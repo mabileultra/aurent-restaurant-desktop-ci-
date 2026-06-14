@@ -7,6 +7,7 @@ import com.pos.finance.dto.integration.PurchaseExpenseRequest;
 import com.pos.finance.dto.integration.RefundExpenseRequest;
 import com.pos.finance.dto.integration.SaleAdvanceApplyRequest;
 import com.pos.finance.dto.integration.SaleIncomeRequest;
+import com.pos.finance.dto.integration.ZReportIncomeRequest;
 import com.pos.finance.service.CustomerAdvanceService;
 import com.pos.finance.service.AdvanceSaleIntegrationService;
 import com.pos.finance.service.CreditPurchaseIntegrationService;
@@ -14,6 +15,7 @@ import com.pos.finance.service.CreditSaleIntegrationService;
 import com.pos.finance.service.PurchaseIntegrationService;
 import com.pos.finance.service.ReturnIntegrationService;
 import com.pos.finance.service.SaleIntegrationService;
+import com.pos.finance.service.ZReportIntegrationService;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +38,17 @@ public class InternalIntegrationController {
     private final CreditPurchaseIntegrationService creditPurchaseIntegrationService;
     private final AdvanceSaleIntegrationService advanceSaleIntegrationService;
     private final CustomerAdvanceService customerAdvanceService;
+    private final ZReportIntegrationService zReportIntegrationService;
 
     @PostMapping("/incomes/from-sale")
     public ResponseEntity<Void> recordSaleIncome(@Valid @RequestBody SaleIncomeRequest request) {
         saleIntegrationService.recordSaleIncome(request);
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/incomes/from-z-report")
+    public ResponseEntity<Void> recordZReportIncome(@Valid @RequestBody ZReportIncomeRequest request) {
+        zReportIntegrationService.recordZReportIncome(request);
         return ResponseEntity.accepted().build();
     }
 

@@ -1,6 +1,7 @@
 package com.pos.finance.service.impl;
 
 import com.pos.finance.dto.income.CreateIncomeRequest;
+import com.pos.finance.dto.income.DailyRevenueSummaryDto;
 import com.pos.finance.dto.income.IncomeDto;
 import com.pos.finance.dto.income.UpdateIncomeRequest;
 import com.pos.finance.dto.shared.PageResponse;
@@ -19,6 +20,7 @@ import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.IncomeService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.CurrencySupport;
 import com.pos.finance.service.support.FinanceAuditSupport;
 import com.pos.finance.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -45,14 +48,42 @@ public class IncomeServiceImpl implements IncomeService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<IncomeDto> list(
-        Integer storeId, LocalDate from, LocalDate to, PaymentMethod paymentMethod, Pageable pageable
+        Integer storeId,
+        LocalDate from,
+        LocalDate to,
+        PaymentMethod paymentMethod,
+        boolean excludeSale,
+        IncomeSourceType sourceType,
+        Pageable pageable
     ) {
         Integer companyId = FinanceTenantContext.requireCompanyId();
         bootstrapSupport.ensureBootstrapped(companyId);
         return PageResponse.from(
-            incomeRepository.search(companyId, storeId, from, to, paymentMethod, pageable)
+            incomeRepository.search(companyId, storeId, from, to, paymentMethod, excludeSale, sourceType, pageable)
                 .map(mapper::toDto)
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<DailyRevenueSummaryDto> dailyRevenue(Integer storeId, LocalDate from, LocalDate to) {
+        Integer companyId = FinanceTenantContext.requireCompanyId();
+        bootstrapSupport.ensureBootstrapped(companyId);
+        LocalDate periodFrom = from != null ? from : LocalDate.now().minusDays(30);
+        LocalDate periodTo = to != null ? to : LocalDate.now();
+        if (periodTo.isBefore(periodFrom)) {
+            throw FinanceExceptions.badRequest("Дата «по» не может быть раньше «с»");
+        }
+        return incomeRepository.sumDailyRevenue(companyId, periodFrom, periodTo, storeId).stream()
+            .map(row -> new DailyRevenueSummaryDto(
+                (LocalDate) row[0],
+                (Integer) row[1],
+                (BigDecimal) row[2],
+                (BigDecimal) row[3],
+                (BigDecimal) row[4],
+                row[5] != null ? ((Number) row[5]).longValue() : 0L
+            ))
+            .toList();
     }
 
     @Override
@@ -60,6 +91,8 @@ public class IncomeServiceImpl implements IncomeService {
         Integer companyId = FinanceTenantContext.requireCompanyId();
         bootstrapSupport.ensureBootstrapped(companyId);
         FinancialAccount account = balanceSupport.requireAccount(request.accountId(), companyId);
+        String currency = CurrencySupport.resolve(request.currency());
+        CurrencySupport.requireMatchesAccount(currency, account);
         IncomeCategory category = incomeCategoryRepository.findByIdAndCompanyId(request.incomeCategoryId(), companyId)
             .orElseThrow(() -> FinanceExceptions.notFound("IncomeCategory", request.incomeCategoryId()));
         if (!category.isActive()) {
@@ -70,7 +103,7 @@ public class IncomeServiceImpl implements IncomeService {
             .storeId(request.storeId())
             .account(account)
             .amount(request.amount())
-            .currency(request.currency() != null ? request.currency() : "UZS")
+            .currency(currency)
             .paymentMethod(request.paymentMethod())
             .incomeCategory(category)
             .sourceType(request.sourceType() != null ? request.sourceType() : IncomeSourceType.MANUAL)
@@ -102,6 +135,8 @@ public class IncomeServiceImpl implements IncomeService {
         }
         FinancialAccount oldAccount = income.getAccount();
         FinancialAccount newAccount = balanceSupport.requireAccount(request.accountId(), companyId);
+        String currency = CurrencySupport.resolve(request.currency());
+        CurrencySupport.requireMatchesAccount(currency, newAccount);
         IncomeCategory category = incomeCategoryRepository.findByIdAndCompanyId(request.incomeCategoryId(), companyId)
             .orElseThrow(() -> FinanceExceptions.notFound("IncomeCategory", request.incomeCategoryId()));
 
@@ -121,6 +156,7 @@ public class IncomeServiceImpl implements IncomeService {
 
         income.setAccount(newAccount);
         income.setAmount(newAmount);
+        income.setCurrency(currency);
         income.setIncomeCategory(category);
         income.setPaymentMethod(request.paymentMethod());
         income.setStoreId(request.storeId());

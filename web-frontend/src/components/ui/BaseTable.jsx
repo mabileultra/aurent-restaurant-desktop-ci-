@@ -15,7 +15,7 @@ export default function BaseTable({
   return (
     <div
       className={clsx(
-        'overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none',
+        'rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none',
         className
       )}
     >
@@ -37,7 +37,11 @@ export default function BaseTable({
           )}
         </table>
       </div>
-      {footer}
+      {footer ? (
+        <div className="base-table__footer relative z-20 overflow-visible bg-white dark:bg-slate-900">
+          {footer}
+        </div>
+      ) : null}
     </div>
   );
 }

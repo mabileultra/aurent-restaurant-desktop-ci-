@@ -1,0 +1,96 @@
+{
+  "common": {
+    "currency": "so'm",
+    "million": "mln",
+    "loading": "Yuklanmoqda…",
+    "loadError": "Ma'lumotlarni yuklab bo'lmadi",
+    "retry": "Qayta urinish",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish",
+    "logout": "Chiqish",
+    "version": "Versiya {{version}}"
+  },
+  "login": {
+    "title": "Aurent",
+    "subtitle": "Rahbar uchun moliyaviy ko'rinish",
+    "companyCode": "Kompaniya kodi",
+    "companyCodePh": "masalan MIRONKUL",
+    "username": "Login",
+    "usernamePh": "masalan admin",
+    "password": "Parol",
+    "remember": "Qurilmani eslab qolish",
+    "signIn": "Kirish",
+    "signingIn": "Kirish…",
+    "failed": "Kirish xatosi",
+    "badCredentials": "Noto'g'ri login yoki parol",
+    "networkError": "Server bilan aloqa yo'q",
+    "serverUrl": "Server manzili",
+    "serverUrlPh": "https://your-server.com/api/v1",
+    "serverUrlHint": "Backend URL kiriting. Test: http://IP:8080/api/v1"
+  },
+  "tabs": {
+    "today": "Bugun",
+    "trends": "Dinamika",
+    "money": "Pul",
+    "profile": "Profil"
+  },
+  "today": {
+    "salesToday": "Bugungi sotuvlar",
+    "receipts": "{{count}} chek",
+    "profit": "Foyda",
+    "money": "Pul",
+    "cashAndBank": "kassa + bank",
+    "dynamics": "Dinamika",
+    "days7": "7 kun",
+    "expensesToday": "Bugungi xarajatlar",
+    "showAllExpenses": "Barcha xarajatlarni ko'rsatish",
+    "updatedAt": "Yangilandi: {{time}}",
+    "income": "Tushum",
+    "expense": "Xarajat"
+  },
+  "trends": {
+    "title": "Dinamika",
+    "subtitle": "Davr bo'yicha tushum, xarajat va foyda",
+    "periodToday": "Bugun",
+    "periodWeek": "Hafta",
+    "periodMonth": "Oy",
+    "revenue": "Tushum",
+    "expenses": "Xarajat",
+    "netProfit": "Sof foyda",
+    "vsPrevious": "o'tgan davrga nisbatan",
+    "incomeVsExpense": "Tushum va xarajat",
+    "profitByDay": "Kunlik foyda",
+    "max": "MAX",
+    "lastDayIncome": "Oxirgi kun tushumi",
+    "compareToday": "Bugun vs kecha",
+    "compareWeek": "Bu hafta vs o'tgan",
+    "compareMonth": "Bu oy vs o'tgan",
+    "netProfitPeriod": "Davr uchun sof foyda",
+    "previousPeriod": "O'tgan davr",
+    "averageCheck": "O'rtacha chek",
+    "salesCount": "Kassadan sotuvlar"
+  },
+  "money": {
+    "title": "Pul",
+    "cash": "Kassalarda",
+    "bank": "Hisoblarda",
+    "total": "Jami",
+    "customerDebt": "Bizga qarzdorlar",
+    "supplierDebt": "Biz qarzdormiz",
+    "freeMoney": "Erkin mablag'"
+  },
+  "profile": {
+    "title": "Profil",
+    "company": "Kompaniya",
+    "role": "Rol",
+    "language": "Til",
+    "langRu": "Русский",
+    "langUz": "O'zbek",
+    "server": "Server",
+    "logoutConfirm": "Hisobdan chiqilsinmi?"
+  },
+  "roles": {
+    "ADMIN": "Administrator",
+    "MANAGER": "Menejer"
+  }
+}

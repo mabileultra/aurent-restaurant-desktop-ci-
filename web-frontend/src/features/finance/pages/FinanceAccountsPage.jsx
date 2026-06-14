@@ -1,12 +1,14 @@
 import TablePagination from '../../../components/shared/TablePagination';
-import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
-import FinanceBulkConfirmModal from '../components/FinanceBulkConfirmModal';
-import FinanceBulkToolbar from '../components/FinanceBulkToolbar';
-import FinanceRowActions from '../components/FinanceRowActions';
-import FinanceSelectHeader, { FinanceSelectCell } from '../components/FinanceSelectHeader';
-import { useClientTablePagination } from '../hooks/useClientTablePagination';
-import { useFinanceAccountsPage } from '../hooks/useFinanceAccountsPage';
-import { formatMoney } from '../utils/formatMoney';
+import { BaseButton, BaseModal, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
+import FinanceAccountCreateForm from '../components/accounts/FinanceAccountCreateForm';
+import FinanceAccountEditForm from '../components/accounts/FinanceAccountEditForm';
+import FinanceBulkConfirmModal from '../components/shared/FinanceBulkConfirmModal';
+import FinanceBulkToolbar from '../components/shared/FinanceBulkToolbar';
+import FinanceRowActions from '../components/shared/FinanceRowActions';
+import FinanceSelectHeader, { FinanceSelectCell } from '../components/shared/FinanceSelectHeader';
+import { useClientTablePagination } from '../hooks/shared/useClientTablePagination';
+import { useFinanceAccountsPage } from '../hooks/accounts/useFinanceAccountsPage';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
 import '../../../styles/finance/accounts.css';
@@ -100,30 +102,27 @@ export default function FinanceAccountsPage() {
       </div>
 
       <BaseModal open={p.modalOpen} onClose={() => p.setModalOpen(false)} title={p.t('finance.accounts.add')} size="lg" className="finance-modal" bodyClassName="finance-modal__body">
-        <div className="finance-form">
-          <BaseInput label={p.t('finance.accounts.name')} value={p.form.name} onChange={(e) => p.setForm({ ...p.form, name: e.target.value })} />
-          <BaseSelect label={p.t('finance.accounts.type')} value={p.form.type} onChange={(e) => p.setForm({ ...p.form, type: e.target.value })} options={p.accountTypes.map((type) => ({ value: type, label: type }))} />
-          <BaseInput label={p.t('finance.accounts.initialBalance')} type="number" value={p.form.initialBalance} onChange={(e) => p.setForm({ ...p.form, initialBalance: e.target.value })} />
-          <div className="finance-form__actions">
-            <BaseButton variant="secondary" onClick={() => p.setModalOpen(false)}>{p.t('common.cancel')}</BaseButton>
-            <BaseButton onClick={p.submit} disabled={!p.form.name.trim() || p.createMutation.isPending}>{p.t('common.save')}</BaseButton>
-          </div>
-        </div>
+        <FinanceAccountCreateForm
+          t={p.t}
+          form={p.form}
+          setForm={p.setForm}
+          accountTypes={p.accountTypes}
+          onCancel={() => p.setModalOpen(false)}
+          onSubmit={p.submit}
+          isPending={p.createMutation.isPending}
+        />
       </BaseModal>
 
       <BaseModal open={!!p.editModal} onClose={() => p.setEditModal(null)} title={p.t('finance.accounts.edit')} size="lg" className="finance-modal" bodyClassName="finance-modal__body">
-        <div className="finance-form">
-          <BaseInput label={p.t('finance.accounts.name')} value={p.editForm.name} onChange={(e) => p.setEditForm({ ...p.editForm, name: e.target.value })} />
-          <BaseSelect label={p.t('finance.accounts.type')} value={p.editForm.type} onChange={(e) => p.setEditForm({ ...p.editForm, type: e.target.value })} options={p.accountTypes.map((type) => ({ value: type, label: type }))} />
-          <label className="finance-form__label finance-form__label--checkbox">
-            <input type="checkbox" checked={p.editForm.active} onChange={(e) => p.setEditForm({ ...p.editForm, active: e.target.checked })} />
-            {p.t('common.active')}
-          </label>
-          <div className="finance-form__actions">
-            <BaseButton variant="secondary" onClick={() => p.setEditModal(null)}>{p.t('common.cancel')}</BaseButton>
-            <BaseButton onClick={p.submitEdit} disabled={!p.editForm.name.trim() || p.updateMutation.isPending}>{p.t('common.save')}</BaseButton>
-          </div>
-        </div>
+        <FinanceAccountEditForm
+          t={p.t}
+          form={p.editForm}
+          setForm={p.setEditForm}
+          accountTypes={p.accountTypes}
+          onCancel={() => p.setEditModal(null)}
+          onSubmit={p.submitEdit}
+          isPending={p.updateMutation.isPending}
+        />
       </BaseModal>
 
       <FinanceBulkConfirmModal

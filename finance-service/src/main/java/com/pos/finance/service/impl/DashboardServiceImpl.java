@@ -73,16 +73,14 @@ public class DashboardServiceImpl implements DashboardService {
         BigDecimal expensesWeek = expenseRepository.sumByPeriod(companyId, weekStart, today, storeId);
         BigDecimal expensesMonth = expenseRepository.sumByPeriod(companyId, periodStart, periodEnd, storeId);
 
-        BigDecimal salesIncomeToday = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.SALE, today, today, storeId
-        );
-        BigDecimal salesIncomeMonth = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.SALE, periodStart, periodEnd, storeId
-        );
+        BigDecimal salesIncomeToday = sumRevenueByPeriod(companyId, today, today, storeId);
+        BigDecimal salesIncomeMonth = sumRevenueByPeriod(companyId, periodStart, periodEnd, storeId);
         BigDecimal purchaseExpenseMonth = expenseRepository.sumBySourceAndPeriod(
             companyId, ExpenseSourceType.PURCHASE, periodStart, periodEnd, storeId
         );
         long salesCountToday = incomeRepository.countBySourceAndPeriod(
+            companyId, IncomeSourceType.Z_REPORT, today, today, storeId
+        ) + incomeRepository.countBySourceAndPeriod(
             companyId, IncomeSourceType.SALE, today, today, storeId
         );
 
@@ -182,5 +180,15 @@ public class DashboardServiceImpl implements DashboardService {
             ));
         }
         return days;
+    }
+
+    private BigDecimal sumRevenueByPeriod(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
+        BigDecimal zReport = incomeRepository.sumBySourceAndPeriod(
+            companyId, IncomeSourceType.Z_REPORT, from, to, storeId
+        );
+        BigDecimal legacySale = incomeRepository.sumBySourceAndPeriod(
+            companyId, IncomeSourceType.SALE, from, to, storeId
+        );
+        return zReport.add(legacySale);
     }
 }

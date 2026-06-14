@@ -14,6 +14,7 @@ public record UpdateIncomeRequest(
     @NotNull UUID incomeCategoryId,
     @NotNull PaymentMethod paymentMethod,
     Integer storeId,
+    String currency,
     String comment,
     LocalDate transactionDate
 ) {

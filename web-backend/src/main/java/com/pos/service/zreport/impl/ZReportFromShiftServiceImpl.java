@@ -11,6 +11,7 @@ import com.pos.repository.CashRegisterRepository;
 import com.pos.repository.CashierShiftRepository;
 import com.pos.repository.sale.ShiftReportRepository;
 import com.pos.repository.ZReportRepository;
+import com.pos.service.finance.FinanceZReportIntegrationService;
 import com.pos.service.zreport.ZReportFromShiftService;
 import com.pos.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
     private final CashRegisterRepository cashRegisterRepository;
     private final ShiftReportRepository shiftReportRepository;
     private final CashierShiftRepository cashierShiftRepository;
+    private final FinanceZReportIntegrationService financeZReportIntegrationService;
 
     @Override
     public ZReport createForClosedShift(CashierShift shift, ShiftReportResponse report) {
@@ -114,6 +116,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         }
 
         shift.setZReport(zReport);
+        financeZReportIntegrationService.onZReportCreated(zReport, shift);
         LogUtil.info(
             ZReportFromShiftServiceImpl.class,
             "Z-report {} (#{}) created for cashier shift {}",
@@ -197,6 +200,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             throw new BadRequestException("Не удалось сохранить Z-отчёт: " + ex.getMessage());
         }
 
+        financeZReportIntegrationService.onZReportCreated(zReport, shift);
         LogUtil.info(
             ZReportFromShiftServiceImpl.class,
             "Z-report {} (#{}) created for open shift {} (period reset)",

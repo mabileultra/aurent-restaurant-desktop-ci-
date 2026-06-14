@@ -1,9 +1,11 @@
 package com.pos.finance.controller;
 
 import com.pos.finance.dto.income.CreateIncomeRequest;
+import com.pos.finance.dto.income.DailyRevenueSummaryDto;
 import com.pos.finance.dto.income.IncomeDto;
 import com.pos.finance.dto.income.UpdateIncomeRequest;
 import com.pos.finance.dto.shared.PageResponse;
+import com.pos.finance.entity.IncomeSourceType;
 import com.pos.finance.entity.PaymentMethod;
 import com.pos.finance.service.IncomeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,6 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -35,9 +38,21 @@ public class IncomeController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) PaymentMethod paymentMethod,
+        @RequestParam(required = false, defaultValue = "true") boolean excludeSale,
+        @RequestParam(required = false) IncomeSourceType sourceType,
         @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(incomeService.list(storeId, from, to, paymentMethod, pageable));
+        return ResponseEntity.ok(incomeService.list(storeId, from, to, paymentMethod, excludeSale, sourceType, pageable));
+    }
+
+    @GetMapping("/revenue-daily")
+    @Operation(summary = "Сводная выручка по дням")
+    public ResponseEntity<List<DailyRevenueSummaryDto>> dailyRevenue(
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        return ResponseEntity.ok(incomeService.dailyRevenue(storeId, from, to));
     }
 
     @PostMapping

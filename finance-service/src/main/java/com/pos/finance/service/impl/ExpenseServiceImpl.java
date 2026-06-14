@@ -19,6 +19,7 @@ import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.ExpenseService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.CurrencySupport;
 import com.pos.finance.service.support.FinanceAuditSupport;
 import com.pos.finance.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +61,8 @@ public class ExpenseServiceImpl implements ExpenseService {
         Integer companyId = FinanceTenantContext.requireCompanyId();
         bootstrapSupport.ensureBootstrapped(companyId);
         FinancialAccount account = balanceSupport.requireAccount(request.accountId(), companyId);
+        String currency = CurrencySupport.resolve(request.currency());
+        CurrencySupport.requireMatchesAccount(currency, account);
         ExpenseCategory category = expenseCategoryRepository.findByIdAndCompanyId(request.expenseCategoryId(), companyId)
             .orElseThrow(() -> FinanceExceptions.notFound("ExpenseCategory", request.expenseCategoryId()));
         if (!category.isActive()) {
@@ -72,7 +75,7 @@ public class ExpenseServiceImpl implements ExpenseService {
             .storeId(request.storeId())
             .account(account)
             .amount(request.amount())
-            .currency(request.currency() != null ? request.currency() : "UZS")
+            .currency(currency)
             .paymentMethod(request.paymentMethod())
             .expenseCategory(category)
             .supplierId(request.supplierId())
@@ -102,6 +105,8 @@ public class ExpenseServiceImpl implements ExpenseService {
             .orElseThrow(() -> FinanceExceptions.notFound("Expense", id));
         FinancialAccount oldAccount = expense.getAccount();
         FinancialAccount newAccount = balanceSupport.requireAccount(request.accountId(), companyId);
+        String currency = CurrencySupport.resolve(request.currency());
+        CurrencySupport.requireMatchesAccount(currency, newAccount);
         ExpenseCategory category = expenseCategoryRepository.findByIdAndCompanyId(request.expenseCategoryId(), companyId)
             .orElseThrow(() -> FinanceExceptions.notFound("ExpenseCategory", request.expenseCategoryId()));
 
@@ -121,9 +126,12 @@ public class ExpenseServiceImpl implements ExpenseService {
 
         expense.setAccount(newAccount);
         expense.setAmount(newAmount);
+        expense.setCurrency(currency);
         expense.setExpenseCategory(category);
         expense.setPaymentMethod(request.paymentMethod());
         expense.setStoreId(request.storeId());
+        expense.setSupplierId(request.supplierId());
+        expense.setEmployeeId(request.employeeId());
         expense.setComment(request.comment());
         expense.setTransactionDate(request.transactionDate() != null ? request.transactionDate() : expense.getTransactionDate());
         expense.setUpdatedBy(FinanceTenantContext.userId().orElse(null));

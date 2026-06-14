@@ -18,6 +18,7 @@ export default function BaseModal({
   size = 'md',
   className,
   bodyClassName,
+  hideHeader = false,
 }) {
   if (!open) return null;
 
@@ -33,7 +34,7 @@ export default function BaseModal({
         aria-modal="true"
         aria-labelledby={title ? 'base-modal-title' : undefined}
       >
-        {(title || onClose) && (
+        {!hideHeader && (title || onClose) && (
           <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             {title && (
               <h2

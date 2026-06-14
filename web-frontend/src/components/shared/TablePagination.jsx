@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../ui';
+import '../../styles/shared/table-pagination.css';
 
 export const TABLE_PAGE_SIZE_OPTIONS = [10, 14, 20, 50];
 
@@ -42,13 +43,17 @@ export default function TablePagination({
 
   return (
     <div
-      className={`flex flex-col gap-3 border-t border-slate-200 px-4 py-3 text-sm text-slate-600 dark:border-slate-800 dark:text-slate-400 lg:flex-row lg:items-center lg:justify-between ${className}`.trim()}
+      className={`table-pagination flex flex-col gap-3 border-t border-slate-200 px-4 py-3 dark:border-slate-800 lg:flex-row lg:items-center lg:justify-between ${className}`.trim()}
     >
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span>{t('products.recordsRange', { from, to, total })}</span>
+      <div className="table-pagination__meta">
+        <span className="table-pagination__range">
+          {t('products.recordsRange', { from, to, total })}
+        </span>
         {onPageSizeChange ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-slate-500 dark:text-slate-500">{t('cashRegisters.pageSizePrefix')}</span>
+          <div className="table-pagination__page-size">
+            <span className="table-pagination__page-size-label">
+              {t('cashRegisters.pageSizePrefix')}
+            </span>
             <BaseSelect
               size="sm"
               value={pageSize}
@@ -65,12 +70,12 @@ export default function TablePagination({
         ) : null}
       </div>
 
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="table-pagination__nav">
         <button
           type="button"
           disabled={page === 0}
           onClick={() => onPageChange(page - 1)}
-          className="rounded px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 disabled:opacity-40 dark:text-slate-400 dark:hover:text-slate-200"
+          className="table-pagination__nav-btn"
         >
           {t('common.prev')}
         </button>
@@ -79,11 +84,11 @@ export default function TablePagination({
             <button
               type="button"
               onClick={() => onPageChange(0)}
-              className="min-w-[2.5rem] rounded border border-slate-300 px-2.5 py-1.5 text-sm dark:border-slate-600"
+              className="table-pagination__page-btn"
             >
               1
             </button>
-            <span className="px-1 text-slate-400">…</span>
+            <span className="table-pagination__ellipsis">…</span>
           </>
         ) : null}
         {displayButtons.map((i) => (
@@ -92,22 +97,18 @@ export default function TablePagination({
             type="button"
             onClick={() => totalPages > 1 && onPageChange(i)}
             disabled={totalPages <= 1 && i !== page}
-            className={`min-w-[2.5rem] rounded border px-2.5 py-1.5 text-sm ${
-              page === i
-                ? 'border-emerald-600 bg-emerald-50 font-semibold text-emerald-800 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-200'
-                : 'border-slate-300 dark:border-slate-600'
-            }`}
+            className={`table-pagination__page-btn ${page === i ? 'table-pagination__page-btn--active' : ''}`.trim()}
           >
             {i + 1}
           </button>
         ))}
         {showEllipsisAfter ? (
           <>
-            <span className="px-1 text-slate-400">…</span>
+            <span className="table-pagination__ellipsis">…</span>
             <button
               type="button"
               onClick={() => onPageChange(totalPages - 1)}
-              className="min-w-[2.5rem] rounded border border-slate-300 px-2.5 py-1.5 text-sm dark:border-slate-600"
+              className="table-pagination__page-btn"
             >
               {totalPages}
             </button>
@@ -117,7 +118,7 @@ export default function TablePagination({
           type="button"
           disabled={page >= totalPages - 1 || totalPages === 0}
           onClick={() => onPageChange(page + 1)}
-          className="rounded px-3 py-1.5 text-sm text-slate-600 hover:text-slate-900 disabled:opacity-40 dark:text-slate-400 dark:hover:text-slate-200"
+          className="table-pagination__nav-btn"
         >
           {t('common.next')}
         </button>

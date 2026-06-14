@@ -1,6 +1,6 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { BaseButton, BaseInput, BaseTable, BaseSelect, ErrorBanner, PageLayout } from '../../../components/ui';
-import { useFinanceSyncPage } from '../hooks/useFinanceSyncPage';
+import { useFinanceSyncPage } from '../hooks/sync/useFinanceSyncPage';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
 import '../../../styles/finance/sync.css';
@@ -50,8 +50,8 @@ export default function FinanceSyncPage() {
               <BaseInput type="date" label={p.t('finance.reports.to')} value={p.backfillTo} onChange={(e) => p.setBackfillTo(e.target.value)} />
             </div>
             <label className="finance-form__label finance-form__label--checkbox">
-              <input type="checkbox" checked={p.backfillSales} onChange={(e) => p.setBackfillSales(e.target.checked)} />
-              {p.t('finance.sync.backfillSales')}
+              <input type="checkbox" checked={p.backfillZReports} onChange={(e) => p.setBackfillZReports(e.target.checked)} />
+              {p.t('finance.sync.backfillZReports')}
             </label>
             <label className="finance-form__label finance-form__label--checkbox">
               <input type="checkbox" checked={p.backfillPurchases} onChange={(e) => p.setBackfillPurchases(e.target.checked)} />
@@ -59,7 +59,7 @@ export default function FinanceSyncPage() {
             </label>
             <BaseButton
               onClick={() => p.backfillMutation.mutate()}
-              disabled={!p.backfillFrom || !p.backfillTo || p.backfillMutation.isPending || (!p.backfillSales && !p.backfillPurchases)}
+              disabled={!p.backfillFrom || !p.backfillTo || p.backfillMutation.isPending || (!p.backfillZReports && !p.backfillPurchases)}
             >
               {p.t('finance.sync.runBackfill')}
             </BaseButton>

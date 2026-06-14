@@ -11,6 +11,7 @@ import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.FinancialAccountService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.CurrencySupport;
 import com.pos.finance.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -51,7 +52,7 @@ public class FinancialAccountServiceImpl implements FinancialAccountService {
             .name(request.name().trim())
             .type(request.type())
             .balance(initial)
-            .currency(request.currency() != null ? request.currency() : "UZS")
+            .currency(CurrencySupport.resolve(request.currency()))
             .active(true)
             .deleted(false)
             .createdBy(FinanceTenantContext.userId().orElse(null))

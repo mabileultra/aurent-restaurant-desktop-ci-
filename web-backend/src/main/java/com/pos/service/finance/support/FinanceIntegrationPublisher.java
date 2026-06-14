@@ -19,6 +19,15 @@ public class FinanceIntegrationPublisher {
         publishAfterCommit("SALE_INCOME", "/internal/finance/incomes/from-sale", "sale:" + payload.get("saleId"), payload);
     }
 
+    public void publishZReportIncomeAfterCommit(Map<String, Object> payload) {
+        publishAfterCommit(
+            "Z_REPORT_INCOME",
+            "/internal/finance/incomes/from-z-report",
+            "z-report:" + payload.get("zReportId"),
+            payload
+        );
+    }
+
     public void publishPurchaseExpenseAfterCommit(Map<String, Object> payload) {
         publishAfterCommit(
             "PURCHASE_EXPENSE",

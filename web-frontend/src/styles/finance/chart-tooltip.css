@@ -1,0 +1,104 @@
+.finance-daily-chart__column {
+  position: relative;
+  cursor: pointer;
+}
+
+.finance-daily-chart__column:hover .finance-daily-chart__bar--income,
+.finance-daily-chart__column:focus-visible .finance-daily-chart__bar--income {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 2px rgb(34 197 94 / 0.35);
+}
+
+.finance-daily-chart__column:hover .finance-daily-chart__bar--expense,
+.finance-daily-chart__column:focus-visible .finance-daily-chart__bar--expense {
+  filter: brightness(1.08);
+  box-shadow: 0 0 0 2px rgb(239 68 68 / 0.35);
+}
+
+.finance-daily-chart__column--active .finance-daily-chart__label {
+  color: rgb(15 23 42);
+  font-weight: 700;
+}
+
+.finance-chart-tooltip {
+  position: absolute;
+  bottom: calc(100% + 0.5rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  min-width: 9.5rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(15 23 42);
+  color: #fff;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 0.28);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.finance-chart-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgb(15 23 42);
+}
+
+.finance-chart-tooltip__date {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: rgb(148 163 184);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.finance-chart-tooltip__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.finance-chart-tooltip__row + .finance-chart-tooltip__row {
+  margin-top: 0.25rem;
+}
+
+.finance-chart-tooltip__row--income span:last-child {
+  color: rgb(134 239 172);
+  font-weight: 700;
+}
+
+.finance-chart-tooltip__row--expense span:last-child {
+  color: rgb(252 165 165);
+  font-weight: 700;
+}
+
+.finance-chart-tooltip__hint {
+  display: block;
+  margin-top: 0.5rem;
+  padding-top: 0.375rem;
+  border-top: 1px solid rgb(51 65 85);
+  font-size: 0.625rem;
+  color: rgb(148 163 184);
+  text-align: center;
+}
+
+.finance-recent__item {
+  cursor: pointer;
+}
+
+.finance-recent__item:hover {
+  background: rgb(248 250 252);
+}
+
+.finance-recent__item:focus-visible {
+  outline: 2px solid rgb(16 185 129);
+  outline-offset: -2px;
+}

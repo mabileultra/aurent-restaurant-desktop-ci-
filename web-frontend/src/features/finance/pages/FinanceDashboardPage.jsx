@@ -1,10 +1,10 @@
 import { PageLayout, ErrorBanner } from '../../../components/ui';
-import FinanceListFilters from '../components/FinanceListFilters';
+import FinanceListFilters from '../components/shared/FinanceListFilters';
 import FinanceKpiCard from '../components/dashboard/FinanceKpiCard';
 import FinanceRecentTransactions from '../components/dashboard/FinanceRecentTransactions';
 import FinanceDailyChart from '../components/dashboard/FinanceDailyChart';
-import { useFinanceDashboardPage } from '../hooks/useFinanceDashboardPage';
-import { formatMoney } from '../utils/formatMoney';
+import { useFinanceDashboardPage } from '../hooks/dashboard/useFinanceDashboardPage';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/dashboard.css';
 

@@ -6,6 +6,7 @@ on:
     paths:
       - 'web-backend/**'
       - 'web-frontend/**'
+      - 'finance-service/**'
       - 'deploy/**'
       - 'docker-compose.prod.yml'
       - '.github/workflows/deploy-web.yml'

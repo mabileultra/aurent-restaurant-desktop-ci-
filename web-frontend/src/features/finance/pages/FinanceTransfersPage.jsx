@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
+import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
 import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
-import FinanceListFilters from '../components/FinanceListFilters';
-import { useFinanceTransfersPage } from '../hooks/useFinanceTransfersPage';
-import { formatMoney } from '../utils/formatMoney';
+import FinanceListFilters from '../components/shared/FinanceListFilters';
+import FinanceRecordDetailModal from '../components/shared/FinanceRecordDetailModal';
+import { useFinanceTransfersPage } from '../hooks/transfers/useFinanceTransfersPage';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
+import '../../../styles/finance/detail-modal.css';
 
 export default function FinanceTransfersPage() {
   const p = useFinanceTransfersPage();
   const rows = p.transfersQuery.data?.content ?? [];
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [detailRow, setDetailRow] = useState(null);
 
   return (
     <PageLayout
@@ -31,46 +37,67 @@ export default function FinanceTransfersPage() {
         ) : null}
 
         <BaseTable
-        isLoading={p.transfersQuery.isLoading}
-        isEmpty={!p.transfersQuery.isLoading && rows.length === 0}
-        emptyMessage={p.t('finance.transfers.empty')}
-        colSpan={5}
-        footer={(
-          <TablePagination
-            className="finance-pagination"
-            page={p.page}
-            pageSize={p.pageSize}
-            total={p.transfersQuery.data?.totalElements ?? 0}
-            totalPages={p.transfersQuery.data?.totalPages}
-            onPageChange={p.setPage}
-            onPageSizeChange={p.setPageSize}
-          />
-        )}
-      >
-        <table className="finance-table">
-          <thead>
-            <tr>
-              <th>{p.t('finance.transfers.date')}</th>
-              <th>{p.t('finance.transfers.from')}</th>
-              <th>{p.t('finance.transfers.to')}</th>
-              <th>{p.t('finance.common.amount')}</th>
-              <th>{p.t('finance.common.comment')}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.transactionDate}</td>
-                <td>{row.fromAccountName}</td>
-                <td>{row.toAccountName}</td>
-                <td className="finance-amount--income">{formatMoney(row.amount, row.currency)}</td>
-                <td>{row.comment || '—'}</td>
+          isLoading={p.transfersQuery.isLoading}
+          isEmpty={!p.transfersQuery.isLoading && rows.length === 0}
+          emptyMessage={p.t('finance.transfers.empty')}
+          colSpan={6}
+          footer={(
+            <TablePagination
+              className="finance-pagination"
+              page={p.page}
+              pageSize={p.pageSize}
+              total={p.transfersQuery.data?.totalElements ?? 0}
+              totalPages={p.transfersQuery.data?.totalPages}
+              onPageChange={p.setPage}
+              onPageSizeChange={p.setPageSize}
+            />
+          )}
+        >
+          <table className="finance-table">
+            <thead>
+              <tr>
+                <th>{p.t('finance.transfers.date')}</th>
+                <th>{p.t('finance.transfers.from')}</th>
+                <th>{p.t('finance.transfers.to')}</th>
+                <th>{p.t('finance.common.amount')}</th>
+                <th>{p.t('finance.common.comment')}</th>
+                <th />
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </BaseTable>
+            </thead>
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.transactionDate}</td>
+                  <td>{row.fromAccountName}</td>
+                  <td>{row.toAccountName}</td>
+                  <td className="finance-amount--income">{formatMoney(row.amount, row.currency)}</td>
+                  <td>{row.comment || '—'}</td>
+                  <td className="finance-cell-actions">
+                    <TableRowActionsMenu
+                      open={menuOpenId === row.id}
+                      onOpenChange={(open) => setMenuOpenId(open ? row.id : null)}
+                      actions={[
+                        {
+                          label: p.t('finance.detail.view'),
+                          onClick: () => setDetailRow(row),
+                        },
+                      ]}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </BaseTable>
       </div>
+
+      <FinanceRecordDetailModal
+        open={!!detailRow}
+        onClose={() => setDetailRow(null)}
+        kind="transfer"
+        record={detailRow}
+        t={p.t}
+      />
 
       <BaseModal
         open={p.modalOpen}

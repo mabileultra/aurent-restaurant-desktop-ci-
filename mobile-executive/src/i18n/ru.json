@@ -1,0 +1,96 @@
+{
+  "common": {
+    "currency": "сум",
+    "million": "млн",
+    "loading": "Загрузка…",
+    "loadError": "Не удалось загрузить данные",
+    "retry": "Повторить",
+    "save": "Сохранить",
+    "cancel": "Отмена",
+    "logout": "Выйти",
+    "version": "Версия {{version}}"
+  },
+  "login": {
+    "title": "Aurent",
+    "subtitle": "Финансовый обзор для руководителя",
+    "companyCode": "Код компании",
+    "companyCodePh": "например MIRONKUL",
+    "username": "Логин",
+    "usernamePh": "например admin",
+    "password": "Пароль",
+    "remember": "Запомнить устройство",
+    "signIn": "Войти",
+    "signingIn": "Вход…",
+    "failed": "Ошибка входа",
+    "badCredentials": "Неверный логин или пароль",
+    "networkError": "Нет связи с сервером",
+    "serverUrl": "Адрес сервера",
+    "serverUrlPh": "https://your-server.com/api/v1",
+    "serverUrlHint": "Укажите URL backend. Для теста: http://IP:8080/api/v1"
+  },
+  "tabs": {
+    "today": "Сегодня",
+    "trends": "Динамика",
+    "money": "Деньги",
+    "profile": "Профиль"
+  },
+  "today": {
+    "salesToday": "Продажи сегодня",
+    "receipts": "{{count}} чеков",
+    "profit": "Прибыль",
+    "money": "Деньги",
+    "cashAndBank": "касса + банк",
+    "dynamics": "Динамика",
+    "days7": "7 дней",
+    "expensesToday": "Расходы сегодня",
+    "showAllExpenses": "Показать все расходы",
+    "updatedAt": "Обновлено: {{time}}",
+    "income": "Доход",
+    "expense": "Расход"
+  },
+  "trends": {
+    "title": "Динамика",
+    "subtitle": "Доходы, расходы и прибыль за период",
+    "periodToday": "Сегодня",
+    "periodWeek": "Неделя",
+    "periodMonth": "Месяц",
+    "revenue": "Доход",
+    "expenses": "Расход",
+    "netProfit": "Чистая прибыль",
+    "vsPrevious": "к прошлому периоду",
+    "incomeVsExpense": "Доход и расход",
+    "profitByDay": "Прибыль по дням",
+    "max": "MAX",
+    "lastDayIncome": "Доход в последний день",
+    "compareToday": "Сегодня vs вчера",
+    "compareWeek": "Эта неделя vs прошлая",
+    "compareMonth": "Этот месяц vs прошлый",
+    "netProfitPeriod": "Чистая прибыль за период",
+    "previousPeriod": "Прошлый период",
+    "averageCheck": "Средний чек",
+    "salesCount": "Продажи с кассы"
+  },
+  "money": {
+    "title": "Деньги",
+    "cash": "В кассах",
+    "bank": "На счетах",
+    "total": "Всего",
+    "customerDebt": "Нам должны",
+    "supplierDebt": "Мы должны",
+    "freeMoney": "Свободные деньги"
+  },
+  "profile": {
+    "title": "Профиль",
+    "company": "Компания",
+    "role": "Роль",
+    "language": "Язык",
+    "langRu": "Русский",
+    "langUz": "O'zbek",
+    "server": "Сервер",
+    "logoutConfirm": "Выйти из аккаунта?"
+  },
+  "roles": {
+    "ADMIN": "Администратор",
+    "MANAGER": "Менеджер"
+  }
+}

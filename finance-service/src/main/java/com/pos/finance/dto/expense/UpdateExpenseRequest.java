@@ -14,6 +14,9 @@ public record UpdateExpenseRequest(
     @NotNull UUID expenseCategoryId,
     @NotNull PaymentMethod paymentMethod,
     Integer storeId,
+    UUID supplierId,
+    UUID employeeId,
+    String currency,
     String comment,
     LocalDate transactionDate
 ) {

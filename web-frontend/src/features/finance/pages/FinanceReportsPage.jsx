@@ -1,11 +1,11 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { ErrorBanner, PageLayout } from '../../../components/ui';
-import FinanceListFilters from '../components/FinanceListFilters';
+import FinanceListFilters from '../components/shared/FinanceListFilters';
 import { financeApi } from '../../../api';
 import ReportExportButton from '../../reports/components/ReportExportButton';
-import { useClientTablePagination } from '../hooks/useClientTablePagination';
-import { useFinanceReportsPage } from '../hooks/useFinanceReportsPage';
-import { formatMoney } from '../utils/formatMoney';
+import { useClientTablePagination } from '../hooks/shared/useClientTablePagination';
+import { useFinanceReportsPage } from '../hooks/reports/useFinanceReportsPage';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
 import '../../../styles/finance/reports.css';

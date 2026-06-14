@@ -25,6 +25,13 @@
   height: 1rem;
 }
 
+.finance-form__hint {
+  margin: -0.5rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: rgb(148 163 184);
+}
+
 .finance-form__actions {
   display: flex;
   justify-content: flex-end;
@@ -89,11 +96,10 @@
 }
 
 .finance-pagination {
-  font-size: 0.875rem;
+  background: inherit;
+  overflow: visible;
 }
 
-.finance-pagination button,
 .finance-pagination .base-select__trigger {
   min-height: 2.25rem;
-  font-size: 0.875rem;
 }

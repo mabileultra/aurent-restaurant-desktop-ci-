@@ -2,6 +2,7 @@ package com.pos.finance.service.impl;
 
 import com.pos.finance.dto.debt.DebtBalanceDto;
 import com.pos.finance.dto.debt.DebtEntryDto;
+import com.pos.finance.dto.debt.DebtReferenceKind;
 import com.pos.finance.dto.debt.PaySupplierDebtRequest;
 import com.pos.finance.dto.expense.ExpenseDto;
 import com.pos.finance.entity.*;
@@ -117,13 +118,19 @@ public class SupplierDebtServiceImpl implements SupplierDebtService {
 
     private DebtEntryDto toEntryDto(SupplierPayableEntry entry) {
         UUID ref = entry.getReceiptId() != null ? entry.getReceiptId() : entry.getExpenseId();
+        DebtReferenceKind kind = entry.getReceiptId() != null
+            ? DebtReferenceKind.RECEIPT
+            : entry.getExpenseId() != null
+                ? DebtReferenceKind.EXPENSE
+                : DebtReferenceKind.NONE;
         return new DebtEntryDto(
             entry.getId(),
             entry.getEntryType(),
             entry.getAmount(),
             entry.getComment(),
             entry.getTransactionDate(),
-            ref
+            ref,
+            kind
         );
     }
 }

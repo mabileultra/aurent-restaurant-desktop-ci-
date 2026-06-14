@@ -9,6 +9,7 @@ export const financeApi = {
   },
   incomes: {
     list: (params) => api.get('/finance/incomes', { params }),
+    dailyRevenue: (params) => api.get('/finance/incomes/revenue-daily', { params }),
     create: (data) => api.post('/finance/incomes', data),
     update: (id, data) => api.put(`/finance/incomes/${id}`, data),
     delete: (id) => api.delete(`/finance/incomes/${id}`),
@@ -57,6 +58,10 @@ export const financeApi = {
       balance: (customerId) => api.get(`/finance/advances/customers/${customerId}/balance`),
       entries: (customerId) => api.get(`/finance/advances/customers/${customerId}/entries`),
       apply: (customerId, data) => api.post(`/finance/advances/customers/${customerId}/apply`, data),
+    },
+    documents: {
+      receipt: (receiptId) => api.get(`/finance/debts/documents/receipts/${receiptId}`),
+      sale: (saleId) => api.get(`/finance/debts/documents/sales/${saleId}`),
     },
   },
 };

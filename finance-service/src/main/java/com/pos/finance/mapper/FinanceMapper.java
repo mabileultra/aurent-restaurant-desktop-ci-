@@ -70,6 +70,8 @@ public class FinanceMapper {
             entity.getExpenseCategory().getName(),
             entity.getSourceType(),
             entity.getSourceId(),
+            entity.getSupplierId(),
+            entity.getEmployeeId(),
             entity.getComment(),
             entity.getTransactionDate()
         );

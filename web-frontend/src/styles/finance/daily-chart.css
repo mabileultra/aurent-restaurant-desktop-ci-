@@ -47,6 +47,9 @@
   align-items: end;
   min-height: 150px;
   overflow-x: auto;
+  overflow-y: visible;
+  padding-top: 5.5rem;
+  margin-top: -5.5rem;
   padding-bottom: 0.25rem;
 }
 
