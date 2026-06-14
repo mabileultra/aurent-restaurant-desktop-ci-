@@ -35,24 +35,46 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
   useLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
 
+    const gap = 4;
+    const edgePadding = 8;
+
+    const estimateMenuHeight = () => {
+      const menuEl = menuRef.current;
+      if (menuEl?.offsetHeight) return menuEl.offsetHeight;
+      const itemHeight = 40;
+      const menuPadding = 8;
+      const maxMenuHeight = Math.min(288, window.innerHeight * 0.5);
+      return Math.min(options.length * itemHeight + menuPadding, maxMenuHeight);
+    };
+
     const updatePosition = () => {
       const rect = triggerRef.current.getBoundingClientRect();
-      setMenuStyle({
-        top: rect.bottom + 4,
-        left: rect.left,
-        width: rect.width,
-      });
+      const menuHeight = estimateMenuHeight();
+      const spaceBelow = window.innerHeight - edgePadding - rect.bottom;
+      const spaceAbove = rect.top - edgePadding;
+      const openUpward = spaceBelow < menuHeight && spaceAbove > spaceBelow;
+
+      let top = openUpward ? rect.top - menuHeight - gap : rect.bottom + gap;
+      top = Math.max(edgePadding, Math.min(top, window.innerHeight - menuHeight - edgePadding));
+
+      let left = rect.left;
+      const width = Math.max(rect.width, 80);
+      left = Math.max(edgePadding, Math.min(left, window.innerWidth - width - edgePadding));
+
+      setMenuStyle({ top, left, width });
     };
 
     updatePosition();
+    const rafId = requestAnimationFrame(updatePosition);
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
 
     return () => {
+      cancelAnimationFrame(rafId);
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
-  }, [open]);
+  }, [open, options.length]);
 
   useEffect(() => {
     if (!open) return undefined;

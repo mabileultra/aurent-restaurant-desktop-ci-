@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.lang.NonNull;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface ZReportRepository extends JpaRepository<ZReport, Long>, JpaSpecificationExecutor<ZReport> {
@@ -56,5 +58,20 @@ public interface ZReportRepository extends JpaRepository<ZReport, Long>, JpaSpec
     org.springframework.data.domain.Page<ZReport> findRecentByCompanyId(
             @Param("companyId") Integer companyId,
             Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"store", "store.company"})
+    @Query("""
+        SELECT z FROM ZReport z
+        JOIN z.store st
+        WHERE (:companyId IS NULL OR st.company.id = :companyId)
+          AND z.closedAt >= :from
+          AND z.closedAt < :to
+        ORDER BY z.closedAt ASC
+        """)
+    List<ZReport> findForFinanceBackfill(
+        @Param("companyId") Integer companyId,
+        @Param("from") Instant from,
+        @Param("to") Instant to
     );
 }

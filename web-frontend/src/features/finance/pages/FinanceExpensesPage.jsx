@@ -1,20 +1,35 @@
+import { useMemo, useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
-import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
-import FinanceBulkConfirmModal from '../components/FinanceBulkConfirmModal';
-import FinanceBulkToolbar from '../components/FinanceBulkToolbar';
-import FinanceListFilters from '../components/FinanceListFilters';
-import FinanceRowActions from '../components/FinanceRowActions';
-import FinanceSelectHeader, { FinanceSelectCell } from '../components/FinanceSelectHeader';
-import { useFinanceExpensesPage } from '../hooks/useFinanceExpensesPage';
-import { formatMoney } from '../utils/formatMoney';
+import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import { BaseButton, BaseModal, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
+import FinanceBulkConfirmModal from '../components/shared/FinanceBulkConfirmModal';
+import FinanceBulkToolbar from '../components/shared/FinanceBulkToolbar';
+import FinanceExpenseFormFields from '../components/expenses/FinanceExpenseFormFields';
+import FinanceListFilters from '../components/shared/FinanceListFilters';
+import FinanceRecordDetailModal from '../components/shared/FinanceRecordDetailModal';
+import FinanceSelectHeader, { FinanceSelectCell } from '../components/shared/FinanceSelectHeader';
+import { useFinanceExpensesPage } from '../hooks/expenses/useFinanceExpensesPage';
+import { resolveExpenseCounterpartyLabel } from '../utils/expenses/expenseCounterparty';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
 import '../../../styles/finance/bulk-actions.css';
+import '../../../styles/finance/detail-modal.css';
+import '../../../styles/finance/counterparty-field.css';
 
 export default function FinanceExpensesPage() {
   const p = useFinanceExpensesPage();
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [detailRow, setDetailRow] = useState(null);
   const deleteCount = p.bulkDeleteOpen ? p.selectedDeletable.length : (p.deleteTarget ? 1 : 0);
   const deletePending = p.bulkDeleteMutation.isPending || p.deleteMutation.isPending;
+
+  const suppliers = p.suppliersQuery.data ?? [];
+  const users = p.usersQuery.data ?? [];
+  const counterpartyContext = useMemo(
+    () => ({ suppliers, users }),
+    [suppliers, users],
+  );
 
   return (
     <PageLayout
@@ -53,7 +68,7 @@ export default function FinanceExpensesPage() {
           isLoading={p.expensesQuery.isLoading}
           isEmpty={!p.expensesQuery.isLoading && p.rows.length === 0}
           emptyMessage={p.t('finance.expenses.empty')}
-          colSpan={6}
+          colSpan={7}
           footer={(
             <TablePagination
               className="finance-pagination"
@@ -77,6 +92,7 @@ export default function FinanceExpensesPage() {
                 />
                 <th>{p.t('finance.common.date')}</th>
                 <th>{p.t('finance.common.category')}</th>
+                <th>{p.t('finance.expenses.counterparty')}</th>
                 <th>{p.t('finance.common.account')}</th>
                 <th>{p.t('finance.common.amount')}</th>
                 <th />
@@ -85,6 +101,19 @@ export default function FinanceExpensesPage() {
             <tbody>
               {p.rows.map((row) => {
                 const editable = p.isEditable(row);
+                const actions = [
+                  {
+                    label: p.t('finance.detail.view'),
+                    onClick: () => setDetailRow(row),
+                  },
+                ];
+                if (editable) {
+                  actions.push(
+                    { label: p.t('common.edit'), onClick: () => p.openEdit(row) },
+                    { label: p.t('common.delete'), onClick: () => p.openDelete(row), danger: true },
+                  );
+                }
+
                 return (
                   <tr key={row.id} className={p.selection.selectedIds.has(row.id) ? 'finance-table__row--selected' : ''}>
                     <FinanceSelectCell
@@ -94,20 +123,15 @@ export default function FinanceExpensesPage() {
                     />
                     <td>{row.transactionDate}</td>
                     <td>{row.expenseCategoryName}</td>
+                    <td>{resolveExpenseCounterpartyLabel(row, counterpartyContext)}</td>
                     <td>{row.accountName}</td>
                     <td className="finance-amount--expense">{formatMoney(row.amount, row.currency)}</td>
                     <td className="finance-cell-actions">
-                      {editable ? (
-                        <FinanceRowActions
-                          t={p.t}
-                          onEdit={() => p.openEdit(row)}
-                          onDelete={() => p.openDelete(row)}
-                          canToggle={false}
-                          deletePending={deletePending}
-                        />
-                      ) : (
-                        <span className="finance-badge finance-badge--muted">{row.sourceType}</span>
-                      )}
+                      <TableRowActionsMenu
+                        open={menuOpenId === row.id}
+                        onOpenChange={(open) => setMenuOpenId(open ? row.id : null)}
+                        actions={actions}
+                      />
                     </td>
                   </tr>
                 );
@@ -117,6 +141,18 @@ export default function FinanceExpensesPage() {
         </BaseTable>
       </div>
 
+      <FinanceRecordDetailModal
+        open={!!detailRow}
+        onClose={() => setDetailRow(null)}
+        kind="expense"
+        record={detailRow}
+        t={p.t}
+        counterpartyLabel={resolveExpenseCounterpartyLabel(detailRow, counterpartyContext)}
+        canEdit={detailRow ? p.isEditable(detailRow) : false}
+        onEdit={p.openEdit}
+        onDelete={p.openDelete}
+      />
+
       <BaseModal
         open={p.modalOpen}
         onClose={() => { p.setModalOpen(false); p.resetForm(); }}
@@ -125,58 +161,20 @@ export default function FinanceExpensesPage() {
         className="finance-modal"
         bodyClassName="finance-modal__body"
       >
-        <div className="finance-form">
-          <BaseInput label={p.t('finance.common.amount')} type="number" value={p.form.amount} onChange={(e) => p.setForm({ ...p.form, amount: e.target.value })} />
-          <BaseInput label={p.t('finance.common.date')} type="date" value={p.form.transactionDate} onChange={(e) => p.setForm({ ...p.form, transactionDate: e.target.value })} />
-          <BaseSelect
-            label={p.t('finance.common.account')}
-            value={p.form.accountId}
-            onChange={(e) => p.setForm({ ...p.form, accountId: e.target.value })}
-            placeholder={p.t('common.select')}
-            options={[
-              { value: '', label: p.t('common.select') },
-              ...(p.accountsQuery.data ?? []).map((a) => ({ value: String(a.id), label: a.name })),
-            ]}
-          />
-          <BaseSelect
-            label={p.t('finance.common.category')}
-            value={p.form.expenseCategoryId}
-            onChange={(e) => p.setForm({ ...p.form, expenseCategoryId: e.target.value })}
-            placeholder={p.t('common.select')}
-            options={[
-              { value: '', label: p.t('common.select') },
-              ...(p.categoriesQuery.data ?? []).filter((c) => c.active).map((c) => ({ value: String(c.id), label: c.name })),
-            ]}
-          />
-          <BaseSelect
-            label={p.t('finance.common.paymentMethod')}
-            value={p.form.paymentMethod}
-            onChange={(e) => p.setForm({ ...p.form, paymentMethod: e.target.value })}
-            options={[
-              { value: 'CASH', label: p.t('finance.payment.cash') },
-              { value: 'CARD', label: p.t('finance.payment.card') },
-              { value: 'BANK', label: p.t('finance.payment.bank') },
-            ]}
-          />
-          {!p.editingId && p.isSalaryCategory ? (
-            <BaseSelect
-              label={p.t('finance.expenses.employee')}
-              value={p.form.employeeId}
-              onChange={(e) => p.setForm({ ...p.form, employeeId: e.target.value })}
-              placeholder={p.t('common.select')}
-              options={[
-                { value: '', label: p.t('common.select') },
-                ...(p.usersQuery.data ?? []).map((u) => ({ value: String(u.id), label: u.fullName })),
-              ]}
-            />
-          ) : null}
-          <BaseInput label={p.t('finance.common.comment')} value={p.form.comment} onChange={(e) => p.setForm({ ...p.form, comment: e.target.value })} />
-          <div className="finance-form__actions">
-            <BaseButton variant="secondary" onClick={() => { p.setModalOpen(false); p.resetForm(); }}>{p.t('common.cancel')}</BaseButton>
-            <BaseButton onClick={p.submit} disabled={!p.form.amount || !p.form.accountId || !p.form.expenseCategoryId || p.createMutation.isPending || p.updateMutation.isPending}>
-              {p.t('common.save')}
-            </BaseButton>
-          </div>
+        <FinanceExpenseFormFields
+          t={p.t}
+          form={p.form}
+          setForm={p.setForm}
+          accounts={p.accountsQuery.data}
+          categories={p.categoriesQuery.data}
+          users={p.usersQuery.data}
+          isSalaryCategory={p.isSalaryCategory}
+        />
+        <div className="finance-form__actions">
+          <BaseButton variant="secondary" onClick={() => { p.setModalOpen(false); p.resetForm(); }}>{p.t('common.cancel')}</BaseButton>
+          <BaseButton onClick={p.submit} disabled={!p.form.amount || !p.form.accountId || !p.form.expenseCategoryId || p.createMutation.isPending || p.updateMutation.isPending}>
+            {p.t('common.save')}
+          </BaseButton>
         </div>
       </BaseModal>
 

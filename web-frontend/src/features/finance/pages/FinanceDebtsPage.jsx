@@ -1,9 +1,9 @@
 import TablePagination from '../../../components/shared/TablePagination';
 import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
-import FinanceDebtEntriesModal from '../components/FinanceDebtEntriesModal';
-import { useClientTablePagination } from '../hooks/useClientTablePagination';
-import { useFinanceDebtsPage } from '../hooks/useFinanceDebtsPage';
-import { formatMoney } from '../utils/formatMoney';
+import FinanceDebtEntriesModal from '../components/debts/FinanceDebtEntriesModal';
+import { useClientTablePagination } from '../hooks/shared/useClientTablePagination';
+import { useFinanceDebtsPage } from '../hooks/debts/useFinanceDebtsPage';
+import { formatMoney } from '../utils/shared/formatMoney';
 import '../../../styles/finance/common.css';
 import '../../../styles/finance/forms.css';
 import '../../../styles/finance/debts.css';

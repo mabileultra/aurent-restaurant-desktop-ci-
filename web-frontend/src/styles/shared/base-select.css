@@ -90,7 +90,8 @@
 }
 
 .base-select__menu {
-  z-index: 1200;
+  position: fixed;
+  z-index: 9999;
   min-width: 8rem;
   max-height: min(18rem, 50dvh);
   overflow-y: auto;

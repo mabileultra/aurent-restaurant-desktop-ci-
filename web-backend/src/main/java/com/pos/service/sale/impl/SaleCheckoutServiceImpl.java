@@ -28,7 +28,6 @@ import com.pos.service.sale.support.SaleVatCalculator;
 import com.pos.service.finance.FinanceAdvancePaymentIntegrationService;
 import com.pos.service.finance.FinanceAdvanceSaleIntegrationService;
 import com.pos.service.finance.FinanceCreditSaleIntegrationService;
-import com.pos.service.finance.FinanceSaleIntegrationService;
 import com.pos.service.salesledger.SalesLedgerCacheService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
@@ -66,7 +65,6 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
     private final CheckoutProductLoader checkoutProductLoader;
-    private final FinanceSaleIntegrationService financeSaleIntegrationService;
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceAdvancePaymentIntegrationService financeAdvancePaymentIntegrationService;
@@ -208,13 +206,9 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         if (saved.getReceiptType() == Sale.ReceiptType.CREDIT) {
             financeCreditSaleIntegrationService.onCreditSaleCompleted(saved);
         } else if (saved.getReceiptType() == Sale.ReceiptType.ADVANCE) {
-            financeSaleIntegrationService.onSaleCompleted(saved);
             financeAdvanceSaleIntegrationService.onAdvanceSaleCompleted(saved);
-        } else {
-            financeSaleIntegrationService.onSaleCompleted(saved);
-            if (saved.getAdvanceAmount() != null && saved.getAdvanceAmount().signum() > 0) {
-                financeAdvancePaymentIntegrationService.onSaleAdvanceApplied(saved);
-            }
+        } else if (saved.getAdvanceAmount() != null && saved.getAdvanceAmount().signum() > 0) {
+            financeAdvancePaymentIntegrationService.onSaleAdvanceApplied(saved);
         }
         LogUtil.info(SaleCheckoutServiceImpl.class, "Sale completed: id={}, receipt={}", saved.getId(), saved.getReceiptNumber());
         return saleMapper.toResponse(saved);
