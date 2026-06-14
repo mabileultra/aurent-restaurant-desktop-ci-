@@ -19,6 +19,8 @@ public record ExpenseDto(
     String expenseCategoryName,
     ExpenseSourceType sourceType,
     String sourceId,
+    UUID supplierId,
+    UUID employeeId,
     String comment,
     LocalDate transactionDate
 ) {

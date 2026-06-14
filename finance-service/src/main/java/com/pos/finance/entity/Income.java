@@ -1,45 +1,20 @@
 package com.pos.finance.entity;
 
+import com.pos.finance.entity.base.MonetaryMovementEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
 @Table(name = "incomes")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Income {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
-
-    @Column(name = "company_id", nullable = false)
-    private Integer companyId;
-
-    @Column(name = "store_id")
-    private Integer storeId;
-
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "account_id", nullable = false)
-    private FinancialAccount account;
-
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
-
-    @Column(nullable = false, length = 8)
-    private String currency;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_method", nullable = false, length = 32)
-    private PaymentMethod paymentMethod;
+public class Income extends MonetaryMovementEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "income_category_id", nullable = false)
@@ -52,47 +27,6 @@ public class Income {
     @Column(name = "source_id", length = 64)
     private String sourceId;
 
-    @Column(length = 1000)
-    private String comment;
-
-    @Column(name = "transaction_date", nullable = false)
-    private LocalDate transactionDate;
-
-    @Column(nullable = false)
-    private boolean deleted;
-
-    @Column(name = "created_at")
-    private Instant createdAt;
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
-
     @Column(name = "customer_id")
     private UUID customerId;
-
-    @Column(name = "created_by")
-    private UUID createdBy;
-
-    @Column(name = "updated_by")
-    private UUID updatedBy;
-
-    @PrePersist
-    void prePersist() {
-        Instant now = Instant.now();
-        if (createdAt == null) {
-            createdAt = now;
-        }
-        updatedAt = now;
-        if (currency == null) {
-            currency = "UZS";
-        }
-        if (transactionDate == null) {
-            transactionDate = LocalDate.now();
-        }
-    }
-
-    @PreUpdate
-    void preUpdate() {
-        updatedAt = Instant.now();
-    }
 }

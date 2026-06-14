@@ -12,6 +12,7 @@ public record DebtEntryDto(
     BigDecimal amount,
     String comment,
     LocalDate transactionDate,
-    UUID referenceId
+    UUID referenceId,
+    DebtReferenceKind referenceKind
 ) {
 }

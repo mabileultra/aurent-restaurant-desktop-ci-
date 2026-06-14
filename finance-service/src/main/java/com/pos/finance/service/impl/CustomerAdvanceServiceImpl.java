@@ -3,6 +3,7 @@ package com.pos.finance.service.impl;
 import com.pos.finance.dto.advance.ApplyCustomerAdvanceRequest;
 import com.pos.finance.dto.debt.DebtBalanceDto;
 import com.pos.finance.dto.debt.DebtEntryDto;
+import com.pos.finance.dto.debt.DebtReferenceKind;
 import com.pos.finance.dto.integration.SaleAdvanceApplyRequest;
 import com.pos.finance.entity.AdvanceEntryType;
 import com.pos.finance.entity.CustomerAdvanceEntry;
@@ -133,13 +134,19 @@ public class CustomerAdvanceServiceImpl implements CustomerAdvanceService {
 
     private DebtEntryDto toEntryDto(CustomerAdvanceEntry entry) {
         UUID ref = entry.getSaleId() != null ? entry.getSaleId() : entry.getIncomeId();
+        DebtReferenceKind kind = entry.getSaleId() != null
+            ? DebtReferenceKind.SALE
+            : entry.getIncomeId() != null
+                ? DebtReferenceKind.INCOME
+                : DebtReferenceKind.NONE;
         return new DebtEntryDto(
             entry.getId(),
             entry.getEntryType() == AdvanceEntryType.DEPOSIT ? com.pos.finance.entity.LedgerEntryType.CHARGE : com.pos.finance.entity.LedgerEntryType.PAYMENT,
             entry.getAmount(),
             entry.getComment(),
             entry.getTransactionDate(),
-            ref
+            ref,
+            kind
         );
     }
 }

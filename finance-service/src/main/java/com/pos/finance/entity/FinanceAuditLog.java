@@ -1,7 +1,9 @@
 package com.pos.finance.entity;
 
+import com.pos.finance.entity.base.UuidIdentifiedEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -10,14 +12,10 @@ import java.util.UUID;
 @Table(name = "finance_audit_logs")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FinanceAuditLog {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+public class FinanceAuditLog extends UuidIdentifiedEntity {
 
     @Column(name = "company_id", nullable = false)
     private Integer companyId;

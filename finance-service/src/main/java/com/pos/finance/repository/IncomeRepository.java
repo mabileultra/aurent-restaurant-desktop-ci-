@@ -24,6 +24,14 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         Integer companyId, IncomeSourceType sourceType, String sourceId
     );
 
+    @Query("""
+        SELECT COUNT(i) > 0 FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType = com.pos.finance.entity.IncomeSourceType.Z_REPORT
+          AND i.sourceId LIKE CONCAT(:groupKey, '%')
+        """)
+    boolean existsZReportIncome(@Param("companyId") Integer companyId, @Param("groupKey") String groupKey);
+
     Optional<Income> findByIdAndCompanyIdAndDeletedFalse(UUID id, Integer companyId);
 
     @Query("""
@@ -33,6 +41,8 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
           AND i.transactionDate >= COALESCE(:from, i.transactionDate)
           AND i.transactionDate <= COALESCE(:to, i.transactionDate)
           AND i.paymentMethod = COALESCE(:paymentMethod, i.paymentMethod)
+          AND (:excludeSale = false OR i.sourceType <> com.pos.finance.entity.IncomeSourceType.SALE)
+          AND (:sourceType IS NULL OR i.sourceType = :sourceType)
         ORDER BY i.transactionDate DESC, i.createdAt DESC
         """)
     Page<Income> search(
@@ -41,7 +51,30 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
         @Param("paymentMethod") com.pos.finance.entity.PaymentMethod paymentMethod,
+        @Param("excludeSale") boolean excludeSale,
+        @Param("sourceType") IncomeSourceType sourceType,
         Pageable pageable
+    );
+
+    @Query("""
+        SELECT i.transactionDate, i.storeId,
+               COALESCE(SUM(i.amount), 0),
+               COALESCE(SUM(CASE WHEN i.paymentMethod = com.pos.finance.entity.PaymentMethod.CASH THEN i.amount ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN i.paymentMethod = com.pos.finance.entity.PaymentMethod.CARD THEN i.amount ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN i.paymentMethod = com.pos.finance.entity.PaymentMethod.CASH AND i.sourceType = com.pos.finance.entity.IncomeSourceType.Z_REPORT THEN 1 ELSE 0 END), 0)
+        FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType IN (com.pos.finance.entity.IncomeSourceType.Z_REPORT, com.pos.finance.entity.IncomeSourceType.SALE)
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        GROUP BY i.transactionDate, i.storeId
+        ORDER BY i.transactionDate DESC
+        """)
+    List<Object[]> sumDailyRevenue(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
     );
 
     @Query("""
