@@ -1,3 +1,4 @@
+import { APP_NAME } from '../../../../config/brand';
 import {
   Barcode,
   ChevronDown,
@@ -32,7 +33,7 @@ export default function CashierDesktopMenuPanel({
     checkAppUpdates,
   } = menu;
 
-  const label = appName || 'Aurent';
+  const label = appName || APP_NAME;
 
   return (
     <div

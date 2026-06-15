@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { APP_NAME } from '../../config/brand';
+import { COMPANY_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import ReceiptQrCode from './ReceiptQrCode';
 import {
@@ -63,7 +63,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
     customCompanyName ||
     import.meta.env.VITE_COMPANY_NAME ||
     import.meta.env.VITE_STORE_BRAND ||
-    APP_NAME;
+    COMPANY_NAME;
   const companyAddress =
     customCompanyAddress ||
     import.meta.env.VITE_COMPANY_ADDRESS ||

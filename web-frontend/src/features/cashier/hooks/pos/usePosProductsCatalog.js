@@ -3,10 +3,10 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { ALL_CATEGORY_ID } from '../usePosCatalogPanel';
 import { markApiUnreachable, useConnectivityStore, usePosRoute } from '../../../../store/connectivityStore';
 import {
-  fetchPosCategories,
-  fetchPosProductsPage,
-  getPosProductsNextPageParam,
-} from '../../../../services/offline/posCatalogFetchService';
+  posFetchCategories,
+  posFetchProductsPage,
+  posProductsNextPageParam,
+} from '../../../../services/pos/posDataRouter';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
 
 function invalidatePosCatalogQueries(qc) {
@@ -75,7 +75,7 @@ export function usePosProductsCatalog({ storeId }) {
     isError: categoriesError,
   } = useQuery({
     queryKey: ['pos-categories', storeId, catalogMode],
-    queryFn: ({ signal }) => fetchPosCategories({ storeId, signal }),
+    queryFn: ({ signal }) => posFetchCategories({ storeId, signal }),
     enabled: !!storeId,
     retry: catalogMode === 'offline' ? false : 1,
     staleTime: catalogMode === 'offline' ? Infinity : 0,
@@ -99,7 +99,7 @@ export function usePosProductsCatalog({ storeId }) {
       productCount,
     ],
     queryFn: ({ pageParam, signal }) =>
-      fetchPosProductsPage({
+      posFetchProductsPage({
         storeId,
         categoryId: categoryFilterId,
         search,
@@ -108,7 +108,7 @@ export function usePosProductsCatalog({ storeId }) {
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, lastPageParam) =>
-      getPosProductsNextPageParam(lastPage, lastPageParam, storeId),
+      posProductsNextPageParam(lastPage, lastPageParam, storeId),
     enabled: productsEnabled,
     retry: catalogMode === 'offline' ? false : 1,
     staleTime: catalogMode === 'offline' ? Infinity : 0,

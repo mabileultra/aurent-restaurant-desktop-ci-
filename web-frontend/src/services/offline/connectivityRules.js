@@ -1,6 +1,6 @@
 /**
  * Чистые правила offline/online для кассы (без zustand/DOM).
- * Используются в connectivityStore и verify-offline-connectivity.mjs.
+ * Маршрутизация POS — в posRouteResolver.js + posDataRouter.js.
  */
 
 export function catalogMatchesStore(catalogStoreId, requestedStoreId) {
@@ -32,9 +32,27 @@ export function isCatalogStoreMismatch(catalogStoreId, requestedStoreId) {
   return Number(catalogStoreId) !== Number(requestedStoreId);
 }
 
-/**
- * Desktop + офлайн + каталог текущего магазина → local-first checkout/catalog.
- */
+/** Контекст для posRouteResolver и тестов. */
+export function buildConnectivityContext({
+  isDesktop,
+  offlineAllowed,
+  state,
+  storeId = null,
+}) {
+  const offlineLike = isConnectivityOfflineLike(state);
+  return {
+    isDesktop: Boolean(isDesktop),
+    offlineAllowed: Boolean(offlineAllowed),
+    offlineLike,
+    state,
+    storeId,
+    apiOnline: state?.apiOnline,
+    offlineMode: state?.offlineMode,
+    forceOfflineMode: state?.forceOfflineMode,
+  };
+}
+
+/** @deprecated только для verify-offline-connectivity.mjs */
 export function shouldPreferLocalCheckout({
   isDesktop,
   offlineAllowed,
@@ -51,48 +69,23 @@ export function shouldPreferLocalCheckout({
   return hasLocalPosCatalog(state, storeId);
 }
 
-export function shouldUseLocalPosCatalog({
-  isDesktop,
-  offlineAllowed,
-  offlineLike,
-  state,
-  storeId,
-}) {
-  return shouldPreferLocalCheckout({ isDesktop, offlineAllowed, offlineLike, state, storeId });
-}
-
-/** Fallback SQLite после сбоя онлайн-запроса (каталог/штрихкод). */
-export function canUseOfflineCatalogFallback({
-  isDesktop,
-  offlineAllowed,
-  state,
-  storeId,
-}) {
+/** @deprecated только для verify-offline-connectivity.mjs */
+export function canFallbackToOfflineCheckout({ isDesktop, offlineAllowed, state, storeId }) {
   if (!isDesktop || !offlineAllowed) return false;
   return hasLocalPosCatalog(state, storeId);
 }
 
-/** Fallback SQLite при сбое API оплаты. */
-export function canFallbackToOfflineCheckout({
-  isDesktop,
-  offlineAllowed,
-  state,
-  storeId,
-}) {
-  return canUseOfflineCatalogFallback({ isDesktop, offlineAllowed, state, storeId });
-}
-
-const OFFLINE_CHECKOUT_NO_ONLINE_RETRY = new Set([
-  'offline_ipc_timeout',
-  'offline_checkout_timeout',
-  'OFFLINE_SALE_SAVE_FAILED',
-  'offline_sale_save_failed',
-  'OFFLINE_SHIFT_REQUIRED',
-]);
-
+/** @deprecated только для verify-offline-connectivity.mjs */
 export function shouldRetryOnlineAfterOfflineFailure(offlineErr, ctx) {
   const msg = String(offlineErr?.message || '');
-  if (OFFLINE_CHECKOUT_NO_ONLINE_RETRY.has(msg)) return false;
+  const NO_RETRY = new Set([
+    'offline_ipc_timeout',
+    'offline_checkout_timeout',
+    'OFFLINE_SALE_SAVE_FAILED',
+    'offline_sale_save_failed',
+    'OFFLINE_SHIFT_REQUIRED',
+  ]);
+  if (NO_RETRY.has(msg)) return false;
   if (ctx.offlineLike) return false;
   if (
     shouldPreferLocalCheckout({
@@ -107,24 +100,3 @@ export function shouldRetryOnlineAfterOfflineFailure(offlineErr, ctx) {
   }
   return Boolean(ctx.apiOnline && !ctx.offlineMode);
 }
-
-/** Единый контекст для store / checkout / тестов. */
-export function buildConnectivityContext({
-  isDesktop,
-  offlineAllowed,
-  state,
-  storeId = null,
-}) {
-  const offlineLike = isConnectivityOfflineLike(state);
-  return {
-    isDesktop: Boolean(isDesktop),
-    offlineAllowed: Boolean(offlineAllowed),
-    offlineLike,
-    state,
-    storeId,
-    apiOnline: state?.apiOnline,
-    offlineMode: state?.offlineMode,
-  };
-}
-
-export { OFFLINE_CHECKOUT_NO_ONLINE_RETRY };

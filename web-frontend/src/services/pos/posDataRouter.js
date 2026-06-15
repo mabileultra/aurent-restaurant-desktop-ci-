@@ -16,7 +16,7 @@ import {
   offlineSyncShiftFromServer,
   offlineListMySales,
 } from '../offline/desktopOfflineBridge';
-import { processOfflineCheckout } from '../offline/offlineCheckoutService';
+import { processOfflineCheckout } from './offlineCheckout';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
 

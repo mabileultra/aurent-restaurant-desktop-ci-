@@ -2,6 +2,7 @@
  * Payload Z-отчёта для ESC/POS.
  */
 import i18n from '../../i18n/config';
+import { APP_NAME } from '../../config/brand';
 
 /**
  * @param {Function} t
@@ -53,6 +54,6 @@ export function buildEscposZReportPayload(z, t) {
     z,
     labels: buildEscposZReportLabels(t),
     locale: String(i18n.language || 'ru').split('-')[0],
-    branding: { appName: z.brandName || 'Aurent' },
+    branding: { appName: z.brandName || APP_NAME },
   };
 }

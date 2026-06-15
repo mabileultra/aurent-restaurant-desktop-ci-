@@ -1,15 +1,10 @@
-import {
-  hasLocalPosCatalog,
-  refreshConnectivityStatus,
-  shouldPreferLocalCheckout,
-  shouldRetryOnlineAfterOfflineFailure,
-  useConnectivityStore,
-} from '../../store/connectivityStore';
-import { isDesktopOfflineBridge, offlineCompleteCheckout } from './desktopOfflineBridge';
+import { refreshConnectivityStatus, useConnectivityStore } from '../../store/connectivityStore';
+import { hasLocalPosCatalog } from '../offline/connectivityRules';
+import { isDesktopOfflineBridge, offlineCompleteCheckout } from '../offline/desktopOfflineBridge';
 import {
   buildOfflineCheckoutPayload,
   buildOfflineSaleResponse,
-} from './buildOfflineSaleResponse';
+} from '../offline/buildOfflineSaleResponse';
 
 const CHECKOUT_TIMEOUT_MS = 10_000;
 
@@ -27,11 +22,6 @@ function withCheckoutTimeout(promise) {
       setTimeout(() => reject(new Error('offline_checkout_timeout')), CHECKOUT_TIMEOUT_MS);
     }),
   ]);
-}
-
-/** @deprecated use shouldPreferLocalCheckout from connectivityStore */
-export function shouldRunOfflineCheckoutFirst(storeId = null) {
-  return shouldPreferLocalCheckout(storeId);
 }
 
 export async function processOfflineCheckout({
@@ -54,14 +44,13 @@ export async function processOfflineCheckout({
 
   const clientSaleId = newClientSaleId();
   const receiptNumber = `OFF-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${String(Date.now()).slice(-4)}`;
-  const cartItems = items;
   const orderDiscountAmount = getCheckoutOrderDiscountAmount();
   const orderDiscountPercent = getCheckoutOrderDiscountPercent();
 
   const payload = buildOfflineCheckoutPayload({
     storeId,
     payment,
-    cartItems,
+    cartItems: items,
     orderDiscountAmount,
     orderDiscountPercent,
   });
@@ -75,7 +64,7 @@ export async function processOfflineCheckout({
     storeName: storeName || cachedShift?.storeName || '',
     cashierName: user?.fullName || user?.username || cachedShift?.cashierName || '',
     shift: cachedShift,
-    cartItems,
+    cartItems: items,
     orderDiscountAmount,
     orderDiscountPercent,
   });
@@ -89,7 +78,7 @@ export async function processOfflineCheckout({
       cachedShift,
       payload,
       response,
-      stockLines: cartItems.map((line) => ({
+      stockLines: items.map((line) => ({
         productId: line.productId,
         quantity: line.quantity,
       })),
@@ -103,5 +92,3 @@ export async function processOfflineCheckout({
   void refreshConnectivityStatus();
   return { data: { ...response, receiptNumber: saved.receiptNumber || response.receiptNumber } };
 }
-
-export { shouldPreferLocalCheckout, shouldRetryOnlineAfterOfflineFailure };

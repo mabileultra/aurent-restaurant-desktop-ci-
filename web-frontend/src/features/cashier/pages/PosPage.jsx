@@ -21,6 +21,7 @@ export default function PosPage() {
           {p.showShiftClosedBanner ? (
             <PosShiftClosedBanner
               t={p.t}
+              storeId={p.storeId}
               openShiftMutation={p.openShiftMutation}
               onOpenShift={p.handleOpenShift}
               onOpenShiftModal={p.openShiftModal}

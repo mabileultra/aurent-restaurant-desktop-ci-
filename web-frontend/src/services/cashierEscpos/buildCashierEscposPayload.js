@@ -1,7 +1,7 @@
 /**
  * Собирает JSON для main process (подписи с i18n, поля из tenant store).
  */
-import { APP_NAME } from '../../config/brand';
+import { COMPANY_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
@@ -100,7 +100,7 @@ export function buildCashierEscposPayload(sale, t) {
     branding.companyName =
       import.meta.env.VITE_COMPANY_NAME ||
       import.meta.env.VITE_STORE_BRAND ||
-      APP_NAME;
+      COMPANY_NAME;
   }
   if (!branding.companyAddress) {
     branding.companyAddress =

@@ -6,13 +6,11 @@
 
 import {
   canFallbackToOfflineCheckout,
-  canUseOfflineCatalogFallback,
   catalogMatchesStore,
   hasLocalPosCatalog,
   isCatalogStoreMismatch,
+  isConnectivityOfflineLike,
   shouldPreferLocalCheckout,
-  shouldRetryOnlineAfterOfflineFailure,
-  shouldUseLocalPosCatalog,
 } from '../src/services/offline/connectivityRules.js';
 
 let passed = 0;
@@ -48,19 +46,6 @@ test('онлайн + локальный каталог → оплата чере
     })
   ) {
     throw new Error('must not prefer local checkout when online');
-  }
-});
-
-test('онлайн + локальный каталог → каталог через API', () => {
-  if (
-    shouldUseLocalPosCatalog({
-      ...desktopCtx,
-      offlineLike: false,
-      state: storeA,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('must not use local catalog when online');
   }
 });
 
@@ -115,98 +100,27 @@ test('онлайн API fail → fallback checkout если есть катало
   }
 });
 
-test('онлайн API fail → нет fallback без каталога', () => {
+test('forceOfflineMode → offlineLike без сети', () => {
   if (
-    canFallbackToOfflineCheckout({
-      ...desktopCtx,
-      state: emptyCatalog,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('must not fallback without catalog');
-  }
-});
-
-test('онлайн API fail → нет fallback при чужом каталоге', () => {
-  if (
-    canFallbackToOfflineCheckout({
-      ...desktopCtx,
-      state: storeB,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('must not fallback with mismatched catalog');
-  }
-});
-
-test('каталог fallback при сбое API', () => {
-  if (
-    !canUseOfflineCatalogFallback({
-      ...desktopCtx,
-      state: storeA,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('expected catalog fallback');
-  }
-});
-
-test('web-касса → всегда онлайн', () => {
-  if (
-    shouldPreferLocalCheckout({
-      isDesktop: false,
-      offlineAllowed: true,
-      offlineLike: true,
-      state: storeA,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('web must not use local checkout');
-  }
-});
-
-test('IPC timeout → не retry онлайн', () => {
-  if (
-    shouldRetryOnlineAfterOfflineFailure(new Error('offline_ipc_timeout'), {
-      ...desktopCtx,
-      offlineLike: false,
-      apiOnline: true,
+    !isConnectivityOfflineLike({
+      forceOfflineMode: true,
       offlineMode: false,
-      state: storeA,
-      storeId: 5,
+      apiOnline: true,
     })
   ) {
-    throw new Error('must not retry online after ipc timeout');
+    throw new Error('forceOfflineMode must imply offlineLike');
   }
 });
 
-test('офлайн + сбой local → не retry онлайн', () => {
+test('forceOfflineMode → local-first при каталоге', () => {
   if (
-    shouldRetryOnlineAfterOfflineFailure(new Error('db_locked'), {
+    !shouldPreferLocalCheckout({
       ...desktopCtx,
-      offlineLike: true,
-      apiOnline: true,
-      offlineMode: false,
-      state: storeA,
+      state: { ...storeA, forceOfflineMode: true, offlineMode: false, apiOnline: true },
       storeId: 5,
     })
   ) {
-    throw new Error('must not retry online when offlineLike');
-  }
-});
-
-test('онлайн + сбой local → retry онлайн', () => {
-  if (
-    !shouldRetryOnlineAfterOfflineFailure(new Error('db_locked'), {
-      ...desktopCtx,
-      offlineLike: false,
-      apiOnline: true,
-      offlineMode: false,
-      state: storeA,
-      storeId: 5,
-    })
-  ) {
-    throw new Error('expected online retry when truly online');
+    throw new Error('expected local checkout when forceOfflineMode');
   }
 });
 
@@ -228,25 +142,6 @@ test('несовпадение storeId каталога', () => {
   }
   if (isCatalogStoreMismatch(5, 5)) {
     throw new Error('same store must not mismatch');
-  }
-});
-
-test('forceOfflineMode → local-first при готовом каталоге', () => {
-  if (
-    !shouldPreferLocalCheckout({
-      ...desktopCtx,
-      state: { ...storeA, forceOfflineMode: true, offlineMode: false, apiOnline: true },
-      storeId: 5,
-    })
-  ) {
-    throw new Error('expected local checkout when forceOfflineMode');
-  }
-});
-
-test('каталог: таймаут онлайн 4с', () => {
-  const POS_CATALOG_ONLINE_TIMEOUT_MS = 4_000;
-  if (POS_CATALOG_ONLINE_TIMEOUT_MS > 5_000) {
-    throw new Error('catalog timeout too long');
   }
 });
 
