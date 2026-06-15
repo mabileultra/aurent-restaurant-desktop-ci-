@@ -50,8 +50,8 @@ public enum AdminModule {
     CHECKOUT("checkout", "main", Set.of("ADMIN", "MANAGER")),
     CASHIER_POS("cashierPos", "cashier", Set.of("CASHIER", "ADMIN", "MANAGER")),
     CASHIER_SALES("cashierSales", "cashier", Set.of("CASHIER", "ADMIN", "MANAGER")),
-    /** Офлайн-режим на desktop-кассе; по умолчанию никому — только через SUPER_ADMIN. */
-    CASHIER_OFFLINE("cashierOffline", "cashier", Set.of()),
+    /** Офлайн-режим на desktop-кассе (SQLite + sync). */
+    CASHIER_OFFLINE("cashierOffline", "cashier", Set.of("CASHIER", "ADMIN", "MANAGER")),
     FINANCE_DASHBOARD("financeDashboard", "finance", Set.of("ADMIN", "MANAGER")),
     FINANCE_DEBTS("financeDebts", "finance", Set.of("ADMIN", "MANAGER")),
     FINANCE_INCOMES("financeIncomes", "finance", Set.of("ADMIN", "MANAGER")),

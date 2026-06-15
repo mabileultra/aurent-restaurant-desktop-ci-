@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { configureDesktopApiBaseUrl } from '../../services/desktopApiInit';
 import { isDesktopCashier } from '../../utils/authLogin';
+import { isDesktopOfflineBridge } from '../../services/offline/desktopOfflineBridge';
+import { startConnectivityWatcher } from '../../store/connectivityStore';
 
 export default function DesktopApiBootstrap({ children }) {
   const [ready, setReady] = useState(!isDesktopCashier());
@@ -9,7 +11,12 @@ export default function DesktopApiBootstrap({ children }) {
     if (!isDesktopCashier()) return undefined;
     let cancelled = false;
     configureDesktopApiBaseUrl().finally(() => {
-      if (!cancelled) setReady(true);
+      if (!cancelled) {
+        if (isDesktopOfflineBridge()) {
+          startConnectivityWatcher();
+        }
+        setReady(true);
+      }
     });
     return () => {
       cancelled = true;

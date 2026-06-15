@@ -98,9 +98,9 @@ if [[ "$TARGET" == "mac" ]]; then
   SKIP_NATIVE_PRINTER=1 npm ci --silent 2>/dev/null || SKIP_NATIVE_PRINTER=1 npm install
 elif [[ "$TARGET" == "win" ]]; then
   echo "==> npm ci + native printer (Electron)..."
-  npm ci --silent 2>/dev/null || npm install
+  npm ci --silent || npm install
   echo "==> Native printer driver (Electron)..."
-  npm run rebuild:native
+  REQUIRE_NATIVE_PRINTER=1 npm run rebuild:native
 else
   npm ci --silent 2>/dev/null || npm install
 fi

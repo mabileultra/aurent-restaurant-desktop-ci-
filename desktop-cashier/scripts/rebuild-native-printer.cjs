@@ -12,9 +12,47 @@ const root = path.join(__dirname, '..');
 const required = process.argv.includes('--required') || process.env.REQUIRE_NATIVE_PRINTER === '1';
 const skip = process.env.SKIP_NATIVE_PRINTER === '1';
 const isDarwin = process.platform === 'darwin';
+const isWin32 = process.platform === 'win32';
 
 function log(msg) {
   console.log(`[desktop-cashier] ${msg}`);
+}
+
+function readDependencySpec(name) {
+  const pkgPath = path.join(root, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  const deps = { ...pkg.dependencies, ...pkg.optionalDependencies };
+  return deps[name] || name;
+}
+
+function moduleDir(name) {
+  return path.join(root, 'node_modules', ...name.split('/'));
+}
+
+/** optionalDependency может отсутствовать, если install/prebuild упал при npm ci. */
+function ensureNativePackage(name) {
+  const dir = moduleDir(name);
+  if (fs.existsSync(dir)) {
+    return true;
+  }
+
+  const spec = `${name}@${readDependencySpec(name)}`;
+  log(`Пакет ${name} не найден — npm install ${spec} --ignore-scripts`);
+  const npm = isWin32 ? 'npm.cmd' : 'npm';
+  const result = spawnSync(
+    npm,
+    ['install', spec, '--ignore-scripts', '--no-audit', '--no-fund'],
+    { cwd: root, stdio: 'inherit', shell: isWin32 },
+  );
+  if (result.status !== 0) {
+    console.error(`[desktop-cashier] Не удалось установить ${name}`);
+    return false;
+  }
+  if (!fs.existsSync(dir)) {
+    console.error(`[desktop-cashier] ${name} установлен, но каталог не найден: ${dir}`);
+    return false;
+  }
+  return true;
 }
 
 if (skip) {
@@ -39,17 +77,23 @@ if (!fs.existsSync(electronPkg)) {
   process.exit(0);
 }
 
-const printerDir = path.join(root, 'node_modules', '@thiagoelg', 'node-printer');
-if (!fs.existsSync(printerDir)) {
-  const msg = 'Пакет @thiagoelg/node-printer не найден. Выполните: npm install';
-  console.error(`[desktop-cashier] ${msg}`);
-  process.exit(required ? 1 : 0);
+const printerName = '@thiagoelg/node-printer';
+if (!fs.existsSync(moduleDir(printerName))) {
+  if (required && isWin32 && ensureNativePackage(printerName)) {
+    log('Пакет принтера установлен, продолжаем electron-rebuild');
+  } else {
+    const msg = 'Пакет @thiagoelg/node-printer не найден. Выполните: npm install';
+    console.error(`[desktop-cashier] ${msg}`);
+    process.exit(required ? 1 : 0);
+  }
 }
 
-const nativeModules = ['@thiagoelg/node-printer'];
-const serialDir = path.join(root, 'node_modules', 'serialport');
-if (fs.existsSync(serialDir)) {
-  nativeModules.push('serialport');
+const nativeModules = [printerName];
+const serialName = 'serialport';
+if (fs.existsSync(moduleDir(serialName))) {
+  nativeModules.push(serialName);
+} else if (required && isWin32 && ensureNativePackage(serialName)) {
+  nativeModules.push(serialName);
 }
 
 log(`Сборка native-модулей для Electron: ${nativeModules.join(', ')}…`);

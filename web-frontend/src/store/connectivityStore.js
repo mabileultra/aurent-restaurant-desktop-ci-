@@ -20,24 +20,33 @@ import { userHasCashierOfflineAccess } from '../utils/cashierOfflineAccess';
 /** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
 const ONLINE_RECOVERY_STREAK = 2;
 const CONNECTIVITY_POLL_MS = 2_000;
+/** После 502/таймаута API не переключаться обратно в online сразу (probe может мигать). */
+const API_UNREACHABLE_COOLDOWN_MS = 12_000;
 let stableApiOnline = null;
 let onlineRecoveryStreak = 0;
+let apiUnreachableUntil = 0;
 
 export function resetConnectivityStabilizer() {
   stableApiOnline = null;
   onlineRecoveryStreak = 0;
+  apiUnreachableUntil = 0;
 }
 
 function stabilizeApiOnline(rawOnline) {
-  if (stableApiOnline === null) {
-    stableApiOnline = rawOnline;
-    onlineRecoveryStreak = rawOnline ? 1 : 0;
-    return stableApiOnline;
-  }
   if (!rawOnline) {
     stableApiOnline = false;
     onlineRecoveryStreak = 0;
     return false;
+  }
+  if (Date.now() < apiUnreachableUntil) {
+    stableApiOnline = false;
+    onlineRecoveryStreak = 0;
+    return false;
+  }
+  if (stableApiOnline === null) {
+    stableApiOnline = rawOnline;
+    onlineRecoveryStreak = rawOnline ? 1 : 0;
+    return stableApiOnline;
   }
   if (!stableApiOnline) {
     onlineRecoveryStreak += 1;
@@ -180,6 +189,9 @@ export function hasLocalPosCatalog(state = useConnectivityStore.getState(), stor
 /** Мгновенно пометить API недоступным (axios 502, navigator offline, proxy error). */
 export function markApiUnreachable() {
   const state = useConnectivityStore.getState();
+  apiUnreachableUntil = Date.now() + API_UNREACHABLE_COOLDOWN_MS;
+  stableApiOnline = false;
+  onlineRecoveryStreak = 0;
   if (!state.apiOnline && state.offlineMode) return;
   useConnectivityStore.getState().applyStatus({ apiOnline: false, offlineMode: true });
 }
@@ -248,6 +260,8 @@ export function userAllowedOfflinePos() {
 }
 
 export function shouldUseOfflinePos() {
+  if (!isDesktopOfflineBridge()) return false;
+  if (!userHasCashierOfflineAccess(useAuthStore.getState().user)) return false;
   const { offlineMode, apiOnline } = useConnectivityStore.getState();
   const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
   return offlineMode || !apiOnline || browserOffline;
@@ -268,14 +282,7 @@ export function canUseOfflineCatalogFallback(storeId = null) {
 }
 
 export function useShouldUseOfflinePos() {
-  const user = useAuthStore((s) => s.user);
-  const apiOnline = useConnectivityStore((s) => s.apiOnline);
-  const offlineMode = useConnectivityStore((s) => s.offlineMode);
-  if (typeof window === 'undefined' || !window.desktopCashier?.isDesktop) return false;
-  const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-  const offlineLike = offlineMode || !apiOnline || browserOffline;
-  if (offlineLike && !userHasCashierOfflineAccess(user)) return false;
-  return offlineLike;
+  return shouldUseOfflinePos();
 }
 
 export function useShouldUseLocalPosCatalog(storeId) {

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { userHasCashierOfflineAccess } from '../utils/cashierOfflineAccess';
 import { useCashierStore } from './useCashierStore';
 import {
   refreshConnectivityStatus,
@@ -20,8 +19,6 @@ import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge
 
 export function useOfflineConnectivity() {
   const token = useAuthStore((s) => s.token);
-  const user = useAuthStore((s) => s.user);
-  const offlineAllowed = userHasCashierOfflineAccess(user);
   const { storeId } = useCashierStore();
   const prevStoreIdRef = useRef(storeId);
   const apiOnline = useConnectivityStore((s) => s.apiOnline);
@@ -38,7 +35,7 @@ export function useOfflineConnectivity() {
   }, []);
 
   useEffect(() => {
-    if (!isDesktopOfflineBridge() || !token || !storeId || !apiOnline || !offlineAllowed) return undefined;
+    if (!isDesktopOfflineBridge() || !token || !storeId || !apiOnline) return undefined;
 
     let cancelled = false;
 
@@ -102,7 +99,7 @@ export function useOfflineConnectivity() {
       clearInterval(salesTimer);
       clearInterval(catalogTimer);
     };
-  }, [token, storeId, apiOnline, offlineAllowed]);
+  }, [token, storeId, apiOnline]);
 
   return {
     apiOnline,

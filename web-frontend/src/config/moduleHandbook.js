@@ -118,7 +118,7 @@ export const ADMIN_MODULE_IDS = [
 export const CASHIER_MODULE_IDS = [
   { id: 'cashierPos', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
   { id: 'cashierSales', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
-  { id: 'cashierOffline', group: 'cashier', roles: [] },
+  { id: 'cashierOffline', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
 ];
 
 export function resolveHandbookModuleId(pathname) {
