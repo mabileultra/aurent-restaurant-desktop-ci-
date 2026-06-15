@@ -10,19 +10,13 @@ import {
 } from '../../../../services/cashierEscpos';
 import { isDesktopCashier } from '../../../../utils/printReceipt';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
-import { POS_CATALOG_ONLINE_TIMEOUT_MS } from '../../../../services/offline/posCatalogConstants';
+import { posCreateSale } from '../../../../services/pos/posDataRouter';
 import { clampPayAmount, round2 } from '../../../../utils/taxAmounts';
-import { saleApi } from '../../../../services/api';
 import { useCartStore } from '../../../../store/cartStore';
-import {
-  canFallbackToOfflineCheckout,
-  shouldPreferLocalCheckout,
-  shouldRetryOnlineAfterOfflineFailure,
-  useConnectivityStore,
-} from '../../../../store/connectivityStore';
+import { useConnectivityStore } from '../../../../store/connectivityStore';
 import { isApiUnreachableError } from '../../../../utils/apiNetworkError';
-import { processOfflineCheckout } from '../../../../services/offline/offlineCheckoutService';
 import { useAuthStore } from '../../../../store/authStore';
+import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 
 export function usePosCheckout({
   storeId,
@@ -42,59 +36,20 @@ export function usePosCheckout({
   const getCheckoutOrderDiscountAmount = useCartStore((s) => s.getCheckoutOrderDiscountAmount);
   const getCheckoutOrderDiscountPercent = useCartStore((s) => s.getCheckoutOrderDiscountPercent);
 
-  const runOfflineCheckout = (payment, items) =>
-    processOfflineCheckout({
-      storeId,
-      payment,
-      user,
-      cachedShift: shift,
-      storeName: storeName || shift?.storeName || '',
-      getCheckoutOrderDiscountAmount,
-      getCheckoutOrderDiscountPercent,
-      items,
-    });
-
   const checkoutMutation = useMutation({
     mutationFn: async (payment) => {
       const items = useCartStore.getState().items;
-
-      if (shouldPreferLocalCheckout(storeId)) {
-        try {
-          return await runOfflineCheckout(payment, items);
-        } catch (offlineErr) {
-          if (!shouldRetryOnlineAfterOfflineFailure(offlineErr, storeId)) {
-            throw offlineErr;
-          }
-        }
-      }
-
-      try {
-        const onlineTimeout = isDesktopOfflineBridge()
-          ? POS_CATALOG_ONLINE_TIMEOUT_MS + 2_000
-          : undefined;
-        return await saleApi.create(
-          {
-            storeId: Number(storeId),
-            paymentMethod: payment.paymentMethod,
-            receiptType: payment.receiptType,
-            cardType: payment.cardType,
-            cashAmount: payment.cashAmount,
-            cardAmount: payment.cardAmount,
-            amountTendered: payment.amountTendered,
-            customerId: payment.customerId || undefined,
-            advanceAmount: payment.advanceAmount || undefined,
-            items: getCheckoutLineItems(),
-            orderDiscountAmount: getCheckoutOrderDiscountAmount(),
-            orderDiscountPercent: getCheckoutOrderDiscountPercent(),
-          },
-          onlineTimeout ? { timeout: onlineTimeout } : undefined,
-        );
-      } catch (err) {
-        if (isApiUnreachableError(err) && canFallbackToOfflineCheckout(storeId)) {
-          return runOfflineCheckout(payment, items);
-        }
-        throw err;
-      }
+      return posCreateSale({
+        storeId,
+        payment,
+        user,
+        cachedShift: shift,
+        storeName: storeName || shift?.storeName || '',
+        getCheckoutLineItems,
+        getCheckoutOrderDiscountAmount,
+        getCheckoutOrderDiscountPercent,
+        items,
+      });
     },
     onSuccess: async (res, payment) => {
       clearCart();
@@ -149,7 +104,8 @@ export function usePosCheckout({
         toast.error(t('offline.saleSaveFailed'));
         return;
       }
-      if (isApiUnreachableError(e) && isDesktopOfflineBridge() && !canFallbackToOfflineCheckout(storeId)) {
+      const { hasCatalog, offlineLike } = resolvePosRoute(storeId, useConnectivityStore.getState());
+      if (isApiUnreachableError(e) && isDesktopOfflineBridge() && offlineLike && !hasCatalog) {
         toast.error(t('offline.openShiftNeedsCatalog'));
         return;
       }

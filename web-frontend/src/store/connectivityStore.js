@@ -16,6 +16,11 @@ import {
 } from '../services/offline/connectivityRules';
 import { useAuthStore } from './authStore';
 import { userHasCashierOfflineAccess } from '../utils/cashierOfflineAccess';
+import {
+  readForceOfflineMode,
+  writeForceOfflineMode,
+} from '../services/pos/posForceOfflineStorage';
+import { resolvePosRoute } from '../services/pos/posRouteResolver';
 
 /** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
 const ONLINE_RECOVERY_STREAK = 2;
@@ -103,6 +108,7 @@ export function shouldRetryOnlineAfterOfflineFailure(offlineErr, storeId = null)
 export const useConnectivityStore = create((set, get) => ({
   apiOnline: true,
   offlineMode: false,
+  forceOfflineMode: readForceOfflineMode(),
   canSellOffline: false,
   bootstrapReady: false,
   pendingSales: 0,
@@ -173,6 +179,13 @@ export const useConnectivityStore = create((set, get) => ({
       lastSyncAt: ok ? new Date().toISOString() : get().lastSyncAt,
       lastSyncError: error || null,
     });
+  },
+
+  /** Ручной режим «работать офлайн» (desktop). */
+  setForceOfflineMode(enabled) {
+    const next = Boolean(enabled);
+    writeForceOfflineMode(next);
+    set({ forceOfflineMode: next });
   },
 }));
 
@@ -260,11 +273,9 @@ export function userAllowedOfflinePos() {
 }
 
 export function shouldUseOfflinePos() {
-  if (!isDesktopOfflineBridge()) return false;
-  if (!userHasCashierOfflineAccess(useAuthStore.getState().user)) return false;
-  const { offlineMode, apiOnline } = useConnectivityStore.getState();
-  const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-  return offlineMode || !apiOnline || browserOffline;
+  return isConnectivityOfflineLikeRule(useConnectivityStore.getState())
+    && isDesktopOfflineBridge()
+    && userHasCashierOfflineAccess(useAuthStore.getState().user);
 }
 
 /**
@@ -282,24 +293,35 @@ export function canUseOfflineCatalogFallback(storeId = null) {
 }
 
 export function useShouldUseOfflinePos() {
-  return shouldUseOfflinePos();
+  const apiOnline = useConnectivityStore((s) => s.apiOnline);
+  const offlineMode = useConnectivityStore((s) => s.offlineMode);
+  const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
+  if (!isDesktopOfflineBridge()) return false;
+  if (!userHasCashierOfflineAccess(useAuthStore.getState().user)) return false;
+  const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+  return forceOfflineMode || offlineMode || !apiOnline || browserOffline;
 }
 
-export function useShouldUseLocalPosCatalog(storeId) {
-  const user = useAuthStore((s) => s.user);
+export function usePosRoute(storeId) {
+  const apiOnline = useConnectivityStore((s) => s.apiOnline);
+  const offlineMode = useConnectivityStore((s) => s.offlineMode);
+  const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
   const canSellOffline = useConnectivityStore((s) => s.canSellOffline);
   const productCount = useConnectivityStore((s) => s.productCount);
   const catalogStoreId = useConnectivityStore((s) => s.storeId);
-  const apiOnline = useConnectivityStore((s) => s.apiOnline);
-  const offlineMode = useConnectivityStore((s) => s.offlineMode);
-  if (typeof window === 'undefined' || !window.desktopCashier?.isDesktop) return false;
-  if (!userHasCashierOfflineAccess(user)) return false;
-  const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-  const offlineLike = offlineMode || !apiOnline || browserOffline;
-  if (!offlineLike) return false;
-  return hasLocalPosCatalog(
-    { bootstrapReady, canSellOffline, productCount, storeId: catalogStoreId },
-    storeId,
-  );
+
+  return resolvePosRoute(storeId, {
+    apiOnline,
+    offlineMode,
+    forceOfflineMode,
+    bootstrapReady,
+    canSellOffline,
+    productCount,
+    storeId: catalogStoreId,
+  });
+}
+
+export function useShouldUseLocalPosCatalog(storeId) {
+  return usePosRoute(storeId).route === 'local';
 }

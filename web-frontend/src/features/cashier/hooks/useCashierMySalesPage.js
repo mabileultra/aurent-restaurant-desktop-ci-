@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { saleApi } from '../../../services/api';
 import {
   CASHIER_SALES_EMPTY_FILTERS,
   CASHIER_SALES_RECEIPT_DEBOUNCE_MS,
@@ -12,6 +11,7 @@ import {
   normalizeCashierSalesFilters,
 } from '../components/my-sales/cashierSalesFilterUtils';
 import { useCashierShift } from '../../../hooks/useCashierShift';
+import { posFetchMySales } from '../../../services/pos/posDataRouter';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 
@@ -54,8 +54,8 @@ export function useCashierMySalesPage() {
     isError: salesError,
   } = useQuery({
     queryKey: ['my-sales', salesQueryParams],
-    queryFn: () => saleApi.mySales(salesQueryParams).then((r) => r.data),
-    enabled: !!shiftId,
+    queryFn: () => posFetchMySales(storeId, salesQueryParams),
+    enabled: !!shiftId && !!storeId,
   });
 
   const rows = useMemo(() => sales?.content ?? [], [sales?.content]);

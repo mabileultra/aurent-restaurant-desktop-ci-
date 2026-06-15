@@ -6,7 +6,11 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useAuthStore } from '../../../store/authStore';
 import { userHasCashierOfflineAccess } from '../../../utils/cashierOfflineAccess';
-import { useConnectivityStore, refreshConnectivityStatus } from '../../../store/connectivityStore';
+import {
+  useConnectivityStore,
+  usePosRoute,
+  refreshConnectivityStatus,
+} from '../../../store/connectivityStore';
 import {
   pushPendingSales,
   refreshCatalogBootstrap,
@@ -22,11 +26,21 @@ function formatCatalogSyncAt(iso) {
   }
 }
 
+function invalidatePosData(qc, storeId) {
+  qc.invalidateQueries({ queryKey: ['pos-categories'] });
+  qc.invalidateQueries({ queryKey: ['pos-products'] });
+  if (storeId) {
+    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['my-sales'] });
+  }
+}
+
 export default function OfflineStatusBanner() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { storeId } = useCashierStore();
   const offlineMode = useConnectivityStore((s) => s.offlineMode);
+  const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const canSellOffline = useConnectivityStore((s) => s.canSellOffline);
   const pendingSales = useConnectivityStore((s) => s.pendingSales);
   const syncing = useConnectivityStore((s) => s.syncing);
@@ -37,10 +51,11 @@ export default function OfflineStatusBanner() {
   const productCount = useConnectivityStore((s) => s.productCount);
   const user = useAuthStore((s) => s.user);
   const offlineAllowed = userHasCashierOfflineAccess(user);
+  const posRoute = usePosRoute(storeId);
 
   if (!isDesktopOfflineBridge()) return null;
 
-  if (!offlineAllowed && offlineMode) {
+  if (!offlineAllowed && (offlineMode || forceOfflineMode)) {
     return (
       <div className="offline-banner offline-banner--warn" role="status">
         <span className="offline-banner__icon">
@@ -51,14 +66,21 @@ export default function OfflineStatusBanner() {
     );
   }
 
-  const showOffline = offlineMode || !apiOnline;
-  const showPending = apiOnline && pendingSales > 0;
+  const networkOffline = offlineMode || !apiOnline;
+  const showOffline = forceOfflineMode || networkOffline || posRoute.route === 'local';
+  const showPending = !forceOfflineMode && apiOnline && pendingSales > 0;
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
-  const showCatalogStrip = apiOnline && bootstrapReady && !showOffline;
+  const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
 
-  if (!showOffline && !showPending && !showCatalogStrip && !(apiOnline && !bootstrapReady)) {
-    return null;
-  }
+  const handleToggleForceOffline = (enabled) => {
+    if (enabled && !canSellOffline && !posRoute.hasCatalog) {
+      toast.error(t('offline.noCatalog'));
+      return;
+    }
+    useConnectivityStore.getState().setForceOfflineMode(enabled);
+    invalidatePosData(qc, storeId);
+    toast.success(enabled ? t('offline.forceOfflineOn') : t('offline.forceOfflineOff'));
+  };
 
   const handleSyncSales = async () => {
     useConnectivityStore.getState().setSyncing(true);
@@ -76,7 +98,7 @@ export default function OfflineStatusBanner() {
 
   const handleRefreshCatalog = async () => {
     if (!storeId) return;
-    if (offlineMode) {
+    if (forceOfflineMode || networkOffline) {
       toast.error(t('offline.updateCatalogNeedsInternet'));
       return;
     }
@@ -88,8 +110,7 @@ export default function OfflineStatusBanner() {
       }
       useConnectivityStore.getState().setSyncResult({ ok: true });
       await refreshConnectivityStatus();
-      qc.invalidateQueries({ queryKey: ['pos-categories'] });
-      qc.invalidateQueries({ queryKey: ['pos-products'] });
+      invalidatePosData(qc, storeId);
       if (!result?.skipped) {
         toast.success(t('offline.catalogUpdated', { count: result?.productCount ?? 0 }));
       }
@@ -108,9 +129,15 @@ export default function OfflineStatusBanner() {
   let message = t('offline.onlineOk');
   let tone = 'offline-banner--ok';
 
-  if (showOffline && !canSellOffline) {
+  if (forceOfflineMode && !posRoute.hasCatalog) {
+    message = t('offline.forceOfflineNoCatalog');
+    tone = 'offline-banner--warn';
+  } else if (showOffline && !canSellOffline && !posRoute.hasCatalog) {
     message = t('offline.noCatalog');
     tone = 'offline-banner--warn';
+  } else if (forceOfflineMode) {
+    message = t('offline.forceOfflineActive');
+    tone = 'offline-banner--offline';
   } else if (showOffline) {
     message = t('offline.workingOffline');
     tone = 'offline-banner--offline';
@@ -133,7 +160,27 @@ export default function OfflineStatusBanner() {
       </span>
       <span className="offline-banner__text">{message}</span>
       <div className="offline-banner__actions">
-        {showPending && apiOnline ? (
+        {offlineAllowed && !forceOfflineMode && canSellOffline ? (
+          <button
+            type="button"
+            className="offline-banner__action btn btn-sm btn-outline-light"
+            onClick={() => handleToggleForceOffline(true)}
+          >
+            <CloudOff size={14} aria-hidden />
+            {t('offline.switchToOffline')}
+          </button>
+        ) : null}
+        {offlineAllowed && forceOfflineMode ? (
+          <button
+            type="button"
+            className="offline-banner__action btn btn-sm btn-outline-light"
+            onClick={() => handleToggleForceOffline(false)}
+          >
+            <Wifi size={14} aria-hidden />
+            {t('offline.switchToOnline')}
+          </button>
+        ) : null}
+        {showPending && apiOnline && !forceOfflineMode ? (
           <button
             type="button"
             className="offline-banner__action btn btn-sm btn-outline-light"
@@ -144,7 +191,7 @@ export default function OfflineStatusBanner() {
             {syncing ? t('offline.syncing') : t('offline.syncSales')}
           </button>
         ) : null}
-        {apiOnline && !showOffline ? (
+        {apiOnline && !forceOfflineMode && !networkOffline ? (
           <button
             type="button"
             className="offline-banner__action btn btn-sm btn-outline-light"

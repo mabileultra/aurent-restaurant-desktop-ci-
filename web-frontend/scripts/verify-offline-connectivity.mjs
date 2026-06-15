@@ -231,6 +231,18 @@ test('несовпадение storeId каталога', () => {
   }
 });
 
+test('forceOfflineMode → local-first при готовом каталоге', () => {
+  if (
+    !shouldPreferLocalCheckout({
+      ...desktopCtx,
+      state: { ...storeA, forceOfflineMode: true, offlineMode: false, apiOnline: true },
+      storeId: 5,
+    })
+  ) {
+    throw new Error('expected local checkout when forceOfflineMode');
+  }
+});
+
 test('каталог: таймаут онлайн 4с', () => {
   const POS_CATALOG_ONLINE_TIMEOUT_MS = 4_000;
   if (POS_CATALOG_ONLINE_TIMEOUT_MS > 5_000) {

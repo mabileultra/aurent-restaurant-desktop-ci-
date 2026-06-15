@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ALL_CATEGORY_ID } from '../usePosCatalogPanel';
-import { markApiUnreachable, useConnectivityStore } from '../../../../store/connectivityStore';
+import { markApiUnreachable, useConnectivityStore, usePosRoute } from '../../../../store/connectivityStore';
 import {
   fetchPosCategories,
   fetchPosProductsPage,
-  getPosCatalogMode,
   getPosProductsNextPageParam,
 } from '../../../../services/offline/posCatalogFetchService';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
@@ -22,8 +21,10 @@ export function usePosProductsCatalog({ storeId }) {
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(ALL_CATEGORY_ID);
   const [catalogBrowse, setCatalogBrowse] = useState('categories');
-  const catalogMode = getPosCatalogMode(storeId);
+  const posRoute = usePosRoute(storeId);
+  const catalogMode = posRoute.route === 'local' ? 'offline' : 'online';
   const apiOnline = useConnectivityStore((s) => s.apiOnline);
+  const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
   const productCount = useConnectivityStore((s) => s.productCount);
   const prevCatalogModeRef = useRef(catalogMode);
@@ -44,7 +45,7 @@ export function usePosProductsCatalog({ storeId }) {
       invalidatePosCatalogQueries(qc);
     }
     prevCatalogModeRef.current = catalogMode;
-  }, [catalogMode, storeId, qc]);
+  }, [catalogMode, storeId, qc, forceOfflineMode]);
 
   useEffect(() => {
     if (!isDesktopOfflineBridge() || !storeId) return undefined;

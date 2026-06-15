@@ -19,7 +19,12 @@ export function hasLocalPosCatalog(state, storeId) {
 export function isConnectivityOfflineLike(state) {
   const browserOffline =
     typeof navigator !== 'undefined' && navigator.onLine === false;
-  return Boolean(state?.offlineMode || !state?.apiOnline || browserOffline);
+  return Boolean(
+    state?.forceOfflineMode ||
+      state?.offlineMode ||
+      !state?.apiOnline ||
+      browserOffline,
+  );
 }
 
 export function isCatalogStoreMismatch(catalogStoreId, requestedStoreId) {
@@ -38,7 +43,11 @@ export function shouldPreferLocalCheckout({
   storeId,
 }) {
   if (!isDesktop || !offlineAllowed) return false;
-  if (!offlineLike) return false;
+  const effectiveOfflineLike =
+    offlineLike !== undefined && offlineLike !== null
+      ? offlineLike
+      : isConnectivityOfflineLike(state);
+  if (!effectiveOfflineLike) return false;
   return hasLocalPosCatalog(state, storeId);
 }
 

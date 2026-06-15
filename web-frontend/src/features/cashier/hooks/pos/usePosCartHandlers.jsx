@@ -1,16 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { productApi } from '../../../../services/api';
-import {
-  isDesktopOfflineBridge,
-  offlineGetProductByBarcode,
-} from '../../../../services/offline/desktopOfflineBridge';
-import {
-  canFallbackToOfflineCheckout,
-  shouldUseLocalPosCatalog,
-} from '../../../../store/connectivityStore';
-import { isApiUnreachableError } from '../../../../utils/apiNetworkError';
+import { posFetchProductByBarcode } from '../../../../services/pos/posDataRouter';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
 import { lineSubtotal, useCartStore } from '../../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
@@ -161,33 +152,15 @@ export function usePosCartHandlers({
       if (!trimmed || !storeId || scanningRef.current || payOpen || returnOpen) return false;
       scanningRef.current = true;
       try {
-        if (shouldUseLocalPosCatalog(storeId)) {
-          const product = await offlineGetProductByBarcode(trimmed);
-          if (product) {
-            addProductToCart(product);
-            setSearch('');
-            return true;
-          }
-          if (!silent) toast.error(t('pos.barcodeNotFound'));
-          return false;
+        const product = await posFetchProductByBarcode(storeId, trimmed);
+        if (product) {
+          addProductToCart(product);
+          setSearch('');
+          return true;
         }
-        const res = await productApi.getByBarcode(trimmed, storeId);
-        addProductToCart(res.data);
-        setSearch('');
-        return true;
+        if (!silent) toast.error(t('pos.barcodeNotFound'));
+        return false;
       } catch (e) {
-        if (
-          isApiUnreachableError(e) &&
-          isDesktopOfflineBridge() &&
-          canFallbackToOfflineCheckout(storeId)
-        ) {
-          const product = await offlineGetProductByBarcode(trimmed);
-          if (product) {
-            addProductToCart(product);
-            setSearch('');
-            return true;
-          }
-        }
         if (!silent) toast.error(e.response?.data?.message ?? t('pos.barcodeNotFound'));
         return false;
       } finally {

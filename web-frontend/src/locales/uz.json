@@ -2748,7 +2748,13 @@
     "shiftOpenFailed": "Smenani mahalliy ochib bo‘lmadi. Ilovani qayta ishga tushiring.",
     "syncing": "Sinxronlanmoqda…",
     "saleSavedLocally": "Savdo mahalliy saqlandi. Internet paydo bo‘lganda serverga yuboriladi.",
-    "saleSaveFailed": "Savdoni mahalliy saqlab bo‘lmadi. Ilovani qayta ishga tushiring va qayta urinib ko‘ring."
+    "saleSaveFailed": "Savdoni mahalliy saqlab bo‘lmadi. Ilovani qayta ishga tushiring va qayta urinib ko‘ring.",
+    "switchToOffline": "Oflayn ishlash",
+    "switchToOnline": "Onlaynga qaytish",
+    "forceOfflineActive": "Qo‘lda oflayn — savdolar faqat mahalliy bazaga",
+    "forceOfflineNoCatalog": "Oflayn yoqilgan, lekin katalog yuklanmagan. Internetni ulang va «Katalogni yangilash»ni bosing.",
+    "forceOfflineOn": "Oflayn rejim yoqildi",
+    "forceOfflineOff": "Onlayn rejim — so‘rovlar serverga"
   },
   "unitConversion": {
     "helperTitle": "Boshqa birlikda kiriting → {{unit}}",
