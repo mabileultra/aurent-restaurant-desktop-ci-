@@ -1,6 +1,5 @@
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
-import { APP_NAME } from '../../../../config/brand';
 import { fmtMoney } from '../../../../utils/formatMoney';
 
 const fmtAt = (iso) => {
@@ -27,7 +26,7 @@ export default function ZReportReceiptBody({ z }) {
 
   if (!z) return null;
 
-  const brand = z.brandName || APP_NAME;
+  const brand = z.brandName || 'Aurent';
   const company = z.companyName || z.storeName || '—';
   const currency = t('fiscalReceipt.currency');
 
