@@ -12,6 +12,18 @@ function fmtMoney(value) {
 }
 
 /**
+ * Сумма для узкой колонки tableCustom (без пробелов в тысячах).
+ * С пробелами «24 000.00» не помещается в width 0.3 — дробная часть уезжает на новую строку как «00».
+ * @param {number|string} value
+ * @returns {string}
+ */
+function fmtMoneyTable(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return '0.00';
+  return n.toFixed(2);
+}
+
+/**
  * Количество без лишних нулей.
  * @param {number|string} value
  * @returns {string}
@@ -140,6 +152,7 @@ function fmtAt(iso) {
 
 module.exports = {
   fmtMoney,
+  fmtMoneyTable,
   fmtQty,
   splitDateTime,
   buildFiscalSign,

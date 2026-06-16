@@ -12,7 +12,7 @@ const {
   sanitizePayloadForPrint,
   EXIT_CHINESE_MODE,
 } = require('../electron/cashier-receipt-escpos/escpos-encoding.cjs');
-const { interpolateLabel } = require('../electron/cashier-receipt-escpos/escpos-format.cjs');
+const { interpolateLabel, fmtMoney, fmtMoneyTable } = require('../electron/cashier-receipt-escpos/escpos-format.cjs');
 const { CharacterSet } = require('node-thermal-printer');
 
 const mockPayload = {
@@ -28,7 +28,7 @@ const mockPayload = {
     paymentMethod: 'CASH',
     amountTendered: 130000,
     changeGiven: 5000,
-    items: [{ productName: 'Хлеб', quantity: 2, lineTotal: 25000 }],
+    items: [{ productName: 'French Dog', quantity: 1, lineTotal: 24000 }],
   },
   branding: {
     companyName: 'AURENT TEST',
@@ -181,6 +181,12 @@ async function main() {
     );
   });
 
+  testSync('fmtMoneyTable без пробелов в тысячах для узкой колонки', () => {
+    assert.strictEqual(fmtMoney(24000), '24 000.00');
+    assert.strictEqual(fmtMoneyTable(24000), '24000.00');
+    assert.ok(fmtMoneyTable(24000).length < fmtMoney(24000).length);
+  });
+
   await testAsync('buildReceiptOnPrinter формирует текст чека', async () => {
     const printer = createMockPrinter();
     await buildReceiptOnPrinter(printer, mockPayload, 'test-job');
@@ -190,7 +196,8 @@ async function main() {
     assert.ok(text.includes('НДС 12%'), 'НДС с подставленной ставкой');
     assert.ok(text.includes('AURENT'), 'компания');
     assert.ok(text.includes('+998'), 'телефон в шапке');
-    assert.ok(text.includes('Хлеб'), 'товар');
+    assert.ok(text.includes('French Dog'), 'товар');
+    assert.ok(text.includes('24000.00'), 'сумма строки без пробелов в тысячах');
     assert.ok(text.includes('Продажа'), 'тип чека — продажа');
     assert.ok(text.includes('[CUT]'), 'отрез');
     const raw = printer.getRaw();

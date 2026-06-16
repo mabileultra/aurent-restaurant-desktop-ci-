@@ -7,6 +7,7 @@ const os = require('os');
 const path = require('path');
 const {
   fmtMoney,
+  fmtMoneyTable,
   fmtQty,
   splitDateTime,
   buildFiscalSign,
@@ -242,7 +243,7 @@ function appendItems(printer, payload) {
     printer.tableCustom([
       { text: String(item.productName || ''), align: 'LEFT', width: 0.55 },
       { text: fmtQty(item.quantity, item.saleType), align: 'CENTER', width: 0.15 },
-      { text: fmtMoney(item.lineTotal), align: 'RIGHT', width: 0.3 },
+      { text: fmtMoneyTable(item.lineTotal), align: 'RIGHT', width: 0.3 },
     ]);
     if (isOn(fields, 'itemIkpu') && item.ikpu) {
       printer.println(`${L.ikpuLine || 'IKPU'}: ${item.ikpu}`);
