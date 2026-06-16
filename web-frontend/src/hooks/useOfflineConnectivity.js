@@ -35,7 +35,8 @@ export function useOfflineConnectivity() {
   }, []);
 
   useEffect(() => {
-    if (!isDesktopOfflineBridge() || !token || !storeId || !apiOnline) return undefined;
+    const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+    if (!isDesktopOfflineBridge() || !token || !storeId || (!apiOnline && !browserOnline)) return undefined;
 
     let cancelled = false;
 

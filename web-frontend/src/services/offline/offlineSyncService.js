@@ -7,6 +7,7 @@ import {
   offlineMarkSalesSynced,
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
+import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
 
 /** Отправка очереди продаж — часто (лёгкий запрос). */
 export const SALES_SYNC_INTERVAL_MS = 60_000;
@@ -29,6 +30,7 @@ export { isCatalogStoreMismatch } from './connectivityRules';
 export async function pullCatalogBootstrap(storeId) {
   const res = await syncApi.bootstrap(storeId);
   const data = res.data;
+  markApiReachable();
   if (isDesktopOfflineBridge()) {
     await offlineImportBootstrap(data);
   }
@@ -78,6 +80,7 @@ export async function pushPendingSales() {
   }));
 
   const res = await syncApi.pushSalesBatch({ sales });
+  markApiReachable();
   const results = res.data?.results || [];
   await offlineMarkSalesSynced(results);
   const ok = results.filter((r) => r.status === 'CREATED' || r.status === 'ALREADY_EXISTS').length;
@@ -88,8 +91,9 @@ export async function pushPendingSales() {
 export async function runSalesSyncOnly() {
   try {
     return await pushPendingSales();
-  } catch {
-    return { pushed: 0, failed: 0, results: [] };
+  } catch (err) {
+    useConnectivityStore.getState().setSyncResult({ ok: false, error: err?.message || String(err) });
+    return { pushed: 0, failed: 0, results: [], error: err?.message || String(err) };
   }
 }
 

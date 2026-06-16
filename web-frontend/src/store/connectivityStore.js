@@ -161,6 +161,14 @@ export function markApiUnreachable() {
   useConnectivityStore.getState().applyStatus({ apiOnline: false, offlineMode: true });
 }
 
+/** Использовать после успешного запроса к API (bootstrap/sync), если probe ещё не обновился. */
+export function markApiReachable() {
+  apiUnreachableUntil = 0;
+  stableApiOnline = true;
+  onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
+  useConnectivityStore.getState().applyStatus({ apiOnline: true, offlineMode: false });
+}
+
 function applyBrowserOfflineHint() {
   if (typeof navigator === 'undefined' || navigator.onLine) return;
   markApiUnreachable();

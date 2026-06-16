@@ -68,7 +68,7 @@ export default function OfflineStatusBanner() {
 
   const networkOffline = offlineMode || !apiOnline;
   const showOffline = forceOfflineMode || networkOffline || posRoute.route === 'local';
-  const showPending = !forceOfflineMode && apiOnline && pendingSales > 0;
+  const showPending = apiOnline && pendingSales > 0;
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
 
@@ -180,7 +180,7 @@ export default function OfflineStatusBanner() {
             {t('offline.switchToOnline')}
           </button>
         ) : null}
-        {showPending && apiOnline && !forceOfflineMode ? (
+        {showPending && apiOnline ? (
           <button
             type="button"
             className="offline-banner__action btn btn-sm btn-outline-light"
