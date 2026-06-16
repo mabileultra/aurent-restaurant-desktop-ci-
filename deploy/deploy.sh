@@ -50,7 +50,8 @@ if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
   docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d finance-db
 
   echo "==> Запуск finance-service..."
-  if ! docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --no-deps finance-service; then
+  chmod +x deploy/docker-recreate-service.sh
+  if ! bash deploy/docker-recreate-service.sh finance-service; then
     echo "==> Ошибка запуска finance-service. Последние логи:"
     docker compose -f "$COMPOSE_FILE" logs --tail=120 finance-service || true
     exit 1
@@ -90,7 +91,7 @@ if ! bash deploy/verify-db.sh; then
 fi
 
 echo "==> Запуск backend..."
-if ! docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d --no-deps backend; then
+if ! bash deploy/docker-recreate-service.sh backend; then
   echo "==> Ошибка запуска backend. Последние логи:"
   docker compose -f "$COMPOSE_FILE" logs --tail=120 backend || true
   exit 1
@@ -114,7 +115,7 @@ if [[ "$backend_ok" != "1" ]]; then
 fi
 
 echo "==> Запуск frontend..."
-docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" up -d frontend
+bash deploy/docker-recreate-service.sh frontend
 
 if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
   echo "==> Запуск Telegram-бота поддержки..."
