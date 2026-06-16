@@ -1,0 +1,72 @@
+/* Order panel — итоги внизу чека (светло-серый блок) */
+.pos-order-panel--register .pos-order-panel__totals-foot {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  min-height: clamp(76px, 18cqi, 92px);
+  padding: clamp(12px, 3cqi, 16px) clamp(14px, 3.5cqi, 18px) clamp(14px, 3.5cqi, 18px);
+  border-top: 1.5px solid var(--pos-border, #e5e7eb);
+  background: var(--pos-surface-elevated, #f3f4f6);
+  border-radius: 0 0 14px 14px;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-meta p {
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  color: var(--pos-muted, #6b7280);
+}
+
+.pos-order-panel--register .pos-order-panel__totals-meta span {
+  color: var(--pos-text, #111827);
+  font-weight: 600;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-hero-label {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--pos-muted, #6b7280);
+}
+
+.pos-order-panel--register .pos-order-panel__totals-hero-value {
+  font-size: clamp(1.5rem, 8cqi, 2.5rem);
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--pos-text, #111827);
+  line-height: 1;
+}
+
+.cashier-app.cashier-app--light .pos-order-panel--register .pos-order-panel__totals-foot {
+  background: var(--pos-surface-elevated);
+  border-top-color: var(--pos-border);
+}
+
+@media (max-height: 720px) {
+  .pos-order-panel--register .pos-order-panel__totals-foot {
+    min-height: 72px;
+    gap: 12px;
+  }
+
+  .pos-order-panel--register .pos-order-panel__totals-hero-value {
+    font-size: clamp(1.35rem, 7cqi, 2rem);
+  }
+}

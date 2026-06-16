@@ -3,6 +3,18 @@
 .cashier-app {
   font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
   line-height: 1.45;
+  --pos-keypad-key-h: 56px;
+  --pos-keypad-gap: 8px;
+  --pos-keypad-radius: 14px;
+  --pos-keypad-digit-size: 1.375rem;
+  --pos-keypad-action-size: 0.8125rem;
+  --pos-keypad-quick-h: 46px;
+  --pos-keypad-clear-h: 48px;
+  --pos-keypad-border: #c5ccd6;
+  --pos-keypad-bg: #fff;
+  --pos-keypad-bg-hover: #f3f4f6;
+  --pos-keypad-text: #111827;
+  --pos-keypad-muted: #6b7280;
 }
 
 /* Тёмная терминальная тема (по умолчанию) */
@@ -30,20 +42,30 @@
 
   color: var(--pos-text);
   background: var(--pos-bg) !important;
+
+  --pos-keypad-border: var(--pos-border);
+  --pos-keypad-bg: var(--pos-surface);
+  --pos-keypad-bg-hover: var(--pos-surface-elevated);
+  --pos-keypad-text: var(--pos-text);
+  --pos-keypad-muted: var(--pos-muted);
 }
 
-/* Светлая тема кассы */
+/* Светлая тема кассы — светло-серый фон, тёмно-синий текст */
 .cashier-app.cashier-app--light {
+  --pos-ink: #1e3a5f;
   --pos-green: #006847;
   --pos-green-hover: #005538;
-  --pos-green-soft: #e8f5ef;
-  --pos-bg: #f0f2f5;
-  --pos-surface: #ffffff;
-  --pos-surface-elevated: #f8faf9;
-  --pos-border: #e5e7eb;
-  --pos-text: #111827;
-  --pos-muted: #6b7280;
-  --pos-money: #b45309;
+  --pos-green-soft: #e8edf3;
+  --pos-bg: #e9eef4;
+  --pos-surface: #f4f6fa;
+  --pos-surface-elevated: #fbfcfe;
+  --pos-surface-hover: #eef2f8;
+  --pos-surface-active: #e4eaf3;
+  --pos-surface-accent: #f0f4f9;
+  --pos-border: #d1d9e6;
+  --pos-text: #1e3a5f;
+  --pos-muted: #5a6f8c;
+  --pos-money: #1e3a5f;
   --pos-danger: #dc2626;
   --pos-on-green: #ffffff;
   --pos-radius: 10px;
@@ -57,4 +79,10 @@
 
   color: var(--pos-text);
   background: var(--pos-bg) !important;
+
+  --pos-keypad-border: #d1d9e6;
+  --pos-keypad-bg: #f8fafc;
+  --pos-keypad-bg-hover: #eef2f8;
+  --pos-keypad-text: var(--pos-ink);
+  --pos-keypad-muted: var(--pos-muted);
 }

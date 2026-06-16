@@ -16,7 +16,7 @@
 }
 
 .cashier-app.cashier-app--touch .pos-product-card {
-  min-height: 96px;
+  min-height: 104px;
   touch-action: manipulation;
 }
 
@@ -33,22 +33,22 @@
   min-height: 44px;
 }
 
-/* В текущем чеке — крупные +/- для удобного нажатия */
+/* В текущем чеке — сенсор, но без растягивания */
 .cashier-app.cashier-app--touch .pos-order-panel--register .pos-qty-control {
-  min-height: 52px;
+  min-height: 44px;
 }
 
 .cashier-app.cashier-app--touch .pos-order-panel--register .pos-qty-control__btn {
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
 }
 
 .cashier-app.cashier-app--touch .pos-cart-table__remove-btn,
 .cashier-app.cashier-app--touch .pos-order-panel__btn,
-.cashier-app.cashier-app--touch .pos-order-rail__btn,
-.cashier-app.cashier-app--touch .pos-order-rail__pay {
+.cashier-app.cashier-app--touch .pos-register-pay-rail__tool,
+.cashier-app.cashier-app--touch .pos-register-pay-footer__sale {
   min-height: var(--cashier-touch-min, 48px);
   touch-action: manipulation;
 }
@@ -61,16 +61,20 @@
   min-height: 44px;
 }
 
+.cashier-app.cashier-app--touch {
+  --pos-keypad-key-h: 60px;
+  --pos-keypad-digit-size: 1.5rem;
+  --pos-keypad-quick-h: 52px;
+  --pos-keypad-clear-h: 52px;
+}
+
 .cashier-app.cashier-app--touch .pos-keypad__key,
 .cashier-app.cashier-app--touch .pos-keypad__quick-btn,
 .cashier-app.cashier-app--touch .pos-keypad__clear {
-  min-height: 3.5rem;
-  font-size: 1.5rem;
   touch-action: manipulation;
 }
 
 .cashier-app.cashier-app--touch .pos-pay-method-card--register,
-.cashier-app.cashier-app--touch .pos-pay-method-card--row,
 .cashier-app.cashier-app--touch .pos-pay-method-card--tile {
   min-height: 56px;
   touch-action: manipulation;

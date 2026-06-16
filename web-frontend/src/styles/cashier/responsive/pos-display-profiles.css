@@ -1,0 +1,82 @@
+/*
+ * POS-мониторы 10–17" (типовые разрешения)
+ *
+ * 1024×768   — 10–11", 4:3 компакт
+ * 1280×800   — 12–14", широкий низкий
+ * 1280×1024  — 14–15", 5:4 классика
+ * 1366×768   — 15", 16:9
+ * 1440×900   — 15", Mac-style
+ * 1920×1080  — 17", Full HD
+ */
+
+/* ── 10–11": 1024×768 и близкие 4:3 ── */
+@media (min-width: 1000px) and (max-width: 1100px) and (max-height: 820px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 13px;
+    --cashier-gap: 6px;
+    --cashier-pad: 6px;
+    --cashier-pay-w: 260px;
+    --cashier-bottom-nav-h: 88px;
+    --cashier-cart-cols-register: minmax(3.5rem, 1fr) minmax(5.25rem, 7.5rem) minmax(7rem, 8.5rem) minmax(5.25rem, 7.75rem) minmax(2.5rem, 3.25rem);
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 6px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .cashier-topbar--pos {
+    min-height: 36px;
+  }
+}
+
+/* ── 12–14": 1024–1280 ширина, до 900 высоты ── */
+@media (min-width: 1024px) and (max-width: 1366px) and (max-height: 900px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-pay-w: clamp(280px, 32cqi, 360px);
+    --cashier-bottom-nav-h: clamp(88px, 10vh, 96px);
+  }
+}
+
+/* ── 15": 1280×1024, 1366×768, 1440×900 ── */
+@media (min-width: 1280px) and (max-width: 1600px) and (min-height: 768px) and (max-height: 1024px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 14px;
+    --cashier-gap: 8px;
+    --cashier-pay-w: clamp(300px, 30%, 400px);
+    --cashier-bottom-nav-h: clamp(96px, 10vh, 104px);
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  }
+}
+
+/* ── 17" Full HD: 1920×1080 и крупнее ── */
+@media (min-width: 1600px) and (min-height: 900px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 14px;
+    --cashier-gap: 10px;
+    --cashier-pad: 12px;
+    --cashier-pay-w: clamp(320px, 24vw, 440px);
+    --cashier-bottom-nav-h: 112px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  }
+}
+
+/* Квадратный 4:3 / 5:4 — больше места по вертикали на каталог */
+@media (min-aspect-ratio: 4/5) and (max-aspect-ratio: 5/4) and (min-width: 1024px) {
+  .cashier-app.cashier-app--pos-screen .pos-catalog-panel__body {
+    padding-block: 10px;
+  }
+}
+
+/* Широкий 16:9 — чек + оплата получают больше горизонтали */
+@media (min-aspect-ratio: 16/10) and (max-height: 900px) {
+  .cashier-app.cashier-app--pos-screen .cashier-register__stage {
+    --cashier-pay-w: clamp(300px, 34%, 400px);
+  }
+}

@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 /** Сенсор или «пальцевый» ввод (кассовый терминал, планшет). */
 export const CASHIER_TOUCH_POINTER_MEDIA = '(pointer: coarse)';
 
-/** Классический POS: 1024×768, 1280×800 и похожие. */
+/** Классический POS: 1024×768 … 1920×1080 (10–17"). */
 export const CASHIER_POS_DISPLAY_MEDIA =
-  '(min-width: 1024px) and (max-width: 1600px) and (max-height: 900px)';
+  '(min-width: 1024px) and (max-width: 1920px) and (max-height: 1080px)';
 
 function readTouchLayout() {
   if (typeof window === 'undefined') return false;

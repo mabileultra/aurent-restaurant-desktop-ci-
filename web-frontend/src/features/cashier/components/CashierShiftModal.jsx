@@ -188,6 +188,7 @@ export default function CashierShiftModal({
                     onSuccess: (openedShift) => {
                       toast.success(t('pos.shiftOpenedSuccess'));
                       onShiftUpdated?.(openedShift);
+                      onClose();
                     },
                     onError: (e) => toast.error(e.response?.data?.message ?? t('pos.shiftOpenFailed')),
                   })

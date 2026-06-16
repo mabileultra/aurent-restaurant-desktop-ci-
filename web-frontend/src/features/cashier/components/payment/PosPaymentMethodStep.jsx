@@ -3,6 +3,8 @@ import { fmtMoney as fmt } from '../../../../utils/formatMoney';
 import { PAY_METHODS } from './posPaymentConstants';
 
 export default function PosPaymentMethodStep({ t, toPay, handleMethod }) {
+  const methods = PAY_METHODS.filter(({ action }) => action !== 'advance');
+
   return (
     <div className="pos-pay-panel__step">
       <div className="pos-pay-method-step__hero">
@@ -13,7 +15,7 @@ export default function PosPaymentMethodStep({ t, toPay, handleMethod }) {
         </div>
       </div>
       <div className="pos-pay-method-cards pos-pay-method-cards--register-stack pos-pay-method-cards--terminal">
-        {PAY_METHODS.map(({ id, icon: Icon, labelKey, action }) => (
+        {methods.map(({ id, icon: Icon, labelKey, action }) => (
           <button
             key={id}
             type="button"

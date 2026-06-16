@@ -1,0 +1,41 @@
+/* Inline pay rail — flex-колонка без собственного скролла */
+.pos-register-pay-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(4px, 1.2cqi, 8px);
+  padding: clamp(8px, 2cqi, 12px) clamp(10px, 2.5cqi, 14px) clamp(10px, 2.5cqi, 14px);
+  background: #fafbfc;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.pos-register-pay-rail__pay-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.pos-register-pay-rail__keypad-wrap {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pos-register-pay-rail__tools {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail {
+  background: var(--pos-surface-elevated, #1c2433);
+}

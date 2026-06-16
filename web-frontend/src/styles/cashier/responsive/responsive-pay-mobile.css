@@ -1,0 +1,79 @@
+/* Мобильная оплата — полная высота вместо 34vh / 300px */
+
+@media (max-width: 799px) {
+  .cashier-register__split--register:has(.cashier-register__actions-col--pay) .cashier-register__stage {
+    grid-template-rows: minmax(0, 1fr) auto;
+  }
+
+  .cashier-register__split--register:has(.cashier-register__actions-col--pay) .cashier-register__order-col {
+    display: none;
+  }
+
+  .cashier-register__split--register .cashier-register__actions-col--pay {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 4;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .cashier-register__split--register .cashier-register__actions-col--pay .cashier-register__pay-shell,
+  .cashier-register__split--register .cashier-register__actions-col--pay .cashier-register__pay-pane--flow,
+  .cashier-register__split--register .cashier-register__actions-col--pay .pos-pay-panel--register-rail {
+    min-height: 0;
+    height: 100%;
+  }
+}
+
+/* Смешанная оплата — компактная клавиатура (перебивает touch 60px) */
+.cashier-app.cashier-app--touch .pos-pay-panel--register-rail.is-step-mixedCash {
+  --pos-keypad-key-h: 44px;
+  --pos-keypad-quick-h: 34px;
+  --pos-keypad-clear-h: 36px;
+  --pos-keypad-gap: 5px;
+  --pos-keypad-digit-size: 1.2rem;
+  --pos-keypad-action-size: 0.6875rem;
+}
+
+@media (max-width: 799px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 42px;
+    --pos-keypad-quick-h: 32px;
+    --pos-keypad-clear-h: 34px;
+    --pos-keypad-gap: 4px;
+    --pos-keypad-digit-size: 1.15rem;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box {
+    padding: 7px 9px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack {
+    gap: 5px;
+    padding-top: 6px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress {
+    padding: 2px 12px 4px;
+  }
+}
+
+@media (max-width: 799px) and (max-height: 700px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 38px;
+    --pos-keypad-quick-h: 30px;
+  }
+}
+
+@media (max-width: 799px) and (max-height: 580px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 34px;
+    --pos-keypad-quick-h: 28px;
+    --pos-keypad-digit-size: 1.05rem;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-register-rail__head {
+    padding: 8px 12px;
+  }
+}

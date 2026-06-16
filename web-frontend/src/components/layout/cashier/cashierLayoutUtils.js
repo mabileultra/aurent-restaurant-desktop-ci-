@@ -1,7 +1,5 @@
 import { format } from 'date-fns';
 
-export const CASHIER_SIDEBAR_KEY = 'cashier-sidebar-open';
-
 export function displayCashierName(user) {
   if (!user) return '';
   const parts = [user.lastName, user.firstName, user.patronymic].filter(Boolean);
@@ -16,15 +14,4 @@ export function formatShiftOpenedAt(openedAt) {
   } catch {
     return null;
   }
-}
-
-export function readSidebarOpen() {
-  try {
-    const v = localStorage.getItem(CASHIER_SIDEBAR_KEY);
-    if (v === '0') return false;
-    if (v === '1') return true;
-  } catch {
-    /* ignore */
-  }
-  return true;
 }

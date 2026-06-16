@@ -222,18 +222,20 @@
   min-height: 44px;
   border: none;
   border-radius: 10px;
-  background: #d97706;
+  background: linear-gradient(180deg, #00875a 0%, var(--pos-green, #006847) 100%);
   color: #fff;
   font-size: 0.875rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.12s;
+  box-shadow: 0 4px 12px rgb(0 104 71 / 0.24);
+  transition: background 0.12s, box-shadow 0.12s;
 }
 
 .cashier-sales-receipt-pane__return:hover:not(:disabled) {
-  background: #b45309;
+  background: linear-gradient(180deg, #007a52 0%, #005a3a 100%);
+  box-shadow: 0 6px 16px rgb(0 104 71 / 0.28);
 }
 
 .cashier-sales-receipt-pane__return:disabled {

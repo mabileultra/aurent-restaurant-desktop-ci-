@@ -1,0 +1,81 @@
+/* Pay rail — card provider buttons with brand logos */
+.pos-register-card-providers {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(5px, 1.8cqi, 8px);
+}
+
+.pos-register-card-providers__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(52px, 16cqi, 68px);
+  height: auto;
+  padding: clamp(8px, 2.5cqi, 12px) clamp(8px, 2.5cqi, 14px);
+  border: 1.5px solid #c5ccd6;
+  border-radius: 16px;
+  background: #fff;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.07);
+  overflow: hidden;
+  transition: transform 0.1s, border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+.pos-register-card-providers__btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: #9ca3af;
+  background: #f9fafb;
+  box-shadow: 0 2px 6px rgb(15 23 42 / 0.1);
+}
+
+.pos-register-card-providers__btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.pos-register-card-providers__btn:disabled {
+  cursor: not-allowed;
+}
+
+.pos-register-card-providers__btn.is-soon {
+  opacity: 0.55;
+}
+
+.pos-register-card-providers__logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 92%;
+  max-height: clamp(26px, 9cqi, 36px);
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pos-register-card-providers__btn--humo .pos-register-card-providers__logo,
+.pos-register-card-providers__btn--uzcard .pos-register-card-providers__logo {
+  max-height: clamp(24px, 8cqi, 32px);
+}
+
+.pos-register-card-providers__btn--clic {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+}
+
+.pos-register-card-providers__btn--clic:hover:not(:disabled) {
+  background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn {
+  background: var(--pos-surface, #151b26);
+  border-color: var(--pos-border, #2a3548);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--clic {
+  background: var(--pos-surface-elevated, #1c2433);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn:hover:not(:disabled) {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: rgb(148 163 184 / 0.45);
+}

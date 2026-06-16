@@ -1,13 +1,5 @@
 /* Top navigation and register/catalog tabs */
 @media (max-width: 799px) {
-  .cashier-app .cashier-sidebar {
-    display: none !important;
-  }
-
-  .cashier-app.cashier-app--sidebar-collapsed {
-    --cashier-sidebar-current-w: 0px;
-  }
-
   .cashier-app .cashier-topbar--pos {
     min-height: 40px;
     padding-top: 6px !important;
@@ -20,12 +12,26 @@
 
   .cashier-register__split--register .cashier-register__stage {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-rows: minmax(0, 1fr) minmax(0, min(34vh, 300px)) auto;
+  }
+
+  .cashier-register__split--register .cashier-register__order-col {
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 0;
   }
 
   .cashier-register__split--register .cashier-register__actions-col {
-    max-height: min(42vh, 320px);
-    overflow-y: auto;
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+  }
+
+  .cashier-register__split--register .cashier-register__bottom-nav {
+    grid-column: 1 / -1;
+    grid-row: 3;
   }
 }
 

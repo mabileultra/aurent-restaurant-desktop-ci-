@@ -27,12 +27,6 @@
   --bs-btn-hover-color: var(--pos-text);
 }
 
-.cashier-app.cashier-app--terminal .pos-shift-closed-banner {
-  background: rgb(245 200 66 / 0.1);
-  border: 1px solid rgb(245 200 66 / 0.3);
-  color: var(--pos-money);
-}
-
 /* Lock overlay */
 .cashier-lock-overlay__card {
   background: var(--pos-surface);

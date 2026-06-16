@@ -1,0 +1,89 @@
+/* Подсказка конвертации единиц (модал веса) */
+.unit-conversion-helper {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: 10px;
+  background: var(--pos-surface-hover, #eef2f8);
+  font-size: 0.75rem;
+}
+
+.unit-conversion-helper__title {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--pos-ink, #1e3a5f);
+}
+
+.unit-conversion-helper__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.unit-conversion-helper__row + .unit-conversion-helper__row {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--pos-border, #d1d9e6);
+}
+
+.unit-conversion-helper__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 7rem;
+  flex: 1;
+}
+
+.unit-conversion-helper__field--qty {
+  width: 6rem;
+  flex: 0 0 auto;
+}
+
+.unit-conversion-helper__label {
+  color: var(--pos-muted, #5a6f8c);
+}
+
+.unit-conversion-helper__input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: 8px;
+  background: var(--pos-surface-elevated, #fbfcfe);
+  color: var(--pos-ink, #1e3a5f);
+}
+
+.unit-conversion-helper__input:focus {
+  outline: none;
+  border-color: var(--pos-ink, #1e3a5f);
+  box-shadow: 0 0 0 3px rgb(30 58 95 / 0.12);
+}
+
+.unit-conversion-helper__apply {
+  min-height: 34px;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--pos-ink, #1e3a5f);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.unit-conversion-helper__apply:hover:not(:disabled) {
+  background: #152d4a;
+}
+
+.unit-conversion-helper__apply:disabled {
+  background: var(--pos-surface-active, #e4eaf3);
+  color: var(--pos-muted, #5a6f8c);
+  cursor: not-allowed;
+}
+
+.unit-conversion-helper__coil-hint {
+  margin: 0;
+  padding-bottom: 0.375rem;
+  color: var(--pos-muted, #5a6f8c);
+}

@@ -1,3 +1,6 @@
 @import './shell-base.css';
 @import './shell-desktop-topbar.css';
+@import './shell-desktop-layout.css';
+@import './shell-pos-topbar.css';
+@import './cashier-bottom-nav.css';
 @import './shell-lang-switch.css';

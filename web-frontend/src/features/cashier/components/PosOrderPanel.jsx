@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { usePosOrderPanel } from '../hooks/usePosOrderPanel';
 import PosOrderPanelLine from './pos-order-panel/PosOrderPanelLine';
-import PosOrderPanelLineToolbar from './pos-order-panel/PosOrderPanelLineToolbar';
 import PosOrderPanelTotalsFoot from './pos-order-panel/PosOrderPanelTotalsFoot';
 
 export default function PosOrderPanel({
@@ -11,15 +10,12 @@ export default function PosOrderPanel({
   onQtyDelta,
   onUpdateQuantity,
   onUpdatePrice,
-  onUpdateDiscountPercent,
   onRemove,
   total,
   className = '',
-  variant = 'default',
   showTotalsFoot = false,
 }) {
   const { t } = useTranslation();
-  const isRegister = variant === 'register';
   const p = usePosOrderPanel({
     items,
     selectedLineId,
@@ -29,18 +25,9 @@ export default function PosOrderPanel({
   });
 
   return (
-    <section
-      className={`pos-order-panel${isRegister ? ' pos-order-panel--register' : ''}${
-        className ? ` ${className}` : ''
-      }`}
-    >
+    <section className={`pos-order-panel pos-order-panel--register${className ? ` ${className}` : ''}`}>
       <header className="pos-order-panel__head">
-        <h2 className="pos-order-panel__title">
-          {isRegister ? t('pos.currentCheck') : t('pos.orderTitle')}
-          {items.length > 0 ? (
-            <span className="pos-order-panel__badge">{t('pos.orderPositions', { count: items.length })}</span>
-          ) : null}
-        </h2>
+        <h2 className="pos-order-panel__title">{t('pos.currentCheck')}</h2>
       </header>
 
       <div className="pos-order-panel__list">
@@ -95,7 +82,7 @@ export default function PosOrderPanel({
         </div>
       </div>
 
-      {isRegister && showTotalsFoot && items.length > 0 ? (
+      {showTotalsFoot && items.length > 0 ? (
         <PosOrderPanelTotalsFoot
           t={t}
           subtotalBeforeTax={p.subtotalBeforeTax}
@@ -104,17 +91,6 @@ export default function PosOrderPanel({
           payableTotal={p.payableTotal}
         />
       ) : null}
-
-      <div className="pos-order-panel__bottom">
-        {!isRegister ? (
-          <PosOrderPanelLineToolbar
-            t={t}
-            selected={p.selected}
-            onUpdateDiscountPercent={onUpdateDiscountPercent}
-            onRemove={onRemove}
-          />
-        ) : null}
-      </div>
     </section>
   );
 }

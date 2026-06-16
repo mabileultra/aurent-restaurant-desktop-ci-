@@ -1,6 +1,6 @@
 /* Order panel shell */
 .pos-order-panel {
-  container-type: inline-size;
+  container-type: size;
   container-name: order-panel;
   display: flex;
   flex-direction: column;

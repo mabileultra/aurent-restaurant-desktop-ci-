@@ -6,6 +6,7 @@ import {
   convertToStockUnit,
   inputAlternativesForStockUnit,
 } from '../../utils/unitConversionHelpers';
+import '../../styles/shared/unit-conversion-helper.css';
 
 export default function UnitConversionHelper({
   t,
@@ -42,14 +43,14 @@ export default function UnitConversionHelper({
   };
 
   return (
-    <div className="mt-2 space-y-2 rounded-lg border border-amber-200 bg-amber-50/60 p-3 text-xs dark:border-amber-900/40 dark:bg-amber-950/20">
-      <p className="font-medium text-amber-900 dark:text-amber-200">
+    <div className="unit-conversion-helper">
+      <p className="unit-conversion-helper__title">
         {t('unitConversion.helperTitle', { unit: stockLabel })}
       </p>
 
       {alternatives.length > 0 ? (
-        <div className="flex flex-wrap items-end gap-2">
-          <div className="flex min-w-[7rem] flex-1 flex-col">
+        <div className="unit-conversion-helper__row">
+          <div className="unit-conversion-helper__field">
             <BaseSelect
               label={t('unitConversion.altUnit')}
               value={altCode}
@@ -61,21 +62,21 @@ export default function UnitConversionHelper({
               ]}
             />
           </div>
-          <label className="flex w-24 flex-col gap-1">
-            <span className="text-amber-800/80 dark:text-amber-300/80">{t('unitConversion.qty')}</span>
+          <label className="unit-conversion-helper__field unit-conversion-helper__field--qty">
+            <span className="unit-conversion-helper__label">{t('unitConversion.qty')}</span>
             <input
               type="text"
               inputMode="decimal"
               value={altQty}
               onChange={(e) => setAltQty(e.target.value)}
-              className="rounded-md border border-amber-200 bg-white px-2 py-1.5 text-sm dark:border-amber-800 dark:bg-slate-900"
+              className="unit-conversion-helper__input"
             />
           </label>
           <button
             type="button"
             onClick={handleApplyAlt}
             disabled={!altCode || !altQty}
-            className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            className="unit-conversion-helper__apply"
           >
             {t('unitConversion.apply')}
           </button>
@@ -83,26 +84,26 @@ export default function UnitConversionHelper({
       ) : null}
 
       {showCoil ? (
-        <div className="flex flex-wrap items-end gap-2 border-t border-amber-200/80 pt-2 dark:border-amber-900/50">
-          <label className="flex w-28 flex-col gap-1">
-            <span className="text-amber-800/80 dark:text-amber-300/80">{t('unitConversion.coilCount')}</span>
+        <div className="unit-conversion-helper__row">
+          <label className="unit-conversion-helper__field unit-conversion-helper__field--qty">
+            <span className="unit-conversion-helper__label">{t('unitConversion.coilCount')}</span>
             <input
               type="text"
               inputMode="numeric"
               value={coilCount}
               onChange={(e) => setCoilCount(e.target.value)}
               placeholder="10"
-              className="rounded-md border border-amber-200 bg-white px-2 py-1.5 text-sm dark:border-amber-800 dark:bg-slate-900"
+              className="unit-conversion-helper__input"
             />
           </label>
-          <p className="pb-1.5 text-amber-800/90 dark:text-amber-300/90">
+          <p className="unit-conversion-helper__coil-hint">
             {t('unitConversion.coilLength', { length: standardLength })}
           </p>
           <button
             type="button"
             onClick={handleApplyCoil}
             disabled={!coilCount}
-            className="rounded-md bg-amber-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-amber-700 disabled:opacity-50"
+            className="unit-conversion-helper__apply"
           >
             {t('unitConversion.applyCoil')}
           </button>

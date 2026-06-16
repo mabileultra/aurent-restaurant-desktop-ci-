@@ -1,17 +1,15 @@
-/* Cashier responsive — CSS variables, sidebar, order-panel container queries */
+/* Cashier responsive — CSS variables, order-panel container queries */
 .cashier-app {
   --cashier-vh: 100dvh;
+  --cashier-bottom-nav-h: clamp(96px, 11vh, 112px);
   /* Стандартный UI-масштаб (14px), без раздувания на больших экранах */
   --cashier-font: 14px;
   --cashier-gap: clamp(8px, 1vw, 14px);
   --cashier-pad: clamp(8px, 1.2vw, 16px);
-  /* Правая колонка оплаты */
-  --cashier-pay-w: clamp(280px, 26vw, 400px);
+  /* Правая колонка оплаты — уточняется в register-layout-adaptive (cqi) */
+  --cashier-pay-w: clamp(300px, 34%, 420px);
   --cashier-cart-cols: minmax(0, 1.65fr) minmax(0, 0.85fr) minmax(7rem, 0.72fr) minmax(0, 0.95fr) minmax(2.75rem, 3.25rem);
-  /* Текущий чек (register): фиксированная ширина qty/remove, чтобы +/- не наезжали на цену */
-  --cashier-cart-cols-register: minmax(0, 1.35fr) minmax(4rem, 0.78fr) 9.5rem minmax(4rem, 0.88fr) 2.75rem;
-  --cashier-sidebar-w: clamp(212px, 15vw, 248px);
-  --cashier-sidebar-w-collapsed: 64px;
+  --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
 
   font-size: var(--cashier-font);
   min-height: var(--cashier-vh);
@@ -24,15 +22,17 @@
   flex: 1;
 }
 
-.cashier-app .cashier-sidebar {
-  width: var(--cashier-sidebar-current-w, var(--cashier-sidebar-w));
-  min-width: var(--cashier-sidebar-current-w, var(--cashier-sidebar-w));
+.cashier-app .cashier-app__body {
+  min-height: 0;
+  flex: 1 1 auto;
+  width: 100%;
 }
 
-.cashier-app .cashier-sidebar.is-collapsed {
-  --cashier-sidebar-current-w: var(--cashier-sidebar-w-collapsed);
-  width: var(--cashier-sidebar-w-collapsed);
-  min-width: var(--cashier-sidebar-w-collapsed);
+.cashier-app .cashier-app__bottom-nav {
+  flex-shrink: 0;
+  padding: 8px 12px 12px;
+  border-top: 1px solid var(--pos-border);
+  background: var(--pos-surface);
 }
 
 .cashier-register__workspace {
@@ -42,30 +42,5 @@
 
 .cashier-pos-tabs {
   flex-shrink: 0;
-}
-
-@container order-panel (max-width: 520px) {
-  .pos-cart-table {
-    --pos-cart-cols: minmax(0, 1fr) minmax(3.5rem, 0.72fr) 8.5rem minmax(3.75rem, 0.85fr) 2.5rem;
-  }
-
-  .pos-order-panel--register .pos-cart-table {
-    --pos-cart-cols: minmax(0, 1fr) minmax(3.25rem, 0.68fr) 8.5rem minmax(3.5rem, 0.82fr) 2.5rem;
-  }
-}
-
-@container order-panel (max-width: 420px) {
-  .pos-order-panel__list {
-    overflow-x: hidden;
-  }
-
-  .pos-cart-table {
-    width: 100%;
-    --pos-cart-cols: minmax(0, 1fr) minmax(3rem, 0.65fr) 8rem minmax(3.25rem, 0.8fr) 2.375rem;
-  }
-
-  .pos-order-panel--register .pos-cart-table {
-    --pos-cart-cols: minmax(0, 1fr) minmax(3rem, 0.62fr) 8rem minmax(3rem, 0.78fr) 2.375rem;
-  }
 }
 

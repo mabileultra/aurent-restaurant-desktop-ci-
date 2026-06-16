@@ -35,15 +35,21 @@
   border-radius: 12px;
 }
 
+.cashier-app.cashier-app--light .pos-search-bar__field:focus-within {
+  border-color: var(--pos-ink);
+  box-shadow: 0 0 0 3px rgb(30 58 95 / 0.15);
+}
+
 .cashier-app.cashier-app--light .pos-category-tile--all {
   grid-column: 1 / -1;
   flex-direction: row;
   align-items: center;
   min-height: 72px;
   padding: 14px 16px;
-  background: linear-gradient(90deg, var(--pos-green-soft) 0%, #fff 55%);
-  border: 1px solid rgb(0 104 71 / 0.2);
+  background: linear-gradient(90deg, var(--pos-surface-hover) 0%, var(--pos-surface-elevated) 55%);
+  border: 1px solid var(--pos-border);
   border-radius: 12px;
+  color: var(--pos-ink);
 }
 
 .cashier-app .pos-category-tile--all .pos-category-tile__hint {

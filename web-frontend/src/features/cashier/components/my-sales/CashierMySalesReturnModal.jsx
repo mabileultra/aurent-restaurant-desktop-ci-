@@ -7,6 +7,7 @@ export default function CashierMySalesReturnModal({
 }) {
   return (
     <SalePartialReturnModal
+      terminal
       open={!!returnSaleId}
       saleId={returnSaleId}
       onClose={onClose}

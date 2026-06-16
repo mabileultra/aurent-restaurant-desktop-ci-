@@ -1,0 +1,120 @@
+/* Pay rail — блок к оплате / получено / сдача */
+.pos-register-pay-rail .pos-register-pay-cash {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1.5px solid #c5ccd6;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
+}
+
+.pos-register-pay-rail .pos-pay-cash__summary-row {
+  font-size: clamp(0.875rem, 4cqi, 1rem);
+  font-weight: 600;
+  color: #374151;
+}
+
+.pos-register-pay-rail .pos-pay-cash__summary-row strong {
+  font-size: clamp(1.1rem, 6cqi, 1.375rem);
+  font-weight: 800;
+  color: #111827;
+}
+
+.pos-register-pay-rail .pos-pay-cash__hint {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #6b7280;
+}
+
+.pos-register-pay-rail .pos-pay-cash__received-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px 18px;
+  border: 1.5px solid #c5ccd6;
+  background: #f3f4f6;
+  box-shadow: none;
+  border-radius: 14px;
+}
+
+.pos-register-pay-rail .pos-pay-cash__received-label {
+  flex: 0 0 auto;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6b7280;
+}
+
+.pos-register-pay-rail .pos-pay-cash__received-value {
+  max-width: 72%;
+}
+
+.pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.pos-register-pay-rail .pos-pay-cash__change-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+.pos-register-pay-rail .pos-pay-cash__summary-row,
+.pos-register-pay-rail .pos-pay-cash__change-row {
+  text-align: left;
+}
+
+.pos-register-pay-rail .pos-pay-cash__summary-row strong,
+.pos-register-pay-rail .pos-pay-cash__change-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-register-pay-cash {
+  background: var(--pos-surface, #151b26);
+  border-color: var(--pos-border, #2a3548);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__summary-row {
+  color: var(--pos-muted, #94a3b8);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__summary-row strong {
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-box {
+  border-color: var(--pos-border, #2a3548);
+  background: var(--pos-surface-elevated, #1c2433);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-label {
+  color: var(--pos-muted, #94a3b8);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
+  color: var(--pos-text, #f1f5f9);
+}

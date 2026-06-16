@@ -132,7 +132,6 @@
 }
 
 /* Стеки для узкой колонки */
-.cashier-app .pos-pay-receipt-types--stack,
 .cashier-app .pos-pay-method-cards--stack,
 .cashier-app .pos-pay-method-cards--register-stack,
 .cashier-app .pos-pay-card-types--stack,
@@ -140,162 +139,6 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  min-height: 52px;
-  padding: 12px 14px;
-  font-size: 0.875rem;
-  border-radius: 12px;
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type__icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  border-radius: 10px;
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type.is-active .pos-pay-receipt-type__icon-wrap {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type__label {
-  flex: 1;
-  min-width: 0;
-  text-align: left;
-  font-weight: 600;
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type__check {
-  flex-shrink: 0;
-  margin-left: auto;
-  color: var(--pos-green);
-}
-
-.cashier-app .pos-pay-receipt-types--stack .pos-pay-receipt-type.is-active {
-  border-color: var(--pos-green);
-  border-width: 2px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(0 104 71 / 0.08);
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  position: relative;
-  min-height: 0;
-  padding: 10px 6px;
-  font-size: 0.75rem;
-  border-radius: 10px;
-  text-align: center;
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type__icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  border-radius: 9px;
-  background: #eff6ff;
-  color: #2563eb;
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type.is-active .pos-pay-receipt-type__icon-wrap {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type__label {
-  flex: none;
-  min-width: 0;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type__check {
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  flex-shrink: 0;
-  margin: 0;
-  color: var(--pos-green);
-}
-
-.cashier-app .pos-pay-receipt-types--footer-grid .pos-pay-receipt-type.is-active {
-  border-color: var(--pos-green);
-  border-width: 2px;
-  background: #fff;
-  box-shadow: 0 0 0 1px rgb(0 104 71 / 0.08);
-}
-
-.pos-pay-deferred-summary {
-  margin-top: 14px;
-  padding: 14px 16px;
-  border: 1px solid var(--pos-border, #2a3548);
-  border-radius: 12px;
-  background: var(--pos-surface-elevated, #1c2433);
-}
-
-.pos-pay-deferred-summary__hint {
-  margin: 0 0 12px;
-  font-size: 0.8125rem;
-  line-height: 1.45;
-  color: var(--pos-muted, #94a3b8);
-}
-
-.pos-pay-deferred-summary__amount {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.pos-pay-deferred-summary__label {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pos-muted, #94a3b8);
-}
-
-.pos-pay-deferred-summary__value {
-  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--pos-money, #f5c842);
-  line-height: 1.1;
-}
-
-.cashier-app.cashier-app--terminal .pos-pay-deferred-summary {
-  border-color: rgb(61 255 168 / 0.25);
-  background: rgb(61 255 168 / 0.06);
-}
-
-.cashier-app.cashier-app--light .pos-pay-deferred-summary {
-  background: #f8faf9;
-  border-color: var(--pos-border, #e5e7eb);
 }
 
 .cashier-app .pos-pay-method-cards--footer-grid {
@@ -473,29 +316,6 @@
 
 .cashier-app .pos-pay-panel .pos-pay-cash__display {
   font-size: 1.5rem;
-}
-
-.cashier-app .pos-pay-panel .pos-keypad__key {
-  min-height: 48px;
-  font-size: 1.1rem;
-}
-
-.cashier-app .pos-pay-panel .pos-keypad__quick-btn {
-  min-height: 40px;
-  padding: 0 10px;
-  border: 1px solid var(--pos-border);
-  border-radius: 8px;
-  background: #fff;
-  font-weight: 600;
-  font-size: 0.8rem;
-  color: var(--pos-green);
-  cursor: pointer;
-}
-
-.cashier-app .pos-pay-panel .pos-keypad__quick {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 8px;
 }
 
 .cashier-app .pos-pay-panel .pos-pay-mixed-summary {

@@ -26,6 +26,7 @@ export function usePosCartHandlers({
   removeItem,
   selectedLineId,
   setSelectedLineId,
+  onGoToRegister,
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
@@ -108,8 +109,9 @@ export function usePosCartHandlers({
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
       if (line) showLineAddedToast(line, product.name);
       setSelectedLineId(lineId);
+      onGoToRegister?.();
     },
-    [addPieceItem, cartProductPayload, shiftIsOpen, showLineAddedToast, t, setSelectedLineId]
+    [addPieceItem, cartProductPayload, shiftIsOpen, showLineAddedToast, t, setSelectedLineId, onGoToRegister]
   );
 
   const handleWeightConfirm = useCallback(
@@ -134,6 +136,7 @@ export function usePosCartHandlers({
       setWeightModalProduct(null);
       setWeightEditLineId(null);
       if (lineId) setSelectedLineId(lineId);
+      onGoToRegister?.();
     },
     [
       addWeightLine,
@@ -143,6 +146,7 @@ export function usePosCartHandlers({
       weightEditLineId,
       weightModalProduct,
       setSelectedLineId,
+      onGoToRegister,
     ]
   );
 

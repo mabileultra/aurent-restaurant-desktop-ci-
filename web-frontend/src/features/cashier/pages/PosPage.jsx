@@ -2,7 +2,6 @@ import PosOrderDiscountModal from '../components/PosOrderDiscountModal';
 import { PosReturnModal } from '../../../components/pos';
 import WeightEntryModal from '../components/WeightEntryModal';
 import PosRegisterWorkspace from '../components/pos/PosRegisterWorkspace';
-import PosShiftClosedBanner from '../components/pos/PosShiftClosedBanner';
 import { usePosPage } from '../hooks/usePosPage';
 
 export default function PosPage() {
@@ -18,15 +17,6 @@ export default function PosPage() {
         <div className="alert alert-secondary mb-0">{p.t('common.loading')}</div>
       ) : (
         <>
-          {p.showShiftClosedBanner ? (
-            <PosShiftClosedBanner
-              t={p.t}
-              storeId={p.storeId}
-              openShiftMutation={p.openShiftMutation}
-              onOpenShift={p.handleOpenShift}
-              onOpenShiftModal={p.openShiftModal}
-            />
-          ) : null}
           <PosRegisterWorkspace
             posPane={p.posPane}
             searchInputRef={p.searchInputRef}
@@ -41,17 +31,16 @@ export default function PosPage() {
               handleQtyDelta: p.cartHandlers.handleQtyDelta,
               updateQuantity: p.updateQuantity,
               updateUnitPrice: p.updateUnitPrice,
-              updateDiscountPercent: p.updateDiscountPercent,
               removeItem: p.removeItem,
-              clearCart: p.clearCart,
-              discountTotal: p.discountTotal,
             }}
             checkout={{ checkoutMutation: p.checkoutMutation, handleConfirmPayment: p.handleConfirmPayment }}
             shiftIsOpen={p.shiftIsOpen}
             onReturn={() => p.setReturnOpen(true)}
             onDiscount={p.handleDiscount}
-            onCheckout={p.handleCheckout}
-            t={p.t}
+            onOpenPaymentFlow={p.handleOpenPaymentFlow}
+            onPayFlowClosed={p.handlePayFlowClosed}
+            payFlowOptions={p.payFlowOptions}
+            payFlowSession={p.payFlowSession}
           />
         </>
       )}

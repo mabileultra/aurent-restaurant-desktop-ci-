@@ -1,48 +1,49 @@
-/* Light theme — catalog */
+/* Light theme — catalog (серо-синяя палитра) */
 .cashier-app.cashier-app--light .pos-search-bar__field {
-  background: #fff;
+  background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .pos-category-tile:not(.pos-category-tile--all) {
-  background: #fff;
+  background: var(--pos-surface-elevated);
   border: 1px solid var(--pos-border);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .pos-product-card {
-  background: #fff;
+  background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
 }
 
 .cashier-app.cashier-app--light .pos-product-card:hover {
-  border-color: rgb(0 104 71 / 0.35);
-  box-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
+  border-color: var(--pos-border);
+  box-shadow: 0 2px 8px rgb(30 58 95 / 0.08);
 }
 
 .cashier-app.cashier-app--light .pos-product-card.is-active {
-  border-color: var(--pos-green);
-  box-shadow: inset 3px 0 0 var(--pos-green);
+  border-color: var(--pos-ink);
+  box-shadow: inset 3px 0 0 var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .pos-product-card__name {
-  color: var(--pos-text);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .pos-product-card__code {
-  color: var(--pos-green);
+  color: var(--pos-muted);
 }
 
 .cashier-app.cashier-app--light .pos-product-card__price {
-  color: var(--pos-money);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .pos-catalog-toolbar__back {
-  background: #fff;
+  background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
   color: var(--pos-muted);
 }
 
 .cashier-app.cashier-app--light .pos-catalog-toolbar__title {
-  color: var(--pos-text);
+  color: var(--pos-ink);
 }
-

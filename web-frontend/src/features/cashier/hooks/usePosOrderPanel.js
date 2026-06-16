@@ -21,7 +21,6 @@ export function usePosOrderPanel({
     items.length === 0 ? 0 : Math.round(items.reduce((s, i) => s + (i.taxRate ?? 0), 0) / items.length);
 
   const rowRefs = useRef({});
-  const selected = items.find((i) => i.lineId === selectedLineId);
   const [editingPriceLineId, setEditingPriceLineId] = useState(null);
   const [priceDraft, setPriceDraft] = useState('');
   const [editingQtyLineId, setEditingQtyLineId] = useState(null);
@@ -55,7 +54,6 @@ export function usePosOrderPanel({
     subtotalBeforeTax,
     taxRateLabel,
     rowRefs,
-    selected,
     editingPriceLineId,
     setEditingPriceLineId,
     priceDraft,

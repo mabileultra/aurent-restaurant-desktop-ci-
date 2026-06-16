@@ -1,5 +1,8 @@
 /* Cashier shell — load order matters */
 @import './tokens.css';
+@import './pos-keypad.css';
+@import './components/auto-fit-text.css';
+@import './components/print-receipt-toggle.css';
 @import './shell/index.css';
 @import './register.css';
 @import './cart/index.css';
