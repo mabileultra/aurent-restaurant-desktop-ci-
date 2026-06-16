@@ -1,13 +1,14 @@
 /* Qty control in register table */
 .cashier-app .pos-order-panel--register .pos-qty-control {
   width: 100%;
-  max-width: 100%;
+  max-width: 8.5rem;
+  margin-inline: auto;
   min-width: 0;
-  flex-shrink: 1;
+  flex-shrink: 0;
   justify-content: center;
   align-items: stretch;
-  min-height: 48px;
-  border-radius: 12px;
+  min-height: 44px;
+  border-radius: 10px;
 }
 
 .cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn {
@@ -21,11 +22,12 @@
 .cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__val,
 .cashier-app .pos-order-panel--register .pos-qty-control__input {
   flex: 1 1 auto;
-  min-width: 2.75rem;
+  width: auto;
+  min-width: 2.5rem;
   max-width: none;
   min-height: 40px;
-  padding: 4px 6px;
-  font-size: 0.875rem;
+  padding: 4px 2px;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.15;
 }
@@ -53,7 +55,7 @@
 }
 
 .cashier-app .pos-order-panel--register .pos-qty-control__num {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
@@ -104,11 +106,6 @@
   background: var(--pos-green-soft);
 }
 
-.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-}
 
 .cashier-app.cashier-app--terminal .pos-order-panel--register .pos-qty-control {
   background: #243044;
@@ -207,9 +204,5 @@
   font-variant-numeric: tabular-nums;
   color: var(--pos-money, #f5c842);
   line-height: 1;
-}
-
-.cashier-app .pos-order-panel--register .pos-order-panel__bottom {
-  display: none;
 }
 

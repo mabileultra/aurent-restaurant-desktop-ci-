@@ -1,0 +1,99 @@
+/* Смешанная оплата — прокрутка в body, футер закреплён снизу */
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step {
+  flex: 0 0 auto;
+  min-height: auto;
+  overflow: visible;
+  justify-content: flex-start;
+  gap: 4px;
+  padding-bottom: 8px;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
+  flex: 0 0 auto;
+  min-height: 0;
+  padding: 4px 12px 10px;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+
+/* Плотность по высоте колонки оплаты */
+@container pay-shell (max-height: 760px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 46px;
+    --pos-keypad-quick-h: 34px;
+    --pos-keypad-gap: 5px;
+    --pos-keypad-digit-size: 1.2rem;
+    --pos-keypad-action-size: 0.6875rem;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack {
+    gap: 5px;
+    padding-top: 6px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box {
+    padding: 7px 9px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress {
+    padding: 2px 12px 4px;
+  }
+}
+
+@container pay-shell (max-height: 640px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 40px;
+    --pos-keypad-quick-h: 30px;
+    --pos-keypad-gap: 4px;
+    --pos-keypad-digit-size: 1.1rem;
+    --pos-keypad-action-size: 0.625rem;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-register-rail__head {
+    padding: 8px 12px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack {
+    gap: 4px;
+    padding-top: 4px;
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box__value {
+    font-size: clamp(0.95rem, 4cqi, 1.2rem);
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {
+    padding: 6px 10px max(6px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-register-pay-footer__sale,
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-register-pay-footer .pos-pay-print-toggle--footer {
+    min-height: 44px;
+    max-height: 44px;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    font-size: 0.8125rem;
+  }
+}
+
+@container pay-shell (max-height: 520px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash {
+    --pos-keypad-key-h: 36px;
+    --pos-keypad-quick-h: 28px;
+    --pos-keypad-digit-size: 1rem;
+  }
+}

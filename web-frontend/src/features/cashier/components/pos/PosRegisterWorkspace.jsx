@@ -1,7 +1,9 @@
 import PosCatalogPanel from '../PosCatalogPanel';
 import PosOrderPanel from '../PosOrderPanel';
 import PosPaymentFlow from '../PosPaymentFlow';
-import PosRegisterFooter from '../PosRegisterFooter';
+import PosRegisterPayRail from '../register-pay-rail/PosRegisterPayRail';
+import { usePayFlowTransition } from '../../hooks/usePayFlowTransition';
+import CashierBottomNav from '../../../../components/layout/cashier/bottom-nav/CashierBottomNav';
 
 export default function PosRegisterWorkspace({
   posPane,
@@ -14,7 +16,10 @@ export default function PosRegisterWorkspace({
   shiftIsOpen,
   onReturn,
   onDiscount,
-  onCheckout,
+  onOpenPaymentFlow,
+  payFlowOptions,
+  payFlowSession,
+  onPayFlowClosed,
 }) {
   const {
     storeId,
@@ -37,6 +42,7 @@ export default function PosRegisterWorkspace({
     fetchMoreProducts,
     addProductToCart,
     viewMode,
+    handleViewModeChange,
   } = catalog;
 
   const {
@@ -47,13 +53,13 @@ export default function PosRegisterWorkspace({
     handleQtyDelta,
     updateQuantity,
     updateUnitPrice,
-    updateDiscountPercent,
     removeItem,
-    clearCart,
-    discountTotal,
   } = cart;
 
   const { checkoutMutation, handleConfirmPayment } = checkout;
+  usePayFlowTransition(payOpen, onPayFlowClosed);
+
+  const payShellClassName = 'cashier-register__pay-shell';
 
   return (
     <div
@@ -84,13 +90,13 @@ export default function PosRegisterWorkspace({
               onLoadMoreProducts={() => fetchMoreProducts()}
               onAddProduct={addProductToCart}
               viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
             />
           </div>
 
           <div className="cashier-register__order-col">
             <PosOrderPanel
-              variant="register"
-              showTotalsFoot={payOpen}
+              showTotalsFoot={items.length > 0}
               items={items}
               total={total}
               selectedLineId={selectedLineId}
@@ -98,7 +104,6 @@ export default function PosRegisterWorkspace({
               onQtyDelta={handleQtyDelta}
               onUpdateQuantity={updateQuantity}
               onUpdatePrice={updateUnitPrice}
-              onUpdateDiscountPercent={updateDiscountPercent}
               onRemove={removeItem}
             />
           </div>
@@ -106,30 +111,40 @@ export default function PosRegisterWorkspace({
           <aside
             className={`cashier-register__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}`}
           >
-            {payOpen ? (
-              <PosPaymentFlow
-                open
-                onClose={onClosePayment}
-                total={total}
-                isPending={checkoutMutation.isPending}
-                onConfirm={handleConfirmPayment}
-              />
-            ) : (
-              <PosRegisterFooter
-                items={items}
-                total={total}
-                discountTotal={discountTotal}
-                onReturn={onReturn}
-                onClear={clearCart}
-                canClear={items.length > 0}
-                onDiscount={onDiscount}
-                onCheckout={onCheckout}
-                checkoutDisabled={
-                  items.length === 0 || checkoutMutation.isPending || !shiftIsOpen
-                }
-              />
-            )}
+            <div className={payShellClassName}>
+              <div
+                className="cashier-register__pay-pane cashier-register__pay-pane--rail"
+                inert={payOpen || undefined}
+              >
+                <PosRegisterPayRail
+                  total={total}
+                  onReturn={onReturn}
+                  onDiscount={onDiscount}
+                  onConfirm={handleConfirmPayment}
+                  onOpenPaymentFlow={onOpenPaymentFlow}
+                  checkoutDisabled={
+                    items.length === 0 || checkoutMutation.isPending || !shiftIsOpen
+                  }
+                  isPending={checkoutMutation.isPending}
+                />
+              </div>
+
+              {payOpen ? (
+                <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
+                  <PosPaymentFlow
+                    key={`pay-flow-${payFlowSession}`}
+                    onClose={onClosePayment}
+                    total={total}
+                    isPending={checkoutMutation.isPending}
+                    onConfirm={handleConfirmPayment}
+                    openOptions={payFlowOptions}
+                  />
+                </div>
+              ) : null}
+            </div>
           </aside>
+
+          <CashierBottomNav className="cashier-register__bottom-nav" />
         </div>
       </div>
     </div>

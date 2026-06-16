@@ -189,13 +189,14 @@
 }
 
 .pos-return-modal--terminal .pos-return-line-select__max {
-  background: rgb(245 200 66 / 0.1);
-  border-color: rgb(245 200 66 / 0.45);
-  color: var(--pos-money);
+  background: rgb(0 104 71 / 0.1);
+  border-color: rgb(0 104 71 / 0.4);
+  color: var(--pos-green);
 }
 
 .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled) {
-  background: rgb(245 200 66 / 0.18);
+  background: rgb(0 104 71 / 0.18);
+  border-color: var(--pos-green);
 }
 
 .pos-return-modal--terminal .pos-return-modal__footer {

@@ -3,8 +3,7 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { usePosCatalogPanel } from '../hooks/usePosCatalogPanel';
 import PosCatalogCategoryBrowse from './pos-catalog/PosCatalogCategoryBrowse';
 import PosCatalogProductBrowse from './pos-catalog/PosCatalogProductBrowse';
-
-export { ALL_CATEGORY_ID } from '../hooks/usePosCatalogPanel';
+import PosCatalogViewToggle from './pos-catalog/PosCatalogViewToggle';
 
 const PosCatalogPanel = forwardRef(function PosCatalogPanel(
   {
@@ -28,6 +27,7 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
     onLoadMoreProducts,
     onAddProduct,
     viewMode = 'grid',
+    onViewModeChange,
   },
   searchInputRef
 ) {
@@ -81,6 +81,13 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
             {panel.t('pos.backToCategories')}
           </button>
           <h2 className="pos-catalog-toolbar__title">{panel.productsTitle}</h2>
+          {catalogBrowse === 'products' && onViewModeChange ? (
+            <PosCatalogViewToggle
+              viewMode={viewMode}
+              onChange={onViewModeChange}
+              t={panel.t}
+            />
+          ) : null}
         </div>
       ) : null}
 

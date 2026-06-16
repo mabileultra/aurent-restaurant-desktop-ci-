@@ -1,0 +1,103 @@
+/* Register layout — колонки и детали под любой экран (касса / планшет) */
+
+/* ── Контейнер сцены: ширина колонки оплаты от доступного места ── */
+.cashier-register__stage {
+  container-type: inline-size;
+  container-name: register-stage;
+  --cashier-pay-w: clamp(280px, 32cqi, 420px);
+}
+
+@container register-stage (min-width: 1100px) {
+  .cashier-register__stage {
+    --cashier-pay-w: clamp(300px, 30cqi, 440px);
+  }
+}
+
+@container register-stage (min-width: 1400px) {
+  .cashier-register__stage {
+    --cashier-pay-w: clamp(320px, 28cqi, 460px);
+  }
+}
+
+@container register-stage (max-width: 1024px) {
+  .cashier-register__stage {
+    --cashier-pay-w: clamp(268px, 34cqi, 360px);
+  }
+}
+
+/* ── Чек: колонки таблицы — register-cart-cols.css ── */
+.pos-order-panel--register {
+  container-type: size;
+  container-name: order-panel;
+}
+
+/* Ячейки и типографика — от ширины панели чека */
+.cashier-app .pos-order-panel--register .pos-order-panel__head {
+  padding: clamp(10px, 2.5cqi, 14px) clamp(12px, 3cqi, 16px);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col {
+  padding: clamp(8px, 2cqi, 10px) clamp(6px, 1.8cqi, 10px);
+  font-size: clamp(0.625rem, 1.8cqi, 0.6875rem);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  padding: clamp(9px, 2.2cqi, 11px) clamp(6px, 1.8cqi, 10px);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__name {
+  font-size: clamp(0.75rem, 2.4cqi, 0.8125rem);
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app .pos-order-panel--register .pos-cart-table__price-btn span,
+.cashier-app .pos-order-panel--register .pos-cart-table__sum {
+  font-size: clamp(0.8125rem, 2.5cqi, 1.0625rem);
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control {
+  min-height: 44px;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+.cashier-app .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__val,
+.cashier-app .pos-order-panel--register .pos-qty-control__input {
+  min-height: 40px;
+  font-size: 0.9375rem;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__remove-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__col--remove {
+  padding: 6px 4px;
+}
+
+/* ── Низкая высота: компактнее нижнее меню ── */
+@media (max-height: 820px) {
+  .cashier-app {
+    --cashier-bottom-nav-h: clamp(88px, 10vh, 96px);
+    --cashier-gap: clamp(6px, 0.8vw, 10px);
+  }
+
+  .cashier-bottom-nav__btn {
+    font-size: clamp(0.625rem, 2.2cqi, 0.75rem);
+    gap: 3px;
+    padding: 5px 4px;
+  }
+}
+
+@media (max-height: 720px) {
+  .cashier-app {
+    --cashier-bottom-nav-h: clamp(84px, 9vh, 92px);
+  }
+}

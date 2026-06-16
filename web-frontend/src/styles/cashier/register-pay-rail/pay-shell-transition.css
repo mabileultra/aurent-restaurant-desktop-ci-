@@ -1,0 +1,59 @@
+/* Pay rail ↔ payment flow — непрозрачный overlay, без просвета фона */
+.cashier-register__pay-shell {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
+  isolation: isolate;
+  background: #fafbfc;
+}
+
+.cashier-register__pay-pane {
+  min-height: 0;
+  height: 100%;
+}
+
+.cashier-register__pay-pane--rail {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+}
+
+.cashier-register__pay-shell:has(.cashier-register__pay-pane--flow) .cashier-register__pay-pane--rail {
+  visibility: hidden;
+}
+
+.cashier-register__pay-pane--rail > .pos-register-pay-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.cashier-register__pay-pane--flow {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  background: #fafbfc;
+}
+
+.cashier-register__pay-pane--flow .pos-pay-panel--register-rail {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  background: #fafbfc;
+}
+
+.cashier-app.cashier-app--terminal .cashier-register__pay-shell,
+.cashier-app.cashier-app--terminal .cashier-register__pay-pane--flow,
+.cashier-app.cashier-app--terminal .cashier-register__pay-pane--flow .pos-pay-panel--register-rail {
+  background: var(--pos-surface-elevated, #1c2433);
+}
+
+.cashier-app.cashier-app--light .cashier-register__pay-shell,
+.cashier-app.cashier-app--light .cashier-register__pay-pane--flow,
+.cashier-app.cashier-app--light .cashier-register__pay-pane--flow .pos-pay-panel--register-rail {
+  background: var(--pos-surface);
+}

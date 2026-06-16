@@ -3,10 +3,15 @@ import { Delete, Eraser } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fmtInteger } from '../../../utils/formatMoney';
 
+/** Макс. цифр на клавиатуре (999 999 999 сум — достаточно для наличных). */
+export const MAX_KEYPAD_DIGITS = 9;
+
 export const formatKeypadAmount = (raw) => {
   if (!raw) return '0';
-  const n = Number(raw);
-  if (!Number.isFinite(n)) return raw;
+  const digits = String(raw).replace(/\D/g, '');
+  if (!digits) return '0';
+  const n = Number(digits);
+  if (!Number.isFinite(n)) return '0';
   return fmtInteger(n);
 };
 
@@ -15,7 +20,7 @@ export function appendKeypadDigit(current, digit) {
   if (!/^\d$/.test(d)) return current;
   const base = current === '0' ? '' : current;
   const next = `${base}${d}`.replace(/^0+/, '') || '0';
-  return next.length > 12 ? current : next;
+  return next.length > MAX_KEYPAD_DIGITS ? current : next;
 }
 
 const toAmountString = (amount) => {

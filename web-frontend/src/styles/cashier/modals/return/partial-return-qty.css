@@ -180,20 +180,20 @@
 .pos-return-line-select__max {
   min-height: 52px;
   padding: 0 18px;
-  border: 2px solid #f59e0b;
+  border: 2px solid rgb(0 104 71 / 0.35);
   border-radius: 12px;
-  background: linear-gradient(180deg, #fffbeb 0%, #fff 100%);
+  background: linear-gradient(180deg, #f0faf5 0%, #fff 100%);
   font-size: 0.9375rem;
   font-weight: 700;
-  color: #b45309;
+  color: var(--pos-green, #006847);
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
   touch-action: manipulation;
 }
 
 .pos-return-line-select__max:hover:not(:disabled) {
-  background: #fef3c7;
-  border-color: #d97706;
+  background: #e8f5ef;
+  border-color: var(--pos-green, #006847);
 }
 
 .pos-return-line-select__max:active:not(:disabled) {

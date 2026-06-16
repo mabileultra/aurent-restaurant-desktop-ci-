@@ -1,0 +1,54 @@
+/* Pay rail — discount / return tools */
+.pos-register-pay-rail__tool {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 54px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1.5px solid transparent;
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+}
+
+.pos-register-pay-rail__tool svg {
+  flex-shrink: 0;
+}
+
+.pos-register-pay-rail__tool--discount {
+  border-color: #6ee7b7;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.pos-register-pay-rail__tool--discount:hover:not(:disabled) {
+  background: #d1fae5;
+  border-color: #34d399;
+}
+
+.pos-register-pay-rail__tool--return {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.pos-register-pay-rail__tool--return:hover:not(:disabled) {
+  background: #fee2e2;
+  border-color: #f87171;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--discount {
+  border-color: rgb(61 255 168 / 0.35);
+  background: rgb(61 255 168 / 0.1);
+  color: var(--pos-green, #3dffa8);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--return {
+  border-color: rgb(248 113 113 / 0.45);
+  background: rgb(248 113 113 / 0.1);
+  color: var(--pos-danger, #f87171);
+}

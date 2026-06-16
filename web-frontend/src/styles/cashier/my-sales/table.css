@@ -176,7 +176,7 @@
 .cashier-sales-table__return {
   border: none;
   background: transparent;
-  color: #d97706;
+  color: var(--pos-green, #006847);
   font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 8px;
@@ -185,7 +185,7 @@
 }
 
 .cashier-sales-table__return:hover:not(:disabled) {
-  background: #fff7ed;
+  background: var(--pos-green-soft, #e8f5ef);
 }
 
 .cashier-sales-pill {

@@ -7,16 +7,18 @@ import { setPosReceiptPrintEnabled, isPosReceiptPrintEnabled } from '../../../ut
 import {
   STEPS_WITH_PRINT_TOGGLE,
   amountStr,
-  isDeferredReceiptType,
+  buildPaymentFlowState,
   parseTenderedInput,
 } from '../components/payment/posPaymentConstants';
 import { usePosCreditCustomerPicker } from './usePosCreditCustomerPicker';
 
-export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }) {
+export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOptions = null }) {
   const { t } = useTranslation();
-  const [step, setStep] = useState('receipt');
-  const [receiptType, setReceiptType] = useState('SALE');
-  const [payMethod, setPayMethod] = useState(null);
+  const initialState = buildPaymentFlowState(openOptions);
+
+  const [step, setStep] = useState(initialState.step);
+  const [receiptType, setReceiptType] = useState(initialState.receiptType);
+  const [payMethod, setPayMethod] = useState(initialState.payMethod);
   const [tendered, setTendered] = useState('');
   const [cashPortion, setCashPortion] = useState('');
   const [printReceiptEnabled, setPrintReceiptEnabled] = useState(isPosReceiptPrintEnabled);
@@ -24,12 +26,13 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
   const [advanceInput, setAdvanceInput] = useState('');
   const [advanceBalance, setAdvanceBalance] = useState(0);
 
-  const creditCustomer = usePosCreditCustomerPicker({ enabled: open && step === 'creditCustomer' });
+  const creditCustomer = usePosCreditCustomerPicker({ enabled: step === 'creditCustomer' });
 
-  const reset = () => {
-    setStep('receipt');
-    setReceiptType('SALE');
-    setPayMethod(null);
+  const reset = (overrides = {}) => {
+    if (!overrides.step) return;
+    setStep(overrides.step);
+    setReceiptType(overrides.receiptType ?? 'SALE');
+    setPayMethod(overrides.payMethod ?? null);
     setTendered('');
     setCashPortion('');
     setAdvanceAmountUsed(0);
@@ -40,7 +43,6 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
   };
 
   const handleClose = () => {
-    reset();
     onClose();
   };
 
@@ -50,11 +52,12 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     : checkTotal;
 
   useEffect(() => {
-    if (!open) reset();
-  }, [open]);
+    if (!openOptions?.step) return;
+    reset(openOptions);
+  }, [openOptions]);
 
   const goToCash = () => {
-    setPayMethod((prev) => prev === 'advance' ? 'advance' : 'cash');
+    setPayMethod((prev) => (prev === 'advance' ? 'advance' : 'cash'));
     setTendered(effectiveToPay > 0 ? amountStr(effectiveToPay) : '');
     setStep('cash');
   };
@@ -70,12 +73,6 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     else if (action === 'card') {
       setPayMethod(advanceAmountUsed > 0 ? 'advance' : 'card');
       setStep('cardType');
-    } else if (action === 'advance') {
-      setPayMethod('advance');
-      setAdvanceAmountUsed(0);
-      setAdvanceInput('');
-      setAdvanceBalance(0);
-      setStep('creditCustomer');
     } else if (action === 'cashless') submitCashless();
     else goToMixed();
   };
@@ -98,7 +95,7 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
       const clamped = clampPayAmount(num, effectiveToPay);
       setCashPortion(amountStr(clamped));
     },
-    [effectiveToPay]
+    [effectiveToPay],
   );
 
   const mixedQuickActions = [
@@ -113,8 +110,8 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     ? round2(effectiveToPay - tenderedNum)
     : 0;
 
-  const withDeferredCustomer = (payment) => {
-    if (receiptType !== 'ADVANCE' && receiptType !== 'CREDIT') return payment;
+  const withCreditCustomer = (payment) => {
+    if (receiptType !== 'CREDIT') return payment;
     return {
       ...payment,
       customerId: creditCustomer.selectedId || payment.customerId,
@@ -123,7 +120,7 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
   };
 
   const withAdvancePayment = (payment) => {
-    const base = withDeferredCustomer(payment);
+    const base = withCreditCustomer(payment);
     if (advanceAmountUsed <= 0) return base;
     return {
       ...base,
@@ -201,12 +198,11 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     }));
   };
 
-  const submitDeferred = (customerId = null, customerName = null) => {
-    if (isPending) return;
-    if (receiptType === 'CREDIT' && !customerId) return;
+  const submitCredit = (customerId, customerName) => {
+    if (isPending || !customerId) return;
     onConfirm({
       paymentMethod: 'CASH',
-      receiptType,
+      receiptType: 'CREDIT',
       cardType: null,
       cashAmount: 0,
       cardAmount: 0,
@@ -233,15 +229,6 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     });
   };
 
-  const proceedFromDeferred = () => {
-    if (isPending) return;
-    if (receiptType === 'CREDIT' || receiptType === 'ADVANCE') {
-      setStep('creditCustomer');
-      return;
-    }
-    submitDeferred();
-  };
-
   const submitCreditWithCustomer = async () => {
     if (!creditCustomer.selectedId) {
       toast.error(t('pos.creditCustomerRequired'));
@@ -264,11 +251,7 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
       }
       return;
     }
-    if (receiptType === 'ADVANCE') {
-      setStep('method');
-      return;
-    }
-    submitDeferred(creditCustomer.selectedId, creditCustomer.selectedName);
+    submitCredit(creditCustomer.selectedId, creditCustomer.selectedName);
   };
 
   const submitAdvanceAmount = () => {
@@ -293,24 +276,17 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     setPosReceiptPrintEnabled(next);
   };
 
-  const selectReceiptType = (id) => {
-    setReceiptType(id);
-    if (id === 'SALE') setStep('method');
-  };
-
-  const deferredReceipt = isDeferredReceiptType(receiptType);
-
-  let stepTitle = t('pos.receiptTypeTitle');
-  if (step === 'receipt' && deferredReceipt) stepTitle = t(`pos.receiptType.${receiptType}`);
-  else if (step === 'method') stepTitle = t('pos.choosePaymentMethod');
+  let stepTitle = t('pos.choosePaymentMethod');
+  if (step === 'method') stepTitle = t('pos.choosePaymentMethod');
   else if (step === 'cash') stepTitle = t('pos.payCash');
   else if (step === 'mixedCash') stepTitle = t('pos.mixedPayTitle');
   else if (step === 'mixedCard') stepTitle = t('pos.mixedStepCardTitle');
   else if (step === 'cardType') stepTitle = t('pos.cardTypeTitle');
   else if (step === 'advanceAmount') stepTitle = t('pos.advanceAmountTitle');
   else if (step === 'creditCustomer') {
-    if (payMethod === 'advance') stepTitle = t('pos.advanceCustomerTitle');
-    else stepTitle = receiptType === 'ADVANCE' ? t('pos.advanceCustomerTitle') : t('pos.creditCustomerTitle');
+    stepTitle = payMethod === 'advance'
+      ? t('pos.advanceCustomerTitle')
+      : t('pos.creditCustomerTitle');
   }
 
   const stepBack =
@@ -321,25 +297,24 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
             setStep('advanceAmount');
             return;
           }
-          if (receiptType === 'ADVANCE') setStep('creditCustomer');
-          else setStep('receipt');
+          handleClose();
         }
       : step === 'advanceAmount'
         ? () => setStep('creditCustomer')
-      : step === 'creditCustomer'
-        ? () => (payMethod === 'advance' ? setStep('method') : setStep('receipt'))
-      : step === 'cash'
-        ? () => {
-            setTendered('');
-            setStep('method');
-          }
-        : step === 'mixedCash'
-          ? () => setStep('method')
-          : step === 'mixedCard'
-            ? () => setStep('mixedCash')
-            : step === 'cardType'
-              ? () => setStep(payMethod === 'mixed' || payMethod === 'advance' ? 'mixedCard' : 'method')
-              : null;
+        : step === 'creditCustomer'
+          ? () => handleClose()
+          : step === 'cash'
+            ? () => {
+                setTendered('');
+                setStep('method');
+              }
+            : step === 'mixedCash'
+              ? () => (advanceAmountUsed > 0 ? setStep('method') : handleClose())
+              : step === 'mixedCard'
+                ? () => setStep('mixedCash')
+                : step === 'cardType'
+                  ? () => setStep(payMethod === 'mixed' || payMethod === 'advance' ? 'mixedCard' : 'method')
+                  : null;
 
   const headerPayAmount =
     (step === 'cardType' && (payMethod === 'mixed' || payMethod === 'advance')) || step === 'mixedCard'
@@ -348,7 +323,6 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
         ? checkTotal
         : effectiveToPay;
   const showHeaderAmount =
-    (step === 'receipt' && deferredReceipt) ||
     step === 'creditCustomer' ||
     step === 'advanceAmount' ||
     step === 'method' ||
@@ -357,12 +331,9 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     step === 'cardType' ||
     step === 'mixedCard';
 
-  const registerBack = step === 'receipt' ? handleClose : stepBack;
   const showRegisterBackToCheck = step === 'method' || step === 'cash';
-  const showPrintToggle =
-    STEPS_WITH_PRINT_TOGGLE.has(step) && (step !== 'receipt' || deferredReceipt);
+  const showPrintToggle = STEPS_WITH_PRINT_TOGGLE.has(step);
   const showFooterPrimary =
-    (step === 'receipt' && deferredReceipt) ||
     step === 'creditCustomer' ||
     step === 'advanceAmount' ||
     step === 'mixedCash' ||
@@ -388,7 +359,6 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     handleMethod,
     handleCashPortionChange,
     handlePrintReceiptChange,
-    selectReceiptType,
     submitCard,
     cashPartNum,
     cardRemainder,
@@ -401,12 +371,9 @@ export function usePosPaymentFlow({ open, onClose, total, onConfirm, isPending }
     cashShortfall,
     isPending,
     stepTitle,
-    registerBack,
+    registerBack: stepBack,
     showHeaderAmount,
     headerPayAmount,
-    deferredReceipt,
-    submitDeferred,
-    proceedFromDeferred,
     submitCreditWithCustomer,
     submitAdvanceAmount,
     creditCustomer,

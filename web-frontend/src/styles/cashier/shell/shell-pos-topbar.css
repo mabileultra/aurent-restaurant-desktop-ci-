@@ -1,0 +1,74 @@
+/* POS topbar — смена, кассир; без дублей из сайдбара */
+
+.cashier-pos-topbar__cashier {
+  align-items: center;
+  gap: 8px;
+  max-width: min(220px, 28vw);
+  min-height: 28px;
+  padding: 4px 12px;
+  border: 1px solid var(--pos-border);
+  border-radius: 999px;
+  background: var(--pos-surface-elevated, #fff);
+  color: var(--pos-text);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.cashier-pos-topbar__cashier svg {
+  flex-shrink: 0;
+  color: var(--pos-muted);
+}
+
+.cashier-pos-topbar__cashier-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cashier-pos-topbar__open-shift {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 0 14px;
+  border: 1px solid rgb(0 104 71 / 0.35);
+  border-radius: 10px;
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+
+.cashier-pos-topbar__open-shift:hover {
+  background: rgb(0 104 71 / 0.12);
+  border-color: var(--pos-green);
+  box-shadow: 0 2px 10px rgb(0 104 71 / 0.12);
+}
+
+.cashier-pos-topbar__logout {
+  align-items: center;
+  justify-content: center;
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 0 14px;
+  border: 1px solid var(--pos-border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--pos-muted);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.cashier-pos-topbar__logout:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}

@@ -1,4 +1,5 @@
 @import './responsive-tokens.css';
+@import './pos-display-profiles.css';
 @import './responsive-catalog.css';
 @import './responsive-narrow.css';
 @import './responsive-low-height.css';
@@ -7,3 +8,4 @@
 @import './responsive-top-nav.css';
 @import './responsive-mini.css';
 @import './responsive-touch.css';
+@import './responsive-pay-mobile.css';

@@ -90,9 +90,9 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-product-card__price {
-  position: static;
-  display: block;
-  margin-bottom: 6px;
+  order: -1;
+  align-self: flex-end;
+  margin: 0 0 4px;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--pos-muted);
@@ -101,7 +101,7 @@
 
 .cashier-app.cashier-app--terminal .pos-product-card__code {
   display: block;
-  margin: 0 0 8px;
+  margin: 0 0 6px;
   font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -111,10 +111,9 @@
 
 .cashier-app.cashier-app--terminal .pos-product-card__name {
   display: block;
-  -webkit-line-clamp: 3;
   font-size: 0.8125rem;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.3;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--pos-text);

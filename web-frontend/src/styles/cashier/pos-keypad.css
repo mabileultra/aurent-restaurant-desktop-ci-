@@ -1,0 +1,156 @@
+/* POS numeric keypad — единый шаблон для всей кассы */
+.cashier-app .pos-keypad {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pos-keypad-gap);
+}
+
+.cashier-app .pos-keypad__quick {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pos-keypad-gap);
+}
+
+.cashier-app .pos-keypad__quick-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--pos-keypad-quick-h);
+  padding: 8px 10px;
+  border: 1.5px solid var(--pos-keypad-border);
+  border-radius: var(--pos-keypad-radius);
+  background: var(--pos-keypad-bg);
+  color: var(--pos-keypad-text);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cashier-app .pos-keypad__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: repeat(4, var(--pos-keypad-key-h));
+  gap: var(--pos-keypad-gap);
+}
+
+.cashier-app .pos-keypad__key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--pos-keypad-key-h);
+  min-height: var(--pos-keypad-key-h);
+  max-height: var(--pos-keypad-key-h);
+  padding: 0 6px;
+  border: 1.5px solid var(--pos-keypad-border);
+  border-radius: var(--pos-keypad-radius);
+  background: var(--pos-keypad-bg);
+  color: var(--pos-keypad-text);
+  font-size: var(--pos-keypad-digit-size);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  transition: background 0.12s, border-color 0.12s, transform 0.08s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cashier-app .pos-keypad__key--action {
+  font-size: var(--pos-keypad-action-size);
+  font-weight: 700;
+  line-height: 1.15;
+  color: #374151;
+  background: #eef2f7;
+  border-color: #9ca3af;
+  white-space: normal;
+  text-wrap: balance;
+}
+
+.cashier-app .pos-keypad__clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--pos-keypad-clear-h);
+  padding: 10px 12px;
+  border: 1.5px solid #9ca3af;
+  border-radius: var(--pos-keypad-radius);
+  background: #eef2f7;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.cashier-app .pos-keypad__clear:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #64748b;
+  color: #111827;
+}
+
+.cashier-app .pos-keypad__key--icon {
+  color: var(--pos-keypad-muted);
+}
+
+.cashier-app .pos-keypad__key--icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.cashier-app .pos-keypad__key:hover:not(:disabled),
+.cashier-app .pos-keypad__quick-btn:hover:not(:disabled) {
+  border-color: #9ca3af;
+  background: var(--pos-keypad-bg-hover);
+}
+
+.cashier-app .pos-keypad__key:active:not(:disabled),
+.cashier-app .pos-keypad__quick-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.cashier-app .pos-keypad__key:disabled,
+.cashier-app .pos-keypad__quick-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cashier-app .pos-keypad__clear:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cashier-app.cashier-app--terminal .pos-keypad__key--action,
+.cashier-app.cashier-app--terminal .pos-keypad__clear {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: var(--pos-border, #2a3548);
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pos-keypad__key:hover:not(:disabled),
+.cashier-app.cashier-app--terminal .pos-keypad__quick-btn:hover:not(:disabled) {
+  border-color: rgb(148 163 184 / 0.45);
+}
+
+@media (max-height: 720px) {
+  .cashier-app {
+    --pos-keypad-key-h: 50px;
+    --pos-keypad-digit-size: 1.25rem;
+    --pos-keypad-quick-h: 42px;
+    --pos-keypad-clear-h: 44px;
+    --pos-keypad-gap: 6px;
+  }
+}
+
+@media (min-width: 900px) {
+  .cashier-app {
+    --pos-keypad-key-h: 58px;
+    --pos-keypad-digit-size: 1.4375rem;
+  }
+}

@@ -1,15 +1,21 @@
 /* Light theme — secondary pages */
 .cashier-app.cashier-app--light {
-  --cashier-panel-surface: #fff;
-  --cashier-panel-surface-2: #f9fafb;
-  --cashier-panel-border: #e5e7eb;
-  --cashier-panel-text: #111827;
-  --cashier-panel-muted: #6b7280;
+  --cashier-panel-surface: var(--pos-surface-elevated);
+  --cashier-panel-surface-2: var(--pos-surface);
+  --cashier-panel-border: var(--pos-border);
+  --cashier-panel-text: var(--pos-ink);
+  --cashier-panel-muted: var(--pos-muted);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-stats {
+  border-color: var(--pos-border);
+  background: linear-gradient(135deg, var(--pos-surface-hover) 0%, var(--pos-surface-elevated) 55%, var(--pos-surface) 100%);
+  box-shadow: 0 1px 4px rgb(30 58 95 / 0.06);
 }
 
 .cashier-app.cashier-app--light .handbook-page__nav-btn--active {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+  background: var(--pos-surface-active);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .handbook-page__summary,
@@ -34,13 +40,18 @@
 }
 
 .cashier-app.cashier-app--light .cashier-sales-shift-stats__icon {
-  background: var(--pos-green);
+  background: var(--pos-ink);
   color: #fff;
   border: none;
 }
 
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__title,
+.cashier-app.cashier-app--light .cashier-sales-shift-stats__value {
+  color: var(--pos-ink);
+}
+
 .cashier-app.cashier-app--light .cashier-sales-shift-stats__value--sum {
-  color: var(--pos-green);
+  color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .cashier-sales-table__row:hover,
@@ -57,5 +68,37 @@
   background: var(--pos-green);
   border-color: var(--pos-green);
   color: #fff;
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__return {
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-table__return:hover:not(:disabled) {
+  background: var(--pos-surface-hover);
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__return {
+  background: var(--pos-ink);
+  box-shadow: 0 4px 12px rgb(30 58 95 / 0.24);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__return:hover:not(:disabled) {
+  background: #152d4a;
+  box-shadow: 0 6px 16px rgb(30 58 95 / 0.28);
+}
+
+.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max,
+.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__max {
+  background: var(--pos-surface-hover);
+  border-color: rgb(30 58 95 / 0.28);
+  color: var(--pos-ink);
+}
+
+.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled),
+.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled) {
+  background: var(--pos-surface-active);
+  border-color: var(--pos-ink);
 }
 

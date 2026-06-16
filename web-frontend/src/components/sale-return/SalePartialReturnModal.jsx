@@ -20,6 +20,7 @@ export default function SalePartialReturnModal({
   sale: saleProp,
   onSuccess,
   portal = true,
+  terminal = false,
 }) {
   const { t } = useTranslation();
 
@@ -71,7 +72,7 @@ export default function SalePartialReturnModal({
 
   const body = (
     <div
-      className="pos-return-modal pos-return-modal--partial"
+      className={`pos-return-modal${terminal ? ' pos-return-modal--terminal' : ''} pos-return-modal--partial`}
       onMouseDown={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"

@@ -36,9 +36,10 @@ export function usePosNavigation({
   }, [setPayOpen]);
 
   const handleGoToRegister = useCallback(() => {
+    setPayOpen(false);
     setPosPane('register');
     setSearch('');
-  }, [setPosPane, setSearch]);
+  }, [setPayOpen, setPosPane, setSearch]);
 
   useEffect(() => {
     if (!setShell) return undefined;

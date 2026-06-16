@@ -129,8 +129,8 @@
   }
 
   .cashier-app .pos-product-card__name {
-    -webkit-line-clamp: 4;
     font-size: 0.875rem;
+    line-height: 1.35;
   }
 
   .pos-product-grid {

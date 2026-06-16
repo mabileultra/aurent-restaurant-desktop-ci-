@@ -1,0 +1,157 @@
+/* Нижняя навигация кассы */
+
+.cashier-bottom-nav {
+  display: grid;
+  grid-template-columns: minmax(56px, 7.5cqi) repeat(6, minmax(0, 1fr));
+  align-items: stretch;
+  gap: clamp(6px, 1cqi, 10px);
+  width: 100%;
+  min-height: var(--cashier-bottom-nav-h, 100px);
+  max-height: var(--cashier-bottom-nav-h, 100px);
+  padding: 0;
+  box-sizing: border-box;
+  container-type: inline-size;
+  container-name: cashier-bottom-nav;
+}
+
+.cashier-bottom-nav__btn {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 1.2cqi, 8px);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: clamp(10px, 2cqi, 14px) clamp(6px, 1cqi, 10px);
+  border: 1px solid var(--pos-border);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--pos-text);
+  font-size: clamp(0.75rem, 2.6cqi, 0.875rem);
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    color 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.cashier-bottom-nav__btn span {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+  hyphens: auto;
+}
+
+.cashier-bottom-nav__btn svg {
+  flex-shrink: 0;
+  width: clamp(24px, 6.5cqi, 30px) !important;
+  height: clamp(24px, 6.5cqi, 30px) !important;
+  color: var(--pos-green);
+}
+
+.cashier-bottom-nav__btn:hover:not(:disabled):not(.is-active) {
+  background: var(--pos-green-soft);
+  border-color: rgb(0 104 71 / 0.25);
+}
+
+.cashier-bottom-nav__btn.is-active {
+  border-color: var(--pos-green);
+  background: var(--pos-green);
+  color: var(--pos-on-green, #fff);
+  box-shadow: 0 2px 12px rgb(0 104 71 / 0.2);
+}
+
+.cashier-bottom-nav__btn.is-active svg {
+  color: var(--pos-on-green, #fff);
+}
+
+.cashier-bottom-nav__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.cashier-bottom-nav__btn--icon {
+  width: 100%;
+  max-width: none;
+  padding: 0;
+}
+
+.cashier-bottom-nav__btn--icon svg {
+  width: clamp(26px, 6.5cqi, 32px) !important;
+  height: clamp(26px, 6.5cqi, 32px) !important;
+}
+
+/* Касса / Товары — справа, крупнее */
+.cashier-bottom-nav__btn--primary {
+  font-size: clamp(0.8125rem, 2.9cqi, 0.9375rem);
+}
+
+.cashier-register__bottom-nav {
+  grid-area: bottom-nav;
+  align-self: end;
+  flex-shrink: 0;
+}
+
+.cashier-app .cashier-app__bottom-nav {
+  flex-shrink: 0;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn {
+  background: var(--pos-surface);
+  border-color: var(--pos-border);
+}
+
+.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn.is-active {
+  background: var(--pos-green);
+  color: var(--pos-on-green);
+}
+
+.cashier-app.cashier-app--terminal .cashier-bottom-nav__btn.is-active svg {
+  color: var(--pos-on-green);
+}
+
+.cashier-app.cashier-app--touch .cashier-bottom-nav__btn {
+  min-height: 52px;
+  touch-action: manipulation;
+}
+
+.cashier-app.cashier-app--touch .cashier-bottom-nav__btn--icon {
+  width: 100%;
+  max-width: none;
+}
+
+@container cashier-bottom-nav (max-width: 560px) {
+  .cashier-bottom-nav__btn {
+    font-size: clamp(0.625rem, 2.6cqi, 0.75rem);
+    gap: 3px;
+    padding: 5px 3px;
+  }
+
+  .cashier-bottom-nav__btn svg {
+    width: clamp(18px, 5cqi, 22px) !important;
+    height: clamp(18px, 5cqi, 22px) !important;
+  }
+}
+
+@media (max-width: 799px) {
+  .cashier-bottom-nav {
+    gap: 5px;
+  }
+}

@@ -1,0 +1,16 @@
+/* Auto-fit text — уменьшает шрифт, если число не помещается (без ellipsis) */
+.auto-fit-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.auto-fit-text__inner {
+  display: inline-block;
+  max-width: 100%;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.05;
+}

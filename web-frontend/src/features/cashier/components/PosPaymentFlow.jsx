@@ -1,48 +1,46 @@
 import { ArrowLeft } from 'lucide-react';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PrintReceiptToggle from './payment/PrintReceiptToggle';
-import PosPaymentReceiptStep from './payment/PosPaymentReceiptStep';
 import PosPaymentMethodStep from './payment/PosPaymentMethodStep';
 import PosPaymentCashStep from './payment/PosPaymentCashStep';
 import PosPaymentMixedCashStep from './payment/PosPaymentMixedCashStep';
 import PosPaymentMixedCardStep from './payment/PosPaymentMixedCardStep';
 import PosPaymentCardTypeStep from './payment/PosPaymentCardTypeStep';
 import PosPaymentFlowFooterPrimary from './payment/PosPaymentFlowFooterPrimary';
+import PosPayFlowFooter from './payment/PosPayFlowFooter';
 import PosPaymentCreditCustomerStep from './payment/PosPaymentCreditCustomerStep';
 import PosPaymentAdvanceAmountStep from './payment/PosPaymentAdvanceAmountStep';
 import { usePosPaymentFlow } from '../hooks/usePosPaymentFlow';
 
 export default function PosPaymentFlow({
-  open,
   onClose,
   total,
   onConfirm,
   isPending,
+  openOptions = null,
   className = '',
 }) {
-  const p = usePosPaymentFlow({ open, onClose, total, onConfirm, isPending });
-
-  if (!open) return null;
+  const p = usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOptions });
 
   const printToggle = p.showPrintToggle ? (
     <PrintReceiptToggle
       checked={p.printReceiptEnabled}
       onChange={p.handlePrintReceiptChange}
       t={p.t}
+      className="pos-pay-print-toggle--footer"
+      disabled={p.isPending}
     />
   ) : null;
 
   const footerPrimary = p.showFooterPrimary ? (
     <PosPaymentFlowFooterPrimary
       step={p.step}
-      deferredReceipt={p.deferredReceipt}
       isPending={p.isPending}
       cashExceeds={p.cashExceeds}
       cashPaidEnough={p.cashPaidEnough}
       cardRemainder={p.cardRemainder}
-      receiptType={p.receiptType}
+      payMethod={p.payMethod}
       t={p.t}
-      onProceedFromDeferred={p.proceedFromDeferred}
       onSubmitCreditWithCustomer={p.submitCreditWithCustomer}
       onSubmitAdvanceAmount={p.submitAdvanceAmount}
       creditCustomerSelected={Boolean(p.creditCustomer.selectedId)}
@@ -53,15 +51,8 @@ export default function PosPaymentFlow({
   ) : null;
 
   const footerMain =
-    footerPrimary && p.showPrintToggle ? (
-      <div className="pos-pay-panel__footer-row">
-        <div className="pos-pay-panel__footer-row__primary">{footerPrimary}</div>
-        {printToggle}
-      </div>
-    ) : footerPrimary && !p.showPrintToggle ? (
-      footerPrimary
-    ) : p.showPrintToggle ? (
-      <div className="pos-pay-panel__footer-row pos-pay-panel__footer-row--toggle-only">{printToggle}</div>
+    footerPrimary || printToggle ? (
+      <PosPayFlowFooter primary={footerPrimary} printToggle={p.showPrintToggle ? printToggle : null} />
     ) : null;
 
   return (
@@ -77,7 +68,7 @@ export default function PosPaymentFlow({
             type="button"
             className="pos-pay-register-rail__back"
             onClick={p.registerBack}
-            aria-label={p.step === 'receipt' ? p.t('pos.backToCheck') : p.t('common.back')}
+            aria-label={p.t('common.back')}
           >
             <ArrowLeft size={20} strokeWidth={2} aria-hidden />
           </button>
@@ -93,16 +84,8 @@ export default function PosPaymentFlow({
       </header>
 
       <div className="pos-pay-panel__body">
-        {p.step === 'method' || p.step === 'receipt' || p.step === 'creditCustomer' || p.step === 'advanceAmount' ? (
+        {p.step === 'method' || p.step === 'creditCustomer' || p.step === 'advanceAmount' ? (
           <div className="pos-pay-panel__scroll">
-            {p.step === 'receipt' && (
-              <PosPaymentReceiptStep
-                t={p.t}
-                receiptType={p.receiptType}
-                selectReceiptType={p.selectReceiptType}
-                toPay={p.toPay}
-              />
-            )}
             {p.step === 'method' && (
               <PosPaymentMethodStep t={p.t} toPay={p.toPay} handleMethod={p.handleMethod} />
             )}
@@ -117,32 +100,32 @@ export default function PosPaymentFlow({
               />
             )}
             {p.step === 'creditCustomer' && (
-              <PosPaymentCreditCustomerStep
-                t={p.t}
-                hint={
-                  p.payMethod === 'advance'
-                    ? p.t('pos.advancePayCustomerHint')
-                    : p.receiptType === 'ADVANCE'
-                      ? p.t('pos.advanceCustomerHint')
+              <div className="pos-pay-panel__step pos-pay-panel__step--credit-customer">
+                <PosPaymentCreditCustomerStep
+                  t={p.t}
+                  hint={
+                    p.payMethod === 'advance'
+                      ? p.t('pos.advancePayCustomerHint')
                       : p.t('pos.creditCustomerHint')
-                }
-                search={p.creditCustomer.search}
-                setSearch={p.creditCustomer.setSearch}
-                customers={p.creditCustomer.customers}
-                selectedId={p.creditCustomer.selectedId}
-                selectCustomer={p.creditCustomer.selectCustomer}
-                isLoading={p.creditCustomer.isLoading}
-                isFetching={p.creditCustomer.isFetching}
-                isError={p.creditCustomer.isError}
-                showCreate={p.creditCustomer.showCreate}
-                toggleCreate={p.creditCustomer.toggleCreate}
-                createName={p.creditCustomer.createName}
-                setCreateName={p.creditCustomer.setCreateName}
-                createPhone={p.creditCustomer.createPhone}
-                setCreatePhone={p.creditCustomer.setCreatePhone}
-                submitCreate={p.creditCustomer.submitCreate}
-                isCreating={p.creditCustomer.isCreating}
-              />
+                  }
+                  search={p.creditCustomer.search}
+                  setSearch={p.creditCustomer.setSearch}
+                  customers={p.creditCustomer.customers}
+                  selectedId={p.creditCustomer.selectedId}
+                  selectCustomer={p.creditCustomer.selectCustomer}
+                  isLoading={p.creditCustomer.isLoading}
+                  isFetching={p.creditCustomer.isFetching}
+                  isError={p.creditCustomer.isError}
+                  showCreate={p.creditCustomer.showCreate}
+                  toggleCreate={p.creditCustomer.toggleCreate}
+                  createName={p.creditCustomer.createName}
+                  setCreateName={p.creditCustomer.setCreateName}
+                  createPhone={p.creditCustomer.createPhone}
+                  setCreatePhone={p.creditCustomer.setCreatePhone}
+                  submitCreate={p.creditCustomer.submitCreate}
+                  isCreating={p.creditCustomer.isCreating}
+                />
+              </div>
             )}
           </div>
         ) : (

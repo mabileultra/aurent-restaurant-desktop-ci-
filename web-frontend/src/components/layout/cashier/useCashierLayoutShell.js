@@ -22,16 +22,9 @@ import { useOfflineConnectivity } from '../../../hooks/useOfflineConnectivity';
 import { useCashierTouchLayout } from '../../../hooks/useCashierTouchLayout';
 import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocumentUiState';
 import { syncAuthSession } from '../../../utils/syncAuthSession';
-import {
-  CASHIER_SIDEBAR_KEY,
-  displayCashierName,
-  formatShiftOpenedAt,
-  readSidebarOpen,
-} from './cashierLayoutUtils';
+import { displayCashierName, formatShiftOpenedAt } from './cashierLayoutUtils';
 
 export function useCashierLayoutShell() {
-  const [sidebarOpen, setSidebarOpen] = useState(readSidebarOpen);
-  const [sidebarNavExpanded, setSidebarNavExpanded] = useState(readSidebarOpen);
   const [cashierTheme, setCashierTheme] = useState(readCashierTheme);
 
   useLayoutEffect(() => {
@@ -67,22 +60,6 @@ export function useCashierLayoutShell() {
   const navigate = useNavigate();
   const location = useLocation();
   const isPosRoute = location.pathname.startsWith('/cashier/pos');
-  const touchLayout = useCashierTouchLayout();
-
-  useEffect(() => {
-    if (!isPosRoute) return;
-    if (typeof window === 'undefined') return;
-    const mq = window.matchMedia('(max-width: 799px)');
-    const apply = () => {
-      if (mq.matches) {
-        setSidebarOpen(false);
-        setSidebarNavExpanded(false);
-      }
-    };
-    apply();
-    mq.addEventListener('change', apply);
-    return () => mq.removeEventListener('change', apply);
-  }, [isPosRoute]);
 
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const { data: shift } = useCashierShift(storeId);
@@ -93,27 +70,12 @@ export function useCashierLayoutShell() {
     return time ? t('pos.shiftOpenedAt', { time }) : t('pos.shiftOpen');
   }, [shift, t]);
 
-  const navLinkClass = ({ isActive }) =>
-    `nav-link d-flex align-items-center gap-2 ${isActive ? 'active' : ''}`;
-
   const handleLogout = () => {
     clearCashierScreenLocked(user?.id);
     logoutAndResetSession();
     navigate(cashierLoginPath());
   };
 
-  const toggleSidebar = () => {
-    const next = !sidebarOpen;
-    setSidebarOpen(next);
-    setSidebarNavExpanded(next);
-    try {
-      localStorage.setItem(CASHIER_SIDEBAR_KEY, next ? '1' : '0');
-    } catch {
-      /* ignore */
-    }
-  };
-
-  const sidebarClass = `cashier-sidebar d-none d-lg-flex flex-column${sidebarOpen ? '' : ' is-collapsed'}`;
   const themeClass = cashierThemeClassName(cashierTheme);
   const isDesktopApp =
     typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
@@ -126,7 +88,10 @@ export function useCashierLayoutShell() {
     return () => document.documentElement.classList.remove('cashier-shell--desktop');
   }, [isDesktopApp]);
 
-  const shellClassName = `cashier-app ${themeClass} d-flex${sidebarOpen ? '' : ' cashier-app--sidebar-collapsed'}${
+  const touchFromMedia = useCashierTouchLayout();
+  const touchLayout = touchFromMedia || isDesktopApp;
+
+  const shellClassName = `cashier-app ${themeClass} d-flex cashier-app--bottom-nav${
     isPosRoute ? ' cashier-app--pos-screen' : ''
   }${touchLayout ? ' cashier-app--touch' : ''}${isDesktopApp ? ' cashier-app--desktop' : ''}`;
 
@@ -146,12 +111,7 @@ export function useCashierLayoutShell() {
     shift,
     cashierTheme,
     toggleCashierTheme,
-    sidebarOpen,
-    sidebarNavExpanded,
-    sidebarClass,
-    navLinkClass,
     handleLogout,
-    toggleSidebar,
     shellClassName,
     isDesktopApp,
     shiftOpenBadge,

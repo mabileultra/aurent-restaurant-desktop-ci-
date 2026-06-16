@@ -1,7 +1,9 @@
 @import './page-grid.css';
 @import './register-table.css';
+@import './register-cart-cols.css';
+@import './register-layout-adaptive.css';
 @import './qty-control.css';
+@import './order-panel-totals-foot.css';
 @import './catalog-search.css';
-@import './order-rail.css';
 @import './cash-terminal.css';
 @import './toast.css';

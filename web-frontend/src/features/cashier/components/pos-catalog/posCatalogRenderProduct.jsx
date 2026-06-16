@@ -19,9 +19,9 @@ export function renderPosCatalogProduct(p, { viewMode, t, onAddProduct }) {
 
   return (
     <button key={p.id} type="button" className="pos-product-card" onClick={() => onAddProduct(p)}>
-      <span className="pos-product-card__price">{fmt(p.sellingPrice)}</span>
       {p.sku ? <span className="pos-product-card__code">{p.sku}</span> : null}
       <span className="pos-product-card__name">{p.name}</span>
+      <span className="pos-product-card__price">{fmt(p.sellingPrice)}</span>
     </button>
   );
 }

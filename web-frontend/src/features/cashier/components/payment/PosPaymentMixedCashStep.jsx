@@ -58,6 +58,7 @@ export default function PosPaymentMixedCashStep({
         value={cashPortion}
         onChange={handleCashPortionChange}
         quickActions={mixedQuickActions}
+        actionKeyMode="clear"
         disabled={isPending}
       />
     </div>

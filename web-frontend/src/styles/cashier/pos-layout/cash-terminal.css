@@ -43,9 +43,12 @@
 }
 
 .pos-pay-cash-panel--terminal .pos-pay-cash__received-value {
-  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  max-width: 72%;
+}
+
+.pos-pay-cash-panel--terminal .pos-pay-cash__received-value .auto-fit-text__inner {
+  font-size: 2.5rem;
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
   color: var(--pos-green, #3dffa8);
   line-height: 1;
 }
@@ -56,17 +59,24 @@
   justify-content: space-between;
   gap: 12px;
   font-size: 0.875rem;
-  color: var(--pos-money, #f5c842);
+  color: var(--pos-text, #f1f5f9);
 }
 
-.pos-pay-cash-panel--terminal .pos-pay-cash__change-row strong {
+.pos-pay-cash-panel--terminal .pos-pay-cash__change-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+}
+
+.pos-pay-cash-panel--terminal .pos-pay-cash__change-value .auto-fit-text__inner {
+  font-size: 0.875rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--pos-money, #f5c842);
+  color: var(--pos-text, #f1f5f9);
 }
 
-.pos-pay-cash-panel--terminal .pos-pay-cash__change-row--ready strong {
-  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+.pos-pay-cash-panel--terminal .pos-pay-cash__change-value--ready {
+  font-size: 2.25rem;
   line-height: 1.1;
 }
 
@@ -90,11 +100,6 @@
   display: flex;
   flex-direction: column;
   margin-top: 4px;
-}
-
-.pos-pay-cash-panel--terminal .pos-keypad__grid {
-  flex: 0 0 auto;
-  grid-template-rows: repeat(4, minmax(40px, 44px));
 }
 
 .pos-pay-panel__back-check {

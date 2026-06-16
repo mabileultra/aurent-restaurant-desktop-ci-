@@ -152,12 +152,12 @@
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-table__return {
-  color: #c2410c;
+  color: var(--pos-green, #3dffa8);
   font-weight: 700;
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-table__return:hover:not(:disabled) {
-  background: #fed7aa;
+  background: rgb(61 255 168 / 0.12);
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-pill--cash {
@@ -293,12 +293,12 @@
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-receipt-pane__return {
-  background: #ea580c;
-  color: #fff;
+  background: linear-gradient(180deg, #5dffb0 0%, var(--pos-green) 100%);
+  color: #0a1218;
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-receipt-pane__return:hover:not(:disabled) {
-  background: #c2410c;
+  background: linear-gradient(180deg, var(--pos-green) 0%, var(--pos-green-hover, #2ee694) 100%);
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-receipt-pane__placeholder {

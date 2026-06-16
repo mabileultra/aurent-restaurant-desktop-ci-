@@ -1,5 +1,6 @@
-import NumericKeypad, { formatKeypadAmount } from '../NumericKeypad';
+import NumericKeypad from '../NumericKeypad';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
+import { PosPayCashChangeValue, PosPayCashReceivedValue } from './PosPayCashAmountFields';
 
 export default function PosPaymentCashStep({
   t,
@@ -21,14 +22,14 @@ export default function PosPaymentCashStep({
         <p className="pos-pay-cash__hint">{t('pos.cashTenderHint')}</p>
         <div className="pos-pay-cash__received-box" aria-live="polite">
           <span className="pos-pay-cash__received-label">{t('pos.receivedLabel')}</span>
-          <span className="pos-pay-cash__received-value">{formatKeypadAmount(tendered)}</span>
+          <PosPayCashReceivedValue tendered={tendered} />
         </div>
         <div
           className={`pos-pay-cash__change-row${cashPaidEnough ? ' pos-pay-cash__change-row--ready' : ''}`}
           aria-live="polite"
         >
           <span>{t('pos.change')}</span>
-          <strong>{fmt(changeDue)}</strong>
+          <PosPayCashChangeValue changeDue={changeDue} ready={cashPaidEnough} />
         </div>
         {cashShortfall > 0 ? (
           <p className="pos-pay-cash__shortfall" role="status">

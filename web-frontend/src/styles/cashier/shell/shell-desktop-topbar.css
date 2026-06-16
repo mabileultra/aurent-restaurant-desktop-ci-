@@ -12,7 +12,7 @@
 
 .cashier-app--desktop .cashier-topbar__brand-block {
   flex: 0 1 auto;
-  max-width: min(58vw, 560px);
+  max-width: min(62vw, 640px);
 }
 
 /* Меню приложения Aurent (Electron, Windows) — рядом с названием, по наведению */

@@ -26,7 +26,7 @@
   .cashier-app {
     --cashier-pay-w: clamp(300px, 22vw, 420px);
     --cashier-cart-cols: minmax(0, 2.2fr) minmax(0, 1fr) minmax(6.25rem, 0.85fr) minmax(0, 1.1fr) minmax(2.75rem, 3.25rem);
-    --cashier-cart-cols-register: minmax(0, 1.5fr) minmax(4.25rem, 0.85fr) 10rem minmax(4.25rem, 0.95fr) 2.75rem;
+    --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
   }
 }
 
@@ -34,7 +34,7 @@
   .cashier-app {
     --cashier-pay-w: 420px;
     --cashier-cart-cols: minmax(0, 2.3fr) minmax(0, 1.05fr) minmax(6.5rem, 0.85fr) minmax(0, 1.15fr) minmax(2.75rem, 3.25rem);
-    --cashier-cart-cols-register: minmax(0, 1.6fr) minmax(4.5rem, 0.9fr) 10.5rem minmax(4.5rem, 1fr) 2.75rem;
+    --cashier-cart-cols-register: minmax(4.5rem, 1fr) minmax(6rem, 9.5rem) minmax(7.25rem, 8.75rem) minmax(6rem, 10rem) minmax(2.75rem, 3.5rem);
   }
 }
 
