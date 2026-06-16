@@ -2,6 +2,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { USER_ROLE_BADGE } from '../../constants';
+import { canDeleteUser } from '../../utils/userDeletePolicy';
 
 export default function UsersTable({
   t,
@@ -18,6 +19,8 @@ export default function UsersTable({
   onMenuOpenChange,
   onEdit,
   onToggleActive,
+  onDelete,
+  actorRole,
 }) {
   const colSpan = isPlatform ? 9 : 6;
 
@@ -102,6 +105,13 @@ export default function UsersTable({
                         label: user.active ? t('users.deactivate') : t('users.activate'),
                         onClick: () => onToggleActive(user.id),
                       },
+                      ...(canDeleteUser(actorRole, user.role)
+                        ? [{
+                            label: t('common.delete'),
+                            onClick: () => onDelete(user),
+                            danger: true,
+                          }]
+                        : []),
                     ]}
                   />
                 </td>

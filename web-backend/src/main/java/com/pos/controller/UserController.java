@@ -65,4 +65,12 @@ public class UserController {
     public ResponseEntity<UserResponse> toggle(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.toggleActive(id));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Удалить пользователя", description = "Удаление пользователя с проверкой прав и связанных данных")
+    @ApiResponse(responseCode = "204", description = "Пользователь удалён")
+    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+        userService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

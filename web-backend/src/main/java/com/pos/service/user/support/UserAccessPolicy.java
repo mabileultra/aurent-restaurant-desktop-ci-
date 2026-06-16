@@ -56,7 +56,7 @@ public class UserAccessPolicy {
         if (tenantAccess.isSuperAdmin()) {
             return;
         }
-        if (!List.of("ADMIN", "MANAGER", "CASHIER").contains(roleName)) {
+        if (!List.of("ADMIN", "MANAGER", "CASHIER", "ACCOUNTANT").contains(roleName)) {
             throw PosExceptions.badRequest("Invalid role for tenant admin");
         }
         if ("ADMIN".equals(roleName)) {
@@ -65,7 +65,7 @@ public class UserAccessPolicy {
     }
 
     public Integer resolveCompanyIdForCreate(Integer requestedCompanyId, String roleName) {
-        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName) || "CASHIER".equals(roleName)) {
+        if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName) || "CASHIER".equals(roleName) || "ACCOUNTANT".equals(roleName)) {
             if (tenantAccess.isSuperAdmin()) {
                 if (requestedCompanyId == null) {
                     throw PosExceptions.badRequest("Company is required for this role");
@@ -122,6 +122,27 @@ public class UserAccessPolicy {
         if (storeIds == null || storeIds.size() != 1) {
             throw PosExceptions.badRequest("Cashier must be assigned to exactly one store");
         }
+    }
+
+    public void assertDeletable(User target) {
+        User actor = tenantAccess.currentUser();
+        if (actor.getId().equals(target.getId())) {
+            throw PosExceptions.badRequest("Cannot delete your own account");
+        }
+        String targetRole = target.getRole().getName();
+        if ("SUPER_ADMIN".equals(targetRole)) {
+            throw PosExceptions.badRequest("Cannot delete super administrator");
+        }
+        if (tenantAccess.isSuperAdmin()) {
+            if (List.of("ADMIN", "MANAGER", "CASHIER", "ACCOUNTANT").contains(targetRole)) {
+                return;
+            }
+            throw PosExceptions.badRequest("Cannot delete this user");
+        }
+        if ("CASHIER".equals(targetRole)) {
+            return;
+        }
+        throw PosExceptions.badRequest("Only cashiers can be deleted by company admin");
     }
 
     public User loadForResponse(UUID id, User fallback) {

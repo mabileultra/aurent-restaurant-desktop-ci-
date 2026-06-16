@@ -1,11 +1,14 @@
 import { Plus } from 'lucide-react';
 import { BaseButton, PageLayout, PageSearchField } from '../../../components/ui';
 import UserFormModal from '../components/users/UserFormModal';
+import UserDeleteConfirmModal from '../components/users/UserDeleteConfirmModal';
 import UsersTable from '../components/users/UsersTable';
 import { useUsersPage } from '../hooks/useUsersPage';
+import { useAuthStore } from '../../../store/authStore';
 
 export default function UsersPage({ mode = 'tenant' }) {
   const p = useUsersPage({ mode });
+  const actorRole = useAuthStore((s) => s.user?.role);
 
   return (
     <PageLayout
@@ -41,6 +44,16 @@ export default function UsersPage({ mode = 'tenant' }) {
         onMenuOpenChange={p.setMenuId}
         onEdit={p.openEdit}
         onToggleActive={p.toggleUser}
+        onDelete={p.openDelete}
+        actorRole={actorRole}
+      />
+
+      <UserDeleteConfirmModal
+        user={p.deleteTarget}
+        t={p.t}
+        isPending={p.isDeletePending}
+        onClose={p.closeDelete}
+        onConfirm={p.confirmDelete}
       />
 
       <UserFormModal

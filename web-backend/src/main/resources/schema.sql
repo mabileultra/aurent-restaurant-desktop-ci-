@@ -460,7 +460,8 @@ INSERT INTO roles (name, description) VALUES
     ('SUPER_ADMIN', 'Platform operator'),
     ('ADMIN',    'Full system access'),
     ('MANAGER',  'Reports + inventory management'),
-    ('CASHIER',  'Sales and basic operations');
+    ('CASHIER',  'Sales and basic operations'),
+    ('ACCOUNTANT', 'Finance-only access');
 
 INSERT INTO categories (name, description) VALUES
     ('Electronics',   'Electronic devices and accessories'),

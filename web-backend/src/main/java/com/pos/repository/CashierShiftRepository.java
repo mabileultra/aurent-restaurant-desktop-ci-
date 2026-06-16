@@ -14,6 +14,8 @@ public interface CashierShiftRepository extends JpaRepository<CashierShift, UUID
 
     long countByStore_Id(Integer storeId);
 
+    boolean existsByCashier_Id(UUID cashierId);
+
     Optional<CashierShift> findByCashierIdAndStoreIdAndStatus(
         UUID cashierId,
         Integer storeId,

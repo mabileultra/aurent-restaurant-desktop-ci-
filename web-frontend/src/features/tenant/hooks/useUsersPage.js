@@ -13,6 +13,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const { tenantKey, tenantReady } = useTenantScope();
   const [formMode, setFormMode] = useState(null);
   const [menuId, setMenuId] = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [search, setSearch] = useState('');
@@ -31,6 +32,19 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
       qc.invalidateQueries({ queryKey: ['users'] });
       toast.success(t('users.updated'));
       setMenuId(null);
+    },
+  });
+
+  const { mutate: deleteUser, isPending: isDeletePending } = useMutation({
+    mutationFn: (id) => userApi.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['users'] });
+      toast.success(t('users.deleted'));
+      setDeleteTarget(null);
+      setMenuId(null);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message ?? t('users.deleteFailed'));
     },
   });
 
@@ -63,6 +77,17 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const closeModal = () => setFormMode(null);
 
+  const openDelete = (row) => {
+    setMenuId(null);
+    setDeleteTarget(row);
+  };
+
+  const closeDelete = () => setDeleteTarget(null);
+
+  const confirmDelete = () => {
+    if (deleteTarget?.id) deleteUser(deleteTarget.id);
+  };
+
   const handleSearchChange = (value) => {
     setSearch(value);
     setPage(0);
@@ -94,6 +119,11 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     closeModal,
     handleSearchChange,
     toggleUser,
+    deleteTarget,
+    openDelete,
+    closeDelete,
+    confirmDelete,
+    isDeletePending,
     subtitle: `${subtitle}${searchSuffix}`,
     title: isPlatform ? t('platform.usersTitle') : t('users.title'),
     editingUser: formMode?.type === 'edit' ? formMode.user : undefined,

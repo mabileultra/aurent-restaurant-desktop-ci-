@@ -132,7 +132,7 @@
     "desktopHint": "Kassa dasturi orqali kirish tavsiya etiladi"
   },
   "installer": {
-    "heroTitle": "DT Group kassasi — savdoingiz uchun",
+    "heroTitle": "Aurent kassasi — savdoingiz uchun",
     "subtitle": "Windows yoki Mac uchun kassa dasturini o‘rnating. Interfeys serverdan yuklanadi — yangilanish qayta o‘rnatishsiz.",
     "loadingVersion": "Versiya yuklanmoqda…",
     "versionLine": "Versiya {{version}} · {{date}}",
@@ -1359,6 +1359,11 @@
     "storeInactive": "nofaol",
     "roleManager": "Menejer",
     "roleAdmin": "Admin",
+    "roleAccountant": "Buxgalter",
+    "deleteTitle": "Foydalanuvchini o‘chirish",
+    "deleteHint": "«{{name}}» foydalanuvchisini o‘chirish? Bu amalni bekor qilib bo‘lmaydi.",
+    "deleted": "Foydalanuvchi o‘chirildi",
+    "deleteFailed": "Foydalanuvchini o‘chirish muvaffaqiyatsiz",
     "createUser": "Yaratish",
     "placeholderName": "Ali Vali",
     "placeholderUser": "ali",
@@ -3067,6 +3072,7 @@
     "ADMIN": "Admin",
     "MANAGER": "Menejer",
     "CASHIER": "Kassir",
+    "ACCOUNTANT": "Buxgalter",
     "SUPER_ADMIN": "Super-admin"
   }
 }

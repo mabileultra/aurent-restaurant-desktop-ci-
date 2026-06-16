@@ -11,10 +11,10 @@ import { resetClientSessionState } from '../../../utils/authSession';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 
+import { resolveRoleHomePath } from '../../../utils/roleHomePath';
+
 function resolvePostLoginPath(role) {
-  if (role === 'SUPER_ADMIN') return '/platform';
-  if (role === 'CASHIER') return '/cashier/pos';
-  return '/dashboard';
+  return resolveRoleHomePath(role);
 }
 
 export function useLoginPage() {

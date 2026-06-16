@@ -141,7 +141,7 @@
     "desktopHint": "Рекомендуется вход через программу кассы"
   },
   "installer": {
-    "heroTitle": "Касса DT Group — для вашей торговли",
+    "heroTitle": "Касса Aurent — для вашей торговли",
     "subtitle": "Установите программу кассы для Windows или Mac. Интерфейс загружается с сервера — обновления без переустановки.",
     "loadingVersion": "Загрузка версии…",
     "versionLine": "Версия {{version}} · {{date}}",
@@ -1395,6 +1395,11 @@
     "storeInactive": "неактивен",
     "roleManager": "Менеджер",
     "roleAdmin": "Админ",
+    "roleAccountant": "Бухгалтер",
+    "deleteTitle": "Удалить пользователя",
+    "deleteHint": "Удалить пользователя «{{name}}»? Это действие нельзя отменить.",
+    "deleted": "Пользователь удалён",
+    "deleteFailed": "Не удалось удалить пользователя",
     "createUser": "Создать",
     "placeholderName": "Иван Иванов",
     "placeholderUser": "ivan",
@@ -2825,6 +2830,7 @@
     "ADMIN": "Админ",
     "MANAGER": "Менеджер",
     "CASHIER": "Кассир",
+    "ACCOUNTANT": "Бухгалтер",
     "SUPER_ADMIN": "Супер-админ"
   },
   "finance": {

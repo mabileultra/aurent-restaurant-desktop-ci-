@@ -52,14 +52,14 @@ public enum AdminModule {
     CASHIER_SALES("cashierSales", "cashier", Set.of("CASHIER", "ADMIN", "MANAGER")),
     /** Офлайн-режим на desktop-кассе (SQLite + sync). */
     CASHIER_OFFLINE("cashierOffline", "cashier", Set.of("CASHIER", "ADMIN", "MANAGER")),
-    FINANCE_DASHBOARD("financeDashboard", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_DEBTS("financeDebts", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_INCOMES("financeIncomes", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_EXPENSES("financeExpenses", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_ACCOUNTS("financeAccounts", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_TRANSFERS("financeTransfers", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_REPORTS("financeReports", "finance", Set.of("ADMIN", "MANAGER")),
-    FINANCE_AUDIT("financeAudit", "finance", Set.of("ADMIN", "MANAGER")),
+    FINANCE_DASHBOARD("financeDashboard", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_DEBTS("financeDebts", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_INCOMES("financeIncomes", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_EXPENSES("financeExpenses", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_ACCOUNTS("financeAccounts", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_TRANSFERS("financeTransfers", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_REPORTS("financeReports", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
+    FINANCE_AUDIT("financeAudit", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
     FINANCE_CATEGORIES("financeCategories", "finance", Set.of("ADMIN")),
     FINANCE_SYNC("financeSync", "finance", Set.of("ADMIN"));
 
@@ -112,6 +112,12 @@ public enum AdminModule {
     public static List<AdminModule> cashierScope() {
         return Arrays.stream(values())
             .filter(m -> "cashier".equals(m.group))
+            .toList();
+    }
+
+    public static List<AdminModule> financeScope() {
+        return Arrays.stream(values())
+            .filter(m -> "finance".equals(m.group))
             .toList();
     }
 
