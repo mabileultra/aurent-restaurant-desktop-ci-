@@ -22,6 +22,9 @@
 
     <!-- Полная схема для пустой БД (docker initdb / новый инстанс). -->
     <changeSet id="v1-baseline-schema" author="pos">
+        <!-- Допустимые checksum после правки schema.sql (ACCOUNTANT в baseline — откатили в v4). -->
+        <validCheckSum>9:95309baf611d95526a3b0bceef305066</validCheckSum>
+        <validCheckSum>9:607391f15971307e507db2bf9d8e1967</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="roles"/>
