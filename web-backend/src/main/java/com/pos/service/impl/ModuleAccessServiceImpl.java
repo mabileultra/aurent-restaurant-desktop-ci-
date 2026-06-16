@@ -177,6 +177,9 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         if ("CASHIER".equals(role)) {
             return AdminModule.cashierScope();
         }
+        if ("ACCOUNTANT".equals(role)) {
+            return AdminModule.financeScope();
+        }
         return AdminModule.adminScope();
     }
 

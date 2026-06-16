@@ -36,6 +36,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
 
     long countByStore_Id(Integer storeId);
 
+    boolean existsByCashier_Id(UUID cashierId);
+
     @EntityGraph(attributePaths = {"cashier", "store", "items", "items.product"})
     @Query("""
         SELECT DISTINCT s FROM Sale s

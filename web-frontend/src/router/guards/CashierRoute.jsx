@@ -1,6 +1,7 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { isDesktopCashier } from '../../utils/authLogin';
+import { resolveRoleHomePath } from '../../utils/roleHomePath';
 
 export default function CashierRoute({ children }) {
   const location = useLocation();
@@ -22,7 +23,7 @@ export default function CashierRoute({ children }) {
         />
       );
     }
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={resolveRoleHomePath(user?.role)} replace />;
   }
   return children;
 }

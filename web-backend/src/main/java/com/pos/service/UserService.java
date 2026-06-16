@@ -18,4 +18,6 @@ public interface UserService {
     UserResponse update(UUID id, UpdateUserRequest req);
 
     UserResponse toggleActive(UUID id);
+
+    void delete(UUID id);
 }

@@ -2,6 +2,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { isDesktopCashier } from '../../utils/authLogin';
+import { resolveRoleHomePath } from '../../utils/roleHomePath';
 
 export default function ProtectedRoute({ children, requiredRole, module: moduleId }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -14,11 +15,12 @@ export default function ProtectedRoute({ children, requiredRole, module: moduleI
   }
   if (user?.role === 'SUPER_ADMIN') return <Navigate to="/platform" replace />;
   if (user?.role === 'CASHIER') return <Navigate to="/cashier/pos" replace />;
+  const homePath = resolveRoleHomePath(user?.role);
   if (requiredRole && user?.role !== requiredRole && !['ADMIN'].includes(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={homePath} replace />;
   }
   if (moduleId && !hasModule(moduleId)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to={homePath} replace />;
   }
   return children;
 }

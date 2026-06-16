@@ -161,10 +161,12 @@ export default function UserFormModalFields({
                     { value: 'ADMIN', label: t('users.roleAdmin') },
                     { value: 'MANAGER', label: t('users.roleManager') },
                     { value: 'CASHIER', label: t('users.roleCashier') },
+                    { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
                   ]
                 : [
                     { value: 'MANAGER', label: t('users.roleManager') },
                     { value: 'CASHIER', label: t('users.roleCashier') },
+                    { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
                   ]
             }
           />

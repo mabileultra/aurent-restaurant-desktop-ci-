@@ -11,6 +11,7 @@ import com.pos.service.UserService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.security.cache.AuthenticatedUserCache;
 import com.pos.service.user.impl.UserCreateHandler;
+import com.pos.service.user.impl.UserDeleteHandler;
 import com.pos.service.user.impl.UserUpdateHandler;
 import com.pos.service.user.support.UserAccessPolicy;
 import com.pos.util.DbExceptionTranslator;
@@ -33,6 +34,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final UserCreateHandler createHandler;
     private final UserUpdateHandler updateHandler;
+    private final UserDeleteHandler deleteHandler;
     private final AuthenticatedUserCache authenticatedUserCache;
 
     @Override
@@ -79,5 +81,11 @@ public class UserServiceImpl implements UserService {
         authenticatedUserCache.evict(saved.getId());
         LogUtil.info(UserServiceImpl.class, "User active toggled: id={}, active={}", id, saved.isActive());
         return userMapper.toResponse(accessPolicy.loadForResponse(saved.getId(), saved));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void delete(UUID id) {
+        deleteHandler.delete(id);
     }
 }

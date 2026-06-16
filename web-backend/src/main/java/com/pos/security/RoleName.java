@@ -13,7 +13,8 @@ public enum RoleName {
     SUPER_ADMIN("SUPER_ADMIN"),
     TENANT_ADMIN("ADMIN"),
     MANAGER("MANAGER"),
-    CASHIER("CASHIER");
+    CASHIER("CASHIER"),
+    ACCOUNTANT("ACCOUNTANT");
 
     private final String key;
 

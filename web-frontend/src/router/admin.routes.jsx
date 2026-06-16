@@ -1,5 +1,6 @@
 import { Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './guards/ProtectedRoute';
+import RoleHomeRedirect from './guards/RoleHomeRedirect';
 import CheckoutRedirect from './guards/CheckoutRedirect';
 import AppShellLayout from '../components/layout/AppShellLayout';
 import {
@@ -67,7 +68,7 @@ export const adminRoutes = (
       </ProtectedRoute>
     )}
   >
-    <Route index element={<Navigate to="/dashboard" replace />} />
+    <Route index element={<RoleHomeRedirect />} />
     <Route
       path="dashboard"
       element={(
@@ -329,7 +330,7 @@ export const adminRoutes = (
     <Route
       path="finance/dashboard"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeDashboard">
+        <ProtectedRoute module="financeDashboard">
           <FinanceDashboardPage />
         </ProtectedRoute>
       )}
@@ -337,7 +338,7 @@ export const adminRoutes = (
     <Route
       path="finance/incomes"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeIncomes">
+        <ProtectedRoute module="financeIncomes">
           <FinanceIncomesPage />
         </ProtectedRoute>
       )}
@@ -345,7 +346,7 @@ export const adminRoutes = (
     <Route
       path="finance/debts"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeDebts">
+        <ProtectedRoute module="financeDebts">
           <FinanceDebtsPage />
         </ProtectedRoute>
       )}
@@ -353,7 +354,7 @@ export const adminRoutes = (
     <Route
       path="finance/expenses"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeExpenses">
+        <ProtectedRoute module="financeExpenses">
           <FinanceExpensesPage />
         </ProtectedRoute>
       )}
@@ -361,7 +362,7 @@ export const adminRoutes = (
     <Route
       path="finance/accounts"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeAccounts">
+        <ProtectedRoute module="financeAccounts">
           <FinanceAccountsPage />
         </ProtectedRoute>
       )}
@@ -369,7 +370,7 @@ export const adminRoutes = (
     <Route
       path="finance/transfers"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeTransfers">
+        <ProtectedRoute module="financeTransfers">
           <FinanceTransfersPage />
         </ProtectedRoute>
       )}
@@ -377,7 +378,7 @@ export const adminRoutes = (
     <Route
       path="finance/reports"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeReports">
+        <ProtectedRoute module="financeReports">
           <FinanceReportsPage />
         </ProtectedRoute>
       )}
@@ -385,7 +386,7 @@ export const adminRoutes = (
     <Route
       path="finance/audit"
       element={(
-        <ProtectedRoute requiredRole="MANAGER" module="financeAudit">
+        <ProtectedRoute module="financeAudit">
           <FinanceAuditPage />
         </ProtectedRoute>
       )}
@@ -393,7 +394,7 @@ export const adminRoutes = (
     <Route
       path="finance/categories"
       element={(
-        <ProtectedRoute requiredRole="ADMIN" module="financeCategories">
+        <ProtectedRoute module="financeCategories">
           <FinanceCategoriesPage />
         </ProtectedRoute>
       )}
@@ -401,7 +402,7 @@ export const adminRoutes = (
     <Route
       path="finance/sync"
       element={(
-        <ProtectedRoute requiredRole="ADMIN" module="financeSync">
+        <ProtectedRoute module="financeSync">
           <FinanceSyncPage />
         </ProtectedRoute>
       )}
