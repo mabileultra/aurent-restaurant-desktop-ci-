@@ -1,5 +1,12 @@
+import { cardTypeLabel } from '../../../../utils/salePaymentLabel';
+
 export function isDeferredReceiptType(receiptType) {
   return receiptType === 'ADVANCE' || receiptType === 'CREDIT';
+}
+
+function cardPaymentLabel(t, cardType, prefixKey) {
+  const card = cardTypeLabel(cardType, t);
+  return card ? `${t(prefixKey)} · ${card}` : t(prefixKey);
 }
 
 export function cashierSalesPaymentLabel(method, t, receiptType, cardType) {
@@ -10,15 +17,11 @@ export function cashierSalesPaymentLabel(method, t, receiptType, cardType) {
     case 'CASH':
       return t('pos.payCash');
     case 'CARD':
-      if (cardType === 'HUMO') return `${t('pos.payCard')} · ${t('pos.cardHumo')}`;
-      if (cardType === 'UZCARD') return `${t('pos.payCard')} · ${t('pos.cardUzcard')}`;
-      return t('pos.payCard');
+      return cardPaymentLabel(t, cardType, 'pos.payCard');
     case 'CASHLESS':
       return t('pos.payCashless');
     case 'MIXED':
-      if (cardType === 'HUMO') return `${t('pos.payMixed')} · ${t('pos.cardHumo')}`;
-      if (cardType === 'UZCARD') return `${t('pos.payMixed')} · ${t('pos.cardUzcard')}`;
-      return t('pos.payMixed');
+      return cardPaymentLabel(t, cardType, 'pos.payMixed');
     case 'MPESA':
       return 'M-Pesa';
     default:

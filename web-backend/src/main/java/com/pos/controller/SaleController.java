@@ -143,6 +143,7 @@ public class SaleController {
         @RequestParam(required = false) String receiptNumber,
         @RequestParam(required = false) String paymentMethod,
         @RequestParam(required = false) String status,
+        @RequestParam(required = false) String paymentSettlement,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @PageableDefault(size = 10) Pageable pageable
@@ -158,6 +159,7 @@ public class SaleController {
                 receiptNumber,
                 paymentMethod,
                 status,
+                paymentSettlement,
                 from,
                 to,
                 pageable

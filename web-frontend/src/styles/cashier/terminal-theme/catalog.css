@@ -75,6 +75,7 @@
 
 .cashier-app.cashier-app--terminal .pos-product-card {
   min-height: 108px;
+  height: 100%;
   padding: 12px 12px 14px;
   background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
@@ -111,6 +112,8 @@
 
 .cashier-app.cashier-app--terminal .pos-product-card__name {
   display: block;
+  flex: 1 1 auto;
+  min-height: 0;
   font-size: 0.8125rem;
   font-weight: 800;
   line-height: 1.3;

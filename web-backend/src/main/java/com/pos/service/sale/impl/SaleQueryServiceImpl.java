@@ -118,6 +118,7 @@ public class SaleQueryServiceImpl implements SaleQueryService {
         String receiptNumber,
         String paymentMethodStr,
         String statusStr,
+        String paymentSettlement,
         LocalDate from,
         LocalDate to,
         Pageable pageable
@@ -125,6 +126,9 @@ public class SaleQueryServiceImpl implements SaleQueryService {
         Sale.PaymentMethod paymentMethod = SaleEnumParser.paymentMethod(paymentMethodStr);
         Sale.SaleStatus status = SaleEnumParser.saleStatus(statusStr);
         String receipt = receiptNumber != null && !receiptNumber.isBlank() ? receiptNumber.trim() : null;
+        String settlement = paymentSettlement != null && !paymentSettlement.isBlank()
+            ? paymentSettlement.trim()
+            : null;
         ZoneId zone = ZoneId.systemDefault();
         Instant dateFrom = from != null ? from.atStartOfDay(zone).toInstant() : null;
         Instant dateTo = to != null ? to.plusDays(1).atStartOfDay(zone).toInstant() : null;
@@ -137,6 +141,7 @@ public class SaleQueryServiceImpl implements SaleQueryService {
                 receipt,
                 paymentMethod,
                 status,
+                settlement,
                 dateFrom,
                 dateTo
             ),

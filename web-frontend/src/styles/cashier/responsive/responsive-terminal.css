@@ -17,7 +17,8 @@
   }
 
   .cashier-app.cashier-app--pos-screen .pos-product-card {
-    min-height: 96px;
+    min-height: clamp(96px, 20cqi, 118px);
+    height: 100%;
   }
 
   .cashier-app.cashier-app--pos-screen .pos-order-panel__head {
@@ -78,7 +79,8 @@
   }
 
   .pos-product-card {
-    min-height: auto;
+    min-height: clamp(92px, 18cqi, 112px);
+    height: 100%;
     padding: 12px 14px;
     display: flex;
     flex-direction: column;

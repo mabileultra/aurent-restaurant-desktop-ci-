@@ -22,6 +22,7 @@ public final class SaleSpecifications {
         String receiptNumber,
         Sale.PaymentMethod paymentMethod,
         Sale.SaleStatus status,
+        String paymentSettlement,
         Instant dateFrom,
         Instant dateTo
     ) {
@@ -47,6 +48,19 @@ public final class SaleSpecifications {
             }
             if (paymentMethod != null) {
                 parts.add(cb.equal(root.get("paymentMethod"), paymentMethod));
+            }
+            if (StringUtils.hasText(paymentSettlement)) {
+                String settlement = paymentSettlement.trim().toUpperCase();
+                if ("CREDIT".equals(settlement)) {
+                    parts.add(cb.equal(root.get("receiptType"), Sale.ReceiptType.CREDIT));
+                } else if ("ADVANCE".equals(settlement)) {
+                    parts.add(cb.equal(root.get("receiptType"), Sale.ReceiptType.ADVANCE));
+                } else if ("FULL".equals(settlement)) {
+                    parts.add(cb.or(
+                        cb.isNull(root.get("receiptType")),
+                        cb.equal(root.get("receiptType"), Sale.ReceiptType.SALE)
+                    ));
+                }
             }
             if (status != null) {
                 parts.add(cb.equal(root.get("status"), status));

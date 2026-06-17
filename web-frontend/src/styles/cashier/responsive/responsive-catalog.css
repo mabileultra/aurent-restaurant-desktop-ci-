@@ -65,7 +65,8 @@
 }
 
 .cashier-app .pos-product-card {
-  min-height: 90px;
+  min-height: clamp(90px, 20cqi, 112px);
+  height: 100%;
   padding: 12px 14px;
 }
 

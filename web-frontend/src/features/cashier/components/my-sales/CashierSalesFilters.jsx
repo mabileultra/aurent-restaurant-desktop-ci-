@@ -77,6 +77,8 @@ export default function CashierSalesFilters({ filters, onPatch, onReset, filteri
                 { value: 'CARD', label: t('pos.payCard') },
                 { value: 'CASHLESS', label: t('pos.payCashless') },
                 { value: 'MIXED', label: t('pos.payMixed') },
+                { value: 'CREDIT', label: t('pos.receiptType.CREDIT') },
+                { value: 'ADVANCE', label: t('pos.receiptType.ADVANCE') },
                 { value: 'MPESA', label: 'M-Pesa' },
               ]}
             />

@@ -141,5 +141,5 @@ public class Sale {
     public enum PaymentMethod { CASH, CARD, CASHLESS, MPESA, MIXED }
     public enum SaleStatus    { COMPLETED, REFUNDED, VOIDED }
     public enum ReceiptType   { SALE, ADVANCE, CREDIT }
-    public enum CardType      { HUMO, UZCARD, PERSONAL, CORPORATE, SOCIAL }
+    public enum CardType      { HUMO, UZCARD, PAYME, CLICK, PERSONAL, CORPORATE, SOCIAL }
 }

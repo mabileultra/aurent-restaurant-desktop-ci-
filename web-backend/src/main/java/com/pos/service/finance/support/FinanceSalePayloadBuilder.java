@@ -43,6 +43,9 @@ public final class FinanceSalePayloadBuilder {
         payload.put("cashAmount", sale.getCashAmount() != null ? sale.getCashAmount() : BigDecimal.ZERO);
         payload.put("cardAmount", sale.getCardAmount() != null ? sale.getCardAmount() : BigDecimal.ZERO);
         payload.put("paymentMethod", sale.getPaymentMethod().name());
+        if (sale.getCardType() != null) {
+            payload.put("cardType", sale.getCardType().name());
+        }
         payload.put("transactionDate", LocalDate.ofInstant(sale.getCreatedAt(), ZONE));
         if (sale.getCashier() != null) {
             payload.put("createdBy", sale.getCashier().getId());

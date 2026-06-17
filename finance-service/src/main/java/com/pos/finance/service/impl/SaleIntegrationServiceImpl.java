@@ -51,7 +51,15 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             recordPart(request, salesCategory, txDate, cashAmount, PaymentMethod.CASH, AccountType.CASH, saleSourceId);
         }
         if (cardAmount.signum() > 0) {
-            recordPart(request, salesCategory, txDate, cardAmount, PaymentMethod.CARD, AccountType.CARD, saleSourceId);
+            recordPart(
+                request,
+                salesCategory,
+                txDate,
+                cardAmount,
+                PaymentMethod.CARD,
+                resolveCardAccountType(request.cardType()),
+                saleSourceId
+            );
         }
         if (cashAmount.signum() == 0 && cardAmount.signum() == 0 && totalAmount.signum() > 0) {
             PaymentMethod method = mapPaymentMethod(request.paymentMethod());
@@ -103,6 +111,17 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             case "CARD", "MIXED" -> PaymentMethod.CARD;
             case "CASHLESS", "BANK", "TRANSFER" -> PaymentMethod.BANK;
             default -> PaymentMethod.CASH;
+        };
+    }
+
+    private static AccountType resolveCardAccountType(String cardType) {
+        if (cardType == null || cardType.isBlank()) {
+            return AccountType.CARD;
+        }
+        return switch (cardType.trim().toUpperCase()) {
+            case "PAYME" -> AccountType.PAYME;
+            case "CLICK" -> AccountType.CLICK;
+            default -> AccountType.CARD;
         };
     }
 }

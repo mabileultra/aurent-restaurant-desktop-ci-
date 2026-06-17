@@ -139,3 +139,58 @@
   font-variant-numeric: tabular-nums;
   color: var(--pos-money, #f5c842);
 }
+
+.pos-pay-panel--register-rail .pos-pay-card-providers--flow-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  border: 1.5px solid var(--pos-border, #2a3548);
+  border-radius: 12px;
+  background: var(--pos-surface-elevated, #1c2433);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn:hover:not(:disabled) {
+  border-color: var(--pos-green, #3dffa8);
+  background: rgb(61 255 168 / 0.06);
+  box-shadow: 0 2px 10px rgb(61 255 168 / 0.12);
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__logo {
+  display: block;
+  width: auto;
+  max-width: 88%;
+  max-height: 22px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn--payme {
+  background: #0b0b0b;
+  border-color: #1f2937;
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn--click {
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+}
+
+.pos-pay-panel--register-rail .pos-pay-card-providers__btn--humo .pos-pay-card-providers__logo {
+  max-height: 18px;
+}

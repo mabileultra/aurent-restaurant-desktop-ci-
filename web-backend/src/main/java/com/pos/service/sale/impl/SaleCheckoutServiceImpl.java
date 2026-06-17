@@ -28,6 +28,7 @@ import com.pos.service.sale.support.SaleVatCalculator;
 import com.pos.service.finance.FinanceAdvancePaymentIntegrationService;
 import com.pos.service.finance.FinanceAdvanceSaleIntegrationService;
 import com.pos.service.finance.FinanceCreditSaleIntegrationService;
+import com.pos.service.finance.FinanceSaleIntegrationService;
 import com.pos.service.salesledger.SalesLedgerCacheService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
@@ -68,6 +69,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceAdvancePaymentIntegrationService financeAdvancePaymentIntegrationService;
+    private final FinanceSaleIntegrationService financeSaleIntegrationService;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -209,6 +211,8 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             financeAdvanceSaleIntegrationService.onAdvanceSaleCompleted(saved);
         } else if (saved.getAdvanceAmount() != null && saved.getAdvanceAmount().signum() > 0) {
             financeAdvancePaymentIntegrationService.onSaleAdvanceApplied(saved);
+        } else {
+            financeSaleIntegrationService.onSaleCompleted(saved);
         }
         LogUtil.info(SaleCheckoutServiceImpl.class, "Sale completed: id={}, receipt={}", saved.getId(), saved.getReceiptNumber());
         return saleMapper.toResponse(saved);

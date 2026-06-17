@@ -77,13 +77,14 @@ public class SaleServiceImpl implements SaleService {
         String receiptNumber,
         String paymentMethodStr,
         String statusStr,
+        String paymentSettlement,
         LocalDate from,
         LocalDate to,
         Pageable pageable
     ) {
         return queryService.getSalesByCashier(
             cashierId, shiftId, excludeShiftId, receiptNumber,
-            paymentMethodStr, statusStr, from, to, pageable
+            paymentMethodStr, statusStr, paymentSettlement, from, to, pageable
         );
     }
 

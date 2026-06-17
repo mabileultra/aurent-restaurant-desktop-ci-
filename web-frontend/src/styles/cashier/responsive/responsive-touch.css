@@ -16,7 +16,8 @@
 }
 
 .cashier-app.cashier-app--touch .pos-product-card {
-  min-height: 104px;
+  min-height: clamp(100px, 22cqi, 116px);
+  height: 100%;
   touch-action: manipulation;
 }
 

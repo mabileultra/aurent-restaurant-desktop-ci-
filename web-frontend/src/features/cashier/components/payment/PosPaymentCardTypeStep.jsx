@@ -1,26 +1,33 @@
-import { ArrowRight } from 'lucide-react';
-import { CARD_TYPES } from './posPaymentConstants';
+import { useTranslation } from 'react-i18next';
+import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../constants/paymentCardProviders';
 
 export default function PosPaymentCardTypeStep({ t, isPending, submitCard }) {
+  const { t: translate } = useTranslation();
+  const tr = t ?? translate;
+
   return (
     <div className="pos-pay-panel__step pos-pay-panel__step--card-type">
-      <p className="pos-pay-card-type-step__lead">{t('pos.cardTypeLead')}</p>
-      <div className="pos-pay-card-types pos-pay-card-types--register-stack">
-        {CARD_TYPES.map((c) => {
-          const Icon = c.icon;
+      <p className="pos-pay-card-type-step__lead">{tr('pos.cardTypeLead')}</p>
+      <div className="pos-pay-card-providers pos-pay-card-providers--flow-stack">
+        {ENABLED_PAYMENT_CARD_PROVIDERS.map((provider) => {
+          const label = tr(provider.labelKey);
           return (
             <button
-              key={c.id}
+              key={provider.id}
               type="button"
-              className="pos-pay-card-type pos-pay-card-type--register"
+              className={`pos-pay-card-providers__btn pos-pay-card-providers__btn--${provider.tone}`}
               disabled={isPending}
-              onClick={() => submitCard(c.id)}
+              title={label}
+              aria-label={label}
+              onClick={() => submitCard(provider.cardType)}
             >
-              <span className="pos-pay-card-type__icon">
-                <Icon size={22} strokeWidth={1.5} aria-hidden />
-              </span>
-              <span className="pos-pay-card-type__label">{t(c.labelKey)}</span>
-              <ArrowRight size={18} className="pos-pay-card-type__arrow" aria-hidden />
+              <img
+                src={provider.logoSrc}
+                alt=""
+                className="pos-pay-card-providers__logo"
+                loading="lazy"
+                draggable={false}
+              />
             </button>
           );
         })}

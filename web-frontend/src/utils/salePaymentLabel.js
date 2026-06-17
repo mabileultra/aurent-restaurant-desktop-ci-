@@ -5,6 +5,10 @@ export function cardTypeLabel(cardType, t) {
       return t('pos.cardHumo');
     case 'UZCARD':
       return t('pos.cardUzcard');
+    case 'PAYME':
+      return t('pos.cardPayme');
+    case 'CLICK':
+      return t('pos.cardClick');
     case 'PERSONAL':
       return t('pos.cardPersonal', { defaultValue: 'Личная' });
     case 'CORPORATE':
@@ -16,9 +20,17 @@ export function cardTypeLabel(cardType, t) {
   }
 }
 
+function deferredPaymentLabel(row, t) {
+  const typeLabel = t(`pos.receiptType.${row.receiptType}`);
+  if (row.customerName) {
+    return `${typeLabel} · ${row.customerName}`;
+  }
+  return typeLabel;
+}
+
 export function salePaymentLabel(row, t) {
   if (row.receiptType === 'CREDIT' || row.receiptType === 'ADVANCE') {
-    return t(`pos.receiptType.${row.receiptType}`);
+    return deferredPaymentLabel(row, t);
   }
   const m = row.paymentMethod;
   if (m === 'CARD') {

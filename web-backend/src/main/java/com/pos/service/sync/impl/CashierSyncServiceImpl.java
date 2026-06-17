@@ -30,6 +30,7 @@ import com.pos.repository.UserRepository;
 import com.pos.service.CategoryService;
 import com.pos.service.finance.FinanceAdvanceSaleIntegrationService;
 import com.pos.service.finance.FinanceCreditSaleIntegrationService;
+import com.pos.service.finance.FinanceSaleIntegrationService;
 import com.pos.service.product.ProductQueryService;
 import com.pos.service.sale.support.SaleEnumParser;
 import com.pos.service.sale.support.SalePaymentResolver;
@@ -75,6 +76,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final StoreStockService storeStockService;
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
+    private final FinanceSaleIntegrationService financeSaleIntegrationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -302,6 +304,8 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             financeCreditSaleIntegrationService.onCreditSaleCompleted(saved);
         } else if (saved.getReceiptType() == Sale.ReceiptType.ADVANCE) {
             financeAdvanceSaleIntegrationService.onAdvanceSaleCompleted(saved);
+        } else {
+            financeSaleIntegrationService.onSaleCompleted(saved);
         }
         LogUtil.info(
             CashierSyncServiceImpl.class,

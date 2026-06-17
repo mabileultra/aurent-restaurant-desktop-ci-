@@ -53,6 +53,7 @@ public interface SaleService {
         String receiptNumber,
         String paymentMethodStr,
         String statusStr,
+        String paymentSettlement,
         LocalDate from,
         LocalDate to,
         Pageable pageable
