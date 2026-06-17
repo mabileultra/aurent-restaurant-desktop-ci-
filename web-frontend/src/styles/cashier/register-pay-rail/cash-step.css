@@ -67,12 +67,12 @@
 }
 
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-cash__received-box {
-  padding: 8px 12px;
-  min-height: 58px;
+  padding: 12px 14px;
+  min-height: 60px;
 }
 
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: 1.75rem;
+  font-size: 1.875rem;
 }
 
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-cash__change-row {

@@ -4,6 +4,33 @@
   container-name: pay-shell;
 }
 
+/* ── Клавиатура в колонке оплаты ── */
+.pos-register-pay-rail__keypad-wrap .pos-keypad {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pos-pay-panel--register-rail.is-step-cash .pos-keypad,
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
+  flex: 0 0 auto;
+  min-height: 0;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pos-pay-panel--register-rail .pos-keypad {
+  flex: 0 1 auto;
+  min-height: 0;
+}
+
 /* ── Payment flow: без второго скролла на шагах с клавиатурой ── */
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step,
 .pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__step,
@@ -22,12 +49,12 @@
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-box {
-  padding: clamp(10px, 2.5cqi, 14px) clamp(12px, 3cqi, 16px);
-  min-height: clamp(48px, 12cqi, 58px);
+  padding: clamp(12px, 2.5cqi, 16px) clamp(14px, 3cqi, 18px);
+  min-height: clamp(56px, 13cqi, 64px);
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: clamp(1.35rem, 9cqi, 2.25rem);
+  font-size: clamp(1.75rem, 9cqi, 2.25rem);
 }
 
 /* ── Узкая колонка оплаты ── */
@@ -91,10 +118,10 @@
 
 @container pay-shell (min-height: 721px) {
   .cashier-register__pay-shell {
-    --pos-keypad-gap: 8px;
-    --pos-keypad-quick-h: 46px;
-    --pos-keypad-clear-h: 48px;
-    --pos-keypad-digit-size: 1.5rem;
-    --pos-keypad-action-size: 0.875rem;
+    --pos-keypad-gap: 7px;
+    --pos-keypad-quick-h: 44px;
+    --pos-keypad-clear-h: 46px;
+    --pos-keypad-digit-size: 1.3125rem;
+    --pos-keypad-action-size: 0.8125rem;
   }
 }

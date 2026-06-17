@@ -1,101 +1,79 @@
-/* Pay column — единая крупная клавиатура (inline rail + cash + mixed) */
+/* Pay column — стандартная квадратная клавиатура на шагах оплаты */
 
-.cashier-register__pay-shell .pos-keypad {
-  align-items: stretch;
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad,
+.pos-pay-panel--register-rail .pos-keypad {
+  align-items: center;
 }
 
-.cashier-register__pay-shell .pos-keypad__grid {
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+.pos-pay-panel--register-rail .pos-keypad__grid {
   --pos-keypad-cell: clamp(
-    56px,
+    52px,
     calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-    9999px
+    76px
   );
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, var(--pos-keypad-cell)));
-  width: 100%;
+  grid-template-columns: repeat(3, var(--pos-keypad-cell));
+  grid-template-rows: repeat(4, var(--pos-keypad-cell));
+  width: fit-content;
   max-width: 100%;
-  margin-inline: 0;
+  margin-inline: auto;
   flex: 0 0 auto;
   max-height: none;
 }
 
-.cashier-register__pay-shell .pos-keypad__key {
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__key,
+.pos-pay-panel--register-rail .pos-keypad__key,
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key,
+.pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
   width: 100%;
   height: 100%;
   min-height: 0;
   max-height: none;
   aspect-ratio: 1;
-  padding: 0 clamp(2px, 1cqi, 8px);
-  font-size: var(--pos-keypad-digit-size, 1.375rem);
+  padding: 0 clamp(2px, 1cqi, 6px);
 }
 
-.cashier-register__pay-shell .pos-keypad__key--action {
-  aspect-ratio: unset;
-  font-size: var(--pos-keypad-action-size, 0.8125rem);
-}
-
-.cashier-register__pay-shell .pos-keypad__key--icon svg {
-  width: clamp(22px, 5cqi, 28px);
-  height: clamp(22px, 5cqi, 28px);
-}
-
-.cashier-app.cashier-app--touch .cashier-register__pay-shell .pos-keypad__grid {
+.cashier-app.cashier-app--touch .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+.cashier-app.cashier-app--touch .pos-pay-panel--register-rail .pos-keypad__grid {
   --pos-keypad-cell: clamp(
-    60px,
+    54px,
     calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-    9999px
-  );
-}
-
-.cashier-app.cashier-app--desktop .cashier-register__pay-shell .pos-keypad__grid {
-  --pos-keypad-cell: clamp(
-    58px,
-    calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-    9999px
+    80px
   );
 }
 
 @container pay-shell (max-width: 320px) {
-  .cashier-register__pay-shell .pos-keypad__grid {
-    --pos-keypad-cell: clamp(
-      52px,
-      calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-      9999px
-    );
-  }
-}
-
-@container pay-shell (max-height: 720px) {
-  .cashier-register__pay-shell .pos-keypad__grid {
-    --pos-keypad-gap: 6px;
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+  .pos-pay-panel--register-rail .pos-keypad__grid {
     --pos-keypad-cell: clamp(
       50px,
-      calc((100cqw - var(--pos-keypad-gap) * 2) / 3),
-      9999px
+      calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
+      68px
     );
   }
 }
 
-@container pay-shell (max-height: 600px) {
-  .cashier-register__pay-shell .pos-keypad__grid {
-    --pos-keypad-gap: 5px;
+@container pay-shell (max-height: 640px) {
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+  .pos-pay-panel--register-rail .pos-keypad__grid {
+    --pos-keypad-gap: 6px;
     --pos-keypad-cell: clamp(
-      46px,
+      48px,
       calc((100cqw - var(--pos-keypad-gap) * 2) / 3),
-      9999px
+      64px
     );
-    --pos-keypad-digit-size: 1.2rem;
     --pos-keypad-action-size: 0.75rem;
   }
 }
 
 @container pay-shell (max-height: 520px) {
-  .cashier-register__pay-shell .pos-keypad__grid {
-    --pos-keypad-gap: 4px;
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+  .pos-pay-panel--register-rail .pos-keypad__grid {
+    --pos-keypad-gap: 5px;
     --pos-keypad-cell: clamp(
-      42px,
+      44px,
       calc((100cqw - var(--pos-keypad-gap) * 2) / 3),
-      9999px
+      58px
     );
     --pos-keypad-digit-size: 1.125rem;
     --pos-keypad-action-size: 0.6875rem;
