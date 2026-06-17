@@ -59,10 +59,6 @@
   font-size: 0.75rem;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
-  padding: 4px 12px 4px;
-}
-
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {
   padding-top: 6px;
 }
@@ -74,11 +70,6 @@
 .pos-pay-panel--register-rail.is-step-cardType .pos-pay-register-rail__title,
 .pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-register-rail__title {
   color: var(--pos-money, #f5c842);
-}
-
-.pos-pay-panel--register-rail .pos-keypad {
-  flex: 0 1 auto;
-  min-height: 0;
 }
 
 @media (max-height: 720px) {

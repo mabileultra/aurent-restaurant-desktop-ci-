@@ -35,17 +35,17 @@
 }
 
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
-  max-height: 100%;
+  max-height: none;
   margin-top: auto;
   padding: 8px 12px 4px;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
-  max-height: 100%;
+  max-height: none;
   margin-top: auto;
   padding: 8px 12px 4px;
 }

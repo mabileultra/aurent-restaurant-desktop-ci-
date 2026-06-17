@@ -4,49 +4,11 @@
   container-name: pay-shell;
 }
 
-/* ── Клавиатура в колонке оплаты ── */
-.pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 0 1 auto;
-  min-height: 0;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.pos-pay-panel--register-rail.is-step-cash .pos-keypad {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  overflow: hidden;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: stretch;
-  overflow: hidden;
-}
-
-/* Размеры клавиш — pos-keypad-adaptive.css (квадратная сетка по ширине колонки) */
-
 /* ── Payment flow: без второго скролла на шагах с клавиатурой ── */
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step,
 .pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__step,
 .pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-panel__step {
   overflow: hidden;
-}
-
-.pos-pay-panel--register-rail .pos-keypad {
-  flex: 0 1 auto;
-  min-height: 0;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box__value {
@@ -129,9 +91,10 @@
 
 @container pay-shell (min-height: 721px) {
   .cashier-register__pay-shell {
-    --pos-keypad-gap: 7px;
-    --pos-keypad-quick-h: 44px;
-    --pos-keypad-clear-h: 46px;
-    --pos-keypad-digit-size: 1.3125rem;
+    --pos-keypad-gap: 8px;
+    --pos-keypad-quick-h: 46px;
+    --pos-keypad-clear-h: 48px;
+    --pos-keypad-digit-size: 1.5rem;
+    --pos-keypad-action-size: 0.875rem;
   }
 }

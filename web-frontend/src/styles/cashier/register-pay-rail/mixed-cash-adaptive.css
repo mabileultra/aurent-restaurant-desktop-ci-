@@ -19,18 +19,12 @@
   padding-bottom: 8px;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
-  flex: 0 0 auto;
-  min-height: 0;
-  padding: 4px 12px 10px;
-}
-
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {
   flex-shrink: 0;
   margin-top: 0;
 }
 
-/* Плотность по высоте колонки оплаты — клавиши: pos-keypad-adaptive.css */
+/* Плотность по высоте колонки оплаты */
 @container pay-shell (max-height: 760px) {
   .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack {
     gap: 5px;
