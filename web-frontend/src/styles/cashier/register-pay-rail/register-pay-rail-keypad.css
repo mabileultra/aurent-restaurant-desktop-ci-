@@ -11,7 +11,7 @@
 .pos-register-pay-rail__keypad-wrap {
   container-type: size;
   container-name: pay-keypad-wrap;
-  flex: 1.5 1 auto;
+  flex: 2 1 auto;
   min-height: 0;
   width: 100%;
   padding: 2px 0;
