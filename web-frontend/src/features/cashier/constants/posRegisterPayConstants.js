@@ -12,11 +12,11 @@ export const REGISTER_PAY_METHODS = [
 
 export const REGISTER_CARD_PROVIDERS = [
   {
-    id: 'UZUM',
-    labelKey: 'pos.cardUzum',
+    id: 'PAYME',
+    labelKey: 'pos.cardPayme',
     enabled: false,
-    tone: 'uzum',
-    logoSrc: PAYMENT_PROVIDER_LOGOS.UZUM,
+    tone: 'payme',
+    logoSrc: PAYMENT_PROVIDER_LOGOS.PAYME,
   },
   {
     id: 'HUMO',
@@ -35,10 +35,10 @@ export const REGISTER_CARD_PROVIDERS = [
     logoSrc: PAYMENT_PROVIDER_LOGOS.UZCARD,
   },
   {
-    id: 'CLIC',
-    labelKey: 'pos.cardClic',
+    id: 'CLICK',
+    labelKey: 'pos.cardClick',
     enabled: false,
-    tone: 'clic',
-    logoSrc: PAYMENT_PROVIDER_LOGOS.CLIC,
+    tone: 'click',
+    logoSrc: PAYMENT_PROVIDER_LOGOS.CLICK,
   },
 ];

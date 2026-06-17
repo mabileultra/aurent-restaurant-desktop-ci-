@@ -56,11 +56,21 @@
   border-color: var(--pos-border);
 }
 
-.cashier-app.cashier-app--light .pos-register-card-providers__btn--clic {
+.cashier-app.cashier-app--light .pos-register-card-providers__btn--payme {
+  background: #0b0b0b;
+  border-color: #1f2937;
+}
+
+.cashier-app.cashier-app--light .pos-register-card-providers__btn--payme:hover:not(:disabled) {
+  background: #111827;
+  border-color: #374151;
+}
+
+.cashier-app.cashier-app--light .pos-register-card-providers__btn--click {
   background: linear-gradient(180deg, var(--pos-surface-elevated) 0%, var(--pos-surface) 100%);
 }
 
-.cashier-app.cashier-app--light .pos-register-card-providers__btn--clic:hover:not(:disabled) {
+.cashier-app.cashier-app--light .pos-register-card-providers__btn--click:hover:not(:disabled) {
   background: linear-gradient(180deg, var(--pos-surface-hover) 0%, var(--pos-surface-elevated) 100%);
 }
 

@@ -15,8 +15,8 @@
   min-height: 0;
   overflow: hidden;
   justify-content: flex-start;
-  gap: 4px;
-  padding-bottom: 8px;
+  gap: 8px;
+  padding-bottom: 4px;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {

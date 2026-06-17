@@ -10,9 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: clamp(52px, 16cqi, 68px);
+  min-height: clamp(40px, 12cqi, 52px);
   height: auto;
-  padding: clamp(8px, 2.5cqi, 12px) clamp(8px, 2.5cqi, 14px);
+  padding: clamp(6px, 2cqi, 10px) clamp(6px, 2cqi, 12px);
   border: 1.5px solid #c5ccd6;
   border-radius: 16px;
   background: #fff;
@@ -45,24 +45,33 @@
   display: block;
   width: auto;
   height: auto;
-  max-width: 92%;
-  max-height: clamp(26px, 9cqi, 36px);
+  max-width: 88%;
+  max-height: clamp(16px, 5cqi, 22px);
   object-fit: contain;
   object-position: center;
   pointer-events: none;
   user-select: none;
 }
 
-.pos-register-card-providers__btn--humo .pos-register-card-providers__logo,
-.pos-register-card-providers__btn--uzcard .pos-register-card-providers__logo {
-  max-height: clamp(24px, 8cqi, 32px);
+.pos-register-card-providers__btn--humo .pos-register-card-providers__logo {
+  max-height: clamp(14px, 4.5cqi, 18px);
 }
 
-.pos-register-card-providers__btn--clic {
+.pos-register-card-providers__btn--payme {
+  background: #0b0b0b;
+  border-color: #1f2937;
+}
+
+.pos-register-card-providers__btn--payme:hover:not(:disabled) {
+  background: #111827;
+  border-color: #374151;
+}
+
+.pos-register-card-providers__btn--click {
   background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
 }
 
-.pos-register-card-providers__btn--clic:hover:not(:disabled) {
+.pos-register-card-providers__btn--click:hover:not(:disabled) {
   background: linear-gradient(180deg, #f1f5f9 0%, #e2e8f0 100%);
 }
 
@@ -71,7 +80,12 @@
   border-color: var(--pos-border, #2a3548);
 }
 
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--clic {
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme {
+  background: #0b0b0b;
+  border-color: #1f2937;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--click {
   background: var(--pos-surface-elevated, #1c2433);
 }
 

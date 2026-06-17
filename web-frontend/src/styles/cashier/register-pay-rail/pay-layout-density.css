@@ -22,7 +22,7 @@
   max-height: none;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   overflow: hidden;
 }
 
@@ -44,24 +44,24 @@
 }
 
 .pos-register-pay-rail .pos-register-pay-cash {
-  gap: clamp(6px, 1.5cqi, 10px);
-  padding: clamp(10px, 2.5cqi, 14px) clamp(12px, 3cqi, 16px);
+  gap: clamp(5px, 1.2cqi, 8px);
+  padding: clamp(8px, 2cqi, 12px) clamp(10px, 2.5cqi, 14px);
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-box {
-  padding: clamp(12px, 2.5cqi, 16px) clamp(14px, 3cqi, 18px);
-  min-height: clamp(56px, 13cqi, 64px);
+  padding: clamp(8px, 2cqi, 12px) clamp(10px, 2.5cqi, 14px);
+  min-height: clamp(44px, 10cqi, 52px);
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: clamp(1.75rem, 9cqi, 2.25rem);
+  font-size: clamp(1.5rem, 7.5cqi, 2rem);
 }
 
 /* ── Узкая колонка оплаты ── */
 @container pay-shell (max-width: 300px) {
   .pos-register-pay-methods__tile,
   .pos-register-card-providers__btn {
-    min-height: clamp(48px, 18cqi, 58px);
+    min-height: clamp(44px, 16cqi, 52px);
   }
 
   .pos-register-pay-rail .pos-pay-cash__hint {
