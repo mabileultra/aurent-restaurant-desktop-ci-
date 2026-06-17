@@ -32,7 +32,6 @@
 
 .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__key,
 .pos-pay-panel--register-rail .pos-keypad__key,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key,
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
   width: 100%;
   height: 100%;

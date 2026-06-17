@@ -2168,6 +2168,8 @@
     "receivedLabel": "Qabul qilindi",
     "cashTenderHint": "Xaridor bergan summani kiriting — qaytim avtomatik hisoblanadi",
     "cashShortfall": "Yana {{amount}} yetmayapti",
+    "cardRemainderRail": "Karta qoldig'i",
+    "cardRemainderHint": "Qoldiqni to'lash uchun HUMO yoki UZCARD tugmasini bosing",
     "amountTendered": "Qabul qilindi",
     "keypadExact": "Aniq summa",
     "keypadClear": "Tozalash",

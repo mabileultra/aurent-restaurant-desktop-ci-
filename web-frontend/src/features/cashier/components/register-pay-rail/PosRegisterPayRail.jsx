@@ -32,14 +32,14 @@ export default function PosRegisterPayRail({
         tendered={rail.tendered}
         changeDue={rail.changeDue}
         cashPaidEnough={rail.cashPaidEnough}
-        cashShortfall={rail.cashShortfall}
+        cardRemainder={rail.cardRemainder}
+        hasPartialCash={rail.hasPartialCash}
       />
 
       <div className="pos-register-pay-rail__pay-block">
         <PosRegisterPayMethods
           disabled={checkoutDisabled || isPending}
           onCashless={rail.submitCashless}
-          onMixed={rail.openMixed}
           onCredit={rail.openCredit}
           onAdvance={rail.openAdvance}
         />
@@ -47,6 +47,8 @@ export default function PosRegisterPayRail({
         <PosRegisterCardProviders
           disabled={checkoutDisabled}
           isPending={isPending}
+          cardPayBlocked={rail.cardPayBlocked}
+          hasCardRemainder={rail.hasPartialCash}
           onSelectCard={rail.submitCard}
         />
       </div>
@@ -82,7 +84,7 @@ export default function PosRegisterPayRail({
       </div>
 
       <PosRegisterPayFooter
-        disabled={checkoutDisabled}
+        disabled={rail.saleDisabled}
         isPending={isPending}
         printReceiptEnabled={rail.printReceiptEnabled}
         onPrintReceiptChange={rail.handlePrintReceiptChange}

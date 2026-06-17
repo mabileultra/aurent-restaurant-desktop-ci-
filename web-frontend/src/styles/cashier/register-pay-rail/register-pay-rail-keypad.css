@@ -59,13 +59,6 @@
   flex-shrink: 0;
 }
 
-/* Payment flow — верхние блоки не сжимаются */
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__error {
-  flex-shrink: 0;
-}
-
 /* Компактная колонка — только при реальной нехватке высоты */
 @container pay-shell (max-height: 720px) {
   .pos-register-pay-rail .pos-pay-cash__hint {
@@ -149,8 +142,7 @@
   }
 
   .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
-  .cashier-app .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key,
-  .cashier-app .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key {
+  .cashier-app .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
     font-size: clamp(0.8125rem, 3.4cqi, 1rem);
   }
 }

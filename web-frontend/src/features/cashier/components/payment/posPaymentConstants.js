@@ -1,7 +1,6 @@
 import {
   CreditCard,
   Banknote,
-  Split,
   QrCode,
   Coins,
 } from 'lucide-react';
@@ -17,13 +16,10 @@ export const PAY_METHODS = [
   { id: 'card', icon: CreditCard, labelKey: 'pos.payCard', action: 'card' },
   { id: 'advance', icon: Coins, labelKey: 'pos.payAdvance', action: 'advance' },
   { id: 'cashless', icon: QrCode, labelKey: 'pos.payCashless', action: 'cashless' },
-  { id: 'mixed', icon: Split, labelKey: 'pos.payMixed', action: 'mixed' },
 ];
 
 export const STEPS_WITH_PRINT_TOGGLE = new Set([
   'cash',
-  'mixedCash',
-  'mixedCard',
   'cardType',
   'creditCustomer',
   'advanceAmount',
@@ -31,7 +27,7 @@ export const STEPS_WITH_PRINT_TOGGLE = new Set([
 
 export function buildPaymentFlowState(openOptions = null) {
   return {
-    step: openOptions?.step ?? 'mixedCash',
+    step: openOptions?.step ?? 'creditCustomer',
     receiptType: openOptions?.receiptType ?? 'SALE',
     payMethod: openOptions?.payMethod ?? null,
   };

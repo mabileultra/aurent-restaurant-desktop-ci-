@@ -2223,6 +2223,8 @@
     "receivedLabel": "Получено",
     "cashTenderHint": "Введите сумму, которую дал покупатель — сдача посчитается автоматически",
     "cashShortfall": "Не хватает ещё {{amount}}",
+    "cardRemainderRail": "Остаток картой",
+    "cardRemainderHint": "Нажмите HUMO или UZCARD для оплаты остатка",
     "amountTendered": "Получено",
     "keypadExact": "Без сдачи",
     "keypadClear": "Очистить",

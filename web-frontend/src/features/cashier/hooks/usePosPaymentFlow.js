@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { financeApi } from '../../../api/finance.api';
-import { clampPayAmount, exceedsPayAmount, round2 } from '../../../utils/taxAmounts';
+import { round2 } from '../../../utils/taxAmounts';
 import { setPosReceiptPrintEnabled, isPosReceiptPrintEnabled } from '../../../utils/receiptPrintPreference';
 import {
   STEPS_WITH_PRINT_TOGGLE,
@@ -20,7 +20,6 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
   const [receiptType, setReceiptType] = useState(initialState.receiptType);
   const [payMethod, setPayMethod] = useState(initialState.payMethod);
   const [tendered, setTendered] = useState('');
-  const [cashPortion, setCashPortion] = useState('');
   const [printReceiptEnabled, setPrintReceiptEnabled] = useState(isPosReceiptPrintEnabled);
   const [advanceAmountUsed, setAdvanceAmountUsed] = useState(0);
   const [advanceInput, setAdvanceInput] = useState('');
@@ -34,7 +33,6 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     setReceiptType(overrides.receiptType ?? 'SALE');
     setPayMethod(overrides.payMethod ?? null);
     setTendered('');
-    setCashPortion('');
     setAdvanceAmountUsed(0);
     setAdvanceInput('');
     setAdvanceBalance(0);
@@ -62,46 +60,13 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     setStep('cash');
   };
 
-  const goToMixed = () => {
-    setPayMethod((prev) => (prev === 'advance' ? 'advance' : 'mixed'));
-    setCashPortion('');
-    setStep('mixedCash');
-  };
-
   const handleMethod = (action) => {
     if (action === 'cash') goToCash();
     else if (action === 'card') {
       setPayMethod(advanceAmountUsed > 0 ? 'advance' : 'card');
       setStep('cardType');
     } else if (action === 'cashless') submitCashless();
-    else goToMixed();
   };
-
-  const cashPartNum = round2(cashPortion);
-  const cashExceeds = exceedsPayAmount(cashPartNum, effectiveToPay);
-  const cardRemainder = round2(Math.max(0, effectiveToPay - cashPartNum));
-  const mixedDistributed = round2(Math.min(cashPartNum + cardRemainder, effectiveToPay));
-  const mixedPercent = effectiveToPay > 0
-    ? Math.min(100, Math.round((mixedDistributed / effectiveToPay) * 100))
-    : 0;
-
-  const handleCashPortionChange = useCallback(
-    (next) => {
-      if (next === '') {
-        setCashPortion('');
-        return;
-      }
-      const num = round2(next);
-      const clamped = clampPayAmount(num, effectiveToPay);
-      setCashPortion(amountStr(clamped));
-    },
-    [effectiveToPay],
-  );
-
-  const mixedQuickActions = [
-    { label: t('pos.mixedKeypadHalf'), amount: round2(effectiveToPay / 2) },
-    { label: t('pos.mixedKeypadAll'), amount: effectiveToPay },
-  ];
 
   const tenderedNum = parseTenderedInput(tendered);
   const changeDue = round2(Math.max(0, tenderedNum - effectiveToPay));
@@ -130,42 +95,7 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     };
   };
 
-  const submitMixed = (type) => {
-    if (isPending || cashExceeds) return;
-    const cash = clampPayAmount(cashPartNum, effectiveToPay);
-    const card = round2(Math.max(0, effectiveToPay - cash));
-    if (cash <= 0 && card <= 0 && advanceAmountUsed <= 0) return;
-    onConfirm(withAdvancePayment({
-      paymentMethod: 'MIXED',
-      receiptType,
-      cardType: card > 0.001 ? type : null,
-      cashAmount: cash,
-      cardAmount: card,
-      amountTendered: cash,
-      printReceipt: printReceiptEnabled,
-    }));
-  };
-
-  const proceedFromMixedCash = () => {
-    if (isPending || cashExceeds) return;
-    if (cashPartNum <= 0 && effectiveToPay > 0) {
-      toast.error(t('pos.mixedCashRequired'));
-      return;
-    }
-    if (cardRemainder > 0.001) setStep('mixedCard');
-    else submitMixed(null);
-  };
-
-  const proceedFromMixedCard = () => {
-    if (cardRemainder > 0.001) setStep('cardType');
-    else submitMixed(null);
-  };
-
   const submitCard = (type) => {
-    if (payMethod === 'mixed' || (payMethod === 'advance' && step === 'mixedCard')) {
-      submitMixed(type);
-      return;
-    }
     onConfirm(withAdvancePayment({
       paymentMethod: 'CARD',
       receiptType,
@@ -279,8 +209,6 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
   let stepTitle = t('pos.choosePaymentMethod');
   if (step === 'method') stepTitle = t('pos.choosePaymentMethod');
   else if (step === 'cash') stepTitle = t('pos.payCash');
-  else if (step === 'mixedCash') stepTitle = t('pos.mixedPayTitle');
-  else if (step === 'mixedCard') stepTitle = t('pos.mixedStepCardTitle');
   else if (step === 'cardType') stepTitle = t('pos.cardTypeTitle');
   else if (step === 'advanceAmount') stepTitle = t('pos.advanceAmountTitle');
   else if (step === 'creditCustomer') {
@@ -308,36 +236,24 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
                 setTendered('');
                 setStep('method');
               }
-            : step === 'mixedCash'
-              ? () => (advanceAmountUsed > 0 ? setStep('method') : handleClose())
-              : step === 'mixedCard'
-                ? () => setStep('mixedCash')
-                : step === 'cardType'
-                  ? () => setStep(payMethod === 'mixed' || payMethod === 'advance' ? 'mixedCard' : 'method')
-                  : null;
+            : step === 'cardType'
+              ? () => setStep('method')
+              : null;
 
   const headerPayAmount =
-    (step === 'cardType' && (payMethod === 'mixed' || payMethod === 'advance')) || step === 'mixedCard'
-      ? cardRemainder
-      : step === 'advanceAmount'
-        ? checkTotal
-        : effectiveToPay;
+    step === 'advanceAmount' ? checkTotal : effectiveToPay;
   const showHeaderAmount =
     step === 'creditCustomer' ||
     step === 'advanceAmount' ||
     step === 'method' ||
     step === 'cash' ||
-    step === 'mixedCash' ||
-    step === 'cardType' ||
-    step === 'mixedCard';
+    step === 'cardType';
 
   const showRegisterBackToCheck = step === 'method' || step === 'cash';
   const showPrintToggle = STEPS_WITH_PRINT_TOGGLE.has(step);
   const showFooterPrimary =
     step === 'creditCustomer' ||
     step === 'advanceAmount' ||
-    step === 'mixedCash' ||
-    step === 'mixedCard' ||
     step === 'cash';
 
   return {
@@ -347,8 +263,6 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     payMethod,
     tendered,
     setTendered,
-    cashPortion,
-    setCashPortion,
     printReceiptEnabled,
     toPay: effectiveToPay,
     checkTotal,
@@ -357,15 +271,8 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     advanceBalance,
     handleClose,
     handleMethod,
-    handleCashPortionChange,
     handlePrintReceiptChange,
     submitCard,
-    cashPartNum,
-    cardRemainder,
-    mixedDistributed,
-    mixedPercent,
-    cashExceeds,
-    mixedQuickActions,
     changeDue,
     cashPaidEnough,
     cashShortfall,
@@ -377,8 +284,6 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     submitCreditWithCustomer,
     submitAdvanceAmount,
     creditCustomer,
-    proceedFromMixedCash,
-    proceedFromMixedCard,
     submitCash,
     showRegisterBackToCheck,
     showPrintToggle,

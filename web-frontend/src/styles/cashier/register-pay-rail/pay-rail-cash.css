@@ -79,6 +79,26 @@
   color: #111827;
 }
 
+.pos-register-pay-rail .pos-pay-cash__change-row--card-remainder {
+  color: #1d4ed8;
+}
+
+.pos-register-pay-rail .pos-pay-cash__card-remainder-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  text-align: right;
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #1d4ed8;
+}
+
+.pos-register-pay-rail .pos-pay-cash__hint--card-remainder {
+  margin: 0;
+  color: #2563eb;
+  font-weight: 600;
+}
+
 .pos-register-pay-rail .pos-pay-cash__summary-row,
 .pos-register-pay-rail .pos-pay-cash__change-row {
   text-align: left;
@@ -119,4 +139,16 @@
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
   color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-row--card-remainder {
+  color: var(--pos-green, #3dffa8);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__card-remainder-value {
+  color: var(--pos-green, #3dffa8);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__hint--card-remainder {
+  color: var(--pos-green, #3dffa8);
 }

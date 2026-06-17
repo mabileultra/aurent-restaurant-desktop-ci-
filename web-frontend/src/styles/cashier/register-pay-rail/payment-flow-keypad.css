@@ -1,6 +1,5 @@
-/* Payment flow — cash / mixed cash: без скролла, клавиатура сжимается по высоте */
+/* Payment flow — cash step: без скролла, клавиатура сжимается по высоте */
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__body,
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__body {
   flex: 1 1 auto;
   min-height: 0;
@@ -9,7 +8,6 @@
   overflow: hidden;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step,
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step {
   flex: 1 1 auto;
   min-height: 0;
@@ -20,14 +18,10 @@
   gap: 8px;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__error,
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-cash-panel--terminal {
   flex: 0 0 auto;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad,
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad {
   flex: 1 1 auto;
   min-height: 0;
@@ -42,18 +36,12 @@
   box-sizing: border-box;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__quick {
-  flex: 0 0 auto;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__grid,
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad__grid {
   flex: 1 1 auto;
   min-height: 0;
   grid-template-rows: repeat(4, minmax(0, 1fr));
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key,
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
   min-height: 0;
   height: 100%;

@@ -134,8 +134,7 @@
 /* Стеки для узкой колонки */
 .cashier-app .pos-pay-method-cards--stack,
 .cashier-app .pos-pay-method-cards--register-stack,
-.cashier-app .pos-pay-card-types--stack,
-.cashier-app .pos-pay-mixed-cards--stack {
+.cashier-app .pos-pay-card-types--stack {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -316,26 +315,6 @@
 
 .cashier-app .pos-pay-panel .pos-pay-cash__display {
   font-size: 1.5rem;
-}
-
-.cashier-app .pos-pay-panel .pos-pay-mixed-summary {
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #f9fafb;
-  border: 1px solid var(--pos-border);
-}
-
-.cashier-app .pos-pay-panel .pos-pay-mixed-summary__row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85rem;
-}
-
-.cashier-app .pos-pay-panel .pos-pay-mixed-summary__row--total {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid var(--pos-border);
-  font-weight: 700;
 }
 
 .cashier-app .pos-pay-panel .pos-pay-card-type-hint {

@@ -8,14 +8,6 @@
   padding: 0;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-}
-
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step {
   flex: 1 1 auto;
   min-height: 0;
@@ -25,24 +17,7 @@
   overflow: hidden;
 }
 
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step {
-  flex: 1 1 auto;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  overflow: hidden;
-}
-
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad {
-  flex: 0 0 auto;
-  min-height: 0;
-  max-height: none;
-  margin-top: 0;
-  padding: 0 12px 4px;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad {
   flex: 0 0 auto;
   min-height: 0;
   max-height: none;
@@ -83,8 +58,7 @@
   font-size: 1.5rem;
 }
 
-.pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__actions-wrap,
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__actions-wrap {
+.pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__actions-wrap {
   flex-shrink: 0;
   padding: 8px 12px max(8px, env(safe-area-inset-bottom, 0px));
   gap: 6px;
@@ -94,4 +68,3 @@
 .pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__back-check {
   min-height: 48px;
 }
-

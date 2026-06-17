@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { round2 } from '../../../utils/taxAmounts';
-import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import {
   isPosReceiptPrintEnabled,
   setPosReceiptPrintEnabled,
@@ -29,8 +28,10 @@ export function usePosRegisterPayRail({
   const tenderedNum = parseTenderedInput(tendered);
   const changeDue = round2(Math.max(0, tenderedNum - toPay));
   const cashPaidEnough = tenderedNum >= toPay && tenderedNum > 0;
-  const cashShortfall =
+  const cardRemainder =
     tenderedNum > 0 && tenderedNum < toPay ? round2(toPay - tenderedNum) : 0;
+  const hasPartialCash = cardRemainder > 0;
+  const cardPayBlocked = tenderedNum >= toPay && tenderedNum > 0;
 
   const guardCheckout = useCallback(() => {
     if (checkoutDisabled || isPending) return false;
@@ -42,23 +43,18 @@ export function usePosRegisterPayRail({
   }, [checkoutDisabled, isPending, toPay, t]);
 
   const submitCash = useCallback(() => {
-      if (!guardCheckout()) return;
-      const entered = parseTenderedInput(tendered);
-      const amountTendered = entered > 0 ? entered : toPay;
-      if (amountTendered < toPay) {
-        toast.error(t('pos.cashShortfall', { amount: fmt(round2(toPay - amountTendered)) }));
-        return;
-      }
-      onConfirm({
-        paymentMethod: 'CASH',
-        receiptType: 'SALE',
-        cardType: null,
-        amountTendered,
-        printReceipt: printReceiptEnabled,
-      });
-    },
-    [guardCheckout, onConfirm, printReceiptEnabled, t, tendered, toPay],
-  );
+    if (!guardCheckout() || hasPartialCash) return;
+    const entered = parseTenderedInput(tendered);
+    const amountTendered = entered > 0 ? entered : toPay;
+    if (amountTendered < toPay) return;
+    onConfirm({
+      paymentMethod: 'CASH',
+      receiptType: 'SALE',
+      cardType: null,
+      amountTendered,
+      printReceipt: printReceiptEnabled,
+    });
+  }, [guardCheckout, hasPartialCash, onConfirm, printReceiptEnabled, tendered, toPay]);
 
   const handlePrintReceiptChange = useCallback((event) => {
     const next = Boolean(event.target.checked);
@@ -68,7 +64,20 @@ export function usePosRegisterPayRail({
 
   const submitCard = useCallback(
     (cardType) => {
-      if (!guardCheckout()) return;
+      if (!guardCheckout() || cardPayBlocked) return;
+      const entered = parseTenderedInput(tendered);
+      if (hasPartialCash) {
+        onConfirm({
+          paymentMethod: 'MIXED',
+          receiptType: 'SALE',
+          cardType,
+          cashAmount: entered,
+          cardAmount: cardRemainder,
+          amountTendered: entered,
+          printReceipt: isPosReceiptPrintEnabled(),
+        });
+        return;
+      }
       onConfirm({
         paymentMethod: 'CARD',
         receiptType: 'SALE',
@@ -77,7 +86,7 @@ export function usePosRegisterPayRail({
         printReceipt: isPosReceiptPrintEnabled(),
       });
     },
-    [guardCheckout, onConfirm, toPay],
+    [cardPayBlocked, cardRemainder, guardCheckout, hasPartialCash, onConfirm, tendered, toPay],
   );
 
   const submitCashless = useCallback(() => {
@@ -90,11 +99,6 @@ export function usePosRegisterPayRail({
       printReceipt: isPosReceiptPrintEnabled(),
     });
   }, [guardCheckout, onConfirm, toPay]);
-
-  const openMixed = useCallback(() => {
-    if (!guardCheckout()) return;
-    onOpenPaymentFlow({ step: 'mixedCash', payMethod: 'mixed' });
-  }, [guardCheckout, onOpenPaymentFlow]);
 
   const openCredit = useCallback(() => {
     if (!guardCheckout()) return;
@@ -112,14 +116,16 @@ export function usePosRegisterPayRail({
     toPay,
     changeDue,
     cashPaidEnough,
-    cashShortfall,
+    cardRemainder,
+    hasPartialCash,
+    cardPayBlocked,
     submitCash,
     submitCard,
     submitCashless,
-    openMixed,
     openCredit,
     openAdvance,
     printReceiptEnabled,
     handlePrintReceiptChange,
+    saleDisabled: checkoutDisabled || isPending || hasPartialCash,
   };
 }

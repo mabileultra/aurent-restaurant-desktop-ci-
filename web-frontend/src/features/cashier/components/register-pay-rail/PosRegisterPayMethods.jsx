@@ -4,7 +4,6 @@ import { REGISTER_PAY_METHODS } from '../../constants/posRegisterPayConstants';
 export default function PosRegisterPayMethods({
   disabled,
   onCashless,
-  onMixed,
   onCredit,
   onAdvance,
 }) {
@@ -12,7 +11,6 @@ export default function PosRegisterPayMethods({
 
   const handlers = {
     cashless: onCashless,
-    mixed: onMixed,
     credit: onCredit,
     advance: onAdvance,
   };

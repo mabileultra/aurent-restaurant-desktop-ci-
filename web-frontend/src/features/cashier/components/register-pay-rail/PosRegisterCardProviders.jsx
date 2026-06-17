@@ -1,13 +1,23 @@
 import { useTranslation } from 'react-i18next';
 import { REGISTER_CARD_PROVIDERS } from '../../constants/posRegisterPayConstants';
 
-export default function PosRegisterCardProviders({ disabled, isPending, onSelectCard }) {
+export default function PosRegisterCardProviders({
+  disabled,
+  isPending,
+  cardPayBlocked,
+  hasCardRemainder,
+  onSelectCard,
+}) {
   const { t } = useTranslation();
 
   return (
-    <div className="pos-register-card-providers">
+    <div
+      className={`pos-register-card-providers${
+        hasCardRemainder ? ' pos-register-card-providers--remainder' : ''
+      }`}
+    >
       {REGISTER_CARD_PROVIDERS.map((provider) => {
-        const isDisabled = disabled || isPending || !provider.enabled;
+        const isDisabled = disabled || isPending || cardPayBlocked || !provider.enabled;
         const label = t(provider.labelKey);
 
         return (

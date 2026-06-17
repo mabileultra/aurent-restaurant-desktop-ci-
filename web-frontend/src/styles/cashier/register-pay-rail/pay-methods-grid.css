@@ -1,11 +1,11 @@
-/* Pay rail — method tiles (одинаковый размер, 4 колонки как у логотипов карт) */
+/* Pay rail — method tiles */
 .pos-register-pay-methods {
   flex-shrink: 0;
 }
 
 .pos-register-pay-methods__grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(5px, 1.8cqi, 8px);
 }
 

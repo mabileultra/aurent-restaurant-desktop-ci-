@@ -7,7 +7,8 @@ export default function PosRegisterPayCashPanel({
   tendered,
   changeDue,
   cashPaidEnough,
-  cashShortfall,
+  cardRemainder,
+  hasPartialCash,
 }) {
   const { t } = useTranslation();
 
@@ -22,16 +23,26 @@ export default function PosRegisterPayCashPanel({
         <span className="pos-pay-cash__received-label">{t('pos.receivedLabel')}</span>
         <PosPayCashReceivedValue tendered={tendered} />
       </div>
-      <div
-        className={`pos-pay-cash__change-row${cashPaidEnough ? ' pos-pay-cash__change-row--ready' : ''}`}
-        aria-live="polite"
-      >
-        <span>{t('pos.change')}</span>
-        <PosPayCashChangeValue changeDue={changeDue} ready={cashPaidEnough} />
-      </div>
-      {cashShortfall > 0 ? (
-        <p className="pos-pay-cash__shortfall" role="status">
-          {t('pos.cashShortfall', { amount: fmt(cashShortfall) })}
+      {hasPartialCash ? (
+        <div
+          className="pos-pay-cash__change-row pos-pay-cash__change-row--card-remainder"
+          aria-live="polite"
+        >
+          <span>{t('pos.cardRemainderRail')}</span>
+          <strong className="pos-pay-cash__card-remainder-value">{fmt(cardRemainder)}</strong>
+        </div>
+      ) : (
+        <div
+          className={`pos-pay-cash__change-row${cashPaidEnough ? ' pos-pay-cash__change-row--ready' : ''}`}
+          aria-live="polite"
+        >
+          <span>{t('pos.change')}</span>
+          <PosPayCashChangeValue changeDue={changeDue} ready={cashPaidEnough} />
+        </div>
+      )}
+      {hasPartialCash ? (
+        <p className="pos-pay-cash__hint pos-pay-cash__hint--card-remainder" role="status">
+          {t('pos.cardRemainderHint')}
         </p>
       ) : null}
     </div>

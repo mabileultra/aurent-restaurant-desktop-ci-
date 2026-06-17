@@ -1,6 +1,5 @@
 /* Pay rail — card type step */
-.pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__body,
-.pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-panel__body {
+.pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__body {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -9,8 +8,7 @@
   padding: 0;
 }
 
-.pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__step,
-.pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-panel__step {
+.pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__step {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -39,18 +37,6 @@
   width: 100%;
   gap: 10px;
   margin: auto 0;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-mixed-summary {
-  flex: 0 0 auto;
-  width: 100%;
-  margin: auto 0;
-  padding: 12px 14px;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCard .pos-pay-panel__actions-wrap {
-  flex-shrink: 0;
-  padding: 8px 12px max(8px, env(safe-area-inset-bottom, 0px));
 }
 
 .pos-pay-panel--register-rail.is-step-cardType .pos-pay-panel__actions-wrap:empty {

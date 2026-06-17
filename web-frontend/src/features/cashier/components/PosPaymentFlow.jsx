@@ -3,8 +3,6 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PrintReceiptToggle from './payment/PrintReceiptToggle';
 import PosPaymentMethodStep from './payment/PosPaymentMethodStep';
 import PosPaymentCashStep from './payment/PosPaymentCashStep';
-import PosPaymentMixedCashStep from './payment/PosPaymentMixedCashStep';
-import PosPaymentMixedCardStep from './payment/PosPaymentMixedCardStep';
 import PosPaymentCardTypeStep from './payment/PosPaymentCardTypeStep';
 import PosPaymentFlowFooterPrimary from './payment/PosPaymentFlowFooterPrimary';
 import PosPayFlowFooter from './payment/PosPayFlowFooter';
@@ -36,16 +34,12 @@ export default function PosPaymentFlow({
     <PosPaymentFlowFooterPrimary
       step={p.step}
       isPending={p.isPending}
-      cashExceeds={p.cashExceeds}
       cashPaidEnough={p.cashPaidEnough}
-      cardRemainder={p.cardRemainder}
       payMethod={p.payMethod}
       t={p.t}
       onSubmitCreditWithCustomer={p.submitCreditWithCustomer}
       onSubmitAdvanceAmount={p.submitAdvanceAmount}
       creditCustomerSelected={Boolean(p.creditCustomer.selectedId)}
-      onProceedFromMixedCash={p.proceedFromMixedCash}
-      onProceedFromMixedCard={p.proceedFromMixedCard}
       onSubmitCash={p.submitCash}
     />
   ) : null;
@@ -130,28 +124,6 @@ export default function PosPaymentFlow({
           </div>
         ) : (
           <>
-            {p.step === 'mixedCash' && (
-              <PosPaymentMixedCashStep
-                t={p.t}
-                toPay={p.toPay}
-                cashPortion={p.cashPortion}
-                setCashPortion={p.setCashPortion}
-                cardRemainder={p.cardRemainder}
-                mixedDistributed={p.mixedDistributed}
-                mixedPercent={p.mixedPercent}
-                cashExceeds={p.cashExceeds}
-                mixedQuickActions={p.mixedQuickActions}
-                handleCashPortionChange={p.handleCashPortionChange}
-                isPending={p.isPending}
-              />
-            )}
-            {p.step === 'mixedCard' && (
-              <PosPaymentMixedCardStep
-                t={p.t}
-                cashPartNum={p.cashPartNum}
-                cardRemainder={p.cardRemainder}
-              />
-            )}
             {p.step === 'cardType' && (
               <PosPaymentCardTypeStep t={p.t} isPending={p.isPending} submitCard={p.submitCard} />
             )}
