@@ -2,7 +2,6 @@ import { Outlet } from 'react-router-dom';
 import {
   CashierLockOverlay,
   CashierShiftModal,
-  OfflineStatusBanner,
 } from '../../features/cashier';
 import { CashierShiftModalProvider } from '../../contexts/CashierShiftModalContext';
 import { CashierLockProvider } from '../../contexts/CashierLockContext';
@@ -36,7 +35,6 @@ function CashierLayoutShell() {
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
             />
-            {p.isDesktopApp ? <OfflineStatusBanner /> : null}
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />
             </main>
@@ -55,7 +53,6 @@ function CashierLayoutShell() {
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
             />
-            {p.isDesktopApp ? <OfflineStatusBanner /> : null}
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />
             </main>

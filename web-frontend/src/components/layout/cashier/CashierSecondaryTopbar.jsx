@@ -1,4 +1,4 @@
-import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
+import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
@@ -23,12 +23,15 @@ export default function CashierSecondaryTopbar({
           {!isDesktopApp ? (
             <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
           ) : null}
-          <CashierTopbarTerminalMeta
-            t={t}
-            storeName={storeName}
-            shiftOpenBadge={shiftOpenBadge}
-            shift={shift}
-          />
+          <div className="cashier-topbar__terminal-strip d-none d-md-flex">
+            <CashierTopbarTerminalMeta
+              t={t}
+              storeName={storeName}
+              shiftOpenBadge={shiftOpenBadge}
+              shift={shift}
+            />
+            {isDesktopApp ? <OfflineStatusTopbar /> : null}
+          </div>
           <CashierPosTopbarCashier name={cashierName} />
         </div>
         <div className="cashier-topbar__actions">

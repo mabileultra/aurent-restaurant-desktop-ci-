@@ -1,6 +1,6 @@
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
-import { CloudOff, RefreshCw, Wifi } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCashierStore } from '../../../hooks/useCashierStore';
@@ -35,7 +35,7 @@ function invalidatePosData(qc, storeId) {
   }
 }
 
-export default function OfflineStatusBanner() {
+export function useOfflineStatus() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { storeId } = useCashierStore();
@@ -53,26 +53,15 @@ export default function OfflineStatusBanner() {
   const offlineAllowed = userHasCashierOfflineAccess(user);
   const posRoute = usePosRoute(storeId);
 
-  if (!isDesktopOfflineBridge()) return null;
-
-  if (!offlineAllowed && (offlineMode || forceOfflineMode)) {
-    return (
-      <div className="offline-banner offline-banner--warn" role="status">
-        <span className="offline-banner__icon">
-          <CloudOff size={16} aria-hidden />
-        </span>
-        <span className="offline-banner__text">{t('offline.notAllowed')}</span>
-      </div>
-    );
-  }
-
+  const visible = isDesktopOfflineBridge();
+  const notAllowed = !offlineAllowed && (offlineMode || forceOfflineMode);
   const networkOffline = offlineMode || !apiOnline;
   const showOffline = forceOfflineMode || networkOffline || posRoute.route === 'local';
   const showPending = apiOnline && pendingSales > 0;
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
 
-  const handleToggleForceOffline = (enabled) => {
+  const handleToggleForceOffline = useCallback((enabled) => {
     if (enabled && !canSellOffline && !posRoute.hasCatalog) {
       toast.error(t('offline.noCatalog'));
       return;
@@ -80,9 +69,9 @@ export default function OfflineStatusBanner() {
     useConnectivityStore.getState().setForceOfflineMode(enabled);
     invalidatePosData(qc, storeId);
     toast.success(enabled ? t('offline.forceOfflineOn') : t('offline.forceOfflineOff'));
-  };
+  }, [canSellOffline, posRoute.hasCatalog, qc, storeId, t]);
 
-  const handleSyncSales = async () => {
+  const handleSyncSales = useCallback(async () => {
     useConnectivityStore.getState().setSyncing(true);
     try {
       await pushPendingSales();
@@ -94,9 +83,9 @@ export default function OfflineStatusBanner() {
         error: err?.message || String(err),
       });
     }
-  };
+  }, []);
 
-  const handleRefreshCatalog = async () => {
+  const handleRefreshCatalog = useCallback(async () => {
     if (!storeId) return;
     if (forceOfflineMode || networkOffline) {
       toast.error(t('offline.updateCatalogNeedsInternet'));
@@ -124,85 +113,74 @@ export default function OfflineStatusBanner() {
     } finally {
       useConnectivityStore.getState().setSyncingCatalog(false);
     }
-  };
+  }, [forceOfflineMode, networkOffline, qc, storeId, t]);
 
   let message = t('offline.onlineOk');
-  let tone = 'offline-banner--ok';
+  let shortLabel = t('offline.topbarOnline');
+  let tone = 'ok';
 
-  if (forceOfflineMode && !posRoute.hasCatalog) {
+  if (notAllowed) {
+    message = t('offline.notAllowed');
+    shortLabel = t('offline.topbarDenied');
+    tone = 'warn';
+  } else if (forceOfflineMode && !posRoute.hasCatalog) {
     message = t('offline.forceOfflineNoCatalog');
-    tone = 'offline-banner--warn';
+    shortLabel = t('offline.topbarNoCatalog');
+    tone = 'warn';
   } else if (showOffline && !canSellOffline && !posRoute.hasCatalog) {
     message = t('offline.noCatalog');
-    tone = 'offline-banner--warn';
+    shortLabel = t('offline.topbarNoCatalog');
+    tone = 'warn';
   } else if (forceOfflineMode) {
     message = t('offline.forceOfflineActive');
-    tone = 'offline-banner--offline';
+    shortLabel = t('offline.topbarOffline');
+    tone = 'offline';
   } else if (showOffline) {
     message = t('offline.workingOffline');
-    tone = 'offline-banner--offline';
+    shortLabel = t('offline.topbarOffline');
+    tone = 'offline';
   } else if (showPending) {
     message = t('offline.pendingSales', { count: pendingSales });
-    tone = 'offline-banner--pending';
+    shortLabel = t('offline.topbarPending', { count: pendingSales });
+    tone = 'pending';
   } else if (!bootstrapReady && apiOnline) {
     message = t('offline.preparingCatalog');
+    shortLabel = t('offline.topbarSyncing');
+    tone = 'pending';
   } else if (showCatalogStrip && catalogLabel) {
     message = t('offline.catalogFresh', {
       date: catalogLabel,
       count: productCount,
     });
+    shortLabel = t('offline.topbarOnline');
+    tone = 'ok';
   }
 
-  return (
-    <div className={`offline-banner ${tone}`} role="status">
-      <span className="offline-banner__icon">
-        {showOffline ? <CloudOff size={16} aria-hidden /> : <Wifi size={16} aria-hidden />}
-      </span>
-      <span className="offline-banner__text">{message}</span>
-      <div className="offline-banner__actions">
-        {offlineAllowed && !forceOfflineMode && canSellOffline ? (
-          <button
-            type="button"
-            className="offline-banner__action btn btn-sm btn-outline-light"
-            onClick={() => handleToggleForceOffline(true)}
-          >
-            <CloudOff size={14} aria-hidden />
-            {t('offline.switchToOffline')}
-          </button>
-        ) : null}
-        {offlineAllowed && forceOfflineMode ? (
-          <button
-            type="button"
-            className="offline-banner__action btn btn-sm btn-outline-light"
-            onClick={() => handleToggleForceOffline(false)}
-          >
-            <Wifi size={14} aria-hidden />
-            {t('offline.switchToOnline')}
-          </button>
-        ) : null}
-        {showPending && apiOnline ? (
-          <button
-            type="button"
-            className="offline-banner__action btn btn-sm btn-outline-light"
-            disabled={syncing}
-            onClick={handleSyncSales}
-          >
-            <RefreshCw size={14} className={syncing ? 'spin' : ''} aria-hidden />
-            {syncing ? t('offline.syncing') : t('offline.syncSales')}
-          </button>
-        ) : null}
-        {apiOnline && !forceOfflineMode && !networkOffline ? (
-          <button
-            type="button"
-            className="offline-banner__action btn btn-sm btn-outline-light"
-            disabled={syncingCatalog}
-            onClick={handleRefreshCatalog}
-          >
-            <RefreshCw size={14} className={syncingCatalog ? 'spin' : ''} aria-hidden />
-            {syncingCatalog ? t('offline.updatingCatalog') : t('offline.updateCatalog')}
-          </button>
-        ) : null}
-      </div>
-    </div>
-  );
+  return {
+    visible,
+    notAllowed,
+    message,
+    shortLabel,
+    tone,
+    showOffline,
+    showPending,
+    offlineAllowed,
+    forceOfflineMode,
+    canSellOffline,
+    apiOnline,
+    networkOffline,
+    syncing,
+    syncingCatalog,
+    actions: {
+      showSwitchOffline: offlineAllowed && !forceOfflineMode && canSellOffline,
+      showSwitchOnline: offlineAllowed && forceOfflineMode,
+      showSyncSales: showPending && apiOnline,
+      showRefreshCatalog: apiOnline && !forceOfflineMode && !networkOffline,
+    },
+    handlers: {
+      toggleForceOffline: handleToggleForceOffline,
+      syncSales: handleSyncSales,
+      refreshCatalog: handleRefreshCatalog,
+    },
+  };
 }

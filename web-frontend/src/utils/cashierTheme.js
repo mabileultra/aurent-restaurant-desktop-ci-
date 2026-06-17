@@ -1,3 +1,5 @@
+import { syncCashierDocumentPaint } from './cashierDocumentPaint';
+
 export const CASHIER_THEME_STORAGE_KEY = 'pos-cashier-theme';
 
 /** @typedef {'dark' | 'light'} CashierTheme */
@@ -33,6 +35,7 @@ export function syncCashierThemeDocument(theme) {
   const root = document.documentElement;
   root.classList.remove('cashier-theme--light', 'cashier-theme--dark');
   root.classList.add(theme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark');
+  syncCashierDocumentPaint(theme);
 }
 
 /** Сброс классов кассы при уходе с /cashier (админка остаётся светлой). */

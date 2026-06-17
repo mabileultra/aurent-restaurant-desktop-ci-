@@ -1,46 +1,53 @@
-/* Pay rail — inline клавиатура заполняет оставшуюся высоту, все 4 ряда видны */
+/* Pay rail — inline клавиатура: 4 ряда в доступной высоте, без наложения на способы оплаты */
 
 .pos-register-pay-rail {
   min-height: 0;
 }
 
 .pos-register-pay-rail__pay-block {
-  position: relative;
-  z-index: 1;
   flex-shrink: 0;
 }
 
 .pos-register-pay-rail__keypad-wrap {
   container-type: size;
   container-name: pay-keypad-wrap;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1 1 0;
+  min-height: 148px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  justify-content: stretch;
-}
-
-.cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 1 1 auto;
-  min-height: 0;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  justify-content: stretch;
+  justify-content: center;
   align-items: stretch;
 }
 
-.cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-  flex: 1 1 auto;
-  width: 100%;
-  max-width: 100%;
-  height: 100%;
+.cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
+  flex: 0 1 auto;
   min-height: 0;
-  margin-inline: 0;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, 1fr));
-  gap: var(--pos-keypad-gap, 8px);
+  width: 100%;
+  max-height: 100%;
+  overflow: hidden;
+  justify-content: center;
+  align-items: center;
+}
+
+.cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
+  --pos-keypad-rail-gap: var(--pos-keypad-gap, 8px);
+  --pos-keypad-rail-row-h: max(32px, calc((100cqh - var(--pos-keypad-rail-gap) * 3) / 4));
+  --pos-keypad-rail-col-w: max(32px, calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3));
+  --pos-keypad-rail-cell: min(var(--pos-keypad-rail-col-w), var(--pos-keypad-rail-row-h));
+  flex: 0 1 auto;
+  width: min(100%, calc(var(--pos-keypad-rail-cell) * 3 + var(--pos-keypad-rail-gap) * 2));
+  max-width: 100%;
+  height: min(
+    100%,
+    calc(var(--pos-keypad-rail-cell) * 4 + var(--pos-keypad-rail-gap) * 3)
+  );
+  max-height: 100%;
+  min-height: 0;
+  margin-inline: auto;
+  grid-template-columns: repeat(3, minmax(0, var(--pos-keypad-rail-cell)));
+  grid-template-rows: repeat(4, minmax(0, var(--pos-keypad-rail-cell)));
+  gap: var(--pos-keypad-rail-gap);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
@@ -48,9 +55,9 @@
   height: 100%;
   min-height: 0;
   max-height: none;
-  aspect-ratio: unset;
+  aspect-ratio: 1;
   padding: 0 clamp(2px, 1cqi, 6px);
-  font-size: clamp(1rem, 4.5cqi, 1.375rem);
+  font-size: clamp(0.875rem, min(4.5cqi, 18cqh), 1.375rem);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
@@ -105,7 +112,27 @@
   max-height: none;
 }
 
-/* Компактная колонка по высоте */
+/* Компактная колонка по высоте — освобождаем место под клавиатуру */
+@container pay-shell (max-height: 900px) {
+  .pos-register-pay-rail .pos-pay-cash__hint {
+    display: none;
+  }
+
+  .pos-register-pay-rail__pay-block {
+    gap: 6px;
+  }
+
+  .pos-register-pay-methods__tile,
+  .pos-register-card-providers__btn {
+    min-height: clamp(40px, 11cqi, 52px);
+    padding-block: clamp(4px, 1.5cqi, 8px);
+  }
+
+  .pos-register-card-providers__logo {
+    max-height: clamp(22px, 7cqi, 30px);
+  }
+}
+
 @container pay-shell (max-height: 760px) {
   .pos-register-pay-rail .pos-register-pay-cash {
     gap: 8px;
@@ -121,13 +148,13 @@
     font-size: clamp(1.35rem, 8cqi, 1.85rem);
   }
 
-  .pos-register-pay-rail .pos-pay-cash__hint {
-    display: none;
+  .pos-register-pay-rail__keypad-wrap {
+    min-height: 132px;
   }
 
   .pos-register-pay-methods__tile,
   .pos-register-card-providers__btn {
-    min-height: clamp(44px, 13cqi, 56px);
+    min-height: clamp(38px, 10cqi, 48px);
   }
 }
 
@@ -137,14 +164,30 @@
     padding: 10px 12px;
   }
 
+  .pos-register-pay-rail__keypad-wrap {
+    min-height: 120px;
+  }
+
   .pos-register-pay-methods__tile,
   .pos-register-card-providers__btn {
-    min-height: 42px;
-    padding-block: 6px;
+    min-height: 36px;
+    padding-block: 5px;
   }
 
   .pos-register-pay-methods__tile-label {
     font-size: 0.5625rem;
+  }
+
+  .pos-register-pay-rail__tool {
+    min-height: 40px;
+    padding-block: 8px;
+    font-size: 0.8125rem;
+  }
+
+  .pos-register-pay-footer__sale {
+    min-height: 44px;
+    padding-block: 8px;
+    font-size: 0.8125rem;
   }
 }
 

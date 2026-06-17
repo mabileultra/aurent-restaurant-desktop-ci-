@@ -2,7 +2,7 @@ export default function CashierTopbarTerminalMeta({ t, storeName, shiftOpenBadge
   if (!storeName && !shiftOpenBadge) return null;
 
   return (
-    <div className="cashier-topbar__terminal-meta d-none d-md-flex">
+    <>
       {storeName ? (
         <span className="cashier-topbar__terminal-badge" title={storeName}>
           {storeName}
@@ -16,6 +16,6 @@ export default function CashierTopbarTerminalMeta({ t, storeName, shiftOpenBadge
           {shiftOpenBadge}
         </span>
       ) : null}
-    </div>
+    </>
   );
 }

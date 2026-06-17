@@ -9,6 +9,7 @@ const { probeApiHealth } = require('../network/api-health.cjs');
 const { showSetupWindow, configPath } = require('../setup/setup-window.cjs');
 const { showServerSetupPasswordWindow } = require('../setup/password-window.cjs');
 const state = require('../bootstrap/state.cjs');
+const { reloadWebContents, applyCashierWindowBackground } = require('./reload-page.cjs');
 
 function buildLoginUrl(cfg) {
   const base = `${String(cfg.cashierUrl || '').replace(/\/$/, '')}/cashier/login`;
@@ -52,6 +53,7 @@ async function reloadCashierLogin(cfg, { clearSession = false } = {}) {
   if (clearSession) {
     await clearCashierWebStorage(cfg);
   }
+  applyCashierWindowBackground(mainWindow);
   mainWindow.loadURL(buildLoginUrl(cfg));
 }
 
@@ -102,8 +104,9 @@ async function reloadCashierPage() {
     const isLocal =
       current.includes('127.0.0.1') || current.includes('localhost') || current.startsWith('file:');
     if (isLocal) {
-      mainWindow.webContents.reload();
+      return reloadWebContents(mainWindow);
     } else {
+      applyCashierWindowBackground(mainWindow);
       await mainWindow.loadURL(`${config.cashierUrl}${pathPart}`);
     }
     return { ok: true };
@@ -120,8 +123,7 @@ async function reloadCashierPage() {
     });
     return { ok: false };
   }
-  mainWindow.webContents.reload();
-  return { ok: true };
+  return reloadWebContents(mainWindow);
 }
 
 async function openServerSettings() {

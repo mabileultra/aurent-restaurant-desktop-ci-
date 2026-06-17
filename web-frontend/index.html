@@ -4,20 +4,44 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#f1f5f9" />
+    <meta name="theme-color" content="#0c1018" />
+    <style>
+      html.cashier-theme--dark,
+      html.cashier-theme--dark body {
+        background-color: #0c1018;
+      }
+      html.cashier-theme--light,
+      html.cashier-theme--light body {
+        background-color: #e9eef4;
+      }
+    </style>
     <script>
       (function () {
         try {
           document.documentElement.classList.remove('dark');
-          document.documentElement.style.colorScheme = 'light';
-          localStorage.removeItem('pos-theme');
-          if (location.pathname.indexOf('/cashier') === 0) {
-            var cashierTheme = localStorage.getItem('pos-cashier-theme');
+          var isCashier = location.pathname.indexOf('/cashier') === 0;
+          var cashierTheme = 'dark';
+          if (isCashier) {
+            cashierTheme = localStorage.getItem('pos-cashier-theme');
             if (cashierTheme !== 'light' && cashierTheme !== 'dark') cashierTheme = 'dark';
             document.documentElement.classList.remove('cashier-theme--light', 'cashier-theme--dark');
             document.documentElement.classList.add(
               cashierTheme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark'
             );
+          }
+          if (isCashier) {
+            var bg = cashierTheme === 'light' ? '#e9eef4' : '#0c1018';
+            var scheme = cashierTheme === 'light' ? 'light' : 'dark';
+            document.documentElement.style.backgroundColor = bg;
+            document.documentElement.style.colorScheme = scheme;
+            document.addEventListener('DOMContentLoaded', function () {
+              document.body.style.backgroundColor = bg;
+            });
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', bg);
+          } else {
+            document.documentElement.style.colorScheme = 'light';
+            localStorage.removeItem('pos-theme');
           }
         } catch (e) {
           /* ignore */

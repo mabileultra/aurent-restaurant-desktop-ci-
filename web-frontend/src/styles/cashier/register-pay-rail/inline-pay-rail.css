@@ -22,8 +22,7 @@
 }
 
 .pos-register-pay-rail__keypad-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
 }

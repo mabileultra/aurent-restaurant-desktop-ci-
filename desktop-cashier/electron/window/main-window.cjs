@@ -8,6 +8,7 @@ const { resolveWebDist } = require('../network/embedded-server.cjs');
 const { buildLoginUrl, ensureEmbeddedUiRunning } = require('./cashier-session.cjs');
 const { isAllowedLocation } = require('./navigation.cjs');
 const state = require('../bootstrap/state.cjs');
+const { CASHIER_BG_DARK } = require('./reload-page.cjs');
 const { windowIconOptions } = require('../core/window-icon.cjs');
 
 function fitWindowToPosDisplay(win) {
@@ -34,7 +35,7 @@ function createMainWindow() {
     center: true,
     title: 'Aurent — Касса',
     autoHideMenuBar: process.platform === 'darwin',
-    backgroundColor: '#f1f5f9',
+    backgroundColor: CASHIER_BG_DARK,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

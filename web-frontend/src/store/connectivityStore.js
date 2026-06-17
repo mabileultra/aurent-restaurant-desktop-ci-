@@ -18,30 +18,47 @@ import { resolvePosRoute } from '../services/pos/posRouteResolver';
 
 /** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
 const ONLINE_RECOVERY_STREAK = 2;
+/** Offline — после двух подряд неудачных probe (меньше мигания полоски). */
+const OFFLINE_FAILURE_STREAK = 2;
 const CONNECTIVITY_POLL_MS = 2_000;
 /** После 502/таймаута API не переключаться обратно в online сразу (probe может мигать). */
 const API_UNREACHABLE_COOLDOWN_MS = 12_000;
 let stableApiOnline = null;
 let onlineRecoveryStreak = 0;
+let offlineFailureStreak = 0;
 let apiUnreachableUntil = 0;
 
 export function resetConnectivityStabilizer() {
   stableApiOnline = null;
   onlineRecoveryStreak = 0;
+  offlineFailureStreak = 0;
   apiUnreachableUntil = 0;
 }
 
 function stabilizeApiOnline(rawOnline) {
-  if (!rawOnline) {
-    stableApiOnline = false;
-    onlineRecoveryStreak = 0;
-    return false;
-  }
   if (Date.now() < apiUnreachableUntil) {
     stableApiOnline = false;
     onlineRecoveryStreak = 0;
+    offlineFailureStreak = 0;
     return false;
   }
+
+  if (!rawOnline) {
+    offlineFailureStreak += 1;
+    if (stableApiOnline === null || stableApiOnline === false) {
+      stableApiOnline = false;
+      onlineRecoveryStreak = 0;
+      return false;
+    }
+    if (offlineFailureStreak >= OFFLINE_FAILURE_STREAK) {
+      stableApiOnline = false;
+      onlineRecoveryStreak = 0;
+      return false;
+    }
+    return true;
+  }
+
+  offlineFailureStreak = 0;
   if (stableApiOnline === null) {
     stableApiOnline = rawOnline;
     onlineRecoveryStreak = rawOnline ? 1 : 0;
@@ -55,6 +72,36 @@ function stabilizeApiOnline(rawOnline) {
     return stableApiOnline;
   }
   return true;
+}
+
+function connectivityFields(state) {
+  return {
+    apiOnline: state.apiOnline,
+    offlineMode: state.offlineMode,
+    canSellOffline: state.canSellOffline,
+    bootstrapReady: state.bootstrapReady,
+    pendingSales: state.pendingSales,
+    lastCatalogSyncAt: state.lastCatalogSyncAt,
+    productCount: state.productCount,
+    storeId: state.storeId,
+    storeName: state.storeName,
+    deviceId: state.deviceId,
+  };
+}
+
+function connectivityFieldsEqual(a, b) {
+  return (
+    a.apiOnline === b.apiOnline
+    && a.offlineMode === b.offlineMode
+    && a.canSellOffline === b.canSellOffline
+    && a.bootstrapReady === b.bootstrapReady
+    && a.pendingSales === b.pendingSales
+    && a.lastCatalogSyncAt === b.lastCatalogSyncAt
+    && a.productCount === b.productCount
+    && a.storeId === b.storeId
+    && a.storeName === b.storeName
+    && a.deviceId === b.deviceId
+  );
 }
 
 export function isConnectivityOfflineLike(state = useConnectivityStore.getState()) {
@@ -86,7 +133,7 @@ export const useConnectivityStore = create((set, get) => ({
     const rawOfflineMode =
       status.offlineMode !== undefined ? Boolean(status.offlineMode) : !rawApiOnline;
     const apiOnline = rawOfflineMode ? false : stabilizeApiOnline(rawApiOnline);
-    set({
+    const next = {
       apiOnline,
       offlineMode: !apiOnline,
       canSellOffline:
@@ -118,7 +165,9 @@ export const useConnectivityStore = create((set, get) => ({
       storeName:
         status.storeName !== undefined ? status.storeName || null : prev.storeName,
       deviceId: status.deviceId !== undefined ? status.deviceId || null : prev.deviceId,
-    });
+    };
+    if (connectivityFieldsEqual(connectivityFields(prev), next)) return;
+    set(next);
   },
 
   setSyncing(syncing) {
@@ -157,6 +206,7 @@ export function markApiUnreachable() {
   apiUnreachableUntil = Date.now() + API_UNREACHABLE_COOLDOWN_MS;
   stableApiOnline = false;
   onlineRecoveryStreak = 0;
+  offlineFailureStreak = OFFLINE_FAILURE_STREAK;
   if (!state.apiOnline && state.offlineMode) return;
   useConnectivityStore.getState().applyStatus({ apiOnline: false, offlineMode: true });
 }
@@ -166,6 +216,7 @@ export function markApiReachable() {
   apiUnreachableUntil = 0;
   stableApiOnline = true;
   onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
+  offlineFailureStreak = 0;
   useConnectivityStore.getState().applyStatus({ apiOnline: true, offlineMode: false });
 }
 

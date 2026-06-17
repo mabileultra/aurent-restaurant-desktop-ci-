@@ -1,0 +1,167 @@
+/* Desktop topbar — компактный индикатор online/offline в одной строке с магазином и сменой */
+
+.offline-topbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  max-width: min(18rem, 34vw);
+  min-height: 28px;
+  padding: 2px 4px 2px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.offline-topbar__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+
+.offline-topbar__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.offline-topbar__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.offline-topbar__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.offline-topbar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.9;
+  transition: background 0.12s ease, opacity 0.12s ease;
+}
+
+.offline-topbar__btn:hover:not(:disabled) {
+  opacity: 1;
+  background: rgb(15 23 42 / 0.08);
+}
+
+.offline-topbar__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.offline-topbar__spin {
+  animation: offline-topbar-spin 0.9s linear infinite;
+}
+
+@keyframes offline-topbar-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.offline-topbar--ok {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.offline-topbar--offline {
+  color: #92400e;
+  background: #fef3c7;
+  border-color: #fcd34d;
+}
+
+.offline-topbar--warn {
+  color: #991b1b;
+  background: #fee2e2;
+  border-color: #fca5a5;
+}
+
+.offline-topbar--pending {
+  color: #1e40af;
+  background: #dbeafe;
+  border-color: #93c5fd;
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar--ok {
+  color: #3dffa8;
+  background: rgb(61 255 168 / 0.12);
+  border-color: rgb(61 255 168 / 0.35);
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar--offline {
+  color: #fbbf24;
+  background: rgb(251 191 36 / 0.12);
+  border-color: rgb(251 191 36 / 0.35);
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar--warn {
+  color: #f87171;
+  background: rgb(248 113 113 / 0.12);
+  border-color: rgb(248 113 113 / 0.35);
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar--pending {
+  color: #93c5fd;
+  background: rgb(147 197 253 / 0.12);
+  border-color: rgb(147 197 253 / 0.35);
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar__btn:hover:not(:disabled) {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.cashier-app.cashier-app--light .offline-topbar--ok {
+  color: #047857;
+  background: #ecfdf5;
+  border-color: #a7f3d0;
+}
+
+.cashier-app.cashier-app--light .offline-topbar--offline {
+  color: #b45309;
+  background: #fffbeb;
+  border-color: #fcd34d;
+}
+
+.cashier-app.cashier-app--light .offline-topbar--warn {
+  color: #b91c1c;
+  background: #fef2f2;
+  border-color: #fca5a5;
+}
+
+.cashier-app.cashier-app--light .offline-topbar--pending {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.cashier-app--desktop .cashier-topbar__terminal-meta {
+  flex-wrap: nowrap;
+  flex-shrink: 1;
+  min-width: 0;
+}
+
+.cashier-app--desktop .cashier-topbar__terminal-strip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 1;
+  min-width: 0;
+}

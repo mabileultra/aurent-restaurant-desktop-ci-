@@ -25,18 +25,6 @@ html.cashier-shell--desktop #root {
   overflow: hidden;
 }
 
-/* Офлайн-полоска — не ломает шапку на узком окне */
-.cashier-app.cashier-app--desktop .offline-banner {
-  flex-shrink: 0;
-  flex-wrap: wrap;
-  row-gap: 0.35rem;
-}
-
-.cashier-app.cashier-app--desktop .offline-banner__actions {
-  flex: 1 1 auto;
-  justify-content: flex-end;
-}
-
 /* POS: сцена на всю высоту под шапкой */
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register {
   min-height: 0;
