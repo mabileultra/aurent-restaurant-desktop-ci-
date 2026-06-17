@@ -3,8 +3,8 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 8px 10px;
+  gap: 5px;
+  padding: 7px 9px;
   border: 1.5px solid #c5ccd6;
   border-radius: 14px;
   background: #fff;
@@ -35,8 +35,8 @@
   justify-content: space-between;
   gap: 10px;
   min-width: 0;
-  min-height: 44px;
-  padding: 8px 10px;
+  min-height: 42px;
+  padding: 7px 9px;
   border: 1.5px solid #c5ccd6;
   background: #f3f4f6;
   box-shadow: none;
@@ -57,7 +57,7 @@
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: clamp(1.55rem, 7.5cqi, 2rem);
+  font-size: clamp(1.45rem, 7cqi, 1.9rem);
   font-weight: 800;
   color: #111827;
 }
@@ -67,8 +67,8 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  min-height: 26px;
-  font-size: 0.875rem;
+  min-height: 24px;
+  font-size: 0.84375rem;
   font-weight: 600;
   color: #374151;
 }
