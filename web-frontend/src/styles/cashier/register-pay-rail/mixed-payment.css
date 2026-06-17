@@ -7,7 +7,7 @@
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box {
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-amount-box__head {
@@ -50,7 +50,7 @@
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress {
   flex: 0 0 auto;
-  padding: 4px 12px 6px;
+  padding: 2px 12px 6px;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__error {
