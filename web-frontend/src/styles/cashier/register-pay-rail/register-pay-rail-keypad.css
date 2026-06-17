@@ -22,36 +22,32 @@
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   gap: var(--pos-keypad-gap, 6px);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
   --pos-keypad-rail-gap: var(--pos-keypad-gap, 6px);
-  --pos-keypad-rail-cell-w: calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3);
-  --pos-keypad-rail-cell-h: calc((100cqh - var(--pos-keypad-rail-gap) * 3) / 4);
-  --pos-keypad-rail-cell: clamp(
-    44px,
-    min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
-    72px
-  );
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   max-width: 100%;
   margin-inline: 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(4, minmax(0, var(--pos-keypad-rail-cell)));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
   gap: var(--pos-keypad-rail-gap);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
   width: 100%;
   height: 100%;
-  min-height: var(--pos-keypad-rail-cell);
+  min-height: 0;
   max-height: none;
   aspect-ratio: auto;
   padding: 0 clamp(2px, 1cqi, 6px);
-  font-size: clamp(0.9375rem, min(4.5cqi, 18cqw), 1.25rem);
+  font-size: clamp(0.875rem, min(4cqi, 16cqw), 1.25rem);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
@@ -63,33 +59,11 @@
   flex-shrink: 0;
 }
 
-/* Payment flow — клавиатура сразу под верхним блоком */
+/* Payment flow — верхние блоки не сжимаются */
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack,
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress,
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__error {
   flex-shrink: 0;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step,
-.pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step {
-  min-height: 0;
-  overflow: hidden;
-  justify-content: flex-start;
-  gap: 8px;
-}
-
-.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad,
-.pos-pay-panel--register-rail.is-step-cash .pos-keypad {
-  flex: 0 0 auto;
-  width: 100%;
-  min-height: 0;
-  max-height: none;
-  margin-top: 0;
-  overflow: hidden;
-  justify-content: flex-start;
-  align-items: stretch;
-  padding: 0 12px;
-  box-sizing: border-box;
 }
 
 /* Компактная колонка — только при реальной нехватке высоты */
@@ -116,12 +90,8 @@
     max-height: clamp(12px, 4cqi, 16px);
   }
 
-  .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-    --pos-keypad-rail-cell: clamp(
-      42px,
-      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
-      66px
-    );
+  .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+    font-size: clamp(0.8125rem, 3.8cqi, 1.125rem);
   }
 }
 
@@ -145,12 +115,8 @@
     min-height: clamp(34px, 9cqi, 40px);
   }
 
-  .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-    --pos-keypad-rail-cell: clamp(
-      40px,
-      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
-      60px
-    );
+  .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+    font-size: clamp(0.8125rem, 3.6cqi, 1.0625rem);
   }
 }
 
@@ -182,17 +148,9 @@
     font-size: 0.8125rem;
   }
 
-  .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-    --pos-keypad-rail-cell: clamp(
-      36px,
-      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
-      54px
-    );
-  }
-
   .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
   .cashier-app .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key,
   .cashier-app .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key {
-    font-size: clamp(0.9375rem, 4cqi, 1.125rem);
+    font-size: clamp(0.8125rem, 3.4cqi, 1rem);
   }
 }

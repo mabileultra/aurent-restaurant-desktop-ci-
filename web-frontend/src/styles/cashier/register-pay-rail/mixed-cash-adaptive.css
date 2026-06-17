@@ -1,13 +1,9 @@
-/* Смешанная оплата — прокрутка в body, футер закреплён снизу */
+/* Смешанная оплата — без скролла, футер закреплён снизу */
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__body {
   flex: 1 1 auto;
   min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  overflow: hidden;
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step {
