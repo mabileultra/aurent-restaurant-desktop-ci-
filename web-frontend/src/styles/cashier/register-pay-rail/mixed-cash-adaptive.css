@@ -11,9 +11,9 @@
 }
 
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step {
-  flex: 0 0 auto;
-  min-height: auto;
-  overflow: visible;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
   justify-content: flex-start;
   gap: 4px;
   padding-bottom: 8px;

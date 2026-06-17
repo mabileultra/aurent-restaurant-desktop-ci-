@@ -80,7 +80,7 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
   const cashPartNum = round2(cashPortion);
   const cashExceeds = exceedsPayAmount(cashPartNum, effectiveToPay);
   const cardRemainder = round2(Math.max(0, effectiveToPay - cashPartNum));
-  const mixedDistributed = round2(Math.min(cashPartNum, effectiveToPay));
+  const mixedDistributed = round2(Math.min(cashPartNum + cardRemainder, effectiveToPay));
   const mixedPercent = effectiveToPay > 0
     ? Math.min(100, Math.round((mixedDistributed / effectiveToPay) * 100))
     : 0;

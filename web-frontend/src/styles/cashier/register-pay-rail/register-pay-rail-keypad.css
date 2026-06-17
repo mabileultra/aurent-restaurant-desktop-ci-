@@ -1,0 +1,75 @@
+/* Pay rail — клавиатура не наезжает на способы оплаты */
+
+.pos-register-pay-rail__keypad-wrap {
+  container-type: size;
+  container-name: pay-keypad-wrap;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.pos-register-pay-rail__keypad-wrap .pos-keypad {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  overflow: hidden;
+  justify-content: flex-end;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack,
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-progress,
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__error {
+  flex-shrink: 0;
+}
+
+.pos-register-pay-rail__pay-block {
+  position: relative;
+  z-index: 1;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-panel__step,
+.pos-pay-panel--register-rail.is-step-cash .pos-pay-panel__step {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad,
+.pos-pay-panel--register-rail.is-step-cash .pos-keypad {
+  flex: 0 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  overflow: hidden;
+  justify-content: flex-end;
+}
+
+@container pay-keypad-wrap (min-height: 1px) {
+  .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
+    --pos-keypad-cell-by-height: calc((100cqh - var(--pos-keypad-gap, 8px) * 3) / 4);
+    --pos-keypad-cell: min(
+      clamp(48px, calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3), 80px),
+      var(--pos-keypad-cell-by-height)
+    );
+  }
+}
+
+@container pay-shell (max-height: 720px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__grid,
+  .pos-pay-panel--register-rail.is-step-cash .pos-keypad__grid {
+    --pos-keypad-cell-by-height: calc((100cqh - var(--pos-keypad-gap, 8px) * 3 - 180px) / 4);
+    --pos-keypad-cell: min(
+      clamp(44px, calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3), 72px),
+      max(40px, var(--pos-keypad-cell-by-height))
+    );
+  }
+}
+
+@container pay-shell (max-height: 600px) {
+  .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__grid,
+  .pos-pay-panel--register-rail.is-step-cash .pos-keypad__grid {
+    --pos-keypad-cell: clamp(40px, calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3), 60px);
+  }
+}
