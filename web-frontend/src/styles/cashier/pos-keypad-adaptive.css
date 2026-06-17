@@ -1,11 +1,11 @@
-/* POS keypad — квадратные клавиши в колонке оплаты (не «блины» на узком мониторе) */
+/* POS keypad — квадратные клавиши в payment flow (не inline register rail) */
 
-.cashier-register__pay-shell .pos-keypad,
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad,
 .pos-pay-panel--register-rail .pos-keypad {
   align-items: center;
 }
 
-.cashier-register__pay-shell .pos-keypad__grid,
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
 .pos-pay-panel--register-rail .pos-keypad__grid {
   --pos-keypad-cell: clamp(
     52px,
@@ -21,7 +21,7 @@
   max-height: none;
 }
 
-.cashier-register__pay-shell .pos-keypad__key,
+.cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__key,
 .pos-pay-panel--register-rail .pos-keypad__key,
 .pos-pay-panel--register-rail.is-step-mixedCash .pos-keypad__key,
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
@@ -33,7 +33,7 @@
   padding: 0 clamp(2px, 1cqi, 6px);
 }
 
-.cashier-app.cashier-app--touch .cashier-register__pay-shell .pos-keypad__grid,
+.cashier-app.cashier-app--touch .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
 .cashier-app.cashier-app--touch .pos-pay-panel--register-rail .pos-keypad__grid {
   --pos-keypad-cell: clamp(
     56px,
@@ -43,7 +43,7 @@
 }
 
 @container pay-shell (max-width: 320px) {
-  .cashier-register__pay-shell .pos-keypad__grid,
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
     --pos-keypad-cell: clamp(
       50px,
@@ -54,7 +54,7 @@
 }
 
 @container pay-shell (max-height: 640px) {
-  .cashier-register__pay-shell .pos-keypad__grid,
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
     --pos-keypad-gap: 6px;
     --pos-keypad-cell: clamp(
@@ -67,7 +67,7 @@
 }
 
 @container pay-shell (max-height: 520px) {
-  .cashier-register__pay-shell .pos-keypad__grid,
+  .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
     --pos-keypad-gap: 5px;
     --pos-keypad-cell: clamp(

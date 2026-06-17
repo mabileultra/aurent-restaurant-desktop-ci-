@@ -17,6 +17,7 @@
 @import './pos-layout/index.css';
 @import './register-pay-rail/index.css';
 @import './responsive/index.css';
+@import './register-pay-rail/register-pay-rail-keypad.css';
 @import './secondary-pages/index.css';
 @import './my-sales/terminal-overrides.css';
 @import './modals/index.css';
