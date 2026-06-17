@@ -4,6 +4,7 @@
 @import './pos-keypad-adaptive.css';
 @import './components/auto-fit-text.css';
 @import './components/print-receipt-toggle.css';
+@import './components/cashier-notifications.css';
 @import './shell/index.css';
 @import './register.css';
 @import './cart/index.css';

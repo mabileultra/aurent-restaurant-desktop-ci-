@@ -1,25 +1,19 @@
 const { app, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const { buildUpdateFeedUrl } = require('./update-feed-url.cjs');
+const { registerAutoUpdaterEvents } = require('./update-events.cjs');
 
 let configured = false;
-
-function buildUpdateFeedUrl(cashierUrl) {
-  try {
-    const origin = new URL(String(cashierUrl || '')).origin;
-    if (!origin || origin.includes('127.0.0.1') || origin.includes('localhost')) {
-      return null;
-    }
-    return `${origin.replace(/\/$/, '')}/downloads/desktop/`;
-  } catch {
-    return null;
-  }
-}
 
 function shouldCheckUpdates() {
   return app.isPackaged && process.env.POS_SKIP_AUTO_UPDATE !== '1';
 }
 
-function setupAutoUpdater({ getMainWindow, getCashierUrl }) {
+function resolveFeedUrl(config) {
+  return buildUpdateFeedUrl(config || {});
+}
+
+function setupAutoUpdater({ getMainWindow, getConfig }) {
   if (!shouldCheckUpdates() || configured) {
     return;
   }
@@ -27,6 +21,7 @@ function setupAutoUpdater({ getMainWindow, getCashierUrl }) {
 
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
+  registerAutoUpdaterEvents(autoUpdater, getMainWindow);
 
   autoUpdater.on('update-available', (info) => {
     const win = getMainWindow?.();
@@ -69,20 +64,22 @@ function setupAutoUpdater({ getMainWindow, getCashierUrl }) {
     }
   });
 
-  const feedUrl = buildUpdateFeedUrl(getCashierUrl?.());
+  const feedUrl = resolveFeedUrl(getConfig?.());
   if (feedUrl) {
     autoUpdater.setFeedURL({ provider: 'generic', url: feedUrl });
     setTimeout(() => {
       autoUpdater.checkForUpdates().catch(() => {});
     }, 8000);
+  } else if (process.env.POS_DEBUG_UPDATE === '1') {
+    console.warn('[Aurent auto-update] feed URL not resolved — проверьте backendOrigin в настройках сервера');
   }
 }
 
-async function checkForUpdatesNow(cashierUrl) {
+async function checkForUpdatesNow(config) {
   if (!shouldCheckUpdates()) {
     return { ok: false, reason: 'dev' };
   }
-  const feedUrl = buildUpdateFeedUrl(cashierUrl);
+  const feedUrl = resolveFeedUrl(config);
   if (!feedUrl) {
     return { ok: false, reason: 'no-feed' };
   }
@@ -100,9 +97,18 @@ async function checkForUpdatesNow(cashierUrl) {
   }
 }
 
+async function quitAndInstallUpdate() {
+  if (!shouldCheckUpdates()) {
+    return { ok: false, reason: 'dev' };
+  }
+  autoUpdater.quitAndInstall(false, true);
+  return { ok: true };
+}
+
 module.exports = {
   buildUpdateFeedUrl,
   setupAutoUpdater,
   checkForUpdatesNow,
+  quitAndInstallUpdate,
   shouldCheckUpdates,
 };

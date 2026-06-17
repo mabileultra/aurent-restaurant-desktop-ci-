@@ -9,5 +9,6 @@
     <include file="v2-incremental.xml" relativeToChangelogFile="true"/>
     <include file="v3-sale-advance-amount.xml" relativeToChangelogFile="true"/>
     <include file="v4-accountant-role.xml" relativeToChangelogFile="true"/>
+    <include file="v5-desktop-notifications.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

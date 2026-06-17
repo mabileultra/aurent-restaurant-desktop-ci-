@@ -4,7 +4,7 @@
 # PLATFORM=mac|win|auto   — целевая ОС (auto = текущая)
 # PACKAGE_ZIP=1           — упаковать dist/Aurent-Cashier-Desktop-VERSION.zip
 # COPY_TO_DOWNLOADS=1   — скопировать артефакты в downloads/desktop/
-# INCLUDE_WEB_DIST=0      — тонкий клиент (prod по умолчанию)
+# INCLUDE_WEB_DIST=0      — тонкий клиент (prod по умолчанию: UI с сервера)
 #
 # Примеры:
 #   PLATFORM=mac COPY_TO_DOWNLOADS=1 ./scripts/build-desktop-release.sh
@@ -35,11 +35,18 @@ VERSION="${VERSION:-$(read_version)}"
 SERVER_HOST="${SERVER_HOST:-111.88.132.126}"
 SERVER_WEB_PORT="${SERVER_WEB_PORT:-8081}"
 SERVER_API_PORT="${SERVER_API_PORT:-8081}"
-INCLUDE_WEB_DIST="${INCLUDE_WEB_DIST:-1}"
+INCLUDE_WEB_DIST="${INCLUDE_WEB_DIST:-0}"
 PLATFORM="${PLATFORM:-auto}"
 PACKAGE_ZIP="${PACKAGE_ZIP:-0}"
 COPY_TO_DOWNLOADS="${COPY_TO_DOWNLOADS:-0}"
-UPDATE_URL="${DESKTOP_UPDATE_URL:-http://${SERVER_HOST}/downloads/desktop/}"
+PUBLIC_WEB_ORIGIN="${PUBLIC_WEB_ORIGIN:-}"
+if [[ -n "${DESKTOP_UPDATE_URL:-}" ]]; then
+  UPDATE_URL="${DESKTOP_UPDATE_URL}"
+elif [[ -n "$PUBLIC_WEB_ORIGIN" ]]; then
+  UPDATE_URL="${PUBLIC_WEB_ORIGIN%/}/downloads/desktop/"
+else
+  UPDATE_URL="http://${SERVER_HOST}/downloads/desktop/"
+fi
 
 DOWNLOADS_DIR="$ROOT/downloads/desktop"
 STAGING="$ROOT/dist/Aurent-Cashier-Desktop-${VERSION}"

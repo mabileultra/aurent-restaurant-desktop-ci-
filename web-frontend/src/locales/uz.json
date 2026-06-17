@@ -175,6 +175,23 @@
     "scaleNotSet": "sozlanmagan — avtomatik qidirish",
     "scaleSaved": "Tarozilar saqlandi"
   },
+  "notifications": {
+    "bellAria": "Bildirishnomalar",
+    "bellAriaWithCount": "Bildirishnomalar, o'qilmagan: {{count}}",
+    "panelTitle": "Bildirishnomalar",
+    "loading": "Yuklanmoqda…",
+    "empty": "Yangi bildirishnomalar yo'q",
+    "dismiss": "Yashirish",
+    "restartNow": "Qayta ishga tushirish",
+    "checkUpdate": "Tekshirish",
+    "updateAvailableTitle": "Yangilanish mavjud {{version}}",
+    "updateAvailableBody": "Yuklab olish avtomatik boshlanadi. Tayyor bo'lgach kassani qayta ishga tushiring.",
+    "updateDownloadingTitle": "Yangilanish yuklanmoqda",
+    "updateDownloadingBody": "Yuklandi {{percent}}%",
+    "updateReadyTitle": "Yangilanish {{version}} tayyor",
+    "updateReadyBody": "Yangi versiyani qo'llash uchun kassani qayta ishga tushiring.",
+    "updateErrorTitle": "Yangilash xatosi"
+  },
   "validation": {
     "required": "Majburiy maydon",
     "fieldRequired": "{{field}} majburiy",
@@ -1220,6 +1237,27 @@
       },
       "defaultSubject": "Aurent POS dan xabar",
       "defaultMessage": "Tizim foydalanuvchilari uchun namuna matn."
+    },
+    "desktopNotifications": {
+      "nav": "Kassa",
+      "title": "Kassa bildirishnomalari",
+      "subtitle": "Desktop-kassalarga xabar va ogohlantirishlar. Ilova yangilanishlari ham kassir kolokolchigida ko'rinadi.",
+      "broadcastTitle": "Yangi xabar",
+      "historyTitle": "Tarix",
+      "historyEmpty": "Hali yuborishlar yo'q",
+      "fieldTitle": "Sarlavha",
+      "titlePlaceholder": "Muhim xabar",
+      "message": "Matn",
+      "messagePlaceholder": "Barcha desktop-kassalar uchun matn…",
+      "kind": "Turi",
+      "kindMessage": "Xabar",
+      "kindUpdate": "Yangilanish",
+      "kindAlert": "Muhim",
+      "expires": "Yashirish (soat)",
+      "send": "Kassalarga yuborish",
+      "sent": "Bildirishnoma yuborildi",
+      "sendFailed": "Yuborib bo'lmadi",
+      "validation": "Sarlavha va matnni to'ldiring"
     },
     "security": {
       "nav": "Xavfsizlik",

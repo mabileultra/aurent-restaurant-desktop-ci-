@@ -1,4 +1,4 @@
-import { CashierThemeToggle, CashierDesktopMenu } from '../../../features/cashier';
+import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
@@ -37,6 +37,7 @@ export default function CashierPosTopbar({
           <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">{t('pos.navSale')}</p>
         </div>
         <div className="cashier-topbar__actions">
+          {isDesktopApp ? <CashierNotificationsBell /> : null}
           {!shiftOpen && storeId ? (
             <button type="button" className="cashier-pos-topbar__open-shift" onClick={openShift}>
               {t('pos.openShift')}

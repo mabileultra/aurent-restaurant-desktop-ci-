@@ -30,6 +30,12 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   openLabelPrinterPicker: () => ipcRenderer.invoke('desktop:open-label-printer-picker'),
   openBarcodePage: () => ipcRenderer.invoke('desktop:open-barcode-page'),
   checkForUpdates: () => ipcRenderer.invoke('desktop:check-updates'),
+  quitAndInstallUpdate: () => ipcRenderer.invoke('desktop:quit-and-install-update'),
+  onDesktopUpdate: (callback) => {
+    const listener = (_event, payload) => callback(payload);
+    ipcRenderer.on('desktop:update-event', listener);
+    return () => ipcRenderer.removeListener('desktop:update-event', listener);
+  },
 
   scaleIsAvailable: () => ipcRenderer.invoke('desktop:scale-is-available'),
   scaleStatus: () => ipcRenderer.invoke('desktop:scale-status'),

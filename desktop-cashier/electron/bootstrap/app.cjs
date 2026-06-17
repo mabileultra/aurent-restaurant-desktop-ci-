@@ -99,7 +99,7 @@ async function bootstrapApp() {
 
   setupAutoUpdater({
     getMainWindow: () => state.getMainWindow(),
-    getCashierUrl: () => state.getConfig()?.cashierUrl,
+    getConfig: () => state.getConfig(),
   });
 
   app.on('activate', () => {

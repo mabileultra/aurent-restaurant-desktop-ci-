@@ -1,0 +1,185 @@
+.platform-desktop-notifications-page__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  gap: 16px;
+}
+
+.platform-desktop-notifications-card {
+  border: 1px solid rgb(226 232 240);
+  border-radius: 16px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.dark .platform-desktop-notifications-card {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42);
+}
+
+.platform-desktop-notifications-card__head {
+  padding: 14px 16px;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.dark .platform-desktop-notifications-card__head {
+  border-color: rgb(51 65 85);
+}
+
+.platform-desktop-notifications-card__body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.platform-desktop-notifications-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.platform-desktop-notifications-field label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+}
+
+.dark .platform-desktop-notifications-field label {
+  color: rgb(148 163 184);
+}
+
+.platform-desktop-notifications-field input,
+.platform-desktop-notifications-field textarea,
+.platform-desktop-notifications-field select {
+  width: 100%;
+  border: 1px solid rgb(203 213 225);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  background: #fff;
+  color: rgb(15 23 42);
+}
+
+.platform-desktop-notifications-field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.dark .platform-desktop-notifications-field input,
+.dark .platform-desktop-notifications-field textarea,
+.dark .platform-desktop-notifications-field select {
+  border-color: rgb(71 85 105);
+  background: rgb(30 41 59);
+  color: rgb(248 250 252);
+}
+
+.platform-desktop-notifications-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 10px;
+  background: rgb(16 185 129);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.platform-desktop-notifications-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.platform-desktop-notifications-history {
+  max-height: 560px;
+  overflow: auto;
+}
+
+.platform-desktop-notifications-history__item {
+  padding: 12px 0;
+  border-bottom: 1px solid rgb(226 232 240);
+}
+
+.dark .platform-desktop-notifications-history__item {
+  border-color: rgb(51 65 85);
+}
+
+.platform-desktop-notifications-history__item:last-child {
+  border-bottom: none;
+}
+
+.platform-desktop-notifications-history__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.platform-desktop-notifications-history__kind {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.platform-desktop-notifications-history__kind--message {
+  background: rgb(226 232 240);
+  color: rgb(51 65 85);
+}
+
+.platform-desktop-notifications-history__kind--update {
+  background: rgb(209 250 229);
+  color: rgb(4 120 87);
+}
+
+.platform-desktop-notifications-history__kind--alert {
+  background: rgb(254 226 226);
+  color: rgb(185 28 28);
+}
+
+.platform-desktop-notifications-history__item h3 {
+  margin: 0 0 4px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: rgb(15 23 42);
+}
+
+.dark .platform-desktop-notifications-history__item h3 {
+  color: rgb(248 250 252);
+}
+
+.platform-desktop-notifications-history__item p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: rgb(71 85 105);
+  white-space: pre-wrap;
+}
+
+.dark .platform-desktop-notifications-history__item p {
+  color: rgb(148 163 184);
+}
+
+.platform-desktop-notifications-empty {
+  margin: 0;
+  padding: 24px 12px;
+  text-align: center;
+  color: rgb(100 116 139);
+}
+
+@media (max-width: 960px) {
+  .platform-desktop-notifications-page__grid {
+    grid-template-columns: 1fr;
+  }
+}

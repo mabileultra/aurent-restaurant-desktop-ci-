@@ -31,7 +31,8 @@ env:
   SERVER_HOST: ${{ github.event.inputs.server_host || secrets.SERVER_HOST || '111.88.132.126' }}
   SERVER_WEB_PORT: '8081'
   SERVER_API_PORT: '8081'
-  INCLUDE_WEB_DIST: '1'
+  PUBLIC_WEB_ORIGIN: ${{ secrets.PUBLIC_WEB_ORIGIN || 'https://www.aurent.uz' }}
+  INCLUDE_WEB_DIST: '0'
 
 jobs:
   build-mac:
@@ -59,7 +60,8 @@ jobs:
           for attempt in 1 2 3; do
             echo "==> Mac build attempt ${attempt}/3"
             if PLATFORM=mac COPY_TO_DOWNLOADS=1 \
-              DESKTOP_UPDATE_URL="http://${SERVER_HOST}:${SERVER_WEB_PORT}/downloads/desktop/" \
+              PUBLIC_WEB_ORIGIN="${PUBLIC_WEB_ORIGIN}" \
+              DESKTOP_UPDATE_URL="${PUBLIC_WEB_ORIGIN%/}/downloads/desktop/" \
               bash scripts/build-desktop-release.sh; then
               exit 0
             fi
@@ -110,7 +112,8 @@ jobs:
           for attempt in 1 2 3; do
             echo "==> Windows build attempt ${attempt}/3"
             if PLATFORM=win COPY_TO_DOWNLOADS=1 \
-              DESKTOP_UPDATE_URL="http://${SERVER_HOST}:${SERVER_WEB_PORT}/downloads/desktop/" \
+              PUBLIC_WEB_ORIGIN="${PUBLIC_WEB_ORIGIN}" \
+              DESKTOP_UPDATE_URL="${PUBLIC_WEB_ORIGIN%/}/downloads/desktop/" \
               bash scripts/build-desktop-release.sh; then
               exit 0
             fi
@@ -174,6 +177,10 @@ jobs:
           has_mac = bool(glob.glob('downloads/desktop/*.dmg'))
           if not has_win and not has_mac:
               sys.exit('No desktop artifacts to deploy')
+          if has_win and not glob.glob('downloads/desktop/latest.yml'):
+              sys.exit('missing latest.yml for Windows auto-update')
+          if has_mac and not glob.glob('downloads/desktop/latest-mac.yml'):
+              sys.exit('missing latest-mac.yml for macOS auto-update')
           m = json.load(open('downloads/desktop/manifest.json'))
           if has_win and not m.get('windows'):
               sys.exit('missing windows in manifest')
@@ -252,7 +259,6 @@ jobs:
           PY
 
       - name: Deploy to production server
-        continue-on-error: true
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}

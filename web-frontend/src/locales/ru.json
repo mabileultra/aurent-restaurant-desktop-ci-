@@ -184,6 +184,23 @@
     "scaleNotSet": "не настроены — найти автоматически",
     "scaleSaved": "Весы сохранены"
   },
+  "notifications": {
+    "bellAria": "Уведомления",
+    "bellAriaWithCount": "Уведомления, непрочитанных: {{count}}",
+    "panelTitle": "Уведомления",
+    "loading": "Загрузка…",
+    "empty": "Нет новых уведомлений",
+    "dismiss": "Скрыть",
+    "restartNow": "Перезапустить",
+    "checkUpdate": "Проверить",
+    "updateAvailableTitle": "Доступно обновление {{version}}",
+    "updateAvailableBody": "Загрузка начнётся автоматически. После загрузки можно перезапустить кассу.",
+    "updateDownloadingTitle": "Загрузка обновления",
+    "updateDownloadingBody": "Скачано {{percent}}%",
+    "updateReadyTitle": "Обновление {{version}} готово",
+    "updateReadyBody": "Перезапустите кассу, чтобы применить новую версию.",
+    "updateErrorTitle": "Ошибка обновления"
+  },
   "validation": {
     "required": "Обязательное поле",
     "fieldRequired": "{{field}} обязательно",
@@ -1256,6 +1273,27 @@
       },
       "defaultSubject": "Сообщение от Aurent POS",
       "defaultMessage": "Пример текста рассылки для пользователей системы."
+    },
+    "desktopNotifications": {
+      "nav": "Касса",
+      "title": "Уведомления кассы",
+      "subtitle": "Сообщения и оповещения на desktop-кассы. Обновления приложения также появляются в колокольчике у кассира.",
+      "broadcastTitle": "Новое сообщение",
+      "historyTitle": "История",
+      "historyEmpty": "Рассылок пока не было",
+      "fieldTitle": "Заголовок",
+      "titlePlaceholder": "Важное сообщение",
+      "message": "Текст",
+      "messagePlaceholder": "Текст для всех desktop-касс…",
+      "kind": "Тип",
+      "kindMessage": "Сообщение",
+      "kindUpdate": "Обновление",
+      "kindAlert": "Важно",
+      "expires": "Скрыть через (часов)",
+      "send": "Отправить на кассы",
+      "sent": "Уведомление отправлено",
+      "sendFailed": "Не удалось отправить",
+      "validation": "Заполните заголовок и текст"
     },
     "security": {
       "nav": "Безопасность",

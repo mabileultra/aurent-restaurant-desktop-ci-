@@ -22,7 +22,7 @@ function buildAppMenuTemplate() {
           label: 'Проверить обновления…',
           click: () => {
             const config = state.getConfig();
-            checkForUpdatesNow(config?.cashierUrl).then((result) => {
+            checkForUpdatesNow(config).then((result) => {
               if (result.updateAvailable) {
                 dialog.showMessageBox({
                   type: 'info',

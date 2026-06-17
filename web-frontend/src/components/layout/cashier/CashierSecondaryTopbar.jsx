@@ -1,4 +1,4 @@
-import { CashierThemeToggle, CashierDesktopMenu } from '../../../features/cashier';
+import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
@@ -32,6 +32,7 @@ export default function CashierSecondaryTopbar({
           <CashierPosTopbarCashier name={cashierName} />
         </div>
         <div className="cashier-topbar__actions">
+          {isDesktopApp ? <CashierNotificationsBell /> : null}
           <CashierThemeToggle
             theme={cashierTheme}
             onToggle={toggleCashierTheme}

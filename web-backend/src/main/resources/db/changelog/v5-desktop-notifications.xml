@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v5-001-desktop-broadcasts" author="pos">
+        <createTable tableName="desktop_broadcasts">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="body" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="kind" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="priority" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="action_label" type="VARCHAR(100)"/>
+            <column name="action_url" type="VARCHAR(500)"/>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expires_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+        <createIndex tableName="desktop_broadcasts" indexName="idx_desktop_broadcasts_created_at">
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v5-002-desktop-broadcast-reads" author="pos">
+        <createTable tableName="desktop_broadcast_reads">
+            <column name="broadcast_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="read_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="desktop_broadcast_reads"
+            columnNames="broadcast_id, user_id"
+            constraintName="pk_desktop_broadcast_reads"/>
+        <addForeignKeyConstraint
+            baseTableName="desktop_broadcast_reads"
+            baseColumnNames="broadcast_id"
+            referencedTableName="desktop_broadcasts"
+            referencedColumnNames="id"
+            constraintName="fk_desktop_broadcast_reads_broadcast"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="desktop_broadcast_reads"
+            baseColumnNames="user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_desktop_broadcast_reads_user"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -5,7 +5,7 @@ const { registerLabelTsplIpc } = require('../label-tspl/index.cjs');
 const { registerOfflineIpc } = require('../offline/ipc.cjs');
 const { probeBackendOnlineQuick } = require('../connectivity/probe.cjs');
 const { showPrinterPickerWindow } = require('../printers/picker-window.cjs');
-const { checkForUpdatesNow } = require('../updates/auto-update.cjs');
+const { checkForUpdatesNow, quitAndInstallUpdate } = require('../updates/auto-update.cjs');
 const {
   resolveReceiptPrinterName,
   resolveLabelPrinterName,
@@ -85,8 +85,10 @@ function registerDesktopIpc(escposModule) {
   ipcMain.handle('desktop:check-updates', async () => {
     const config = loadConfig();
     state.setConfig(config);
-    return checkForUpdatesNow(config?.cashierUrl);
+    return checkForUpdatesNow(config);
   });
+
+  ipcMain.handle('desktop:quit-and-install-update', async () => quitAndInstallUpdate());
 
   registerScaleIpc(ipcMain, () => state.getMainWindow());
   registerLabelTsplIpc(ipcMain);

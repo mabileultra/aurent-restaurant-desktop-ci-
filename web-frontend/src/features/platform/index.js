@@ -2,6 +2,7 @@ export { default as PlatformCompaniesPage } from './pages/PlatformCompaniesPage'
 export { default as PlatformModuleAccessPage } from './pages/PlatformModuleAccessPage';
 export { default as PlatformMonitoringPage } from './pages/PlatformMonitoringPage';
 export { default as PlatformEmailPage } from './pages/PlatformEmailPage';
+export { default as PlatformDesktopNotificationsPage } from './pages/PlatformDesktopNotificationsPage';
 export { default as PlatformSecurityPage } from './pages/PlatformSecurityPage';
 export { default as PlatformBusinessTypesPage } from './pages/PlatformBusinessTypesPage';
 
