@@ -44,17 +44,17 @@
 }
 
 .pos-register-pay-rail .pos-register-pay-cash {
-  gap: clamp(5px, 1.2cqi, 8px);
-  padding: clamp(8px, 2cqi, 12px) clamp(10px, 2.5cqi, 14px);
+  gap: clamp(6px, 1.4cqi, 9px);
+  padding: clamp(9px, 2.2cqi, 13px) clamp(11px, 2.8cqi, 15px);
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-box {
-  padding: clamp(8px, 2cqi, 12px) clamp(10px, 2.5cqi, 14px);
-  min-height: clamp(44px, 10cqi, 52px);
+  padding: clamp(9px, 2.2cqi, 13px) clamp(11px, 2.8cqi, 15px);
+  min-height: clamp(48px, 11cqi, 56px);
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: clamp(1.5rem, 7.5cqi, 2rem);
+  font-size: clamp(1.6rem, 8cqi, 2.1rem);
 }
 
 /* ── Узкая колонка оплаты ── */
@@ -118,7 +118,7 @@
 
 @container pay-shell (min-height: 721px) {
   .cashier-register__pay-shell {
-    --pos-keypad-gap: 7px;
+    --pos-keypad-gap: 6px;
     --pos-keypad-quick-h: 44px;
     --pos-keypad-clear-h: 46px;
     --pos-keypad-digit-size: 1.3125rem;

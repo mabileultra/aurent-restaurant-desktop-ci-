@@ -3,16 +3,18 @@
 .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad,
 .pos-pay-panel--register-rail .pos-keypad {
   align-items: stretch;
-  container-type: inline-size;
+  container-type: size;
   container-name: pay-keypad;
 }
 
 .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
 .pos-pay-panel--register-rail .pos-keypad__grid {
+  --pos-keypad-cell-w: calc((100cqw - var(--pos-keypad-gap, 6px) * 2) / 3);
+  --pos-keypad-cell-h: calc((100cqh - var(--pos-keypad-gap, 6px) * 3) / 4);
   --pos-keypad-cell: clamp(
-    58px,
-    calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-    86px
+    44px,
+    min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+    72px
   );
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, var(--pos-keypad-cell)));
@@ -43,9 +45,9 @@
 .cashier-app.cashier-app--touch .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
 .cashier-app.cashier-app--touch .pos-pay-panel--register-rail .pos-keypad__grid {
   --pos-keypad-cell: clamp(
-    60px,
-    calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-    90px
+    46px,
+    min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+    76px
   );
 }
 
@@ -53,9 +55,9 @@
   .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
     --pos-keypad-cell: clamp(
-      54px,
-      calc((100cqw - var(--pos-keypad-gap, 8px) * 2) / 3),
-      72px
+      42px,
+      min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+      64px
     );
   }
 }
@@ -63,11 +65,11 @@
 @container pay-shell (max-height: 640px) {
   .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
-    --pos-keypad-gap: 6px;
+    --pos-keypad-gap: 5px;
     --pos-keypad-cell: clamp(
-      52px,
-      calc((100cqw - var(--pos-keypad-gap) * 2) / 3),
-      76px
+      40px,
+      min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+      58px
     );
     --pos-keypad-action-size: 0.75rem;
   }
@@ -76,11 +78,11 @@
 @container pay-shell (max-height: 520px) {
   .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
   .pos-pay-panel--register-rail .pos-keypad__grid {
-    --pos-keypad-gap: 5px;
+    --pos-keypad-gap: 4px;
     --pos-keypad-cell: clamp(
-      48px,
-      calc((100cqw - var(--pos-keypad-gap) * 2) / 3),
-      66px
+      36px,
+      min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+      52px
     );
     --pos-keypad-digit-size: 1.125rem;
     --pos-keypad-action-size: 0.6875rem;

@@ -3,8 +3,8 @@
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px;
+  gap: 9px;
+  padding: 11px 13px;
   border: 1.5px solid #c5ccd6;
   border-radius: 14px;
   background: #fff;
@@ -18,7 +18,7 @@
 }
 
 .pos-register-pay-rail .pos-pay-cash__summary-row strong {
-  font-size: clamp(1rem, 5cqi, 1.2rem);
+  font-size: clamp(1.05rem, 5.2cqi, 1.25rem);
   font-weight: 800;
   color: #111827;
 }
@@ -35,8 +35,8 @@
   justify-content: space-between;
   gap: 10px;
   min-width: 0;
-  min-height: 48px;
-  padding: 10px 12px;
+  min-height: 52px;
+  padding: 11px 13px;
   border: 1.5px solid #c5ccd6;
   background: #f3f4f6;
   box-shadow: none;
@@ -57,7 +57,7 @@
 }
 
 .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: clamp(1.75rem, 8cqi, 2.125rem);
+  font-size: clamp(1.85rem, 8.5cqi, 2.2rem);
   font-weight: 800;
   color: #111827;
 }
@@ -67,7 +67,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
-  min-height: 28px;
+  min-height: 30px;
   font-size: 0.9375rem;
   font-weight: 600;
   color: #374151;
