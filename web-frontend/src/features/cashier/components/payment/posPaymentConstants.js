@@ -1,4 +1,17 @@
+import {
+  Banknote,
+  CreditCard,
+  QrCode,
+  Coins,
+} from 'lucide-react';
 import { round2 } from '../../../../utils/taxAmounts';
+
+export const PAY_METHODS = [
+  { id: 'cash', icon: Banknote, labelKey: 'pos.payCash', action: 'cash' },
+  { id: 'card', icon: CreditCard, labelKey: 'pos.payCard', action: 'card' },
+  { id: 'advance', icon: Coins, labelKey: 'pos.payAdvance', action: 'advance' },
+  { id: 'cashless', icon: QrCode, labelKey: 'pos.payCashless', action: 'cashless' },
+];
 
 export const STEPS_WITH_PRINT_TOGGLE = new Set([
   'cash',
