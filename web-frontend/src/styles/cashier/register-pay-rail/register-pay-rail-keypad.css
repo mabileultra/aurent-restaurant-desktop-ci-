@@ -9,28 +9,32 @@
 }
 
 .pos-register-pay-rail__keypad-wrap {
-  container-type: inline-size;
+  container-type: size;
   container-name: pay-keypad-wrap;
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
-  padding: 2px 0 4px;
+  padding: 2px 0;
   display: flex;
   flex-direction: column;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   width: 100%;
-  gap: var(--pos-keypad-gap, 8px);
+  gap: var(--pos-keypad-gap, 6px);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-  --pos-keypad-rail-gap: var(--pos-keypad-gap, 8px);
+  --pos-keypad-rail-gap: var(--pos-keypad-gap, 6px);
+  --pos-keypad-rail-cell-w: calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3);
+  --pos-keypad-rail-cell-h: calc((100cqh - var(--pos-keypad-rail-gap) * 3) / 4);
   --pos-keypad-rail-cell: clamp(
-    58px,
-    calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3),
-    86px
+    44px,
+    min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
+    72px
   );
   width: 100%;
   max-width: 100%;
@@ -47,7 +51,7 @@
   max-height: none;
   aspect-ratio: auto;
   padding: 0 clamp(2px, 1cqi, 6px);
-  font-size: clamp(1rem, min(5cqi, 20cqw), 1.375rem);
+  font-size: clamp(0.9375rem, min(4.5cqi, 18cqw), 1.25rem);
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
@@ -114,9 +118,9 @@
 
   .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
     --pos-keypad-rail-cell: clamp(
-      54px,
-      calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3),
-      78px
+      42px,
+      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
+      66px
     );
   }
 }
@@ -143,9 +147,9 @@
 
   .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
     --pos-keypad-rail-cell: clamp(
-      50px,
-      calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3),
-      72px
+      40px,
+      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
+      60px
     );
   }
 }
@@ -180,9 +184,9 @@
 
   .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
     --pos-keypad-rail-cell: clamp(
-      46px,
-      calc((100cqw - var(--pos-keypad-rail-gap) * 2) / 3),
-      64px
+      36px,
+      min(var(--pos-keypad-rail-cell-w), var(--pos-keypad-rail-cell-h)),
+      54px
     );
   }
 

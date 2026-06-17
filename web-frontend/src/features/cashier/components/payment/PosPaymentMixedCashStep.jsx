@@ -42,13 +42,6 @@ export default function PosPaymentMixedCashStep({
           </p>
         </div>
       </div>
-      <NumericKeypad
-        value={cashPortion}
-        onChange={handleCashPortionChange}
-        quickActions={mixedQuickActions}
-        actionKeyMode="clear"
-        disabled={isPending}
-      />
       <div className="pos-pay-mixed-progress">
         <div className="pos-pay-mixed-progress__meta">
           <span>
@@ -60,6 +53,13 @@ export default function PosPaymentMixedCashStep({
           <div className="pos-pay-mixed-progress__fill" style={{ '--mixed-progress': `${mixedPercent}%` }} />
         </div>
       </div>
+      <NumericKeypad
+        value={cashPortion}
+        onChange={handleCashPortionChange}
+        quickActions={mixedQuickActions}
+        actionKeyMode="clear"
+        disabled={isPending}
+      />
       {cashExceeds && <p className="pos-pay-panel__error">{t('pos.mixedCashExceeds')}</p>}
     </div>
   );
