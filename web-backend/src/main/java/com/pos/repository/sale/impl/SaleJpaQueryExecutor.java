@@ -49,8 +49,10 @@ class SaleJpaQueryExecutor {
             graphSetup.accept(graph);
             query.setHint("jakarta.persistence.fetchgraph", graph);
         }
-        query.setFirstResult((int) pageable.getOffset());
-        query.setMaxResults(pageable.getPageSize());
+        if (pageable.isPaged()) {
+            query.setFirstResult((int) pageable.getOffset());
+            query.setMaxResults(pageable.getPageSize());
+        }
         return new PageImpl<>(query.getResultList(), pageable, total);
     }
 

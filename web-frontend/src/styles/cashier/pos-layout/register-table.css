@@ -73,43 +73,67 @@
 .cashier-app .pos-order-panel--register .pos-cart-table {
   flex: 1 1 auto;
   min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__head,
 .cashier-app .pos-order-panel--register .pos-cart-table__row {
-  column-gap: 4px;
+  column-gap: 0;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__body {
+  overflow: visible;
+  flex: none;
+  min-height: auto;
+}
+
+.cashier-app .pos-order-panel--register .pos-cart-table__head,
+.cashier-app .pos-order-panel--register .pos-cart-table__row {
+  width: 100%;
+  min-width: 0;
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__row {
   align-items: stretch;
 }
 
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col,
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  padding: clamp(9px, 2.2cqi, 11px) clamp(6px, 1.8cqi, 10px);
+}
+
 .cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col {
-  padding: 10px 10px;
-  font-size: 0.6875rem;
+  padding: clamp(8px, 2cqi, 10px) clamp(6px, 1.8cqi, 10px);
+  font-size: clamp(0.625rem, 1.8cqi, 0.6875rem);
   font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1.2;
 }
 
-.cashier-app .pos-order-panel--register .pos-cart-table__col {
-  padding: 11px 10px;
-  overflow: hidden;
-}
-
-.cashier-app .pos-order-panel--register .pos-cart-table__col--name {
+.cashier-app .pos-order-panel--register .pos-cart-table__col--name,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--name {
   align-items: flex-start;
   justify-content: flex-start;
   padding-left: 14px;
   padding-right: 8px;
 }
 
-.cashier-app .pos-order-panel--register .pos-cart-table__col--price,
-.cashier-app .pos-order-panel--register .pos-cart-table__col--sum {
-  padding-left: 6px;
-  padding-right: 8px;
+.cashier-app .pos-order-panel--register .pos-cart-table__col {
+  overflow: hidden;
 }
 
+.cashier-app .pos-order-panel--register .pos-cart-table__col--price,
+.cashier-app .pos-order-panel--register .pos-cart-table__col--sum,
 .cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--price,
 .cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--sum {
   padding-left: 6px;
@@ -121,11 +145,13 @@
   overflow: visible;
 }
 
-.cashier-app .pos-order-panel--register .pos-cart-table__col--qty {
+.cashier-app .pos-order-panel--register .pos-cart-table__col--qty,
+.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--qty {
   align-items: center;
   justify-content: center;
   padding: 8px 4px;
   overflow: visible;
+  text-align: center;
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__col--remove,
@@ -137,17 +163,6 @@
   justify-content: center;
   padding: 6px 4px;
   overflow: visible;
-}
-
-.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--remove {
-  align-items: center;
-  justify-content: center;
-}
-
-.cashier-app .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--qty {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__remove-btn {

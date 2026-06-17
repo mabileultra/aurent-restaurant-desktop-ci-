@@ -4,7 +4,7 @@ const VARIANT_CLS = {
   primary:
     'bg-emerald-500 font-semibold text-white hover:bg-emerald-600 disabled:opacity-50 dark:bg-emerald-600 dark:hover:bg-emerald-700',
   secondary:
-    'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800',
+    'border border-slate-300 bg-white font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700',
   danger:
     'bg-red-600 font-semibold text-white hover:bg-red-700 disabled:opacity-50',
   ghost:
