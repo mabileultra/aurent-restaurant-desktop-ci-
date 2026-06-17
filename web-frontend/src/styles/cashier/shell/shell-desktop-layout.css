@@ -72,7 +72,11 @@ html.cashier-shell--desktop #root {
 
 /* Electron: токены под типичное окно 1024–1920 */
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
-  --cashier-bottom-nav-h: clamp(88px, 10vh, 104px);
+  --cashier-bottom-nav-h: clamp(96px, 11vh, 112px);
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register__bottom-nav {
+  padding-bottom: 8px;
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {

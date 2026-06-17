@@ -85,19 +85,19 @@
 /* ── Низкая высота: компактнее нижнее меню ── */
 @media (max-height: 820px) {
   .cashier-app {
-    --cashier-bottom-nav-h: clamp(88px, 10vh, 96px);
+    --cashier-bottom-nav-h: clamp(92px, 11vh, 100px);
     --cashier-gap: clamp(6px, 0.8vw, 10px);
   }
 
   .cashier-bottom-nav__btn {
     font-size: clamp(0.625rem, 2.2cqi, 0.75rem);
-    gap: 3px;
-    padding: 5px 4px;
+    gap: 4px;
+    padding: 6px 4px;
   }
 }
 
 @media (max-height: 720px) {
   .cashier-app {
-    --cashier-bottom-nav-h: clamp(84px, 9vh, 92px);
+    --cashier-bottom-nav-h: clamp(88px, 10vh, 96px);
   }
 }

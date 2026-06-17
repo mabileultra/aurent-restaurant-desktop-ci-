@@ -30,16 +30,8 @@
   margin-top: 0;
 }
 
-/* Плотность по высоте колонки оплаты */
+/* Плотность по высоте колонки оплаты — клавиши: pos-keypad-adaptive.css */
 @container pay-shell (max-height: 760px) {
-  .pos-pay-panel--register-rail.is-step-mixedCash {
-    --pos-keypad-key-h: 46px;
-    --pos-keypad-quick-h: 34px;
-    --pos-keypad-gap: 5px;
-    --pos-keypad-digit-size: 1.2rem;
-    --pos-keypad-action-size: 0.6875rem;
-  }
-
   .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-mixed-cards--stack {
     gap: 5px;
     padding-top: 6px;
@@ -55,14 +47,6 @@
 }
 
 @container pay-shell (max-height: 640px) {
-  .pos-pay-panel--register-rail.is-step-mixedCash {
-    --pos-keypad-key-h: 40px;
-    --pos-keypad-quick-h: 30px;
-    --pos-keypad-gap: 4px;
-    --pos-keypad-digit-size: 1.1rem;
-    --pos-keypad-action-size: 0.625rem;
-  }
-
   .pos-pay-panel--register-rail.is-step-mixedCash .pos-pay-register-rail__head {
     padding: 8px 12px;
   }
@@ -90,10 +74,3 @@
   }
 }
 
-@container pay-shell (max-height: 520px) {
-  .pos-pay-panel--register-rail.is-step-mixedCash {
-    --pos-keypad-key-h: 36px;
-    --pos-keypad-quick-h: 28px;
-    --pos-keypad-digit-size: 1rem;
-  }
-}

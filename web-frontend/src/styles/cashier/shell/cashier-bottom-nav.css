@@ -7,7 +7,6 @@
   gap: clamp(6px, 1cqi, 10px);
   width: 100%;
   min-height: var(--cashier-bottom-nav-h, 100px);
-  max-height: var(--cashier-bottom-nav-h, 100px);
   padding: 0;
   box-sizing: border-box;
   container-type: inline-size;
@@ -22,7 +21,7 @@
   gap: clamp(6px, 1.2cqi, 8px);
   min-width: 0;
   min-height: 0;
-  height: 100%;
+  align-self: stretch;
   padding: clamp(10px, 2cqi, 14px) clamp(6px, 1cqi, 10px);
   border: 1px solid var(--pos-border);
   border-radius: 14px;
@@ -101,6 +100,9 @@
   grid-area: bottom-nav;
   align-self: end;
   flex-shrink: 0;
+  padding-bottom: 6px;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .cashier-app .cashier-app__bottom-nav {
