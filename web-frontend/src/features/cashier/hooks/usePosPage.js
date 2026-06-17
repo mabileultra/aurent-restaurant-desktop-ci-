@@ -107,7 +107,6 @@ export function usePosPage() {
     removeItem,
     selectedLineId,
     setSelectedLineId,
-    onGoToRegister: handleGoToRegister,
   });
 
   useEffect(() => {

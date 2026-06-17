@@ -57,16 +57,6 @@
   max-height: clamp(14px, 4.5cqi, 18px);
 }
 
-.pos-register-card-providers__btn--payme {
-  background: #0b0b0b;
-  border-color: #1f2937;
-}
-
-.pos-register-card-providers__btn--payme:hover:not(:disabled) {
-  background: #111827;
-  border-color: #374151;
-}
-
 .pos-register-card-providers__btn--click {
   background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
 }
@@ -80,13 +70,18 @@
   border-color: var(--pos-border, #2a3548);
 }
 
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme {
-  background: #0b0b0b;
-  border-color: #1f2937;
-}
-
 .cashier-app.cashier-app--terminal .pos-register-card-providers__btn--click {
   background: var(--pos-surface-elevated, #1c2433);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme {
+  background: #fff;
+  border-color: #c5ccd6;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-card-providers__btn:hover:not(:disabled) {
