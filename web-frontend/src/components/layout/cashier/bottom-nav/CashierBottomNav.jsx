@@ -65,8 +65,8 @@ export default function CashierBottomNav({ className = '' }) {
         <Receipt size={28} strokeWidth={2} aria-hidden />
         <span>{t('pos.navMySales')}</span>
       </NavLink>
-      <CashierBottomNavRegister t={t} />
       <CashierBottomNavProducts t={t} />
+      <CashierBottomNavRegister t={t} />
     </nav>
   );
 }
