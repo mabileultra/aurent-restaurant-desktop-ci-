@@ -2,12 +2,16 @@ import { format } from 'date-fns';
 import { Clock } from 'lucide-react';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
 
-export default function CashierShiftStatsBanner({ shift, t }) {
+export default function CashierShiftStatsBanner({ shift, t, compact = false }) {
   const opened =
     shift?.openedAt != null ? format(new Date(shift.openedAt), 'dd.MM.yyyy HH:mm') : '—';
 
   return (
-    <div className="cashier-sales-shift-stats mb-3 flex-shrink-0">
+    <div
+      className={`cashier-sales-shift-stats flex-shrink-0${
+        compact ? ' cashier-sales-shift-stats--compact' : ' mb-3'
+      }`}
+    >
       <div className="cashier-sales-shift-stats__icon">
         <Clock size={20} aria-hidden />
       </div>

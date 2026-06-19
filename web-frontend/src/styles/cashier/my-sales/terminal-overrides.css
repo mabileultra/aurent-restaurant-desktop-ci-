@@ -10,6 +10,7 @@
 
 .cashier-app.cashier-app--terminal .cashier-sales-filters-card,
 .cashier-app.cashier-app--terminal .cashier-sales-shift-stats,
+.cashier-app.cashier-app--terminal .cashier-my-sales-toolbar__shift-placeholder,
 .cashier-app.cashier-app--terminal .cashier-sales-card {
   background: var(--cashier-panel-surface);
   border: 1px solid var(--cashier-panel-border);
@@ -69,6 +70,10 @@
 .cashier-app.cashier-app--terminal .cashier-sales-filters__select:focus {
   border-color: #ea580c;
   box-shadow: 0 0 0 2px rgb(234 88 12 / 0.2);
+}
+
+.cashier-app.cashier-app--terminal .cashier-my-sales-toolbar__shift-placeholder-text {
+  color: var(--cashier-panel-muted);
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-shift-stats__value {

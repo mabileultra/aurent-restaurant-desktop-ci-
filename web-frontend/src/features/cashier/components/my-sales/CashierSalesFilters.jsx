@@ -2,12 +2,21 @@ import { Filter, X } from 'lucide-react';
 import { BaseSelect } from '../../../../components/ui';
 import { hasActiveCashierSalesFilters } from './cashierSalesFilterUtils';
 
-export default function CashierSalesFilters({ filters, onPatch, onReset, filtering, t }) {
+export default function CashierSalesFilters({
+  filters,
+  onPatch,
+  onReset,
+  filtering,
+  t,
+  compact = false,
+}) {
   const active = hasActiveCashierSalesFilters(filters);
 
   return (
     <div
-      className={`cashier-sales-filters-card mb-3 flex-shrink-0${active ? ' is-active' : ''}`}
+      className={`cashier-sales-filters-card flex-shrink-0${
+        compact ? ' cashier-sales-filters-card--compact' : ' mb-3'
+      }${active ? ' is-active' : ''}`}
     >
       <div className="cashier-sales-filters-card__head">
         <div className="cashier-sales-filters-card__title">
@@ -25,7 +34,7 @@ export default function CashierSalesFilters({ filters, onPatch, onReset, filteri
         ) : null}
       </div>
       <form className="cashier-sales-filters-card__body" onSubmit={(e) => e.preventDefault()}>
-        <div className="cashier-sales-filters">
+        <div className={`cashier-sales-filters${compact ? ' cashier-sales-filters--compact' : ''}`}>
           <div className="cashier-sales-filters__field">
             <label className="cashier-sales-filters__label" htmlFor="sales-filter-receipt">
               {t('pos.receipt')}

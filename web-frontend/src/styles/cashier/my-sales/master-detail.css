@@ -21,14 +21,8 @@
 .cashier-sales-list-pane {
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-height: 0;
   min-width: 0;
-}
-
-.cashier-sales-list-pane .cashier-sales-shift-stats {
-  flex-shrink: 0;
-  margin-bottom: 0 !important;
 }
 
 .cashier-sales-list-card {
@@ -75,9 +69,9 @@
 
 .cashier-sales-list-card.is-view-cards .cashier-sales-mobile-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 8px;
-  padding: 10px 12px;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 10px;
+  padding: 12px 14px;
 }
 
 .cashier-sales-table__row.is-selected,

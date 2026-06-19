@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import CashierSalesFilters from '../components/my-sales/CashierSalesFilters';
+import CashierMySalesToolbar from '../components/my-sales/CashierMySalesToolbar';
 import CashierMySalesWorkspace from '../components/my-sales/CashierMySalesWorkspace';
 import CashierMySalesReturnModal from '../components/my-sales/CashierMySalesReturnModal';
 import { useCashierMySalesPage } from '../hooks/useCashierMySalesPage';
@@ -10,13 +10,15 @@ export default function CashierMySalesPage() {
 
   return (
     <div className="cashier-page cashier-page--my-sales">
-      <h1 className="h5 fw-bold mb-3 flex-shrink-0">{t('pos.mySalesTitle')}</h1>
+      <h1 className="h5 fw-bold mb-2 flex-shrink-0">{t('pos.mySalesTitle')}</h1>
 
-      <CashierSalesFilters
+      <CashierMySalesToolbar
         filters={p.filters}
         onPatch={p.patchFilters}
         onReset={p.resetFilters}
         filtering={p.filtering}
+        shift={p.shift}
+        shiftLoading={p.shiftLoading}
         t={t}
       />
 
@@ -31,7 +33,6 @@ export default function CashierMySalesPage() {
           t={t}
           shiftLoading={p.shiftLoading}
           shiftId={p.shiftId}
-          shift={p.shift}
           rows={p.rows}
           salesLoading={p.salesLoading}
           filtering={p.filtering}

@@ -1,12 +1,10 @@
 import CashierSalesListCard from './CashierSalesListCard';
 import CashierSalesReceiptPane from './CashierSalesReceiptPane';
-import CashierShiftStatsBanner from './CashierShiftStatsBanner';
 
 export default function CashierMySalesWorkspace({
   t,
   shiftLoading,
   shiftId,
-  shift,
   rows,
   salesLoading,
   filtering,
@@ -33,7 +31,6 @@ export default function CashierMySalesWorkspace({
   return (
     <div className={`cashier-sales-master${selectedId ? ' has-selection' : ''}`}>
       <div className="cashier-sales-list-pane">
-        <CashierShiftStatsBanner shift={shift} t={t} />
         <CashierSalesListCard
           rows={rows}
           isPending={salesLoading || filtering}
