@@ -16,6 +16,9 @@ RUN mvn -pl finance-service -am package -DskipTests -q
 
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
+
+RUN apk add --no-cache wget
+
 COPY --from=build /app/finance-service/target/finance-service-1.0.0.jar app.jar
 EXPOSE 8082
 ENTRYPOINT ["java", "-jar", "app.jar"]
