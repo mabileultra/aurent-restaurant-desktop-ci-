@@ -1,8 +1,12 @@
 import { Route, Navigate } from 'react-router-dom';
 import CashierRoute from './guards/CashierRoute';
+import CashierHomeRedirect from './guards/CashierHomeRedirect';
+import CashierRetailPosGuard from './guards/CashierRetailPosGuard';
 import CashierLayout from '../components/layout/CashierLayout';
 import {
   PosPage,
+  RestaurantPosPage,
+  KitchenDisplayPage,
   CashierMySalesPage,
   HandbookPage,
   SupportPage,
@@ -17,8 +21,17 @@ export const cashierRoutes = (
       </CashierRoute>
     )}
   >
-    <Route index element={<Navigate to="/cashier/pos" replace />} />
-    <Route path="pos" element={<PosPage />} />
+    <Route index element={<CashierHomeRedirect />} />
+    <Route
+      path="pos"
+      element={(
+        <CashierRetailPosGuard>
+          <PosPage />
+        </CashierRetailPosGuard>
+      )}
+    />
+    <Route path="restaurant" element={<RestaurantPosPage />} />
+    <Route path="kitchen" element={<KitchenDisplayPage />} />
     <Route path="sales" element={<CashierMySalesPage />} />
     <Route path="handbook" element={<HandbookPage scope="cashier" />} />
     <Route path="handbook/:moduleId" element={<HandbookPage scope="cashier" />} />

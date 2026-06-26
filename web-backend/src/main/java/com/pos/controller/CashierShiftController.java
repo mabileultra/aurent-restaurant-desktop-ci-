@@ -30,7 +30,7 @@ public class CashierShiftController {
     private final CashierShiftService cashierShiftService;
 
     @GetMapping("/current")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Текущая смена", description = "Получение активной смены кассира в магазине")
     @ApiResponse(responseCode = "200", description = "Данные текущей смены")
     public ResponseEntity<CashierShiftResponse> current(@RequestParam Integer storeId) {
@@ -38,7 +38,7 @@ public class CashierShiftController {
     }
 
     @PostMapping("/open")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Открыть смену", description = "Открытие новой кассовой смены")
     @ApiResponse(responseCode = "200", description = "Смена открыта")
     public ResponseEntity<CashierShiftResponse> open(@RequestParam Integer storeId) {
@@ -46,7 +46,7 @@ public class CashierShiftController {
     }
 
     @GetMapping("/{id}/x-report")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "X-отчёт", description = "Промежуточный отчёт по смене без закрытия")
     @ApiResponse(responseCode = "200", description = "X-отчёт смены")
     public ResponseEntity<ShiftReportResponse> xReport(@PathVariable UUID id) {
@@ -54,7 +54,7 @@ public class CashierShiftController {
     }
 
     @GetMapping("/{id}/z-report")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Предпросмотр Z-отчёта", description = "Предварительный Z-отчёт перед закрытием смены")
     @ApiResponse(responseCode = "200", description = "Предпросмотр Z-отчёта")
     public ResponseEntity<ShiftReportResponse> zReportPreview(@PathVariable UUID id) {
@@ -62,7 +62,7 @@ public class CashierShiftController {
     }
 
     @PostMapping("/{id}/z-report")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Финализировать Z-отчёт", description = "Формирование и сохранение Z-отчёта смены")
     @ApiResponse(responseCode = "200", description = "Z-отчёт сформирован")
     public ResponseEntity<FinalizeZReportResponse> finalizeZReport(@PathVariable UUID id) {
@@ -70,7 +70,7 @@ public class CashierShiftController {
     }
 
     @PostMapping("/{id}/close")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Закрыть смену", description = "Закрытие кассовой смены")
     @ApiResponse(responseCode = "200", description = "Смена закрыта")
     public ResponseEntity<CashierShiftResponse> close(@PathVariable UUID id) {

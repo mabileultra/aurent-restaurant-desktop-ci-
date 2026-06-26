@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.pos.domain.sale.ServiceMode;
+
 @Entity
 @Table(name = "sales")
 @Getter @Setter @Builder
@@ -123,6 +125,14 @@ public class Sale {
 
     @Column(name = "created_at")
     private Instant createdAt;
+
+    @Column(name = "table_session_id")
+    private UUID tableSessionId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "service_mode", nullable = false, length = 20)
+    @Builder.Default
+    private ServiceMode serviceMode = ServiceMode.RETAIL;
 
     public enum SaleSource {
         ONLINE,

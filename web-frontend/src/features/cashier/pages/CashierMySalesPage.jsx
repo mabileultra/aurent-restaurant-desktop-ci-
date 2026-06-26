@@ -10,8 +10,6 @@ export default function CashierMySalesPage() {
 
   return (
     <div className="cashier-page cashier-page--my-sales">
-      <h1 className="h5 fw-bold mb-2 flex-shrink-0">{t('pos.mySalesTitle')}</h1>
-
       <CashierMySalesToolbar
         filters={p.filters}
         onPatch={p.patchFilters}

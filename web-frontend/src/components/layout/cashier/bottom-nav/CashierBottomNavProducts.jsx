@@ -1,21 +1,24 @@
 import { Package } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 import { usePosShell } from '../../../../contexts/PosShellContext';
+import { isCashierRegisterScreen } from '../../../../utils/cashierRegisterRoute';
 import { bottomNavLinkClass } from './bottomNavClass';
 
 export default function CashierBottomNavProducts({ t }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { registerPath } = useCashierStoreProfile();
   const { shell } = usePosShell() ?? {};
-  const onPosPage = location.pathname.startsWith('/cashier/pos');
-  const isCatalogActive = onPosPage && shell?.posPane === 'catalog' && !shell?.payOpen;
+  const onRegisterScreen = isCashierRegisterScreen(location.pathname);
+  const isCatalogActive = onRegisterScreen && shell?.posPane === 'catalog' && !shell?.payOpen;
 
   const openCatalog = () => {
-    if (onPosPage && shell && !shell.payOpen) {
+    if (onRegisterScreen && shell && !shell.payOpen) {
       shell.onGoToCatalog();
       return;
     }
-    navigate('/cashier/pos', { state: { pane: 'catalog' } });
+    navigate(registerPath, { state: { pane: 'catalog' } });
   };
 
   return (

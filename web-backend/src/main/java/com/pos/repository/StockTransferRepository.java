@@ -40,4 +40,19 @@ public interface StockTransferRepository extends JpaRepository<StockTransfer, UU
         @Param("toStoreId") Integer toStoreId,
         Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"fromStore", "toStore", "createdBy"})
+    @Query("""
+        SELECT t FROM StockTransfer t
+        WHERE t.fromStore.company.id = :companyId
+          AND t.toStore.company.id = :companyId
+          AND t.createdAt >= :start AND t.createdAt < :end
+        ORDER BY t.createdAt DESC
+        """)
+    Page<StockTransfer> findByCompanyBetween(
+        @Param("companyId") Integer companyId,
+        @Param("start") Instant start,
+        @Param("end") Instant end,
+        Pageable pageable
+    );
 }

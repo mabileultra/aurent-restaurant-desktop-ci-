@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="reporting-011-shift-closed-details" author="pos">
+        <addColumn tableName="shift_closed_facts">
+            <column name="z_number" type="INT"/>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="closed_at" type="TIMESTAMPTZ"/>
+            <column name="sales_count" type="INT"/>
+            <column name="employee_name" type="VARCHAR(255)"/>
+        </addColumn>
+        <createIndex indexName="idx_shift_closed_facts_company_closed_at" tableName="shift_closed_facts">
+            <column name="company_id"/>
+            <column name="closed_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

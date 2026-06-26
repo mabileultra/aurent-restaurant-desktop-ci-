@@ -1,10 +1,10 @@
 package com.pos.service.ai;
 
+import com.pos.client.reporting.ReportingStockReportClient;
 import com.pos.entity.Product;
 import com.pos.repository.spec.ProductSpecifications;
-import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.product.ProductLifecycleService;
-import com.pos.service.stock.StockReportService;
+import com.pos.service.support.ProductLookupSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,7 @@ public class AiAssistantCompanyRepository {
     private static final long TTL_MS = 90_000L;
 
     private final AnalyticsToolFacade toolFacade;
-    private final StockReportService stockReportService;
+    private final ReportingStockReportClient reportingStockReportClient;
     private final ProductLifecycleService productLifecycleService;
     private final ProductLookupSupport productLookup;
 
@@ -109,7 +109,7 @@ public class AiAssistantCompanyRepository {
 
     private Map<String, Object> lowStockOverview(int limit) {
         int size = Math.max(1, Math.min(200, limit > 0 ? limit : 30));
-        var page = stockReportService.lowStock(PageRequest.of(0, size));
+        var page = reportingStockReportClient.lowStock(0, size);
         return Map.of(
             "count", page.totalElements(),
             "items", page.content()
@@ -120,7 +120,7 @@ public class AiAssistantCompanyRepository {
         LocalDate start = from != null ? from : LocalDate.now().minusDays(30);
         LocalDate end = to != null ? to : LocalDate.now();
         int size = Math.max(1, Math.min(200, limit > 0 ? limit : 30));
-        var page = stockReportService.turnover(start, end, null, query, PageRequest.of(0, size));
+        var page = reportingStockReportClient.turnover(start, end, null, query, 0, size);
         return Map.of(
             "from", start,
             "to", end,
@@ -133,7 +133,7 @@ public class AiAssistantCompanyRepository {
         LocalDate start = from != null ? from : LocalDate.now().minusDays(30);
         LocalDate end = to != null ? to : LocalDate.now();
         int size = Math.max(1, Math.min(200, limit > 0 ? limit : 30));
-        var page = stockReportService.productSales(start, end, null, null, query, PageRequest.of(0, size));
+        var page = reportingStockReportClient.productSales(start, end, null, null, query, 0, size);
         return Map.of(
             "from", start,
             "to", end,
@@ -146,7 +146,7 @@ public class AiAssistantCompanyRepository {
         LocalDate date = asOf != null ? asOf : LocalDate.now();
         int size = Math.max(1, Math.min(200, limit > 0 ? limit : 30));
         int daysNoSale = 30;
-        var page = stockReportService.deadStock(date, daysNoSale, null, query, PageRequest.of(0, size));
+        var page = reportingStockReportClient.deadStock(date, daysNoSale, null, query, 0, size);
         return Map.of(
             "asOfDate", date,
             "daysNoSale", daysNoSale,

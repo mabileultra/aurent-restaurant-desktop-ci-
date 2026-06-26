@@ -1,6 +1,6 @@
 # Весы (фронтенд)
 
-Мост к Electron-модулю `desktop-cashier/electron/scales/`.
+Мост к Electron-модулю `aurent-cashier-desktop/electron/scales/`.
 
 - `scaleBridge.js` — вызовы `window.desktopCashier.*`
 - `useScaleWeight.js` — подписка на показания при открытой модалке

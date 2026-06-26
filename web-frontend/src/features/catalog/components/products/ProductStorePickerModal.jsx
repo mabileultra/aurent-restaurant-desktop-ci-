@@ -1,6 +1,6 @@
 import { Store, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { resolveBusinessTypeForTemplates } from '../../../../config/productCatalogTemplateRegistry';
+import { businessTypeLabelKey, normalizeBusinessTypeCode } from '../../../../config/productCatalogConfig';
 
 export default function ProductStorePickerModal({ stores, onClose, onSelectStore }) {
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export default function ProductStorePickerModal({ stores, onClose, onSelectStore
             </p>
           ) : (
             activeStores.map((store) => {
-              const businessType = resolveBusinessTypeForTemplates(store.businessType);
+              const businessType = normalizeBusinessTypeCode(store.businessType);
               return (
                 <button
                   key={store.id}
@@ -53,7 +53,7 @@ export default function ProductStorePickerModal({ stores, onClose, onSelectStore
                       </span>
                     ) : null}
                     <span className="mt-2 inline-block rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
-                      {t(`productTemplates.businessTypes.${businessType}`)}
+                      {t(businessTypeLabelKey(businessType), { defaultValue: businessType })}
                     </span>
                   </span>
                 </button>

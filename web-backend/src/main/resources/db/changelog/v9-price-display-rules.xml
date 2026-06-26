@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v9-business-type-price-rules" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="business_type_price_rules"/>
+            </not>
+        </preConditions>
+        <createTable tableName="business_type_price_rules">
+            <column name="business_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_value" type="VARCHAR(200)" defaultValue="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="business_type_price_rules"
+            columnNames="business_type_id, rule_key"
+            constraintName="pk_business_type_price_rules"/>
+        <addForeignKeyConstraint
+            baseTableName="business_type_price_rules"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_business_type_price_rules_type"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="v9-field-display-rules" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="field_display_rules"/>
+            </not>
+        </preConditions>
+        <createTable tableName="field_display_rules">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_field_display_rules"/>
+            </column>
+            <column name="business_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="target_field_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trigger_field_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operator" type="VARCHAR(20)" defaultValue="EQUALS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="trigger_value" type="VARCHAR(200)"/>
+            <column name="effect" type="VARCHAR(20)" defaultValue="SHOW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="field_display_rules"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_field_display_rules_type"
+            onDelete="CASCADE"/>
+        <createIndex tableName="field_display_rules" indexName="idx_field_display_rules_type">
+            <column name="business_type_id"/>
+            <column name="target_field_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v9-seed-price-display-rules" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM business_type_price_rules</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_price_rules (business_type_id, rule_key, rule_value)
+            SELECT bt.id, v.rule_key, v.rule_value
+            FROM business_types bt
+            CROSS JOIN (VALUES
+                ('CLOTHING', 'price.minMarginPercent', '15'),
+                ('CLOTHING', 'price.maxDiscountPercent', '30'),
+                ('GROCERY', 'price.requireCost', 'true'),
+                ('GROCERY', 'price.minMarginPercent', '5'),
+                ('CONSTRUCTION', 'price.hideInitialStock', 'true'),
+                ('CONSTRUCTION', 'price.minMarginPercent', '10')
+            ) AS v(type_code, rule_key, rule_value)
+            WHERE bt.code = v.type_code;
+
+            INSERT INTO field_display_rules
+                (business_type_id, target_field_key, trigger_field_key, operator, trigger_value, effect, sort_order)
+            SELECT bt.id, v.target_key, v.trigger_key, v.operator, v.trigger_value, v.effect, v.sort_order
+            FROM business_types bt
+            CROSS JOIN (VALUES
+                ('CLOTHING', 'season', 'gender', 'EQUALS', 'KIDS', 'HIDE', 10),
+                ('CLOTHING', 'material', 'gender', 'EQUALS', 'KIDS', 'HIDE', 20)
+            ) AS v(type_code, target_key, trigger_key, operator, trigger_value, effect, sort_order)
+            WHERE bt.code = v.type_code;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

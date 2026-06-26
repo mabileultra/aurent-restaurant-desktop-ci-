@@ -15,12 +15,13 @@ import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.StockInventoryRepository;
-import com.pos.repository.StockMovementRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
 import com.pos.service.stock.StockInventoryService;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.stock.support.StockDocumentSupport;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -49,12 +50,13 @@ public class StockInventoryServiceImpl implements StockInventoryService {
 
     private final StockInventoryRepository stockInventoryRepository;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final StoreRepository storeRepository;
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
     private final CurrentUserProvider currentUserProvider;
     private final StockDocumentSupport stockDocument;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public StockInventoryResponse create(CreateStockInventoryRequest request) {
@@ -95,7 +97,7 @@ public class StockInventoryServiceImpl implements StockInventoryService {
             if (diff.signum() != 0) {
                 storeStockService.setQuantity(product, store, counted);
                 productRepository.save(product);
-                stockMovementRepository.save(StockMovement.builder()
+                stockMovementPersistence.save(StockMovement.builder()
                     .product(product)
                     .store(store)
                     .movementType(StockMovementType.ADJUSTMENT)
@@ -115,7 +117,9 @@ public class StockInventoryServiceImpl implements StockInventoryService {
         inventory.setTotalDifference(totalDiff);
         stockInventoryRepository.save(inventory);
 
-        return toResponse(stockInventoryRepository.findDetailedById(inventoryId).orElseThrow());
+        StockInventory detailed = stockInventoryRepository.findDetailedById(inventoryId).orElseThrow();
+        posDomainEventService.publishStockInventoryAfterCommit(detailed);
+        return toResponse(detailed);
     }
 
     @Override

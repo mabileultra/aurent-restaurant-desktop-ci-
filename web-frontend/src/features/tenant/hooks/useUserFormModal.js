@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi, storeApi, userApi } from '../../../api';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
+import { useAuthStore } from '../../../store/authStore';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import {
   asStoreList,
@@ -15,7 +16,9 @@ import {
 export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
-  const { tenantKey, tenantReady } = useTenantScope();
+  const { tenantKey } = useTenantScope();
+  const authCompanyId = useAuthStore((s) => s.user?.companyId ?? null);
+  const authCompanyName = useAuthStore((s) => s.user?.companyName ?? null);
   const isEdit = mode === 'edit';
   const user = isEdit ? editingUser : null;
 
@@ -38,11 +41,11 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     },
   });
 
-  const { register, handleSubmit, reset, watch, formState: { errors } } = form;
+  const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form;
   const selectedRole = watch('role');
-  const isCashierRole = selectedRole === 'CASHIER';
+  const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
-  const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER');
+  const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
   const showPasswordField = !isCashierRole && (isPlatform || fieldOn('password') || !isEdit);
 
   const { data: companies = [] } = useQuery({
@@ -51,10 +54,20 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     enabled: isPlatform && open,
   });
 
-  const { data: storesRaw } = useQuery({
-    queryKey: isPlatform ? ['stores', 'platform-user-form', companyId || 'none'] : tenantKey('stores'),
-    queryFn: () => storeApi.getAll().then((r) => r.data),
-    enabled: open && (isPlatform ? Boolean(companyId) : tenantReady),
+  const { data: storesRaw, isLoading: storesLoading, isError: storesError } = useQuery({
+    queryKey: isPlatform
+      ? ['stores', 'platform-user-form', companyId || 'none']
+      : tenantKey('stores-user-form'),
+    queryFn: async () => {
+      const params = { page: 0, size: 500 };
+      if (isPlatform && companyId) {
+        params.companyId = Number(companyId);
+      }
+      const res = await storeApi.getManaged(params);
+      return res.data?.content ?? [];
+    },
+    enabled: open && (isPlatform ? Boolean(companyId) : authCompanyId != null),
+    staleTime: 0,
   });
 
   const stores = asStoreList(storesRaw);
@@ -76,7 +89,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
   }, [stores, companyId, isPlatform]);
 
   const storeOptions = useMemo(() => {
-    const base = (isPlatform ? filteredStores : stores).filter((s) => s.active !== false);
+    const source = isPlatform ? filteredStores : stores;
+    const base = source.filter((s) => s.active !== false);
     if (!isEdit || !user) return base;
 
     const assignedIds = Array.isArray(user.storeIds) ? user.storeIds : [];
@@ -95,14 +109,20 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     return [...base, ...extras];
   }, [isPlatform, filteredStores, stores, isEdit, user]);
 
+  const formInitializedRef = useRef(false);
+
   useEffect(() => {
     if (!open) {
+      formInitializedRef.current = false;
       setPasswordVisible(false);
       return;
     }
+    if (formInitializedRef.current) return;
+    if (isEdit && !user?.id) return;
+
+    formInitializedRef.current = true;
 
     if (isEdit) {
-      if (!user?.id) return;
       const role = user.role ?? 'MANAGER';
       const initialStores = toStoreIdSet(user.storeIds);
       reset({
@@ -115,7 +135,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
         pin: '',
         password: '',
       });
-      setStoreIds(role === 'CASHIER' ? cashierStoreSet(initialStores) : initialStores);
+      setStoreIds(role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores);
       setCompanyId(user.companyId != null ? String(user.companyId) : '');
     } else {
       reset({
@@ -131,7 +151,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
       setStoreIds(new Set());
       setCompanyId('');
     }
-  }, [open, isEdit, user, isPlatform, reset]);
+  }, [open, isEdit, user?.id, isPlatform, reset]);
 
   useEffect(() => {
     if (!isCashierRole) return;
@@ -183,10 +203,10 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     const firstName = fieldOn('firstName') ? data.firstName?.trim() : username;
     const lastName = fieldOn('lastName') ? data.lastName?.trim() : '—';
     const patronymic = fieldOn('patronymic') ? data.patronymic?.trim() || null : null;
-    const email = fieldOn('email') ? data.email.trim() : `${username}@local.pos`;
+    const email = fieldOn('email') ? data.email.trim() : `${username}@example.com`;
     let selectedStoreIds = Array.from(storeIds).map(Number).filter((n) => !Number.isNaN(n));
 
-    if (role === 'CASHIER') {
+    if (isCashierRole) {
       if (selectedStoreIds.length === 0) {
         toast.error(t('users.cashierStoreRequired'));
         return;
@@ -215,6 +235,16 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
       return;
     }
 
+    if (isPlatform && !isEdit && !companyId) {
+      toast.error(t('users.companyRequired'));
+      return;
+    }
+
+    if (!role) {
+      toast.error(t('validation.fieldRequired', { field: t('users.role') }));
+      return;
+    }
+
     if (isEdit) {
       const newPassword = data.password?.trim() ?? '';
       if (newPassword.length > 0 && newPassword.length < 6) {
@@ -239,14 +269,15 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
       return;
     }
 
+    const pwd = String(data.password || '').trim();
     saveUser({
       firstName,
       lastName,
       patronymic,
       username,
       email,
-      pin: role === 'CASHIER' ? pin : undefined,
-      password: role === 'CASHIER' ? undefined : data.password,
+      pin: isCashierRole ? pin : undefined,
+      ...(isCashierRole || pwd.length === 0 ? {} : { password: pwd }),
       role,
       companyId: isPlatform && companyId ? Number(companyId) : undefined,
       storeIds: selectedStoreIds,
@@ -254,8 +285,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     if (isPlatform) {
       createCredentialsRef.current = {
         username,
-        password: role === 'CASHIER' ? null : String(data.password || '').trim(),
-        pin: role === 'CASHIER' ? pin : null,
+        password: isCashierRole ? null : String(data.password || '').trim(),
+        pin: isCashierRole ? pin : null,
         role,
         companyLoginCode,
       };
@@ -272,6 +303,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     setCreatedCredentials(null);
     toast.success(t('users.created'));
   };
+
+  const selectedStoreId = storeIds.size > 0 ? String([...storeIds][0]) : '';
 
   return {
     t,
@@ -294,11 +327,18 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     createdCredentials,
     dismissCredentials,
     register,
+    setValue,
+    selectedRole,
     handleSubmit,
     errors,
     onSubmit,
     isPending,
     storeIds,
+    selectedStoreId,
+    storesLoading,
+    storesError,
+    authCompanyId,
+    authCompanyName,
     toggleStore,
     storeOptions,
     fioFields,

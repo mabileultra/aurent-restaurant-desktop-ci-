@@ -19,9 +19,16 @@ export default function UserFormModalFields({
   passwordVisible,
   setPasswordVisible,
   register,
+  setValue,
+  selectedRole,
   errors,
   isPending,
   storeIds,
+  selectedStoreId,
+  storesLoading,
+  storesError,
+  authCompanyId,
+  authCompanyName,
   toggleStore,
   storeOptions,
   fioFields,
@@ -150,54 +157,110 @@ export default function UserFormModalFields({
           />
         </div>
       )}
-      {(isPlatform || fieldOn('role')) ? (
+      {(isPlatform || fieldOn('role') || !isEdit) ? (
         <div>
+          <input type="hidden" {...register('role')} />
           <BaseSelect
             label={t('users.role')}
-            {...register('role')}
+            value={selectedRole}
+            onChange={(e) => setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true })}
             options={
               isPlatform
                 ? [
                     { value: 'ADMIN', label: t('users.roleAdmin') },
                     { value: 'MANAGER', label: t('users.roleManager') },
                     { value: 'CASHIER', label: t('users.roleCashier') },
+                    { value: 'WAITER', label: t('users.roleWaiter') },
+                    { value: 'COURIER', label: t('users.roleCourier') },
+                    { value: 'COOK', label: t('users.roleCook') },
                     { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
                   ]
                 : [
                     { value: 'MANAGER', label: t('users.roleManager') },
                     { value: 'CASHIER', label: t('users.roleCashier') },
+                    { value: 'WAITER', label: t('users.roleWaiter') },
+                    { value: 'COURIER', label: t('users.roleCourier') },
+                    { value: 'COOK', label: t('users.roleCook') },
                     { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
                   ]
             }
           />
         </div>
       ) : null}
-      {(isPlatform || fieldOn('stores')) ? (
+      {(isPlatform || fieldOn('stores') || isCashierRole) ? (
         <div>
-          <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.colStores')}</label>
-          {isCashierRole && (
-            <p className="mb-2 text-xs text-slate-500 dark:text-slate-400">{t('users.cashierStoreHint')}</p>
+          {isCashierRole ? (
+            <>
+              <label className="mb-1 block text-xs font-medium text-slate-500 dark:text-slate-400">
+                <span className="text-red-400">* </span>
+                {t('users.colStores')}
+              </label>
+              <select
+                className={userFormInputCls}
+                value={selectedStoreId}
+                disabled={storesLoading || (storeOptions.length === 0 && !storesError)}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  if (!next) {
+                    setStoreIds(new Set());
+                    return;
+                  }
+                  toggleStore(next);
+                }}
+              >
+                <option value="">
+                  {storesLoading
+                    ? t('common.loading')
+                    : storeOptions.length === 0
+                      ? t('users.noStoresAvailable')
+                      : t('users.selectStore')}
+                </option>
+                {storeOptions.map((s) => (
+                  <option key={s.id} value={String(s.id)}>
+                    {`${s.name}${s.active === false ? ` (${t('users.storeInactive')})` : ''}`}
+                  </option>
+                ))}
+              </select>
+              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('users.cashierStoreHint')}</p>
+              {storesError ? (
+                <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
+              ) : null}
+              {!storesLoading && !storesError && storeOptions.length === 0 ? (
+                <p className="mt-1 text-xs text-amber-600 dark:text-amber-400">
+                  {isPlatform
+                    ? t('users.noStoresForSelectedCompany')
+                    : t('users.noStoresForYourCompany', {
+                        company: authCompanyName || (authCompanyId != null ? `#${authCompanyId}` : '—'),
+                      })}
+                </p>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.colStores')}</label>
+              <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border p-3 dark:border-slate-700">
+                {storesLoading ? (
+                  <p className="text-xs text-slate-500">{t('common.loading')}</p>
+                ) : storeOptions.length === 0 ? (
+                  <p className="text-xs text-slate-500">{t('users.noStoresAvailable')}</p>
+                ) : (
+                  storeOptions.map((s) => (
+                    <label key={s.id} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={storeIds.has(Number(s.id))}
+                        onChange={() => toggleStore(s.id)}
+                      />
+                      <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : ''}>
+                        {s.name}
+                        {s.active === false ? ` (${t('users.storeInactive')})` : ''}
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </>
           )}
-          <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border p-3 dark:border-slate-700">
-            {storeOptions.length === 0 ? (
-              <p className="text-xs text-slate-500">{t('users.noStoresAvailable')}</p>
-            ) : (
-              storeOptions.map((s) => (
-                <label key={s.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type={isCashierRole ? 'radio' : 'checkbox'}
-                    name={isCashierRole ? `cashier-store-${user?.id ?? 'new'}` : undefined}
-                    checked={storeIds.has(Number(s.id))}
-                    onChange={() => toggleStore(s.id)}
-                  />
-                  <span className={s.active === false ? 'text-amber-600 dark:text-amber-400' : ''}>
-                    {s.name}
-                    {s.active === false ? ` (${t('users.storeInactive')})` : ''}
-                  </span>
-                </label>
-              ))
-            )}
-          </div>
         </div>
       ) : null}
       <div className="flex gap-3">

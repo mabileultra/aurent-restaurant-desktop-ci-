@@ -1,0 +1,30 @@
+.kitchen-department-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.kitchen-department-form__field {
+  display: block;
+}
+
+.kitchen-department-form__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--rest-text-muted);
+}
+
+.kitchen-department-form__hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--rest-text-muted);
+}
+
+.kitchen-department-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.35rem;
+}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v6-stock-receipt-facts-dimensions" author="reporting">
+        <addColumn tableName="stock_receipt_facts">
+            <column name="receipt_number" type="VARCHAR(40)"/>
+            <column name="supplier_name" type="VARCHAR(255)"/>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="total_quantity" type="DECIMAL(18,3)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

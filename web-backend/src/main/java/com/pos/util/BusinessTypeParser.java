@@ -1,6 +1,6 @@
 package com.pos.util;
 
-import com.pos.domain.BusinessType;
+import com.pos.domain.businessconfig.BusinessTypeCodes;
 import com.pos.exception.BadRequestException;
 import org.springframework.util.StringUtils;
 
@@ -8,25 +8,17 @@ public final class BusinessTypeParser {
 
     private BusinessTypeParser() {}
 
-    public static BusinessType parseRequired(String code) {
+    public static String parseRequired(String code) {
         if (!StringUtils.hasText(code)) {
             throw new BadRequestException("Business type is required");
         }
-        return parseOrDefault(code, null);
+        return BusinessTypeCodes.normalize(code);
     }
 
-    public static BusinessType parseOrDefault(String code, BusinessType fallback) {
+    public static String parseOrDefault(String code, String fallback) {
         if (!StringUtils.hasText(code)) {
-            return fallback != null ? fallback : BusinessType.UNIVERSAL;
+            return fallback != null ? fallback : BusinessTypeCodes.UNIVERSAL;
         }
-        String normalized = code.trim().toUpperCase();
-        if ("RETAIL".equals(normalized)) {
-            return BusinessType.UNIVERSAL;
-        }
-        try {
-            return BusinessType.valueOf(normalized);
-        } catch (IllegalArgumentException ex) {
-            throw new BadRequestException("Unknown business type: " + code);
-        }
+        return BusinessTypeCodes.normalize(code);
     }
 }

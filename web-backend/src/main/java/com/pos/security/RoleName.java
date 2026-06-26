@@ -14,6 +14,7 @@ public enum RoleName {
     TENANT_ADMIN("ADMIN"),
     MANAGER("MANAGER"),
     CASHIER("CASHIER"),
+    WAITER("WAITER"),
     ACCOUNTANT("ACCOUNTANT");
 
     private final String key;

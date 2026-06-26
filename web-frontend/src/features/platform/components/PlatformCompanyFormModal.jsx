@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { BaseButton, BaseInput, BaseModal, BaseSelect } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseModal } from '../../../components/ui';
 
 export default function PlatformCompanyFormModal({
   open,
@@ -9,6 +9,8 @@ export default function PlatformCompanyFormModal({
   businessTypes,
   onClose,
   onFieldChange,
+  onToggleBusinessType,
+  onSetDefaultBusinessType,
   onSave,
 }) {
   const { t } = useTranslation();
@@ -25,7 +27,7 @@ export default function PlatformCompanyFormModal({
             {t('common.cancel')}
           </BaseButton>
           <BaseButton
-            disabled={!form.name.trim() || isSaving}
+            disabled={!form.name.trim() || isSaving || form.businessTypeIds.length === 0}
             onClick={onSave}
           >
             {t('common.save')}
@@ -67,16 +69,52 @@ export default function PlatformCompanyFormModal({
       />
 
       <div className="mb-1">
-        <BaseSelect
-          label={t('platform.field_businessType')}
-          value={form.businessType}
-          onChange={(e) => onFieldChange('businessType', e.target.value)}
-          options={businessTypes.map((bt) => ({
-            value: bt.code,
-            label: t(`productTemplates.businessTypes.${bt.code}`),
-          }))}
-        />
-        <p className="mt-1 text-xs text-slate-500">{t('platform.field_businessTypeHint')}</p>
+        <p className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+          {t('platform.field_businessTypes')}
+        </p>
+        <div className="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-slate-700">
+          {businessTypes.map((bt) => {
+            const checked = form.businessTypeIds.includes(bt.id);
+            const isDefault = form.defaultBusinessTypeId === bt.id;
+            return (
+              <label
+                key={bt.id}
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60"
+              >
+                <span className="flex items-center gap-2 text-sm text-slate-800 dark:text-slate-200">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggleBusinessType(bt.id)}
+                  />
+                  <span>{bt.name}</span>
+                  <span className="font-mono text-xs text-slate-400">{bt.code}</span>
+                </span>
+                {checked ? (
+                  <button
+                    type="button"
+                    className={`rounded px-2 py-0.5 text-xs ${
+                      isDefault
+                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                    }`}
+                    onClick={() => onSetDefaultBusinessType(bt.id)}
+                  >
+                    {isDefault ? t('platform.businessTypeDefault') : t('platform.businessTypeMakeDefault')}
+                  </button>
+                ) : null}
+              </label>
+            );
+          })}
+        </div>
+        <p className="mt-1 text-xs text-slate-500">{t('platform.field_businessTypesHint')}</p>
+        {form.defaultBusinessTypeId ? (
+          <p className="mt-2 text-xs text-amber-700 dark:text-amber-300">
+            {t('platform.businessTypeDefaultHint', {
+              code: businessTypes.find((bt) => bt.id === form.defaultBusinessTypeId)?.code ?? '',
+            })}
+          </p>
+        ) : null}
       </div>
     </BaseModal>
   );

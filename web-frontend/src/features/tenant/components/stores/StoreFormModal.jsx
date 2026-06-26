@@ -1,13 +1,11 @@
-// src/components/stores/StoreFormModal.jsx
-import { useEffect } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../../components/ui';
-import { BUSINESS_TYPES } from '../../../../config/productCatalogTemplateRegistry';
-import { useCompanyBusinessType } from '../../../../hooks/useCompanyBusinessType';
+import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
   focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -24,35 +22,107 @@ export default function StoreFormModal({
   title,
 }) {
   const { t } = useTranslation();
-  const { businessType: companyBusinessType } = useCompanyBusinessType();
 
-  const schema = z.object({
+  const schema = useMemo(() => z.object({
     name: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colName') })),
     address: z.string().optional(),
     phone: z.string().optional(),
     code: z.string().optional(),
-    companyId: z.string().optional(),
+    companyId: showCompanySelect
+      ? z.string().min(1, t('validation.fieldRequired', { field: t('stores.colCompany') }))
+      : z.string().optional(),
     businessType: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colBusinessType') })),
+    businessTypeId: z.string().optional(),
     active: z.boolean().optional(),
-  });
+  }), [showCompanySelect, t]);
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { active: true },
   });
 
+  const watchedCompanyId = watch('companyId');
+  const watchedBusinessType = watch('businessType');
+  const {
+    types: companyTypes,
+    defaultTypeCode,
+    isLoading: typesLoading,
+    needsCompany,
+  } = useStoreFormBusinessTypes(watchedCompanyId, { platformMode: showCompanySelect });
+
+  const prevCompanyRef = useRef('');
+
+  const businessTypeOptions = useMemo(() => {
+    if (needsCompany) {
+      return [{ value: '', label: t('stores.selectCompanyFirst') }];
+    }
+    if (companyTypes.length > 0) {
+      return companyTypes.map((bt) => ({
+        value: bt.code,
+        id: bt.id,
+        label: bt.name || t(`productTemplates.businessTypes.${bt.code}`, { defaultValue: bt.code }),
+      }));
+    }
+    return [{
+      value: defaultTypeCode,
+      id: null,
+      label: t(`productTemplates.businessTypes.${defaultTypeCode}`),
+    }];
+  }, [companyTypes, defaultTypeCode, needsCompany, t]);
+
   useEffect(() => {
-    if (!open) return;
+    if (!open || !showCompanySelect) return;
+
+    if (!watchedCompanyId) {
+      if (prevCompanyRef.current) {
+        setValue('businessType', '');
+        setValue('businessTypeId', '');
+      }
+      prevCompanyRef.current = '';
+      return;
+    }
+
+    const companyChanged = prevCompanyRef.current !== watchedCompanyId;
+    if (companyChanged) {
+      prevCompanyRef.current = watchedCompanyId;
+      setValue('businessType', '');
+      setValue('businessTypeId', '');
+    }
+
+    if (typesLoading || companyTypes.length === 0) return;
+
+    const validForCompany = companyTypes.some((bt) => bt.code === watchedBusinessType);
+    if (validForCompany && watchedBusinessType) return;
+
+    const defaultType = companyTypes.find((bt) => bt.defaultType) ?? companyTypes[0];
+    setValue('businessType', defaultType.code);
+    setValue('businessTypeId', String(defaultType.id));
+  }, [
+    open,
+    showCompanySelect,
+    watchedCompanyId,
+    watchedBusinessType,
+    companyTypes,
+    typesLoading,
+    setValue,
+  ]);
+
+  useEffect(() => {
+    if (!open) {
+      prevCompanyRef.current = '';
+      return;
+    }
     reset({
       name: initial?.name ?? '',
       address: initial?.address ?? '',
       phone: initial?.phone ?? '',
       code: initial?.code ?? '',
       companyId: initial?.companyId ? String(initial.companyId) : '',
-      businessType: initial?.businessType ?? companyBusinessType ?? 'UNIVERSAL',
+      businessType: initial?.businessType ?? '',
+      businessTypeId: initial?.businessTypeId ? String(initial.businessTypeId) : '',
       active: initial?.active ?? true,
     });
-  }, [open, initial, reset, companyBusinessType]);
+  }, [open, initial?.id, reset]);
 
   if (!open) return null;
 
@@ -64,6 +134,7 @@ export default function StoreFormModal({
       code: data.code?.trim() || null,
       companyId: data.companyId ? Number(data.companyId) : undefined,
       businessType: data.businessType,
+      businessTypeId: data.businessTypeId ? Number(data.businessTypeId) : undefined,
       active: data.active,
     });
   };
@@ -71,7 +142,7 @@ export default function StoreFormModal({
   const modalTitle = title ?? (initial ? t('stores.editTitle') : t('stores.addTitle'));
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
       <div className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">
         <div className="flex items-center justify-between border-b border-slate-200 p-5 dark:border-slate-800">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">{modalTitle}</h2>
@@ -81,15 +152,21 @@ export default function StoreFormModal({
         </div>
         <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4 p-5">
           {showCompanySelect ? (
-            <BaseSelect
+            <>
+              <input type="hidden" {...register('companyId')} />
+              <BaseSelect
               label={t('stores.colCompany')}
-              {...register('companyId')}
+              required
+              value={watchedCompanyId ?? ''}
+              onChange={(e) => setValue('companyId', e.target.value, { shouldValidate: true })}
+              error={errors.companyId?.message}
               placeholder={t('stores.selectCompany')}
               options={[
                 { value: '', label: t('stores.selectCompany') },
                 ...companies.map((c) => ({ value: String(c.id), label: c.name })),
               ]}
             />
+            </>
           ) : null}
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('stores.colName')} *</label>
@@ -97,14 +174,26 @@ export default function StoreFormModal({
             {errors.name && <p className="mt-1 text-xs text-red-400">{errors.name.message}</p>}
           </div>
           <div>
+            <input type="hidden" {...register('businessTypeId')} />
             <BaseSelect
               label={t('stores.colBusinessType')}
               required
-              {...register('businessType')}
+              disabled={typesLoading || needsCompany}
+              value={watchedBusinessType ?? ''}
+              onChange={(e) => {
+                const next = e.target.value;
+                setValue('businessType', next, { shouldValidate: true });
+                const selected = businessTypeOptions.find((o) => o.value === next);
+                if (selected?.id) {
+                  setValue('businessTypeId', String(selected.id));
+                }
+              }}
               error={errors.businessType?.message}
-              options={BUSINESS_TYPES.map((bt) => ({
-                value: bt.code,
-                label: t(`productTemplates.businessTypes.${bt.code}`),
+              placeholder={needsCompany ? t('stores.selectCompanyFirst') : undefined}
+              options={businessTypeOptions.map((bt) => ({
+                value: bt.value,
+                label: bt.label,
+                disabled: !bt.value,
               }))}
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>

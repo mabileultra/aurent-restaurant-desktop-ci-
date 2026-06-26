@@ -2,9 +2,11 @@ package com.pos.service.impl;
 
 import com.pos.dto.order.CreateCustomerOrderRequest;
 import com.pos.dto.order.CustomerOrderCreatedResponse;
+import com.pos.dto.order.CustomerOrderDetailResponse;
 import com.pos.dto.order.CustomerOrderRowResponse;
 import com.pos.dto.order.CourierOptionResponse;
 import com.pos.dto.order.PhotoDownload;
+import com.pos.dto.order.UpdateCustomerOrderRequest;
 import com.pos.dto.shared.PageResponse;
 import com.pos.entity.CustomerOrder;
 import com.pos.entity.CustomerOrderPhoto;
@@ -77,6 +79,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CustomerOrderRowResponse> list(
+        Integer storeId,
         String search,
         String externalNumber,
         String clientName,
@@ -98,6 +101,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         var spec = CustomerOrderSpecifications.filter(
             companyId,
+            storeId,
             search,
             externalNumber,
             clientName,
@@ -132,6 +136,71 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public CustomerOrderDetailResponse getById(long orderId) {
+        CustomerOrder order = requireAccessibleOrder(orderId);
+        return customerOrderMapper.toDetailResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public CustomerOrderDetailResponse updateOrder(long orderId, UpdateCustomerOrderRequest req) {
+        CustomerOrder order = requireAccessibleOrder(orderId);
+        if (order.getStatus() == OrderStatus.CANCELLED || order.getStatus() == OrderStatus.COMPLETED) {
+            throw new BadRequestException("Cannot update order in status " + order.getStatus());
+        }
+        order.setClientName(req.clientName().trim());
+        order.setClientPhone(req.clientPhone().trim());
+        order.setDeliveryAddress(req.deliveryAddress().trim());
+        order.setComment(StringUtils.hasText(req.comment()) ? req.comment().trim() : null);
+        order.setCourier(resolveCourier(req.courierId(), order.getStore()));
+        order.setUpdatedAt(Instant.now());
+        LogUtil.info(CustomerOrderServiceImpl.class, "Customer order updated: id={}", orderId);
+        return customerOrderMapper.toDetailResponse(order);
+    }
+
+    @Override
+    @Transactional
+    public void cancelOrder(long orderId) {
+        CustomerOrder order = requireAccessibleOrder(orderId);
+        if (order.getStatus() == OrderStatus.CANCELLED) {
+            return;
+        }
+        if (order.getStatus() == OrderStatus.COMPLETED) {
+            throw new BadRequestException("Cannot cancel completed order");
+        }
+        order.setStatus(OrderStatus.CANCELLED);
+        order.setUpdatedAt(Instant.now());
+        LogUtil.info(CustomerOrderServiceImpl.class, "Customer order cancelled: id={}", orderId);
+    }
+
+    private CustomerOrder requireAccessibleOrder(long orderId) {
+        CustomerOrder order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        if (order.getStore() != null) {
+            tenantAccess.assertCanAccessStore(order.getStore());
+        }
+        return order;
+    }
+
+    private User resolveCourier(UUID courierId, Store store) {
+        if (courierId == null) {
+            return null;
+        }
+        User courier = userRepository.findById(courierId)
+            .orElseThrow(() -> new ResourceNotFoundException("Courier not found"));
+        if (!"COURIER".equalsIgnoreCase(courier.getRole().getName())) {
+            throw new BadRequestException("Selected user is not a courier");
+        }
+        if (courier.getCompany() == null
+            || store.getCompany() == null
+            || !courier.getCompany().getId().equals(store.getCompany().getId())) {
+            throw new BadRequestException("Courier does not belong to this company");
+        }
+        return courier;
+    }
+
+    @Override
     @Transactional
     public CustomerOrderCreatedResponse createOrder(CreateCustomerOrderRequest req, UUID creatorId) {
         Store store = storeRepository.findById(req.storeId())
@@ -146,16 +215,7 @@ public class CustomerOrderServiceImpl implements CustomerOrderService {
 
         User courier = null;
         if (req.courierId() != null) {
-            courier = userRepository.findById(req.courierId())
-                .orElseThrow(() -> new ResourceNotFoundException("Courier not found"));
-            if (!"COURIER".equalsIgnoreCase(courier.getRole().getName())) {
-                throw new BadRequestException("Selected user is not a courier");
-            }
-            if (courier.getCompany() == null
-                || store.getCompany() == null
-                || !courier.getCompany().getId().equals(store.getCompany().getId())) {
-                throw new BadRequestException("Courier does not belong to this company");
-            }
+            courier = resolveCourier(req.courierId(), store);
         }
 
         String comment = StringUtils.hasText(req.comment()) ? req.comment().trim() : null;

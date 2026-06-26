@@ -7,11 +7,12 @@ import com.pos.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.product.ProductExtensionService;
 import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.ProductStockService;
 import com.pos.service.product.support.ProductCatalogLoader;
+import com.pos.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.util.QuantityUtil;
@@ -30,10 +31,11 @@ public class ProductStockServiceImpl implements ProductStockService {
 
     private final ProductCatalogLoader catalogLoader;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final ProductResponseAssembler assembler;
     private final ProductExtensionService extensionService;
+    private final ProductSnapshotNotifier productSnapshotNotifier;
 
     @Override
     public ProductResponse adjustStock(UUID id, BigDecimal quantity, String movementType, String notes, Integer storeId) {
@@ -67,6 +69,7 @@ public class ProductStockServiceImpl implements ProductStockService {
         }
         Product saved = productRepository.save(product);
         recordMovement(saved, quantity, "RESTOCK", "Склад: поступление", store);
+        productSnapshotNotifier.notify(saved.getId());
         return assembler.toResponse(saved);
     }
 
@@ -82,7 +85,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     }
 
     private void recordMovement(Product product, BigDecimal quantity, String movementType, String notes, Store store) {
-        stockMovementRepository.save(StockMovement.builder()
+        stockMovementPersistence.save(StockMovement.builder()
             .product(product)
             .store(store)
             .movementType(movementType)

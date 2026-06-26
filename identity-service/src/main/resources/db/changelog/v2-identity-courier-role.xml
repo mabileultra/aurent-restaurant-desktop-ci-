@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="identity-007-waiter-role" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM roles WHERE name = 'WAITER'</sqlCheck>
+        </preConditions>
+        <insert tableName="roles">
+            <column name="name" value="WAITER"/>
+            <column name="description" value="Restaurant floor service"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="identity-008-courier-role" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM roles WHERE name = 'COURIER'</sqlCheck>
+        </preConditions>
+        <insert tableName="roles">
+            <column name="name" value="COURIER"/>
+            <column name="description" value="Delivery courier"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

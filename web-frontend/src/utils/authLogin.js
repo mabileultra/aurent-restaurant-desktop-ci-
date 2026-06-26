@@ -25,6 +25,11 @@ export function normalizeCompanyLoginCode(code) {
   return String(n).padStart(5, '0');
 }
 
+/** Только цифры, до 5 символов — для поля ввода без сброса при наборе. */
+export function sanitizeCompanyLoginCodeInput(raw) {
+  return String(raw || '').replace(/\D/g, '').slice(0, 5);
+}
+
 export function persistCompanyLoginCode(code) {
   const normalized = normalizeCompanyLoginCode(code);
   try {
@@ -94,7 +99,7 @@ export function redirectToLogin() {
 }
 
 export function cashierSessionMatchesCompany(user, companyCode) {
-  if (!user || user.role !== 'CASHIER') return true;
+  if (!user || !['CASHIER', 'WAITER'].includes(user.role)) return true;
   const expected = normalizeCompanyLoginCode(companyCode);
   if (!expected) return true;
   const sessionCode = normalizeCompanyLoginCode(user.companyLoginCode);

@@ -95,6 +95,13 @@ public class UnitCatalogServiceImpl implements UnitCatalogService {
     }
 
     private static UnitResponse toResponse(Unit unit) {
+        return toResponsePublic(unit);
+    }
+
+    public static UnitResponse toResponsePublic(Unit unit) {
+        if (unit == null) {
+            return null;
+        }
         return new UnitResponse(
             unit.getCode(),
             unit.getCategory().name(),

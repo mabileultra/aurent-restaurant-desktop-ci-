@@ -1,12 +1,11 @@
 package com.pos.service.impl;
 
-import com.pos.domain.BusinessType;
 import com.pos.dto.shared.PageResponse;
-import com.pos.util.BusinessTypeParser;
 import com.pos.util.TextUtil;
 import com.pos.dto.store.CreateStoreRequest;
 import com.pos.dto.store.StoreResponse;
 import com.pos.dto.store.UpdateStoreRequest;
+import com.pos.entity.BusinessTypeDefinition;
 import com.pos.entity.Company;
 import com.pos.entity.Store;
 import com.pos.entity.User;
@@ -23,6 +22,7 @@ import com.pos.repository.StockTransferRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.repository.spec.StoreSpecifications;
 import com.pos.service.StoreService;
+import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +34,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +53,7 @@ public class StoreServiceImpl implements StoreService {
     private final StockInventoryRepository stockInventoryRepository;
     private final StockTransferRepository stockTransferRepository;
     private final CustomerOrderRepository customerOrderRepository;
+    private final StoreBusinessTypeResolver storeBusinessTypeResolver;
 
     @Override
     @Cacheable(value = "stores", key = "@tenantCacheKeyResolver.stores()")
@@ -102,7 +102,11 @@ public class StoreServiceImpl implements StoreService {
         Company company = tenantAccess.requireCompany(companyId);
         tenantAccess.assertCanAccessCompany(companyId);
 
-        BusinessType businessType = resolveStoreBusinessType(request.businessType(), company.getBusinessType());
+        BusinessTypeDefinition businessTypeDefinition = storeBusinessTypeResolver.resolveForCreate(
+            company,
+            request.businessTypeId(),
+            request.businessType()
+        );
 
         Store store = Store.builder()
             .name(request.name().trim())
@@ -110,7 +114,8 @@ public class StoreServiceImpl implements StoreService {
             .address(TextUtil.trimOrNull(request.address()))
             .phone(TextUtil.trimOrNull(request.phone()))
             .company(company)
-            .businessType(businessType)
+            .businessTypeDefinition(businessTypeDefinition)
+            .businessType(storeBusinessTypeResolver.codeFromDefinition(businessTypeDefinition))
             .active(request.active() == null || request.active())
             .build();
         Store saved = storeRepository.save(store);
@@ -130,8 +135,14 @@ public class StoreServiceImpl implements StoreService {
         if (request.address() != null) store.setAddress(TextUtil.trimOrNull(request.address()));
         if (request.phone() != null) store.setPhone(TextUtil.trimOrNull(request.phone()));
         if (request.active() != null) store.setActive(request.active());
-        if (request.businessType() != null) {
-            store.setBusinessType(BusinessTypeParser.parseRequired(request.businessType()));
+        BusinessTypeDefinition businessTypeDefinition = storeBusinessTypeResolver.resolveForUpdate(
+            store.getCompany().getId(),
+            request.businessTypeId(),
+            request.businessType()
+        );
+        if (businessTypeDefinition != null) {
+            store.setBusinessTypeDefinition(businessTypeDefinition);
+            store.setBusinessType(storeBusinessTypeResolver.codeFromDefinition(businessTypeDefinition));
         }
         if (request.companyId() != null && tenantAccess.isSuperAdmin()) {
             store.setCompany(tenantAccess.requireCompany(request.companyId()));
@@ -205,22 +216,11 @@ public class StoreServiceImpl implements StoreService {
         if (tenantAccess.isSuperAdmin()) {
             return companyId;
         }
-        User actor = tenantAccess.currentUser();
-        if (actor.getCompany() == null) {
-            throw new BadRequestException("Your account is not linked to a company");
-        }
-        return actor.getCompany().getId();
+        return tenantAccess.requireEffectiveCompanyId();
     }
 
     private Store requireStore(Integer id) {
         return storeRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-    }
-
-    private static BusinessType resolveStoreBusinessType(String requestType, BusinessType companyDefault) {
-        if (StringUtils.hasText(requestType)) {
-            return BusinessTypeParser.parseRequired(requestType);
-        }
-        return companyDefault != null ? companyDefault : BusinessType.UNIVERSAL;
     }
 }

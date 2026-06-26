@@ -6,6 +6,8 @@ export const DesktopInstallerPage = lazy(() => import('../features/desktop/pages
 export const ReceiptPage = lazy(() => import('../features/receipt/pages/ReceiptPage'));
 
 export const PosPage = lazy(() => import('../features/cashier/pages/PosPage'));
+export const RestaurantPosPage = lazy(() => import('../features/restaurant-cashier/pages/RestaurantPosPage'));
+export const KitchenDisplayPage = lazy(() => import('../features/restaurant-kitchen/pages/KitchenDisplayPage'));
 export const CashierMySalesPage = lazy(() => import('../features/cashier/pages/CashierMySalesPage'));
 export const HandbookPage = lazy(() => import('../features/handbook/pages/HandbookPage'));
 export const SupportPage = lazy(() => import('../features/support/pages/SupportPage'));
@@ -19,6 +21,7 @@ export const PlatformEmailPage = lazy(() => import('../features/platform/pages/P
 export const PlatformDesktopNotificationsPage = lazy(() => import('../features/platform/pages/PlatformDesktopNotificationsPage'));
 export const PlatformSecurityPage = lazy(() => import('../features/platform/pages/PlatformSecurityPage'));
 export const PlatformBusinessTypesPage = lazy(() => import('../features/platform/pages/PlatformBusinessTypesPage'));
+export const PlatformReferenceBooksPage = lazy(() => import('../features/platform/pages/PlatformReferenceBooksPage'));
 
 export const DashboardPage = lazy(() => import('../features/dashboard/pages/DashboardPage'));
 export const AiAssistantPage = lazy(() => import('../features/ai/pages/AiAssistantPage'));
@@ -52,6 +55,7 @@ export const DeadStockReportPage = lazy(() => import('../features/reports/pages/
 export const StockInventoriesReportPage = lazy(() => import('../features/reports/pages/StockInventoriesReportPage'));
 export const StockTransfersReportPage = lazy(() => import('../features/reports/pages/StockTransfersReportPage'));
 export const ProductLifecycleReportPage = lazy(() => import('../features/reports/pages/ProductLifecycleReportPage'));
+export const ReportingSyncPage = lazy(() => import('../features/reports/pages/ReportingSyncPage'));
 export const FinanceDashboardPage = lazy(() => import('../features/finance/pages/FinanceDashboardPage'));
 export const FinanceAccountsPage = lazy(() => import('../features/finance/pages/FinanceAccountsPage'));
 export const FinanceIncomesPage = lazy(() => import('../features/finance/pages/FinanceIncomesPage'));
@@ -67,6 +71,9 @@ export const ZReportsPage = lazy(() => import('../features/cash-registers/pages/
 export const CashRegisterTransferPage = lazy(() => import('../features/cash-registers/pages/CashRegisterTransferPage'));
 export const CashRegisterConfigPage = lazy(() => import('../features/cash-registers/pages/CashRegisterConfigPage'));
 export const StoresPage = lazy(() => import('../features/tenant/pages/StoresPage'));
+export const RestaurantHallPage = lazy(() => import('../features/restaurant-hall/pages/RestaurantHallPage'));
+export const RestaurantBookingPage = lazy(() => import('../features/restaurant-booking/pages/RestaurantBookingPage'));
+export const RestaurantDeliveryPage = lazy(() => import('../features/restaurant-delivery/pages/RestaurantDeliveryPage'));
 export const UsersPage = lazy(() => import('../features/tenant/pages/UsersPage'));
 export const UsersPrinterSettingsPage = lazy(() => import('../features/tenant/pages/UsersPrinterSettingsPage'));
 export const UsersBrandingSettingsPage = lazy(() => import('../features/tenant/pages/UsersBrandingSettingsPage'));

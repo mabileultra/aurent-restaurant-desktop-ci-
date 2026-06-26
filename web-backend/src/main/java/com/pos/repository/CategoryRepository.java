@@ -23,6 +23,15 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     List<Category> findByCompanyIdOrderByNameAsc(Integer companyId);
 
     @Query("""
+        SELECT c FROM Category c
+        LEFT JOIN FETCH c.businessType bt
+        WHERE c.company.id = :companyId
+        AND (:businessTypeId IS NULL OR c.businessType IS NULL OR c.businessType.id = :businessTypeId)
+        ORDER BY c.name ASC
+        """)
+    List<Category> findByCompanyIdFiltered(@Param("companyId") Integer companyId, @Param("businessTypeId") Integer businessTypeId);
+
+    @Query("""
         SELECT DISTINCT c FROM Category c
         WHERE EXISTS (
             SELECT 1 FROM Product p

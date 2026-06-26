@@ -13,6 +13,7 @@ import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { BaseSelect } from '../../../components/ui';
 import UnitConversionHelper from '../../../components/shared/UnitConversionHelper';
+import { getProductLengthM } from '../../../utils/productAttributes';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
                   placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -40,8 +41,7 @@ export default function StockAdjustModal({ product, onClose, onSaved }) {
   const unitCode = productAtStore?.unitCode ?? product.unitCode ?? 'PCS';
   const saleType = productAtStore?.saleType ?? product.saleType ?? 'PIECE';
   const unitConfig = getUnitConfig(unitCode);
-  const constructionLength = productAtStore?.constructionDetails?.standardLength
-    ?? product.constructionDetails?.standardLength;
+  const constructionLength = getProductLengthM(productAtStore) ?? getProductLengthM(product);
 
   const schema = useMemo(
     () =>

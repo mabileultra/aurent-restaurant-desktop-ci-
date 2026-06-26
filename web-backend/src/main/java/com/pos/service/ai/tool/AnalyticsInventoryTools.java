@@ -1,18 +1,15 @@
 package com.pos.service.ai.tool;
 
-import com.pos.entity.StockInventory;
-import com.pos.repository.StockInventoryRepository;
-import com.pos.repository.ZReportRepository;
-import com.pos.repository.report.StockReportRepository;
+import com.pos.client.reporting.ReportingShiftReportClient;
+import com.pos.client.reporting.ReportingStockReportClient;
+import com.pos.dto.report.shift.ShiftOverviewResponse;
+import com.pos.dto.report.shift.ShiftReportRowResponse;
 import com.pos.service.ai.AiAnalyticsMaps;
 import com.pos.service.ai.AiAssistantParallel;
 import com.pos.service.ai.support.AnalyticsPeriodSupport;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -25,40 +22,21 @@ import static com.pos.service.ai.support.AnalyticsPeriodSupport.period;
 @RequiredArgsConstructor
 public class AnalyticsInventoryTools {
 
-    private final StockInventoryRepository stockInventoryRepository;
-    private final StockReportRepository stockReportRepository;
-    private final ZReportRepository zReportRepository;
+    private final ReportingStockReportClient reportingStockReportClient;
+    private final ReportingShiftReportClient reportingShiftReportClient;
     private final AiAssistantParallel parallel;
 
     public Map<String, Object> zReportsOverview(LocalDate from, LocalDate to, Integer companyId) {
         AnalyticsPeriodSupport.Period range = period(from, to, 90);
-
-        CompletableFuture<Long> totalInSystemF = parallel.supply(
-            () -> zReportRepository.countByCompanyId(companyId)
-        );
-        CompletableFuture<Object[]> periodSummaryF = parallel.supply(
-            () -> zReportRepository.summarizeByCompanyAndClosedAtBetween(
-                companyId, range.start(), range.end()
-            )
-        );
-        CompletableFuture<List<Map<String, Object>>> recentF = parallel.supply(
-            () -> loadRecentZReportRows(companyId, 15)
-        );
-        AiAssistantParallel.awaitAll(totalInSystemF, periodSummaryF, recentF);
-
-        Object[] periodSummary = periodSummaryF.join();
-        long periodCount = periodSummary != null && periodSummary.length > 0 && periodSummary[0] instanceof Number n
-            ? n.longValue() : 0L;
-        BigDecimal periodTotal = periodSummary != null && periodSummary.length > 1 && periodSummary[1] instanceof BigDecimal b
-            ? b : BigDecimal.ZERO;
+        ShiftOverviewResponse overview = reportingShiftReportClient.overview(range.from(), range.to(), 15);
 
         Map<String, Object> out = AiAnalyticsMaps.create();
         out.put("from", range.from().toString());
         out.put("to", range.to().toString());
-        out.put("periodCount", periodCount);
-        out.put("periodTotalAmount", periodTotal);
-        out.put("totalInSystem", totalInSystemF.join());
-        out.put("recentReports", recentF.join());
+        out.put("periodCount", overview.periodCount());
+        out.put("periodTotalAmount", overview.periodTotalAmount());
+        out.put("totalInSystem", overview.totalInSystem());
+        out.put("recentReports", overview.recentReports().stream().map(this::toZReportRow).toList());
         return out;
     }
 
@@ -66,74 +44,71 @@ public class AnalyticsInventoryTools {
         AnalyticsPeriodSupport.Period range = period(from, to, 30);
 
         CompletableFuture<InventorySlice> inventoryF = parallel.supply(
-            () -> loadInventorySlice(companyId, range.start(), range.end())
+            () -> loadInventorySlice(range.from(), range.to())
         );
-        CompletableFuture<List<Map<String, Object>>> lowStockF = parallel.supply(
-            () -> loadLowStockRows(companyId)
+        CompletableFuture<LowStockSlice> lowStockF = parallel.supply(
+            this::loadLowStockSlice
         );
         AiAssistantParallel.awaitAll(inventoryF, lowStockF);
 
         InventorySlice inventorySlice = inventoryF.join();
-        List<Map<String, Object>> lowStockRows = lowStockF.join();
+        LowStockSlice lowStockSlice = lowStockF.join();
 
         return Map.of(
             "from", range.from().toString(),
             "to", range.to().toString(),
             "inventoriesCount", inventorySlice.count(),
             "recentInventories", inventorySlice.recent(),
-            "lowStockCount", lowStockRows.size(),
-            "lowStockProducts", lowStockRows
+            "lowStockCount", lowStockSlice.count(),
+            "lowStockProducts", lowStockSlice.rows()
         );
     }
 
-    private List<Map<String, Object>> loadRecentZReportRows(Integer companyId, int limit) {
-        return zReportRepository.findRecentByCompanyId(companyId, PageRequest.of(0, limit))
-            .getContent()
-            .stream()
-            .map(z -> {
+    private InventorySlice loadInventorySlice(LocalDate from, LocalDate to) {
+        var page = reportingStockReportClient.inventories(from, to, null, 0, 10);
+        List<Map<String, Object>> recent = page.content().stream()
+            .map(inventory -> {
                 Map<String, Object> row = new LinkedHashMap<>();
-                row.put("zNumber", z.getZNumber());
-                row.put("storeName", z.getStore() != null ? z.getStore().getName() : "—");
-                row.put("closedAt", z.getClosedAt() != null ? z.getClosedAt().toString() : "—");
-                row.put("totalAmount", AiAnalyticsMaps.money(z.getTotalAmount()));
-                row.put("salesCount", z.getSalesCount() != null ? z.getSalesCount() : 0);
-                row.put("employeeName", z.getEmployeeName());
+                row.put("inventoryNumber", inventory.inventoryNumber());
+                row.put("storeName", inventory.storeName() != null ? inventory.storeName() : "—");
+                row.put("status", inventory.status());
+                row.put("totalLines", inventory.totalLines());
+                row.put("totalDifference", inventory.totalDifference());
+                row.put("createdAt", inventory.createdAt() != null ? inventory.createdAt().toString() : "—");
                 return row;
             })
             .toList();
+        return new InventorySlice(page.totalElements(), recent);
     }
 
-    private InventorySlice loadInventorySlice(Integer companyId, Instant start, Instant end) {
-        var page = stockInventoryRepository.findByCompanyBetween(companyId, start, end, PageRequest.of(0, 10));
-        List<Map<String, Object>> recent = page.getContent().stream()
-            .map(this::toInventoryRow)
-            .toList();
-        return new InventorySlice(page.getTotalElements(), recent);
-    }
-
-    private List<Map<String, Object>> loadLowStockRows(Integer companyId) {
-        return stockReportRepository.lowStockProducts(companyId, PageRequest.of(0, 15)).stream()
-            .map(p -> {
+    private LowStockSlice loadLowStockSlice() {
+        var page = reportingStockReportClient.lowStock(0, 15);
+        List<Map<String, Object>> rows = page.content().stream()
+            .map(product -> {
                 Map<String, Object> row = new LinkedHashMap<>();
-                row.put("productName", p.getName());
-                row.put("stockQty", p.getStockQuantity());
-                row.put("lowStockAlert", p.getLowStockAlert());
+                row.put("productName", product.productName());
+                row.put("stockQty", product.stockQuantity());
+                row.put("lowStockAlert", product.lowStockAlert());
                 return row;
             })
             .toList();
+        return new LowStockSlice(page.totalElements(), rows);
     }
 
-    private Map<String, Object> toInventoryRow(StockInventory i) {
+    private Map<String, Object> toZReportRow(ShiftReportRowResponse shift) {
         Map<String, Object> row = new LinkedHashMap<>();
-        row.put("inventoryNumber", i.getInventoryNumber());
-        row.put("storeName", i.getStore() != null ? i.getStore().getName() : "—");
-        row.put("status", i.getStatus());
-        row.put("totalLines", i.getTotalLines());
-        row.put("totalDifference", i.getTotalDifference());
-        row.put("createdAt", i.getCreatedAt() != null ? i.getCreatedAt().toString() : "—");
+        row.put("zNumber", shift.zNumber() != null ? shift.zNumber() : "—");
+        row.put("storeName", shift.storeName() != null ? shift.storeName() : "—");
+        row.put("closedAt", shift.closedAt() != null ? shift.closedAt().toString() : "—");
+        row.put("totalAmount", AiAnalyticsMaps.money(shift.totalAmount()));
+        row.put("salesCount", shift.salesCount() != null ? shift.salesCount() : 0);
+        row.put("employeeName", shift.employeeName() != null ? shift.employeeName() : "—");
         return row;
     }
 
     private record InventorySlice(long count, List<Map<String, Object>> recent) {
+    }
+
+    private record LowStockSlice(long count, List<Map<String, Object>> rows) {
     }
 }

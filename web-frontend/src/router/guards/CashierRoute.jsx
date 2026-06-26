@@ -7,7 +7,7 @@ export default function CashierRoute({ children }) {
   const location = useLocation();
   const { isAuthenticated, user, logout } = useAuthStore();
   if (!isAuthenticated()) return <Navigate to="/cashier/login" replace />;
-  if (user?.role !== 'CASHIER') {
+  if (user?.role !== 'CASHIER' && user?.role !== 'WAITER') {
     // Desktop app должен всегда работать через кассира (PIN). Если в storage остался ADMIN-токен,
     // кассовые эндпоинты вернут 403. Сбрасываем сессию и отправляем на PIN-login.
     if (isDesktopCashier()) {

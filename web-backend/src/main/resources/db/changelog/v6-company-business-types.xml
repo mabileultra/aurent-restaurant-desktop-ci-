@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v6-001-company-business-types" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="company_business_types"/>
+            </not>
+        </preConditions>
+        <createTable tableName="company_business_types">
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="business_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="company_business_types"
+            columnNames="company_id, business_type_id"
+            constraintName="pk_company_business_types"/>
+        <addForeignKeyConstraint
+            baseTableName="company_business_types"
+            baseColumnNames="company_id"
+            referencedTableName="companies"
+            referencedColumnNames="id"
+            constraintName="fk_company_business_types_company"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="company_business_types"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_company_business_types_type"
+            onDelete="CASCADE"/>
+        <createIndex tableName="company_business_types" indexName="idx_company_business_types_type">
+            <column name="business_type_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v6-002-backfill-company-business-types" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM company_business_types</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO company_business_types (company_id, business_type_id, is_default)
+            SELECT c.id, bt.id, TRUE
+            FROM companies c
+            JOIN business_types bt ON UPPER(bt.code) = UPPER(c.business_type)
+            ON CONFLICT DO NOTHING;
+        </sql>
+        <sql>
+            INSERT INTO company_business_types (company_id, business_type_id, is_default)
+            SELECT c.id, bt.id, TRUE
+            FROM companies c
+            CROSS JOIN business_types bt
+            WHERE bt.code = 'UNIVERSAL'
+              AND NOT EXISTS (
+                  SELECT 1 FROM company_business_types cbt WHERE cbt.company_id = c.id
+              );
+        </sql>
+    </changeSet>
+
+    <changeSet id="v6-003-stores-business-type-id" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="stores" columnName="business_type_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="stores">
+            <column name="business_type_id" type="INT"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="stores"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_stores_business_type"
+            onDelete="SET NULL"/>
+        <createIndex tableName="stores" indexName="idx_stores_business_type_id">
+            <column name="business_type_id"/>
+        </createIndex>
+        <sql>
+            UPDATE stores s
+            SET business_type_id = bt.id
+            FROM business_types bt
+            WHERE UPPER(bt.code) = UPPER(s.business_type)
+              AND s.business_type_id IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v6-004-categories-business-type-id" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="categories" columnName="business_type_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="categories">
+            <column name="business_type_id" type="INT"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="categories"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_categories_business_type"
+            onDelete="SET NULL"/>
+        <createIndex tableName="categories" indexName="idx_categories_business_type_id">
+            <column name="business_type_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

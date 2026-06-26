@@ -27,6 +27,10 @@ public class Category {
 
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_type_id")
+    private BusinessTypeDefinition businessType;
+
     @Column(name = "created_at")
     private Instant createdAt;
 

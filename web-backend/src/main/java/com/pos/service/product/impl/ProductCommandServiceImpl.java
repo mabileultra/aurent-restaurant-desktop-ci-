@@ -9,6 +9,7 @@ import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
 import com.pos.service.product.ProductCommandService;
 import com.pos.service.product.support.ProductCatalogLoader;
+import com.pos.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.support.ProductValueNormalizer;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     private final ProductUpdateHandler updateHandler;
     private final ProductCatalogLoader catalogLoader;
     private final ProductRepository productRepository;
+    private final ProductSnapshotNotifier productSnapshotNotifier;
 
     @Override
     public ProductResponse createProduct(CreateProductRequest req) {
@@ -42,6 +44,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         Product product = catalogLoader.requireById(id);
         product.setActive(false);
         productRepository.save(product);
+        productSnapshotNotifier.notify(product.getId());
     }
 
     @Override
@@ -54,6 +57,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
             product.setTaxRate(ProductValueNormalizer.taxRatePercent(req.taxRate()));
         }
         productRepository.saveAll(products);
+        products.forEach(product -> productSnapshotNotifier.notify(product.getId()));
         return products.size();
     }
 
@@ -71,6 +75,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
             }
         }
         productRepository.saveAll(products);
+        products.forEach(product -> productSnapshotNotifier.notify(product.getId()));
         return updated;
     }
 }

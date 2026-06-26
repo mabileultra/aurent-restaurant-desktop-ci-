@@ -112,7 +112,7 @@ public class SaleController {
     }
 
     @PostMapping("/{id}/void")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'WAITER')")
     @Operation(summary = "Аннулировать продажу", description = "Полная отмена (void) продажи")
     @ApiResponse(responseCode = "200", description = "Продажа аннулирована")
     public ResponseEntity<SaleResponse> voidSale(
@@ -123,7 +123,7 @@ public class SaleController {
     }
 
     @PostMapping("/{id}/return-items")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'WAITER')")
     @Operation(summary = "Частичный возврат", description = "Возврат отдельных позиций из чека")
     @ApiResponse(responseCode = "200", description = "Возврат оформлен")
     public ResponseEntity<SaleResponse> returnItems(

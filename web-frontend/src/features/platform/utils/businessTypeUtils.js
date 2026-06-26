@@ -6,11 +6,21 @@ export const EMPTY_BUSINESS_FIELD_FORM = {
   fieldType: 'TEXT',
   required: false,
   enabled: true,
+  filterable: false,
   sortOrder: 100,
   placeholder: '',
   hint: '',
   optionsText: '',
+  referenceBookId: '',
 };
+
+export function entriesToText(entries = []) {
+  return entries.map((e) => (e.label === e.value ? e.value : `${e.value}|${e.label}`)).join('\n');
+}
+
+export function parseEntriesText(text) {
+  return parseOptionsText(text);
+}
 
 export const EMPTY_BUSINESS_TYPE_FORM = {
   code: '',
@@ -42,9 +52,11 @@ export function fieldToForm(field) {
     fieldType: field.fieldType,
     required: field.required,
     enabled: field.enabled,
+    filterable: field.filterable ?? false,
     sortOrder: field.sortOrder,
     placeholder: field.placeholder ?? '',
     hint: field.hint ?? '',
     optionsText: optionsToText(field.options),
+    referenceBookId: field.referenceBookId ? String(field.referenceBookId) : '',
   };
 }

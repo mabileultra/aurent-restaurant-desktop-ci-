@@ -1,16 +1,39 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
+import PlatformBusinessTypeUnitsRules from './PlatformBusinessTypeUnitsRules';
+import PlatformBusinessTypePriceDisplayRules from './PlatformBusinessTypePriceDisplayRules';
 
 export default function PlatformBusinessTypeDetail({
   t,
   detail,
   detailLoading,
   fields,
+  catalogUnits = [],
+  unitCodes = [],
+  defaultUnitCode,
+  rules = [],
+  priceRules = [],
+  displayRules = [],
   onEditType,
   onDeleteType,
   onAddField,
   onEditField,
   onDeleteField,
+  onToggleUnit,
+  onSetDefaultUnit,
+  onToggleRule,
+  onPriceRuleChange,
+  onAddDisplayRule,
+  onDisplayRuleChange,
+  onRemoveDisplayRule,
+  onSaveUnits,
+  onSaveRules,
+  onSavePriceRules,
+  onSaveDisplayRules,
+  savingUnits,
+  savingRules,
+  savingPriceRules,
+  savingDisplayRules,
 }) {
   if (!detail) {
     return (
@@ -113,6 +136,41 @@ export default function PlatformBusinessTypeDetail({
           </tbody>
         </table>
       </div>
+
+      {onToggleUnit ? (
+        <PlatformBusinessTypeUnitsRules
+          t={t}
+          detail={detail}
+          catalogUnits={catalogUnits}
+          unitCodes={unitCodes}
+          defaultUnitCode={defaultUnitCode}
+          rules={rules}
+          onToggleUnit={onToggleUnit}
+          onSetDefaultUnit={onSetDefaultUnit}
+          onToggleRule={onToggleRule}
+          onSaveUnits={onSaveUnits}
+          onSaveRules={onSaveRules}
+          savingUnits={savingUnits}
+          savingRules={savingRules}
+        />
+      ) : null}
+
+      {onPriceRuleChange ? (
+        <PlatformBusinessTypePriceDisplayRules
+          t={t}
+          fields={fields}
+          priceRules={priceRules}
+          displayRules={displayRules}
+          onPriceRuleChange={onPriceRuleChange}
+          onDisplayRuleChange={onDisplayRuleChange}
+          onAddDisplayRule={onAddDisplayRule}
+          onRemoveDisplayRule={onRemoveDisplayRule}
+          onSavePriceRules={onSavePriceRules}
+          onSaveDisplayRules={onSaveDisplayRules}
+          savingPriceRules={savingPriceRules}
+          savingDisplayRules={savingDisplayRules}
+        />
+      ) : null}
     </div>
   );
 }

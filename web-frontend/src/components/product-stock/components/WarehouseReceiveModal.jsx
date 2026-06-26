@@ -12,6 +12,7 @@ import { getUnitConfig } from '../../../utils/unitConfig';
 import { BaseSelect } from '../../../components/ui';
 import { ProductLookupSelect } from '../../../components/product-lookup';
 import UnitConversionHelper from '../../../components/shared/UnitConversionHelper';
+import { getProductLengthM } from '../../../utils/productAttributes';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm
                   focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -230,7 +231,7 @@ export default function WarehouseReceiveModal({ open, onClose, initialProduct, o
                 <UnitConversionHelper
                   t={t}
                   stockUnitCode={unitCode}
-                  standardLength={selectedProduct.constructionDetails?.standardLength}
+                  standardLength={getProductLengthM(selectedProduct)}
                   onApplyStockQty={(qty) => setQuantity(String(qty))}
                 />
               ) : null}

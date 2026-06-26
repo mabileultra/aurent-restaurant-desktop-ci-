@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
 import { Check, ChevronDown } from 'lucide-react';
@@ -37,17 +37,41 @@ const BaseSelect = forwardRef(function BaseSelect(
 ) {
   const [open, setOpen] = useState(false);
   const nativeRef = useRef(null);
-  const normalizedValue = toOptionValue(value ?? emptyValue);
+  const isControlled = value !== undefined;
+  const [uncontrolledValue, setUncontrolledValue] = useState(emptyValue);
 
   useImperativeHandle(forwardedRef, () => nativeRef.current);
 
+  useLayoutEffect(() => {
+    if (isControlled) return;
+    const el = nativeRef.current;
+    if (!el) return;
+    const domValue = toOptionValue(el.value ?? emptyValue);
+    setUncontrolledValue((prev) => (prev !== domValue ? domValue : prev));
+  });
+
+  const effectiveValue = isControlled
+    ? toOptionValue(value ?? emptyValue)
+    : uncontrolledValue;
+
+  const closeMenuRef = useRef(() => {});
+
+  const commitSelection = (optionValue) => {
+    if (!isControlled) {
+      setUncontrolledValue(optionValue);
+      fireNativeChange(nativeRef.current, optionValue);
+    }
+    onChange?.({ target: { value: optionValue, name } });
+    closeMenuRef.current();
+  };
+
   const selectedOption = useMemo(
-    () => options.find((option) => toOptionValue(option.value) === normalizedValue),
-    [normalizedValue, options]
+    () => options.find((option) => toOptionValue(option.value) === effectiveValue),
+    [effectiveValue, options]
   );
 
   const fieldId = id || name;
-  const displayLabel = selectedOption?.label ?? (normalizedValue ? normalizedValue : '');
+  const displayLabel = selectedOption?.label ?? (effectiveValue ? effectiveValue : '');
 
   const {
     listId,
@@ -66,13 +90,11 @@ const BaseSelect = forwardRef(function BaseSelect(
     disabled,
     onBlur,
     name,
-    value: normalizedValue,
-    onSelectOption: (nextValue) => {
-      fireNativeChange(nativeRef.current, nextValue);
-      onChange?.({ target: { value: nextValue, name } });
-      close();
-    },
+    value: effectiveValue,
+    onSelectOption: commitSelection,
   });
+
+  closeMenuRef.current = close;
 
   const menu = open
     ? createPortal(
@@ -90,7 +112,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         >
           {options.map((option, index) => {
             const optionValue = toOptionValue(option.value);
-            const isSelected = optionValue === normalizedValue;
+            const isSelected = optionValue === effectiveValue;
             const isHighlighted = index === highlightIndex;
 
             return (
@@ -106,11 +128,11 @@ const BaseSelect = forwardRef(function BaseSelect(
                   isHighlighted && 'base-select__option--highlight'
                 )}
                 onMouseEnter={() => setHighlightIndex(index)}
-                onClick={() => {
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
                   if (option.disabled) return;
-                  fireNativeChange(nativeRef.current, optionValue);
-                  onChange?.({ target: { value: optionValue, name } });
-                  close();
+                  commitSelection(optionValue);
                 }}
               >
                 <Check size={14} className="base-select__check" aria-hidden />
@@ -176,7 +198,7 @@ const BaseSelect = forwardRef(function BaseSelect(
       <select
         ref={nativeRef}
         name={name}
-        value={normalizedValue}
+        {...(isControlled ? { value: effectiveValue } : {})}
         disabled={disabled}
         className="base-select__native"
         tabIndex={-1}

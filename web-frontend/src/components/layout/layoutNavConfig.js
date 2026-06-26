@@ -31,6 +31,8 @@ import {
   BookOpen,
   Bot,
   LogOut,
+  UtensilsCrossed,
+  CalendarClock,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -66,6 +68,8 @@ export const ICONS = {
   BookOpen,
   Bot,
   LogOut,
+  UtensilsCrossed,
+  CalendarClock,
 };
 
 export const GOODS_ROUTES = ['/products', '/categories'];
@@ -102,6 +106,7 @@ export const REPORT_SALES_CHILDREN = [
   { to: '/reports/sales', key: 'reportsSales', icon: ICONS.Receipt, moduleId: 'reportsSales' },
   { to: '/reports/sales/cashiers', key: 'reportsCashierPerformance', icon: ICONS.UserCog, moduleId: 'reportsCashierPerformance' },
   { to: '/reports/returns', key: 'reportsReturns', icon: ICONS.RotateCcw, moduleId: 'reportsReturns' },
+  { to: '/reports/sync', key: 'reportsSync', icon: ICONS.RotateCcw, moduleId: 'reportsSync' },
 ];
 
 export const REPORT_STOCK_CHILDREN = [
@@ -146,7 +151,18 @@ export const USER_CHILDREN = [
   { to: '/users/barcode-print', key: 'usersBarcodePrint', icon: ICONS.Barcode, moduleId: 'usersBarcodePrint' },
 ];
 
-export const REST_NAV = [{ to: '/stores', icon: ICONS.Store, key: 'stores', roles: ['ADMIN'], moduleId: 'stores' }];
+export const RESTAURANT_ROUTES = ['/restaurant/hall', '/restaurant/kitchen', '/restaurant/booking', '/restaurant/delivery'];
+
+export const RESTAURANT_CHILDREN = [
+  { to: '/restaurant/hall', key: 'restaurantHall', icon: ICONS.LayoutGrid, moduleId: 'restaurantFloor' },
+  { to: '/restaurant/kitchen', key: 'restaurantKitchen', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantKitchen' },
+  { to: '/restaurant/booking', key: 'restaurantBooking', icon: ICONS.CalendarClock, moduleId: 'restaurantBooking' },
+  { to: '/restaurant/delivery', key: 'restaurantDelivery', icon: ICONS.Truck, moduleId: 'restaurantDelivery' },
+];
+
+export const REST_NAV = [
+  { to: '/stores', icon: ICONS.Store, key: 'stores', roles: ['ADMIN'], moduleId: 'stores' },
+];
 
 export const REPORT_SALES_ROUTES = REPORT_SALES_CHILDREN.map((item) => item.to);
 export const REPORT_STOCK_ROUTES = REPORT_STOCK_CHILDREN.map((item) => item.to);

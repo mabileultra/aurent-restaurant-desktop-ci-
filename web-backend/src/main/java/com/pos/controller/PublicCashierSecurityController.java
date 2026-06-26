@@ -1,9 +1,9 @@
 package com.pos.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
+import com.pos.client.platform.PlatformSecurityClient;
 import com.pos.dto.platform.security.VerifyCashierServerPasswordRequest;
 import com.pos.dto.platform.security.VerifyCashierServerPasswordResponse;
-import com.pos.service.PlatformSecurityService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -21,13 +21,13 @@ import org.springframework.web.bind.annotation.RestController;
 @StandardApiResponses
 public class PublicCashierSecurityController {
 
-    private final PlatformSecurityService platformSecurityService;
+    private final PlatformSecurityClient platformSecurityClient;
 
     @PostMapping("/server-setup/verify-password")
     @Operation(summary = "Проверить пароль настройки сервера кассы")
     public ResponseEntity<VerifyCashierServerPasswordResponse> verifyServerSetupPassword(
         @Valid @RequestBody VerifyCashierServerPasswordRequest request
     ) {
-        return ResponseEntity.ok(platformSecurityService.verifyCashierServerPassword(request.password()));
+        return ResponseEntity.ok(platformSecurityClient.verifyCashierServerPassword(request.password()));
     }
 }

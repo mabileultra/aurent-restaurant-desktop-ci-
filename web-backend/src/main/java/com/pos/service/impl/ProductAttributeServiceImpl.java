@@ -48,7 +48,7 @@ public class ProductAttributeServiceImpl implements ProductAttributeService {
         }
 
         BusinessTypeDefinition type = typeRepository.findActiveDetailedByCode(
-            BusinessTypeParser.parseOrDefault(businessTypeCode, com.pos.domain.BusinessType.UNIVERSAL).name()
+            BusinessTypeParser.parseOrDefault(businessTypeCode, com.pos.domain.businessconfig.BusinessTypeCodes.UNIVERSAL)
         ).orElse(null);
 
         Map<String, BusinessTypeField> allowed = type == null

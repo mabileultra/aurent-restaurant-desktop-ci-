@@ -9,5 +9,9 @@ public record BusinessTypeDetailResponse(
     String description,
     boolean active,
     int sortOrder,
-    List<BusinessTypeFieldResponse> fields
+    List<BusinessTypeFieldResponse> fields,
+    List<BusinessTypeUnitAssignmentResponse> units,
+    List<BusinessTypeRuleResponse> rules,
+    List<BusinessTypePriceRuleResponse> priceRules,
+    List<FieldDisplayRuleResponse> displayRules
 ) {}

@@ -101,7 +101,6 @@ CREATE TABLE products (
     default_discount_percent NUMERIC(5, 2) NOT NULL DEFAULT 0,
     tax_rate            NUMERIC(5, 2) DEFAULT 0,
     product_type        VARCHAR(30) NOT NULL DEFAULT 'RETAIL',
-    template_code       VARCHAR(32),
     sale_type           VARCHAR(20) NOT NULL DEFAULT 'PIECE',
     unit_code           VARCHAR(16) NOT NULL DEFAULT 'PCS',
     quantity_scale      INT NOT NULL DEFAULT 0,
@@ -138,21 +137,6 @@ CREATE TABLE retail_product_details (
     pharmacy_expiry_required        BOOLEAN NOT NULL DEFAULT FALSE,
     pharmacy_prescription_required  BOOLEAN NOT NULL DEFAULT FALSE,
     pharmacy_dosage_form            VARCHAR(100)
-);
-
-CREATE TABLE construction_product_details (
-    product_id          UUID PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
-    standard_length     NUMERIC(10, 2),
-    width               NUMERIC(10, 2),
-    thickness           NUMERIC(10, 2),
-    allow_cutting       BOOLEAN NOT NULL DEFAULT FALSE
-);
-
-CREATE TABLE restaurant_product_details (
-    product_id                  UUID PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
-    preparation_time_minutes    INT,
-    kitchen_department          VARCHAR(50),
-    is_combo_component          BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE service_product_details (

@@ -4,7 +4,6 @@ export const stockReportApi = {
   dashboard: (params) => api.get('/reports/stock/dashboard', { params }),
   lowStock: (params) => api.get('/reports/stock/low-stock', { params }),
   writeOffs: (params) => api.get('/reports/stock/write-offs', { params }),
-  createWriteOff: (body) => api.post('/reports/stock/write-offs', body),
   turnover: (params) => api.get('/reports/stock/turnover', { params }),
   movements: (params) => api.get('/reports/stock/movements', { params }),
   adjustments: (params) => api.get('/reports/stock/adjustments', { params }),

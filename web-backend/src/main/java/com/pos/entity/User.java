@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 public class User implements UserDetails {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Column(nullable = false, length = 100)
@@ -84,6 +83,9 @@ public class User implements UserDetails {
 
     @PrePersist
     void prePersist() {
+        if (id == null) {
+            id = UUID.randomUUID();
+        }
         this.createdAt = Instant.now();
         this.updatedAt = Instant.now();
         syncFullName();

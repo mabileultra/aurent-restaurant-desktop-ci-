@@ -14,7 +14,9 @@ export default function ProtectedRoute({ children, requiredRole, module: moduleI
     return <Navigate to={landOnInstall ? '/install' : '/login'} replace />;
   }
   if (user?.role === 'SUPER_ADMIN') return <Navigate to="/platform" replace />;
-  if (user?.role === 'CASHIER') return <Navigate to="/cashier/pos" replace />;
+  if (user?.role === 'CASHIER' || user?.role === 'WAITER') {
+    return <Navigate to="/cashier" replace />;
+  }
   const homePath = resolveRoleHomePath(user?.role);
   if (requiredRole && user?.role !== requiredRole && !['ADMIN'].includes(user?.role)) {
     return <Navigate to={homePath} replace />;

@@ -10,5 +10,19 @@
     <include file="v3-sale-advance-amount.xml" relativeToChangelogFile="true"/>
     <include file="v4-accountant-role.xml" relativeToChangelogFile="true"/>
     <include file="v5-desktop-notifications.xml" relativeToChangelogFile="true"/>
+    <include file="v6-company-business-types.xml" relativeToChangelogFile="true"/>
+    <include file="v7-business-type-units-rules.xml" relativeToChangelogFile="true"/>
+    <include file="v8-reference-books-attribute-filters.xml" relativeToChangelogFile="true"/>
+    <include file="v9-price-display-rules.xml" relativeToChangelogFile="true"/>
+    <include file="v10-legacy-cleanup.xml" relativeToChangelogFile="true"/>
+    <include file="v11-construction-attributes-template-cleanup.xml" relativeToChangelogFile="true"/>
+    <include file="v12-restaurant-r0-product-fields.xml" relativeToChangelogFile="true"/>
+    <include file="v13-restaurant-floor.xml" relativeToChangelogFile="true"/>
+    <include file="v14-restaurant-sessions.xml" relativeToChangelogFile="true"/>
+    <include file="v15-restaurant-kitchen.xml" relativeToChangelogFile="true"/>
+    <include file="v16-restaurant-booking.xml" relativeToChangelogFile="true"/>
+    <include file="v17-courier-role.xml" relativeToChangelogFile="true"/>
+    <include file="v18-cook-role.xml" relativeToChangelogFile="true"/>
+    <include file="v19-kitchen-none-department.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

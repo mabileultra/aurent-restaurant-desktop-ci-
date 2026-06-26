@@ -1,0 +1,87 @@
+package com.pos.identity.controller;
+
+import com.pos.identity.dto.auth.AuthRequest;
+import com.pos.identity.dto.auth.AuthResponse;
+import com.pos.identity.dto.auth.CashierPinAuthRequest;
+import com.pos.identity.dto.auth.RegisterRequest;
+import com.pos.identity.dto.auth.VerifyPasswordRequest;
+import com.pos.identity.dto.auth.VerifyPinRequest;
+import com.pos.identity.service.AuthService;
+import com.pos.identity.util.ClientIpResolver;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/auth")
+@RequiredArgsConstructor
+@Tag(name = "Auth", description = "Аутентификация, регистрация и проверка учётных данных")
+public class AuthController {
+
+    private final AuthService authService;
+
+    @PostMapping("/login")
+    @Operation(summary = "Вход в систему")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "Успешная аутентификация")
+    public ResponseEntity<AuthResponse> login(
+        @Valid @RequestBody AuthRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        return ResponseEntity.ok(authService.authenticate(
+            request,
+            ClientIpResolver.resolve(httpRequest),
+            httpRequest.getHeader("User-Agent")
+        ));
+    }
+
+    @PostMapping("/cashier-pin/login")
+    @Operation(summary = "Вход кассира по PIN")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "Успешная аутентификация кассира")
+    public ResponseEntity<AuthResponse> cashierPinLogin(@Valid @RequestBody CashierPinAuthRequest request) {
+        return ResponseEntity.ok(authService.authenticateCashierPin(request));
+    }
+
+    @PostMapping("/register")
+    @Operation(summary = "Регистрация")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "Пользователь зарегистрирован")
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        return ResponseEntity.ok(authService.register(request));
+    }
+
+    @PostMapping("/refresh")
+    @Operation(summary = "Обновление токена")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "Токены обновлены")
+    public ResponseEntity<AuthResponse> refresh(@RequestHeader("Authorization") String bearerToken) {
+        return ResponseEntity.ok(authService.refreshToken(bearerToken.substring(7)));
+    }
+
+    @PostMapping("/verify-password")
+    @Operation(summary = "Проверка пароля")
+    @ApiResponse(responseCode = "204", description = "Пароль подтверждён")
+    public ResponseEntity<Void> verifyPassword(@Valid @RequestBody VerifyPasswordRequest request) {
+        authService.verifyPassword(request.password());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/verify-pin")
+    @Operation(summary = "Проверка PIN")
+    @ApiResponse(responseCode = "204", description = "PIN подтверждён")
+    public ResponseEntity<Void> verifyPin(@Valid @RequestBody VerifyPinRequest request) {
+        authService.verifyPin(request.pin());
+        return ResponseEntity.noContent().build();
+    }
+}

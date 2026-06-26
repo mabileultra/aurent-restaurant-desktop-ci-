@@ -2,10 +2,19 @@ import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { productApi, categoryApi, storeApi } from '../../../../api';
 import { useTenantScope } from '../../../../hooks/useTenantScope';
-import { PRODUCT_DEFAULT_FILTERS } from '../../constants';
+import { useCompanyBusinessType } from '../../../../hooks/useCompanyBusinessType';
+import useBusinessConfig from '../../../../hooks/useBusinessConfig';
+import { PRODUCT_DEFAULT_FILTERS, buildAttributeFiltersParam } from '../../constants';
 
 export function useProductsPageData() {
   const { tenantKey, tenantReady } = useTenantScope();
+  const { defaultTypeCode } = useCompanyBusinessType();
+  const { data: businessConfig } = useBusinessConfig(defaultTypeCode);
+
+  const filterFields = useMemo(
+    () => (businessConfig?.fields ?? []).filter((field) => field.filterable && field.fieldType === 'LIST'),
+    [businessConfig?.fields]
+  );
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -28,6 +37,7 @@ export function useProductsPageData() {
       soldIndividually:
         af.soldIndividually === '' ? undefined : af.soldIndividually === 'true',
       barcode: af.barcode.trim() || undefined,
+      attributeFilters: buildAttributeFiltersParam(af.attributes),
     };
   }, [search, page, pageSize, appliedFilters]);
 
@@ -78,5 +88,6 @@ export function useProductsPageData() {
     total: data?.totalElements ?? 0,
     totalPages: data?.totalPages ?? 0,
     pageContent: data?.content ?? [],
+    filterFields,
   };
 }

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v7-001-business-type-units" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="business_type_units"/>
+            </not>
+        </preConditions>
+        <createTable tableName="business_type_units">
+            <column name="business_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_code" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_default" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="business_type_units"
+            columnNames="business_type_id, unit_code"
+            constraintName="pk_business_type_units"/>
+        <addForeignKeyConstraint
+            baseTableName="business_type_units"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_business_type_units_type"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="business_type_units"
+            baseColumnNames="unit_code"
+            referencedTableName="units"
+            referencedColumnNames="code"
+            constraintName="fk_business_type_units_unit"
+            onDelete="CASCADE"/>
+        <createIndex tableName="business_type_units" indexName="idx_business_type_units_code">
+            <column name="unit_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v7-002-business-type-rules" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="business_type_rules"/>
+            </not>
+        </preConditions>
+        <createTable tableName="business_type_rules">
+            <column name="business_type_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="rule_value" type="VARCHAR(200)" defaultValue="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="business_type_rules"
+            columnNames="business_type_id, rule_key"
+            constraintName="pk_business_type_rules"/>
+        <addForeignKeyConstraint
+            baseTableName="business_type_rules"
+            baseColumnNames="business_type_id"
+            referencedTableName="business_types"
+            referencedColumnNames="id"
+            constraintName="fk_business_type_rules_type"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="v7-003-backfill-business-type-units" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM business_type_units</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_units (business_type_id, unit_code, is_default, sort_order)
+            SELECT bt.id, u.code, (u.code = 'PCS'), u.sort_order
+            FROM business_types bt
+            CROSS JOIN units u
+            WHERE u.enabled = TRUE AND u.stock_allowed = TRUE
+            ON CONFLICT DO NOTHING;
+        </sql>
+        <sql>
+            UPDATE business_type_units btu
+            SET is_default = TRUE
+            FROM business_types bt
+            WHERE btu.business_type_id = bt.id
+              AND bt.code = 'GROCERY'
+              AND btu.unit_code = 'KG';
+        </sql>
+        <sql>
+            UPDATE business_type_units btu
+            SET is_default = TRUE
+            FROM business_types bt
+            WHERE btu.business_type_id = bt.id
+              AND bt.code = 'CONSTRUCTION'
+              AND btu.unit_code = 'M';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v7-004-seed-business-type-rules" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM business_type_rules</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_rules (business_type_id, rule_key, rule_value)
+            SELECT bt.id, r.rule_key, r.rule_value
+            FROM business_types bt
+            CROSS JOIN (VALUES
+                ('GROCERY', 'stock.trackExpiry', 'true'),
+                ('GROCERY', 'stock.trackBatches', 'true'),
+                ('PHARMACY', 'stock.trackExpiry', 'true'),
+                ('PHARMACY', 'stock.trackBatches', 'true'),
+                ('CONSTRUCTION', 'product.allowFraction', 'true'),
+                ('CONSTRUCTION', 'product.defaultWeightSale', 'true'),
+                ('CONSTRUCTION', 'cashier.weightEntry', 'true'),
+                ('CLOTHING', 'label.showSize', 'true')
+            ) AS r(type_code, rule_key, rule_value)
+            WHERE bt.code = r.type_code
+            ON CONFLICT DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

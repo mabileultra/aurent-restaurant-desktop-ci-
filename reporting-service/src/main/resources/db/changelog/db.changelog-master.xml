@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <include file="db/changelog/v1-reporting-baseline.xml"/>
+    <include file="db/changelog/v2-sale-facts-items-sold.xml"/>
+    <include file="db/changelog/v3-sale-facts-dimensions.xml"/>
+    <include file="db/changelog/v4-sale-item-facts.xml"/>
+    <include file="db/changelog/v5-sale-item-facts-dimensions.xml"/>
+    <include file="db/changelog/v6-stock-receipt-facts-dimensions.xml"/>
+    <include file="db/changelog/v7-stock-movement-facts.xml"/>
+    <include file="db/changelog/v8-product-snapshot-facts.xml"/>
+    <include file="db/changelog/v9-stock-document-facts.xml"/>
+    <include file="db/changelog/v10-stock-movement-unit-cost.xml"/>
+    <include file="db/changelog/v11-shift-closed-details.xml"/>
+    <include file="db/changelog/v12-sale-facts-status.xml"/>
+
+</databaseChangeLog>

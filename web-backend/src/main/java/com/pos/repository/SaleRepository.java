@@ -1,6 +1,7 @@
 package com.pos.repository;
 
 import com.pos.entity.Sale;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -69,5 +70,39 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         @Param("companyId") Integer companyId,
         @Param("status") Sale.SaleStatus status,
         @Param("saleReceiptType") Sale.ReceiptType saleReceiptType
+    );
+
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.status = :status
+          AND (s.receiptType = :saleReceiptType OR s.receiptType IS NULL)
+          AND s.createdAt >= :start AND s.createdAt < :end
+          AND (:companyId IS NULL OR COALESCE(s.company.id, s.store.company.id) = :companyId)
+        ORDER BY s.createdAt ASC
+        """)
+    Page<Sale> findCompletedSalesForReportingBackfill(
+        @Param("start") Instant start,
+        @Param("end") Instant end,
+        @Param("companyId") Integer companyId,
+        @Param("status") Sale.SaleStatus status,
+        @Param("saleReceiptType") Sale.ReceiptType saleReceiptType,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE (s.receiptType = :saleReceiptType OR s.receiptType IS NULL)
+          AND s.createdAt >= :start AND s.createdAt < :end
+          AND (:companyId IS NULL OR COALESCE(s.company.id, s.store.company.id) = :companyId)
+        ORDER BY s.createdAt ASC
+        """)
+    Page<Sale> findSalesForReportingBackfill(
+        @Param("start") Instant start,
+        @Param("end") Instant end,
+        @Param("companyId") Integer companyId,
+        @Param("saleReceiptType") Sale.ReceiptType saleReceiptType,
+        Pageable pageable
     );
 }

@@ -11,9 +11,10 @@ export function usePosOrderPanel({
   onUpdateQuantity,
   onUpdatePrice,
   total,
+  taxTotal: taxTotalOverride,
 }) {
   const getTaxTotal = useCartStore((s) => s.getTaxTotal);
-  const taxTotal = getTaxTotal();
+  const taxTotal = taxTotalOverride ?? getTaxTotal();
   const linesTotal = items.reduce((s, i) => s + lineSubtotal(i), 0);
   const payableTotal = total ?? linesTotal;
   const subtotalBeforeTax = Math.max(0, payableTotal - taxTotal);

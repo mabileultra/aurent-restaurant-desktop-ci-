@@ -6,6 +6,7 @@ export default function PlatformBusinessFieldFormModal({
   t,
   modal,
   form,
+  referenceBooks = [],
   onClose,
   onFieldChange,
   onSave,
@@ -15,6 +16,7 @@ export default function PlatformBusinessFieldFormModal({
 
   const title =
     modal.mode === 'create' ? t('platform.businessTypes.addField') : t('common.edit');
+  const usesReferenceBook = form.fieldType === 'LIST' && Boolean(form.referenceBookId);
 
   return (
     <BaseModal onClose={onClose} title={title} size="lg">
@@ -57,6 +59,16 @@ export default function PlatformBusinessFieldFormModal({
             {form.enabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
             {t('platform.businessTypes.enabled')}
           </label>
+          {form.fieldType === 'LIST' ? (
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={form.filterable}
+                onChange={(e) => onFieldChange({ filterable: e.target.checked })}
+              />
+              {t('platform.businessTypes.filterable')}
+            </label>
+          ) : null}
         </div>
         <BaseInput
           type="number"
@@ -70,13 +82,32 @@ export default function PlatformBusinessFieldFormModal({
           onChange={(e) => onFieldChange({ placeholder: e.target.value })}
         />
         {form.fieldType === 'LIST' ? (
-          <textarea
-            className={inputCls}
-            rows={4}
-            placeholder={t('platform.businessTypes.optionsPh')}
-            value={form.optionsText}
-            onChange={(e) => onFieldChange({ optionsText: e.target.value })}
-          />
+          <>
+            <BaseSelect
+              label={t('platform.businessTypes.referenceBook')}
+              value={form.referenceBookId}
+              onChange={(e) => onFieldChange({ referenceBookId: e.target.value })}
+              placeholder={t('platform.businessTypes.referenceBookInline')}
+              options={[
+                { value: '', label: t('platform.businessTypes.referenceBookInline') },
+                ...referenceBooks.map((book) => ({
+                  value: String(book.id),
+                  label: `${book.name} (${book.code})`,
+                })),
+              ]}
+            />
+            {!usesReferenceBook ? (
+              <textarea
+                className={inputCls}
+                rows={4}
+                placeholder={t('platform.businessTypes.optionsPh')}
+                value={form.optionsText}
+                onChange={(e) => onFieldChange({ optionsText: e.target.value })}
+              />
+            ) : (
+              <p className="text-xs text-slate-500">{t('platform.businessTypes.referenceBookHint')}</p>
+            )}
+          </>
         ) : null}
       </div>
       <div className="mt-4 flex justify-end gap-2">

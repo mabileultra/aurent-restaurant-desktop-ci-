@@ -43,6 +43,8 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: ${LIQUIBASE_ENABLED:true}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
   jpa:
     hibernate:
       ddl-auto: validate
@@ -64,6 +66,21 @@ app:
     include-context: ${APP_ERRORS_INCLUDE_CONTEXT:false}
   cors:
     allowed-origin-patterns: ${APP_CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*}
+  identity:
+    base-url: ${IDENTITY_SERVICE_URL:http://localhost:8081/api/v1}
+    internal-api-key: ${IDENTITY_INTERNAL_API_KEY:identity-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 15000
+  platform:
+    base-url: ${PLATFORM_SERVICE_URL:http://localhost:8084/api/v1}
+    internal-api-key: ${PLATFORM_INTERNAL_API_KEY:platform-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 15000
+  reporting:
+    base-url: ${REPORTING_SERVICE_URL:http://localhost:8085/api/v1}
+    internal-api-key: ${REPORTING_INTERNAL_API_KEY:reporting-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 30000
   cache:
     window-months: 2
     refresh-cron: "0 0 1 * * *"
@@ -102,6 +119,15 @@ app:
     read-timeout-ms: 15000
     sync-batch-size: 50
     sync-retry-ms: 30000
+    kafka:
+      enabled: ${FINANCE_KAFKA_ENABLED:true}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+      send-timeout-ms: 10000
+  kafka:
+    domain:
+      enabled: ${DOMAIN_KAFKA_ENABLED:true}
+      bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+      send-timeout-ms: 10000
   ai:
     enabled: ${AI_ASSISTANT_ENABLED:true}
     provider: ${AI_ASSISTANT_PROVIDER:deepseek}

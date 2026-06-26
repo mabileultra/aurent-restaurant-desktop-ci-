@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v12-kitchen-departments-reference-book" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM reference_books WHERE code = 'kitchen_departments'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO reference_books (code, name, description, active)
+            VALUES ('kitchen_departments', 'Цеха кухни', 'Горячий, холодный, бар и др.', TRUE);
+
+            INSERT INTO reference_book_entries (reference_book_id, value, label, sort_order)
+            SELECT rb.id, v.value, v.label, v.sort_order
+            FROM reference_books rb
+            CROSS JOIN (VALUES
+                ('HOT', 'Горячий цех', 10),
+                ('COLD', 'Холодный цех', 20),
+                ('BAR', 'Бар', 30),
+                ('GRILL', 'Гриль', 40),
+                ('PASTRY', 'Кондитерский', 50)
+            ) AS v(value, label, sort_order)
+            WHERE rb.code = 'kitchen_departments';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v12-restaurant-canteen-fields" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_fields f
+                JOIN business_types bt ON bt.id = f.business_type_id
+                WHERE bt.code = 'RESTAURANT' AND f.field_key = 'preparation_time_min'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_fields (business_type_id, field_key, label, field_type, required, sort_order)
+            SELECT bt.id, v.field_key, v.label, v.field_type, v.required, v.sort_order
+            FROM business_types bt
+            CROSS JOIN (VALUES
+                ('preparation_time_min', 'Время приготовления, мин', 'NUMBER', FALSE, 10),
+                ('kitchen_department', 'Цех', 'LIST', FALSE, 20),
+                ('combo_component', 'Компонент комбо', 'BOOLEAN', FALSE, 30)
+            ) AS v(field_key, label, field_type, required, sort_order)
+            WHERE bt.code IN ('RESTAURANT', 'CANTEEN')
+            ON CONFLICT (business_type_id, field_key) DO NOTHING;
+
+            UPDATE business_type_fields f
+            SET reference_book_id = rb.id
+            FROM business_types bt
+            JOIN reference_books rb ON rb.code = 'kitchen_departments'
+            WHERE f.business_type_id = bt.id
+              AND bt.code IN ('RESTAURANT', 'CANTEEN')
+              AND f.field_key = 'kitchen_department';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v12-restaurant-pos-mode-rule" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_rules r
+                JOIN business_types bt ON bt.id = r.business_type_id
+                WHERE bt.code = 'RESTAURANT' AND r.rule_key = 'pos.mode'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_rules (business_type_id, rule_key, rule_value)
+            SELECT bt.id, 'pos.mode', 'TABLE'
+            FROM business_types bt
+            WHERE bt.code = 'RESTAURANT';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v12-migrate-restaurant-to-attributes" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="restaurant_product_details"/>
+        </preConditions>
+        <sql>
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'preparation_time_min', trim(rpd.preparation_time_minutes::text)
+            FROM restaurant_product_details rpd
+            WHERE rpd.preparation_time_minutes IS NOT NULL
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'kitchen_department', trim(rpd.kitchen_department)
+            FROM restaurant_product_details rpd
+            WHERE rpd.kitchen_department IS NOT NULL AND trim(rpd.kitchen_department) &lt;&gt; ''
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'combo_component', 'true'
+            FROM restaurant_product_details rpd
+            WHERE rpd.is_combo_component = TRUE
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v12-drop-restaurant-product-details" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="restaurant_product_details"/>
+        </preConditions>
+        <dropTable tableName="restaurant_product_details"/>
+    </changeSet>
+
+</databaseChangeLog>

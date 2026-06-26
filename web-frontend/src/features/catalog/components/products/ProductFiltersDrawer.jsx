@@ -13,6 +13,7 @@ export default function ProductFiltersDrawer({
   onReset,
   categories,
   stores,
+  filterFields,
 }) {
   const { t } = useTranslation();
   if (!open) return null;
@@ -29,6 +30,7 @@ export default function ProductFiltersDrawer({
           onChange={onChange}
           categories={categories}
           stores={stores}
+          filterFields={filterFields}
         />
         <ProductFiltersDrawerFooter t={t} onReset={onReset} onApply={onApply} />
       </aside>

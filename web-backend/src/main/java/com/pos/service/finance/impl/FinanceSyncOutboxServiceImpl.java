@@ -6,7 +6,10 @@ import com.pos.config.finance.FinanceServiceProperties;
 import com.pos.entity.FinanceSyncOutbox;
 import com.pos.repository.FinanceSyncOutboxRepository;
 import com.pos.service.finance.FinanceSyncOutboxService;
+import org.springframework.beans.factory.ObjectProvider;
+import com.pos.config.finance.FinanceKafkaProperties;
 import com.pos.service.finance.support.FinanceHttpClient;
+import com.pos.service.finance.support.FinanceKafkaPublisher;
 import com.pos.util.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,8 @@ public class FinanceSyncOutboxServiceImpl implements FinanceSyncOutboxService {
 
     private final FinanceSyncOutboxRepository outboxRepository;
     private final FinanceHttpClient financeHttpClient;
+    private final ObjectProvider<FinanceKafkaPublisher> financeKafkaPublisher;
+    private final FinanceKafkaProperties financeKafkaProperties;
     private final ObjectMapper objectMapper;
     private final FinanceServiceProperties properties;
 
@@ -91,7 +96,9 @@ public class FinanceSyncOutboxServiceImpl implements FinanceSyncOutboxService {
             markFailed(row, "Invalid payload JSON");
             return;
         }
-        boolean ok = financeHttpClient.postInternal(row.getTargetPath(), body);
+        boolean ok = financeKafkaProperties.isEnabled() && financeKafkaPublisher.getIfAvailable() != null
+            ? financeKafkaPublisher.getObject().publish(row)
+            : financeHttpClient.postInternal(row.getTargetPath(), body);
         if (ok) {
             row.setStatus("SENT");
             row.setLastError(null);
@@ -100,7 +107,9 @@ public class FinanceSyncOutboxServiceImpl implements FinanceSyncOutboxService {
             LogUtil.info(FinanceSyncOutboxServiceImpl.class, "Finance sync sent: key={}", row.getIdempotencyKey());
             return;
         }
-        markFailed(row, "Finance service call failed");
+        markFailed(row, financeKafkaProperties.isEnabled()
+            ? "Kafka publish failed"
+            : "Finance service call failed");
     }
 
     private void markFailed(FinanceSyncOutbox row, String error) {

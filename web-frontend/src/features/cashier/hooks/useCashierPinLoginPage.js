@@ -10,6 +10,7 @@ import {
   persistCompanyLoginCode,
   cashierSessionMatchesCompany,
   resolveCashierCompanyCode,
+  isDesktopCashier,
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
@@ -26,12 +27,13 @@ export function useCashierPinLoginPage() {
 
   const [pin, setPin] = useState('');
   const [companyCode, setCompanyCode] = useState('');
+  const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const freshLoginRef = useRef(false);
   const touchLayout = useCashierTouchLayout();
 
   useEffect(() => {
-    if (!hasHydrated || !token || user?.role !== 'CASHIER') return;
+    if (!hasHydrated || !token || !['CASHIER', 'WAITER'].includes(user?.role)) return;
     if (freshLoginRef.current) return;
 
     let cancelled = false;
@@ -47,7 +49,7 @@ export function useCashierPinLoginPage() {
         return;
       }
       if (window.location.pathname.startsWith('/cashier/login')) {
-        navigate('/cashier/pos', { replace: true });
+        navigate('/cashier', { replace: true });
       }
     })();
 
@@ -67,17 +69,28 @@ export function useCashierPinLoginPage() {
     };
   }, [searchParams]);
 
+  const normalizedCompanyCode = useMemo(
+    () => normalizeCompanyLoginCode(companyCode),
+    [companyCode]
+  );
+
   const canSubmit = useMemo(
-    () => normalizePin(pin).length >= PIN_MIN && Boolean(companyCode.trim()),
-    [pin, companyCode]
+    () => normalizePin(pin).length >= PIN_MIN && Boolean(normalizedCompanyCode),
+    [pin, normalizedCompanyCode]
   );
 
   const submit = useCallback(async () => {
     if (!canSubmit || loading) return;
+    const loginCode = normalizedCompanyCode;
+    if (!loginCode) {
+      if (!isDesktopCashier()) setCompanyPopoverOpen(true);
+      toast.error(t('cashierLogin.companyCodeRequired', { defaultValue: 'Укажите код компании' }));
+      return;
+    }
     setLoading(true);
     try {
       const res = await authApi.cashierPinLogin({
-        companyLoginCode: normalizeCompanyLoginCode(companyCode),
+        companyLoginCode: loginCode,
         pin: normalizePin(pin),
       });
       const { token: accessToken, ...profile } = res.data;
@@ -85,19 +98,19 @@ export function useCashierPinLoginPage() {
         toast.error(t('login.failed'));
         return;
       }
-      if (profile.role !== 'CASHIER') {
+      if (profile.role !== 'CASHIER' && profile.role !== 'WAITER') {
         toast.error(t('login.failed'));
         return;
       }
-      const loginCode = normalizeCompanyLoginCode(companyCode)
-        || normalizeCompanyLoginCode(profile.companyLoginCode);
+      const loginCodeFromProfile = normalizeCompanyLoginCode(profile.companyLoginCode);
       setAuth(accessToken, {
         ...profile,
-        companyLoginCode: loginCode || profile.companyLoginCode,
+        companyLoginCode: loginCode || loginCodeFromProfile || profile.companyLoginCode,
       });
       if (loginCode) persistCompanyLoginCode(loginCode);
+      setCompanyPopoverOpen(false);
       freshLoginRef.current = true;
-      navigate('/cashier/pos', { replace: true });
+      navigate('/cashier', { replace: true });
       window.setTimeout(() => {
         freshLoginRef.current = false;
       }, 4000);
@@ -109,7 +122,7 @@ export function useCashierPinLoginPage() {
     } finally {
       setLoading(false);
     }
-  }, [canSubmit, loading, companyCode, pin, setAuth, navigate, t]);
+  }, [canSubmit, loading, normalizedCompanyCode, pin, setAuth, navigate, t]);
 
   const pressDigit = useCallback((d) => {
     setPin((p) => normalizePin(p + String(d)));
@@ -126,6 +139,14 @@ export function useCashierPinLoginPage() {
   useEffect(() => {
     const onKeyDown = (e) => {
       if (loading) return;
+      const target = e.target;
+      if (
+        target instanceof HTMLInputElement
+        || target instanceof HTMLTextAreaElement
+        || target?.isContentEditable
+      ) {
+        return;
+      }
       if (e.key >= '0' && e.key <= '9') {
         pressDigit(e.key);
         return;
@@ -153,6 +174,11 @@ export function useCashierPinLoginPage() {
     dotCount,
     loading,
     canSubmit,
+    companyCode,
+    setCompanyCode,
+    companyPopoverOpen,
+    setCompanyPopoverOpen,
+    showCompanyCodeField: !isDesktopCashier(),
     pressDigit,
     backspace,
     clear,

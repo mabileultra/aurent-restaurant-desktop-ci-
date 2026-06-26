@@ -1,6 +1,7 @@
 package com.pos.repository.spec;
 
 import com.pos.entity.Product;
+import com.pos.entity.ProductAttribute;
 import com.pos.entity.ProductBarcode;
 import com.pos.entity.ProductStorePrice;
 import jakarta.persistence.criteria.Join;
@@ -13,6 +14,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public final class ProductSpecifications {
 
@@ -28,7 +30,8 @@ public final class ProductSpecifications {
         String ikpuStatus,
         Boolean markedProduct,
         Boolean soldIndividually,
-        String barcodeExact
+        String barcodeExact,
+        Map<String, String> attributeFilters
     ) {
         return (root, query, cb) -> {
 
@@ -65,7 +68,15 @@ public final class ProductSpecifications {
                     cb.isNotNull(root.get("ikpu")),
                     cb.like(cb.lower(root.get("ikpu")), like)
                 );
-                parts.add(cb.or(name, sku, description, unitOfMeasure, bc, extraBc, ikpu));
+                Subquery<Long> attrSearch = query.subquery(Long.class);
+                Root<ProductAttribute> attrRoot = attrSearch.from(ProductAttribute.class);
+                attrSearch.select(cb.literal(1L));
+                attrSearch.where(
+                    cb.equal(attrRoot.get("productId"), root.get("id")),
+                    cb.isNotNull(attrRoot.get("valueText")),
+                    cb.like(cb.lower(attrRoot.get("valueText")), like)
+                );
+                parts.add(cb.or(name, sku, description, unitOfMeasure, bc, extraBc, ikpu, cb.exists(attrSearch)));
             }
 
             if (categoryId != null) {
@@ -93,6 +104,23 @@ public final class ProductSpecifications {
 
             if (StringUtils.hasText(barcodeExact)) {
                 parts.add(cb.equal(root.get("barcode"), barcodeExact.trim()));
+            }
+
+            if (attributeFilters != null && !attributeFilters.isEmpty()) {
+                for (Map.Entry<String, String> entry : attributeFilters.entrySet()) {
+                    if (!StringUtils.hasText(entry.getKey()) || !StringUtils.hasText(entry.getValue())) {
+                        continue;
+                    }
+                    Subquery<Long> attrFilter = query.subquery(Long.class);
+                    Root<ProductAttribute> attrRoot = attrFilter.from(ProductAttribute.class);
+                    attrFilter.select(cb.literal(1L));
+                    attrFilter.where(
+                        cb.equal(attrRoot.get("productId"), root.get("id")),
+                        cb.equal(cb.lower(attrRoot.get("fieldKey")), entry.getKey().trim().toLowerCase()),
+                        cb.equal(attrRoot.get("valueText"), entry.getValue().trim())
+                    );
+                    parts.add(cb.exists(attrFilter));
+                }
             }
 
             if (storeId != null) {

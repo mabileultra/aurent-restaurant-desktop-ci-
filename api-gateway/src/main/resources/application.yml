@@ -1,0 +1,80 @@
+server:
+  port: ${GATEWAY_SERVER_PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        # Типы бизнеса компании — web-backend (не platform-service).
+        - id: pos-company-business-types
+          uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/v1/company-business-types, /api/v1/admin/companies/*/business-types
+          order: 0
+          filters:
+            - PreserveHostHeader
+
+        # Детали документов долгов — данные из pos_db (остаётся в web-backend).
+        - id: finance-debt-documents
+          uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/v1/finance/debts/documents/**
+          order: 0
+          filters:
+            - PreserveHostHeader
+
+        # UI finance API — напрямую в finance-service.
+        - id: finance-service
+          uri: ${FINANCE_SERVICE_URL:http://127.0.0.1:8082}
+          predicates:
+            - Path=/api/v1/finance/**
+          order: 2
+          filters:
+            - PreserveHostHeader
+
+        # Auth, пользователи и platform admin в identity — identity-service.
+        - id: identity-service
+          uri: ${IDENTITY_SERVICE_URL:http://127.0.0.1:8081}
+          predicates:
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/platform/module-access/**, /api/v1/platform/security/super-admins/**
+          order: 1
+          filters:
+            - PreserveHostHeader
+
+        # Компании, platform UI, finance-sync admin — platform-service.
+        - id: platform-service
+          uri: ${PLATFORM_SERVICE_URL:http://127.0.0.1:8084}
+          predicates:
+            - Path=/api/v1/companies/**, /api/v1/platform/**, /api/v1/admin/finance-sync/**
+          order: 1
+          filters:
+            - PreserveHostHeader
+
+        # Reporting API — reporting-service (Kafka read-model + POS internal clients).
+        - id: reporting-service
+          uri: ${REPORTING_SERVICE_URL:http://127.0.0.1:8085}
+          predicates:
+            - Path=/api/v1/reports/**, /api/v1/admin/reporting-sync/**
+          order: 2
+          filters:
+            - PreserveHostHeader
+
+        # Всё остальное — web-backend (касса, склад).
+        - id: pos-backend
+          uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/v1/**
+          order: 3
+          filters:
+            - PreserveHostHeader
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never

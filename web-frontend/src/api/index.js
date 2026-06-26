@@ -21,11 +21,13 @@ export { returnApi } from './return.api';
 export { reportApi } from './report.api';
 export { aiAssistantApi } from './aiAssistant.api';
 export { stockReportApi } from './stockReport.api';
+export { stockWriteOffApi } from './stockWriteOff.api';
 export { warehouseApi } from './warehouse.api';
 export { tenantDisplayApi } from './tenantDisplay.api';
 export { companyBusinessTypeApi } from './companyBusinessType.api';
 export { unitsApi } from './units.api';
 export { financeApi } from './finance.api';
+export { reportingSyncApi } from './reportingSync.api';
 export { financeSyncApi } from './financeSync.api';
 
 export { platformModuleAccessApi } from './platform/moduleAccess.api';
@@ -34,3 +36,5 @@ export { platformDesktopNotificationsApi } from './platform/desktopNotifications
 export { platformSecurityApi } from './platform/security.api';
 export { platformMonitoringApi } from './platform/monitoring.api';
 export { platformBusinessTypeApi } from './platform/businessType.api';
+export { platformReferenceBookApi } from './platform/referenceBook.api';
+export { restaurantApi } from './restaurant.api';

@@ -22,6 +22,7 @@ import { useOfflineConnectivity } from '../../../hooks/useOfflineConnectivity';
 import { useCashierTouchLayout } from '../../../hooks/useCashierTouchLayout';
 import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocumentUiState';
 import { syncAuthSession } from '../../../utils/syncAuthSession';
+import { isCashierRegisterScreen } from '../../../utils/cashierRegisterRoute';
 import { displayCashierName, formatShiftOpenedAt } from './cashierLayoutUtils';
 
 export function useCashierLayoutShell() {
@@ -59,7 +60,7 @@ export function useCashierLayoutShell() {
   const { lock } = useCashierLock();
   const navigate = useNavigate();
   const location = useLocation();
-  const isPosRoute = location.pathname.startsWith('/cashier/pos');
+  const isPosRoute = isCashierRegisterScreen(location.pathname);
 
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const { data: shift } = useCashierShift(storeId);

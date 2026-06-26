@@ -15,6 +15,7 @@ export default function ProductsImportExportModals({ p }) {
         onChange={p.setFilters}
         categories={p.categories}
         stores={p.stores}
+        filterFields={p.filterFields}
         onReset={p.resetFilters}
         onApply={p.applyFilters}
       />

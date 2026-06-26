@@ -47,6 +47,8 @@ export default function PlatformCompaniesPage() {
         businessTypes={p.businessTypes}
         onClose={p.closeModal}
         onFieldChange={p.updateField}
+        onToggleBusinessType={p.toggleBusinessType}
+        onSetDefaultBusinessType={p.setDefaultBusinessType}
         onSave={() => p.saveMutation.mutate()}
       />
     </PageLayout>

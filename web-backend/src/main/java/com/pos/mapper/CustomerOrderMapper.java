@@ -1,6 +1,7 @@
 package com.pos.mapper;
 
 import com.pos.dto.order.CourierOptionResponse;
+import com.pos.dto.order.CustomerOrderDetailResponse;
 import com.pos.dto.order.CustomerOrderRowResponse;
 import com.pos.entity.CustomerOrder;
 import com.pos.entity.User;
@@ -17,6 +18,13 @@ public interface CustomerOrderMapper {
     @Mapping(target = "courierName", source = "courier.fullName")
     @Mapping(target = "status", source = "status", qualifiedByName = "enumName")
     CustomerOrderRowResponse toRowResponse(CustomerOrder order);
+
+    @Mapping(target = "storeId", source = "store.id")
+    @Mapping(target = "storeName", source = "store.name")
+    @Mapping(target = "courierId", source = "courier.id")
+    @Mapping(target = "courierName", source = "courier.fullName")
+    @Mapping(target = "status", source = "status", qualifiedByName = "enumName")
+    CustomerOrderDetailResponse toDetailResponse(CustomerOrder order);
 
     CourierOptionResponse toCourierOption(User user);
 

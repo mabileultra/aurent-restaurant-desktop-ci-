@@ -4,8 +4,10 @@ import com.pos.config.openapi.StandardApiResponses;
 import com.pos.dto.order.CreateCustomerOrderRequest;
 import com.pos.dto.order.CourierOptionResponse;
 import com.pos.dto.order.CustomerOrderCreatedResponse;
+import com.pos.dto.order.CustomerOrderDetailResponse;
 import com.pos.dto.order.CustomerOrderRowResponse;
 import com.pos.dto.order.PhotoDownload;
+import com.pos.dto.order.UpdateCustomerOrderRequest;
 import com.pos.dto.shared.PageResponse;
 import com.pos.service.CustomerOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,9 +25,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import com.pos.entity.User;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,6 +60,7 @@ public class CustomerOrderController {
     @Operation(summary = "Список заказов", description = "Постраничный журнал заказов клиентов с фильтрами")
     @ApiResponse(responseCode = "200", description = "Список заказов")
     public ResponseEntity<PageResponse<CustomerOrderRowResponse>> list(
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) String search,
         @RequestParam(required = false) String externalNumber,
         @RequestParam(required = false) String clientName,
@@ -67,7 +72,30 @@ public class CustomerOrderController {
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(customerOrderService.list(
-            search, externalNumber, clientName, address, courierId, status, createdFrom, createdTo, pageable));
+            storeId, search, externalNumber, clientName, address, courierId, status, createdFrom, createdTo, pageable));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "Детали заказа")
+    public CustomerOrderDetailResponse getById(@PathVariable long id) {
+        return customerOrderService.getById(id);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Обновить заказ")
+    public CustomerOrderDetailResponse update(
+        @PathVariable long id,
+        @Valid @RequestBody UpdateCustomerOrderRequest body
+    ) {
+        return customerOrderService.updateOrder(id, body);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Отменить заказ")
+    @ApiResponse(responseCode = "204", description = "Заказ отменён")
+    public ResponseEntity<Void> cancel(@PathVariable long id) {
+        customerOrderService.cancelOrder(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)

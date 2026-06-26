@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { productApi, stockReportApi } from '../../../api';
+import { productApi, stockWriteOffApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
 import { useCompanyStores } from '../../../hooks/useCompanyStores';
 
@@ -49,7 +49,7 @@ export default function WriteOffModal({ product, storeId: storeIdProp, onClose, 
       if (!sid) {
         return Promise.reject(new Error(t('stockModal.storeRequired')));
       }
-      return stockReportApi.createWriteOff({
+      return stockWriteOffApi.create({
         productId: product.id,
         quantity: data.quantity,
         reason: data.reason,

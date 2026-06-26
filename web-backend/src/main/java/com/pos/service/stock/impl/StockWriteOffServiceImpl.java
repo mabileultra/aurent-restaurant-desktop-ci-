@@ -2,7 +2,6 @@ package com.pos.service.stock.impl;
 
 import com.pos.domain.StockMovementType;
 import com.pos.domain.WriteOffReason;
-import com.pos.dto.shared.PageResponse;
 import com.pos.dto.stock.CreateWriteOffRequest;
 import com.pos.dto.stock.WriteOffRowResponse;
 import com.pos.entity.Product;
@@ -11,36 +10,27 @@ import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
-import com.pos.repository.StockMovementRepository;
-import com.pos.repository.report.StockReportRepository;
 import com.pos.security.CurrentUserProvider;
 import com.pos.service.stock.StockWriteOffService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.stock.support.StockDocumentSupport;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class StockWriteOffServiceImpl implements StockWriteOffService {
 
-    private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
-
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
-    private final StockReportRepository stockReportRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final CurrentUserProvider currentUserProvider;
     private final TenantAccessSupport tenantAccess;
@@ -76,25 +66,8 @@ public class StockWriteOffServiceImpl implements StockWriteOffService {
             .notes(notes)
             .createdBy(user)
             .build();
-        StockMovement saved = stockMovementRepository.save(movement);
+        StockMovement saved = stockMovementPersistence.save(movement);
         return toRow(saved, product);
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    public PageResponse<WriteOffRowResponse> list(
-        LocalDate from,
-        LocalDate to,
-        Integer storeId,
-        Pageable pageable
-    ) {
-        Instant start = from.atStartOfDay(ZONE).toInstant();
-        Instant end = to.plusDays(1).atStartOfDay(ZONE).toInstant();
-        Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        Page<StockMovement> page = stockReportRepository.findWriteOffsBetween(
-            start, end, storeId, companyId, pageable
-        );
-        return PageResponse.from(page.map(m -> toRow(m, m.getProduct())));
     }
 
     private WriteOffRowResponse toRow(StockMovement m, Product product) {

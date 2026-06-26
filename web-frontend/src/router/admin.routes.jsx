@@ -36,6 +36,7 @@ import {
   StockInventoriesReportPage,
   StockTransfersReportPage,
   ProductLifecycleReportPage,
+  ReportingSyncPage,
   FinanceDashboardPage,
   FinanceAccountsPage,
   FinanceIncomesPage,
@@ -51,6 +52,10 @@ import {
   CashRegisterTransferPage,
   CashRegisterConfigPage,
   StoresPage,
+  RestaurantHallPage,
+  RestaurantBookingPage,
+  RestaurantDeliveryPage,
+  KitchenDisplayPage,
   UsersPage,
   UsersPrinterSettingsPage,
   UsersBrandingSettingsPage,
@@ -212,6 +217,14 @@ export const adminRoutes = (
       element={(
         <ProtectedRoute requiredRole="MANAGER" module="reportsReturns">
           <ReturnsPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="reports/sync"
+      element={(
+        <ProtectedRoute module="reportsSync">
+          <ReportingSyncPage />
         </ProtectedRoute>
       )}
     />
@@ -441,6 +454,40 @@ export const adminRoutes = (
       )}
     />
     <Route path="cash-registers" element={<Navigate to="/cash-registers/list" replace />} />
+    <Route
+      path="restaurant/hall"
+      element={(
+        <ProtectedRoute requiredRole="MANAGER" module="restaurantFloor">
+          <RestaurantHallPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route path="restaurant/floor" element={<Navigate to="/restaurant/hall" replace />} />
+    <Route
+      path="restaurant/kitchen"
+      element={(
+        <ProtectedRoute module="restaurantKitchen">
+          <KitchenDisplayPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="restaurant/booking"
+      element={(
+        <ProtectedRoute module="restaurantBooking">
+          <RestaurantBookingPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="restaurant/delivery"
+      element={(
+        <ProtectedRoute module="restaurantDelivery">
+          <RestaurantDeliveryPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route path="restaurant" element={<Navigate to="/restaurant/hall" replace />} />
     <Route
       path="stores"
       element={(

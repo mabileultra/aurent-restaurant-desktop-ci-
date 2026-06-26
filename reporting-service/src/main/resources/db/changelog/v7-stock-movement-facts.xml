@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v7-stock-movement-facts" author="reporting">
+        <createTable tableName="stock_movement_facts">
+            <column name="movement_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT"/>
+            <column name="store_id" type="INT"/>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="product_id" type="UUID"/>
+            <column name="product_name" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="barcode" type="VARCHAR(64)"/>
+            <column name="movement_type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="write_off_reason" type="VARCHAR(30)"/>
+            <column name="quantity" type="DECIMAL(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="VARCHAR(512)"/>
+            <column name="reference_id" type="UUID"/>
+            <column name="reference_number" type="VARCHAR(40)"/>
+            <column name="created_by" type="UUID"/>
+            <column name="created_by_name" type="VARCHAR(255)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="transaction_date" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ingested_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_stock_movement_facts_company_date" tableName="stock_movement_facts">
+            <column name="company_id"/>
+            <column name="transaction_date"/>
+        </createIndex>
+        <createIndex indexName="idx_stock_movement_facts_company_type_date" tableName="stock_movement_facts">
+            <column name="company_id"/>
+            <column name="movement_type"/>
+            <column name="transaction_date"/>
+        </createIndex>
+        <createIndex indexName="idx_stock_movement_facts_store_date" tableName="stock_movement_facts">
+            <column name="store_id"/>
+            <column name="transaction_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

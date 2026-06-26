@@ -1,8 +1,8 @@
 package com.pos.service.impl;
 
-import com.pos.domain.BusinessType;
-import com.pos.dto.company.CompanyBusinessTypeResponse;
+import com.pos.dto.company.CompanyBusinessTypesResponse;
 import com.pos.entity.Company;
+import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.CompanyBusinessTypeService;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
@@ -15,20 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompanyBusinessTypeServiceImpl implements CompanyBusinessTypeService {
 
     private final TenantAccessSupport tenantAccess;
+    private final CompanyBusinessTypeAssignmentService assignmentService;
 
     @Override
-    public CompanyBusinessTypeResponse getForCurrentCompany() {
+    public CompanyBusinessTypesResponse getForCurrentCompany() {
         Company company = requireCurrentCompany();
-        return toResponse(company);
+        return assignmentService.getForCompany(company.getId());
     }
 
     private Company requireCurrentCompany() {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         return tenantAccess.requireCompany(companyId);
-    }
-
-    private static CompanyBusinessTypeResponse toResponse(Company company) {
-        BusinessType type = company.getBusinessType() != null ? company.getBusinessType() : BusinessType.UNIVERSAL;
-        return new CompanyBusinessTypeResponse(type.name());
     }
 }

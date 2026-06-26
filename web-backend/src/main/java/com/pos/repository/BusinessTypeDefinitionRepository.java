@@ -21,6 +21,7 @@ public interface BusinessTypeDefinitionRepository extends JpaRepository<Business
         SELECT DISTINCT bt FROM BusinessTypeDefinition bt
         LEFT JOIN FETCH bt.fields f
         LEFT JOIN FETCH f.options
+        LEFT JOIN FETCH f.referenceBook
         WHERE bt.id = :id
         """)
     Optional<BusinessTypeDefinition> findDetailedById(Integer id);
@@ -29,6 +30,7 @@ public interface BusinessTypeDefinitionRepository extends JpaRepository<Business
         SELECT DISTINCT bt FROM BusinessTypeDefinition bt
         LEFT JOIN FETCH bt.fields f
         LEFT JOIN FETCH f.options
+        LEFT JOIN FETCH f.referenceBook
         WHERE UPPER(bt.code) = UPPER(:code) AND bt.active = TRUE
         """)
     Optional<BusinessTypeDefinition> findActiveDetailedByCode(String code);

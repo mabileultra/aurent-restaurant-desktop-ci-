@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useEffect, useRef, useState } from 'react';
 import { getStockUnits, UNIT_DEFAULTS } from '../../../utils/unitConfig';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,13 +7,10 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { productApi } from '../../../api';
 import {
-  applyTemplateDefaults,
-  defaultProductTypeForBusinessType,
-  getProductTemplate,
-  resolveProductTemplateCode,
+  applyBusinessConfigDefaults,
+  normalizeBusinessTypeCode,
   resolveCatalogSectionVisible,
-  resolveBusinessTypeForTemplates,
-} from '../../../config/productCatalogTemplateRegistry';
+} from '../../../config/productCatalogConfig';
 import { syncStoreRowPrices } from '../../../utils/productCatalogPrices';
 import useBusinessConfig from '../../../hooks/useBusinessConfig';
 import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
@@ -24,23 +21,18 @@ import {
   defaultProductCatalogFormValues,
 } from '../utils/productCatalogFormDefaults';
 import { createProductCatalogFormSchema } from '../utils/productCatalogFormSchema';
+import { extractAttributeValues, parsePriceRules } from '../../../utils/businessConfigUtils';
 
 export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const { t } = useTranslation();
   const isEdit = !!product;
-  const createTemplateCode = options.templateCode ?? null;
-  const createAdvancedMode = options.advancedMode ?? false;
-  const createUniversalMode = options.universalMode ?? false;
   const selectedStoreId = options.selectedStoreId ?? null;
   const selectedStoreBusinessType = options.selectedStoreBusinessType ?? null;
   const { businessType: companyBusinessType } = useCompanyBusinessType();
-  const effectiveBusinessType = resolveBusinessTypeForTemplates(
+  const effectiveBusinessType = normalizeBusinessTypeCode(
     selectedStoreBusinessType ?? companyBusinessType ?? 'UNIVERSAL'
   );
   const { data: businessConfig, isLoading: businessConfigLoading } = useBusinessConfig(effectiveBusinessType);
-  const [editAdvancedMode, setEditAdvancedMode] = useState(false);
-  const advancedMode = isEdit ? editAdvancedMode : createAdvancedMode;
-  const universalMode = !isEdit && createUniversalMode;
 
   const { data: detail } = useQuery({
     queryKey: ['product', product?.id],
@@ -49,16 +41,10 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   });
   const full = detail ?? product;
 
-  const resolvedTemplateCode = isEdit
-    ? resolveProductTemplateCode(full)
-    : createTemplateCode;
-  const templateCode = advancedMode ? null : resolvedTemplateCode;
-  const template = getProductTemplate(templateCode);
-  const templateLocked = Boolean(template && !advancedMode);
-
   const [storeRows, setStoreRows] = useState([{ storeId: '', price: '' }]);
   const [extraBarcodes, setExtraBarcodes] = useState(['']);
   const prevSellingRef = useRef(null);
+  const defaultsAppliedRef = useRef(false);
 
   useEffect(() => {
     if (isEdit || !selectedStoreId) return;
@@ -80,21 +66,25 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   });
 
   const { register, handleSubmit, reset, setValue, getValues, watch, formState: { errors } } = form;
+  const formValues = watch();
+  const attributeValues = useMemo(() => extractAttributeValues(formValues), [formValues]);
+  const priceRulesConfig = useMemo(
+    () => parsePriceRules(businessConfig?.priceRules),
+    [businessConfig?.priceRules]
+  );
 
   useEffect(() => {
-    if (!isEdit) setEditAdvancedMode(false);
-  }, [isEdit, product?.id]);
-
-  useEffect(() => {
-    if (isEdit || !templateLocked || !template) return;
+    if (isEdit || !businessConfig || defaultsAppliedRef.current) return;
     reset({
       ...defaultProductCatalogFormValues,
-      ...applyTemplateDefaults(template),
+      ...applyBusinessConfigDefaults(businessConfig),
     });
-  }, [isEdit, templateLocked, template, reset]);
+    defaultsAppliedRef.current = true;
+  }, [isEdit, businessConfig, reset]);
 
   useEffect(() => {
     if (!full) return;
+    defaultsAppliedRef.current = true;
     reset({
       sku: full.sku,
       name: full.name,
@@ -124,16 +114,6 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       ownerType: full.ownerType || 'OWN',
       commissionTin: full.commissionTin ?? '',
       commissionPinfl: full.commissionPinfl ?? '',
-      constructionStandardLength: full.constructionDetails?.standardLength ?? '',
-      constructionWidth: full.constructionDetails?.width ?? '',
-      constructionThickness: full.constructionDetails?.thickness ?? '',
-      constructionAllowCutting: full.constructionDetails?.allowCutting ?? false,
-      clothingSizeRange: full.retailExtras?.clothingSizeRange ?? '',
-      clothingColor: full.retailExtras?.clothingColor ?? '',
-      clothingGender: full.retailExtras?.clothingGender ?? '',
-      pharmacyExpiryRequired: full.retailExtras?.pharmacyExpiryRequired ?? false,
-      pharmacyPrescriptionRequired: full.retailExtras?.pharmacyPrescriptionRequired ?? false,
-      pharmacyDosageForm: full.retailExtras?.pharmacyDosageForm ?? '',
     });
     const prices = (full.storePrices && full.storePrices.length > 0
       ? full.storePrices
@@ -166,27 +146,12 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const unitCodeWatch = watch('unitCode');
 
   useEffect(() => {
-    if (templateLocked) return;
     if (saleTypeWatch === 'SERVICE') {
       setValue('productType', 'SERVICE');
     }
-  }, [saleTypeWatch, setValue, templateLocked]);
+  }, [saleTypeWatch, setValue]);
 
   useEffect(() => {
-    if (isEdit || universalMode || !advancedMode || !selectedStoreBusinessType) return;
-    if (saleTypeWatch === 'SERVICE') return;
-    setValue('productType', defaultProductTypeForBusinessType(selectedStoreBusinessType));
-  }, [
-    isEdit,
-    universalMode,
-    advancedMode,
-    selectedStoreBusinessType,
-    saleTypeWatch,
-    setValue,
-  ]);
-
-  useEffect(() => {
-    if (templateLocked) return;
     if (saleTypeWatch === 'WEIGHT') {
       const currentUnit = getValues('unitCode');
       const measuredCodes = getStockUnits()
@@ -214,17 +179,16 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       setValue('quantityScale', defaults.quantityScale);
       setValue('allowFraction', defaults.allowFraction);
     }
-  }, [saleTypeWatch, getValues, setValue, templateLocked]);
+  }, [saleTypeWatch, getValues, setValue]);
 
   useEffect(() => {
-    if (templateLocked) return;
     if (saleTypeWatch !== 'WEIGHT') return;
     const defaults = UNIT_DEFAULTS[unitCodeWatch];
     if (!defaults) return;
     setValue('unitOfMeasure', defaults.unitOfMeasure);
     setValue('quantityScale', defaults.quantityScale);
     setValue('allowFraction', defaults.allowFraction);
-  }, [unitCodeWatch, saleTypeWatch, setValue, templateLocked]);
+  }, [unitCodeWatch, saleTypeWatch, setValue]);
 
   useEffect(() => {
     if (sellingPriceWatch == null || sellingPriceWatch === '') return;
@@ -275,22 +239,31 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   });
 
   const showSection = (section) =>
-    resolveCatalogSectionVisible(section, {
-      classicMode: advancedMode && !universalMode,
-      universalMode,
-      template,
-      productType: productTypeWatch,
-    });
+    resolveCatalogSectionVisible(section, { productType: productTypeWatch });
 
   const onSubmit = (values) => {
+    if (priceRulesConfig.minMarginPercent > 0 && values.costPrice > 0 && values.sellingPrice > 0) {
+      const margin = ((values.sellingPrice - values.costPrice) / values.costPrice) * 100;
+      if (margin < priceRulesConfig.minMarginPercent) {
+        toast.error(
+          t('productCatalog.minMarginError', { percent: priceRulesConfig.minMarginPercent })
+        );
+        return;
+      }
+    }
+    if (values.defaultDiscountPercent > priceRulesConfig.maxDiscountPercent) {
+      toast.error(
+        t('productCatalog.maxDiscountError', { percent: priceRulesConfig.maxDiscountPercent })
+      );
+      return;
+    }
+
     const base = buildProductCatalogPayload({
       values,
       storeRows,
       extraBarcodes,
       effectiveBusinessType,
       businessConfigFields: businessConfig?.fields,
-      advancedMode,
-      resolvedTemplateCode,
       showSection,
     });
     const stockQty = values.initialStock ?? 0;
@@ -313,13 +286,6 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   return {
     t,
     isEdit,
-    template,
-    templateCode: resolvedTemplateCode,
-    templateLocked,
-    advancedMode,
-    universalMode,
-    canToggleAdvanced: Boolean(resolvedTemplateCode) && !universalMode,
-    setAdvancedMode: setEditAdvancedMode,
     showSection,
     register,
     handleSubmit,
@@ -337,5 +303,8 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     productTypeWatch,
     businessConfig,
     businessConfigLoading,
+    priceRulesConfig,
+    attributeValues,
+    displayRules: businessConfig?.displayRules ?? [],
   };
 }

@@ -12,8 +12,9 @@ import com.pos.exception.PosExceptions;
 import com.pos.mapper.SaleMapper;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.SaleRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.finance.FinanceReturnIntegrationService;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.sale.SaleAccessPolicy;
 import com.pos.service.sale.SalePartialReturnService;
 import com.pos.service.salesledger.SalesLedgerCacheService;
@@ -37,12 +38,13 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
 
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SaleAccessPolicy accessPolicy;
     private final StoreStockService storeStockService;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public SaleResponse returnItems(UUID saleId, PartialReturnRequest request) {
@@ -105,6 +107,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
         Sale saved = saleRepository.save(sale);
         salesLedgerCacheService.onSaleChanged(saved);
         financeReturnIntegrationService.onRefundCompleted(saved, returnEventId, refundAmount);
+        posDomainEventService.publishSaleCompletedAfterCommit(saved);
         LogUtil.info(
             SalePartialReturnServiceImpl.class,
             "Partial return: sale={}, receipt={}, status={}",
@@ -150,7 +153,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
         }
         productRepository.save(product);
 
-        stockMovementRepository.save(StockMovement.builder()
+        stockMovementPersistence.save(StockMovement.builder()
             .product(product)
             .store(sale.getStore())
             .movementType(StockMovementType.RETURN)

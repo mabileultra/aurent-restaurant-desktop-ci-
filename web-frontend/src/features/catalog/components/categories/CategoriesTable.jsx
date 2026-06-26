@@ -17,7 +17,7 @@ export default function CategoriesTable({
   onToggleRowMenu,
 }) {
   const { t } = useTranslation();
-  const colSpan = manage ? 4 : 3;
+  const colSpan = manage ? 5 : 4;
 
   return (
     <BaseTable
@@ -51,6 +51,7 @@ export default function CategoriesTable({
               <th className="px-4 py-3 font-medium w-24">{t('categories.colId')}</th>
               <th className="px-4 py-3 font-medium">{t('categories.colName')}</th>
               <th className="px-4 py-3 font-medium">{t('categories.colDescription')}</th>
+              <th className="px-4 py-3 font-medium">{t('categories.colBusinessType')}</th>
               {manage && (
                 <th className="px-4 py-3 font-medium w-12 text-right" aria-label={t('categories.actions')} />
               )}
@@ -62,6 +63,9 @@ export default function CategoriesTable({
                 <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.id}</td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{c.name}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{c.description ?? '—'}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                  {c.businessTypeName ?? t('categories.businessTypeAll')}
+                </td>
                 {manage && (
                   <td className="px-2 py-3 text-right">
                     <button

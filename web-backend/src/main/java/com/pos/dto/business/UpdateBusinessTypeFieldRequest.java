@@ -16,5 +16,7 @@ public record UpdateBusinessTypeFieldRequest(
     Integer sortOrder,
     @Size(max = 200) String placeholder,
     @Size(max = 500) String hint,
+    Integer referenceBookId,
+    Boolean filterable,
     @Valid List<SaveFieldOptionRequest> options
 ) {}

@@ -50,9 +50,6 @@ public class Product {
     @Builder.Default
     private ProductType productType = ProductType.RETAIL;
 
-    @Column(name = "template_code", length = 32)
-    private String templateCode;
-
     @Column(name = "cost_price", nullable = false, precision = 18, scale = 2)
     private BigDecimal costPrice = BigDecimal.ZERO;
 
@@ -154,12 +151,6 @@ public class Product {
 
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private RetailProductDetails retailDetails;
-
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private ConstructionProductDetails constructionDetails;
-
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private RestaurantProductDetails restaurantDetails;
 
     @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private ServiceProductDetails serviceDetails;

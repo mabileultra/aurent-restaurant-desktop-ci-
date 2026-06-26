@@ -1,5 +1,5 @@
 /**
- * Конфиг автопечати чека ESC/POS (только desktop-cashier).
+ * Конфиг автопечати чека ESC/POS (только aurent-cashier-desktop).
  * Не смешивать с printReceipt.js (window.print).
  */
 

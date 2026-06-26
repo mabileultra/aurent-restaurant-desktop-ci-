@@ -3,6 +3,7 @@ import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { adminLoginPath } from '../../../utils/authLogin';
 import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
 import CashierPinLoginHeader from '../components/pin-login/CashierPinLoginHeader';
+import CashierPinLoginCompanyPopover from '../components/pin-login/CashierPinLoginCompanyPopover';
 import CashierPinLoginKeypad from '../components/pin-login/CashierPinLoginKeypad';
 import { useCashierPinLoginPage } from '../hooks/useCashierPinLoginPage';
 import '../../../styles/cashier/pin-login.css';
@@ -16,6 +17,11 @@ export default function CashierPinLoginPage() {
     dotCount,
     loading,
     canSubmit,
+    companyCode,
+    setCompanyCode,
+    companyPopoverOpen,
+    setCompanyPopoverOpen,
+    showCompanyCodeField,
     pressDigit,
     backspace,
     clear,
@@ -26,14 +32,27 @@ export default function CashierPinLoginPage() {
 
   return (
     <div className={`cashier-pin-login${touchLayout ? ' cashier-pin-login--touch' : ''}`}>
-      <Link
-        to={adminLoginPath()}
-        className="cashier-pin-login__admin-chip"
-        aria-label={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
-        title={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
-      >
-        A
-      </Link>
+      <div className="cashier-pin-login__top-actions">
+        {showCompanyCodeField ? (
+          <CashierPinLoginCompanyPopover
+            t={t}
+            value={companyCode}
+            onChange={setCompanyCode}
+            disabled={loading}
+            open={companyPopoverOpen}
+            onToggle={() => setCompanyPopoverOpen((v) => !v)}
+            onClose={() => setCompanyPopoverOpen(false)}
+          />
+        ) : null}
+        <Link
+          to={adminLoginPath()}
+          className="cashier-pin-login__admin-chip"
+          aria-label={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
+          title={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
+        >
+          A
+        </Link>
+      </div>
 
       <div className="cashier-pin-login__layout">
         <CashierPinLoginVisual />

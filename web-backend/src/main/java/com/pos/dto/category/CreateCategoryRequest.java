@@ -4,5 +4,6 @@ import jakarta.validation.constraints.NotBlank;
 
 public record CreateCategoryRequest(
     @NotBlank String name,
-    String description
+    String description,
+    Integer businessTypeId
 ) {}

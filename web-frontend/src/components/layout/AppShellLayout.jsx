@@ -26,6 +26,8 @@ import {
   REPORT_SALES_CHILDREN,
   REPORT_STOCK_CHILDREN,
   REST_NAV,
+  RESTAURANT_ROUTES,
+  RESTAURANT_CHILDREN,
 } from './layoutNavConfig';
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import '../../styles/cashier/modals/index.css';
@@ -41,19 +43,20 @@ export default function AppShellLayout() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
   const [sidebarNavExpanded, setSidebarNavExpanded] = useState(true);
-  const [goodsOpen, setGoodsOpen] = useState(true);
-  const [stockOpen, setStockOpen] = useState(true);
-  const [reportsOpen, setReportsOpen] = useState(true);
-  const [reportsSalesOpen, setReportsSalesOpen] = useState(true);
-  const [reportsStockOpen, setReportsStockOpen] = useState(true);
+  const [goodsOpen, setGoodsOpen] = useState(false);
+  const [stockOpen, setStockOpen] = useState(false);
+  const [reportsOpen, setReportsOpen] = useState(false);
+  const [reportsSalesOpen, setReportsSalesOpen] = useState(false);
+  const [reportsStockOpen, setReportsStockOpen] = useState(false);
 
   useEffect(() => {
     syncAuthSession();
   }, []);
-  const [financeOpen, setFinanceOpen] = useState(true);
-  const [registersOpen, setRegistersOpen] = useState(true);
-  const [usersOpen, setUsersOpen] = useState(true);
-  const [ordersOpen, setOrdersOpen] = useState(true);
+  const [financeOpen, setFinanceOpen] = useState(false);
+  const [registersOpen, setRegistersOpen] = useState(false);
+  const [usersOpen, setUsersOpen] = useState(false);
+  const [ordersOpen, setOrdersOpen] = useState(false);
+  const [restaurantOpen, setRestaurantOpen] = useState(false);
 
   const filterByModule = (items) => items.filter((item) => !item.moduleId || hasModule(item.moduleId));
   const goodsNav = filterByModule(GOODS_CHILDREN);
@@ -64,6 +67,7 @@ export default function AppShellLayout() {
   const reportsSalesNav = filterByModule(REPORT_SALES_CHILDREN);
   const reportsStockNav = filterByModule(REPORT_STOCK_CHILDREN);
   const usersNav = filterByModule(USER_CHILDREN);
+  const restaurantNav = filterByModule(RESTAURANT_CHILDREN);
 
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1024px)');
@@ -97,6 +101,7 @@ export default function AppShellLayout() {
     if (REGISTER_ROUTES.includes(location.pathname)) setRegistersOpen(true);
     if (USER_ROUTES.includes(location.pathname)) setUsersOpen(true);
     if (ORDER_ROUTES.includes(location.pathname)) setOrdersOpen(true);
+    if (RESTAURANT_ROUTES.includes(location.pathname)) setRestaurantOpen(true);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -154,6 +159,7 @@ export default function AppShellLayout() {
         showRegisters={registersNav.length > 0}
         showReports={reportsSalesNav.length > 0 || reportsStockNav.length > 0}
         showUsers={usersNav.length > 0}
+        showRestaurant={restaurantNav.length > 0}
         inGoodsSection={GOODS_ROUTES.includes(location.pathname)}
         inStockSection={STOCK_ROUTES.includes(location.pathname)}
         inOrdersSection={ORDER_ROUTES.includes(location.pathname)}
@@ -163,6 +169,7 @@ export default function AppShellLayout() {
         inReportsSalesSection={REPORT_SALES_ROUTES.includes(location.pathname)}
         inReportsStockSection={REPORT_STOCK_ROUTES.includes(location.pathname)}
         inUsersSection={USER_ROUTES.includes(location.pathname)}
+        inRestaurantSection={RESTAURANT_ROUTES.includes(location.pathname)}
         goodsOpen={goodsOpen}
         stockOpen={stockOpen}
         ordersOpen={ordersOpen}
@@ -172,6 +179,7 @@ export default function AppShellLayout() {
         reportsSalesOpen={reportsSalesOpen}
         reportsStockOpen={reportsStockOpen}
         usersOpen={usersOpen}
+        restaurantOpen={restaurantOpen}
         setGoodsOpen={setGoodsOpen}
         setStockOpen={setStockOpen}
         setOrdersOpen={setOrdersOpen}
@@ -181,6 +189,7 @@ export default function AppShellLayout() {
         setReportsSalesOpen={setReportsSalesOpen}
         setReportsStockOpen={setReportsStockOpen}
         setUsersOpen={setUsersOpen}
+        setRestaurantOpen={setRestaurantOpen}
         goodsNav={goodsNav}
         stockNav={stockNav}
         ordersNav={ordersNav}
@@ -192,6 +201,7 @@ export default function AppShellLayout() {
         reportsStockNav={reportsStockNav}
         reportsHubActive={location.pathname === '/reports'}
         usersNav={usersNav}
+        restaurantNav={restaurantNav}
         visibleRest={visibleRest}
       />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">

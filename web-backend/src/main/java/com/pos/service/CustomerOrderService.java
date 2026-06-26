@@ -2,9 +2,11 @@ package com.pos.service;
 
 import com.pos.dto.order.CreateCustomerOrderRequest;
 import com.pos.dto.order.CustomerOrderCreatedResponse;
+import com.pos.dto.order.CustomerOrderDetailResponse;
 import com.pos.dto.order.CustomerOrderRowResponse;
 import com.pos.dto.order.CourierOptionResponse;
 import com.pos.dto.order.PhotoDownload;
+import com.pos.dto.order.UpdateCustomerOrderRequest;
 import com.pos.dto.shared.PageResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public interface CustomerOrderService {
 
     PageResponse<CustomerOrderRowResponse> list(
+        Integer storeId,
         String search,
         String externalNumber,
         String clientName,
@@ -29,7 +32,13 @@ public interface CustomerOrderService {
 
     List<CourierOptionResponse> listCourierCandidates();
 
+    CustomerOrderDetailResponse getById(long orderId);
+
     CustomerOrderCreatedResponse createOrder(CreateCustomerOrderRequest req, UUID creatorId);
+
+    CustomerOrderDetailResponse updateOrder(long orderId, UpdateCustomerOrderRequest req);
+
+    void cancelOrder(long orderId);
 
     CustomerOrderCreatedResponse createWithPhotos(int storeId, List<MultipartFile> photos, UUID creatorId);
 

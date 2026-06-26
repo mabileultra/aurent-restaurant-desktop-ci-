@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi } from '../../../api/company.api';
-import { BUSINESS_TYPES } from '../../../config/productCatalogTemplateRegistry';
+import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
+import { platformBusinessTypeApi } from '../../../api';
 
 export const PLATFORM_COMPANY_PAGE_SIZE = 14;
 
@@ -15,6 +16,8 @@ const emptyForm = () => ({
   phone: '',
   active: true,
   businessType: 'UNIVERSAL',
+  businessTypeIds: [],
+  defaultBusinessTypeId: null,
 });
 
 export function usePlatformCompaniesPage() {
@@ -37,14 +40,56 @@ export function usePlatformCompaniesPage() {
     queryFn: () => companyApi.getAll(params).then((r) => r.data),
   });
 
+  const { data: constructorTypes = [] } = useQuery({
+    queryKey: ['platform-business-types-options'],
+    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+    staleTime: 300_000,
+  });
+
   const saveMutation = useMutation({
-    mutationFn: () => {
-      const { name, legalName, tin, address, phone, active, businessType } = form;
-      const payload = { name, legalName, tin, address, phone, active, businessType };
-      return editing ? companyApi.update(editing.id, payload) : companyApi.create(payload);
+    mutationFn: async () => {
+      const {
+        name,
+        legalName,
+        tin,
+        address,
+        phone,
+        active,
+        businessType,
+        businessTypeIds,
+        defaultBusinessTypeId,
+      } = form;
+
+      const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId)
+        ?? constructorTypes.find((bt) => businessTypeIds.includes(bt.id))
+        ?? constructorTypes.find((bt) => bt.code === businessType);
+
+      const payload = {
+        name,
+        legalName,
+        tin,
+        address,
+        phone,
+        active,
+        businessType: defaultType?.code ?? businessType,
+      };
+
+      const companyRes = editing
+        ? await companyApi.update(editing.id, payload)
+        : await companyApi.create(payload);
+
+      const companyId = editing?.id ?? companyRes.data?.id;
+      if (companyId && businessTypeIds.length > 0) {
+        await companyBusinessTypeApi.setForCompany(companyId, {
+          businessTypeIds,
+          defaultBusinessTypeId: defaultBusinessTypeId ?? businessTypeIds[0],
+        });
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['companies'] });
+      qc.invalidateQueries({ queryKey: ['companies-all'] });
+      qc.invalidateQueries({ queryKey: ['company-business-types'] });
       toast.success(t('platform.companySaved'));
       setModalOpen(false);
       setEditing(null);
@@ -70,12 +115,32 @@ export function usePlatformCompaniesPage() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm(emptyForm());
+    const universal = constructorTypes.find((bt) => bt.code === 'UNIVERSAL');
+    setForm({
+      ...emptyForm(),
+      businessTypeIds: universal ? [universal.id] : [],
+      defaultBusinessTypeId: universal?.id ?? null,
+    });
     setModalOpen(true);
   };
 
-  const openEdit = (row) => {
+  const openEdit = async (row) => {
     setEditing(row);
+    let businessTypeIds = [];
+    let defaultBusinessTypeId = null;
+    try {
+      const assigned = await companyBusinessTypeApi.getForCompany(row.id).then((r) => r.data);
+      businessTypeIds = assigned.types?.map((bt) => bt.id) ?? [];
+      defaultBusinessTypeId = assigned.types?.find((bt) => bt.defaultType)?.id
+        ?? businessTypeIds[0]
+        ?? null;
+    } catch {
+      const fallback = constructorTypes.find((bt) => bt.code === (row.businessType ?? 'UNIVERSAL'));
+      if (fallback) {
+        businessTypeIds = [fallback.id];
+        defaultBusinessTypeId = fallback.id;
+      }
+    }
     setForm({
       name: row.name,
       legalName: row.legalName ?? '',
@@ -84,6 +149,8 @@ export function usePlatformCompaniesPage() {
       phone: row.phone ?? '',
       active: row.active,
       businessType: row.businessType ?? 'UNIVERSAL',
+      businessTypeIds,
+      defaultBusinessTypeId,
     });
     setModalOpen(true);
     setMenuId(null);
@@ -96,6 +163,40 @@ export function usePlatformCompaniesPage() {
 
   const updateField = (field, value) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const toggleBusinessType = (typeId) => {
+    setForm((prev) => {
+      const exists = prev.businessTypeIds.includes(typeId);
+      const businessTypeIds = exists
+        ? prev.businessTypeIds.filter((id) => id !== typeId)
+        : [...prev.businessTypeIds, typeId];
+      let defaultBusinessTypeId = prev.defaultBusinessTypeId;
+      if (!businessTypeIds.includes(defaultBusinessTypeId)) {
+        defaultBusinessTypeId = businessTypeIds[0] ?? null;
+      }
+      if (!exists && businessTypeIds.length === 1) {
+        defaultBusinessTypeId = typeId;
+      }
+      const defaultType = constructorTypes.find((bt) => bt.id === defaultBusinessTypeId);
+      return {
+        ...prev,
+        businessTypeIds,
+        defaultBusinessTypeId,
+        businessType: defaultType?.code ?? prev.businessType,
+      };
+    });
+  };
+
+  const setDefaultBusinessType = (typeId) => {
+    setForm((prev) => {
+      const defaultType = constructorTypes.find((bt) => bt.id === typeId);
+      return {
+        ...prev,
+        defaultBusinessTypeId: typeId,
+        businessType: defaultType?.code ?? prev.businessType,
+      };
+    });
   };
 
   const handleSearchChange = (value) => {
@@ -129,12 +230,14 @@ export function usePlatformCompaniesPage() {
     totalPages,
     fromN,
     toN,
-    businessTypes: BUSINESS_TYPES,
+    businessTypes: constructorTypes,
     saveMutation,
     openCreate,
     openEdit,
     closeModal,
     updateField,
+    toggleBusinessType,
+    setDefaultBusinessType,
     handleSearchChange,
     tryDelete,
   };

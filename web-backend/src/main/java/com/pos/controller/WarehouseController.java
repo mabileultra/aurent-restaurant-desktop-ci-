@@ -9,11 +9,14 @@ import com.pos.dto.warehouse.CreateStockTransferRequest;
 import com.pos.dto.warehouse.StockInventoryResponse;
 import com.pos.dto.warehouse.StockReceiptResponse;
 import com.pos.dto.warehouse.StockTransferResponse;
+import com.pos.dto.stock.CreateWriteOffRequest;
+import com.pos.dto.stock.WriteOffRowResponse;
 import com.pos.dto.warehouse.WarehouseReceiveRequest;
 import com.pos.service.ProductService;
 import com.pos.service.stock.StockInventoryService;
 import com.pos.service.stock.StockReceiptService;
 import com.pos.service.stock.StockTransferService;
+import com.pos.service.stock.StockWriteOffService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,6 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -42,6 +46,7 @@ public class WarehouseController {
     private final StockReceiptService stockReceiptService;
     private final StockInventoryService stockInventoryService;
     private final StockTransferService stockTransferService;
+    private final StockWriteOffService stockWriteOffService;
 
     @GetMapping("/products")
     @Operation(summary = "Товары склада", description = "Список товаров с фильтрами для складского интерфейса")
@@ -111,5 +116,14 @@ public class WarehouseController {
     @ApiResponse(responseCode = "200", description = "Данные перемещения")
     public ResponseEntity<StockTransferResponse> getTransfer(@PathVariable UUID id) {
         return ResponseEntity.ok(stockTransferService.getById(id));
+    }
+
+    @PostMapping("/write-offs")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Создать списание", description = "Оформление списания товара со склада")
+    @ApiResponse(responseCode = "201", description = "Списание создано")
+    public ResponseEntity<WriteOffRowResponse> createWriteOff(@Valid @RequestBody CreateWriteOffRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(stockWriteOffService.create(request));
     }
 }

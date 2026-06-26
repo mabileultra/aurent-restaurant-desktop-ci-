@@ -6,6 +6,10 @@ server:
 spring:
   application:
     name: finance-service
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
+    consumer:
+      group-id: finance-integration-consumer
   datasource:
     url: ${FINANCE_DB_URL:jdbc:postgresql://localhost:5434/finance_db}
     username: ${FINANCE_DB_USERNAME:finance_user}
@@ -27,6 +31,9 @@ spring:
 
 app:
   timezone: ${APP_TIMEZONE:Asia/Tashkent}
+  kafka:
+    consumer:
+      enabled: ${FINANCE_KAFKA_CONSUMER_ENABLED:true}
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
   internal:

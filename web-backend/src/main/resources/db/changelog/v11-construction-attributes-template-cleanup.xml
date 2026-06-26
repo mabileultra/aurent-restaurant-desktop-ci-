@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v11-construction-allow-cutting-field" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_fields f
+                JOIN business_types bt ON bt.id = f.business_type_id
+                WHERE bt.code = 'CONSTRUCTION' AND f.field_key = 'allow_cutting'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_fields (business_type_id, field_key, label, field_type, required, sort_order)
+            SELECT bt.id, 'allow_cutting', 'Разрешить нарезку', 'BOOLEAN', FALSE, 70
+            FROM business_types bt
+            WHERE bt.code = 'CONSTRUCTION';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v11-migrate-construction-to-attributes" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="construction_product_details"/>
+        </preConditions>
+        <sql>
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT cpd.product_id, 'length_m', trim(to_char(cpd.standard_length, 'FM999999990.00'))
+            FROM construction_product_details cpd
+            WHERE cpd.standard_length IS NOT NULL
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT cpd.product_id, 'width_m', trim(to_char(cpd.width, 'FM999999990.00'))
+            FROM construction_product_details cpd
+            WHERE cpd.width IS NOT NULL
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT cpd.product_id, 'thickness_mm', trim(to_char(cpd.thickness, 'FM999999990.00'))
+            FROM construction_product_details cpd
+            WHERE cpd.thickness IS NOT NULL
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT cpd.product_id, 'allow_cutting', 'true'
+            FROM construction_product_details cpd
+            WHERE cpd.allow_cutting = TRUE
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v11-drop-construction-product-details" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="construction_product_details"/>
+        </preConditions>
+        <dropTable tableName="construction_product_details"/>
+    </changeSet>
+
+    <changeSet id="v11-drop-product-template-code" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="products" columnName="template_code"/>
+        </preConditions>
+        <sql>DROP INDEX IF EXISTS idx_products_template_code;</sql>
+        <dropColumn tableName="products" columnName="template_code"/>
+    </changeSet>
+
+</databaseChangeLog>

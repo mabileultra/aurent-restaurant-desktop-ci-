@@ -1,5 +1,6 @@
 import { fmtMoney } from '../../../../utils/formatMoney';
 import UnitConversionHelper from '../../../../components/shared/UnitConversionHelper';
+import { getProductLengthM } from '../../../../utils/productAttributes';
 
 export default function WeightEntryModalBody({ w }) {
   const {
@@ -99,7 +100,7 @@ export default function WeightEntryModalBody({ w }) {
             <UnitConversionHelper
               t={t}
               stockUnitCode={unitCode}
-              standardLength={product.constructionDetails?.standardLength}
+              standardLength={getProductLengthM(product)}
               onApplyStockQty={(qty) => setQtyDraft(String(qty))}
             />
           </label>

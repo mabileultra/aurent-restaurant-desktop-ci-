@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v8-reference-books-table" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="reference_books"/>
+            </not>
+        </preConditions>
+        <createTable tableName="reference_books">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_reference_books"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true" uniqueConstraintName="uq_reference_books_code"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="v8-reference-book-entries-table" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="reference_book_entries"/>
+            </not>
+        </preConditions>
+        <createTable tableName="reference_book_entries">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_reference_book_entries"/>
+            </column>
+            <column name="reference_book_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="reference_book_entries"
+            baseColumnNames="reference_book_id"
+            referencedTableName="reference_books"
+            referencedColumnNames="id"
+            constraintName="fk_reference_book_entries_book"
+            onDelete="CASCADE"/>
+        <addUniqueConstraint
+            tableName="reference_book_entries"
+            columnNames="reference_book_id, value"
+            constraintName="uq_reference_book_entry_value"/>
+        <createIndex tableName="reference_book_entries" indexName="idx_reference_book_entries_book">
+            <column name="reference_book_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v8-business-type-fields-reference-book" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="business_type_fields" columnName="reference_book_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="business_type_fields">
+            <column name="reference_book_id" type="INT"/>
+            <column name="filterable" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="business_type_fields"
+            baseColumnNames="reference_book_id"
+            referencedTableName="reference_books"
+            referencedColumnNames="id"
+            constraintName="fk_business_type_fields_reference_book"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="v8-seed-clothing-reference-books" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM reference_books</sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO reference_books (code, name, description, active)
+            VALUES
+                ('clothing_sizes', 'Размеры одежды', 'S–XXL', TRUE),
+                ('clothing_gender', 'Пол (одежда)', 'Унисекс, мужской, женский, детский', TRUE),
+                ('clothing_season', 'Сезон (одежда)', 'Лето, зима, демисезон', TRUE);
+
+            INSERT INTO reference_book_entries (reference_book_id, value, label, sort_order)
+            SELECT rb.id, v.value, v.label, v.sort_order
+            FROM reference_books rb
+            CROSS JOIN (VALUES
+                ('clothing_sizes', 'S', 'S', 10),
+                ('clothing_sizes', 'M', 'M', 20),
+                ('clothing_sizes', 'L', 'L', 30),
+                ('clothing_sizes', 'XL', 'XL', 40),
+                ('clothing_sizes', 'XXL', 'XXL', 50),
+                ('clothing_gender', 'UNISEX', 'Унисекс', 10),
+                ('clothing_gender', 'MALE', 'Мужской', 20),
+                ('clothing_gender', 'FEMALE', 'Женский', 30),
+                ('clothing_gender', 'KIDS', 'Детский', 40),
+                ('clothing_season', 'SUMMER', 'Лето', 10),
+                ('clothing_season', 'WINTER', 'Зима', 20),
+                ('clothing_season', 'DEMI', 'Демисезон', 30)
+            ) AS v(book_code, value, label, sort_order)
+            WHERE rb.code = v.book_code;
+
+            UPDATE business_type_fields f
+            SET reference_book_id = rb.id,
+                filterable = TRUE
+            FROM business_types bt,
+                 reference_books rb
+            WHERE f.business_type_id = bt.id
+              AND bt.code = 'CLOTHING'
+              AND f.field_key IN ('size', 'gender', 'season')
+              AND (
+                (f.field_key = 'size' AND rb.code = 'clothing_sizes')
+                OR (f.field_key = 'gender' AND rb.code = 'clothing_gender')
+                OR (f.field_key = 'season' AND rb.code = 'clothing_season')
+              );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

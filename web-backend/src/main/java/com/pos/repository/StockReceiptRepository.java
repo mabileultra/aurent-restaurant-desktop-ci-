@@ -64,4 +64,22 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
         @Param("end") Instant end,
         @Param("companyId") Integer companyId
     );
+
+    @Query("""
+        SELECT r FROM StockReceipt r
+        JOIN FETCH r.store st
+        JOIN FETCH st.company
+        LEFT JOIN FETCH r.supplier
+        LEFT JOIN FETCH r.createdBy
+        WHERE r.createdAt >= :start AND r.createdAt < :end
+          AND r.totalCost > 0
+          AND (:companyId IS NULL OR st.company.id = :companyId)
+        ORDER BY r.createdAt ASC
+        """)
+    Page<StockReceipt> findForReportingBackfill(
+        @Param("start") Instant start,
+        @Param("end") Instant end,
+        @Param("companyId") Integer companyId,
+        Pageable pageable
+    );
 }

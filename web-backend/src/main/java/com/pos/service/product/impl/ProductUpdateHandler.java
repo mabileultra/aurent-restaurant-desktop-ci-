@@ -15,10 +15,10 @@ import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.SaleTypeSupport;
 import com.pos.service.product.support.ProductBarcodeValidator;
 import com.pos.service.product.support.ProductCatalogLoader;
+import com.pos.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.util.LogUtil;
-import com.pos.util.ProductTemplateCodeValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +40,7 @@ public class ProductUpdateHandler {
     private final UnitCatalogService unitCatalogService;
     private final ProductAttributeService productAttributeService;
     private final ProductResponseAssembler assembler;
+    private final ProductSnapshotNotifier productSnapshotNotifier;
 
     @Transactional
     public ProductResponse update(UUID id, UpdateProductRequest req) {
@@ -50,6 +51,7 @@ public class ProductUpdateHandler {
             productAttributeService.saveAttributes(saved.getId(), req.businessTypeCode(), req.attributes());
         }
         LogUtil.info(ProductUpdateHandler.class, "Product updated: id={}", id);
+        productSnapshotNotifier.notify(saved.getId());
         return assembler.toResponse(saved);
     }
 
@@ -72,9 +74,6 @@ public class ProductUpdateHandler {
         }
         if (req.taxRate() != null) {
             product.setTaxRate(ProductValueNormalizer.taxRatePercent(req.taxRate()));
-        }
-        if (req.templateCode() != null) {
-            product.setTemplateCode(ProductTemplateCodeValidator.normalizeOrNull(req.templateCode()));
         }
         if (req.saleType() != null || req.unitCode() != null || req.quantityScale() != null || req.allowFraction() != null) {
             ProductQuantityRulesResolver.applyTo(

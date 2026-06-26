@@ -18,7 +18,12 @@ public class TenantCacheKeyResolver {
     }
 
     public String categories() {
-        return TenantContext.cacheKeyPrefix() + ":categories";
+        return categories(null);
+    }
+
+    public String categories(Integer businessTypeId) {
+        String suffix = businessTypeId == null ? "all" : "bt:" + businessTypeId;
+        return TenantContext.cacheKeyPrefix() + ":categories:" + suffix;
     }
 
     /** Для @CacheEvict когда нет HTTP-контекста (после create/update). */

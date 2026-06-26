@@ -104,7 +104,7 @@ public class ProductExportServiceImpl implements ProductExportService {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             companyId,
-            null, null, "ACTIVE", null, null, null, null, null
+            null, null, "ACTIVE", null, null, null, null, null, null
         );
         List<Integer> storeIds = ProductImportParseUtil.parseStoreIdList(storeIdsParam);
         for (Integer storeId : storeIds) {

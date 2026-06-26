@@ -22,7 +22,6 @@ public record ProductResponse(
     BigDecimal defaultDiscountPercent,
     BigDecimal taxRate,
     ProductType productType,
-    String templateCode,
     SaleType saleType,
     UnitCode unitCode,
     int quantityScale,
@@ -51,8 +50,6 @@ public record ProductResponse(
     String commissionPinfl,
     int storesCount,
     List<ProductStorePriceRow> storePrices,
-    ConstructionProductDetailsDto constructionDetails,
-    RestaurantProductDetailsDto restaurantDetails,
     ServiceProductDetailsDto serviceDetails,
     RetailExtrasDto retailExtras,
     Map<String, String> attributes

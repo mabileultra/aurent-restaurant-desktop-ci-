@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v16-restaurant-booking-table" author="pos">
+        <createTable tableName="table_reservations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_table_reservations_store"
+                             referencedTableName="stores" referencedColumnNames="id"/>
+            </column>
+            <column name="table_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_table_reservations_table"
+                             referencedTableName="dining_tables" referencedColumnNames="id"/>
+            </column>
+            <column name="client_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_phone" type="VARCHAR(40)"/>
+            <column name="guest_count" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="INT" defaultValueNumeric="120">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="UUID">
+                <constraints foreignKeyName="fk_table_reservations_created_by"
+                             referencedTableName="users" referencedColumnNames="id"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="table_reservations" indexName="idx_table_reservations_store_status">
+            <column name="store_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="table_reservations" indexName="idx_table_reservations_table_status">
+            <column name="table_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="table_reservations" indexName="idx_table_reservations_reserved_at">
+            <column name="reserved_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

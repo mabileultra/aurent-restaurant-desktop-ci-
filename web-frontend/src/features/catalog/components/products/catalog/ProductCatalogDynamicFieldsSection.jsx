@@ -1,4 +1,5 @@
 import { BaseSelect } from '../../../../../components/ui';
+import { resolveFieldDisplayState } from '../../../../../utils/businessConfigUtils';
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
 
 function fieldName(key) {
@@ -10,9 +11,10 @@ export default function ProductCatalogDynamicFieldsSection({
   register,
   errors,
   fields = [],
+  displayRules = [],
+  attributeValues = {},
   loading = false,
 }) {
-  const enabledFields = fields.filter((f) => f.enabled !== false);
   if (loading) {
     return (
       <section className="space-y-3">
@@ -23,7 +25,16 @@ export default function ProductCatalogDynamicFieldsSection({
       </section>
     );
   }
-  if (enabledFields.length === 0) return null;
+
+  const visibleFields = fields
+    .filter((field) => field.enabled !== false)
+    .map((field) => ({
+      field,
+      state: resolveFieldDisplayState(field, displayRules, attributeValues),
+    }))
+    .filter(({ state }) => state.visible);
+
+  if (visibleFields.length === 0) return null;
 
   return (
     <section className="space-y-4">
@@ -31,10 +42,10 @@ export default function ProductCatalogDynamicFieldsSection({
         {t('productCatalog.sectionBusinessFields')}
       </h3>
       <div className="grid grid-cols-1 gap-3 rounded-xl border border-indigo-200 bg-indigo-50/40 p-4 dark:border-indigo-900/50 dark:bg-indigo-950/20 md:grid-cols-2">
-        {enabledFields.map((field) => {
+        {visibleFields.map(({ field, state }) => {
           const name = fieldName(field.fieldKey);
           const error = errors[name]?.message;
-          const rules = field.required ? { required: t('validation.fieldRequired', { field: field.label }) } : {};
+          const rules = state.required ? { required: t('validation.fieldRequired', { field: field.label }) } : {};
 
           if (field.fieldType === 'BOOLEAN') {
             return (
@@ -44,14 +55,19 @@ export default function ProductCatalogDynamicFieldsSection({
               >
                 <input type="checkbox" {...register(name, rules)} className="rounded border-slate-400 dark:border-slate-600" />
                 {field.label}
-                {field.required ? <span className="text-red-500">*</span> : null}
+                {state.required ? <span className="text-red-500">*</span> : null}
               </label>
             );
           }
 
           if (field.fieldType === 'LIST') {
             return (
-              <ProductCatalogField key={field.id ?? field.fieldKey} label={field.label} required={field.required} error={error}>
+              <ProductCatalogField
+                key={field.id ?? field.fieldKey}
+                label={field.label}
+                required={state.required}
+                error={error}
+              >
                 <BaseSelect
                   {...register(name, rules)}
                   placeholder={t('productModal.noneCategory')}
@@ -75,7 +91,12 @@ export default function ProductCatalogDynamicFieldsSection({
                 : 'text';
 
           return (
-            <ProductCatalogField key={field.id ?? field.fieldKey} label={field.label} required={field.required} error={error}>
+            <ProductCatalogField
+              key={field.id ?? field.fieldKey}
+              label={field.label}
+              required={state.required}
+              error={error}
+            >
               <input
                 type={inputType}
                 step={field.fieldType === 'PRICE' || field.fieldType === 'NUMBER' ? 'any' : undefined}

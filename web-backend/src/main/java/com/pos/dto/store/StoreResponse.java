@@ -8,6 +8,7 @@ public record StoreResponse(
     String phone,
     Integer companyId,
     String companyName,
+    Integer businessTypeId,
     String businessType,
     boolean active
 ) {}

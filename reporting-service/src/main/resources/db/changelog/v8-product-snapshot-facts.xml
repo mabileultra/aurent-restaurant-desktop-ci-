@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v8-product-snapshot-facts" author="reporting">
+        <createTable tableName="product_snapshot_facts">
+            <column name="product_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sku" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="barcode" type="VARCHAR(64)"/>
+            <column name="category_id" type="INT"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="cost_price" type="DECIMAL(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="selling_price" type="DECIMAL(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="low_stock_alert" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="ingested_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_product_snapshot_facts_company_active" tableName="product_snapshot_facts">
+            <column name="company_id"/>
+            <column name="is_active"/>
+        </createIndex>
+        <createIndex indexName="idx_product_snapshot_facts_company_category" tableName="product_snapshot_facts">
+            <column name="company_id"/>
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

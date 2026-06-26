@@ -3,5 +3,8 @@ package com.pos.dto.category;
 public record CategoryResponse(
     Integer id,
     String name,
-    String description
+    String description,
+    Integer businessTypeId,
+    String businessTypeCode,
+    String businessTypeName
 ) {}

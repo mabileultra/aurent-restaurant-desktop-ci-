@@ -17,11 +17,17 @@
   box-sizing: border-box;
 }
 
-.cashier-pin-login__admin-chip {
+.cashier-pin-login__top-actions {
   position: fixed;
   top: max(1rem, env(safe-area-inset-top, 0px));
   right: max(1rem, env(safe-area-inset-right, 0px));
   z-index: 2147483601;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.cashier-pin-login__admin-chip {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -37,6 +43,7 @@
   text-decoration: none;
   box-shadow: 0 2px 10px rgb(15 23 42 / 0.08);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .cashier-pin-login__admin-chip:hover {
@@ -101,6 +108,83 @@
   margin: 0.375rem 0 0;
   font-size: 1rem;
   color: #64748b;
+}
+
+.cashier-pin-login__company-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.cashier-pin-login__company-chip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0;
+  padding: 0;
+  border-radius: 9999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgb(15 23 42 / 0.08);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease, color 0.15s ease;
+}
+
+.cashier-pin-login__company-chip:hover {
+  border-color: #94a3b8;
+  color: #334155;
+}
+
+.cashier-pin-login__company-chip.is-open,
+.cashier-pin-login__company-chip.is-set {
+  border-color: #10b981;
+  color: #10b981;
+  box-shadow: 0 4px 14px rgb(16 185 129 / 0.18);
+}
+
+.cashier-pin-login__company-chip:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.cashier-pin-login__company-popover {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: min(14rem, calc(100vw - 2rem));
+  padding: 0.875rem;
+  border-radius: 0.875rem;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  box-shadow: 0 12px 32px rgb(15 23 42 / 0.12);
+}
+
+.cashier-pin-login__company-label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.cashier-pin-login__company-input {
+  width: 100%;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.625rem;
+  background: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-align: center;
+  color: #0f172a;
+}
+
+.cashier-pin-login__company-input:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgb(16 185 129 / 0.15);
 }
 
 .cashier-pin-login__card {

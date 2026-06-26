@@ -6,6 +6,7 @@ export default function OrdersSearchPanel({
   onSearchChange,
   onSearchApply,
   onOpenFilters,
+  showFilters = true,
 }) {
   return (
     <>
@@ -27,14 +28,16 @@ export default function OrdersSearchPanel({
             />
             <p className="mt-1.5 text-xs text-slate-500 dark:text-slate-400">{t('orders.searchHint')}</p>
           </div>
-          <button
-            type="button"
-            onClick={onOpenFilters}
-            className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-900 dark:bg-emerald-700 dark:hover:bg-emerald-600"
-          >
-            <Filter size={18} />
-            {t('orders.filters')}
-          </button>
+          {showFilters ? (
+            <button
+              type="button"
+              onClick={onOpenFilters}
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-emerald-800 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-900 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+            >
+              <Filter size={18} />
+              {t('orders.filters')}
+            </button>
+          ) : null}
         </div>
       </div>
 

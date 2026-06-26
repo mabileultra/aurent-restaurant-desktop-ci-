@@ -1,0 +1,118 @@
+.restaurant-kitchen-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.kitchen-ticket {
+  border: 1px solid var(--rest-border);
+  border-radius: var(--rest-radius-lg);
+  background: var(--rest-surface);
+  box-shadow: var(--rest-shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.kitchen-ticket--pending {
+  border-left: 4px solid var(--rest-amber);
+}
+
+.kitchen-ticket--progress {
+  border-left: 4px solid var(--rest-blue);
+}
+
+.kitchen-ticket--ready {
+  border-left: 4px solid var(--rest-emerald);
+}
+
+.kitchen-ticket__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--rest-surface-muted);
+  border-bottom: 1px solid var(--rest-border);
+  font-size: 0.8125rem;
+}
+
+.kitchen-ticket__table {
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--rest-text);
+}
+
+.kitchen-ticket__status {
+  border-radius: 9999px;
+  padding: 0.15rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--rest-slate-soft);
+  color: var(--rest-text-muted);
+}
+
+.kitchen-ticket--pending .kitchen-ticket__status {
+  background: var(--rest-amber-soft);
+  color: #b45309;
+}
+
+.kitchen-ticket--progress .kitchen-ticket__status {
+  background: var(--rest-blue-soft);
+  color: #1d4ed8;
+}
+
+.kitchen-ticket--ready .kitchen-ticket__status {
+  background: var(--rest-emerald-soft);
+  color: #047857;
+}
+
+.kitchen-ticket__body {
+  padding: 1rem;
+  flex: 1;
+}
+
+.kitchen-ticket__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--rest-text);
+}
+
+.kitchen-ticket__qty {
+  margin: 0.35rem 0 0;
+  font-weight: 600;
+  color: var(--rest-text-muted);
+}
+
+.kitchen-ticket__note,
+.kitchen-ticket__department {
+  margin: 0.35rem 0 0;
+  font-size: 0.85rem;
+  color: var(--rest-text-muted);
+}
+
+.kitchen-ticket__foot {
+  padding: 0.85rem 1rem;
+  border-top: 1px solid var(--rest-border);
+}
+
+.kitchen-ticket__btn {
+  width: 100%;
+  border: none;
+  border-radius: var(--rest-radius);
+  background: var(--rest-emerald);
+  color: #fff;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.kitchen-ticket__btn:hover:not(:disabled) {
+  background: #059669;
+}
+
+.kitchen-ticket__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

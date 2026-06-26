@@ -14,6 +14,12 @@ export default function PosOrderPanel({
   total,
   className = '',
   showTotalsFoot = false,
+  title,
+  subtitle,
+  taxTotal,
+  priceEditable = true,
+  hideHeader = false,
+  resolveDepartmentLabel,
 }) {
   const { t } = useTranslation();
   const p = usePosOrderPanel({
@@ -22,13 +28,19 @@ export default function PosOrderPanel({
     onUpdateQuantity,
     onUpdatePrice,
     total,
+    taxTotal,
   });
+
+  const panelTitle = title ?? t('pos.currentCheck');
 
   return (
     <section className={`pos-order-panel pos-order-panel--register${className ? ` ${className}` : ''}`}>
-      <header className="pos-order-panel__head">
-        <h2 className="pos-order-panel__title">{t('pos.currentCheck')}</h2>
-      </header>
+      {!hideHeader ? (
+        <header className="pos-order-panel__head">
+          <h2 className="pos-order-panel__title">{panelTitle}</h2>
+          {subtitle ? <p className="pos-order-panel__subtitle">{subtitle}</p> : null}
+        </header>
+      ) : null}
 
       <div className="pos-order-panel__list">
         <div className="pos-cart-table">
@@ -74,6 +86,8 @@ export default function PosOrderPanel({
                   setQtyDraft={p.setQtyDraft}
                   startQtyEdit={p.startQtyEdit}
                   commitQty={p.commitQty}
+                  priceEditable={priceEditable}
+                  resolveDepartmentLabel={resolveDepartmentLabel}
                   t={t}
                 />
               ))

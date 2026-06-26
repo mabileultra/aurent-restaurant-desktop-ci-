@@ -3,6 +3,6 @@ import { useAuthStore } from '../../store/authStore';
 
 export default function CheckoutRedirect() {
   const user = useAuthStore((s) => s.user);
-  if (user?.role === 'CASHIER') return <Navigate to="/cashier/pos" replace />;
+  if (user?.role === 'CASHIER' || user?.role === 'WAITER') return <Navigate to="/cashier" replace />;
   return <Navigate to="/dashboard" replace />;
 }

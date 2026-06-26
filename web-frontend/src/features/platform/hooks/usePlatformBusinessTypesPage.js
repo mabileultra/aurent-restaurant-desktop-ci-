@@ -1,8 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { platformBusinessTypeApi } from '../../../api';
+import { platformBusinessTypeApi, platformReferenceBookApi } from '../../../api';
 import {
   EMPTY_BUSINESS_FIELD_FORM,
   EMPTY_BUSINESS_TYPE_FORM,
@@ -17,10 +17,27 @@ export function usePlatformBusinessTypesPage() {
   const [typeModal, setTypeModal] = useState(null);
   const [fieldModal, setFieldModal] = useState(null);
   const [fieldForm, setFieldForm] = useState(EMPTY_BUSINESS_FIELD_FORM);
+  const [unitCodes, setUnitCodes] = useState([]);
+  const [defaultUnitCode, setDefaultUnitCode] = useState('PCS');
+  const [rules, setRules] = useState([]);
+  const [priceRules, setPriceRules] = useState([]);
+  const [displayRules, setDisplayRules] = useState([]);
 
   const { data: types = [], isLoading } = useQuery({
     queryKey: ['platform-business-types'],
     queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+  });
+
+  const { data: catalogUnits = [] } = useQuery({
+    queryKey: ['platform-catalog-units'],
+    queryFn: () => platformBusinessTypeApi.listCatalogUnits().then((r) => r.data),
+    staleTime: 300_000,
+  });
+
+  const { data: referenceBooks = [] } = useQuery({
+    queryKey: ['platform-reference-books'],
+    queryFn: () => platformReferenceBookApi.list().then((r) => r.data),
+    staleTime: 300_000,
   });
 
   const activeTypeId = selectedId ?? types[0]?.id ?? null;
@@ -30,6 +47,16 @@ export function usePlatformBusinessTypesPage() {
     queryFn: () => platformBusinessTypeApi.get(activeTypeId).then((r) => r.data),
     enabled: !!activeTypeId,
   });
+
+  useEffect(() => {
+    if (!detail) return;
+    const codes = detail.units?.map((u) => u.unitCode) ?? [];
+    setUnitCodes(codes);
+    setDefaultUnitCode(detail.units?.find((u) => u.defaultUnit)?.unitCode ?? codes[0] ?? 'PCS');
+    setRules(detail.rules ?? []);
+    setPriceRules(detail.priceRules ?? []);
+    setDisplayRules(detail.displayRules ?? []);
+  }, [detail]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['platform-business-types'] });
@@ -79,6 +106,64 @@ export function usePlatformBusinessTypesPage() {
     onSuccess: () => {
       invalidate();
       toast.success(t('platform.businessTypes.fieldDeleted'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
+  const saveUnitsMutation = useMutation({
+    mutationFn: () => platformBusinessTypeApi.setUnits(activeTypeId, {
+      unitCodes,
+      defaultUnitCode,
+    }),
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.businessTypes.unitsSaved'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
+  const saveRulesMutation = useMutation({
+    mutationFn: () => platformBusinessTypeApi.setRules(activeTypeId, {
+      rules: rules.map((rule) => ({
+        ruleKey: rule.ruleKey,
+        ruleValue: rule.enabled ? 'true' : 'false',
+      })),
+    }),
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.businessTypes.rulesSaved'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
+  const savePriceRulesMutation = useMutation({
+    mutationFn: () => platformBusinessTypeApi.setPriceRules(activeTypeId, {
+      rules: priceRules.map((rule) => ({
+        ruleKey: rule.ruleKey,
+        ruleValue: rule.numeric ? String(rule.ruleValue) : (rule.enabled ? 'true' : 'false'),
+      })),
+    }),
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.businessTypes.priceRulesSaved'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
+  const saveDisplayRulesMutation = useMutation({
+    mutationFn: () => platformBusinessTypeApi.setDisplayRules(activeTypeId, {
+      rules: displayRules.map((rule, index) => ({
+        targetFieldKey: rule.targetFieldKey,
+        triggerFieldKey: rule.triggerFieldKey,
+        operator: rule.operator,
+        triggerValue: rule.triggerValue || null,
+        effect: rule.effect,
+        sortOrder: rule.sortOrder ?? (index + 1) * 10,
+      })),
+    }),
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.businessTypes.displayRulesSaved'));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
@@ -146,10 +231,14 @@ export function usePlatformBusinessTypesPage() {
       fieldType: fieldForm.fieldType,
       required: fieldForm.required,
       enabled: fieldForm.enabled,
+      filterable: fieldForm.filterable,
       sortOrder: Number(fieldForm.sortOrder) || 100,
       placeholder: fieldForm.placeholder.trim() || null,
       hint: fieldForm.hint.trim() || null,
-      options: fieldForm.fieldType === 'LIST' ? parseOptionsText(fieldForm.optionsText) : [],
+      referenceBookId: fieldForm.referenceBookId ? Number(fieldForm.referenceBookId) : null,
+      options: fieldForm.fieldType === 'LIST' && !fieldForm.referenceBookId
+        ? parseOptionsText(fieldForm.optionsText)
+        : [],
     };
     if (fieldModal?.mode === 'edit') {
       saveFieldMutation.mutate({ typeId: activeTypeId, fieldId: fieldModal.field.id, body });
@@ -167,6 +256,62 @@ export function usePlatformBusinessTypesPage() {
     }
   };
 
+  const toggleUnit = (code) => {
+    setUnitCodes((prev) => {
+      const exists = prev.includes(code);
+      const next = exists ? prev.filter((c) => c !== code) : [...prev, code];
+      if (!next.includes(defaultUnitCode)) {
+        setDefaultUnitCode(next[0] ?? 'PCS');
+      }
+      if (!exists && next.length === 1) {
+        setDefaultUnitCode(code);
+      }
+      return next;
+    });
+  };
+
+  const setDefaultUnit = (code) => {
+    setDefaultUnitCode(code);
+  };
+
+  const toggleRule = (ruleKey) => {
+    setRules((prev) => prev.map((rule) => (
+      rule.ruleKey === ruleKey ? { ...rule, enabled: !rule.enabled } : rule
+    )));
+  };
+
+  const changePriceRule = (ruleKey, value) => {
+    setPriceRules((prev) => prev.map((rule) => {
+      if (rule.ruleKey !== ruleKey) return rule;
+      if (rule.numeric) return { ...rule, ruleValue: value, enabled: false };
+      return { ...rule, enabled: value === 'true', ruleValue: value };
+    }));
+  };
+
+  const addDisplayRule = () => {
+    const first = fields[0]?.fieldKey ?? '';
+    const second = fields[1]?.fieldKey ?? first;
+    setDisplayRules((prev) => [
+      ...prev,
+      {
+        targetFieldKey: first,
+        triggerFieldKey: second,
+        operator: 'EQUALS',
+        triggerValue: '',
+        effect: 'SHOW',
+        sortOrder: (prev.length + 1) * 10,
+      },
+    ]);
+  };
+
+  const changeDisplayRule = (index, patch) => {
+    setDisplayRules((prev) => prev.map((rule, i) => (i === index ? { ...rule, ...patch } : rule)));
+  };
+
+  const removeDisplayRule = (index) => {
+    setDisplayRules((prev) => prev.filter((_, i) => i !== index));
+  };
+
   return {
     t,
     types,
@@ -176,6 +321,13 @@ export function usePlatformBusinessTypesPage() {
     detail,
     detailLoading,
     fields,
+    catalogUnits,
+    referenceBooks,
+    unitCodes,
+    defaultUnitCode,
+    rules,
+    priceRules,
+    displayRules,
     typeModal,
     openCreateType,
     openEditType,
@@ -193,5 +345,16 @@ export function usePlatformBusinessTypesPage() {
     submitField,
     tryDeleteField,
     saveFieldMutation,
+    toggleUnit,
+    setDefaultUnit,
+    toggleRule,
+    changePriceRule,
+    addDisplayRule,
+    changeDisplayRule,
+    removeDisplayRule,
+    saveUnitsMutation,
+    saveRulesMutation,
+    savePriceRulesMutation,
+    saveDisplayRulesMutation,
   };
 }

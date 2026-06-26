@@ -36,6 +36,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ predicate: (q) => {
+        const key = q.queryKey;
+        return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
+      }});
       toast.success(editing ? t('stores.updated') : t('stores.created'));
       setModalOpen(false);
       setEditing(null);
@@ -48,6 +52,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ predicate: (q) => {
+        const key = q.queryKey;
+        return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
+      }});
       toast.success(t('stores.updated'));
       setMenuId(null);
     },
@@ -59,6 +67,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['stores-manage'] });
       qc.invalidateQueries({ queryKey: ['stores'] });
+      qc.invalidateQueries({ predicate: (q) => {
+        const key = q.queryKey;
+        return Array.isArray(key) && (key.includes('stores-user-form') || key.includes('platform-user-form'));
+      }});
       qc.invalidateQueries({ queryKey: ['companies'] });
       qc.invalidateQueries({ queryKey: ['companies-all'] });
       toast.success(t('stores.deleted'));

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="identity-001-extensions" author="pos">
+        <sql>CREATE EXTENSION IF NOT EXISTS "uuid-ossp";</sql>
+    </changeSet>
+
+    <changeSet id="identity-002-roles" author="pos">
+        <createTable tableName="roles">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="description" type="TEXT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="identity-003-users" author="pos">
+        <createTable tableName="users">
+            <column name="id" type="UUID" defaultValueComputed="uuid_generate_v4()">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pin_digest" type="VARCHAR(64)"/>
+            <column name="full_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="first_name" type="VARCHAR(100)"/>
+            <column name="last_name" type="VARCHAR(100)"/>
+            <column name="patronymic" type="VARCHAR(100)"/>
+            <column name="role_id" type="INT">
+                <constraints nullable="false" foreignKeyName="fk_users_role" references="roles(id)"/>
+            </column>
+            <column name="company_id" type="INT"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="module_access_custom" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"/>
+        </createTable>
+        <createIndex indexName="idx_users_company" tableName="users">
+            <column name="company_id"/>
+        </createIndex>
+        <sql>
+            CREATE UNIQUE INDEX uq_users_tenant_username ON users (LOWER(username))
+              WHERE company_id IS NOT NULL;
+            CREATE UNIQUE INDEX uq_users_company_email ON users (company_id, LOWER(email))
+              WHERE company_id IS NOT NULL;
+            CREATE UNIQUE INDEX uq_users_platform_username ON users (LOWER(username))
+              WHERE company_id IS NULL;
+            CREATE UNIQUE INDEX uq_users_platform_email ON users (LOWER(email))
+              WHERE company_id IS NULL;
+            CREATE INDEX ix_users_company_pin_digest
+              ON users (company_id, pin_digest)
+              WHERE company_id IS NOT NULL AND pin_digest IS NOT NULL;
+            CREATE UNIQUE INDEX uq_users_company_pin_digest
+              ON users (company_id, pin_digest)
+              WHERE company_id IS NOT NULL AND pin_digest IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="identity-004-user-stores" author="pos">
+        <createTable tableName="user_stores">
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_user_stores_user" references="users(id)" deleteCascade="true"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_stores" columnNames="user_id, store_id" constraintName="pk_user_stores"/>
+        <createIndex indexName="idx_user_stores_user" tableName="user_stores">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="identity-005-user-module-access" author="pos">
+        <createTable tableName="user_module_access">
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_user_module_access_user" references="users(id)" deleteCascade="true"/>
+            </column>
+            <column name="module_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allowed" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="user_module_access" columnNames="user_id, module_key" constraintName="pk_user_module_access"/>
+        <createIndex indexName="idx_user_module_access_user" tableName="user_module_access">
+            <column name="user_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="identity-006-seed-roles" author="pos">
+        <insert tableName="roles">
+            <column name="name" value="SUPER_ADMIN"/>
+            <column name="description" value="Platform operator"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ADMIN"/>
+            <column name="description" value="Full system access"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="MANAGER"/>
+            <column name="description" value="Reports and inventory management"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="CASHIER"/>
+            <column name="description" value="Sales and basic operations"/>
+        </insert>
+        <insert tableName="roles">
+            <column name="name" value="ACCOUNTANT"/>
+            <column name="description" value="Finance-only access"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

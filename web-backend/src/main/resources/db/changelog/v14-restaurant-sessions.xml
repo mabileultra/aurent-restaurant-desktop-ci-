@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v14-table-sessions" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="table_sessions"/>
+            </not>
+        </preConditions>
+        <createTable tableName="table_sessions">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_table_sessions"/>
+            </column>
+            <column name="table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="INT"/>
+            <column name="opened_by_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="waiter_user_id" type="UUID"/>
+            <column name="guest_count" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="OPEN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sale_id" type="UUID"/>
+            <column name="notes" type="VARCHAR(500)"/>
+            <column name="opened_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="closed_at" type="TIMESTAMPTZ"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="table_id"
+            referencedTableName="dining_tables"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_table"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="store_id"
+            referencedTableName="stores"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_store"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="company_id"
+            referencedTableName="companies"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_company"
+            onDelete="SET NULL"/>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="opened_by_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_opened_by"
+            onDelete="RESTRICT"/>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="waiter_user_id"
+            referencedTableName="users"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_waiter"
+            onDelete="SET NULL"/>
+        <addForeignKeyConstraint
+            baseTableName="table_sessions"
+            baseColumnNames="sale_id"
+            referencedTableName="sales"
+            referencedColumnNames="id"
+            constraintName="fk_table_sessions_sale"
+            onDelete="SET NULL"/>
+        <createIndex tableName="table_sessions" indexName="idx_table_sessions_store_status">
+            <column name="store_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="table_sessions" indexName="idx_table_sessions_table_status">
+            <column name="table_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v14-table-session-lines" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="table_session_lines"/>
+            </not>
+        </preConditions>
+        <createTable tableName="table_session_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_table_session_lines"/>
+            </column>
+            <column name="session_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_discount_percent" type="NUMERIC(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="VARCHAR(300)"/>
+            <column name="kitchen_status" type="VARCHAR(20)"/>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="table_session_lines"
+            baseColumnNames="session_id"
+            referencedTableName="table_sessions"
+            referencedColumnNames="id"
+            constraintName="fk_table_session_lines_session"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="table_session_lines"
+            baseColumnNames="product_id"
+            referencedTableName="products"
+            referencedColumnNames="id"
+            constraintName="fk_table_session_lines_product"
+            onDelete="RESTRICT"/>
+        <createIndex tableName="table_session_lines" indexName="idx_table_session_lines_session">
+            <column name="session_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v14-sales-table-session" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="sales" columnName="table_session_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="sales">
+            <column name="table_session_id" type="UUID"/>
+            <column name="service_mode" type="VARCHAR(20)" defaultValue="RETAIL">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="sales"
+            baseColumnNames="table_session_id"
+            referencedTableName="table_sessions"
+            referencedColumnNames="id"
+            constraintName="fk_sales_table_session"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+</databaseChangeLog>

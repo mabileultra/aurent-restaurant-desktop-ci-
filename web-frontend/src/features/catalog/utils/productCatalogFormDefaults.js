@@ -1,5 +1,3 @@
-import { businessAttributeFieldName } from '../components/products/catalog/ProductCatalogDynamicFieldsSection';
-
 export const defaultProductCatalogFormValues = {
   taxRate: 0,
   defaultDiscountPercent: 0,
@@ -16,12 +14,6 @@ export const defaultProductCatalogFormValues = {
   unitCode: 'PCS',
   quantityScale: 0,
   allowFraction: false,
-  clothingSizeRange: '',
-  clothingColor: '',
-  clothingGender: '',
-  pharmacyExpiryRequired: false,
-  pharmacyPrescriptionRequired: false,
-  pharmacyDosageForm: '',
 };
 
 export function attributeFormValue(value, fieldType) {
@@ -34,7 +26,7 @@ export function buildAttributesPayload(values, fields) {
   const attrs = {};
   for (const field of fields) {
     if (field.enabled === false) continue;
-    const raw = values[businessAttributeFieldName(field.fieldKey)];
+    const raw = values[`attr_${field.fieldKey}`];
     if (field.fieldType === 'BOOLEAN') {
       attrs[field.fieldKey] = raw ? 'true' : '';
       continue;

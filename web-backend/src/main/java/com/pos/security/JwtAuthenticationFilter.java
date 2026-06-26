@@ -2,6 +2,7 @@ package com.pos.security;
 
 import com.pos.entity.User;
 import com.pos.security.cache.AuthenticatedUserCache;
+import com.pos.service.identity.AuthenticatedUserBootstrapService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,6 +25,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AuthenticatedUserCache authenticatedUserCache;
+    private final AuthenticatedUserBootstrapService authenticatedUserBootstrapService;
     private final CurrentUserProvider currentUserProvider;
 
     @Override
@@ -61,7 +63,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         User user = authenticatedUserCache.findById(userId).orElse(null);
         if (user == null || !user.isActive()) {
-            return;
+            if (user == null && jwtService.isTokenActive(jwt)) {
+                user = authenticatedUserBootstrapService.ensureUser(userId).orElse(null);
+            }
+            if (user == null || !user.isActive()) {
+                return;
+            }
         }
 
         try {

@@ -29,8 +29,10 @@ public class CategoryController {
     @GetMapping
     @Operation(summary = "Список категорий", description = "Получение всех категорий товаров")
     @ApiResponse(responseCode = "200", description = "Список категорий")
-    public ResponseEntity<List<CategoryResponse>> list() {
-        return ResponseEntity.ok(categoryService.findAll());
+    public ResponseEntity<List<CategoryResponse>> list(
+        @RequestParam(required = false) Integer businessTypeId
+    ) {
+        return ResponseEntity.ok(categoryService.findAll(businessTypeId));
     }
 
     @PostMapping

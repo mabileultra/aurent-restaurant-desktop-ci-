@@ -25,10 +25,11 @@ import com.pos.repository.CashierShiftRepository;
 import com.pos.service.sale.support.CreditSaleCustomerSupport;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.SaleRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
 import com.pos.service.CategoryService;
 import com.pos.service.finance.FinanceAdvanceSaleIntegrationService;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.finance.FinanceCreditSaleIntegrationService;
 import com.pos.service.finance.FinanceSaleIntegrationService;
 import com.pos.service.product.ProductQueryService;
@@ -69,7 +70,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final CashierShiftRepository cashierShiftRepository;
     private final ProductRepository productRepository;
     private final CreditSaleCustomerSupport creditSaleCustomerSupport;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SalePaymentResolver paymentResolver;
     private final SaleReceiptNumberGenerator receiptNumberGenerator;
@@ -77,6 +78,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     @Transactional(readOnly = true)
@@ -86,7 +88,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
         assertStoreMatchesCashierCompany(cashier, store);
 
-        List<CategoryResponse> categories = categoryService.findAll();
+        List<CategoryResponse> categories = categoryService.findAll(null);
         List<ProductResponse> products = new ArrayList<>();
         int page = 0;
         while (true) {
@@ -96,6 +98,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
                 true,
                 "ACTIVE",
                 store.getId(),
+                null,
                 null,
                 null,
                 null,
@@ -288,7 +291,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         Sale saved = saleRepository.save(sale);
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {
             for (SaleItem saleItem : saved.getItems()) {
-                stockMovementRepository.save(StockMovement.builder()
+                stockMovementPersistence.save(StockMovement.builder()
                     .product(saleItem.getProduct())
                     .store(store)
                     .movementType(StockMovementType.SALE)
@@ -307,6 +310,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         } else {
             financeSaleIntegrationService.onSaleCompleted(saved);
         }
+        posDomainEventService.publishSaleCompletedAfterCommit(saved);
         LogUtil.info(
             CashierSyncServiceImpl.class,
             "Offline sale synced: clientSaleId={}, receipt={}",

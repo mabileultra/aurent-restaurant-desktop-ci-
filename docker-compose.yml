@@ -34,13 +34,35 @@ services:
       timeout: 5s
       retries: 10
 
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
+    container_name: masterpiece-redpanda
+    command:
+      - redpanda
+      - start
+      - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr internal://redpanda:9092,external://localhost:19092
+      - --mode dev-container
+      - --smp 1
+      - --default-log-level=warn
+    ports:
+      - "19092:19092"
+    healthcheck:
+      test: ["CMD-SHELL", "rpk cluster health 2>/dev/null | grep -q Healthy || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
   finance-service:
     build:
-      context: ./finance-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: finance-service/Dockerfile
     container_name: masterpiece-finance-service
     depends_on:
       finance-db:
+        condition: service_healthy
+      redpanda:
         condition: service_healthy
     environment:
       FINANCE_DB_URL: jdbc:postgresql://finance-db:5432/finance_db
@@ -49,25 +71,180 @@ services:
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
       FINANCE_INTERNAL_API_KEY: finance-internal-dev-key-change-in-prod
       FINANCE_SERVER_PORT: "8082"
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      FINANCE_KAFKA_CONSUMER_ENABLED: "true"
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8082:8082"
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/api/v1/swagger-ui.html >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8082/api/v1/swagger-ui/index.html >/dev/null 2>&1 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 12
       start_period: 40s
 
+  identity-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-identity-db
+    environment:
+      POSTGRES_DB: identity_db
+      POSTGRES_USER: identity_user
+      POSTGRES_PASSWORD: identity_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - identity_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U identity_user -d identity_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  identity-service:
+    build:
+      context: .
+      dockerfile: identity-service/Dockerfile
+    container_name: masterpiece-identity-service
+    depends_on:
+      identity-db:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    environment:
+      IDENTITY_DB_URL: jdbc:postgresql://identity-db:5432/identity_db
+      IDENTITY_DB_USERNAME: identity_user
+      IDENTITY_DB_PASSWORD: identity_password
+      JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      IDENTITY_INTERNAL_API_KEY: identity-internal-dev-key-change-in-prod
+      IDENTITY_SERVER_PORT: "8081"
+      POS_CORE_URL: http://backend:8080/api/v1
+      POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
+      POS_CORE_DATASOURCE_USERNAME: pos_user
+      POS_CORE_DATASOURCE_PASSWORD: pos_password
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8081/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
+  platform-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-platform-db
+    environment:
+      POSTGRES_DB: platform_db
+      POSTGRES_USER: platform_user
+      POSTGRES_PASSWORD: platform_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - platform_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U platform_user -d platform_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  platform-service:
+    build:
+      context: .
+      dockerfile: platform-service/Dockerfile
+    container_name: masterpiece-platform-service
+    depends_on:
+      platform-db:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    environment:
+      PLATFORM_DB_URL: jdbc:postgresql://platform-db:5432/platform_db
+      PLATFORM_DB_USERNAME: platform_user
+      PLATFORM_DB_PASSWORD: platform_password
+      JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      PLATFORM_INTERNAL_API_KEY: platform-internal-dev-key-change-in-prod
+      PLATFORM_SERVER_PORT: "8084"
+      POS_CORE_URL: http://backend:8080/api/v1
+      POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
+      POS_CORE_DATASOURCE_USERNAME: pos_user
+      POS_CORE_DATASOURCE_PASSWORD: pos_password
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - "8084:8084"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8084/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
+  reporting-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-reporting-db
+    environment:
+      POSTGRES_DB: reporting_db
+      POSTGRES_USER: reporting_user
+      POSTGRES_PASSWORD: reporting_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - reporting_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reporting_user -d reporting_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  reporting-service:
+    build:
+      context: .
+      dockerfile: reporting-service/Dockerfile
+    container_name: masterpiece-reporting-service
+    depends_on:
+      reporting-db:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    environment:
+      REPORTING_DB_URL: jdbc:postgresql://reporting-db:5432/reporting_db
+      REPORTING_DB_USERNAME: reporting_user
+      REPORTING_DB_PASSWORD: reporting_password
+      REPORTING_SERVER_PORT: "8085"
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      REPORTING_KAFKA_CONSUMER_ENABLED: "true"
+      JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      REPORTING_INTERNAL_API_KEY: reporting-internal-dev-key-change-in-prod
+      POS_CORE_URL: http://backend:8080/api/v1
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - "8085:8085"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8085/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
   backend:
     build:
-      context: ./web-backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: web-backend/Dockerfile
     container_name: masterpiece-pos-backend
+    expose:
+      - "8080"
     depends_on:
       postgres:
         condition: service_healthy
       finance-service:
+        condition: service_healthy
+      redpanda:
         condition: service_healthy
     environment:
       # local — Swagger включён (см. application-local.yml). Prod: docker-compose.prod.yml
@@ -85,9 +262,55 @@ services:
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
       FINANCE_SERVICE_URL: http://finance-service:8082/api/v1
       FINANCE_INTERNAL_API_KEY: finance-internal-dev-key-change-in-prod
+      IDENTITY_INTERNAL_API_KEY: identity-internal-dev-key-change-in-prod
+      IDENTITY_SERVICE_URL: http://identity-service:8081/api/v1
+      PLATFORM_INTERNAL_API_KEY: platform-internal-dev-key-change-in-prod
+      PLATFORM_SERVICE_URL: http://platform-service:8084/api/v1
+      KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
+      FINANCE_KAFKA_ENABLED: "true"
+      DOMAIN_KAFKA_ENABLED: "true"
+      REPORTING_INTERNAL_API_KEY: reporting-internal-dev-key-change-in-prod
+      REPORTING_SERVICE_URL: http://reporting-service:8085/api/v1
+      TZ: ${TZ:-Asia/Tashkent}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 60s
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: masterpiece-api-gateway
+    depends_on:
+      backend:
+        condition: service_healthy
+      finance-service:
+        condition: service_healthy
+      identity-service:
+        condition: service_healthy
+      platform-service:
+        condition: service_healthy
+      reporting-service:
+        condition: service_healthy
+    environment:
+      GATEWAY_SERVER_PORT: "8080"
+      POS_BACKEND_URL: http://backend:8080
+      FINANCE_SERVICE_URL: http://finance-service:8082
+      IDENTITY_SERVICE_URL: http://identity-service:8081
+      PLATFORM_SERVICE_URL: http://platform-service:8084
+      REPORTING_SERVICE_URL: http://reporting-service:8085
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
   frontend:
     build:
@@ -97,7 +320,8 @@ services:
         VITE_API_URL: /api/v1
     container_name: masterpiece-pos-frontend
     depends_on:
-      - backend
+      api-gateway:
+        condition: service_healthy
     ports:
       - "5173:80"
     volumes:
@@ -106,3 +330,6 @@ services:
 volumes:
   pos_pg_data:
   finance_pg_data:
+  identity_pg_data:
+  platform_pg_data:
+  reporting_pg_data:

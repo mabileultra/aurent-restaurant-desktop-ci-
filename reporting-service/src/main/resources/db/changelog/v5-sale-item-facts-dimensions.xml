@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="reporting-006-sale-item-facts-dimensions" author="pos">
+        <addColumn tableName="sale_item_facts">
+            <column name="product_id" type="UUID"/>
+            <column name="sku" type="VARCHAR(128)"/>
+            <column name="barcode" type="VARCHAR(128)"/>
+            <column name="category_id" type="INT"/>
+            <column name="category_name" type="VARCHAR(255)"/>
+            <column name="quantity_returned" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revenue" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cost_estimate" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <createIndex indexName="idx_sale_item_facts_product" tableName="sale_item_facts">
+            <column name="product_id"/>
+        </createIndex>
+        <createIndex indexName="idx_sale_item_facts_category" tableName="sale_item_facts">
+            <column name="category_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

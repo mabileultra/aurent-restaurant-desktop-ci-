@@ -8,17 +8,16 @@ import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductBarcodeRepository;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.ProductStorePriceRepository;
-import com.pos.repository.report.StockReportRepository;
 import com.pos.repository.spec.ProductSpecifications;
 import com.pos.service.product.ProductQueryService;
 import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.support.ProductCatalogLoader;
+import com.pos.service.product.support.ProductLowStockQuerySupport;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional(readOnly = true)
@@ -43,7 +41,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductCatalogLoader catalogLoader;
     private final ProductResponseAssembler assembler;
     private final StoreStockService storeStockService;
-    private final StockReportRepository stockReportRepository;
+    private final ProductLowStockQuerySupport productLowStockQuerySupport;
     private final TenantAccessSupport tenantAccess;
 
     @Override
@@ -57,12 +55,14 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Boolean markedProduct,
         Boolean soldIndividually,
         String barcodeExact,
+        java.util.Map<String, String> attributeFilters,
         Pageable pageable
     ) {
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
-            search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact
+            search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
+            attributeFilters
         );
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
@@ -101,10 +101,8 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     public List<ProductResponse> getLowStockProducts() {
-        Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        return stockReportRepository.lowStockProducts(companyId, PageRequest.of(0, 500)).stream()
-            .map(assembler::toResponse)
-            .collect(Collectors.toList());
+        tenantAccess.requireEffectiveCompanyId();
+        return productLowStockQuerySupport.list(500);
     }
 
     private PageResponse<ProductResponse> mapPage(Page<Product> page, Integer storeId) {

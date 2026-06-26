@@ -93,7 +93,10 @@ export function useReceiptPage() {
     return () => window.clearTimeout(timer);
   }, [sale, autoPrint, silentJob, runPrint]);
 
-  const backTarget = fromCashier ? '/cashier/pos' : '/dashboard';
+  const cashierReturnPath = location.state?.cashierReturnPath;
+  const backTarget = fromCashier
+    ? (cashierReturnPath || '/cashier/pos')
+    : '/dashboard';
   const headerWidthCls =
     'w-full max-w-[min(640px,calc(var(--print-paper-w,80mm)+8rem))]';
   const dateTime = sale?.createdAt ? splitDateTime(sale.createdAt) : null;

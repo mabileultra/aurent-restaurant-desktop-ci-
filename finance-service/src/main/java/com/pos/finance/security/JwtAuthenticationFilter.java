@@ -9,8 +9,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
+
+import com.pos.shared.http.TenantHeaders;
 
 @Component
 @RequiredArgsConstructor
@@ -32,17 +39,25 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     if (jwtService.isTokenValid(token)) {
                         Integer companyId = resolveCompanyId(request, token);
                         UUID userId = jwtService.extractUserId(token);
-                        String role = request.getHeader("X-User-Roles");
+                        String role = request.getHeader(TenantHeaders.USER_ROLES);
                         if (role == null || role.isBlank()) {
                             role = jwtService.extractRole(token);
                         }
                         FinanceTenantContext.set(companyId, userId, role);
+                        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+                        var authentication = new UsernamePasswordAuthenticationToken(
+                            userId.toString(),
+                            null,
+                            authorities
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
                     }
                 }
             }
             filterChain.doFilter(request, response);
         } finally {
             FinanceTenantContext.clear();
+            SecurityContextHolder.clearContext();
         }
     }
 
@@ -51,7 +66,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (companyId != null) {
             return companyId;
         }
-        String headerValue = request.getHeader("X-Company-Id");
+        String headerValue = request.getHeader(TenantHeaders.COMPANY_ID);
         if (headerValue == null || headerValue.isBlank()) {
             return null;
         }

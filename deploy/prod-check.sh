@@ -42,6 +42,26 @@ else
   else
     ok "POSTGRES_PASSWORD задан"
   fi
+  for key in IDENTITY_DB_PASSWORD IDENTITY_INTERNAL_API_KEY \
+             PLATFORM_DB_PASSWORD PLATFORM_INTERNAL_API_KEY \
+             REPORTING_DB_PASSWORD REPORTING_INTERNAL_API_KEY; do
+    if [[ "${!key:-}" == *"CHANGE_ME"* ]] || [[ -z "${!key:-}" ]]; then
+      warn "${key} не задан"
+    else
+      ok "${key} задан"
+    fi
+  done
+  if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
+    for key in FINANCE_DB_PASSWORD FINANCE_INTERNAL_API_KEY; do
+      if [[ "${!key:-}" == *"CHANGE_ME"* ]] || [[ -z "${!key:-}" ]]; then
+        warn "${key} не задан"
+      else
+        ok "${key} задан"
+      fi
+    done
+  else
+    skip "FINANCE_SERVICE_ENABLED=false"
+  fi
   ai_enabled="${AI_ASSISTANT_ENABLED:-true}"
   if [[ "$ai_enabled" == "true" || "$ai_enabled" == "1" ]]; then
     if [[ -z "${AI_ASSISTANT_API_KEY:-}" ]]; then

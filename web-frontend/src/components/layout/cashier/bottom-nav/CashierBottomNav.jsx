@@ -7,6 +7,8 @@ import { useCashierLock } from '../../../../contexts/CashierLockContext';
 import { bottomNavLinkClass } from './bottomNavClass';
 import CashierBottomNavProducts from './CashierBottomNavProducts';
 import CashierBottomNavRegister from './CashierBottomNavRegister';
+import CashierBottomNavTables from './CashierBottomNavTables';
+import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 
 function navClass(isActive) {
   return bottomNavLinkClass(isActive);
@@ -15,6 +17,7 @@ function navClass(isActive) {
 export default function CashierBottomNav({ className = '' }) {
   const { t } = useTranslation();
   const { storeId } = useCashierStore();
+  const { isRestaurant } = useCashierStoreProfile();
   const { openShift } = useCashierShiftModal();
   const { lock } = useCashierLock();
 
@@ -66,7 +69,7 @@ export default function CashierBottomNav({ className = '' }) {
         <span>{t('pos.navMySales')}</span>
       </NavLink>
       <CashierBottomNavProducts t={t} />
-      <CashierBottomNavRegister t={t} />
+      {isRestaurant ? <CashierBottomNavTables t={t} /> : <CashierBottomNavRegister t={t} />}
     </nav>
   );
 }

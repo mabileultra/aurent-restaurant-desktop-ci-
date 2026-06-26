@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v19-kitchen-department-none" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM reference_book_entries e
+                JOIN reference_books rb ON rb.id = e.reference_book_id
+                WHERE rb.code = 'kitchen_departments' AND upper(e.value) = 'NONE'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO reference_book_entries (reference_book_id, value, label, sort_order)
+            SELECT rb.id, 'NONE', 'Без кухни', 5
+            FROM reference_books rb
+            WHERE rb.code = 'kitchen_departments';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

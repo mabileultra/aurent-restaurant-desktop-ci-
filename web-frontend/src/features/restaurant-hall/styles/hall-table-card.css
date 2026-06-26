@@ -1,0 +1,90 @@
+.hall-table-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 168px;
+  padding: 1.25rem 1rem 1rem;
+  border-radius: var(--rest-radius-lg);
+  border: 1px solid var(--rest-border);
+  background: var(--rest-surface);
+  box-shadow: var(--rest-shadow);
+  text-align: center;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.hall-table-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgb(15 23 42 / 0.1);
+}
+
+.hall-table-card__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  color: var(--rest-emerald);
+  background: var(--rest-emerald-soft);
+}
+
+.hall-table-card--occupied .hall-table-card__icon {
+  color: var(--rest-blue);
+  background: var(--rest-blue-soft);
+}
+
+.hall-table-card--reserved .hall-table-card__icon {
+  color: var(--rest-violet);
+  background: var(--rest-violet-soft);
+}
+
+.hall-table-card__code {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--rest-text);
+}
+
+.hall-table-card__seats {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8125rem;
+  color: var(--rest-text-muted);
+}
+
+.hall-table-card__badge {
+  margin-top: auto;
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.hall-table-card__badge--free {
+  background: var(--rest-amber-soft);
+  color: #b45309;
+}
+
+.hall-table-card__badge--occupied {
+  background: var(--rest-emerald-soft);
+  color: #047857;
+}
+
+.hall-table-card__badge--reserved {
+  background: var(--rest-violet-soft);
+  color: #6d28d9;
+}
+
+.dark .hall-table-card__badge--free {
+  color: #fcd34d;
+}
+
+.dark .hall-table-card__badge--occupied {
+  color: #6ee7b7;
+}
+
+.dark .hall-table-card__badge--reserved {
+  color: #c4b5fd;
+}

@@ -39,15 +39,5 @@ export function createProductCatalogFormSchema(t) {
       .string()
       .optional()
       .refine((v) => !v || /^\d{0,14}$/.test(v), t('productCatalog.pinflDigits')),
-    constructionStandardLength: z.coerce.number().min(0).optional(),
-    constructionWidth: z.coerce.number().min(0).optional(),
-    constructionThickness: z.coerce.number().min(0).optional(),
-    constructionAllowCutting: z.boolean().optional(),
-    clothingSizeRange: z.string().optional(),
-    clothingColor: z.string().optional(),
-    clothingGender: z.string().optional(),
-    pharmacyExpiryRequired: z.boolean().optional(),
-    pharmacyPrescriptionRequired: z.boolean().optional(),
-    pharmacyDosageForm: z.string().optional(),
-  });
+  }).passthrough();
 }

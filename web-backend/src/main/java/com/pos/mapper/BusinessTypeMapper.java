@@ -3,13 +3,17 @@ package com.pos.mapper;
 import com.pos.dto.business.*;
 import com.pos.entity.BusinessTypeDefinition;
 import com.pos.entity.BusinessTypeField;
-import com.pos.entity.FieldOption;
+import com.pos.service.businessconfig.support.BusinessTypeFieldOptionsResolver;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class BusinessTypeMapper {
+
+    private final BusinessTypeFieldOptionsResolver fieldOptionsResolver;
 
     public BusinessTypeResponse toResponse(BusinessTypeDefinition entity) {
         int fieldsCount = entity.getFields() == null ? 0 : entity.getFields().size();
@@ -24,7 +28,13 @@ public class BusinessTypeMapper {
         );
     }
 
-    public BusinessTypeDetailResponse toDetailResponse(BusinessTypeDefinition entity) {
+    public BusinessTypeDetailResponse toDetailResponse(
+        BusinessTypeDefinition entity,
+        List<BusinessTypeUnitAssignmentResponse> units,
+        List<BusinessTypeRuleResponse> rules,
+        List<BusinessTypePriceRuleResponse> priceRules,
+        List<FieldDisplayRuleResponse> displayRules
+    ) {
         return new BusinessTypeDetailResponse(
             entity.getId(),
             entity.getCode(),
@@ -32,7 +42,11 @@ public class BusinessTypeMapper {
             entity.getDescription(),
             entity.isActive(),
             entity.getSortOrder(),
-            toFieldResponses(entity.getFields())
+            toFieldResponses(entity.getFields()),
+            units,
+            rules,
+            priceRules,
+            displayRules
         );
     }
 
@@ -44,7 +58,7 @@ public class BusinessTypeMapper {
                 .sorted(java.util.Comparator.comparingInt(BusinessTypeField::getSortOrder).thenComparingInt(BusinessTypeField::getId))
                 .map(this::toFieldResponse)
                 .toList();
-        return new BusinessConfigResponse(entity.getCode(), entity.getName(), fields);
+        return new BusinessConfigResponse(entity.getCode(), entity.getName(), fields, List.of(), List.of(), List.of(), List.of(), List.of());
     }
 
     public BusinessTypeFieldResponse toFieldResponse(BusinessTypeField field) {
@@ -55,10 +69,13 @@ public class BusinessTypeMapper {
             field.getFieldType(),
             field.isRequired(),
             field.isEnabled(),
+            field.isFilterable(),
             field.getSortOrder(),
             field.getPlaceholder(),
             field.getHint(),
-            toOptionResponses(field.getOptions())
+            field.getReferenceBook() != null ? field.getReferenceBook().getId() : null,
+            field.getReferenceBook() != null ? field.getReferenceBook().getCode() : null,
+            fieldOptionsResolver.resolve(field)
         );
     }
 
@@ -69,16 +86,6 @@ public class BusinessTypeMapper {
         return fields.stream()
             .sorted(java.util.Comparator.comparingInt(BusinessTypeField::getSortOrder).thenComparingInt(BusinessTypeField::getId))
             .map(this::toFieldResponse)
-            .toList();
-    }
-
-    private List<BusinessFieldOptionResponse> toOptionResponses(java.util.Collection<FieldOption> options) {
-        if (options == null || options.isEmpty()) {
-            return List.of();
-        }
-        return options.stream()
-            .sorted(java.util.Comparator.comparingInt(FieldOption::getSortOrder).thenComparingInt(FieldOption::getId))
-            .map(o -> new BusinessFieldOptionResponse(o.getId(), o.getValue(), o.getLabel(), o.getSortOrder()))
             .toList();
     }
 }

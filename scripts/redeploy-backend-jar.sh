@@ -10,7 +10,7 @@ MAVEN_IMAGE="${MAVEN_IMAGE:-maven:3.9-eclipse-temurin-17}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
 
 echo "==> DB migrations (local)..."
-COMPOSE_FILE="$COMPOSE_FILE" ENV_FILE="${ENV_FILE:-$ROOT/.env}" bash "$ROOT/deploy/migrate-db.sh"
+COMPOSE_FILE="$COMPOSE_FILE" ENV_FILE="${ENV_FILE:-$ROOT/.env}" bash "$ROOT/deploy/optional/migrate-db.sh"
 
 echo "==> Maven build in Docker..."
 docker run --rm \

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v15-kitchen-tickets" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="kitchen_tickets"/>
+            </not>
+        </preConditions>
+        <createTable tableName="kitchen_tickets">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_kitchen_tickets"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="session_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="session_line_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="table_code" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(300)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="VARCHAR(300)"/>
+            <column name="kitchen_department" type="VARCHAR(100)"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="store_id"
+            referencedTableName="stores"
+            referencedColumnNames="id"
+            constraintName="fk_kitchen_tickets_store"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="session_id"
+            referencedTableName="table_sessions"
+            referencedColumnNames="id"
+            constraintName="fk_kitchen_tickets_session"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="session_line_id"
+            referencedTableName="table_session_lines"
+            referencedColumnNames="id"
+            constraintName="fk_kitchen_tickets_session_line"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="product_id"
+            referencedTableName="products"
+            referencedColumnNames="id"
+            constraintName="fk_kitchen_tickets_product"
+            onDelete="RESTRICT"/>
+        <addUniqueConstraint
+            tableName="kitchen_tickets"
+            columnNames="session_line_id"
+            constraintName="uq_kitchen_tickets_session_line"/>
+        <createIndex tableName="kitchen_tickets" indexName="idx_kitchen_tickets_store_status">
+            <column name="store_id"/>
+            <column name="status"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex tableName="kitchen_tickets" indexName="idx_kitchen_tickets_department">
+            <column name="store_id"/>
+            <column name="kitchen_department"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

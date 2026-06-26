@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CategoryService {
 
-    List<CategoryResponse> findAll();
+    List<CategoryResponse> findAll(Integer businessTypeId);
 
     CategoryResponse create(CreateCategoryRequest req);
 

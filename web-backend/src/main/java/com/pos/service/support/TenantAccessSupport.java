@@ -41,10 +41,11 @@ public class TenantAccessSupport {
             }
             return requestedCompanyId;
         }
-        if (actor.getCompany() == null) {
+        Integer companyId = companyIdFromUserOrJwt(actor);
+        if (companyId == null) {
             throw new BadRequestException("Your account is not linked to a company");
         }
-        return actor.getCompany().getId();
+        return companyId;
     }
 
     public Company requireCompany(Integer companyId) {
@@ -57,9 +58,17 @@ public class TenantAccessSupport {
         if (currentUserProvider.isSuperAdmin(actor)) {
             return;
         }
-        if (actor.getCompany() == null || !actor.getCompany().getId().equals(companyId)) {
-            throw new BadRequestException("Access denied to this company");
+        if (actor.getCompany() != null) {
+            if (!actor.getCompany().getId().equals(companyId)) {
+                throw new BadRequestException("Access denied to this company");
+            }
+            return;
         }
+        Integer jwtCompanyId = TenantContext.companyId().orElse(null);
+        if (jwtCompanyId != null && jwtCompanyId.equals(companyId)) {
+            return;
+        }
+        throw new BadRequestException("Access denied to this company");
     }
 
     public void assertCanAccessStore(Store store) {
@@ -86,17 +95,18 @@ public class TenantAccessSupport {
         return stores;
     }
 
-    /** companyId для текущего запроса: JWT → user.company → ошибка. */
+    /** companyId для текущего запроса: user.company → JWT → ошибка. */
     public Integer requireEffectiveCompanyId() {
         User actor = currentUser();
         if (currentUserProvider.isSuperAdmin(actor)) {
             return TenantContext.companyId()
                 .orElseThrow(() -> new BadRequestException("Company context is required"));
         }
-        if (actor.getCompany() == null) {
+        Integer companyId = companyIdFromUserOrJwt(actor);
+        if (companyId == null) {
             throw new BadRequestException("Your account is not linked to a company");
         }
-        return actor.getCompany().getId();
+        return companyId;
     }
 
     /** Для read-only операций: null только у SUPER_ADMIN без company в JWT. */
@@ -105,10 +115,14 @@ public class TenantAccessSupport {
         if (currentUserProvider.isSuperAdmin(actor)) {
             return TenantContext.companyId().orElse(null);
         }
-        if (actor.getCompany() == null) {
-            throw new BadRequestException("Your account is not linked to a company");
+        return companyIdFromUserOrJwt(actor);
+    }
+
+    private Integer companyIdFromUserOrJwt(User actor) {
+        if (actor.getCompany() != null) {
+            return actor.getCompany().getId();
         }
-        return actor.getCompany().getId();
+        return TenantContext.companyId().orElse(null);
     }
 
     public void assertProductBelongsToTenant(Product product) {

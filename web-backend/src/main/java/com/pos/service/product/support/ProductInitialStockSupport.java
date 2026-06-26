@@ -5,8 +5,8 @@ import com.pos.entity.Product;
 import com.pos.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.exception.PosExceptions;
-import com.pos.repository.StockMovementRepository;
 import com.pos.repository.StoreRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.stock.StoreStockService;
 import com.pos.util.QuantityUtil;
 import com.pos.util.QuantityValidator;
@@ -24,7 +24,7 @@ public class ProductInitialStockSupport {
 
     private final StoreRepository storeRepository;
     private final StoreStockService storeStockService;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
 
     public void applyIfPresent(
         Product product,
@@ -69,7 +69,7 @@ public class ProductInitialStockSupport {
     }
 
     private void recordMovement(Product product, BigDecimal quantity, String movementType, String notes, Store store) {
-        stockMovementRepository.save(StockMovement.builder()
+        stockMovementPersistence.save(StockMovement.builder()
             .product(product)
             .store(store)
             .movementType(movementType)

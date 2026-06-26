@@ -10,7 +10,7 @@ export default function UserFormModal(props) {
 
   if (p.open && p.isEdit && !p.user?.id) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+      <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
         <div className="rounded-xl bg-white p-6 text-sm text-slate-600 dark:bg-slate-900 dark:text-slate-300">
           {p.t('common.loading')}
         </div>
@@ -26,7 +26,7 @@ export default function UserFormModal(props) {
         onClose={p.dismissCredentials}
       />
       {p.open ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-4">
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border bg-white dark:border-slate-700 dark:bg-slate-900">
             <div className="flex items-center justify-between border-b p-5 dark:border-slate-800">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white">

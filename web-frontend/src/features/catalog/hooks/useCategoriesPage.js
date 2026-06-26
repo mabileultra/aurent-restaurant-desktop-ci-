@@ -3,11 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../../store/authStore';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { categoryApi } from '../../../api/category.api';
+import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { canManageCatalog } from '../constants';
 
 export function useCategoriesPage() {
   const { user } = useAuthStore();
   const { tenantKey, tenantReady } = useTenantScope();
+  const { types: companyBusinessTypes } = useCompanyBusinessType();
   const manage = canManageCatalog(user?.role);
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -16,10 +18,16 @@ export function useCategoriesPage() {
   const [rowMenu, setRowMenu] = useState(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(14);
+  const [businessTypeFilter, setBusinessTypeFilter] = useState('');
+
+  const filterParams = useMemo(
+    () => (businessTypeFilter ? { businessTypeId: Number(businessTypeFilter) } : undefined),
+    [businessTypeFilter]
+  );
 
   const { data: categories = [], isLoading } = useQuery({
-    queryKey: tenantKey('categories'),
-    queryFn: () => categoryApi.getAll().then((r) => r.data),
+    queryKey: tenantKey('categories', filterParams),
+    queryFn: () => categoryApi.getAll(filterParams).then((r) => r.data),
     enabled: tenantReady,
   });
 
@@ -69,9 +77,17 @@ export function useCategoriesPage() {
     setRowMenu((cur) => (cur?.category?.id === category.id ? null : { category, rect }));
   };
 
+  const handleBusinessTypeFilterChange = (value) => {
+    setBusinessTypeFilter(value);
+    setPage(0);
+  };
+
   return {
     manage,
     categories,
+    companyBusinessTypes,
+    businessTypeFilter,
+    handleBusinessTypeFilterChange,
     isLoading,
     pageRows,
     page,

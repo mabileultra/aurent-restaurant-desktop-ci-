@@ -1,13 +1,15 @@
 package com.pos.service.ai.tool;
 
+import com.pos.client.reporting.ReportingSalesReportClient;
+import com.pos.client.reporting.ReportingShiftReportClient;
+import com.pos.client.reporting.ReportingStockReportClient;
 import com.pos.dto.report.SalesReportResponse;
 import com.pos.dto.report.TopProductRow;
+import com.pos.dto.report.sales.StoreSalesRowResponse;
+import com.pos.dto.report.shift.ShiftOverviewResponse;
+import com.pos.dto.report.stock.StockCatalogStatsResponse;
 import com.pos.repository.CategoryRepository;
 import com.pos.repository.StoreRepository;
-import com.pos.repository.ZReportRepository;
-import com.pos.repository.report.StockReportRepository;
-import com.pos.repository.sale.SaleAggregateRepository;
-import com.pos.service.ReportService;
 import com.pos.service.ai.AiAnalyticsMaps;
 import com.pos.service.ai.AiAssistantParallel;
 import com.pos.service.ai.support.AnalyticsPeriodSupport;
@@ -18,6 +20,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,12 +32,11 @@ import static com.pos.service.ai.support.AnalyticsPeriodSupport.period;
 @RequiredArgsConstructor
 public class AnalyticsOverviewTools {
 
-    private final ReportService reportService;
-    private final SaleAggregateRepository saleAggregateRepository;
-    private final StockReportRepository stockReportRepository;
+    private final ReportingSalesReportClient reportingSalesReportClient;
+    private final ReportingShiftReportClient reportingShiftReportClient;
+    private final ReportingStockReportClient reportingStockReportClient;
     private final CategoryRepository categoryRepository;
     private final StoreRepository storeRepository;
-    private final ZReportRepository zReportRepository;
     private final AnalyticsSalesTools salesTools;
     private final AnalyticsStockInsightTools stockInsightTools;
     private final AiAssistantParallel parallel;
@@ -46,10 +48,10 @@ public class AnalyticsOverviewTools {
         LocalDate prevFrom = prevTo.minusDays(days - 1);
 
         CompletableFuture<SalesReportResponse> currentF = parallel.supply(
-            () -> reportService.getSalesReport(range.from(), range.to())
+            () -> reportingSalesReportClient.salesReport(range.from(), range.to())
         );
         CompletableFuture<SalesReportResponse> previousF = parallel.supply(
-            () -> reportService.getSalesReport(prevFrom, prevTo)
+            () -> reportingSalesReportClient.salesReport(prevFrom, prevTo)
         );
         CompletableFuture<Map<String, Object>> returnsF = parallel.supply(
             () -> salesTools.returnsSummaryPeriod(range.from(), range.to(), companyId)
@@ -73,7 +75,7 @@ public class AnalyticsOverviewTools {
         BigDecimal delta = curRevenue.subtract(prevRevenue);
         BigDecimal returnsAmount = returns.get("returnsAmount") instanceof BigDecimal b ? b : BigDecimal.ZERO;
         long returnsCount = returns.get("returnsCount") instanceof Number n ? n.longValue() : 0L;
-        long lowStockCount = stockReportRepository.countLowStockProducts(companyId);
+        long lowStockCount = reportingStockReportClient.catalogStats().lowStockSkus();
 
         List<Map<String, Object>> topItems = normalizeTopProducts(topProducts);
         List<Map<String, Object>> decliningProducts = findDecliningProducts(topItems);
@@ -104,19 +106,16 @@ public class AnalyticsOverviewTools {
         AnalyticsPeriodSupport.Period range = period(from, to, 30);
 
         CompletableFuture<SalesReportResponse> salesF = parallel.supply(
-            () -> reportService.getSalesReport(range.from(), range.to())
+            () -> reportingSalesReportClient.salesReport(range.from(), range.to())
         );
         CompletableFuture<List<TopProductRow>> topProductsF = parallel.supply(
-            () -> reportService.getTopProducts(5, range.from(), range.to())
+            () -> reportingSalesReportClient.topProducts(5, range.from(), range.to())
         );
-        CompletableFuture<List<Object[]>> storesRawF = parallel.supply(
-            () -> saleAggregateRepository.salesByStoreBetween(range.start(), range.end(), companyId)
+        CompletableFuture<List<StoreSalesRowResponse>> storesRawF = parallel.supply(
+            () -> reportingSalesReportClient.salesByStores(range.from(), range.to(), 0, 100).content()
         );
-        CompletableFuture<Long> productCountF = parallel.supply(
-            () -> stockReportRepository.countActiveProducts(companyId)
-        );
-        CompletableFuture<Long> lowStockCountF = parallel.supply(
-            () -> stockReportRepository.countLowStockProducts(companyId)
+        CompletableFuture<StockCatalogStatsResponse> catalogStatsF = parallel.supply(
+            () -> reportingStockReportClient.catalogStats()
         );
         CompletableFuture<Long> categoryCountF = parallel.supply(
             () -> categoryRepository.countByCompanyId(companyId)
@@ -127,45 +126,36 @@ public class AnalyticsOverviewTools {
         CompletableFuture<Long> activeStoreCountF = parallel.supply(
             () -> storeRepository.countByCompanyIdAndActiveTrue(companyId)
         );
-        CompletableFuture<Object[]> zSummaryF = parallel.supply(
-            () -> zReportRepository.summarizeByCompanyAndClosedAtBetween(
-                companyId, range.start(), range.end()
-            )
-        );
-        CompletableFuture<Long> zTotalF = parallel.supply(
-            () -> zReportRepository.countByCompanyId(companyId)
+        CompletableFuture<ShiftOverviewResponse> shiftOverviewF = parallel.supply(
+            () -> reportingShiftReportClient.overview(range.from(), range.to(), 1)
         );
         CompletableFuture<Map<String, Object>> returnsF = parallel.supply(
             () -> salesTools.returnsSummaryPeriod(range.from(), range.to(), companyId)
         );
         AiAssistantParallel.awaitAll(
-            salesF, topProductsF, storesRawF, productCountF, lowStockCountF,
-            categoryCountF, storeCountF, activeStoreCountF, zSummaryF, zTotalF, returnsF
+            salesF, topProductsF, storesRawF, catalogStatsF,
+            categoryCountF, storeCountF, activeStoreCountF, shiftOverviewF, returnsF
         );
 
         SalesReportResponse sales = salesF.join();
         List<TopProductRow> topProducts = topProductsF.join();
-        List<Object[]> storesRaw = storesRawF.join();
+        List<StoreSalesRowResponse> storesRaw = storesRawF.join();
         List<Map<String, Object>> topStores = storesRaw.stream()
-            .sorted((a, b) -> Double.compare(toDouble(b[2]), toDouble(a[2])))
+            .sorted(Comparator.comparing(StoreSalesRowResponse::revenue, Comparator.nullsLast(Comparator.reverseOrder())))
             .limit(5)
             .map(row -> {
                 Map<String, Object> one = new LinkedHashMap<>();
-                one.put("storeId", row[0] != null ? ((Number) row[0]).intValue() : null);
-                one.put("storeName", row[1] != null ? String.valueOf(row[1]) : "—");
-                one.put("revenue", row[2]);
-                one.put("checks", row[3] != null ? ((Number) row[3]).longValue() : 0L);
+                one.put("storeId", row.storeId());
+                one.put("storeName", row.storeName() != null ? row.storeName() : "—");
+                one.put("revenue", row.revenue());
+                one.put("checks", row.receiptCount());
                 return one;
             })
             .toList();
 
-        Object[] zSummary = zSummaryF.join();
-        long zReportsCount = zSummary != null && zSummary.length > 0 && zSummary[0] instanceof Number n
-            ? n.longValue() : 0L;
-        BigDecimal zReportsTotal = zSummary != null && zSummary.length > 1 && zSummary[1] instanceof BigDecimal b
-            ? b : BigDecimal.ZERO;
-
+        ShiftOverviewResponse shiftOverview = shiftOverviewF.join();
         Map<String, Object> returns = returnsF.join();
+        var catalogStats = catalogStatsF.join();
 
         Map<String, Object> out = new LinkedHashMap<>();
         out.put("from", range.from().toString());
@@ -176,9 +166,9 @@ public class AnalyticsOverviewTools {
         returnsBlock.put("amount", AiAnalyticsMaps.safe(returns.get("returnsAmount")));
         out.put("returns", returnsBlock);
         out.put("catalog", Map.of(
-            "products", productCountF.join(),
+            "products", catalogStats.activeProducts(),
             "categories", categoryCountF.join(),
-            "lowStockProducts", lowStockCountF.join()
+            "lowStockProducts", catalogStats.lowStockSkus()
         ));
         out.put("stores", Map.of(
             "total", storeCountF.join(),
@@ -187,9 +177,9 @@ public class AnalyticsOverviewTools {
             "top", topStores
         ));
         Map<String, Object> zReportsBlock = AiAnalyticsMaps.create();
-        zReportsBlock.put("countInPeriod", zReportsCount);
-        zReportsBlock.put("totalAmountInPeriod", zReportsTotal);
-        zReportsBlock.put("totalInSystem", zTotalF.join());
+        zReportsBlock.put("countInPeriod", shiftOverview.periodCount());
+        zReportsBlock.put("totalAmountInPeriod", shiftOverview.periodTotalAmount());
+        zReportsBlock.put("totalInSystem", shiftOverview.totalInSystem());
         out.put("zReports", zReportsBlock);
         out.put("topProducts", topProducts);
         return out;
@@ -279,12 +269,5 @@ public class AnalyticsOverviewTools {
             simpleActions.add("Returns detected. Review return reasons.");
         }
         return simpleActions;
-    }
-
-    private static double toDouble(Object value) {
-        if (value instanceof Number n) {
-            return n.doubleValue();
-        }
-        return 0d;
     }
 }

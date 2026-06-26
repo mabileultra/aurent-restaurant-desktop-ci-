@@ -11,7 +11,22 @@
     <name>Masterpiece POS</name>
 
     <modules>
+        <module>shared-kernel</module>
+        <module>api-gateway</module>
         <module>web-backend</module>
         <module>finance-service</module>
+        <module>identity-service</module>
+        <module>platform-service</module>
+        <module>reporting-service</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.pos</groupId>
+                <artifactId>shared-kernel</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

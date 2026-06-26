@@ -3,13 +3,16 @@ package com.pos.service.impl;
 import com.pos.dto.category.CategoryResponse;
 import com.pos.dto.category.CreateCategoryRequest;
 import com.pos.dto.category.UpdateCategoryRequest;
+import com.pos.entity.BusinessTypeDefinition;
 import com.pos.entity.Category;
 import com.pos.entity.Company;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.mapper.CategoryMapper;
+import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.repository.CategoryRepository;
 import com.pos.service.CategoryService;
+import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -28,27 +31,36 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final CategoryMapper categoryMapper;
     private final TenantAccessSupport tenantAccess;
+    private final BusinessTypeDefinitionRepository typeRepository;
+    private final CompanyBusinessTypeAssignmentService companyBusinessTypeAssignmentService;
 
     @Override
-    @Cacheable(value = "categories", key = "@tenantCacheKeyResolver.categories()")
-    public List<CategoryResponse> findAll() {
+    @Cacheable(value = "categories", key = "@tenantCacheKeyResolver.categories(#businessTypeId)")
+    public List<CategoryResponse> findAll(Integer businessTypeId) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        return categoryMapper.toResponseList(categoryRepository.findByCompanyIdOrderByNameAsc(companyId));
+        if (businessTypeId != null) {
+            companyBusinessTypeAssignmentService.assertAllowedForCompany(companyId, businessTypeId);
+        }
+        return categoryMapper.toResponseList(
+            categoryRepository.findByCompanyIdFiltered(companyId, businessTypeId)
+        );
     }
 
     @Override
     @Transactional
-    @CacheEvict(value = "categories", key = "@tenantCacheKeyResolver.categoriesForCurrentUser()")
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse create(CreateCategoryRequest req) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         if (categoryRepository.existsByNameIgnoreCaseAndCompanyId(req.name(), companyId)) {
             throw new BadRequestException("Category already exists");
         }
         Company company = tenantAccess.requireCompany(companyId);
+        BusinessTypeDefinition businessType = resolveBusinessType(companyId, req.businessTypeId());
         Category cat = Category.builder()
             .company(company)
             .name(req.name())
             .description(req.description())
+            .businessType(businessType)
             .build();
         Category saved = categoryRepository.save(cat);
         LogUtil.info(CategoryServiceImpl.class, "Category created: id={}, name={}", saved.getId(), saved.getName());
@@ -57,7 +69,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "categories", key = "@tenantCacheKeyResolver.categoriesForCurrentUser()")
+    @CacheEvict(value = "categories", allEntries = true)
     public CategoryResponse update(Integer id, UpdateCategoryRequest req) {
         Category cat = categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -68,6 +80,7 @@ public class CategoryServiceImpl implements CategoryService {
         }
         cat.setName(name);
         cat.setDescription(req.description());
+        cat.setBusinessType(resolveBusinessType(cat.getCompany().getId(), req.businessTypeId()));
         Category saved = categoryRepository.save(cat);
         LogUtil.info(CategoryServiceImpl.class, "Category updated: id={}", id);
         return categoryMapper.toResponse(saved);
@@ -75,12 +88,22 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "categories", key = "@tenantCacheKeyResolver.categoriesForCurrentUser()")
+    @CacheEvict(value = "categories", allEntries = true)
     public void delete(Integer id) {
         Category cat = categoryRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
         tenantAccess.assertCanAccessCompany(cat.getCompany().getId());
         categoryRepository.delete(cat);
         LogUtil.info(CategoryServiceImpl.class, "Category deleted: id={}", id);
+    }
+
+    private BusinessTypeDefinition resolveBusinessType(Integer companyId, Integer businessTypeId) {
+        if (businessTypeId == null) {
+            return null;
+        }
+        companyBusinessTypeAssignmentService.assertAllowedForCompany(companyId, businessTypeId);
+        return typeRepository.findById(businessTypeId)
+            .filter(BusinessTypeDefinition::isActive)
+            .orElseThrow(() -> new ResourceNotFoundException("Business type not found"));
     }
 }

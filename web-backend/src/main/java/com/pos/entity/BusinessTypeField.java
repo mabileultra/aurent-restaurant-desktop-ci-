@@ -52,6 +52,14 @@ public class BusinessTypeField {
     @Column(columnDefinition = "TEXT")
     private String hint;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reference_book_id")
+    private ReferenceBook referenceBook;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean filterable = false;
+
     @OneToMany(mappedBy = "field", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC, id ASC")
     @Builder.Default

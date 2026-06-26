@@ -3,7 +3,6 @@ import ProductCatalogGeneralSection from './ProductCatalogGeneralSection';
 import ProductCatalogAccountingSection from './ProductCatalogAccountingSection';
 import ProductCatalogStorePricesSection from './ProductCatalogStorePricesSection';
 import ProductCatalogBarcodesSection from './ProductCatalogBarcodesSection';
-import ProductCatalogRetailExtrasSection from './ProductCatalogRetailExtrasSection';
 import ProductCatalogDynamicFieldsSection from './ProductCatalogDynamicFieldsSection';
 import ProductCatalogFiscalSection from './ProductCatalogFiscalSection';
 import ProductCatalogStoreContextSection from './ProductCatalogStoreContextSection';
@@ -14,9 +13,6 @@ export default function ProductCatalogModalFormBody({
   stores,
   selectedStore,
   onCreateStoreChange,
-  templateCode,
-  advancedMode,
-  onCreateTemplateChange,
 }) {
   return (
     <>
@@ -26,10 +22,6 @@ export default function ProductCatalogModalFormBody({
           stores={stores}
           selectedStore={selectedStore}
           onStoreChange={onCreateStoreChange}
-          universalMode={form.universalMode}
-          templateCode={templateCode}
-          advancedMode={advancedMode}
-          onTemplateChange={onCreateTemplateChange}
         />
       ) : null}
 
@@ -52,17 +44,16 @@ export default function ProductCatalogModalFormBody({
         isEdit={form.isEdit}
         saleTypeWatch={form.saleTypeWatch}
         productTypeWatch={form.productTypeWatch}
-        template={form.template}
-        universalMode={form.universalMode}
         showSection={form.showSection}
+        configUnits={form.businessConfig?.units}
       />
 
       <ProductCatalogAccountingSection
         t={form.t}
         register={form.register}
         errors={form.errors}
-        template={form.template}
         showSection={form.showSection}
+        priceRules={form.priceRulesConfig}
       />
 
       {form.showSection('storePrices') ? (
@@ -76,21 +67,13 @@ export default function ProductCatalogModalFormBody({
         />
       ) : null}
 
-      {form.showSection('clothing') || form.showSection('pharmacy') ? (
-        <ProductCatalogRetailExtrasSection
-          t={form.t}
-          register={form.register}
-          errors={form.errors}
-          template={form.template}
-          showSection={form.showSection}
-        />
-      ) : null}
-
       <ProductCatalogDynamicFieldsSection
         t={form.t}
         register={form.register}
         errors={form.errors}
         fields={form.businessConfig?.fields ?? []}
+        displayRules={form.displayRules}
+        attributeValues={form.attributeValues}
         loading={form.businessConfigLoading}
       />
 

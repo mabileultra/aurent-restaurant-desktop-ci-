@@ -1,5 +1,7 @@
 package com.pos.exception;
 
+import com.pos.shared.api.ApiErrorResponse;
+import com.pos.shared.api.ErrorCode;
 import com.pos.util.DbExceptionTranslator;
 import com.pos.util.LogUtil;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,0 +1,46 @@
+.delivery-order-edit-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.delivery-order-edit-modal__loading {
+  padding: 1.5rem 0;
+  text-align: center;
+  color: var(--rest-text-muted);
+}
+
+.delivery-order-edit-modal__field {
+  display: block;
+}
+
+.delivery-order-edit-modal__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--rest-text-muted);
+}
+
+.delivery-order-edit-modal__textarea {
+  width: 100%;
+  resize: vertical;
+  border-radius: 0.5rem;
+  border: 1px solid var(--rest-border, #cbd5e1);
+  background: var(--rest-surface, #fff);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--rest-text);
+}
+
+.delivery-order-edit-modal__hint {
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: #dc2626;
+}
+
+.delivery-order-edit-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}

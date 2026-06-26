@@ -32,6 +32,7 @@ const ROUTE_MAP = [
   { test: (p) => p.startsWith('/reports/sales/by-products'), id: 'reportsSalesByProducts' },
   { test: (p) => p.startsWith('/reports/sales'), id: 'reportsSales' },
   { test: (p) => p.startsWith('/reports/returns'), id: 'reportsReturns' },
+  { test: (p) => p.startsWith('/reports/sync'), id: 'reportsSync' },
   { test: (p) => p.startsWith('/reports/analytics'), id: 'reportsAnalytics' },
   { test: (p) => p.startsWith('/orders'), id: 'ordersList' },
   { test: (p) => p.startsWith('/cash-registers/list'), id: 'registersList' },
@@ -49,6 +50,10 @@ const ROUTE_MAP = [
   { test: (p) => p.startsWith('/finance/categories'), id: 'financeCategories' },
   { test: (p) => p.startsWith('/finance/sync'), id: 'financeSync' },
   { test: (p) => p.startsWith('/stores'), id: 'stores' },
+  { test: (p) => p.startsWith('/restaurant/hall') || p.startsWith('/restaurant/floor'), id: 'restaurantFloor' },
+  { test: (p) => p.startsWith('/restaurant/kitchen') || p.startsWith('/cashier/kitchen'), id: 'restaurantKitchen' },
+  { test: (p) => p.startsWith('/restaurant/booking'), id: 'restaurantBooking' },
+  { test: (p) => p.startsWith('/restaurant/delivery'), id: 'restaurantDelivery' },
   { test: (p) => p.startsWith('/users/barcode-print'), id: 'usersBarcodePrint' },
   { test: (p) => p.startsWith('/users/printer-settings'), id: 'usersPrinterSettings' },
   { test: (p) => p.startsWith('/users/branding-settings'), id: 'usersBrandingSettings' },
@@ -57,7 +62,7 @@ const ROUTE_MAP = [
 ];
 
 export const HANDBOOK_GROUPS = {
-  admin: ['main', 'goods', 'stock', 'orders', 'finance', 'registers', 'reportsSales', 'reportsStock', 'settings', 'cashier'],
+  admin: ['main', 'goods', 'stock', 'orders', 'finance', 'registers', 'reportsSales', 'reportsStock', 'restaurant', 'settings', 'cashier'],
   cashier: ['cashier'],
 };
 
@@ -80,6 +85,7 @@ export const ADMIN_MODULE_IDS = [
   { id: 'reportsSales', group: 'reportsSales', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsCashierPerformance', group: 'reportsSales', roles: ['ADMIN'] },
   { id: 'reportsReturns', group: 'reportsSales', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'reportsSync', group: 'reportsSales', roles: ['ADMIN'] },
   { id: 'reportsStockDashboard', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockBalances', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
   { id: 'reportsStockLow', group: 'reportsStock', roles: ['ADMIN', 'MANAGER'] },
@@ -98,6 +104,10 @@ export const ADMIN_MODULE_IDS = [
   { id: 'registersTransfer', group: 'registers', roles: ['ADMIN', 'MANAGER'] },
   { id: 'registersConfig', group: 'registers', roles: ['ADMIN', 'MANAGER'] },
   { id: 'stores', group: 'settings', roles: ['ADMIN'] },
+  { id: 'restaurantFloor', group: 'restaurant', roles: ['ADMIN', 'MANAGER'] },
+  { id: 'restaurantKitchen', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COOK'] },
+  { id: 'restaurantBooking', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },
+  { id: 'restaurantDelivery', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },
   { id: 'usersList', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersPrinterSettings', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersBrandingSettings', group: 'settings', roles: ['ADMIN'] },
@@ -116,9 +126,11 @@ export const ADMIN_MODULE_IDS = [
 ];
 
 export const CASHIER_MODULE_IDS = [
-  { id: 'cashierPos', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
-  { id: 'cashierSales', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
-  { id: 'cashierOffline', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER'] },
+  { id: 'cashierPos', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER', 'WAITER'] },
+  { id: 'cashierSales', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER', 'WAITER'] },
+  { id: 'cashierOffline', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER', 'WAITER'] },
+  { id: 'restaurantPos', group: 'cashier', roles: ['CASHIER', 'WAITER', 'MANAGER', 'ADMIN'] },
+  { id: 'restaurantKitchen', group: 'cashier', roles: ['CASHIER', 'WAITER', 'COOK', 'MANAGER', 'ADMIN'] },
 ];
 
 export function resolveHandbookModuleId(pathname) {

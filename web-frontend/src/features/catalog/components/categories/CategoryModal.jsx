@@ -6,9 +6,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { categoryApi } from '../../../../api/category.api';
-import { BaseButton, BaseInput, BaseModal } from '../../../../components/ui';
+import { BaseButton, BaseInput, BaseModal, BaseSelect } from '../../../../components/ui';
 
-export default function CategoryModal({ category, onClose, onSaved }) {
+export default function CategoryModal({ category, businessTypes = [], onClose, onSaved }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const isEdit = !!category;
@@ -16,24 +16,35 @@ export default function CategoryModal({ category, onClose, onSaved }) {
   const schema = z.object({
     name: z.string().min(1, t('validation.required')),
     description: z.string().optional(),
+    businessTypeId: z.string().optional(),
   });
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { name: '', description: '' },
+    defaultValues: { name: '', description: '', businessTypeId: '' },
   });
 
   useEffect(() => {
     if (category) {
-      reset({ name: category.name, description: category.description ?? '' });
+      reset({
+        name: category.name,
+        description: category.description ?? '',
+        businessTypeId: category.businessTypeId ? String(category.businessTypeId) : '',
+      });
     } else {
-      reset({ name: '', description: '' });
+      reset({ name: '', description: '', businessTypeId: '' });
     }
   }, [category, reset]);
 
   const { mutate, isPending } = useMutation({
-    mutationFn: (data) =>
-      isEdit ? categoryApi.update(category.id, data) : categoryApi.create(data),
+    mutationFn: (data) => {
+      const payload = {
+        name: data.name,
+        description: data.description || null,
+        businessTypeId: data.businessTypeId ? Number(data.businessTypeId) : null,
+      };
+      return isEdit ? categoryApi.update(category.id, payload) : categoryApi.create(payload);
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['categories'] });
       toast.success(isEdit ? t('categories.updated') : t('categories.created'));
@@ -83,6 +94,19 @@ export default function CategoryModal({ category, onClose, onSaved }) {
           rows={3}
           {...register('description')}
         />
+        {businessTypes.length > 0 ? (
+          <BaseSelect
+            label={t('categories.businessType')}
+            {...register('businessTypeId')}
+            options={[
+              { value: '', label: t('categories.businessTypeAll') },
+              ...businessTypes.map((bt) => ({
+                value: String(bt.id),
+                label: bt.name,
+              })),
+            ]}
+          />
+        ) : null}
       </form>
     </BaseModal>
   );

@@ -1,6 +1,5 @@
 package com.pos.entity;
 
-import com.pos.domain.BusinessType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -33,10 +32,13 @@ public class Store {
     @JoinColumn(name = "company_id")
     private Company company;
 
-    @Enumerated(EnumType.STRING)
     @Column(name = "business_type", nullable = false, length = 32)
     @Builder.Default
-    private BusinessType businessType = BusinessType.UNIVERSAL;
+    private String businessType = "UNIVERSAL";
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_type_id")
+    private BusinessTypeDefinition businessTypeDefinition;
 
     @Column(name = "is_active")
     private boolean active = true;

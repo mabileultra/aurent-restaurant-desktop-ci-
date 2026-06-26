@@ -14,12 +14,13 @@ import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
-import com.pos.repository.StockMovementRepository;
 import com.pos.repository.StockTransferRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
 import com.pos.service.stock.StockTransferService;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.stock.support.StockDocumentSupport;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -48,11 +49,12 @@ public class StockTransferServiceImpl implements StockTransferService {
 
     private final StockTransferRepository stockTransferRepository;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final StoreRepository storeRepository;
     private final CurrentUserProvider currentUserProvider;
     private final TenantAccessSupport tenantAccess;
     private final StockDocumentSupport stockDocument;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public StockTransferResponse create(CreateStockTransferRequest request) {
@@ -102,7 +104,7 @@ public class StockTransferServiceImpl implements StockTransferService {
                 .quantity(q)
                 .build());
 
-            stockMovementRepository.save(StockMovement.builder()
+            stockMovementPersistence.save(StockMovement.builder()
                 .product(product)
                 .store(fromStore)
                 .movementType(StockMovementType.ADJUSTMENT)
@@ -111,7 +113,7 @@ public class StockTransferServiceImpl implements StockTransferService {
                 .notes("Перемещение " + number + " → " + toStore.getName())
                 .createdBy(user)
                 .build());
-            stockMovementRepository.save(StockMovement.builder()
+            stockMovementPersistence.save(StockMovement.builder()
                 .product(product)
                 .store(toStore)
                 .movementType(StockMovementType.RESTOCK)
@@ -129,7 +131,9 @@ public class StockTransferServiceImpl implements StockTransferService {
         transfer.setTotalQuantity(totalQty);
         stockTransferRepository.save(transfer);
 
-        return toResponse(stockTransferRepository.findDetailedById(transferId).orElseThrow());
+        StockTransfer detailed = stockTransferRepository.findDetailedById(transferId).orElseThrow();
+        posDomainEventService.publishStockTransferAfterCommit(detailed);
+        return toResponse(detailed);
     }
 
     @Override

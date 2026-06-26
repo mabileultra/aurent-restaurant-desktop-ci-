@@ -154,6 +154,17 @@
   color: #fff;
 }
 
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--primary.is-active {
+  background: var(--pos-green);
+  border-color: var(--pos-green);
+  color: var(--pos-on-green, #fff);
+  box-shadow: 0 2px 12px rgb(0 104 71 / 0.22);
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--primary.is-active svg {
+  color: var(--pos-on-green, #fff);
+}
+
 .cashier-app.cashier-app--light .cashier-app__main {
   background: var(--pos-bg);
 }

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v10-pharmacy-dosage-field" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_fields f
+                JOIN business_types bt ON bt.id = f.business_type_id
+                WHERE bt.code = 'PHARMACY' AND f.field_key = 'dosage_form'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_fields (business_type_id, field_key, label, field_type, required, sort_order)
+            SELECT bt.id, 'dosage_form', 'Форма выпуска', 'TEXT', FALSE, 50
+            FROM business_types bt
+            WHERE bt.code = 'PHARMACY';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v10-migrate-retail-extras-to-attributes" author="pos">
+        <sql>
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'size', trim(rpd.clothing_size_range)
+            FROM retail_product_details rpd
+            WHERE rpd.clothing_size_range IS NOT NULL AND trim(rpd.clothing_size_range) &lt;&gt; ''
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'color', trim(rpd.clothing_color)
+            FROM retail_product_details rpd
+            WHERE rpd.clothing_color IS NOT NULL AND trim(rpd.clothing_color) &lt;&gt; ''
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'gender', trim(rpd.clothing_gender)
+            FROM retail_product_details rpd
+            WHERE rpd.clothing_gender IS NOT NULL AND trim(rpd.clothing_gender) &lt;&gt; ''
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'dosage_form', trim(rpd.pharmacy_dosage_form)
+            FROM retail_product_details rpd
+            WHERE rpd.pharmacy_dosage_form IS NOT NULL AND trim(rpd.pharmacy_dosage_form) &lt;&gt; ''
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'prescription_required', 'true'
+            FROM retail_product_details rpd
+            WHERE rpd.pharmacy_prescription_required = TRUE
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+
+            INSERT INTO product_attributes (product_id, field_key, value_text)
+            SELECT rpd.product_id, 'expiry_tracking', 'true'
+            FROM retail_product_details rpd
+            WHERE rpd.pharmacy_expiry_required = TRUE
+            ON CONFLICT (product_id, field_key) DO NOTHING;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v10-drop-retail-vertical-columns" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <columnExists tableName="retail_product_details" columnName="clothing_size_range"/>
+        </preConditions>
+        <dropColumn tableName="retail_product_details" columnName="clothing_size_range"/>
+        <dropColumn tableName="retail_product_details" columnName="clothing_color"/>
+        <dropColumn tableName="retail_product_details" columnName="clothing_gender"/>
+        <dropColumn tableName="retail_product_details" columnName="pharmacy_expiry_required"/>
+        <dropColumn tableName="retail_product_details" columnName="pharmacy_prescription_required"/>
+        <dropColumn tableName="retail_product_details" columnName="pharmacy_dosage_form"/>
+    </changeSet>
+
+</databaseChangeLog>

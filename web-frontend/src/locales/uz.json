@@ -88,6 +88,7 @@
     "financeAudit": "Jurnal",
     "financeCategories": "Kategoriyalar",
     "financeSync": "Sinxronizatsiya",
+    "reportsSync": "Reporting sync",
     "stores": "Do‘konlar",
     "users": "Foydalanuvchilar",
     "usersGroup": "Foydalanuvchilar",
@@ -275,7 +276,12 @@
     "deleteTitle": "Kategoriyani o‘chirish",
     "deleteHint": "«{{name}}» ni o‘chirish? Shu kategoriyadagi mahsulotlarda kategoriya bo‘sh qoladi.",
     "rowEdit": "Tahrirlash",
-    "rowDelete": "O‘chirish"
+    "rowDelete": "O‘chirish",
+    "colBusinessType": "Biznes turi",
+    "businessType": "Biznes turi",
+    "businessTypeAll": "Barcha turlar uchun",
+    "filterBusinessType": "Tur bo‘yicha filtr",
+    "filterBusinessTypeAll": "Barcha turlar"
   },
   "products": {
     "title": "Mahsulotlar",
@@ -837,6 +843,20 @@
     "cashierPerf": "Kassirlar samaradorligi",
     "noCashierData": "Kassirlar bo‘yicha maʼlumot yoʻq"
   },
+  "reportsSync": {
+    "title": "Reporting sinxronizatsiyasi",
+    "subtitle": "pos_db dan reporting_db ga read-model yuklash",
+    "backfillTitle": "Davr bo'yicha yuklash",
+    "backfillHint": "Sotuvlar, kirimlar va yopilgan smenalarni reporting_db ga yuklaydi. Dublikatlar id bo'yicha o'tkazib yuboriladi.",
+    "from": "Dan",
+    "to": "Gacha",
+    "backfillSales": "Sotuvlar",
+    "backfillStock": "Kirimlar",
+    "backfillShifts": "Yopilgan smenalar",
+    "runBackfill": "Yuklashni ishga tushirish",
+    "backfillSuccess": "Yuklandi: sotuvlar {{sales}}, kirimlar {{stock}}, smenalar {{shifts}}, o'tkazildi {{skipped}}",
+    "backfillFailed": "Yuklash amalga oshmadi"
+  },
   "stockReports": {
     "salesByProductsTitle": "Tovarlar bo'yicha sotuv",
     "salesByProductsSubtitle": "Har bir tovar bo'yicha davr ichida sotilgan miqdor",
@@ -1060,6 +1080,10 @@
     "colBusinessType": "Biznes turi",
     "field_businessType": "Biznes turi",
     "field_businessTypeHint": "Ushbu kompaniya uchun mahsulot shablonlari.",
+    "field_businessTypes": "Biznes turlari",
+    "field_businessTypesHint": "Konstruktordan bir yoki bir nechta tur tanlang. Asosiy tur — yangi do'konlar uchun.",
+    "businessTypeDefault": "Asosiy",
+    "businessTypeMakeDefault": "Asosiy qilish",
     "moduleAccess": {
       "nav": "Kirish huquqlari",
       "title": "Kirishlarni boshqarish",
@@ -1392,6 +1416,7 @@
     "passwordMinLength": "Parol kamida 6 belgidan iborat bo'lishi kerak",
     "role": "Rol",
     "roleCashier": "Kassir",
+    "roleWaiter": "Ofitsiant",
     "cashierStoreHint": "Kassir uchun bitta do'kon tanlang — kassada do'kon tanlash mumkin emas.",
     "cashierStoreRequired": "Kassir uchun do'konni belgilang",
     "storeInactive": "nofaol",
@@ -3126,6 +3151,7 @@
     "ADMIN": "Admin",
     "MANAGER": "Menejer",
     "CASHIER": "Kassir",
+    "WAITER": "Ofitsiant",
     "ACCOUNTANT": "Buxgalter",
     "SUPER_ADMIN": "Super-admin"
   }

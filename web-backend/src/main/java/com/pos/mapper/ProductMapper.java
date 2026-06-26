@@ -27,8 +27,6 @@ public interface ProductMapper {
     @Mapping(target = "productType", source = "product.productType")
     @Mapping(target = "markedProduct", expression = "java(com.pos.service.product.ProductRetailFields.markedProduct(product))")
     @Mapping(target = "soldIndividually", expression = "java(com.pos.service.product.ProductRetailFields.soldIndividually(product))")
-    @Mapping(target = "constructionDetails", ignore = true)
-    @Mapping(target = "restaurantDetails", ignore = true)
     @Mapping(target = "serviceDetails", ignore = true)
     @Mapping(target = "retailExtras", ignore = true)
     @Mapping(target = "attributes", ignore = true)

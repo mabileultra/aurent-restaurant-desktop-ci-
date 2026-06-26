@@ -1,12 +1,14 @@
 package com.pos.config;
 
+import com.pos.security.IdentityInternalApiKeyFilter;
 import com.pos.security.JwtAuthenticationFilter;
+import com.pos.security.PlatformInternalApiKeyFilter;
+import com.pos.security.ReportingInternalApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -28,13 +30,15 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
+    private final IdentityInternalApiKeyFilter identityInternalApiKeyFilter;
+    private final PlatformInternalApiKeyFilter platformInternalApiKeyFilter;
+    private final ReportingInternalApiKeyFilter reportingInternalApiKeyFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
     private String corsAllowedOriginPatterns;
 
     private static final String[] PUBLIC_PATHS = {
-        "/auth/**",
         "/public/**",
         "/actuator/health",
         "/swagger-ui.html",
@@ -49,12 +53,10 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/verify-password").authenticated()
+                .requestMatchers("/internal/identity/**").permitAll()
+                .requestMatchers("/internal/platform/**").permitAll()
+                .requestMatchers("/internal/reports/**").permitAll()
                 .requestMatchers(PUBLIC_PATHS).permitAll()
-                .requestMatchers("/companies/**").hasRole("SUPER_ADMIN")
-                .requestMatchers("/platform/**").hasRole("SUPER_ADMIN")
-                .requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                .requestMatchers("/reports/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/returns/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/orders/**").hasAnyRole("ADMIN", "MANAGER")
                 .anyRequest().authenticated()
@@ -63,6 +65,9 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             .authenticationProvider(authenticationProvider)
+            .addFilterBefore(identityInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(platformInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(reportingInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }

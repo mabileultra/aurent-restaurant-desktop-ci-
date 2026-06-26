@@ -15,15 +15,16 @@ import com.pos.entity.Supplier;
 import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
-import com.pos.repository.StockMovementRepository;
 import com.pos.repository.StockReceiptRepository;
 import com.pos.repository.SupplierRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.finance.FinancePurchaseIntegrationService;
 import com.pos.service.stock.StockReceiptService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.stock.support.StockDocumentSupport;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.QuantityUtil;
@@ -53,7 +54,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
 
     private final StockReceiptRepository stockReceiptRepository;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final SupplierRepository supplierRepository;
     private final StoreRepository storeRepository;
     private final StoreStockService storeStockService;
@@ -61,6 +62,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private final CurrentUserProvider currentUserProvider;
     private final StockDocumentSupport stockDocument;
     private final FinancePurchaseIntegrationService financePurchaseIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public StockReceiptResponse create(CreateStockReceiptRequest request) {
@@ -120,7 +122,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
                 .build();
             lines.add(line);
 
-            stockMovementRepository.save(StockMovement.builder()
+            stockMovementPersistence.save(StockMovement.builder()
                 .product(product)
                 .store(store)
                 .movementType(StockMovementType.RESTOCK)
@@ -128,7 +130,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
                 .referenceId(receiptId)
                 .notes("Приход " + receiptNumber)
                 .createdBy(user)
-                .build());
+                .build(), receiptNumber);
 
             totalQty = QuantityUtil.add(totalQty, q);
             totalCost = totalCost.add(lineCost);
@@ -140,6 +142,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         receipt.setTotalCost(totalCost);
         stockReceiptRepository.save(receipt);
         financePurchaseIntegrationService.onPurchaseCompleted(receipt, request.paymentType());
+        posDomainEventService.publishStockReceivedAfterCommit(receipt);
 
         return toResponse(stockReceiptRepository.findDetailedById(receiptId).orElseThrow());
     }

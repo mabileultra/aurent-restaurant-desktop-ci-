@@ -9,14 +9,25 @@ export default function CashierSalesFilters({
   filtering,
   t,
   compact = false,
+  toolbar = false,
 }) {
   const active = hasActiveCashierSalesFilters(filters);
+  const modeClass = toolbar
+    ? ' cashier-sales-filters-card--toolbar'
+    : compact
+      ? ' cashier-sales-filters-card--compact'
+      : ' mb-3';
+  const filtersClass = toolbar
+    ? ' cashier-sales-filters--toolbar'
+    : compact
+      ? ' cashier-sales-filters--compact'
+      : '';
 
   return (
     <div
-      className={`cashier-sales-filters-card flex-shrink-0${
-        compact ? ' cashier-sales-filters-card--compact' : ' mb-3'
-      }${active ? ' is-active' : ''}`}
+      className={`cashier-sales-filters-card flex-shrink-0${modeClass}${
+        active ? ' is-active' : ''
+      }`}
     >
       <div className="cashier-sales-filters-card__head">
         <div className="cashier-sales-filters-card__title">
@@ -34,7 +45,7 @@ export default function CashierSalesFilters({
         ) : null}
       </div>
       <form className="cashier-sales-filters-card__body" onSubmit={(e) => e.preventDefault()}>
-        <div className={`cashier-sales-filters${compact ? ' cashier-sales-filters--compact' : ''}`}>
+        <div className={`cashier-sales-filters${filtersClass}`}>
           <div className="cashier-sales-filters__field">
             <label className="cashier-sales-filters__label" htmlFor="sales-filter-receipt">
               {t('pos.receipt')}

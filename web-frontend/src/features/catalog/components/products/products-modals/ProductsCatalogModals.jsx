@@ -15,11 +15,7 @@ export default function ProductsCatalogModals({ p }) {
           categories={p.categories}
           stores={p.activeStores}
           selectedStore={p.editProduct ? null : p.createStore}
-          templateCode={p.editProduct ? null : p.createTemplateCode}
-          advancedMode={!p.editProduct && p.createAdvancedMode}
-          universalMode={!p.editProduct && p.createUniversalMode}
           onCreateStoreChange={p.handleCreateStoreChange}
-          onCreateTemplateChange={p.handleCreateTemplateChange}
           onClose={p.closeCatalogModal}
           onSaved={p.onCatalogSaved}
         />

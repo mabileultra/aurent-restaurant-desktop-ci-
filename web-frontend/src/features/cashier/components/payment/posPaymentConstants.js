@@ -22,7 +22,7 @@ export const STEPS_WITH_PRINT_TOGGLE = new Set([
 
 export function buildPaymentFlowState(openOptions = null) {
   return {
-    step: openOptions?.step ?? 'creditCustomer',
+    step: openOptions?.step ?? 'method',
     receiptType: openOptions?.receiptType ?? 'SALE',
     payMethod: openOptions?.payMethod ?? null,
   };

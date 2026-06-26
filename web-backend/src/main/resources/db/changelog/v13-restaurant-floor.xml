@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v13-waiter-role" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM roles WHERE name = 'WAITER'</sqlCheck>
+        </preConditions>
+        <insert tableName="roles">
+            <column name="name" value="WAITER"/>
+            <column name="description" value="Restaurant floor service"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="v13-dining-halls-table" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dining_halls"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dining_halls">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_dining_halls"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="dining_halls"
+            baseColumnNames="store_id"
+            referencedTableName="stores"
+            referencedColumnNames="id"
+            constraintName="fk_dining_halls_store"
+            onDelete="CASCADE"/>
+        <addUniqueConstraint
+            tableName="dining_halls"
+            columnNames="store_id, name"
+            constraintName="uq_dining_halls_store_name"/>
+        <createIndex tableName="dining_halls" indexName="idx_dining_halls_store">
+            <column name="store_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v13-dining-tables-table" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dining_tables"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dining_tables">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" primaryKeyName="pk_dining_tables"/>
+            </column>
+            <column name="hall_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(100)"/>
+            <column name="seat_count" type="INT" defaultValueNumeric="4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pos_x" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pos_y" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="INT" defaultValueNumeric="80">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="INT" defaultValueNumeric="80">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="FREE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="dining_tables"
+            baseColumnNames="hall_id"
+            referencedTableName="dining_halls"
+            referencedColumnNames="id"
+            constraintName="fk_dining_tables_hall"
+            onDelete="CASCADE"/>
+        <addUniqueConstraint
+            tableName="dining_tables"
+            columnNames="hall_id, code"
+            constraintName="uq_dining_tables_hall_code"/>
+        <createIndex tableName="dining_tables" indexName="idx_dining_tables_hall">
+            <column name="hall_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

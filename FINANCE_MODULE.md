@@ -177,7 +177,7 @@ UI: `/finance/sync` (только ADMIN).
 
 ## Запуск локально
 
-**Рекомендуемый способ — только Docker.** Finance-service слушает порт **8082** (8081 зарезервирован под основной POS-сервер в installer/desktop-cashier). Не запускайте `mvn spring-boot:run` и Docker одновременно на одном порту.
+**Рекомендуемый способ — только Docker.** Finance-service слушает порт **8082** (8081 зарезервирован под основной POS-сервер в installer/aurent-cashier-desktop). Не запускайте `mvn spring-boot:run` и Docker одновременно на одном порту.
 
 ```bash
 # из корня проекта

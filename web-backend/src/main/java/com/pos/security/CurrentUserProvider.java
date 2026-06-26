@@ -56,4 +56,12 @@ public class CurrentUserProvider {
     public boolean isCashier(User user) {
         return RoleName.CASHIER.matches(user);
     }
+
+    public boolean isWaiter(User user) {
+        return RoleName.WAITER.matches(user);
+    }
+
+    public boolean isCashierOrWaiter(User user) {
+        return isCashier(user) || isWaiter(user);
+    }
 }

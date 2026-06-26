@@ -33,11 +33,32 @@ export default function PlatformBusinessTypesPage() {
           detail={p.detail}
           detailLoading={p.detailLoading}
           fields={p.fields}
+          catalogUnits={p.catalogUnits}
+          unitCodes={p.unitCodes}
+          defaultUnitCode={p.defaultUnitCode}
+          rules={p.rules}
+          priceRules={p.priceRules}
+          displayRules={p.displayRules}
           onEditType={p.openEditType}
           onDeleteType={p.tryDeleteType}
           onAddField={p.openCreateField}
           onEditField={p.openFieldEdit}
           onDeleteField={p.tryDeleteField}
+          onToggleUnit={p.toggleUnit}
+          onSetDefaultUnit={p.setDefaultUnit}
+          onToggleRule={p.toggleRule}
+          onPriceRuleChange={p.changePriceRule}
+          onAddDisplayRule={p.addDisplayRule}
+          onDisplayRuleChange={p.changeDisplayRule}
+          onRemoveDisplayRule={p.removeDisplayRule}
+          onSaveUnits={() => p.saveUnitsMutation.mutate()}
+          onSaveRules={() => p.saveRulesMutation.mutate()}
+          onSavePriceRules={() => p.savePriceRulesMutation.mutate()}
+          onSaveDisplayRules={() => p.saveDisplayRulesMutation.mutate()}
+          savingUnits={p.saveUnitsMutation.isPending}
+          savingRules={p.saveRulesMutation.isPending}
+          savingPriceRules={p.savePriceRulesMutation.isPending}
+          savingDisplayRules={p.saveDisplayRulesMutation.isPending}
         />
       </div>
 
@@ -54,6 +75,7 @@ export default function PlatformBusinessTypesPage() {
         t={p.t}
         modal={p.fieldModal}
         form={p.fieldForm}
+        referenceBooks={p.referenceBooks}
         onClose={p.closeFieldModal}
         onFieldChange={p.updateFieldForm}
         onSave={p.submitField}

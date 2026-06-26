@@ -11,8 +11,11 @@ public record BusinessTypeFieldResponse(
     BusinessFieldType fieldType,
     boolean required,
     boolean enabled,
+    boolean filterable,
     int sortOrder,
     String placeholder,
     String hint,
+    Integer referenceBookId,
+    String referenceBookCode,
     List<BusinessFieldOptionResponse> options
 ) {}

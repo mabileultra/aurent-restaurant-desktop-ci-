@@ -57,11 +57,12 @@ public class ProductServiceImpl implements ProductService {
         Boolean markedProduct,
         Boolean soldIndividually,
         String barcodeExact,
+        java.util.Map<String, String> attributeFilters,
         Pageable pageable
     ) {
         return queryService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId,
-            ikpuStatus, markedProduct, soldIndividually, barcodeExact, pageable
+            ikpuStatus, markedProduct, soldIndividually, barcodeExact, attributeFilters, pageable
         );
     }
 

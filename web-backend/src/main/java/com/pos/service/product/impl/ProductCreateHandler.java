@@ -16,12 +16,12 @@ import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.SaleTypeSupport;
 import com.pos.service.product.support.ProductBarcodeValidator;
 import com.pos.service.product.support.ProductInitialStockSupport;
+import com.pos.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.LogUtil;
-import com.pos.util.ProductTemplateCodeValidator;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -46,6 +46,7 @@ public class ProductCreateHandler {
     private final UnitCatalogService unitCatalogService;
     private final ProductAttributeService productAttributeService;
     private final ProductResponseAssembler assembler;
+    private final ProductSnapshotNotifier productSnapshotNotifier;
 
     @Transactional
     public ProductResponse create(CreateProductRequest req) {
@@ -76,6 +77,7 @@ public class ProductCreateHandler {
         productAttributeService.saveAttributes(persisted.getId(), req.businessTypeCode(), req.attributes());
 
         LogUtil.info(ProductCreateHandler.class, "Product created: id={}, sku={}", persisted.getId(), persisted.getSku());
+        productSnapshotNotifier.notify(persisted.getId());
         return assembler.toResponse(persisted);
     }
 
@@ -115,7 +117,6 @@ public class ProductCreateHandler {
         );
         product.setStockQuantity(BigDecimal.ZERO);
         extensionService.applyOnCreate(product, req);
-        product.setTemplateCode(ProductTemplateCodeValidator.normalizeOrNull(req.templateCode()));
 
         Product saved = productRepository.save(product);
         storePriceApplier.applyStorePrices(saved, req.storePrices());
@@ -127,6 +128,7 @@ public class ProductCreateHandler {
         );
 
         LogUtil.info(ProductCreateHandler.class, "Product reactivated: id={}, sku={}", persisted.getId(), persisted.getSku());
+        productSnapshotNotifier.notify(persisted.getId());
         return assembler.toResponse(persisted);
     }
 
@@ -174,7 +176,6 @@ public class ProductCreateHandler {
             product.setUnitOfMeasure(SaleTypeSupport.defaultUnitOfMeasure(product.getSaleType(), req.unitOfMeasure()));
         }
         extensionService.applyOnCreate(product, req);
-        product.setTemplateCode(ProductTemplateCodeValidator.normalizeOrNull(req.templateCode()));
         return product;
     }
 

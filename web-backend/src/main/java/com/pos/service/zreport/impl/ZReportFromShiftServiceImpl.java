@@ -11,6 +11,7 @@ import com.pos.repository.CashRegisterRepository;
 import com.pos.repository.CashierShiftRepository;
 import com.pos.repository.sale.ShiftReportRepository;
 import com.pos.repository.ZReportRepository;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.finance.FinanceZReportIntegrationService;
 import com.pos.service.zreport.ZReportFromShiftService;
 import com.pos.util.LogUtil;
@@ -37,6 +38,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
     private final ShiftReportRepository shiftReportRepository;
     private final CashierShiftRepository cashierShiftRepository;
     private final FinanceZReportIntegrationService financeZReportIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public ZReport createForClosedShift(CashierShift shift, ShiftReportResponse report) {
@@ -117,6 +119,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
 
         shift.setZReport(zReport);
         financeZReportIntegrationService.onZReportCreated(zReport, shift);
+        posDomainEventService.publishShiftClosedAfterCommit(zReport, shift);
         LogUtil.info(
             ZReportFromShiftServiceImpl.class,
             "Z-report {} (#{}) created for cashier shift {}",
@@ -201,6 +204,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         }
 
         financeZReportIntegrationService.onZReportCreated(zReport, shift);
+        posDomainEventService.publishShiftClosedAfterCommit(zReport, shift);
         LogUtil.info(
             ZReportFromShiftServiceImpl.class,
             "Z-report {} (#{}) created for open shift {} (period reset)",

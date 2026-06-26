@@ -1,8 +1,8 @@
 package com.pos.service;
 
-import com.pos.dto.company.CompanyBusinessTypeResponse;
+import com.pos.dto.company.CompanyBusinessTypesResponse;
 
 public interface CompanyBusinessTypeService {
 
-    CompanyBusinessTypeResponse getForCurrentCompany();
+    CompanyBusinessTypesResponse getForCurrentCompany();
 }

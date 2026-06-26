@@ -22,6 +22,8 @@ export default function PosOrderPanelLine({
   commitQty,
   setEditingQtyLineId,
   t,
+  priceEditable = true,
+  resolveDepartmentLabel,
 }) {
   const lineSum = lineSubtotal(item);
   const isWeight = item.saleType === 'WEIGHT';
@@ -44,10 +46,25 @@ export default function PosOrderPanelLine({
             {item.sku}
           </span>
         ) : null}
+        {item.kitchenDepartment ? (
+          <span
+            className={`pos-cart-table__kitchen-meta${item.kitchenRoutable === false ? ' pos-cart-table__kitchen-meta--none' : ''}`}
+          >
+            {resolveDepartmentLabel
+              ? resolveDepartmentLabel(item.kitchenDepartment)
+              : item.kitchenDepartment}
+            {item.kitchenStatus && item.kitchenStatusLabelKey ? (
+              <span className="pos-cart-table__kitchen-status">
+                {' · '}
+                {t(item.kitchenStatusLabelKey)}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
       </div>
 
       <div className="pos-cart-table__col pos-cart-table__col--price">
-        {editingPriceLineId === item.lineId ? (
+        {priceEditable && editingPriceLineId === item.lineId ? (
           <input
             type="number"
             step="0.01"
@@ -62,7 +79,7 @@ export default function PosOrderPanelLine({
             }}
             autoFocus
           />
-        ) : (
+        ) : priceEditable ? (
           <button
             type="button"
             className="pos-cart-table__price-btn"
@@ -74,6 +91,10 @@ export default function PosOrderPanelLine({
           >
             <span title={fmt(item.unitPrice)}>{fmtCompact(item.unitPrice)}</span>
           </button>
+        ) : (
+          <span className="pos-cart-table__money" title={fmt(item.unitPrice)}>
+            {fmtCompact(item.unitPrice)}
+          </span>
         )}
       </div>
 

@@ -1,8 +1,9 @@
 package com.pos.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
+import com.pos.client.platform.PlatformDesktopClient;
 import com.pos.dto.desktop.DesktopBroadcastListResponse;
-import com.pos.service.desktop.DesktopBroadcastService;
+import com.pos.security.CurrentUserProvider;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,14 +25,17 @@ import java.util.UUID;
 @StandardApiResponses
 public class CashierDesktopNotificationController {
 
-    private final DesktopBroadcastService desktopBroadcastService;
+    private final PlatformDesktopClient platformDesktopClient;
+    private final CurrentUserProvider currentUserProvider;
 
     @GetMapping
     @PreAuthorize("hasRole('CASHIER')")
     @Operation(summary = "Непрочитанные уведомления", description = "Сообщения от платформы и администратора")
     @ApiResponse(responseCode = "200", description = "Список непрочитанных уведомлений")
     public ResponseEntity<DesktopBroadcastListResponse> unread() {
-        return ResponseEntity.ok(desktopBroadcastService.listUnreadForCurrentUser());
+        return ResponseEntity.ok(
+            platformDesktopClient.listUnread(currentUserProvider.requireCurrentUser().getId())
+        );
     }
 
     @PostMapping("/{id}/read")
@@ -39,7 +43,7 @@ public class CashierDesktopNotificationController {
     @Operation(summary = "Отметить прочитанным", description = "Скрыть уведомление для текущего кассира")
     @ApiResponse(responseCode = "204", description = "Отмечено")
     public ResponseEntity<Void> markRead(@PathVariable UUID id) {
-        desktopBroadcastService.markRead(id);
+        platformDesktopClient.markRead(id, currentUserProvider.requireCurrentUser().getId());
         return ResponseEntity.noContent().build();
     }
 }

@@ -18,6 +18,7 @@ import java.util.List;
 
 import com.pos.dto.shared.PageResponse;
 import com.pos.service.ProductService;
+import com.pos.util.AttributeFilterParser;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -59,11 +60,12 @@ public class ProductController {
         @RequestParam(required = false) Boolean markedProduct,
         @RequestParam(required = false) Boolean soldIndividually,
         @RequestParam(required = false) String barcode,
+        @RequestParam(required = false) String attributeFilters,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(productService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId, ikpuStatus,
-            markedProduct, soldIndividually, barcode, pageable
+            markedProduct, soldIndividually, barcode, AttributeFilterParser.parse(attributeFilters), pageable
         ));
     }
 

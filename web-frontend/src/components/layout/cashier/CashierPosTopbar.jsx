@@ -1,5 +1,6 @@
 import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
+import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
 
@@ -17,6 +18,8 @@ export default function CashierPosTopbar({
   cashierTheme,
   toggleCashierTheme,
 }) {
+  const location = useLocation();
+  const isRestaurantRegister = location.pathname.startsWith('/cashier/restaurant');
   const shiftOpen = shift?.status === 'OPEN';
 
   return (
@@ -37,7 +40,9 @@ export default function CashierPosTopbar({
             {isDesktopApp ? <OfflineStatusTopbar /> : null}
           </div>
           <CashierPosTopbarCashier name={cashierName} />
-          <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">{t('pos.navSale')}</p>
+          <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">
+            {t(isRestaurantRegister ? 'restaurantCashier.title' : 'pos.navSale')}
+          </p>
         </div>
         <div className="cashier-topbar__actions">
           {isDesktopApp ? <CashierNotificationsBell /> : null}

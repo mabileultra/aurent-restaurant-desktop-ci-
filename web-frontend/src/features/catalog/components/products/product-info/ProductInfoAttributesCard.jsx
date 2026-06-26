@@ -1,4 +1,4 @@
-import { getProductTemplateTitle } from '../../../../../config/productCatalogTemplateRegistry';
+import { productBusinessTypeLabel } from '../../../../../config/productCatalogConfig';
 import {
   productInfoBoolLabel,
   productInfoLabelCls,
@@ -7,6 +7,8 @@ import {
 } from '../../../utils/productInfoModalUi';
 
 export default function ProductInfoAttributesCard({ t, product }) {
+  const attributeEntries = Object.entries(product.attributes ?? {}).filter(([, value]) => value);
+
   return (
     <div className="rounded-xl border border-slate-200 p-4 dark:border-slate-800">
       <div className={productInfoRowCls}>
@@ -18,45 +20,19 @@ export default function ProductInfoAttributesCard({ t, product }) {
         <span className={productInfoValueCls}>{product.categoryName ?? '—'}</span>
       </div>
       <div className={productInfoRowCls}>
-        <span className={productInfoLabelCls}>{t('products.colTemplate')}:</span>
-        <span className={productInfoValueCls}>{getProductTemplateTitle(t, product) ?? '—'}</span>
+        <span className={productInfoLabelCls}>{t('stores.colBusinessType')}:</span>
+        <span className={productInfoValueCls}>{productBusinessTypeLabel(t, product) ?? '—'}</span>
       </div>
-      {product.retailExtras?.clothingSizeRange || product.retailExtras?.clothingColor ? (
-        <>
-          <div className={productInfoRowCls}>
-            <span className={productInfoLabelCls}>{t('productCatalog.clothingSizeRange')}:</span>
-            <span className={productInfoValueCls}>{product.retailExtras.clothingSizeRange ?? '—'}</span>
-          </div>
-          <div className={productInfoRowCls}>
-            <span className={productInfoLabelCls}>{t('productCatalog.clothingColor')}:</span>
-            <span className={productInfoValueCls}>{product.retailExtras.clothingColor ?? '—'}</span>
-          </div>
-        </>
-      ) : null}
-      {product.retailExtras?.pharmacyDosageForm ? (
-        <div className={productInfoRowCls}>
-          <span className={productInfoLabelCls}>{t('productCatalog.pharmacyDosageForm')}:</span>
-          <span className={productInfoValueCls}>{product.retailExtras.pharmacyDosageForm}</span>
+      {attributeEntries.map(([key, value]) => (
+        <div key={key} className={productInfoRowCls}>
+          <span className={productInfoLabelCls}>{key}:</span>
+          <span className={productInfoValueCls}>{value}</span>
         </div>
-      ) : null}
+      ))}
       <div className={productInfoRowCls}>
         <span className={productInfoLabelCls}>{t('productCatalog.unit')}:</span>
         <span className={productInfoValueCls}>{product.unitOfMeasure ?? '—'}</span>
       </div>
-      {product.constructionDetails ? (
-        <>
-          <div className={productInfoRowCls}>
-            <span className={productInfoLabelCls}>{t('productCatalog.constructionStandardLength')}:</span>
-            <span className={productInfoValueCls}>{product.constructionDetails.standardLength ?? '—'}</span>
-          </div>
-          <div className={productInfoRowCls}>
-            <span className={productInfoLabelCls}>{t('productCatalog.constructionAllowCutting')}:</span>
-            <span className={productInfoValueCls}>
-              {productInfoBoolLabel(product.constructionDetails.allowCutting, t)}
-            </span>
-          </div>
-        </>
-      ) : null}
       <div className={productInfoRowCls}>
         <span className={productInfoLabelCls}>{t('productCatalog.unitCode')}:</span>
         <span className={productInfoValueCls}>{product.unitMeasureCode ?? '—'}</span>

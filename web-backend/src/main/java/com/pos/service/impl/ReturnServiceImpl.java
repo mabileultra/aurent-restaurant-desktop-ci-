@@ -16,7 +16,7 @@ import com.pos.repository.ProductRepository;
 import com.pos.repository.SaleItemRepository;
 import com.pos.repository.SaleRepository;
 import com.pos.repository.sale.SaleSearchRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.ReturnService;
 import com.pos.service.sale.SaleAccessPolicy;
 import com.pos.service.salesledger.SalesLedgerCacheService;
@@ -43,7 +43,7 @@ public class ReturnServiceImpl implements ReturnService {
     private final SaleRepository saleRepository;
     private final SaleSearchRepository saleSearchRepository;
     private final SaleItemRepository saleItemRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final StoreStockService storeStockService;
     private final ReturnMapper returnMapper;
     private final SaleMapper saleMapper;
@@ -122,7 +122,7 @@ public class ReturnServiceImpl implements ReturnService {
             storeStockService.requireAvailable(product, store, item.getQuantity());
             storeStockService.decrease(product, store, item.getQuantity());
 
-            stockMovementRepository.save(StockMovement.builder()
+            stockMovementPersistence.save(StockMovement.builder()
                 .product(product)
                 .store(sale.getStore())
                 .movementType(StockMovementType.SALE)

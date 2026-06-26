@@ -8,10 +8,17 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-RUN mvn dependency:go-offline -q
+COPY shared-kernel shared-kernel
+COPY api-gateway/pom.xml api-gateway/pom.xml
+COPY web-backend/pom.xml web-backend/pom.xml
+COPY finance-service/pom.xml finance-service/pom.xml
+COPY identity-service/pom.xml identity-service/pom.xml
+COPY platform-service/pom.xml platform-service/pom.xml
+COPY reporting-service/pom.xml reporting-service/pom.xml
+RUN mvn -pl shared-kernel,web-backend -am dependency:go-offline -q
 
-COPY src ./src
-RUN mvn clean package -DskipTests -q
+COPY web-backend/src web-backend/src
+RUN mvn -pl web-backend -am package -DskipTests -q
 
 # Stage 2: Runtime
 FROM eclipse-temurin:17-jre-jammy
@@ -26,7 +33,7 @@ RUN apt-get update \
 
 USER pos
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/web-backend/target/*.jar app.jar
 
 ENV ORDERS_UPLOAD_DIR=/app/uploads/orders \
     LOG_PATH=/app/logs

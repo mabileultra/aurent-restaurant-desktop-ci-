@@ -15,6 +15,7 @@ export default function PosRegisterPayRail({
   onOpenPaymentFlow,
   checkoutDisabled,
   isPending,
+  hideTools = false,
 }) {
   const { t } = useTranslation();
   const rail = usePosRegisterPayRail({
@@ -64,24 +65,26 @@ export default function PosRegisterPayRail({
         />
       </div>
 
-      <div className="pos-register-pay-rail__tools">
-        <button
-          type="button"
-          className="pos-register-pay-rail__tool pos-register-pay-rail__tool--discount"
-          onClick={onDiscount}
-        >
-          <Percent size={18} strokeWidth={2.25} aria-hidden />
-          {t('pos.discount')}
-        </button>
-        <button
-          type="button"
-          className="pos-register-pay-rail__tool pos-register-pay-rail__tool--return"
-          onClick={onReturn}
-        >
-          <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
-          {t('pos.return')}
-        </button>
-      </div>
+      {!hideTools ? (
+        <div className="pos-register-pay-rail__tools">
+          <button
+            type="button"
+            className="pos-register-pay-rail__tool pos-register-pay-rail__tool--discount"
+            onClick={onDiscount}
+          >
+            <Percent size={18} strokeWidth={2.25} aria-hidden />
+            {t('pos.discount')}
+          </button>
+          <button
+            type="button"
+            className="pos-register-pay-rail__tool pos-register-pay-rail__tool--return"
+            onClick={onReturn}
+          >
+            <RotateCcw size={18} strokeWidth={2.25} aria-hidden />
+            {t('pos.return')}
+          </button>
+        </div>
+      ) : null}
 
       <PosRegisterPayFooter
         disabled={rail.saleDisabled}

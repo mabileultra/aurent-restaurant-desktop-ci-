@@ -1,5 +1,7 @@
 package com.pos.exception;
 
+import com.pos.shared.api.ErrorCode;
+
 public class CacheRefreshException extends PosException {
 
     public CacheRefreshException(String message) {

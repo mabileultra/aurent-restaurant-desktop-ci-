@@ -1,3 +1,4 @@
+import { unitsApi } from '../units.api';
 import { api } from '../client';
 
 export const platformBusinessTypeApi = {
@@ -10,4 +11,9 @@ export const platformBusinessTypeApi = {
   updateField: (typeId, fieldId, body) =>
     api.put(`/platform/business-types/${typeId}/fields/${fieldId}`, body),
   deleteField: (typeId, fieldId) => api.delete(`/platform/business-types/${typeId}/fields/${fieldId}`),
+  setUnits: (typeId, body) => api.put(`/platform/business-types/${typeId}/units`, body),
+  setRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/rules`, body),
+  setPriceRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/price-rules`, body),
+  setDisplayRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/display-rules`, body),
+  listCatalogUnits: () => unitsApi.list({ stockOnly: true }),
 };

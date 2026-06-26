@@ -1,5 +1,7 @@
 package com.pos.exception;
 
+import com.pos.shared.api.ErrorCode;
+
 import java.util.Map;
 
 public class BadRequestException extends PosException {

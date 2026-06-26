@@ -21,6 +21,7 @@ public final class CustomerOrderSpecifications {
 
     public static Specification<CustomerOrder> filter(
         Integer companyId,
+        Integer storeId,
         String search,
         String externalNumber,
         String clientName,
@@ -36,6 +37,11 @@ public final class CustomerOrderSpecifications {
             if (companyId != null) {
                 Join<CustomerOrder, com.pos.entity.Store> store = root.join("store", JoinType.INNER);
                 parts.add(cb.equal(store.get("company").get("id"), companyId));
+            }
+
+            if (storeId != null) {
+                Join<CustomerOrder, com.pos.entity.Store> storeJoin = root.join("store", JoinType.INNER);
+                parts.add(cb.equal(storeJoin.get("id"), storeId));
             }
 
             String s = search != null ? search.trim() : "";

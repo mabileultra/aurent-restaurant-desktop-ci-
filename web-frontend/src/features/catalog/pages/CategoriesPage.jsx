@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { BaseButton } from '../../../components/ui';
+import { BaseButton, BaseSelect } from '../../../components/ui';
 import CategoriesTable from '../components/categories/CategoriesTable';
 import CategoryModal from '../components/categories/CategoryModal';
 import CategoryDeleteModal from '../components/categories/CategoryDeleteModal';
@@ -13,19 +13,37 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('categories.title')}</h1>
           <p className="text-sm text-slate-600 dark:text-slate-400">
             {t('categories.subtitle', { count: c.categories.length })}
           </p>
         </div>
-        {c.manage && (
-          <BaseButton onClick={c.openCreate}>
-            <Plus size={16} />
-            {t('categories.add')}
-          </BaseButton>
-        )}
+        <div className="flex flex-wrap items-end gap-3">
+          {c.companyBusinessTypes.length > 1 ? (
+            <div className="min-w-[220px]">
+              <BaseSelect
+                label={t('categories.filterBusinessType')}
+                value={c.businessTypeFilter}
+                onChange={(e) => c.handleBusinessTypeFilterChange(e.target.value)}
+                options={[
+                  { value: '', label: t('categories.filterBusinessTypeAll') },
+                  ...c.companyBusinessTypes.map((bt) => ({
+                    value: String(bt.id),
+                    label: bt.name,
+                  })),
+                ]}
+              />
+            </div>
+          ) : null}
+          {c.manage ? (
+            <BaseButton onClick={c.openCreate}>
+              <Plus size={16} />
+              {t('categories.add')}
+            </BaseButton>
+          ) : null}
+        </div>
       </div>
 
       <CategoriesTable
@@ -46,6 +64,7 @@ export default function CategoriesPage() {
         <CategoryModal
           key={c.modalCategory?.id ?? 'new'}
           category={c.modalCategory}
+          businessTypes={c.companyBusinessTypes}
           onClose={c.closeModal}
           onSaved={c.onModalSaved}
         />

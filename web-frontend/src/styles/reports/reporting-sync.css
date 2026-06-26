@@ -1,0 +1,37 @@
+.reporting-sync-backfill {
+  background: var(--surface-card, #fff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.reporting-sync-backfill__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem;
+}
+
+.reporting-sync-backfill__hint {
+  margin: 0 0 1rem;
+  color: var(--text-muted, #64748b);
+  font-size: 0.875rem;
+}
+
+.reporting-sync-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.reporting-sync-filters__field {
+  min-width: 160px;
+}
+
+.reporting-sync-filters__checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  padding-bottom: 0.5rem;
+}

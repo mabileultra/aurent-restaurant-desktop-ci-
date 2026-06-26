@@ -9,8 +9,9 @@ import com.pos.exception.PosExceptions;
 import com.pos.mapper.SaleMapper;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.SaleRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.service.finance.FinanceReturnIntegrationService;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.sale.SaleAccessPolicy;
 import com.pos.service.sale.SaleVoidService;
 import com.pos.service.salesledger.SalesLedgerCacheService;
@@ -31,12 +32,13 @@ public class SaleVoidServiceImpl implements SaleVoidService {
 
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SaleAccessPolicy accessPolicy;
     private final StoreStockService storeStockService;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public SaleResponse voidSale(UUID id, String reason) {
@@ -69,7 +71,7 @@ public class SaleVoidServiceImpl implements SaleVoidService {
             item.setReturnedQuantity(item.getQuantity());
             refundAmount = refundAmount.add(SalePartialReturnServiceImpl.lineReturnAmount(item, remaining));
 
-            stockMovementRepository.save(StockMovement.builder()
+            stockMovementPersistence.save(StockMovement.builder()
                 .product(product)
                 .store(sale.getStore())
                 .movementType(StockMovementType.RETURN)
@@ -91,6 +93,7 @@ public class SaleVoidServiceImpl implements SaleVoidService {
         Sale saved = saleRepository.save(sale);
         salesLedgerCacheService.onSaleChanged(saved);
         financeReturnIntegrationService.onRefundCompleted(saved, returnEventId, refundAmount);
+        posDomainEventService.publishSaleCompletedAfterCommit(saved);
         LogUtil.info(SaleVoidServiceImpl.class, "Sale voided: id={}, receipt={}", saved.getId(), saved.getReceiptNumber());
         return saleMapper.toResponse(saved);
     }

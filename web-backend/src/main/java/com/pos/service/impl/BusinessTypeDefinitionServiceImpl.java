@@ -4,11 +4,14 @@ import com.pos.dto.business.*;
 import com.pos.entity.BusinessTypeDefinition;
 import com.pos.entity.BusinessTypeField;
 import com.pos.entity.FieldOption;
+import com.pos.entity.ReferenceBook;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.mapper.BusinessTypeMapper;
 import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.repository.BusinessTypeFieldRepository;
+import com.pos.repository.ReferenceBookRepository;
+import com.pos.service.BusinessTypeConfigService;
 import com.pos.service.BusinessTypeDefinitionService;
 import com.pos.util.LogUtil;
 import com.pos.util.TextUtil;
@@ -27,7 +30,9 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
 
     private final BusinessTypeDefinitionRepository typeRepository;
     private final BusinessTypeFieldRepository fieldRepository;
+    private final ReferenceBookRepository referenceBookRepository;
     private final BusinessTypeMapper mapper;
+    private final BusinessTypeConfigService businessTypeConfigService;
 
     @Override
     public List<BusinessTypeResponse> list() {
@@ -46,7 +51,14 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
 
     @Override
     public BusinessTypeDetailResponse getById(Integer id) {
-        return mapper.toDetailResponse(requireDetailed(id));
+        BusinessTypeDefinition entity = requireDetailed(id);
+        return mapper.toDetailResponse(
+            entity,
+            businessTypeConfigService.getUnits(id),
+            businessTypeConfigService.getRules(id),
+            businessTypeConfigService.getPriceRules(id),
+            businessTypeConfigService.getDisplayRules(id)
+        );
     }
 
     @Override
@@ -63,8 +75,9 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
             .active(request.active() == null || request.active())
             .sortOrder(request.sortOrder() != null ? request.sortOrder() : 100)
             .build());
+        businessTypeConfigService.seedDefaultsForType(saved.getId());
         LogUtil.info(BusinessTypeDefinitionServiceImpl.class, "Business type created: {}", code);
-        return mapper.toDetailResponse(saved);
+        return getById(saved.getId());
     }
 
     @Override
@@ -80,7 +93,7 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
             entity.setSortOrder(request.sortOrder());
         }
         LogUtil.info(BusinessTypeDefinitionServiceImpl.class, "Business type updated: id={}", id);
-        return mapper.toDetailResponse(entity);
+        return getById(id);
     }
 
     @Override
@@ -113,6 +126,10 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
             .placeholder(TextUtil.trimOrNull(request.placeholder()))
             .hint(TextUtil.trimOrNull(request.hint()))
             .build();
+        applyReferenceBook(field, request.referenceBookId());
+        if (request.filterable() != null) {
+            field.setFilterable(request.filterable());
+        }
         applyOptions(field, request.options());
         type.getFields().add(field);
         BusinessTypeField saved = fieldRepository.save(field);
@@ -141,6 +158,10 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
         }
         field.setPlaceholder(TextUtil.trimOrNull(request.placeholder()));
         field.setHint(TextUtil.trimOrNull(request.hint()));
+        applyReferenceBook(field, request.referenceBookId());
+        if (request.filterable() != null) {
+            field.setFilterable(request.filterable());
+        }
         field.getOptions().clear();
         applyOptions(field, request.options());
         LogUtil.info(BusinessTypeDefinitionServiceImpl.class, "Field updated: id={}", fieldId);
@@ -181,6 +202,16 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
             order += 10;
         }
         field.getOptions().addAll(entities);
+    }
+
+    private void applyReferenceBook(BusinessTypeField field, Integer referenceBookId) {
+        if (referenceBookId == null) {
+            field.setReferenceBook(null);
+            return;
+        }
+        ReferenceBook book = referenceBookRepository.findById(referenceBookId)
+            .orElseThrow(() -> new BadRequestException("Reference book not found: " + referenceBookId));
+        field.setReferenceBook(book);
     }
 
 }

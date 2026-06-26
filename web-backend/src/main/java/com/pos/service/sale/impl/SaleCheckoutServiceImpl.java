@@ -17,7 +17,7 @@ import com.pos.mapper.SaleMapper;
 import com.pos.repository.CashierShiftRepository;
 import com.pos.service.sale.support.CreditSaleCustomerSupport;
 import com.pos.repository.SaleRepository;
-import com.pos.repository.StockMovementRepository;
+import com.pos.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
 import com.pos.service.sale.SaleCheckoutService;
 import com.pos.service.sale.support.CheckoutProductLoader;
@@ -25,6 +25,7 @@ import com.pos.service.sale.support.SaleEnumParser;
 import com.pos.service.sale.support.SalePaymentResolver;
 import com.pos.service.sale.support.SaleReceiptNumberGenerator;
 import com.pos.service.sale.support.SaleVatCalculator;
+import com.pos.service.event.PosDomainEventService;
 import com.pos.service.finance.FinanceAdvancePaymentIntegrationService;
 import com.pos.service.finance.FinanceAdvanceSaleIntegrationService;
 import com.pos.service.finance.FinanceCreditSaleIntegrationService;
@@ -57,7 +58,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final CashierShiftRepository cashierShiftRepository;
     private final UserRepository userRepository;
     private final CreditSaleCustomerSupport creditSaleCustomerSupport;
-    private final StockMovementRepository stockMovementRepository;
+    private final StockMovementPersistence stockMovementPersistence;
     private final CashierSaleSupport cashierSaleSupport;
     private final SaleMapper saleMapper;
     private final SalesLedgerCacheService salesLedgerCacheService;
@@ -70,6 +71,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceAdvancePaymentIntegrationService financeAdvancePaymentIntegrationService;
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
+    private final PosDomainEventService posDomainEventService;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -193,7 +195,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         Sale saved = saleRepository.save(sale);
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {
             for (SaleItem item : saved.getItems()) {
-                stockMovementRepository.save(StockMovement.builder()
+                stockMovementPersistence.save(StockMovement.builder()
                     .product(item.getProduct())
                     .store(store)
                     .movementType(StockMovementType.SALE)
@@ -214,6 +216,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         } else {
             financeSaleIntegrationService.onSaleCompleted(saved);
         }
+        posDomainEventService.publishSaleCompletedAfterCommit(saved);
         LogUtil.info(SaleCheckoutServiceImpl.class, "Sale completed: id={}, receipt={}", saved.getId(), saved.getReceiptNumber());
         return saleMapper.toResponse(saved);
     }
