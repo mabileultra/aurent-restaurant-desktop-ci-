@@ -134,41 +134,40 @@ export default function RestaurantRegisterWorkspace({
             {mainContent}
           </div>
 
-          {showPayRail ? (
-            <aside
-              className={`cashier-register__actions-col restaurant-cashier__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}`}
-            >
-              <div className="cashier-register__pay-shell">
-                <div
-                  className="cashier-register__pay-pane cashier-register__pay-pane--rail"
-                  inert={payOpen || undefined}
-                >
-                  <PosRegisterPayRail
+          <aside
+            className={`cashier-register__actions-col restaurant-cashier__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}${showPayRail ? '' : ' restaurant-cashier__actions-col--collapsed'}`}
+            inert={!showPayRail || undefined}
+          >
+            <div className="cashier-register__pay-shell">
+              <div
+                className="cashier-register__pay-pane cashier-register__pay-pane--rail"
+                inert={payOpen || undefined}
+              >
+                <PosRegisterPayRail
+                  total={total}
+                  onReturn={onReturn}
+                  onDiscount={onDiscount}
+                  onConfirm={onConfirmPayment}
+                  onOpenPaymentFlow={onOpenPaymentFlow}
+                  checkoutDisabled={payDisabled}
+                  isPending={checkoutPending}
+                />
+              </div>
+
+              {payOpen ? (
+                <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
+                  <PosPaymentFlow
+                    key={`restaurant-pay-flow-${payFlowSession}`}
+                    onClose={onClosePayment}
                     total={total}
-                    onReturn={onReturn}
-                    onDiscount={onDiscount}
-                    onConfirm={onConfirmPayment}
-                    onOpenPaymentFlow={onOpenPaymentFlow}
-                    checkoutDisabled={payDisabled}
                     isPending={checkoutPending}
+                    onConfirm={onConfirmPayment}
+                    openOptions={payFlowOptions}
                   />
                 </div>
-
-                {payOpen ? (
-                  <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
-                    <PosPaymentFlow
-                      key={`restaurant-pay-flow-${payFlowSession}`}
-                      onClose={onClosePayment}
-                      total={total}
-                      isPending={checkoutPending}
-                      onConfirm={onConfirmPayment}
-                      openOptions={payFlowOptions}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            </aside>
-          ) : null}
+              ) : null}
+            </div>
+          </aside>
 
           <CashierBottomNav className="cashier-register__bottom-nav" />
         </div>
