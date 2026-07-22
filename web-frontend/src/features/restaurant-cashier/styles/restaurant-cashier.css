@@ -57,7 +57,6 @@
   gap: var(--cashier-gap, 10px);
   flex: 1 1 auto;
   min-height: 0;
-  transition: grid-template-columns 220ms ease, gap 220ms ease;
 }
 
 .restaurant-cashier__split--tables.restaurant-cashier__split--session-open .cashier-register__stage {
@@ -75,15 +74,11 @@
 
 .restaurant-cashier__split--catalog .cashier-register__stage {
   display: grid;
-  /* Вторая колонка не удаляется, а схлопывается до 0 — так grid-template-columns
-     можно анимировать (число треков должно совпадать с --tables, иначе браузер
-     не интерполирует, а мгновенно переключает). */
-  grid-template-columns: minmax(0, 1fr) 0px;
+  grid-template-columns: minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 0;
+  gap: var(--cashier-gap, 10px);
   flex: 1 1 auto;
   min-height: 0;
-  transition: grid-template-columns 220ms ease, gap 220ms ease;
 }
 
 .restaurant-cashier__split--tables .cashier-register__stage,
@@ -117,16 +112,7 @@
 }
 
 .restaurant-cashier__split--catalog .restaurant-cashier__actions-col {
-  grid-column: 2;
-  grid-row: 1 / span 2;
-}
-
-.restaurant-cashier__actions-col--collapsed {
-  opacity: 0;
-  border: 0;
-  box-shadow: none;
-  pointer-events: none;
-  transition: opacity 160ms ease;
+  display: none;
 }
 
 .restaurant-cashier__split--tables .cashier-register__bottom-nav,
