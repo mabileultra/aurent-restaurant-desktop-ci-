@@ -6,15 +6,40 @@ import { restaurantApi } from '../../../api';
 import { useRestaurantStores } from '../../../hooks/useRestaurantStores';
 
 const emptyHallForm = () => ({ name: '', sortOrder: 100 });
-const emptyTableForm = () => ({
+
+const TABLE_DEFAULT_SIZE = 88;
+const TABLE_GRID_GAP = 24;
+const TABLE_GRID_COLUMNS = 4;
+
+const gridPosition = (index) => {
+  const col = index % TABLE_GRID_COLUMNS;
+  const row = Math.floor(index / TABLE_GRID_COLUMNS);
+  return {
+    posX: 40 + col * (TABLE_DEFAULT_SIZE + TABLE_GRID_GAP),
+    posY: 40 + row * (TABLE_DEFAULT_SIZE + TABLE_GRID_GAP),
+  };
+};
+
+const nextTableForm = (existingTables = []) => ({
   code: '',
   label: '',
   seatCount: 4,
-  posX: 40,
-  posY: 40,
-  width: 88,
-  height: 88,
+  ...gridPosition(existingTables.length),
+  width: TABLE_DEFAULT_SIZE,
+  height: TABLE_DEFAULT_SIZE,
 });
+
+// Столы, созданные без явных координат, оказываются наложены друг на друга (одинаковые posX/posY).
+// Раскладывает их по сетке через тот же бэкенд-эндпоинт, что и ручное перетаскивание — без прямого доступа к БД.
+const buildTableLayout = (tables = []) => {
+  const movable = tables.filter((table) => table.status !== 'OCCUPIED');
+  return movable.map((table, index) => ({
+    id: table.id,
+    width: table.width || TABLE_DEFAULT_SIZE,
+    height: table.height || TABLE_DEFAULT_SIZE,
+    ...gridPosition(index),
+  }));
+};
 
 export function useRestaurantHallPage() {
   const { t } = useTranslation();
@@ -81,6 +106,15 @@ export function useRestaurantHallPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('restaurantHall.saveFailed')),
   });
 
+  const arrangeTablesMutation = useMutation({
+    mutationFn: () => restaurantApi.updateLayout(selectedHall.id, { tables: buildTableLayout(selectedHall.tables) }),
+    onSuccess: () => {
+      toast.success(t('restaurantHall.tablesArranged'));
+      invalidate();
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('restaurantHall.saveFailed')),
+  });
+
   const deactivateHallMutation = useMutation({
     mutationFn: (hallId) => restaurantApi.deactivateHall(hallId),
     onSuccess: () => {
@@ -104,7 +138,11 @@ export function useRestaurantHallPage() {
   const openEditHall = (hall) => setHallModal({ mode: 'edit', id: hall.id, form: { name: hall.name, sortOrder: hall.sortOrder } });
   const openCreateTable = () => {
     if (!selectedHall) return;
-    setTableModal({ mode: 'create', form: emptyTableForm() });
+    setTableModal({ mode: 'create', form: nextTableForm(selectedHall.tables ?? []) });
+  };
+  const arrangeTables = () => {
+    if (!selectedHall || (selectedHall.tables ?? []).length === 0) return;
+    arrangeTablesMutation.mutate();
   };
   const openEditTable = (table) => setTableModal({
     mode: 'edit',
@@ -138,8 +176,10 @@ export function useRestaurantHallPage() {
     openEditHall,
     openCreateTable,
     openEditTable,
+    arrangeTables,
     saveHallMutation,
     saveTableMutation,
+    arrangeTablesMutation,
     deactivateHallMutation,
     deactivateTableMutation,
   };

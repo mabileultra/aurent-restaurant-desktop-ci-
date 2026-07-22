@@ -1105,7 +1105,10 @@
     "statFree": "Свободно",
     "statReserved": "Забронировано",
     "tablesSection": "Столы зала",
-    "tableListSection": "Список столов"
+    "tableListSection": "Список столов",
+    "arrangeTables": "Расставить автоматически",
+    "confirmArrangeTables": "Разложить все столы зала по сетке автоматически? Столы с активными заказами (занятые) не будут перемещены.",
+    "tablesArranged": "Столы расставлены"
   },
   "restaurantBooking": {
     "title": "Бронирование",

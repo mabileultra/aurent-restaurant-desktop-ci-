@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react';
+import { LayoutGrid, Plus } from 'lucide-react';
 import { BaseButton, BaseSelect, ErrorBanner, PageLayout } from '../../../components/ui';
 import RestaurantNotice from '../../restaurant-shared/components/RestaurantNotice';
 import RestaurantPanel from '../../restaurant-shared/components/RestaurantPanel';
@@ -43,6 +43,18 @@ export default function RestaurantHallPage() {
           <BaseButton onClick={p.openCreateTable} disabled={!p.selectedHall}>
             <Plus size={16} />
             {p.t('restaurantHall.addTable')}
+          </BaseButton>
+          <BaseButton
+            variant="secondary"
+            onClick={() => {
+              if (window.confirm(p.t('restaurantHall.confirmArrangeTables'))) {
+                p.arrangeTables();
+              }
+            }}
+            disabled={!p.selectedHall || tables.length === 0 || p.arrangeTablesMutation.isPending}
+          >
+            <LayoutGrid size={16} />
+            {p.t('restaurantHall.arrangeTables')}
           </BaseButton>
         </div>
       )}
