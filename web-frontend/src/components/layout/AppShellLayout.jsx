@@ -50,7 +50,11 @@ export default function AppShellLayout() {
   const [reportsStockOpen, setReportsStockOpen] = useState(false);
 
   useEffect(() => {
+    // См. useCashierLayoutShell.js — токен живёт 24ч и не обновляется после истечения,
+    // поэтому обновляем его периодически, а не только при монтировании оболочки.
     syncAuthSession();
+    const intervalId = window.setInterval(syncAuthSession, 20 * 60 * 1000);
+    return () => window.clearInterval(intervalId);
   }, []);
   const [financeOpen, setFinanceOpen] = useState(false);
   const [registersOpen, setRegistersOpen] = useState(false);
