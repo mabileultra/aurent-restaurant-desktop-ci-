@@ -33,10 +33,9 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-# shellcheck disable=SC1090
-set -a
-source "$ENV_FILE"
-set +a
+# shellcheck source=deploy/load-dotenv.sh
+source "$ROOT/deploy/load-dotenv.sh"
+load_dotenv "$ENV_FILE"
 
 require_env JWT_SECRET
 if [[ ${#JWT_SECRET} -lt 32 ]]; then

@@ -13,10 +13,9 @@ if [[ ! -f "$ENV_FILE" ]]; then
   exit 1
 fi
 
-# shellcheck disable=SC1090
-set -a
-source "$ENV_FILE"
-set +a
+# shellcheck source=deploy/load-dotenv.sh
+source "$ROOT/deploy/load-dotenv.sh"
+load_dotenv "$ENV_FILE"
 
 PG_USER="${POSTGRES_USER:-pos_user}"
 PG_DB="${POSTGRES_DB:-pos_db}"
