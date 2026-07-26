@@ -46,7 +46,6 @@ export default function RestaurantRegisterWorkspace({
 }) {
   const paneClass = restaurantPane === 'catalog' ? 'catalog' : 'tables';
   const tablesSessionOpen = restaurantPane === 'tables' && checkOpen;
-  const showPayRail = restaurantPane === 'tables';
 
   usePayFlowTransition(payOpen, onPayFlowClosed);
 
@@ -113,20 +112,22 @@ export default function RestaurantRegisterWorkspace({
     <div
       className={`cashier-register__split cashier-register__split--pane restaurant-cashier__split restaurant-cashier__split--${paneClass}${tablesSessionOpen ? ' restaurant-cashier__split--session-open' : ''}`}
     >
-      {restaurantPane === 'tables' ? (
-        <div className="restaurant-cashier__halls">
-          {halls.map((hall) => (
-            <button
-              key={hall.id}
-              type="button"
-              className={`restaurant-cashier__hall-tab${selectedHall?.id === hall.id ? ' is-active' : ''}`}
-              onClick={() => onSelectHall(hall.id)}
-            >
-              {hall.name}
-            </button>
-          ))}
-        </div>
-      ) : null}
+      <div
+        className={`restaurant-cashier__halls${restaurantPane === 'tables' ? '' : ' restaurant-cashier__halls--hidden'}`}
+        aria-hidden={restaurantPane !== 'tables' || undefined}
+      >
+        {halls.map((hall) => (
+          <button
+            key={hall.id}
+            type="button"
+            className={`restaurant-cashier__hall-tab${selectedHall?.id === hall.id ? ' is-active' : ''}`}
+            onClick={() => onSelectHall(hall.id)}
+            tabIndex={restaurantPane === 'tables' ? undefined : -1}
+          >
+            {hall.name}
+          </button>
+        ))}
+      </div>
 
       <div className="cashier-register__workspace">
         <div className="cashier-register__stage restaurant-cashier__stage">
@@ -134,41 +135,39 @@ export default function RestaurantRegisterWorkspace({
             {mainContent}
           </div>
 
-          {showPayRail ? (
-            <aside
-              className={`cashier-register__actions-col restaurant-cashier__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}`}
-            >
-              <div className="cashier-register__pay-shell">
-                <div
-                  className="cashier-register__pay-pane cashier-register__pay-pane--rail"
-                  inert={payOpen || undefined}
-                >
-                  <PosRegisterPayRail
+          <aside
+            className={`cashier-register__actions-col restaurant-cashier__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}`}
+          >
+            <div className="cashier-register__pay-shell">
+              <div
+                className="cashier-register__pay-pane cashier-register__pay-pane--rail"
+                inert={payOpen || undefined}
+              >
+                <PosRegisterPayRail
+                  total={total}
+                  onReturn={onReturn}
+                  onDiscount={onDiscount}
+                  onConfirm={onConfirmPayment}
+                  onOpenPaymentFlow={onOpenPaymentFlow}
+                  checkoutDisabled={payDisabled}
+                  isPending={checkoutPending}
+                />
+              </div>
+
+              {payOpen ? (
+                <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
+                  <PosPaymentFlow
+                    key={`restaurant-pay-flow-${payFlowSession}`}
+                    onClose={onClosePayment}
                     total={total}
-                    onReturn={onReturn}
-                    onDiscount={onDiscount}
-                    onConfirm={onConfirmPayment}
-                    onOpenPaymentFlow={onOpenPaymentFlow}
-                    checkoutDisabled={payDisabled}
                     isPending={checkoutPending}
+                    onConfirm={onConfirmPayment}
+                    openOptions={payFlowOptions}
                   />
                 </div>
-
-                {payOpen ? (
-                  <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
-                    <PosPaymentFlow
-                      key={`restaurant-pay-flow-${payFlowSession}`}
-                      onClose={onClosePayment}
-                      total={total}
-                      isPending={checkoutPending}
-                      onConfirm={onConfirmPayment}
-                      openOptions={payFlowOptions}
-                    />
-                  </div>
-                ) : null}
-              </div>
-            </aside>
-          ) : null}
+              ) : null}
+            </div>
+          </aside>
 
           <CashierBottomNav className="cashier-register__bottom-nav" />
         </div>

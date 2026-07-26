@@ -153,10 +153,6 @@
   color: var(--pos-muted);
 }
 
-.restaurant-cashier__split--catalog .restaurant-cashier__actions-col {
-  display: none;
-}
-
 /* ── Light: нижнее меню Товары/Столы — тёмно-синий, не зелёный ── */
 .cashier-app.cashier-app--light .restaurant-cashier .cashier-bottom-nav__btn--primary.is-active {
   background: var(--pos-ink);
@@ -199,7 +195,8 @@
 }
 
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan {
-  background: linear-gradient(180deg, var(--pos-surface-elevated) 0%, var(--pos-surface) 100%);
+  background: linear-gradient(180deg, #121820 0%, var(--pos-surface) 100%);
+  border-color: var(--pos-border);
 }
 
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan--empty,
@@ -211,26 +208,63 @@
   color: var(--pos-muted);
 }
 
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table {
+  box-shadow: 0 2px 10px rgb(0 0 0 / 0.35);
+  backdrop-filter: none;
+}
+
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--free {
-  background: rgb(61 255 168 / 0.1);
-  border-color: rgb(61 255 168 / 0.45);
-  color: var(--pos-green);
+  background: #163528;
+  border-color: #2f9e6b;
+  color: #9af0c4;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--free .restaurant-hall-plan__table-code {
+  color: #dffceb;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--free .restaurant-hall-plan__table-status {
+  color: #3dffa8;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--free .restaurant-hall-plan__table-seats {
+  color: #7dcea8;
+  opacity: 1;
 }
 
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied {
-  background: rgb(245 158 11 / 0.12);
-  border-color: rgb(245 158 11 / 0.55);
-  color: #fbbf24;
+  background: #2a2214;
+  border-color: #d4a017;
+  color: #f6d58a;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied .restaurant-hall-plan__table-code {
+  color: #ffe9b0;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied .restaurant-hall-plan__table-check-total {
+  color: #ffd56a;
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied .restaurant-hall-plan__table-check-meta,
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied .restaurant-hall-plan__table-check-items,
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--occupied .restaurant-hall-plan__table-check-empty {
+  color: #d6bc7a;
+  opacity: 1;
 }
 
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table--reserved {
   background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
+  border-color: #4b6284;
   color: var(--pos-text);
 }
 
 .cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table:hover {
   box-shadow: 0 8px 24px rgb(0 0 0 / 0.45);
+}
+
+.cashier-app.cashier-app--terminal .restaurant-cashier-floor .restaurant-hall-plan__table.is-selected {
+  box-shadow: 0 0 0 3px #3dffa8, 0 8px 24px rgb(61 255 168 / 0.18);
 }
 
 .cashier-app.cashier-app--terminal .restaurant-session-panel__head,

@@ -1,5 +1,6 @@
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatTableCheckPreviewItems } from '../utils/tableCheckPreview';
+import { resolveFloorPlanPositions } from '../utils/resolveFloorPlanPositions';
 import '../styles/restaurant-hall.css';
 
 const STATUS_CLASS = {
@@ -24,10 +25,12 @@ export default function FloorPlanPreview({
     );
   }
 
+  const tables = resolveFloorPlanPositions(hall.tables ?? []);
+
   return (
     <div className="restaurant-hall-plan">
       <div className="restaurant-hall-plan__canvas">
-        {(hall.tables ?? []).map((table) => {
+        {tables.map((table) => {
           const session = table.activeSession;
           const hasCheckPreview = showCheckPreview && table.status === 'OCCUPIED' && session;
           const previewItems = hasCheckPreview ? formatTableCheckPreviewItems(session) : '';
