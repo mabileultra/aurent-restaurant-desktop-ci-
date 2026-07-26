@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -39,11 +40,13 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
 
         String digits = normalizeDigits(q);
         return fetchPage(resolveLang(lang), safePage, safeSize, properties.getSearchType(), builder -> {
-            if (digits.length() >= 17) {
+            if (digits.length() >= 17 && isMostlyDigits(q)) {
+                // Полный MXIK (обычно 17 цифр)
                 builder.queryParam("mxikCode", digits);
-            } else if (digits.length() >= 8 && isMostlyDigits(q)) {
+            } else if (digits.length() >= 8 && digits.length() <= 14 && isMostlyDigits(q)) {
+                // EAN/штрихкод
                 builder.queryParam("shtrixCode", digits);
-            } else if (digits.length() >= 10 && isMostlyDigits(q)) {
+            } else if (digits.length() >= 15 && isMostlyDigits(q)) {
                 builder.queryParam("mxikCode", digits);
             } else {
                 builder.queryParam("search_text", q);
@@ -108,9 +111,13 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
             .queryParam("lang", lang);
         params.accept(builder);
 
+        // Важно: передаём URI, а не String — иначе RestClient повторно кодирует
+        // кириллицу (%D0%BC… → %25D0%25BC…) и Tasnif возвращает пустой список.
+        URI uri = builder.build().toUri();
+
         try {
             JsonNode root = tasnifRestClient.get()
-                .uri(builder.build().toUriString())
+                .uri(uri)
                 .retrieve()
                 .body(JsonNode.class);
 
@@ -170,7 +177,7 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         }
         for (JsonNode pkg : packagesNode) {
             list.add(new MxikPackageDto(
-                pkg.has("code") ? pkg.get("code").asText() : null,
+                nodeAsString(pkg.get("code")),
                 text(pkg, "mxikCode"),
                 text(pkg, "nameRu"),
                 text(pkg, "nameUz"),
@@ -223,7 +230,17 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         if (node == null || node.isMissingNode() || node.isNull()) {
             return null;
         }
-        String v = node.path(field).asText(null);
+        return nodeAsString(node.get(field));
+    }
+
+    private static String nodeAsString(JsonNode node) {
+        if (node == null || node.isMissingNode() || node.isNull()) {
+            return null;
+        }
+        if (node.isNumber()) {
+            return node.numberValue().toString();
+        }
+        String v = node.asText(null);
         return StringUtils.hasText(v) ? v.trim() : null;
     }
 

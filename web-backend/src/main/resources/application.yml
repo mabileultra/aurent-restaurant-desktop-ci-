@@ -99,8 +99,8 @@ app:
   tasnif:
     enabled: true
     base-url: https://tasnif.soliq.uz/api/cl-api
-    connect-timeout-ms: 5000
-    read-timeout-ms: 10000
+    connect-timeout-ms: 8000
+    read-timeout-ms: 20000
     default-lang: uz
     default-type: 2
     search-type: 1
