@@ -104,15 +104,17 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
             throw new BadRequestException("Сервис tasnif.soliq.uz отключён");
         }
 
-        UriComponentsBuilder builder = UriComponentsBuilder.fromPath("/integration-mxik/get/information")
+        UriComponentsBuilder builder = UriComponentsBuilder
+            .fromUriString(properties.getBaseUrl())
+            .path("/integration-mxik/get/information")
             .queryParam("page", page)
             .queryParam("size", size)
             .queryParam("type", type)
             .queryParam("lang", lang);
         params.accept(builder);
 
-        // Важно: передаём URI, а не String — иначе RestClient повторно кодирует
-        // кириллицу (%D0%BC… → %25D0%25BC…) и Tasnif возвращает пустой список.
+        // Абсолютный URI + объект (не String) — иначе RestClient либо падает с
+        // "URI is not absolute", либо повторно кодирует кириллицу в query.
         URI uri = builder.build().toUri();
 
         try {
