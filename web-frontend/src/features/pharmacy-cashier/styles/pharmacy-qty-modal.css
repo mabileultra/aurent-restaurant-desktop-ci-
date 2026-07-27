@@ -1,0 +1,126 @@
+.pharmacy-qty-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+}
+
+.pharmacy-qty-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgba(15, 23, 42, 0.55);
+  cursor: pointer;
+}
+
+.pharmacy-qty-modal__panel {
+  position: relative;
+  width: min(420px, 100%);
+  background: var(--pharm-elevated, #fbfcfe);
+  color: var(--pharm-ink, #1e3a5f);
+  border: 1px solid var(--pharm-border, #d1d9e6);
+  border-radius: 16px;
+  box-shadow: 0 25px 60px rgb(30 58 95 / 0.2);
+  padding: 1.5rem 1.75rem 1.75rem;
+}
+
+.pharmacy-qty-modal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.pharmacy-qty-modal__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-top: 0.55rem;
+}
+
+.pharmacy-qty-modal__meta p {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--pharm-muted, #5a6f8c);
+}
+
+.pharmacy-qty-modal__meta strong {
+  color: var(--pharm-ink, #1e3a5f);
+}
+
+.pharmacy-qty-modal__label {
+  display: block;
+  margin: 1.25rem 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pharm-muted, #5a6f8c);
+}
+
+.pharmacy-qty-modal__input {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid var(--pharm-border, #d1d9e6);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--pharm-ink, #1e3a5f);
+  font-size: 1.35rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.pharmacy-qty-modal__input:focus {
+  border-color: var(--pharm-accent, #2f6fed);
+  box-shadow: 0 0 0 3px rgb(47 111 237 / 0.18);
+}
+
+.pharmacy-qty-modal__preview {
+  margin: 0.75rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #1e3a5f);
+}
+
+.pharmacy-qty-modal__error {
+  margin: 0.5rem 0 0;
+  font-size: 0.875rem;
+  color: #b42318;
+}
+
+.pharmacy-qty-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 10px;
+  margin-top: 1.35rem;
+}
+
+.pharmacy-qty-modal__btn {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--pharm-border, #d1d9e6);
+  font-size: 0.9375rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pharmacy-qty-modal__btn--cancel {
+  background: var(--pharm-surface, #f4f6fa);
+  color: var(--pharm-ink, #1e3a5f);
+}
+
+.pharmacy-qty-modal__btn--ok {
+  background: #1e3a5f;
+  border-color: #1e3a5f;
+  color: #fff;
+}
+
+.pharmacy-qty-modal__btn--ok:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

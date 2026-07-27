@@ -18,15 +18,15 @@ export function useCashierStoreProfile() {
 
   const businessType = normalizeBusinessTypeCode(query.data?.businessType);
   const isRestaurant = businessType === 'RESTAURANT' || onRestaurantRoute;
-  const registerPath = isRestaurant
-    ? '/cashier/restaurant'
-    : resolveCashierRegisterPath(query.data?.businessType);
+  const isPharmacy = businessType === 'PHARMACY' || location.pathname.startsWith('/cashier/pharmacy');
+  const registerPath = resolveCashierRegisterPath(query.data?.businessType);
 
   return {
     storeId,
     store: query.data,
     businessType,
     isRestaurant,
+    isPharmacy,
     registerPath,
     isLoading: query.isLoading,
     isFetched: query.isFetched,

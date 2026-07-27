@@ -23,8 +23,12 @@ export default function CashierRetailPosGuard({ children }) {
     return null;
   }
 
-  if (normalizeBusinessTypeCode(store?.businessType) === 'RESTAURANT') {
+  const type = normalizeBusinessTypeCode(store?.businessType);
+  if (type === 'RESTAURANT') {
     return <Navigate to="/cashier/restaurant" replace />;
+  }
+  if (type === 'PHARMACY') {
+    return <Navigate to="/cashier/pharmacy" replace />;
   }
 
   return children;

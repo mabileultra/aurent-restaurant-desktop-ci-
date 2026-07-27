@@ -1,0 +1,120 @@
+/* Аптечная касса: чек сверху, поиск снизу, оплата справа */
+
+.pharmacy-cashier {
+  --pharm-gap: 10px;
+  --pharm-pay-w: min(380px, 34vw);
+  --pharm-ink: var(--pos-text, #1e3a5f);
+  --pharm-muted: var(--pos-muted, #5a6f8c);
+  --pharm-border: var(--pos-border, #d1d9e6);
+  --pharm-surface: var(--pos-surface, #f4f6fa);
+  --pharm-elevated: var(--pos-surface-elevated, #fbfcfe);
+  --pharm-hover: var(--pos-surface-hover, #eef2f8);
+  --pharm-active: var(--pos-surface-active, #e4eaf3);
+  --pharm-accent: var(--pos-accent, #2f6fed);
+}
+
+.pharmacy-cashier__split {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cashier__stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--pharm-pay-w);
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--pharm-gap);
+  align-items: stretch;
+  padding: var(--pharm-gap);
+}
+
+.pharmacy-cashier__main {
+  min-width: 0;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(140px, 0.95fr) minmax(180px, 1.05fr);
+  gap: var(--pharm-gap);
+}
+
+.pharmacy-cashier__cart-pane,
+.pharmacy-cashier__search-pane {
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--pharm-elevated);
+  border: 1px solid var(--pharm-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pharmacy-cashier__pane-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--pharm-border);
+  background: var(--pharm-surface);
+}
+
+.pharmacy-cashier__pane-title {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pharm-muted);
+}
+
+.pharmacy-cashier__actions {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cashier__pay-shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.pharmacy-cashier__pay-pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cashier__pay-pane--flow {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: var(--pharm-elevated);
+  border: 1px solid var(--pharm-border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.pharmacy-cashier__bottom-nav {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 960px) {
+  .pharmacy-cashier__stage {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    --pharm-pay-w: 100%;
+  }
+
+  .pharmacy-cashier__actions {
+    max-height: 42vh;
+  }
+}

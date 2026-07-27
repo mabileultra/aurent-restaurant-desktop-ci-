@@ -1,0 +1,110 @@
+.pharmacy-cart-table {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.pharmacy-cart-table__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pharmacy-cart-table__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.875rem;
+}
+
+.pharmacy-cart-table__table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 12px;
+  text-align: left;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pharm-muted, #5a6f8c);
+  background: var(--pharm-surface, #f4f6fa);
+  border-bottom: 1px solid var(--pharm-border, #d1d9e6);
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--pharm-border, #d1d9e6);
+  color: var(--pharm-ink, #1e3a5f);
+  vertical-align: middle;
+}
+
+.pharmacy-cart-table__row {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+
+.pharmacy-cart-table__row:hover {
+  background: var(--pharm-hover, #eef2f8);
+}
+
+.pharmacy-cart-table__row.is-selected {
+  background: var(--pharm-active, #e4eaf3);
+}
+
+.pharmacy-cart-table__name {
+  font-weight: 700;
+  max-width: 28vw;
+}
+
+.pharmacy-cart-table__mono {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8125rem;
+}
+
+.pharmacy-cart-table__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pharmacy-cart-table__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.pharmacy-cart-table__qty-btn,
+.pharmacy-cart-table__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--pharm-border, #d1d9e6);
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fbfcfe);
+  color: var(--pharm-ink, #1e3a5f);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.pharmacy-cart-table__qty-btn:hover,
+.pharmacy-cart-table__remove:hover {
+  background: var(--pharm-hover, #eef2f8);
+}
+
+.pharmacy-cart-table__remove {
+  color: #b42318;
+}
+
+.pharmacy-cart-table__empty {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--pharm-muted, #5a6f8c);
+  font-size: 0.9375rem;
+}

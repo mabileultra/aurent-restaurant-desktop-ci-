@@ -9,18 +9,20 @@ export default function CashierBottomNavRegister({ t }) {
   const navigate = useNavigate();
   const { registerPath } = useCashierStoreProfile();
   const { shell } = usePosShell() ?? {};
-  const onPosPage = location.pathname.startsWith('/cashier/pos');
-  const isRegisterActive = onPosPage && shell?.posPane === 'register' && !shell?.payOpen;
+  const onRegisterPage =
+    location.pathname.startsWith('/cashier/pos')
+    || location.pathname.startsWith('/cashier/pharmacy');
+  const isRegisterActive = onRegisterPage && shell?.posPane === 'register' && !shell?.payOpen;
 
   const openRegister = () => {
     if (location.pathname === registerPath) {
-      if (onPosPage && shell) {
+      if (onRegisterPage && shell) {
         shell.onClosePayment?.();
         shell.onGoToRegister?.();
       }
       return;
     }
-    if (onPosPage && shell) {
+    if (onRegisterPage && shell) {
       shell.onClosePayment?.();
       shell.onGoToRegister?.();
       return;

@@ -37,6 +37,8 @@ export function usePosCartHandlers({
       id: product.id,
       name: product.name,
       sku: product.sku,
+      ikpu: product.ikpu ?? null,
+      attributes: product.attributes ?? null,
       saleType: product.saleType || 'PIECE',
       unitCode: product.unitCode,
       quantityScale: product.quantityScale,

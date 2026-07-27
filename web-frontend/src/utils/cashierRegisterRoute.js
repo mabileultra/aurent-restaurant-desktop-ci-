@@ -2,11 +2,16 @@ import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
 
 /** Полноэкранный режим кассы (как /cashier/pos): без вторичной шапки и внешнего bottom-nav. */
 export function isCashierRegisterScreen(pathname) {
-  return pathname.startsWith('/cashier/pos') || pathname.startsWith('/cashier/restaurant');
+  return (
+    pathname.startsWith('/cashier/pos')
+    || pathname.startsWith('/cashier/restaurant')
+    || pathname.startsWith('/cashier/pharmacy')
+  );
 }
 
 export function resolveCashierRegisterPath(businessType) {
-  return normalizeBusinessTypeCode(businessType) === 'RESTAURANT'
-    ? '/cashier/restaurant'
-    : '/cashier/pos';
+  const type = normalizeBusinessTypeCode(businessType);
+  if (type === 'RESTAURANT') return '/cashier/restaurant';
+  if (type === 'PHARMACY') return '/cashier/pharmacy';
+  return '/cashier/pos';
 }

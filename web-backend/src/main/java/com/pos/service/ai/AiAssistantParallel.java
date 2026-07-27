@@ -4,6 +4,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -25,10 +27,24 @@ public class AiAssistantParallel {
     }
 
     public <T> CompletableFuture<T> supply(Supplier<T> supplier) {
+        RequestAttributes requestAttributes = RequestContextHolder.getRequestAttributes();
         return CompletableFuture.supplyAsync(
-                () -> readOnlyTx.execute(status -> supplier.get()),
+                () -> executeWithRequestContext(requestAttributes, supplier),
                 executor
         );
+    }
+
+    private <T> T executeWithRequestContext(RequestAttributes requestAttributes, Supplier<T> supplier) {
+        if (requestAttributes != null) {
+            RequestContextHolder.setRequestAttributes(requestAttributes, true);
+        }
+        try {
+            return readOnlyTx.execute(status -> supplier.get());
+        } finally {
+            if (requestAttributes != null) {
+                RequestContextHolder.resetRequestAttributes();
+            }
+        }
     }
 
     public static void awaitAll(CompletableFuture<?>... futures) {

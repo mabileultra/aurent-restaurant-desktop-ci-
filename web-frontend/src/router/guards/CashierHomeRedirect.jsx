@@ -28,6 +28,12 @@ export default function CashierHomeRedirect() {
     return null;
   }
 
-  const isRestaurant = normalizeBusinessTypeCode(store?.businessType) === 'RESTAURANT';
-  return <Navigate to={isRestaurant ? '/cashier/restaurant' : '/cashier/pos'} replace />;
+  const type = normalizeBusinessTypeCode(store?.businessType);
+  if (type === 'RESTAURANT') {
+    return <Navigate to="/cashier/restaurant" replace />;
+  }
+  if (type === 'PHARMACY') {
+    return <Navigate to="/cashier/pharmacy" replace />;
+  }
+  return <Navigate to="/cashier/pos" replace />;
 }

@@ -7,6 +7,7 @@ export const ReceiptPage = lazy(() => import('../features/receipt/pages/ReceiptP
 
 export const PosPage = lazy(() => import('../features/cashier/pages/PosPage'));
 export const RestaurantPosPage = lazy(() => import('../features/restaurant-cashier/pages/RestaurantPosPage'));
+export const PharmacyPosPage = lazy(() => import('../features/pharmacy-cashier/pages/PharmacyPosPage'));
 export const KitchenDisplayPage = lazy(() => import('../features/restaurant-kitchen/pages/KitchenDisplayPage'));
 export const CashierMySalesPage = lazy(() => import('../features/cashier/pages/CashierMySalesPage'));
 export const HandbookPage = lazy(() => import('../features/handbook/pages/HandbookPage'));

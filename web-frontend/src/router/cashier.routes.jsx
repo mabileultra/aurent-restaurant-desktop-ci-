@@ -2,10 +2,12 @@ import { Route, Navigate } from 'react-router-dom';
 import CashierRoute from './guards/CashierRoute';
 import CashierHomeRedirect from './guards/CashierHomeRedirect';
 import CashierRetailPosGuard from './guards/CashierRetailPosGuard';
+import CashierPharmacyPosGuard from './guards/CashierPharmacyPosGuard';
 import CashierLayout from '../components/layout/CashierLayout';
 import {
   PosPage,
   RestaurantPosPage,
+  PharmacyPosPage,
   KitchenDisplayPage,
   CashierMySalesPage,
   HandbookPage,
@@ -31,6 +33,14 @@ export const cashierRoutes = (
       )}
     />
     <Route path="restaurant" element={<RestaurantPosPage />} />
+    <Route
+      path="pharmacy"
+      element={(
+        <CashierPharmacyPosGuard>
+          <PharmacyPosPage />
+        </CashierPharmacyPosGuard>
+      )}
+    />
     <Route path="kitchen" element={<KitchenDisplayPage />} />
     <Route path="sales" element={<CashierMySalesPage />} />
     <Route path="handbook" element={<HandbookPage scope="cashier" />} />

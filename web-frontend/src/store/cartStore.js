@@ -33,6 +33,8 @@ const buildLine = (product, quantity) => {
     productId: product.id,
     name: product.name,
     sku: product.sku,
+    ikpu: product.ikpu ?? null,
+    attributes: product.attributes ?? null,
     saleType,
     unitCode: product.unitCode || (saleType === 'WEIGHT' ? 'KG' : 'PCS'),
     unitLabel: saleType === 'WEIGHT' ? unitLabel(product.unitCode || 'KG') : 'pcs',
