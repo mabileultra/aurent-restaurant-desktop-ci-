@@ -137,7 +137,7 @@ export function createBot(config) {
   return {
     bot,
     async start() {
-      await bot.launch();
+      // setMyCommands до launch: в Telegraf await launch() висит до остановки бота
       try {
         await bot.telegram.setMyCommands(BOT_COMMANDS);
         console.log('Команды бота обновлены');
@@ -145,6 +145,7 @@ export function createBot(config) {
         console.warn('Не удалось setMyCommands:', err.message);
       }
       console.log('Aurent bot запущен (меню + поиск + поддержка)');
+      await bot.launch();
     },
     stop(reason) {
       bot.stop(reason);
