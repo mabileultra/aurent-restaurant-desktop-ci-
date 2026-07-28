@@ -113,6 +113,39 @@ export function createUserDataStore(dataDir) {
       return ticket;
     },
 
+    linkGroupMessage(userId, ticketId, groupMessageId) {
+      if (groupMessageId == null) return;
+      const db = load();
+      if (!db.groupMessages) db.groupMessages = {};
+      db.groupMessages[String(groupMessageId)] = {
+        userId: Number(userId),
+        ticketId: Number(ticketId),
+      };
+      // keep last 500 mappings
+      const keys = Object.keys(db.groupMessages);
+      if (keys.length > 500) {
+        for (const key of keys.slice(0, keys.length - 500)) {
+          delete db.groupMessages[key];
+        }
+      }
+      save(db);
+    },
+
+    resolveGroupMessage(groupMessageId) {
+      const db = load();
+      return db.groupMessages?.[String(groupMessageId)] || null;
+    },
+
+    setTicketStatus(userId, ticketId, status) {
+      const db = load();
+      const user = userBucket(db, userId);
+      const ticket = user.tickets.find((t) => t.id === Number(ticketId));
+      if (!ticket || ticket.closed) return null;
+      ticket.status = status;
+      save(db);
+      return ticket;
+    },
+
     getActiveTicket(userId) {
       return userBucket(load(), userId).tickets.find((t) => !t.closed) || null;
     },

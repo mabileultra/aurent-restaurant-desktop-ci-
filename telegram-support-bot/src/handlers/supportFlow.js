@@ -74,22 +74,30 @@ export async function receiveSupportMessage(ctx, deps) {
   const groupId = getGroupId();
   if (groupId) {
     try {
-      await ctx.telegram.sendMessage(groupId, groupText, { parse_mode: 'HTML' });
+      const sent = await ctx.telegram.sendMessage(groupId, groupText, { parse_mode: 'HTML' });
+      dataStore.linkGroupMessage(ctx.from.id, ticket.id, sent.message_id);
+
       if (ctx.message.photo?.length) {
         const photo = ctx.message.photo[ctx.message.photo.length - 1];
-        await ctx.telegram.sendPhoto(groupId, photo.file_id, {
+        const media = await ctx.telegram.sendPhoto(groupId, photo.file_id, {
           caption: `Обращение №${ticket.id}`,
+          reply_to_message_id: sent.message_id,
         });
+        dataStore.linkGroupMessage(ctx.from.id, ticket.id, media.message_id);
       } else if (ctx.message.document) {
-        await ctx.telegram.sendDocument(groupId, ctx.message.document.file_id, {
+        const media = await ctx.telegram.sendDocument(groupId, ctx.message.document.file_id, {
           caption: `Обращение №${ticket.id}`,
+          reply_to_message_id: sent.message_id,
         });
+        dataStore.linkGroupMessage(ctx.from.id, ticket.id, media.message_id);
       } else if (ctx.message.location) {
-        await ctx.telegram.sendLocation(
+        const media = await ctx.telegram.sendLocation(
           groupId,
           ctx.message.location.latitude,
-          ctx.message.location.longitude
+          ctx.message.location.longitude,
+          { reply_to_message_id: sent.message_id }
         );
+        dataStore.linkGroupMessage(ctx.from.id, ticket.id, media.message_id);
       }
     } catch (err) {
       console.error('Support forward error:', err);
@@ -155,11 +163,17 @@ export async function appendOrCreateSupport(ctx, deps) {
       deps.dataStore.appendTicketNote(ctx.from.id, existing.id, note);
       const groupId = deps.getGroupId();
       if (groupId) {
-        await ctx.telegram.sendMessage(
+        const sent = await ctx.telegram.sendMessage(
           groupId,
-          `➕ Дополнение к обращению №${existing.id}:\n${escapeHtml(note)}`,
+          [
+            `➕ Дополнение к обращению <b>№${existing.id}</b>`,
+            `<b>Telegram ID:</b> <code>${ctx.from.id}</code>`,
+            '',
+            escapeHtml(note),
+          ].join('\n'),
           { parse_mode: 'HTML' }
         );
+        deps.dataStore.linkGroupMessage(ctx.from.id, existing.id, sent.message_id);
       }
       deps.stateStore.setState(ctx.from.id, STATES.SUPPORT_ACTIVE, {
         activeTicketId: existing.id,

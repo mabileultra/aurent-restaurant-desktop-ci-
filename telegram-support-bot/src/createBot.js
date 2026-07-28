@@ -2,6 +2,7 @@ import { Telegraf } from 'telegraf';
 import { createBotApi } from './api/botApi.js';
 import { createSupportForwarder } from './support/supportForwarder.js';
 import { createSupportGroupStore } from './support/supportGroupStore.js';
+import { handleSupportGroupReply } from './support/groupReplyHandler.js';
 import { createUserDataStore } from './state/userDataStore.js';
 import { createUserStateStore } from './state/userStateStore.js';
 import { isGroupChat } from './utils/telegramText.js';
@@ -116,6 +117,11 @@ export function createBot(config) {
   bot.on('message', async (ctx) => {
     if (isGroupChat(ctx.chat)) {
       if (!groupStore.getId()) groupStore.connectGroup(ctx.chat);
+      try {
+        await handleSupportGroupReply(ctx, deps);
+      } catch (err) {
+        console.error('group reply error:', err);
+      }
       return;
     }
     if (ctx.chat?.type !== 'private') return;
