@@ -1,0 +1,156 @@
+package com.pos.ai.service.impl;
+
+import com.pos.ai.dto.AiAssistantChatMessage;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+@Component
+class AiAssistantToolRouter {
+
+    private static final Pattern SKU_LIKE = Pattern.compile("(?i)(?:sku|артикул|товар)\\s*[:#]?\\s*([a-z0-9][a-z0-9\\-_.]{2,})");
+
+    AiAssistantToolCall selectTool(String message, List<AiAssistantChatMessage> history) {
+        String q = AiAssistantMessageNormalizer.forRouting(message);
+        if (isVagueFollowUp(q) && history != null && !history.isEmpty()) {
+            q = q + " " + AiAssistantConversationHistory.contextHint(history).toLowerCase(Locale.ROOT);
+        }
+        return selectToolFallback(q, message);
+    }
+
+    private boolean isVagueFollowUp(String q) {
+        if (q.length() > 45) {
+            return false;
+        }
+        return q.startsWith("а ") || q.startsWith("и ") || q.startsWith("ну ")
+                || q.contains("подробнее") || q.contains("ещё") || q.contains("еще")
+                || q.contains("почему") || q.contains("this") || q.contains("that");
+    }
+
+    String detectLanguage(String message) {
+        String q = message.toLowerCase(Locale.ROOT);
+        if (q.contains("answer in english") || q.contains("respond in english") || q.contains("на английском")) return "en";
+        if (q.contains("узбек") || q.contains("o'zbek") || q.contains("uzbek")
+                || q.contains("salom") || q.contains("rahmat") || q.contains("qanday")
+                || q.contains("savdo") || q.contains("ombor") || q.contains("do'kon")
+                || q.contains("bugun") || q.contains("tushum") || q.contains("qaytar")) return "uz";
+        if (q.chars().anyMatch(ch -> ch >= 0x0400 && ch <= 0x04FF)) return "ru";
+        return "en";
+    }
+
+    boolean isSmallTalk(String message) {
+        String q = AiAssistantMessageNormalizer.forRouting(message);
+        if (q.length() > 80) {
+            return false;
+        }
+        return q.equals("привет") || q.equals("здравствуйте") || q.equals("салам") || q.equals("салам алейкум")
+                || q.equals("hello") || q.equals("hi") || q.equals("how are you") || q.equals("hey")
+                || q.equals("как дела") || q.equals("спасибо") || q.equals("благодарю") || q.equals("пока")
+                || q.equals("rahmat") || q.equals("thanks") || q.equals("thank you")
+                || q.startsWith("привет ") || q.startsWith("hello ");
+    }
+
+    private AiAssistantToolCall selectToolFallback(String q, String raw) {
+        q = stripRoutingFiller(q);
+        if (isZReportQuery(q)) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.Z_REPORTS, null, null, null, 15);
+        }
+        if (q.contains("низк") || q.contains("мало остат") || q.contains("low stock") || q.contains("кам қолдиқ")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.LOW_STOCK, null, null, null, 15);
+        }
+        if (q.contains("оборач") || q.contains("turnover")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.STOCK_TURNOVER, null, null, null, 15);
+        }
+        if (q.contains("мертв") || q.contains("dead stock") || q.contains("не прода") || q.contains("давно не прода")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.DEAD_STOCK, null, null, null, 15);
+        }
+        if (q.contains("жизненн") || q.contains("lifecycle") || q.contains("история товара") || q.contains("harakatlar tarixi")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.PRODUCT_LIFECYCLE, null, null, extractQuery(raw), 30);
+        }
+        if (q.contains("продаж по товар") || q.contains("sales by products") || q.contains("product sales")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.PRODUCT_SALES, null, null, extractQuery(raw), 15);
+        }
+        if (q.contains("инвентар") || q.contains("inventory count") || q.contains("inventory")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.INVENTORY, null, null, null, 10);
+        }
+        if (q.contains("возврат") || q.contains("return")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.RETURNS_SUMMARY, null, null, null, 10);
+        }
+        if (q.contains("топ") || q.contains("top") || q.contains("лидер")
+                || (q.contains("товар") && !q.contains("остат") && !q.contains("склад"))) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.TOP_PRODUCTS, null, null, null, 10);
+        }
+        if (q.contains("сегодня") || q.contains("today") || q.contains("за день")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.TODAY_REVENUE, null, null, null, 10);
+        }
+        if (q.contains("продаж") || q.contains("выруч") || q.contains("чек") || q.contains("sales") || q.contains("revenue")
+                || q.contains("динамик")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.SALES_PERIOD, null, null, null, 10);
+        }
+        if (q.contains("отчёт") || q.contains("отчет") || q.contains("отчот")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.SALES_PERIOD, null, null, null, 10);
+        }
+        if (q.contains("graph") || q.contains("chart") || q.contains("график")
+                || q.contains("по магазин") || q.contains("магазин") || q.contains("store") || q.contains("филиал")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.STORE_INSIGHT, null, null, null, 10);
+        }
+        if (q.contains("перемещ") || q.contains("распредел")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.REDISTRIBUTION, null, null, null, 10);
+        }
+        if (q.contains("склад") || q.contains("остат") || q.contains("stock")) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.INVENTORY, null, null, null, 10);
+        }
+        if (isConversationalOverview(q)) {
+            return new AiAssistantToolCall(AiAssistantToolCatalog.SMALLTALK, null, null, null, 10);
+        }
+        return new AiAssistantToolCall(AiAssistantToolCatalog.SMALLTALK, null, null, null, 10);
+    }
+
+    private String extractQuery(String raw) {
+        if (raw == null) {
+            return null;
+        }
+        Matcher m = SKU_LIKE.matcher(raw);
+        if (m.find()) {
+            return m.group(1);
+        }
+        return null;
+    }
+
+    private boolean isConversationalOverview(String q) {
+        return q.contains("текущее состояние") || q.contains("общее состояние") || q.contains("состояние системы")
+                || q.contains("по всей системе") || q.contains("как дела у бизнеса") || q.contains("общая картина")
+                || q.contains("по системе") || q.contains("по системе всё") || q.contains("скажи всё")
+                || q.contains("что у нас") || q.contains("как бизнес") || q.contains("что не так") || q.contains("что делать")
+                || q.contains("совет") || q.contains("рекоменд")
+                || q.contains("свод") || q.contains("обзор") || q.contains("overview") || q.contains("summary")
+                || q.contains("общий") || q.contains("общая") || q.contains("обший") || q.contains("обгий")
+                || q.contains("итог") || q.contains("картина");
+    }
+
+    private static String stripRoutingFiller(String q) {
+        String s = q;
+        for (String prefix : List.of(
+                "давай ", "покажи ", "покажите ", "выведи ", "выведите ",
+                "нужны ", "нужен ", "хочу ", "хотел бы ", "можно "
+        )) {
+            if (s.startsWith(prefix)) {
+                s = s.substring(prefix.length()).trim();
+            }
+        }
+        return s;
+    }
+
+    private boolean isZReportQuery(String q) {
+        String n = q.replace('з', 'z');
+        return n.contains("z-отчет") || n.contains("z отчет") || n.contains("z отчот")
+                || n.contains("z-отчёт") || n.contains("z отчёт") || n.contains("zотчет") || n.contains("zотчот")
+                || n.contains("z report") || n.contains("z-report")
+                || (n.contains(" z ") && (n.contains("отч") || n.contains("отчот")))
+                || n.startsWith("z ") || n.startsWith("z-")
+                || (n.contains("z") && (n.contains("отчот") || n.contains("отчет") || n.contains("отчёт")));
+    }
+}

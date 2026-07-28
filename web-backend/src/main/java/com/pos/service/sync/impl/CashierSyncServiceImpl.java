@@ -12,7 +12,7 @@ import com.pos.dto.sync.OfflineSalesBatchRequest;
 import com.pos.dto.sync.OfflineSalesBatchResponse;
 import com.pos.domain.StockMovementType;
 import com.pos.entity.CashierShift;
-import com.pos.entity.Customer;
+import com.pos.crm.entity.Customer;
 import com.pos.entity.Product;
 import com.pos.entity.Sale;
 import com.pos.entity.SaleItem;

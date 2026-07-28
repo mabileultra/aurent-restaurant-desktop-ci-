@@ -4,7 +4,7 @@ import com.pos.dto.sale.CreateSaleRequest;
 import com.pos.dto.sale.SaleItemRequest;
 import com.pos.dto.sale.SaleResponse;
 import com.pos.entity.CashierShift;
-import com.pos.entity.Customer;
+import com.pos.crm.entity.Customer;
 import com.pos.entity.Product;
 import com.pos.entity.Sale;
 import com.pos.entity.SaleItem;

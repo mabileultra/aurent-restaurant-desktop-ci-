@@ -13,7 +13,7 @@ import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.mapper.StoreMapper;
 import com.pos.repository.CashierShiftRepository;
-import com.pos.repository.CustomerOrderRepository;
+import com.pos.crm.repository.CustomerOrderRepository;
 import com.pos.repository.SaleRepository;
 import com.pos.repository.StockInventoryRepository;
 import com.pos.repository.StockMovementRepository;

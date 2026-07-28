@@ -4,7 +4,7 @@ import com.pos.security.IdentityInternalApiKeyFilter;
 import com.pos.security.JwtAuthenticationFilter;
 import com.pos.security.PlatformInternalApiKeyFilter;
 import com.pos.security.ReportingInternalApiKeyFilter;
-import com.pos.security.TelegramBotApiKeyFilter;
+import com.pos.telegram.security.TelegramBotApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

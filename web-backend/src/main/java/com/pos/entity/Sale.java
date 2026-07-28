@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.pos.crm.entity.Customer;
 import com.pos.domain.sale.ServiceMode;
 
 @Entity

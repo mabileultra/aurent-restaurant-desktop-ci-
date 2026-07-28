@@ -1,6 +1,6 @@
 package com.pos.service.finance.support;
 
-import com.pos.entity.Customer;
+import com.pos.crm.entity.Customer;
 import com.pos.entity.Sale;
 import com.pos.shared.log.LogUtil;
 

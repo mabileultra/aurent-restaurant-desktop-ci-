@@ -8,7 +8,7 @@ import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.CashierShiftRepository;
 import com.pos.repository.CompanyRepository;
-import com.pos.repository.CustomerOrderRepository;
+import com.pos.crm.repository.CustomerOrderRepository;
 import com.pos.repository.RoleRepository;
 import com.pos.repository.SaleRepository;
 import com.pos.repository.UserRepository;
