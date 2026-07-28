@@ -3,7 +3,8 @@ package com.pos.exception;
 import com.pos.shared.api.ApiErrorResponse;
 import com.pos.shared.api.ErrorCode;
 import com.pos.util.DbExceptionTranslator;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import jakarta.persistence.EntityNotFoundException;
@@ -35,6 +36,21 @@ public class GlobalExceptionHandler {
 
     @Value("${app.errors.include-context:false}")
     private boolean includeContextInResponse;
+
+    @ExceptionHandler(CallNotPermittedException.class)
+    public ResponseEntity<ApiErrorResponse> handleCircuitOpen(CallNotPermittedException ex, HttpServletRequest req) {
+        String message = "Downstream service is temporarily unavailable, try again shortly";
+        logClientError(ErrorCode.SERVICE_UNAVAILABLE, message, req, Map.of("circuitBreaker", ex.getCausingCircuitBreakerName()), ex);
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(
+            ApiErrorResponse.of(
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                ErrorCode.SERVICE_UNAVAILABLE,
+                message,
+                req.getRequestURI(),
+                null
+            )
+        );
+    }
 
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiErrorResponse> handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {

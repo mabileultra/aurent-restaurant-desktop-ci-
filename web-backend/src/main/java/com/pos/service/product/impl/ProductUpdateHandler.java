@@ -18,7 +18,7 @@ import com.pos.service.product.support.ProductCatalogLoader;
 import com.pos.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductValueNormalizer;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

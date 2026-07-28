@@ -14,7 +14,7 @@ import com.pos.repository.CategoryRepository;
 import com.pos.service.CategoryService;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

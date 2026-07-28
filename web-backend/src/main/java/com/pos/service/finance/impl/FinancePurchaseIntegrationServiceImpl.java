@@ -5,7 +5,7 @@ import com.pos.service.finance.FinancePurchaseIntegrationService;
 import com.pos.service.finance.support.FinanceCreditPurchasePayloadBuilder;
 import com.pos.service.finance.support.FinanceIntegrationPublisher;
 import com.pos.service.finance.support.FinancePurchasePayloadBuilder;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

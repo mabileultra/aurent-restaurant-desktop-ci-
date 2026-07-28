@@ -4,7 +4,7 @@ import com.pos.entity.Sale;
 import com.pos.service.finance.FinanceSaleIntegrationService;
 import com.pos.service.finance.support.FinanceIntegrationPublisher;
 import com.pos.service.finance.support.FinanceSalePayloadBuilder;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

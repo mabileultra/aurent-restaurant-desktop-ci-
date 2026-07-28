@@ -21,7 +21,7 @@ import com.pos.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

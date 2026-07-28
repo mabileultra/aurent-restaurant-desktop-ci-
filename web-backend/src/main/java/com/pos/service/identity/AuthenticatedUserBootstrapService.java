@@ -4,7 +4,7 @@ import com.pos.client.identity.IdentityOutboundClient;
 import com.pos.dto.identity.internal.UserSyncRequest;
 import com.pos.entity.User;
 import com.pos.security.cache.AuthenticatedUserCache;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

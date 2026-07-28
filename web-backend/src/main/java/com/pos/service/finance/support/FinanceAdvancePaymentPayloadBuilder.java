@@ -2,7 +2,7 @@ package com.pos.service.finance.support;
 
 import com.pos.entity.Customer;
 import com.pos.entity.Sale;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

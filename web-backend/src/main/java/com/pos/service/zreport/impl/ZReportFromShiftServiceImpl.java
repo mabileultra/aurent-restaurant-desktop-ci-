@@ -14,7 +14,7 @@ import com.pos.repository.ZReportRepository;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.service.finance.FinanceZReportIntegrationService;
 import com.pos.service.zreport.ZReportFromShiftService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

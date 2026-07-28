@@ -10,7 +10,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import com.pos.config.finance.FinanceKafkaProperties;
 import com.pos.service.finance.support.FinanceHttpClient;
 import com.pos.service.finance.support.FinanceKafkaPublisher;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;

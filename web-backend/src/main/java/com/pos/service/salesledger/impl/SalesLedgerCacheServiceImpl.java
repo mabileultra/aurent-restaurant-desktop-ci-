@@ -13,7 +13,7 @@ import com.pos.service.cache.support.AbstractPosCacheRefreshService;
 import com.pos.service.salesledger.SalesLedgerCacheLoader;
 import com.pos.service.salesledger.SalesLedgerCacheService;
 import com.pos.service.salesledger.support.SalesLedgerCacheSearchSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

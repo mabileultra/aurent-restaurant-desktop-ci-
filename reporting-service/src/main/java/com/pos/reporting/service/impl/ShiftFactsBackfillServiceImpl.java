@@ -8,7 +8,7 @@ import com.pos.reporting.client.PosReportingFactsClient;
 import com.pos.reporting.dto.FactsBackfillResult;
 import com.pos.reporting.dto.ShiftFactsPageResponse;
 import com.pos.shared.event.ShiftClosedEvent;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

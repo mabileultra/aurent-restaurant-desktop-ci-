@@ -27,7 +27,7 @@ import com.pos.repository.BusinessTypeUnitRepository;
 import com.pos.repository.FieldDisplayRuleRepository;
 import com.pos.repository.UnitRepository;
 import com.pos.service.BusinessTypeConfigService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;

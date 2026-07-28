@@ -15,6 +15,8 @@ public enum RoleName {
     MANAGER("MANAGER"),
     CASHIER("CASHIER"),
     WAITER("WAITER"),
+    COURIER("COURIER"),
+    COOK("COOK"),
     ACCOUNTANT("ACCOUNTANT");
 
     private final String key;

@@ -1,10 +1,13 @@
 package com.pos.platform.security;
 
+import com.pos.shared.http.TenantHeaders;
+import com.pos.shared.jwt.JwtClaims;
+import com.pos.shared.jwt.JwtClaimsExtractor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -12,17 +15,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.pos.shared.http.TenantHeaders;
-
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    @Value("${app.jwt.secret}")
+    private String secretKey;
 
     @Override
     protected void doFilterInternal(
@@ -34,43 +34,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 String token = authHeader.substring(7);
-                if (jwtService.isTokenValid(token)) {
-                    Integer companyId = resolveCompanyId(request, token);
-                    UUID userId = jwtService.extractUserId(token);
+                try {
+                    JwtClaims claims = JwtClaimsExtractor.extract(token, secretKey);
+                    Integer companyId = JwtClaimsExtractor.resolveCompanyId(
+                        claims.companyId(), request.getHeader(TenantHeaders.COMPANY_ID)
+                    );
                     String role = request.getHeader(TenantHeaders.USER_ROLES);
                     if (role == null || role.isBlank()) {
-                        role = jwtService.extractRole(token);
+                        role = claims.role();
                     }
-                    PlatformTenantContext.set(companyId, userId, role);
+                    PlatformTenantContext.set(companyId, claims.userId(), role);
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                     var authentication = new UsernamePasswordAuthenticationToken(
-                        userId.toString(),
+                        claims.userId().toString(),
                         null,
                         authorities
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
+                } catch (Exception ignored) {
+                    // невалидный/просроченный токен — не аутентифицируем
                 }
             }
             filterChain.doFilter(request, response);
         } finally {
             PlatformTenantContext.clear();
             SecurityContextHolder.clearContext();
-        }
-    }
-
-    private Integer resolveCompanyId(HttpServletRequest request, String token) {
-        Integer companyId = jwtService.extractCompanyId(token);
-        if (companyId != null) {
-            return companyId;
-        }
-        String headerValue = request.getHeader(TenantHeaders.COMPANY_ID);
-        if (headerValue == null || headerValue.isBlank()) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(headerValue.trim());
-        } catch (NumberFormatException ex) {
-            return null;
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.pos.email;
 
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StreamUtils;

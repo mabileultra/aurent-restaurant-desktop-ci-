@@ -3,7 +3,7 @@ package com.pos.service.finance.support;
 import com.pos.config.finance.FinanceKafkaProperties;
 import com.pos.entity.FinanceSyncOutbox;
 import com.pos.shared.kafka.FinanceIntegrationMessage;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;

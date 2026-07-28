@@ -6,7 +6,7 @@ import com.pos.config.AiAssistantProperties;
 import com.pos.dto.ai.AiAssistantChatMessage;
 import com.pos.exception.BadRequestException;
 import com.pos.service.ai.DeepSeekClient;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

@@ -16,7 +16,7 @@ import com.pos.service.product.lifecycle.ProductLifecycleReferenceResolver;
 import com.pos.service.product.lifecycle.ProductLifecycleStockBalanceTracker;
 import com.pos.service.product.lifecycle.ProductLifecycleSummaryBuilder;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

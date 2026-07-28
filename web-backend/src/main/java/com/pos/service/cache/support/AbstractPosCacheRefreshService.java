@@ -1,7 +1,7 @@
 package com.pos.service.cache.support;
 
 import com.pos.exception.CacheRefreshException;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 
 /**
  * Единственный approved abstract для service-слоя: шаблон refresh in-memory кэшей (load → replace → log).

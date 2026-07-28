@@ -40,7 +40,7 @@ import com.pos.service.salesledger.SalesLedgerCacheService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
 import com.pos.service.sync.CashierSyncService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
 import com.pos.util.QuantityValidator;
 import lombok.RequiredArgsConstructor;

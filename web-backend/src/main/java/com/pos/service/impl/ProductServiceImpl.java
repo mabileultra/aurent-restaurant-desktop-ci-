@@ -19,7 +19,7 @@ import com.pos.service.product.ProductCommandService;
 import com.pos.service.product.ProductLifecycleService;
 import com.pos.service.product.ProductQueryService;
 import com.pos.service.product.ProductStockService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

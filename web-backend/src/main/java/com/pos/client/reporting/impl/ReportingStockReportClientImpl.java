@@ -9,6 +9,8 @@ import com.pos.dto.report.stock.StockInventoryRowResponse;
 import com.pos.dto.report.stock.StockTurnoverRowResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.service.support.HttpRequestAuthSupport;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -24,10 +26,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportingStockReportClientImpl implements ReportingStockReportClient {
 
+    private static final String REPORTING_SERVICE = "reporting-service";
+
     private final RestClient reportingRestClient;
     private final HttpRequestAuthSupport httpRequestAuthSupport;
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public StockCatalogStatsResponse catalogStats() {
         StockCatalogStatsResponse body = fetch(
             "/reports/stock/catalog-stats",
@@ -38,6 +44,8 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<LowStockRowResponse> lowStock(int page, int size) {
         return fetch(
             "/reports/stock/low-stock",
@@ -47,6 +55,8 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<StockInventoryRowResponse> inventories(
         LocalDate from,
         LocalDate to,
@@ -70,6 +80,8 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<StockTurnoverRowResponse> turnover(
         LocalDate from,
         LocalDate to,
@@ -97,6 +109,8 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<ProductSalesRowResponse> productSales(
         LocalDate from,
         LocalDate to,
@@ -128,6 +142,8 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<DeadStockRowResponse> deadStock(
         LocalDate asOfDate,
         int daysNoSale,

@@ -8,7 +8,7 @@ import com.pos.platform.exception.BadRequestException;
 import com.pos.platform.repository.PlatformSettingRepository;
 import com.pos.platform.security.PlatformTenantContext;
 import com.pos.platform.service.PlatformSecurityService;
-import com.pos.platform.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

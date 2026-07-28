@@ -19,7 +19,7 @@ import com.pos.restaurant.repository.TableSessionLineRepository;
 import com.pos.restaurant.repository.TableSessionRepository;
 import com.pos.restaurant.service.DiningHallService;
 import com.pos.restaurant.support.RestaurantStoreSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

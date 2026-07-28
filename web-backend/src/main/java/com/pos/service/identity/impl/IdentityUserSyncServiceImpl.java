@@ -15,7 +15,7 @@ import com.pos.repository.UserRepository;
 import com.pos.security.cache.AuthenticatedUserCache;
 import com.pos.service.identity.IdentityUserSyncService;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

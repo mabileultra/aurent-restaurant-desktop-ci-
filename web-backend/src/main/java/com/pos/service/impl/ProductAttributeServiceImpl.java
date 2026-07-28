@@ -8,7 +8,7 @@ import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.repository.ProductAttributeRepository;
 import com.pos.service.ProductAttributeService;
 import com.pos.util.BusinessTypeParser;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

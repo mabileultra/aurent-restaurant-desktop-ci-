@@ -14,11 +14,22 @@ RUN mvn -pl shared-kernel,finance-service -am dependency:go-offline -q
 COPY finance-service/src finance-service/src
 RUN mvn -pl finance-service -am package -DskipTests -q
 
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
-RUN apk add --no-cache wget
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl \
+  && groupadd -r pos && useradd -r -g pos pos \
+  && rm -rf /var/lib/apt/lists/*
+
+USER pos
 
 COPY --from=build /app/finance-service/target/finance-service-1.0.0.jar app.jar
+
 EXPOSE 8082
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", \
+  "-XX:+UseContainerSupport", \
+  "-XX:MaxRAMPercentage=75.0", \
+  "-Djava.security.egd=file:/dev/./urandom", \
+  "-jar", "app.jar"]

@@ -10,7 +10,7 @@ import com.pos.reporting.dto.ShiftFactsPageResponse;
 import com.pos.reporting.dto.StockFactsPageResponse;
 import com.pos.shared.event.ShiftClosedEvent;
 import com.pos.shared.event.StockReceivedEvent;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

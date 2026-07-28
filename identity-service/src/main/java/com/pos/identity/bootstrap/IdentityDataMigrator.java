@@ -1,7 +1,7 @@
 package com.pos.identity.bootstrap;
 
 import com.pos.identity.repository.UserRepository;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;

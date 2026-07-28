@@ -18,7 +18,7 @@ import com.pos.restaurant.support.KitchenDepartmentResolver;
 import com.pos.restaurant.support.KitchenTicketMapper;
 import com.pos.restaurant.support.RestaurantStoreSupport;
 import com.pos.restaurant.support.TableSessionMapper;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

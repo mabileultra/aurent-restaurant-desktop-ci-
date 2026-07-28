@@ -6,7 +6,7 @@ import com.pos.finance.entity.LedgerEntryType;
 import com.pos.finance.repository.CustomerReceivableEntryRepository;
 import com.pos.finance.service.CreditSaleIntegrationService;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

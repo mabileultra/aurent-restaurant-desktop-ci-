@@ -9,7 +9,7 @@ import com.pos.repository.ReferenceBookRepository;
 import com.pos.restaurant.dto.KitchenDepartmentResponse;
 import com.pos.restaurant.dto.SaveKitchenDepartmentRequest;
 import com.pos.restaurant.service.KitchenDepartmentService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;

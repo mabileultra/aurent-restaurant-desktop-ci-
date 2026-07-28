@@ -6,7 +6,7 @@ import com.pos.finance.entity.SupplierPayableEntry;
 import com.pos.finance.repository.SupplierPayableEntryRepository;
 import com.pos.finance.service.CreditPurchaseIntegrationService;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

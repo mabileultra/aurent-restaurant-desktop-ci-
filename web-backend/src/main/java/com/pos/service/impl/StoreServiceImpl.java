@@ -24,7 +24,7 @@ import com.pos.repository.spec.StoreSpecifications;
 import com.pos.service.StoreService;
 import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;

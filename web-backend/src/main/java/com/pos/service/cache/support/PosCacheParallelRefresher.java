@@ -2,7 +2,7 @@ package com.pos.service.cache.support;
 
 import com.pos.exception.CacheRefreshException;
 import com.pos.service.cache.PosCacheRefreshTask;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 

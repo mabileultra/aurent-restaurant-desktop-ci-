@@ -5,7 +5,7 @@ import com.pos.reporting.dto.FactsBackfillResult;
 import com.pos.reporting.dto.TransferFactsPageResponse;
 import com.pos.reporting.service.ReportingIngestService;
 import com.pos.reporting.service.TransferFactsBackfillService;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.shared.event.StockTransferRecordedEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -13,7 +13,7 @@ import com.pos.repository.BusinessTypeFieldRepository;
 import com.pos.repository.ReferenceBookRepository;
 import com.pos.service.BusinessTypeConfigService;
 import com.pos.service.BusinessTypeDefinitionService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

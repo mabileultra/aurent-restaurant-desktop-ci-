@@ -3,7 +3,7 @@ package com.pos.service.finance.support;
 import com.pos.entity.CashierShift;
 import com.pos.entity.Store;
 import com.pos.entity.ZReport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

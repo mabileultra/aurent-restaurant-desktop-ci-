@@ -22,7 +22,7 @@ import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import com.pos.finance.service.support.CurrencySupport;
 import com.pos.finance.service.support.FinanceAuditSupport;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;

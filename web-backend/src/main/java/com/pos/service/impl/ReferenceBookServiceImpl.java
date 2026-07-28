@@ -7,7 +7,7 @@ import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.repository.ReferenceBookRepository;
 import com.pos.service.ReferenceBookService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;

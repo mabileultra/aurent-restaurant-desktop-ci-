@@ -13,7 +13,7 @@ import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.identity.service.user.UserPinService;
 import com.pos.identity.service.user.support.UserAccessPolicy;
 import com.pos.identity.util.DbExceptionTranslator;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.identity.util.TextUtil;
 import com.pos.identity.util.UserLoginUtil;
 import lombok.RequiredArgsConstructor;

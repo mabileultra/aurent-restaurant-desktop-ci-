@@ -65,6 +65,24 @@ public final class JwtClaimsExtractor {
         }
     }
 
+    /**
+     * Company id из claims, с fallback на заголовок (например, для сервис-к-сервис вызовов,
+     * где токен не несёт company id, но его прокидывает вызывающая сторона).
+     */
+    public static Integer resolveCompanyId(Integer claimsCompanyId, String headerValue) {
+        if (claimsCompanyId != null) {
+            return claimsCompanyId;
+        }
+        if (headerValue == null || headerValue.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(headerValue.trim());
+        } catch (NumberFormatException ex) {
+            return null;
+        }
+    }
+
     private static SecretKey signingKey(String secretKey) {
         return io.jsonwebtoken.security.Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
     }

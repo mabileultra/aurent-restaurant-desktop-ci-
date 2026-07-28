@@ -7,7 +7,7 @@ import com.pos.repository.CompanyRepository;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.platform.PlatformCompanySyncService;
 import com.pos.util.BusinessTypeParser;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;

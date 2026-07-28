@@ -16,7 +16,7 @@ import com.pos.service.sale.SaleAccessPolicy;
 import com.pos.service.sale.SaleVoidService;
 import com.pos.service.salesledger.SalesLedgerCacheService;
 import com.pos.service.stock.StoreStockService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

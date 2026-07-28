@@ -13,7 +13,7 @@ import com.pos.repository.CompanyBusinessTypeRepository;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.BusinessTypeParser;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

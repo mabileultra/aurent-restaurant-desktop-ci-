@@ -1,6 +1,6 @@
 package com.pos.service.cache;
 
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 

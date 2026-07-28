@@ -23,7 +23,7 @@ import com.pos.repository.UserRepository;
 import com.pos.repository.spec.CustomerOrderSpecifications;
 import com.pos.service.CustomerOrderService;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.data.domain.Page;

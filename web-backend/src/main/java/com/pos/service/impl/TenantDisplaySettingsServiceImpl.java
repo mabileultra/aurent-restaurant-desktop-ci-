@@ -9,7 +9,7 @@ import com.pos.exception.BadRequestException;
 import com.pos.repository.CompanyTenantDisplaySettingsRepository;
 import com.pos.service.TenantDisplaySettingsService;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

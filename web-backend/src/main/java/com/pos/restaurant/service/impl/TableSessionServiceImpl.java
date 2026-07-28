@@ -36,7 +36,7 @@ import com.pos.security.CurrentUserProvider;
 import com.pos.security.RoleName;
 import com.pos.service.sale.SaleCheckoutService;
 import com.pos.service.support.CashierSaleSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
 import com.pos.util.QuantityValidator;
 import lombok.RequiredArgsConstructor;

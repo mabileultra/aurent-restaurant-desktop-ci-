@@ -1,6 +1,6 @@
 package com.pos.finance.config;
 
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;

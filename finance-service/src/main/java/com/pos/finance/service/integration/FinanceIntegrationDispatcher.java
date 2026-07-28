@@ -18,7 +18,7 @@ import com.pos.finance.service.PurchaseIntegrationService;
 import com.pos.finance.service.ReturnIntegrationService;
 import com.pos.finance.service.SaleIntegrationService;
 import com.pos.finance.service.ZReportIntegrationService;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

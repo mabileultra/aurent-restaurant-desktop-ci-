@@ -4,7 +4,7 @@ import com.pos.identity.entity.User;
 import com.pos.identity.repository.UserRepository;
 import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.identity.service.user.support.UserAccessPolicy;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

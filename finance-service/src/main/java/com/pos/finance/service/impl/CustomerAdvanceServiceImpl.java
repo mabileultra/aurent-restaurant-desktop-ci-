@@ -12,7 +12,7 @@ import com.pos.finance.repository.CustomerAdvanceEntryRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.CustomerAdvanceService;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

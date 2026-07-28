@@ -8,7 +8,7 @@ import com.pos.reporting.dto.FactsBackfillResult;
 import com.pos.reporting.dto.SaleFactsPageResponse;
 import com.pos.reporting.client.PosSaleFactsClient;
 import com.pos.shared.event.SaleCompletedEvent;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

@@ -8,6 +8,8 @@ import com.pos.dto.report.TopProductRow;
 import com.pos.dto.report.sales.StoreSalesRowResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.service.support.HttpRequestAuthSupport;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -22,10 +24,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReportingSalesReportClientImpl implements ReportingSalesReportClient {
 
+    private static final String REPORTING_SERVICE = "reporting-service";
+
     private final RestClient reportingRestClient;
     private final HttpRequestAuthSupport httpRequestAuthSupport;
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public SalesReportResponse salesReport(LocalDate from, LocalDate to) {
         return fetch(
             UriComponentsBuilder.fromPath("/reports/sales")
@@ -38,6 +44,8 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public PageResponse<StoreSalesRowResponse> salesByStores(LocalDate from, LocalDate to, int page, int size) {
         String uri = UriComponentsBuilder.fromPath("/reports/sales/by-stores")
             .queryParam("from", from)
@@ -51,6 +59,8 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public List<TopProductRow> topProducts(int limit, LocalDate from, LocalDate to) {
         String uri = UriComponentsBuilder.fromPath("/reports/top-products")
             .queryParam("limit", Math.max(1, limit))
@@ -63,6 +73,8 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public ReturnsSummaryResponse returnsSummary(LocalDate from, LocalDate to) {
         String uri = UriComponentsBuilder.fromPath("/reports/sales/returns-summary")
             .queryParam("from", from)
@@ -74,6 +86,8 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
     }
 
     @Override
+    @CircuitBreaker(name = REPORTING_SERVICE)
+    @Retry(name = REPORTING_SERVICE)
     public DailySummaryResponse dailySummary(LocalDate date) {
         String uri = UriComponentsBuilder.fromPath("/reports/daily")
             .queryParam("date", date)

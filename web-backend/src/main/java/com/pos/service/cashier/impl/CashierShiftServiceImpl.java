@@ -18,7 +18,7 @@ import com.pos.service.cashier.support.ShiftBannerAggregate;
 import com.pos.service.cashier.support.ShiftReturnsAggregate;
 import com.pos.service.support.CashierSaleSupport;
 import com.pos.service.zreport.ZReportFromShiftService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

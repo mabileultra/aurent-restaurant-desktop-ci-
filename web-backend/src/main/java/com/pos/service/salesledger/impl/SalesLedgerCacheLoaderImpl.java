@@ -6,7 +6,7 @@ import com.pos.config.PosCacheProperties;
 import com.pos.service.cache.support.PosCacheWindowSupport;
 import com.pos.service.salesledger.SalesLedgerCacheLoader;
 import com.pos.service.salesledger.support.SalesLedgerChunkLoader;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -13,7 +13,7 @@ import com.pos.platform.repository.DesktopBroadcastReadRepository;
 import com.pos.platform.repository.DesktopBroadcastRepository;
 import com.pos.platform.security.PlatformTenantContext;
 import com.pos.platform.service.DesktopBroadcastService;
-import com.pos.platform.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -18,7 +18,7 @@ import com.pos.restaurant.service.TableReservationService;
 import com.pos.restaurant.support.RestaurantStoreSupport;
 import com.pos.restaurant.support.TableReservationMapper;
 import com.pos.security.CurrentUserProvider;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

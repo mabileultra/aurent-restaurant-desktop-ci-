@@ -13,7 +13,7 @@ import com.pos.restaurant.repository.DiningHallRepository;
 import com.pos.restaurant.repository.DiningTableRepository;
 import com.pos.restaurant.service.DiningTableService;
 import com.pos.restaurant.support.RestaurantStoreSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

@@ -15,7 +15,7 @@ import com.pos.identity.service.user.impl.UserDeleteHandler;
 import com.pos.identity.service.user.impl.UserUpdateHandler;
 import com.pos.identity.service.user.support.UserAccessPolicy;
 import com.pos.identity.util.DbExceptionTranslator;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

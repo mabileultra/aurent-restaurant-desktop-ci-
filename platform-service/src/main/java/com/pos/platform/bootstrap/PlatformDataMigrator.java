@@ -3,7 +3,7 @@ package com.pos.platform.bootstrap;
 import com.pos.platform.repository.CompanyRepository;
 import com.pos.platform.repository.DesktopBroadcastRepository;
 import com.pos.platform.repository.PlatformSettingRepository;
-import com.pos.platform.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;

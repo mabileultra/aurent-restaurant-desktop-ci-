@@ -5,7 +5,7 @@ import com.pos.entity.ZReport;
 import com.pos.service.finance.FinanceZReportIntegrationService;
 import com.pos.service.finance.support.FinanceIntegrationPublisher;
 import com.pos.service.finance.support.FinanceZReportPayloadBuilder;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

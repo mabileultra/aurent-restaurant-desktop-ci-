@@ -7,7 +7,7 @@ import com.pos.entity.Company;
 import com.pos.entity.User;
 import com.pos.security.RoleName;
 import com.pos.service.email.EmailService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;

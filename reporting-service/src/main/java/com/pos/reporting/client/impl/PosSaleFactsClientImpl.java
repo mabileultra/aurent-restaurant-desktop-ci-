@@ -2,6 +2,8 @@ package com.pos.reporting.client.impl;
 
 import com.pos.reporting.client.PosSaleFactsClient;
 import com.pos.reporting.dto.SaleFactsPageResponse;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -15,9 +17,13 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class PosSaleFactsClientImpl implements PosSaleFactsClient {
 
+    private static final String POS_CORE = "pos-core";
+
     private final RestClient posCoreRestClient;
 
     @Override
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
     public SaleFactsPageResponse fetchPage(
         LocalDate from,
         LocalDate to,

@@ -5,7 +5,7 @@ import com.pos.reporting.dto.FactsBackfillResult;
 import com.pos.reporting.dto.ProductFactsPageResponse;
 import com.pos.reporting.service.ProductFactsBackfillService;
 import com.pos.reporting.service.ReportingIngestService;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.shared.event.ProductSnapshotEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

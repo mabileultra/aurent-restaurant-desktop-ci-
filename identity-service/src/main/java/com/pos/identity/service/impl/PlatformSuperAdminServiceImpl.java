@@ -15,7 +15,7 @@ import com.pos.identity.security.RoleName;
 import com.pos.identity.service.PlatformSuperAdminService;
 import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserSyncSupport;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.identity.util.PersonNameUtil;
 import com.pos.identity.util.UserLoginUtil;
 import lombok.RequiredArgsConstructor;

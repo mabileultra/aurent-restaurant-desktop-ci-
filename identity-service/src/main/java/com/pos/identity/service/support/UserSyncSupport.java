@@ -3,7 +3,7 @@ package com.pos.identity.service.support;
 import com.pos.identity.client.PosCoreClient;
 import com.pos.identity.client.dto.UserSyncRequest;
 import com.pos.identity.entity.User;
-import com.pos.identity.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

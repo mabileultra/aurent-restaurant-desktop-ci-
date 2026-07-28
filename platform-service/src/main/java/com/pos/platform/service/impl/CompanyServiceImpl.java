@@ -16,7 +16,7 @@ import com.pos.platform.service.CompanyService;
 import com.pos.platform.service.support.CompanySyncSupport;
 import com.pos.platform.util.BusinessTypeParser;
 import com.pos.platform.util.CompanyLoginCodeUtil;
-import com.pos.platform.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.platform.util.TextUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

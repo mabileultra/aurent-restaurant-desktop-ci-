@@ -26,7 +26,7 @@ import com.pos.shared.event.StockInventoryRecordedEvent;
 import com.pos.shared.event.StockMovementRecordedEvent;
 import com.pos.shared.event.StockReceivedEvent;
 import com.pos.shared.event.StockTransferRecordedEvent;
-import com.pos.reporting.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

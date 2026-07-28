@@ -2,7 +2,7 @@ package com.pos.service.cache;
 
 import com.pos.config.PosCacheProperties;
 import com.pos.service.cache.support.PosCacheParallelRefresher;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

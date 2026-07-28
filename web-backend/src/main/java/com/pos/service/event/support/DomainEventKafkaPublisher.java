@@ -1,7 +1,7 @@
 package com.pos.service.event.support;
 
 import com.pos.config.kafka.DomainKafkaProperties;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.kafka.core.KafkaTemplate;

@@ -12,7 +12,7 @@ import com.pos.repository.CashRegisterRepository;
 import com.pos.repository.spec.CashRegisterSpecifications;
 import com.pos.service.CashRegisterService;
 import com.pos.service.support.TenantAccessSupport;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

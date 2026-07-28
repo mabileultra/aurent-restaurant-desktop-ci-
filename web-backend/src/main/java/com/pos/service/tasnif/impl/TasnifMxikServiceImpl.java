@@ -9,7 +9,7 @@ import com.pos.dto.tasnif.MxikSearchResponse;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.service.tasnif.TasnifMxikService;
-import com.pos.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

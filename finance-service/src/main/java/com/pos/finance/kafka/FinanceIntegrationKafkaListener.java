@@ -1,7 +1,7 @@
 package com.pos.finance.kafka;
 
 import com.pos.finance.service.integration.FinanceIntegrationDispatcher;
-import com.pos.finance.util.LogUtil;
+import com.pos.shared.log.LogUtil;
 import com.pos.shared.kafka.FinanceIntegrationMessage;
 import com.pos.shared.kafka.KafkaTopics;
 import lombok.RequiredArgsConstructor;

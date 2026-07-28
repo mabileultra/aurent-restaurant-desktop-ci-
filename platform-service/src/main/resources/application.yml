@@ -32,10 +32,35 @@ app:
     api-key: ${PLATFORM_INTERNAL_API_KEY:platform-internal-dev-key-change-in-prod}
   pos-core:
     url: ${POS_CORE_URL:http://localhost:8080/api/v1}
+    connect-timeout-ms: ${POS_CORE_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${POS_CORE_READ_TIMEOUT_MS:15000}
   migration:
     pos-core-datasource-url: ${POS_CORE_DATASOURCE_URL:}
     pos-core-datasource-username: ${POS_CORE_DATASOURCE_USERNAME:pos_user}
     pos-core-datasource-password: ${POS_CORE_DATASOURCE_PASSWORD:pos_password}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      pos-core:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 20
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 5
+        automatic-transition-from-open-to-half-open-enabled: true
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
+  retry:
+    instances:
+      pos-core:
+        max-attempts: 3
+        wait-duration: 300ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        ignore-exceptions:
+          - org.springframework.web.client.HttpClientErrorException
 
 springdoc:
   api-docs:
