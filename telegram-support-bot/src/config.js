@@ -1,3 +1,8 @@
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 /**
  * Конфиг Telegram-бота из env.
  */
@@ -16,5 +21,7 @@ export function loadBotConfig() {
       || 'http://backend:8080/api/v1'
     ).replace(/\/$/, ''),
     botApiToken: process.env.TELEGRAM_BOT_API_TOKEN?.trim() || '',
+    dataDir: process.env.TELEGRAM_BOT_DATA_DIR?.trim()
+      || path.join(__dirname, '..', 'data'),
   };
 }

@@ -430,10 +430,13 @@ services:
       TELEGRAM_SUPPORT_GROUP_ID: ${TELEGRAM_SUPPORT_GROUP_ID:-}
       TELEGRAM_BOT_API_TOKEN: ${TELEGRAM_BOT_API_TOKEN:-}
       TELEGRAM_BOT_BACKEND_URL: ${TELEGRAM_BOT_BACKEND_URL:-http://backend:8080/api/v1}
+      TELEGRAM_BOT_DATA_DIR: /app/data
       TZ: ${TZ:-Asia/Tashkent}
     depends_on:
       backend:
         condition: service_healthy
+    volumes:
+      - telegram_bot_data:/app/data
     networks:
       - pos-net
 
@@ -449,3 +452,4 @@ volumes:
   reporting_pg_data:
   backend_uploads:
   backend_logs:
+  telegram_bot_data:

@@ -4,6 +4,7 @@ import com.pos.config.telegram.TelegramBotProperties;
 import com.pos.dto.telegram.MedicineSearchItemDto;
 import com.pos.dto.telegram.MedicineSearchResponse;
 import com.pos.dto.telegram.MedicineStoreMatchDto;
+import com.pos.dto.telegram.TelegramStoreDto;
 import com.pos.entity.Product;
 import com.pos.entity.ProductStorePrice;
 import com.pos.entity.Store;
@@ -11,6 +12,7 @@ import com.pos.entity.StoreStock;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.ProductStorePriceRepository;
+import com.pos.repository.StoreRepository;
 import com.pos.repository.StoreStockRepository;
 import com.pos.repository.spec.ProductSpecifications;
 import com.pos.service.ProductAttributeService;
@@ -39,6 +41,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
     private final ProductRepository productRepository;
     private final ProductStorePriceRepository productStorePriceRepository;
     private final StoreStockRepository storeStockRepository;
+    private final StoreRepository storeRepository;
     private final ProductAttributeService productAttributeService;
     private final TelegramBotProperties properties;
 
@@ -76,6 +79,58 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
             return new MedicineSearchResponse(q, 0, List.of());
         }
 
+        List<MedicineSearchItemDto> items = buildItems(products);
+        LogUtil.info(
+            TelegramMedicineSearchServiceImpl.class,
+            "Telegram medicine search: q={}, products={}, items={}",
+            q,
+            products.size(),
+            items.size()
+        );
+        return new MedicineSearchResponse(q, items.size(), items);
+    }
+
+    @Override
+    public MedicineSearchItemDto getProductAvailability(UUID productId) {
+        Product product = productRepository.findById(productId)
+            .orElseThrow(() -> PosExceptions.notFound("Товар не найден"));
+        if (!product.isActive()) {
+            throw PosExceptions.notFound("Товар не найден");
+        }
+        Integer companyId = properties.resolveCompanyId();
+        if (companyId != null
+            && product.getCompany() != null
+            && !companyId.equals(product.getCompany().getId())) {
+            throw PosExceptions.notFound("Товар не найден");
+        }
+        List<MedicineSearchItemDto> items = buildItems(List.of(product));
+        if (items.isEmpty()) {
+            throw PosExceptions.notFound("Товар не найден в магазинах");
+        }
+        return items.get(0);
+    }
+
+    @Override
+    public List<TelegramStoreDto> listActiveStores() {
+        Integer companyId = properties.resolveCompanyId();
+        List<Store> stores = companyId != null
+            ? storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
+                .filter(Store::isActive)
+                .toList()
+            : storeRepository.findByActiveTrueAndCompanyIsNotNullOrderByNameAsc();
+
+        return stores.stream()
+            .map(store -> new TelegramStoreDto(
+                store.getId(),
+                store.getName(),
+                store.getAddress(),
+                store.getPhone(),
+                store.getBusinessType()
+            ))
+            .toList();
+    }
+
+    private List<MedicineSearchItemDto> buildItems(List<Product> products) {
         List<UUID> productIds = products.stream().map(Product::getId).toList();
         Map<UUID, List<ProductStorePrice>> pricesByProduct = groupStorePrices(productIds);
         Map<String, BigDecimal> stockByKey = groupStock(productIds);
@@ -122,6 +177,12 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                 continue;
             }
 
+            matches.sort((a, b) -> {
+                BigDecimal pa = a.price() != null ? a.price() : BigDecimal.valueOf(Long.MAX_VALUE);
+                BigDecimal pb = b.price() != null ? b.price() : BigDecimal.valueOf(Long.MAX_VALUE);
+                return pa.compareTo(pb);
+            });
+
             items.add(new MedicineSearchItemDto(
                 product.getId(),
                 product.getName(),
@@ -130,15 +191,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                 matches
             ));
         }
-
-        LogUtil.info(
-            TelegramMedicineSearchServiceImpl.class,
-            "Telegram medicine search: q={}, products={}, items={}",
-            q,
-            products.size(),
-            items.size()
-        );
-        return new MedicineSearchResponse(q, items.size(), items);
+        return items;
     }
 
     private Map<UUID, List<ProductStorePrice>> groupStorePrices(List<UUID> productIds) {

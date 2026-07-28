@@ -1,33 +1,56 @@
 import { Telegraf } from 'telegraf';
-import { createMedicineSearchApi } from './api/medicineSearchApi.js';
-import { handleMedicineSearch } from './handlers/medicineSearchHandler.js';
-import { handleStart } from './handlers/startHandler.js';
-import { handleSupportMessage } from './handlers/supportHandler.js';
+import { createBotApi } from './api/botApi.js';
 import { createSupportForwarder } from './support/supportForwarder.js';
 import { createSupportGroupStore } from './support/supportGroupStore.js';
+import { createUserDataStore } from './state/userDataStore.js';
+import { createUserStateStore } from './state/userStateStore.js';
 import { isGroupChat } from './utils/telegramText.js';
+import {
+  handleCallback,
+  handlePrivateMessage,
+  showAbout,
+  showMainMenu,
+} from './handlers/menuRouter.js';
+import { promptSearch, runMedicineSearch } from './handlers/searchFlow.js';
+import { promptNearby, showFavorites, showHistory } from './handlers/nearbyFavoritesHistory.js';
+import { showSupportCategories } from './handlers/supportFlow.js';
+
+const BOT_COMMANDS = [
+  { command: 'start', description: 'Открыть главное меню' },
+  { command: 'find', description: 'Найти лекарство' },
+  { command: 'nearby', description: 'Найти ближайшие аптеки' },
+  { command: 'favorites', description: 'Избранные лекарства' },
+  { command: 'history', description: 'История поиска' },
+  { command: 'support', description: 'Связаться с поддержкой' },
+  { command: 'help', description: 'Помощь' },
+];
 
 /**
- * Собирает и запускает Telegram-бота (поиск лекарств + поддержка).
+ * Собирает полноценное мини-приложение Telegram-бота Aurent.
  */
 export function createBot(config) {
   const bot = new Telegraf(config.token);
   const groupStore = createSupportGroupStore(config.supportGroupId);
-  const medicineApi = createMedicineSearchApi({
+  const botApi = createBotApi({
     backendBaseUrl: config.backendBaseUrl,
     botApiToken: config.botApiToken,
   });
+  const stateStore = createUserStateStore();
+  const dataStore = createUserDataStore(config.dataDir);
 
-  const supportSessions = new Set();
+  const deps = {
+    botApi,
+    stateStore,
+    dataStore,
+    getGroupId: () => groupStore.getId(),
+    forwardToGroup: null,
+  };
 
   if (!config.supportGroupId) {
-    console.warn(
-      'TELEGRAM_SUPPORT_GROUP_ID не задан — добавьте бота в группу и напишите там сообщение, ID подхватится автоматически.'
-    );
+    console.warn('TELEGRAM_SUPPORT_GROUP_ID не задан — группа подхватится автоматически.');
   } else {
     console.log(`Группа поддержки: ${config.supportGroupId}`);
   }
-
   if (!config.botApiToken) {
     console.warn('TELEGRAM_BOT_API_TOKEN не задан — поиск лекарств будет недоступен.');
   }
@@ -40,21 +63,54 @@ export function createBot(config) {
     }
   });
 
-  bot.start(handleStart);
+  bot.start(async (ctx) => {
+    if (ctx.chat?.type !== 'private') return;
+    await showMainMenu(ctx, stateStore);
+  });
+
+  bot.help(async (ctx) => {
+    if (ctx.chat?.type !== 'private') return;
+    await showAbout(ctx, stateStore);
+  });
 
   bot.command('find', async (ctx) => {
     if (ctx.chat?.type !== 'private') return;
     const query = ctx.message.text.replace(/^\/find(@\w+)?\s*/i, '').trim();
-    supportSessions.delete(ctx.from.id);
-    await handleMedicineSearch(ctx, query, medicineApi);
+    if (query) {
+      await runMedicineSearch(ctx, query, deps);
+    } else {
+      await promptSearch(ctx, stateStore);
+    }
+  });
+
+  bot.command('nearby', async (ctx) => {
+    if (ctx.chat?.type !== 'private') return;
+    await promptNearby(ctx, stateStore);
+  });
+
+  bot.command('favorites', async (ctx) => {
+    if (ctx.chat?.type !== 'private') return;
+    await showFavorites(ctx, deps);
+  });
+
+  bot.command('history', async (ctx) => {
+    if (ctx.chat?.type !== 'private') return;
+    await showHistory(ctx, deps);
   });
 
   bot.command('support', async (ctx) => {
     if (ctx.chat?.type !== 'private') return;
-    supportSessions.add(ctx.from.id);
-    await ctx.reply(
-      'Режим поддержки включён.\nОпишите проблему текстом, фото или документом.\n\nЧтобы снова искать лекарства — просто напишите название или /find.'
-    );
+    await showSupportCategories(ctx, stateStore);
+  });
+
+  bot.on('callback_query', async (ctx) => {
+    if (ctx.chat?.type && ctx.chat.type !== 'private') return;
+    try {
+      await handleCallback(ctx, deps);
+    } catch (err) {
+      console.error('callback error:', err);
+      await ctx.answerCbQuery('Ошибка').catch(() => {});
+    }
   });
 
   bot.on('message', async (ctx) => {
@@ -62,44 +118,36 @@ export function createBot(config) {
       if (!groupStore.getId()) groupStore.connectGroup(ctx.chat);
       return;
     }
-
     if (ctx.chat?.type !== 'private') return;
+    if (ctx.message.text?.startsWith('/')) return;
 
-    const text = ctx.message.text?.trim();
-    if (text?.startsWith('/')) return;
-
-    const forwardToGroup = createSupportForwarder({
+    deps.forwardToGroup = createSupportForwarder({
       telegram: ctx.telegram,
       getGroupId: () => groupStore.getId(),
     });
 
-    const inSupport = supportSessions.has(ctx.from.id);
-    const hasMedia = Boolean(ctx.message.photo?.length || ctx.message.document);
-
     try {
-      if (inSupport || hasMedia) {
-        await handleSupportMessage(ctx, {
-          forwardToGroup,
-          getGroupId: () => groupStore.getId(),
-        });
-        return;
-      }
-
-      if (text) {
-        supportSessions.delete(ctx.from.id);
-        await handleMedicineSearch(ctx, text, medicineApi);
-        return;
-      }
-
-      await handleSupportMessage(ctx, {
-        forwardToGroup,
-        getGroupId: () => groupStore.getId(),
-      });
+      await handlePrivateMessage(ctx, deps);
     } catch (err) {
-      console.error('Ошибка обработки сообщения:', err);
-      await ctx.reply('Произошла ошибка. Попробуйте позже или напишите /support.');
+      console.error('message error:', err);
+      await ctx.reply('Произошла ошибка. Нажмите «Главное меню» или /start.');
     }
   });
 
-  return bot;
+  return {
+    bot,
+    async start() {
+      await bot.launch();
+      try {
+        await bot.telegram.setMyCommands(BOT_COMMANDS);
+        console.log('Команды бота обновлены');
+      } catch (err) {
+        console.warn('Не удалось setMyCommands:', err.message);
+      }
+      console.log('Aurent bot запущен (меню + поиск + поддержка)');
+    },
+    stop(reason) {
+      bot.stop(reason);
+    },
+  };
 }

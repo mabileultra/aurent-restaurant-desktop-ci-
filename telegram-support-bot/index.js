@@ -9,11 +9,12 @@ try {
   process.exit(1);
 }
 
-const bot = createBot(config);
+const app = createBot(config);
 
-bot.launch().then(() => {
-  console.log('Бот Aurent запущен (поиск лекарств + поддержка)');
+app.start().catch((err) => {
+  console.error('Не удалось запустить бота:', err);
+  process.exit(1);
 });
 
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => app.stop('SIGINT'));
+process.once('SIGTERM', () => app.stop('SIGTERM'));
