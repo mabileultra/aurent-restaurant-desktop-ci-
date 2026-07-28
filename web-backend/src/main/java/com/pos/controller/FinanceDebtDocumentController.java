@@ -1,8 +1,8 @@
 package com.pos.controller;
 
-import com.pos.dto.sale.SaleResponse;
+import com.pos.sales.dto.sale.SaleResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
-import com.pos.service.SaleService;
+import com.pos.sales.service.SaleService;
 import com.pos.inventory.service.stock.StockReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

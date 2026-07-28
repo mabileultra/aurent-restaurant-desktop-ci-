@@ -1,7 +1,7 @@
 package com.pos.integrations.finance.service;
 
-import com.pos.entity.CashierShift;
-import com.pos.entity.ZReport;
+import com.pos.sales.entity.CashierShift;
+import com.pos.sales.entity.ZReport;
 
 public interface FinanceZReportIntegrationService {
 

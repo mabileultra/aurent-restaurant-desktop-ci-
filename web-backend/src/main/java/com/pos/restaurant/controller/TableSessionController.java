@@ -1,7 +1,7 @@
 package com.pos.restaurant.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
-import com.pos.dto.sale.SaleResponse;
+import com.pos.sales.dto.sale.SaleResponse;
 import com.pos.restaurant.dto.AddTableSessionLineRequest;
 import com.pos.restaurant.dto.AssignWaiterRequest;
 import com.pos.restaurant.dto.OpenTableSessionRequest;

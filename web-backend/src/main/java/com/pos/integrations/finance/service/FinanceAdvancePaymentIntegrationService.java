@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service;
 
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 
 public interface FinanceAdvancePaymentIntegrationService {
 

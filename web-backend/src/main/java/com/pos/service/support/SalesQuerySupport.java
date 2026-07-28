@@ -1,6 +1,6 @@
 package com.pos.service.support;
 
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 
 import java.time.Instant;
 import java.time.LocalDate;

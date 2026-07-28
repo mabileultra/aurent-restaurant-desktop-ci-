@@ -7,7 +7,7 @@ import com.pos.restaurant.dto.TableSessionCheckoutPreviewResponse;
 import com.pos.restaurant.dto.TableSessionCheckoutRequest;
 import com.pos.restaurant.dto.TableSessionResponse;
 import com.pos.restaurant.dto.UpdateTableSessionLineRequest;
-import com.pos.dto.sale.SaleResponse;
+import com.pos.sales.dto.sale.SaleResponse;
 
 import java.util.UUID;
 

@@ -1,8 +1,8 @@
 package com.pos.integrations.finance.service.support;
 
-import com.pos.entity.CashierShift;
+import com.pos.sales.entity.CashierShift;
 import com.pos.entity.Store;
-import com.pos.entity.ZReport;
+import com.pos.sales.entity.ZReport;
 import com.pos.shared.log.LogUtil;
 
 import java.math.BigDecimal;

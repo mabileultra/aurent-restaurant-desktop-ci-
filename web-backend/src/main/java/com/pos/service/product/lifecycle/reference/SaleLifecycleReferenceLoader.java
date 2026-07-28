@@ -1,8 +1,8 @@
 package com.pos.service.product.lifecycle.reference;
 
 import com.pos.dto.product.ProductLifecycleReferenceLabel;
-import com.pos.entity.Sale;
-import com.pos.repository.SaleRepository;
+import com.pos.sales.entity.Sale;
+import com.pos.sales.repository.SaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

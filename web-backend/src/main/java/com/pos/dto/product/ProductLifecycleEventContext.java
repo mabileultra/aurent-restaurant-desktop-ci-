@@ -1,6 +1,6 @@
 package com.pos.dto.product;
 
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.inventory.entity.StockMovement;
 
 import java.math.BigDecimal;

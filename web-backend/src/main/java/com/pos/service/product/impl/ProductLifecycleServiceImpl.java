@@ -3,7 +3,7 @@ package com.pos.service.product.impl;
 import com.pos.dto.product.ProductLifecycleResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.entity.Product;
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.exception.PosExceptions;
 import com.pos.mapper.ProductLifecycleMapper;
 import com.pos.repository.ProductRepository;

@@ -1,6 +1,6 @@
 package com.pos.cache.salesledger;
 
-import com.pos.dto.sale.SaleResponse;
+import com.pos.sales.dto.sale.SaleResponse;
 
 import java.util.UUID;
 

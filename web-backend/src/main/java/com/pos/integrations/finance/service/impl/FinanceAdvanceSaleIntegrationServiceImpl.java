@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service.impl;
 
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
 import com.pos.integrations.finance.service.support.FinanceAdvanceSalePayloadBuilder;
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;

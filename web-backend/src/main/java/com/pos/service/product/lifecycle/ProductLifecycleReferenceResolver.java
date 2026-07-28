@@ -3,7 +3,7 @@ package com.pos.service.product.lifecycle;
 import com.pos.domain.StockMovementType;
 import com.pos.dto.product.ProductLifecycleReferenceLabel;
 import com.pos.dto.product.ProductLifecycleReferences;
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.service.product.lifecycle.reference.LifecycleReferenceContributor;
 import com.pos.service.product.lifecycle.reference.SaleLifecycleReferenceLoader;

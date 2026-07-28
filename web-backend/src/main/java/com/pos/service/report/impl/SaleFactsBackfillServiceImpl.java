@@ -1,8 +1,8 @@
 package com.pos.service.report.impl;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.entity.Sale;
-import com.pos.repository.SaleRepository;
+import com.pos.sales.entity.Sale;
+import com.pos.sales.repository.SaleRepository;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.service.report.SaleFactsBackfillService;
 import com.pos.service.support.TenantAccessSupport;

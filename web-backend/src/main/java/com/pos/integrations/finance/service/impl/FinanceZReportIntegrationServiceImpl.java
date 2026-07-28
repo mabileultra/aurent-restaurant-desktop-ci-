@@ -1,7 +1,7 @@
 package com.pos.integrations.finance.service.impl;
 
-import com.pos.entity.CashierShift;
-import com.pos.entity.ZReport;
+import com.pos.sales.entity.CashierShift;
+import com.pos.sales.entity.ZReport;
 import com.pos.integrations.finance.service.FinanceZReportIntegrationService;
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
 import com.pos.integrations.finance.service.support.FinanceZReportPayloadBuilder;

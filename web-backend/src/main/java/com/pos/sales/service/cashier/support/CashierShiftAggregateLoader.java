@@ -1,0 +1,52 @@
+package com.pos.sales.service.cashier.support;
+
+import com.pos.sales.entity.CashierShift;
+import com.pos.sales.mapper.CashierShiftMapper;
+import com.pos.sales.repository.sale.ShiftReportRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Instant;
+import java.util.List;
+
+@Component
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class CashierShiftAggregateLoader {
+
+    private final ShiftReportRepository shiftReportRepository;
+    private final CashierShiftMapper cashierShiftMapper;
+
+    public ShiftBannerAggregate loadForShift(CashierShift shift, Instant periodFrom, Instant reportAt) {
+        List<Object[]> rows = shiftReportRepository.aggregateShiftBannerByShiftId(shift.getId(), periodFrom, reportAt);
+        if (rows.isEmpty() || cashierShiftMapper.isEmptyBannerRow(rows.get(0))) {
+            rows = shiftReportRepository.aggregateShiftBannerByCashierAndTime(
+                shift.getCashier().getId(),
+                shift.getStore().getId(),
+                periodFrom,
+                reportAt
+            );
+        }
+        if (rows.isEmpty()) {
+            return ShiftBannerAggregate.empty();
+        }
+        return cashierShiftMapper.fromBannerRow(rows.get(0));
+    }
+
+    public ShiftReturnsAggregate loadReturnsForShift(CashierShift shift, Instant periodFrom, Instant reportAt) {
+        List<Object[]> rows = shiftReportRepository.aggregateReturnsByShiftId(shift.getId(), periodFrom, reportAt);
+        if (rows.isEmpty() || cashierShiftMapper.isEmptyReturnsRow(rows.get(0))) {
+            rows = shiftReportRepository.aggregateReturnsByCashierAndTime(
+                shift.getCashier().getId(),
+                shift.getStore().getId(),
+                periodFrom,
+                reportAt
+            );
+        }
+        if (rows.isEmpty()) {
+            return ShiftReturnsAggregate.empty();
+        }
+        return cashierShiftMapper.fromReturnsRow(rows.get(0));
+    }
+}

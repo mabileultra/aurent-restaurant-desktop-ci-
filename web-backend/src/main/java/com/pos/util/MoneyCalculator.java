@@ -1,6 +1,6 @@
 package com.pos.util;
 
-import com.pos.service.sale.support.SaleVatCalculator;
+import com.pos.sales.service.sale.support.SaleVatCalculator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

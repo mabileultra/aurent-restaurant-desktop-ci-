@@ -1,8 +1,8 @@
 package com.pos.service.report.impl;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.entity.CashierShift;
-import com.pos.repository.CashierShiftRepository;
+import com.pos.sales.entity.CashierShift;
+import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.service.report.ShiftFactsBackfillService;
 import com.pos.service.support.TenantAccessSupport;

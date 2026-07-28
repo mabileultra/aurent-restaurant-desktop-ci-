@@ -1,13 +1,13 @@
 package com.pos.service.event;
 
-import com.pos.entity.CashierShift;
+import com.pos.sales.entity.CashierShift;
 import com.pos.entity.Product;
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.inventory.entity.StockInventory;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.inventory.entity.StockReceipt;
 import com.pos.inventory.entity.StockTransfer;
-import com.pos.entity.ZReport;
+import com.pos.sales.entity.ZReport;
 import com.pos.service.event.support.DomainEventKafkaPublisher;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.shared.event.ProductSnapshotEvent;

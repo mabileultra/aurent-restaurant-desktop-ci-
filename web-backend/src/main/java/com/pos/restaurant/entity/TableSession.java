@@ -1,7 +1,7 @@
 package com.pos.restaurant.entity;
 
 import com.pos.entity.Company;
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.restaurant.domain.TableSessionStatus;

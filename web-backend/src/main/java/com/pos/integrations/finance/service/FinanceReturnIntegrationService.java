@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service;
 
-import com.pos.entity.Sale;
+import com.pos.sales.entity.Sale;
 
 import java.math.BigDecimal;
 import java.util.UUID;
