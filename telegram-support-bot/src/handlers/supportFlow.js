@@ -15,6 +15,7 @@ export const SUPPORT_CATEGORIES = {
 export async function showSupportCategories(ctx, stateStore) {
   stateStore.setState(ctx.from.id, STATES.SUPPORT_CATEGORY, {
     supportCategory: null,
+    activeTicketId: null,
   });
   await ctx.reply(
     '🆘 <b>Служба поддержки</b>\n\nС чем возникла проблема?',
@@ -30,6 +31,7 @@ export async function selectSupportCategory(ctx, code, stateStore) {
   const label = SUPPORT_CATEGORIES[code] || 'Другая проблема';
   stateStore.setState(ctx.from.id, STATES.SUPPORT_MESSAGE, {
     supportCategory: code,
+    activeTicketId: null,
   });
   await ctx.reply(
     `Категория: <b>${escapeHtml(label)}</b>\n\nОпишите проблему одним сообщением.\n\nМожно отправить:\n• текст\n• фото\n• документ\n• геолокацию`,
@@ -38,6 +40,10 @@ export async function selectSupportCategory(ctx, code, stateStore) {
       ...homeOnlyKeyboard(),
     }
   );
+}
+
+async function forwardTextToGroup(telegram, groupId, text, parseMode = 'HTML') {
+  return telegram.sendMessage(groupId, text, { parse_mode: parseMode });
 }
 
 export async function receiveSupportMessage(ctx, deps) {
@@ -71,11 +77,13 @@ export async function receiveSupportMessage(ctx, deps) {
     escapeHtml(preview),
   ].join('\n');
 
+  let deliveredToGroup = false;
   const groupId = getGroupId();
   if (groupId) {
     try {
-      const sent = await ctx.telegram.sendMessage(groupId, groupText, { parse_mode: 'HTML' });
+      const sent = await forwardTextToGroup(ctx.telegram, groupId, groupText);
       dataStore.linkGroupMessage(ctx.from.id, ticket.id, sent.message_id);
+      deliveredToGroup = true;
 
       if (ctx.message.photo?.length) {
         const photo = ctx.message.photo[ctx.message.photo.length - 1];
@@ -100,10 +108,16 @@ export async function receiveSupportMessage(ctx, deps) {
         dataStore.linkGroupMessage(ctx.from.id, ticket.id, media.message_id);
       }
     } catch (err) {
-      console.error('Support forward error:', err);
+      console.error('Support forward error:', err.message || err);
     }
   } else if (forwardToGroup) {
-    await forwardToGroup(ctx, `[№${ticket.id}] [${label}] ${preview}`);
+    try {
+      deliveredToGroup = Boolean(
+        await forwardToGroup(ctx, `[№${ticket.id}] [${label}] ${preview}`)
+      );
+    } catch (err) {
+      console.error('Support forward error:', err.message || err);
+    }
   }
 
   stateStore.setState(ctx.from.id, STATES.SUPPORT_ACTIVE, {
@@ -111,20 +125,26 @@ export async function receiveSupportMessage(ctx, deps) {
     supportCategory: code,
   });
 
-  await ctx.reply(
-    [
-      `✅ Обращение <b>№${ticket.id}</b> принято.`,
-      '',
-      `Категория: ${escapeHtml(label)}`,
-      'Статус: Новое',
-      '',
-      'Сотрудник поддержки ответит вам в этом чате.',
-    ].join('\n'),
-    {
-      parse_mode: 'HTML',
-      ...ticketButtons(ticket.id),
-    }
-  );
+  const lines = [
+    `✅ Обращение <b>№${ticket.id}</b> принято.`,
+    '',
+    `Категория: ${escapeHtml(label)}`,
+    'Статус: Новое',
+    '',
+  ];
+  if (deliveredToGroup) {
+    lines.push('Сотрудник поддержки ответит вам в этом чате.');
+  } else {
+    lines.push(
+      '⚠️ Обращение сохранено, но группа поддержки сейчас недоступна.',
+      'Администратору нужно добавить бота в группу поддержки.'
+    );
+  }
+
+  await ctx.reply(lines.join('\n'), {
+    parse_mode: 'HTML',
+    ...ticketButtons(ticket.id),
+  });
 }
 
 export async function showTicketStatus(ctx, ticketId, deps) {
@@ -162,23 +182,32 @@ export async function appendOrCreateSupport(ctx, deps) {
       const note = ctx.message.text || ctx.message.caption || '[медиа]';
       deps.dataStore.appendTicketNote(ctx.from.id, existing.id, note);
       const groupId = deps.getGroupId();
+      let deliveredToGroup = false;
       if (groupId) {
-        const sent = await ctx.telegram.sendMessage(
-          groupId,
-          [
-            `➕ Дополнение к обращению <b>№${existing.id}</b>`,
-            `<b>Telegram ID:</b> <code>${ctx.from.id}</code>`,
-            '',
-            escapeHtml(note),
-          ].join('\n'),
-          { parse_mode: 'HTML' }
-        );
-        deps.dataStore.linkGroupMessage(ctx.from.id, existing.id, sent.message_id);
+        try {
+          const sent = await forwardTextToGroup(
+            ctx.telegram,
+            groupId,
+            [
+              `➕ Дополнение к обращению <b>№${existing.id}</b>`,
+              `<b>Telegram ID:</b> <code>${ctx.from.id}</code>`,
+              '',
+              escapeHtml(note),
+            ].join('\n')
+          );
+          deps.dataStore.linkGroupMessage(ctx.from.id, existing.id, sent.message_id);
+          deliveredToGroup = true;
+        } catch (err) {
+          console.error('Support append forward error:', err.message || err);
+        }
       }
       deps.stateStore.setState(ctx.from.id, STATES.SUPPORT_ACTIVE, {
         activeTicketId: existing.id,
       });
-      await ctx.reply(`✅ Дополнение к обращению №${existing.id} принято.`, ticketButtons(existing.id));
+      const text = deliveredToGroup
+        ? `✅ Дополнение к обращению №${existing.id} принято.`
+        : `✅ Дополнение к обращению №${existing.id} сохранено.\n⚠️ Группа поддержки сейчас недоступна.`;
+      await ctx.reply(text, ticketButtons(existing.id));
       return;
     }
   }
