@@ -17,4 +17,15 @@ public interface ProductStorePriceRepository extends JpaRepository<ProductStoreP
     List<Object[]> countStoresByProductIds(@Param("ids") Collection<UUID> ids);
 
     java.util.Optional<ProductStorePrice> findByProduct_IdAndStore_Id(UUID productId, Integer storeId);
+
+    @Query("""
+        SELECT sp
+        FROM ProductStorePrice sp
+        JOIN FETCH sp.store st
+        JOIN FETCH sp.product p
+        WHERE p.id IN :productIds
+          AND st.active = true
+        ORDER BY st.name ASC
+        """)
+    List<ProductStorePrice> findActiveStorePricesByProductIds(@Param("productIds") Collection<UUID> productIds);
 }

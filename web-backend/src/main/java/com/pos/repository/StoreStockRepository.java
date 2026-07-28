@@ -43,4 +43,11 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
         WHERE st.company.id = :companyId
         """)
     List<StoreStock> findAllDetailedByCompanyId(@Param("companyId") Integer companyId);
+
+    @Query("""
+        SELECT ss
+        FROM StoreStock ss
+        WHERE ss.product.id IN :productIds
+        """)
+    List<StoreStock> findByProductIdIn(@Param("productIds") Collection<UUID> productIds);
 }

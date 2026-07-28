@@ -104,6 +104,11 @@ app:
     default-lang: uz
     default-type: 2
     search-type: 1
+  telegram-bot:
+    api-token: ${TELEGRAM_BOT_API_TOKEN:}
+    company-id: ${TELEGRAM_BOT_COMPANY_ID:}
+    max-results: ${TELEGRAM_BOT_MAX_RESULTS:10}
+    min-query-length: 2
   mail:
     enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:${MAIL_USERNAME:}}

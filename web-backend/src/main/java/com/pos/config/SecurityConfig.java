@@ -4,6 +4,7 @@ import com.pos.security.IdentityInternalApiKeyFilter;
 import com.pos.security.JwtAuthenticationFilter;
 import com.pos.security.PlatformInternalApiKeyFilter;
 import com.pos.security.ReportingInternalApiKeyFilter;
+import com.pos.security.TelegramBotApiKeyFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final IdentityInternalApiKeyFilter identityInternalApiKeyFilter;
     private final PlatformInternalApiKeyFilter platformInternalApiKeyFilter;
     private final ReportingInternalApiKeyFilter reportingInternalApiKeyFilter;
+    private final TelegramBotApiKeyFilter telegramBotApiKeyFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Value("${app.cors.allowed-origin-patterns:http://localhost:*,http://127.0.0.1:*}")
@@ -68,6 +70,7 @@ public class SecurityConfig {
             .addFilterBefore(identityInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(platformInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(reportingInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(telegramBotApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
     }

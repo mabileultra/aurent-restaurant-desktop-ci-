@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Telegram-бот поддержки Aurent POS — принимает обращения и пересылает в группу",
+  "description": "Telegram-бот Aurent POS — поиск лекарств по магазинам и обращения в поддержку",
   "scripts": {
     "start": "node --env-file=.env index.js",
     "dev": "node --env-file=.env --watch index.js"
