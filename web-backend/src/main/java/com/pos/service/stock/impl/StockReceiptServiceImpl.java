@@ -20,7 +20,7 @@ import com.pos.repository.SupplierRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
 import com.pos.service.event.PosDomainEventService;
-import com.pos.service.finance.FinancePurchaseIntegrationService;
+import com.pos.integrations.finance.service.FinancePurchaseIntegrationService;
 import com.pos.service.stock.StockReceiptService;
 import com.pos.service.stock.StoreStockService;
 import com.pos.service.stock.support.StockDocumentSupport;

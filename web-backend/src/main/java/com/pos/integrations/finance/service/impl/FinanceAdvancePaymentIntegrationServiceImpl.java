@@ -1,0 +1,32 @@
+package com.pos.integrations.finance.service.impl;
+
+import com.pos.entity.Sale;
+import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
+import com.pos.integrations.finance.service.support.FinanceAdvancePaymentPayloadBuilder;
+import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
+import com.pos.shared.log.LogUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import java.util.Map;
+
+@Service
+@RequiredArgsConstructor
+public class FinanceAdvancePaymentIntegrationServiceImpl implements FinanceAdvancePaymentIntegrationService {
+
+    private final FinanceIntegrationPublisher financeIntegrationPublisher;
+
+    @Override
+    public void onSaleAdvanceApplied(Sale sale) {
+        Map<String, Object> payload = FinanceAdvancePaymentPayloadBuilder.build(sale);
+        if (payload == null) {
+            return;
+        }
+        financeIntegrationPublisher.publishAdvancePaymentAfterCommit(payload);
+        LogUtil.info(
+            FinanceAdvancePaymentIntegrationServiceImpl.class,
+            "Finance sale advance payment sync scheduled: sale={}",
+            sale.getId()
+        );
+    }
+}

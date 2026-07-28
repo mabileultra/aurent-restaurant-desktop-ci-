@@ -10,7 +10,7 @@ import com.pos.mapper.SaleMapper;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.SaleRepository;
 import com.pos.service.stock.support.StockMovementPersistence;
-import com.pos.service.finance.FinanceReturnIntegrationService;
+import com.pos.integrations.finance.service.FinanceReturnIntegrationService;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.service.sale.SaleAccessPolicy;
 import com.pos.service.sale.SaleVoidService;

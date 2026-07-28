@@ -1,6 +1,6 @@
 package com.pos.config.kafka;
 
-import com.pos.config.finance.FinanceKafkaProperties;
+import com.pos.integrations.finance.config.FinanceKafkaProperties;
 import com.pos.shared.kafka.FinanceIntegrationMessage;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;

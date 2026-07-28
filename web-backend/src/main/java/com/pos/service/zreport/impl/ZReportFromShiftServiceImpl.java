@@ -12,7 +12,7 @@ import com.pos.repository.CashierShiftRepository;
 import com.pos.repository.sale.ShiftReportRepository;
 import com.pos.repository.ZReportRepository;
 import com.pos.service.event.PosDomainEventService;
-import com.pos.service.finance.FinanceZReportIntegrationService;
+import com.pos.integrations.finance.service.FinanceZReportIntegrationService;
 import com.pos.service.zreport.ZReportFromShiftService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
