@@ -1,8 +1,8 @@
 package com.pos.service.report.impl;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.entity.StockTransfer;
-import com.pos.repository.StockTransferRepository;
+import com.pos.inventory.entity.StockTransfer;
+import com.pos.inventory.repository.StockTransferRepository;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.service.report.TransferFactsBackfillService;
 import com.pos.service.support.TenantAccessSupport;

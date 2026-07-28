@@ -2,12 +2,12 @@ package com.pos.service.product.support;
 
 import com.pos.dto.product.ProductStorePriceRequest;
 import com.pos.entity.Product;
-import com.pos.entity.StockMovement;
+import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.StoreRepository;
-import com.pos.service.stock.support.StockMovementPersistence;
-import com.pos.service.stock.StoreStockService;
+import com.pos.inventory.service.stock.support.StockMovementPersistence;
+import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.util.QuantityUtil;
 import com.pos.util.QuantityValidator;
 import com.pos.util.StockCalculator;

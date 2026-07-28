@@ -1,10 +1,10 @@
 package com.pos.service.report.impl;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.entity.StockMovement;
-import com.pos.entity.StockReceipt;
-import com.pos.repository.StockMovementRepository;
-import com.pos.repository.StockReceiptRepository;
+import com.pos.inventory.entity.StockMovement;
+import com.pos.inventory.entity.StockReceipt;
+import com.pos.inventory.repository.StockMovementRepository;
+import com.pos.inventory.repository.StockReceiptRepository;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.service.report.MovementFactsBackfillService;
 import com.pos.service.support.TenantAccessSupport;

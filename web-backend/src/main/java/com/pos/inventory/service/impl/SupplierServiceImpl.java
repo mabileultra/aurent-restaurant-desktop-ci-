@@ -1,0 +1,69 @@
+package com.pos.inventory.service.impl;
+
+import com.pos.dto.shared.PageResponse;
+import com.pos.inventory.dto.supplier.CreateSupplierRequest;
+import com.pos.inventory.dto.supplier.SupplierResponse;
+import com.pos.inventory.entity.Supplier;
+import com.pos.exception.BadRequestException;
+import com.pos.inventory.mapper.SupplierMapper;
+import com.pos.inventory.repository.SupplierRepository;
+import com.pos.inventory.repository.spec.SupplierSpecifications;
+import com.pos.inventory.service.SupplierService;
+import com.pos.service.support.TenantAccessSupport;
+import com.pos.shared.log.LogUtil;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+
+import java.time.LocalDate;
+import java.util.regex.Pattern;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class SupplierServiceImpl implements SupplierService {
+
+    private static final Pattern EMAIL_OK = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
+
+    private final SupplierRepository supplierRepository;
+    private final SupplierMapper supplierMapper;
+    private final TenantAccessSupport tenantAccess;
+
+    @Override
+    public PageResponse<SupplierResponse> list(String search, LocalDate createdOn, Pageable pageable) {
+        Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        Specification<Supplier> spec = SupplierSpecifications.filter(companyId, search, createdOn);
+        Page<Supplier> page = supplierRepository.findAll(spec, pageable);
+        return PageResponse.from(page.map(supplierMapper::toResponse));
+    }
+
+    @Override
+    @Transactional
+    public SupplierResponse create(CreateSupplierRequest req) {
+        Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        String taxId = req.taxId().trim();
+        if (supplierRepository.existsByCompanyIdAndTaxId(companyId, taxId)) {
+            throw new BadRequestException("Поставщик с таким ИНН/ПИНФЛ уже существует");
+        }
+        if (StringUtils.hasText(req.email()) && !EMAIL_OK.matcher(req.email().trim()).matches()) {
+            throw new BadRequestException("Некорректный email");
+        }
+
+        Supplier s = Supplier.builder()
+            .company(tenantAccess.requireCompany(companyId))
+            .name(req.name().trim())
+            .taxId(taxId)
+            .address(StringUtils.hasText(req.address()) ? req.address().trim() : null)
+            .email(StringUtils.hasText(req.email()) ? req.email().trim() : null)
+            .phone(StringUtils.hasText(req.phone()) ? req.phone().trim() : null)
+            .build();
+        Supplier saved = supplierRepository.save(s);
+        LogUtil.info(SupplierServiceImpl.class, "Supplier created: id={}, taxId={}", saved.getId(), saved.getTaxId());
+        return supplierMapper.toResponse(saved);
+    }
+
+}

@@ -13,7 +13,7 @@ import com.pos.service.product.ProductQueryService;
 import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.support.ProductCatalogLoader;
 import com.pos.service.product.support.ProductLowStockQuerySupport;
-import com.pos.service.stock.StoreStockService;
+import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;

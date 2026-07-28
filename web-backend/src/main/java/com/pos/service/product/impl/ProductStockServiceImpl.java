@@ -1,19 +1,19 @@
 package com.pos.service.product.impl;
 
 import com.pos.dto.product.ProductResponse;
-import com.pos.dto.warehouse.WarehouseReceiveRequest;
+import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
 import com.pos.entity.Product;
-import com.pos.entity.StockMovement;
+import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
-import com.pos.service.stock.support.StockMovementPersistence;
+import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.service.product.ProductExtensionService;
 import com.pos.service.product.ProductResponseAssembler;
 import com.pos.service.product.ProductStockService;
 import com.pos.service.product.support.ProductCatalogLoader;
 import com.pos.service.product.support.ProductSnapshotNotifier;
-import com.pos.service.stock.StoreStockService;
+import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;

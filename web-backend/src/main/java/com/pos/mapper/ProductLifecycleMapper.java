@@ -5,7 +5,7 @@ import com.pos.dto.product.ProductLifecycleEventResponse;
 import com.pos.dto.product.ProductLifecycleSummaryResponse;
 import com.pos.entity.Product;
 import com.pos.entity.Sale;
-import com.pos.entity.StockMovement;
+import com.pos.inventory.entity.StockMovement;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.dto.product.ProductLifecycleReferenceLabel;

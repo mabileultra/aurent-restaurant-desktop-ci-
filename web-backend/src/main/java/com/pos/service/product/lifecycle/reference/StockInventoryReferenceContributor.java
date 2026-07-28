@@ -1,8 +1,8 @@
 package com.pos.service.product.lifecycle.reference;
 
 import com.pos.dto.product.ProductLifecycleReferenceLabel;
-import com.pos.entity.StockInventory;
-import com.pos.repository.StockInventoryRepository;
+import com.pos.inventory.entity.StockInventory;
+import com.pos.inventory.repository.StockInventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 

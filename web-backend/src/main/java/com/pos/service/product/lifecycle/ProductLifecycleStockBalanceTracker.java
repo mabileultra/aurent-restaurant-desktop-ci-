@@ -1,6 +1,6 @@
 package com.pos.service.product.lifecycle;
 
-import com.pos.repository.stock.StockMovementQueryRepository;
+import com.pos.inventory.repository.stock.StockMovementQueryRepository;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;

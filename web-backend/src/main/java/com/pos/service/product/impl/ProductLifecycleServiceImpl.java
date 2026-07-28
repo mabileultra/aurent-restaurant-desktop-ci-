@@ -7,7 +7,7 @@ import com.pos.entity.Sale;
 import com.pos.exception.PosExceptions;
 import com.pos.mapper.ProductLifecycleMapper;
 import com.pos.repository.ProductRepository;
-import com.pos.repository.stock.StockMovementQueryRepository;
+import com.pos.inventory.repository.stock.StockMovementQueryRepository;
 import com.pos.service.product.ProductLifecycleService;
 import com.pos.service.product.lifecycle.ProductLifecycleDateRange;
 import com.pos.service.product.lifecycle.ProductLifecycleMovementTypeFilter;
@@ -122,7 +122,7 @@ public class ProductLifecycleServiceImpl implements ProductLifecycleService {
     }
 
     private static Sale resolveLinkedSale(
-        com.pos.entity.StockMovement movement,
+        com.pos.inventory.entity.StockMovement movement,
         Map<UUID, Sale> salesByReferenceId,
         Map<UUID, Sale> orphanSales
     ) {

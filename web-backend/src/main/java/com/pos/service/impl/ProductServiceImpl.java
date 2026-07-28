@@ -11,7 +11,7 @@ import com.pos.dto.product.ProductLifecycleResponse;
 import com.pos.dto.product.ProductResponse;
 import com.pos.dto.product.UpdateProductRequest;
 import com.pos.dto.shared.PageResponse;
-import com.pos.dto.warehouse.WarehouseReceiveRequest;
+import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
 import com.pos.service.ProductService;
 import com.pos.service.export.ProductExportService;
 import com.pos.service.imports.ProductImportService;

@@ -1,8 +1,8 @@
 package com.pos.service.report.impl;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.entity.StockInventory;
-import com.pos.repository.StockInventoryRepository;
+import com.pos.inventory.entity.StockInventory;
+import com.pos.inventory.repository.StockInventoryRepository;
 import com.pos.service.event.support.DomainEventMappers;
 import com.pos.service.report.InventoryFactsBackfillService;
 import com.pos.service.support.TenantAccessSupport;

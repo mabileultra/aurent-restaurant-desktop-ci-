@@ -14,7 +14,7 @@ import com.pos.dto.product.UpdateProductRequest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import com.pos.dto.shared.PageResponse;
-import com.pos.dto.warehouse.WarehouseReceiveRequest;
+import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 

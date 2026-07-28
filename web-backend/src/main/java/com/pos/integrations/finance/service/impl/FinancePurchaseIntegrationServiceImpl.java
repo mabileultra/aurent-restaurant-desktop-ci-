@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service.impl;
 
-import com.pos.entity.StockReceipt;
+import com.pos.inventory.entity.StockReceipt;
 import com.pos.integrations.finance.service.FinancePurchaseIntegrationService;
 import com.pos.integrations.finance.service.support.FinanceCreditPurchasePayloadBuilder;
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;

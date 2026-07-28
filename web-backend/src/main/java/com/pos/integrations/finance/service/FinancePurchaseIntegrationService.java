@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service;
 
-import com.pos.entity.StockReceipt;
+import com.pos.inventory.entity.StockReceipt;
 
 public interface FinancePurchaseIntegrationService {
 

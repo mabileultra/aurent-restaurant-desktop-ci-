@@ -1,6 +1,6 @@
 package com.pos.integrations.finance.service.support;
 
-import com.pos.entity.StockReceipt;
+import com.pos.inventory.entity.StockReceipt;
 
 import java.time.LocalDate;
 import java.time.ZoneId;

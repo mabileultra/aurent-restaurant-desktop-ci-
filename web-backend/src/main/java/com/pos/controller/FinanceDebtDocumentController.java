@@ -1,9 +1,9 @@
 package com.pos.controller;
 
 import com.pos.dto.sale.SaleResponse;
-import com.pos.dto.warehouse.StockReceiptResponse;
+import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.service.SaleService;
-import com.pos.service.stock.StockReceiptService;
+import com.pos.inventory.service.stock.StockReceiptService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

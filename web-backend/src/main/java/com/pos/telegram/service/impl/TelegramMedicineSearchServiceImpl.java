@@ -13,7 +13,7 @@ import com.pos.exception.PosExceptions;
 import com.pos.repository.ProductRepository;
 import com.pos.repository.ProductStorePriceRepository;
 import com.pos.repository.StoreRepository;
-import com.pos.repository.StoreStockRepository;
+import com.pos.inventory.repository.StoreStockRepository;
 import com.pos.repository.spec.ProductSpecifications;
 import com.pos.service.ProductAttributeService;
 import com.pos.telegram.service.TelegramMedicineSearchService;

@@ -1,0 +1,20 @@
+package com.pos.inventory.dto.warehouse;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+import java.util.UUID;
+
+public record StockInventoryResponse(
+    UUID id,
+    String inventoryNumber,
+    Integer storeId,
+    String storeName,
+    String status,
+    String notes,
+    int totalLines,
+    BigDecimal totalDifference,
+    String createdByName,
+    Instant createdAt,
+    List<StockInventoryLineResponse> lines
+) {}

@@ -1,9 +1,9 @@
 package com.pos.integrations.finance.service.impl;
 
 import com.pos.integrations.finance.dto.FinanceSyncBackfillResponse;
-import com.pos.entity.StockReceipt;
+import com.pos.inventory.entity.StockReceipt;
 import com.pos.entity.ZReport;
-import com.pos.repository.StockReceiptRepository;
+import com.pos.inventory.repository.StockReceiptRepository;
 import com.pos.repository.ZReportRepository;
 import com.pos.integrations.finance.service.FinanceSyncBackfillService;
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
