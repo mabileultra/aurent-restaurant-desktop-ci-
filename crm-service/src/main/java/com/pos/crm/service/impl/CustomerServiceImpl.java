@@ -1,5 +1,7 @@
 package com.pos.crm.service.impl;
 
+import com.pos.crm.client.PosCoreClient;
+import com.pos.crm.client.dto.CustomerSyncRequest;
 import com.pos.crm.dto.customer.CreateCustomerRequest;
 import com.pos.crm.dto.customer.CustomerResponse;
 import com.pos.crm.dto.shared.PageResponse;
@@ -30,6 +32,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
+    private final PosCoreClient posCoreClient;
 
     @Override
     public PageResponse<CustomerResponse> list(String search, Pageable pageable) {
@@ -72,6 +75,16 @@ public class CustomerServiceImpl implements CustomerService {
             .build();
         Customer saved = customerRepository.save(customer);
         LogUtil.info(CustomerServiceImpl.class, "Customer created: id={}, name={}", saved.getId(), saved.getName());
+        posCoreClient.syncCustomer(new CustomerSyncRequest(
+            "CREATE",
+            saved.getId(),
+            saved.getCompanyId(),
+            saved.getName(),
+            saved.getPhone(),
+            saved.getEmail(),
+            saved.getLoyaltyPts(),
+            saved.getCreatedAt()
+        ));
         return customerMapper.toResponse(saved);
     }
 }

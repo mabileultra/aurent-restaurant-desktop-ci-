@@ -81,6 +81,11 @@ app:
     internal-api-key: ${REPORTING_INTERNAL_API_KEY:reporting-internal-dev-key-change-in-prod}
     connect-timeout-ms: 5000
     read-timeout-ms: 30000
+  crm:
+    base-url: ${CRM_SERVICE_URL:http://localhost:8083/api/v1}
+    internal-api-key: ${CRM_INTERNAL_API_KEY:crm-internal-dev-key-change-in-prod}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 15000
   cache:
     window-months: 2
     refresh-cron: "0 0 1 * * *"

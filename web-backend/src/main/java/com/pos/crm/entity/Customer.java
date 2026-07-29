@@ -16,8 +16,12 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Customer {
 
+    /**
+     * Assigned, not generated: this table is now a read replica synced from crm-service
+     * (see CrmCustomerSyncServiceImpl) — the id always comes from the sync source, same as
+     * {@link com.pos.entity.User#getId()}.
+     */
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

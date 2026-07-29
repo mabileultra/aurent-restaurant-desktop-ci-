@@ -1,5 +1,6 @@
 package com.pos.config;
 
+import com.pos.security.CrmInternalApiKeyFilter;
 import com.pos.security.IdentityInternalApiKeyFilter;
 import com.pos.security.JwtAuthenticationFilter;
 import com.pos.security.PlatformInternalApiKeyFilter;
@@ -34,6 +35,7 @@ public class SecurityConfig {
     private final IdentityInternalApiKeyFilter identityInternalApiKeyFilter;
     private final PlatformInternalApiKeyFilter platformInternalApiKeyFilter;
     private final ReportingInternalApiKeyFilter reportingInternalApiKeyFilter;
+    private final CrmInternalApiKeyFilter crmInternalApiKeyFilter;
     private final TelegramBotApiKeyFilter telegramBotApiKeyFilter;
     private final AuthenticationProvider authenticationProvider;
 
@@ -58,6 +60,7 @@ public class SecurityConfig {
                 .requestMatchers("/internal/identity/**").permitAll()
                 .requestMatchers("/internal/platform/**").permitAll()
                 .requestMatchers("/internal/reports/**").permitAll()
+                .requestMatchers("/internal/crm/**").permitAll()
                 .requestMatchers(PUBLIC_PATHS).permitAll()
                 .requestMatchers("/returns/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/orders/**").hasAnyRole("ADMIN", "MANAGER")
@@ -70,6 +73,7 @@ public class SecurityConfig {
             .addFilterBefore(identityInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(platformInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(reportingInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(crmInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(telegramBotApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();

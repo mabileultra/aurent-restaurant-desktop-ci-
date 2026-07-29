@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -65,6 +66,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
 
         Customer customer = Customer.builder()
+            .id(UUID.randomUUID())
             .company(tenantAccess.requireCompany(companyId))
             .name(name)
             .phone(phone)
