@@ -1,6 +1,7 @@
 package com.pos.entity;
 
 import jakarta.persistence.*;
+import com.pos.catalog.entity.Unit;
 import lombok.*;
 
 @Entity

@@ -5,7 +5,7 @@ import com.pos.sales.dto.sale.SaleItemRequest;
 import com.pos.sales.dto.sale.SaleResponse;
 import com.pos.sales.entity.CashierShift;
 import com.pos.crm.entity.Customer;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.SaleItem;
 import com.pos.domain.StockMovementType;

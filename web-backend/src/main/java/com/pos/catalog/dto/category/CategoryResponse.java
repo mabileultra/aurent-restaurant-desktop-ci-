@@ -1,0 +1,10 @@
+package com.pos.catalog.dto.category;
+
+public record CategoryResponse(
+    Integer id,
+    String name,
+    String description,
+    Integer businessTypeId,
+    String businessTypeCode,
+    String businessTypeName
+) {}

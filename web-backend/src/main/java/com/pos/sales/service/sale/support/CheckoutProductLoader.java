@@ -1,9 +1,9 @@
 package com.pos.sales.service.sale.support;
 
 import com.pos.sales.dto.sale.SaleItemRequest;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.exception.PosExceptions;
-import com.pos.repository.ProductRepository;
+import com.pos.catalog.repository.ProductRepository;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

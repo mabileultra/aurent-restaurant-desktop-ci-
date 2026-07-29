@@ -1,6 +1,6 @@
 package com.pos.restaurant.entity;
 
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

@@ -2,7 +2,7 @@ package com.pos.util;
 
 import com.pos.domain.ProductQuantityRules;
 import com.pos.domain.SaleType;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 
 import java.math.BigDecimal;
 

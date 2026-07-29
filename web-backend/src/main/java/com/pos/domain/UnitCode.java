@@ -5,7 +5,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 
 /**
- * Код единицы учёта на товаре. Справочник labels/rules — таблица {@code units} + {@link com.pos.service.UnitCatalogService}.
+ * Код единицы учёта на товаре. Справочник labels/rules — таблица {@code units} + {@link com.pos.catalog.service.UnitCatalogService}.
  */
 public enum UnitCode {
     PCS,

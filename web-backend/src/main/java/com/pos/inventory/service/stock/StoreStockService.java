@@ -1,7 +1,7 @@
 package com.pos.inventory.service.stock;
 
 import com.pos.domain.SaleType;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.entity.StoreStock;
 import com.pos.exception.PosExceptions;

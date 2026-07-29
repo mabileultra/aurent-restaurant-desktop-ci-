@@ -1,7 +1,7 @@
 package com.pos.service.support;
 
 import com.pos.entity.Company;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.BadRequestException;

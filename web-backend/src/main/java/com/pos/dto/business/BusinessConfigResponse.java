@@ -1,7 +1,7 @@
 package com.pos.dto.business;
 
-import com.pos.dto.unit.UnitConversionResponse;
-import com.pos.dto.unit.UnitResponse;
+import com.pos.catalog.dto.unit.UnitConversionResponse;
+import com.pos.catalog.dto.unit.UnitResponse;
 
 import java.util.List;
 

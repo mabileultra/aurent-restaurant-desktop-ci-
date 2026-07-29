@@ -2,9 +2,9 @@ package com.pos.sales.service.sale.support;
 
 import com.pos.sales.dto.sale.SaleItemRequest;
 import com.pos.entity.Company;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.exception.ResourceNotFoundException;
-import com.pos.repository.ProductRepository;
+import com.pos.catalog.repository.ProductRepository;
 import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

@@ -1,7 +1,7 @@
 package com.pos.sales.dto.sync;
 
-import com.pos.dto.category.CategoryResponse;
-import com.pos.dto.product.ProductResponse;
+import com.pos.catalog.dto.category.CategoryResponse;
+import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.sales.dto.sale.CreateSaleRequest;
 
 import java.time.Instant;

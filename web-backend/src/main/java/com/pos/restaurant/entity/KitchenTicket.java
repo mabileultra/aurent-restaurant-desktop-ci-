@@ -1,6 +1,6 @@
 package com.pos.restaurant.entity;
 
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.restaurant.domain.KitchenTicketStatus;
 import jakarta.persistence.Column;

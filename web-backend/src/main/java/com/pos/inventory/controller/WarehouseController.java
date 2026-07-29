@@ -1,7 +1,7 @@
 package com.pos.inventory.controller;
 
 import com.pos.config.openapi.StandardApiResponses;
-import com.pos.dto.product.ProductResponse;
+import com.pos.catalog.dto.product.ProductResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.inventory.dto.warehouse.CreateStockInventoryRequest;
 import com.pos.inventory.dto.warehouse.CreateStockReceiptRequest;
@@ -12,7 +12,7 @@ import com.pos.inventory.dto.warehouse.StockTransferResponse;
 import com.pos.inventory.dto.stock.CreateWriteOffRequest;
 import com.pos.inventory.dto.stock.WriteOffRowResponse;
 import com.pos.inventory.dto.warehouse.WarehouseReceiveRequest;
-import com.pos.service.ProductService;
+import com.pos.catalog.service.ProductService;
 import com.pos.inventory.service.stock.StockInventoryService;
 import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StockTransferService;

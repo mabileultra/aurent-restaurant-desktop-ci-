@@ -1,7 +1,7 @@
 package com.pos.integrations.reporting.controller;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.service.report.InventoryFactsBackfillService;
+import com.pos.inventory.service.report.InventoryFactsBackfillService;
 import com.pos.shared.event.StockInventoryRecordedEvent;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;

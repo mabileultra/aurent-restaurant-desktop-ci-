@@ -3,7 +3,7 @@ package com.pos.util;
 import com.pos.domain.ProductQuantityRules;
 import com.pos.domain.SaleType;
 import com.pos.domain.UnitCode;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.exception.BadRequestException;
 
 import java.math.BigDecimal;

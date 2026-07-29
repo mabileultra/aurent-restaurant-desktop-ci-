@@ -1,7 +1,7 @@
 package com.pos.service.event;
 
 import com.pos.sales.entity.CashierShift;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.sales.entity.Sale;
 import com.pos.inventory.entity.StockInventory;
 import com.pos.inventory.entity.StockMovement;

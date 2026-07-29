@@ -1,7 +1,7 @@
 package com.pos.integrations.reporting.controller;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.service.report.ProductSnapshotBackfillService;
+import com.pos.catalog.service.report.ProductSnapshotBackfillService;
 import com.pos.shared.event.ProductSnapshotEvent;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;

@@ -1,6 +1,6 @@
 package com.pos.sales.service.export.impl;
 
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.SaleItem;
 import com.pos.sales.repository.sale.SaleSearchRepository;

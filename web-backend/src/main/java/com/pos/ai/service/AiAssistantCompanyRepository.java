@@ -1,9 +1,9 @@
 package com.pos.ai.service;
 
 import com.pos.client.reporting.ReportingStockReportClient;
-import com.pos.entity.Product;
-import com.pos.repository.spec.ProductSpecifications;
-import com.pos.service.product.ProductLifecycleService;
+import com.pos.catalog.entity.Product;
+import com.pos.catalog.repository.spec.ProductSpecifications;
+import com.pos.catalog.service.product.ProductLifecycleService;
 import com.pos.service.support.ProductLookupSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;

@@ -1,8 +1,8 @@
 package com.pos.service.support;
 
-import com.pos.entity.Product;
-import com.pos.repository.ProductRepository;
-import com.pos.repository.spec.ProductSpecifications;
+import com.pos.catalog.entity.Product;
+import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.repository.spec.ProductSpecifications;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;

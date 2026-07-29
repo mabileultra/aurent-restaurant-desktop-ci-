@@ -1,6 +1,6 @@
 package com.pos.restaurant.support;
 
-import com.pos.service.ProductAttributeService;
+import com.pos.catalog.service.ProductAttributeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

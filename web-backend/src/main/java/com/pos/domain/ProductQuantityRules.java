@@ -1,6 +1,6 @@
 package com.pos.domain;
 
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 
 /**
  * Правила количества для товара: тип продажи, единица, точность, дробность.

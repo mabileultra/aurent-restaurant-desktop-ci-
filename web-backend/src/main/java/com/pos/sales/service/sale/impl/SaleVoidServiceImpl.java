@@ -1,13 +1,13 @@
 package com.pos.sales.service.sale.impl;
 
 import com.pos.sales.dto.sale.SaleResponse;
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.sales.entity.Sale;
 import com.pos.domain.StockMovementType;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.exception.PosExceptions;
 import com.pos.sales.mapper.SaleMapper;
-import com.pos.repository.ProductRepository;
+import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.integrations.finance.service.FinanceReturnIntegrationService;

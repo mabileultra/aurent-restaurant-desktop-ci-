@@ -1,7 +1,7 @@
 package com.pos.sales.entity;
 
 import jakarta.persistence.*;
-import com.pos.entity.Category;
+import com.pos.catalog.entity.Category;
 import com.pos.entity.Store;
 import lombok.*;
 

@@ -1,6 +1,6 @@
 package com.pos.sales.dto.cashregister;
 
-import com.pos.dto.category.CategoryResponse;
+import com.pos.catalog.dto.category.CategoryResponse;
 import com.pos.dto.store.StoreResponse;
 
 import java.util.List;

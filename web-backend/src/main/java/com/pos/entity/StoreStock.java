@@ -1,6 +1,7 @@
 package com.pos.entity;
 
 import jakarta.persistence.*;
+import com.pos.catalog.entity.Product;
 import lombok.*;
 
 import java.math.BigDecimal;

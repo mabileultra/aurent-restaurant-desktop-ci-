@@ -1,10 +1,10 @@
 package com.pos.service.support;
 
-import com.pos.entity.Product;
+import com.pos.catalog.entity.Product;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
-import com.pos.repository.ProductStorePriceRepository;
+import com.pos.catalog.repository.ProductStorePriceRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.security.CurrentUserProvider;
 import lombok.RequiredArgsConstructor;

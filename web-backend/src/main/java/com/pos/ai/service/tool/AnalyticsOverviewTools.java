@@ -8,7 +8,7 @@ import com.pos.dto.report.TopProductRow;
 import com.pos.dto.report.sales.StoreSalesRowResponse;
 import com.pos.dto.report.shift.ShiftOverviewResponse;
 import com.pos.dto.report.stock.StockCatalogStatsResponse;
-import com.pos.repository.CategoryRepository;
+import com.pos.catalog.repository.CategoryRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.ai.service.AiAnalyticsMaps;
 import com.pos.ai.service.AiAssistantParallel;

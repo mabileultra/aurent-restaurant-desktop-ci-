@@ -1,7 +1,7 @@
 package com.pos.integrations.reporting.controller;
 
 import com.pos.dto.shared.PageResponse;
-import com.pos.service.report.ShiftFactsBackfillService;
+import com.pos.sales.service.report.ShiftFactsBackfillService;
 import com.pos.shared.event.ShiftClosedEvent;
 import io.swagger.v3.oas.annotations.Hidden;
 import lombok.RequiredArgsConstructor;
