@@ -12,8 +12,8 @@ import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.mapper.StoreMapper;
+import com.pos.client.crm.CrmOutboundClient;
 import com.pos.sales.repository.CashierShiftRepository;
-import com.pos.crm.repository.CustomerOrderRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.repository.StockInventoryRepository;
 import com.pos.inventory.repository.StockMovementRepository;
@@ -52,7 +52,7 @@ public class StoreServiceImpl implements StoreService {
     private final StockReceiptRepository stockReceiptRepository;
     private final StockInventoryRepository stockInventoryRepository;
     private final StockTransferRepository stockTransferRepository;
-    private final CustomerOrderRepository customerOrderRepository;
+    private final CrmOutboundClient crmOutboundClient;
     private final StoreBusinessTypeResolver storeBusinessTypeResolver;
 
     @Override
@@ -201,7 +201,7 @@ public class StoreServiceImpl implements StoreService {
         if (transfers > 0) {
             blocks.add("перемещения — " + transfers);
         }
-        long orders = customerOrderRepository.countByStore_Id(storeId);
+        long orders = crmOutboundClient.countOrdersByStore(storeId);
         if (orders > 0) {
             blocks.add("заказы — " + orders);
         }

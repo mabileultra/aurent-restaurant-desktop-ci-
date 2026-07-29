@@ -1,5 +1,6 @@
 package com.pos.service.identity.impl;
 
+import com.pos.client.crm.CrmOutboundClient;
 import com.pos.dto.identity.internal.UserSyncRequest;
 import com.pos.entity.Company;
 import com.pos.entity.Role;
@@ -8,7 +9,6 @@ import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.repository.CompanyRepository;
-import com.pos.crm.repository.CustomerOrderRepository;
 import com.pos.repository.RoleRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.repository.UserRepository;
@@ -37,7 +37,7 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
     private final TenantAccessSupport tenantAccess;
     private final SaleRepository saleRepository;
     private final CashierShiftRepository cashierShiftRepository;
-    private final CustomerOrderRepository customerOrderRepository;
+    private final CrmOutboundClient crmOutboundClient;
     private final AuthenticatedUserCache authenticatedUserCache;
     private final EntityManager entityManager;
 
@@ -163,6 +163,6 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
     private boolean hasBlockingReferences(UUID userId) {
         return saleRepository.existsByCashier_Id(userId)
             || cashierShiftRepository.existsByCashier_Id(userId)
-            || customerOrderRepository.existsByCreatedBy_Id(userId);
+            || crmOutboundClient.existsOrderByCreator(userId);
     }
 }
