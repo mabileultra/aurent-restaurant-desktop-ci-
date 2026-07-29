@@ -183,6 +183,56 @@ services:
       retries: 12
       start_period: 45s
 
+  crm-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-crm-db
+    environment:
+      POSTGRES_DB: crm_db
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: crm_password
+    ports:
+      - "5438:5432"
+    volumes:
+      - crm_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crm_user -d crm_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  crm-service:
+    build:
+      context: .
+      dockerfile: crm-service/Dockerfile
+    container_name: masterpiece-crm-service
+    depends_on:
+      crm-db:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    environment:
+      CRM_DB_URL: jdbc:postgresql://crm-db:5432/crm_db
+      CRM_DB_USERNAME: crm_user
+      CRM_DB_PASSWORD: crm_password
+      JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      CRM_INTERNAL_API_KEY: crm-internal-dev-key-change-in-prod
+      CRM_SERVER_PORT: "8083"
+      POS_CORE_URL: http://backend:8080/api/v1
+      POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
+      POS_CORE_DATASOURCE_USERNAME: pos_user
+      POS_CORE_DATASOURCE_PASSWORD: pos_password
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - "8083:8083"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8083/api/v1/actuator/health | grep -q UP || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+
   reporting-db:
     image: postgres:15-alpine
     container_name: masterpiece-reporting-db
@@ -333,3 +383,4 @@ volumes:
   identity_pg_data:
   platform_pg_data:
   reporting_pg_data:
+  crm_pg_data:
