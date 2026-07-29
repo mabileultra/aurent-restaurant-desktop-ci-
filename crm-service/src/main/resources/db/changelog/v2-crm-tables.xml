@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="crm-002-customer_orders" author="pos">
+        <createTable tableName="customer_orders">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_name" type="VARCHAR(255)"/>
+            <column name="external_number" type="VARCHAR(100)"/>
+            <column name="status" type="VARCHAR(30)" defaultValue="NEW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_name" type="VARCHAR(255)"/>
+            <column name="client_phone" type="VARCHAR(40)"/>
+            <column name="delivery_address" type="TEXT"/>
+            <column name="comment" type="TEXT"/>
+            <column name="courier_id" type="UUID"/>
+            <column name="courier_name" type="VARCHAR(255)"/>
+            <column name="payment_method" type="VARCHAR(20)"/>
+            <column name="receipt_number" type="VARCHAR(50)"/>
+            <column name="receipt_at" type="TIMESTAMPTZ"/>
+            <column name="total_amount" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_customer_orders_company" tableName="customer_orders">
+            <column name="company_id"/>
+        </createIndex>
+        <createIndex indexName="idx_customer_orders_store" tableName="customer_orders">
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_customer_orders_created" tableName="customer_orders">
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex indexName="idx_customer_orders_status" tableName="customer_orders">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="crm-003-customer_order_photos" author="pos">
+        <createTable tableName="customer_order_photos">
+            <column name="id" type="BIGSERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="slot" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="file_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_type" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="customer_order_photos"
+            baseColumnNames="order_id"
+            constraintName="fk_customer_order_photos_order"
+            referencedTableName="customer_orders"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addUniqueConstraint
+            tableName="customer_order_photos"
+            columnNames="order_id, slot"
+            constraintName="uq_customer_order_photos_order_slot"/>
+        <sql>
+            ALTER TABLE customer_order_photos ADD CONSTRAINT chk_customer_order_photos_slot CHECK (slot >= 1 AND slot &lt;= 5);
+        </sql>
+        <createIndex indexName="idx_customer_order_photos_order" tableName="customer_order_photos">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

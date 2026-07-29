@@ -1,11 +1,20 @@
 package com.pos.crm.client;
 
+import com.pos.crm.client.dto.CourierRefDto;
 import com.pos.crm.client.dto.CustomerSyncRequest;
+import com.pos.crm.client.dto.StoreRefDto;
+import com.pos.crm.exception.BadRequestException;
 import com.pos.shared.log.LogUtil;
 import io.github.resilience4j.circuitbreaker.CircuitBreakerRegistry;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -15,6 +24,30 @@ public class PosCoreClient {
 
     private final RestClient posCoreRestClient;
     private final CircuitBreakerRegistry circuitBreakerRegistry;
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public StoreRefDto getStore(Integer id) {
+        return posCoreRestClient.get()
+            .uri("/internal/crm/stores/{id}", id)
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                throw new BadRequestException("Store not found: " + id);
+            })
+            .body(StoreRefDto.class);
+    }
+
+    @CircuitBreaker(name = POS_CORE)
+    @Retry(name = POS_CORE)
+    public List<CourierRefDto> listCouriers(Integer companyId) {
+        return posCoreRestClient.get()
+            .uri("/internal/crm/couriers?companyId={companyId}", companyId)
+            .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                throw new BadRequestException("Failed to load couriers");
+            })
+            .body(new ParameterizedTypeReference<List<CourierRefDto>>() {});
+    }
 
     public void syncCustomer(CustomerSyncRequest request) {
         postVoid("/internal/crm/customers/sync", request);

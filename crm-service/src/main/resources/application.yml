@@ -38,6 +38,8 @@ app:
     pos-core-datasource-url: ${POS_CORE_DATASOURCE_URL:}
     pos-core-datasource-username: ${POS_CORE_DATASOURCE_USERNAME:pos_user}
     pos-core-datasource-password: ${POS_CORE_DATASOURCE_PASSWORD:pos_password}
+  orders:
+    upload-dir: ${ORDERS_UPLOAD_DIR:uploads/orders}
 
 resilience4j:
   circuitbreaker:
