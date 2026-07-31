@@ -1,8 +1,5 @@
 import PosCatalogPanel from '../../cashier/components/PosCatalogPanel';
-import PosPaymentFlow from '../../cashier/components/PosPaymentFlow';
-import PosRegisterPayRail from '../../cashier/components/register-pay-rail/PosRegisterPayRail';
-import { usePayFlowTransition } from '../../cashier/hooks/usePayFlowTransition';
-import CashierBottomNav from '../../../components/layout/cashier/bottom-nav/CashierBottomNav';
+import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import RestaurantFloorPlan from './RestaurantFloorPlan';
 import RestaurantOrderPanel from './RestaurantOrderPanel';
 
@@ -46,8 +43,6 @@ export default function RestaurantRegisterWorkspace({
 }) {
   const paneClass = restaurantPane === 'catalog' ? 'catalog' : 'tables';
   const tablesSessionOpen = restaurantPane === 'tables' && checkOpen;
-
-  usePayFlowTransition(payOpen, onPayFlowClosed);
 
   let mainContent = null;
   if (restaurantPane === 'catalog') {
@@ -108,70 +103,50 @@ export default function RestaurantRegisterWorkspace({
     );
   }
 
-  return (
+  const hallsBar = (
     <div
-      className={`cashier-register__split cashier-register__split--pane restaurant-cashier__split restaurant-cashier__split--${paneClass}${tablesSessionOpen ? ' restaurant-cashier__split--session-open' : ''}`}
+      className={`restaurant-cashier__halls${restaurantPane === 'tables' ? '' : ' restaurant-cashier__halls--hidden'}`}
+      aria-hidden={restaurantPane !== 'tables' || undefined}
     >
-      <div
-        className={`restaurant-cashier__halls${restaurantPane === 'tables' ? '' : ' restaurant-cashier__halls--hidden'}`}
-        aria-hidden={restaurantPane !== 'tables' || undefined}
-      >
-        {halls.map((hall) => (
-          <button
-            key={hall.id}
-            type="button"
-            className={`restaurant-cashier__hall-tab${selectedHall?.id === hall.id ? ' is-active' : ''}`}
-            onClick={() => onSelectHall(hall.id)}
-            tabIndex={restaurantPane === 'tables' ? undefined : -1}
-          >
-            {hall.name}
-          </button>
-        ))}
-      </div>
-
-      <div className="cashier-register__workspace">
-        <div className="cashier-register__stage restaurant-cashier__stage">
-          <div className="restaurant-cashier__main-col">
-            {mainContent}
-          </div>
-
-          <aside
-            className={`cashier-register__actions-col restaurant-cashier__actions-col${payOpen ? ' cashier-register__actions-col--pay' : ''}`}
-          >
-            <div className="cashier-register__pay-shell">
-              <div
-                className="cashier-register__pay-pane cashier-register__pay-pane--rail"
-                inert={payOpen || undefined}
-              >
-                <PosRegisterPayRail
-                  total={total}
-                  onReturn={onReturn}
-                  onDiscount={onDiscount}
-                  onConfirm={onConfirmPayment}
-                  onOpenPaymentFlow={onOpenPaymentFlow}
-                  checkoutDisabled={payDisabled}
-                  isPending={checkoutPending}
-                />
-              </div>
-
-              {payOpen ? (
-                <div className="cashier-register__pay-pane cashier-register__pay-pane--flow">
-                  <PosPaymentFlow
-                    key={`restaurant-pay-flow-${payFlowSession}`}
-                    onClose={onClosePayment}
-                    total={total}
-                    isPending={checkoutPending}
-                    onConfirm={onConfirmPayment}
-                    openOptions={payFlowOptions}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </aside>
-
-          <CashierBottomNav className="cashier-register__bottom-nav" />
-        </div>
-      </div>
+      {halls.map((hall) => (
+        <button
+          key={hall.id}
+          type="button"
+          className={`restaurant-cashier__hall-tab${selectedHall?.id === hall.id ? ' is-active' : ''}`}
+          onClick={() => onSelectHall(hall.id)}
+          tabIndex={restaurantPane === 'tables' ? undefined : -1}
+        >
+          {hall.name}
+        </button>
+      ))}
     </div>
+  );
+
+  return (
+    <CashierRegisterShell
+      splitClassName={`restaurant-cashier__split restaurant-cashier__split--${paneClass}${tablesSessionOpen ? ' restaurant-cashier__split--session-open' : ''}`}
+      stageClassName="restaurant-cashier__stage"
+      beforeWorkspace={hallsBar}
+      pay={{
+        className: 'restaurant-cashier__actions-col',
+        payOpen,
+        total,
+        onReturn,
+        onDiscount,
+        onConfirm: onConfirmPayment,
+        onOpenPaymentFlow,
+        onClosePayment,
+        checkoutDisabled: payDisabled,
+        isPending: checkoutPending,
+        payFlowOptions,
+        payFlowSession,
+        payFlowKeyPrefix: 'restaurant-pay-flow',
+        onPayFlowClosed,
+      }}
+    >
+      <div className="restaurant-cashier__main-col">
+        {mainContent}
+      </div>
+    </CashierRegisterShell>
   );
 }
