@@ -10,7 +10,7 @@ import com.pos.ai.dto.shared.PageResponse;
 import com.pos.ai.support.HttpRequestAuthSupport;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -21,13 +21,20 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class ReportingSalesReportClientImpl implements ReportingSalesReportClient {
 
     private static final String REPORTING_SERVICE = "reporting-service";
 
     private final RestClient reportingRestClient;
     private final HttpRequestAuthSupport httpRequestAuthSupport;
+
+    public ReportingSalesReportClientImpl(
+        @Qualifier("reportingRestClient") RestClient reportingRestClient,
+        HttpRequestAuthSupport httpRequestAuthSupport
+    ) {
+        this.reportingRestClient = reportingRestClient;
+        this.httpRequestAuthSupport = httpRequestAuthSupport;
+    }
 
     @Override
     @CircuitBreaker(name = REPORTING_SERVICE)

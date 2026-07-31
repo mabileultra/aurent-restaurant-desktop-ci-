@@ -6,7 +6,7 @@ import com.pos.ai.support.HttpRequestAuthSupport;
 import com.pos.shared.log.LogUtil;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
@@ -19,13 +19,20 @@ import java.util.Map;
 import java.util.UUID;
 
 @Component
-@RequiredArgsConstructor
 public class PosCoreClientImpl implements PosCoreClient {
 
     private static final String POS_CORE_SERVICE = "pos-core-service";
 
     private final RestClient posCoreRestClient;
     private final HttpRequestAuthSupport httpRequestAuthSupport;
+
+    public PosCoreClientImpl(
+        @Qualifier("posCoreRestClient") RestClient posCoreRestClient,
+        HttpRequestAuthSupport httpRequestAuthSupport
+    ) {
+        this.posCoreRestClient = posCoreRestClient;
+        this.httpRequestAuthSupport = httpRequestAuthSupport;
+    }
 
     @Override
     @CircuitBreaker(name = POS_CORE_SERVICE, fallbackMethod = "resolveProductIdFallback")

@@ -16,7 +16,7 @@ import java.time.Duration;
 @EnableConfigurationProperties(AiAssistantProperties.class)
 public class AppConfig {
 
-    @Bean
+    @Bean(name = "reportingRestClient")
     public RestClient reportingRestClient(@Value("${app.reporting.url}") String baseUrl) {
         return RestClient.builder()
             .baseUrl(baseUrl)
@@ -29,7 +29,7 @@ public class AppConfig {
             .build();
     }
 
-    @Bean
+    @Bean(name = "posCoreRestClient")
     public RestClient posCoreRestClient(@Value("${app.pos-core.url}") String baseUrl) {
         return RestClient.builder()
             .baseUrl(baseUrl)
@@ -42,8 +42,8 @@ public class AppConfig {
             .build();
     }
 
-    @Bean
-    public RestClient deepSeekRestClient(AiAssistantProperties properties) {
+    @Bean(name = "deepseekRestClient")
+    public RestClient deepseekRestClient(AiAssistantProperties properties) {
         return RestClient.builder()
             .baseUrl(properties.getBaseUrl())
             .defaultHeader("Authorization", "Bearer " + properties.getApiKey())

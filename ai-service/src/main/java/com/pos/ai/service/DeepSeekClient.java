@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.ai.config.AiAssistantProperties;
 import com.pos.ai.exception.BadRequestException;
 import com.pos.shared.log.LogUtil;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
@@ -15,12 +15,21 @@ import java.util.List;
 import java.util.Map;
 
 @Component
-@RequiredArgsConstructor
 public class DeepSeekClient {
 
     private final RestClient deepseekRestClient;
     private final AiAssistantProperties properties;
     private final ObjectMapper objectMapper;
+
+    public DeepSeekClient(
+        @Qualifier("deepseekRestClient") RestClient deepseekRestClient,
+        AiAssistantProperties properties,
+        ObjectMapper objectMapper
+    ) {
+        this.deepseekRestClient = deepseekRestClient;
+        this.properties = properties;
+        this.objectMapper = objectMapper;
+    }
 
     public String chat(List<Map<String, String>> messages) {
         return chat(messages, 1100);
