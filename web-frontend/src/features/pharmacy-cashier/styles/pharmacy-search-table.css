@@ -111,11 +111,23 @@
   font-weight: 700;
 }
 
+.pharmacy-search__shelf {
+  font-weight: 800;
+  color: var(--pharm-ink, #1e3a5f);
+  white-space: nowrap;
+}
+
 .pharmacy-search__mono {
   font-variant-numeric: tabular-nums;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.8125rem;
   color: var(--pharm-muted, #5a6f8c);
+}
+
+.pharmacy-search__hint {
+  font-weight: 700;
+  color: var(--pharm-accent, #2f6fed);
+  white-space: nowrap;
 }
 
 .pharmacy-search__num {

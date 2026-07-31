@@ -479,11 +479,12 @@ services:
     networks:
       - pos-net
 
+  # Аптечный бот: поиск лекарств + поддержка аптеки
   telegram-support-bot:
     build:
       context: ./telegram-support-bot
       dockerfile: Dockerfile
-    container_name: aurent-pos-telegram-bot
+    container_name: aurent-pharmacy-telegram-bot
     restart: unless-stopped
     env_file:
       - .env
@@ -502,6 +503,25 @@ services:
     networks:
       - pos-net
 
+  # Бот поддержки веб-приложения (страница «Поддержка» в CRM/POS)
+  telegram-web-support-bot:
+    build:
+      context: ./telegram-web-support-bot
+      dockerfile: Dockerfile
+    container_name: aurent-web-support-telegram-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      TELEGRAM_WEB_SUPPORT_BOT_TOKEN: ${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}
+      TELEGRAM_WEB_SUPPORT_GROUP_ID: ${TELEGRAM_WEB_SUPPORT_GROUP_ID:-}
+      TELEGRAM_WEB_SUPPORT_DATA_DIR: /app/data
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - telegram_web_support_data:/app/data
+    networks:
+      - pos-net
+
 networks:
   pos-net:
     driver: bridge
@@ -516,3 +536,4 @@ volumes:
   backend_uploads:
   backend_logs:
   telegram_bot_data:
+  telegram_web_support_data:

@@ -71,6 +71,15 @@ docker compose -f docker-compose.prod.yml logs -f backend
 - `AI_ASSISTANT_API_KEY` (если ассистент включён)
 - `FINANCE_DB_PASSWORD`, `FINANCE_INTERNAL_API_KEY` (если finance включён)
 
+### Два Telegram-бота
+
+| Бот | Env | Для чего |
+|-----|-----|----------|
+| **Веб-поддержка** | `TELEGRAM_WEB_SUPPORT_BOT_TOKEN` + `VITE_SUPPORT_TELEGRAM_BOT` | Страница «Поддержка» в CRM/POS |
+| **Аптека** | `TELEGRAM_BOT_TOKEN` | Поиск лекарств + поддержка аптеки |
+
+`VITE_SUPPORT_TELEGRAM_BOT` = **username веб-бота**, не аптечного.
+
 ---
 
 ## Бэкапы

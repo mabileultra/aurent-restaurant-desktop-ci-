@@ -177,11 +177,18 @@ if ! recreate_service frontend; then
   exit 1
 fi
 
+if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
+  echo "==> Telegram-бот поддержки веба (CRM/POS)..."
+  compose up -d --build telegram-web-support-bot
+else
+  echo "==> TELEGRAM_WEB_SUPPORT_BOT_TOKEN не задан — веб-бот поддержки пропущен."
+fi
+
 if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
-  echo "==> Telegram-бот поддержки..."
+  echo "==> Telegram-бот аптеки (поиск лекарств)..."
   compose up -d --build telegram-support-bot
 else
-  echo "==> TELEGRAM_BOT_TOKEN не задан — бот поддержки пропущен."
+  echo "==> TELEGRAM_BOT_TOKEN не задан — аптечный бот пропущен."
 fi
 
 echo ""

@@ -24,5 +24,6 @@
     <include file="v17-courier-role.xml" relativeToChangelogFile="true"/>
     <include file="v18-cook-role.xml" relativeToChangelogFile="true"/>
     <include file="v19-kitchen-none-department.xml" relativeToChangelogFile="true"/>
+    <include file="v20-pharmacy-cashier-fields.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

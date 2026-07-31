@@ -82,6 +82,12 @@
   max-width: 22vw;
 }
 
+.pharmacy-cart-table__shelf {
+  font-weight: 800;
+  color: var(--pharm-ink, #1e3a5f);
+  white-space: nowrap;
+}
+
 .pharmacy-cart-table__mono {
   font-variant-numeric: tabular-nums;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;

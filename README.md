@@ -15,9 +15,11 @@
 
 ```
 postsystem/
-├── web-backend/      # REST API
-├── web-frontend/     # Веб-интерфейс (менеджер/админ + UI кассы)
-├── deploy/           # Скрипты деплоя на Ubuntu
+├── web-backend/                 # REST API
+├── web-frontend/                # Веб-интерфейс (менеджер/админ + UI кассы)
+├── telegram-web-support-bot/    # Бот поддержки CRM/POS (страница «Поддержка»)
+├── telegram-support-bot/        # Аптечный бот (поиск лекарств)
+├── deploy/                      # Скрипты деплоя на Ubuntu
 ├── docker-compose.yml
 └── docker-compose.prod.yml
 ```

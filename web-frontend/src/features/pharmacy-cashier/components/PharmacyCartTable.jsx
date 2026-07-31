@@ -4,9 +4,11 @@ import { lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import {
-  formatExpiryDisplay,
+  formatExpiryRemaining,
   productBatch,
-  productExpiry,
+  productDosageForm,
+  productStorageLocation,
+  productUnitLabel,
   pharmacyRowStatus,
   pharmacyRowStatusClass,
 } from '../utils/pharmacyProductMeta';
@@ -20,6 +22,7 @@ export default function PharmacyCartTable({
   onRemove,
 }) {
   const { t } = useTranslation();
+  const daysLabel = t('pharmacyCashier.daysShort');
 
   if (!items.length) {
     return (
@@ -36,6 +39,9 @@ export default function PharmacyCartTable({
           <thead>
             <tr>
               <th>{t('pharmacyCashier.colName')}</th>
+              <th>{t('pharmacyCashier.colUnit')}</th>
+              <th>{t('pharmacyCashier.colForm')}</th>
+              <th>{t('pharmacyCashier.colShelf')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colQty')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colPrice')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colSum')}</th>
@@ -50,7 +56,10 @@ export default function PharmacyCartTable({
             {items.map((item) => {
               const status = pharmacyRowStatus(item, { stockKey: 'maxStock' });
               const statusClass = pharmacyRowStatusClass(status, 'pharmacy-cart-table__row');
-              const expiry = formatExpiryDisplay(productExpiry(item)) || '—';
+              const unit = productUnitLabel(item) || '—';
+              const form = productDosageForm(item) || '—';
+              const shelf = productStorageLocation(item) || '—';
+              const expiry = formatExpiryRemaining(item, daysLabel) || '—';
               const batch = productBatch(item) || '—';
               return (
                 <tr
@@ -63,6 +72,9 @@ export default function PharmacyCartTable({
                   onClick={() => onSelectLine(item.lineId)}
                 >
                   <td className="pharmacy-cart-table__name">{item.name}</td>
+                  <td className="pharmacy-cart-table__mono">{unit}</td>
+                  <td className="pharmacy-cart-table__mono">{form}</td>
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__shelf">{shelf}</td>
                   <td className="pharmacy-cart-table__num">
                     {formatQty(item.quantity, item.saleType, item.unitCode)}
                   </td>

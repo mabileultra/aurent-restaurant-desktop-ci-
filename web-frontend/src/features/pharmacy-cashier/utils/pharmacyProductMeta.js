@@ -1,5 +1,5 @@
 /**
- * Атрибуты товара для аптечной кассы (срок / серия) и световая гамма строк.
+ * Атрибуты товара для аптечной кассы (срок / серия / фасовка) и световая гамма строк.
  */
 
 export const PHARMACY_EXPIRY_WARN_DAYS = 90;
@@ -46,6 +46,58 @@ export function productBatch(productOrLine) {
   );
 }
 
+export function productDosageForm(productOrLine) {
+  const fromAttr = productAttr(productOrLine, 'dosage_form', 'dosageForm', 'form');
+  if (fromAttr) return fromAttr;
+  const extras = productOrLine?.retailExtras;
+  if (extras?.pharmacyDosageForm) return String(extras.pharmacyDosageForm).trim();
+  return '';
+}
+
+export function productUnitsInPack(productOrLine) {
+  const raw = productAttr(productOrLine, 'units_in_pack', 'unitsInPack', 'pack_size', 'packSize');
+  if (!raw) return null;
+  const n = Number(String(raw).replace(',', '.'));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+export function productShelfLifeDays(productOrLine) {
+  const raw = productAttr(productOrLine, 'shelf_life_days', 'shelfLifeDays', 'storage_days');
+  if (!raw) return null;
+  const n = Number(String(raw).replace(',', '.'));
+  return Number.isFinite(n) && n > 0 ? Math.round(n) : null;
+}
+
+export function productArrivalDate(productOrLine) {
+  return productAttr(productOrLine, 'arrival_date', 'arrivalDate', 'received_date', 'receivedDate');
+}
+
+export function productUnitLabel(productOrLine) {
+  const measure = productOrLine?.unitOfMeasure;
+  if (measure != null && String(measure).trim()) return String(measure).trim();
+  const code = productOrLine?.unitCode;
+  if (code != null && String(code).trim()) return String(code).trim();
+  return '';
+}
+
+/** Полка / место хранения (из карточки товара). */
+export function productStorageLocation(productOrLine) {
+  return productAttr(
+    productOrLine,
+    'storageLocation',
+    'storage_location',
+    'shelf',
+  );
+}
+
+/** Можно продавать дробно / по 1 из пачки (лента). */
+export function productSellByUnitHint(productOrLine) {
+  if (productOrLine?.allowFraction) return true;
+  if (productOrLine?.soldIndividually) return true;
+  const pack = productUnitsInPack(productOrLine);
+  return pack != null && pack > 1;
+}
+
 /**
  * Парсит срок в Date (локальная полночь). Поддерживает ДД.ММ.ГГГГ и ISO.
  */
@@ -89,6 +141,29 @@ export function daysUntilExpiry(raw, now = new Date()) {
   if (!date) return null;
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   return Math.floor((date.getTime() - today.getTime()) / 86_400_000);
+}
+
+/**
+ * Срок + оставшиеся дни: `01.06.2026 · 280 дн.` или `280 / 365 дн.`
+ */
+export function formatExpiryRemaining(productOrLine, daysLabel = 'дн.') {
+  const expiryRaw = productExpiry(productOrLine);
+  const dateStr = formatExpiryDisplay(expiryRaw);
+  const left = daysUntilExpiry(expiryRaw);
+  const shelf = productShelfLifeDays(productOrLine);
+
+  if (dateStr && left != null && shelf != null) {
+    return `${dateStr} · ${left} / ${shelf} ${daysLabel}`;
+  }
+  if (dateStr && left != null) {
+    return `${dateStr} · ${left} ${daysLabel}`;
+  }
+  if (dateStr) return dateStr;
+  if (left != null && shelf != null) {
+    return `${left} / ${shelf} ${daysLabel}`;
+  }
+  if (left != null) return `${left} ${daysLabel}`;
+  return '';
 }
 
 /**

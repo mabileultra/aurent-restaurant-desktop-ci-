@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v20-pharmacy-cashier-fields" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_fields f
+                JOIN business_types bt ON bt.id = f.business_type_id
+                WHERE bt.code = 'PHARMACY' AND f.field_key = 'expiry_date'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_fields (business_type_id, field_key, label, field_type, required, sort_order)
+            SELECT bt.id, v.field_key, v.label, v.field_type, v.required, v.sort_order
+            FROM business_types bt
+            CROSS JOIN (VALUES
+                ('expiry_date', 'Срок годности', 'DATE', FALSE, 10),
+                ('batch', 'Серия', 'TEXT', FALSE, 20),
+                ('shelf_life_days', 'Срок хранения (дней)', 'NUMBER', FALSE, 30),
+                ('units_in_pack', 'Ед. в упаковке', 'NUMBER', FALSE, 40),
+                ('arrival_date', 'Дата прихода', 'DATE', FALSE, 60)
+            ) AS v(field_key, label, field_type, required, sort_order)
+            WHERE bt.code = 'PHARMACY'
+            ON CONFLICT (business_type_id, field_key) DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
