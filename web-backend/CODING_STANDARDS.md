@@ -310,7 +310,7 @@ log.info("...");
 |----------|------------|
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Архитектура, bounded contexts, roadmap PR |
 | [application.yml](./src/main/resources/application.yml) | Конфиг prod/dev |
-| `deploy/migrations-prod.txt` | Порядок SQL-миграций (до Liquibase) |
+| `db/changelog/` | Liquibase-миграции |
 
 ---
 

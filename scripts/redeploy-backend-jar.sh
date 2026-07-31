@@ -9,10 +9,7 @@ CONTAINER="${BACKEND_CONTAINER:-masterpiece-pos-backend}"
 MAVEN_IMAGE="${MAVEN_IMAGE:-maven:3.9-eclipse-temurin-17}"
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
 
-echo "==> DB migrations (local)..."
-COMPOSE_FILE="$COMPOSE_FILE" ENV_FILE="${ENV_FILE:-$ROOT/.env}" bash "$ROOT/deploy/optional/migrate-db.sh"
-
-echo "==> Maven build in Docker..."
+echo "==> Maven build in Docker (миграции — Liquibase при рестарте backend)..."
 docker run --rm \
   -v "$BACKEND:/app" \
   -w /app \

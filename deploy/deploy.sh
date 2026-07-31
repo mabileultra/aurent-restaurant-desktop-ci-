@@ -119,12 +119,7 @@ else
   echo "==> FINANCE_SERVICE_ENABLED=false — finance-service пропущен."
 fi
 
-if [[ "${RUN_LEGACY_MIGRATE:-}" == "1" ]]; then
-  echo "==> Legacy SQL-миграции (optional/migrate-db.sh)..."
-  bash deploy/optional/migrate-db.sh
-else
-  echo "==> Миграции БД: Liquibase при старте backend (db/changelog/)"
-fi
+echo "==> Миграции БД: Liquibase при старте backend (db/changelog/)"
 
 echo "==> Проверка пароля pos_db..."
 if ! bash deploy/verify-db.sh; then

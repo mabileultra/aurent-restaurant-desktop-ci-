@@ -383,11 +383,11 @@ service/user/
 resources/db/changelog/
 ├── db.changelog-master.xml
 ├── v1-baseline.xml          # app_schema_migrations + schema.sql (пустая БД)
-└── v2-incremental.xml       # 39 changesets из migrations-prod.txt
+└── v2-incremental.xml       # incremental changesets
 ```
 
 - `spring.liquibase.enabled=true` (профили local/prod)
-- `deploy/migrate-db.sh` — fallback без рестарта backend
+- Миграции применяются при старте backend (Liquibase)
 - `ddl-auto: validate` сохраняется
 - Новые миграции: SQL в `db/` + changeset в `v2-incremental.xml`
 
