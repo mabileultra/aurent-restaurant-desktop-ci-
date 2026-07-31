@@ -29,8 +29,8 @@ push main → GitHub Actions (deploy-web.yml)
 Скрипт поднимает полный стек:
 
 ```
-postgres + identity/platform/reporting/finance DB + redpanda
-  → finance-service → backend → identity/platform/reporting
+postgres + identity/platform/reporting/finance/crm DB + redpanda
+  → finance-service → backend → identity/platform/reporting/crm
   → api-gateway → frontend
 ```
 

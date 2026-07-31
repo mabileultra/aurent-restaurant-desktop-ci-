@@ -347,6 +347,8 @@ services:
         condition: service_healthy
       reporting-service:
         condition: service_healthy
+      crm-service:
+        condition: service_healthy
     environment:
       GATEWAY_SERVER_PORT: "8080"
       POS_BACKEND_URL: http://backend:8080
@@ -354,6 +356,7 @@ services:
       IDENTITY_SERVICE_URL: http://identity-service:8081
       PLATFORM_SERVICE_URL: http://platform-service:8084
       REPORTING_SERVICE_URL: http://reporting-service:8085
+      CRM_SERVICE_URL: http://crm-service:8083
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8080:8080"

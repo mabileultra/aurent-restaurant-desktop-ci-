@@ -64,6 +64,15 @@ spring:
           filters:
             - PreserveHostHeader
 
+        # Клиенты и заказы клиентов (доставка) — crm-service.
+        - id: crm-service
+          uri: ${CRM_SERVICE_URL:http://127.0.0.1:8083}
+          predicates:
+            - Path=/api/v1/customers/**, /api/v1/orders/**
+          order: 2
+          filters:
+            - PreserveHostHeader
+
         # Всё остальное — web-backend (касса, склад).
         - id: pos-backend
           uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}

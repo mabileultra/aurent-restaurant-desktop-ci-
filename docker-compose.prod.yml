@@ -283,6 +283,63 @@ services:
     networks:
       - pos-net
 
+  crm-db:
+    image: postgres:15-alpine
+    container_name: aurent-crm-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CRM_DB_NAME:-crm_db}
+      POSTGRES_USER: ${CRM_DB_USER:-crm_user}
+      POSTGRES_PASSWORD: ${CRM_DB_PASSWORD:?Set CRM_DB_PASSWORD in .env}
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - crm_pg_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5439:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${CRM_DB_USER:-crm_user} -d ${CRM_DB_NAME:-crm_db}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pos-net
+
+  crm-service:
+    build:
+      context: .
+      dockerfile: crm-service/Dockerfile
+    container_name: aurent-crm-service
+    restart: unless-stopped
+    depends_on:
+      crm-db:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    environment:
+      CRM_DB_URL: jdbc:postgresql://crm-db:5432/${CRM_DB_NAME:-crm_db}
+      CRM_DB_USERNAME: ${CRM_DB_USER:-crm_user}
+      CRM_DB_PASSWORD: ${CRM_DB_PASSWORD:?Set CRM_DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (min 32 chars)}
+      CRM_INTERNAL_API_KEY: ${CRM_INTERNAL_API_KEY:?Set CRM_INTERNAL_API_KEY in .env}
+      CRM_SERVER_PORT: "8083"
+      POS_CORE_URL: http://backend:8080/api/v1
+      POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pos_db}
+      POS_CORE_DATASOURCE_USERNAME: ${POSTGRES_USER:-pos_user}
+      POS_CORE_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - '127.0.0.1:8083:8083'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:8083/api/v1/actuator/health | grep -q UP || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+    networks:
+      - pos-net
+
   backend:
     build:
       context: .
@@ -341,6 +398,8 @@ services:
       DOMAIN_KAFKA_ENABLED: ${DOMAIN_KAFKA_ENABLED:-true}
       REPORTING_INTERNAL_API_KEY: ${REPORTING_INTERNAL_API_KEY:?Set REPORTING_INTERNAL_API_KEY in .env}
       REPORTING_SERVICE_URL: http://reporting-service:8085/api/v1
+      CRM_INTERNAL_API_KEY: ${CRM_INTERNAL_API_KEY:?Set CRM_INTERNAL_API_KEY in .env}
+      CRM_SERVICE_URL: http://crm-service:8083/api/v1
       TELEGRAM_BOT_API_TOKEN: ${TELEGRAM_BOT_API_TOKEN:-}
       TELEGRAM_BOT_COMPANY_ID: ${TELEGRAM_BOT_COMPANY_ID:-}
       TELEGRAM_BOT_MAX_RESULTS: ${TELEGRAM_BOT_MAX_RESULTS:-10}
@@ -378,6 +437,8 @@ services:
         condition: service_healthy
       reporting-service:
         condition: service_healthy
+      crm-service:
+        condition: service_healthy
     environment:
       GATEWAY_SERVER_PORT: "8080"
       POS_BACKEND_URL: http://backend:8080
@@ -385,6 +446,7 @@ services:
       IDENTITY_SERVICE_URL: http://identity-service:8081
       PLATFORM_SERVICE_URL: http://platform-service:8084
       REPORTING_SERVICE_URL: http://reporting-service:8085/api/v1
+      CRM_SERVICE_URL: http://crm-service:8083
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - '${API_PORT:-8080}:8080'
@@ -450,6 +512,7 @@ volumes:
   identity_pg_data:
   platform_pg_data:
   reporting_pg_data:
+  crm_pg_data:
   backend_uploads:
   backend_logs:
   telegram_bot_data:

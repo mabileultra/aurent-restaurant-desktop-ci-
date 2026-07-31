@@ -44,7 +44,8 @@ else
   fi
   for key in IDENTITY_DB_PASSWORD IDENTITY_INTERNAL_API_KEY \
              PLATFORM_DB_PASSWORD PLATFORM_INTERNAL_API_KEY \
-             REPORTING_DB_PASSWORD REPORTING_INTERNAL_API_KEY; do
+             REPORTING_DB_PASSWORD REPORTING_INTERNAL_API_KEY \
+             CRM_DB_PASSWORD CRM_INTERNAL_API_KEY; do
     if [[ "${!key:-}" == *"CHANGE_ME"* ]] || [[ -z "${!key:-}" ]]; then
       warn "${key} не задан"
     else

@@ -96,8 +96,6 @@ app:
     sales-ledger:
       enabled: true
       load-chunks: 8
-  orders:
-    upload-dir: ${ORDERS_UPLOAD_DIR:uploads/orders}
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
     expiration-ms: 86400000
