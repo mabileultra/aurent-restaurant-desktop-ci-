@@ -110,6 +110,7 @@ app:
   telegram-bot:
     api-token: ${TELEGRAM_BOT_API_TOKEN:}
     company-id: ${TELEGRAM_BOT_COMPANY_ID:}
+    runtime-token: ${TELEGRAM_BOT_RUNTIME_TOKEN:}
     max-results: ${TELEGRAM_BOT_MAX_RESULTS:10}
     min-query-length: 2
   mail:
@@ -136,19 +137,6 @@ app:
       enabled: ${DOMAIN_KAFKA_ENABLED:true}
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
       send-timeout-ms: 10000
-  ai:
-    enabled: ${AI_ASSISTANT_ENABLED:true}
-    provider: ${AI_ASSISTANT_PROVIDER:deepseek}
-    base-url: ${AI_ASSISTANT_BASE_URL:https://api.deepseek.com}
-    api-key: ${AI_ASSISTANT_API_KEY:}
-    model: ${AI_ASSISTANT_MODEL:deepseek-chat}
-    connect-timeout-ms: ${AI_ASSISTANT_CONNECT_TIMEOUT_MS:5000}
-    read-timeout-ms: ${AI_ASSISTANT_READ_TIMEOUT_MS:20000}
-    max-prompt-chars: ${AI_ASSISTANT_MAX_PROMPT_CHARS:2000}
-    max-requests-per-minute-per-user: ${AI_ASSISTANT_MAX_RPM_PER_USER:20}
-    fast-mode: ${AI_ASSISTANT_FAST_MODE:true}
-    max-tokens-insight: ${AI_ASSISTANT_MAX_TOKENS_INSIGHT:550}
-    max-tokens-general-chat: ${AI_ASSISTANT_MAX_TOKENS_GENERAL:700}
 
 resilience4j:
   circuitbreaker:

@@ -8,6 +8,7 @@ on:
       - 'web-frontend/**'
       - 'finance-service/**'
       - 'crm-service/**'
+      - 'ai-service/**'
       - 'identity-service/**'
       - 'platform-service/**'
       - 'reporting-service/**'

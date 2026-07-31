@@ -68,6 +68,7 @@ docker compose -f docker-compose.prod.yml logs -f backend
 
 - `POSTGRES_PASSWORD`
 - `JWT_SECRET` (≥ 32 символов)
+# --- ИИ-ассистент (DeepSeek) — сервис ai-service:8086 ---
 - `AI_ASSISTANT_API_KEY` (если ассистент включён)
 - `FINANCE_DB_PASSWORD`, `FINANCE_INTERNAL_API_KEY` (если finance включён)
 

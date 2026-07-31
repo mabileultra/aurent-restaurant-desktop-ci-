@@ -136,8 +136,8 @@ wait_container_healthy aurent-pos-backend backend || {
   exit 1
 }
 
-echo "==> identity-service, platform-service, reporting-service, crm-service..."
-for svc in identity-service platform-service reporting-service crm-service; do
+echo "==> identity-service, platform-service, reporting-service, crm-service, ai-service..."
+for svc in identity-service platform-service reporting-service crm-service ai-service; do
   if ! recreate_service "$svc"; then
     compose_logs_tail "$svc" 150
     exit 1
@@ -158,6 +158,10 @@ wait_container_healthy aurent-reporting-service reporting-service || {
 }
 wait_container_healthy aurent-crm-service crm-service || {
   compose_logs_tail crm-service 150
+  exit 1
+}
+wait_container_healthy aurent-ai-service ai-service || {
+  compose_logs_tail ai-service 150
   exit 1
 }
 
@@ -205,4 +209,5 @@ echo "  Finance:   http://127.0.0.1:8082/api/v1/swagger-ui.html (localhost)"
 echo "  CRM:       http://127.0.0.1:8083/api/v1/actuator/health (localhost)"
 echo "  Platform:  http://127.0.0.1:8084/api/v1/actuator/health (localhost)"
 echo "  Reporting: http://127.0.0.1:8085/api/v1/actuator/health (localhost)"
-echo "  Логи:      docker compose -f $COMPOSE_FILE logs -f api-gateway backend crm-service"
+echo "  AI:        http://127.0.0.1:8086/api/v1/actuator/health (localhost)"
+echo "  Логи:      docker compose -f $COMPOSE_FILE logs -f api-gateway backend crm-service ai-service"

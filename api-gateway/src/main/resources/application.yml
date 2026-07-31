@@ -64,6 +64,15 @@ spring:
           filters:
             - PreserveHostHeader
 
+        # AI Assistant — ai-service.
+        - id: ai-service
+          uri: ${AI_SERVICE_URL:http://127.0.0.1:8086}
+          predicates:
+            - Path=/api/v1/ai/**
+          order: 2
+          filters:
+            - PreserveHostHeader
+
         # Клиенты и заказы клиентов (доставка) — crm-service.
         - id: crm-service
           uri: ${CRM_SERVICE_URL:http://127.0.0.1:8083}
