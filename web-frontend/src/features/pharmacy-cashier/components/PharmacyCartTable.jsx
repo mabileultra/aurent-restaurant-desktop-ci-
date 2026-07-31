@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
-import { productBatch, productExpiry } from '../utils/pharmacyProductMeta';
+import {
+  formatExpiryDisplay,
+  productBatch,
+  productExpiry,
+  pharmacyRowStatus,
+  pharmacyRowStatusClass,
+} from '../utils/pharmacyProductMeta';
 import '../styles/pharmacy-cart-table.css';
 
 export default function PharmacyCartTable({
@@ -33,34 +39,40 @@ export default function PharmacyCartTable({
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colQty')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colPrice')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colSum')}</th>
-              <th>{t('pharmacyCashier.colStock')}</th>
+              <th>{t('pharmacyCashier.colExpiry')}</th>
+              <th>{t('pharmacyCashier.colBatch')}</th>
+              <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colStock')}</th>
               <th>{t('pharmacyCashier.colIkpu')}</th>
               <th aria-label={t('common.actions')} />
             </tr>
           </thead>
           <tbody>
             {items.map((item) => {
-              const expiry = productExpiry(item);
-              const batch = productBatch(item);
-              const meta = [expiry, batch].filter(Boolean).join(' · ');
+              const status = pharmacyRowStatus(item, { stockKey: 'maxStock' });
+              const statusClass = pharmacyRowStatusClass(status, 'pharmacy-cart-table__row');
+              const expiry = formatExpiryDisplay(productExpiry(item)) || '—';
+              const batch = productBatch(item) || '—';
               return (
                 <tr
                   key={item.lineId}
-                  className={`pharmacy-cart-table__row${
-                    selectedLineId === item.lineId ? ' is-selected' : ''
-                  }`}
+                  className={[
+                    'pharmacy-cart-table__row',
+                    statusClass,
+                    selectedLineId === item.lineId ? 'is-selected' : '',
+                  ].filter(Boolean).join(' ')}
                   onClick={() => onSelectLine(item.lineId)}
                 >
-                  <td className="pharmacy-cart-table__name">
-                    <div>{item.name}</div>
-                    {meta ? <div className="pharmacy-cart-table__mono">{meta}</div> : null}
-                  </td>
+                  <td className="pharmacy-cart-table__name">{item.name}</td>
                   <td className="pharmacy-cart-table__num">
                     {formatQty(item.quantity, item.saleType, item.unitCode)}
                   </td>
                   <td className="pharmacy-cart-table__num">{fmt(item.unitPrice)}</td>
                   <td className="pharmacy-cart-table__num">{fmt(lineSubtotal(item))}</td>
-                  <td className="pharmacy-cart-table__num">
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__expiry">
+                    {expiry}
+                  </td>
+                  <td className="pharmacy-cart-table__mono">{batch}</td>
+                  <td className="pharmacy-cart-table__num pharmacy-cart-table__stock">
                     {formatQty(item.maxStock, item.saleType, item.unitCode)}
                   </td>
                   <td className="pharmacy-cart-table__mono">{item.ikpu || '—'}</td>

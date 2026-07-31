@@ -1064,9 +1064,7 @@
     "qtyLabel": "Miqdor",
     "qtyInvalid": "Noldan katta miqdor kiriting",
     "qtyExceedsStock": "Omborda yetarli qoldiq yo‘q",
-    "linePreview": "Qator summasi: {{sum}}",
-    "payCash": "Naqd",
-    "payMore": "Boshqa"
+    "linePreview": "Qator summasi: {{sum}}"
   },
   "platform": {
     "title": "Super-admin",

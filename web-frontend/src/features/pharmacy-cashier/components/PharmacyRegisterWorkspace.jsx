@@ -1,6 +1,6 @@
 import PharmacyCartTable from './PharmacyCartTable';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
-import PharmacyPayRail from './PharmacyPayRail';
+import PosRegisterPayRail from '../../cashier/components/register-pay-rail/PosRegisterPayRail';
 import PosPaymentFlow from '../../cashier/components/PosPaymentFlow';
 import { usePayFlowTransition } from '../../cashier/hooks/usePayFlowTransition';
 import CashierBottomNav from '../../../components/layout/cashier/bottom-nav/CashierBottomNav';
@@ -15,8 +15,6 @@ export default function PharmacyRegisterWorkspace({
   cart,
   checkout,
   shiftIsOpen,
-  linesTotal,
-  orderDiscount,
   onReturn,
   onDiscount,
   onOpenPaymentFlow,
@@ -72,10 +70,8 @@ export default function PharmacyRegisterWorkspace({
 
         <aside className={`pharmacy-cashier__actions${payOpen ? ' pharmacy-cashier__actions--pay' : ''}`}>
           <div className="pharmacy-cashier__pay-shell">
-            <div className="pharmacy-cashier__pay-pane" inert={payOpen || undefined}>
-              <PharmacyPayRail
-                linesTotal={linesTotal}
-                orderDiscount={orderDiscount}
+            <div className="pharmacy-cashier__pay-pane pharmacy-cashier__pay-pane--rail" inert={payOpen || undefined}>
+              <PosRegisterPayRail
                 total={cart.total}
                 onReturn={onReturn}
                 onDiscount={onDiscount}
@@ -83,7 +79,6 @@ export default function PharmacyRegisterWorkspace({
                 onOpenPaymentFlow={onOpenPaymentFlow}
                 checkoutDisabled={checkoutDisabled}
                 isPending={checkoutMutation.isPending}
-                hotkeysEnabled={!payOpen}
               />
             </div>
 

@@ -46,17 +46,40 @@
   transition: background 0.12s ease;
 }
 
-.pharmacy-cart-table__row:hover {
+.pharmacy-cart-table__row--ok {
+  background: var(--pharm-ok, #d8f3dc);
+}
+
+.pharmacy-cart-table__row--ok:hover {
+  background: var(--pharm-ok-strong, #b7e4c0);
+}
+
+.pharmacy-cart-table__row--danger {
+  background: var(--pharm-danger, #fde2e1);
+}
+
+.pharmacy-cart-table__row--danger:hover {
+  background: var(--pharm-danger-strong, #f5c2c0);
+}
+
+.pharmacy-cart-table__row--danger .pharmacy-cart-table__expiry,
+.pharmacy-cart-table__row--danger .pharmacy-cart-table__stock {
+  background: var(--pharm-danger-strong, #f5c2c0);
+  font-weight: 700;
+}
+
+.pharmacy-cart-table__row:not(.pharmacy-cart-table__row--ok):not(.pharmacy-cart-table__row--danger):hover {
   background: var(--pharm-hover, #eef2f8);
 }
 
 .pharmacy-cart-table__row.is-selected {
-  background: var(--pharm-active, #e4eaf3);
+  outline: 2px solid var(--pharm-accent, #2f6fed);
+  outline-offset: -2px;
 }
 
 .pharmacy-cart-table__name {
   font-weight: 700;
-  max-width: 28vw;
+  max-width: 22vw;
 }
 
 .pharmacy-cart-table__mono {

@@ -71,14 +71,40 @@
   transition: background 0.12s ease;
 }
 
-.pharmacy-search__row:hover,
-.pharmacy-search__row.is-active {
+.pharmacy-search__row--ok {
+  background: var(--pharm-ok, #d8f3dc);
+}
+
+.pharmacy-search__row--ok:hover,
+.pharmacy-search__row--ok.is-active {
+  background: var(--pharm-ok-strong, #b7e4c0);
+}
+
+.pharmacy-search__row--danger {
+  background: var(--pharm-danger, #fde2e1);
+}
+
+.pharmacy-search__row--danger:hover,
+.pharmacy-search__row--danger.is-active {
+  background: var(--pharm-danger-strong, #f5c2c0);
+}
+
+.pharmacy-search__row--danger .pharmacy-search__expiry,
+.pharmacy-search__row--danger .pharmacy-search__stock {
+  background: var(--pharm-danger-strong, #f5c2c0);
+  font-weight: 700;
+  color: var(--pharm-ink, #1e3a5f);
+}
+
+.pharmacy-search__row:not(.pharmacy-search__row--ok):not(.pharmacy-search__row--danger):hover,
+.pharmacy-search__row:not(.pharmacy-search__row--ok):not(.pharmacy-search__row--danger).is-active {
   background: var(--pharm-hover, #eef2f8);
 }
 
 .pharmacy-search__row.is-disabled {
   opacity: 0.55;
   cursor: not-allowed;
+  background: transparent;
 }
 
 .pharmacy-search__name {

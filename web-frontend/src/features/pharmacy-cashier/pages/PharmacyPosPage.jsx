@@ -41,8 +41,6 @@ export default function PharmacyPosPage() {
           handleConfirmPayment: p.handleConfirmPayment,
         }}
         shiftIsOpen={p.shiftIsOpen}
-        linesTotal={p.linesTotal}
-        orderDiscount={p.orderDiscount}
         onReturn={() => p.setReturnOpen(true)}
         onDiscount={p.handleDiscount}
         onOpenPaymentFlow={p.handleOpenPaymentFlow}

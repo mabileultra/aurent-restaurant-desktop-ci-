@@ -1197,9 +1197,7 @@
     "qtyLabel": "Количество",
     "qtyInvalid": "Укажите количество больше нуля",
     "qtyExceedsStock": "Недостаточно остатка на складе",
-    "linePreview": "Сумма строки: {{sum}}",
-    "payCash": "Наличные",
-    "payMore": "Прочее"
+    "linePreview": "Сумма строки: {{sum}}"
   },
   "restaurantCashier": {
     "title": "Касса ресторана",

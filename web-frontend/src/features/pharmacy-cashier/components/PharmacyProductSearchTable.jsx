@@ -3,7 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
-import { productBatch, productExpiry } from '../utils/pharmacyProductMeta';
+import {
+  formatExpiryDisplay,
+  productBatch,
+  productExpiry,
+  pharmacyRowStatus,
+  pharmacyRowStatusClass,
+} from '../utils/pharmacyProductMeta';
 import '../styles/pharmacy-search-table.css';
 
 const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTable(
@@ -93,10 +99,18 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                   && Number(product.stockQuantity) <= 0;
                 const inactive = product.active === false;
                 const disabled = outOfStock || inactive;
+                const status = disabled ? null : pharmacyRowStatus(product);
+                const statusClass = pharmacyRowStatusClass(status, 'pharmacy-search__row');
+                const expiry = formatExpiryDisplay(productExpiry(product)) || '—';
+                const batch = productBatch(product) || '—';
                 return (
                   <tr
                     key={product.id}
-                    className={`pharmacy-search__row${disabled ? ' is-disabled' : ''}`}
+                    className={[
+                      'pharmacy-search__row',
+                      statusClass,
+                      disabled ? 'is-disabled' : '',
+                    ].filter(Boolean).join(' ')}
                     onClick={() => {
                       if (!disabled) onSelectProduct(product);
                     }}
@@ -105,12 +119,12 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     <td className="pharmacy-search__num">
                       {fmt(resolveProductUnitPrice(product, storeId))}
                     </td>
-                    <td className="pharmacy-search__num">
+                    <td className="pharmacy-search__num pharmacy-search__stock">
                       {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                     </td>
                     <td className="pharmacy-search__mono">{product.ikpu || '—'}</td>
-                    <td className="pharmacy-search__mono">{productExpiry(product) || '—'}</td>
-                    <td className="pharmacy-search__mono">{productBatch(product) || '—'}</td>
+                    <td className="pharmacy-search__mono pharmacy-search__expiry">{expiry}</td>
+                    <td className="pharmacy-search__mono">{batch}</td>
                   </tr>
                 );
               })}
