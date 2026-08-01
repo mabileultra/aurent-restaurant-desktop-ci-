@@ -11,8 +11,12 @@
   --pharm-accent: var(--pos-accent, #2f6fed);
   --pharm-ok: #d8f3dc;
   --pharm-ok-strong: #b7e4c0;
+  --pharm-warn: #fff3cd;
+  --pharm-warn-strong: #ffe08a;
   --pharm-danger: #fde2e1;
   --pharm-danger-strong: #f5c2c0;
+  --pharm-info: #d6e6ff;
+  --pharm-info-strong: #b3d0ff;
 }
 
 .pharmacy-cashier__split {

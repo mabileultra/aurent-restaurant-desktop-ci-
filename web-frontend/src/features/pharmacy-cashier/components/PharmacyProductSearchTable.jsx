@@ -13,9 +13,13 @@ import {
   productStorageLocation,
   productUnitLabel,
   productUnitsInPack,
-  pharmacyRowStatus,
-  pharmacyRowStatusClass,
 } from '../utils/pharmacyProductMeta';
+import {
+  pharmacyCellToneClass,
+  pharmacyExpiryTone,
+  pharmacyShelfTone,
+  pharmacyStockTone,
+} from '../utils/pharmacyCellTone';
 import '../styles/pharmacy-search-table.css';
 
 const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTable(
@@ -111,8 +115,6 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                   && Number(product.stockQuantity) <= 0;
                 const inactive = product.active === false;
                 const disabled = outOfStock || inactive;
-                const status = disabled ? null : pharmacyRowStatus(product);
-                const statusClass = pharmacyRowStatusClass(status, 'pharmacy-search__row');
                 const unit = productUnitLabel(product) || '—';
                 const form = productDosageForm(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
@@ -121,14 +123,13 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const batch = productBatch(product) || '—';
                 const arrival = formatExpiryDisplay(productArrivalDate(product)) || '—';
                 const sellByUnit = productSellByUnitHint(product);
+                const stockTone = disabled ? null : pharmacyStockTone(product);
+                const expiryTone = disabled ? null : pharmacyExpiryTone(product);
+                const shelfTone = disabled ? null : pharmacyShelfTone(product);
                 return (
                   <tr
                     key={product.id}
-                    className={[
-                      'pharmacy-search__row',
-                      statusClass,
-                      disabled ? 'is-disabled' : '',
-                    ].filter(Boolean).join(' ')}
+                    className={['pharmacy-search__row', disabled ? 'is-disabled' : ''].filter(Boolean).join(' ')}
                     onClick={() => {
                       if (!disabled) onSelectProduct(product);
                     }}
@@ -143,15 +144,34 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                       ) : null}
                     </td>
                     <td className="pharmacy-search__mono">{form}</td>
-                    <td className="pharmacy-search__mono pharmacy-search__shelf">{shelf}</td>
+                    <td
+                      className={[
+                        'pharmacy-search__mono',
+                        pharmacyCellToneClass(shelfTone, 'pharmacy-search__cell'),
+                      ].filter(Boolean).join(' ')}
+                    >
+                      {shelf}
+                    </td>
                     <td className="pharmacy-search__num">
                       {fmt(resolveProductUnitPrice(product, storeId))}
                     </td>
-                    <td className="pharmacy-search__num pharmacy-search__stock">
+                    <td
+                      className={[
+                        'pharmacy-search__num',
+                        pharmacyCellToneClass(stockTone, 'pharmacy-search__cell'),
+                      ].filter(Boolean).join(' ')}
+                    >
                       {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                     </td>
                     <td className="pharmacy-search__num">{pack != null ? pack : '—'}</td>
-                    <td className="pharmacy-search__mono pharmacy-search__expiry">{expiry}</td>
+                    <td
+                      className={[
+                        'pharmacy-search__mono',
+                        pharmacyCellToneClass(expiryTone, 'pharmacy-search__cell'),
+                      ].filter(Boolean).join(' ')}
+                    >
+                      {expiry}
+                    </td>
                     <td className="pharmacy-search__mono">{batch}</td>
                     <td className="pharmacy-search__mono">{arrival}</td>
                     <td className="pharmacy-search__mono">{product.ikpu || '—'}</td>

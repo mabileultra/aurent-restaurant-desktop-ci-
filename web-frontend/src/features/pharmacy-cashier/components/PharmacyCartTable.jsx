@@ -9,9 +9,13 @@ import {
   productDosageForm,
   productStorageLocation,
   productUnitLabel,
-  pharmacyRowStatus,
-  pharmacyRowStatusClass,
 } from '../utils/pharmacyProductMeta';
+import {
+  pharmacyCellToneClass,
+  pharmacyExpiryTone,
+  pharmacyShelfTone,
+  pharmacyStockTone,
+} from '../utils/pharmacyCellTone';
 import '../styles/pharmacy-cart-table.css';
 
 export default function PharmacyCartTable({
@@ -54,19 +58,19 @@ export default function PharmacyCartTable({
           </thead>
           <tbody>
             {items.map((item) => {
-              const status = pharmacyRowStatus(item, { stockKey: 'maxStock' });
-              const statusClass = pharmacyRowStatusClass(status, 'pharmacy-cart-table__row');
               const unit = productUnitLabel(item) || '—';
               const form = productDosageForm(item) || '—';
               const shelf = productStorageLocation(item) || '—';
               const expiry = formatExpiryRemaining(item, daysLabel) || '—';
               const batch = productBatch(item) || '—';
+              const stockTone = pharmacyStockTone(item, { stockKey: 'maxStock' });
+              const expiryTone = pharmacyExpiryTone(item);
+              const shelfTone = pharmacyShelfTone(item);
               return (
                 <tr
                   key={item.lineId}
                   className={[
                     'pharmacy-cart-table__row',
-                    statusClass,
                     selectedLineId === item.lineId ? 'is-selected' : '',
                   ].filter(Boolean).join(' ')}
                   onClick={() => onSelectLine(item.lineId)}
@@ -74,17 +78,34 @@ export default function PharmacyCartTable({
                   <td className="pharmacy-cart-table__name">{item.name}</td>
                   <td className="pharmacy-cart-table__mono">{unit}</td>
                   <td className="pharmacy-cart-table__mono">{form}</td>
-                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__shelf">{shelf}</td>
+                  <td
+                    className={[
+                      'pharmacy-cart-table__mono',
+                      pharmacyCellToneClass(shelfTone, 'pharmacy-cart-table__cell'),
+                    ].filter(Boolean).join(' ')}
+                  >
+                    {shelf}
+                  </td>
                   <td className="pharmacy-cart-table__num">
                     {formatQty(item.quantity, item.saleType, item.unitCode)}
                   </td>
                   <td className="pharmacy-cart-table__num">{fmt(item.unitPrice)}</td>
                   <td className="pharmacy-cart-table__num">{fmt(lineSubtotal(item))}</td>
-                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__expiry">
+                  <td
+                    className={[
+                      'pharmacy-cart-table__mono',
+                      pharmacyCellToneClass(expiryTone, 'pharmacy-cart-table__cell'),
+                    ].filter(Boolean).join(' ')}
+                  >
                     {expiry}
                   </td>
                   <td className="pharmacy-cart-table__mono">{batch}</td>
-                  <td className="pharmacy-cart-table__num pharmacy-cart-table__stock">
+                  <td
+                    className={[
+                      'pharmacy-cart-table__num',
+                      pharmacyCellToneClass(stockTone, 'pharmacy-cart-table__cell'),
+                    ].filter(Boolean).join(' ')}
+                  >
                     {formatQty(item.maxStock, item.saleType, item.unitCode)}
                   </td>
                   <td className="pharmacy-cart-table__mono">{item.ikpu || '—'}</td>
@@ -99,7 +120,7 @@ export default function PharmacyCartTable({
                           onQtyDelta(item.lineId, -1);
                         }}
                       >
-                        <Minus size={14} strokeWidth={2.5} aria-hidden />
+                        <Minus size={12} strokeWidth={2.5} aria-hidden />
                       </button>
                       <button
                         type="button"
@@ -110,7 +131,7 @@ export default function PharmacyCartTable({
                           onQtyDelta(item.lineId, 1);
                         }}
                       >
-                        <Plus size={14} strokeWidth={2.5} aria-hidden />
+                        <Plus size={12} strokeWidth={2.5} aria-hidden />
                       </button>
                       <button
                         type="button"
@@ -121,7 +142,7 @@ export default function PharmacyCartTable({
                           onRemove(item.lineId);
                         }}
                       >
-                        <Trash2 size={14} strokeWidth={2.25} aria-hidden />
+                        <Trash2 size={12} strokeWidth={2.25} aria-hidden />
                       </button>
                     </div>
                   </td>

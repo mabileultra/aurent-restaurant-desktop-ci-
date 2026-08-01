@@ -1,5 +1,6 @@
 /**
- * Атрибуты товара для аптечной кассы (срок / серия / фасовка) и световая гамма строк.
+ * Атрибуты товара для аптечной кассы (срок / серия / фасовка).
+ * Цвета ячеек — см. pharmacyCellTone.js
  */
 
 export const PHARMACY_EXPIRY_WARN_DAYS = 90;
@@ -163,40 +164,5 @@ export function formatExpiryRemaining(productOrLine, daysLabel = 'дн.') {
     return `${left} / ${shelf} ${daysLabel}`;
   }
   if (left != null) return `${left} ${daysLabel}`;
-  return '';
-}
-
-/**
- * @returns {'danger' | 'ok' | null}
- * danger — срок ≤ 90 дней или остаток ≤ 5
- * ok — остальное (есть остаток)
- * null — нет подсветки (нет остатка / услуга без оценки)
- */
-export function pharmacyRowStatus(productOrLine, { stockKey = 'stockQuantity' } = {}) {
-  const saleType = productOrLine?.saleType || 'PIECE';
-  const stockRaw = productOrLine?.[stockKey] ?? productOrLine?.maxStock ?? 0;
-  const stock = Number(stockRaw);
-  const isService = saleType === 'SERVICE';
-
-  if (!isService && Number.isFinite(stock) && stock <= 0) {
-    return null;
-  }
-
-  const expiryRaw = productExpiry(productOrLine);
-  const daysLeft = daysUntilExpiry(expiryRaw);
-  const nearExpiry = daysLeft != null && daysLeft <= PHARMACY_EXPIRY_WARN_DAYS;
-  const lowStock =
-    !isService
-    && Number.isFinite(stock)
-    && stock > 0
-    && stock <= PHARMACY_LOW_STOCK_THRESHOLD;
-
-  if (nearExpiry || lowStock) return 'danger';
-  return 'ok';
-}
-
-export function pharmacyRowStatusClass(status, prefix) {
-  if (status === 'danger') return `${prefix}--danger`;
-  if (status === 'ok') return `${prefix}--ok`;
   return '';
 }
