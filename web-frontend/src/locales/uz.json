@@ -2831,6 +2831,36 @@
           "Chekni raqam bo'yicha qidirish.",
           "Kerak bo'lsa chekni qayta chop etish."
         ]
+      },
+      "cashierOffline": {
+        "title": "Kassa — oflayn rejim",
+        "summary": "Internetsiz savdo: mahalliy katalog, cheklar navbati va tarmoq paydo bo'lganda sinxronlash.",
+        "details": [
+          "Bir marta internetda katalogni yuklang.",
+          "Oflaynda savdolar shu kompyuterga saqlanadi.",
+          "Aloqa tiklanganda savdolar navbatini serverga yuboring.",
+          "Oflayn ruxsatni platforma administratori beradi."
+        ]
+      },
+      "restaurantPos": {
+        "title": "Restoran kassasi",
+        "summary": "Zal, stollar va buyurtmalar: stol ochish, menyu, oshxonaga yuborish va to'lov.",
+        "details": [
+          "Zal rejasidan stolni tanlang va sessiyani oching.",
+          "Menyudan taomlarni stol buyurtmasiga qo'shing.",
+          "Pozitsiyalarni sexlar bo'yicha oshxonaga yuboring.",
+          "Stolni umumiy kassa to'lov ekrani orqali yoping."
+        ]
+      },
+      "restaurantKitchen": {
+        "title": "Oshxona (KDS)",
+        "summary": "Oshxona ekrani: sexlar bo'yicha buyurtmalar, tayyorlash va tayyor holatlar.",
+        "details": [
+          "Do'kon va sexni tanlang (yoki hammasini ko'ring).",
+          "Yangi buyurtmalar restoran kassasidan yuborilgandan keyin paydo bo'ladi.",
+          "Holatni o'zgartiring: ishda → tayyor → berildi.",
+          "Kerak bo'lsa oshxona sexlarini qo'shing va sozlang."
+        ]
       }
     }
   },
