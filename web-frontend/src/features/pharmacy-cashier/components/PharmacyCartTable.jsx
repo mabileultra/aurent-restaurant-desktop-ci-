@@ -120,7 +120,7 @@ export default function PharmacyCartTable({
                           onQtyDelta(item.lineId, -1);
                         }}
                       >
-                        <Minus size={12} strokeWidth={2.5} aria-hidden />
+                        <Minus size={18} strokeWidth={2.5} aria-hidden />
                       </button>
                       <button
                         type="button"
@@ -131,7 +131,7 @@ export default function PharmacyCartTable({
                           onQtyDelta(item.lineId, 1);
                         }}
                       >
-                        <Plus size={12} strokeWidth={2.5} aria-hidden />
+                        <Plus size={18} strokeWidth={2.5} aria-hidden />
                       </button>
                       <button
                         type="button"
@@ -142,7 +142,7 @@ export default function PharmacyCartTable({
                           onRemove(item.lineId);
                         }}
                       >
-                        <Trash2 size={12} strokeWidth={2.25} aria-hidden />
+                        <Trash2 size={16} strokeWidth={2.25} aria-hidden />
                       </button>
                     </div>
                   </td>

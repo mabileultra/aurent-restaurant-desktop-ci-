@@ -14,8 +14,8 @@
 .pharmacy-cart-table__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.6875rem;
-  line-height: 1.2;
+  font-size: 0.8125rem;
+  line-height: 1.25;
   color: var(--pharm-ink);
 }
 
@@ -23,9 +23,9 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 3px 6px;
+  padding: 5px 8px;
   text-align: left;
-  font-size: 0.5625rem;
+  font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -36,7 +36,7 @@
 }
 
 .pharmacy-cart-table__table tbody td {
-  padding: 2px 6px;
+  padding: 5px 8px;
   border: 1px solid var(--pharm-border);
   color: var(--pharm-ink);
   vertical-align: middle;
@@ -45,7 +45,7 @@
 
 .pharmacy-cart-table__row {
   cursor: pointer;
-  height: 24px;
+  min-height: 36px;
 }
 
 .pharmacy-cart-table__row:hover td:not([class*='pharmacy-cart-table__cell--']) {
@@ -58,16 +58,19 @@
 
 .pharmacy-cart-table__name {
   font-weight: 700;
-  max-width: 16vw;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  max-width: 22vw;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  vertical-align: top;
 }
 
 .pharmacy-cart-table__mono {
   font-variant-numeric: tabular-nums;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.625rem;
+  font-size: 0.75rem;
   color: var(--pharm-muted);
   white-space: nowrap;
 }
@@ -121,7 +124,7 @@
 .pharmacy-cart-table__actions {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
+  gap: 6px;
 }
 
 .pharmacy-cart-table__qty-btn,
@@ -129,13 +132,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 34px;
+  height: 34px;
+  min-width: 34px;
+  min-height: 34px;
   border: 1px solid var(--pharm-border);
-  border-radius: 4px;
+  border-radius: 8px;
   background: var(--pharm-surface);
   color: var(--pharm-ink);
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .pharmacy-cart-table__qty-btn:hover,
