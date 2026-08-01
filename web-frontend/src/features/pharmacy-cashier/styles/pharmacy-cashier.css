@@ -1,23 +1,6 @@
 /* Аптека: только левая колонка (чек + поиск). Оплата — общий CashierPayColumn / page-grid. */
 
-.pharmacy-cashier {
-  --pharm-ink: var(--pos-text, #1e3a5f);
-  --pharm-muted: var(--pos-muted, #5a6f8c);
-  --pharm-border: var(--pos-border, #d1d9e6);
-  --pharm-surface: var(--pos-surface, #f4f6fa);
-  --pharm-elevated: var(--pos-surface-elevated, #fbfcfe);
-  --pharm-hover: var(--pos-surface-hover, #eef2f8);
-  --pharm-active: var(--pos-surface-active, #e4eaf3);
-  --pharm-accent: var(--pos-accent, #2f6fed);
-  --pharm-ok: #d8f3dc;
-  --pharm-ok-strong: #b7e4c0;
-  --pharm-warn: #fff3cd;
-  --pharm-warn-strong: #ffe08a;
-  --pharm-danger: #fde2e1;
-  --pharm-danger-strong: #f5c2c0;
-  --pharm-info: #d6e6ff;
-  --pharm-info-strong: #b3d0ff;
-}
+@import './pharmacy-tables-theme.css';
 
 .pharmacy-cashier__split {
   flex: 1 1 auto;
@@ -55,21 +38,20 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-bottom: 1px solid var(--pharm-border);
   background: var(--pharm-surface);
 }
 
 .pharmacy-cashier__pane-title {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--pharm-muted);
 }
 
-/* Левая колонка register уже с рамкой — внутренние панели без двойной «карточки» */
 .cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main {
   background: transparent;
   border: none;
