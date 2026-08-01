@@ -53,7 +53,9 @@ export default function SaleReturnLinesEditor({ sale, qtyByItemId, onQtyChange, 
           <li key={line.id} className="pos-return-line-select">
             <div className="pos-return-line-select__top">
               <div className="pos-return-line-select__info">
-                <span className="pos-return-modal__line-name">{line.productName}</span>
+                <span className="pos-return-modal__line-name">
+                  {line.productName || line.productSku || '—'}
+                </span>
                 <span className="pos-return-line-select__meta">
                   {t('pos.returnSold')}: {line.quantity}
                   {(line.returnedQuantity ?? 0) > 0 ? (

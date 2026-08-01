@@ -129,29 +129,29 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
   }, [debouncedQuery, open, lookupReceipt]);
 
   const returnMutation = useMutation({
-    mutationFn: () => {
+    mutationFn: ({ sale: s, qtyByItemId: qtys, reasonText }) => {
       const payload = buildReturnPayload(
-        sale,
-        qtyByItemId,
-        reason.trim() || t('pos.returnDefaultReason')
+        s,
+        qtys,
+        reasonText.trim() || t('pos.returnDefaultReason')
       );
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return saleApi.returnItems(sale.id, payload).then((r) => r.data);
+      return saleApi.returnItems(s.id, payload).then((r) => r.data);
     },
-    onSuccess: async () => {
-      const returnReason = reason.trim() || t('pos.returnDefaultReason');
+    onSuccess: async (_data, vars) => {
+      const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');
       toast.success(t('pos.returnSuccess'));
       qc.invalidateQueries({ queryKey: ['my-sales'] });
       qc.invalidateQueries({ queryKey: ['sales-ledger'] });
       qc.invalidateQueries({ queryKey: ['returns'] });
       qc.invalidateQueries({ queryKey: ['cashier-shift'] });
 
-      if (sale) {
+      if (vars?.sale) {
         await printReturnReceiptWithToast({
-          originalSale: sale,
-          qtyByItemId,
+          originalSale: vars.sale,
+          qtyByItemId: vars.qtyByItemId,
           reason: returnReason,
           t,
         });
@@ -288,8 +288,14 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
           <button
             type="button"
             className="pos-return-modal__submit"
-            disabled={!sale || returnMutation.isPending}
-            onClick={() => returnMutation.mutate()}
+            disabled={!sale || totalSelected <= 0 || returnMutation.isPending}
+            onClick={() =>
+              returnMutation.mutate({
+                sale,
+                qtyByItemId,
+                reasonText: reason,
+              })
+            }
           >
             {returnMutation.isPending ? (
               <Loader size={18} className="pos-return-modal__spin" />

@@ -61,7 +61,10 @@ export default function ReturnDetailModal({ open, returnId, reasonPreview, onClo
                 <InfoRow label={t('returnsModule.filters.cashierName')} value={sale.cashierName ?? '—'} />
                 <InfoRow label={t('common.status')} value={sale.status} />
                 <InfoRow label={t('returnsModule.colReason')} value={reason} />
-                <InfoRow label={t('returnsModule.colAmount')} value={fmtMoney(sale.totalAmount)} />
+                <InfoRow
+                  label={t('returnsModule.colAmount')}
+                  value={fmtMoney(sale.returnAmount ?? sale.totalAmount)}
+                />
               </dl>
               {sale.items?.length > 0 && (
                 <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-700">
@@ -75,14 +78,24 @@ export default function ReturnDetailModal({ open, returnId, reasonPreview, onClo
                       </tr>
                     </thead>
                     <tbody>
-                      {sale.items.map((line, i) => (
-                        <tr key={i} className="border-b border-slate-100 dark:border-slate-800">
-                          <td className="px-3 py-2">{line.productName}</td>
-                          <td className="px-3 py-2 text-right">{line.quantity}</td>
-                          <td className="px-3 py-2 text-right">{line.returnedQuantity ?? 0}</td>
-                          <td className="px-3 py-2 text-right">{fmtMoney(line.lineTotal)}</td>
-                        </tr>
-                      ))}
+                      {sale.items
+                        .filter((line) => Number(line.returnedQuantity ?? 0) > 0)
+                        .map((line, i) => {
+                          const soldQty = Number(line.quantity) || 1;
+                          const retQty = Number(line.returnedQuantity) || 0;
+                          const unit =
+                            line.lineTotal != null && soldQty > 0
+                              ? Number(line.lineTotal) / soldQty
+                              : Number(line.unitPrice) || 0;
+                          return (
+                            <tr key={line.id ?? i} className="border-b border-slate-100 dark:border-slate-800">
+                              <td className="px-3 py-2">{line.productName || line.productSku || '—'}</td>
+                              <td className="px-3 py-2 text-right">{line.quantity}</td>
+                              <td className="px-3 py-2 text-right">{retQty}</td>
+                              <td className="px-3 py-2 text-right">{fmtMoney(unit * retQty)}</td>
+                            </tr>
+                          );
+                        })}
                     </tbody>
                   </table>
                 </div>

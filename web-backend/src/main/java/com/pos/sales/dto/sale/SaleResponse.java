@@ -21,7 +21,7 @@ public record SaleResponse(
     BigDecimal orderDiscountAmount,
     BigDecimal orderDiscountPercent,
     BigDecimal totalAmount,
-    /** Сумма возврата (для VOIDED / REFUNDED — равна сумме чека). */
+    /** Сумма фактически возвращённых позиций (не всегда равна сумме чека). */
     BigDecimal returnAmount,
     String paymentMethod,
     String cardType,

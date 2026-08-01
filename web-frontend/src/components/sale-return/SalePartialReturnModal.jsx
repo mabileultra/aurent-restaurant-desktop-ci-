@@ -36,21 +36,21 @@ export default function SalePartialReturnModal({
   const { qtyByItemId, setQty, selectAllMax, totalSelected } = useReturnQtyState(sale, open);
 
   const returnMutation = useMutation({
-    mutationFn: () => {
-      const payload = buildReturnPayload(sale, qtyByItemId, reason || t('pos.returnDefaultReason'));
+    mutationFn: ({ sale: s, qtyByItemId: qtys, reasonText }) => {
+      const payload = buildReturnPayload(s, qtys, reasonText || t('pos.returnDefaultReason'));
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return saleApi.returnItems(sale.id, payload).then((r) => r.data);
+      return saleApi.returnItems(s.id, payload).then((r) => r.data);
     },
-    onSuccess: async () => {
-      const returnReason = reason.trim() || t('pos.returnDefaultReason');
+    onSuccess: async (_data, vars) => {
+      const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');
       toast.success(t('pos.returnSuccess'));
 
-      if (sale) {
+      if (vars?.sale) {
         await printReturnReceiptWithToast({
-          originalSale: sale,
-          qtyByItemId,
+          originalSale: vars.sale,
+          qtyByItemId: vars.qtyByItemId,
           reason: returnReason,
           t,
         });
@@ -68,7 +68,8 @@ export default function SalePartialReturnModal({
   if (!open) return null;
 
   const returnable = getReturnableLines(sale);
-  const canSubmit = sale && returnable.length > 0 && !returnMutation.isPending;
+  const canSubmit =
+    sale && returnable.length > 0 && totalSelected > 0 && !returnMutation.isPending;
 
   const body = (
     <div
@@ -138,7 +139,13 @@ export default function SalePartialReturnModal({
           type="button"
           className="pos-return-modal__submit"
           disabled={!canSubmit}
-          onClick={() => returnMutation.mutate()}
+          onClick={() =>
+            returnMutation.mutate({
+              sale,
+              qtyByItemId,
+              reasonText: reason,
+            })
+          }
         >
           {returnMutation.isPending ? (
             <Loader size={18} className="pos-return-modal__spin" />

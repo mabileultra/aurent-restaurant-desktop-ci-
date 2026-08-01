@@ -65,15 +65,14 @@ public interface SaleMapper {
         if (sale == null || sale.getStatus() == null) {
             return BigDecimal.ZERO;
         }
-        if (sale.getStatus() == Sale.SaleStatus.VOIDED) {
-            return sale.getTotalAmount() != null ? sale.getTotalAmount() : BigDecimal.ZERO;
+        if (sale.getStatus() != Sale.SaleStatus.VOIDED && sale.getStatus() != Sale.SaleStatus.REFUNDED) {
+            return BigDecimal.ZERO;
         }
-        if (sale.getStatus() == Sale.SaleStatus.REFUNDED) {
-            if (!Hibernate.isInitialized(sale.getItems())) {
-                return BigDecimal.ZERO;
-            }
-            return com.pos.sales.service.sale.impl.SalePartialReturnServiceImpl.totalReturnedAmount(sale);
+        if (!Hibernate.isInitialized(sale.getItems())) {
+            return sale.getStatus() == Sale.SaleStatus.VOIDED && sale.getTotalAmount() != null
+                ? sale.getTotalAmount()
+                : BigDecimal.ZERO;
         }
-        return BigDecimal.ZERO;
+        return com.pos.sales.service.sale.impl.SalePartialReturnServiceImpl.totalReturnedAmount(sale);
     }
 }

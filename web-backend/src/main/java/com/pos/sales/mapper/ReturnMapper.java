@@ -2,23 +2,35 @@ package com.pos.sales.mapper;
 
 import com.pos.sales.dto.returns.ReturnRowResponse;
 import com.pos.sales.entity.Sale;
+import com.pos.sales.service.sale.impl.SalePartialReturnServiceImpl;
 import com.pos.util.ReturnNotesSupport;
 import com.pos.mapper.PosMapperConfig;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Named;
 
+import java.math.BigDecimal;
+
 @Mapper(config = PosMapperConfig.class)
 public interface ReturnMapper {
 
     @Mapping(target = "id", source = "sale.id")
     @Mapping(target = "fiscalModuleId", source = "sale.receiptNumber")
+    @Mapping(target = "totalAmount", source = "sale", qualifiedByName = "returnedAmount")
     @Mapping(target = "positionsCount", source = "positionsCount")
     @Mapping(target = "storeName", source = "sale", qualifiedByName = "storeName")
     @Mapping(target = "cashierName", source = "sale.cashier.fullName")
     @Mapping(target = "reason", source = "sale", qualifiedByName = "reason")
     @Mapping(target = "status", source = "sale.status", qualifiedByName = "statusName")
     ReturnRowResponse toRowResponse(Sale sale, int positionsCount);
+
+    @Named("returnedAmount")
+    default BigDecimal returnedAmount(Sale sale) {
+        if (sale == null) {
+            return BigDecimal.ZERO;
+        }
+        return SalePartialReturnServiceImpl.totalReturnedAmount(sale);
+    }
 
     @Named("storeName")
     default String storeName(Sale sale) {

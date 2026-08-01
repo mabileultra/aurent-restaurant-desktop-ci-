@@ -191,11 +191,12 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   }, [unitCodeWatch, saleTypeWatch, setValue]);
 
   useEffect(() => {
-    if (sellingPriceWatch == null || sellingPriceWatch === '') return;
+    const next = Number(sellingPriceWatch);
+    if (!Number.isFinite(next) || next <= 0) return;
     setStoreRows((rows) =>
-      syncStoreRowPrices(rows, sellingPriceWatch, prevSellingRef.current, costPriceWatch)
+      syncStoreRowPrices(rows, next, prevSellingRef.current, costPriceWatch)
     );
-    prevSellingRef.current = sellingPriceWatch;
+    prevSellingRef.current = next;
   }, [sellingPriceWatch, costPriceWatch]);
 
   const resolveStockStoreId = () => {

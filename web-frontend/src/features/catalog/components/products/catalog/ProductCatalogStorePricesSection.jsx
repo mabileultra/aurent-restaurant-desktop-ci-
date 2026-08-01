@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { BaseSelect } from '../../../../../components/ui';
+import { toPositivePrice } from '../../../../../utils/productCatalogPrices';
 import { inputCls } from './productCatalogFormUi';
 
 export default function ProductCatalogStorePricesSection({
@@ -10,6 +11,8 @@ export default function ProductCatalogStorePricesSection({
   getValues,
   sellingPriceWatch,
 }) {
+  const sellingPlaceholder = toPositivePrice(sellingPriceWatch);
+
   return (
     <section className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
@@ -25,14 +28,11 @@ export default function ProductCatalogStorePricesSection({
                 value={row.storeId}
                 onChange={(e) => {
                   const v = e.target.value;
-                  const sell = getValues('sellingPrice');
+                  const sell = toPositivePrice(getValues('sellingPrice'));
                   setStoreRows((rs) =>
                     rs.map((r, i) => {
                       if (i !== idx) return r;
-                      const price =
-                        r.price === '' && sell != null && sell !== ''
-                          ? String(sell)
-                          : r.price;
+                      const price = r.price === '' && sell != null ? String(sell) : r.price;
                       return { ...r, storeId: v, price };
                     })
                   );
@@ -52,8 +52,8 @@ export default function ProductCatalogStorePricesSection({
                 type="number"
                 step="0.01"
                 className={inputCls}
-                placeholder={sellingPriceWatch != null ? String(sellingPriceWatch) : ''}
-                value={row.price}
+                placeholder={sellingPlaceholder != null ? String(sellingPlaceholder) : ''}
+                value={row.price === 'NaN' ? '' : row.price}
                 onChange={(e) => {
                   const v = e.target.value;
                   setStoreRows((rs) => rs.map((r, i) => (i === idx ? { ...r, price: v } : r)));

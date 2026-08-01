@@ -2330,7 +2330,8 @@
       "reportsSales": "Hisobotlar — sotuv",
       "reportsStock": "Hisobotlar — ombor",
       "settings": "Sozlamalar",
-      "cashier": "Kassa"
+      "cashier": "Kassa",
+      "restaurant": "Restoran"
     },
     "modules": {
       "dashboard": {
@@ -2850,6 +2851,33 @@
           "Menyudan taomlarni stol buyurtmasiga qo'shing.",
           "Pozitsiyalarni sexlar bo'yicha oshxonaga yuboring.",
           "Stolni umumiy kassa to'lov ekrani orqali yoping."
+        ]
+      },
+      "restaurantFloor": {
+        "title": "Zal va stollar",
+        "summary": "Zal rejasi: stollar, zonalar va mehmonlarga xizmat holatlari.",
+        "details": [
+          "Zal sxemasi va stollarni sozlang.",
+          "Restoran kassasidan stol oching va yoping.",
+          "Stol holatlari ofitsiant va menejerga yordam beradi."
+        ]
+      },
+      "restaurantBooking": {
+        "title": "Bronlash",
+        "summary": "Stol bronlari: mehmonlar, vaqt, zal va tasdiqlash.",
+        "details": [
+          "Sana va vaqtga bron yarating.",
+          "Bronni stol yoki zonaga bog'lang.",
+          "Tasdiq va bekor qilishlarni kuzating."
+        ]
+      },
+      "restaurantDelivery": {
+        "title": "Yetkazib berish",
+        "summary": "Yetkazib berish buyurtmalari: manzil, kuryer, holat va to'lov.",
+        "details": [
+          "Yetkazib berish buyurtmalarini qabul qiling.",
+          "Kuryer belgilang va holatni kuzating.",
+          "Kassa va oshxona bilan pozitsiyalar bo'yicha bog'lanish."
         ]
       },
       "restaurantKitchen": {

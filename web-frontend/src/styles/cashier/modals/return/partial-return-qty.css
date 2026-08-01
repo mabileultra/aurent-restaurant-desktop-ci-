@@ -25,19 +25,36 @@
 .pos-return-modal--partial .pos-return-modal__preview-receipt {
   font-size: 1rem;
   font-weight: 700;
+}
+
+.pos-return-modal--partial:not(.pos-return-modal--terminal) .pos-return-modal__preview-receipt {
   color: #0f172a;
 }
 
 .pos-return-modal--partial .pos-return-modal__preview-total-inline {
   font-size: 1rem;
+}
+
+.pos-return-modal--partial:not(.pos-return-modal--terminal) .pos-return-modal__preview-total-inline {
   color: #334155;
 }
 
 .pos-return-modal--partial .pos-return-modal__line-name {
   font-size: 0.9375rem;
   font-weight: 600;
-  color: #0f172a;
   line-height: 1.4;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Не перебивать тёмную тему кассы светлым #0f172a (имена «исчезали»). */
+.pos-return-modal--partial:not(.pos-return-modal--terminal) .pos-return-modal__line-name {
+  color: #0f172a;
+}
+
+.pos-return-modal--terminal.pos-return-modal--partial .pos-return-modal__line-name {
+  color: var(--pos-text);
 }
 
 .pos-return-modal--partial .pos-return-modal__textarea {
@@ -90,9 +107,16 @@
 .pos-return-line-select__meta {
   display: block;
   font-size: 0.8125rem;
-  color: #64748b;
   margin-top: 4px;
   line-height: 1.35;
+}
+
+.pos-return-modal--partial:not(.pos-return-modal--terminal) .pos-return-line-select__meta {
+  color: #64748b;
+}
+
+.pos-return-modal--terminal.pos-return-modal--partial .pos-return-line-select__meta {
+  color: var(--pos-muted);
 }
 
 .pos-return-line-select__returned {

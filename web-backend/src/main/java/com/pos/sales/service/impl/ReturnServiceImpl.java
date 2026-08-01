@@ -77,7 +77,7 @@ public class ReturnServiceImpl implements ReturnService {
         );
         return PageResponse.from(page.map(sale -> returnMapper.toRowResponse(
             sale,
-            (int) saleItemRepository.countBySale_Id(sale.getId())
+            (int) saleItemRepository.countReturnedBySaleId(sale.getId())
         )));
     }
 
@@ -97,7 +97,7 @@ public class ReturnServiceImpl implements ReturnService {
         salesLedgerCacheService.onSaleChanged(saved);
         return returnMapper.toRowResponse(
             saved,
-            (int) saleItemRepository.countBySale_Id(saved.getId())
+            (int) saleItemRepository.countReturnedBySaleId(saved.getId())
         );
     }
 
