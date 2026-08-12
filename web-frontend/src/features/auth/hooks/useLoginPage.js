@@ -42,13 +42,14 @@ export function useLoginPage() {
       z.object({
         username: z.string().min(1, t('validation.required')),
         password: z.string().min(1, t('validation.required')),
+        remember: z.boolean().optional(),
       }),
     [t]
   );
 
   const form = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { username: '', password: '' },
+    defaultValues: { username: '', password: '', remember: false },
   });
 
   const onSubmit = async (data) => {

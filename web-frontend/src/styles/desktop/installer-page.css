@@ -1,0 +1,247 @@
+@import '../public-site/public-site-shell.css';
+
+.installer-page__main {
+  flex: 1;
+}
+
+.installer-hero {
+  padding: 2.75rem 1.25rem 2rem;
+  text-align: center;
+}
+
+.installer-hero__inner {
+  max-width: 48rem;
+  margin: 0 auto;
+}
+
+.installer-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: #e8f1f8;
+  color: #1e3a5f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.installer-hero__title {
+  margin: 1.15rem 0 0;
+  font-size: clamp(2.1rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.installer-hero__title-kassa {
+  font-family: var(--ps-display);
+  font-weight: 700;
+  color: var(--ps-ink);
+}
+
+.installer-hero__title-brand {
+  font-family: var(--ps-font);
+  font-weight: 700;
+  color: var(--ps-green);
+}
+
+.installer-hero__subtitle {
+  margin: 1rem auto 0;
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.55;
+  color: var(--ps-muted);
+}
+
+.installer-hero__downloads {
+  margin-top: 1.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.85rem;
+}
+
+.installer-download-card {
+  min-width: min(100%, 16.5rem);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  border-radius: 1rem;
+  border: 1px solid var(--ps-line);
+  background: #fff;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.06);
+  text-decoration: none;
+  color: var(--ps-ink);
+  text-align: left;
+  transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.installer-download-card:hover {
+  transform: translateY(-1px);
+  border-color: rgb(0 104 71 / 0.35);
+  box-shadow: 0 14px 32px rgb(15 23 42 / 0.1);
+}
+
+.installer-download-card.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.installer-download-card__icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
+  background: #eef8f3;
+  color: var(--ps-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.installer-download-card__label {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.installer-download-card__sub {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--ps-muted);
+}
+
+.installer-hero__meta {
+  margin-top: 1rem;
+  min-height: 1.25rem;
+  font-size: 0.875rem;
+  color: var(--ps-muted);
+}
+
+.installer-hero__meta--warn {
+  color: #b45309;
+}
+
+.installer-steps {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 1rem 1.25rem 3rem;
+  text-align: center;
+}
+
+.installer-steps__title {
+  margin: 0;
+  font-family: var(--ps-display);
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+  color: var(--ps-ink);
+}
+
+.installer-steps__subtitle {
+  margin: 0.55rem auto 0;
+  max-width: 28rem;
+  color: var(--ps-muted);
+  font-size: 0.95rem;
+}
+
+.installer-steps__track {
+  position: relative;
+  margin-top: 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.installer-steps__track::before {
+  content: none;
+}
+
+.installer-step {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--ps-line);
+  border-radius: 1rem;
+  padding: 1.35rem 1.15rem 1.25rem;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 0.05);
+  text-align: center;
+}
+
+.installer-step__num {
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0 auto 0.85rem;
+  border-radius: 999px;
+  background: var(--ps-green);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  box-shadow: 0 8px 18px rgb(0 104 71 / 0.25);
+}
+
+.installer-step__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ps-ink);
+}
+
+.installer-step__text {
+  margin: 0.45rem 0 0;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  color: var(--ps-muted);
+}
+
+.installer-steps__hint {
+  margin: 1.5rem auto 0;
+  max-width: 36rem;
+  font-size: 0.8125rem;
+  color: var(--ps-muted);
+}
+
+.installer-page__account {
+  margin: 0 auto 2.5rem;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--ps-muted);
+}
+
+.installer-page__account-link {
+  font-weight: 700;
+  color: var(--ps-green);
+  text-decoration: none;
+}
+
+.installer-page__account-link:hover {
+  text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+  .installer-steps__track {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    padding-top: 0.5rem;
+  }
+
+  .installer-steps__track::before {
+    content: '';
+    position: absolute;
+    top: 1.75rem;
+    left: 16%;
+    right: 16%;
+    height: 2px;
+    background: rgb(0 104 71 / 0.2);
+    z-index: 0;
+  }
+
+  .installer-step {
+    z-index: 1;
+  }
+}

@@ -33,6 +33,30 @@ export default function LanguageSwitcher({ className = '', variant = 'default' }
     );
   }
 
+  if (variant === 'public') {
+    return (
+      <div
+        className={clsx('public-lang-switch', className)}
+        role="group"
+        aria-label="Language"
+      >
+        {LANGS.map(({ code, label }) => (
+          <button
+            key={code}
+            type="button"
+            onClick={() => i18n.changeLanguage(code)}
+            className={clsx(
+              'public-lang-switch__btn',
+              i18n.language?.startsWith(code) && 'is-active'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className={clsx(
       'flex items-center gap-1 rounded-lg border p-0.5',
