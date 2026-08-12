@@ -18,7 +18,9 @@ public class ProductExtensionServiceImpl implements ProductExtensionService {
     public void applyOnCreate(Product product, CreateProductRequest req) {
         ProductType type = ProductTypeSupport.resolve(req.productType(), req.saleType());
         product.setProductType(type);
-        clearExtensions(product);
+        // Не сбрасываем extension того же типа: при reactivate soft-deleted товара
+        // clear+new RetailProductDetails с тем же product_id даёт NonUniqueObjectException.
+        clearOppositeExtensions(product, type);
         switch (type) {
             case RETAIL -> applyRetailFlags(product, req.soldIndividually(), req.markedProduct());
             case SERVICE -> applyService(product, req.serviceDetails());
@@ -30,7 +32,7 @@ public class ProductExtensionServiceImpl implements ProductExtensionService {
     public void applyOnUpdate(Product product, UpdateProductRequest req) {
         if (req.productType() != null && req.productType() != product.getProductType()) {
             product.setProductType(req.productType());
-            clearExtensions(product);
+            clearOppositeExtensions(product, req.productType());
         }
         ProductType type = product.getProductType();
         switch (type) {
@@ -88,8 +90,20 @@ public class ProductExtensionServiceImpl implements ProductExtensionService {
         // Legacy vertical fields migrated to product_attributes.
     }
 
-    private void clearExtensions(Product product) {
-        product.setRetailDetails(null);
-        product.setServiceDetails(null);
+    /** Убирает только чужой extension; текущий обновляется in-place. */
+    private void clearOppositeExtensions(Product product, ProductType keep) {
+        if (keep == null) {
+            product.setRetailDetails(null);
+            product.setServiceDetails(null);
+            return;
+        }
+        switch (keep) {
+            case RETAIL -> product.setServiceDetails(null);
+            case SERVICE -> product.setRetailDetails(null);
+            default -> {
+                product.setRetailDetails(null);
+                product.setServiceDetails(null);
+            }
+        }
     }
 }
