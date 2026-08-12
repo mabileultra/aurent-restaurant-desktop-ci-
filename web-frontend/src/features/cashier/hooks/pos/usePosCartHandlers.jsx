@@ -2,6 +2,8 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { posFetchProductByBarcode } from '../../../../services/pos/posDataRouter';
+import { scalesApi } from '../../../../api/scales.api';
+import { decodeWeightBarcode } from '../../../scales/utils/weightBarcode';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
 import { lineSubtotal, useCartStore } from '../../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
@@ -154,6 +156,26 @@ export function usePosCartHandlers({
       if (!trimmed || !storeId || scanningRef.current || payOpen || returnOpen) return false;
       scanningRef.current = true;
       try {
+        const decoded = decodeWeightBarcode(trimmed);
+        if (decoded) {
+          const { data: product } = await scalesApi.getByPlu(decoded.plu, storeId);
+          if (!shiftIsOpen) {
+            toast.error(t('pos.shiftRequired'));
+            return false;
+          }
+          if (!product?.active) {
+            toast.error(t('pos.productInactive'));
+            return false;
+          }
+          const payload = cartProductPayload(product);
+          const lineId = addWeightLine(payload, decoded.weightKg);
+          const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
+          if (line) showLineAddedToast(line, product.name);
+          if (lineId) setSelectedLineId(lineId);
+          setSearch('');
+          return true;
+        }
+
         const product = await posFetchProductByBarcode(storeId, trimmed);
         if (product) {
           addProductToCart(product);
@@ -170,7 +192,20 @@ export function usePosCartHandlers({
         searchInputRef.current?.focus();
       }
     },
-    [storeId, addProductToCart, payOpen, returnOpen, t, setSearch, searchInputRef]
+    [
+      storeId,
+      addProductToCart,
+      addWeightLine,
+      cartProductPayload,
+      payOpen,
+      returnOpen,
+      shiftIsOpen,
+      showLineAddedToast,
+      t,
+      setSearch,
+      searchInputRef,
+      setSelectedLineId,
+    ]
   );
 
   useBarcodeScanner({

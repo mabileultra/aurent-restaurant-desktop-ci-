@@ -108,7 +108,8 @@ class ProductCreateHandlerTest {
             null,
             null,
             10,
-            null,
+            null, // barcode
+            null, // plu
             null,
             null,
             null,
@@ -153,6 +154,7 @@ class ProductCreateHandlerTest {
             0,
             10,
             false,
+            null,
             null,
             List.of(),
             null,

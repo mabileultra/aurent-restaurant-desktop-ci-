@@ -299,6 +299,7 @@ public class ProductImportServiceImpl implements ProductImportService {
             null,
             null,
             null,
+            null,
             row.ikpu(),
             null,
             unit,

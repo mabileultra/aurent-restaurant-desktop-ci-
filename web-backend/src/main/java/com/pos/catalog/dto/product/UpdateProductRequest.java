@@ -39,6 +39,7 @@ public record UpdateProductRequest(
     String commissionTin,
     String commissionPinfl,
     String barcode,
+    String plu,
     @Valid List<ProductStorePriceRequest> storePrices,
     List<String> additionalBarcodes,
     ServiceProductDetailsRequest serviceDetails,

@@ -14,6 +14,7 @@ import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.inventory.service.stock.StoreStockService;
+import com.pos.scales.codec.WeightBarcodeCodec;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final StoreStockService storeStockService;
     private final ProductLowStockQuerySupport productLowStockQuerySupport;
     private final TenantAccessSupport tenantAccess;
+    private final WeightBarcodeCodec weightBarcodeCodec;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -160,8 +162,13 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         if (primary.isPresent()) {
             return primary.get();
         }
-        return productBarcodeRepository.findByBarcodeAndProductCompanyId(barcode, companyId)
-            .map(ProductBarcode::getProduct)
+        Optional<Product> extra = productBarcodeRepository.findByBarcodeAndProductCompanyId(barcode, companyId)
+            .map(ProductBarcode::getProduct);
+        if (extra.isPresent()) {
+            return extra.get();
+        }
+        return weightBarcodeCodec.tryDecode(barcode)
+            .flatMap(decoded -> productRepository.findByCompany_IdAndPlu(companyId, decoded.plu()))
             .orElseThrow(() -> PosExceptions.notFound("Product for barcode", barcode));
     }
 }

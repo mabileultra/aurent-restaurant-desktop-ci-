@@ -1,27 +1,22 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const botDir = path.join(__dirname, '..');
-const rootEnvPath = path.join(botDir, '..', '.env');
-const botEnvPath = path.join(botDir, '.env');
-
-export function createSupportGroupStore(initialGroupId) {
+/**
+ * Хранит ID группы поддержки для одного инстанса бота (файл в dataDir).
+ */
+export function createSupportGroupStore(initialGroupId, dataDir) {
   let activeGroupId = initialGroupId || null;
+  const filePath = dataDir ? path.join(dataDir, 'support-group-id.txt') : null;
+
+  if (!activeGroupId && filePath && fs.existsSync(filePath)) {
+    const saved = fs.readFileSync(filePath, 'utf8').trim();
+    if (saved) activeGroupId = saved;
+  }
 
   function persistGroupId(id) {
-    const line = `TELEGRAM_SUPPORT_GROUP_ID=${id}`;
-    for (const file of [botEnvPath, rootEnvPath]) {
-      if (!fs.existsSync(file)) continue;
-      let content = fs.readFileSync(file, 'utf8');
-      if (/TELEGRAM_SUPPORT_GROUP_ID=/.test(content)) {
-        content = content.replace(/TELEGRAM_SUPPORT_GROUP_ID=.*/m, line);
-      } else {
-        content = `${content.trimEnd()}\n${line}\n`;
-      }
-      fs.writeFileSync(file, content);
-    }
+    if (!filePath) return;
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    fs.writeFileSync(filePath, `${id}\n`);
   }
 
   return {

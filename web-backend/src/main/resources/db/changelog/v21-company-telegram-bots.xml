@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v21-company-telegram-bots" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="company_telegram_bots"/>
+            </not>
+        </preConditions>
+        <createTable tableName="company_telegram_bots">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false" unique="true"
+                             foreignKeyName="fk_company_telegram_bots_company"
+                             references="companies(id)"/>
+            </column>
+            <column name="bot_username" type="VARCHAR(64)"/>
+            <column name="bot_token" type="VARCHAR(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="api_token" type="VARCHAR(128)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="support_group_id" type="VARCHAR(64)"/>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="company_telegram_bots" indexName="idx_company_telegram_bots_api_token">
+            <column name="api_token"/>
+        </createIndex>
+        <createIndex tableName="company_telegram_bots" indexName="idx_company_telegram_bots_enabled">
+            <column name="enabled"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

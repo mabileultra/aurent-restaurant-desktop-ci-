@@ -10,11 +10,14 @@ import org.springframework.util.StringUtils;
 @ConfigurationProperties(prefix = "app.telegram-bot")
 public class TelegramBotProperties {
 
-    /** Shared secret for X-Bot-Token header. Empty = bot API disabled. */
+    /** Legacy shared secret for X-Bot-Token. Prefer per-company api_token in DB. */
     private String apiToken = "";
 
-    /** Optional company scope as string (empty = all companies). */
+    /** Legacy single-company scope when using global apiToken. Empty = not set. */
     private String companyId = "";
+
+    /** Master token for GET /public/bot/runtime/instances (multi-bot runner). */
+    private String runtimeToken = "";
 
     private int maxResults = 10;
 

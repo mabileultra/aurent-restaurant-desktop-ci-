@@ -15,6 +15,7 @@ import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.SaleTypeSupport;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
+import com.pos.catalog.service.product.support.ProductPluValidator;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductValueNormalizer;
@@ -35,6 +36,7 @@ public class ProductUpdateHandler {
     private final CategoryRepository categoryRepository;
     private final ProductCatalogLoader catalogLoader;
     private final ProductBarcodeValidator barcodeValidator;
+    private final ProductPluValidator pluValidator;
     private final ProductStorePriceApplier storePriceApplier;
     private final ProductExtensionService extensionService;
     private final UnitCatalogService unitCatalogService;
@@ -136,6 +138,17 @@ public class ProductUpdateHandler {
         if (req.barcode() != null) {
             barcodeValidator.assertUnique(product.getCompany().getId(), req.barcode(), product.getId());
             product.setBarcode(req.barcode());
+        }
+        if (req.plu() != null) {
+            String plu = pluValidator.normalizeOrNull(req.plu());
+            if (plu != null) {
+                productRepository.findByCompany_IdAndPlu(product.getCompany().getId(), plu)
+                    .filter(other -> !other.getId().equals(product.getId()))
+                    .ifPresent(other -> {
+                        throw PosExceptions.conflict("PLU already in use", "plu", plu);
+                    });
+            }
+            product.setPlu(plu);
         }
         if (req.additionalBarcodes() != null) {
             String primary = product.getBarcode();

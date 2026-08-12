@@ -92,6 +92,10 @@ public class Product {
 
     private String barcode;
 
+    /** Код товара на весах (PLU), 1–5 цифр. */
+    @Column(name = "plu", length = 5)
+    private String plu;
+
     @Column(name = "image_url")
     private String imageUrl;
 

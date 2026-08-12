@@ -10,8 +10,8 @@ import { promptSearch, runMedicineSearch } from './searchFlow.js';
 
 export async function promptNearby(ctx, stateStore) {
   stateStore.setState(ctx.from.id, STATES.NEARBY_WAIT_LOCATION);
-  await ctx.reply(
-    'Отправьте геолокацию, чтобы я нашёл ближайшие аптеки.\n\nПока координаты магазинов не заполнены — покажу список аптек с адресами.',
+    await ctx.reply(
+    'Отправьте геолокацию, чтобы найти аптеки этой сети.\n\nПока координаты магазинов не заполнены — покажу список аптек компании.',
     nearbyReplyKeyboard()
   );
 }

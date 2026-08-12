@@ -2,13 +2,20 @@
 
 Мост к Electron-модулю `aurent-cashier-desktop/electron/scales/`.
 
-- `scaleBridge.js` — вызовы `window.desktopCashier.*`
-- `useScaleWeight.js` — подписка на показания при открытой модалке
+- `scaleBridge.js` — вызовы `window.desktopCashier.*` (любая модель → вес в кг)
+- `useScaleWeight.js` — подписка на показания при открытой модалке / станции
 
-В браузере без Electron вкладка «Весы» скрыта.
+В браузере без Electron вкладка «Весы» скрыта / станция показывает «нужна desktop-касса».
+
+## Модуль станции
+
+`features/scales/` — отдельный модуль:
+
+- `/scales/plu` — назначение PLU весовым товарам
+- `/scales/station` — PLU → товар → вес → автопечать этикетки (как ценники через `shelfLabelPrint`)
+
+Формат штрихкода: EAN-13 `20 + PLU(5) + граммы(5) + check`.
 
 ## Настройка в десктопе
 
-Меню **Aurent → Весы** или кнопка **«Настроить весы…»** в модалке весового товара.
-
-`openScalePicker()` / `scaleAutoDetect()` в `scaleBridge.js`.
+Меню **Aurent → Весы** или кнопки **«Настроить…» / «Автопоиск»** на станции.

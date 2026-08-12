@@ -1,15 +1,177 @@
 #!/usr/bin/env bash
-# Сборка и запуск production-стека (микросервисы + gateway + frontend).
+# Сборка и запуск production-стека (микросервисы + gateway + frontend) + БД-утилиты.
+# Использование:
+#   bash deploy/deploy.sh                  — полный деплой
+#   bash deploy/deploy.sh verify-db        — проверить пароль .env против Postgres
+#   bash deploy/deploy.sh sync-db-password — синхронизировать пароль БД с .env
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
-COMPOSE_FILE="docker-compose.prod.yml"
+COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 ENV_FILE="${ENV_FILE:-.env}"
+SUBCOMMAND="${1:-deploy}"
 
-# shellcheck source=deploy/wait-healthy.sh
-source "$ROOT/deploy/wait-healthy.sh"
+compose() {
+  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+}
+
+# --- .env: безопасная загрузка (только строки KEY=VALUE, без выполнения мусора) ---
+load_dotenv() {
+  local file="${1:-.env}"
+  local line key val
+  if [[ ! -f "$file" ]]; then
+    echo "Нет файла $file" >&2
+    return 1
+  fi
+
+  while IFS= read -r line || [[ -n "$line" ]]; do
+    line="${line%$'\r'}"
+    [[ -z "${line//[[:space:]]/}" ]] && continue
+    [[ "$line" =~ ^[[:space:]]*# ]] && continue
+    if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
+      key="${BASH_REMATCH[1]}"
+      val="${BASH_REMATCH[2]}"
+      # Снять окружающие кавычки
+      if [[ "$val" =~ ^\"(.*)\"$ ]]; then
+        val="${BASH_REMATCH[1]}"
+      elif [[ "$val" =~ ^\'(.*)\'$ ]]; then
+        val="${BASH_REMATCH[1]}"
+      fi
+      printf -v "$key" '%s' "$val"
+      export "$key"
+    else
+      echo "WARN: пропуск неверной строки в ${file}: ${line:0:48}" >&2
+    fi
+  done < "$file"
+}
+
+# --- Ожидание docker healthcheck контейнера по имени ---
+wait_container_healthy() {
+  local name="$1"
+  local label="${2:-$name}"
+  local max="${3:-36}"
+  local interval="${4:-5}"
+  local status="unknown"
+
+  echo "==> Ожидание health: ${label} (до $((max * interval))с)..."
+  for _ in $(seq 1 "$max"); do
+    status="$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$name" 2>/dev/null || echo "missing")"
+    if [[ "$status" == "healthy" ]]; then
+      echo "    ${label}: healthy"
+      return 0
+    fi
+    sleep "$interval"
+  done
+
+  echo "ОШИБКА: ${label} не стал healthy (последний статус: ${status})" >&2
+  return 1
+}
+
+compose_logs_tail() {
+  local service="$1"
+  local lines="${2:-120}"
+  compose logs --tail="$lines" "$service" 2>/dev/null || true
+}
+
+# --- Пересоздание одного compose-сервиса: убирает ghost-контейнеры после неудачного up ---
+declare -A CONTAINER_NAMES=(
+  [postgres]=aurent-pos-db
+  [finance-db]=aurent-finance-db
+  [identity-db]=aurent-identity-db
+  [platform-db]=aurent-platform-db
+  [reporting-db]=aurent-reporting-db
+  [crm-db]=aurent-crm-db
+  [redpanda]=aurent-redpanda
+  [finance-service]=aurent-finance-service
+  [identity-service]=aurent-identity-service
+  [platform-service]=aurent-platform-service
+  [reporting-service]=aurent-reporting-service
+  [crm-service]=aurent-crm-service
+  [ai-service]=aurent-ai-service
+  [backend]=aurent-pos-backend
+  [api-gateway]=aurent-api-gateway
+  [frontend]=aurent-pos-frontend
+)
+
+recreate_service() {
+  local service="$1"
+  local cname="${CONTAINER_NAMES[$service]:-}"
+
+  compose stop "$service" 2>/dev/null || true
+  compose rm -f "$service" 2>/dev/null || true
+
+  if [[ -n "$cname" ]]; then
+    docker ps -aq --filter "name=${cname}" | xargs -r docker rm -f
+  fi
+
+  compose up -d --no-deps --force-recreate "$service"
+}
+
+# --- Проверка пароля PostgreSQL из .env (на сервере перед/после деплоя) ---
+verify_db() {
+  local pg_user="${POSTGRES_USER:-pos_user}"
+  local pg_db="${POSTGRES_DB:-pos_db}"
+
+  echo "==> Проверка входа в PostgreSQL (пользователь $pg_user)..."
+  if compose exec -T -e PGPASSWORD="$POSTGRES_PASSWORD" postgres \
+    psql -U "$pg_user" -d "$pg_db" -c 'SELECT 1 AS ok;' >/dev/null 2>&1; then
+    echo "OK: пароль из .env подходит к БД"
+    return 0
+  fi
+
+  echo "ОШИБКА: пароль из .env НЕ подходит к существующей БД."
+  echo ""
+  echo "Частая причина: POSTGRES_PASSWORD в .env меняли после первого запуска Postgres."
+  echo "Исправление (подставит пароль из .env в PostgreSQL):"
+  echo ""
+  echo "  bash deploy/deploy.sh sync-db-password"
+  echo ""
+  return 1
+}
+
+# --- Синхронизировать пароль пользователя БД с POSTGRES_PASSWORD из .env ---
+sync_db_password() {
+  local pg_user="${POSTGRES_USER:-pos_user}"
+  local pg_db="${POSTGRES_DB:-pos_db}"
+
+  echo "==> Обновление пароля PostgreSQL для пользователя $pg_user"
+  # Внутри контейнера локальный вход без пароля (trust)
+  compose exec -T postgres \
+    psql -U "$pg_user" -d postgres -v ON_ERROR_STOP=1 \
+    -c "ALTER USER \"${pg_user}\" WITH PASSWORD '${POSTGRES_PASSWORD}';"
+
+  echo "==> Проверка входа с паролем из .env..."
+  compose exec -T -e PGPASSWORD="$POSTGRES_PASSWORD" postgres \
+    psql -U "$pg_user" -d "$pg_db" -c 'SELECT 1 AS ok;'
+
+  echo "OK: пароль синхронизирован"
+}
+
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Нет файла $ENV_FILE — скопируйте: cp .env.example .env && отредактируйте пароли."
+  exit 1
+fi
+
+load_dotenv "$ENV_FILE"
+
+case "$SUBCOMMAND" in
+  verify-db)
+    verify_db
+    exit $?
+    ;;
+  sync-db-password)
+    sync_db_password
+    exit 0
+    ;;
+  deploy)
+    ;;
+  *)
+    echo "Использование: bash deploy/deploy.sh [deploy|verify-db|sync-db-password]" >&2
+    exit 1
+    ;;
+esac
 
 require_env() {
   local key="$1"
@@ -19,23 +181,6 @@ require_env() {
     exit 1
   fi
 }
-
-compose() {
-  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
-}
-
-recreate_service() {
-  COMPOSE_FILE="$COMPOSE_FILE" ENV_FILE="$ENV_FILE" bash "$ROOT/deploy/docker-recreate-service.sh" "$1"
-}
-
-if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Нет файла $ENV_FILE — скопируйте: cp .env.example .env && отредактируйте пароли."
-  exit 1
-fi
-
-# shellcheck source=deploy/load-dotenv.sh
-source "$ROOT/deploy/load-dotenv.sh"
-load_dotenv "$ENV_FILE"
 
 # Для уже существующего .env на сервере — дописать CRM-секреты, если их ещё нет.
 ensure_secret() {
@@ -88,8 +233,6 @@ if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
   require_env FINANCE_INTERNAL_API_KEY
 fi
 
-chmod +x deploy/docker-recreate-service.sh deploy/wait-healthy.sh
-
 echo "==> Сборка образов ($COMPOSE_FILE)..."
 compose build --pull
 
@@ -122,7 +265,7 @@ fi
 echo "==> Миграции БД: Liquibase при старте backend (db/changelog/)"
 
 echo "==> Проверка пароля pos_db..."
-if ! bash deploy/verify-db.sh; then
+if ! verify_db; then
   exit 1
 fi
 
@@ -188,11 +331,11 @@ else
   echo "==> TELEGRAM_WEB_SUPPORT_BOT_TOKEN не задан — веб-бот поддержки пропущен."
 fi
 
-if [[ -n "${TELEGRAM_BOT_TOKEN:-}" ]]; then
-  echo "==> Telegram-бот аптеки (поиск лекарств)..."
+if [[ -n "${TELEGRAM_BOT_RUNTIME_TOKEN:-}" || -n "${TELEGRAM_BOT_TOKEN:-}" || -n "${TELEGRAM_BOTS:-}" ]]; then
+  echo "==> Telegram-бот(ы) аптеки (по компаниям)..."
   compose up -d --build telegram-support-bot
 else
-  echo "==> TELEGRAM_BOT_TOKEN не задан — аптечный бот пропущен."
+  echo "==> Аптечные боты пропущены (нет TELEGRAM_BOT_RUNTIME_TOKEN / TELEGRAM_BOT_TOKEN / TELEGRAM_BOTS)."
 fi
 
 echo ""

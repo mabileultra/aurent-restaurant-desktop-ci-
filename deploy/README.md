@@ -1,35 +1,24 @@
 # Деплой Aurent POS
 
 ```
-push main → GitHub Actions → SSH → git-update.sh → deploy.sh → Docker
+push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
 ```
 
-На сервере вручную: `bash deploy/git-update.sh`.
+На сервере вручную: `bash deploy/update.sh`.
 
 ---
 
 ## Скрипты
 
-| Скрипт | Когда |
-|--------|--------|
-| `ubuntu-prepare.sh` | **Один раз** на чистом Ubuntu: Docker, UFW |
-| `git-bootstrap.sh` | **Один раз**: клон/git в `/opt/aurent-pos` |
-| `setup-env.sh` | **Один раз**: создать `.env` из `.env.example` |
-| `prod-check.sh` | Перед первым деплоем: JWT, пароли, Docker |
-| `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` |
-| `git-update.sh` | **Каждое обновление**: `git pull` + `deploy.sh` |
-| `backup-db.sh` | Бэкап Postgres (CI делает перед деплоем) |
-| `restore-db.sh` | Восстановление из дампа |
-| `install-backup-cron.sh` | Cron бэкапа в 03:00 |
-| `ci-ssh-setup.sh` | Только GitHub Actions (SSH-ключ) |
+5 скриптов, у каждого есть подкоманды (без аргумента — поведение по умолчанию, см. ниже).
 
-Вспомогательные (вызываются из `deploy.sh`):
-
-- `docker-recreate-service.sh` — пересоздать один сервис
-- `wait-healthy.sh` — ждать healthy контейнера
-- `load-dotenv.sh` — безопасная загрузка `.env`
-- `verify-db.sh` — пароль `.env` совпадает с Postgres
-- `sync-db-password.sh` — починить пароль БД из `.env`
+| Скрипт | Когда | Подкоманды |
+|--------|--------|--------|
+| `server-setup.sh` | **Один раз**: подготовка сервера/CI | `ubuntu` (Docker, UFW — root), `env` (создать `.env`), `ci-ssh` (SSH-ключ для GitHub Actions) |
+| `update.sh` | **Один раз** / **каждое обновление** | *(нет)* = `git pull` + `deploy.sh`; `bootstrap` = клон репозитория в `/opt/aurent-pos` |
+| `prod-check.sh` | Перед первым деплоем: JWT, пароли, Docker | — |
+| `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой; `verify-db` = пароль `.env` совпадает с Postgres; `sync-db-password` = починить пароль БД из `.env` |
+| `backup.sh` | Бэкапы Postgres | *(нет)* = создать бэкап; `restore <файл>` = восстановить; `install-cron` = ежедневный бэкап в 03:00 |
 
 ---
 
@@ -37,8 +26,8 @@ push main → GitHub Actions → SSH → git-update.sh → deploy.sh → Docker
 
 ```bash
 cd /opt/aurent-pos
-sudo bash deploy/ubuntu-prepare.sh
-bash deploy/setup-env.sh && nano .env
+sudo bash deploy/server-setup.sh ubuntu
+bash deploy/server-setup.sh env && nano .env
 bash deploy/prod-check.sh
 bash deploy/deploy.sh
 ```
@@ -47,7 +36,7 @@ bash deploy/deploy.sh
 
 ```bash
 cd /opt/aurent-pos
-bash deploy/git-update.sh
+bash deploy/update.sh
 ```
 
 Или merge в `main` → CI сам деплоит (secrets: `DEPLOY_SSH_KEY_B64`, `DEPLOY_HOST`, `DEPLOY_USER`).
@@ -77,7 +66,9 @@ docker compose -f docker-compose.prod.yml logs -f backend
 | Бот | Env | Для чего |
 |-----|-----|----------|
 | **Веб-поддержка** | `TELEGRAM_WEB_SUPPORT_BOT_TOKEN` + `VITE_SUPPORT_TELEGRAM_BOT` | Страница «Поддержка» в CRM/POS |
-| **Аптека** | `TELEGRAM_BOT_TOKEN` | Поиск лекарств + поддержка аптеки |
+| **Аптека (по компаниям)** | `TELEGRAM_BOT_RUNTIME_TOKEN` + настройки в CRM | Каждая аптечная компания — свой бот и свои магазины |
+
+Быстрый фикс legacy (один бот): задать `TELEGRAM_BOT_COMPANY_ID=<id компании>` — иначе API больше не отдаёт все магазины всех компаний.
 
 `VITE_SUPPORT_TELEGRAM_BOT` = **username веб-бота**, не аптечного.
 
@@ -86,22 +77,48 @@ docker compose -f docker-compose.prod.yml logs -f backend
 ## Бэкапы
 
 ```bash
-bash deploy/backup-db.sh
-bash deploy/install-backup-cron.sh
-bash deploy/restore-db.sh backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
+bash deploy/backup.sh
+sudo bash deploy/backup.sh install-cron
+bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 ```
 
 ---
 
 ## Касса и `/install`
 
-- UI кассы: `git-update.sh` → «Вид → Обновить» в приложении
+- UI кассы: `update.sh` → «Вид → Обновить» в приложении
 - Electron (`.exe`/`.dmg`) — репозиторий `aurent-cashier-desktop`, CI заливает в `downloads/desktop/`
 - Страница: `https://домен/install`
 
 ## SSL
 
-Пример nginx на хосте: `nginx-host.conf.example` + Certbot.
+Опционально: nginx на хосте Ubuntu (SSL + прокси на Docker frontend `:80`).
+
+```bash
+apt install nginx certbot python3-certbot-nginx
+```
+
+Файл `/etc/nginx/sites-available/aurent-pos`, ссылка в `sites-enabled/`:
+
+```nginx
+server {
+    listen 80;
+    server_name pos.example.uz;
+
+    client_max_body_size 80m;
+
+    location / {
+        proxy_pass http://127.0.0.1:80;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+После `certbot --nginx -d pos.example.uz` certbot сам допишет блок `listen 443 ssl`.
 
 ## Порты
 

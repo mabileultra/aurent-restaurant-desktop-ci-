@@ -30,6 +30,7 @@ public record CreateProductRequest(
     BigDecimal initialStock,
     Integer lowStockAlert,
     String barcode,
+    String plu,
     String imageUrl,
     String externalProductId,
     String ikpu,

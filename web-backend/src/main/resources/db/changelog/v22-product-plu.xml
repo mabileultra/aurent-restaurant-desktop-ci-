@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v22-product-plu" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="products" columnName="plu"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="products">
+            <column name="plu" type="varchar(5)">
+                <constraints nullable="true"/>
+            </column>
+        </addColumn>
+        <createIndex tableName="products" indexName="idx_products_company_plu">
+            <column name="company_id"/>
+            <column name="plu"/>
+        </createIndex>
+        <sql>
+            CREATE UNIQUE INDEX uq_products_company_plu
+            ON products (company_id, plu)
+            WHERE plu IS NOT NULL;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

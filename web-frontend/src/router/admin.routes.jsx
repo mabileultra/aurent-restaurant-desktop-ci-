@@ -60,6 +60,8 @@ import {
   UsersPrinterSettingsPage,
   UsersBrandingSettingsPage,
   UsersBarcodePrintPage,
+  ScalesStationPage,
+  ScalesPluPage,
   HandbookPage,
   SupportPage,
 } from './lazyPages';
@@ -103,6 +105,22 @@ export const adminRoutes = (
       element={(
         <ProtectedRoute module="categories">
           <CategoriesPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="scales/station"
+      element={(
+        <ProtectedRoute module="scalesStation">
+          <ScalesStationPage />
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="scales/plu"
+      element={(
+        <ProtectedRoute module="scalesPlu">
+          <ScalesPluPage />
         </ProtectedRoute>
       )}
     />

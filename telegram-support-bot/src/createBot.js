@@ -31,7 +31,7 @@ const BOT_COMMANDS = [
  */
 export function createBot(config) {
   const bot = new Telegraf(config.token);
-  const groupStore = createSupportGroupStore(config.supportGroupId);
+  const groupStore = createSupportGroupStore(config.supportGroupId, config.dataDir);
   const botApi = createBotApi({
     backendBaseUrl: config.backendBaseUrl,
     botApiToken: config.botApiToken,
@@ -47,13 +47,16 @@ export function createBot(config) {
     forwardToGroup: null,
   };
 
+  const label = config.label || 'bot';
   if (!config.supportGroupId) {
-    console.warn('TELEGRAM_SUPPORT_GROUP_ID не задан — группа подхватится автоматически.');
+    console.warn(`[${label}] supportGroupId не задан — группа подхватится автоматически.`);
   } else {
-    console.log(`Группа поддержки: ${config.supportGroupId}`);
+    console.log(`[${label}] Группа поддержки: ${config.supportGroupId}`);
   }
   if (!config.botApiToken) {
-    console.warn('TELEGRAM_BOT_API_TOKEN не задан — поиск лекарств будет недоступен.');
+    console.warn(`[${label}] botApiToken не задан — поиск лекарств будет недоступен.`);
+  } else if (config.companyId) {
+    console.log(`[${label}] Привязка к компании id=${config.companyId}`);
   }
 
   bot.on('my_chat_member', async (ctx) => {
@@ -146,11 +149,11 @@ export function createBot(config) {
       // setMyCommands до launch: в Telegraf await launch() висит до остановки бота
       try {
         await bot.telegram.setMyCommands(BOT_COMMANDS);
-        console.log('Команды бота обновлены');
+        console.log(`[${label}] Команды бота обновлены`);
       } catch (err) {
-        console.warn('Не удалось setMyCommands:', err.message);
+        console.warn(`[${label}] Не удалось setMyCommands:`, err.message);
       }
-      console.log('Aurent bot запущен (меню + поиск + поддержка)');
+      console.log(`[${label}] Aurent pharmacy bot запущен`);
       await bot.launch();
     },
     stop(reason) {

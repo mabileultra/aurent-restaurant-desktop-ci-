@@ -1,29 +1,52 @@
-# Aurent Telegram — аптечный бот
+# Aurent Telegram — аптечный бот (по компаниям)
 
-Мини-приложение для **аптеки**:
-- поиск лекарств, аптеки рядом, избранное, история
-- своя поддержка (категории про лекарства / остатки)
+Каждая аптечная **компания** получает своего бота. Бот показывает только магазины этой компании.
 
-**Не путать** с `telegram-web-support-bot` — тот для страницы «Поддержка» в веб-CRM/POS.
+**Не путать** с `telegram-web-support-bot` (поддержка CRM/POS).
 
-На фронте username **этого** бота в `VITE_SUPPORT_TELEGRAM_BOT` ставить **нельзя**.
+## Как работает
 
-## Env
+1. В CRM (ADMIN): `PUT /api/v1/company-telegram-bot` — токен BotFather + группа
+2. Backend хранит привязку `api_token → company_id`
+3. Runner (`telegram-support-bot`) поднимает все enabled-боты из БД
 
-| Переменная | Назначение |
-|------------|------------|
-| `TELEGRAM_BOT_TOKEN` | Токен аптечного бота |
-| `TELEGRAM_SUPPORT_GROUP_ID` | Группа поддержки аптеки |
-| `TELEGRAM_BOT_API_TOKEN` | Секрет для backend API |
-| `TELEGRAM_BOT_BACKEND_URL` | URL backend |
-| `TELEGRAM_BOT_DATA_DIR` | Данные (по умолчанию `./data`) |
+## Env (сервер)
 
-## Команды
+```bash
+# Master-токен для загрузки списка ботов из backend
+TELEGRAM_BOT_RUNTIME_TOKEN=long-random-secret
 
-- `/start` — главное меню
-- `/find` — поиск
-- `/nearby` — аптеки
-- `/favorites` — избранное
-- `/history` — история
-- `/support` — поддержка аптеки
-- `/help` — о сервисе
+# Legacy (одна компания без БД):
+# TELEGRAM_BOT_TOKEN=...
+# TELEGRAM_BOT_API_TOKEN=...
+# TELEGRAM_BOT_COMPANY_ID=123   # обязательно! иначе API откажет
+# TELEGRAM_SUPPORT_GROUP_ID=...
+```
+
+Backend:
+
+```bash
+TELEGRAM_BOT_RUNTIME_TOKEN=тот-же-секрет
+# legacy optional:
+TELEGRAM_BOT_API_TOKEN=...
+TELEGRAM_BOT_COMPANY_ID=123
+```
+
+## API компании
+
+```http
+PUT /api/v1/company-telegram-bot
+Authorization: Bearer …
+{
+  "botUsername": "claudia_pharm_bot",
+  "botToken": "123:ABC...",
+  "supportGroupId": "-100...",
+  "enabled": true
+}
+```
+
+После сохранения runner подхватит бота (рестарт контейнера или следующий деплой).
+
+## Команды бота
+
+- `/start` `/find` `/nearby` `/favorites` `/history` `/support` `/help`

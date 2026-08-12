@@ -1,23 +1,24 @@
 package com.pos.telegram.service.impl;
 
+import com.pos.catalog.entity.Product;
+import com.pos.catalog.entity.ProductStorePrice;
+import com.pos.catalog.repository.ProductRepository;
+import com.pos.catalog.repository.ProductStorePriceRepository;
+import com.pos.catalog.repository.spec.ProductSpecifications;
+import com.pos.catalog.service.ProductAttributeService;
+import com.pos.entity.Store;
+import com.pos.entity.StoreStock;
+import com.pos.exception.PosExceptions;
+import com.pos.inventory.repository.StoreStockRepository;
+import com.pos.repository.StoreRepository;
+import com.pos.shared.log.LogUtil;
 import com.pos.telegram.config.TelegramBotProperties;
 import com.pos.telegram.dto.MedicineSearchItemDto;
 import com.pos.telegram.dto.MedicineSearchResponse;
 import com.pos.telegram.dto.MedicineStoreMatchDto;
 import com.pos.telegram.dto.TelegramStoreDto;
-import com.pos.catalog.entity.Product;
-import com.pos.catalog.entity.ProductStorePrice;
-import com.pos.entity.Store;
-import com.pos.entity.StoreStock;
-import com.pos.exception.PosExceptions;
-import com.pos.catalog.repository.ProductRepository;
-import com.pos.catalog.repository.ProductStorePriceRepository;
-import com.pos.repository.StoreRepository;
-import com.pos.inventory.repository.StoreStockRepository;
-import com.pos.catalog.repository.spec.ProductSpecifications;
-import com.pos.catalog.service.ProductAttributeService;
 import com.pos.telegram.service.TelegramMedicineSearchService;
-import com.pos.shared.log.LogUtil;
+import com.pos.telegram.support.TelegramBotCompanyResolver;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,15 +39,19 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearchService {
 
+    private static final String PHARMACY = "PHARMACY";
+
     private final ProductRepository productRepository;
     private final ProductStorePriceRepository productStorePriceRepository;
     private final StoreStockRepository storeStockRepository;
     private final StoreRepository storeRepository;
     private final ProductAttributeService productAttributeService;
     private final TelegramBotProperties properties;
+    private final TelegramBotCompanyResolver companyResolver;
 
     @Override
     public MedicineSearchResponse search(String query) {
+        Integer companyId = companyResolver.requireCompanyId();
         String q = query != null ? query.trim() : "";
         if (q.length() < properties.getMinQueryLength()) {
             throw PosExceptions.badRequest(
@@ -60,7 +65,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
         List<Product> products = productRepository.findAll(
             ProductSpecifications.catalogFilter(
-                properties.resolveCompanyId(),
+                companyId,
                 searchText,
                 null,
                 "ACTIVE",
@@ -75,14 +80,20 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
         ).getContent();
 
         if (products.isEmpty()) {
-            LogUtil.info(TelegramMedicineSearchServiceImpl.class, "Telegram medicine search empty: q={}", q);
+            LogUtil.info(
+                TelegramMedicineSearchServiceImpl.class,
+                "Telegram medicine search empty: company={}, q={}",
+                companyId,
+                q
+            );
             return new MedicineSearchResponse(q, 0, List.of());
         }
 
-        List<MedicineSearchItemDto> items = buildItems(products);
+        List<MedicineSearchItemDto> items = buildItems(products, companyId);
         LogUtil.info(
             TelegramMedicineSearchServiceImpl.class,
-            "Telegram medicine search: q={}, products={}, items={}",
+            "Telegram medicine search: company={}, q={}, products={}, items={}",
+            companyId,
             q,
             products.size(),
             items.size()
@@ -92,18 +103,16 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
     @Override
     public MedicineSearchItemDto getProductAvailability(UUID productId) {
+        Integer companyId = companyResolver.requireCompanyId();
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> PosExceptions.notFound("Товар не найден"));
         if (!product.isActive()) {
             throw PosExceptions.notFound("Товар не найден");
         }
-        Integer companyId = properties.resolveCompanyId();
-        if (companyId != null
-            && product.getCompany() != null
-            && !companyId.equals(product.getCompany().getId())) {
+        if (product.getCompany() == null || !companyId.equals(product.getCompany().getId())) {
             throw PosExceptions.notFound("Товар не найден");
         }
-        List<MedicineSearchItemDto> items = buildItems(List.of(product));
+        List<MedicineSearchItemDto> items = buildItems(List.of(product), companyId);
         if (items.isEmpty()) {
             throw PosExceptions.notFound("Товар не найден в магазинах");
         }
@@ -112,12 +121,16 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
     @Override
     public List<TelegramStoreDto> listActiveStores() {
-        Integer companyId = properties.resolveCompanyId();
-        List<Store> stores = companyId != null
-            ? storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
-                .filter(Store::isActive)
-                .toList()
-            : storeRepository.findByActiveTrueAndCompanyIsNotNullOrderByNameAsc();
+        Integer companyId = companyResolver.requireCompanyId();
+        List<Store> companyStores = storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
+            .filter(Store::isActive)
+            .toList();
+
+        List<Store> pharmacyStores = companyStores.stream()
+            .filter(this::isPharmacyStore)
+            .toList();
+
+        List<Store> stores = pharmacyStores.isEmpty() ? companyStores : pharmacyStores;
 
         return stores.stream()
             .map(store -> new TelegramStoreDto(
@@ -130,7 +143,12 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
             .toList();
     }
 
-    private List<MedicineSearchItemDto> buildItems(List<Product> products) {
+    private boolean isPharmacyStore(Store store) {
+        return store.getBusinessType() != null
+            && PHARMACY.equalsIgnoreCase(store.getBusinessType().trim());
+    }
+
+    private List<MedicineSearchItemDto> buildItems(List<Product> products, Integer companyId) {
         List<UUID> productIds = products.stream().map(Product::getId).toList();
         Map<UUID, List<ProductStorePrice>> pricesByProduct = groupStorePrices(productIds);
         Map<String, BigDecimal> stockByKey = groupStock(productIds);
@@ -155,6 +173,9 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                 for (ProductStorePrice priceRow : prices) {
                     Store store = priceRow.getStore();
                     if (store == null || !store.isActive()) {
+                        continue;
+                    }
+                    if (store.getCompany() == null || !companyId.equals(store.getCompany().getId())) {
                         continue;
                     }
                     BigDecimal stock = stockByKey.getOrDefault(

@@ -16,6 +16,7 @@ import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.SaleTypeSupport;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductInitialStockSupport;
+import com.pos.catalog.service.product.support.ProductPluValidator;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
 import com.pos.service.support.ProductLookupSupport;
@@ -40,6 +41,7 @@ public class ProductCreateHandler {
     private final CategoryRepository categoryRepository;
     private final TenantAccessSupport tenantAccess;
     private final ProductBarcodeValidator barcodeValidator;
+    private final ProductPluValidator pluValidator;
     private final ProductStorePriceApplier storePriceApplier;
     private final ProductInitialStockSupport initialStockSupport;
     private final ProductExtensionService extensionService;
@@ -64,6 +66,12 @@ public class ProductCreateHandler {
 
         Category category = resolveCategory(req.categoryId(), companyId);
         barcodeValidator.validateForCreate(companyId, req.barcode(), req.additionalBarcodes());
+        String plu = pluValidator.normalizeOrNull(req.plu());
+        if (plu != null) {
+            productRepository.findByCompany_IdAndPlu(companyId, plu).ifPresent(existing -> {
+                throw PosExceptions.conflict("PLU already in use", "plu", plu);
+            });
+        }
 
         Product product = buildNewProduct(req, companyId, category);
         Product saved = productRepository.save(product);
@@ -95,6 +103,7 @@ public class ProductCreateHandler {
         product.setTaxRate(ProductValueNormalizer.taxRatePercent(req.taxRate()));
         product.setLowStockAlert(req.lowStockAlert() != null ? req.lowStockAlert() : 10);
         product.setBarcode(req.barcode());
+        product.setPlu(pluValidator.normalizeOrNull(req.plu()));
         product.setImageUrl(req.imageUrl());
         product.setActive(true);
         product.setExternalProductId(req.externalProductId());
@@ -146,6 +155,7 @@ public class ProductCreateHandler {
             .stockQuantity(BigDecimal.ZERO)
             .lowStockAlert(req.lowStockAlert() != null ? req.lowStockAlert() : 10)
             .barcode(req.barcode())
+            .plu(pluValidator.normalizeOrNull(req.plu()))
             .imageUrl(req.imageUrl())
             .isActive(true)
             .externalProductId(req.externalProductId())

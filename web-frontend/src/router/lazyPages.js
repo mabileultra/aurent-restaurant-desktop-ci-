@@ -79,3 +79,5 @@ export const UsersPage = lazy(() => import('../features/tenant/pages/UsersPage')
 export const UsersPrinterSettingsPage = lazy(() => import('../features/tenant/pages/UsersPrinterSettingsPage'));
 export const UsersBrandingSettingsPage = lazy(() => import('../features/tenant/pages/UsersBrandingSettingsPage'));
 export const UsersBarcodePrintPage = lazy(() => import('../features/tenant/pages/UsersBarcodePrintPage'));
+export const ScalesStationPage = lazy(() => import('../features/scales/pages/ScalesStationPage'));
+export const ScalesPluPage = lazy(() => import('../features/scales/pages/ScalesPluPage'));

@@ -32,6 +32,7 @@ public record ProductResponse(
     int lowStockAlert,
     boolean lowStock,
     String barcode,
+    String plu,
     List<String> barcodes,
     String imageUrl,
     boolean active,
