@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface CompanyTelegramBotRepository extends JpaRepository<CompanyTelegramBot, Long> {
+public interface CompanyTelegramBotRepository extends JpaRepository<CompanyTelegramBot, Integer> {
 
     @Query("select b.company.id from CompanyTelegramBot b where b.apiToken = :apiToken and b.enabled = true")
     Optional<Integer> findCompanyIdByApiTokenAndEnabledTrue(@Param("apiToken") String apiToken);
