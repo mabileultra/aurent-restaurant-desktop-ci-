@@ -1,4 +1,10 @@
-import { openScalePicker, scaleAutoDetect, isDesktopScaleBridge } from '../../../scales/scaleBridge';
+import toast from 'react-hot-toast';
+import {
+  openScalePicker,
+  scaleAutoDetect,
+  isDesktopApp,
+  isDesktopScaleBridge,
+} from '../../../scales/scaleBridge';
 
 export default function ScalesConnectionBar({
   t,
@@ -9,9 +15,64 @@ export default function ScalesConnectionBar({
   needsSetup,
   onReconnect,
 }) {
-  const desktop = isDesktopScaleBridge();
+  const desktop = isDesktopApp();
+  const scalesApi = isDesktopScaleBridge();
+  const canControl = scalesApi;
   const kg = reading?.kg != null ? Number(reading.kg).toFixed(3) : '—';
   const stable = Boolean(reading?.stable);
+
+  const statusTitle = connected
+    ? t('scales.connected')
+    : scalesApi
+      ? t('scales.disconnected')
+      : desktop
+        ? t('scales.desktopUpdateRequired')
+        : t('scales.desktopRequired');
+
+  const statusMeta =
+    error ||
+    (scalesApi
+      ? available
+        ? t('scales.anyModelHint')
+        : t('scales.bridgeHint')
+      : desktop
+        ? t('scales.desktopUpdateHint')
+        : t('scales.bridgeHint'));
+
+  const onSetup = async () => {
+    if (!canControl) {
+      toast.error(desktop ? t('scales.desktopUpdateRequired') : t('scales.desktopRequired'));
+      return;
+    }
+    const res = await openScalePicker();
+    if (res?.ok === false) {
+      toast.error(res.message || t('scales.setupFailed'));
+      return;
+    }
+    onReconnect?.();
+  };
+
+  const onAuto = async () => {
+    if (!canControl) {
+      toast.error(desktop ? t('scales.desktopUpdateRequired') : t('scales.desktopRequired'));
+      return;
+    }
+    const res = await scaleAutoDetect({ save: true });
+    if (res?.ok) {
+      toast.success(t('scales.autoDetectOk'));
+      onReconnect?.();
+    } else {
+      toast.error(res?.message || t('scales.autoDetectFailed'));
+    }
+  };
+
+  const onReconnectClick = () => {
+    if (!canControl) {
+      toast.error(desktop ? t('scales.desktopUpdateRequired') : t('scales.desktopRequired'));
+      return;
+    }
+    onReconnect?.();
+  };
 
   return (
     <div className="scales-connection">
@@ -22,16 +83,8 @@ export default function ScalesConnectionBar({
           }`}
         />
         <div>
-          <p className="scales-connection__title">
-            {connected
-              ? t('scales.connected')
-              : desktop
-                ? t('scales.disconnected')
-                : t('scales.desktopRequired')}
-          </p>
-          <p className="scales-connection__meta">
-            {error || (available ? t('scales.anyModelHint') : t('scales.bridgeHint'))}
-          </p>
+          <p className="scales-connection__title">{statusTitle}</p>
+          <p className="scales-connection__meta">{statusMeta}</p>
         </div>
       </div>
 
@@ -48,29 +101,17 @@ export default function ScalesConnectionBar({
       </div>
 
       <div className="scales-connection__actions">
-        <button type="button" className="scales-btn scales-btn--ghost" onClick={onReconnect} disabled={!desktop}>
+        <button type="button" className="scales-btn scales-btn--ghost" onClick={onReconnectClick}>
           {t('scales.reconnect')}
         </button>
-        <button
-          type="button"
-          className="scales-btn scales-btn--ghost"
-          disabled={!desktop}
-          onClick={() => openScalePicker()}
-        >
+        <button type="button" className="scales-btn scales-btn--ghost" onClick={onSetup}>
           {t('scales.setup')}
         </button>
-        {(needsSetup || !connected) && desktop ? (
-          <button
-            type="button"
-            className="scales-btn"
-            onClick={async () => {
-              await scaleAutoDetect();
-              onReconnect?.();
-            }}
-          >
+        {(needsSetup || !connected) && (
+          <button type="button" className="scales-btn scales-btn--primary" onClick={onAuto}>
             {t('scales.autoDetect')}
           </button>
-        ) : null}
+        )}
       </div>
     </div>
   );

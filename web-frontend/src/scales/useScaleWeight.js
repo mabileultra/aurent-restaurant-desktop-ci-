@@ -8,7 +8,7 @@ import {
 } from './scaleBridge';
 
 /**
- * Подключение к весам пока открыта модалка (enabled=true).
+ * Подключение к весам, пока страница/модалка открыта (enabled=true).
  */
 export function useScaleWeight(enabled) {
   const [available, setAvailable] = useState(false);
@@ -21,19 +21,21 @@ export function useScaleWeight(enabled) {
   useEffect(() => {
     if (!enabled || !isDesktopScaleBridge()) {
       setAvailable(false);
+      setConnected(false);
+      setReading(null);
       return undefined;
     }
     let cancelled = false;
     scaleIsAvailable().then((ok) => {
-      if (!cancelled) setAvailable(ok);
+      if (!cancelled) setAvailable(Boolean(ok));
     });
     return () => {
       cancelled = true;
     };
-  }, [enabled]);
+  }, [enabled, connectAttempt]);
 
   useEffect(() => {
-    if (!enabled || !available) {
+    if (!enabled || !isDesktopScaleBridge()) {
       setConnected(false);
       setReading(null);
       setError(null);
@@ -41,16 +43,20 @@ export function useScaleWeight(enabled) {
     }
 
     let unsub = () => {};
+    let active = true;
+
     (async () => {
       const res = await scaleStart();
+      if (!active) return;
       if (res?.ok) {
         setConnected(true);
         setError(null);
         setNeedsSetup(false);
+        setAvailable(true);
       } else {
         setConnected(false);
         setError(res?.message || 'Не удалось подключить весы');
-        setNeedsSetup(Boolean(res?.suggestPicker));
+        setNeedsSetup(Boolean(res?.suggestPicker) || res?.mode !== 'web');
       }
     })();
 
@@ -65,11 +71,12 @@ export function useScaleWeight(enabled) {
     });
 
     return () => {
+      active = false;
       unsub();
       scaleStop();
       setConnected(false);
     };
-  }, [enabled, available, connectAttempt]);
+  }, [enabled, connectAttempt]);
 
   const reconnect = useCallback(() => {
     setConnectAttempt((n) => n + 1);
@@ -88,5 +95,6 @@ export function useScaleWeight(enabled) {
     needsSetup,
     reconnect,
     applyToDraft,
+    bridgeReady: isDesktopScaleBridge(),
   };
 }

@@ -4,6 +4,7 @@ import ScalesProductCard from '../components/ScalesProductCard';
 import ScalesWeightPanel from '../components/ScalesWeightPanel';
 import { useScalesStation } from '../hooks/useScalesStation';
 import '../../../styles/scales/scales-station.css';
+import '../../../styles/scales/scales-connection.css';
 
 export default function ScalesStationPage() {
   const {
@@ -41,7 +42,7 @@ export default function ScalesStationPage() {
       />
 
       <div className="scales-station__grid">
-        <section className="scales-station__panel">
+        <section className="scales-station__panel scales-station__panel--plu">
           <ScalesPluInput
             t={t}
             value={plu}
@@ -52,7 +53,7 @@ export default function ScalesStationPage() {
           <ScalesProductCard t={t} product={product} />
         </section>
 
-        <section className="scales-station__panel">
+        <section className="scales-station__panel scales-station__panel--weight">
           <ScalesWeightPanel
             t={t}
             product={product}

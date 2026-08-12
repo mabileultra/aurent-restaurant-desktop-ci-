@@ -128,13 +128,18 @@
     "connected": "Весы подключены",
     "disconnected": "Весы не подключены",
     "desktopRequired": "Нужна desktop-касса",
+    "desktopUpdateRequired": "Обновите Aurent Cashier",
+    "desktopUpdateHint": "В этой версии нет модуля весов — скачайте свежий установщик",
     "anyModelHint": "Любая модель через COM/USB — вес приходит в кг",
     "bridgeHint": "Откройте Aurent Desktop и настройте весы",
     "stable": "стабильно",
     "unstable": "ждём стабильный вес",
     "reconnect": "Переподключить",
     "setup": "Настроить…",
+    "setupFailed": "Не удалось открыть настройку весов",
     "autoDetect": "Автопоиск",
+    "autoDetectOk": "Порт весов найден",
+    "autoDetectFailed": "Автопоиск не нашёл весы",
     "pluLabel": "Код товара (PLU)",
     "findProduct": "Найти",
     "loading": "Загрузка…",
@@ -200,7 +205,8 @@
     "serviceUnavailable": "Сервер временно недоступен. Подождите минуту и повторите вход.",
     "serverError": "Ошибка на сервере. Обратитесь к администратору или попробуйте позже.",
     "badPin": "Неверный PIN",
-    "footer": "Aurent · © {{year}}"
+    "footer": "Aurent · © {{year}}",
+    "downloadCashier": "Скачать кассу"
   },
   "cashierLogin": {
     "title": "Вход кассира",
@@ -239,6 +245,7 @@
   },
   "publicSite": {
     "home": "Главная",
+    "download": "Скачать",
     "navAria": "Навигация сайта",
     "footerCopy": "© {{year}} Aurent Retail Systems. Все права защищены."
   },

@@ -11,6 +11,7 @@ const AUTO_PRINT_KEY = 'scales.station.autoPrint';
 
 export function useScalesStation() {
   const { t } = useTranslation();
+  const bridgeReady = isDesktopScaleBridge();
   const [plu, setPlu] = useState('');
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -24,7 +25,7 @@ export function useScalesStation() {
     }
   });
 
-  const scale = useScaleWeight(isDesktopScaleBridge());
+  const scale = useScaleWeight(bridgeReady);
   const lastPrintedKeyRef = useRef('');
   const printingRef = useRef(false);
 

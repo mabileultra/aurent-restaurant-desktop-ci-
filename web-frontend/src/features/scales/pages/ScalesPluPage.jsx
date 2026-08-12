@@ -5,7 +5,22 @@ import { useScalesPluSync } from '../hooks/useScalesPluSync';
 import '../../../styles/scales/scales-plu.css';
 
 export default function ScalesPluPage() {
-  const { t, items, draftPlu, loading, savingId, onDraftChange, onSave, reload } = useScalesPluPage();
+  const {
+    t,
+    items,
+    draftPlu,
+    loading,
+    savingId,
+    onDraftChange,
+    onSave,
+    reload,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
+    totalPages,
+  } = useScalesPluPage();
   const sync = useScalesPluSync(t);
 
   return (
@@ -41,6 +56,12 @@ export default function ScalesPluPage() {
           onDraftChange={onDraftChange}
           onSave={onSave}
           savingId={savingId}
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       )}
     </div>

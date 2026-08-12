@@ -1,4 +1,19 @@
-/** API весов в десктоп-кассе (Electron preload). Модель не важна — вес нормализуется в кг. */
+/** API весов в десктоп-кассе (Electron preload). */
+
+function desktopApi() {
+  return typeof window !== 'undefined' ? window.desktopCashier : null;
+}
+
+/** Любой Aurent Desktop (есть `isDesktop`). */
+export function isDesktopApp() {
+  return Boolean(desktopApi()?.isDesktop);
+}
+
+/** Desktop с IPC весов (preload со scale*). */
+export function isDesktopScaleBridge() {
+  const api = desktopApi();
+  return Boolean(api?.isDesktop && typeof api.scaleStart === 'function');
+}
 
 function safeCall(fn, fallback) {
   try {
@@ -8,23 +23,28 @@ function safeCall(fn, fallback) {
   }
 }
 
-export function isDesktopScaleBridge() {
-  return typeof window !== 'undefined' && Boolean(window.desktopCashier?.scaleStart);
-}
-
 export async function scaleIsAvailable() {
   if (!isDesktopScaleBridge()) return false;
   try {
-    return Boolean(await window.desktopCashier.scaleIsAvailable());
+    return Boolean(await desktopApi().scaleIsAvailable());
   } catch {
     return false;
   }
 }
 
 export async function scaleStart() {
-  if (!isDesktopScaleBridge()) return { ok: false, mode: 'web', message: 'Desktop bridge missing' };
+  if (!isDesktopScaleBridge()) {
+    return {
+      ok: false,
+      mode: isDesktopApp() ? 'desktop-outdated' : 'web',
+      message: isDesktopApp()
+        ? 'Обновите Aurent Cashier — в этой версии нет модуля весов'
+        : 'Нужна desktop-касса',
+      suggestPicker: false,
+    };
+  }
   try {
-    const res = await window.desktopCashier.scaleStart();
+    const res = await desktopApi().scaleStart();
     if (res && typeof res === 'object') return res;
     return { ok: Boolean(res) };
   } catch (e) {
@@ -35,7 +55,7 @@ export async function scaleStart() {
 export async function scaleStop() {
   if (!isDesktopScaleBridge()) return { ok: true };
   try {
-    return await window.desktopCashier.scaleStop();
+    return await desktopApi().scaleStop();
   } catch {
     return { ok: true };
   }
@@ -43,33 +63,38 @@ export async function scaleStop() {
 
 export async function scaleCapture() {
   if (!isDesktopScaleBridge()) return null;
-  return safeCall(() => window.desktopCashier.scaleCapture(), null);
+  return safeCall(() => desktopApi().scaleCapture(), null);
 }
 
 export async function openScalePicker() {
-  if (!isDesktopScaleBridge()) return null;
+  if (!isDesktopScaleBridge()) {
+    return { ok: false, message: 'Нужна desktop-касса с модулем весов' };
+  }
   try {
-    return await window.desktopCashier.openScalePicker();
-  } catch {
-    return null;
+    const saved = await desktopApi().openScalePicker();
+    return { ok: true, saved };
+  } catch (e) {
+    return { ok: false, message: e?.message || 'Не удалось открыть настройку весов' };
   }
 }
 
 export async function scaleAutoDetect(options = {}) {
-  if (!isDesktopScaleBridge()) return { ok: false };
+  if (!isDesktopScaleBridge()) {
+    return { ok: false, message: 'Нужна desktop-касса с модулем весов' };
+  }
   try {
-    return await window.desktopCashier.scaleAutoDetect(options);
+    return await desktopApi().scaleAutoDetect(options);
   } catch (e) {
     return { ok: false, message: e?.message || 'Auto-detect failed' };
   }
 }
 
 export function subscribeScaleWeight(callback) {
-  if (!isDesktopScaleBridge() || typeof window.desktopCashier.onScaleWeight !== 'function') {
+  if (!isDesktopScaleBridge() || typeof desktopApi().onScaleWeight !== 'function') {
     return () => {};
   }
   try {
-    return window.desktopCashier.onScaleWeight((payload) => {
+    return desktopApi().onScaleWeight((payload) => {
       if (!payload || typeof callback !== 'function') return;
       const kg = Number(payload.kg);
       callback({
@@ -85,11 +110,11 @@ export function subscribeScaleWeight(callback) {
 }
 
 export async function scaleListAdapters() {
-  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleListAdapters !== 'function') {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleListAdapters !== 'function') {
     return [];
   }
   try {
-    const list = await window.desktopCashier.scaleListAdapters();
+    const list = await desktopApi().scaleListAdapters();
     return Array.isArray(list) ? list : [];
   } catch {
     return [];
@@ -97,33 +122,33 @@ export async function scaleListAdapters() {
 }
 
 export async function scaleGetActiveAdapter() {
-  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleGetActiveAdapter !== 'function') {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleGetActiveAdapter !== 'function') {
     return null;
   }
   try {
-    return await window.desktopCashier.scaleGetActiveAdapter();
+    return await desktopApi().scaleGetActiveAdapter();
   } catch {
     return null;
   }
 }
 
 export async function scaleSetActiveAdapter(adapterId) {
-  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleSetActiveAdapter !== 'function') {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scaleSetActiveAdapter !== 'function') {
     return null;
   }
   try {
-    return await window.desktopCashier.scaleSetActiveAdapter(adapterId);
+    return await desktopApi().scaleSetActiveAdapter(adapterId);
   } catch {
     return null;
   }
 }
 
 export async function scalePushPlu(items) {
-  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scalePushPlu !== 'function') {
+  if (!isDesktopScaleBridge() || typeof desktopApi().scalePushPlu !== 'function') {
     return { ok: false, message: 'Desktop bridge missing' };
   }
   try {
-    return await window.desktopCashier.scalePushPlu(items);
+    return await desktopApi().scalePushPlu(items);
   } catch (e) {
     return { ok: false, message: e?.message || 'PLU push failed' };
   }

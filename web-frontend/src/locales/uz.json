@@ -117,13 +117,18 @@
     "connected": "Tarozi ulangan",
     "disconnected": "Tarozi ulanmagan",
     "desktopRequired": "Desktop-kassa kerak",
+    "desktopUpdateRequired": "Aurent Cashier-ni yangilang",
+    "desktopUpdateHint": "Bu versiyada tarozi moduli yo‘q — yangi o‘rnatuvchini yuklab oling",
     "anyModelHint": "Har qanday model COM/USB orqali — og‘irlik kg da keladi",
     "bridgeHint": "Aurent Desktop oching va tarozini sozlang",
     "stable": "barqaror",
     "unstable": "barqaror og‘irlik kutilmoqda",
     "reconnect": "Qayta ulash",
     "setup": "Sozlash…",
+    "setupFailed": "Tarozi sozlamasini ochib bo‘lmadi",
     "autoDetect": "Avtoqidiruv",
+    "autoDetectOk": "Tarozi porti topildi",
+    "autoDetectFailed": "Avtoqidiruv tarozini topmadi",
     "pluLabel": "Tovar kodi (PLU)",
     "findProduct": "Topish",
     "loading": "Yuklanmoqda…",
@@ -186,7 +191,8 @@
     "badCredentials": "Login yoki parol noto‘g‘ri",
     "badCompanyCode": "Kompaniya kodi noto‘g‘ri",
     "networkError": "Server bilan aloqa yo‘q. IP va portni «Ko‘rinish → Server sozlamalari…» orqali tekshiring",
-    "footer": "Aurent · © {{year}}"
+    "footer": "Aurent · © {{year}}",
+    "downloadCashier": "Kassani yuklab olish"
   },
   "cashierLogin": {
     "title": "Kassir kirishi",
@@ -222,6 +228,7 @@
   },
   "publicSite": {
     "home": "Bosh sahifa",
+    "download": "Yuklab olish",
     "navAria": "Sayt navigatsiyasi",
     "footerCopy": "© {{year}} Aurent Retail Systems. Barcha huquqlar himoyalangan."
   },
