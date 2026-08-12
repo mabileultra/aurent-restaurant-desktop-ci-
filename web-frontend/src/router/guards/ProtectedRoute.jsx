@@ -1,17 +1,14 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
-import { isDesktopCashier } from '../../utils/authLogin';
 import { resolveRoleHomePath } from '../../utils/roleHomePath';
 
 export default function ProtectedRoute({ children, requiredRole, module: moduleId }) {
   const { isAuthenticated, user } = useAuthStore();
   const { hasModule } = useModuleAccess();
-  const location = useLocation();
   if (!isAuthenticated()) {
-    // Первый заход на сайт (корень) в браузере — на лендинг скачивания кассы.
-    const landOnInstall = location.pathname === '/' && !isDesktopCashier();
-    return <Navigate to={landOnInstall ? '/install' : '/login'} replace />;
+    // Корень сайта → вход. Скачивание кассы — отдельно на /install.
+    return <Navigate to="/login" replace />;
   }
   if (user?.role === 'SUPER_ADMIN') return <Navigate to="/platform" replace />;
   if (user?.role === 'CASHIER' || user?.role === 'WAITER') {

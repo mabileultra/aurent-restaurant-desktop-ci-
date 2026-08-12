@@ -1,41 +1,60 @@
 import { Link, useLocation } from 'react-router-dom';
+import { Download } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import BrandMark from '../../../components/shared/BrandMark';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
-import { cashierLoginPath } from '../../../utils/authLogin';
+import { cashierLoginPath, isDesktopCashier } from '../../../utils/authLogin';
 
 /**
- * Общий хедер публичных страниц.
- * Без пунктов «Решения» / «Тарифы» — только Главная.
+ * Хедер: бренд + Главная слева, скачать/вход справа.
+ * Без «Решения» / «Тарифы».
  */
 export default function PublicSiteHeader({ showLoginCta = true }) {
   const { t } = useTranslation();
   const location = useLocation();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
-  const homeActive = location.pathname === '/install' || location.pathname === '/';
+  const homeActive = location.pathname === '/login' || location.pathname === '/';
+  const installActive = location.pathname === '/install';
+  const showDownload = !isDesktopCashier();
 
   return (
     <header className="public-site-header">
       <div className="public-site-header__inner">
-        <Link to="/install" className="public-site-header__brand">
-          <span className="public-site-header__mark">
-            <BrandMark size={18} iconClassName="text-white" />
-          </span>
-          <span className="public-site-header__name">{displayAppName() || 'Aurent'}</span>
-        </Link>
-
-        <nav className="public-site-header__nav" aria-label={t('publicSite.navAria')}>
-          <Link
-            to="/install"
-            className={`public-site-header__link${homeActive ? ' is-active' : ''}`}
-          >
-            {t('publicSite.home')}
+        <div className="public-site-header__left">
+          <Link to="/login" className="public-site-header__brand">
+            <span className="public-site-header__mark">
+              <BrandMark size={18} iconClassName="text-white" />
+            </span>
+            <span className="public-site-header__name">{displayAppName() || 'Aurent'}</span>
           </Link>
-        </nav>
+
+          <nav className="public-site-header__nav" aria-label={t('publicSite.navAria')}>
+            <Link
+              to="/login"
+              className={`public-site-header__link${homeActive ? ' is-active' : ''}`}
+            >
+              {t('publicSite.home')}
+            </Link>
+            {showDownload ? (
+              <Link
+                to="/install"
+                className={`public-site-header__link${installActive ? ' is-active' : ''}`}
+              >
+                {t('publicSite.download')}
+              </Link>
+            ) : null}
+          </nav>
+        </div>
 
         <div className="public-site-header__actions">
           <LanguageSwitcher className="public-site-header__lang" variant="public" />
+          {showDownload ? (
+            <Link to="/install" className="public-site-header__download">
+              <Download size={16} aria-hidden />
+              {t('login.downloadCashier')}
+            </Link>
+          ) : null}
           <Link to={cashierLoginPath()} className="public-site-header__ghost">
             {t('cashierLogin.backToCashier')}
           </Link>

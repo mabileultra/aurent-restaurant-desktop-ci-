@@ -12,7 +12,7 @@ export default function PublicSiteFooter() {
   return (
     <footer className="public-site-footer">
       <div className="public-site-footer__inner">
-        <Link to="/install" className="public-site-footer__brand">
+        <Link to="/login" className="public-site-footer__brand">
           <span className="public-site-footer__mark">
             <BrandMark size={12} iconClassName="text-white" />
           </span>
