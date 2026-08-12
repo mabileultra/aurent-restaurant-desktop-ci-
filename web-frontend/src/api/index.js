@@ -28,6 +28,7 @@ export { companyBusinessTypeApi } from './companyBusinessType.api';
 export { unitsApi } from './units.api';
 export { financeApi } from './finance.api';
 export { scalesApi } from './scales.api';
+export { supportApi } from './support.api';
 export { reportingSyncApi } from './reportingSync.api';
 export { financeSyncApi } from './financeSync.api';
 

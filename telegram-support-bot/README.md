@@ -1,52 +1,34 @@
-# Aurent Telegram — аптечный бот (по компаниям)
+# Aurent Telegram — аптечный бот
 
-Каждая аптечная **компания** получает своего бота. Бот показывает только магазины этой компании.
+Профессиональный бот поиска лекарств и аптек.
 
-**Не путать** с `telegram-web-support-bot` (поддержка CRM/POS).
+## Меню
 
-## Как работает
-
-1. В CRM (ADMIN): `PUT /api/v1/company-telegram-bot` — токен BotFather + группа
-2. Backend хранит привязку `api_token → company_id`
-3. Runner (`telegram-support-bot`) поднимает все enabled-боты из БД
-
-## Env (сервер)
-
-```bash
-# Master-токен для загрузки списка ботов из backend
-TELEGRAM_BOT_RUNTIME_TOKEN=long-random-secret
-
-# Legacy (одна компания без БД):
-# TELEGRAM_BOT_TOKEN=...
-# TELEGRAM_BOT_API_TOKEN=...
-# TELEGRAM_BOT_COMPANY_ID=123   # обязательно! иначе API откажет
-# TELEGRAM_SUPPORT_GROUP_ID=...
+```
+🔎 Найти лекарство | 📍 Аптеки рядом
+⭐ Избранное       | 🕘 История поиска
+📷 Сканировать     | 🆘 Поддержка
+ℹ️ О сервисе
 ```
 
-Backend:
+На каждом шаге: **⬅️ Назад** и **🏠 Главное меню**.
+
+## FSM
+
+Состояние хранится на Telegram user id (не глобально).
+
+## Env
 
 ```bash
-TELEGRAM_BOT_RUNTIME_TOKEN=тот-же-секрет
-# legacy optional:
+TELEGRAM_BOT_TOKEN=...
 TELEGRAM_BOT_API_TOKEN=...
-TELEGRAM_BOT_COMPANY_ID=123
+TELEGRAM_SUPPORT_GROUP_ID=...
+TELEGRAM_BOT_BACKEND_URL=http://backend:8080/api/v1
 ```
 
-## API компании
+Показывает только магазины с типом **PHARMACY**.
 
-```http
-PUT /api/v1/company-telegram-bot
-Authorization: Bearer …
-{
-  "botUsername": "claudia_pharm_bot",
-  "botToken": "123:ABC...",
-  "supportGroupId": "-100...",
-  "enabled": true
-}
-```
+## Ограничения (честно)
 
-После сохранения runner подхватит бота (рестарт контейнера или следующий деплой).
-
-## Команды бота
-
-- `/start` `/find` `/nearby` `/favorites` `/history` `/support` `/help`
+- Расстояние до аптеки появится после координат магазинов в CRM.
+- Распознавание штрихкода с фото: пока надёжнее отправлять **цифры** текстом.

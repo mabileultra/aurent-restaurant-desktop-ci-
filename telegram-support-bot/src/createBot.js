@@ -6,28 +6,26 @@ import { handleSupportGroupReply } from './support/groupReplyHandler.js';
 import { createUserDataStore } from './state/userDataStore.js';
 import { createUserStateStore } from './state/userStateStore.js';
 import { isGroupChat } from './utils/telegramText.js';
-import {
-  handleCallback,
-  handlePrivateMessage,
-  showAbout,
-  showMainMenu,
-} from './handlers/menuRouter.js';
+import { mainMenuKeyboard } from './keyboards/menus.js';
+import { showMainMenu, showAbout } from './handlers/mainMenu.js';
 import { promptSearch, runMedicineSearch } from './handlers/searchFlow.js';
-import { promptNearby, showFavorites, showHistory } from './handlers/nearbyFavoritesHistory.js';
-import { showSupportCategories } from './handlers/supportFlow.js';
+import { promptNearby } from './handlers/nearbyFlow.js';
+import { showFavorites, showHistory } from './handlers/favoritesHistory.js';
+import { showSupportMenu } from './handlers/supportFlow.js';
+import { handleCallback, handlePrivateMessage } from './handlers/router.js';
 
 const BOT_COMMANDS = [
-  { command: 'start', description: 'Открыть главное меню' },
+  { command: 'start', description: 'Главное меню' },
   { command: 'find', description: 'Найти лекарство' },
-  { command: 'nearby', description: 'Найти ближайшие аптеки' },
-  { command: 'favorites', description: 'Избранные лекарства' },
+  { command: 'nearby', description: 'Аптеки рядом' },
+  { command: 'favorites', description: 'Избранное' },
   { command: 'history', description: 'История поиска' },
-  { command: 'support', description: 'Связаться с поддержкой' },
-  { command: 'help', description: 'Помощь' },
+  { command: 'support', description: 'Поддержка' },
+  { command: 'help', description: 'О сервисе' },
 ];
 
 /**
- * Собирает полноценное мини-приложение Telegram-бота Aurent.
+ * Аптечный Telegram-бот Aurent (поиск лекарств + аптеки + поддержка).
  */
 export function createBot(config) {
   const bot = new Telegraf(config.token);
@@ -47,7 +45,7 @@ export function createBot(config) {
     forwardToGroup: null,
   };
 
-  const label = config.label || 'bot';
+  const label = config.label || 'pharmacy';
   if (!config.supportGroupId) {
     console.warn(`[${label}] supportGroupId не задан — группа подхватится автоматически.`);
   } else {
@@ -80,16 +78,13 @@ export function createBot(config) {
   bot.command('find', async (ctx) => {
     if (ctx.chat?.type !== 'private') return;
     const query = ctx.message.text.replace(/^\/find(@\w+)?\s*/i, '').trim();
-    if (query) {
-      await runMedicineSearch(ctx, query, deps);
-    } else {
-      await promptSearch(ctx, stateStore);
-    }
+    if (query) await runMedicineSearch(ctx, query, deps);
+    else await promptSearch(ctx, stateStore);
   });
 
   bot.command('nearby', async (ctx) => {
     if (ctx.chat?.type !== 'private') return;
-    await promptNearby(ctx, stateStore);
+    await promptNearby(ctx, deps);
   });
 
   bot.command('favorites', async (ctx) => {
@@ -104,7 +99,7 @@ export function createBot(config) {
 
   bot.command('support', async (ctx) => {
     if (ctx.chat?.type !== 'private') return;
-    await showSupportCategories(ctx, stateStore);
+    await showSupportMenu(ctx, stateStore);
   });
 
   bot.on('callback_query', async (ctx) => {
@@ -139,14 +134,16 @@ export function createBot(config) {
       await handlePrivateMessage(ctx, deps);
     } catch (err) {
       console.error('message error:', err);
-      await ctx.reply('Произошла ошибка. Нажмите «Главное меню» или /start.');
+      await ctx.reply(
+        '⚠️ Произошла ошибка. Нажмите «🏠 Главное меню» или /start.',
+        mainMenuKeyboard()
+      );
     }
   });
 
   return {
     bot,
     async start() {
-      // setMyCommands до launch: в Telegraf await launch() висит до остановки бота
       try {
         await bot.telegram.setMyCommands(BOT_COMMANDS);
         console.log(`[${label}] Команды бота обновлены`);

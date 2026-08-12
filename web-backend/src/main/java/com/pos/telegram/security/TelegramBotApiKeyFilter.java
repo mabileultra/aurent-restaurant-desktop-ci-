@@ -83,13 +83,11 @@ public class TelegramBotApiKeyFilter extends OncePerRequestFilter {
 
         String legacy = properties.getApiToken();
         if (StringUtils.hasText(legacy) && key.equals(legacy)) {
+            // Без company id = общий бот: только магазины типа PHARMACY
             Integer companyId = properties.resolveCompanyId();
-            if (companyId == null) {
-                writeJson(response, HttpServletResponse.SC_FORBIDDEN,
-                    "Bot is not bound to a company. Set TELEGRAM_BOT_COMPANY_ID or register company_telegram_bots");
-                return false;
+            if (companyId != null) {
+                TelegramBotCompanyContext.setCompanyId(companyId);
             }
-            TelegramBotCompanyContext.setCompanyId(companyId);
             return true;
         }
 

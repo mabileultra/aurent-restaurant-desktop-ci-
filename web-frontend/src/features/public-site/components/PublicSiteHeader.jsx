@@ -7,8 +7,7 @@ import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { cashierLoginPath, isDesktopCashier } from '../../../utils/authLogin';
 
 /**
- * Хедер: бренд + Главная слева, скачать/вход справа.
- * Без «Решения» / «Тарифы».
+ * Хедер: бренд + Главная слева; справа язык, одна кнопка «Скачать кассу», входы.
  */
 export default function PublicSiteHeader({ showLoginCta = true }) {
   const { t } = useTranslation();
@@ -36,21 +35,17 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
             >
               {t('publicSite.home')}
             </Link>
-            {showDownload ? (
-              <Link
-                to="/install"
-                className={`public-site-header__link${installActive ? ' is-active' : ''}`}
-              >
-                {t('publicSite.download')}
-              </Link>
-            ) : null}
           </nav>
         </div>
 
         <div className="public-site-header__actions">
           <LanguageSwitcher className="public-site-header__lang" variant="public" />
           {showDownload ? (
-            <Link to="/install" className="public-site-header__download">
+            <Link
+              to="/install"
+              className={`public-site-header__download${installActive ? ' is-active' : ''}`}
+              aria-current={installActive ? 'page' : undefined}
+            >
               <Download size={16} aria-hidden />
               {t('login.downloadCashier')}
             </Link>

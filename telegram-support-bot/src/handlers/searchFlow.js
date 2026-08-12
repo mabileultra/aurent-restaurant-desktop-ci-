@@ -1,52 +1,79 @@
-import { searchResultButtons } from '../keyboards/inlineKeyboards.js';
-import { searchReplyKeyboard } from '../keyboards/replyKeyboards.js';
 import {
-  formatSearchResults,
+  searchResultButtons,
+  notFoundButtons,
+  homeKeyboard,
+  errorButtons,
+} from '../keyboards/menus.js';
+import {
   searchPromptText,
-} from '../format/uiMessages.js';
+  formatSearchResults,
+  notFoundText,
+  needMedicineNameText,
+  genericErrorText,
+} from '../texts/messages.js';
 import { STATES } from '../state/userStateStore.js';
 
 export async function promptSearch(ctx, stateStore) {
-  stateStore.setState(ctx.from.id, STATES.SEARCH_WAIT_QUERY);
-  await ctx.reply(searchPromptText(), searchReplyKeyboard());
+  stateStore.setState(ctx.from.id, STATES.SEARCH_MEDICINE, {
+    lastProductId: null,
+    pharmacyMatches: null,
+  });
+  await ctx.reply(searchPromptText(), {
+    parse_mode: 'HTML',
+    ...homeKeyboard(),
+  });
 }
 
-export async function runMedicineSearch(ctx, query, { botApi, stateStore, dataStore }) {
-  const q = String(query || '').trim();
+export function normalizeQuery(raw) {
+  return String(raw || '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export async function runMedicineSearch(ctx, query, deps) {
+  const { botApi, stateStore, dataStore } = deps;
+  const q = normalizeQuery(query);
   if (q.length < 2) {
-    await ctx.reply('Введите минимум 2 символа.\nПример: Парацетамол');
+    await ctx.reply(needMedicineNameText());
     return;
   }
 
-  await ctx.replyWithChatAction('typing');
+  await ctx.replyWithChatAction('typing').catch(() => {});
   try {
     const data = await botApi.search(q);
     dataStore.addHistory(ctx.from.id, q);
-    stateStore.setState(ctx.from.id, STATES.SEARCH_WAIT_QUERY, {
+
+    if (!data.items?.length) {
+      stateStore.setState(ctx.from.id, STATES.SEARCH_MEDICINE, { lastSearch: data });
+      await ctx.reply(notFoundText(q), {
+        parse_mode: 'HTML',
+        ...notFoundButtons(),
+      });
+      return;
+    }
+
+    stateStore.setState(ctx.from.id, STATES.SEARCH_MEDICINE_RESULTS, {
       lastSearch: data,
       lastProductId: null,
     });
 
-    const text = formatSearchResults(data);
-    if (!data.items?.length) {
-      await ctx.reply(text, searchReplyKeyboard());
-      return;
-    }
-    await ctx.reply(text, {
+    await ctx.reply(formatSearchResults(data), {
       parse_mode: 'HTML',
       ...searchResultButtons(data.items),
     });
   } catch (err) {
     console.error('Medicine search error:', err);
+    stateStore.setState(ctx.from.id, STATES.SEARCH_MEDICINE);
+    const retry = 'nav:search_prompt';
     if (err.code === 'BOT_API_NOT_CONFIGURED') {
-      await ctx.reply('Поиск пока не настроен. Напишите в поддержку.');
+      await ctx.reply('Поиск временно недоступен. Напишите в поддержку.', errorButtons('nav:support'));
       return;
     }
-    await ctx.reply(err.message ? `Не удалось найти: ${err.message}` : 'Сервис поиска временно недоступен.');
+    await ctx.reply(genericErrorText(), errorButtons(retry));
   }
 }
 
 export function findCachedProduct(state, productId) {
   const items = state?.lastSearch?.items || [];
-  return items.find((i) => i.productId === productId) || null;
+  return items.find((i) => String(i.productId) === String(productId)) || null;
 }

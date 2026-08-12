@@ -113,6 +113,10 @@ app:
     runtime-token: ${TELEGRAM_BOT_RUNTIME_TOKEN:}
     max-results: ${TELEGRAM_BOT_MAX_RESULTS:10}
     min-query-length: 2
+  # Поддержка веба/десктопа (telegram-web-support-bot). НЕ аптечный бот.
+  support:
+    phone: ${SUPPORT_PHONE:${VITE_SUPPORT_PHONE:}}
+    telegram-bot: ${SUPPORT_TELEGRAM_BOT:${VITE_SUPPORT_TELEGRAM_BOT:}}
   mail:
     enabled: ${MAIL_ENABLED:true}
     from: ${MAIL_FROM:${MAIL_USERNAME:}}

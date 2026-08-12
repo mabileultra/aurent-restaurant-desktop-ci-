@@ -45,7 +45,7 @@ export async function handleSupportGroupReply(ctx, { dataStore, getGroupId }) {
   try {
     await deliverReplyToUser(ctx, link.userId);
     if (link.ticketId) {
-      dataStore.setTicketStatus(link.userId, link.ticketId, 'В работе');
+      dataStore.setTicketStatus(link.userId, link.ticketId, 'IN_PROGRESS');
     }
     await ctx.reply('✅ Ответ отправлен клиенту.').catch(() => {});
   } catch (err) {

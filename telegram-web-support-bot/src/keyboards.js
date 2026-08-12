@@ -1,5 +1,5 @@
 import { Markup } from 'telegraf';
-import { WEB_SUPPORT_CATEGORIES } from '../categories.js';
+import { WEB_SUPPORT_CATEGORIES } from './categories.js';
 
 export function categoryKeyboard() {
   const rows = Object.entries(WEB_SUPPORT_CATEGORIES).map(([code, label]) => [

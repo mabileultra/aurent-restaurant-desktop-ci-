@@ -2389,12 +2389,12 @@
     "phoneTitle": "Telefon",
     "phoneHint": "Ish vaqtida qo'ng'iroq qiling — yordam beramiz.",
     "telegramTitle": "Telegram",
-    "telegramHint": "Telegramda yozing: bot muammoni tasvirlashni so'raydi va murojaatni qo'llab-quvvatlash guruhiga yuboradi.",
-    "telegramButton": "Telegramda yozish",
-    "stepsTitle": "Telegramda qanday yozish kerak",
-    "step1": "«Telegramda yozish» tugmasini bosing — bot bilan chat ochiladi.",
-    "step2": "Bot sizni kutib oladi va muammoni tasvirlashni so'raydi.",
-    "step3": "Xabarni yuboring — u qo'llab-quvvatlash guruhiga tushadi, Telegramda javob beramiz."
+    "telegramHint": "Aurent POS qo'llab-quvvatlash boti ochiladi (kassa / CRM). Bu dorixona boti emas.",
+    "telegramButton": "Qo'llab-quvvatlashga yozish",
+    "stepsTitle": "Qo'llab-quvvatlashga qanday yozish kerak",
+    "step1": "Tugmani bosing — POS qo'llab-quvvatlash boti ochiladi.",
+    "step2": "Mavzuni tanlang va muammoni tasvirlang.",
+    "step3": "Xabar qo'llab-quvvatlash guruhiga ketadi; javob shu chatda keladi."
   },
   "handbook": {
     "title": "Modullar qo'llanmasi",

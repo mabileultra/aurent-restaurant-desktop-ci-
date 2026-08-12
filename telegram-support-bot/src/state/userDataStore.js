@@ -30,6 +30,7 @@ export function createUserDataStore(dataDir) {
         favorites: [],
         history: [],
         tickets: [],
+        radiusKm: 5,
       };
     }
     return db.users[key];
@@ -45,6 +46,16 @@ export function createUserDataStore(dataDir) {
         { query: q, at: new Date().toISOString() },
         ...user.history.filter((h) => h.query.toLowerCase() !== q.toLowerCase()),
       ].slice(0, 30);
+      save(db);
+    },
+
+    getRadiusKm(userId) {
+      return userBucket(load(), userId).radiusKm || 5;
+    },
+
+    setRadiusKm(userId, km) {
+      const db = load();
+      userBucket(db, userId).radiusKm = Number(km) || 5;
       save(db);
     },
 
@@ -104,8 +115,9 @@ export function createUserDataStore(dataDir) {
         category,
         categoryLabel,
         preview: String(preview || '').slice(0, 200),
-        status: 'Новое',
+        status: 'OPEN',
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
         closed: false,
       };
       user.tickets = [ticket, ...user.tickets].slice(0, 20);
@@ -142,6 +154,7 @@ export function createUserDataStore(dataDir) {
       const ticket = user.tickets.find((t) => t.id === Number(ticketId));
       if (!ticket || ticket.closed) return null;
       ticket.status = status;
+      ticket.updatedAt = new Date().toISOString();
       save(db);
       return ticket;
     },
@@ -160,7 +173,8 @@ export function createUserDataStore(dataDir) {
       const ticket = user.tickets.find((t) => t.id === Number(ticketId));
       if (!ticket) return null;
       ticket.closed = true;
-      ticket.status = 'Закрыто';
+      ticket.status = 'CLOSED';
+      ticket.updatedAt = new Date().toISOString();
       save(db);
       return ticket;
     },

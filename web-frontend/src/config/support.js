@@ -1,4 +1,7 @@
-/** Контакты службы поддержки (VITE_* задаются при сборке фронтенда). */
+/** Контакты службы поддержки CRM/кассы (VITE_* — fallback при сборке).
+ * Аптечный бот (поиск лекарств) сюда НЕ указывать.
+ * На проде источник истины: backend SUPPORT_TELEGRAM_BOT / SUPPORT_PHONE.
+ */
 
 function normalizeBotUsername(raw) {
   const value = (raw ?? '').trim().replace(/^@/, '');
@@ -7,7 +10,7 @@ function normalizeBotUsername(raw) {
 
 /** Значения по умолчанию для npm run dev, если VITE_* не заданы */
 const DEV_DEFAULT_PHONE = '+998 90 123 45 67';
-const DEV_DEFAULT_TELEGRAM_BOT = 'pos_support_bot';
+const DEV_DEFAULT_TELEGRAM_BOT = 'in_you_bot';
 
 function envOrDevFallback(raw, devFallback) {
   const value = (raw ?? '').trim();

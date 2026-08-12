@@ -120,6 +120,12 @@
   border-color: var(--ps-green);
 }
 
+.public-site-header__download.is-active {
+  border-color: var(--ps-green);
+  background: #e4f5ec;
+  box-shadow: inset 0 0 0 1px rgb(0 104 71 / 0.15);
+}
+
 .public-site-header__cta {
   display: inline-flex;
   align-items: center;

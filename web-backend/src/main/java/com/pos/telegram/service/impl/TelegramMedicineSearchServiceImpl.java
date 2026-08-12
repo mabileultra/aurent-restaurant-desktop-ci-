@@ -34,6 +34,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Аптечный каталог для Telegram.
+ * Без company id — один общий бот: только магазины с business_type = PHARMACY.
+ * С company id — только эта компания (опционально свой бренд-бот).
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -51,7 +56,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
     @Override
     public MedicineSearchResponse search(String query) {
-        Integer companyId = companyResolver.requireCompanyId();
+        Integer companyId = companyResolver.optionalCompanyId();
         String q = query != null ? query.trim() : "";
         if (q.length() < properties.getMinQueryLength()) {
             throw PosExceptions.badRequest(
@@ -62,6 +67,9 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
         int limit = Math.max(1, Math.min(properties.getMaxResults(), 25));
         String barcodeExact = resolveBarcodeExact(q);
         String searchText = barcodeExact != null ? null : q;
+
+        // Берём с запасом: после фильтра по аптечным магазинам часть отсеется
+        int fetchLimit = companyId == null ? Math.min(limit * 3, 50) : limit;
 
         List<Product> products = productRepository.findAll(
             ProductSpecifications.catalogFilter(
@@ -76,7 +84,7 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
                 barcodeExact,
                 null
             ),
-            PageRequest.of(0, limit, Sort.by(Sort.Direction.ASC, "name"))
+            PageRequest.of(0, fetchLimit, Sort.by(Sort.Direction.ASC, "name"))
         ).getContent();
 
         if (products.isEmpty()) {
@@ -90,6 +98,9 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
         }
 
         List<MedicineSearchItemDto> items = buildItems(products, companyId);
+        if (items.size() > limit) {
+            items = items.subList(0, limit);
+        }
         LogUtil.info(
             TelegramMedicineSearchServiceImpl.class,
             "Telegram medicine search: company={}, q={}, products={}, items={}",
@@ -103,34 +114,41 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
 
     @Override
     public MedicineSearchItemDto getProductAvailability(UUID productId) {
-        Integer companyId = companyResolver.requireCompanyId();
+        Integer companyId = companyResolver.optionalCompanyId();
         Product product = productRepository.findById(productId)
             .orElseThrow(() -> PosExceptions.notFound("Товар не найден"));
         if (!product.isActive()) {
             throw PosExceptions.notFound("Товар не найден");
         }
-        if (product.getCompany() == null || !companyId.equals(product.getCompany().getId())) {
+        if (companyId != null
+            && (product.getCompany() == null || !companyId.equals(product.getCompany().getId()))) {
             throw PosExceptions.notFound("Товар не найден");
         }
         List<MedicineSearchItemDto> items = buildItems(List.of(product), companyId);
         if (items.isEmpty()) {
-            throw PosExceptions.notFound("Товар не найден в магазинах");
+            throw PosExceptions.notFound("Товар не найден в аптеках");
         }
         return items.get(0);
     }
 
     @Override
     public List<TelegramStoreDto> listActiveStores() {
-        Integer companyId = companyResolver.requireCompanyId();
-        List<Store> companyStores = storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
-            .filter(Store::isActive)
-            .toList();
+        Integer companyId = companyResolver.optionalCompanyId();
+        List<Store> stores;
 
-        List<Store> pharmacyStores = companyStores.stream()
-            .filter(this::isPharmacyStore)
-            .toList();
-
-        List<Store> stores = pharmacyStores.isEmpty() ? companyStores : pharmacyStores;
+        if (companyId != null) {
+            stores = storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
+                .filter(Store::isActive)
+                .filter(this::isPharmacyStore)
+                .toList();
+            // Если у компании ещё не проставили PHARMACY — не отдаём хот-доги/прочее
+            if (stores.isEmpty()) {
+                return List.of();
+            }
+        } else {
+            // Общий бот: все активные аптеки всех компаний
+            stores = storeRepository.findByActiveTrueAndBusinessTypeIgnoreCaseOrderByNameAsc(PHARMACY);
+        }
 
         return stores.stream()
             .map(store -> new TelegramStoreDto(
@@ -159,39 +177,31 @@ public class TelegramMedicineSearchServiceImpl implements TelegramMedicineSearch
             Map<String, String> attributes = productAttributeService.getAttributes(product.getId());
             List<MedicineStoreMatchDto> matches = new ArrayList<>();
 
-            if (prices.isEmpty()) {
+            for (ProductStorePrice priceRow : prices) {
+                Store store = priceRow.getStore();
+                if (store == null || !store.isActive()) {
+                    continue;
+                }
+                if (!isPharmacyStore(store)) {
+                    continue;
+                }
+                if (companyId != null
+                    && (store.getCompany() == null || !companyId.equals(store.getCompany().getId()))) {
+                    continue;
+                }
+                BigDecimal stock = stockByKey.getOrDefault(
+                    stockKey(product.getId(), store.getId()),
+                    BigDecimal.ZERO.setScale(QuantityUtil.SCALE)
+                );
                 matches.add(new MedicineStoreMatchDto(
-                    null,
-                    "Без привязки к магазину",
-                    null,
-                    null,
-                    product.getSellingPrice(),
-                    QuantityUtil.normalize(product.getStockQuantity()),
+                    store.getId(),
+                    store.getName(),
+                    store.getAddress(),
+                    store.getPhone(),
+                    priceRow.getPrice() != null ? priceRow.getPrice() : product.getSellingPrice(),
+                    stock,
                     attributes.isEmpty() ? Map.of() : attributes
                 ));
-            } else {
-                for (ProductStorePrice priceRow : prices) {
-                    Store store = priceRow.getStore();
-                    if (store == null || !store.isActive()) {
-                        continue;
-                    }
-                    if (store.getCompany() == null || !companyId.equals(store.getCompany().getId())) {
-                        continue;
-                    }
-                    BigDecimal stock = stockByKey.getOrDefault(
-                        stockKey(product.getId(), store.getId()),
-                        BigDecimal.ZERO.setScale(QuantityUtil.SCALE)
-                    );
-                    matches.add(new MedicineStoreMatchDto(
-                        store.getId(),
-                        store.getName(),
-                        store.getAddress(),
-                        store.getPhone(),
-                        priceRow.getPrice() != null ? priceRow.getPrice() : product.getSellingPrice(),
-                        stock,
-                        attributes.isEmpty() ? Map.of() : attributes
-                    ));
-                }
             }
 
             if (matches.isEmpty()) {

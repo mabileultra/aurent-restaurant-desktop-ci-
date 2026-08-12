@@ -65,12 +65,11 @@ docker compose -f docker-compose.prod.yml logs -f backend
 
 | Бот | Env | Для чего |
 |-----|-----|----------|
-| **Веб-поддержка** | `TELEGRAM_WEB_SUPPORT_BOT_TOKEN` + `VITE_SUPPORT_TELEGRAM_BOT` | Страница «Поддержка» в CRM/POS |
-| **Аптека (по компаниям)** | `TELEGRAM_BOT_RUNTIME_TOKEN` + настройки в CRM | Каждая аптечная компания — свой бот и свои магазины |
+| **Веб/десктоп поддержка** | `SUPPORT_TELEGRAM_BOT` + `TELEGRAM_WEB_SUPPORT_BOT_TOKEN` | Страница «Поддержка» в CRM и кассе |
+| **Аптека** | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_BOT_API_TOKEN` | Отдельный бот: только магазины PHARMACY |
 
-Быстрый фикс legacy (один бот): задать `TELEGRAM_BOT_COMPANY_ID=<id компании>` — иначе API больше не отдаёт все магазины всех компаний.
-
-`VITE_SUPPORT_TELEGRAM_BOT` = **username веб-бота**, не аптечного.
+`SUPPORT_TELEGRAM_BOT` = username **бота поддержки POS**, не аптечного.
+Аптечный бот в поддержку из веба/десктопа не подставляется.
 
 ---
 
