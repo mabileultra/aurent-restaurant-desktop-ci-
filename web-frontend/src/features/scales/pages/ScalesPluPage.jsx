@@ -1,9 +1,12 @@
 import ScalesPluTable from '../components/ScalesPluTable';
+import ScalesPluSyncPanel from '../components/ScalesPluSyncPanel';
 import { useScalesPluPage } from '../hooks/useScalesPluPage';
+import { useScalesPluSync } from '../hooks/useScalesPluSync';
 import '../../../styles/scales/scales-plu.css';
 
 export default function ScalesPluPage() {
   const { t, items, draftPlu, loading, savingId, onDraftChange, onSave, reload } = useScalesPluPage();
+  const sync = useScalesPluSync(t);
 
   return (
     <div className="scales-plu-page">
@@ -16,6 +19,17 @@ export default function ScalesPluPage() {
           {t('scales.refresh')}
         </button>
       </header>
+
+      <ScalesPluSyncPanel
+        t={t}
+        desktop={sync.desktop}
+        adapters={sync.adapters}
+        active={sync.active}
+        syncing={sync.syncing}
+        lastExport={sync.lastExport}
+        onSelectAdapter={sync.onSelectAdapter}
+        onExportToScale={sync.onExportToScale}
+      />
 
       {loading ? (
         <div className="scales-plu-page__loading">{t('scales.loading')}</div>

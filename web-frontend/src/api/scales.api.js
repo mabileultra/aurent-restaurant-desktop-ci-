@@ -14,4 +14,13 @@ export const scalesApi = {
     api.get(`/scales/barcode/decode/${encodeURIComponent(barcode)}`, {
       params: storeId != null ? { storeId } : undefined,
     }),
+  listAdapterFamilies: () => api.get('/scales/sync/adapters'),
+  listAdapterFamilies: () => api.get('/scales/sync/adapters'),
+  exportPluCatalog: (params = {}) =>
+    api.get('/scales/sync/export', {
+      params: {
+        onlyWithPlu: params.onlyWithPlu !== false,
+        ...(params.storeId != null ? { storeId: params.storeId } : {}),
+      },
+    }),
 };

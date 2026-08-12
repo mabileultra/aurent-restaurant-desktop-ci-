@@ -83,3 +83,48 @@ export function subscribeScaleWeight(callback) {
     return () => {};
   }
 }
+
+export async function scaleListAdapters() {
+  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleListAdapters !== 'function') {
+    return [];
+  }
+  try {
+    const list = await window.desktopCashier.scaleListAdapters();
+    return Array.isArray(list) ? list : [];
+  } catch {
+    return [];
+  }
+}
+
+export async function scaleGetActiveAdapter() {
+  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleGetActiveAdapter !== 'function') {
+    return null;
+  }
+  try {
+    return await window.desktopCashier.scaleGetActiveAdapter();
+  } catch {
+    return null;
+  }
+}
+
+export async function scaleSetActiveAdapter(adapterId) {
+  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scaleSetActiveAdapter !== 'function') {
+    return null;
+  }
+  try {
+    return await window.desktopCashier.scaleSetActiveAdapter(adapterId);
+  } catch {
+    return null;
+  }
+}
+
+export async function scalePushPlu(items) {
+  if (!isDesktopScaleBridge() || typeof window.desktopCashier.scalePushPlu !== 'function') {
+    return { ok: false, message: 'Desktop bridge missing' };
+  }
+  try {
+    return await window.desktopCashier.scalePushPlu(items);
+  } catch (e) {
+    return { ok: false, message: e?.message || 'PLU push failed' };
+  }
+}

@@ -99,3 +99,6 @@ Thumbs.db
 *.pid.lock
 
 
+
+# Sibling desktop app nested by mistake
+aurent-cashier-desktop/
