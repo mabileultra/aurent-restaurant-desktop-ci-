@@ -58,6 +58,16 @@ public record ScaleAdapterFamilyDto(
                 true
             ),
             new ScaleAdapterFamilyDto(
+                "family-yespos-tlp",
+                "YesPOS TLP (семейство)",
+                "Умные label-scales: PLU-клавиатура + печать на весах",
+                "TLP18-LD, TLP18 и близкие линейки",
+                false,
+                true,
+                true,
+                true
+            ),
+            new ScaleAdapterFamilyDto(
                 "family-rongta",
                 "Rongta / совместимые (семейство)",
                 "Китайские label-scales",
