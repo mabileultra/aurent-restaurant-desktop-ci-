@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import clsx from 'clsx';
 import { inputCls } from './uiClasses';
+import '../../styles/shared/page-search-field.css';
 
 export default function PageSearchField({
   value,
@@ -9,16 +10,13 @@ export default function PageSearchField({
   className,
 }) {
   return (
-    <div className={clsx('relative flex-1', className)}>
-      <Search
-        size={16}
-        className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-      />
+    <div className={clsx('page-search-field', className)}>
+      <Search size={16} className="page-search-field__icon" aria-hidden />
       <input
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className={clsx(inputCls, 'py-2 pl-9 pr-4')}
+        className={clsx(inputCls, 'page-search-field__input')}
       />
     </div>
   );

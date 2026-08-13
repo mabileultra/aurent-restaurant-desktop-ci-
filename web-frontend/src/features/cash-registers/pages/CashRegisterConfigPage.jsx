@@ -1,9 +1,10 @@
-import { Filter, Plus, Search } from 'lucide-react';
+import { Filter, Plus } from 'lucide-react';
 import CashRegisterErrorBanner from '../components/CashRegisterErrorBanner';
 import CashRegisterConfigTable from '../components/CashRegisterConfigTable';
 import CashRegisterConfigFiltersDrawer from '../components/CashRegisterConfigFiltersDrawer';
 import CashRegisterConfigAddModal from '../components/CashRegisterConfigAddModal';
 import { useCashRegisterConfigPage } from '../hooks/useCashRegisterConfigPage';
+import PageSearchField from '../../../components/ui/PageSearchField';
 
 export default function CashRegisterConfigPage() {
   const p = useCashRegisterConfigPage();
@@ -37,15 +38,11 @@ export default function CashRegisterConfigPage() {
         </div>
       </div>
 
-      <div className="relative min-w-0">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          value={p.search}
-          onChange={(e) => p.onSearchChange(e.target.value)}
-          placeholder={p.t('cashRegisters.configSearchPlaceholder')}
-          className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
-        />
-      </div>
+      <PageSearchField
+        value={p.search}
+        onChange={p.onSearchChange}
+        placeholder={p.t('cashRegisters.configSearchPlaceholder')}
+      />
 
       <CashRegisterConfigTable
         t={p.t}

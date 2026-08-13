@@ -1,0 +1,26 @@
+.page-search-field {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.page-search-field__icon {
+  pointer-events: none;
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  z-index: 1;
+  width: 1rem;
+  height: 1rem;
+  color: rgb(148 163 184);
+  transform: translateY(-50%);
+}
+
+.page-search-field__input {
+  padding-left: 2.5rem !important;
+  padding-right: 1rem;
+}
+
+.dark .page-search-field__icon {
+  color: rgb(148 163 184);
+}

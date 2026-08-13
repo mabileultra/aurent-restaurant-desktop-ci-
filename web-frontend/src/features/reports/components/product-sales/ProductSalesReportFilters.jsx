@@ -1,5 +1,4 @@
-import { Search } from 'lucide-react';
-import { BaseSelect, inputCls } from '../../../../components/ui';
+import { BaseSelect, PageSearchField } from '../../../../components/ui';
 import ReportDateBar from '../../../../components/shared/ReportDateBar';
 import ReportStoreSelect from '../ReportStoreSelect';
 
@@ -22,15 +21,12 @@ export default function ProductSalesReportFilters({
     <>
       <ReportDateBar from={from} to={to} onFrom={onFrom} onTo={onTo} />
       <div className="flex flex-wrap gap-3">
-        <div className="relative min-w-[12rem] flex-1">
-          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t('common.search')}
-            className={inputCls + ' py-2 pl-9 pr-3'}
-          />
-        </div>
+        <PageSearchField
+          className="min-w-[12rem]"
+          value={search}
+          onChange={onSearchChange}
+          placeholder={t('common.search')}
+        />
         <ReportStoreSelect stores={stores} value={storeId} onChange={onStoreChange} />
         <BaseSelect
           value={categoryId}

@@ -1,5 +1,5 @@
-import { Search } from 'lucide-react';
 import { cardCls } from '../../../../utils/platformMonitoringFormat';
+import PageSearchField from '../../../../components/ui/PageSearchField';
 
 export default function PlatformMonitoringMetricsTab({
   t,
@@ -15,15 +15,12 @@ export default function PlatformMonitoringMetricsTab({
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr]">
       <div className={cardCls}>
-        <div className="relative mb-3">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('platform.monitoring.searchMetrics')}
-            className="w-full rounded-lg border border-slate-200 bg-white py-2 pl-8 pr-3 text-sm dark:border-slate-700 dark:bg-slate-800 dark:text-white"
-          />
-        </div>
+        <PageSearchField
+          className="mb-3"
+          value={search}
+          onChange={setSearch}
+          placeholder={t('platform.monitoring.searchMetrics')}
+        />
         <div className="max-h-[480px] overflow-auto divide-y dark:divide-slate-800">
           {metricsQuery.isPending ? (
             <p className="p-3 text-center text-sm text-slate-500">{t('common.loading')}</p>

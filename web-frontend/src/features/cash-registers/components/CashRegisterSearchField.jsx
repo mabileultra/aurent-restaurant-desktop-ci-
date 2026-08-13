@@ -1,4 +1,5 @@
-import { Search, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
+import PageSearchField from '../../../components/ui/PageSearchField';
 
 export default function CashRegisterSearchField({
   value,
@@ -10,15 +11,11 @@ export default function CashRegisterSearchField({
 }) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div className="relative min-w-0 flex-1">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
-        />
-      </div>
+      <PageSearchField
+        value={value}
+        onChange={(next) => onChange({ target: { value: next } })}
+        placeholder={placeholder}
+      />
       {showFilter ? (
         <button
           type="button"

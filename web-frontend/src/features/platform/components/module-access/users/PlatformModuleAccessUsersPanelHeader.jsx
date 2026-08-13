@@ -1,5 +1,4 @@
-import { Search } from 'lucide-react';
-import { inputCls } from '../../../../../components/ui';
+import { PageSearchField } from '../../../../../components/ui';
 
 export default function PlatformModuleAccessUsersPanelHeader({
   t,
@@ -23,15 +22,12 @@ export default function PlatformModuleAccessUsersPanelHeader({
           </span>
         ) : null}
       </div>
-      <div className="relative mt-2">
-        <Search size={14} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          value={userSearch}
-          onChange={(e) => onUserSearchChange(e.target.value)}
-          placeholder={t('platform.userSearch')}
-          className={`${inputCls} py-2 pl-8 pr-2`}
-        />
-      </div>
+      <PageSearchField
+        className="mt-2"
+        value={userSearch}
+        onChange={onUserSearchChange}
+        placeholder={t('platform.userSearch')}
+      />
       <div className="module-access-filters mt-2 flex flex-wrap gap-1">
         {filterOptions.map(([key, label]) => (
           <button

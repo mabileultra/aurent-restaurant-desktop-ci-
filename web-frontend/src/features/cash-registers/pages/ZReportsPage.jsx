@@ -1,9 +1,10 @@
-import { Download, Filter, Search } from 'lucide-react';
+import { Download, Filter } from 'lucide-react';
 import CashRegisterErrorBanner from '../components/CashRegisterErrorBanner';
 import CashRegisterHintBanner from '../components/CashRegisterHintBanner';
 import ZReportsTable from '../components/z-reports/ZReportsTable';
 import ZReportsOverlays from '../components/z-reports/ZReportsOverlays';
 import { useZReportsPage } from '../hooks/useZReportsPage';
+import PageSearchField from '../../../components/ui/PageSearchField';
 
 export default function ZReportsPage() {
   const p = useZReportsPage();
@@ -39,15 +40,11 @@ export default function ZReportsPage() {
         </div>
       </div>
 
-      <div className="relative">
-        <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-        <input
-          value={p.search}
-          onChange={(e) => p.onSearchChange(e.target.value)}
-          placeholder={p.t('zReports.searchPlaceholder')}
-          className="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-4 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder-slate-500"
-        />
-      </div>
+      <PageSearchField
+        value={p.search}
+        onChange={p.onSearchChange}
+        placeholder={p.t('zReports.searchPlaceholder')}
+      />
 
       <ZReportsTable
         t={p.t}
