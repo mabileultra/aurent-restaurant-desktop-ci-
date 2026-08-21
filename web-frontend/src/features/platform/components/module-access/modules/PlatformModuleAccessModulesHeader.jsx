@@ -2,6 +2,7 @@ export default function PlatformModuleAccessModulesHeader({
   t,
   fullName,
   role,
+  companyName,
   customAccess,
   onCustomAccessChange,
   onSetAllModules,
@@ -10,6 +11,7 @@ export default function PlatformModuleAccessModulesHeader({
     <div className="module-access-panel__header border-b border-slate-200 px-4 py-3 dark:border-slate-800">
       <p className="font-semibold text-slate-900 dark:text-white">{fullName}</p>
       <p className="text-xs text-slate-500">{t(`roles.${role}`, role)}</p>
+      {companyName ? <p className="text-xs text-slate-500">{companyName}</p> : null}
       <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm">
         <input
           type="checkbox"

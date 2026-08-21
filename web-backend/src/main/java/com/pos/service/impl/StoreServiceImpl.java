@@ -73,7 +73,12 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public PageResponse<StoreResponse> listManaged(String search, Integer companyId, Pageable pageable) {
+    public PageResponse<StoreResponse> listManaged(
+        String search,
+        Integer companyId,
+        String businessType,
+        Pageable pageable
+    ) {
         Integer scopedCompanyId = resolveListCompanyId(companyId);
         Pageable sorted = PageRequest.of(
             pageable.getPageNumber(),
@@ -81,7 +86,7 @@ public class StoreServiceImpl implements StoreService {
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
         Page<Store> page = storeRepository.findAll(
-            StoreSpecifications.filter(search, scopedCompanyId),
+            StoreSpecifications.filter(search, scopedCompanyId, businessType),
             sorted
         );
         return PageResponse.from(page.map(storeMapper::toResponse));

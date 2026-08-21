@@ -1,10 +1,17 @@
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import TablePagination from '../../../components/shared/TablePagination';
 import { BaseTable } from '../../../components/ui';
 
 export default function PlatformCompaniesTable({
   t,
   isPending,
   rows,
+  page,
+  pageSize,
+  total,
+  totalPages,
+  onPageChange,
+  onPageSizeChange,
   menuId,
   onMenuOpenChange,
   onEdit,
@@ -16,12 +23,24 @@ export default function PlatformCompaniesTable({
       isEmpty={!isPending && rows.length === 0}
       loadingMessage={t('common.loading')}
       emptyMessage={t('common.noData')}
-      colSpan={6}
+      colSpan={8}
+      footer={(
+        <TablePagination
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+          onPageSizeChange={onPageSizeChange}
+        />
+      )}
     >
       {!isPending && rows.length > 0 && (
         <>
           <thead>
             <tr className="border-b bg-slate-50 text-left text-xs uppercase text-slate-500 dark:bg-slate-800/50">
+              <th className="w-14 px-4 py-3">{t('platform.colNo')}</th>
+              <th className="w-16 px-4 py-3">{t('platform.colId')}</th>
               <th className="px-4 py-3">{t('platform.colName')}</th>
               <th className="px-4 py-3">{t('platform.colLoginCode')}</th>
               <th className="px-4 py-3">{t('platform.colStores')}</th>
@@ -31,8 +50,14 @@ export default function PlatformCompaniesTable({
             </tr>
           </thead>
           <tbody className="divide-y dark:divide-slate-800">
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <tr key={row.id}>
+                <td className="px-4 py-3 tabular-nums text-slate-500">
+                  {page * pageSize + index + 1}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                  {row.id}
+                </td>
                 <td className="px-4 py-3 font-medium">{row.name}</td>
                 <td className="px-4 py-3 font-mono text-xs tracking-wide text-slate-600 dark:text-slate-400">
                   {row.loginCode || '—'}

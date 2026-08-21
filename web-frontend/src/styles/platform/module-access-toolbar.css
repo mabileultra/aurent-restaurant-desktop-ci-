@@ -1,0 +1,24 @@
+.module-access-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.module-access-toolbar__search {
+  flex: 1 1 18rem;
+  min-width: 0;
+}
+
+.module-access-toolbar__company {
+  flex: 0 1 16rem;
+  width: 16rem;
+  min-width: 12rem;
+}
+
+@media (max-width: 640px) {
+  .module-access-toolbar__company {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

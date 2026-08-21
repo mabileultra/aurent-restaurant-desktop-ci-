@@ -41,10 +41,10 @@ public class PlatformModuleAccessController {
     }
 
     @GetMapping("/users")
-    @Operation(summary = "Пользователи компании", description = "Сводка доступа к модулям по пользователям компании")
+    @Operation(summary = "Пользователи для доступа", description = "Сводка доступа к модулям. Без companyId — все компании, новые сверху")
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     public ResponseEntity<List<UserModuleAccessSummary>> listUsers(
-        @RequestParam Integer companyId
+        @RequestParam(required = false) Integer companyId
     ) {
         return ResponseEntity.ok(moduleAccessService.listUsers(companyId));
     }

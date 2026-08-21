@@ -32,5 +32,15 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
         """)
     List<User> findByCompanyIdWithDetails(@Param("companyId") Integer companyId);
 
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN FETCH u.role
+        LEFT JOIN FETCH u.storeIds
+        WHERE u.role.name <> 'SUPER_ADMIN'
+          AND u.companyId IS NOT NULL
+          AND (:companyId IS NULL OR u.companyId = :companyId)
+        """)
+    List<User> findTenantUsersForModuleAccess(@Param("companyId") Integer companyId);
+
     long count();
 }

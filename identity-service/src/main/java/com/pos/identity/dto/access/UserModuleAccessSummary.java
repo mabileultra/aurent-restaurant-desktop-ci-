@@ -1,5 +1,6 @@
 package com.pos.identity.dto.access;
 
+import java.time.Instant;
 import java.util.UUID;
 
 public record UserModuleAccessSummary(
@@ -9,5 +10,6 @@ public record UserModuleAccessSummary(
     String role,
     Integer companyId,
     String companyName,
-    boolean moduleAccessCustom
+    boolean moduleAccessCustom,
+    Instant createdAt
 ) {}

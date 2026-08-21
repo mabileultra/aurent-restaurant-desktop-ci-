@@ -33,9 +33,10 @@ public class CompanyController {
     @ApiResponse(responseCode = "200", description = "Список компаний")
     public ResponseEntity<PageResponse<CompanyResponse>> list(
         @RequestParam(required = false) String search,
+        @RequestParam(required = false) String businessType,
         @PageableDefault(size = 14) Pageable pageable
     ) {
-        return ResponseEntity.ok(companyService.list(search, pageable));
+        return ResponseEntity.ok(companyService.list(search, businessType, pageable));
     }
 
     @GetMapping("/all")

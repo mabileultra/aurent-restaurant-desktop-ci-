@@ -3,12 +3,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi, platformModuleAccessApi } from '../../../api';
-import { MODULE_ACCESS_GROUP_ORDER } from '../constants';
+import { MODULE_ACCESS_GROUP_ORDER, MODULE_ACCESS_USER_FILTER_LABELS, MODULE_ACCESS_USER_FILTERS } from '../constants';
 import {
   buildTogglesFromDetail,
   catalogGroupFor,
   extractApiError,
 } from '../utils/moduleAccessUtils';
+import {
+  filterModuleAccessUsers,
+  withCompanyNames,
+} from '../utils/moduleAccessUserFilters';
 
 export function usePlatformModuleAccessPage() {
   const { t } = useTranslation();
@@ -40,30 +44,25 @@ export function usePlatformModuleAccessPage() {
   }, [catalog]);
 
   const { data: users = [], isLoading: usersLoading } = useQuery({
-    queryKey: ['platform-module-access-users', companyId],
-    queryFn: () => platformModuleAccessApi.listUsers(Number(companyId)).then((r) => r.data),
-    enabled: !!companyId,
+    queryKey: ['platform-module-access-users'],
+    queryFn: () => platformModuleAccessApi.listUsers().then((r) => r.data),
   });
 
-  const filteredUsers = useMemo(() => {
-    let list = users;
-    if (userFilter === 'unconfigured') {
-      list = list.filter((u) => !u.moduleAccessCustom);
-    } else if (userFilter === 'custom') {
-      list = list.filter((u) => u.moduleAccessCustom);
-    }
-    const q = userSearch.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter((u) =>
-      [u.fullName, u.username, u.role, u.companyName]
-        .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q))
-    );
-  }, [users, userSearch, userFilter]);
+  const namedUsers = useMemo(() => withCompanyNames(users, companies), [users, companies]);
+
+  const companyUsers = useMemo(
+    () => filterModuleAccessUsers(namedUsers, { companyId }),
+    [namedUsers, companyId]
+  );
+
+  const filteredUsers = useMemo(
+    () => filterModuleAccessUsers(namedUsers, { companyId, search: userSearch, filter: userFilter }),
+    [namedUsers, companyId, userSearch, userFilter]
+  );
 
   const unconfiguredCount = useMemo(
-    () => users.filter((u) => !u.moduleAccessCustom).length,
-    [users]
+    () => companyUsers.filter((u) => !u.moduleAccessCustom).length,
+    [companyUsers]
   );
 
   const { data: detail, isLoading: detailLoading } = useQuery({
@@ -97,7 +96,7 @@ export function usePlatformModuleAccessPage() {
     onSuccess: () => {
       setCustomAccess(true);
       toast.success(t('platform.moduleAccess.saved'));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users', companyId] });
+      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
       qc.invalidateQueries({ queryKey: ['platform-module-access-detail', selectedUserId] });
     },
     onError: (e) => {
@@ -113,7 +112,7 @@ export function usePlatformModuleAccessPage() {
     },
     onSuccess: (_data, { userIds }) => {
       toast.success(t('platform.moduleAccess.bulkSaved', { count: userIds.length }));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users', companyId] });
+      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
       for (const userId of userIds) {
         qc.invalidateQueries({ queryKey: ['platform-module-access-detail', userId] });
       }
@@ -127,7 +126,7 @@ export function usePlatformModuleAccessPage() {
       toast.success(t('platform.moduleAccess.resetDone'));
       setCustomAccess(false);
       setModuleToggles(buildTogglesFromDetail(res.data));
-      qc.invalidateQueries({ queryKey: ['platform-module-access-users', companyId] });
+      qc.invalidateQueries({ queryKey: ['platform-module-access-users'] });
       qc.invalidateQueries({ queryKey: ['platform-module-access-detail', selectedUserId] });
     },
     onError: (e) => toast.error(extractApiError(e, t('platform.moduleAccess.saveFailed'))),
@@ -217,15 +216,11 @@ export function usePlatformModuleAccessPage() {
     setSelectedUserIds(new Set());
   };
 
-  const selectedUser = users.find((u) => u.userId === selectedUserId);
+  const selectedUser = namedUsers.find((u) => u.userId === selectedUserId);
   const isSaving = saveMutation.isPending || resetMutation.isPending || bulkSaveMutation.isPending;
 
   const filterOptions = useMemo(
-    () => [
-      ['all', t('platform.moduleAccess.filterAll')],
-      ['unconfigured', t('platform.moduleAccess.filterUnconfigured')],
-      ['custom', t('platform.moduleAccess.filterCustom')],
-    ],
+    () => MODULE_ACCESS_USER_FILTERS.map((key) => [key, t(MODULE_ACCESS_USER_FILTER_LABELS[key])]),
     [t]
   );
 

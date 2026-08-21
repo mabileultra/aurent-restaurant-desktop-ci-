@@ -1,10 +1,8 @@
-import { PageSearchField } from '../../../../../components/ui';
+import PlatformModuleAccessUsersFilterChips from './PlatformModuleAccessUsersFilterChips';
 
 export default function PlatformModuleAccessUsersPanelHeader({
   t,
   unconfiguredCount,
-  userSearch,
-  onUserSearchChange,
   userFilter,
   onUserFilterChange,
   filterOptions,
@@ -22,26 +20,11 @@ export default function PlatformModuleAccessUsersPanelHeader({
           </span>
         ) : null}
       </div>
-      <PageSearchField
-        className="mt-2"
-        value={userSearch}
-        onChange={onUserSearchChange}
-        placeholder={t('platform.userSearch')}
+      <PlatformModuleAccessUsersFilterChips
+        userFilter={userFilter}
+        onUserFilterChange={onUserFilterChange}
+        filterOptions={filterOptions}
       />
-      <div className="module-access-filters mt-2 flex flex-wrap gap-1">
-        {filterOptions.map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => onUserFilterChange(key)}
-            className={`module-access-filters__chip rounded-full px-2.5 py-1 text-xs font-medium ${
-              userFilter === key ? 'module-access-filters__chip--active' : ''
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
       <label className="mt-2 flex cursor-pointer items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
         <input
           type="checkbox"

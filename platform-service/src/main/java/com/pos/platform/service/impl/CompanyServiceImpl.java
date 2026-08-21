@@ -41,13 +41,16 @@ public class CompanyServiceImpl implements CompanyService {
     private final PosCoreClient posCoreClient;
 
     @Override
-    public PageResponse<CompanyResponse> list(String search, Pageable pageable) {
+    public PageResponse<CompanyResponse> list(String search, String businessType, Pageable pageable) {
         Pageable sorted = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
-        Page<Company> page = companyRepository.findAll(CompanySpecifications.filter(search), sorted);
+        Page<Company> page = companyRepository.findAll(
+            CompanySpecifications.filter(search, businessType),
+            sorted
+        );
         return PageResponse.from(page.map(this::toResponse));
     }
 

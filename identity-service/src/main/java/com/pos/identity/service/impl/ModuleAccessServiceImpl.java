@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -45,8 +46,9 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     @Override
     public List<UserModuleAccessSummary> listUsers(Integer companyId) {
-        String companyName = resolveCompanyName(companyId);
-        return userRepository.findByCompanyIdWithDetails(companyId).stream()
+        String companyName = companyId != null ? resolveCompanyName(companyId) : null;
+        return userRepository.findTenantUsersForModuleAccess(companyId).stream()
+            .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
             .map(user -> toSummary(user, companyName))
             .toList();
     }
@@ -195,7 +197,8 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             user.getRole().getName(),
             user.getCompanyId(),
             companyName,
-            user.isModuleAccessCustom()
+            user.isModuleAccessCustom(),
+            user.getCreatedAt()
         );
     }
 

@@ -2,32 +2,48 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { storeApi } from '../../../api';
+import { storeApi, platformBusinessTypeApi } from '../../../api';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 
 export function useStoresPage({ showCompanySelect = false, companyIdFilter, companies = [] } = {}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const [companyId, setCompanyId] = useState(
+    companyIdFilter != null && companyIdFilter !== '' ? String(companyIdFilter) : ''
+  );
+  const [businessType, setBusinessType] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [menuId, setMenuId] = useState(null);
 
+  const resolvedCompanyId = showCompanySelect
+    ? (companyId ? Number(companyId) : undefined)
+    : companyIdFilter;
+
   const queryParams = useMemo(
     () => ({
       page,
       size: pageSize,
       search: search.trim() || undefined,
-      companyId: companyIdFilter,
+      companyId: resolvedCompanyId,
+      businessType: businessType || undefined,
     }),
-    [search, page, pageSize, companyIdFilter]
+    [search, page, pageSize, resolvedCompanyId, businessType]
   );
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['stores-manage', queryParams],
     queryFn: () => storeApi.getManaged(queryParams).then((r) => r.data),
+  });
+
+  const { data: businessTypes = [] } = useQuery({
+    queryKey: ['platform-business-types-options'],
+    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+    staleTime: 300_000,
+    enabled: showCompanySelect,
   });
 
   const saveMutation = useMutation({
@@ -104,6 +120,21 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setPage(0);
   };
 
+  const handleCompanyChange = (value) => {
+    setCompanyId(value || '');
+    setPage(0);
+  };
+
+  const handleBusinessTypeChange = (code) => {
+    setBusinessType(code || '');
+    setPage(0);
+  };
+
+  const handlePageSizeChange = (nextSize) => {
+    setPageSize(nextSize);
+    setPage(0);
+  };
+
   const tryDelete = (row) => {
     if (window.confirm(t('stores.deleteConfirm', { name: row.name }))) {
       deleteMutation.mutate(row.id);
@@ -115,10 +146,12 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   return {
     t,
     search,
+    companyId,
+    businessType,
     page,
     pageSize,
     setPage,
-    setPageSize,
+    setPageSize: handlePageSizeChange,
     modalOpen,
     editing,
     menuId,
@@ -131,11 +164,14 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     errorMessage,
     showCompanySelect,
     companies,
+    businessTypes,
     saveMutation,
     openCreate,
     openEdit,
     closeModal,
     handleSearchChange,
+    handleCompanyChange,
+    handleBusinessTypeChange,
     toggleMutation,
     tryDelete,
   };

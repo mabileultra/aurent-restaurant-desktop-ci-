@@ -7,6 +7,7 @@ import { companyBusinessTypeApi } from '../../../api/companyBusinessType.api';
 import { platformBusinessTypeApi } from '../../../api';
 
 export const PLATFORM_COMPANY_PAGE_SIZE = 14;
+export const PLATFORM_COMPANY_PAGE_SIZE_OPTIONS = [10, 14, 20, 50];
 
 const emptyForm = () => ({
   name: '',
@@ -24,15 +25,22 @@ export function usePlatformCompaniesPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
+  const [businessType, setBusinessType] = useState('');
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(PLATFORM_COMPANY_PAGE_SIZE);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [menuId, setMenuId] = useState(null);
 
   const params = useMemo(
-    () => ({ page, size: PLATFORM_COMPANY_PAGE_SIZE, search: search.trim() || undefined }),
-    [page, search]
+    () => ({
+      page,
+      size: pageSize,
+      search: search.trim() || undefined,
+      businessType: businessType || undefined,
+    }),
+    [page, pageSize, search, businessType]
   );
 
   const { data, isPending } = useQuery({
@@ -110,8 +118,8 @@ export function usePlatformCompaniesPage() {
   const rows = data?.content ?? [];
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
-  const fromN = total === 0 ? 0 : page * PLATFORM_COMPANY_PAGE_SIZE + 1;
-  const toN = Math.min((page + 1) * PLATFORM_COMPANY_PAGE_SIZE, total);
+  const fromN = total === 0 ? 0 : page * pageSize + 1;
+  const toN = Math.min((page + 1) * pageSize, total);
 
   const openCreate = () => {
     setEditing(null);
@@ -204,6 +212,16 @@ export function usePlatformCompaniesPage() {
     setPage(0);
   };
 
+  const handleBusinessTypeChange = (code) => {
+    setBusinessType(code || '');
+    setPage(0);
+  };
+
+  const handlePageSizeChange = (nextSize) => {
+    setPageSize(nextSize);
+    setPage(0);
+  };
+
   const tryDelete = (row) => {
     const stores = row.storeCount ?? 0;
     if (stores > 0) {
@@ -218,7 +236,11 @@ export function usePlatformCompaniesPage() {
   return {
     t,
     search,
+    businessType,
     page,
+    pageSize,
+    setPage,
+    setPageSize: handlePageSizeChange,
     modalOpen,
     editing,
     form,
@@ -239,6 +261,7 @@ export function usePlatformCompaniesPage() {
     toggleBusinessType,
     setDefaultBusinessType,
     handleSearchChange,
+    handleBusinessTypeChange,
     tryDelete,
   };
 }

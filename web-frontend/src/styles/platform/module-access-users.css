@@ -1,0 +1,31 @@
+.module-access-user-row__title {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.module-access-user-row__new {
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  background: rgb(16 185 129);
+  color: #fff;
+}
+
+.module-access-user-row__company {
+  display: block;
+  font-size: 0.75rem;
+  color: rgb(71 85 105);
+}
+
+.dark .module-access-user-row__company {
+  color: rgb(148 163 184);
+}
+
+.module-access-user-row__badge {
+  margin-left: 0.35rem;
+}

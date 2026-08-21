@@ -22,13 +22,15 @@ export default function UsersTable({
   onDelete,
   actorRole,
 }) {
-  const colSpan = isPlatform ? 9 : 6;
+  const colSpan = isPlatform ? 11 : 8;
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+            <th className="w-14 px-4 py-3 font-medium">{t('platform.colNo')}</th>
+            <th className="w-16 px-4 py-3 font-medium">{t('platform.colId')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colUser')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colUsername')}</th>
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCompanyCode')}</th>}
@@ -54,8 +56,17 @@ export default function UsersTable({
               </td>
             </tr>
           ) : (
-            pageRows.map((user) => (
+            pageRows.map((user, index) => (
               <tr key={user.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <td className="px-4 py-3 tabular-nums text-slate-500">
+                  {page * pageSize + index + 1}
+                </td>
+                <td
+                  className="max-w-[7.5rem] truncate px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400"
+                  title={String(user.id)}
+                >
+                  {user.id}
+                </td>
                 <td className="px-4 py-3">
                   <p className="font-medium text-slate-900 dark:text-white">{user.fullName}</p>
                   <p className="text-xs text-slate-500">{user.email}</p>

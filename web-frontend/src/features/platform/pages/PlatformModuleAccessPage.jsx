@@ -1,6 +1,6 @@
 import { Shield } from 'lucide-react';
 import { PageLayout } from '../../../components/ui';
-import PlatformModuleAccessCompanySelect from '../components/module-access/PlatformModuleAccessCompanySelect';
+import PlatformModuleAccessToolbar from '../components/module-access/PlatformModuleAccessToolbar';
 import PlatformModuleAccessWorkspace from '../components/module-access/PlatformModuleAccessWorkspace';
 import { usePlatformModuleAccessPage } from '../hooks/usePlatformModuleAccessPage';
 import '../../../styles/platform/module-access.css';
@@ -19,15 +19,18 @@ export default function PlatformModuleAccessPage() {
         </span>
       )}
       subtitle={p.t('platform.moduleAccess.subtitle')}
+      filters={(
+        <PlatformModuleAccessToolbar
+          t={p.t}
+          userSearch={p.userSearch}
+          onUserSearchChange={p.setUserSearch}
+          companies={p.companies}
+          companyId={p.companyId}
+          onCompanyChange={p.handleCompanyChange}
+        />
+      )}
     >
-      <PlatformModuleAccessCompanySelect
-        t={p.t}
-        companies={p.companies}
-        companyId={p.companyId}
-        onChange={p.handleCompanyChange}
-      />
-
-      {p.companyId ? <PlatformModuleAccessWorkspace p={p} /> : null}
+      <PlatformModuleAccessWorkspace p={p} />
     </PageLayout>
   );
 }

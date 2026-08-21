@@ -34,6 +34,7 @@ export default function PlatformModuleAccessModulesPanel({
         t={t}
         fullName={selectedUser?.fullName}
         role={detail.role}
+        companyName={selectedUser?.companyName}
         customAccess={customAccess}
         onCustomAccessChange={onCustomAccessChange}
         onSetAllModules={onSetAllModules}

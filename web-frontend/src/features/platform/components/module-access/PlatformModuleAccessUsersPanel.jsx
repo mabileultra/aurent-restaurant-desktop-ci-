@@ -8,8 +8,6 @@ export default function PlatformModuleAccessUsersPanel(props) {
     usersLoading,
     filteredUsers,
     unconfiguredCount,
-    userSearch,
-    onUserSearchChange,
     userFilter,
     onUserFilterChange,
     filterOptions,
@@ -29,8 +27,6 @@ export default function PlatformModuleAccessUsersPanel(props) {
       <PlatformModuleAccessUsersPanelHeader
         t={t}
         unconfiguredCount={unconfiguredCount}
-        userSearch={userSearch}
-        onUserSearchChange={onUserSearchChange}
         userFilter={userFilter}
         onUserFilterChange={onUserFilterChange}
         filterOptions={filterOptions}

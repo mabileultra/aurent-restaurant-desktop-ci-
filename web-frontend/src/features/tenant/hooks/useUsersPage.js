@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { userApi } from '../../../api';
+import { companyApi, platformBusinessTypeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 
@@ -17,6 +17,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [search, setSearch] = useState('');
+  const [businessType, setBusinessType] = useState('');
 
   const modalOpen = formMode !== null;
 
@@ -25,6 +26,28 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     queryFn: () => userApi.getAll().then((r) => r.data),
     enabled: isPlatform || tenantReady,
   });
+
+  const { data: companies = [] } = useQuery({
+    queryKey: ['companies-all'],
+    queryFn: () => companyApi.listAll().then((r) => r.data),
+    enabled: isPlatform,
+    staleTime: 60_000,
+  });
+
+  const { data: businessTypes = [] } = useQuery({
+    queryKey: ['platform-business-types-options'],
+    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+    staleTime: 300_000,
+    enabled: isPlatform,
+  });
+
+  const companyBusinessTypeById = useMemo(() => {
+    const map = new Map();
+    companies.forEach((company) => {
+      map.set(company.id, company.businessType ?? 'UNIVERSAL');
+    });
+    return map;
+  }, [companies]);
 
   const { mutate: toggleUser } = useMutation({
     mutationFn: (id) => userApi.toggle(id),
@@ -50,16 +73,20 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return users;
-    return users.filter((user) =>
-      [user.fullName, user.username, user.email, user.role, user.companyName, user.companyLoginCode]
+    return users.filter((user) => {
+      if (businessType) {
+        const companyType = companyBusinessTypeById.get(user.companyId) ?? '';
+        if (companyType !== businessType) return false;
+      }
+      if (!q) return true;
+      return [user.fullName, user.username, user.email, user.role, user.companyName, user.companyLoginCode]
         .filter(Boolean)
-        .some((v) => String(v).toLowerCase().includes(q))
-    );
-  }, [users, search]);
+        .some((v) => String(v).toLowerCase().includes(q));
+    });
+  }, [users, search, businessType, companyBusinessTypeById]);
 
   const total = filteredUsers.length;
-  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
   const pageRows = useMemo(() => {
     const start = page * pageSize;
     return filteredUsers.slice(start, start + pageSize);
@@ -93,8 +120,18 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     setPage(0);
   };
 
+  const handleBusinessTypeChange = (code) => {
+    setBusinessType(code || '');
+    setPage(0);
+  };
+
+  const handlePageSizeChange = (nextSize) => {
+    setPageSize(nextSize);
+    setPage(0);
+  };
+
   const subtitle = t('common.systemUsers', { count: users.length });
-  const searchSuffix = search.trim()
+  const searchSuffix = search.trim() || businessType
     ? ` · ${t('platform.searchResults', { count: filteredUsers.length })}`
     : '';
 
@@ -108,8 +145,10 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     page,
     pageSize,
     setPage,
-    setPageSize,
+    setPageSize: handlePageSizeChange,
     search,
+    businessType,
+    businessTypes,
     isLoading,
     pageRows,
     total,
@@ -118,6 +157,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     openEdit,
     closeModal,
     handleSearchChange,
+    handleBusinessTypeChange,
     toggleUser,
     deleteTarget,
     openDelete,

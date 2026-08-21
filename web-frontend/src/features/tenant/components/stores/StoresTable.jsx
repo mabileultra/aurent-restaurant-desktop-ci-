@@ -10,6 +10,7 @@ export default function StoresTable({
   pageSize,
   total,
   totalPages,
+  showCompany = false,
   onPageChange,
   onPageSizeChange,
   menuId,
@@ -18,12 +19,19 @@ export default function StoresTable({
   onToggleActive,
   onDelete,
 }) {
+  const colSpan = showCompany ? 9 : 8;
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+            <th className="w-14 px-4 py-3 font-medium">{t('platform.colNo')}</th>
+            <th className="w-16 px-4 py-3 font-medium">{t('platform.colId')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colName')}</th>
+            {showCompany && (
+              <th className="px-4 py-3 font-medium">{t('stores.colCompany')}</th>
+            )}
             <th className="px-4 py-3 font-medium">{t('stores.colBusinessType')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colAddress')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colPhone')}</th>
@@ -34,20 +42,31 @@ export default function StoresTable({
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
           {isPending ? (
             <tr>
-              <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+              <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                 {t('common.loading')}
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
-              <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+              <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                 {t('stores.empty')}
               </td>
             </tr>
           ) : (
-            rows.map((row) => (
+            rows.map((row, index) => (
               <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                <td className="px-4 py-3 tabular-nums text-slate-500">
+                  {page * pageSize + index + 1}
+                </td>
+                <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">
+                  {row.id}
+                </td>
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
+                {showCompany && (
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    {row.companyName || '—'}
+                  </td>
+                )}
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                   {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`)}
                 </td>

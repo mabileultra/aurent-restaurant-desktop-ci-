@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, ErrorBanner, PageLayout, PageSearchField } from '../../../components/ui';
+import { BaseButton, ErrorBanner, PageLayout } from '../../../components/ui';
 import StoreFormModal from '../components/stores/StoreFormModal';
+import StoresFiltersBar from '../components/stores/StoresFiltersBar';
 import StoresTable from '../components/stores/StoresTable';
 import { useStoresPage } from '../hooks/useStoresPage';
 
@@ -17,10 +18,17 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
         </BaseButton>
       )}
       filters={(
-        <PageSearchField
-          value={p.search}
-          onChange={p.handleSearchChange}
-          placeholder={p.t('stores.searchPlaceholder')}
+        <StoresFiltersBar
+          t={p.t}
+          search={p.search}
+          onSearchChange={p.handleSearchChange}
+          showCompanySelect={showCompanySelect}
+          companies={p.companies}
+          companyId={p.companyId}
+          onCompanyChange={p.handleCompanyChange}
+          businessTypes={p.businessTypes}
+          businessType={p.businessType}
+          onBusinessTypeChange={p.handleBusinessTypeChange}
         />
       )}
     >
@@ -34,6 +42,7 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
         pageSize={p.pageSize}
         total={p.total}
         totalPages={p.totalPages}
+        showCompany={showCompanySelect}
         onPageChange={p.setPage}
         onPageSizeChange={p.setPageSize}
         menuId={p.menuId}
