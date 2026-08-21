@@ -47,18 +47,20 @@ API: `http://localhost:8080/api/v1`
 ```bash
 # на сервере
 cd /opt/aurent-pos
-bash deploy/git-update.sh
+bash deploy/update.sh
 ```
 
 Первый раз на сервере:
 
 ```bash
-bash deploy/git-bootstrap.sh   # или git clone + ubuntu-prepare
-bash deploy/setup-env.sh
+sudo bash deploy/server-setup.sh ubuntu
+bash deploy/update.sh bootstrap
+bash deploy/server-setup.sh env
+bash deploy/deploy.sh check
 bash deploy/deploy.sh
 ```
 
-Подробнее: [deploy/README.md](deploy/README.md)
+Подробнее: [deploy/README.md](deploy/README.md) — 4 скрипта: `server-setup` · `update` · `deploy` · `backup`
 
 | Порт | Назначение |
 |------|------------|

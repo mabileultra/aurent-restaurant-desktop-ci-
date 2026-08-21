@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Сборка и запуск production-стека (микросервисы + gateway + frontend) + БД-утилиты.
+# Сборка и запуск production-стека + проверки/утилиты БД.
 # Использование:
-#   bash deploy/deploy.sh                  — полный деплой
-#   bash deploy/deploy.sh verify-db        — проверить пароль .env против Postgres
-#   bash deploy/deploy.sh sync-db-password — синхронизировать пароль БД с .env
+#   bash deploy/deploy.sh                     — полный деплой
+#   bash deploy/deploy.sh check               — проверка готовности (.env, compose, секреты)
+#   bash deploy/deploy.sh verify-db           — пароль .env совпадает с Postgres
+#   bash deploy/deploy.sh sync-db-password    — починить пароль БД из .env
+#   bash deploy/deploy.sh recreate <service>  — пересоздать один сервис (ghost-контейнеры)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -33,7 +35,6 @@ load_dotenv() {
     if [[ "$line" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(.*)$ ]]; then
       key="${BASH_REMATCH[1]}"
       val="${BASH_REMATCH[2]}"
-      # Снять окружающие кавычки
       if [[ "$val" =~ ^\"(.*)\"$ ]]; then
         val="${BASH_REMATCH[1]}"
       elif [[ "$val" =~ ^\'(.*)\'$ ]]; then
@@ -47,7 +48,6 @@ load_dotenv() {
   done < "$file"
 }
 
-# --- Ожидание docker healthcheck контейнера по имени ---
 wait_container_healthy() {
   local name="$1"
   local label="${2:-$name}"
@@ -75,7 +75,6 @@ compose_logs_tail() {
   compose logs --tail="$lines" "$service" 2>/dev/null || true
 }
 
-# --- Пересоздание одного compose-сервиса: убирает ghost-контейнеры после неудачного up ---
 declare -A CONTAINER_NAMES=(
   [postgres]=aurent-pos-db
   [finance-db]=aurent-finance-db
@@ -109,7 +108,6 @@ recreate_service() {
   compose up -d --no-deps --force-recreate "$service"
 }
 
-# --- Проверка пароля PostgreSQL из .env (на сервере перед/после деплоя) ---
 verify_db() {
   local pg_user="${POSTGRES_USER:-pos_user}"
   local pg_db="${POSTGRES_DB:-pos_db}"
@@ -122,22 +120,15 @@ verify_db() {
   fi
 
   echo "ОШИБКА: пароль из .env НЕ подходит к существующей БД."
-  echo ""
-  echo "Частая причина: POSTGRES_PASSWORD в .env меняли после первого запуска Postgres."
-  echo "Исправление (подставит пароль из .env в PostgreSQL):"
-  echo ""
-  echo "  bash deploy/deploy.sh sync-db-password"
-  echo ""
+  echo "Исправление: bash deploy/deploy.sh sync-db-password"
   return 1
 }
 
-# --- Синхронизировать пароль пользователя БД с POSTGRES_PASSWORD из .env ---
 sync_db_password() {
   local pg_user="${POSTGRES_USER:-pos_user}"
   local pg_db="${POSTGRES_DB:-pos_db}"
 
   echo "==> Обновление пароля PostgreSQL для пользователя $pg_user"
-  # Внутри контейнера локальный вход без пароля (trust)
   compose exec -T postgres \
     psql -U "$pg_user" -d postgres -v ON_ERROR_STOP=1 \
     -c "ALTER USER \"${pg_user}\" WITH PASSWORD '${POSTGRES_PASSWORD}';"
@@ -149,8 +140,97 @@ sync_db_password() {
   echo "OK: пароль синхронизирован"
 }
 
+# --- Предпрод проверка (секреты + compose), без тяжёлой локальной сборки ---
+cmd_check() {
+  local err=0
+  local has_docker=0
+  command -v docker >/dev/null 2>&1 && has_docker=1
+
+  warn() { echo "  [!] $*"; err=1; }
+  ok() { echo "  [ok] $*"; }
+  skip() { echo "  [—] $*"; }
+
+  echo "==> Aurent POS — проверка перед продом"
+  echo ""
+  echo "1. Файлы и секреты"
+  if [[ ! -f "$ENV_FILE" ]]; then
+    warn "Нет $ENV_FILE — создайте: bash deploy/server-setup.sh env"
+  else
+    ok "$ENV_FILE найден"
+    load_dotenv "$ENV_FILE"
+    if [[ "${JWT_SECRET:-}" == *"CHANGE_ME"* ]] || [[ ${#JWT_SECRET} -lt 32 ]]; then
+      warn "JWT_SECRET: минимум 32 символа, не CHANGE_ME"
+    else
+      ok "JWT_SECRET задан"
+    fi
+    if [[ "${POSTGRES_PASSWORD:-}" == *"CHANGE_ME"* ]] || [[ -z "${POSTGRES_PASSWORD:-}" ]]; then
+      warn "POSTGRES_PASSWORD не задан"
+    else
+      ok "POSTGRES_PASSWORD задан"
+    fi
+    local key
+    for key in IDENTITY_DB_PASSWORD IDENTITY_INTERNAL_API_KEY \
+               PLATFORM_DB_PASSWORD PLATFORM_INTERNAL_API_KEY \
+               REPORTING_DB_PASSWORD REPORTING_INTERNAL_API_KEY \
+               CRM_DB_PASSWORD CRM_INTERNAL_API_KEY; do
+      if [[ "${!key:-}" == *"CHANGE_ME"* ]] || [[ -z "${!key:-}" ]]; then
+        warn "${key} не задан"
+      else
+        ok "${key} задан"
+      fi
+    done
+    if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
+      for key in FINANCE_DB_PASSWORD FINANCE_INTERNAL_API_KEY; do
+        if [[ "${!key:-}" == *"CHANGE_ME"* ]] || [[ -z "${!key:-}" ]]; then
+          warn "${key} не задан"
+        else
+          ok "${key} задан"
+        fi
+      done
+    else
+      skip "FINANCE_SERVICE_ENABLED=false"
+    fi
+  fi
+
+  echo ""
+  echo "2. Docker Compose (prod)"
+  if [[ "$has_docker" -eq 1 ]]; then
+    if [[ -f "$ENV_FILE" ]] && docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" config -q 2>/dev/null; then
+      ok "$COMPOSE_FILE валиден"
+    elif [[ -f .env.example ]]; then
+      local temp_env jwt_tmp pg_tmp
+      temp_env="$(mktemp)"
+      jwt_tmp="$(openssl rand -base64 32 | tr -d '\n')"
+      pg_tmp="$(openssl rand -base64 24 | tr -d '\n')"
+      sed "s|^POSTGRES_PASSWORD=.*|POSTGRES_PASSWORD=${pg_tmp}|; s|^JWT_SECRET=.*|JWT_SECRET=${jwt_tmp}|" .env.example >"$temp_env"
+      if docker compose -f "$COMPOSE_FILE" --env-file "$temp_env" config -q 2>/dev/null; then
+        ok "$COMPOSE_FILE валиден (по .env.example)"
+      else
+        warn "$COMPOSE_FILE — ошибка конфигурации"
+      fi
+      rm -f "$temp_env"
+    else
+      warn "Нужен .env или .env.example для проверки compose"
+    fi
+  else
+    warn "docker не найден"
+  fi
+
+  echo ""
+  if [[ "$err" -eq 0 ]]; then
+    echo "Готово к деплою: bash deploy/deploy.sh"
+    exit 0
+  fi
+  echo "Исправьте замечания выше перед выкладкой на прод."
+  exit 1
+}
+
+if [[ "$SUBCOMMAND" == "check" ]]; then
+  cmd_check
+fi
+
 if [[ ! -f "$ENV_FILE" ]]; then
-  echo "Нет файла $ENV_FILE — скопируйте: cp .env.example .env && отредактируйте пароли."
+  echo "Нет файла $ENV_FILE — создайте: bash deploy/server-setup.sh env"
   exit 1
 fi
 
@@ -165,10 +245,19 @@ case "$SUBCOMMAND" in
     sync_db_password
     exit 0
     ;;
+  recreate)
+    shift || true
+    if [[ -z "${1:-}" ]]; then
+      echo "Использование: bash deploy/deploy.sh recreate <service>" >&2
+      exit 1
+    fi
+    recreate_service "$1"
+    exit 0
+    ;;
   deploy)
     ;;
   *)
-    echo "Использование: bash deploy/deploy.sh [deploy|verify-db|sync-db-password]" >&2
+    echo "Использование: bash deploy/deploy.sh [deploy|check|verify-db|sync-db-password|recreate <service>]" >&2
     exit 1
     ;;
 esac
@@ -182,7 +271,6 @@ require_env() {
   fi
 }
 
-# Для уже существующего .env на сервере — дописать CRM-секреты, если их ещё нет.
 ensure_secret() {
   local key="$1"
   local val="${!key:-}"
@@ -210,7 +298,6 @@ if ! grep -q '^CRM_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
   printf '\nCRM_DB_NAME=crm_db\nCRM_DB_USER=crm_user\n' >> "$ENV_FILE"
   echo "==> Добавлены CRM_DB_NAME / CRM_DB_USER в ${ENV_FILE}"
 fi
-# перечитать .env после возможной дописки
 load_dotenv "$ENV_FILE"
 
 require_env JWT_SECRET

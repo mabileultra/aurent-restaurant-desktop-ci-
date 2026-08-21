@@ -42,8 +42,8 @@ jobs:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
           DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
         run: |
-          chmod +x deploy/ci-ssh-setup.sh
-          bash deploy/ci-ssh-setup.sh
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
 
       - name: Backup database
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_backup != true }}
@@ -56,7 +56,7 @@ jobs:
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            'cd /opt/aurent-pos && bash deploy/backup-db.sh'
+            'cd /opt/aurent-pos && bash deploy/backup.sh'
 
       - name: Deploy (git pull + docker rebuild)
         env:
@@ -67,7 +67,7 @@ jobs:
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
-            'cd /opt/aurent-pos && bash deploy/git-update.sh'
+            'cd /opt/aurent-pos && bash deploy/update.sh'
 
       - name: Health check
         env:

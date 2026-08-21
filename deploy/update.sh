@@ -99,7 +99,7 @@ cmd_bootstrap() {
 
   echo ""
   echo "Готово. Репозиторий: $repo_url ($branch)"
-  echo "Дальше: cd $app_dir && bash deploy/prod-check.sh && bash deploy/deploy.sh"
+  echo "Дальше: cd $app_dir && bash deploy/deploy.sh check && bash deploy/deploy.sh"
   echo "Обновления: bash deploy/update.sh"
 }
 

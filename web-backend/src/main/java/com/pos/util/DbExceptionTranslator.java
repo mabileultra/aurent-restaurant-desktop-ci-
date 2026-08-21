@@ -20,10 +20,10 @@ public final class DbExceptionTranslator {
         String lower = root.toLowerCase();
 
         if (lower.contains("pin_digest") || lower.contains("module_access_custom")) {
-            return "Схема БД устарела: на сервере выполните bash deploy/git-update.sh";
+            return "Схема БД устарела: на сервере выполните bash deploy/update.sh";
         }
         if (lower.contains("does not exist") && lower.contains("column")) {
-            return "Схема БД устарела: на сервере выполните bash deploy/git-update.sh";
+            return "Схема БД устарела: на сервере выполните bash deploy/update.sh";
         }
         if (lower.contains("read-only transaction")) {
             return "Ошибка записи в БД (read-only transaction). Перезапустите backend.";

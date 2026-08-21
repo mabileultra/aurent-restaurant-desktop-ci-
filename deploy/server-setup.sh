@@ -97,7 +97,7 @@ cmd_env() {
   echo "  JWT_SECRET        — сохранён в .env"
   echo ""
   echo "На сервере используйте тот же .env или создайте заново: bash deploy/server-setup.sh env"
-  echo "Дальше: bash deploy/prod-check.sh"
+  echo "Дальше: bash deploy/deploy.sh check && bash deploy/deploy.sh"
 }
 
 cmd_ci_ssh() {

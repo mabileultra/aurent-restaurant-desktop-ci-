@@ -8,17 +8,18 @@ push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
 
 ---
 
-## Скрипты
+## Скрипты (4 фасада)
 
-5 скриптов, у каждого есть подкоманды (без аргумента — поведение по умолчанию, см. ниже).
+Универсальность сохранена через **подкоманды** — один вход на сценарий, без дублей файлов.
 
 | Скрипт | Когда | Подкоманды |
-|--------|--------|--------|
-| `server-setup.sh` | **Один раз**: подготовка сервера/CI | `ubuntu` (Docker, UFW — root), `env` (создать `.env`), `ci-ssh` (SSH-ключ для GitHub Actions) |
-| `update.sh` | **Один раз** / **каждое обновление** | *(нет)* = `git pull` + `deploy.sh`; `bootstrap` = клон репозитория в `/opt/aurent-pos` |
-| `prod-check.sh` | Перед первым деплоем: JWT, пароли, Docker | — |
-| `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой; `verify-db` = пароль `.env` совпадает с Postgres; `sync-db-password` = починить пароль БД из `.env` |
-| `backup.sh` | Бэкапы Postgres | *(нет)* = создать бэкап; `restore <файл>` = восстановить; `install-cron` = ежедневный бэкап в 03:00 |
+|--------|--------|------------|
+| `server-setup.sh` | **Один раз**: сервер / `.env` / CI SSH | `ubuntu` · `env` · `ci-ssh` |
+| `update.sh` | Клон или каждое обновление | *(нет)* = `git pull` + `deploy.sh` · `bootstrap` = клон в `/opt/aurent-pos` |
+| `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой · `check` · `verify-db` · `sync-db-password` · `recreate <service>` |
+| `backup.sh` | Бэкапы Postgres | *(нет)* = создать · `restore <файл>` · `install-cron` |
+
+Дополнительно: `nginx-host.conf.example` (опциональный SSL на хосте).
 
 ---
 
@@ -27,8 +28,9 @@ push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
 ```bash
 cd /opt/aurent-pos
 sudo bash deploy/server-setup.sh ubuntu
+bash deploy/update.sh bootstrap   # если ещё нет git-клона
 bash deploy/server-setup.sh env && nano .env
-bash deploy/prod-check.sh
+bash deploy/deploy.sh check
 bash deploy/deploy.sh
 ```
 
@@ -44,9 +46,9 @@ bash deploy/update.sh
 ## Проверка
 
 ```bash
+bash deploy/deploy.sh check
 curl -s http://localhost/api/v1/actuator/health
 docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f backend
 ```
 
 ---
@@ -57,7 +59,6 @@ docker compose -f docker-compose.prod.yml logs -f backend
 
 - `POSTGRES_PASSWORD`
 - `JWT_SECRET` (≥ 32 символов)
-# --- ИИ-ассистент (DeepSeek) — сервис ai-service:8086 ---
 - `AI_ASSISTANT_API_KEY` (если ассистент включён)
 - `FINANCE_DB_PASSWORD`, `FINANCE_INTERNAL_API_KEY` (если finance включён)
 
@@ -67,9 +68,6 @@ docker compose -f docker-compose.prod.yml logs -f backend
 |-----|-----|----------|
 | **Веб/десктоп поддержка** | `SUPPORT_TELEGRAM_BOT` + `TELEGRAM_WEB_SUPPORT_BOT_TOKEN` | Страница «Поддержка» в CRM и кассе |
 | **Аптека** | `TELEGRAM_BOT_TOKEN` + `TELEGRAM_BOT_API_TOKEN` | Отдельный бот: только магазины PHARMACY |
-
-`SUPPORT_TELEGRAM_BOT` = username **бота поддержки POS**, не аптечного.
-Аптечный бот в поддержку из веба/десктопа не подставляется.
 
 ---
 
@@ -85,8 +83,8 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 ## Касса и `/install`
 
-- UI кассы: `update.sh` → «Вид → Обновить» в приложении
-- Electron (`.exe`/`.dmg`) — репозиторий `aurent-cashier-desktop`, CI заливает в `downloads/desktop/`
+- UI кассы: `update.sh` → в приложении «Вид → Обновить»
+- Electron (`.exe`/`.dmg`) — репозиторий `aurent-cashier-desktop`, CI → `downloads/desktop/`
 - Страница: `https://домен/install`
 
 ## SSL
@@ -97,27 +95,7 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 apt install nginx certbot python3-certbot-nginx
 ```
 
-Файл `/etc/nginx/sites-available/aurent-pos`, ссылка в `sites-enabled/`:
-
-```nginx
-server {
-    listen 80;
-    server_name pos.example.uz;
-
-    client_max_body_size 80m;
-
-    location / {
-        proxy_pass http://127.0.0.1:80;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-```
-
-После `certbot --nginx -d pos.example.uz` certbot сам допишет блок `listen 443 ssl`.
+Шаблон: `deploy/nginx-host.conf.example`.
 
 ## Порты
 
