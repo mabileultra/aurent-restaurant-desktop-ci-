@@ -1,6 +1,7 @@
 import { Menu, X } from 'lucide-react';
 import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
 import BrandMark from '../shared/BrandMark';
+import LanguageSwitcher from '../shared/LanguageSwitcher';
 
 export default function AppTopHeader({
   t,
