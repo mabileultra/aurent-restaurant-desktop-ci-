@@ -20,10 +20,10 @@ public interface StockMovementFactRepository extends JpaRepository<StockMovement
           AND (:movementType IS NULL OR f.movementType = :movementType)
           AND (:storeId IS NULL OR f.storeId = :storeId)
           AND (
-            :search IS NULL
-            OR LOWER(f.productName) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(COALESCE(f.sku, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(COALESCE(f.barcode, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+            :searchPattern = ''
+            OR LOWER(f.productName) LIKE LOWER(:searchPattern)
+            OR LOWER(COALESCE(f.sku, '')) LIKE LOWER(:searchPattern)
+            OR LOWER(COALESCE(f.barcode, '')) LIKE LOWER(:searchPattern)
           )
         ORDER BY COALESCE(f.createdAt, f.ingestedAt) DESC, f.movementId DESC
         """)
@@ -33,7 +33,7 @@ public interface StockMovementFactRepository extends JpaRepository<StockMovement
         @Param("to") LocalDate to,
         @Param("movementType") String movementType,
         @Param("storeId") Integer storeId,
-        @Param("search") String search,
+        @Param("searchPattern") String searchPattern,
         Pageable pageable
     );
 

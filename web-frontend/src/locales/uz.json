@@ -931,15 +931,19 @@
     "title": "Reporting sinxronizatsiyasi",
     "subtitle": "pos_db dan reporting_db ga read-model yuklash",
     "backfillTitle": "Davr bo'yicha yuklash",
-    "backfillHint": "Sotuvlar, kirimlar va yopilgan smenalarni reporting_db ga yuklaydi. Dublikatlar id bo'yicha o'tkazib yuboriladi.",
+    "backfillHint": "Sotuvlar, ombor harakatlari, tovarlar va smenalarni reporting_db ga yuklaydi. Dead-stock uchun tovarlar va harakatlar kerak. Dublikatlar id bo'yicha o'tkazib yuboriladi.",
     "from": "Dan",
     "to": "Gacha",
     "backfillSales": "Sotuvlar",
     "backfillStock": "Kirimlar",
+    "backfillMovements": "Ombor harakatlari",
     "backfillShifts": "Yopilgan smenalar",
+    "backfillProducts": "Tovarlar katalogi",
     "runBackfill": "Yuklashni ishga tushirish",
     "backfillSuccess": "Yuklandi: sotuvlar {{sales}}, kirimlar {{stock}}, smenalar {{shifts}}, o'tkazildi {{skipped}}",
-    "backfillFailed": "Yuklash amalga oshmadi"
+    "backfillFailed": "Yuklash amalga oshmadi",
+    "backfillForbidden": "Reporting yuklashga ruxsat yo'q (ADMIN kerak)",
+    "backfillTimeout": "Yuklash juda uzoq — davrni qisqartiring"
   },
   "stockReports": {
     "salesByProductsTitle": "Tovarlar bo'yicha sotuv",

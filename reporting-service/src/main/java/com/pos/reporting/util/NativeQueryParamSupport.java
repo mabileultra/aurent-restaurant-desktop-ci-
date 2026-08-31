@@ -25,6 +25,12 @@ public final class NativeQueryParamSupport {
         return search == null || search.isBlank() ? "" : search.trim();
     }
 
+    /** LIKE-паттерн {@code %q%} без null — не использовать CONCAT('%', :search, '%') в SQL. */
+    public static String toContainsPattern(String search) {
+        String normalized = normalizeSearch(search);
+        return normalized.isEmpty() ? "" : "%" + normalized + "%";
+    }
+
     public static void bindOptionalCategoryId(Query query, String paramName, Integer categoryId) {
         query.setParameter(paramName, optionalCategoryId(categoryId));
     }

@@ -72,7 +72,7 @@ public class StockMovementReportServiceImpl implements StockMovementReportServic
             to,
             StockMovementTypeFilter.normalize(movementType),
             storeId,
-            ReportingSearchSupport.normalizeLikePattern(search),
+            ReportingSearchSupport.toContainsPattern(search),
             pageable
         );
     }

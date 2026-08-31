@@ -4,7 +4,9 @@ import '../../../styles/reports/reporting-sync.css';
 
 export default function ReportingSyncPage() {
   const p = useReportingSyncPage();
-  const canRun = p.backfillFrom && p.backfillTo && (p.backfillSales || p.backfillStock || p.backfillShifts);
+  const canRun = p.backfillFrom && p.backfillTo && (
+    p.backfillSales || p.backfillStock || p.backfillMovements || p.backfillShifts || p.backfillProducts
+  );
 
   return (
     <PageLayout
@@ -40,8 +42,16 @@ export default function ReportingSyncPage() {
             {p.t('reportsSync.backfillStock')}
           </label>
           <label className="reporting-sync-filters__checkbox">
+            <input type="checkbox" checked={p.backfillMovements} onChange={(e) => p.setBackfillMovements(e.target.checked)} />
+            {p.t('reportsSync.backfillMovements')}
+          </label>
+          <label className="reporting-sync-filters__checkbox">
             <input type="checkbox" checked={p.backfillShifts} onChange={(e) => p.setBackfillShifts(e.target.checked)} />
             {p.t('reportsSync.backfillShifts')}
+          </label>
+          <label className="reporting-sync-filters__checkbox">
+            <input type="checkbox" checked={p.backfillProducts} onChange={(e) => p.setBackfillProducts(e.target.checked)} />
+            {p.t('reportsSync.backfillProducts')}
           </label>
           <BaseButton
             onClick={() => p.backfillMutation.mutate()}

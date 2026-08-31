@@ -51,10 +51,10 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
           AND (:storeId IS NULL OR i.store_id = :storeId)
           AND (:categoryId IS NULL OR i.category_id = :categoryId)
           AND (
-            :search = ''
-            OR LOWER(i.product_name) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(COALESCE(i.sku, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(COALESCE(i.barcode, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+            CAST(:searchPattern AS text) = ''
+            OR LOWER(i.product_name) LIKE LOWER(CAST(:searchPattern AS text))
+            OR LOWER(COALESCE(i.sku, '')) LIKE LOWER(CAST(:searchPattern AS text))
+            OR LOWER(COALESCE(i.barcode, '')) LIKE LOWER(CAST(:searchPattern AS text))
           )
         GROUP BY COALESCE(CAST(i.product_id AS varchar), i.product_name)
         HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
@@ -70,10 +70,10 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
             AND (:storeId IS NULL OR i.store_id = :storeId)
             AND (:categoryId IS NULL OR i.category_id = :categoryId)
             AND (
-              :search = ''
-              OR LOWER(i.product_name) LIKE LOWER(CONCAT('%', :search, '%'))
-              OR LOWER(COALESCE(i.sku, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-              OR LOWER(COALESCE(i.barcode, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+              CAST(:searchPattern AS text) = ''
+              OR LOWER(i.product_name) LIKE LOWER(CAST(:searchPattern AS text))
+              OR LOWER(COALESCE(i.sku, '')) LIKE LOWER(CAST(:searchPattern AS text))
+              OR LOWER(COALESCE(i.barcode, '')) LIKE LOWER(CAST(:searchPattern AS text))
             )
           GROUP BY COALESCE(CAST(i.product_id AS varchar), i.product_name)
           HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
@@ -88,7 +88,7 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         @Param("to") LocalDate to,
         @Param("storeId") Integer storeId,
         @Param("categoryId") Integer categoryId,
-        @Param("search") String search,
+        @Param("searchPattern") String searchPattern,
         Pageable pageable
     );
 

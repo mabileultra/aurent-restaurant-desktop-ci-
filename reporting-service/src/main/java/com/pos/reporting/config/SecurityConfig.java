@@ -27,8 +27,8 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/reports/**").hasAnyRole("ADMIN", "MANAGER")
-                .requestMatchers("/admin/reporting-sync/**").hasRole("ADMIN")
+                .requestMatchers("/reports/**").hasAnyRole("ADMIN", "MANAGER", "SUPER_ADMIN")
+                .requestMatchers("/admin/reporting-sync/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().denyAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -949,15 +949,19 @@
     "title": "Синхронизация reporting",
     "subtitle": "Догрузка read-model из pos_db в reporting_db",
     "backfillTitle": "Догрузка за период",
-    "backfillHint": "Загружает продажи, приходы и закрытые смены в reporting_db. Дубликаты пропускаются по id.",
+    "backfillHint": "Загружает продажи, движения склада, товары и смены в reporting_db. Для dead-stock нужны товары и движения. Дубликаты пропускаются по id.",
     "from": "С",
     "to": "По",
     "backfillSales": "Продажи",
     "backfillStock": "Приходы",
+    "backfillMovements": "Движения склада",
     "backfillShifts": "Закрытые смены",
+    "backfillProducts": "Справочник товаров",
     "runBackfill": "Запустить догрузку",
     "backfillSuccess": "Загружено: продажи {{sales}}, приходы {{stock}}, смены {{shifts}}, пропущено {{skipped}}",
-    "backfillFailed": "Не удалось выполнить догрузку"
+    "backfillFailed": "Не удалось выполнить догрузку",
+    "backfillForbidden": "Нет доступа к догрузке reporting (нужна роль ADMIN)",
+    "backfillTimeout": "Догрузка слишком долгая — попробуйте меньший период"
   },
   "stockReports": {
     "salesByProductsTitle": "Продажи по товарам",

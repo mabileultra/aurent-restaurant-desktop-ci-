@@ -89,7 +89,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
     ) {
         query.setParameter("companyId", companyId);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("search", NativeQueryParamSupport.normalizeSearch(search));
+        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
         query.setParameter("onlyWithStock", NativeQueryParamSupport.booleanFlag(onlyWithStock));
     }
 
@@ -105,7 +105,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         query.setParameter("from", from);
         query.setParameter("to", to);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("search", NativeQueryParamSupport.normalizeSearch(search));
+        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
     }
 
     private static void bindDeadStock(
@@ -122,6 +122,6 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         query.setParameter("cutoffDate", cutoffDate);
         query.setParameter("daysNoSale", daysNoSale);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("search", NativeQueryParamSupport.normalizeSearch(search));
+        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
     }
 }

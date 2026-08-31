@@ -24,9 +24,9 @@ WHERE p.company_id = :companyId
   AND (:onlyWithStock = 0 OR COALESCE(sb.stock_qty, 0) > 0)
   AND (:categoryId < 0 OR p.category_id = :categoryId)
   AND (
-    :search = ''
-    OR LOWER(p.product_name) LIKE LOWER(CONCAT('%', :search, '%'))
-    OR LOWER(COALESCE(p.sku, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-    OR LOWER(COALESCE(p.barcode, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+    CAST(:searchPattern AS text) = ''
+    OR LOWER(p.product_name) LIKE LOWER(CAST(:searchPattern AS text))
+    OR LOWER(COALESCE(p.sku, '')) LIKE LOWER(CAST(:searchPattern AS text))
+    OR LOWER(COALESCE(p.barcode, '')) LIKE LOWER(CAST(:searchPattern AS text))
   )
 ORDER BY p.product_name ASC

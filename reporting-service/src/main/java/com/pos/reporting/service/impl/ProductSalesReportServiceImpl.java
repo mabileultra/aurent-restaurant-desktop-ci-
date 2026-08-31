@@ -7,6 +7,7 @@ import com.pos.reporting.dto.ProductSalesRowResponse;
 import com.pos.reporting.mapper.SaleReportRowMapper;
 import com.pos.reporting.repository.SaleItemFactRepository;
 import com.pos.reporting.security.ReportingTenantContext;
+import com.pos.reporting.util.ReportingSearchSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +41,7 @@ public class ProductSalesReportServiceImpl implements ProductSalesReportService 
             to,
             storeId,
             categoryId,
-            normalizeSearch(search),
+            ReportingSearchSupport.toContainsPattern(search),
             pageable
         );
         List<ProductSalesRowResponse> content = page.getContent().stream()
@@ -53,12 +54,5 @@ public class ProductSalesReportServiceImpl implements ProductSalesReportService 
             page.getSize(),
             page.getNumber()
         );
-    }
-
-    private static String normalizeSearch(String search) {
-        if (search == null || search.isBlank()) {
-            return "";
-        }
-        return search.trim();
     }
 }
