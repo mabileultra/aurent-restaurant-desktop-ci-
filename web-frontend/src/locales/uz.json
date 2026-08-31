@@ -33,7 +33,9 @@
     "search": "Qidirish",
     "back": "Orqaga",
     "loadError": "Ma'lumotlarni yuklab bo'lmadi",
-    "saveError": "Saqlab bo'lmadi"
+    "saveError": "Saqlab bo'lmadi",
+    "view": "Ochish",
+    "saving": "Saqlanmoqda…"
   },
   "productLookup": {
     "minChars": "Qidirish uchun yana {{count}} belgi kiriting"
@@ -218,8 +220,9 @@
     "versionLine": "Versiya {{version}} · {{date}}",
     "manifestUnavailable": "O‘rnatish fayllari hali serverga yuklanmagan. Administratorga murojaat qiling.",
     "downloadForWindows": "Windows 10/11 uchun yuklab olish",
-    "downloadForMac": "macOS (Intel/M1) uchun yuklab olish",
+    "downloadForMac": "macOS (Intel va Apple Silicon) uchun yuklab olish",
     "notAvailable": "Tez orada",
+    "macIntelUnsupported": "Hozirgi o‘rnatuvchi faqat Apple Silicon (M1/M2/M3) uchun. Intel Mac’da ochilmaydi — universal yig‘ilma tayyorlanmoqda. Hozircha desktop-electron → npm start orqali ishga tushiring.",
     "stepsTitle": "Tezkor start",
     "stepsSubtitle": "Kassada ishlashni 3 oddiy qadamda boshlang",
     "step1Title": "O‘rnatish",
@@ -236,7 +239,115 @@
     "home": "Bosh sahifa",
     "download": "Yuklab olish",
     "navAria": "Sayt navigatsiyasi",
-    "footerCopy": "© {{year}} Aurent Retail Systems. Barcha huquqlar himoyalangan."
+    "footerCopy": "© {{year}} Aurent Retail Systems. Barcha huquqlar himoyalangan.",
+    "login": "Kirish",
+    "loginAdmin": "Administrator kirishi",
+    "loginCashier": "Kassir kirishi",
+    "nav": {
+      "home": "Bosh sahifa",
+      "about": "Biz haqimizda",
+      "pricing": "Tariflar",
+      "equipment": "Uskunalar",
+      "contacts": "Aloqa"
+    },
+    "leadForm": {
+      "name": "Ism",
+      "namePh": "Ismingiz",
+      "phone": "Telefon",
+      "phonePh": "+998 …",
+      "email": "Email",
+      "emailPh": "name@company.uz",
+      "preferredTime": "Qulay vaqt",
+      "preferredTimePh": "Masalan: dushanba–juma 15:00 dan keyin",
+      "message": "Xabar",
+      "messagePh": "Vazifani qisqacha yozing",
+      "submit": "Ariza yuborish",
+      "sending": "Yuborilmoqda…",
+      "success": "Ariza yuborildi — tez orada bog‘lanamiz",
+      "error": "Arizani yuborib bo‘lmadi",
+      "required": "Ism va telefonni kiriting"
+    },
+    "homePage": {
+      "eyebrow": "Chakana va HoReCa uchun POS",
+      "title": "Aurent — kassa, ombor va tahlil bir tizimda",
+      "subtitle": "Savdo, qoldiqlar va hisobotlarni brauzer yoki kassa dasturidan boshqaring.",
+      "ctaDemo": "Ariza qoldirish",
+      "ctaInstall": "Kassani yuklab olish"
+    },
+    "about": {
+      "eyebrow": "Platforma haqida",
+      "title": "Do‘konlar, aptekalar va restoranlar uchun",
+      "subtitle": "Aurent kassani tez ishga tushirish, uskunalarni ulash va tarmoqni kengaytirishga yordam beradi.",
+      "block1Title": "Yagona ekotizim",
+      "block1Text": "Kassa, ombor, moliya va hisobotlar bir ma'lumotlar bazasida ishlaydi.",
+      "block2Title": "Moslashuvchan ssenariylar",
+      "block2Text": "Chakana, og‘irlikli mahsulotlar, restoran zali, yetkazib berish — modullar kerak bo‘lganda yoqiladi.",
+      "block3Title": "Joriy etish yordami",
+      "block3Text": "O‘rnatish, xodimlarni o‘qitish va fiskal uskunalarni ulashda yordam beramiz.",
+      "cta": "Biz bilan bog‘lanish"
+    },
+    "pricing": {
+      "eyebrow": "Tariflar",
+      "title": "O‘sish uchun shaffof rejalar",
+      "subtitle": "Mos paketni tanlang yoki ariza qoldiring — individual shartlar taklif qilamiz.",
+      "formTitle": "Tarifni ulash",
+      "ctaContacts": "Savol berish",
+      "plans": {
+        "start": {
+          "name": "Start",
+          "price": "290 000 so‘mdan / oy",
+          "desc": "1 do‘kon, kassa, asosiy hisobotlar."
+        },
+        "business": {
+          "name": "Business",
+          "price": "590 000 so‘mdan / oy",
+          "desc": "Bir nechta nuqta, ombor, moliya, kengaytirilgan tahlil."
+        },
+        "enterprise": {
+          "name": "Enterprise",
+          "price": "so‘rov bo‘yicha",
+          "desc": "Tarmoq, individual integratsiyalar va SLA."
+        }
+      }
+    },
+    "equipment": {
+      "eyebrow": "Uskunalar",
+      "title": "Mos keladigan uskunalar",
+      "subtitle": "Fiskal registratorlar, skanerlar, tarozilar va terminalar — to‘plamni tanlashda yordam beramiz.",
+      "formTitle": "To‘plam buyurtma qilish",
+      "items": {
+        "fiscal": {
+          "title": "Fiskal registrator",
+          "desc": "Cheklarni chop etish va soliq organiga ma'lumot uzatish."
+        },
+        "scanner": {
+          "title": "Shtrix-kod skaneri",
+          "desc": "Kassada mahsulotni tez topish."
+        },
+        "scale": {
+          "title": "Savdo tarozilari",
+          "desc": "Og‘irlikli mahsulotlar va yorliq chop etish."
+        },
+        "terminal": {
+          "title": "POS-terminal",
+          "desc": "Naqd pulsiz to‘lovlarni qabul qilish."
+        }
+      }
+    },
+    "contacts": {
+      "eyebrow": "Aloqa",
+      "title": "Biz bilan bog‘laning",
+      "subtitle": "Ariza qoldiring — menejer qo‘ng‘iroq qiladi va demo yoki ulashda yordam beradi.",
+      "formTitle": "Ariza formasi",
+      "formHint": "Kontaktlarni to‘ldiring — ish vaqtida javob beramiz.",
+      "infoTitle": "Kontaktlar",
+      "phoneLabel": "Telefon",
+      "phoneValue": "+998 71 200 00 00",
+      "emailLabel": "Email",
+      "emailValue": "info@aurent.uz",
+      "hoursLabel": "Ish vaqti",
+      "hoursValue": "Du–Ju, 9:00–18:00"
+    }
   },
   "desktop": {
     "serverSetup": "Server sozlamalari…",
@@ -1245,6 +1356,44 @@
       "bulkSaved": "Kirish {{count}} foydalanuvchiga qo‘llandi",
       "pickUsersForBulk": "Ommaviy qo‘llash uchun foydalanuvchilarni tanlang",
       "enableCustomFirst": "Individual huquqlarni yoqing va modullarni sozlang"
+    },
+    "leads": {
+      "nav": "Arizalar",
+      "title": "Saytdan arizalar",
+      "subtitle": "Ommaviy formalardan murojaatlar: demo, ulash, savollar, uskunalar",
+      "search": "Ism, telefon yoki email…",
+      "filterAll": "Barchasi",
+      "saved": "Ariza yangilandi",
+      "detailTitle": "Ariza kartochkasi",
+      "managerNote": "Menejer izohi",
+      "managerNotePh": "Arizani qayta ishlash bo‘yicha eslatmalar",
+      "preferredTime": "Qulay vaqt",
+      "message": "Xabar",
+      "locale": "Til",
+      "colDate": "Sana",
+      "colName": "Ism",
+      "colPhone": "Telefon",
+      "colEmail": "Email",
+      "colType": "Tur",
+      "colSource": "Manba",
+      "statuses": {
+        "NEW": "Yangi",
+        "IN_PROGRESS": "Jarayonda",
+        "DONE": "Yakunlangan",
+        "REJECTED": "Rad etilgan"
+      },
+      "types": {
+        "DEMO": "Demo",
+        "CONNECT": "Ulash",
+        "QUESTION": "Savol",
+        "EQUIPMENT": "Uskunalar"
+      },
+      "sources": {
+        "contacts": "Aloqa",
+        "hero": "Bosh sahifa",
+        "pricing": "Tariflar",
+        "equipment": "Uskunalar"
+      }
     },
     "moduleGroups": {
       "main": "Asosiy",

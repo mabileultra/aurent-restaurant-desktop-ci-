@@ -30,6 +30,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/internal/platform/**").permitAll()
+                .requestMatchers("/public/site/**").permitAll()
                 .requestMatchers("/platform/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/finance-sync/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/companies/**").hasRole("SUPER_ADMIN")

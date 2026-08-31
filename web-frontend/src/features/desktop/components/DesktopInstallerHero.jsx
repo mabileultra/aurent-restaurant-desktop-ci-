@@ -1,8 +1,12 @@
 import { Apple, CheckCircle2, Loader, Monitor } from 'lucide-react';
 import InstallerDownloadButton from './InstallerDownloadButton';
 import { formatInstallerBytes } from '../utils/installerFormatUtils';
+import { isArm64OnlyMacInstaller, isLikelyIntelMac } from '../utils/installerPlatformHint';
 
 export default function DesktopInstallerHero({ t, manifest, version, releasedAt, isLoading, isError }) {
+  const macArm64Only = isArm64OnlyMacInstaller(manifest);
+  const showIntelMacWarning = macArm64Only && isLikelyIntelMac();
+
   return (
     <section className="installer-hero">
       <div className="installer-hero__inner">
@@ -44,6 +48,12 @@ export default function DesktopInstallerHero({ t, manifest, version, releasedAt,
             disabled={!manifest?.mac?.url}
           />
         </div>
+
+        {showIntelMacWarning ? (
+          <p className="installer-hero__meta installer-hero__meta--warn" role="status">
+            {t('installer.macIntelUnsupported')}
+          </p>
+        ) : null}
 
         <div className="installer-hero__meta">
           {isLoading ? (

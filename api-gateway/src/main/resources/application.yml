@@ -55,11 +55,11 @@ spring:
           filters:
             - PreserveHostHeader
 
-        # Компании и platform UI — platform-service.
+        # Компании, platform UI и публичные заявки — platform-service.
         - id: platform-service
           uri: ${PLATFORM_SERVICE_URL:http://127.0.0.1:8084}
           predicates:
-            - Path=/api/v1/companies/**, /api/v1/platform/**
+            - Path=/api/v1/companies/**, /api/v1/platform/**, /api/v1/public/site/**
           order: 1
           filters:
             - PreserveHostHeader

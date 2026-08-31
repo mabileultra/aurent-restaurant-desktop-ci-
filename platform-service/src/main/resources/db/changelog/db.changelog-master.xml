@@ -7,5 +7,6 @@
 
     <include file="db/changelog/v1-platform-baseline.xml"/>
     <include file="db/changelog/v2-platform-tables.xml"/>
+    <include file="db/changelog/v3-site-leads.xml"/>
 
 </databaseChangeLog>

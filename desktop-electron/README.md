@@ -21,6 +21,8 @@ AURENT_WEB_URL=http://localhost:5173 npm start
 npm run dist
 ```
 
+macOS собирается как **universal** `.dmg` (Intel + Apple Silicon). На CI (`macos-latest`) не используйте только `arm64` — Intel Mac не откроет такой установщик.
+
 Иконки генерируются из `web-frontend/public/desktop/icon.svg` (#10B981).
 
 ## Окно

@@ -1,7 +1,7 @@
 // src/components/layout/SuperAdminLayout.jsx
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen } from 'lucide-react';
+import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen, Inbox } from 'lucide-react';
 import BrandMark from '../shared/BrandMark';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
@@ -16,6 +16,7 @@ const NAV = [
   { to: '/platform/access', icon: KeyRound, key: 'platform.moduleAccess.nav' },
   { to: '/platform/business-types', icon: Layers, key: 'platform.businessTypes.nav' },
   { to: '/platform/reference-books', icon: BookOpen, key: 'platform.referenceBooks.nav' },
+  { to: '/platform/leads', icon: Inbox, key: 'platform.leads.nav' },
   { to: '/platform/monitoring', icon: Activity, key: 'platform.monitoring.nav' },
   { to: '/platform/email', icon: Mail, key: 'platform.email.nav' },
   { to: '/platform/desktop-notifications', icon: Bell, key: 'platform.desktopNotifications.nav' },

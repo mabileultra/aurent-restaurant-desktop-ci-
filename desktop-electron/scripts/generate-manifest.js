@@ -74,7 +74,10 @@ function main() {
   }
 
   const winName = pickNewest(dist, /\.exe$/i);
-  const macName = pickNewest(dist, /\.dmg$/i);
+  const macName =
+    pickNewest(dist, /mac-universal\.dmg$/i)
+    || pickNewest(dist, /mac-x64\.dmg$/i)
+    || pickNewest(dist, /\.dmg$/i);
   const zipName = pickNewest(dist, /\.zip$/i);
 
   const manifest = {

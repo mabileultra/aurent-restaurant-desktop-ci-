@@ -1,0 +1,57 @@
+.public-lead-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.public-lead-form__grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.public-lead-form__field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.public-lead-form__field span {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ps-ink);
+}
+
+.public-lead-form__field input,
+.public-lead-form__field textarea {
+  width: 100%;
+  border: 1px solid var(--ps-line);
+  border-radius: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+  color: var(--ps-ink);
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.public-lead-form__field input:focus,
+.public-lead-form__field textarea:focus {
+  outline: none;
+  border-color: var(--ps-green);
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.12);
+}
+
+.public-lead-form__field--full {
+  grid-column: 1 / -1;
+}
+
+.public-lead-form__submit {
+  justify-self: start;
+}
+
+.public-lead-form--compact .public-lead-form__grid {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@media (min-width: 640px) {
+  .public-lead-form__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

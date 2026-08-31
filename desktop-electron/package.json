@@ -1,6 +1,6 @@
 {
   "name": "aurent-cashier-desktop",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
@@ -28,7 +28,12 @@
     ],
     "mac": {
       "icon": "build/icon.png",
-      "target": ["dmg"],
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        }
+      ],
       "category": "public.app-category.business"
     },
     "win": {

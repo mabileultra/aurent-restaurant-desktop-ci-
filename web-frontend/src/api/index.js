@@ -39,4 +39,6 @@ export { platformSecurityApi } from './platform/security.api';
 export { platformMonitoringApi } from './platform/monitoring.api';
 export { platformBusinessTypeApi } from './platform/businessType.api';
 export { platformReferenceBookApi } from './platform/referenceBook.api';
+export { platformLeadsApi } from './platform/leads.api';
+export { publicSiteApi } from './publicSite.api';
 export { restaurantApi } from './restaurant.api';
