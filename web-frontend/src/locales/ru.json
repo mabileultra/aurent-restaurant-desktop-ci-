@@ -395,7 +395,7 @@
     "pageSizeLabel": "Записей на странице: {{size}}",
     "colProduct": "Товар",
     "colSku": "SKU",
-    "colIkpuId": "ИКПУ / ID",
+    "colIkpuId": "ИКПУ",
     "colName": "Название",
     "colCategory": "Категория",
     "colCost": "Себест.",
