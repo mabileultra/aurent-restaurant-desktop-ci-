@@ -23,7 +23,7 @@ export default function StockInventoryCreatePage() {
   } = useStockInventoryCreatePage();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="admin-page admin-page--full space-y-6">
       <StockDocumentPageHeader
         backTo="/reports/stock/inventories"
         backLabel={t('stockReports.inventoriesTitle')}

@@ -21,12 +21,9 @@ export default function CashierSecondaryTopbar({
       <div className="cashier-topbar__row cashier-topbar__row--main">
         <div className="cashier-topbar__brand-block">
           <CashierDesktopMenu appName={displayAppName()} />
+          <BrandMark variant="full" height={32} className="cashier-topbar__brand-full" />
           {!isDesktopApp ? (
-            <>
-              <BrandMark variant="full" height={28} className="d-md-none cashier-topbar__brand-icon" />
-              <BrandMark variant="full" height={32} className="d-none d-md-block cashier-topbar__brand-full" />
-              <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
-            </>
+            <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
           ) : null}
           <div className="cashier-topbar__terminal-strip d-none d-md-flex">
             <CashierTopbarTerminalMeta

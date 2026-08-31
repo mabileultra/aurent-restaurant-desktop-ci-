@@ -2,7 +2,7 @@ import ReceiptPrinterSettingsPanel from '../components/users/ReceiptPrinterSetti
 
 export default function UsersPrinterSettingsPage() {
   return (
-    <div className="max-w-4xl">
+    <div className="admin-page admin-page--full">
       <ReceiptPrinterSettingsPanel />
     </div>
   );

@@ -5,6 +5,7 @@ import com.pos.reporting.service.SalesReportService;
 import com.pos.reporting.dto.DailyPoint;
 import com.pos.reporting.dto.SalesReportResponse;
 import com.pos.reporting.repository.SaleFactRepository;
+import com.pos.reporting.repository.SaleItemFactRepository;
 import com.pos.reporting.security.ReportingTenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.List;
 public class SalesReportServiceImpl implements SalesReportService {
 
     private final SaleFactRepository saleFactRepository;
+    private final SaleItemFactRepository saleItemFactRepository;
 
     @Override
     public SalesReportResponse salesReport(LocalDate from, LocalDate to) {
@@ -31,6 +33,11 @@ public class SalesReportServiceImpl implements SalesReportService {
         BigDecimal averageTransactionValue = transactionCount > 0
             ? totalRevenue.divide(BigDecimal.valueOf(transactionCount), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
+        BigDecimal totalCostEstimate = saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(companyId, from, to);
+        if (totalCostEstimate == null) {
+            totalCostEstimate = BigDecimal.ZERO;
+        }
+        BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
         List<DailyPoint> dailyBreakdown = saleFactRepository.dailyRevenueByCompanyAndDateRange(companyId, from, to)
             .stream()
             .map(row -> new DailyPoint(
@@ -43,8 +50,8 @@ public class SalesReportServiceImpl implements SalesReportService {
             transactionCount,
             totalItemsSold,
             averageTransactionValue,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO,
+            totalCostEstimate,
+            grossProfit,
             dailyBreakdown
         );
     }

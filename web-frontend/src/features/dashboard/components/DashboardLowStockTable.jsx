@@ -1,6 +1,13 @@
 import { AlertTriangle } from 'lucide-react';
+import TablePagination from '../../../components/shared/TablePagination';
+import {
+  DASHBOARD_LOW_STOCK_PAGE_SIZES,
+  useDashboardLowStockTable,
+} from '../hooks/useDashboardLowStockTable';
 
 export default function DashboardLowStockTable({ t, lowStock }) {
+  const p = useDashboardLowStockTable(lowStock);
+
   if (!lowStock?.length) return null;
 
   return (
@@ -20,19 +27,29 @@ export default function DashboardLowStockTable({ t, lowStock }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-red-100 dark:divide-slate-800">
-            {lowStock.map((p) => (
-              <tr key={p.id} className="text-slate-800 dark:text-slate-300">
-                <td className="py-2">{p.name}</td>
-                <td className="py-2 text-slate-600 dark:text-slate-500">{p.sku}</td>
+            {p.rows.map((row) => (
+              <tr key={row.id} className="text-slate-800 dark:text-slate-300">
+                <td className="py-2">{row.name}</td>
+                <td className="py-2 text-slate-600 dark:text-slate-500">{row.sku}</td>
                 <td className="py-2 text-right font-semibold text-red-600 dark:text-red-400">
-                  {p.stockQuantity}
+                  {row.stockQuantity}
                 </td>
-                <td className="py-2 text-right text-slate-600 dark:text-slate-500">{p.lowStockAlert}</td>
+                <td className="py-2 text-right text-slate-600 dark:text-slate-500">{row.lowStockAlert}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <TablePagination
+        page={p.page}
+        pageSize={p.pageSize}
+        total={p.total}
+        totalPages={p.totalPages}
+        onPageChange={p.setPage}
+        onPageSizeChange={p.setPageSize}
+        pageSizeOptions={DASHBOARD_LOW_STOCK_PAGE_SIZES}
+        className="mt-3 border-red-200 px-0 dark:border-slate-800"
+      />
     </div>
   );
 }

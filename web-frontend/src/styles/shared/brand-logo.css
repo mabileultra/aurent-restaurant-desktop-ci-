@@ -18,9 +18,14 @@
   object-fit: contain;
 }
 
-.cashier-topbar__brand-icon.brand-logo--full,
 .cashier-topbar__brand-full.brand-logo--full {
-  max-width: 140px;
+  max-width: 160px;
+  height: 32px;
+}
+
+.cashier-app--desktop .cashier-topbar__brand-full.brand-logo--full {
+  height: 30px;
+  max-width: 150px;
 }
 
 .cashier-desktop-menu__logo.brand-logo--full {

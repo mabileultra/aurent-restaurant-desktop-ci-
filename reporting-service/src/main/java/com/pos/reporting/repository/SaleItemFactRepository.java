@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -143,6 +144,18 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
         @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(i.costEstimate), 0)
+        FROM SaleItemFact i
+        WHERE i.companyId = :companyId
+          AND i.transactionDate BETWEEN :from AND :to
+        """)
+    BigDecimal sumCostEstimateByCompanyAndDateRange(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to
     );
 
     @Query(value = """

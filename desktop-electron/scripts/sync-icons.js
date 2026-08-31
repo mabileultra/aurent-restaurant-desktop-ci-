@@ -1,11 +1,12 @@
 #!/usr/bin/env node
 /**
- * Иконки Electron: logo1.png → icon.png, icon.ico (NSIS), icon.icns (macOS).
+ * Иконки Electron: logo2.png → icon.png, icon.ico
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
+const LOGO2 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo2.png');
 const LOGO1 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo1.png');
 const SVG = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.svg');
 const BUILD = path.join(ROOT, 'build');
@@ -22,9 +23,10 @@ async function loadSharp() {
 }
 
 function resolveSource() {
+  if (fs.existsSync(LOGO2)) return LOGO2;
   if (fs.existsSync(LOGO1)) return LOGO1;
   if (fs.existsSync(SVG)) return SVG;
-  console.error('Missing logo source:', LOGO1, 'or', SVG);
+  console.error('Missing logo source:', LOGO2, LOGO1, 'or', SVG);
   process.exit(1);
 }
 

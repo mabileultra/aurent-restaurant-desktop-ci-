@@ -2,6 +2,7 @@
 @import './forms.css';
 @import './modals.css';
 @import './tables-canonical.css';
+@import './page-full.css';
 @import '../platform/tokens.css';
 @import './receipt-page.css';
 @import './electron-silent-print.css';

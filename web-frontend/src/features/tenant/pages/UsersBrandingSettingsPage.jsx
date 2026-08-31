@@ -2,7 +2,7 @@ import UserBrandingSettingsPanel from '../components/users/UserBrandingSettingsP
 
 export default function UsersBrandingSettingsPage() {
   return (
-    <div className="max-w-4xl">
+    <div className="admin-page admin-page--full">
       <UserBrandingSettingsPanel />
     </div>
   );
