@@ -57,15 +57,6 @@ export default defineConfig({
               return 'cashier-my-sales';
             }
             if (
-              id.includes('/pin-login/')
-              || id.includes('CashierPinLogin')
-              || id.includes('useCashierPinLogin')
-              || id.includes('CashierLockOverlay')
-              || id.includes('/pages/CashierPinLoginPage')
-            ) {
-              return 'cashier-pin';
-            }
-            if (
               id.includes('WeightEntryModal')
               || id.includes('useWeightEntryModal')
               || id.includes('/weight-entry/')
