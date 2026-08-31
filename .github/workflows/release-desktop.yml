@@ -24,7 +24,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  UPDATE_BASE_URL: ${{ secrets.DEPLOY_PUBLIC_URL || format('https://{0}', secrets.DEPLOY_HOST) }}
+  UPDATE_BASE_URL: ${{ secrets.DEPLOY_PUBLIC_URL || 'https://aurent.uz' }}
 
 jobs:
   build-win:

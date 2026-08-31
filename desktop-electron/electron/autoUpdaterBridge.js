@@ -3,6 +3,7 @@
  */
 const { app, ipcMain, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
+const { DESKTOP_UPDATE_FEED } = require('../config/publicUrl');
 
 let feedUrl = null;
 
@@ -11,12 +12,15 @@ function resolveFeedUrl(webUrl) {
     const url = process.env.AURENT_UPDATE_URL.trim();
     return url.endsWith('/') ? url : `${url}/`;
   }
-  if (!webUrl) return null;
+  if (!webUrl) return DESKTOP_UPDATE_FEED;
   try {
     const origin = new URL(webUrl).origin;
+    if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+      return DESKTOP_UPDATE_FEED;
+    }
     return `${origin}/downloads/desktop/`;
   } catch {
-    return null;
+    return DESKTOP_UPDATE_FEED;
   }
 }
 

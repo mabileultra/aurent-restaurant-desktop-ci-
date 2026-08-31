@@ -2,7 +2,7 @@
   "name": "aurent-cashier-desktop",
   "version": "1.0.0",
   "private": true,
-  "description": "Aurent POS — Electron desktop (касса + admin)",
+  "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
   "scripts": {
     "sync-icons": "node scripts/sync-icons.js",
@@ -22,11 +22,12 @@
     },
     "files": [
       "electron/**/*",
+      "config/**/*",
       "build/**/*",
       "package.json"
     ],
     "mac": {
-      "icon": "build/icon.icns",
+      "icon": "build/icon.png",
       "target": ["dmg"],
       "category": "public.app-category.business"
     },

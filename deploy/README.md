@@ -52,7 +52,7 @@ bash deploy/update.sh
 | `DEPLOY_SSH_KEY` или `DEPLOY_SSH_KEY_B64` | SSH-ключ для деплоя |
 | `DEPLOY_HOST` | IP или хост сервера |
 | `DEPLOY_USER` | SSH-пользователь (по умолчанию `root`) |
-| `DEPLOY_PUBLIC_URL` | Публичный URL, напр. `https://pos.example.com` — для `latest.yml` десктопа |
+| `DEPLOY_PUBLIC_URL` | Публичный URL (по умолчанию в CI: `https://aurent.uz`) |
 
 ## Проверка
 
