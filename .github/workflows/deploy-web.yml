@@ -85,18 +85,18 @@ jobs:
             echo "Waiting for backend... ($i/12)"
             sleep 10
             if [[ "$i" -eq 12 ]]; then
-              echo "Health check failed"
+              echo "Backend health check failed"
               exit 1
             fi
           done
-          for i in $(seq 1 6); do
+          for i in $(seq 1 12); do
             if ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
               "${DEPLOY_USER}@${DEPLOY_HOST}" \
-              'curl -fsS -o /dev/null -w "%{http_code}" http://127.0.0.1:80/ | grep -qE "200|304"'; then
+              "cd /opt/aurent-pos && port=\$(docker compose -f docker-compose.prod.yml port frontend 80 2>/dev/null | sed 's/.*://') && port=\${port:-80} && code=\$(curl -fsS -o /dev/null -w '%{http_code}' \"http://127.0.0.1:\${port}/\" || echo 000) && echo \"Frontend probe :\${port} -> \${code}\" && echo \"\${code}\" | grep -qE '200|304'"; then
               echo "Frontend health: OK"
               exit 0
             fi
-            echo "Waiting for frontend... ($i/6)"
+            echo "Waiting for frontend... ($i/12)"
             sleep 5
           done
           echo "Frontend health check failed"
