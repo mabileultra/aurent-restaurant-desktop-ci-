@@ -1,0 +1,59 @@
+/* Shared shell layout — admin, platform, public */
+
+html,
+body,
+#root {
+  max-width: 100%;
+  min-height: 100%;
+}
+
+html.app-viewport--desktop body,
+html.app-viewport--canonical body {
+  overflow-x: hidden;
+}
+
+.admin-shell,
+.platform-shell {
+  min-height: 100dvh;
+  height: 100dvh;
+  font-size: var(--shell-font-size);
+}
+
+.admin-main,
+.platform-shell .admin-main {
+  min-width: 0;
+  padding: var(--shell-pad) !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-main > *,
+.platform-shell .admin-main > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+.admin-main .overflow-x-auto,
+.platform-shell .admin-main .overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-main .recharts-responsive-container,
+.platform-shell .admin-main .recharts-responsive-container {
+  min-width: 0 !important;
+}
+
+/* Canonical 1024×768: уже sidebar lg:w-60 (240px) — сужаем контент через pad */
+html.app-viewport--canonical .admin-shell aside[class*='lg:w-60'] {
+  width: var(--shell-sidebar-w) !important;
+  max-width: var(--shell-sidebar-w) !important;
+}
+
+html.app-viewport--canonical .admin-shell aside[class*='lg:w-16'] {
+  width: var(--shell-sidebar-w-collapsed) !important;
+  max-width: var(--shell-sidebar-w-collapsed) !important;
+}
+
+html.app-viewport--canonical .platform-shell aside[class*='lg:w-64'] {
+  width: var(--shell-sidebar-w) !important;
+  max-width: var(--shell-sidebar-w) !important;
+}

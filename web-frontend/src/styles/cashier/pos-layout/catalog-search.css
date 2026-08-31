@@ -59,15 +59,15 @@
 }
 
 .cashier-app .pos-category-tile:not(.pos-category-tile--all) {
-  min-height: 100px;
+  min-height: 88px;
   justify-content: flex-end;
-  padding: 14px;
+  padding: 10px 12px;
   border-radius: 12px;
 }
 
 .cashier-app .pos-category-tile__name {
   font-weight: 800;
-  font-size: 0.9375rem;
+  font-size: 0.875rem;
 }
 
 .cashier-app .pos-catalog-panel__body {

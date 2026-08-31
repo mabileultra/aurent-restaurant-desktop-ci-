@@ -1,9 +1,10 @@
 @import './responsive-tokens.css';
-@import './pos-display-profiles.css';
+@import './pos-profiles.css';
 @import './responsive-catalog.css';
 @import './responsive-narrow.css';
 @import './responsive-low-height.css';
 @import './responsive-terminal.css';
+@import './pos-catalog-canonical.css';
 @import './responsive-my-sales.css';
 @import './responsive-top-nav.css';
 @import './responsive-mini.css';

@@ -1,4 +1,8 @@
-/* Admin shell — print, receipt layout, responsive (import after Tailwind in src/index.css) */
+@import './tokens.css';
+@import './forms.css';
+@import './modals.css';
+@import './tables-canonical.css';
+@import '../platform/tokens.css';
 @import './receipt-page.css';
 @import './electron-silent-print.css';
 @import './receipt-print-root.css';

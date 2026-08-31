@@ -4,7 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
 import { useAuthStore } from '../../../store/authStore';
-import { useCashierTouchLayout } from '../../../hooks/useCashierTouchLayout';
+import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
 import {
   normalizeCompanyLoginCode,
   persistCompanyLoginCode,
@@ -30,7 +30,7 @@ export function useCashierPinLoginPage() {
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const freshLoginRef = useRef(false);
-  const touchLayout = useCashierTouchLayout();
+  const touchLayout = useCashierPosTouchLayout();
 
   useEffect(() => {
     if (!hasHydrated || !token || !['CASHIER', 'WAITER'].includes(user?.role)) return;

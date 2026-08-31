@@ -5,8 +5,7 @@ import './i18n/config';
 import App from './App.jsx';
 import './index.css';
 import { syncRootTheme } from './store/themeStore';
-import { readCashierTheme } from './utils/cashierTheme';
-import { syncCashierDocumentPaint } from './utils/cashierDocumentPaint';
+import { readCashierTheme, syncCashierThemeDocument } from './utils/cashierTheme';
 import { usePrintSettingsStore } from './store/printSettingsStore';
 import { useTenantDisplayStore } from './store/tenantDisplayStore';
 import { syncPrintCssVars } from './utils/syncPrintCssVars';
@@ -17,7 +16,7 @@ resetCashierDocumentUiState();
 const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');
 if (isCashierRoute) {
-  syncCashierDocumentPaint(readCashierTheme());
+  syncCashierThemeDocument(readCashierTheme());
 } else {
   syncRootTheme();
 }

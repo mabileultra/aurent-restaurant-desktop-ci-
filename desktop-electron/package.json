@@ -1,0 +1,59 @@
+{
+  "name": "aurent-cashier-desktop",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aurent POS — Electron desktop (касса + admin)",
+  "main": "electron/main.js",
+  "scripts": {
+    "sync-icons": "node scripts/sync-icons.js",
+    "start": "electron .",
+    "pack": "npm run sync-icons && electron-builder --dir",
+    "dist": "npm run sync-icons && electron-builder",
+    "dist:win": "npm run sync-icons && electron-builder --win",
+    "dist:mac": "npm run sync-icons && electron-builder --mac",
+    "manifest": "node scripts/generate-manifest.js"
+  },
+  "build": {
+    "appId": "com.aurent.cashier",
+    "productName": "Aurent Cashier",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "build/**/*",
+      "package.json"
+    ],
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": ["dmg"],
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": ["nsis"]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    },
+    "publish": {
+      "provider": "generic",
+      "url": "${env.UPDATE_BASE_URL}/downloads/desktop/"
+    },
+    "artifactName": "Aurent-Cashier-${version}-${os}-${arch}.${ext}"
+  },
+  "dependencies": {
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8",
+    "png-to-ico": "^2.1.8",
+    "sharp": "^0.33.5"
+  }
+}

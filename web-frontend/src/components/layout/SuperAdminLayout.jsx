@@ -1,11 +1,13 @@
 // src/components/layout/SuperAdminLayout.jsx
 import { useEffect, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Building2, Store, Users, LogOut, Shield, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen } from 'lucide-react';
+import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen } from 'lucide-react';
+import BrandMark from '../shared/BrandMark';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
+import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
 
 const NAV = [
   { to: '/platform/companies', icon: Building2, key: 'platform.companies' },
@@ -44,7 +46,7 @@ export default function SuperAdminLayout() {
     }`;
 
   return (
-    <div className="admin-shell flex min-h-0 overflow-hidden bg-slate-100 dark:bg-slate-950">
+    <div className="platform-shell admin-shell flex min-h-0 overflow-hidden bg-slate-100 dark:bg-slate-950">
       {mobileNavOpen ? (
         <button
           type="button"
@@ -59,9 +61,9 @@ export default function SuperAdminLayout() {
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-5 dark:border-slate-800">
-          <Shield className="shrink-0 text-emerald-500" size={22} />
-          <div className="min-w-0">
+        <div className="platform-shell__brand flex items-center gap-2 border-b border-slate-200 px-4 py-5 dark:border-slate-800">
+          <BrandMark variant="full" height={28} className="shrink-0" />
+          <div className="min-w-0 lg:hidden">
             <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{t('platform.title')}</p>
             <p className="truncate text-xs text-slate-500">{t('platform.subtitle')}</p>
           </div>
@@ -99,6 +101,8 @@ export default function SuperAdminLayout() {
           </button>
           <p className="truncate text-sm font-semibold text-slate-900 lg:hidden dark:text-white">{t('platform.title')}</p>
           <div className="ml-auto flex items-center gap-2">
+            <BrandMark variant="full" height={26} className="lg:hidden" />
+            <OnScreenKeyboardButton variant="header" />
             <LanguageSwitcher />
             <button
               type="button"

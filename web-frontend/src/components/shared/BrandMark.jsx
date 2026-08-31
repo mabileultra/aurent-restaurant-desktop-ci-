@@ -1,25 +1,55 @@
-import { ShoppingCart } from 'lucide-react';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
+import { BRAND_LOGO_FULL, BRAND_LOGO_ICON, BRAND_NAME } from '../../config/brandLogos';
 
 /**
- * Логотип системы: загруженный в настройках или иконка по умолчанию.
+ * Логотип: кастомный из настроек компании или фирменный Aurent.
+ * @param {'icon'|'full'} variant — logo1 (иконка) или logo2 (полный, для desktop)
  */
-export default function BrandMark({ size = 32, className = '', iconClassName = 'text-white' }) {
-  const logo = useTenantDisplayStore((s) => s.committed.systemLogoDataUrl);
+export default function BrandMark({
+  variant = 'icon',
+  size = 32,
+  height,
+  className = '',
+  alt,
+}) {
+  const tenantLogo = useTenantDisplayStore((s) => s.committed.systemLogoDataUrl);
   const systemLogoSizePx = useTenantDisplayStore((s) => s.committed.systemLogoSizePx);
-  const base = typeof size === 'number' ? size : 32;
-  const px = logo && systemLogoSizePx ? systemLogoSizePx : base;
+  const label = alt ?? BRAND_NAME;
 
-  if (logo) {
+  if (tenantLogo) {
+    const px = systemLogoSizePx || (typeof size === 'number' ? size : 32);
     return (
       <img
-        src={logo}
-        alt=""
-        className={`object-contain ${className}`}
+        src={tenantLogo}
+        alt={label}
+        className={`brand-logo object-contain ${className}`.trim()}
         style={{ width: px, height: px, maxWidth: px, maxHeight: px }}
       />
     );
   }
 
-  return <ShoppingCart size={px} className={iconClassName} strokeWidth={2} aria-hidden />;
+  const isFull = variant === 'full';
+  const src = isFull ? BRAND_LOGO_FULL : BRAND_LOGO_ICON;
+
+  if (isFull) {
+    const h = height ?? 40;
+    return (
+      <img
+        src={src}
+        alt={label}
+        className={`brand-logo brand-logo--full ${className}`.trim()}
+        style={{ height: h }}
+      />
+    );
+  }
+
+  const px = typeof size === 'number' ? size : 32;
+  return (
+    <img
+      src={src}
+      alt={label}
+      className={`brand-logo brand-logo--icon ${className}`.trim()}
+      style={{ width: px, height: px }}
+    />
+  );
 }

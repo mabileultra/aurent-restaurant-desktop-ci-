@@ -162,8 +162,8 @@
   flex-direction: column;
   align-items: flex-start;
   gap: 6px;
-  min-height: 96px;
-  padding: 14px 12px;
+  min-height: 84px;
+  padding: 10px 12px;
   text-align: left;
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-radius-lg);
@@ -205,6 +205,10 @@
 }
 
 .pos-category-tile__name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.25;
@@ -312,7 +316,7 @@
   justify-content: space-between;
   gap: 12px;
   width: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   text-align: left;
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-radius);
@@ -332,7 +336,10 @@
 }
 
 .pos-product-row__name {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.3;

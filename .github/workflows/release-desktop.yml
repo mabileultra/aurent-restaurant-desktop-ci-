@@ -1,0 +1,146 @@
+name: Release Desktop
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'desktop-electron/**'
+      - 'web-frontend/public/brand/**'
+      - 'downloads/desktop/**'
+      - 'deploy/publish-desktop.sh'
+      - '.github/workflows/release-desktop.yml'
+    tags:
+      - 'desktop-v*'
+  workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: 'Only build artifacts, do not upload to server'
+        required: false
+        default: false
+        type: boolean
+
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UPDATE_BASE_URL: ${{ secrets.DEPLOY_PUBLIC_URL || format('https://{0}', secrets.DEPLOY_HOST) }}
+
+jobs:
+  build-win:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: desktop-electron/package-lock.json
+
+      - name: Install & build (Windows)
+        working-directory: desktop-electron
+        env:
+          UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
+        run: |
+          npm ci
+          npm run dist:win
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-win
+          path: |
+            desktop-electron/dist/*.exe
+            desktop-electron/dist/*.blockmap
+            desktop-electron/dist/latest.yml
+          if-no-files-found: error
+
+  build-mac:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: desktop-electron/package-lock.json
+
+      - name: Install & build (macOS)
+        working-directory: desktop-electron
+        env:
+          UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
+        run: |
+          npm ci
+          npm run dist:mac
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-mac
+          path: |
+            desktop-electron/dist/*.dmg
+            desktop-electron/dist/*.blockmap
+            desktop-electron/dist/latest-mac.yml
+          if-no-files-found: error
+
+  publish:
+    needs: [build-win, build-mac]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.ref == 'refs/heads/main' ||
+      startsWith(github.ref, 'refs/tags/desktop-v')
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Merge build artifacts
+        run: |
+          mkdir -p desktop-electron/dist
+          cp -v artifacts/desktop-win/* desktop-electron/dist/ 2>/dev/null || true
+          cp -v artifacts/desktop-mac/* desktop-electron/dist/ 2>/dev/null || true
+          ls -la desktop-electron/dist/
+
+      - name: Publish to downloads/desktop
+        run: bash deploy/publish-desktop.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: desktop-release-bundle
+          path: downloads/desktop/
+          retention-days: 30
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload installers to server
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            'mkdir -p /opt/aurent-pos/downloads/desktop'
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            downloads/desktop/* \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/"
+          echo "Installers uploaded → /opt/aurent-pos/downloads/desktop/"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

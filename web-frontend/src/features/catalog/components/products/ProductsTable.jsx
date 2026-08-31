@@ -24,7 +24,7 @@ export default function ProductsTable({
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm min-w-[960px]">
+        <table className="admin-data-table admin-data-table--wide w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:text-slate-500">
               <th className="px-3 py-3 w-10">

@@ -4,7 +4,7 @@
 }
 
 .pos-product-card {
-  --pos-product-card-min-h: clamp(96px, 22cqi, 118px);
+  --pos-product-card-min-h: clamp(84px, 20cqi, 104px);
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -12,7 +12,7 @@
   width: 100%;
   min-height: var(--pos-product-card-min-h);
   height: 100%;
-  padding: 12px 14px;
+  padding: 10px 12px;
   text-align: left;
   border: 1px solid var(--pos-border);
   border-radius: var(--pos-radius);
@@ -37,7 +37,10 @@
 }
 
 .pos-product-card__name {
-  display: block;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
   flex: 1 1 auto;
   min-height: 0;
   font-size: 0.8125rem;
@@ -46,7 +49,6 @@
   color: var(--pos-text);
   word-break: break-word;
   overflow-wrap: anywhere;
-  white-space: normal;
 }
 
 .pos-product-card__price {

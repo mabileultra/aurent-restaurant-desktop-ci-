@@ -1,6 +1,7 @@
 /* Аптека: только левая колонка (чек + поиск). Оплата — общий CashierPayColumn / page-grid. */
 
 @import './pharmacy-tables-theme.css';
+@import './pharmacy-viewport.css';
 
 .pharmacy-cashier__split {
   flex: 1 1 auto;

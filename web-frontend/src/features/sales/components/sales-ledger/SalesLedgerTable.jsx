@@ -30,7 +30,7 @@ export default function SalesLedgerTable({
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1120px] text-sm">
+        <table className="admin-data-table admin-data-table--xl w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
               <th className="w-10 px-3 py-3">

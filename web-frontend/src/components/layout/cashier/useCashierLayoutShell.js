@@ -19,7 +19,8 @@ import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { cashierLoginPath } from '../../../utils/authLogin';
 import { useCashierShift } from '../../../hooks/useCashierShift';
 import { useOfflineConnectivity } from '../../../hooks/useOfflineConnectivity';
-import { useCashierTouchLayout } from '../../../hooks/useCashierTouchLayout';
+import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
+import { useCashierPosDesktopLayout } from '../../../hooks/useCashierPosDesktopLayout';
 import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocumentUiState';
 import { syncAuthSession } from '../../../utils/syncAuthSession';
 import { isCashierRegisterScreen } from '../../../utils/cashierRegisterRoute';
@@ -95,12 +96,14 @@ export function useCashierLayoutShell() {
     return () => document.documentElement.classList.remove('cashier-shell--desktop');
   }, [isDesktopApp]);
 
-  const touchFromMedia = useCashierTouchLayout();
-  const touchLayout = touchFromMedia || isDesktopApp;
+  const touchLayout = useCashierPosTouchLayout();
+  const posDesktop = useCashierPosDesktopLayout();
 
   const shellClassName = `cashier-app ${themeClass} d-flex cashier-app--bottom-nav${
     isPosRoute ? ' cashier-app--pos-screen' : ''
-  }${touchLayout ? ' cashier-app--touch' : ''}${isDesktopApp ? ' cashier-app--desktop' : ''}`;
+  }${posDesktop && isPosRoute ? ' cashier-app--pos-desktop' : ''}${
+    touchLayout ? ' cashier-app--touch' : ''
+  }${isDesktopApp ? ' cashier-app--desktop' : ''}`;
 
   return {
     t,

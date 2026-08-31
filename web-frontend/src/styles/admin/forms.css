@@ -1,0 +1,86 @@
+/*
+ * Admin UI — формы, инпуты (включая порталы на body и модалки).
+ * html.app-theme--admin выставляет AdminThemeSync / syncRootTheme.
+ */
+
+html.app-theme--admin {
+  color-scheme: light;
+}
+
+html.app-theme--admin input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+html.app-theme--admin select,
+html.app-theme--admin textarea,
+html.app-theme--admin .form-control,
+html.app-theme--admin .form-select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+html.app-theme--admin input::placeholder,
+html.app-theme--admin textarea::placeholder {
+  color: #94a3b8;
+}
+
+html.app-theme--admin input:disabled,
+html.app-theme--admin select:disabled,
+html.app-theme--admin textarea:disabled {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+html.app-theme--admin input:focus,
+html.app-theme--admin select:focus,
+html.app-theme--admin textarea:focus,
+html.app-theme--admin .form-control:focus,
+html.app-theme--admin .form-select:focus {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #10b981;
+  outline: none;
+}
+
+/* Shell-обёртки (дублируют html.app-theme--admin для specificity) */
+.admin-shell,
+.platform-shell,
+.login-page,
+.public-site {
+  color-scheme: light;
+}
+
+.admin-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.admin-shell select,
+.admin-shell textarea,
+.platform-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.platform-shell select,
+.platform-shell textarea,
+.login-page input:not([type='checkbox']):not([type='radio']),
+.login-page select,
+.login-page textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.admin-shell .form-control,
+.admin-shell .form-select,
+.platform-shell .form-control,
+.platform-shell .form-select {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.admin-shell .form-control:focus,
+.admin-shell .form-select:focus,
+.platform-shell .form-control:focus,
+.platform-shell .form-select:focus {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #10b981;
+  box-shadow: 0 0 0 0.2rem rgb(16 185 129 / 0.15);
+}
+
+html:not(.cashier-theme--dark):not(.cashier-theme--light):not(.app-theme--cashier) {
+  color-scheme: light;
+}

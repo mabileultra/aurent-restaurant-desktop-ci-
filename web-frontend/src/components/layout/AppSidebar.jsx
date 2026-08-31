@@ -90,10 +90,12 @@ export default function AppSidebar(props) {
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${sidebarOpen ? 'w-[min(100vw,20rem)] lg:w-60' : 'w-[min(100vw,20rem)] lg:w-16'}`}
       >
-        <div className="flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-emerald-900/60">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500">
-            <BrandMark size={16} iconClassName="text-white" />
-          </div>
+        <div className="admin-sidebar__brand flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-emerald-900/60">
+          <BrandMark
+            variant={navLabelsVisible ? 'full' : 'icon'}
+            size={32}
+            height={32}
+          />
           {navLabelsVisible ? (
             <span className="truncate text-lg font-bold text-slate-900 dark:text-white">{displayAppName()}</span>
           ) : null}

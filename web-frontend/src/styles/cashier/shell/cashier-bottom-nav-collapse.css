@@ -1,0 +1,60 @@
+/* Сворачиваемая нижняя панель кассы */
+
+.cashier-bottom-nav-shell {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.cashier-bottom-nav-shell.is-collapsed {
+  --cashier-bottom-nav-h: 48px;
+}
+
+.cashier-bottom-nav-shell.is-collapsed .cashier-bottom-nav {
+  grid-template-columns: minmax(44px, 5.5cqi) minmax(44px, 5.5cqi) minmax(44px, 5.5cqi);
+  max-width: 220px;
+}
+
+.cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: clamp(64px, 7.5vh, 76px);
+}
+
+.cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  grid-template-columns:
+    minmax(44px, 5cqi)
+    minmax(44px, 5cqi)
+    repeat(6, minmax(0, 1fr))
+    minmax(44px, 5cqi);
+}
+
+.cashier-bottom-nav__btn--keyboard {
+  gap: 2px;
+  padding-top: clamp(5px, 1cqi, 8px);
+  padding-bottom: clamp(5px, 1cqi, 8px);
+}
+
+.cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
+  display: block;
+  font-size: clamp(0.625rem, 2cqi, 0.75rem);
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.cashier-bottom-nav__btn--toggle {
+  padding: 0;
+}
+
+.cashier-register__bottom-nav.cashier-bottom-nav-shell,
+.cashier-app__bottom-nav.cashier-bottom-nav-shell {
+  padding-bottom: 4px;
+}
+
+.cashier-app.cashier-app--touch .cashier-bottom-nav-shell .cashier-bottom-nav__btn {
+  min-height: 44px;
+}
+
+@media (min-width: 1024px) {
+  .cashier-bottom-nav-shell:not(.is-collapsed) {
+    --cashier-bottom-nav-h: clamp(60px, 7vh, 72px);
+  }
+}

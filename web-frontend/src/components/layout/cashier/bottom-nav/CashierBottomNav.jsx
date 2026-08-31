@@ -1,9 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, Clock, Headphones, Lock, Receipt } from 'lucide-react';
+import { BookOpen, ChevronDown, ChevronUp, Clock, Headphones, Lock, Receipt } from 'lucide-react';
 import { useCashierStore } from '../../../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../../../contexts/CashierShiftModalContext';
 import { useCashierLock } from '../../../../contexts/CashierLockContext';
+import { useCashierBottomNavCollapsedState } from '../../../../hooks/useCashierBottomNavCollapsedState';
+import OnScreenKeyboardButton from '../../../shared/OnScreenKeyboardButton';
 import { bottomNavLinkClass } from './bottomNavClass';
 import CashierBottomNavProducts from './CashierBottomNavProducts';
 import CashierBottomNavRegister from './CashierBottomNavRegister';
@@ -20,56 +22,77 @@ export default function CashierBottomNav({ className = '' }) {
   const { isRestaurant } = useCashierStoreProfile();
   const { openShift } = useCashierShiftModal();
   const { lock } = useCashierLock();
+  const { collapsed, toggleCollapsed } = useCashierBottomNavCollapsedState();
 
   return (
-    <nav
-      className={`cashier-bottom-nav${className ? ` ${className}` : ''}`}
-      aria-label={t('nav.handbook')}
+    <div
+      className={`cashier-bottom-nav-shell${collapsed ? ' is-collapsed' : ''}${className ? ` ${className}` : ''}`}
     >
-      <button
-        type="button"
-        className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon"
-        onClick={lock}
-        title={t('pos.lockScreen')}
-      >
-        <Lock size={28} strokeWidth={2} aria-hidden />
-      </button>
-      <NavLink
-        to="/cashier/support"
-        className={({ isActive }) => navClass(isActive)}
-        title={t('nav.support')}
-      >
-        <Headphones size={28} strokeWidth={2} aria-hidden />
-        <span>{t('nav.support')}</span>
-      </NavLink>
-      <NavLink
-        to="/cashier/handbook/cashierPos"
-        className={({ isActive }) => navClass(isActive)}
-        title={t('nav.handbook')}
-      >
-        <BookOpen size={28} strokeWidth={2} aria-hidden />
-        <span>{t('nav.handbook')}</span>
-      </NavLink>
-      <button
-        type="button"
-        className={bottomNavLinkClass(false)}
-        onClick={openShift}
-        disabled={!storeId}
-        title={t('pos.navShift')}
-      >
-        <Clock size={28} strokeWidth={2} aria-hidden />
-        <span>{t('pos.navShift')}</span>
-      </button>
-      <NavLink
-        to="/cashier/sales"
-        className={({ isActive }) => navClass(isActive)}
-        title={t('pos.navMySales')}
-      >
-        <Receipt size={28} strokeWidth={2} aria-hidden />
-        <span>{t('pos.navMySales')}</span>
-      </NavLink>
-      <CashierBottomNavProducts t={t} />
-      {isRestaurant ? <CashierBottomNavTables t={t} /> : <CashierBottomNavRegister t={t} />}
-    </nav>
+      <nav className="cashier-bottom-nav" aria-label={t('nav.handbook')}>
+        <button
+          type="button"
+          className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon"
+          onClick={lock}
+          title={t('pos.lockScreen')}
+          aria-label={t('pos.lockScreen')}
+        >
+          <Lock size={22} strokeWidth={2} aria-hidden />
+        </button>
+
+        <OnScreenKeyboardButton variant="bottom-nav" />
+
+        {!collapsed ? (
+          <>
+            <NavLink
+              to="/cashier/support"
+              className={({ isActive }) => navClass(isActive)}
+              title={t('nav.support')}
+            >
+              <Headphones size={22} strokeWidth={2} aria-hidden />
+              <span>{t('nav.support')}</span>
+            </NavLink>
+            <NavLink
+              to="/cashier/handbook/cashierPos"
+              className={({ isActive }) => navClass(isActive)}
+              title={t('nav.handbook')}
+            >
+              <BookOpen size={22} strokeWidth={2} aria-hidden />
+              <span>{t('nav.handbook')}</span>
+            </NavLink>
+            <button
+              type="button"
+              className={bottomNavLinkClass(false)}
+              onClick={openShift}
+              disabled={!storeId}
+              title={t('pos.navShift')}
+            >
+              <Clock size={22} strokeWidth={2} aria-hidden />
+              <span>{t('pos.navShift')}</span>
+            </button>
+            <NavLink
+              to="/cashier/sales"
+              className={({ isActive }) => navClass(isActive)}
+              title={t('pos.navMySales')}
+            >
+              <Receipt size={22} strokeWidth={2} aria-hidden />
+              <span>{t('pos.navMySales')}</span>
+            </NavLink>
+            <CashierBottomNavProducts t={t} />
+            {isRestaurant ? <CashierBottomNavTables t={t} /> : <CashierBottomNavRegister t={t} />}
+          </>
+        ) : null}
+
+        <button
+          type="button"
+          className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon cashier-bottom-nav__btn--toggle"
+          onClick={toggleCollapsed}
+          title={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
+          aria-label={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
+          aria-expanded={!collapsed}
+        >
+          {collapsed ? <ChevronUp size={22} strokeWidth={2} /> : <ChevronDown size={22} strokeWidth={2} />}
+        </button>
+      </nav>
+    </div>
   );
 }

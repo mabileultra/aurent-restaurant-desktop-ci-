@@ -146,3 +146,50 @@
     font-size: clamp(0.8125rem, 3.4cqi, 1rem);
   }
 }
+
+/* POS desktop — сохраняем читаемость клавиш и кнопок оплаты */
+@container pay-shell (max-height: 720px) {
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail .pos-pay-cash__hint {
+    display: block;
+  }
+
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-methods__tile,
+  .cashier-app.cashier-app--pos-desktop .pos-register-card-providers__btn {
+    min-height: 44px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+    min-height: var(--pos-keypad-cell-min, 48px);
+    font-size: var(--pos-keypad-digit-size);
+  }
+}
+
+@container pay-shell (max-height: 600px) {
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-methods__tile,
+  .cashier-app.cashier-app--pos-desktop .pos-register-card-providers__btn {
+    min-height: 42px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+    min-height: var(--pos-keypad-cell-min, 48px);
+    font-size: var(--pos-keypad-digit-size);
+  }
+}
+
+@container pay-shell (max-height: 520px) {
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-methods__tile,
+  .cashier-app.cashier-app--pos-desktop .pos-register-card-providers__btn {
+    min-height: 40px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__tool,
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-footer__sale {
+    min-height: 48px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
+  .cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
+    min-height: var(--pos-keypad-cell-min, 48px);
+    font-size: var(--pos-keypad-digit-size);
+  }
+}

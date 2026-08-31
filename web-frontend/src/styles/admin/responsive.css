@@ -1,33 +1,5 @@
-/* Админка: адаптив для телефона, планшета и десктопа */
+/* Admin: доп. адаптив (базовый shell — styles/tokens/shell-layout.css) */
 
-html,
-body,
-#root {
-  max-width: 100%;
-  overflow-x: hidden;
-}
-
-.admin-shell {
-  min-height: 100dvh;
-  height: 100dvh;
-}
-
-.admin-main {
-  min-width: 0;
-  -webkit-overflow-scrolling: touch;
-}
-
-.admin-main > * {
-  max-width: 100%;
-  min-width: 0;
-}
-
-/* Таблицы и широкие блоки */
-.admin-main .overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Карточки KPI / формы */
 @media (max-width: 640px) {
   .admin-main h1 {
     font-size: 1.125rem;
@@ -36,20 +8,12 @@ body,
   .admin-main .text-2xl {
     font-size: 1.25rem;
   }
-}
 
-/* Модалки на узком экране */
-@media (max-width: 640px) {
   .admin-main [class*='max-w-3xl'],
   .admin-main [class*='max-w-2xl'],
   .admin-main [class*='max-w-lg'] {
     max-width: calc(100vw - 1.5rem);
   }
-}
-
-/* Recharts — не вылезать за контейнер */
-.admin-main .recharts-responsive-container {
-  min-width: 0 !important;
 }
 
 @media (max-width: 1023px) {

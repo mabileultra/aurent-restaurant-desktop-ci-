@@ -1,0 +1,24 @@
+/* Semantic brand colors — единый источник для всех оболочек */
+
+:root {
+  --color-brand: #006847;
+  --color-brand-hover: #005538;
+  --color-brand-soft: #e8edf3;
+  --color-brand-on: #ffffff;
+  --color-ink: #1e3a5f;
+  --color-text: #0f172a;
+  --color-muted: #64748b;
+  --color-border: #e2e8f0;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-danger: #dc2626;
+  --color-money: #1e3a5f;
+}
+
+.dark {
+  --color-text: #f1f5f9;
+  --color-muted: #94a3b8;
+  --color-border: #334155;
+  --color-surface: #0f172a;
+  --color-surface-muted: #1e293b;
+}

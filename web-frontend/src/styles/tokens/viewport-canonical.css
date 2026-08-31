@@ -1,0 +1,48 @@
+/*
+ * Канонический профиль 1024×768 — касса, admin, platform, finance, restaurant.
+ * Класс html.app-viewport--canonical выставляет AppViewportSync.
+ */
+
+/* ── Admin / platform: компактные заголовки ── */
+html.app-viewport--canonical .admin-main h1 {
+  font-size: var(--text-xl);
+}
+
+html.app-viewport--canonical .admin-main .text-2xl {
+  font-size: var(--text-2xl);
+}
+
+/* ── Finance: одна колонка на каноне ── */
+html.app-viewport--canonical .finance-dashboard-panels {
+  grid-template-columns: 1fr;
+  gap: var(--shell-gap);
+}
+
+html.app-viewport--canonical .finance-kpi-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--shell-gap);
+}
+
+html.app-viewport--canonical .finance-kpi {
+  padding: 0.875rem 1rem;
+}
+
+html.app-viewport--canonical .finance-kpi__value {
+  font-size: var(--text-2xl);
+}
+
+/* ── Platform email ── */
+html.app-viewport--canonical .platform-email-page__grid {
+  grid-template-columns: 1fr;
+}
+
+/* Pharmacy / restaurant — базовый размер на каноне */
+html.app-viewport--canonical .pharmacy-cashier,
+html.app-viewport--canonical .restaurant-cashier {
+  font-size: var(--shell-font-size);
+}
+
+html.app-viewport--canonical .restaurant-cashier__split--tables .cashier-register__stage,
+html.app-viewport--canonical .restaurant-cashier__split--catalog .cashier-register__stage {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, var(--cashier-pay-w, 340px));
+}

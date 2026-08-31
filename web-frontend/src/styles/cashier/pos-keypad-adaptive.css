@@ -87,3 +87,32 @@
     --pos-keypad-action-size: 0.6875rem;
   }
 }
+
+/* POS desktop — не сжимать клавиши ниже минимума */
+@container pay-shell (max-height: 640px) {
+  .cashier-app.cashier-app--pos-desktop .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+  .cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail .pos-keypad__grid {
+    --pos-keypad-gap: 6px;
+    --pos-keypad-cell: clamp(
+      var(--pos-keypad-cell-min, 48px),
+      min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+      68px
+    );
+    --pos-keypad-digit-size: 1.3125rem;
+    --pos-keypad-action-size: 0.75rem;
+  }
+}
+
+@container pay-shell (max-height: 520px) {
+  .cashier-app.cashier-app--pos-desktop .cashier-register__pay-shell .pos-pay-panel--register-rail .pos-keypad__grid,
+  .cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail .pos-keypad__grid {
+    --pos-keypad-gap: 6px;
+    --pos-keypad-cell: clamp(
+      var(--pos-keypad-cell-min, 48px),
+      min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+      60px
+    );
+    --pos-keypad-digit-size: 1.25rem;
+    --pos-keypad-action-size: 0.75rem;
+  }
+}

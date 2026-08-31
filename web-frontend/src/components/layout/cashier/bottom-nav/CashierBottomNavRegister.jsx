@@ -37,7 +37,7 @@ export default function CashierBottomNavRegister({ t }) {
       onClick={openRegister}
       title={t('pos.navSale')}
     >
-      <ScanLine size={28} strokeWidth={2} aria-hidden />
+      <ScanLine size={22} strokeWidth={2} aria-hidden />
       <span>{t('pos.navSale')}</span>
     </button>
   );

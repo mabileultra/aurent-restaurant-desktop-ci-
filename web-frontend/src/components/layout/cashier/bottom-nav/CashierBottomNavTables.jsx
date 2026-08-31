@@ -34,7 +34,7 @@ export default function CashierBottomNavTables({ t }) {
       onClick={openTables}
       title={t('restaurantCashier.navTables')}
     >
-      <UtensilsCrossed size={28} strokeWidth={2} aria-hidden />
+      <UtensilsCrossed size={22} strokeWidth={2} aria-hidden />
       <span>{t('restaurantCashier.navTables')}</span>
     </button>
   );

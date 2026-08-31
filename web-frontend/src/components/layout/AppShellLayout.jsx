@@ -30,6 +30,7 @@ import {
   RESTAURANT_CHILDREN,
 } from './layoutNavConfig';
 import { syncAuthSession } from '../../utils/syncAuthSession';
+import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
 import '../../styles/cashier/modals/index.css';
 
 export default function AppShellLayout() {
@@ -39,9 +40,13 @@ export default function AppShellLayout() {
   const { user } = useAuthStore();
   const { hasModule } = useModuleAccess();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
-  const [sidebarOpen, setSidebarOpen] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
+  const [sidebarOpen, setSidebarOpen] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(VIEWPORT_MEDIA.desktop).matches
+  );
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(() => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches);
+  const [isDesktop, setIsDesktop] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia(VIEWPORT_MEDIA.desktop).matches
+  );
   const [sidebarNavExpanded, setSidebarNavExpanded] = useState(true);
   const [goodsOpen, setGoodsOpen] = useState(false);
   const [stockOpen, setStockOpen] = useState(false);
@@ -74,7 +79,7 @@ export default function AppShellLayout() {
   const restaurantNav = filterByModule(RESTAURANT_CHILDREN);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
+    const mq = window.matchMedia(VIEWPORT_MEDIA.desktop);
     const syncViewport = () => {
       const desktop = mq.matches;
       setIsDesktop(desktop);

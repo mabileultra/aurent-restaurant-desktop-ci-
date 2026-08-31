@@ -1,0 +1,33 @@
+/* Pharmacy — профиль 1024×768 и POS desktop */
+
+html.app-viewport--canonical .pharmacy-cashier__main,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier__main {
+  grid-template-rows: minmax(112px, 0.88fr) minmax(150px, 1fr);
+  gap: var(--cashier-gap, 6px);
+}
+
+html.app-viewport--canonical .pharmacy-cashier__pane-head,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier__pane-head {
+  padding: 6px 10px;
+  gap: 8px;
+}
+
+html.app-viewport--canonical .pharmacy-cashier__pane-title,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier__pane-title {
+  font-size: 0.6875rem;
+}
+
+html.app-viewport--canonical .pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier__split.cashier-register__split--register .cashier-register__stage {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, var(--cashier-pay-w, 340px));
+}
+
+html.app-viewport--canonical .pharmacy-cashier .pharmacy-search-table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier .pharmacy-search-table {
+  font-size: 0.8125rem;
+}
+
+html.app-viewport--canonical .pharmacy-cashier .pharmacy-cart-table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cashier .pharmacy-cart-table {
+  font-size: 0.8125rem;
+}

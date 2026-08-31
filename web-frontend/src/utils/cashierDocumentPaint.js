@@ -3,12 +3,10 @@
 export const CASHIER_PAINT = {
   dark: {
     bg: '#0c1018',
-    scheme: 'dark',
     themeColor: '#0c1018',
   },
   light: {
     bg: '#e9eef4',
-    scheme: 'light',
     themeColor: '#e9eef4',
   },
 };
@@ -19,7 +17,7 @@ export function syncCashierDocumentPaint(theme) {
   const paint = CASHIER_PAINT[theme] || CASHIER_PAINT.dark;
   const root = document.documentElement;
   root.style.backgroundColor = paint.bg;
-  root.style.colorScheme = paint.scheme;
+  /* color-scheme только на .cashier-app — не на <html>, иначе админ-инпуты чёрные в Electron */
   if (document.body) {
     document.body.style.backgroundColor = paint.bg;
   }

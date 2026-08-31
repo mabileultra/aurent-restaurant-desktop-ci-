@@ -65,9 +65,9 @@
 }
 
 .cashier-app .pos-product-card {
-  min-height: clamp(90px, 20cqi, 112px);
-  height: 100%;
-  padding: 12px 14px;
+  min-height: clamp(84px, 18cqi, 104px);
+  height: auto;
+  padding: 10px 12px;
 }
 
 .cashier-app .pos-product-card__name {

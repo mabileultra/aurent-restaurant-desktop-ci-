@@ -1,0 +1,101 @@
+/*
+ * Admin modals, dropdowns, portaled menus — 1024×768
+ */
+
+html.app-theme--admin .base-select__menu,
+html.app-theme--admin .base-select__trigger {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+html.app-theme--admin .base-select__option {
+  color: #0f172a;
+}
+
+html.app-theme--admin .base-select__option:hover,
+html.app-theme--admin .base-select__option.is-highlighted {
+  background-color: #f1f5f9;
+}
+
+/* BaseModal и любые fixed-оверлеи (модалки admin/platform) */
+html.app-theme--admin .fixed.inset-0 {
+  color-scheme: light;
+}
+
+html.app-theme--admin .fixed.inset-0 input,
+html.app-theme--admin .fixed.inset-0 select,
+html.app-theme--admin .fixed.inset-0 textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+html.app-viewport--canonical .fixed.inset-0.flex.items-center.justify-center {
+  padding: var(--shell-pad, 12px);
+}
+
+html.app-viewport--canonical .fixed.inset-0.flex.items-center.justify-center > div[role='dialog'],
+html.app-viewport--canonical .fixed.inset-0.flex.items-center.justify-center > .rounded-xl {
+  max-height: calc(100dvh - var(--shell-pad, 12px) * 2);
+  overflow-y: auto;
+}
+
+html.app-viewport--canonical .finance-detail-modal {
+  max-width: min(100%, 36rem);
+  max-height: calc(100dvh - 1.5rem);
+}
+
+html.app-viewport--canonical .finance-detail-modal--wide {
+  max-width: min(100%, 42rem);
+}
+
+html.app-viewport--canonical .finance-detail-modal__grid {
+  grid-template-columns: 1fr;
+}
+
+html.app-viewport--canonical .finance-detail-modal__hero-amount {
+  font-size: 1.75rem;
+}
+
+html.app-viewport--canonical .finance-detail-modal__header,
+html.app-viewport--canonical .finance-detail-modal__footer {
+  padding-inline: 1rem;
+}
+
+html.app-viewport--canonical .finance-detail-modal__body {
+  padding-inline: 1rem;
+}
+
+html.app-viewport--canonical .platform-desktop-notifications-page__grid {
+  grid-template-columns: 1fr;
+}
+
+html.app-viewport--canonical .platform-desktop-notifications-field input,
+html.app-viewport--canonical .platform-desktop-notifications-field textarea,
+html.app-viewport--canonical .platform-desktop-notifications-field select {
+  padding: 8px 10px;
+  font-size: 0.8125rem;
+}
+
+/* Product lookup / tasnif portaled panels */
+html.app-theme--admin .product-lookup-select__menu,
+html.app-theme--admin .tasnif-search-panel {
+  color-scheme: light;
+  background-color: #ffffff;
+}
+
+/* Weight modal в admin catalog (если открыт вне кассы) */
+html.app-theme--admin .weight-entry-modal__input {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+/* Order wizard portal */
+html.app-theme--admin .order-add-wizard input,
+html.app-theme--admin .order-add-wizard select,
+html.app-theme--admin .order-add-wizard textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+}

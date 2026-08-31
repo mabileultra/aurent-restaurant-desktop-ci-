@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" href="/brand/logo1.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0c1018" />
     <style>
@@ -26,14 +26,14 @@
             if (cashierTheme !== 'light' && cashierTheme !== 'dark') cashierTheme = 'dark';
             document.documentElement.classList.remove('cashier-theme--light', 'cashier-theme--dark');
             document.documentElement.classList.add(
-              cashierTheme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark'
+              cashierTheme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark',
+              'app-theme--cashier'
             );
+            document.documentElement.classList.remove('app-theme--admin');
           }
           if (isCashier) {
             var bg = cashierTheme === 'light' ? '#e9eef4' : '#0c1018';
-            var scheme = cashierTheme === 'light' ? 'light' : 'dark';
             document.documentElement.style.backgroundColor = bg;
-            document.documentElement.style.colorScheme = scheme;
             document.addEventListener('DOMContentLoaded', function () {
               document.body.style.backgroundColor = bg;
             });
@@ -41,6 +41,7 @@
             if (meta) meta.setAttribute('content', bg);
           } else {
             document.documentElement.style.colorScheme = 'light';
+            document.documentElement.classList.add('app-theme--admin');
             localStorage.removeItem('pos-theme');
           }
         } catch (e) {

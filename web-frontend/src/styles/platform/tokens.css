@@ -1,0 +1,10 @@
+/* Platform / super-admin shell */
+.platform-shell {
+  --platform-sidebar-w: var(--shell-sidebar-w, 256px);
+  --platform-header-h: var(--shell-header-h, 56px);
+  --platform-main-pad: var(--shell-pad, 16px);
+}
+
+html.app-viewport--canonical .platform-shell {
+  --platform-sidebar-w: var(--shell-sidebar-w, 200px);
+}

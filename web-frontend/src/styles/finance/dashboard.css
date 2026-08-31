@@ -43,7 +43,7 @@
 
 .finance-dashboard-panels {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
   align-items: stretch;
 }
@@ -52,9 +52,9 @@
   min-height: 0;
 }
 
-@media (max-width: 1100px) {
+@media (min-width: 1280px) {
   .finance-dashboard-panels {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1.1fr 0.9fr;
   }
 }
 

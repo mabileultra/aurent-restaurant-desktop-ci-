@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { authApi } from '../../../services/api';
 import { useCashierLock } from '../../../contexts/CashierLockContext';
 import { useAuthStore } from '../../../store/authStore';
-import { useCashierTouchLayout } from '../../../hooks/useCashierTouchLayout';
+import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
 import '../../../styles/cashier/pin-login.css';
 
 const PIN_MAX = 6;
@@ -19,7 +19,7 @@ export default function CashierLockOverlay() {
   const { locked, unlock } = useCashierLock();
   const user = useAuthStore((s) => s.user);
   const isCashier = user?.role === 'CASHIER';
-  const touchLayout = useCashierTouchLayout();
+  const touchLayout = useCashierPosTouchLayout();
   const [secret, setSecret] = useState('');
   const [submitting, setSubmitting] = useState(false);
 

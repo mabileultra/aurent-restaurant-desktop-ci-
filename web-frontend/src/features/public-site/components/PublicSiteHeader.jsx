@@ -23,7 +23,7 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
         <div className="public-site-header__left">
           <Link to="/login" className="public-site-header__brand">
             <span className="public-site-header__mark">
-              <BrandMark size={18} iconClassName="text-white" />
+              <BrandMark size={18} />
             </span>
             <span className="public-site-header__name">{displayAppName() || 'Aurent'}</span>
           </Link>

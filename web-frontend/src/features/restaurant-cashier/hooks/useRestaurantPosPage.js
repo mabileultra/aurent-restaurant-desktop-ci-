@@ -7,6 +7,7 @@ import { restaurantApi } from '../../../api/restaurant.api';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShift } from '../../../hooks/useCashierShift';
 import { useCashierShiftModal } from '../../../contexts/CashierShiftModalContext';
+import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 import { usePosProductsCatalog } from '../../cashier/hooks/pos/usePosProductsCatalog';
 import { usePosCatalogViewMode } from '../../cashier/hooks/pos/usePosCatalogViewMode';
 import { useRestaurantNavigation } from './useRestaurantNavigation';
@@ -275,7 +276,7 @@ export function useRestaurantPosPage() {
     return undefined;
   }, [restaurantPane, storeId, payOpen]);
 
-  const { data: shift, isFetched: shiftFetched } = useCashierShift(storeId);
+  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId);
   const shiftIsOpen = shift?.status === 'OPEN';
 
   const addProductToSession = useCallback((product) => {
@@ -316,10 +317,13 @@ export function useRestaurantPosPage() {
   }, [weightModalProduct, sessionId, addLineMutation, t]);
 
   useEffect(() => {
-    if (!storeId || !shiftFetched || shiftIsOpen || shiftAutoPromptedRef.current) return;
+    if (shiftAutoPromptedRef.current) return;
+    if (!storeId || !shouldAutoPromptCashierShift({ shiftFetched, shiftIsOpen, shiftQueryError })) {
+      return;
+    }
     shiftAutoPromptedRef.current = true;
     openShiftModal();
-  }, [storeId, shiftFetched, shiftIsOpen, openShiftModal]);
+  }, [storeId, shiftFetched, shiftIsOpen, shiftQueryError, openShiftModal]);
 
   const handleOpenPaymentFlow = (options) => {
     if (!options?.step) return;

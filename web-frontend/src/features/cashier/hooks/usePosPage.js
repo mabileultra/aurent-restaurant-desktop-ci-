@@ -12,6 +12,7 @@ import { usePosProductsCatalog } from './pos/usePosProductsCatalog';
 import { usePosNavigation } from './pos/usePosNavigation';
 import { usePosCartHandlers } from './pos/usePosCartHandlers';
 import { usePosCheckout } from './pos/usePosCheckout';
+import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 
 export function usePosPage() {
   const { t } = useTranslation();
@@ -75,7 +76,7 @@ export function usePosPage() {
     setPayFlowOptions(null);
   }, []);
 
-  const { data: shift, isFetched: shiftFetched } = useCashierShift(storeId);
+  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId);
   const shiftIsOpen = shift?.status === 'OPEN';
 
   const total = getTotal();
@@ -111,10 +112,12 @@ export function usePosPage() {
 
   useEffect(() => {
     if (shiftAutoPromptedRef.current) return;
-    if (!storeId || !shiftFetched || shiftIsOpen) return;
+    if (!storeId || !shouldAutoPromptCashierShift({ shiftFetched, shiftIsOpen, shiftQueryError })) {
+      return;
+    }
     shiftAutoPromptedRef.current = true;
     openShiftModal();
-  }, [storeId, shiftFetched, shiftIsOpen, openShiftModal]);
+  }, [storeId, shiftFetched, shiftIsOpen, shiftQueryError, openShiftModal]);
 
   useEffect(() => {
     if (location.state?.pane !== 'catalog') return;

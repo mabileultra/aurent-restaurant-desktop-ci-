@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
-import { logoutAndResetSession } from '../utils/authSession';
-import { isAuthPage, normalizeCompanyLoginCode, redirectToLogin } from '../utils/authLogin';
+import { normalizeCompanyLoginCode } from '../utils/authLogin';
+import { forceAuthReLogin } from '../utils/authSessionExpiry';
 import { isApiNetworkError } from '../utils/apiNetworkError';
 import {
   markApiUnreachable,
@@ -62,24 +62,22 @@ api.interceptors.response.use(
       markApiUnreachable();
       scheduleConnectivityRefreshFromApi();
     }
-    if (status === 403) {
-      return Promise.reject(error);
-    }
+    const hasStoredToken = Boolean(useAuthStore.getState().token);
+    const shouldAttemptRefresh =
+      !original._retry && (status === 401 || (status === 403 && hasStoredToken));
+
     if (
       isDesktopOfflineBridge() &&
       (isApiNetworkError(error) || status === 502 || status === 503 || status === 504)
     ) {
       return Promise.reject(error);
     }
-    if (status === 401 && !original._retry) {
+    if (shouldAttemptRefresh) {
       original._retry = true;
       const { token } = useAuthStore.getState();
       const jwtParts = typeof token === 'string' ? token.split('.').length : 0;
       if (!token || jwtParts !== 3) {
-        logoutAndResetSession();
-        if (!isAuthPage(window.location.pathname)) {
-          redirectToLogin();
-        }
+        forceAuthReLogin();
         return Promise.reject(error);
       }
       try {
@@ -102,11 +100,12 @@ api.interceptors.response.use(
         if (isApiNetworkError(refreshErr)) {
           return Promise.reject(error);
         }
-        logoutAndResetSession();
-        if (!isAuthPage(window.location.pathname)) {
-          redirectToLogin();
-        }
+        forceAuthReLogin();
+        return Promise.reject(refreshErr);
       }
+    }
+    if (status === 403) {
+      return Promise.reject(error);
     }
     return Promise.reject(error);
   }

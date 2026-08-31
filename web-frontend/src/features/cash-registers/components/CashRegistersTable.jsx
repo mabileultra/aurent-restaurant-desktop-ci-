@@ -11,8 +11,8 @@ export default function CashRegistersTable({
   onToggleStatus,
 }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[900px] text-sm">
+    <div className="admin-data-table-wrap overflow-x-auto">
+      <table className="admin-data-table admin-data-table--wide w-full text-sm">
         <thead>
           <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
             <th className="px-4 py-3">{t('cashRegisters.colStore')}</th>

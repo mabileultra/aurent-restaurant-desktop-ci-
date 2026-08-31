@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
+import { VIEWPORT_MEDIA } from '../utils/viewportBreakpoints';
+
 /** Компактная вёрстка кассы только ниже 800px; от 800px — десктопная раскладка. */
 export const CASHIER_LAYOUT_MIN_WIDTH = 800;
-export const CASHIER_COMPACT_MEDIA = '(max-width: 799px)';
+export const CASHIER_COMPACT_MEDIA = VIEWPORT_MEDIA.compact;
 
 export function useCashierCompactLayout() {
   const [compact, setCompact] = useState(

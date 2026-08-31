@@ -2,6 +2,7 @@ import { MoreVertical } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { fmtMoney } from '../../../../utils/formatMoney';
 import { fmtCashRegisterDateTime } from '../../utils/cashRegisterDisplayUtils';
+import '../../../../styles/cash-registers/z-reports-table.css';
 
 const COL_COUNT = 10;
 
@@ -23,9 +24,9 @@ export default function ZReportsTable({
   onOpenRowMenu,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div className="z-reports-table-wrap overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[1100px] text-sm">
+        <table className="z-reports-table w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
               <th className="w-10 px-3 py-3">
@@ -85,7 +86,7 @@ export default function ZReportsTable({
                   <td className="px-3 py-2 text-right text-base font-bold text-slate-900 dark:text-white">
                     {fmtMoney(row.totalAmount)}
                   </td>
-                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                  <td className="z-reports-table__payments px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
                     <div className="space-y-0.5">
                       <div>{t('zReports.saleCash')}: {fmtMoney(row.cashTotal)}</div>
                       <div>{t('zReports.saleCard')}: {fmtMoney(row.cardTotal)}</div>

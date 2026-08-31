@@ -1,5 +1,6 @@
 import { Menu, X } from 'lucide-react';
-import LanguageSwitcher from '../shared/LanguageSwitcher';
+import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
+import BrandMark from '../shared/BrandMark';
 
 export default function AppTopHeader({
   t,
@@ -22,6 +23,9 @@ export default function AppTopHeader({
         >
           {isDesktop ? (sidebarOpen ? <X size={20} /> : <Menu size={20} />) : <Menu size={20} />}
         </button>
+        <div className="app-top-header__brand hidden sm:block">
+          <BrandMark variant="full" height={28} />
+        </div>
         <div className="min-w-0 lg:hidden">
           <p className="truncate text-sm font-semibold text-slate-900 dark:text-white">{displayAppName()}</p>
           <p className="truncate text-xs text-slate-500 dark:text-slate-400">{user?.fullName}</p>
@@ -29,6 +33,7 @@ export default function AppTopHeader({
       </div>
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
+        <OnScreenKeyboardButton variant="header" />
         <LanguageSwitcher />
         <div className="flex items-center gap-2 text-sm">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 font-bold text-white">

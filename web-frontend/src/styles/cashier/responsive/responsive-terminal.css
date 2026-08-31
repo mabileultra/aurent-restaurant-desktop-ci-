@@ -1,4 +1,4 @@
-/* POS terminal — доп. правила поверх pos-display-profiles.css */
+/* POS terminal — доп. правила поверх pos-profiles.css */
 @media (min-width: 1024px) and (max-width: 1366px) and (max-height: 900px) {
   .cashier-app.cashier-app--pos-screen {
     --cashier-gap: 8px;
@@ -13,12 +13,12 @@
   }
 
   .cashier-app.cashier-app--pos-screen .pos-product-grid {
-    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
   }
 
   .cashier-app.cashier-app--pos-screen .pos-product-card {
-    min-height: clamp(96px, 20cqi, 118px);
-    height: 100%;
+    min-height: clamp(72px, 16cqi, 88px);
+    height: auto;
   }
 
   .cashier-app.cashier-app--pos-screen .pos-order-panel__head {

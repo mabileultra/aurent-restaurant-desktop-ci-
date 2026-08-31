@@ -1,5 +1,6 @@
 import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
+import BrandMark from '../../shared/BrandMark';
 import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
@@ -28,7 +29,10 @@ export default function CashierPosTopbar({
         <div className="cashier-topbar__brand-block">
           <CashierDesktopMenu appName={displayAppName()} />
           {!isDesktopApp ? (
-            <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
+            <>
+              <BrandMark variant="icon" size={32} className="d-md-none cashier-topbar__brand-icon" />
+              <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
+            </>
           ) : null}
           <div className="cashier-topbar__terminal-strip d-none d-md-flex">
             <CashierTopbarTerminalMeta

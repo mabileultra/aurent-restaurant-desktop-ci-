@@ -90,7 +90,7 @@ export default function UserBrandingSettingsPanel() {
 
         <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500">
-            <BrandMark size={28} iconClassName="text-white" />
+            <BrandMark size={28} />
           </div>
           <div className="min-w-0">
             <p className="text-xs text-slate-500 dark:text-slate-400">{t('tenantSettings.preview')}</p>

@@ -11,7 +11,7 @@ import { useCashierCompactLayout } from '../../../hooks/useCashierCompactLayout'
 import { useCartStore } from '../../../store/cartStore';
 import { usePosProductsCatalog } from '../../cashier/hooks/pos/usePosProductsCatalog';
 import { usePosCheckout } from '../../cashier/hooks/pos/usePosCheckout';
-import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
+import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -103,7 +103,7 @@ export function usePharmacyPosPage() {
     catalog.searchActive,
   ]);
 
-  const { data: shift, isFetched: shiftFetched } = useCashierShift(storeId);
+  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId);
   const shiftIsOpen = shift?.status === 'OPEN';
 
   const total = getTotal();
@@ -139,10 +139,12 @@ export function usePharmacyPosPage() {
 
   useEffect(() => {
     if (shiftAutoPromptedRef.current) return;
-    if (!storeId || !shiftFetched || shiftIsOpen) return;
+    if (!storeId || !shouldAutoPromptCashierShift({ shiftFetched, shiftIsOpen, shiftQueryError })) {
+      return;
+    }
     shiftAutoPromptedRef.current = true;
     openShiftModal();
-  }, [storeId, shiftFetched, shiftIsOpen, openShiftModal]);
+  }, [storeId, shiftFetched, shiftIsOpen, shiftQueryError, openShiftModal]);
 
   useEffect(() => {
     if (location.state?.pane !== 'catalog' && location.state?.pane !== 'register') return;

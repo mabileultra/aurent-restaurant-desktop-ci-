@@ -810,7 +810,7 @@
   margin-top: 1rem;
 }
 
-@media (max-width: 992px) {
+@media (max-width: 799px) {
   .restaurant-cashier__split--tables .cashier-register__stage,
   .restaurant-cashier__split--catalog .cashier-register__stage {
     grid-template-columns: 1fr;

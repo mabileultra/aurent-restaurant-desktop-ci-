@@ -10,6 +10,7 @@ import ShiftReportPrintBody from './ShiftReportPrintBody';
 import ThermalReportPrintPortal from '../../../components/shared/ThermalReportPrintPortal';
 import { useAuthStore } from '../../../store/authStore';
 import { useOpenCashierShift, useCloseCashierShift, shiftQueryKey } from '../../../hooks/useCashierShift';
+import { resolvePosShiftOpenErrorMessage } from '../../../utils/resolvePosShiftOpenError';
 
 export default function CashierShiftModal({
   open,
@@ -190,7 +191,10 @@ export default function CashierShiftModal({
                       onShiftUpdated?.(openedShift);
                       onClose();
                     },
-                    onError: (e) => toast.error(e.response?.data?.message ?? t('pos.shiftOpenFailed')),
+                    onError: (e) =>
+                      toast.error(resolvePosShiftOpenErrorMessage(e, t, storeId), {
+                        id: 'pos-shift-open-error',
+                      }),
                   })
                 }
               >

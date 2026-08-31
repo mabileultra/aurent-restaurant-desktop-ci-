@@ -1,0 +1,7 @@
+/* Admin shell tokens — наследует styles/tokens/ */
+.admin-shell {
+  --admin-sidebar-w: var(--shell-sidebar-w, 240px);
+  --admin-sidebar-w-collapsed: var(--shell-sidebar-w-collapsed, 64px);
+  --admin-header-h: var(--shell-header-h, 56px);
+  --admin-main-pad: var(--shell-pad, 16px);
+}

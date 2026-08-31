@@ -28,7 +28,7 @@ export default function CashierBottomNavProducts({ t }) {
       onClick={openCatalog}
       title={t('pos.tabCatalog')}
     >
-      <Package size={28} strokeWidth={2} aria-hidden />
+      <Package size={22} strokeWidth={2} aria-hidden />
       <span>{t('pos.tabCatalog')}</span>
     </button>
   );

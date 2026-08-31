@@ -10,6 +10,9 @@ import {
   Scale,
   Tag,
 } from 'lucide-react';
+import BrandMark from '../../../../components/shared/BrandMark';
+import { isDesktopCashier } from '../../../../utils/authLogin';
+import { BRAND_LOGO_SIZES } from '../../../../config/brandLogos';
 
 export default function CashierDesktopMenuPanel({
   appName,
@@ -33,6 +36,7 @@ export default function CashierDesktopMenuPanel({
   } = menu;
 
   const label = appName || 'Aurent';
+  const desktop = isDesktopCashier();
 
   return (
     <div
@@ -48,7 +52,18 @@ export default function CashierDesktopMenuPanel({
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
       >
-        <span className="cashier-desktop-menu__label">{label}</span>
+        {desktop ? (
+          <BrandMark
+            variant="full"
+            height={BRAND_LOGO_SIZES.fullDesktop}
+            className="cashier-desktop-menu__logo"
+          />
+        ) : (
+          <>
+            <BrandMark variant="icon" size={28} />
+            <span className="cashier-desktop-menu__label">{label}</span>
+          </>
+        )}
         <ChevronDown size={16} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
       </button>
       <div className="cashier-desktop-menu__panel" role="menu">

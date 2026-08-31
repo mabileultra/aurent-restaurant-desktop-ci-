@@ -139,7 +139,7 @@
 }
 
 @media (max-height: 720px) {
-  .cashier-app {
+  .cashier-app:not(.cashier-app--pos-desktop) {
     --pos-keypad-key-h: 50px;
     --pos-keypad-digit-size: 1.25rem;
     --pos-keypad-quick-h: 42px;

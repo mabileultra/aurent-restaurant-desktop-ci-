@@ -2,6 +2,7 @@
 
 ```
 push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
+desktop-electron/** → Release Desktop → downloads/desktop/ на сервере
 ```
 
 На сервере вручную: `bash deploy/update.sh`.
@@ -18,6 +19,7 @@ push main → GitHub Actions → SSH → update.sh → deploy.sh → Docker
 | `update.sh` | Клон или каждое обновление | *(нет)* = `git pull` + `deploy.sh` · `bootstrap` = клон в `/opt/aurent-pos` |
 | `deploy.sh` | Сборка и запуск `docker-compose.prod.yml` | *(нет)* = полный деплой · `check` · `verify-db` · `sync-db-password` · `recreate <service>` |
 | `backup.sh` | Бэкапы Postgres | *(нет)* = создать · `restore <файл>` · `install-cron` |
+| `publish-desktop.sh` | Артефакты Electron → `downloads/desktop/` + `manifest.json` | *(нет)* |
 
 Дополнительно: `nginx-host.conf.example` (опциональный SSL на хосте).
 
@@ -41,7 +43,16 @@ cd /opt/aurent-pos
 bash deploy/update.sh
 ```
 
-Или merge в `main` → CI сам деплоит (secrets: `DEPLOY_SSH_KEY_B64`, `DEPLOY_HOST`, `DEPLOY_USER`).
+Или merge в `main` → CI сам деплоит.
+
+### GitHub Actions secrets
+
+| Secret | Назначение |
+|--------|------------|
+| `DEPLOY_SSH_KEY` или `DEPLOY_SSH_KEY_B64` | SSH-ключ для деплоя |
+| `DEPLOY_HOST` | IP или хост сервера |
+| `DEPLOY_USER` | SSH-пользователь (по умолчанию `root`) |
+| `DEPLOY_PUBLIC_URL` | Публичный URL, напр. `https://pos.example.com` — для `latest.yml` десктопа |
 
 ## Проверка
 
@@ -81,11 +92,25 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 ---
 
-## Касса и `/install`
+## Касса, веб и десктоп
 
-- UI кассы: `update.sh` → в приложении «Вид → Обновить»
-- Electron (`.exe`/`.dmg`) — репозиторий `aurent-cashier-desktop`, CI → `downloads/desktop/`
-- Страница: `https://домен/install`
+### Веб (браузер и Electron UI)
+
+- Merge в `main` (пути `web-frontend/**`, backend и т.д.) → workflow **Deploy Web Stack**
+- `index.html` без кэша — после деплоя достаточно **F5** или «Вид → Обновить» в кассе
+- Electron грузит UI с сервера (`AURENT_WEB_URL`) — отдельный релиз оболочки не нужен для UI-правок
+
+### Десктоп (установщик + автообновление)
+
+1. Поднимите версию в `desktop-electron/package.json` (`version`)
+2. Push в `main` с изменениями в `desktop-electron/**` → workflow **Release Desktop**
+3. CI собирает `.exe` (Windows) и `.dmg` (macOS), публикует в `/downloads/desktop/`:
+   - `latest.yml` / `latest-mac.yml` — для `electron-updater`
+   - `manifest.json` — для страницы `/install`
+4. Установленная касса проверяет обновления автоматически и через «Вид → Проверить обновления»
+5. Новые пользователи: `https://домен/install`
+
+Локально: `cd desktop-electron && npm run dist && bash ../deploy/publish-desktop.sh`
 
 ## SSL
 

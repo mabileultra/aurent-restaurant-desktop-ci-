@@ -1,0 +1,180 @@
+/*
+ * POS profiles — единый файл (бывш. pos-display-profiles + pos-desktop-layout)
+ * Эталон: 1024×768. POS desktop: .cashier-app--pos-desktop.cashier-app--pos-screen
+ */
+
+/* ── Базовый POS desktop (≥1024px) ── */
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen {
+  --cashier-font: 14px;
+  --cashier-gap: 8px;
+  --cashier-pad: 10px;
+  --cashier-pay-w: clamp(300px, 28%, 400px);
+  --cashier-bottom-nav-h: 104px;
+  --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
+  --pos-keypad-key-h: 56px;
+  --pos-keypad-gap: 8px;
+  --pos-keypad-digit-size: 1.375rem;
+  --pos-keypad-action-size: 0.8125rem;
+  --pos-keypad-quick-h: 48px;
+  --pos-keypad-clear-h: 48px;
+  --pos-keypad-cell-min: 48px;
+  --cashier-touch-min: 48px;
+  --cashier-topbar-control-h: 44px;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen .pos-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--cashier-gap);
+}
+
+/* ── Канон 1024×768 ── */
+@media (min-width: 1024px) and (max-width: 1280px) and (max-height: 820px) {
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen,
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 13px;
+    --cashier-gap: 6px;
+    --cashier-pad: 8px;
+    --cashier-pay-w: clamp(268px, 30%, 340px);
+    --cashier-bottom-nav-h: 96px;
+    --cashier-cart-cols-register: minmax(3.5rem, 1fr) minmax(5.25rem, 7.5rem) minmax(7rem, 8.5rem) minmax(5.25rem, 7.75rem) minmax(2.5rem, 3.25rem);
+    --pos-keypad-key-h: 52px;
+    --pos-keypad-cell-min: 48px;
+  }
+
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen .pos-product-grid,
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 5px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .cashier-topbar--pos {
+    min-height: 40px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn {
+    font-size: 0.6875rem;
+    gap: 4px;
+    padding: 6px 4px;
+  }
+}
+
+/* ── 12–14": 1024–1366, низкая высота ── */
+@media (min-width: 1024px) and (max-width: 1366px) and (max-height: 900px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-pay-w: clamp(280px, 32cqi, 360px);
+    --cashier-bottom-nav-h: clamp(96px, 11vh, 104px);
+  }
+}
+
+/* ── 15": 1280×1024, 1366×768 ── */
+@media (min-width: 1280px) and (max-width: 1600px) and (min-height: 768px) and (max-height: 1024px) {
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen,
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 14px;
+    --cashier-gap: 8px;
+    --cashier-pay-w: clamp(300px, 28%, 400px);
+    --cashier-bottom-nav-h: clamp(96px, 10vh, 104px);
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  }
+}
+
+/* ── Full HD+ ── */
+@media (min-width: 1600px) and (min-height: 900px) {
+  .cashier-app.cashier-app--pos-screen {
+    --cashier-font: 14px;
+    --cashier-gap: 10px;
+    --cashier-pad: 12px;
+    --cashier-pay-w: clamp(320px, 24vw, 440px);
+    --cashier-bottom-nav-h: 112px;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen {
+    --cashier-gap: 10px;
+    --cashier-pad: 12px;
+    --cashier-pay-w: clamp(320px, 26%, 420px);
+    --cashier-bottom-nav-h: 108px;
+    --pos-keypad-key-h: 58px;
+    --pos-keypad-digit-size: 1.4375rem;
+  }
+}
+
+/* Aspect ratio tweaks */
+@media (min-aspect-ratio: 4/5) and (max-aspect-ratio: 5/4) and (min-width: 1024px) {
+  .cashier-app.cashier-app--pos-screen .pos-catalog-panel__body {
+    padding-block: 10px;
+  }
+}
+
+@media (min-aspect-ratio: 16/10) and (max-height: 900px) {
+  .cashier-app.cashier-app--pos-screen .cashier-register__stage {
+    --cashier-pay-w: clamp(300px, 34%, 400px);
+  }
+}
+
+/* ── POS desktop: типографика чека (без cqi) ── */
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__name {
+  font-size: 0.8125rem;
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn span,
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__sum {
+  font-size: 0.9375rem;
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-order-panel__head {
+  padding: 12px 14px;
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-order-panel__grand span:last-child {
+  font-size: 1.375rem;
+}
+
+/* ── Keypad minimums ── */
+.cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
+  grid-template-rows: repeat(4, minmax(var(--pos-keypad-cell-min, 48px), 1fr));
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+  min-height: var(--pos-keypad-cell-min, 48px);
+  font-size: var(--pos-keypad-digit-size);
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
+  font-size: var(--pos-keypad-action-size);
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail .pos-keypad__grid {
+  --pos-keypad-cell: clamp(
+    var(--pos-keypad-cell-min, 48px),
+    min(var(--pos-keypad-cell-w), var(--pos-keypad-cell-h)),
+    72px
+  );
+  grid-template-rows: repeat(4, minmax(var(--pos-keypad-cell-min, 48px), var(--pos-keypad-cell)));
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail .pos-keypad__key {
+  min-height: var(--pos-keypad-cell-min, 48px);
+}
+
+@media (max-height: 720px) {
+  .cashier-app.cashier-app--pos-desktop {
+    --pos-keypad-key-h: 52px;
+    --pos-keypad-digit-size: 1.3125rem;
+    --pos-keypad-gap: 7px;
+    --pos-keypad-cell-min: 48px;
+  }
+}
