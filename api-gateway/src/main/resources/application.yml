@@ -46,11 +46,20 @@ spring:
           filters:
             - PreserveHostHeader
 
-        # Компании, platform UI, finance-sync admin — platform-service.
+        # Finance-sync admin — web-backend (данные outbox/backfill в pos_db).
+        - id: finance-sync-admin
+          uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/v1/admin/finance-sync/**
+          order: 0
+          filters:
+            - PreserveHostHeader
+
+        # Компании и platform UI — platform-service.
         - id: platform-service
           uri: ${PLATFORM_SERVICE_URL:http://127.0.0.1:8084}
           predicates:
-            - Path=/api/v1/companies/**, /api/v1/platform/**, /api/v1/admin/finance-sync/**
+            - Path=/api/v1/companies/**, /api/v1/platform/**
           order: 1
           filters:
             - PreserveHostHeader

@@ -26,7 +26,7 @@ function BreakdownList({ title, items, pagination }) {
           </div>
         ))}
       </div>
-      {pagination.total > pagination.pageSize ? (
+      {pagination.total > 0 ? (
         <TablePagination
           className="finance-pagination !border-0 !px-0"
           page={pagination.page}

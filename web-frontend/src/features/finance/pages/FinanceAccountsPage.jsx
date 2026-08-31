@@ -41,7 +41,7 @@ export default function FinanceAccountsPage() {
           isEmpty={!p.query.isLoading && p.allRows.length === 0}
           emptyMessage={p.t('finance.accounts.empty')}
           colSpan={6}
-          footer={pagination.total > pagination.pageSize ? (
+          footer={!p.query.isLoading ? (
             <TablePagination
               className="finance-pagination"
               page={pagination.page}

@@ -50,7 +50,7 @@ export default function FinanceCategoriesPage() {
           isEmpty={!pagination.rows.length && !(p.tab === 'income' ? p.incomeQuery.isLoading : p.expenseQuery.isLoading)}
           emptyMessage={p.t('common.noData')}
           colSpan={5}
-          footer={pagination.total > pagination.pageSize ? (
+          footer={!(p.tab === 'income' ? p.incomeQuery.isLoading : p.expenseQuery.isLoading) ? (
             <TablePagination
               className="finance-pagination"
               page={pagination.page}

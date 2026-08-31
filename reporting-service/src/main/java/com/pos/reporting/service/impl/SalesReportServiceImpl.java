@@ -27,16 +27,15 @@ public class SalesReportServiceImpl implements SalesReportService {
     @Override
     public SalesReportResponse salesReport(LocalDate from, LocalDate to) {
         Integer companyId = ReportingTenantContext.requireCompanyId();
-        BigDecimal totalRevenue = saleFactRepository.sumTotalByCompanyAndDateRange(companyId, from, to);
+        BigDecimal totalRevenue = nz(saleFactRepository.sumTotalByCompanyAndDateRange(companyId, from, to));
         long transactionCount = saleFactRepository.countByCompanyIdAndTransactionDateBetween(companyId, from, to);
         long totalItemsSold = saleFactRepository.sumItemsSoldByCompanyAndDateRange(companyId, from, to);
         BigDecimal averageTransactionValue = transactionCount > 0
             ? totalRevenue.divide(BigDecimal.valueOf(transactionCount), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
-        BigDecimal totalCostEstimate = saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(companyId, from, to);
-        if (totalCostEstimate == null) {
-            totalCostEstimate = BigDecimal.ZERO;
-        }
+        BigDecimal totalCostEstimate = nz(
+            saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(companyId, from, to)
+        );
         BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
         List<DailyPoint> dailyBreakdown = saleFactRepository.dailyRevenueByCompanyAndDateRange(companyId, from, to)
             .stream()
@@ -54,5 +53,9 @@ public class SalesReportServiceImpl implements SalesReportService {
             grossProfit,
             dailyBreakdown
         );
+    }
+
+    private static BigDecimal nz(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }

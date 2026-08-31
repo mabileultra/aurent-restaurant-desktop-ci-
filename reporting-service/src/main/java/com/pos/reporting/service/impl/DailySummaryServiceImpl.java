@@ -25,21 +25,18 @@ public class DailySummaryServiceImpl implements DailySummaryService {
     public DailySummaryResponse dailySummary(LocalDate date) {
         Integer companyId = ReportingTenantContext.requireCompanyId();
         LocalDate reportDate = date != null ? date : LocalDate.now();
-        BigDecimal totalRevenue = saleFactRepository.sumTotalByCompanyAndDateRange(
+        BigDecimal totalRevenue = nz(saleFactRepository.sumTotalByCompanyAndDateRange(
             companyId, reportDate, reportDate
-        );
+        ));
         long transactionCount = saleFactRepository.countByCompanyIdAndTransactionDateBetween(
             companyId, reportDate, reportDate
         );
         long itemsSold = saleFactRepository.sumItemsSoldByCompanyAndDateRange(
             companyId, reportDate, reportDate
         );
-        BigDecimal totalCostEstimate = saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(
+        BigDecimal totalCostEstimate = nz(saleItemFactRepository.sumCostEstimateByCompanyAndDateRange(
             companyId, reportDate, reportDate
-        );
-        if (totalCostEstimate == null) {
-            totalCostEstimate = BigDecimal.ZERO;
-        }
+        ));
         BigDecimal grossProfit = totalRevenue.subtract(totalCostEstimate);
         return new DailySummaryResponse(
             totalRevenue,
@@ -48,5 +45,9 @@ public class DailySummaryServiceImpl implements DailySummaryService {
             totalCostEstimate,
             grossProfit
         );
+    }
+
+    private static BigDecimal nz(BigDecimal value) {
+        return value != null ? value : BigDecimal.ZERO;
     }
 }

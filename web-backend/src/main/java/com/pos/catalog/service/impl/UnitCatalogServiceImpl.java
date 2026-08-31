@@ -10,6 +10,8 @@ import com.pos.catalog.repository.UnitRepository;
 import com.pos.catalog.service.UnitCatalogService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -32,7 +35,12 @@ public class UnitCatalogServiceImpl implements UnitCatalogService {
 
     @PostConstruct
     void warmCache() {
-        refreshCache();
+        try {
+            refreshCache();
+        } catch (DataAccessException ex) {
+            log.warn("Unit catalog cache warm skipped: {}", ex.getMessage());
+            unitByCode = Map.of();
+        }
     }
 
     private void refreshCache() {
@@ -56,9 +64,14 @@ public class UnitCatalogServiceImpl implements UnitCatalogService {
 
     @Override
     public List<UnitConversionResponse> listConversions() {
-        return unitConversionRepository.findAllByOrderByFromCodeAscToCodeAsc().stream()
-            .map(c -> new UnitConversionResponse(c.getFromCode(), c.getToCode(), c.getFactor()))
-            .toList();
+        try {
+            return unitConversionRepository.findAllByOrderByFromCodeAscToCodeAsc().stream()
+                .map(c -> new UnitConversionResponse(c.getFromCode(), c.getToCode(), c.getFactor()))
+                .toList();
+        } catch (DataAccessException ex) {
+            log.warn("Unit conversions unavailable: {}", ex.getMessage());
+            return List.of();
+        }
     }
 
     @Override

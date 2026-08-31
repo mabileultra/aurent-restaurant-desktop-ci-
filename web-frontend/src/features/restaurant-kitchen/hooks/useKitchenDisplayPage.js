@@ -36,7 +36,11 @@ export function useKitchenDisplayPage() {
     [stores],
   );
 
-  const effectiveStoreId = storeId || (restaurantStores.length === 1 ? String(restaurantStores[0].id) : '');
+  const effectiveStoreId = useMemo(() => {
+    const candidate = storeId || (restaurantStores.length === 1 ? String(restaurantStores[0].id) : '');
+    if (!candidate) return '';
+    return restaurantStores.some((s) => String(s.id) === candidate) ? candidate : '';
+  }, [storeId, restaurantStores]);
 
   const departmentsQuery = useQuery({
     queryKey: ['kitchen-departments'],

@@ -1,7 +1,13 @@
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../../components/shared/TablePagination';
 import { BaseTable } from '../../../../components/ui';
+import { useClientTablePagination } from '../../hooks/shared/useClientTablePagination';
 import { formatMoney } from '../../utils/shared/formatMoney';
 
+const REVENUE_PAGE_SIZES = TABLE_PAGE_SIZE_OPTIONS.filter((n) => n <= 20);
+
 export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }) {
+  const pagination = useClientTablePagination(rows, { initialPageSize: 14 });
+
   return (
     <BaseTable
       className="finance-panel"
@@ -9,6 +15,18 @@ export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }
       isEmpty={!isLoading && rows.length === 0}
       emptyMessage={t('finance.incomes.revenueEmpty')}
       colSpan={5}
+      footer={!isLoading && rows.length > 0 ? (
+        <TablePagination
+          className="finance-pagination"
+          page={pagination.page}
+          pageSize={pagination.pageSize}
+          total={pagination.total}
+          totalPages={pagination.totalPages}
+          pageSizeOptions={REVENUE_PAGE_SIZES}
+          onPageChange={pagination.setPage}
+          onPageSizeChange={pagination.setPageSize}
+        />
+      ) : null}
     >
       <table className="finance-table">
         <thead>
@@ -21,7 +39,7 @@ export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => (
+          {pagination.rows.map((row) => (
             <tr key={`${row.date}-${row.storeId ?? 'all'}`}>
               <td>{row.date}</td>
               <td className="finance-amount--income">{formatMoney(row.totalAmount, 'UZS')}</td>
