@@ -1,4 +1,5 @@
 import { Trash2 } from 'lucide-react';
+import { AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { cardCls } from '../../../../utils/platformMonitoringFormat';
 import PlatformMonitoringLogRow from './PlatformMonitoringLogRow';
 
@@ -49,6 +50,7 @@ export default function PlatformMonitoringLogsTab({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b bg-slate-50 text-left text-xs uppercase text-slate-500 dark:bg-slate-800/50">
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-2">{t('platform.monitoring.time')}</th>
               <th className="px-3 py-2">{t('platform.monitoring.level')}</th>
               <th className="px-3 py-2">{t('platform.monitoring.logger')}</th>
@@ -58,11 +60,19 @@ export default function PlatformMonitoringLogsTab({
           </thead>
           <tbody className="divide-y dark:divide-slate-800">
             {logsQuery.isPending ? (
-              <tr><td colSpan={5} className="p-4 text-center text-slate-500">{t('common.loading')}</td></tr>
+              <tr><td colSpan={7} className="p-4 text-center text-slate-500">{t('common.loading')}</td></tr>
             ) : logs.length === 0 ? (
-              <tr><td colSpan={5} className="p-6 text-center text-slate-500">{t('platform.monitoring.noLogs')}</td></tr>
+              <tr><td colSpan={7} className="p-6 text-center text-slate-500">{t('platform.monitoring.noLogs')}</td></tr>
             ) : (
-              logs.map((ev, i) => <PlatformMonitoringLogRow key={`${ev.timestamp}-${i}`} event={ev} />)
+              logs.map((ev, index) => (
+                <PlatformMonitoringLogRow
+                  key={`${ev.timestamp}-${index}`}
+                  event={ev}
+                  page={0}
+                  pageSize={logs.length || 1}
+                  index={index}
+                />
+              ))
             )}
           </tbody>
         </table>

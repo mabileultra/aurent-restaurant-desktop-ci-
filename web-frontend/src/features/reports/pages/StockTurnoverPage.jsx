@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import { useStockTurnoverPage } from '../hooks/useStockTurnoverPage';
@@ -37,6 +38,7 @@ export default function StockTurnoverPage() {
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-slate-50 text-left uppercase text-slate-600 dark:bg-slate-800/80 dark:text-slate-400">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-2">{t('stockReports.colProduct')}</th>
               <th className="px-2 py-2 text-right">{t('stockReports.colOpening')}</th>
               <th className="px-2 py-2 text-right">{t('stockReports.colReceived')}</th>
@@ -47,10 +49,11 @@ export default function StockTurnoverPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={7} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="p-6 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={9} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={9} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.productId} className="border-t border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
                 <td className="px-3 py-2">
                   <div className="font-medium">{row.productName}</div>
                   <div className="text-slate-500">{row.sku}</div>

@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import TablePagination from '../../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../../utils/formatMoney';
 import { lifecycleQtyClass } from '../../../utils/productLifecycleUi';
 
@@ -20,6 +21,7 @@ export default function ProductLifecycleEventsTable({
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80 dark:text-slate-400">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-2">{t('products.lifecycle.colDate')}</th>
               <th className="px-3 py-2">{t('products.lifecycle.colType')}</th>
               <th className="px-3 py-2 text-right">{t('products.lifecycle.colDelta')}</th>
@@ -35,20 +37,21 @@ export default function ProductLifecycleEventsTable({
           <tbody>
             {isPending && (
               <tr>
-                <td colSpan={10} className="px-3 py-8 text-center text-slate-500">
+                <td colSpan={12} className="px-3 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             )}
             {!isPending && rows.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-3 py-8 text-center text-slate-500">
+                <td colSpan={12} className="px-3 py-8 text-center text-slate-500">
                   {t('products.lifecycle.empty')}
                 </td>
               </tr>
             )}
-            {rows.map((ev) => (
+            {rows.map((ev, index) => (
               <tr key={ev.id} className="border-t border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={ev.id} />
                 <td className="px-3 py-2 whitespace-nowrap text-slate-600 dark:text-slate-400">
                   {ev.occurredAt ? format(new Date(ev.occurredAt), 'dd.MM.yyyy HH:mm') : '—'}
                 </td>

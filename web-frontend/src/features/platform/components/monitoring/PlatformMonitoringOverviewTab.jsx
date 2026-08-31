@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { platformMonitoringApi } from '../../../../api';
+import { AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { cardCls } from '../../../../utils/platformMonitoringFormat';
 import PlatformMonitoringLogRow from './PlatformMonitoringLogRow';
 
@@ -34,15 +35,23 @@ export default function PlatformMonitoringOverviewTab() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b bg-slate-50 text-left text-xs uppercase text-slate-500 dark:bg-slate-800/50">
+                <AdminTableNoIdHeaders />
                 <th className="px-3 py-2">{t('platform.monitoring.time')}</th>
+                <th className="px-3 py-2">{t('platform.monitoring.level')}</th>
                 <th className="px-3 py-2">{t('platform.monitoring.logger')}</th>
                 <th className="px-3 py-2">{t('platform.monitoring.message')}</th>
                 <th />
               </tr>
             </thead>
             <tbody className="divide-y dark:divide-slate-800">
-              {data.map((ev, i) => (
-                <PlatformMonitoringLogRow key={`${ev.timestamp}-${i}`} event={ev} />
+              {data.map((ev, index) => (
+                <PlatformMonitoringLogRow
+                  key={`${ev.timestamp}-${index}`}
+                  event={ev}
+                  page={0}
+                  pageSize={data.length || 1}
+                  index={index}
+                />
               ))}
             </tbody>
           </table>

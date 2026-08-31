@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 import { platformReferenceBookApi } from '../../../api';
 import { BaseButton, BaseInput, BaseModal, PageLayout, inputCls } from '../../../components/ui';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { entriesToText, parseEntriesText } from '../utils/businessTypeUtils';
 
 const EMPTY_FORM = {
@@ -102,6 +103,7 @@ export default function PlatformReferenceBooksPage() {
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('platform.referenceBooks.colName')}</th>
               <th className="px-4 py-3">{t('platform.referenceBooks.colCode')}</th>
               <th className="px-4 py-3">{t('platform.referenceBooks.colEntries')}</th>
@@ -112,19 +114,20 @@ export default function PlatformReferenceBooksPage() {
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : books.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                   {t('platform.referenceBooks.empty')}
                 </td>
               </tr>
             ) : (
-              books.map((book) => (
+              books.map((book, index) => (
                 <tr key={book.id}>
+                  <AdminTableNoIdCells page={0} pageSize={books.length || 1} index={index} id={book.id} />
                   <td className="px-4 py-3 font-medium">{book.name}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-500">{book.code}</td>
                   <td className="px-4 py-3">{book.entriesCount}</td>

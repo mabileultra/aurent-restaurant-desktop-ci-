@@ -1,5 +1,6 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import PlatformBusinessTypeUnitsRules from './PlatformBusinessTypeUnitsRules';
 import PlatformBusinessTypePriceDisplayRules from './PlatformBusinessTypePriceDisplayRules';
 
@@ -85,6 +86,7 @@ export default function PlatformBusinessTypeDetail({
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+              <AdminTableNoIdHeaders />
               <th className="px-2 py-2">{t('platform.businessTypes.colLabel')}</th>
               <th className="px-2 py-2">{t('platform.businessTypes.colKey')}</th>
               <th className="px-2 py-2">{t('platform.businessTypes.colType')}</th>
@@ -96,19 +98,25 @@ export default function PlatformBusinessTypeDetail({
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
             {detailLoading ? (
               <tr>
-                <td colSpan={6} className="px-2 py-6 text-center text-slate-500">
+                <td colSpan={8} className="px-2 py-6 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : fields.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-2 py-6 text-center text-slate-500">
+                <td colSpan={8} className="px-2 py-6 text-center text-slate-500">
                   {t('platform.businessTypes.noFields')}
                 </td>
               </tr>
             ) : (
-              fields.map((field) => (
+              fields.map((field, index) => (
                 <tr key={field.id}>
+                  <AdminTableNoIdCells
+                    page={0}
+                    pageSize={fields.length || 1}
+                    index={index}
+                    id={field.id}
+                  />
                   <td className="px-2 py-2 font-medium">{field.label}</td>
                   <td className="px-2 py-2 font-mono text-xs text-slate-500">{field.fieldKey}</td>
                   <td className="px-2 py-2">{field.fieldType}</td>

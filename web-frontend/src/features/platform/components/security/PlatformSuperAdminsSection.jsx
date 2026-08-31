@@ -1,5 +1,6 @@
 import { Shield, UserPlus } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 
 export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmins, onAdd, onEdit }) {
   return (
@@ -24,6 +25,7 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('platform.security.colName')}</th>
               <th className="px-4 py-3">{t('platform.security.colLogin')}</th>
               <th className="px-4 py-3">{t('platform.security.colEmail')}</th>
@@ -33,19 +35,25 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {adminsLoading ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : superAdmins.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-slate-500">
+                <td colSpan={6} className="px-4 py-6 text-center text-slate-500">
                   {t('platform.security.emptyAdmins')}
                 </td>
               </tr>
             ) : (
-              superAdmins.map((row) => (
+              superAdmins.map((row, index) => (
                 <tr key={row.id}>
+                  <AdminTableNoIdCells
+                    page={0}
+                    pageSize={superAdmins.length || 1}
+                    index={index}
+                    id={row.id}
+                  />
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.fullName}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.username}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.email}</td>

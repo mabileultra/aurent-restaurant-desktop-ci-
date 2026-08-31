@@ -1,4 +1,5 @@
 import { BaseButton } from '../../../components/ui';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import '../../restaurant-shared/styles/restaurant-panel.css';
 import '../styles/hall-table-list.css';
 
@@ -12,6 +13,7 @@ export default function HallTableList({ tables, onEditTable, onDeleteTable, t })
       <table className="restaurant-data-table">
         <thead>
           <tr>
+            <AdminTableNoIdHeaders />
             <th>{t('restaurantHall.tableCode')}</th>
             <th>{t('restaurantHall.tableLabel')}</th>
             <th>{t('restaurantHall.seatCount')}</th>
@@ -20,8 +22,9 @@ export default function HallTableList({ tables, onEditTable, onDeleteTable, t })
           </tr>
         </thead>
         <tbody>
-          {tables.map((table) => (
+          {tables.map((table, index) => (
             <tr key={table.id}>
+              <AdminTableNoIdCells page={0} pageSize={tables.length || 1} index={index} id={table.id} />
               <td className="hall-table-list__code">{table.code}</td>
               <td>{table.label || '—'}</td>
               <td>{table.seatCount}</td>

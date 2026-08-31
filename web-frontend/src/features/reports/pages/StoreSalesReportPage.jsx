@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportExportButton from '../components/ReportExportButton';
@@ -28,6 +29,7 @@ export default function StoreSalesReportPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colStore')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colReceipts')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colNet')}</th>
@@ -36,10 +38,11 @@ export default function StoreSalesReportPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.storeId} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.storeId} />
                 <td className="px-4 py-3 font-medium">{row.storeName}</td>
                 <td className="px-4 py-3 text-right">{row.receiptCount}</td>
                 <td className="px-4 py-3 text-right">{row.netQuantity}</td>

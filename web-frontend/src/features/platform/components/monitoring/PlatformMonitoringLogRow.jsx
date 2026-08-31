@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { AdminTableNoIdCells } from '../../../../components/shared/AdminTableNoIdColumns';
 import { formatTimestamp } from '../../../../utils/platformMonitoringFormat';
 
 function LevelBadge({ level }) {
@@ -19,11 +20,12 @@ function LevelBadge({ level }) {
   );
 }
 
-export default function PlatformMonitoringLogRow({ event }) {
+export default function PlatformMonitoringLogRow({ event, page = 0, pageSize = 1, index = 0 }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <tr className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50" onClick={() => setOpen((v) => !v)}>
+        <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={event.id ?? event.timestamp} />
         <td className="whitespace-nowrap px-3 py-2 text-xs text-slate-500">
           {formatTimestamp(event.timestamp)}
         </td>
@@ -36,7 +38,7 @@ export default function PlatformMonitoringLogRow({ event }) {
       </tr>
       {open && event.throwable ? (
         <tr className="bg-slate-50 dark:bg-slate-900/60">
-          <td colSpan={5} className="px-3 pb-3">
+          <td colSpan={7} className="px-3 pb-3">
             <pre className="max-h-72 overflow-auto rounded-lg bg-slate-950 p-3 text-[11px] leading-snug text-slate-100">
               {event.throwable}
             </pre>
