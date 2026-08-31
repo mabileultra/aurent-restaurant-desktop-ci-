@@ -1,4 +1,5 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceDebtEntriesModal from '../components/debts/FinanceDebtEntriesModal';
 import { useClientTablePagination } from '../hooks/shared/useClientTablePagination';
@@ -60,7 +61,7 @@ export default function FinanceDebtsPage() {
           isLoading={isLoading}
           isEmpty={!isLoading && allRows.length === 0}
           emptyMessage={p.tab === 'advances' ? p.t('finance.debts.advancesEmpty') : p.t('finance.debts.empty')}
-          colSpan={3}
+          colSpan={5}
           footer={pagination.total > pagination.pageSize ? (
             <TablePagination
               className="finance-pagination"
@@ -76,14 +77,21 @@ export default function FinanceDebtsPage() {
           <table className="finance-table">
             <thead>
               <tr>
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.debts.name')}</th>
                 <th>{p.tab === 'advances' ? p.t('finance.debts.advanceBalance') : p.t('finance.debts.balance')}</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {pagination.rows.map((row) => (
+              {pagination.rows.map((row, index) => (
                 <tr key={row.counterpartyId}>
+                  <AdminTableNoIdCells
+                    page={pagination.page}
+                    pageSize={pagination.pageSize}
+                    index={index}
+                    id={row.counterpartyId}
+                  />
                   <td className="finance-debts__name">{row.counterpartyName || '—'}</td>
                   <td className={p.tab === 'advances' ? 'finance-amount--income' : 'finance-amount--expense'}>
                     {formatMoney(row.balance)}

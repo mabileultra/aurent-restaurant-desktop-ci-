@@ -1,11 +1,12 @@
 import { MoreVertical } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 import CreditAdvanceCell from './CreditAdvanceCell';
 import PaymentIcon from './PaymentIcon';
 import ShiftCell from './ShiftCell';
 
-const COL_COUNT = 11;
+const COL_COUNT = 13;
 
 export default function SalesLedgerTable({
   t,
@@ -42,6 +43,7 @@ export default function SalesLedgerTable({
                   className="rounded border-slate-300"
                 />
               </th>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-3">{t('salesLedger.colDateReceipt')}</th>
               <th className="px-3 py-3">{t('salesLedger.colStore')}</th>
               <th className="px-3 py-3">{t('salesLedger.colEmployee')}</th>
@@ -68,7 +70,7 @@ export default function SalesLedgerTable({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-3 py-2">
                     <input
@@ -78,6 +80,7 @@ export default function SalesLedgerTable({
                       className="rounded border-slate-300"
                     />
                   </td>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     <div>{fmtAt(row.createdAt)}</div>
                     <div className="font-mono text-xs text-slate-500">/ {row.receiptNumber}</div>

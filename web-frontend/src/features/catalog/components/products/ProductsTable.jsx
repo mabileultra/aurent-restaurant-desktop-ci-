@@ -1,6 +1,7 @@
 import { AlertTriangle, MoreVertical } from 'lucide-react';
 import { fmtMoney as fmtNum } from '../../../../utils/formatMoney';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { productBusinessTypeLabel } from '../../../../config/productCatalogConfig';
 
 export default function ProductsTable({
@@ -36,6 +37,7 @@ export default function ProductsTable({
                   className="rounded border-slate-400 dark:border-slate-600"
                 />
               </th>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-3 font-medium">{t('products.colIkpuId')}</th>
               <th className="px-3 py-3 font-medium">{t('products.colName')}</th>
               <th className="px-3 py-3 font-medium">{t('products.colCategory')}</th>
@@ -51,18 +53,18 @@ export default function ProductsTable({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isLoading ? (
               <tr>
-                <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={13} className="px-4 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : data?.content?.length === 0 ? (
               <tr>
-                <td colSpan={11} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={13} className="px-4 py-8 text-center text-slate-500">
                   {t('products.none')}
                 </td>
               </tr>
             ) : (
-              data.content.map((p) => (
+              data.content.map((p, index) => (
                 <tr key={p.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-3 py-3">
                     <input
@@ -72,10 +74,10 @@ export default function ProductsTable({
                       className="rounded border-slate-400 dark:border-slate-600"
                     />
                   </td>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={p.id} />
                   <td className="px-3 py-3">
                     <div className="font-mono text-xs leading-tight text-slate-700 dark:text-slate-300">
                       {p.ikpu ? <span>{p.ikpu}</span> : <span className="text-slate-400 dark:text-slate-600">—</span>}
-                      <div className="max-w-[140px] break-all text-[11px] text-slate-500 dark:text-slate-500">{p.id}</div>
                     </div>
                   </td>
                   <td className="px-3 py-3">

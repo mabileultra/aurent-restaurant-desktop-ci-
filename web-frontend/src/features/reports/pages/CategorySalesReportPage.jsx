@@ -42,14 +42,17 @@ export default function CategorySalesReportPage() {
         error={r.error}
         t={t}
         columns={columns}
+        page={r.page}
+        pageSize={r.pageSize}
+        getRowId={(row) => row.categoryId ?? 'none'}
         renderRow={(row) => (
-          <tr key={row.categoryId ?? 'none'} className="border-b border-slate-100 dark:border-slate-800">
+          <>
             <td className="px-4 py-3 font-medium">{row.categoryName || t('stockReports.uncategorized')}</td>
             <td className="px-4 py-3 text-right">{row.receiptCount}</td>
             <td className="px-4 py-3 text-right">{row.netQuantity}</td>
             <td className="px-4 py-3 text-right">{fmtMoney(row.revenue)}</td>
             <td className="px-4 py-3 text-right text-emerald-700">{fmtMoney(row.margin)}</td>
-          </tr>
+          </>
         )}
       />
       <TablePagination

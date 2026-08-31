@@ -1,4 +1,5 @@
 import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { BaseTable } from '../../../../components/ui';
 import { useClientTablePagination } from '../../hooks/shared/useClientTablePagination';
 import { formatMoney } from '../../utils/shared/formatMoney';
@@ -14,7 +15,7 @@ export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }
       isLoading={isLoading}
       isEmpty={!isLoading && rows.length === 0}
       emptyMessage={t('finance.incomes.revenueEmpty')}
-      colSpan={5}
+      colSpan={7}
       footer={!isLoading && rows.length > 0 ? (
         <TablePagination
           className="finance-pagination"
@@ -31,6 +32,7 @@ export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }
       <table className="finance-table">
         <thead>
           <tr>
+            <AdminTableNoIdHeaders />
             <th>{t('finance.common.date')}</th>
             <th>{t('finance.incomes.revenueTotal')}</th>
             <th>{t('finance.payment.cash')}</th>
@@ -39,8 +41,14 @@ export default function FinanceDailyRevenueTable({ t, rows, isLoading, isError }
           </tr>
         </thead>
         <tbody>
-          {pagination.rows.map((row) => (
+          {pagination.rows.map((row, index) => (
             <tr key={`${row.date}-${row.storeId ?? 'all'}`}>
+              <AdminTableNoIdCells
+                page={pagination.page}
+                pageSize={pagination.pageSize}
+                index={index}
+                id={row.id ?? row.storeId}
+              />
               <td>{row.date}</td>
               <td className="finance-amount--income">{formatMoney(row.totalAmount, 'UZS')}</td>
               <td>{formatMoney(row.cashAmount, 'UZS')}</td>

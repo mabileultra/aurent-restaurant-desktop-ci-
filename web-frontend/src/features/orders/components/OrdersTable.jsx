@@ -1,8 +1,9 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { fmtOrderDateTime, orderStatusLabel } from '../utils/ordersDisplayUtils';
 
-const COL_COUNT = 9;
+const COL_COUNT = 11;
 
 export default function OrdersTable({
   t,
@@ -26,6 +27,7 @@ export default function OrdersTable({
               <th className="w-10 px-3 py-3">
                 <input type="checkbox" disabled className="rounded border-slate-300" aria-label="select" />
               </th>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-3">{t('orders.colOrderDate')}</th>
               <th className="px-3 py-3">{t('orders.colReceiptSale')}</th>
               <th className="px-3 py-3">{t('orders.colExternal')}</th>
@@ -58,14 +60,14 @@ export default function OrdersTable({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
                   <td className="px-3 py-3">
                     <input type="checkbox" disabled className="rounded border-slate-300" aria-label="select" />
                   </td>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-3 py-3 text-slate-800 dark:text-slate-100">
-                    <div className="font-medium">{row.id}</div>
-                    <div className="text-xs text-slate-500 dark:text-slate-400">{fmtOrderDateTime(row.createdAt)}</div>
+                    {fmtOrderDateTime(row.createdAt)}
                   </td>
                   <td className="px-3 py-3 text-slate-800 dark:text-slate-100">
                     <div>{row.receiptNumber ?? '—'}</div>

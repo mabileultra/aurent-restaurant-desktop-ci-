@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportStoreSelect from '../components/ReportStoreSelect';
@@ -35,6 +36,7 @@ export default function StockReceiptsReportPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colReceiptNo')}</th>
               <th className="px-4 py-3">{t('stockReports.colDate')}</th>
               <th className="px-4 py-3">{t('stockReports.colSupplier')}</th>
@@ -43,10 +45,11 @@ export default function StockReceiptsReportPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="p-6 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={7} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.id} className="border-t border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
                 <td className="px-4 py-2 font-mono text-emerald-800 dark:text-emerald-400">{row.receiptNumber}</td>
                 <td className="px-4 py-2">{row.createdAt ? fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm') : '—'}</td>
                 <td className="px-4 py-2">{row.supplierName || '—'}</td>

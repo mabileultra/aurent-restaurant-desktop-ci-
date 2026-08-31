@@ -1,5 +1,6 @@
 import { format as fmtDate } from 'date-fns';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 
 export default function WriteOffsReportTable({
@@ -19,6 +20,7 @@ export default function WriteOffsReportTable({
         <table className="w-full text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-600 dark:border-slate-700 dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colDate')}</th>
               <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colQty')}</th>
@@ -30,20 +32,21 @@ export default function WriteOffsReportTable({
           <tbody>
             {isPending && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             )}
             {!isPending && rows.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                   {t('common.noData')}
                 </td>
               </tr>
             )}
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                 <td className="px-4 py-3 whitespace-nowrap">
                   {row.createdAt ? fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm') : '—'}
                 </td>

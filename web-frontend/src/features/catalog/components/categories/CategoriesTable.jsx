@@ -1,6 +1,7 @@
 import { Tags, MoreVertical } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { BaseTable } from '../../../../components/ui';
 
 export default function CategoriesTable({
@@ -17,7 +18,7 @@ export default function CategoriesTable({
   onToggleRowMenu,
 }) {
   const { t } = useTranslation();
-  const colSpan = manage ? 5 : 4;
+  const colSpan = manage ? 6 : 5;
 
   return (
     <BaseTable
@@ -48,7 +49,7 @@ export default function CategoriesTable({
         <>
           <thead>
             <tr className="border-b border-slate-200 text-left text-slate-600 dark:border-slate-800 dark:text-slate-500">
-              <th className="px-4 py-3 font-medium w-24">{t('categories.colId')}</th>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3 font-medium">{t('categories.colName')}</th>
               <th className="px-4 py-3 font-medium">{t('categories.colDescription')}</th>
               <th className="px-4 py-3 font-medium">{t('categories.colBusinessType')}</th>
@@ -58,9 +59,9 @@ export default function CategoriesTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
-            {pageRows.map((c) => (
+            {pageRows.map((c, index) => (
               <tr key={c.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td className="px-4 py-3 font-mono text-xs text-slate-500">{c.id}</td>
+                <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={c.id} />
                 <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{c.name}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{c.description ?? '—'}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">

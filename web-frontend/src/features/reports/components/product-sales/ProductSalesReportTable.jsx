@@ -1,4 +1,5 @@
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 
 export default function ProductSalesReportTable({
@@ -20,6 +21,7 @@ export default function ProductSalesReportTable({
         <table className="w-full text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
               <th className="px-4 py-3">{t('stockReports.colCategory')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colSold')}</th>
@@ -32,23 +34,24 @@ export default function ProductSalesReportTable({
           <tbody>
             {isPending && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t('common.loading')}</td>
+                <td colSpan={9} className="px-4 py-8 text-center text-slate-500">{t('common.loading')}</td>
               </tr>
             )}
             {isError && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-red-600">
+                <td colSpan={9} className="px-4 py-8 text-center text-red-600">
                   {error?.response?.data?.message ?? t('common.error')}
                 </td>
               </tr>
             )}
             {!isPending && !isError && rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t('common.noData')}</td>
+                <td colSpan={9} className="px-4 py-8 text-center text-slate-500">{t('common.noData')}</td>
               </tr>
             )}
-            {rows.map((row) => (
+            {rows.map((row, index) => (
               <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.productId} />
                 <td className="px-4 py-3">
                   <div className="font-medium text-slate-900 dark:text-white">{row.productName}</div>
                   <div className="text-xs text-slate-500">

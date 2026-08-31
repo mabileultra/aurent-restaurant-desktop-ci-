@@ -1,4 +1,5 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 
 export default function ScalesPluTable({
   t,
@@ -24,6 +25,7 @@ export default function ScalesPluTable({
         <table>
           <thead>
             <tr>
+              <AdminTableNoIdHeaders />
               <th>{t('scales.colName')}</th>
               <th>SKU</th>
               <th>{t('scales.colPrice')}</th>
@@ -32,11 +34,12 @@ export default function ScalesPluTable({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => {
+            {items.map((item, index) => {
               const draft = draftPlu[item.id] ?? item.plu ?? '';
               const dirty = String(draft) !== String(item.plu ?? '');
               return (
                 <tr key={item.id}>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={item.id} />
                   <td>{item.name}</td>
                   <td>{item.sku}</td>
                   <td>{item.sellingPrice}</td>

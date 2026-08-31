@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseModal, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceBulkConfirmModal from '../components/shared/FinanceBulkConfirmModal';
 import FinanceBulkToolbar from '../components/shared/FinanceBulkToolbar';
@@ -68,7 +69,7 @@ export default function FinanceExpensesPage() {
           isLoading={p.expensesQuery.isLoading}
           isEmpty={!p.expensesQuery.isLoading && p.rows.length === 0}
           emptyMessage={p.t('finance.expenses.empty')}
-          colSpan={7}
+          colSpan={9}
           footer={(
             <TablePagination
               className="finance-pagination"
@@ -90,6 +91,7 @@ export default function FinanceExpensesPage() {
                   onChange={p.toggleSelectAllEditable}
                   disabled={p.selectableRows.length === 0}
                 />
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.common.date')}</th>
                 <th>{p.t('finance.common.category')}</th>
                 <th>{p.t('finance.expenses.counterparty')}</th>
@@ -99,7 +101,7 @@ export default function FinanceExpensesPage() {
               </tr>
             </thead>
             <tbody>
-              {p.rows.map((row) => {
+              {p.rows.map((row, index) => {
                 const editable = p.isEditable(row);
                 const actions = [
                   {
@@ -121,6 +123,7 @@ export default function FinanceExpensesPage() {
                       onChange={() => p.selection.toggleSelect(row.id)}
                       disabled={!editable}
                     />
+                    <AdminTableNoIdCells page={p.page} pageSize={p.pageSize} index={index} id={row.id} />
                     <td>{row.transactionDate}</td>
                     <td>{row.expenseCategoryName}</td>
                     <td>{resolveExpenseCounterpartyLabel(row, counterpartyContext)}</td>

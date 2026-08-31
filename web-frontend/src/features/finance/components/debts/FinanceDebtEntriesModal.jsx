@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { BaseModal, BaseTable } from '../../../../components/ui';
 import { financeApi } from '../../../../api';
 import { useTenantScope } from '../../../../hooks/useTenantScope';
@@ -52,11 +53,12 @@ export default function FinanceDebtEntriesModal({ open, onClose, type, counterpa
           isLoading={query.isLoading}
           isEmpty={!query.isLoading && rows.length === 0}
           emptyMessage={t('finance.debts.historyEmpty')}
-          colSpan={5}
+          colSpan={7}
         >
           <table className="finance-table">
             <thead>
               <tr>
+                <AdminTableNoIdHeaders />
                 <th>{t('finance.common.date')}</th>
                 <th>{t('finance.debts.historyType')}</th>
                 <th>{t('finance.common.amount')}</th>
@@ -65,8 +67,9 @@ export default function FinanceDebtEntriesModal({ open, onClose, type, counterpa
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <tr key={row.id}>
+                  <AdminTableNoIdCells page={0} pageSize={rows.length || 1} index={index} id={row.id} />
                   <td>{row.transactionDate}</td>
                   <td>{debtEntryTypeLabel(t, row.entryType)}</td>
                   <td className={row.entryType === 'PAYMENT' ? 'finance-amount--income' : 'finance-amount--expense'}>

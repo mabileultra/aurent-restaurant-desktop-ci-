@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseModal, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceDailyRevenueTable from '../components/incomes/FinanceDailyRevenueTable';
 import FinanceIncomeFormFields from '../components/incomes/FinanceIncomeFormFields';
@@ -70,7 +71,7 @@ export default function FinanceIncomesPage() {
             isLoading={p.incomesQuery.isLoading}
             isEmpty={!p.incomesQuery.isLoading && p.rows.length === 0}
             emptyMessage={p.t('finance.incomes.empty')}
-            colSpan={6}
+            colSpan={8}
             footer={(
               <TablePagination
                 className="finance-pagination"
@@ -92,6 +93,7 @@ export default function FinanceIncomesPage() {
                     onChange={p.toggleSelectAllEditable}
                     disabled={p.selectableRows.length === 0}
                   />
+                  <AdminTableNoIdHeaders />
                   <th>{p.t('finance.common.date')}</th>
                   <th>{p.t('finance.common.category')}</th>
                   <th>{p.t('finance.common.account')}</th>
@@ -100,7 +102,7 @@ export default function FinanceIncomesPage() {
                 </tr>
               </thead>
               <tbody>
-                {p.rows.map((row) => {
+                {p.rows.map((row, index) => {
                   const editable = p.isEditable(row);
                   const actions = [
                     {
@@ -122,6 +124,7 @@ export default function FinanceIncomesPage() {
                         onChange={() => p.selection.toggleSelect(row.id)}
                         disabled={!editable}
                       />
+                      <AdminTableNoIdCells page={p.page} pageSize={p.pageSize} index={index} id={row.id} />
                       <td>{row.transactionDate}</td>
                       <td>{row.incomeCategoryName}</td>
                       <td>{row.accountName}</td>

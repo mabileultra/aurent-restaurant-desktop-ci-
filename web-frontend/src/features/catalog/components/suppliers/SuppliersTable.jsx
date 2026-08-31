@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 
 export default function SuppliersTable({
   t,
@@ -20,6 +21,7 @@ export default function SuppliersTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('suppliersModule.colDate')}</th>
               <th className="px-4 py-3">{t('suppliersModule.colName')}</th>
               <th className="px-4 py-3">{t('suppliersModule.colTax')}</th>
@@ -31,14 +33,15 @@ export default function SuppliersTable({
           <tbody>
             {loading && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500 dark:text-slate-400">
                   {t('common.loading')}
                 </td>
               </tr>
             )}
             {!loading &&
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr key={row.id} className="border-b border-slate-100 last:border-0 dark:border-slate-800/80">
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{fmtDate(row.createdAt)}</td>
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{row.taxId}</td>

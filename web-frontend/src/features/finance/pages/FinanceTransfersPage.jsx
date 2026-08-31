@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseInput, BaseModal, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceListFilters from '../components/shared/FinanceListFilters';
 import FinanceRecordDetailModal from '../components/shared/FinanceRecordDetailModal';
@@ -40,7 +41,7 @@ export default function FinanceTransfersPage() {
           isLoading={p.transfersQuery.isLoading}
           isEmpty={!p.transfersQuery.isLoading && rows.length === 0}
           emptyMessage={p.t('finance.transfers.empty')}
-          colSpan={6}
+          colSpan={8}
           footer={(
             <TablePagination
               className="finance-pagination"
@@ -56,6 +57,7 @@ export default function FinanceTransfersPage() {
           <table className="finance-table">
             <thead>
               <tr>
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.transfers.date')}</th>
                 <th>{p.t('finance.transfers.from')}</th>
                 <th>{p.t('finance.transfers.to')}</th>
@@ -65,8 +67,9 @@ export default function FinanceTransfersPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <tr key={row.id}>
+                  <AdminTableNoIdCells page={p.page} pageSize={p.pageSize} index={index} id={row.id} />
                   <td>{row.transactionDate}</td>
                   <td>{row.fromAccountName}</td>
                   <td>{row.toAccountName}</td>

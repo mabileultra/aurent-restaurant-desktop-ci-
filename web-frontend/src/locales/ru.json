@@ -23,6 +23,8 @@
     "transactions": "транзакций",
     "txns": "опер.",
     "noData": "Нет данных за период",
+    "colNo": "№",
+    "colId": "ID",
     "processing": "Обработка…",
     "signingIn": "Вход…",
     "dots": "…",

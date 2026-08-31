@@ -1,8 +1,9 @@
 import { Lock, Trash2 } from 'lucide-react';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtConfigCount } from '../utils/cashRegisterDisplayUtils';
 
-const COL_COUNT = 5;
+const COL_COUNT = 7;
 
 export default function CashRegisterConfigTable({
   t,
@@ -22,6 +23,7 @@ export default function CashRegisterConfigTable({
         <table className="w-full min-w-[720px] text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('cashRegisters.configColName')}</th>
               <th className="px-4 py-3">{t('cashRegisters.configColStores')}</th>
               <th className="px-4 py-3">{t('cashRegisters.configColRegisters')}</th>
@@ -43,8 +45,9 @@ export default function CashRegisterConfigTable({
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              rows.map((r, index) => (
                 <tr key={r.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={r.id} />
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">
                     <span className="inline-flex items-center gap-2">
                       {r.lockedDefault && <Lock size={14} className="shrink-0 text-slate-500" aria-hidden />}

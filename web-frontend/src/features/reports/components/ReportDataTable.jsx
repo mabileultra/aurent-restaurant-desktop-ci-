@@ -1,3 +1,5 @@
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+
 export default function ReportDataTable({
   rows,
   isPending,
@@ -7,14 +9,18 @@ export default function ReportDataTable({
   columns,
   renderRow,
   emptyColSpan,
+  page = 0,
+  pageSize = 0,
+  getRowId = (row) => row.id,
 }) {
-  const colSpan = emptyColSpan ?? columns.length;
+  const colSpan = (emptyColSpan ?? columns.length) + 2;
 
   return (
     <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <table className="w-full text-sm">
         <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
           <tr>
+            <AdminTableNoIdHeaders />
             {columns.map((col) => (
               <th
                 key={col.key}
@@ -47,7 +53,20 @@ export default function ReportDataTable({
               </td>
             </tr>
           )}
-          {rows.map(renderRow)}
+          {rows.map((row, index) => {
+            const cells = renderRow(row, index);
+            return (
+              <tr key={getRowId(row) ?? index} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells
+                  page={page}
+                  pageSize={pageSize || rows.length || 1}
+                  index={index}
+                  id={getRowId(row)}
+                />
+                {cells}
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

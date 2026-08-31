@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { stockReportApi } from '../../../api';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportExportButton from '../components/ReportExportButton';
 import ReportStoreSelect from '../components/ReportStoreSelect';
@@ -38,6 +39,7 @@ export default function StockAdjustmentsReportPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colDate')}</th>
               <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colQty')}</th>
@@ -46,10 +48,11 @@ export default function StockAdjustmentsReportPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
                 <td className="px-4 py-3">{fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm')}</td>
                 <td className="px-4 py-3">{row.productName}</td>
                 <td className={`px-4 py-3 text-right font-medium ${row.quantity > 0 ? 'text-emerald-600' : 'text-red-600'}`}>

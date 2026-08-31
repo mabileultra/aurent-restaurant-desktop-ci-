@@ -23,6 +23,8 @@
     "transactions": "tranzaksiya",
     "txns": "oper.",
     "noData": "Bu davr uchun maʼlumot yoʻq",
+    "colNo": "№",
+    "colId": "ID",
     "processing": "Qayta ishlanmoqda…",
     "signingIn": "Kirish…",
     "dots": "…",

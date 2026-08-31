@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import TablePagination from '../../../components/shared/TablePagination';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseInput, BaseSelect, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import { financeApi } from '../../../api';
 import ReportExportButton from '../../reports/components/ReportExportButton';
@@ -64,7 +65,7 @@ export default function FinanceAuditPage() {
           isLoading={p.query.isLoading}
           isEmpty={!p.query.isLoading && rows.length === 0}
           emptyMessage={p.t('finance.audit.empty')}
-          colSpan={5}
+          colSpan={7}
           footer={(
             <TablePagination
               className="finance-pagination"
@@ -80,6 +81,7 @@ export default function FinanceAuditPage() {
           <table className="finance-table">
             <thead>
               <tr>
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.audit.when')}</th>
                 <th>{p.t('finance.audit.entityType')}</th>
                 <th>{p.t('finance.audit.action')}</th>
@@ -88,8 +90,9 @@ export default function FinanceAuditPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
+              {rows.map((row, index) => (
                 <tr key={row.id}>
+                  <AdminTableNoIdCells page={p.page} pageSize={p.pageSize} index={index} id={row.id} />
                   <td>{formatDateTime(row.createdAt)}</td>
                   <td>{p.t(`finance.audit.types.${row.entityType}`, { defaultValue: row.entityType })}</td>
                   <td>{p.t(`finance.audit.actions.${row.action}`, { defaultValue: row.action })}</td>

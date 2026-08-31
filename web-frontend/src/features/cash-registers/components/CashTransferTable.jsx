@@ -1,8 +1,9 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { fmtCashRegisterDateTime } from '../utils/cashRegisterDisplayUtils';
 
-const COL_COUNT = 15;
+const COL_COUNT = 17;
 
 export default function CashTransferTable({
   t,
@@ -21,6 +22,7 @@ export default function CashTransferTable({
         <table className="admin-data-table admin-data-table--xxl w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <AdminTableNoIdHeaders rowSpan={2} />
               <th className="border-r border-slate-200 px-2 py-2 dark:border-slate-700" colSpan={2}>
                 <div className="leading-tight">{t('cashRegisters.transferGroupStoreRegister')}</div>
               </th>
@@ -74,8 +76,9 @@ export default function CashTransferTable({
                 </td>
               </tr>
             ) : (
-              rows.map((r) => (
+              rows.map((r, index) => (
                 <tr key={r.zReportId} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40">
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={r.zReportId} />
                   <td className="max-w-[180px] truncate border-r border-slate-100 px-2 py-2 text-slate-900 dark:border-slate-800 dark:text-slate-100">
                     {r.storeName}
                   </td>

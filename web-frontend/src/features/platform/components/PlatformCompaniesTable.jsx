@@ -1,5 +1,6 @@
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 
 export default function PlatformCompaniesTable({
   t,
@@ -27,8 +28,7 @@ export default function PlatformCompaniesTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
-              <th className="w-14 px-4 py-3 font-medium">{t('platform.colNo')}</th>
-              <th className="w-16 px-4 py-3 font-medium">{t('platform.colId')}</th>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3 font-medium">{t('platform.colName')}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colLoginCode')}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colStores')}</th>
@@ -53,12 +53,7 @@ export default function PlatformCompaniesTable({
             ) : (
               rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
-                  <td className="px-4 py-3 tabular-nums text-slate-500">
-                    {page * pageSize + index + 1}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-slate-600 dark:text-slate-400">
-                    {row.id}
-                  </td>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
                   <td className="px-4 py-3 font-mono text-xs tracking-wide text-slate-600 dark:text-slate-400">
                     {row.loginCode || '—'}

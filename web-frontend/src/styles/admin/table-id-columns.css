@@ -1,0 +1,44 @@
+/* Shared № + ID columns for admin data tables */
+
+.admin-table-col-no {
+  width: 3.25rem;
+  min-width: 3rem;
+  padding-left: 1rem;
+  padding-right: 0.5rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table-col-no--cell {
+  font-variant-numeric: tabular-nums;
+  color: #64748b;
+}
+
+.admin-table-col-id {
+  width: 5.5rem;
+  min-width: 4.5rem;
+  max-width: 7.5rem;
+  padding-left: 0.5rem;
+  padding-right: 1rem;
+  font-weight: 500;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.admin-table-col-id--cell {
+  max-width: 7.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  color: #475569;
+}
+
+html.dark .admin-table-col-no--cell {
+  color: #94a3b8;
+}
+
+html.dark .admin-table-col-id--cell {
+  color: #94a3b8;
+}

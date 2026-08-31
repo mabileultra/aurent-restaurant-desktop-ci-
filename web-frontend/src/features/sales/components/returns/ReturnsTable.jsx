@@ -1,9 +1,10 @@
 import { Info } from 'lucide-react';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 
-const COL_COUNT = 7;
+const COL_COUNT = 9;
 
 export default function ReturnsTable({
   t,
@@ -30,6 +31,7 @@ export default function ReturnsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:bg-slate-800/50 dark:text-slate-400">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('returnsModule.colDate')}</th>
               <th className="px-4 py-3">{t('returnsModule.colFiscal')}</th>
               <th className="px-4 py-3 text-right">{t('returnsModule.colAmount')}</th>
@@ -56,11 +58,12 @@ export default function ReturnsTable({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr
                   key={row.id}
                   className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/40"
                 >
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-4 py-3 text-slate-800 dark:text-slate-200">{fmtAt(row.createdAt)}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">
                     {row.fiscalModuleId}

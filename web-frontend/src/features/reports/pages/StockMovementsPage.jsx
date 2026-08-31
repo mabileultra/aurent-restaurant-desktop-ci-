@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { format as fmtDate } from 'date-fns';
 import { BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportStoreSelect from '../components/ReportStoreSelect';
 import { useStockMovementsPage } from '../hooks/useStockMovementsPage';
@@ -38,6 +39,7 @@ export default function StockMovementsPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colDate')}</th>
               <th className="px-4 py-3">{t('stockReports.colType')}</th>
               <th className="px-4 py-3">{t('stockReports.colProduct')}</th>
@@ -46,10 +48,11 @@ export default function StockMovementsPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="p-6 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={7} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.id} className="border-t border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
                 <td className="whitespace-nowrap px-4 py-2">
                   {row.createdAt ? fmtDate(new Date(row.createdAt), 'dd.MM.yy HH:mm') : '—'}
                 </td>

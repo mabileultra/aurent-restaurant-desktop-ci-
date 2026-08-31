@@ -1,4 +1,5 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseInput, BaseTable, BaseSelect, ErrorBanner, PageLayout } from '../../../components/ui';
 import { useFinanceSyncPage } from '../hooks/sync/useFinanceSyncPage';
 import '../../../styles/finance/common.css';
@@ -89,7 +90,7 @@ export default function FinanceSyncPage() {
             isLoading={p.outboxQuery.isLoading}
             isEmpty={!p.outboxQuery.isLoading && rows.length === 0}
             emptyMessage={p.t('finance.sync.outboxEmpty')}
-            colSpan={6}
+            colSpan={8}
             footer={(
               <TablePagination
                 className="finance-pagination"
@@ -105,6 +106,7 @@ export default function FinanceSyncPage() {
             <table className="finance-table">
               <thead>
                 <tr>
+                  <AdminTableNoIdHeaders />
                   <th>{p.t('finance.sync.colEvent')}</th>
                   <th>{p.t('finance.sync.colStatus')}</th>
                   <th>{p.t('finance.sync.colAttempts')}</th>
@@ -114,8 +116,9 @@ export default function FinanceSyncPage() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row) => (
+                {rows.map((row, index) => (
                   <tr key={row.id}>
+                    <AdminTableNoIdCells page={p.page} pageSize={p.pageSize} index={index} id={row.id} />
                     <td>
                       <div className="finance-sync-event">
                         <strong>{row.eventType}</strong>

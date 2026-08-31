@@ -1,5 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { fmtOrderDateTime, orderStatusLabel } from '../../orders/utils/ordersDisplayUtils';
@@ -29,6 +30,7 @@ export default function DeliveryOrdersTable({
         <table className="restaurant-data-table">
           <thead>
             <tr>
+              <AdminTableNoIdHeaders />
               <th>{t('orders.colOrderDate')}</th>
               <th>{t('orders.colExternal')}</th>
               <th>{t('orders.colClient')}</th>
@@ -41,19 +43,20 @@ export default function DeliveryOrdersTable({
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={7} className="delivery-orders-table__empty">{t('common.loading')}</td>
+                <td colSpan={9} className="delivery-orders-table__empty">{t('common.loading')}</td>
               </tr>
             ) : isError ? (
               <tr>
-                <td colSpan={7} className="delivery-orders-table__error">{errorMessage}</td>
+                <td colSpan={9} className="delivery-orders-table__error">{errorMessage}</td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={7} className="delivery-orders-table__empty">{t('restaurantDelivery.empty')}</td>
+                <td colSpan={9} className="delivery-orders-table__empty">{t('restaurantDelivery.empty')}</td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr key={row.id}>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td>{fmtOrderDateTime(row.createdAt)}</td>
                   <td>{row.externalNumber || '—'}</td>
                   <td>

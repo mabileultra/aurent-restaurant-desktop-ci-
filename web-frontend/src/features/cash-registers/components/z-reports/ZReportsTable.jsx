@@ -1,10 +1,11 @@
 import { MoreVertical } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 import { fmtCashRegisterDateTime } from '../../utils/cashRegisterDisplayUtils';
 import '../../../../styles/cash-registers/z-reports-table.css';
 
-const COL_COUNT = 10;
+const COL_COUNT = 12;
 
 export default function ZReportsTable({
   t,
@@ -38,6 +39,7 @@ export default function ZReportsTable({
                   className="rounded border-slate-300"
                 />
               </th>
+              <AdminTableNoIdHeaders />
               <th className="px-3 py-3">{t('zReports.colFiscalCard')}</th>
               <th className="px-3 py-3">{t('zReports.colDate')}</th>
               <th className="px-3 py-3">{t('zReports.colZNumber')}</th>
@@ -63,7 +65,7 @@ export default function ZReportsTable({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              rows.map((row, index) => (
                 <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <td className="px-3 py-2">
                     <input
@@ -73,6 +75,7 @@ export default function ZReportsTable({
                       className="rounded border-slate-300"
                     />
                   </td>
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-3 py-2 font-mono text-xs text-slate-800 dark:text-slate-200">{row.fiscalCardId}</td>
                   <td className="px-3 py-2">
                     <div className="text-xs font-medium text-amber-800 dark:text-amber-200/90">

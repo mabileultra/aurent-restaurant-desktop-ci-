@@ -1,4 +1,5 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseInput, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceBulkConfirmModal from '../components/shared/FinanceBulkConfirmModal';
 import FinanceBulkToolbar from '../components/shared/FinanceBulkToolbar';
@@ -49,7 +50,7 @@ export default function FinanceCategoriesPage() {
           isLoading={p.tab === 'income' ? p.incomeQuery.isLoading : p.expenseQuery.isLoading}
           isEmpty={!pagination.rows.length && !(p.tab === 'income' ? p.incomeQuery.isLoading : p.expenseQuery.isLoading)}
           emptyMessage={p.t('common.noData')}
-          colSpan={5}
+          colSpan={7}
           footer={!(p.tab === 'income' ? p.incomeQuery.isLoading : p.expenseQuery.isLoading) ? (
             <TablePagination
               className="finance-pagination"
@@ -71,6 +72,7 @@ export default function FinanceCategoriesPage() {
                   onChange={p.toggleSelectAllCustom}
                   disabled={p.selectableRows.length === 0}
                 />
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.categories.name')}</th>
                 <th>{p.t('finance.categories.system')}</th>
                 <th>{p.t('finance.accounts.status')}</th>
@@ -78,7 +80,7 @@ export default function FinanceCategoriesPage() {
               </tr>
             </thead>
             <tbody>
-              {pagination.rows.map((row) => {
+              {pagination.rows.map((row, index) => {
                 const selectable = isSelectableCategory(row);
                 return (
                   <tr key={row.id}>
@@ -86,6 +88,12 @@ export default function FinanceCategoriesPage() {
                       checked={p.selection.selectedIds.has(row.id)}
                       onChange={() => p.selection.toggleSelect(row.id)}
                       disabled={!selectable}
+                    />
+                    <AdminTableNoIdCells
+                      page={pagination.page}
+                      pageSize={pagination.pageSize}
+                      index={index}
+                      id={row.id}
                     />
                     <td>{row.name}</td>
                     <td>

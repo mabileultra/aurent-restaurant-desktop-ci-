@@ -1,7 +1,8 @@
 import { Info, MoreVertical } from 'lucide-react';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 
-const COL_COUNT = 7;
+const COL_COUNT = 9;
 
 export default function StockProductsTable({
   t,
@@ -23,6 +24,7 @@ export default function StockProductsTable({
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-300">
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockModule.colProduct')}</th>
               <th className="px-4 py-3">{t('stockModule.colCategory')}</th>
               <th className="px-4 py-3">{t('stockModule.colQty')}</th>
@@ -41,11 +43,12 @@ export default function StockProductsTable({
               </tr>
             )}
             {!loading &&
-              rows.map((product) => (
+              rows.map((product, index) => (
                 <tr
                   key={product.id}
                   className="border-b border-slate-100 last:border-0 dark:border-slate-800/80"
                 >
+                  <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={product.id} />
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{product.name}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-300">{product.categoryName ?? '—'}</td>
                   <td className="px-4 py-3 font-semibold text-slate-800 dark:text-slate-200">{product.stockQuantity}</td>

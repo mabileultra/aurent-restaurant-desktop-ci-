@@ -1,4 +1,5 @@
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { BaseButton, BaseModal, BaseTable, ErrorBanner, PageLayout } from '../../../components/ui';
 import FinanceAccountCreateForm from '../components/accounts/FinanceAccountCreateForm';
 import FinanceAccountEditForm from '../components/accounts/FinanceAccountEditForm';
@@ -40,7 +41,7 @@ export default function FinanceAccountsPage() {
           isLoading={p.query.isLoading}
           isEmpty={!p.query.isLoading && p.allRows.length === 0}
           emptyMessage={p.t('finance.accounts.empty')}
-          colSpan={6}
+          colSpan={8}
           footer={!p.query.isLoading ? (
             <TablePagination
               className="finance-pagination"
@@ -62,6 +63,7 @@ export default function FinanceAccountsPage() {
                   onChange={p.selection.toggleSelectAllPage}
                   disabled={pagination.rows.length === 0}
                 />
+                <AdminTableNoIdHeaders />
                 <th>{p.t('finance.accounts.name')}</th>
                 <th>{p.t('finance.accounts.type')}</th>
                 <th>{p.t('finance.accounts.balance')}</th>
@@ -70,11 +72,17 @@ export default function FinanceAccountsPage() {
               </tr>
             </thead>
             <tbody>
-              {pagination.rows.map((row) => (
+              {pagination.rows.map((row, index) => (
                 <tr key={row.id}>
                   <FinanceSelectCell
                     checked={p.selection.selectedIds.has(row.id)}
                     onChange={() => p.selection.toggleSelect(row.id)}
+                  />
+                  <AdminTableNoIdCells
+                    page={pagination.page}
+                    pageSize={pagination.pageSize}
+                    index={index}
+                    id={row.id}
                   />
                   <td>{row.name}</td>
                   <td><span className="finance-account-type">{row.type}</span></td>

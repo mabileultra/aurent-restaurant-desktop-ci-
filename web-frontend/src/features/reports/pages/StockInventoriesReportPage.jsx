@@ -4,6 +4,7 @@ import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { stockReportApi } from '../../../api';
 import TablePagination from '../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportExportButton from '../components/ReportExportButton';
 import ReportStoreSelect from '../components/ReportStoreSelect';
@@ -40,6 +41,7 @@ export default function StockInventoriesReportPage() {
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase dark:bg-slate-800/80">
             <tr>
+              <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colInventoryNo')}</th>
               <th className="px-4 py-3">{t('stockReports.colDate')}</th>
               <th className="px-4 py-3">{t('stockReports.colStore')}</th>
@@ -48,10 +50,11 @@ export default function StockInventoriesReportPage() {
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={5} className="p-6 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="p-6 text-center">{t('common.noData')}</td></tr>}
-            {r.rows.map((row) => (
+            {r.isPending && <tr><td colSpan={7} className="p-6 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={7} className="p-6 text-center">{t('common.noData')}</td></tr>}
+            {r.rows.map((row, index) => (
               <tr key={row.id} className="border-b border-slate-100 dark:border-slate-800">
+                <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.id} />
                 <td className="px-4 py-3 font-medium">{row.inventoryNumber}</td>
                 <td className="px-4 py-3">{fmtDate(new Date(row.createdAt), 'dd.MM.yyyy HH:mm')}</td>
                 <td className="px-4 py-3">{row.storeName ?? '—'}</td>
