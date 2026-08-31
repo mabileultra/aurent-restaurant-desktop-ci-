@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api } from '../client';
 
 export const platformLeadsApi = {
   list: (params) => api.get('/platform/leads', { params }),

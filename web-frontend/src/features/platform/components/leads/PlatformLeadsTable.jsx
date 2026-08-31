@@ -1,5 +1,5 @@
-import TablePagination from '../../../components/shared/TablePagination';
-import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import TablePagination from '../../../../components/shared/TablePagination';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 
 function formatLeadDate(value) {
   if (!value) return '—';
