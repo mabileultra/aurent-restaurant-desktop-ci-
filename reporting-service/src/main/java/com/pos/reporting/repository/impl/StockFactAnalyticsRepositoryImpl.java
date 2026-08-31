@@ -87,10 +87,14 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         String search,
         boolean onlyWithStock
     ) {
-        query.setParameter("companyId", companyId);
+        NativeQueryParamSupport.setParameterIfPresent(query, "companyId", companyId);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
-        query.setParameter("onlyWithStock", NativeQueryParamSupport.booleanFlag(onlyWithStock));
+        NativeQueryParamSupport.setParameterIfPresent(
+            query, "searchPattern", NativeQueryParamSupport.toContainsPattern(search)
+        );
+        NativeQueryParamSupport.setParameterIfPresent(
+            query, "onlyWithStock", NativeQueryParamSupport.booleanFlag(onlyWithStock)
+        );
     }
 
     private static void bindTurnover(
@@ -101,11 +105,13 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         Integer categoryId,
         String search
     ) {
-        query.setParameter("companyId", companyId);
-        query.setParameter("from", from);
-        query.setParameter("to", to);
+        NativeQueryParamSupport.setParameterIfPresent(query, "companyId", companyId);
+        NativeQueryParamSupport.setParameterIfPresent(query, "from", from);
+        NativeQueryParamSupport.setParameterIfPresent(query, "to", to);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
+        NativeQueryParamSupport.setParameterIfPresent(
+            query, "searchPattern", NativeQueryParamSupport.toContainsPattern(search)
+        );
     }
 
     private static void bindDeadStock(
@@ -117,11 +123,13 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         Integer categoryId,
         String search
     ) {
-        query.setParameter("companyId", companyId);
-        query.setParameter("asOfDate", asOfDate);
-        query.setParameter("cutoffDate", cutoffDate);
-        query.setParameter("daysNoSale", daysNoSale);
+        NativeQueryParamSupport.setParameterIfPresent(query, "companyId", companyId);
+        NativeQueryParamSupport.setParameterIfPresent(query, "asOfDate", asOfDate);
+        NativeQueryParamSupport.setParameterIfPresent(query, "cutoffDate", cutoffDate);
+        NativeQueryParamSupport.setParameterIfPresent(query, "daysNoSale", daysNoSale);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
-        query.setParameter("searchPattern", NativeQueryParamSupport.toContainsPattern(search));
+        NativeQueryParamSupport.setParameterIfPresent(
+            query, "searchPattern", NativeQueryParamSupport.toContainsPattern(search)
+        );
     }
 }

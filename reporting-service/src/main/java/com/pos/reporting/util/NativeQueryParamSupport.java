@@ -1,5 +1,6 @@
 package com.pos.reporting.util;
 
+import jakarta.persistence.Parameter;
 import jakarta.persistence.Query;
 
 public final class NativeQueryParamSupport {
@@ -32,10 +33,23 @@ public final class NativeQueryParamSupport {
     }
 
     public static void bindOptionalCategoryId(Query query, String paramName, Integer categoryId) {
-        query.setParameter(paramName, optionalCategoryId(categoryId));
+        setParameterIfPresent(query, paramName, optionalCategoryId(categoryId));
     }
 
     public static void bindOptionalStoreId(Query query, String paramName, Integer storeId) {
-        query.setParameter(paramName, optionalStoreId(storeId));
+        setParameterIfPresent(query, paramName, optionalStoreId(storeId));
+    }
+
+    /**
+     * Page и count SQL часто делят один binder — параметры только page-запроса
+     * (например {@code asOfDate}) не должны ломать count.
+     */
+    public static void setParameterIfPresent(Query query, String name, Object value) {
+        for (Parameter<?> parameter : query.getParameters()) {
+            if (name.equals(parameter.getName())) {
+                query.setParameter(name, value);
+                return;
+            }
+        }
     }
 }
