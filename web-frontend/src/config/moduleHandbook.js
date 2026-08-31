@@ -134,7 +134,6 @@ export const CASHIER_MODULE_IDS = [
   { id: 'cashierSales', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER', 'WAITER'] },
   { id: 'cashierOffline', group: 'cashier', roles: ['CASHIER', 'ADMIN', 'MANAGER', 'WAITER'] },
   { id: 'restaurantPos', group: 'cashier', roles: ['CASHIER', 'WAITER', 'MANAGER', 'ADMIN'] },
-  { id: 'restaurantKitchen', group: 'cashier', roles: ['CASHIER', 'WAITER', 'COOK', 'MANAGER', 'ADMIN'] },
 ];
 
 export function resolveHandbookModuleId(pathname) {

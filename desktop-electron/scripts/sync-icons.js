@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 /**
- * Иконки Electron: logo2.png → icon.png, icon.ico
+ * Иконки Electron: desktop/icon.png (прозрачный Aurent) → icon.png, icon.ico
  */
 const fs = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const LOGO2 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo2.png');
-const LOGO1 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo1.png');
+const APP_ICON = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.png');
+const BRAND_APP = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'app-icon.png');
 const SVG = path.join(ROOT, '..', 'web-frontend', 'public', 'desktop', 'icon.svg');
+const LOGO2 = path.join(ROOT, '..', 'web-frontend', 'public', 'brand', 'logo2.png');
 const BUILD = path.join(ROOT, 'build');
 
 const ICO_SIZES = [16, 24, 32, 48, 64, 128, 256];
@@ -23,10 +24,11 @@ async function loadSharp() {
 }
 
 function resolveSource() {
-  if (fs.existsSync(LOGO2)) return LOGO2;
-  if (fs.existsSync(LOGO1)) return LOGO1;
+  if (fs.existsSync(APP_ICON)) return APP_ICON;
+  if (fs.existsSync(BRAND_APP)) return BRAND_APP;
   if (fs.existsSync(SVG)) return SVG;
-  console.error('Missing logo source:', LOGO2, LOGO1, 'or', SVG);
+  if (fs.existsSync(LOGO2)) return LOGO2;
+  console.error('Missing icon source:', APP_ICON);
   process.exit(1);
 }
 

@@ -53,10 +53,10 @@ public enum AdminModule {
     /** Офлайн-режим на desktop-кассе (SQLite + sync). */
     CASHIER_OFFLINE("cashierOffline", "cashier", Set.of("CASHIER", "WAITER", "ADMIN", "MANAGER")),
     RESTAURANT_POS("restaurantPos", "cashier", Set.of("CASHIER", "WAITER", "MANAGER", "ADMIN")),
-    RESTAURANT_KITCHEN("restaurantKitchen", "cashier", Set.of("CASHIER", "WAITER", "COOK", "MANAGER", "ADMIN")),
     RESTAURANT_FLOOR("restaurantFloor", "restaurant", Set.of("ADMIN", "MANAGER")),
     RESTAURANT_BOOKING("restaurantBooking", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_DELIVERY("restaurantDelivery", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
+    RESTAURANT_KITCHEN("restaurantKitchen", "restaurant", Set.of("CASHIER", "WAITER", "COOK", "MANAGER", "ADMIN")),
     FINANCE_DASHBOARD("financeDashboard", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
     FINANCE_DEBTS("financeDebts", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
     FINANCE_INCOMES("financeIncomes", "finance", Set.of("ADMIN", "MANAGER", "ACCOUNTANT")),
@@ -116,7 +116,7 @@ public enum AdminModule {
 
     public static List<AdminModule> cashierScope() {
         return Arrays.stream(values())
-            .filter(m -> "cashier".equals(m.group))
+            .filter(m -> "cashier".equals(m.group) || "restaurant".equals(m.group))
             .toList();
     }
 

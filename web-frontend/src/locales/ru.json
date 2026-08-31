@@ -1546,6 +1546,7 @@
       "registers": "Кассы",
       "reportsSales": "Отчёты — продажи",
       "reportsStock": "Отчёты — склад",
+      "restaurant": "Ресторан",
       "settings": "Настройки",
       "cashier": "Касса"
     },
@@ -1595,7 +1596,12 @@
       "reportsStockTransfers": "Перемещения (отчёт)",
       "cashierPos": "Касса — продажи",
       "cashierSales": "Касса — мои чеки",
-      "cashierOffline": "Касса — офлайн-режим"
+      "cashierOffline": "Касса — офлайн-режим",
+      "restaurantFloor": "Зал и столы",
+      "restaurantKitchen": "Кухня",
+      "restaurantBooking": "Бронирование",
+      "restaurantDelivery": "Доставка",
+      "restaurantPos": "Ресторан — касса"
     },
     "monitoring": {
       "nav": "Мониторинг",

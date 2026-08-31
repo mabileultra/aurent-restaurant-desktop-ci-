@@ -7,6 +7,7 @@ export const MODULE_ACCESS_GROUP_ORDER = [
   'registers',
   'reportsSales',
   'reportsStock',
+  'restaurant',
   'settings',
   'cashier',
 ];
