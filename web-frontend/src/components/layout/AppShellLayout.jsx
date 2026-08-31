@@ -55,11 +55,20 @@ export default function AppShellLayout() {
   const [reportsStockOpen, setReportsStockOpen] = useState(false);
 
   useEffect(() => {
-    // См. useCashierLayoutShell.js — токен живёт 24ч и не обновляется после истечения,
-    // поэтому обновляем его периодически, а не только при монтировании оболочки.
+    // Модули приходят в /auth/refresh (не в JWT) — синхронизируем при входе в оболочку,
+    // по фокусу окна (после выдачи прав супер-админом) и периодически.
     syncAuthSession();
-    const intervalId = window.setInterval(syncAuthSession, 20 * 60 * 1000);
-    return () => window.clearInterval(intervalId);
+    const intervalId = window.setInterval(syncAuthSession, 5 * 60 * 1000);
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') syncAuthSession();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
   }, []);
   const [financeOpen, setFinanceOpen] = useState(false);
   const [registersOpen, setRegistersOpen] = useState(false);
@@ -140,7 +149,7 @@ export default function AppShellLayout() {
       : 'border-transparent text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white'
   }`;
 
-  const visibleRest = REST_NAV.filter((item) => (!item.roles || item.roles.includes(user?.role)) && (!item.moduleId || hasModule(item.moduleId)));
+  const visibleRest = filterByModule(REST_NAV);
   const roleLabel = user?.role ? t(`roles.${user.role}`, user.role) : '';
 
   return (

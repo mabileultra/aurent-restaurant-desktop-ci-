@@ -165,7 +165,7 @@ export const RESTAURANT_CHILDREN = [
 ];
 
 export const REST_NAV = [
-  { to: '/stores', icon: ICONS.Store, key: 'stores', roles: ['ADMIN'], moduleId: 'stores' },
+  { to: '/stores', icon: ICONS.Store, key: 'stores', moduleId: 'stores' },
 ];
 
 export const REPORT_SALES_ROUTES = REPORT_SALES_CHILDREN.map((item) => item.to);

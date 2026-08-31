@@ -2,7 +2,11 @@ import { useCallback, useMemo } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { ADMIN_MODULE_IDS, CASHIER_MODULE_IDS } from '../config/moduleHandbook';
 
-/** Проверка доступа к модулю админки (по allowedModules с бэкенда или fallback по роли). */
+/**
+ * Доступ к модулю админки.
+ * При moduleAccessCustom — только список allowedModules с бэкенда (без fallback по роли).
+ * Без custom — дефолты роли из moduleHandbook.
+ */
 export function useModuleAccess() {
   const user = useAuthStore((s) => s.user);
   const role = user?.role;
@@ -15,11 +19,11 @@ export function useModuleAccess() {
     (moduleId) => {
       if (!moduleId || !role) return false;
       if (role === 'SUPER_ADMIN') return true;
-      if (custom && Array.isArray(allowed)) {
-        if (allowed.includes(moduleId)) return true;
-        const def = moduleDefs.find((m) => m.id === moduleId);
-        return def ? def.roles.includes(role) : false;
+
+      if (custom) {
+        return Array.isArray(allowed) && allowed.includes(moduleId);
       }
+
       const def = moduleDefs.find((m) => m.id === moduleId);
       return def ? def.roles.includes(role) : false;
     },

@@ -43,13 +43,19 @@ export function useCashierLayoutShell() {
   }, []);
 
   useEffect(() => {
-    // Токен живёт 24ч и не может быть обновлён после истечения (см. identity-service
-    // AuthServiceImpl.refreshToken). Касса может не перезагружаться сутками, поэтому
-    // обновляем токен периодически, а не только при монтировании — иначе первый же
-    // запрос после истечения токена жёстко разлогинивает (window.location.href).
+    // Токен живёт 24ч; модули — в refresh. Синхронизируем при фокусе и раз в 5 мин.
     syncAuthSession();
-    const intervalId = window.setInterval(syncAuthSession, 20 * 60 * 1000);
-    return () => window.clearInterval(intervalId);
+    const intervalId = window.setInterval(syncAuthSession, 5 * 60 * 1000);
+    const onFocus = () => {
+      if (document.visibilityState === 'visible') syncAuthSession();
+    };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener('focus', onFocus);
+      document.removeEventListener('visibilitychange', onFocus);
+    };
   }, []);
 
   const toggleCashierTheme = () => {
