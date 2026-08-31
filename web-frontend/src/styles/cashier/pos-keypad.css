@@ -51,7 +51,7 @@
   background: var(--pos-keypad-bg);
   color: var(--pos-keypad-text);
   font-size: var(--pos-keypad-digit-size);
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1;
   cursor: pointer;
   box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);

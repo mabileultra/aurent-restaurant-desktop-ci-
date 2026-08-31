@@ -9,8 +9,7 @@ export default function CashierPinLoginHeader({ appName, subtitle }) {
     <header className="cashier-pin-login__header">
       <div className="cashier-pin-login__logo cashier-pin-login__logo--default">
         <BrandMark
-          variant={desktop ? 'full' : 'icon'}
-          size={BRAND_LOGO_SIZES.iconLg}
+          variant="full"
           height={BRAND_LOGO_SIZES.fullLg}
         />
       </div>

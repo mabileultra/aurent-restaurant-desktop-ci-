@@ -173,6 +173,8 @@
   .cashier-app.cashier-app--pos-screen .pos-product-card__code {
     font-size: var(--pos-catalog-product-code);
     line-height: 1.2;
+    font-weight: 600;
+    color: #334155;
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 1;
@@ -190,6 +192,7 @@
   .cashier-app.cashier-app--pos-screen .pos-product-card__price {
     padding-top: 2px;
     font-size: var(--pos-catalog-product-price);
+    font-weight: 800;
   }
 
   html.app-viewport--canonical .cashier-app.cashier-app--pos-screen .pos-product-list,
@@ -216,11 +219,14 @@
     margin-top: 1px;
     font-size: var(--pos-catalog-row-code);
     line-height: 1.2;
+    font-weight: 600;
+    color: #334155;
   }
 
   html.app-viewport--canonical .cashier-app.cashier-app--pos-screen .pos-product-row__price,
   .cashier-app.cashier-app--pos-screen .pos-product-row__price {
     font-size: var(--pos-catalog-row-price);
+    font-weight: 800;
   }
 
   html.app-viewport--canonical .cashier-app.cashier-app--pos-screen .pos-catalog-panel__hint,

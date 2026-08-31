@@ -60,7 +60,7 @@ export default function CashierDesktopMenuPanel({
           />
         ) : (
           <>
-            <BrandMark variant="icon" size={28} />
+            <BrandMark variant="full" height={28} className="cashier-desktop-menu__logo" />
             <span className="cashier-desktop-menu__label">{label}</span>
           </>
         )}

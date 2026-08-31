@@ -19,6 +19,7 @@
 @import './responsive/index.css';
 @import './register-pay-rail/register-pay-rail-keypad.css';
 @import './register-pay-rail/payment-flow-keypad.css';
+@import './register-pay-rail/pay-rail-pos-compact.css';
 @import './secondary-pages/index.css';
 @import './my-sales/terminal-overrides.css';
 @import './modals/index.css';

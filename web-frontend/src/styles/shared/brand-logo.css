@@ -8,12 +8,19 @@
 .brand-logo--icon {
   width: var(--brand-logo-icon-size, 32px);
   height: var(--brand-logo-icon-size, 32px);
+  object-fit: contain;
 }
 
 .brand-logo--full {
   width: auto;
   height: var(--brand-logo-full-height, 40px);
   max-width: min(100%, 220px);
+  object-fit: contain;
+}
+
+.cashier-topbar__brand-icon.brand-logo--full,
+.cashier-topbar__brand-full.brand-logo--full {
+  max-width: 140px;
 }
 
 .cashier-desktop-menu__logo.brand-logo--full {

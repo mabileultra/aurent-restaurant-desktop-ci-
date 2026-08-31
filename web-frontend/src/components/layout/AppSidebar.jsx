@@ -92,9 +92,9 @@ export default function AppSidebar(props) {
       >
         <div className="admin-sidebar__brand flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-emerald-900/60">
           <BrandMark
-            variant={navLabelsVisible ? 'full' : 'icon'}
+            variant="full"
             size={32}
-            height={32}
+            height={navLabelsVisible ? 32 : 28}
           />
           {navLabelsVisible ? (
             <span className="truncate text-lg font-bold text-slate-900 dark:text-white">{displayAppName()}</span>

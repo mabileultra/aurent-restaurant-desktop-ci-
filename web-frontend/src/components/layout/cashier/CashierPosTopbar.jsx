@@ -30,7 +30,8 @@ export default function CashierPosTopbar({
           <CashierDesktopMenu appName={displayAppName()} />
           {!isDesktopApp ? (
             <>
-              <BrandMark variant="icon" size={32} className="d-md-none cashier-topbar__brand-icon" />
+              <BrandMark variant="full" height={28} className="d-md-none cashier-topbar__brand-icon" />
+              <BrandMark variant="full" height={32} className="d-none d-md-block cashier-topbar__brand-full" />
               <p className="cashier-topbar__terminal-name mb-0 d-none d-md-block">{displayAppName()}</p>
             </>
           ) : null}

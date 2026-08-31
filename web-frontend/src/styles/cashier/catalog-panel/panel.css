@@ -351,7 +351,8 @@
   display: block;
   margin-top: 2px;
   font-size: 0.6875rem;
-  color: var(--pos-muted);
+  font-weight: 600;
+  color: #334155;
   word-break: break-all;
 }
 

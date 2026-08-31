@@ -14,7 +14,7 @@ export default function PublicSiteFooter() {
       <div className="public-site-footer__inner">
         <Link to="/login" className="public-site-footer__brand">
           <span className="public-site-footer__mark">
-            <BrandMark size={12} />
+            <BrandMark variant="full" height={16} />
           </span>
           {displayAppName() || 'Aurent'}
         </Link>

@@ -14,13 +14,13 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  min-height: clamp(52px, 14cqi, 64px);
-  padding: clamp(12px, 3cqi, 16px) clamp(14px, 3.5cqi, 18px);
+  min-height: clamp(44px, 11cqi, 56px);
+  padding: clamp(8px, 2.2cqi, 12px) clamp(12px, 3cqi, 16px);
   border: none;
-  border-radius: 16px;
+  border-radius: 14px;
   background: var(--pos-green, #006847);
   color: #fff;
-  font-size: clamp(0.9375rem, 4cqi, 1.0625rem);
+  font-size: clamp(0.875rem, 3.6cqi, 1rem);
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;

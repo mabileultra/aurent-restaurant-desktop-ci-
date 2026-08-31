@@ -32,7 +32,8 @@
   flex: 0 0 auto;
   font-size: 0.6875rem;
   line-height: 1.3;
-  color: var(--pos-muted);
+  font-weight: 600;
+  color: #334155;
   word-break: break-all;
 }
 
@@ -57,9 +58,10 @@
   margin-top: auto;
   padding-top: 4px;
   font-size: 0.8125rem;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--pos-green);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 @container pos-catalog (min-width: 640px) {

@@ -13,8 +13,8 @@
   --pos-keypad-border: #c5ccd6;
   --pos-keypad-bg: #fff;
   --pos-keypad-bg-hover: #f3f4f6;
-  --pos-keypad-text: #111827;
-  --pos-keypad-muted: #6b7280;
+  --pos-keypad-text: #0f172a;
+  --pos-keypad-muted: #475569;
 }
 
 /* Тёмная терминальная тема (по умолчанию) */
@@ -83,6 +83,6 @@
   --pos-keypad-border: #d1d9e6;
   --pos-keypad-bg: #f8fafc;
   --pos-keypad-bg-hover: #eef2f8;
-  --pos-keypad-text: var(--pos-ink);
-  --pos-keypad-muted: var(--pos-muted);
+  --pos-keypad-text: #0f172a;
+  --pos-keypad-muted: #475569;
 }
