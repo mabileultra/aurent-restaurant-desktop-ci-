@@ -9,10 +9,14 @@
 }
 
 .pos-register-pay-rail__keypad-wrap {
-  container-type: size;
+  /* inline-size: высота от контента. size схлопывал wrap в 0. */
+  container-type: inline-size;
   container-name: pay-keypad-wrap;
-  flex: 0 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: calc(
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+  );
   width: 100%;
   padding: 2px 0;
   display: flex;
@@ -24,8 +28,10 @@
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
   flex: 0 0 auto;
   min-height: 0;
+  max-height: none;
   width: 100%;
   gap: var(--pos-keypad-gap, 6px);
+  overflow: visible;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {

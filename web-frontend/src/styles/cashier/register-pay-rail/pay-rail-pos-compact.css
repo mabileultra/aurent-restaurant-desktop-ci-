@@ -35,16 +35,21 @@
   color: var(--pos-text, #f1f5f9);
 }
 
-/* Клавиатура: не растягивать wrap — фиксированные ряды */
+/* Клавиатура: фиксированные ряды, без схлопывания в flex-колонке */
 .cashier-app .pos-register-pay-rail__keypad-wrap {
-  flex: 0 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: calc(
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+  );
   overflow: visible;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
   flex: 0 0 auto;
   min-height: 0;
+  max-height: none;
+  overflow: visible;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {

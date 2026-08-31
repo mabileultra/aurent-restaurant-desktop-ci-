@@ -22,12 +22,15 @@
 }
 
 .pos-register-pay-rail__keypad-wrap {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  min-height: calc(
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+  );
   display: flex;
   flex-direction: column;
   width: 100%;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .pos-register-pay-rail__tools {

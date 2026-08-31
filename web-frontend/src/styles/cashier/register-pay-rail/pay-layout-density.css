@@ -6,13 +6,13 @@
 
 /* ── Клавиатура в колонке оплаты ── */
 .pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 1 1 auto;
+  flex: 0 0 auto;
   min-height: 0;
-  max-height: 100%;
+  max-height: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .pos-pay-panel--register-rail.is-step-cash .pos-keypad {

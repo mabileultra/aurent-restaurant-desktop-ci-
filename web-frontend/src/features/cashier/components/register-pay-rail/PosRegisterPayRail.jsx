@@ -37,6 +37,17 @@ export default function PosRegisterPayRail({
         hasPartialCash={rail.hasPartialCash}
       />
 
+      <div className="pos-register-pay-rail__keypad-wrap">
+        <NumericKeypad
+          value={rail.tendered}
+          onChange={rail.setTendered}
+          exactAmount={rail.toPay}
+          hideActionKey
+          hideBottomClear
+          disabled={checkoutDisabled || isPending}
+        />
+      </div>
+
       <div className="pos-register-pay-rail__pay-block">
         <PosRegisterPayMethods
           disabled={checkoutDisabled || isPending}
@@ -51,17 +62,6 @@ export default function PosRegisterPayRail({
           cardPayBlocked={rail.cardPayBlocked}
           hasCardRemainder={rail.hasPartialCash}
           onSelectCard={rail.submitCard}
-        />
-      </div>
-
-      <div className="pos-register-pay-rail__keypad-wrap">
-        <NumericKeypad
-          value={rail.tendered}
-          onChange={rail.setTendered}
-          exactAmount={rail.toPay}
-          hideActionKey
-          hideBottomClear
-          disabled={checkoutDisabled || isPending}
         />
       </div>
 
