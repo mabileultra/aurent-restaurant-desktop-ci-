@@ -43,5 +43,6 @@ springdoc:
 sentry:
   dsn: ${SENTRY_DSN:}
   environment: ${SENTRY_ENVIRONMENT:production}
+  release: ${SENTRY_RELEASE:}
   send-default-pii: false
   traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.05}

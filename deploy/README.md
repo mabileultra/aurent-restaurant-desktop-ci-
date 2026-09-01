@@ -112,15 +112,60 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 Локально: `cd desktop-electron && npm run dist && bash ../deploy/publish-desktop.sh`
 
-## SSL
+## SSL (HTTPS на хосте)
 
-Опционально: nginx на хосте Ubuntu (SSL + прокси на Docker frontend `:80`).
+Docker отдаёт HTTP на `:80`. Для **https://ваш-домен** — nginx на Ubuntu + Let's Encrypt:
 
 ```bash
-apt install nginx certbot python3-certbot-nginx
+apt install -y nginx certbot python3-certbot-nginx
+cp deploy/nginx-host.conf.example /etc/nginx/sites-available/aurent-pos
+# замените pos.example.uz на ваш домен
+nano /etc/nginx/sites-available/aurent-pos
+ln -sf /etc/nginx/sites-available/aurent-pos /etc/nginx/sites-enabled/
+rm -f /etc/nginx/sites-enabled/default
+nginx -t && systemctl reload nginx
+certbot --nginx -d your-domain.uz
 ```
 
-Шаблон: `deploy/nginx-host.conf.example`.
+После certbot раскомментируйте `return 301 https://...` в блоке `:80` (см. шаблон).
+
+В `.env` обновите при необходимости:
+
+```env
+MAIL_LOGIN_URL=https://your-domain.uz/login?admin=1
+APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://your-domain.uz,http://localhost:*,http://127.0.0.1:*
+```
+
+Пересборка не обязательна для SSL — только nginx на хосте. Frontend внутри Docker подхватит `X-Forwarded-Proto: https` и отдаст HSTS.
+
+---
+
+## Sentry (мониторинг ошибок)
+
+По умолчанию **выключен**. Чтобы включить:
+
+1. Создайте проект на [sentry.io](https://sentry.io) (Java + React)
+2. В `.env` на сервере:
+
+```env
+SENTRY_DSN=https://...@....ingest.sentry.io/...
+SENTRY_ENVIRONMENT=production
+VITE_SENTRY_DSN=https://...@....ingest.sentry.io/...
+VITE_SENTRY_ENVIRONMENT=production
+```
+
+3. Пересоберите и перезапустите (нужен rebuild frontend из‑за `VITE_*`):
+
+```bash
+cd /opt/aurent-pos
+bash deploy/update.sh
+```
+
+4. Супер-админ → **Мониторинг** — статус Sentry «Подключён»
+
+Без DSN система работает как раньше, без лишней нагрузки.
+
+---
 
 ## Порты
 

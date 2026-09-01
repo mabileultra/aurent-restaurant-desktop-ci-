@@ -446,6 +446,7 @@ services:
       SENTRY_DSN: ${SENTRY_DSN:-}
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
@@ -512,6 +513,7 @@ services:
         VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
         VITE_SENTRY_ENVIRONMENT: ${VITE_SENTRY_ENVIRONMENT:-production}
         VITE_SENTRY_TRACES_SAMPLE_RATE: ${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.05}
+        VITE_SENTRY_RELEASE: ${VITE_SENTRY_RELEASE:-}
     container_name: aurent-pos-frontend
     restart: unless-stopped
     depends_on:
