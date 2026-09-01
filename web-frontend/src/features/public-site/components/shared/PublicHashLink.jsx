@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { PUBLIC_SITE_SECTIONS } from '../../constants/publicSiteSections';
 import { scrollToPublicSection } from '../../hooks/usePublicHashScroll';
 
 export default function PublicHashLink({ to, className, children, onClick }) {
@@ -9,7 +10,7 @@ export default function PublicHashLink({ to, className, children, onClick }) {
     if (location.pathname === '/') {
       event.preventDefault();
       scrollToPublicSection(hash);
-      window.history.replaceState(null, '', hash === '#top' ? '/' : `/${hash}`);
+      window.history.replaceState(null, '', hash === `#${PUBLIC_SITE_SECTIONS.top}` ? '/' : `/${hash}`);
     }
     onClick?.(event);
   };

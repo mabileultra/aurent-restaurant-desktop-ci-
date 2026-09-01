@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { PUBLIC_EQUIPMENT_ITEMS } from '../../constants/publicSiteMedia';
+import { PUBLIC_EQUIPMENT_ITEMS } from '../../constants/publicSiteEquipment';
+import PublicLazyImage from '../shared/PublicLazyImage';
 import PublicSectionTitle from '../shared/PublicSectionTitle';
 
 export default function PublicEquipmentGrid({ showHeader = true }) {
@@ -15,19 +16,19 @@ export default function PublicEquipmentGrid({ showHeader = true }) {
         />
       ) : null}
       <div className="public-equipment-grid">
-        {PUBLIC_EQUIPMENT_ITEMS.map(({ id, image }) => (
+        {PUBLIC_EQUIPMENT_ITEMS.map(({ id, image, srcSet, alt }) => (
           <article key={id} className="public-equipment-card">
             <h3 className="public-equipment-card__label">
               {t(`publicSite.equipment.items.${id}.title`)}
             </h3>
             <div className="public-equipment-card__media">
               <div className="public-equipment-card__glow" aria-hidden />
-              <img
+              <PublicLazyImage
                 className="public-equipment-card__img"
                 src={image}
-                alt=""
-                loading="lazy"
-                decoding="async"
+                srcSet={srcSet}
+                alt={alt}
+                sizes="200px"
               />
             </div>
             <p className="public-equipment-card__desc">

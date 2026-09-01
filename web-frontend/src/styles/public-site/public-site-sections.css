@@ -21,8 +21,8 @@
 
 .public-btn--primary {
   background: var(--ps-accent);
-  color: #fff;
-  box-shadow: 0 12px 32px rgb(0 163 255 / 0.38);
+  color: var(--ps-on-accent);
+  box-shadow: var(--ps-accent-shadow);
 }
 
 .public-btn--primary:hover {
@@ -42,18 +42,18 @@
 
 .public-btn--ghost-light {
   background: transparent;
-  color: #fff;
-  border: 1px solid rgb(255 255 255 / 0.45);
+  color: var(--ps-on-accent);
+  border: 1px solid rgb(255 255 255 / 0.55);
 }
 
 .public-btn--ghost-light:hover {
-  background: rgb(255 255 255 / 0.1);
+  background: rgb(255 255 255 / 0.12);
 }
 
 .public-btn--white {
   background: #fff;
   color: var(--ps-accent);
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.15);
+  box-shadow: 0 12px 32px rgb(15 36 25 / 0.12);
 }
 
 .public-btn--white:hover {
@@ -67,14 +67,6 @@
 
 .public-btn--green:hover {
   background: var(--ps-green-band);
-}
-
-.public-section {
-  padding: 3.5rem 0;
-}
-
-.public-section--alt {
-  background: rgb(255 255 255 / 0.015);
 }
 
 .public-section__head {

@@ -3,12 +3,13 @@ import PublicHashLink from '../shared/PublicHashLink';
 import PublicDownloadStrip from '../layout/PublicDownloadStrip';
 import PublicHeroDevices from './PublicHeroDevices';
 import PublicHeroSupport from './PublicHeroSupport';
+import { PUBLIC_SITE_SECTIONS } from '../../constants/publicSiteSections';
 
 export default function PublicHeroSection() {
   const { t } = useTranslation();
 
   return (
-    <section className="public-hero-wrap" id="top">
+    <section className="public-hero-wrap" id={PUBLIC_SITE_SECTIONS.top}>
       <div className="public-hero-wrap__waves" aria-hidden />
       <div className="public-hero-wrap__inner">
         <div className="public-hero">
@@ -29,11 +30,9 @@ export default function PublicHeroSection() {
           </div>
           <PublicHeroDevices />
         </div>
-        <div className="public-hero__bottom">
-          <PublicHeroSupport />
-          <PublicDownloadStrip embedded />
-        </div>
+        <PublicHeroSupport />
       </div>
+      <PublicDownloadStrip fullBleed />
     </section>
   );
 }

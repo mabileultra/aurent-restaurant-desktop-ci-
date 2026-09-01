@@ -1,0 +1,21 @@
+.public-site {
+  --ps-section-pad: clamp(2.5rem, 5vw, 3.75rem);
+  --ps-section-pad-lg: clamp(3rem, 6vw, 4.5rem);
+}
+
+.public-section {
+  padding: var(--ps-section-pad-lg) 0;
+}
+
+.public-feature-block {
+  padding: var(--ps-section-pad) 0;
+}
+
+.public-contacts {
+  padding: var(--ps-section-pad-lg) 0 calc(var(--ps-section-pad-lg) + 0.5rem);
+}
+
+.public-section--alt {
+  background: var(--ps-surface);
+  border-block: 1px solid var(--ps-line);
+}

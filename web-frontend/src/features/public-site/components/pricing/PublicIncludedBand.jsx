@@ -1,12 +1,13 @@
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_INCLUDED_FEATURES } from '../../constants/publicSiteMedia';
+import { PUBLIC_SITE_SECTIONS } from '../../constants/publicSiteSections';
 import PublicHashLink from '../shared/PublicHashLink';
 
 export default function PublicIncludedBand() {
   const { t } = useTranslation();
 
   return (
-    <section className="public-included-band" id="pricing">
+    <section className="public-included-band" id={PUBLIC_SITE_SECTIONS.pricing}>
       <div className="public-site-section">
         <div className="public-included-band__shell">
           <div className="public-included-band__left">

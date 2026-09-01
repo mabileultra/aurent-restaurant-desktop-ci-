@@ -2,12 +2,14 @@ import { useTranslation } from 'react-i18next';
 import PublicSectionTitle from '../shared/PublicSectionTitle';
 import PublicHashLink from '../shared/PublicHashLink';
 import { PUBLIC_ABOUT_MEDIA } from '../../constants/publicSiteMedia';
+import { PUBLIC_SITE_SECTIONS } from '../../constants/publicSiteSections';
+import PublicLazyImage from '../shared/PublicLazyImage';
 
 export default function PublicAboutSection() {
   const { t } = useTranslation();
 
   return (
-    <section className="public-section public-section--alt" id="about">
+    <section className="public-section public-section--alt" id={PUBLIC_SITE_SECTIONS.about}>
       <div className="public-site-section public-about-section">
         <PublicSectionTitle
           eyebrowKey="publicSite.about.eyebrow"
@@ -24,11 +26,11 @@ export default function PublicAboutSection() {
             ))}
           </div>
           <div className="public-about-section__visual">
-            <img
+            <PublicLazyImage
               src={PUBLIC_ABOUT_MEDIA.image}
+              srcSet={PUBLIC_ABOUT_MEDIA.srcSet}
               alt={PUBLIC_ABOUT_MEDIA.alt}
-              loading="lazy"
-              decoding="async"
+              sizes="(max-width: 900px) 100vw, 40vw"
             />
             <span className="public-about-section__badge">{t('publicSite.about.badge')}</span>
           </div>

@@ -6,10 +6,10 @@
   padding: 3rem 1.75rem 2.5rem;
   border-radius: var(--ps-radius-lg);
   background:
-    radial-gradient(ellipse 100% 70% at 50% 100%, rgb(255 255 255 / 0.12), transparent 55%),
-    linear-gradient(180deg, #1a8fff 0%, #0078e6 55%, #005bb5 100%);
-  border: 1px solid rgb(255 255 255 / 0.14);
-  box-shadow: 0 40px 100px rgb(0 120 255 / 0.22);
+    radial-gradient(ellipse 100% 70% at 50% 100%, rgb(255 255 255 / 0.15), transparent 55%),
+    linear-gradient(180deg, #15803d 0%, #166534 55%, #14532d 100%);
+  border: 1px solid rgb(22 101 52 / 0.25);
+  box-shadow: 0 32px 80px rgb(22 101 52 / 0.2);
   text-align: center;
 }
 
@@ -19,6 +19,7 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: -0.02em;
+  color: #fff;
 }
 
 .public-control-panel__text {
@@ -30,25 +31,8 @@
 }
 
 .public-control-panel__visual {
-  position: relative;
   margin: 0 auto 2rem;
   max-width: 940px;
-}
-
-.public-control-panel__glow {
-  position: absolute;
-  inset: 15% 5% -5%;
-  background: radial-gradient(circle, rgb(255 255 255 / 0.25), transparent 70%);
-  filter: blur(24px);
-}
-
-.public-control-panel__img {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  border-radius: 14px;
-  border: 1px solid rgb(255 255 255 / 0.18);
-  box-shadow: 0 48px 100px rgb(0 0 0 / 0.55);
 }
 
 @media (min-width: 768px) {

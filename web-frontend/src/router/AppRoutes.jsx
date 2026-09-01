@@ -14,7 +14,7 @@ export default function AppRoutes() {
         {cashierRoutes}
         {platformRoutes}
         {adminRoutes}
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );

@@ -3,6 +3,19 @@
   min-height: calc(100vh - var(--ps-header-h));
   padding: 0;
   overflow: hidden;
+  animation: public-hero-fade 0.6s ease both;
+}
+
+@keyframes public-hero-fade {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .public-hero-wrap__waves {
@@ -10,10 +23,9 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 50% 55% at 88% 35%, rgb(0 163 255 / 0.2), transparent 62%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='900' viewBox='0 0 1400 900'%3E%3Cpath d='M700 0 Q900 280 700 560 T700 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.12' stroke-width='2'/%3E%3Cpath d='M820 0 Q1020 300 820 620 T820 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.08' stroke-width='1.5'/%3E%3Cpath d='M580 80 Q780 360 580 640 T580 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")
-    no-repeat right center / 58% auto;
-  opacity: 1;
+    radial-gradient(ellipse 50% 55% at 88% 35%, rgb(34 197 94 / 0.12), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='900' viewBox='0 0 1400 900'%3E%3Cpath d='M700 0 Q900 280 700 560 T700 900' fill='none' stroke='%23166534' stroke-opacity='0.12' stroke-width='2'/%3E%3Cpath d='M820 0 Q1020 300 820 620 T820 900' fill='none' stroke='%23166534' stroke-opacity='0.08' stroke-width='1.5'/%3E%3Cpath d='M580 80 Q780 360 580 640 T580 900' fill='none' stroke='%23166534' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right center / 62% auto;
 }
 
 .public-hero-wrap__inner {
@@ -21,11 +33,11 @@
   z-index: 1;
   width: var(--ps-container);
   margin: 0 auto;
-  min-height: calc(100vh - var(--ps-header-h));
+  min-height: calc(100vh - var(--ps-header-h) - 3.5rem);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 1.5rem 0 0;
+  padding: 1.5rem 0 1.25rem;
 }
 
 .public-hero {
@@ -33,19 +45,19 @@
   gap: 2rem;
   align-items: center;
   flex: 1;
-  padding: 1rem 0 1.5rem;
+  padding: 1rem 0;
 }
 
 .public-hero__content {
-  max-width: 34rem;
+  max-width: 36rem;
 }
 
 .public-hero__title {
   margin: 0 0 1.35rem;
   font-family: var(--ps-display);
-  font-size: clamp(1.65rem, 3.8vw, 2.65rem);
+  font-size: clamp(1.75rem, 4vw, 2.85rem);
   font-weight: 900;
-  line-height: 1.08;
+  line-height: 1.06;
   text-transform: uppercase;
   letter-spacing: -0.02em;
 }
@@ -56,66 +68,63 @@
 
 .public-hero__title-accent-row {
   display: block;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
 }
 
 .public-hero__title-accent {
   color: var(--ps-accent);
-  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  font-size: clamp(2.15rem, 5vw, 3.5rem);
   letter-spacing: -0.03em;
 }
 
 .public-hero__lead {
   margin: 0 0 1.65rem;
-  max-width: 32rem;
-  font-size: 0.95rem;
+  max-width: 34rem;
+  font-size: 0.98rem;
   line-height: 1.65;
-  color: rgb(255 255 255 / 0.82);
+  color: var(--ps-muted);
 }
 
 .public-hero__note {
   margin: 1rem 0 0;
   font-size: 0.68rem;
-  color: rgb(154 163 178 / 0.8);
-  max-width: 28rem;
+  color: var(--ps-muted);
+  max-width: 30rem;
   line-height: 1.55;
 }
 
-.public-hero__bottom {
-  display: grid;
-  gap: 1.25rem;
-  align-items: end;
-  padding-bottom: 1.75rem;
+.public-btn--hero {
+  min-width: min(100%, 18rem);
+  padding: 1rem 2.1rem;
+  font-size: 0.98rem;
+  border-radius: 10px;
+  box-shadow: var(--ps-accent-shadow);
 }
 
-.public-btn--hero {
-  min-width: min(100%, 17rem);
-  padding: 0.95rem 2rem;
-  font-size: 0.95rem;
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgb(0 163 255 / 0.35);
+@media (max-width: 959px) {
+  .public-hero-wrap {
+    min-height: auto;
+  }
+
+  .public-hero-wrap__inner {
+    min-height: auto;
+    padding-top: 1.25rem;
+    padding-bottom: 1rem;
+  }
+
+  .public-hero-devices {
+    min-height: 280px;
+  }
 }
 
 @media (min-width: 960px) {
   .public-hero-wrap__inner {
-    padding: 2rem 0 0;
+    padding: 2rem 0 1.5rem;
   }
 
   .public-hero {
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-    gap: 1.5rem 2rem;
-    padding: 2rem 0 0;
-  }
-
-  .public-hero__bottom {
-    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
-    gap: 0;
-    padding-bottom: 2rem;
-  }
-
-  .public-hero__bottom .public-download-strip--embedded {
-    grid-column: 2;
-    justify-self: stretch;
-    align-self: end;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: 1.5rem 2.5rem;
+    padding: 1.5rem 0 0;
   }
 }

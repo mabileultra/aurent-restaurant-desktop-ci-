@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_FEATURE_MEDIA } from '../../constants/publicSiteMedia';
 import PublicHashLink from '../shared/PublicHashLink';
+import PublicDeviceFrame from '../shared/PublicDeviceFrame';
 import PublicWaveDivider from '../layout/PublicWaveDivider';
 
 export default function PublicFeatureBlock({ sectionId, i18nKey, mediaKey, reversed = false }) {
@@ -24,13 +25,11 @@ export default function PublicFeatureBlock({ sectionId, i18nKey, mediaKey, rever
             </PublicHashLink>
           </div>
           <div className="public-feature-block__visual">
-            <div className="public-feature-block__glow" aria-hidden />
-            <img
-              className="public-feature-block__img"
+            <PublicDeviceFrame
               src={media.image}
+              srcSet={media.srcSet}
               alt={media.alt}
-              loading="lazy"
-              decoding="async"
+              sizes="(max-width: 900px) 100vw, 500px"
             />
           </div>
         </div>

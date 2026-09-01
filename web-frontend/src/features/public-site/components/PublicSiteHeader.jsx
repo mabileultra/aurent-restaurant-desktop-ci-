@@ -7,6 +7,7 @@ import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { cashierLoginPath, isDesktopCashier } from '../../../utils/authLogin';
 import { PUBLIC_SITE_NAV } from '../constants/publicSiteNav';
+import { PUBLIC_SITE_SECTIONS, publicSectionRoute } from '../constants/publicSiteSections';
 import { PUBLIC_SITE_PHONE, PUBLIC_SITE_PHONE_HREF } from '../constants/publicSiteMedia';
 
 export default function PublicSiteHeader({ showLoginCta = true }) {
@@ -35,7 +36,7 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
   }, [loginOpen]);
 
   const isActive = (to) => {
-    if (to === '/#top') {
+    if (to === publicSectionRoute(PUBLIC_SITE_SECTIONS.top)) {
       return location.pathname === '/' && (!location.hash || location.hash === '#top');
     }
     if (to.startsWith('/#')) {

@@ -4,7 +4,8 @@ import ReactDOM from 'react-dom/client';
 import './i18n/config';
 import App from './App.jsx';
 import './index.css';
-import { syncRootTheme } from './store/themeStore';
+import { syncRootTheme, syncPublicTheme } from './store/themeStore';
+import { isPublicAppPath } from './utils/publicAppPaths';
 import { readCashierTheme, syncCashierThemeDocument } from './utils/cashierTheme';
 import { usePrintSettingsStore } from './store/printSettingsStore';
 import { useTenantDisplayStore } from './store/tenantDisplayStore';
@@ -17,6 +18,8 @@ const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');
 if (isCashierRoute) {
   syncCashierThemeDocument(readCashierTheme());
+} else if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
+  syncPublicTheme();
 } else {
   syncRootTheme();
 }

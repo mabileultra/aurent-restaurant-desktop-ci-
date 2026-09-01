@@ -410,33 +410,33 @@
     },
     "equipment": {
       "eyebrow": "Uskunalar",
-      "title": "Aurent uchun qanday uskunalar mos?",
-      "subtitle": "Tarozidan POS-terminalgacha — formatga mos to‘plam tanlaymiz.",
-      "formTitle": "To‘plam buyurtma qilish",
+      "title": "Biz taqdim etadigan uskunalar",
+      "subtitle": "POS-monitorlar, chek printerlari, skanerlar va boshqalar — do‘kon, apteka yoki restoran uchun to‘plam tanlaymiz.",
+      "formTitle": "Uskunalar to‘plamini buyurtma qilish",
       "items": {
-        "scale": {
-          "title": "Tarozilar",
-          "desc": "Og‘irlikli mahsulotlar va yorliq chop etish."
+        "posMonitor": {
+          "title": "POS-monitor",
+          "desc": "Kassa uchun sensorli terminal: tez sotuv, to‘lov va hisob bitta ekranda."
         },
-        "pos": {
-          "title": "Tayyor uskunalar",
-          "desc": "Sensli ekranli POS-terminal."
-        },
-        "scanner": {
-          "title": "Shtrix-kod skaneri",
-          "desc": "Kassada mahsulotni tez topish."
-        },
-        "printer": {
+        "receiptPrinter": {
           "title": "Chek printeri",
-          "desc": "Fiskal va fiskal bo‘lmagan printerlar."
+          "desc": "Fiskal va tovar cheklarini chop etish — do‘kon, apteka va umumiy ovqatlanish uchun."
         },
-        "drawer": {
-          "title": "Pul yechkichlari",
-          "desc": "Kassada naqd pulni saqlash."
+        "barcodeScanner": {
+          "title": "Shtrix-kod skaneri",
+          "desc": "Kassada mahsulotni tez topish — chakana savdo va aptekalar uchun qulay."
         },
-        "router": {
-          "title": "Tarmoq uskunalari",
-          "desc": "Kassa va server o‘rtasida barqaror aloqa."
+        "cashDrawer": {
+          "title": "Pul yechkichi",
+          "desc": "Naqd pulni xavfsiz saqlash, sotuvda avtomatik ochilish."
+        },
+        "scales": {
+          "title": "Savdo tarozilari",
+          "desc": "Kassada og‘irlikli mahsulot: yorliqlar, narx va qoldiqlar Aurent tizimida."
+        },
+        "customerDisplay": {
+          "title": "Xaridor ekrani",
+          "desc": "Mijoz summa va chegirmalarni ko‘radi — kassada ishonch oshadi."
         }
       }
     },
@@ -449,7 +449,7 @@
       "badge": "Do‘konlar va umumiy ovqatlanish uchun avtomatlashtirish dasturi",
       "infoTitle": "Kontaktlar",
       "phoneLabel": "Telefon",
-      "phoneValue": "+998 71 200 00 00",
+      "phoneValue": "+998 90 454 44 43",
       "emailLabel": "Email",
       "emailValue": "info@aurent.uz",
       "hoursLabel": "Ish vaqti",

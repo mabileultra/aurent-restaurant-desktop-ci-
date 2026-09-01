@@ -1,13 +1,13 @@
-import { useEffect } from 'react';
+import { useLayoutEffect } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { redirectIfStoredTokenExpired } from '../../utils/authSessionExpiry';
 
-/** После rehydrate localStorage — сразу выкинуть на PIN, если JWT истёк. */
+/** После rehydrate — сброс протухшего JWT до отрисовки (не редиректить лендинг на login). */
 export default function AuthSessionGuard({ children }) {
   const hydrated = useAuthStore((s) => s._hasHydrated);
   const token = useAuthStore((s) => s.token);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!hydrated) return;
     redirectIfStoredTokenExpired();
   }, [hydrated, token]);

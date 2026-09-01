@@ -2,7 +2,9 @@
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 1.75rem;
-  color: rgb(255 255 255 / 0.55);
+  margin-top: auto;
+  padding-top: 0.75rem;
+  color: var(--ps-muted);
   font-size: 0.72rem;
   line-height: 1.4;
 }

@@ -1,6 +1,5 @@
 import { Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './guards/ProtectedRoute';
-import RoleHomeRedirect from './guards/RoleHomeRedirect';
 import CheckoutRedirect from './guards/CheckoutRedirect';
 import AppShellLayout from '../components/layout/AppShellLayout';
 import {
@@ -68,14 +67,12 @@ import {
 
 export const adminRoutes = (
   <Route
-    path="/"
     element={(
       <ProtectedRoute>
         <AppShellLayout />
       </ProtectedRoute>
     )}
   >
-    <Route index element={<RoleHomeRedirect />} />
     <Route
       path="dashboard"
       element={(

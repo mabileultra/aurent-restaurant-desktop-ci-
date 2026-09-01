@@ -3,9 +3,26 @@
 .login-page__stage {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 2rem 1rem 2.5rem;
+}
+
+.login-page__back {
+  margin: 1.25rem 0 0;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.login-page__back a {
+  color: var(--ps-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.login-page__back a:hover {
+  color: var(--ps-accent);
 }
 
 .login-card {
@@ -109,7 +126,7 @@
 .login-form__input {
   width: 100%;
   border: 1px solid var(--ps-line);
-  background: rgb(0 0 0 / 0.25);
+  background: var(--ps-bg);
   border-radius: 0.75rem;
   padding: 0.85rem 2.75rem 0.85rem 2.55rem;
   font-size: 0.9375rem;
@@ -119,9 +136,9 @@
 }
 
 .login-form__input:focus {
-  background: rgb(0 0 0 / 0.35);
-  border-color: rgb(43 140 255 / 0.55);
-  box-shadow: 0 0 0 3px rgb(43 140 255 / 0.18);
+  background: #fff;
+  border-color: var(--ps-accent);
+  box-shadow: 0 0 0 3px var(--ps-accent-glow);
 }
 
 .login-form__eye {
@@ -175,7 +192,7 @@
   font-size: 0.975rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgb(43 140 255 / 0.28);
+  box-shadow: var(--ps-accent-shadow);
   transition: background 0.15s ease, transform 0.1s ease;
 }
 

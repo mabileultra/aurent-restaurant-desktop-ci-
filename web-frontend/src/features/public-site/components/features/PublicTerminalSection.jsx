@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_TERMINAL_MEDIA } from '../../constants/publicSiteMedia';
+import { PUBLIC_SITE_SECTIONS } from '../../constants/publicSiteSections';
 import PublicHashLink from '../shared/PublicHashLink';
+import PublicDeviceFrame from '../shared/PublicDeviceFrame';
 import PublicWaveDivider from '../layout/PublicWaveDivider';
 
 export default function PublicTerminalSection() {
@@ -9,7 +11,7 @@ export default function PublicTerminalSection() {
   return (
     <>
       <PublicWaveDivider />
-      <section className="public-feature-block" id="features">
+      <section className="public-feature-block" id={PUBLIC_SITE_SECTIONS.features}>
         <div className="public-site-section public-feature-block__inner">
           <div className="public-feature-block__content">
             <p className="public-feature-block__label">{t('publicSite.terminal.label')}</p>
@@ -20,13 +22,11 @@ export default function PublicTerminalSection() {
             </PublicHashLink>
           </div>
           <div className="public-feature-block__visual">
-            <div className="public-feature-block__glow" aria-hidden />
-            <img
-              className="public-feature-block__img"
+            <PublicDeviceFrame
               src={PUBLIC_TERMINAL_MEDIA.image}
+              srcSet={PUBLIC_TERMINAL_MEDIA.srcSet}
               alt={PUBLIC_TERMINAL_MEDIA.alt}
-              loading="lazy"
-              decoding="async"
+              sizes="(max-width: 900px) 100vw, 500px"
             />
           </div>
         </div>

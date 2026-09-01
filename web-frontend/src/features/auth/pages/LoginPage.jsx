@@ -1,6 +1,5 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, Link } from 'react-router-dom';
 import PublicSiteHeader from '../../public-site/components/PublicSiteHeader';
-import PublicSiteFooter from '../../public-site/components/PublicSiteFooter';
 import LoginBranding from '../components/LoginBranding';
 import LoginForm from '../components/LoginForm';
 import { useLoginPage } from '../hooks/useLoginPage';
@@ -41,8 +40,10 @@ export default function LoginPage() {
           />
           <p className="login-card__secure">{t('login.securityBadge')}</p>
         </div>
+        <p className="login-page__back">
+          <Link to="/">{t('publicSite.nav.home')}</Link>
+        </p>
       </main>
-      <PublicSiteFooter />
     </div>
   );
 }

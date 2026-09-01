@@ -16,31 +16,31 @@
 .public-lead-form__field span {
   font-size: 0.78rem;
   font-weight: 600;
-  color: rgb(255 255 255 / 0.72);
+  color: var(--ps-muted);
 }
 
 .public-lead-form__field input,
 .public-lead-form__field textarea {
   width: 100%;
-  border: 1px solid rgb(255 255 255 / 0.08);
+  border: 1px solid var(--ps-line);
   border-radius: 10px;
   padding: 0.75rem 0.9rem;
   font: inherit;
   color: var(--ps-ink);
-  background: rgb(0 0 0 / 0.35);
+  background: var(--ps-bg);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .public-lead-form__field input::placeholder,
 .public-lead-form__field textarea::placeholder {
-  color: rgb(154 163 178 / 0.45);
+  color: rgb(95 111 101 / 0.55);
 }
 
 .public-lead-form__field input:focus,
 .public-lead-form__field textarea:focus {
   outline: none;
   border-color: var(--ps-accent);
-  box-shadow: 0 0 0 3px rgb(0 163 255 / 0.18);
+  box-shadow: 0 0 0 3px var(--ps-accent-glow);
 }
 
 .public-lead-form__field--full {
@@ -54,6 +54,7 @@
   border-radius: 10px !important;
   background: var(--ps-accent) !important;
   border-color: transparent !important;
+  color: var(--ps-on-accent) !important;
   font-weight: 700 !important;
 }
 

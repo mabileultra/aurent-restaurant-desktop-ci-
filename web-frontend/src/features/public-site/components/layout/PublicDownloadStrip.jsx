@@ -10,7 +10,7 @@ function PlatformIcon({ type }) {
   return <Smartphone size={20} aria-hidden />;
 }
 
-export default function PublicDownloadStrip({ embedded = false }) {
+export default function PublicDownloadStrip({ fullBleed = false, embedded = false }) {
   const { t } = useTranslation();
 
   const bar = (
@@ -23,6 +23,14 @@ export default function PublicDownloadStrip({ embedded = false }) {
       ))}
     </div>
   );
+
+  if (fullBleed) {
+    return (
+      <div className="public-download-strip public-download-strip--full-bleed" id="download">
+        <div className="public-download-strip__inner">{bar}</div>
+      </div>
+    );
+  }
 
   if (embedded) {
     return <div className="public-download-strip public-download-strip--embedded">{bar}</div>;

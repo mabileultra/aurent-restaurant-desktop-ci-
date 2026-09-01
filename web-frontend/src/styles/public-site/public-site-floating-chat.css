@@ -13,7 +13,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 16px 40px rgb(0 163 255 / 0.42);
+  box-shadow: var(--ps-accent-shadow);
   transition: transform 0.15s ease, background 0.15s ease;
 }
 

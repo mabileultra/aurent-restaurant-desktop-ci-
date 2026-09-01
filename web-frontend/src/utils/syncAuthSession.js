@@ -4,6 +4,7 @@ import { useAuthStore } from '../store/authStore';
 import { normalizeCompanyLoginCode } from './authLogin';
 import { isJwtExpired } from './jwtToken';
 import { forceAuthReLogin } from './authSessionExpiry';
+import { isPublicAppPath } from './publicAppPaths';
 
 /** Подтянуть с сервера актуальные allowedModules и обновить JWT. */
 export async function syncAuthSession() {
@@ -11,6 +12,10 @@ export async function syncAuthSession() {
   if (!token || token.split('.').length !== 3) return null;
 
   if (isJwtExpired(token)) {
+    if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
+      useAuthStore.getState().logout();
+      return null;
+    }
     forceAuthReLogin();
     return null;
   }
@@ -32,6 +37,10 @@ export async function syncAuthSession() {
     return profile;
   } catch (err) {
     if (isJwtExpired(token) || err?.response?.status === 400) {
+      if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
+        useAuthStore.getState().logout();
+        return null;
+      }
       forceAuthReLogin();
     }
     return null;

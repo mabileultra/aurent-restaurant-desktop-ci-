@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useAuthStore } from '../store/authStore';
 import { normalizeCompanyLoginCode } from '../utils/authLogin';
 import { forceAuthReLogin } from '../utils/authSessionExpiry';
+import { isPublicAppPath } from '../utils/publicAppPaths';
 import { isApiNetworkError } from '../utils/apiNetworkError';
 import {
   markApiUnreachable,
@@ -77,6 +78,10 @@ api.interceptors.response.use(
       const { token } = useAuthStore.getState();
       const jwtParts = typeof token === 'string' ? token.split('.').length : 0;
       if (!token || jwtParts !== 3) {
+        if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
+          useAuthStore.getState().logout();
+          return Promise.reject(error);
+        }
         forceAuthReLogin();
         return Promise.reject(error);
       }
@@ -99,6 +104,10 @@ api.interceptors.response.use(
       } catch (refreshErr) {
         if (isApiNetworkError(refreshErr)) {
           return Promise.reject(error);
+        }
+        if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
+          useAuthStore.getState().logout();
+          return Promise.reject(refreshErr);
         }
         forceAuthReLogin();
         return Promise.reject(refreshErr);
