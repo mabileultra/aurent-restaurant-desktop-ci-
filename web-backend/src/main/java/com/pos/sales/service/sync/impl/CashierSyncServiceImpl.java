@@ -33,6 +33,7 @@ import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceCreditSaleIntegrationService;
 import com.pos.integrations.finance.service.FinanceSaleIntegrationService;
 import com.pos.catalog.service.product.ProductQueryService;
+import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
 import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
@@ -42,7 +43,6 @@ import com.pos.service.support.CashierSaleSupport;
 import com.pos.sales.service.sync.CashierSyncService;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
-import com.pos.util.QuantityValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -52,7 +52,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -78,6 +81,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
+    private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
 
     @Override
@@ -183,6 +187,11 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         BigDecimal subtotal = BigDecimal.ZERO;
         BigDecimal taxTotal = BigDecimal.ZERO;
         BigDecimal lineDiscountTotal = BigDecimal.ZERO;
+        Set<UUID> productIds = new HashSet<>();
+        for (SaleItemRequest itemReq : req.items()) {
+            productIds.add(itemReq.productId());
+        }
+        Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(productIds);
 
         for (SaleItemRequest itemReq : req.items()) {
             Product product = productRepository.findById(itemReq.productId())
@@ -190,8 +199,12 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             if (!product.isActive()) {
                 throw new BadRequestException("Product is inactive: " + product.getName());
             }
-            BigDecimal lineQty = QuantityValidator.normalizeForProduct(product, itemReq.quantity());
-            QuantityValidator.validate(product, lineQty);
+            BigDecimal lineQty = checkoutQuantityResolver.normalizeQuantity(
+                product,
+                itemReq.quantity(),
+                attributesByProductId
+            );
+            checkoutQuantityResolver.validateQuantity(product, lineQty, attributesByProductId);
 
             BigDecimal lineDiscount = itemReq.discount() != null ? itemReq.discount() : BigDecimal.ZERO;
             BigDecimal unitPrice = resolveCheckoutUnitPrice(itemReq, product, store.getId());

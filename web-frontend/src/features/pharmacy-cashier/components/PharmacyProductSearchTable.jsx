@@ -8,6 +8,7 @@ import {
   formatExpiryRemaining,
   productArrivalDate,
   productBatch,
+  productCountry,
   productDosageForm,
   productSellByUnitHint,
   productStorageLocation,
@@ -98,6 +99,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 <th>{t('pharmacyCashier.colName')}</th>
                 <th>{t('pharmacyCashier.colUnit')}</th>
                 <th>{t('pharmacyCashier.colForm')}</th>
+                <th>{t('pharmacyCashier.colCountry')}</th>
                 <th>{t('pharmacyCashier.colShelf')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
@@ -117,6 +119,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const disabled = outOfStock || inactive;
                 const unit = productUnitLabel(product) || '—';
                 const form = productDosageForm(product) || '—';
+                const country = productCountry(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
                 const pack = productUnitsInPack(product);
                 const expiry = formatExpiryRemaining(product, daysLabel) || '—';
@@ -134,8 +137,10 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                       if (!disabled) onSelectProduct(product);
                     }}
                   >
-                    <td className="pharmacy-search__name">{product.name}</td>
-                    <td className="pharmacy-search__mono">
+                    <td className="pharmacy-search__name" title={product.name}>
+                      {product.name}
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={unit}>
                       {unit}
                       {sellByUnit ? (
                         <span className="pharmacy-search__hint" title={t('pharmacyCashier.sellByUnitHint')}>
@@ -143,7 +148,12 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         </span>
                       ) : null}
                     </td>
-                    <td className="pharmacy-search__mono">{form}</td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={form}>
+                      {form}
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
+                      {country}
+                    </td>
                     <td
                       className={[
                         'pharmacy-search__mono',

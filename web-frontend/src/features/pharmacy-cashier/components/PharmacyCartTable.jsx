@@ -6,6 +6,7 @@ import { formatQty } from '../../../utils/quantityFormat';
 import {
   formatExpiryRemaining,
   productBatch,
+  productCountry,
   productDosageForm,
   productStorageLocation,
   productUnitLabel,
@@ -45,6 +46,7 @@ export default function PharmacyCartTable({
               <th>{t('pharmacyCashier.colName')}</th>
               <th>{t('pharmacyCashier.colUnit')}</th>
               <th>{t('pharmacyCashier.colForm')}</th>
+              <th>{t('pharmacyCashier.colCountry')}</th>
               <th>{t('pharmacyCashier.colShelf')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colQty')}</th>
               <th className="pharmacy-cart-table__num">{t('pharmacyCashier.colPrice')}</th>
@@ -60,6 +62,7 @@ export default function PharmacyCartTable({
             {items.map((item) => {
               const unit = productUnitLabel(item) || '—';
               const form = productDosageForm(item) || '—';
+              const country = productCountry(item) || '—';
               const shelf = productStorageLocation(item) || '—';
               const expiry = formatExpiryRemaining(item, daysLabel) || '—';
               const batch = productBatch(item) || '—';
@@ -75,9 +78,18 @@ export default function PharmacyCartTable({
                   ].filter(Boolean).join(' ')}
                   onClick={() => onSelectLine(item.lineId)}
                 >
-                  <td className="pharmacy-cart-table__name">{item.name}</td>
-                  <td className="pharmacy-cart-table__mono">{unit}</td>
-                  <td className="pharmacy-cart-table__mono">{form}</td>
+                  <td className="pharmacy-cart-table__name" title={item.name}>
+                    {item.name}
+                  </td>
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={unit}>
+                    {unit}
+                  </td>
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={form}>
+                    {form}
+                  </td>
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={country}>
+                    {country}
+                  </td>
                   <td
                     className={[
                       'pharmacy-cart-table__mono',
@@ -87,9 +99,25 @@ export default function PharmacyCartTable({
                     {shelf}
                   </td>
                   <td className="pharmacy-cart-table__num">
-                    {formatQty(item.quantity, item.saleType, item.unitCode)}
+                    {item.pharmacySellByPiece ? (
+                      <span
+                        className="pharmacy-cart-table__piece-qty"
+                        title={t('pharmacyCashier.packOf', { count: item.unitsInPack })}
+                      >
+                        {t('pharmacyCashier.pieceCount', { count: Math.round(item.quantity) })}
+                      </span>
+                    ) : (
+                      formatQty(item.quantity, item.saleType, item.unitCode)
+                    )}
                   </td>
-                  <td className="pharmacy-cart-table__num">{fmt(item.unitPrice)}</td>
+                  <td className="pharmacy-cart-table__num">
+                    {fmt(item.unitPrice)}
+                    {item.pharmacySellByPiece ? (
+                      <span className="pharmacy-cart-table__piece-price-hint">
+                        {t('pharmacyCashier.perPieceShort')}
+                      </span>
+                    ) : null}
+                  </td>
                   <td className="pharmacy-cart-table__num">{fmt(lineSubtotal(item))}</td>
                   <td
                     className={[
@@ -106,7 +134,9 @@ export default function PharmacyCartTable({
                       pharmacyCellToneClass(stockTone, 'pharmacy-cart-table__cell'),
                     ].filter(Boolean).join(' ')}
                   >
-                    {formatQty(item.maxStock, item.saleType, item.unitCode)}
+                    {item.pharmacySellByPiece
+                      ? t('pharmacyCashier.pieceCount', { count: Math.floor(item.maxStock) })
+                      : formatQty(item.maxStock, item.saleType, item.unitCode)}
                   </td>
                   <td className="pharmacy-cart-table__mono">{item.ikpu || '—'}</td>
                   <td>

@@ -15,6 +15,7 @@ import com.pos.entity.User;
 import com.pos.exception.PosExceptions;
 import com.pos.sales.mapper.SaleMapper;
 import com.pos.sales.repository.CashierShiftRepository;
+import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
 import com.pos.sales.service.sale.support.CreditSaleCustomerSupport;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
@@ -37,16 +38,17 @@ import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
 import com.pos.util.QuantityUtil;
-import com.pos.util.QuantityValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -71,6 +73,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
     private final FinanceAdvancePaymentIntegrationService financeAdvancePaymentIntegrationService;
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
+    private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
 
     @Override
@@ -88,6 +91,8 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         Customer customer = creditSaleCustomerSupport.resolveForCheckout(req.customerId(), receiptType);
 
         Map<UUID, Product> productsById = checkoutProductLoader.loadIndexed(req.items());
+        Set<UUID> productIds = new HashSet<>(productsById.keySet());
+        Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(productIds);
 
         List<SaleItem> items = new ArrayList<>();
         BigDecimal subtotal = BigDecimal.ZERO;
@@ -96,8 +101,8 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
 
         for (SaleItemRequest itemReq : req.items()) {
             Product product = productsById.get(itemReq.productId());
-            BigDecimal lineQty = QuantityValidator.normalizeForProduct(product, itemReq.quantity());
-            QuantityValidator.validate(product, lineQty);
+            BigDecimal lineQty = checkoutQuantityResolver.normalizeQuantity(product, itemReq.quantity(), attributesByProductId);
+            checkoutQuantityResolver.validateQuantity(product, lineQty, attributesByProductId);
             if (receiptType != Sale.ReceiptType.ADVANCE) {
                 storeStockService.requireAvailable(product, store, lineQty);
             }

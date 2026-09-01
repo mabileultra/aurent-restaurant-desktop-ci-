@@ -24,6 +24,7 @@ export function usePosCheckout({
   setPayOpen,
   setSelectedLineId,
   shift = null,
+  getCheckoutLineItems: getCheckoutLineItemsOverride,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -32,7 +33,8 @@ export function usePosCheckout({
   const storeName = useConnectivityStore((s) => s.storeName);
 
   const clearCart = useCartStore((s) => s.clearCart);
-  const getCheckoutLineItems = useCartStore((s) => s.getCheckoutLineItems);
+  const defaultGetCheckoutLineItems = useCartStore((s) => s.getCheckoutLineItems);
+  const getCheckoutLineItems = getCheckoutLineItemsOverride ?? defaultGetCheckoutLineItems;
   const getCheckoutOrderDiscountAmount = useCartStore((s) => s.getCheckoutOrderDiscountAmount);
   const getCheckoutOrderDiscountPercent = useCartStore((s) => s.getCheckoutOrderDiscountPercent);
 

@@ -47,6 +47,9 @@ const buildLine = (product, quantity) => {
     quantity: roundQty(quantity),
     discountPercent: Number(product.defaultDiscountPercent ?? 0),
     discount: 0,
+    pharmacySellByPiece: product.pharmacySellByPiece === true,
+    unitsInPack: product.unitsInPack ?? null,
+    packUnitPrice: product.packUnitPrice ?? null,
   };
 };
 
@@ -74,7 +77,10 @@ export const useCartStore = create((set, get) => ({
     const qty = roundQty(quantity);
     const { items } = get();
     const existing = items.find(
-      (i) => i.productId === product.id && isPieceLikeProduct(i)
+      (i) =>
+        i.productId === product.id
+        && isPieceLikeProduct(i)
+        && Boolean(i.pharmacySellByPiece) === Boolean(product.pharmacySellByPiece)
     );
     if (existing) {
       const next = syncDiscountFromPercent({

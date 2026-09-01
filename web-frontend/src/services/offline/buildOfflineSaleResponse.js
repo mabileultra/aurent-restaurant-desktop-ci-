@@ -1,9 +1,9 @@
 import { extractVatFromInclusive, round2 } from '../../utils/taxAmounts';
 import {
-  buildCheckoutLineItems,
   lineDiscountAmount,
   lineSubtotal,
 } from '../../store/cartStore';
+import { resolveCheckoutLineItems } from '../../features/pharmacy-cashier/utils/pharmacyCheckoutItems';
 
 function mapLineItems(cartItems) {
   return cartItems.map((item) => {
@@ -128,7 +128,7 @@ export function buildOfflineCheckoutPayload({
     cardAmount: payment.cardAmount,
     amountTendered: payment.amountTendered,
     customerId: payment.customerId || undefined,
-    items: buildCheckoutLineItems(cartItems),
+    items: resolveCheckoutLineItems(cartItems),
     orderDiscountAmount: orderDiscountAmount ?? 0,
     orderDiscountPercent: orderDiscountPercent ?? 0,
   };

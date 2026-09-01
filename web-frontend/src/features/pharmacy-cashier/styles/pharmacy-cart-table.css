@@ -35,6 +35,18 @@
   white-space: nowrap;
 }
 
+.pharmacy-cart-table__piece-price-hint {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--pharm-muted);
+}
+
+.pharmacy-cart-table__piece-qty {
+  white-space: nowrap;
+}
+
 .pharmacy-cart-table__table tbody td {
   padding: 5px 8px;
   border: 1px solid var(--pharm-border);

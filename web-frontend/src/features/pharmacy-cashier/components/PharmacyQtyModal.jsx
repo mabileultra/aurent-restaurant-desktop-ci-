@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
-import { formatQty, roundQty } from '../../../utils/quantityFormat';
+import { roundQty } from '../../../utils/quantityFormat';
 import { round2 } from '../../../utils/taxAmounts';
 import '../styles/pharmacy-qty-modal.css';
 
@@ -39,11 +39,13 @@ export default function PharmacyQtyModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
+  const sellByPiece = product?.pharmacySellByPiece === true;
+  const unitsInPack = Number(product?.unitsInPack) || 0;
   const unitPrice = Number(product?.sellingPrice ?? 0);
   const maxStock = Number(product?.stockQuantity ?? 0);
   const qty = useMemo(() => {
     const raw = Number(String(qtyText).replace(',', '.'));
-    return Number.isFinite(raw) ? roundQty(raw) : 0;
+    return Number.isFinite(raw) ? Math.max(0, Math.round(raw)) : 0;
   }, [qtyText]);
   const preview = round2(unitPrice * Math.max(0, qty));
   const canSubmit = qty > 0 && (maxStock <= 0 || qty <= maxStock);
@@ -74,22 +76,34 @@ export default function PharmacyQtyModal({
         <h2 className="pharmacy-qty-modal__title">{product.name}</h2>
         <div className="pharmacy-qty-modal__meta">
           <p>
-            {t('pharmacyCashier.colPrice')}: <strong>{fmt(unitPrice)}</strong>
+            {sellByPiece ? t('pharmacyCashier.pricePerPiece') : t('pharmacyCashier.colPrice')}:{' '}
+            <strong>{fmt(unitPrice)}</strong>
           </p>
+          {sellByPiece && product.packUnitPrice ? (
+            <p>
+              {t('pharmacyCashier.packPrice')}: <strong>{fmt(product.packUnitPrice)}</strong>
+              {' · '}
+              {t('pharmacyCashier.packOf', { count: unitsInPack })}
+            </p>
+          ) : null}
           <p>
-            {t('pharmacyCashier.colStock')}:{' '}
-            <strong>{formatQty(maxStock, product.saleType, product.unitCode)}</strong>
+            {sellByPiece ? t('pharmacyCashier.stockPieces') : t('pharmacyCashier.colStock')}:{' '}
+            <strong>
+              {sellByPiece
+                ? t('pharmacyCashier.pieceCount', { count: maxStock })
+                : roundQty(maxStock)}
+            </strong>
           </p>
         </div>
 
         <label className="pharmacy-qty-modal__label" htmlFor="pharmacy-qty-input">
-          {t('pharmacyCashier.qtyLabel')}
+          {sellByPiece ? t('pharmacyCashier.qtyPiecesLabel') : t('pharmacyCashier.qtyLabel')}
         </label>
         <input
           id="pharmacy-qty-input"
           ref={inputRef}
           className="pharmacy-qty-modal__input"
-          inputMode="decimal"
+          inputMode="numeric"
           value={qtyText}
           onChange={(e) => {
             setQtyText(e.target.value);

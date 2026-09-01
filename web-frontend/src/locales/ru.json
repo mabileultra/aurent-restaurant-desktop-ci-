@@ -1532,6 +1532,7 @@
     "colStock": "Остаток",
     "colUnit": "Ед.",
     "colForm": "Форма",
+    "colCountry": "Страна",
     "colPack": "В уп.",
     "colIkpu": "ИКПУ",
     "colExpiry": "Срок / дн.",
@@ -1543,7 +1544,14 @@
     "qtyLabel": "Количество",
     "qtyInvalid": "Укажите количество больше нуля",
     "qtyExceedsStock": "Недостаточно остатка на складе",
-    "linePreview": "Сумма строки: {{sum}}"
+    "linePreview": "Сумма строки: {{sum}}",
+    "pricePerPiece": "Цена за шт.",
+    "packPrice": "Цена упаковки",
+    "packOf": "в уп. {{count}}",
+    "stockPieces": "Остаток (шт.)",
+    "qtyPiecesLabel": "Количество (шт.)",
+    "pieceCount": "{{count}} шт.",
+    "perPieceShort": "/ шт."
   },
   "restaurantCashier": {
     "title": "Касса ресторана",

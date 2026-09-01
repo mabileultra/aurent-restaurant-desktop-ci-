@@ -1399,6 +1399,7 @@
     "colStock": "Qoldiq",
     "colUnit": "Birlik",
     "colForm": "Shakl",
+    "colCountry": "Mamlakat",
     "colPack": "Qadoqda",
     "colIkpu": "IKPU",
     "colExpiry": "Muddati / kun",
@@ -1410,7 +1411,14 @@
     "qtyLabel": "Miqdor",
     "qtyInvalid": "Noldan katta miqdor kiriting",
     "qtyExceedsStock": "Omborda yetarli qoldiq yo‘q",
-    "linePreview": "Qator summasi: {{sum}}"
+    "linePreview": "Qator summasi: {{sum}}",
+    "pricePerPiece": "Dona narxi",
+    "packPrice": "Qadoq narxi",
+    "packOf": "qadoqda {{count}} dona",
+    "stockPieces": "Qoldiq (dona)",
+    "qtyPiecesLabel": "Miqdor (dona)",
+    "pieceCount": "{{count}} dona",
+    "perPieceShort": "/ dona"
   },
   "platform": {
     "title": "Super-admin",

@@ -2,6 +2,7 @@
 
 @import './pharmacy-tables-theme.css';
 @import './pharmacy-viewport.css';
+@import './pharmacy-tables-compact.css';
 
 .pharmacy-cashier__split {
   flex: 1 1 auto;

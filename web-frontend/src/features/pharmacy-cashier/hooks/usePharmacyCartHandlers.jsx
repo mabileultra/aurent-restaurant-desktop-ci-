@@ -13,6 +13,8 @@ import {
 } from '../../../utils/quantityFormat';
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
+import { addPharmacyPieceItem, usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
+import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -24,7 +26,6 @@ export function usePharmacyCartHandlers({
   products,
   search,
   setSearch,
-  addPieceItem,
   addWeightLine,
   updateQuantity,
   updateUnitPrice,
@@ -39,26 +40,27 @@ export function usePharmacyCartHandlers({
   const [qtyModalProduct, setQtyModalProduct] = useState(null);
 
   const cartProductPayload = useCallback(
-    (product) => ({
-      id: product.id,
-      name: product.name,
-      sku: product.sku,
-      ikpu: product.ikpu ?? null,
-      attributes: product.attributes ?? null,
-      saleType: product.saleType || 'PIECE',
-      unitCode: product.unitCode,
-      unitOfMeasure: product.unitOfMeasure ?? null,
-      storageLocation: product.storageLocation ?? null,
-      quantityScale: product.quantityScale,
-      allowFraction: product.allowFraction,
-      soldIndividually: product.soldIndividually === true,
-      costPrice: Number(product.costPrice ?? 0),
-      sellingPrice: resolveProductUnitPrice(product, storeId),
-      defaultDiscountPercent: Number(product.defaultDiscountPercent ?? 0),
-      taxRate: Number(product.taxRate ?? 12),
-      stockQuantity: Number(product.stockQuantity ?? 0),
-      active: product.active !== false,
-    }),
+    (product) =>
+      applyPharmacyPackSaleToCartProduct({
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        ikpu: product.ikpu ?? null,
+        attributes: product.attributes ?? null,
+        saleType: product.saleType || 'PIECE',
+        unitCode: product.unitCode,
+        unitOfMeasure: product.unitOfMeasure ?? null,
+        storageLocation: product.storageLocation ?? null,
+        quantityScale: product.quantityScale,
+        allowFraction: product.allowFraction,
+        soldIndividually: product.soldIndividually === true,
+        costPrice: Number(product.costPrice ?? 0),
+        sellingPrice: resolveProductUnitPrice(product, storeId),
+        defaultDiscountPercent: Number(product.defaultDiscountPercent ?? 0),
+        taxRate: Number(product.taxRate ?? 12),
+        stockQuantity: Number(product.stockQuantity ?? 0),
+        active: product.active !== false,
+      }),
     [storeId],
   );
 
@@ -93,13 +95,17 @@ export function usePharmacyCartHandlers({
         return false;
       }
       const saleType = product.saleType || 'PIECE';
-      if (saleType !== 'SERVICE' && Number(product.stockQuantity) <= 0) {
-        toast.error(t('pos.outOfStock'));
-        return false;
+      if (saleType !== 'SERVICE') {
+        const payload = cartProductPayload(product);
+        const available = Number(payload.stockQuantity ?? 0);
+        if (available <= 0) {
+          toast.error(t('pos.outOfStock'));
+          return false;
+        }
       }
       return true;
     },
-    [shiftIsOpen, t],
+    [cartProductPayload, shiftIsOpen, t],
   );
 
   const addProductToCart = useCallback(
@@ -122,7 +128,7 @@ export function usePharmacyCartHandlers({
       if (!payload) return;
       const qty = roundQty(quantity);
       if (qty <= 0) return;
-      const lineId = addPieceItem(payload, qty);
+      const lineId = addPharmacyPieceItem(payload, qty);
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
       if (line) showLineAddedToast(line, payload.name);
       setQtyModalProduct(null);
@@ -130,7 +136,7 @@ export function usePharmacyCartHandlers({
       setSearch('');
       searchInputRef.current?.focus();
     },
-    [addPieceItem, qtyModalProduct, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast],
+    [qtyModalProduct, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast],
   );
 
   const closeQtyModal = useCallback(() => {
@@ -269,6 +275,10 @@ export function usePharmacyCartHandlers({
         return;
       }
       const next = item.quantity + delta;
+      if (item.pharmacySellByPiece && item.maxStock > 0 && next > item.maxStock) {
+        toast.error(t('pharmacyCashier.qtyExceedsStock'));
+        return;
+      }
       if (next <= 0) {
         removeItem(lineId);
         if (selectedLineId === lineId) setSelectedLineId(null);
@@ -276,7 +286,7 @@ export function usePharmacyCartHandlers({
       }
       updateQuantity(lineId, next);
     },
-    [removeItem, selectedLineId, setSelectedLineId, updateQuantity],
+    [removeItem, selectedLineId, setSelectedLineId, t, updateQuantity],
   );
 
   return {

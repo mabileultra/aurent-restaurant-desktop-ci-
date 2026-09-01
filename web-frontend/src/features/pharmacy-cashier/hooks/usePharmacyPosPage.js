@@ -13,6 +13,7 @@ import { usePosProductsCatalog } from '../../cashier/hooks/pos/usePosProductsCat
 import { usePosCheckout } from '../../cashier/hooks/pos/usePosCheckout';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
+import { usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -33,7 +34,6 @@ export function usePharmacyPosPage() {
   const shiftAutoPromptedRef = useRef(false);
 
   const items = useCartStore((s) => s.items);
-  const addPieceItem = useCartStore((s) => s.addPieceItem);
   const addWeightLine = useCartStore((s) => s.addWeightLine);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const updateUnitPrice = useCartStore((s) => s.updateUnitPrice);
@@ -111,12 +111,15 @@ export function usePharmacyPosPage() {
   const linesTotal = getLinesTotal();
   const orderDiscount = getOrderDiscount();
 
+  const getPharmacyCheckoutLineItems = usePharmacyCheckoutLineItems();
+
   const { checkoutMutation, handleConfirmPayment } = usePosCheckout({
     storeId,
     total,
     setPayOpen,
     setSelectedLineId,
     shift,
+    getCheckoutLineItems: getPharmacyCheckoutLineItems,
   });
 
   const cartHandlers = usePharmacyCartHandlers({
@@ -129,7 +132,6 @@ export function usePharmacyPosPage() {
     products: catalog.products,
     search: catalog.search,
     setSearch: catalog.setSearch,
-    addPieceItem,
     addWeightLine,
     updateQuantity,
     updateUnitPrice,

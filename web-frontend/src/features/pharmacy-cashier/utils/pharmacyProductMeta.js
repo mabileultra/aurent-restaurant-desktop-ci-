@@ -55,6 +55,20 @@ export function productDosageForm(productOrLine) {
   return '';
 }
 
+export function productCountry(productOrLine) {
+  return productAttr(
+    productOrLine,
+    'country',
+    'country_of_origin',
+    'countryOfOrigin',
+    'origin_country',
+    'originCountry',
+    'страна',
+    'manufacturer_country',
+    'manufacturerCountry',
+  );
+}
+
 export function productUnitsInPack(productOrLine) {
   const raw = productAttr(productOrLine, 'units_in_pack', 'unitsInPack', 'pack_size', 'packSize');
   if (!raw) return null;
