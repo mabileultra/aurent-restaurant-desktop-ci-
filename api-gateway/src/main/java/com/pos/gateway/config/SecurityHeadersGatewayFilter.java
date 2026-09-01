@@ -14,14 +14,17 @@ import reactor.core.publisher.Mono;
 @Component
 public class SecurityHeadersGatewayFilter implements GlobalFilter, Ordered {
 
+    private static final String X_CONTENT_TYPE_OPTIONS = "X-Content-Type-Options";
+    private static final String X_FRAME_OPTIONS = "X-Frame-Options";
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         HttpHeaders headers = exchange.getResponse().getHeaders();
-        if (!headers.containsKey(HttpHeaders.X_CONTENT_TYPE_OPTIONS)) {
-            headers.add(HttpHeaders.X_CONTENT_TYPE_OPTIONS, "nosniff");
+        if (!headers.containsKey(X_CONTENT_TYPE_OPTIONS)) {
+            headers.add(X_CONTENT_TYPE_OPTIONS, "nosniff");
         }
-        if (!headers.containsKey(HttpHeaders.X_FRAME_OPTIONS)) {
-            headers.add(HttpHeaders.X_FRAME_OPTIONS, "SAMEORIGIN");
+        if (!headers.containsKey(X_FRAME_OPTIONS)) {
+            headers.add(X_FRAME_OPTIONS, "SAMEORIGIN");
         }
         if (!headers.containsKey("Referrer-Policy")) {
             headers.add("Referrer-Policy", "strict-origin-when-cross-origin");
