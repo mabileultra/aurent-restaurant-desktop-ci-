@@ -8,7 +8,6 @@ html.app-viewport--canonical .pharmacy-cashier,
   --pharm-row-px: 5px;
   --pharm-head-py: 4px;
   --pharm-name-lines: 2;
-  --pharm-unit-lines: 1;
   --pharm-row-min-h: 24px;
   --pharm-action-btn: 26px;
   --pharm-action-gap: 4px;
@@ -38,6 +37,12 @@ html.app-viewport--canonical .pharmacy-search__table,
 .cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
   font-size: 0.75rem;
   line-height: 1.2;
+  min-width: 1040px;
+}
+
+html.app-viewport--canonical .pharmacy-search__table,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
+  min-width: 1080px;
 }
 
 html.app-viewport--canonical .pharmacy-cart-table__table thead th,
@@ -72,12 +77,17 @@ html.app-viewport--canonical .pharmacy-search__name,
 .cashier-app.cashier-app--pos-desktop .pharmacy-search__name {
   font-size: 0.75rem;
   line-height: 1.2;
-  max-width: 18vw;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
+  max-width: none;
+  white-space: normal;
+  vertical-align: middle;
+}
+
+html.app-viewport--canonical .pharmacy-cart-table__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__cell-text--name,
+html.app-viewport--canonical .pharmacy-search__cell-text--name,
+.cashier-app.cashier-app--pos-desktop .pharmacy-search__cell-text--name {
   -webkit-line-clamp: var(--pharm-name-lines);
-  overflow: hidden;
-  vertical-align: top;
+  max-height: calc(var(--pharm-name-lines) * 1.2em);
 }
 
 html.app-viewport--canonical .pharmacy-cart-table__mono,
@@ -85,27 +95,6 @@ html.app-viewport--canonical .pharmacy-cart-table__mono,
 html.app-viewport--canonical .pharmacy-search__mono,
 .cashier-app.cashier-app--pos-desktop .pharmacy-search__mono {
   font-size: 0.6875rem;
-}
-
-html.app-viewport--canonical .pharmacy-cart-table__clip,
-.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__clip,
-html.app-viewport--canonical .pharmacy-search__clip,
-.cashier-app.cashier-app--pos-desktop .pharmacy-search__clip {
-  max-width: 7rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-html.app-viewport--canonical .pharmacy-search__mono.pharmacy-search__clip,
-.cashier-app.cashier-app--pos-desktop .pharmacy-search__mono.pharmacy-search__clip {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--pharm-unit-lines);
-  white-space: normal;
-  overflow: hidden;
-  max-width: 9rem;
 }
 
 html.app-viewport--canonical .pharmacy-cart-table__actions,
@@ -134,18 +123,4 @@ html.app-viewport--canonical .pharmacy-cart-table__remove svg,
 .cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__remove svg {
   width: 13px;
   height: 13px;
-}
-
-html.app-viewport--canonical .pharmacy-cart-table__scroll,
-.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__scroll,
-html.app-viewport--canonical .pharmacy-search__scroll,
-.cashier-app.cashier-app--pos-desktop .pharmacy-search__scroll {
-  overflow-x: auto;
-}
-
-html.app-viewport--canonical .pharmacy-cart-table__table,
-.cashier-app.cashier-app--pos-desktop .pharmacy-cart-table__table,
-html.app-viewport--canonical .pharmacy-search__table,
-.cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
-  min-width: 980px;
 }

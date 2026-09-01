@@ -138,21 +138,25 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     }}
                   >
                     <td className="pharmacy-search__name" title={product.name}>
-                      {product.name}
+                      <span className="pharmacy-search__cell-text pharmacy-search__cell-text--name">
+                        {product.name}
+                      </span>
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={unit}>
-                      {unit}
-                      {sellByUnit ? (
-                        <span className="pharmacy-search__hint" title={t('pharmacyCashier.sellByUnitHint')}>
-                          {' '}· 1
-                        </span>
-                      ) : null}
+                      <span className="pharmacy-search__cell-text">
+                        {unit}
+                        {sellByUnit ? (
+                          <span className="pharmacy-search__hint" title={t('pharmacyCashier.sellByUnitHint')}>
+                            {' '}· 1
+                          </span>
+                        ) : null}
+                      </span>
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={form}>
-                      {form}
+                      <span className="pharmacy-search__cell-text">{form}</span>
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
-                      {country}
+                      <span className="pharmacy-search__cell-text">{country}</span>
                     </td>
                     <td
                       className={[

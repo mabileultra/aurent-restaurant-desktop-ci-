@@ -79,16 +79,18 @@ export default function PharmacyCartTable({
                   onClick={() => onSelectLine(item.lineId)}
                 >
                   <td className="pharmacy-cart-table__name" title={item.name}>
-                    {item.name}
+                    <span className="pharmacy-cart-table__cell-text pharmacy-cart-table__cell-text--name">
+                      {item.name}
+                    </span>
                   </td>
                   <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={unit}>
-                    {unit}
+                    <span className="pharmacy-cart-table__cell-text">{unit}</span>
                   </td>
                   <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={form}>
-                    {form}
+                    <span className="pharmacy-cart-table__cell-text">{form}</span>
                   </td>
                   <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={country}>
-                    {country}
+                    <span className="pharmacy-cart-table__cell-text">{country}</span>
                   </td>
                   <td
                     className={[

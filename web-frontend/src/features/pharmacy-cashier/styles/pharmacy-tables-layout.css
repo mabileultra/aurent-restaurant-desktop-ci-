@@ -1,0 +1,162 @@
+/* Фиксированная сетка таблиц + горизонтальный скролл при нехватке ширины */
+
+.pharmacy-cart-table__scroll,
+.pharmacy-search__scroll {
+  overflow: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pharmacy-cart-table__scroll::-webkit-scrollbar,
+.pharmacy-search__scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.pharmacy-cart-table__scroll::-webkit-scrollbar-thumb,
+.pharmacy-search__scroll::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgb(100 116 139 / 0.45);
+}
+
+.pharmacy-cart-table__scroll::-webkit-scrollbar-track,
+.pharmacy-search__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.pharmacy-cart-table__table,
+.pharmacy-search__table {
+  table-layout: fixed;
+  width: 100%;
+  min-width: 1080px;
+}
+
+.pharmacy-search__table {
+  min-width: 1120px;
+}
+
+/* Чек: 13 колонок */
+.pharmacy-cart-table__table th:nth-child(1),
+.pharmacy-cart-table__table td:nth-child(1) {
+  width: 17%;
+}
+
+.pharmacy-cart-table__table th:nth-child(2),
+.pharmacy-cart-table__table td:nth-child(2),
+.pharmacy-cart-table__table th:nth-child(3),
+.pharmacy-cart-table__table td:nth-child(3),
+.pharmacy-cart-table__table th:nth-child(4),
+.pharmacy-cart-table__table td:nth-child(4) {
+  width: 6%;
+}
+
+.pharmacy-cart-table__table th:nth-child(5),
+.pharmacy-cart-table__table td:nth-child(5) {
+  width: 5%;
+}
+
+.pharmacy-cart-table__table th:nth-child(6),
+.pharmacy-cart-table__table td:nth-child(6),
+.pharmacy-cart-table__table th:nth-child(7),
+.pharmacy-cart-table__table td:nth-child(7),
+.pharmacy-cart-table__table th:nth-child(8),
+.pharmacy-cart-table__table td:nth-child(8),
+.pharmacy-cart-table__table th:nth-child(11),
+.pharmacy-cart-table__table td:nth-child(11) {
+  width: 6%;
+}
+
+.pharmacy-cart-table__table th:nth-child(9),
+.pharmacy-cart-table__table td:nth-child(9) {
+  width: 9%;
+}
+
+.pharmacy-cart-table__table th:nth-child(10),
+.pharmacy-cart-table__table td:nth-child(10) {
+  width: 6%;
+}
+
+.pharmacy-cart-table__table th:nth-child(12),
+.pharmacy-cart-table__table td:nth-child(12) {
+  width: 8%;
+}
+
+.pharmacy-cart-table__table th:nth-child(13),
+.pharmacy-cart-table__table td:nth-child(13) {
+  width: 108px;
+  min-width: 108px;
+}
+
+/* Поиск: 12 колонок */
+.pharmacy-search__table th:nth-child(1),
+.pharmacy-search__table td:nth-child(1) {
+  width: 18%;
+}
+
+.pharmacy-search__table th:nth-child(2),
+.pharmacy-search__table td:nth-child(2),
+.pharmacy-search__table th:nth-child(3),
+.pharmacy-search__table td:nth-child(3),
+.pharmacy-search__table th:nth-child(4),
+.pharmacy-search__table td:nth-child(4) {
+  width: 6%;
+}
+
+.pharmacy-search__table th:nth-child(5),
+.pharmacy-search__table td:nth-child(5) {
+  width: 5%;
+}
+
+.pharmacy-search__table th:nth-child(6),
+.pharmacy-search__table td:nth-child(6),
+.pharmacy-search__table th:nth-child(7),
+.pharmacy-search__table td:nth-child(7),
+.pharmacy-search__table th:nth-child(8),
+.pharmacy-search__table td:nth-child(8) {
+  width: 6%;
+}
+
+.pharmacy-search__table th:nth-child(9),
+.pharmacy-search__table td:nth-child(9) {
+  width: 9%;
+}
+
+.pharmacy-search__table th:nth-child(10),
+.pharmacy-search__table td:nth-child(10),
+.pharmacy-search__table th:nth-child(11),
+.pharmacy-search__table td:nth-child(11) {
+  width: 6%;
+}
+
+.pharmacy-search__table th:nth-child(12),
+.pharmacy-search__table td:nth-child(12) {
+  width: 10%;
+}
+
+/* Текст внутри ячейки — обрезка без ломания table-layout */
+.pharmacy-cart-table__cell-text,
+.pharmacy-search__cell-text {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.pharmacy-cart-table__cell-text--name,
+.pharmacy-search__cell-text--name {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.2;
+  max-height: 2.4em;
+}
+
+.pharmacy-cart-table__clip,
+.pharmacy-search__clip {
+  overflow: hidden;
+  max-width: none;
+}
