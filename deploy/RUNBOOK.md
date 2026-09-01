@@ -113,3 +113,8 @@ VITE_SENTRY_DSN=https://...@sentry.io/...
 ```
 
 Пересобрать frontend и backend. Без DSN — Sentry выключен, поведение как раньше.
+
+## 11. Безопасность tenant
+
+Клиент **не может** подменить `X-Company-Id` или `X-User-Roles` — gateway и сервисы берут данные из JWT.
+Заголовок `X-Company-Id` принимается только у **SUPER_ADMIN** без company в токене (супер-админ панель).

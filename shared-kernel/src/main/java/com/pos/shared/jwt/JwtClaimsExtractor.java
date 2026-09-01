@@ -66,13 +66,43 @@ public final class JwtClaimsExtractor {
     }
 
     /**
-     * Company id из claims, с fallback на заголовок (например, для сервис-к-сервис вызовов,
-     * где токен не несёт company id, но его прокидывает вызывающая сторона).
+     * Company id из JWT. Заголовок X-Company-Id принимается только для platform-ролей
+     * (SUPER_ADMIN), когда в токене нет company_id — иначе клиент не может подменить tenant.
      */
+    public static Integer resolveCompanyIdSecure(
+        Integer claimsCompanyId,
+        String role,
+        String headerValue
+    ) {
+        if (claimsCompanyId != null) {
+            return claimsCompanyId;
+        }
+        if (!isPlatformScopeRole(role)) {
+            return null;
+        }
+        return parseHeaderCompanyId(headerValue);
+    }
+
+    /**
+     * @deprecated используйте {@link #resolveCompanyIdSecure}; оставлено для совместимости internal-call.
+     */
+    @Deprecated
     public static Integer resolveCompanyId(Integer claimsCompanyId, String headerValue) {
         if (claimsCompanyId != null) {
             return claimsCompanyId;
         }
+        return parseHeaderCompanyId(headerValue);
+    }
+
+    public static boolean isPlatformScopeRole(String role) {
+        if (role == null || role.isBlank()) {
+            return false;
+        }
+        String normalized = role.trim().toUpperCase();
+        return "SUPER_ADMIN".equals(normalized) || "PLATFORM_ADMIN".equals(normalized);
+    }
+
+    private static Integer parseHeaderCompanyId(String headerValue) {
         if (headerValue == null || headerValue.isBlank()) {
             return null;
         }

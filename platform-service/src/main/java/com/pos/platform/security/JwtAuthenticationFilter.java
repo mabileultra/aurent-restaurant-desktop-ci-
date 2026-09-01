@@ -36,13 +36,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String token = authHeader.substring(7);
                 try {
                     JwtClaims claims = JwtClaimsExtractor.extract(token, secretKey);
-                    Integer companyId = JwtClaimsExtractor.resolveCompanyId(
-                        claims.companyId(), request.getHeader(TenantHeaders.COMPANY_ID)
-                    );
-                    String role = request.getHeader(TenantHeaders.USER_ROLES);
-                    if (role == null || role.isBlank()) {
-                        role = claims.role();
-                    }
+                        Integer companyId = JwtClaimsExtractor.resolveCompanyIdSecure(
+                            claims.companyId(), claims.role(), request.getHeader(TenantHeaders.COMPANY_ID)
+                        );
+                        String role = claims.role();
                     PlatformTenantContext.set(companyId, claims.userId(), role);
                     var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
                     var authentication = new UsernamePasswordAuthenticationToken(

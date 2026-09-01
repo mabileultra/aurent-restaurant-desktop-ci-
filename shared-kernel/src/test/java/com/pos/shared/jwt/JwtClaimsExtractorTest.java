@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class JwtClaimsExtractorTest {
 
@@ -32,6 +33,17 @@ class JwtClaimsExtractorTest {
     @Test
     void isTokenParsable_rejectsInvalidToken() {
         assertFalse(JwtClaimsExtractor.isTokenParsable("invalid", SECRET));
+    }
+
+    @Test
+    void resolveCompanyIdSecure_ignoresHeaderForRegularUser() {
+        assertEquals(7, JwtClaimsExtractor.resolveCompanyIdSecure(7, "MANAGER", "999"));
+        assertNull(JwtClaimsExtractor.resolveCompanyIdSecure(null, "MANAGER", "999"));
+    }
+
+    @Test
+    void resolveCompanyIdSecure_allowsHeaderForSuperAdmin() {
+        assertEquals(42, JwtClaimsExtractor.resolveCompanyIdSecure(null, "SUPER_ADMIN", "42"));
     }
 
     private static String tokenWithClaims(Integer companyId, List<String> roles) {
