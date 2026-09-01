@@ -7,6 +7,7 @@ import com.pos.identity.dto.auth.RegisterRequest;
 import com.pos.identity.dto.auth.VerifyPasswordRequest;
 import com.pos.identity.dto.auth.VerifyPinRequest;
 import com.pos.identity.service.AuthService;
+import com.pos.identity.security.ratelimit.LoginAttemptRateLimiter;
 import com.pos.identity.util.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final LoginAttemptRateLimiter loginRateLimiter;
 
     @PostMapping("/login")
     @Operation(summary = "Вход в систему")
@@ -38,9 +40,11 @@ public class AuthController {
         @Valid @RequestBody AuthRequest request,
         HttpServletRequest httpRequest
     ) {
+        String clientIp = ClientIpResolver.resolve(httpRequest);
+        loginRateLimiter.check(clientIp, "login");
         return ResponseEntity.ok(authService.authenticate(
             request,
-            ClientIpResolver.resolve(httpRequest),
+            clientIp,
             httpRequest.getHeader("User-Agent")
         ));
     }
@@ -49,7 +53,11 @@ public class AuthController {
     @Operation(summary = "Вход кассира по PIN")
     @SecurityRequirements()
     @ApiResponse(responseCode = "200", description = "Успешная аутентификация кассира")
-    public ResponseEntity<AuthResponse> cashierPinLogin(@Valid @RequestBody CashierPinAuthRequest request) {
+    public ResponseEntity<AuthResponse> cashierPinLogin(
+        @Valid @RequestBody CashierPinAuthRequest request,
+        HttpServletRequest httpRequest
+    ) {
+        loginRateLimiter.check(ClientIpResolver.resolve(httpRequest), "cashier-pin");
         return ResponseEntity.ok(authService.authenticateCashierPin(request));
     }
 

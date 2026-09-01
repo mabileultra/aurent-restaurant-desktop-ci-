@@ -51,9 +51,18 @@ bash deploy/update.sh
 
 ```bash
 cd /opt/aurent-pos
+bash deploy/rollback.sh              # на 1 коммит назад
+# или: bash deploy/rollback.sh abc1234
+```
+
+Скрипт сохраняет точку возврата в `logs/rollback.log`.
+
+Ручной откат:
+
+```bash
 git log -5 --oneline
-git checkout <stable-commit>
-bash deploy/update.sh
+git reset --hard <stable-commit>
+bash deploy/deploy.sh
 ```
 
 ## 7. Восстановление БД из бэкапа
@@ -68,7 +77,8 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 ## 8. Ежедневные проверки (5 минут)
 
-- [ ] `bash deploy/health-alert.sh` — без ошибок
+- [ ] `bash deploy/smoke-check.sh` — без ошибок
+- [ ] `bash deploy/backup.sh verify-latest` — бэкап целый
 - [ ] Супер-админ → Мониторинг — ошибок за 24ч в норме
 - [ ] Последний бэкап не старше 24ч
 - [ ] Место на диске < 85%

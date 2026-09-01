@@ -441,3 +441,11 @@ echo "  Platform:  http://127.0.0.1:8084/api/v1/actuator/health (localhost)"
 echo "  Reporting: http://127.0.0.1:8085/api/v1/actuator/health (localhost)"
 echo "  AI:        http://127.0.0.1:8086/api/v1/actuator/health (localhost)"
 echo "  Логи:      docker compose -f $COMPOSE_FILE logs -f api-gateway backend crm-service ai-service"
+
+echo ""
+echo "==> Smoke check..."
+if bash deploy/smoke-check.sh; then
+  echo "==> Smoke check: OK"
+else
+  echo "==> WARN: smoke check failed — см. deploy/smoke-check.sh и deploy/RUNBOOK.md"
+fi

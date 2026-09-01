@@ -118,6 +118,25 @@ cmd_restore() {
   echo "==> Готово. Проверьте: curl -s http://localhost:8080/api/v1/actuator/health"
 }
 
+cmd_verify_latest() {
+  local backup_dir="${BACKUP_DIR:-$ROOT/backups/postgres}"
+  if [[ ! -d "$backup_dir" ]]; then
+    echo "backup verify: нет каталога $backup_dir"
+    exit 1
+  fi
+  local latest
+  latest="$(find "$backup_dir" -maxdepth 1 -name 'pos_db_*.sql.gz' -printf '%T@ %p\n' 2>/dev/null | sort -rn | head -1 | cut -d' ' -f2-)"
+  if [[ -z "$latest" ]]; then
+    echo "backup verify: файлов pos_db_*.sql.gz не найдено"
+    exit 1
+  fi
+  echo "==> Проверка gzip: $latest"
+  gzip -t "$latest"
+  local size
+  size="$(du -h "$latest" | awk '{print $1}')"
+  echo "==> OK ($size)"
+}
+
 cmd_install_cron() {
   local cron_line="0 3 * * * cd $ROOT && /usr/bin/bash deploy/backup.sh >> $ROOT/backups/postgres/backup.log 2>&1"
 
@@ -148,8 +167,11 @@ case "$SUBCOMMAND" in
   install-cron)
     cmd_install_cron
     ;;
+  verify-latest)
+    cmd_verify_latest
+    ;;
   *)
-    echo "Использование: bash deploy/backup.sh [create|restore <файл>|install-cron]" >&2
+    echo "Использование: bash deploy/backup.sh [create|restore <файл>|install-cron|verify-latest]" >&2
     exit 1
     ;;
 esac

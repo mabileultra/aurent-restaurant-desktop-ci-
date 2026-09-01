@@ -105,6 +105,16 @@ jobs:
           echo "Frontend health check failed"
           exit 1
 
+      - name: Smoke check on server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            'cd /opt/aurent-pos && bash deploy/smoke-check.sh'
+
       - name: Cleanup SSH key
         if: always()
         run: rm -f ~/.ssh/deploy_key

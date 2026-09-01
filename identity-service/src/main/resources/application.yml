@@ -29,6 +29,9 @@ app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  security:
+    login-rate-limit-enabled: ${LOGIN_RATE_LIMIT_ENABLED:true}
+    login-rate-limit-per-minute: ${LOGIN_RATE_LIMIT_PER_MINUTE:15}
   internal:
     api-key: ${IDENTITY_INTERNAL_API_KEY:identity-internal-dev-key-change-in-prod}
   pos-core:
