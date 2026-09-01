@@ -52,3 +52,28 @@
   pointer-events: none;
   user-select: none;
 }
+
+.pharmacy-integration-icon--admin {
+  width: 22px;
+  height: 22px;
+}
+
+.pharmacy-integration-icon--dmed {
+  width: 34px;
+  height: 16px;
+}
+
+.pharmacy-integration-toolbar__btn--dmed {
+  width: 42px;
+}
+
+.pharmacy-integration-icon--marking,
+.pharmacy-integration-icon--asl_portal {
+  width: 24px;
+  height: 24px;
+}
+
+.pharmacy-integration-more__icon.pharmacy-integration-icon--asl_portal {
+  width: 22px;
+  height: 22px;
+}

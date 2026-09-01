@@ -8,9 +8,7 @@ export default function PharmacyIntegrationIcon({ linkId, className = '' }) {
     <img
       src={src}
       alt=""
-      className={`pharmacy-integration-icon ${className}`.trim()}
-      width={22}
-      height={22}
+      className={`pharmacy-integration-icon pharmacy-integration-icon--${linkId} ${className}`.trim()}
       loading="lazy"
       decoding="async"
       draggable={false}
