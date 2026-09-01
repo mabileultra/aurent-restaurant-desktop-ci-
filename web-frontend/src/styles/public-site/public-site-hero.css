@@ -1,98 +1,121 @@
 .public-hero-wrap {
   position: relative;
-  padding: 1.5rem 0 0;
+  min-height: calc(100vh - var(--ps-header-h));
+  padding: 0;
   overflow: hidden;
 }
 
 .public-hero-wrap__waves {
   position: absolute;
-  inset: 0 0 30%;
+  inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse 55% 40% at 85% 20%, rgb(0 163 255 / 0.18), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='400' viewBox='0 0 1200 400'%3E%3Cpath d='M0 200 Q300 120 600 200 T1200 200' fill='none' stroke='%2300a3ff' stroke-opacity='0.08' stroke-width='2'/%3E%3Cpath d='M0 260 Q400 180 800 260 T1200 260' fill='none' stroke='%2300a3ff' stroke-opacity='0.05' stroke-width='1.5'/%3E%3C/svg%3E")
-    no-repeat right top / 70% auto;
-  opacity: 0.9;
+    radial-gradient(ellipse 50% 55% at 88% 35%, rgb(0 163 255 / 0.2), transparent 62%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1400' height='900' viewBox='0 0 1400 900'%3E%3Cpath d='M700 0 Q900 280 700 560 T700 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.12' stroke-width='2'/%3E%3Cpath d='M820 0 Q1020 300 820 620 T820 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.08' stroke-width='1.5'/%3E%3Cpath d='M580 80 Q780 360 580 640 T580 900' fill='none' stroke='%2300a3ff' stroke-opacity='0.06' stroke-width='1.5'/%3E%3C/svg%3E")
+    no-repeat right center / 58% auto;
+  opacity: 1;
 }
 
-.public-hero {
+.public-hero-wrap__inner {
   position: relative;
   z-index: 1;
   width: var(--ps-container);
   margin: 0 auto;
-  padding: 2rem 0 1.5rem;
+  min-height: calc(100vh - var(--ps-header-h));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1.5rem 0 0;
+}
+
+.public-hero {
   display: grid;
   gap: 2rem;
   align-items: center;
-  min-height: calc(100vh - var(--ps-header-h) - 5rem);
+  flex: 1;
+  padding: 1rem 0 1.5rem;
+}
+
+.public-hero__content {
+  max-width: 34rem;
 }
 
 .public-hero__title {
-  margin: 0 0 1.25rem;
-  font-size: clamp(2rem, 4.8vw, 3.4rem);
+  margin: 0 0 1.35rem;
+  font-family: var(--ps-display);
+  font-size: clamp(1.65rem, 3.8vw, 2.65rem);
   font-weight: 900;
-  line-height: 1.02;
+  line-height: 1.08;
   text-transform: uppercase;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+}
+
+.public-hero__title-line {
+  display: inline;
+}
+
+.public-hero__title-accent-row {
+  display: block;
+  margin-top: 0.15rem;
 }
 
 .public-hero__title-accent {
   color: var(--ps-accent);
+  font-size: clamp(2rem, 4.5vw, 3.2rem);
+  letter-spacing: -0.03em;
 }
 
 .public-hero__lead {
-  margin: 0 0 1.75rem;
-  max-width: 36rem;
-  font-size: 1rem;
-  line-height: 1.7;
-  color: var(--ps-muted);
-}
-
-.public-hero__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin: 0 0 1.65rem;
+  max-width: 32rem;
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: rgb(255 255 255 / 0.82);
 }
 
 .public-hero__note {
-  margin: 0;
-  font-size: 0.72rem;
-  color: rgb(154 163 178 / 0.75);
-  max-width: 30rem;
-  line-height: 1.5;
+  margin: 1rem 0 0;
+  font-size: 0.68rem;
+  color: rgb(154 163 178 / 0.8);
+  max-width: 28rem;
+  line-height: 1.55;
 }
 
-.public-hero__visual {
-  position: relative;
-  min-height: 300px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.public-hero__bottom {
+  display: grid;
+  gap: 1.25rem;
+  align-items: end;
+  padding-bottom: 1.75rem;
 }
 
-.public-hero__glow {
-  position: absolute;
-  width: min(100%, 460px);
-  aspect-ratio: 1;
-  background: var(--ps-glow);
-  border-radius: 50%;
-  filter: blur(12px);
-}
-
-.public-hero__device {
-  position: relative;
-  z-index: 1;
-  width: min(100%, 540px);
-  border-radius: 1.25rem;
-  box-shadow: 0 48px 100px rgb(0 0 0 / 0.6);
-  border: 1px solid rgb(255 255 255 / 0.1);
+.public-btn--hero {
+  min-width: min(100%, 17rem);
+  padding: 0.95rem 2rem;
+  font-size: 0.95rem;
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgb(0 163 255 / 0.35);
 }
 
 @media (min-width: 960px) {
+  .public-hero-wrap__inner {
+    padding: 2rem 0 0;
+  }
+
   .public-hero {
-    grid-template-columns: 1.05fr 0.95fr;
-    padding: 3rem 0 1.5rem;
-    gap: 2.5rem;
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 1.5rem 2rem;
+    padding: 2rem 0 0;
+  }
+
+  .public-hero__bottom {
+    grid-template-columns: minmax(0, 0.92fr) minmax(0, 1.08fr);
+    gap: 0;
+    padding-bottom: 2rem;
+  }
+
+  .public-hero__bottom .public-download-strip--embedded {
+    grid-column: 2;
+    justify-self: stretch;
+    align-self: end;
   }
 }

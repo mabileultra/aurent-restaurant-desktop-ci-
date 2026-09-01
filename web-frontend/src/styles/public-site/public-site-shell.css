@@ -2,6 +2,8 @@
 @import './public-site-header.css';
 @import './public-site-footer.css';
 @import './public-site-hero.css';
+@import './public-site-hero-devices.css';
+@import './public-site-hero-support.css';
 @import './public-site-download-strip.css';
 @import './public-site-audience.css';
 @import './public-site-waves.css';

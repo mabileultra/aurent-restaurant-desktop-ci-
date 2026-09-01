@@ -307,12 +307,17 @@
     },
     "homePage": {
       "eyebrow": "Chakana va HoReCa uchun POS",
-      "titleBefore": "Do‘konlar va umumiy ovqatlanishni avtomatlashtirish dasturi",
-      "titleAccent": "0 so‘mdan / oy*",
-      "subtitle": "Onlayn kassa, ombor, CRM va tahlil — barchasi Aurent tizimida. Brauzer, kassa va desktop ilovada ishlaydi.",
+      "titleLine1": "Restoranlar, kafeler va umumiy ovqatlanishni avtomatlashtirish dasturi",
+      "titleAccent": "0 so‘m",
+      "titleLine2": "oyiga*",
+      "subtitle": "Onlayn kassa, ombor, CRM, tahlil — barchasi bitta bulutli POS tizimida. Planshet, PC va smartfonlarda ishlaydi.",
       "ctaDemo": "Bepul sinab ko‘rish",
       "ctaInstall": "Kassani yuklab olish",
-      "heroNote": "* Demo va maslahat bepul. Tariflar — «Tariflar» sahifasida yoki ariza orqali."
+      "heroNote": "* Bepul demo tarif. To‘lov — savdo boshlangandan keyin. Savdo bo‘lmasa — to‘lov yo‘q.",
+      "support247": "24/7 qo‘llab-quvvatlash",
+      "salesHours": "Sotuv bo‘limi: Du–Ju 9:00–18:00",
+      "tabletAlt": "Planshetdagi kassa",
+      "phoneAlt": "Ilovadagi tahlil"
     },
     "audience": {
       "eyebrow": "Kim uchun",
@@ -357,7 +362,14 @@
     "downloadStrip": {
       "label": "Yuklab olish:",
       "more": "Barcha versiyalar",
-      "support": "24/7 qo‘llab-quvvatlash · Sotuv: Du–Ju 9:00–18:00"
+      "support": "24/7 qo‘llab-quvvatlash · Sotuv: Du–Ju 9:00–18:00",
+      "platforms": {
+        "android": "Google Play",
+        "ios": "App Store",
+        "windows": "Windows",
+        "mac": "Mac",
+        "apk": "APK yuklab olish"
+      }
     },
     "about": {
       "eyebrow": "Platforma haqida",

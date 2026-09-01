@@ -1,28 +1,26 @@
 import { Link } from 'react-router-dom';
-import { Monitor, Apple, Smartphone } from 'lucide-react';
+import { Apple, Download, Monitor, Smartphone } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PUBLIC_DOWNLOAD_PLATFORMS } from '../../constants/publicSiteDownloads';
+
+function PlatformIcon({ type }) {
+  if (type === 'apple') return <Apple size={20} aria-hidden />;
+  if (type === 'windows') return <Monitor size={20} aria-hidden />;
+  if (type === 'download') return <Download size={20} aria-hidden />;
+  return <Smartphone size={20} aria-hidden />;
+}
 
 export default function PublicDownloadStrip({ embedded = false }) {
   const { t } = useTranslation();
 
   const bar = (
     <div className="public-download-strip__bar">
-      <span className="public-download-strip__label">{t('publicSite.downloadStrip.label')}</span>
-      <Link to="/install" className="public-download-strip__item">
-        <Smartphone size={18} aria-hidden />
-        Android
-      </Link>
-      <Link to="/install" className="public-download-strip__item">
-        <Apple size={18} aria-hidden />
-        iOS
-      </Link>
-      <Link to="/install" className="public-download-strip__item">
-        <Monitor size={18} aria-hidden />
-        Windows
-      </Link>
-      <Link to="/install" className="public-download-strip__item">
-        {t('publicSite.downloadStrip.more')}
-      </Link>
+      {PUBLIC_DOWNLOAD_PLATFORMS.map(({ id, labelKey, icon }) => (
+        <Link key={id} to="/install" className="public-download-strip__item">
+          <PlatformIcon type={icon} />
+          {t(labelKey)}
+        </Link>
+      ))}
     </div>
   );
 

@@ -7,7 +7,8 @@ const u = (id, w = 800) =>
   `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&q=80`;
 
 export const PUBLIC_HERO_MEDIA = {
-  device: u('photo-1556742049-0cfed4f6a45d', 900),
+  tablet: u('photo-1556745757-edd496ffb356', 1200),
+  phone: u('photo-1551288049-bebda4e38f71', 800),
   alt: 'POS terminal',
 };
 

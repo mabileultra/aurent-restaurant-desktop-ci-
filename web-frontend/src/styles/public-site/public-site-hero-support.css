@@ -1,0 +1,25 @@
+.public-hero-support {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.75rem;
+  color: rgb(255 255 255 / 0.55);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.public-hero-support__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.public-hero-support__item svg {
+  flex-shrink: 0;
+  opacity: 0.75;
+}
+
+@media (min-width: 960px) {
+  .public-hero-support {
+    padding-bottom: 0.35rem;
+  }
+}

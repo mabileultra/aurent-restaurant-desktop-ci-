@@ -6,61 +6,43 @@
 
 .public-download-strip--embedded {
   position: relative;
-  z-index: 2;
-  width: var(--ps-container);
-  margin: 0 auto;
-  padding: 0 0 2.5rem;
+  z-index: 3;
+  width: 100%;
+  padding: 0;
 }
 
 .public-download-strip__bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.65rem 1rem;
-  padding: 1rem 1.35rem;
-  border-radius: 14px;
-  background: linear-gradient(90deg, var(--ps-red), var(--ps-red-dark));
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0;
+  background: linear-gradient(180deg, var(--ps-red), var(--ps-red-dark));
   color: #fff;
-  box-shadow: 0 16px 40px rgb(230 56 70 / 0.28);
-}
-
-.public-download-strip--embedded .public-download-strip__bar {
-  margin-left: auto;
-  max-width: 100%;
-}
-
-@media (min-width: 960px) {
-  .public-download-strip--embedded .public-download-strip__bar {
-    max-width: 72%;
-    margin-left: auto;
-  }
-}
-
-.public-download-strip__label {
-  font-size: 0.82rem;
-  font-weight: 700;
-  margin-right: 0.25rem;
-  white-space: nowrap;
+  box-shadow: 0 12px 36px rgb(230 56 70 / 0.35);
 }
 
 .public-download-strip__item {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.9rem;
-  border-radius: 8px;
-  background: rgb(255 255 255 / 0.14);
+  gap: 0.45rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 6px;
+  border: 1.5px solid rgb(255 255 255 / 0.85);
+  background: transparent;
   color: #fff;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
   white-space: nowrap;
 }
 
 .public-download-strip__item:hover {
-  background: rgb(255 255 255 / 0.24);
+  background: rgb(255 255 255 / 0.12);
+  border-color: #fff;
 }
 
 .public-download-strip__support {
@@ -69,4 +51,25 @@
   margin-top: 1rem;
   font-size: 0.78rem;
   color: var(--ps-muted);
+}
+
+@media (min-width: 640px) {
+  .public-download-strip__bar {
+    justify-content: flex-start;
+    gap: 0.65rem;
+    padding: 0.9rem 1.15rem;
+  }
+
+  .public-download-strip__item {
+    font-size: 0.75rem;
+    padding: 0.6rem 1rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .public-download-strip--embedded .public-download-strip__bar {
+    border-radius: 0;
+    margin-left: auto;
+    max-width: 100%;
+  }
 }
