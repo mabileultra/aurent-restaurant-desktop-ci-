@@ -7,9 +7,9 @@ const path = require('path');
 const fs = require('fs');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater } = require('./autoUpdaterBridge');
+const { resolveDesktopUrls } = require('../config/desktopUrls');
 
-const WEB_URL = process.env.AURENT_WEB_URL || process.env.VITE_DEV_URL || 'http://localhost:5173';
-const API_URL = process.env.AURENT_API_URL || 'http://localhost:8080/api/v1';
+const { webUrl: WEB_URL, apiUrl: API_URL } = resolveDesktopUrls({ isPackaged: app.isPackaged });
 const ICON_PNG = path.join(__dirname, '../build/icon.png');
 
 let mainWindow = null;
@@ -54,6 +54,19 @@ function createWindow() {
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
     mainWindow.focus();
+  });
+
+  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
+    if (validatedURL !== WEB_URL) return;
+    const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Aurent Cashier</title>
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#e9eef4;color:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
+.card{max-width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgb(15 23 42 / 0.12)}
+h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475569}code{font-size:.85rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;word-break:break-all}</style></head>
+<body><div class="card"><h1>Не удалось загрузить интерфейс</h1>
+<p>Проверьте интернет и попробуйте снова.</p>
+<p><code>${validatedURL}</code></p>
+<p>Ошибка ${errorCode}: ${errorDescription}</p></div></body></html>`;
+    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   });
 
   mainWindow.loadURL(WEB_URL);

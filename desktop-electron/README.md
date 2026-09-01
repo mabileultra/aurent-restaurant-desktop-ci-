@@ -12,7 +12,7 @@ bash scripts/start-cashier-desktop.sh
 cd desktop-electron
 npm install
 npm run sync-icons
-AURENT_WEB_URL=http://localhost:5173 npm start
+AURENT_WEB_URL=http://localhost:5173/cashier/login npm start
 ```
 
 ## Сборка Windows / Mac
@@ -22,6 +22,8 @@ npm run dist
 ```
 
 macOS собирается как **universal** `.dmg` (Intel + Apple Silicon). На CI (`macos-latest`) не используйте только `arm64` — Intel Mac не откроет такой установщик.
+
+В production-сборке (`app.isPackaged`) UI грузится с `https://aurent.uz/cashier/login`, API — `https://aurent.uz/api/v1` (см. `config/desktopUrls.js`).
 
 Иконки генерируются из `web-frontend/public/desktop/icon.svg` (#10B981).
 

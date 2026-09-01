@@ -14,7 +14,7 @@ fi
 
 npm run sync-icons
 
-export AURENT_WEB_URL="${AURENT_WEB_URL:-http://localhost:5173}"
+export AURENT_WEB_URL="${AURENT_WEB_URL:-http://localhost:5173/cashier/login}"
 export AURENT_API_URL="${AURENT_API_URL:-http://localhost:8080/api/v1}"
 
 if ! curl -sf "$AURENT_WEB_URL" >/dev/null 2>&1; then
