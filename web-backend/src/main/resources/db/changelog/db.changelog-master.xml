@@ -30,5 +30,6 @@
     <include file="v23-cash-register-terminal.xml" relativeToChangelogFile="true"/>
     <include file="v24-pharmacy-country-field.xml" relativeToChangelogFile="true"/>
     <include file="v25-store-pharmacy-integration.xml" relativeToChangelogFile="true"/>
+    <include file="v26-performance-indexes.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

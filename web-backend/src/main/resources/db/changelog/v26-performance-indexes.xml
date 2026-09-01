@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+  <!-- Idempotent indexes for reports, catalog, and monitoring. Safe on existing DBs. -->
+  <changeSet id="v26-performance-indexes" author="pos">
+    <sql splitStatements="true" stripComments="true">
+      CREATE INDEX IF NOT EXISTS idx_sales_company_store_created
+        ON sales (company_id, store_id, created_at DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_sales_completed_created
+        ON sales (created_at DESC)
+        WHERE status = 'COMPLETED';
+
+      CREATE INDEX IF NOT EXISTS idx_sale_items_sale_id
+        ON sale_items (sale_id);
+
+      CREATE INDEX IF NOT EXISTS idx_products_company_active
+        ON products (company_id, active);
+
+      CREATE INDEX IF NOT EXISTS idx_stock_movements_store_created
+        ON stock_movements (store_id, created_at DESC);
+
+      CREATE INDEX IF NOT EXISTS idx_finance_sync_outbox_status_created
+        ON finance_sync_outbox (status, created_at DESC);
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>
