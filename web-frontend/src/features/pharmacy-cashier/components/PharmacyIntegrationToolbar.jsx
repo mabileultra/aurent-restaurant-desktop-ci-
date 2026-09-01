@@ -1,50 +1,34 @@
 import { useState } from 'react';
-import { Chrome, MoreHorizontal, QrCode } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   PHARMACY_MORE_LINKS,
-  PHARMACY_QUICK_LINK_IDS,
   PHARMACY_TOOLBAR_LINKS,
 } from '../constants/pharmacyQuickLinks';
 import { usePharmacyIntegrationToolbar } from '../hooks/usePharmacyIntegrationToolbar';
+import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import PharmacyIntegrationMoreMenu from './PharmacyIntegrationMoreMenu';
 import PharmacyMarkingModal from './PharmacyMarkingModal';
 import '../styles/pharmacy-integration-toolbar.css';
-
-function DmedMark() {
-  return <span className="pharmacy-integration-toolbar__dmed-mark">DMED</span>;
-}
-
-function LinkLabel({ linkId, t }) {
-  if (linkId === PHARMACY_QUICK_LINK_IDS.DMED) {
-    return <DmedMark />;
-  }
-  if (linkId === PHARMACY_QUICK_LINK_IDS.MARKING) {
-    return <QrCode size={16} strokeWidth={2} aria-hidden />;
-  }
-  if (linkId === PHARMACY_QUICK_LINK_IDS.IKPU) {
-    return <span className="pharmacy-integration-toolbar__text-label">ИКПУ</span>;
-  }
-  if (linkId === PHARMACY_QUICK_LINK_IDS.ADMIN) {
-    return <Chrome size={18} strokeWidth={2} aria-hidden />;
-  }
-  return <span className="pharmacy-integration-toolbar__text-label">{t(`pharmacyCashier.integrations.links.${linkId}`)}</span>;
-}
 
 export default function PharmacyIntegrationToolbar({
   storeId,
   capabilities,
   externalUrls,
   onFocusSearch,
+  markingModal,
+  onOpenMarking,
+  onCloseMarking,
 }) {
   const { t } = useTranslation();
-  const [markingOpen, setMarkingOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
 
   const toolbar = usePharmacyIntegrationToolbar({
     capabilities,
     externalUrls,
-    onOpenMarking: () => setMarkingOpen(true),
+    onOpenMarking,
     onFocusSearch,
+    setMoreOpen,
   });
 
   const visibleToolbarLinks = PHARMACY_TOOLBAR_LINKS.filter(toolbar.isLinkVisible);
@@ -61,36 +45,38 @@ export default function PharmacyIntegrationToolbar({
             aria-label={t(`pharmacyCashier.integrations.linkTitles.${link.id}`)}
             onClick={() => toolbar.handleLink(link)}
           >
-            <LinkLabel linkId={link.id} t={t} />
+            <PharmacyIntegrationIcon linkId={link.id} />
           </button>
         ))}
 
         <div className="pharmacy-integration-toolbar__more-wrap">
           <button
             type="button"
-            className="pharmacy-integration-toolbar__btn pharmacy-integration-toolbar__btn--more"
+            className={`pharmacy-integration-toolbar__btn pharmacy-integration-toolbar__btn--more${moreOpen ? ' pharmacy-integration-toolbar__btn--active' : ''}`}
             title={t('pharmacyCashier.integrations.moreTitle')}
             aria-label={t('pharmacyCashier.integrations.moreTitle')}
-            aria-expanded={toolbar.moreOpen}
-            onClick={() => toolbar.setMoreOpen((v) => !v)}
+            aria-expanded={moreOpen}
+            onClick={() => setMoreOpen((v) => !v)}
           >
             <MoreHorizontal size={16} strokeWidth={2} aria-hidden />
           </button>
           <PharmacyIntegrationMoreMenu
-            open={toolbar.moreOpen}
+            open={moreOpen}
             links={PHARMACY_MORE_LINKS}
             onSelect={toolbar.handleLink}
-            onClose={() => toolbar.setMoreOpen(false)}
+            onClose={() => setMoreOpen(false)}
           />
         </div>
       </div>
 
       <PharmacyMarkingModal
-        open={markingOpen}
+        open={Boolean(markingModal?.open)}
         storeId={storeId}
+        initialCode={markingModal?.code}
+        initialResult={markingModal?.result}
         aslApiEnabled={capabilities.aslMarkingEnabled}
         aslPortalUrl={externalUrls.aslPortal}
-        onClose={() => setMarkingOpen(false)}
+        onClose={onCloseMarking}
       />
     </>
   );

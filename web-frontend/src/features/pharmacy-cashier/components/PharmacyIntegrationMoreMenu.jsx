@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import '../styles/pharmacy-integration-more.css';
 
 export default function PharmacyIntegrationMoreMenu({
@@ -35,7 +36,8 @@ export default function PharmacyIntegrationMoreMenu({
               className="pharmacy-integration-more__item"
               onClick={() => onSelect(link)}
             >
-              {t(`pharmacyCashier.integrations.links.${link.id}`)}
+              <PharmacyIntegrationIcon linkId={link.id} className="pharmacy-integration-more__icon" />
+              <span>{t(`pharmacyCashier.integrations.links.${link.id}`)}</span>
             </button>
           </li>
         ))}

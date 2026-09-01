@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Marking">
+  <rect width="64" height="64" rx="14" fill="#0F4C81"/>
+  <rect x="13" y="13" width="38" height="38" rx="3" fill="#fff"/>
+  <rect x="17" y="17" width="7" height="7" fill="#0F4C81"/>
+  <rect x="28" y="17" width="7" height="7" fill="#0F4C81"/>
+  <rect x="39" y="17" width="8" height="7" fill="#16A34A"/>
+  <rect x="17" y="28" width="7" height="7" fill="#16A34A"/>
+  <rect x="28" y="28" width="7" height="7" fill="#0F4C81"/>
+  <rect x="39" y="28" width="8" height="7" fill="#0F4C81"/>
+  <rect x="17" y="39" width="7" height="8" fill="#0F4C81"/>
+  <rect x="28" y="39" width="19" height="8" fill="#16A34A"/>
+</svg>

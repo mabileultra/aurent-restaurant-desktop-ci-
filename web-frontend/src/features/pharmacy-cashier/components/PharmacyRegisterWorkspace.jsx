@@ -3,12 +3,12 @@ import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacyIntegrationToolbar from './PharmacyIntegrationToolbar';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
-import { usePharmacyIntegrationConfig } from '../hooks/usePharmacyIntegrationConfig';
 import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyRegisterWorkspace({
   searchInputRef,
   catalog,
+  integration,
   payOpen,
   onClosePayment,
   cart,
@@ -23,7 +23,6 @@ export default function PharmacyRegisterWorkspace({
 }) {
   const { t } = useTranslation();
   const { checkoutMutation, handleConfirmPayment } = checkout;
-  const integration = usePharmacyIntegrationConfig(catalog.storeId);
 
   const focusSearch = () => {
     searchInputRef.current?.focus();
@@ -72,7 +71,7 @@ export default function PharmacyRegisterWorkspace({
               className="pharmacy-search__field pharmacy-search__field--compact"
               value={catalog.search}
               disabled={!catalog.storeId}
-              placeholder={t('pharmacyCashier.searchPh')}
+              placeholder={t('pharmacyCashier.searchPhMarking')}
               aria-label={t('pos.searchProducts')}
               onChange={(e) => catalog.setSearch(e.target.value)}
               onKeyDown={(e) => {
@@ -87,6 +86,9 @@ export default function PharmacyRegisterWorkspace({
               capabilities={integration.capabilities}
               externalUrls={integration.externalUrls}
               onFocusSearch={focusSearch}
+              markingModal={integration.markingModal}
+              onOpenMarking={() => integration.openMarkingModal()}
+              onCloseMarking={integration.closeMarkingModal}
             />
           </div>
           <PharmacyProductSearchTable

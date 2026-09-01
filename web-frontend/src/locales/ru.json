@@ -1539,6 +1539,7 @@
     "receiptTitle": "Чек",
     "searchTitle": "Товары склада",
     "searchPh": "Поиск: название, штрихкод, артикул…",
+    "searchPhMarking": "Поиск или скан: товар, штрихкод, DataMatrix КМ…",
     "searchHint": "Начните вводить название или отсканируйте штрихкод",
     "noProductsMatch": "Товары не найдены",
     "cartEmpty": "Чек пуст — выберите товар ниже",
@@ -1589,6 +1590,9 @@
       "markingBatch": "Серия",
       "markingFound": "Код найден в системе маркировки",
       "markingNotFound": "Код не найден",
+      "markingVerified": "Маркировка: {{name}}",
+      "markingProductFound": "Товар найден: {{name}}",
+      "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
       "links": {
         "admin": "Админ",
         "dmed": "DMED",

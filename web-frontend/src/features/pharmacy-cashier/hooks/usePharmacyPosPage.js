@@ -14,6 +14,9 @@ import { usePosCheckout } from '../../cashier/hooks/pos/usePosCheckout';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
 import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
 import { usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
+import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
+import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
+import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -46,6 +49,9 @@ export function usePharmacyPosPage() {
   const clearOrderDiscount = useCartStore((s) => s.clearOrderDiscount);
 
   const catalog = usePosProductsCatalog({ storeId });
+  const integration = usePharmacyIntegrationConfig(storeId);
+  const { markingModal, openMarkingModal, closeMarkingModal } = usePharmacyMarkingModalState();
+  const onMarkingScanRef = useRef(async () => false);
 
   useEffect(() => {
     catalog.setCatalogBrowse('products');
@@ -138,7 +144,18 @@ export function usePharmacyPosPage() {
     removeItem,
     selectedLineId,
     setSelectedLineId,
+    onMarkingScan: (code, opts) => onMarkingScanRef.current(code, opts),
   });
+
+  const markingScan = usePharmacyMarkingScan({
+    storeId,
+    aslMarkingEnabled: integration.capabilities.aslMarkingEnabled,
+    products: catalog.products,
+    onProductFound: cartHandlers.addProductToCart,
+    onOpenMarkingModal: openMarkingModal,
+  });
+
+  onMarkingScanRef.current = markingScan.tryHandleMarkingScan;
 
   useEffect(() => {
     if (shiftAutoPromptedRef.current) return;
@@ -267,6 +284,14 @@ export function usePharmacyPosPage() {
       fetchMoreProducts: catalog.fetchMoreProducts,
       addProductToCart: cartHandlers.addProductToCart,
       handleSearchEnter: cartHandlers.handleSearchEnter,
+    },
+    integration: {
+      capabilities: integration.capabilities,
+      externalUrls: integration.externalUrls,
+      markingModal,
+      openMarkingModal,
+      closeMarkingModal,
+      markingVerifying: markingScan.verifying,
     },
   };
 }

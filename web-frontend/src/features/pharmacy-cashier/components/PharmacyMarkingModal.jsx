@@ -2,21 +2,26 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
+import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
+import { PHARMACY_QUICK_LINK_IDS } from '../constants/pharmacyQuickLinks';
 import '../styles/pharmacy-marking-modal.css';
 
 export default function PharmacyMarkingModal({
   open,
   storeId,
+  initialCode = '',
+  initialResult = null,
   aslApiEnabled,
   aslPortalUrl,
   onClose,
 }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
+  const autoVerifiedRef = useRef('');
   const [code, setCode] = useState('');
   const [result, setResult] = useState(null);
 
-  const verifyMutation = useMutation({
+  const { mutate: verifyMarking, isPending: verifying } = useMutation({
     mutationFn: (payload) => pharmacyIntegrationApi.verifyMarking(payload).then((r) => r.data),
     onSuccess: (data) => setResult(data),
     onError: (error) => {
@@ -28,14 +33,27 @@ export default function PharmacyMarkingModal({
   });
 
   useEffect(() => {
-    if (!open) return undefined;
-    setCode('');
-    setResult(null);
+    if (!open) {
+      autoVerifiedRef.current = '';
+      return undefined;
+    }
+    setCode(initialCode || '');
+    setResult(initialResult);
     const timer = setTimeout(() => {
       inputRef.current?.focus();
+      inputRef.current?.select();
     }, 30);
     return () => clearTimeout(timer);
-  }, [open]);
+  }, [open, initialCode, initialResult]);
+
+  useEffect(() => {
+    if (!open || !aslApiEnabled || !storeId) return undefined;
+    const trimmed = (initialCode || '').trim();
+    if (!trimmed || initialResult || autoVerifiedRef.current === trimmed) return undefined;
+    autoVerifiedRef.current = trimmed;
+    verifyMarking({ storeId, code: trimmed });
+    return undefined;
+  }, [open, initialCode, initialResult, aslApiEnabled, storeId, verifyMarking]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -59,7 +77,7 @@ export default function PharmacyMarkingModal({
       setResult({ found: false, error: t('pharmacyCashier.integrations.markingApiDisabled') });
       return;
     }
-    verifyMutation.mutate({ storeId, code: trimmed });
+    verifyMarking({ storeId, code: trimmed });
   };
 
   return (
@@ -67,9 +85,12 @@ export default function PharmacyMarkingModal({
       <button type="button" className="pharmacy-marking-modal__backdrop" aria-label={t('common.close')} onClick={onClose} />
       <div className="pharmacy-marking-modal__dialog" role="dialog" aria-labelledby="pharmacy-marking-title">
         <div className="pharmacy-marking-modal__head">
-          <h2 id="pharmacy-marking-title" className="pharmacy-marking-modal__title">
-            {t('pharmacyCashier.integrations.markingTitle')}
-          </h2>
+          <div className="pharmacy-marking-modal__title-row">
+            <PharmacyIntegrationIcon linkId={PHARMACY_QUICK_LINK_IDS.MARKING} className="pharmacy-marking-modal__logo" />
+            <h2 id="pharmacy-marking-title" className="pharmacy-marking-modal__title">
+              {t('pharmacyCashier.integrations.markingTitle')}
+            </h2>
+          </div>
           <button type="button" className="pharmacy-marking-modal__close" onClick={onClose}>
             ×
           </button>
@@ -110,9 +131,9 @@ export default function PharmacyMarkingModal({
             <button
               type="submit"
               className="pharmacy-marking-modal__btn pharmacy-marking-modal__btn--primary"
-              disabled={verifyMutation.isPending || !code.trim()}
+              disabled={verifying || !code.trim()}
             >
-              {verifyMutation.isPending
+              {verifying
                 ? t('common.loading')
                 : t('pharmacyCashier.integrations.markingVerify')}
             </button>

@@ -32,6 +32,7 @@ export function usePharmacyCartHandlers({
   removeItem,
   selectedLineId,
   setSelectedLineId,
+  onMarkingScan,
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
@@ -196,6 +197,14 @@ export function usePharmacyCartHandlers({
       }
       scanningRef.current = true;
       try {
+        if (onMarkingScan) {
+          const markingHandled = await onMarkingScan(trimmed, { silent });
+          if (markingHandled) {
+            setSearch('');
+            return true;
+          }
+        }
+
         const product = await posFetchProductByBarcode(storeId, trimmed);
         if (product) {
           addProductToCart(product);
@@ -218,6 +227,7 @@ export function usePharmacyCartHandlers({
       payOpen,
       returnOpen,
       qtyModalProduct,
+      onMarkingScan,
       t,
       setSearch,
       searchInputRef,

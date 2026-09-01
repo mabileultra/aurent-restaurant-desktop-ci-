@@ -26,6 +26,7 @@ export default function PharmacyPosPage() {
       <PharmacyRegisterWorkspace
         searchInputRef={p.searchInputRef}
         catalog={p.catalog}
+        integration={p.integration}
         payOpen={p.payOpen}
         onClosePayment={p.handleClosePayment}
         cart={{

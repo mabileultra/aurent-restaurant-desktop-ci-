@@ -8,9 +8,9 @@ export function usePharmacyIntegrationToolbar({
   externalUrls,
   onOpenMarking,
   onFocusSearch,
+  setMoreOpen,
 }) {
   const { t } = useTranslation();
-  const [moreOpen, setMoreOpen] = useState(false);
 
   const handleLink = useCallback((link) => {
     if (link.kind === 'admin') {
@@ -32,14 +32,14 @@ export function usePharmacyIntegrationToolbar({
     if (link.kind === 'analogs') {
       onFocusSearch?.();
       toast(t('pharmacyCashier.integrations.analogsHint'), { icon: '🔍' });
-      setMoreOpen(false);
+      setMoreOpen?.(false);
       return;
     }
     if (link.kind === 'external' && link.urlKey) {
       openPharmacyExternalUrl(externalUrls[link.urlKey]);
-      setMoreOpen(false);
+      setMoreOpen?.(false);
     }
-  }, [capabilities.dmedEnabled, externalUrls, onFocusSearch, onOpenMarking, t]);
+  }, [capabilities.dmedEnabled, externalUrls, onFocusSearch, onOpenMarking, setMoreOpen, t]);
 
   const isLinkVisible = useCallback((link) => {
     if (link.requiresDmed && !capabilities.dmedEnabled) {
@@ -51,7 +51,23 @@ export function usePharmacyIntegrationToolbar({
   return {
     handleLink,
     isLinkVisible,
-    moreOpen,
-    setMoreOpen,
   };
+}
+
+export function usePharmacyMarkingModalState() {
+  const [markingModal, setMarkingModal] = useState({
+    open: false,
+    code: '',
+    result: null,
+  });
+
+  const openMarkingModal = useCallback((code = '', result = null) => {
+    setMarkingModal({ open: true, code: code || '', result: result ?? null });
+  }, []);
+
+  const closeMarkingModal = useCallback(() => {
+    setMarkingModal({ open: false, code: '', result: null });
+  }, []);
+
+  return { markingModal, openMarkingModal, closeMarkingModal };
 }
