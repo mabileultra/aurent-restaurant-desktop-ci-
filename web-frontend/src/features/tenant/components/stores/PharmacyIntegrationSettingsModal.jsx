@@ -1,6 +1,6 @@
 import { X } from 'lucide-react';
-import { usePharmacyIntegrationSettings } from '../hooks/usePharmacyIntegrationSettings';
-import '../../../styles/tenant/pharmacy-integration-settings-modal.css';
+import { usePharmacyIntegrationSettings } from '../../hooks/usePharmacyIntegrationSettings';
+import '../../../../styles/tenant/pharmacy-integration-settings-modal.css';
 
 export default function PharmacyIntegrationSettingsModal({ open, store, onClose }) {
   const p = usePharmacyIntegrationSettings({ store, open, onSaved: onClose });
