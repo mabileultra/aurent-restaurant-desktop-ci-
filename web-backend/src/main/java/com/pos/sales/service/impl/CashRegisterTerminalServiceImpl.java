@@ -8,6 +8,7 @@ import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
 import com.pos.sales.repository.CashRegisterRepository;
 import com.pos.sales.service.CashRegisterTerminalService;
+import com.pos.security.CurrentUserProvider;
 import com.pos.service.support.CashierSaleSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -27,6 +28,7 @@ public class CashRegisterTerminalServiceImpl implements CashRegisterTerminalServ
 
     private final CashRegisterRepository cashRegisterRepository;
     private final CashierSaleSupport cashierSaleSupport;
+    private final CurrentUserProvider currentUserProvider;
     private final TenantAccessSupport tenantAccess;
 
     @Override
@@ -49,7 +51,7 @@ public class CashRegisterTerminalServiceImpl implements CashRegisterTerminalServ
 
     private ResolveResult resolveOrCreate(Integer storeId, RegisterTerminalRequest request) {
         RegisterTerminalRequest safe = request != null ? request : new RegisterTerminalRequest(null, null, null, null, null);
-        User actor = tenantAccess.requireCurrentUser();
+        User actor = currentUserProvider.requireCurrentUser();
         Store store = cashierSaleSupport.requireStoreForSale(actor, storeId);
         tenantAccess.assertCanAccessStore(store);
 
