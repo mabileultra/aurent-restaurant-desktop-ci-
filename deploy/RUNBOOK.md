@@ -78,7 +78,7 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 ## 8. Ежедневные проверки (5 минут)
 
 - [ ] `bash deploy/backup.sh verify-latest` — бэкап целый
-- [ ] `bash deploy/load-test.sh` — p95 &lt; 2с (опционально)
+- [ ] `bash deploy/load-test.sh` — p95 < 2с (опционально)
 - [ ] `bash deploy/health-alert.sh` — без ошибок
 - [ ] Супер-админ → Мониторинг — ошибок за 24ч в норме
 - [ ] Последний бэкап не старше 24ч
