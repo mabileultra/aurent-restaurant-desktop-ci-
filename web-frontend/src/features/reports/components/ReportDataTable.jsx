@@ -1,4 +1,5 @@
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import ReportTableCard from './ReportTableCard';
 
 export default function ReportDataTable({
   rows,
@@ -12,13 +13,14 @@ export default function ReportDataTable({
   page = 0,
   pageSize = 0,
   getRowId = (row) => row.id,
+  pagination,
 }) {
   const colSpan = (emptyColSpan ?? columns.length) + 2;
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <ReportTableCard pagination={pagination}>
       <table className="w-full text-sm">
-        <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
+        <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
           <tr>
             <AdminTableNoIdHeaders />
             {columns.map((col) => (
@@ -34,7 +36,7 @@ export default function ReportDataTable({
         <tbody>
           {isPending && (
             <tr>
-              <td colSpan={colSpan} className="px-4 py-8 text-center">
+              <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                 {t('common.loading')}
               </td>
             </tr>
@@ -48,7 +50,7 @@ export default function ReportDataTable({
           )}
           {!isPending && !isError && rows.length === 0 && (
             <tr>
-              <td colSpan={colSpan} className="px-4 py-8 text-center">
+              <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                 {t('common.noData')}
               </td>
             </tr>
@@ -69,6 +71,6 @@ export default function ReportDataTable({
           })}
         </tbody>
       </table>
-    </div>
+    </ReportTableCard>
   );
 }

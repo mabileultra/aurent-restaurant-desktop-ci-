@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
+import ReportProductNameCell from '../components/ReportProductNameCell';
+import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -34,7 +35,16 @@ export default function StockTurnoverPage() {
           ]}
         />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
         <table className="w-full text-xs sm:text-sm">
           <thead className="bg-slate-50 text-left uppercase text-slate-600 dark:bg-slate-800/80 dark:text-slate-400">
             <tr>
@@ -54,10 +64,7 @@ export default function StockTurnoverPage() {
             {r.rows.map((row, index) => (
               <tr key={row.productId} className="border-t border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
-                <td className="px-3 py-2">
-                  <div className="font-medium">{row.productName}</div>
-                  <div className="text-slate-500">{row.sku}</div>
-                </td>
+                <ReportProductNameCell name={row.productName} sku={row.sku} className="px-3 py-2" />
                 <td className="px-2 py-2 text-right">{row.openingQuantity}</td>
                 <td className="px-2 py-2 text-right text-emerald-700">+{row.receivedQuantity}</td>
                 <td className="px-2 py-2 text-right text-blue-700">−{row.soldQuantity}</td>
@@ -68,15 +75,7 @@ export default function StockTurnoverPage() {
             ))}
           </tbody>
         </table>
-        <TablePagination
-          page={r.page}
-          pageSize={r.pageSize}
-          total={r.total}
-          totalPages={r.totalPages}
-          onPageChange={r.setPage}
-          onPageSizeChange={r.setPageSize}
-        />
-      </div>
+      </ReportTableCard>
     </div>
   );
 }

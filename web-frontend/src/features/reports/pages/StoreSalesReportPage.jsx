@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
-import TablePagination from '../../../components/shared/TablePagination';
+import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -25,7 +25,16 @@ export default function StoreSalesReportPage() {
         />
       </div>
       <ReportDateBar from={r.from} to={r.to} onFrom={r.setFrom} onTo={r.setTo} />
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
@@ -52,8 +61,7 @@ export default function StoreSalesReportPage() {
             ))}
           </tbody>
         </table>
-      </div>
-      <TablePagination page={r.page} pageSize={r.pageSize} total={r.total} totalPages={r.totalPages} onPageChange={r.setPage} onPageSizeChange={r.setPageSize} />
+      </ReportTableCard>
     </div>
   );
 }

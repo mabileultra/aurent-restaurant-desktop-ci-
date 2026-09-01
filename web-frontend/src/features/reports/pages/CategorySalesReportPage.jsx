@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { reportApi } from '../../../api';
-import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportDataTable from '../components/ReportDataTable';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
@@ -51,17 +50,17 @@ export default function CategorySalesReportPage() {
             <td className="px-4 py-3 text-right">{row.receiptCount}</td>
             <td className="px-4 py-3 text-right">{row.netQuantity}</td>
             <td className="px-4 py-3 text-right">{fmtMoney(row.revenue)}</td>
-            <td className="px-4 py-3 text-right text-emerald-700">{fmtMoney(row.margin)}</td>
+            <td className="px-4 py-3 text-right text-emerald-700 dark:text-emerald-400">{fmtMoney(row.margin)}</td>
           </>
         )}
-      />
-      <TablePagination
-        page={r.page}
-        pageSize={r.pageSize}
-        total={r.total}
-        totalPages={r.totalPages}
-        onPageChange={r.setPage}
-        onPageSizeChange={r.setPageSize}
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
       />
     </div>
   );

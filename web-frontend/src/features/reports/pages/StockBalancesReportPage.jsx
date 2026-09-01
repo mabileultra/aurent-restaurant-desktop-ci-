@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { stockReportApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import ReportProductNameCell from '../components/ReportProductNameCell';
+import ReportTableCard from '../components/ReportTableCard';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportExportButton from '../components/ReportExportButton';
 import { useStockBalancesReportPage } from '../hooks/useStockBalancesReportPage';
@@ -44,7 +45,16 @@ export default function StockBalancesReportPage() {
           {t('stockReports.onlyWithStock')}
         </label>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
@@ -62,7 +72,7 @@ export default function StockBalancesReportPage() {
             {r.rows.map((row, index) => (
               <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
-                <td className="px-4 py-3 font-medium">{row.productName}</td>
+                <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
                 <td className="px-4 py-3">{row.categoryName || '—'}</td>
                 <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
                 <td className="px-4 py-3 text-right">{row.lowStockAlert}</td>
@@ -71,8 +81,7 @@ export default function StockBalancesReportPage() {
             ))}
           </tbody>
         </table>
-      </div>
-      <TablePagination page={r.page} pageSize={r.pageSize} total={r.total} totalPages={r.totalPages} onPageChange={r.setPage} onPageSizeChange={r.setPageSize} />
+      </ReportTableCard>
     </div>
   );
 }

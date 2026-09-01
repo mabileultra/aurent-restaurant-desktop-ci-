@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { stockReportApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
-import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import ReportProductNameCell from '../components/ReportProductNameCell';
+import ReportTableCard from '../components/ReportTableCard';
 import { fmtMoney } from '../../../utils/formatMoney';
 import ReportExportButton from '../components/ReportExportButton';
 import { useDeadStockReportPage } from '../hooks/useDeadStockReportPage';
@@ -50,7 +50,16 @@ export default function DeadStockReportPage() {
           ]}
         />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase text-slate-600 dark:bg-slate-800/80">
             <tr>
@@ -69,10 +78,7 @@ export default function DeadStockReportPage() {
             {r.rows.map((row, index) => (
               <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
-                <td className="px-4 py-3">
-                  <div className="font-medium">{row.productName}</div>
-                  <div className="text-xs text-slate-500">{row.sku}</div>
-                </td>
+                <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
                 <td className="px-4 py-3">{row.categoryName || '—'}</td>
                 <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
                 <td className="px-4 py-3 text-right">{fmtMoney(row.stockValue)}</td>
@@ -82,8 +88,7 @@ export default function DeadStockReportPage() {
             ))}
           </tbody>
         </table>
-      </div>
-      <TablePagination page={r.page} pageSize={r.pageSize} total={r.total} totalPages={r.totalPages} onPageChange={r.setPage} onPageSizeChange={r.setPageSize} />
+      </ReportTableCard>
     </div>
   );
 }

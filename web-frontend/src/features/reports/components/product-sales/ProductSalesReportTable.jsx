@@ -1,4 +1,5 @@
-import TablePagination from '../../../../components/shared/TablePagination';
+import ReportTableCard from '../ReportTableCard';
+import ReportProductNameCell from '../ReportProductNameCell';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../../utils/formatMoney';
 
@@ -16,9 +17,17 @@ export default function ProductSalesReportTable({
   onPageSizeChange,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+    <ReportTableCard
+      pagination={{
+        page,
+        pageSize,
+        total,
+        totalPages,
+        onPageChange,
+        onPageSizeChange,
+      }}
+    >
+      <table className="w-full text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-400">
             <tr>
               <AdminTableNoIdHeaders />
@@ -52,13 +61,7 @@ export default function ProductSalesReportTable({
             {rows.map((row, index) => (
               <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.productId} />
-                <td className="px-4 py-3">
-                  <div className="font-medium text-slate-900 dark:text-white">{row.productName}</div>
-                  <div className="text-xs text-slate-500">
-                    {row.sku}
-                    {row.barcode ? ` · ${row.barcode}` : ''}
-                  </div>
-                </td>
+                <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{row.categoryName || '—'}</td>
                 <td className="px-4 py-3 text-right">{row.quantitySold}</td>
                 <td className="px-4 py-3 text-right">{row.quantityReturned}</td>
@@ -69,15 +72,6 @@ export default function ProductSalesReportTable({
             ))}
           </tbody>
         </table>
-      </div>
-      <TablePagination
-        page={page}
-        pageSize={pageSize}
-        total={total}
-        totalPages={totalPages}
-        onPageChange={onPageChange}
-        onPageSizeChange={onPageSizeChange}
-      />
-    </div>
+    </ReportTableCard>
   );
 }

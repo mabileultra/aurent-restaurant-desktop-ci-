@@ -4,7 +4,7 @@ import { format as fmtDate } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { stockReportApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
+import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportExportButton from '../components/ReportExportButton';
@@ -54,7 +54,16 @@ export default function StockTransfersReportPage() {
           ]}
         />
       </div>
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <ReportTableCard
+        pagination={{
+          page: r.page,
+          pageSize: r.pageSize,
+          total: r.total,
+          totalPages: r.totalPages,
+          onPageChange: r.setPage,
+          onPageSizeChange: r.setPageSize,
+        }}
+      >
         <table className="w-full text-sm">
           <thead className="bg-slate-50 text-left text-xs uppercase dark:bg-slate-800/80">
             <tr>
@@ -79,8 +88,7 @@ export default function StockTransfersReportPage() {
             ))}
           </tbody>
         </table>
-      </div>
-      <TablePagination page={r.page} pageSize={r.pageSize} total={r.total} totalPages={r.totalPages} onPageChange={r.setPage} onPageSizeChange={r.setPageSize} />
+      </ReportTableCard>
     </div>
   );
 }
