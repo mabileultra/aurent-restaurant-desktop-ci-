@@ -1,0 +1,57 @@
+.pharmacy-integration-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pharmacy-integration-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    border-color 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.pharmacy-integration-toolbar__btn:hover:not(:disabled) {
+  background: var(--pharm-hover);
+  border-color: rgb(47 111 237 / 0.35);
+}
+
+.pharmacy-integration-toolbar__btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pharmacy-integration-toolbar__btn--chrome svg {
+  color: #4285f4;
+}
+
+.pharmacy-integration-toolbar__dmed-mark {
+  font-size: 0.625rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #0b7a53;
+}
+
+.pharmacy-integration-toolbar__more-wrap {
+  position: relative;
+}
+
+.pharmacy-integration-toolbar__text-label {
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}

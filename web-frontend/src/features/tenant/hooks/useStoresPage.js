@@ -18,6 +18,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [menuId, setMenuId] = useState(null);
+  const [pharmacyIntegrationStore, setPharmacyIntegrationStore] = useState(null);
 
   const resolvedCompanyId = showCompanySelect
     ? (companyId ? Number(companyId) : undefined)
@@ -135,6 +136,15 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setPage(0);
   };
 
+  const openPharmacyIntegration = (row) => {
+    setPharmacyIntegrationStore(row);
+    setMenuId(null);
+  };
+
+  const closePharmacyIntegration = () => {
+    setPharmacyIntegrationStore(null);
+  };
+
   const tryDelete = (row) => {
     if (window.confirm(t('stores.deleteConfirm', { name: row.name }))) {
       deleteMutation.mutate(row.id);
@@ -174,5 +184,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     handleBusinessTypeChange,
     toggleMutation,
     tryDelete,
+    pharmacyIntegrationStore,
+    openPharmacyIntegration,
+    closePharmacyIntegration,
   };
 }

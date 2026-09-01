@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { BaseButton, ErrorBanner, PageLayout } from '../../../components/ui';
 import StoreFormModal from '../components/stores/StoreFormModal';
+import PharmacyIntegrationSettingsModal from '../components/stores/PharmacyIntegrationSettingsModal';
 import StoresFiltersBar from '../components/stores/StoresFiltersBar';
 import StoresTable from '../components/stores/StoresTable';
 import { useStoresPage } from '../hooks/useStoresPage';
@@ -50,6 +51,7 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
         onEdit={p.openEdit}
         onToggleActive={(id) => p.toggleMutation.mutate(id)}
         onDelete={p.tryDelete}
+        onPharmacyIntegration={p.openPharmacyIntegration}
       />
 
       <StoreFormModal
@@ -60,6 +62,12 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
         initial={p.editing}
         showCompanySelect={p.showCompanySelect}
         companies={p.companies}
+      />
+
+      <PharmacyIntegrationSettingsModal
+        open={Boolean(p.pharmacyIntegrationStore)}
+        store={p.pharmacyIntegrationStore}
+        onClose={p.closePharmacyIntegration}
       />
     </PageLayout>
   );

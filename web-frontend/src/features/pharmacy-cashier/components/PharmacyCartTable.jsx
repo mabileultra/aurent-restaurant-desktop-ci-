@@ -18,6 +18,7 @@ import {
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
 import '../styles/pharmacy-cart-table.css';
+import '../styles/pharmacy-cart-table-columns.css';
 
 export default function PharmacyCartTable({
   items,
@@ -41,6 +42,21 @@ export default function PharmacyCartTable({
     <div className="pharmacy-cart-table">
       <div className="pharmacy-cart-table__scroll">
         <table className="pharmacy-cart-table__table">
+          <colgroup>
+            <col className="pharmacy-col pharmacy-col--name" />
+            <col className="pharmacy-col pharmacy-col--unit" />
+            <col className="pharmacy-col pharmacy-col--form" />
+            <col className="pharmacy-col pharmacy-col--country" />
+            <col className="pharmacy-col pharmacy-col--shelf" />
+            <col className="pharmacy-col pharmacy-col--qty" />
+            <col className="pharmacy-col pharmacy-col--money" />
+            <col className="pharmacy-col pharmacy-col--money" />
+            <col className="pharmacy-col pharmacy-col--expiry" />
+            <col className="pharmacy-col pharmacy-col--batch" />
+            <col className="pharmacy-col pharmacy-col--stock" />
+            <col className="pharmacy-col pharmacy-col--ikpu" />
+            <col className="pharmacy-col pharmacy-col--actions" />
+          </colgroup>
           <thead>
             <tr>
               <th>{t('pharmacyCashier.colName')}</th>
@@ -109,18 +125,22 @@ export default function PharmacyCartTable({
                         {t('pharmacyCashier.pieceCount', { count: Math.round(item.quantity) })}
                       </span>
                     ) : (
-                      formatQty(item.quantity, item.saleType, item.unitCode)
+                      <span className="pharmacy-cart-table__money">
+                        {formatQty(item.quantity, item.saleType, item.unitCode)}
+                      </span>
                     )}
                   </td>
                   <td className="pharmacy-cart-table__num">
-                    {fmt(item.unitPrice)}
+                    <span className="pharmacy-cart-table__money">{fmt(item.unitPrice)}</span>
                     {item.pharmacySellByPiece ? (
                       <span className="pharmacy-cart-table__piece-price-hint">
                         {t('pharmacyCashier.perPieceShort')}
                       </span>
                     ) : null}
                   </td>
-                  <td className="pharmacy-cart-table__num">{fmt(lineSubtotal(item))}</td>
+                  <td className="pharmacy-cart-table__num">
+                    <span className="pharmacy-cart-table__money">{fmt(lineSubtotal(item))}</span>
+                  </td>
                   <td
                     className={[
                       'pharmacy-cart-table__mono',
@@ -136,11 +156,15 @@ export default function PharmacyCartTable({
                       pharmacyCellToneClass(stockTone, 'pharmacy-cart-table__cell'),
                     ].filter(Boolean).join(' ')}
                   >
-                    {item.pharmacySellByPiece
-                      ? t('pharmacyCashier.pieceCount', { count: Math.floor(item.maxStock) })
-                      : formatQty(item.maxStock, item.saleType, item.unitCode)}
+                    <span className="pharmacy-cart-table__money">
+                      {item.pharmacySellByPiece
+                        ? t('pharmacyCashier.pieceCount', { count: Math.floor(item.maxStock) })
+                        : formatQty(item.maxStock, item.saleType, item.unitCode)}
+                    </span>
                   </td>
-                  <td className="pharmacy-cart-table__mono">{item.ikpu || '—'}</td>
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__ikpu" title={item.ikpu || undefined}>
+                    <span className="pharmacy-cart-table__cell-text">{item.ikpu || '—'}</span>
+                  </td>
                   <td>
                     <div className="pharmacy-cart-table__actions">
                       <button

@@ -43,3 +43,4 @@ export { platformReferenceBookApi } from './platform/referenceBook.api';
 export { platformLeadsApi } from './platform/leads.api';
 export { publicSiteApi } from './publicSite.api';
 export { restaurantApi } from './restaurant.api';
+export { pharmacyIntegrationApi } from './pharmacyIntegration.api';

@@ -19,14 +19,19 @@ function navClass(isActive) {
 export default function CashierBottomNav({ className = '' }) {
   const { t } = useTranslation();
   const { storeId } = useCashierStore();
-  const { isRestaurant } = useCashierStoreProfile();
+  const { isRestaurant, isPharmacy } = useCashierStoreProfile();
   const { openShift } = useCashierShiftModal();
   const { lock } = useCashierLock();
   const { collapsed, toggleCollapsed } = useCashierBottomNavCollapsedState();
 
   return (
     <div
-      className={`cashier-bottom-nav-shell${collapsed ? ' is-collapsed' : ''}${className ? ` ${className}` : ''}`}
+      className={[
+        'cashier-bottom-nav-shell',
+        collapsed ? 'is-collapsed' : '',
+        isPharmacy ? 'cashier-bottom-nav-shell--pharmacy' : '',
+        className,
+      ].filter(Boolean).join(' ')}
     >
       <nav className="cashier-bottom-nav" aria-label={t('nav.handbook')}>
         <button
@@ -77,7 +82,7 @@ export default function CashierBottomNav({ className = '' }) {
               <Receipt size={22} strokeWidth={2} aria-hidden />
               <span>{t('pos.navMySales')}</span>
             </NavLink>
-            <CashierBottomNavProducts t={t} />
+            {!isPharmacy ? <CashierBottomNavProducts t={t} /> : null}
             {isRestaurant ? <CashierBottomNavTables t={t} /> : <CashierBottomNavRegister t={t} />}
           </>
         ) : null}

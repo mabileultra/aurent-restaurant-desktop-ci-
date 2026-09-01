@@ -29,5 +29,6 @@
     <include file="v22-product-plu.xml" relativeToChangelogFile="true"/>
     <include file="v23-cash-register-terminal.xml" relativeToChangelogFile="true"/>
     <include file="v24-pharmacy-country-field.xml" relativeToChangelogFile="true"/>
+    <include file="v25-store-pharmacy-integration.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v25-store-pharmacy-integration" author="pos">
+        <createTable tableName="store_pharmacy_integration">
+            <column name="store_id" type="INT">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="fk_store_pharmacy_integration_store"
+                             references="stores(id)"/>
+            </column>
+            <column name="asl_enabled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asl_api_base_url" type="VARCHAR(512)"/>
+            <column name="asl_api_key" type="VARCHAR(512)"/>
+            <column name="dmed_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dmed_external_id" type="VARCHAR(128)"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

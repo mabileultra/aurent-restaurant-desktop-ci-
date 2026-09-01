@@ -1,7 +1,9 @@
 import PharmacyCartTable from './PharmacyCartTable';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
+import PharmacyIntegrationToolbar from './PharmacyIntegrationToolbar';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
+import { usePharmacyIntegrationConfig } from '../hooks/usePharmacyIntegrationConfig';
 import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyRegisterWorkspace({
@@ -21,6 +23,11 @@ export default function PharmacyRegisterWorkspace({
 }) {
   const { t } = useTranslation();
   const { checkoutMutation, handleConfirmPayment } = checkout;
+  const integration = usePharmacyIntegrationConfig(catalog.storeId);
+
+  const focusSearch = () => {
+    searchInputRef.current?.focus();
+  };
 
   return (
     <CashierRegisterShell
@@ -57,11 +64,33 @@ export default function PharmacyRegisterWorkspace({
         </section>
 
         <section className="pharmacy-cashier__search-pane" aria-label={t('pharmacyCashier.searchTitle')}>
-          <div className="pharmacy-cashier__pane-head">
+          <div className="pharmacy-cashier__pane-head pharmacy-cashier__pane-head--search">
             <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
+            <input
+              ref={searchInputRef}
+              type="search"
+              className="pharmacy-search__field pharmacy-search__field--compact"
+              value={catalog.search}
+              disabled={!catalog.storeId}
+              placeholder={t('pharmacyCashier.searchPh')}
+              aria-label={t('pos.searchProducts')}
+              onChange={(e) => catalog.setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  catalog.handleSearchEnter?.();
+                }
+              }}
+            />
+            <PharmacyIntegrationToolbar
+              storeId={catalog.storeId}
+              capabilities={integration.capabilities}
+              externalUrls={integration.externalUrls}
+              onFocusSearch={focusSearch}
+            />
           </div>
           <PharmacyProductSearchTable
-            ref={searchInputRef}
+            hideSearchField
             storeId={catalog.storeId}
             search={catalog.search}
             onSearchChange={catalog.setSearch}

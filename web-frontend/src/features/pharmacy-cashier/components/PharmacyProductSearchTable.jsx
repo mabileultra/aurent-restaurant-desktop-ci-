@@ -37,6 +37,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
     onLoadMore,
     onSelectProduct,
     scanDisabled,
+    hideSearchField = false,
   },
   ref,
 ) {
@@ -60,24 +61,26 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
 
   return (
     <div className="pharmacy-search">
-      <div className="pharmacy-search__field-wrap">
-        <input
-          ref={ref}
-          type="search"
-          className="pharmacy-search__field"
-          value={search}
-          disabled={scanDisabled}
-          placeholder={t('pharmacyCashier.searchPh')}
-          aria-label={t('pos.searchProducts')}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onSearchEnter?.();
-            }
-          }}
-        />
-      </div>
+      {!hideSearchField ? (
+        <div className="pharmacy-search__field-wrap">
+          <input
+            ref={ref}
+            type="search"
+            className="pharmacy-search__field"
+            value={search}
+            disabled={scanDisabled}
+            placeholder={t('pharmacyCashier.searchPh')}
+            aria-label={t('pos.searchProducts')}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                onSearchEnter?.();
+              }
+            }}
+          />
+        </div>
+      ) : null}
 
       <div className="pharmacy-search__scroll">
         {productsError ? (

@@ -1405,7 +1405,24 @@
     "deleted": "Магазин удалён",
     "deleteFailed": "Не удалось удалить магазин",
     "pageSize": "Записей на странице",
-    "range": "Записи {{from}} - {{to}} из {{total}}"
+    "range": "Записи {{from}} - {{to}} из {{total}}",
+    "pharmacyIntegration": {
+      "menu": "Интеграции аптеки",
+      "title": "Интеграции аптеки",
+      "aslTitle": "ASL Belgisi — маркировка",
+      "aslEnabled": "Проверка кодов через Open API",
+      "aslBaseUrl": "Базовый URL xTrace API",
+      "aslApiKey": "API-ключ (Bearer)",
+      "aslApiKeyPh": "Вставьте ключ из личного кабинета xTrace",
+      "aslKeySaved": "Ключ сохранён: {{mask}}. Оставьте поле пустым, чтобы не менять.",
+      "dmedTitle": "DMED — электронные рецепты",
+      "dmedEnabled": "Показывать кнопку DMED на кассе",
+      "dmedExternalId": "ID аптеки в DMED (для будущей API-интеграции)",
+      "dmedExternalIdPh": "Необязательно",
+      "dmedHint": "Полная интеграция с DMED (скан рецепта → отпуск) подключается отдельно по договору с оператором.",
+      "saved": "Настройки интеграций сохранены",
+      "saveFailed": "Не удалось сохранить настройки"
+    }
   },
   "restaurantHall": {
     "title": "Зал ресторана",
@@ -1551,7 +1568,46 @@
     "stockPieces": "Остаток (шт.)",
     "qtyPiecesLabel": "Количество (шт.)",
     "pieceCount": "{{count}} шт.",
-    "perPieceShort": "/ шт."
+    "perPieceShort": "/ шт.",
+    "integrations": {
+      "toolbar": "Быстрые ссылки",
+      "adminTitle": "Админка (вход в браузере)",
+      "moreTitle": "Ещё ссылки",
+      "dmedDisabled": "DMED отключён для этой точки",
+      "analogsHint": "Введите МНН или название для поиска аналогов",
+      "markingTitle": "Проверка маркировки",
+      "markingHintApi": "Отсканируйте DataMatrix или введите код КМ — проверка через ASL Belgisi Open API.",
+      "markingHintPortal": "API маркировки не настроен. Настройте ключ в админке или откройте портал ASL.",
+      "markingCodeLabel": "Код маркировки",
+      "markingCodePh": "DataMatrix / КМ…",
+      "markingVerify": "Проверить",
+      "markingApiDisabled": "Включите ASL Belgisi в настройках магазина (админка → Магазины → Интеграции аптеки).",
+      "openAslPortal": "Портал ASL",
+      "markingStatus": "Статус",
+      "markingProduct": "Товар",
+      "markingExpiry": "Срок годности",
+      "markingBatch": "Серия",
+      "markingFound": "Код найден в системе маркировки",
+      "markingNotFound": "Код не найден",
+      "links": {
+        "admin": "Админ",
+        "dmed": "DMED",
+        "marking": "Марк.",
+        "ikpu": "ИКПУ",
+        "analogs": "Аналоги",
+        "asl_portal": "ASL Belgisi",
+        "mygov": "MyGov"
+      },
+      "linkTitles": {
+        "admin": "Админка (вход в браузере)",
+        "dmed": "Портал DMED — электронные рецепты",
+        "marking": "Проверка кода маркировки ASL Belgisi",
+        "ikpu": "Справочник ИКПУ (tasnif.soliq.uz)",
+        "analogs": "Поиск аналогов по МНН",
+        "asl_portal": "Портал xTrace ASL Belgisi",
+        "mygov": "Портал MyGov"
+      }
+    }
   },
   "restaurantCashier": {
     "title": "Касса ресторана",

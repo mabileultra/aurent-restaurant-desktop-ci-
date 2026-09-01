@@ -1382,7 +1382,24 @@
     "deleted": "Do‘kon o‘chirildi",
     "deleteFailed": "Do‘konni o‘chirib bo‘lmadi",
     "pageSize": "Sahifadagi yozuvlar",
-    "range": "Yozuvlar {{from}} - {{to}} / {{total}}"
+    "range": "Yozuvlar {{from}} - {{to}} / {{total}}",
+    "pharmacyIntegration": {
+      "menu": "Dorixona integratsiyalari",
+      "title": "Dorixona integratsiyalari",
+      "aslTitle": "ASL Belgisi — markirovka",
+      "aslEnabled": "Open API orqali kodlarni tekshirish",
+      "aslBaseUrl": "xTrace API bazaviy URL",
+      "aslApiKey": "API kalit (Bearer)",
+      "aslApiKeyPh": "xTrace shaxsiy kabinetidan kalitni kiriting",
+      "aslKeySaved": "Kalit saqlandi: {{mask}}. O‘zgartirmaslik uchun maydonni bo‘sh qoldiring.",
+      "dmedTitle": "DMED — elektron retseptlar",
+      "dmedEnabled": "Kassada DMED tugmasini ko‘rsatish",
+      "dmedExternalId": "DMED dagi dorixona ID (keyingi API uchun)",
+      "dmedExternalIdPh": "Ixtiyoriy",
+      "dmedHint": "DMED bilan to‘liq integratsiya (retsept skan → berish) alohida shartnoma bilan ulanadi.",
+      "saved": "Integratsiya sozlamalari saqlandi",
+      "saveFailed": "Sozlamalarni saqlab bo‘lmadi"
+    }
   },
   "pharmacyCashier": {
     "title": "Dorixona kassasi",
@@ -1418,7 +1435,46 @@
     "stockPieces": "Qoldiq (dona)",
     "qtyPiecesLabel": "Miqdor (dona)",
     "pieceCount": "{{count}} dona",
-    "perPieceShort": "/ dona"
+    "perPieceShort": "/ dona",
+    "integrations": {
+      "toolbar": "Tezkor havolalar",
+      "adminTitle": "Admin panel (brauzerda kirish)",
+      "moreTitle": "Boshqa havolalar",
+      "dmedDisabled": "Ushbu nuqta uchun DMED o‘chirilgan",
+      "analogsHint": "Analoglarni qidirish uchun MNN yoki nom kiriting",
+      "markingTitle": "Markirovka tekshiruvi",
+      "markingHintApi": "DataMatrix skanerlang yoki KM kodini kiriting — ASL Belgisi Open API orqali tekshiriladi.",
+      "markingHintPortal": "Markirovka API sozlanmagan. Admin panelda kalitni sozlang yoki ASL portalini oching.",
+      "markingCodeLabel": "Markirovka kodi",
+      "markingCodePh": "DataMatrix / KM…",
+      "markingVerify": "Tekshirish",
+      "markingApiDisabled": "Admin panelda ASL Belgisi ni yoqing (Do‘konlar → Dorixona integratsiyalari).",
+      "openAslPortal": "ASL portali",
+      "markingStatus": "Holat",
+      "markingProduct": "Mahsulot",
+      "markingExpiry": "Yaroqlilik muddati",
+      "markingBatch": "Seriya",
+      "markingFound": "Kod markirovka tizimida topildi",
+      "markingNotFound": "Kod topilmadi",
+      "links": {
+        "admin": "Admin",
+        "dmed": "DMED",
+        "marking": "Mark.",
+        "ikpu": "IKPU",
+        "analogs": "Analoglar",
+        "asl_portal": "ASL Belgisi",
+        "mygov": "MyGov"
+      },
+      "linkTitles": {
+        "admin": "Admin panel (brauzerda kirish)",
+        "dmed": "DMED portali — elektron retseptlar",
+        "marking": "ASL Belgisi markirovka kodini tekshirish",
+        "ikpu": "IKPU ma’lumotnomasi (tasnif.soliq.uz)",
+        "analogs": "MNN bo‘yicha analog qidiruv",
+        "asl_portal": "xTrace ASL Belgisi portali",
+        "mygov": "MyGov portali"
+      }
+    }
   },
   "platform": {
     "title": "Super-admin",

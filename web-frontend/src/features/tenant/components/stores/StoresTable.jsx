@@ -19,6 +19,7 @@ export default function StoresTable({
   onEdit,
   onToggleActive,
   onDelete,
+  onPharmacyIntegration,
 }) {
   const colSpan = showCompany ? 9 : 8;
 
@@ -80,6 +81,12 @@ export default function StoresTable({
                     onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
                     actions={[
                       { label: t('common.edit'), onClick: () => onEdit(row) },
+                      ...(row.businessType === 'PHARMACY' && onPharmacyIntegration
+                        ? [{
+                          label: t('stores.pharmacyIntegration.menu'),
+                          onClick: () => onPharmacyIntegration(row),
+                        }]
+                        : []),
                       {
                         label: row.active ? t('stores.deactivate') : t('stores.activate'),
                         onClick: () => onToggleActive(row.id),

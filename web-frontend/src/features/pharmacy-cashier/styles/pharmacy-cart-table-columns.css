@@ -1,0 +1,87 @@
+/* Ширины колонок чека (colgroup) + выравнивание чисел */
+
+.pharmacy-cart-table__table {
+  min-width: 1180px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--name {
+  width: 168px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--unit {
+  width: 76px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--form,
+.pharmacy-cart-table__table .pharmacy-col--country {
+  width: 58px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--shelf {
+  width: 52px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--qty {
+  width: 54px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--money {
+  width: 98px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--expiry {
+  width: 104px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--batch {
+  width: 64px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--stock {
+  width: 58px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--ikpu {
+  width: 118px;
+}
+
+.pharmacy-cart-table__table .pharmacy-col--actions {
+  width: 108px;
+}
+
+.pharmacy-cart-table__table thead th.pharmacy-cart-table__num {
+  text-align: right;
+  padding-left: 6px;
+  padding-right: 10px;
+}
+
+.pharmacy-cart-table__num {
+  padding-left: 6px !important;
+  padding-right: 10px !important;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.pharmacy-cart-table__money {
+  display: block;
+  width: 100%;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1.25;
+}
+
+.pharmacy-cart-table__num .pharmacy-cart-table__piece-qty,
+.pharmacy-cart-table__num .pharmacy-cart-table__piece-price-hint {
+  display: block;
+  width: 100%;
+  text-align: right;
+}
+
+.pharmacy-cart-table__mono.pharmacy-cart-table__ikpu {
+  font-size: 0.6875rem;
+}
+
+.pharmacy-cart-table__mono.pharmacy-cart-table__ikpu .pharmacy-cart-table__cell-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}

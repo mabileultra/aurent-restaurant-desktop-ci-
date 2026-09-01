@@ -1,0 +1,99 @@
+/* Компактная аптечная касса: меньше отступов, поиск в одну строку с заголовком */
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
+  grid-template-rows: minmax(88px, 0.88fr) minmax(120px, 1.12fr);
+  gap: 4px;
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head {
+  padding: 4px 8px;
+  gap: 6px;
+  min-height: 0;
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-title {
+  font-size: 0.625rem;
+  flex-shrink: 0;
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head--search {
+  display: grid;
+  grid-template-columns: auto minmax(120px, 1fr) auto;
+  align-items: center;
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 6px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact::placeholder {
+  color: var(--pharm-muted);
+}
+
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact:focus {
+  border-color: var(--pharm-accent);
+  box-shadow: 0 0 0 2px rgb(47 111 237 / 0.14);
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  grid-template-columns:
+    minmax(40px, 4.5cqi)
+    minmax(40px, 4.5cqi)
+    repeat(5, minmax(0, 1fr))
+    minmax(40px, 4.5cqi);
+}
+
+/* Нижнее меню — ниже и компактнее на аптечной кассе */
+.cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: 68px;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__btn {
+  padding: 5px 4px;
+  gap: 3px;
+  font-size: 0.625rem;
+  border-radius: 10px;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__btn svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav-shell.is-collapsed {
+  --cashier-bottom-nav-h: 40px;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav-shell.is-collapsed .cashier-bottom-nav {
+  max-width: 88px;
+  margin-left: auto;
+  grid-template-columns: minmax(36px, 1fr) minmax(36px, 1fr);
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav-shell.is-collapsed .cashier-bottom-nav__btn--keyboard {
+  display: none;
+}
+
+.cashier-app--pharmacy-pos .cashier-register__bottom-nav {
+  padding-bottom: 2px;
+}
+
+@media (min-width: 1024px) and (max-height: 820px) {
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
+    grid-template-rows: minmax(84px, 0.86fr) minmax(116px, 1.14fr);
+  }
+
+  .cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) {
+    --cashier-bottom-nav-h: 64px;
+  }
+}

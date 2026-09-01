@@ -107,11 +107,15 @@ export function useCashierLayoutShell() {
   const touchLayout = useCashierPosTouchLayout();
   const posDesktop = useCashierPosDesktopLayout();
 
+  const isPharmacyRoute = location.pathname.startsWith('/cashier/pharmacy');
+
   const shellClassName = `cashier-app ${themeClass} d-flex cashier-app--bottom-nav${
     isPosRoute ? ' cashier-app--pos-screen' : ''
   }${posDesktop && isPosRoute ? ' cashier-app--pos-desktop' : ''}${
     touchLayout ? ' cashier-app--touch' : ''
-  }${isDesktopApp ? ' cashier-app--desktop' : ''}`;
+  }${isDesktopApp ? ' cashier-app--desktop' : ''}${
+    isPharmacyRoute ? ' cashier-app--pharmacy-pos' : ''
+  }`;
 
   return {
     t,

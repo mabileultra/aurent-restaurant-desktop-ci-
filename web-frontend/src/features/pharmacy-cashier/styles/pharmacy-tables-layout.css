@@ -35,57 +35,7 @@
   min-width: 1120px;
 }
 
-/* Чек: 13 колонок */
-.pharmacy-cart-table__table th:nth-child(1),
-.pharmacy-cart-table__table td:nth-child(1) {
-  width: 17%;
-}
-
-.pharmacy-cart-table__table th:nth-child(2),
-.pharmacy-cart-table__table td:nth-child(2),
-.pharmacy-cart-table__table th:nth-child(3),
-.pharmacy-cart-table__table td:nth-child(3),
-.pharmacy-cart-table__table th:nth-child(4),
-.pharmacy-cart-table__table td:nth-child(4) {
-  width: 6%;
-}
-
-.pharmacy-cart-table__table th:nth-child(5),
-.pharmacy-cart-table__table td:nth-child(5) {
-  width: 5%;
-}
-
-.pharmacy-cart-table__table th:nth-child(6),
-.pharmacy-cart-table__table td:nth-child(6),
-.pharmacy-cart-table__table th:nth-child(7),
-.pharmacy-cart-table__table td:nth-child(7),
-.pharmacy-cart-table__table th:nth-child(8),
-.pharmacy-cart-table__table td:nth-child(8),
-.pharmacy-cart-table__table th:nth-child(11),
-.pharmacy-cart-table__table td:nth-child(11) {
-  width: 6%;
-}
-
-.pharmacy-cart-table__table th:nth-child(9),
-.pharmacy-cart-table__table td:nth-child(9) {
-  width: 9%;
-}
-
-.pharmacy-cart-table__table th:nth-child(10),
-.pharmacy-cart-table__table td:nth-child(10) {
-  width: 6%;
-}
-
-.pharmacy-cart-table__table th:nth-child(12),
-.pharmacy-cart-table__table td:nth-child(12) {
-  width: 8%;
-}
-
-.pharmacy-cart-table__table th:nth-child(13),
-.pharmacy-cart-table__table td:nth-child(13) {
-  width: 108px;
-  min-width: 108px;
-}
+/* Чек: колонки задаются через colgroup в pharmacy-cart-table-columns.css */
 
 /* Поиск: 12 колонок */
 .pharmacy-search__table th:nth-child(1),
