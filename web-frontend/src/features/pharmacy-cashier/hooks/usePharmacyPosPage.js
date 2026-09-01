@@ -12,6 +12,7 @@ import { useCartStore } from '../../../store/cartStore';
 import { usePosProductsCatalog } from '../../cashier/hooks/pos/usePosProductsCatalog';
 import { usePosCheckout } from '../../cashier/hooks/pos/usePosCheckout';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
+import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();

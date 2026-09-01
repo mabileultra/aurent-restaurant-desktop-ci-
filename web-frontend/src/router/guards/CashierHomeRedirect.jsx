@@ -4,6 +4,7 @@ import { storeApi } from '../../services/api';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useAuthStore } from '../../store/authStore';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
+import CashierRouteLoading from '../../components/layout/cashier/CashierRouteLoading';
 
 export default function CashierHomeRedirect() {
   const user = useAuthStore((s) => s.user);
@@ -25,7 +26,7 @@ export default function CashierHomeRedirect() {
   }
 
   if (isPending) {
-    return null;
+    return <CashierRouteLoading />;
   }
 
   const type = normalizeBusinessTypeCode(store?.businessType);

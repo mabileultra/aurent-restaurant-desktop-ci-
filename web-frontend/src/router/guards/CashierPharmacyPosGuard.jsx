@@ -4,6 +4,7 @@ import { storeApi } from '../../services/api';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
 import { resolveCashierRegisterPath } from '../../utils/cashierRegisterRoute';
+import CashierRouteLoading from '../../components/layout/cashier/CashierRouteLoading';
 
 /** Аптечная касса — только для магазинов PHARMACY. */
 export default function CashierPharmacyPosGuard({ children }) {
@@ -21,7 +22,7 @@ export default function CashierPharmacyPosGuard({ children }) {
   }
 
   if (isPending) {
-    return null;
+    return <CashierRouteLoading />;
   }
 
   const type = normalizeBusinessTypeCode(store?.businessType);

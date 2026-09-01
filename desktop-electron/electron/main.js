@@ -2,9 +2,10 @@
  * Aurent Cashier — Electron main process
  * Окно 1024×768+, zoomFactor 1, зелёная иконка.
  */
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
 const { loadDesktopConfig, buildLoginUrl } = require('./config/desktopConfig');
