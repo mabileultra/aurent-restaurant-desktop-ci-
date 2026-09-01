@@ -15,7 +15,7 @@ const {
   reloadCashierLogin,
 } = require('./session/cashierSession');
 
-const ICON_PNG = path.join(__dirname, '../build/icon.png');
+const { attachDesktopNavigationGuard } = require('./navigation/desktopNavigationGuard');
 
 let mainWindow = null;
 let desktopConfig = null;
@@ -41,7 +41,7 @@ function createWindow(startUrl) {
     minWidth: 1024,
     minHeight: 768,
     show: false,
-    autoHideMenuBar: process.platform === 'darwin',
+    autoHideMenuBar: false,
     icon: resolveIcon(),
     backgroundColor: '#e9eef4',
     webPreferences: {
@@ -67,6 +67,9 @@ function createWindow(startUrl) {
   });
 
   mainWindow.once('ready-to-show', () => {
+    if (process.platform === 'win32') {
+      mainWindow.setMenuBarVisibility(true);
+    }
     mainWindow.show();
     mainWindow.focus();
   });
@@ -87,6 +90,8 @@ h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475
   });
 
   mainWindow.loadURL(loginUrl);
+
+  attachDesktopNavigationGuard(mainWindow, refreshDesktopConfig);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);

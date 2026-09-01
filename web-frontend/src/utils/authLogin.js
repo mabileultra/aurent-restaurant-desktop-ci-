@@ -5,7 +5,10 @@ export const ADMIN_LOGIN_QUERY = 'admin=1';
 export const COMPANY_CODE_STORAGE_KEY = 'pos.companyLoginCode';
 
 export function isDesktopCashier() {
-  return typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
+  if (typeof window === 'undefined') return false;
+  if (window.desktopCashier?.isDesktop) return true;
+  // Запасной признак: preload мог не успеть или старая сборка без bridge
+  return typeof navigator !== 'undefined' && /Electron/i.test(navigator.userAgent);
 }
 
 export function isAuthPage(pathname = '') {
