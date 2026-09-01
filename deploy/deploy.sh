@@ -449,3 +449,23 @@ if bash deploy/smoke-check.sh; then
 else
   echo "==> WARN: smoke check failed — см. deploy/smoke-check.sh и deploy/RUNBOOK.md"
 fi
+
+if [[ "${OPS_INSTALL_HEALTH_CRON:-}" == "true" ]]; then
+  echo "==> Ops alerts cron (OPS_INSTALL_HEALTH_CRON=true)..."
+  bash deploy/health-alert.sh install-cron
+fi
+
+echo "==> Health alert check..."
+if bash deploy/health-alert.sh check; then
+  echo "==> Health alert: OK"
+else
+  echo "==> WARN: health alert issues — deploy/RUNBOOK.md §9"
+fi
+
+if [[ -n "${SENTRY_DSN:-}" && -n "${VITE_SENTRY_DSN:-}" ]]; then
+  echo "==> Sentry: backend + frontend DSN заданы"
+elif [[ -n "${SENTRY_DSN:-}" ]]; then
+  echo "==> WARN: Sentry backend задан, но нет VITE_SENTRY_DSN — frontend не отправит ошибки"
+else
+  echo "==> Sentry: не настроен (опционально: SENTRY_DSN + VITE_SENTRY_DSN в .env)"
+fi
