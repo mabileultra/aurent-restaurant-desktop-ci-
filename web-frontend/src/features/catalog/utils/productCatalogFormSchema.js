@@ -17,6 +17,10 @@ export function createProductCatalogFormSchema(t) {
     lowStockAlert: z.coerce.number().min(0).optional(),
     storageLocation: z.string().optional(),
     barcode: z.string().optional(),
+    plu: z
+      .string()
+      .optional()
+      .refine((v) => !v || /^\d{1,5}$/.test(v), t('productCatalog.pluDigits')),
     externalProductId: z.string().optional(),
     ikpu: z.string().optional(),
     productType: z.enum(['RETAIL', 'MATERIAL', 'DISH', 'SERVICE']),

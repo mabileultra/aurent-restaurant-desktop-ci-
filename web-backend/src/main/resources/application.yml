@@ -250,3 +250,9 @@ springdoc:
     tags-sorter: alpha
     display-request-duration: true
   show-actuator: false
+
+# Sentry disabled when SENTRY_DSN is empty (no behavior change in dev/local).
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:local}
+  send-default-pii: false

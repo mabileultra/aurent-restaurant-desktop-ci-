@@ -18,7 +18,9 @@ public record SystemOverviewResponse(
     HttpInfo http,
 
     int errorCount24h,
-    int warnCount24h
+    int warnCount24h,
+
+    OpsHealthInfo ops
 ) {
 
     public record CpuInfo(

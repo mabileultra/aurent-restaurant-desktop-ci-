@@ -2,6 +2,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './i18n/config';
+import { initSentry } from './observability/initSentry';
 import App from './App.jsx';
 import './index.css';
 import { syncRootTheme, syncPublicTheme } from './store/themeStore';
@@ -13,6 +14,7 @@ import { syncPrintCssVars } from './utils/syncPrintCssVars';
 import { syncReceiptDisplayCssVars } from './utils/syncReceiptDisplayCssVars';
 import { resetCashierDocumentUiState } from './utils/resetCashierDocumentUiState';
 resetCashierDocumentUiState();
+initSentry();
 
 const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');

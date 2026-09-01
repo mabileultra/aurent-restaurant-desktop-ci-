@@ -23,6 +23,7 @@ export function buildProductCatalogPayload({
     lowStockAlert: values.lowStockAlert,
     storageLocation: values.storageLocation?.trim() || null,
     barcode: values.barcode || undefined,
+    plu: values.plu?.trim() || undefined,
     externalProductId: values.externalProductId || undefined,
     ikpu: values.ikpu || undefined,
     productType: values.productType,

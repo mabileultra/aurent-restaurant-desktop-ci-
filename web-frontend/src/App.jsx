@@ -12,9 +12,11 @@ import DesktopApiBootstrap from './components/shared/DesktopApiBootstrap';
 import TenantDisplayBootstrap from './components/shared/TenantDisplayBootstrap';
 import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
+import ObservabilityErrorBoundary from './observability/ObservabilityErrorBoundary';
 
 export default function App() {
   return (
+    <ObservabilityErrorBoundary>
     <QueryClientProvider client={queryClient}>
       <HtmlLangSync />
       <AppViewportSync />
@@ -35,5 +37,6 @@ export default function App() {
       <ThemedToaster />
       <VirtualKeyboardOverlay />
     </QueryClientProvider>
+    </ObservabilityErrorBoundary>
   );
 }

@@ -1,6 +1,7 @@
 import { RefreshCcw } from 'lucide-react';
 import { BaseButton, PageLayout } from '../../../components/ui';
 import PlatformMonitoringStatGrid from '../components/monitoring/PlatformMonitoringStatGrid';
+import PlatformMonitoringOpsStrip from '../components/monitoring/PlatformMonitoringOpsStrip';
 import PlatformMonitoringTabBar from '../components/monitoring/PlatformMonitoringTabBar';
 import PlatformMonitoringTabPanels from '../components/monitoring/PlatformMonitoringTabPanels';
 import { usePlatformMonitoringPage } from '../hooks/usePlatformMonitoringPage';
@@ -27,6 +28,7 @@ export default function PlatformMonitoringPage() {
       )}
     >
       <PlatformMonitoringStatGrid t={p.t} overview={p.overview} cpuPercent={p.cpuPercent} />
+      <PlatformMonitoringOpsStrip t={p.t} overview={p.overview} />
       <PlatformMonitoringTabBar tabs={p.tabs} activeTab={p.tab} onTabChange={p.setTab} />
       <PlatformMonitoringTabPanels tab={p.tab} p={p} />
     </PageLayout>

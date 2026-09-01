@@ -7,10 +7,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint src --ext .js,.jsx",
-    "verify:offline": "node scripts/verify-offline-checkout.mjs && node scripts/verify-offline-catalog.mjs && node scripts/verify-offline-connectivity.mjs"
+    "verify:offline": "node scripts/verify-offline-checkout.mjs && node scripts/verify-offline-catalog.mjs && node scripts/verify-offline-connectivity.mjs",
+    "check:modules": "node ../scripts/check-module-sync.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.3",
+    "@sentry/react": "^8.55.2",
     "@tanstack/react-query": "^5.17.0",
     "axios": "^1.6.2",
     "bootstrap": "^5.3.3",

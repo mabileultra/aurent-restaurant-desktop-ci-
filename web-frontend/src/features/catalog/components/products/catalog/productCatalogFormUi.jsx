@@ -5,13 +5,14 @@ export const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3
 export const OWNER_TYPES = ['OWN', 'COMMISSION', 'AGENT'];
 export const VAT_OPTIONS = [0, 12, 15, 16];
 
-export function ProductCatalogField({ label, required, error, children }) {
+export function ProductCatalogField({ label, required, error, hint, children }) {
   return (
     <div>
       <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
         {required && <span className="text-red-400">* </span>}
         {label}
       </label>
+      {hint ? <p className="mb-1 text-xs text-slate-500 dark:text-slate-500">{hint}</p> : null}
       {children}
       {error && <p className="text-red-400 text-xs mt-1">{error}</p>}
     </div>

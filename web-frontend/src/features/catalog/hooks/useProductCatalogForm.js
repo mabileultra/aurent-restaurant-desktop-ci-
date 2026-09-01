@@ -98,6 +98,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       initialStock: full.stockQuantity ?? 0,
       storageLocation: full.storageLocation ?? '',
       barcode: full.barcode ?? '',
+      plu: full.plu ?? '',
       externalProductId: full.externalProductId ?? '',
       ikpu: full.ikpu ?? '',
       productType: full.productType || (full.saleType === 'SERVICE' ? 'SERVICE' : 'RETAIL'),

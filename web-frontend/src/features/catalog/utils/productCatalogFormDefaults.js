@@ -11,6 +11,7 @@ export const defaultProductCatalogFormValues = {
   unitOfMeasure: 'pcs',
   productType: 'RETAIL',
   saleType: 'PIECE',
+  plu: '',
   unitCode: 'PCS',
   quantityScale: 0,
   allowFraction: false,

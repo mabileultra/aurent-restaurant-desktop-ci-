@@ -84,6 +84,7 @@ export default function ProductCatalogModalFormBody({
           errors={form.errors}
           extraBarcodes={form.extraBarcodes}
           setExtraBarcodes={form.setExtraBarcodes}
+          saleTypeWatch={form.saleTypeWatch}
         />
       ) : null}
     </>

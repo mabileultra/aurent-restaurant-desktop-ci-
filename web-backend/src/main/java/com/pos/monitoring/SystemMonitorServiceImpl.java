@@ -5,6 +5,7 @@ import com.pos.dto.monitoring.MetricDetail;
 import com.pos.dto.monitoring.MetricSummary;
 import com.pos.dto.monitoring.SystemOverviewResponse;
 import com.pos.monitoring.log.LogEventBuffer;
+import com.pos.monitoring.ops.OpsHealthSnapshotProvider;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.Measurement;
 import io.micrometer.core.instrument.Meter;
@@ -34,6 +35,7 @@ public class SystemMonitorServiceImpl implements SystemMonitorService {
     private final MeterRegistry meterRegistry;
     private final Environment environment;
     private final LogEventBuffer logBuffer;
+    private final OpsHealthSnapshotProvider opsHealthSnapshotProvider;
 
     @Value("${spring.application.name:pos-backend}")
     private String appName;
@@ -54,7 +56,8 @@ public class SystemMonitorServiceImpl implements SystemMonitorService {
             buildDatabase(),
             buildHttp(),
             logBuffer.countSince(since24h, "ERROR"),
-            logBuffer.countSince(since24h, "WARN")
+            logBuffer.countSince(since24h, "WARN"),
+            opsHealthSnapshotProvider.snapshot()
         );
     }
 

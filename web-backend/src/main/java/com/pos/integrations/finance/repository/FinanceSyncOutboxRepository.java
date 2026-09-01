@@ -31,4 +31,6 @@ public interface FinanceSyncOutboxRepository extends JpaRepository<FinanceSyncOu
     Page<FinanceSyncOutbox> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     Page<FinanceSyncOutbox> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
+    long countByStatus(String status);
 }

@@ -7,7 +7,10 @@ export default function ProductCatalogBarcodesSection({
   errors,
   extraBarcodes,
   setExtraBarcodes,
+  saleTypeWatch,
 }) {
+  const showPlu = saleTypeWatch === 'WEIGHT';
+
   return (
     <section className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
@@ -16,6 +19,21 @@ export default function ProductCatalogBarcodesSection({
       <ProductCatalogField label={t('productModal.barcode')} error={errors.barcode?.message}>
         <input {...register('barcode')} className={inputCls} />
       </ProductCatalogField>
+      {showPlu ? (
+        <ProductCatalogField
+          label={t('productCatalog.pluLabel')}
+          hint={t('productCatalog.pluHint')}
+          error={errors.plu?.message}
+        >
+          <input
+            {...register('plu')}
+            className={inputCls}
+            inputMode="numeric"
+            maxLength={5}
+            placeholder="12345"
+          />
+        </ProductCatalogField>
+      ) : null}
       {extraBarcodes.map((val, idx) => (
         <div key={idx} className="flex gap-2">
           <input

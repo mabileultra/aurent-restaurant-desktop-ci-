@@ -441,6 +441,9 @@ services:
       TOMCAT_MAX_THREADS: ${TOMCAT_MAX_THREADS:-100}
       SPRINGDOC_SWAGGER_UI_ENABLED: ${SPRINGDOC_SWAGGER_UI_ENABLED:-false}
       SPRINGDOC_API_DOCS_ENABLED: ${SPRINGDOC_API_DOCS_ENABLED:-false}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
@@ -503,6 +506,9 @@ services:
         VITE_API_URL: /api/v1
         VITE_SUPPORT_PHONE: ${VITE_SUPPORT_PHONE:-}
         VITE_SUPPORT_TELEGRAM_BOT: ${VITE_SUPPORT_TELEGRAM_BOT:-}
+        VITE_SENTRY_DSN: ${VITE_SENTRY_DSN:-}
+        VITE_SENTRY_ENVIRONMENT: ${VITE_SENTRY_ENVIRONMENT:-production}
+        VITE_SENTRY_TRACES_SAMPLE_RATE: ${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.05}
     container_name: aurent-pos-frontend
     restart: unless-stopped
     depends_on:
