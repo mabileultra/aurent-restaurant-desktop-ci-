@@ -10,8 +10,8 @@
 
 .login-card {
   width: min(100%, 28rem);
-  background: var(--ps-surface);
-  border: 1px solid rgb(226 232 240 / 0.9);
+  background: var(--ps-bg-card);
+  border: 1px solid var(--ps-line);
   border-radius: 1.25rem;
   box-shadow: var(--ps-shadow);
   padding: 2rem 1.75rem 1.5rem;
@@ -76,7 +76,7 @@
 .login-form__label {
   font-size: 0.8125rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--ps-muted);
 }
 
 .login-form__forgot {
@@ -109,7 +109,7 @@
 .login-form__input {
   width: 100%;
   border: 1px solid var(--ps-line);
-  background: #f8fafc;
+  background: rgb(0 0 0 / 0.25);
   border-radius: 0.75rem;
   padding: 0.85rem 2.75rem 0.85rem 2.55rem;
   font-size: 0.9375rem;
@@ -119,9 +119,9 @@
 }
 
 .login-form__input:focus {
-  background: #fff;
-  border-color: rgb(0 104 71 / 0.45);
-  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.12);
+  background: rgb(0 0 0 / 0.35);
+  border-color: rgb(43 140 255 / 0.55);
+  box-shadow: 0 0 0 3px rgb(43 140 255 / 0.18);
 }
 
 .login-form__eye {
@@ -170,17 +170,17 @@
   border: 0;
   border-radius: 0.85rem;
   padding: 0.95rem 1rem;
-  background: var(--ps-green);
+  background: var(--ps-accent);
   color: #fff;
   font-size: 0.975rem;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 12px 28px rgb(0 104 71 / 0.22);
+  box-shadow: 0 12px 28px rgb(43 140 255 / 0.28);
   transition: background 0.15s ease, transform 0.1s ease;
 }
 
 .login-form__submit:hover:not(:disabled) {
-  background: var(--ps-green-hover);
+  background: var(--ps-accent-hover);
 }
 
 .login-form__submit:disabled {

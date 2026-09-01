@@ -1,0 +1,49 @@
+.public-download-strip {
+  width: var(--ps-container);
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+}
+
+.public-download-strip__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--ps-radius);
+  background: linear-gradient(90deg, #dc2626, #b91c1c);
+  color: #fff;
+}
+
+.public-download-strip__label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-right: 0.5rem;
+}
+
+.public-download-strip__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.5rem;
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.public-download-strip__item:hover {
+  background: rgb(255 255 255 / 0.22);
+}
+
+.public-download-strip__support {
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.8rem;
+  color: var(--ps-muted);
+}

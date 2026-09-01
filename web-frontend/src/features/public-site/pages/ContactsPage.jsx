@@ -1,34 +1,41 @@
 import { useTranslation } from 'react-i18next';
 import PublicSitePageShell from '../components/PublicSitePageShell';
 import PublicLeadForm from '../components/PublicLeadForm';
+import PublicSectionTitle from '../components/shared/PublicSectionTitle';
+import { PUBLIC_SITE_EMAIL, PUBLIC_SITE_PHONE, PUBLIC_SITE_PHONE_HREF } from '../constants/publicSiteMedia';
 
 export default function ContactsPage() {
   const { t } = useTranslation();
 
   return (
     <PublicSitePageShell>
-      <section className="public-static-page__hero">
-        <p className="public-static-page__eyebrow">{t('publicSite.contacts.eyebrow')}</p>
-        <h1 className="public-static-page__title">{t('publicSite.contacts.title')}</h1>
-        <p className="public-static-page__lead">{t('publicSite.contacts.subtitle')}</p>
-      </section>
-
-      <section className="public-static-page__content public-static-page__content--split">
-        <div className="public-static-page__panel">
-          <h2 className="public-static-page__panel-title">{t('publicSite.contacts.formTitle')}</h2>
-          <p className="public-static-page__panel-text">{t('publicSite.contacts.formHint')}</p>
+      <div className="public-page-hero">
+        <PublicSectionTitle
+          eyebrowKey="publicSite.contacts.eyebrow"
+          titleKey="publicSite.contacts.title"
+          leadKey="publicSite.contacts.subtitle"
+        />
+      </div>
+      <div className="public-page-content public-page-content--split">
+        <div className="public-panel">
+          <h2 className="public-panel__title">{t('publicSite.contacts.formTitle')}</h2>
+          <p className="public-panel__text">{t('publicSite.contacts.formHint')}</p>
           <PublicLeadForm leadType="QUESTION" source="contacts" />
         </div>
-        <aside className="public-static-page__aside">
-          <h2 className="public-static-page__panel-title">{t('publicSite.contacts.infoTitle')}</h2>
-          <ul className="public-static-page__info-list">
+        <aside className="public-panel">
+          <h2 className="public-panel__title">{t('publicSite.contacts.infoTitle')}</h2>
+          <ul className="public-info-list">
             <li>
               <span>{t('publicSite.contacts.phoneLabel')}</span>
-              <strong>{t('publicSite.contacts.phoneValue')}</strong>
+              <strong>
+                <a href={PUBLIC_SITE_PHONE_HREF}>{PUBLIC_SITE_PHONE}</a>
+              </strong>
             </li>
             <li>
               <span>{t('publicSite.contacts.emailLabel')}</span>
-              <strong>{t('publicSite.contacts.emailValue')}</strong>
+              <strong>
+                <a href={`mailto:${PUBLIC_SITE_EMAIL}`}>{PUBLIC_SITE_EMAIL}</a>
+              </strong>
             </li>
             <li>
               <span>{t('publicSite.contacts.hoursLabel')}</span>
@@ -36,7 +43,7 @@ export default function ContactsPage() {
             </li>
           </ul>
         </aside>
-      </section>
+      </div>
     </PublicSitePageShell>
   );
 }

@@ -1,9 +1,9 @@
 import PublicSiteHeader from '../components/PublicSiteHeader';
 import PublicSiteFooter from '../components/PublicSiteFooter';
+import PublicFloatingChat from '../components/layout/PublicFloatingChat';
 import '../../../styles/public-site/public-site-shell.css';
-import '../../../styles/public-site/public-static-page.css';
 
-export default function PublicSitePageShell({ children, showLoginCta = true }) {
+export default function PublicSitePageShell({ children, showLoginCta = true, showChat = true }) {
   return (
     <div className="public-site">
       <PublicSiteHeader showLoginCta={showLoginCta} />
@@ -11,6 +11,7 @@ export default function PublicSitePageShell({ children, showLoginCta = true }) {
         {children}
       </main>
       <PublicSiteFooter />
+      {showChat ? <PublicFloatingChat /> : null}
     </div>
   );
 }
