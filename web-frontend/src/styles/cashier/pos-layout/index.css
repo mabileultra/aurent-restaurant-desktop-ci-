@@ -2,6 +2,7 @@
 @import './register-table.css';
 @import './register-cart-cols.css';
 @import './register-layout-adaptive.css';
+@import './register-cart-compact.css';
 @import './qty-control.css';
 @import './order-panel-totals-foot.css';
 @import './catalog-search.css';

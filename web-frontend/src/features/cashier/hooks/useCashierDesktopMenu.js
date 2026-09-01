@@ -156,6 +156,32 @@ export function useCashierDesktopMenu() {
     }
   };
 
+  useEffect(() => {
+    if (!isDesktopCashier()) return undefined;
+    const onKey = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+        e.preventDefault();
+        if (typeof window.desktopCashier?.openServerSetup === 'function') {
+          window.desktopCashier.openServerSetup().catch(() => {
+            /* cancelled */
+          });
+        }
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
+
+  const openServerSetup = async () => {
+    close();
+    if (typeof window.desktopCashier?.openServerSetup !== 'function') return;
+    try {
+      await window.desktopCashier.openServerSetup();
+    } catch {
+      /* cancelled */
+    }
+  };
+
   if (!isDesktopCashier()) {
     return null;
   }
@@ -176,6 +202,7 @@ export function useCashierDesktopMenu() {
     openScalePicker,
     openBarcodePage,
     checkAppUpdates,
+    openServerSetup,
     printerLabel: printerName || t('desktop.receiptPrinterNotSet'),
     labelPrinterLabel: labelPrinterName || t('desktop.receiptPrinterNotSet'),
     scaleLabel: scalePort || t('desktop.scaleNotSet'),

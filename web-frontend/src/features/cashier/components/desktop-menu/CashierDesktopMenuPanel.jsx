@@ -8,6 +8,7 @@ import {
   Printer,
   RefreshCw,
   Scale,
+  Server,
   Tag,
 } from 'lucide-react';
 import BrandMark from '../../../../components/shared/BrandMark';
@@ -33,6 +34,7 @@ export default function CashierDesktopMenuPanel({
     openScalePicker,
     openBarcodePage,
     checkAppUpdates,
+    openServerSetup,
   } = menu;
 
   const label = appName || 'Aurent';
@@ -67,6 +69,16 @@ export default function CashierDesktopMenuPanel({
         <ChevronDown size={16} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
       </button>
       <div className="cashier-desktop-menu__panel" role="menu">
+        <button
+          type="button"
+          className="cashier-desktop-menu__item"
+          role="menuitem"
+          onClick={openServerSetup}
+        >
+          <Server size={18} strokeWidth={2} aria-hidden />
+          <span>{t('desktop.serverSetup')}</span>
+        </button>
+        <div className="cashier-desktop-menu__sep" role="separator" />
         <button
           type="button"
           className="cashier-desktop-menu__item cashier-desktop-menu__item--stacked"

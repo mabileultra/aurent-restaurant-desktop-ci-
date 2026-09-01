@@ -1,5 +1,6 @@
 import { Route, Navigate } from 'react-router-dom';
 import AuthRoute from './guards/AuthRoute';
+import DesktopPublicGuard from './guards/DesktopPublicGuard';
 import {
   LoginPage,
   CashierPinLoginPage,
@@ -10,7 +11,14 @@ import {
 
 export const publicRoutes = (
   <>
-    <Route path="/" element={<PublicHomePage />} />
+    <Route
+      path="/"
+      element={(
+        <DesktopPublicGuard>
+          <PublicHomePage />
+        </DesktopPublicGuard>
+      )}
+    />
     <Route path="/about" element={<Navigate to={{ pathname: '/', hash: '#about' }} replace />} />
     <Route path="/pricing" element={<Navigate to={{ pathname: '/', hash: '#pricing' }} replace />} />
     <Route path="/equipment" element={<Navigate to={{ pathname: '/', hash: '#equipment' }} replace />} />

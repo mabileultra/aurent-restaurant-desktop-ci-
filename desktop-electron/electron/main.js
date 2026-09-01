@@ -6,27 +6,42 @@ const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
-const { initAutoUpdater } = require('./autoUpdaterBridge');
-const { resolveDesktopUrls } = require('../config/desktopUrls');
+const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
+const { loadDesktopConfig, buildLoginUrl } = require('./config/desktopConfig');
+const { buildAppMenu } = require('./menu/appMenu');
+const {
+  openServerSettings,
+  ensureInitialServerConfig,
+  reloadCashierLogin,
+} = require('./session/cashierSession');
 
-const { webUrl: WEB_URL, apiUrl: API_URL } = resolveDesktopUrls({ isPackaged: app.isPackaged });
 const ICON_PNG = path.join(__dirname, '../build/icon.png');
 
 let mainWindow = null;
+let desktopConfig = null;
 
 function resolveIcon() {
   if (fs.existsSync(ICON_PNG)) return ICON_PNG;
   return undefined;
 }
 
-function createWindow() {
+function refreshDesktopConfig() {
+  desktopConfig = loadDesktopConfig({ isPackaged: app.isPackaged });
+  return desktopConfig;
+}
+
+function getStartupLoginUrl() {
+  return buildLoginUrl(refreshDesktopConfig());
+}
+
+function createWindow(startUrl) {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 1024,
     minHeight: 768,
     show: false,
-    autoHideMenuBar: true,
+    autoHideMenuBar: process.platform === 'darwin',
     icon: resolveIcon(),
     backgroundColor: '#e9eef4',
     webPreferences: {
@@ -56,20 +71,22 @@ function createWindow() {
     mainWindow.focus();
   });
 
+  const loginUrl = startUrl || getStartupLoginUrl();
+
   mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    if (validatedURL !== WEB_URL) return;
+    if (validatedURL !== loginUrl) return;
     const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Aurent Cashier</title>
 <style>body{margin:0;font-family:system-ui,sans-serif;background:#e9eef4;color:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
 .card{max-width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgb(15 23 42 / 0.12)}
 h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475569}code{font-size:.85rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;word-break:break-all}</style></head>
 <body><div class="card"><h1>Не удалось загрузить интерфейс</h1>
-<p>Проверьте интернет и попробуйте снова.</p>
+<p>Проверьте интернет и настройки сервера (Вид → Настройка сервера).</p>
 <p><code>${validatedURL}</code></p>
 <p>Ошибка ${errorCode}: ${errorDescription}</p></div></body></html>`;
     mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
   });
 
-  mainWindow.loadURL(WEB_URL);
+  mainWindow.loadURL(loginUrl);
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
@@ -77,11 +94,43 @@ h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475
   });
 }
 
-app.whenReady().then(() => {
-  createWindow();
-  initAutoUpdater({ webUrl: WEB_URL });
+async function handleOpenServerSettings() {
+  return openServerSettings({
+    mainWindow,
+    onConfigSaved: (next) => {
+      desktopConfig = next;
+    },
+  });
+}
+
+app.whenReady().then(async () => {
+  refreshDesktopConfig();
+
+  const hasConfig = await ensureInitialServerConfig();
+  if (!hasConfig) {
+    app.quit();
+    return;
+  }
+
+  refreshDesktopConfig();
+
+  buildAppMenu({
+    openServerSettings: handleOpenServerSettings,
+    reloadPage: async () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        await reloadCashierLogin(mainWindow, refreshDesktopConfig());
+      }
+    },
+    checkForUpdates: checkForUpdatesNow,
+  });
+
+  createWindow(getStartupLoginUrl());
+  initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
+
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) {
+      createWindow(getStartupLoginUrl());
+    }
   });
 });
 
@@ -89,9 +138,13 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-ipcMain.handle('desktop:getApiBaseUrl', () => API_URL);
-ipcMain.handle('desktop:getCompanyLoginCode', () => process.env.AURENT_COMPANY_CODE || '');
-ipcMain.handle('desktop:reload', () => mainWindow?.reload());
+ipcMain.handle('desktop:getApiBaseUrl', () => refreshDesktopConfig().apiUrl);
+ipcMain.handle('desktop:getCompanyLoginCode', () => refreshDesktopConfig().companyLoginCode || '');
+ipcMain.handle('desktop:reload', () => {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  return reloadCashierLogin(mainWindow, refreshDesktopConfig());
+});
+ipcMain.handle('desktop:open-server-setup', () => handleOpenServerSettings());
 ipcMain.handle('desktop:toggleFullscreen', () => {
   if (!mainWindow) return false;
   mainWindow.setFullScreen(!mainWindow.isFullScreen());

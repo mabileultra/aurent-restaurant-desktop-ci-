@@ -71,33 +71,32 @@ function scheduleBackgroundChecks() {
   setInterval(check, 4 * 60 * 60 * 1000);
 }
 
-function registerAutoUpdaterIpc() {
-  ipcMain.handle('desktop:checkForUpdates', async () => {
-    if (!app.isPackaged) {
-      return { ok: true, updateAvailable: false, reason: 'dev' };
-    }
-    if (!isUpdaterEnabled()) {
-      return { ok: false, error: 'update_feed_unconfigured' };
-    }
+function checkForUpdatesNow() {
+  if (!app.isPackaged) {
+    return Promise.resolve({ ok: true, updateAvailable: false, reason: 'dev' });
+  }
+  if (!isUpdaterEnabled()) {
+    return Promise.resolve({ ok: false, error: 'update_feed_unconfigured' });
+  }
 
-    try {
-      const result = await autoUpdater.checkForUpdates();
+  return autoUpdater
+    .checkForUpdates()
+    .then((result) => {
       const remoteVersion = result?.updateInfo?.version;
       const currentVersion = app.getVersion();
-      const updateAvailable = Boolean(
-        remoteVersion && remoteVersion !== currentVersion,
-      );
-
+      const updateAvailable = Boolean(remoteVersion && remoteVersion !== currentVersion);
       return {
         ok: true,
         updateAvailable,
         version: remoteVersion || currentVersion,
         currentVersion,
       };
-    } catch (error) {
-      return { ok: false, error: error?.message || String(error) };
-    }
-  });
+    })
+    .catch((error) => ({ ok: false, error: error?.message || String(error) }));
+}
+
+function registerAutoUpdaterIpc() {
+  ipcMain.handle('desktop:checkForUpdates', () => checkForUpdatesNow());
 
   ipcMain.handle('desktop:quitAndInstallUpdate', () => {
     if (!isUpdaterEnabled()) return false;
@@ -124,4 +123,4 @@ function initAutoUpdater({ webUrl }) {
   scheduleBackgroundChecks();
 }
 
-module.exports = { initAutoUpdater, isUpdaterEnabled };
+module.exports = { initAutoUpdater, isUpdaterEnabled, checkForUpdatesNow };

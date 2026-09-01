@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import RouteFallback from './RouteFallback';
+import AppFallbackRedirect from './guards/AppFallbackRedirect';
 import { publicRoutes } from './public.routes';
 import { cashierRoutes } from './cashier.routes';
 import { platformRoutes } from './platform.routes';
@@ -14,7 +15,7 @@ export default function AppRoutes() {
         {cashierRoutes}
         {platformRoutes}
         {adminRoutes}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<AppFallbackRedirect />} />
       </Routes>
     </Suspense>
   );

@@ -106,7 +106,7 @@ export default function PosOrderPanelLine({
             onClick={() => onQtyDelta(item.lineId, -1)}
             aria-label={t('pos.qtyDecrease')}
           >
-            <Minus size={18} strokeWidth={2.25} />
+            <Minus size={15} strokeWidth={2.25} />
           </button>
           {isEditingQty ? (
             <input
@@ -147,7 +147,7 @@ export default function PosOrderPanelLine({
             onClick={() => onQtyDelta(item.lineId, 1)}
             aria-label={t('pos.qtyIncrease')}
           >
-            <Plus size={18} strokeWidth={2.25} />
+            <Plus size={15} strokeWidth={2.25} />
           </button>
         </div>
       </div>
@@ -166,7 +166,7 @@ export default function PosOrderPanelLine({
           aria-label={t('pos.removeLine', { name: item.name })}
           title={t('common.delete')}
         >
-          <Trash2 size={16} strokeWidth={2} />
+          <Trash2 size={14} strokeWidth={2} />
         </button>
       </div>
 
