@@ -1,49 +1,72 @@
 .public-download-strip {
   width: var(--ps-container);
   margin: 0 auto;
-  padding: 2rem 0 4rem;
+  padding: 0 0 3rem;
+}
+
+.public-download-strip--embedded {
+  position: relative;
+  z-index: 2;
+  width: var(--ps-container);
+  margin: 0 auto;
+  padding: 0 0 2.5rem;
 }
 
 .public-download-strip__bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.75rem 1.25rem;
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--ps-radius);
-  background: linear-gradient(90deg, #dc2626, #b91c1c);
+  justify-content: flex-start;
+  gap: 0.65rem 1rem;
+  padding: 1rem 1.35rem;
+  border-radius: 14px;
+  background: linear-gradient(90deg, var(--ps-red), var(--ps-red-dark));
   color: #fff;
+  box-shadow: 0 16px 40px rgb(230 56 70 / 0.28);
+}
+
+.public-download-strip--embedded .public-download-strip__bar {
+  margin-left: auto;
+  max-width: 100%;
+}
+
+@media (min-width: 960px) {
+  .public-download-strip--embedded .public-download-strip__bar {
+    max-width: 72%;
+    margin-left: auto;
+  }
 }
 
 .public-download-strip__label {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   font-weight: 700;
-  margin-right: 0.5rem;
+  margin-right: 0.25rem;
+  white-space: nowrap;
 }
 
 .public-download-strip__item {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  padding: 0.5rem 0.85rem;
-  border-radius: 0.5rem;
-  background: rgb(255 255 255 / 0.12);
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.14);
   color: #fff;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 700;
   text-decoration: none;
   transition: background 0.15s ease;
+  white-space: nowrap;
 }
 
 .public-download-strip__item:hover {
-  background: rgb(255 255 255 / 0.22);
+  background: rgb(255 255 255 / 0.24);
 }
 
 .public-download-strip__support {
   width: 100%;
   text-align: center;
   margin-top: 1rem;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   color: var(--ps-muted);
 }

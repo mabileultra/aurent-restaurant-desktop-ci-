@@ -1,0 +1,70 @@
+.public-contacts {
+  padding: 3rem 0 4.5rem;
+}
+
+.public-contacts__panel {
+  display: grid;
+  gap: 0;
+  border-radius: var(--ps-radius-lg);
+  overflow: hidden;
+  background: var(--ps-bg-panel);
+  border: 1px solid var(--ps-line);
+  box-shadow: var(--ps-shadow);
+}
+
+.public-contacts__form {
+  padding: 2rem 1.75rem;
+}
+
+.public-contacts__title {
+  margin: 0 0 0.75rem;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.public-contacts__hint {
+  margin: 0 0 1.5rem;
+  color: var(--ps-muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.public-contacts__photo {
+  position: relative;
+  min-height: 280px;
+}
+
+.public-contacts__photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.public-contacts__badge {
+  position: absolute;
+  left: 1rem;
+  bottom: 1rem;
+  max-width: calc(100% - 2rem);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--ps-radius-sm);
+  background: rgb(10 12 16 / 0.88);
+  border: 1px solid var(--ps-line);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+@media (min-width: 900px) {
+  .public-contacts__panel {
+    grid-template-columns: 1.1fr 0.9fr;
+    min-height: 520px;
+  }
+
+  .public-contacts__form {
+    padding: 2.5rem 2.25rem;
+  }
+}

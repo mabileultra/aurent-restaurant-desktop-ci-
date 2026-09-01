@@ -1,0 +1,13 @@
+.public-wave-divider {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0.5rem 1.25rem;
+  color: rgb(0 163 255 / 0.35);
+}
+
+.public-wave-divider svg {
+  display: block;
+  width: 100%;
+  height: 36px;
+}

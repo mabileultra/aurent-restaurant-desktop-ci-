@@ -1,0 +1,13 @@
+.public-pricing-section__form {
+  margin-top: 2rem;
+}
+
+.public-included-band--embedded {
+  padding-top: 0;
+  background: transparent;
+  border: 0;
+}
+
+.public-included-band--embedded .public-included-band__inner {
+  margin-top: 2rem;
+}

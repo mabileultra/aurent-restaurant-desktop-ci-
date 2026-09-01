@@ -1,30 +1,17 @@
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { PUBLIC_AUDIENCE_ITEMS } from '../../constants/publicSiteMedia';
-import PublicSectionTitle from '../shared/PublicSectionTitle';
+import PublicHashLink from '../shared/PublicHashLink';
 
 export default function PublicAudienceSection() {
   const { t } = useTranslation();
 
   return (
-    <section className="public-section public-section--alt" id="audience">
+    <section className="public-audience" id="audience">
       <div className="public-site-section">
-        <PublicSectionTitle
-          eyebrowKey="publicSite.audience.eyebrow"
-          titleKey="publicSite.audience.title"
-          leadKey="publicSite.audience.subtitle"
-        />
-        <div className="public-audience-grid">
+        <div className="public-audience__scroll">
           {PUBLIC_AUDIENCE_ITEMS.map(({ id, image }) => (
-            <Link key={id} to="/about" className="public-audience-card">
-              <img
-                className="public-audience-card__img"
-                src={image}
-                alt=""
-                loading="lazy"
-                decoding="async"
-              />
-              <div className="public-audience-card__overlay">
+            <PublicHashLink key={id} to="#about" className="public-audience-card">
+              <div className="public-audience-card__top">
                 <h3 className="public-audience-card__title">
                   {t(`publicSite.audience.items.${id}.title`)}
                 </h3>
@@ -32,7 +19,14 @@ export default function PublicAudienceSection() {
                   {t('publicSite.audience.more')}
                 </span>
               </div>
-            </Link>
+              <img
+                className="public-audience-card__img"
+                src={image}
+                alt=""
+                loading="lazy"
+                decoding="async"
+              />
+            </PublicHashLink>
           ))}
         </div>
       </div>

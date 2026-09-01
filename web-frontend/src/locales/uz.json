@@ -256,6 +256,38 @@
     "chat": {
       "label": "Bizga yozing, onlaynmiz!"
     },
+    "scrollTop": "Yuqoriga",
+    "features": {
+      "customer": {
+        "label": "Order screen",
+        "title": "Xaridor ekrani",
+        "text": "Buyurtma va chegirmalarni mijoz ko‘radi — xizmat sifatini oshiradi va savdo vaqtini qisqartiradi.",
+        "cta": "Batafsil"
+      },
+      "kitchen": {
+        "label": "Kitchen",
+        "title": "Oshxona ekrani",
+        "text": "Oshpazlar uchun buyurtmalar navbati: statuslar, vaqt, ustuvorlik — zal va yetkazib berish bir joyda.",
+        "cta": "Batafsil"
+      },
+      "assembly": {
+        "label": "Package",
+        "title": "Yig‘ish ekrani",
+        "text": "Buyurtmalarni to‘plash va topshirish: xato kamayadi, navbat tezlashtiriladi.",
+        "cta": "Batafsil"
+      }
+    },
+    "controlPanel": {
+      "title": "Boshqaruv paneli",
+      "text": "Savdo tahlili, moliya, ombor, xodimlar va marketing — barchasi bitta admin panelda. Filtrlash, grafiklar va real vaqt ko‘rsatkichlari.",
+      "cta": "Batafsil"
+    },
+    "growthCta": {
+      "title": "Siz o‘sasiz — biz ham o‘samiz. Faqat daromadingizdan to‘lang",
+      "text": "Moslashuvchan tarif: demo bepul, to‘lov savdo boshlanganda. Shaffof shartlar va yordam joriy etishda.",
+      "ctaTerms": "Shartlarni bilish",
+      "ctaDemo": "Bepul sinab ko‘rish"
+    },
     "leadForm": {
       "name": "Ism",
       "namePh": "Ismingiz",
@@ -276,7 +308,7 @@
     "homePage": {
       "eyebrow": "Chakana va HoReCa uchun POS",
       "titleBefore": "Do‘konlar va umumiy ovqatlanishni avtomatlashtirish dasturi",
-      "titleAccent": "bulutda",
+      "titleAccent": "0 so‘mdan / oy*",
       "subtitle": "Onlayn kassa, ombor, CRM va tahlil — barchasi Aurent tizimida. Brauzer, kassa va desktop ilovada ishlaydi.",
       "ctaDemo": "Bepul sinab ko‘rish",
       "ctaInstall": "Kassani yuklab olish",
@@ -308,6 +340,7 @@
       "ctaPricing": "Tariflar",
       "rightTitle": "Hammasi kiritilgan",
       "rightPrice": "290 000 so‘mdan / oy*",
+      "rightIntro": "Barcha modullar uchun yagona narx — qo‘shimcha to‘lovlarsiz.",
       "list1": "Savdo tahlili va hisobotlar",
       "list2": "Ombor va qoldiqlar",
       "list3": "Moliya va kassalar",
@@ -336,6 +369,7 @@
       "block2Text": "Chakana, og‘irlikli mahsulotlar, restoran zali, yetkazib berish — modullar kerak bo‘lganda yoqiladi.",
       "block3Title": "Joriy etish yordami",
       "block3Text": "O‘rnatish, xodimlarni o‘qitish va fiskal uskunalarni ulashda yordam beramiz.",
+      "badge": "Do‘konlar va umumiy ovqatlanish uchun avtomatlashtirish dasturi",
       "cta": "Biz bilan bog‘lanish"
     },
     "pricing": {
@@ -398,8 +432,9 @@
       "eyebrow": "Aloqa",
       "title": "Biz bilan bog‘laning",
       "subtitle": "Ariza qoldiring — menejer qo‘ng‘iroq qiladi va demo yoki ulashda yordam beradi.",
-      "formTitle": "Ariza formasi",
+      "formTitle": "Savollar qoldimi? Yoki ko‘proq bilmoqchimisiz?",
       "formHint": "Kontaktlarni to‘ldiring — ish vaqtida javob beramiz.",
+      "badge": "Do‘konlar va umumiy ovqatlanish uchun avtomatlashtirish dasturi",
       "infoTitle": "Kontaktlar",
       "phoneLabel": "Telefon",
       "phoneValue": "+998 71 200 00 00",
@@ -407,6 +442,21 @@
       "emailValue": "info@aurent.uz",
       "hoursLabel": "Ish vaqti",
       "hoursValue": "Du–Ju, 9:00–18:00"
+    },
+    "footer": {
+      "tagline": "Kafe va do‘konlar uchun bulutli avtomatlashtirish dasturi.",
+      "col1Title": "Yangiliklar",
+      "col1Link1": "Platforma haqida",
+      "col1Link2": "Tariflar",
+      "col1Link3": "Aloqa",
+      "col2Title": "Kim uchun",
+      "col2Link1": "Biznes turlari",
+      "col2Link2": "Imkoniyatlar",
+      "col2Link3": "Uskunalar",
+      "col3Title": "Mijozlarga",
+      "col3Link1": "Kirish",
+      "col3Link2": "Demo so‘rash",
+      "col3Link3": "Yuklab olish"
     }
   },
   "desktop": {

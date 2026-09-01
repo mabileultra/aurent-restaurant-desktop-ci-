@@ -1,11 +1,11 @@
 export const PUBLIC_SITE_NAV = [
-  { to: '/', key: 'publicSite.nav.home', end: true },
+  { to: '/#top', key: 'publicSite.nav.home', hash: true },
   { to: '/#audience', key: 'publicSite.nav.audience', hash: true },
   { to: '/#features', key: 'publicSite.nav.features', hash: true },
-  { to: '/equipment', key: 'publicSite.nav.equipment' },
-  { to: '/pricing', key: 'publicSite.nav.pricing' },
-  { to: '/about', key: 'publicSite.nav.about' },
-  { to: '/contacts', key: 'publicSite.nav.contacts' },
+  { to: '/#equipment', key: 'publicSite.nav.equipment', hash: true },
+  { to: '/#pricing', key: 'publicSite.nav.pricing', hash: true },
+  { to: '/#about', key: 'publicSite.nav.about', hash: true },
+  { to: '/#contacts', key: 'publicSite.nav.contacts', hash: true },
   { to: '/install', key: 'publicSite.nav.download' },
 ];
 

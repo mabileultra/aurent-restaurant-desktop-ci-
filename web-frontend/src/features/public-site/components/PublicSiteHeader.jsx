@@ -35,7 +35,9 @@ export default function PublicSiteHeader({ showLoginCta = true }) {
   }, [loginOpen]);
 
   const isActive = (to) => {
-    if (to === '/') return location.pathname === '/' && !location.hash;
+    if (to === '/#top') {
+      return location.pathname === '/' && (!location.hash || location.hash === '#top');
+    }
     if (to.startsWith('/#')) {
       return location.pathname === '/' && location.hash === to.slice(1);
     }

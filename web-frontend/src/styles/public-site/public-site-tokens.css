@@ -1,28 +1,33 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 .public-site {
-  --ps-bg: #0a0e14;
-  --ps-bg-elevated: #111827;
-  --ps-bg-card: #151d2b;
-  --ps-bg-card-hover: #1a2436;
-  --ps-accent: #2b8cff;
-  --ps-accent-hover: #1a7af0;
-  --ps-green: #22c55e;
-  --ps-green-dark: #16a34a;
-  --ps-green-band: #15803d;
-  --ps-ink: #f8fafc;
-  --ps-muted: #94a3b8;
-  --ps-line: rgb(148 163 184 / 0.14);
-  --ps-surface: #151d2b;
-  --ps-soft: rgb(255 255 255 / 0.04);
-  --ps-radius: 18px;
+  --ps-bg: #0a0c10;
+  --ps-bg-elevated: #11151c;
+  --ps-bg-card: #171c26;
+  --ps-bg-card-hover: #1e2430;
+  --ps-bg-panel: #1a1f2a;
+  --ps-accent: #00a3ff;
+  --ps-accent-hover: #0088d9;
+  --ps-accent-glow: rgb(0 163 255 / 0.45);
+  --ps-green: #63c76a;
+  --ps-green-dark: #2d6b32;
+  --ps-green-band: #4caf50;
+  --ps-red: #e63846;
+  --ps-red-dark: #c41f2d;
+  --ps-ink: #ffffff;
+  --ps-muted: #9aa3b2;
+  --ps-line: rgb(255 255 255 / 0.08);
+  --ps-surface: #141820;
+  --ps-soft: rgb(255 255 255 / 0.05);
+  --ps-radius: 20px;
   --ps-radius-sm: 12px;
-  --ps-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
-  --ps-glow: radial-gradient(circle at 50% 50%, rgb(43 140 255 / 0.35), transparent 62%);
+  --ps-radius-lg: 40px;
+  --ps-shadow: 0 32px 80px rgb(0 0 0 / 0.55);
+  --ps-glow: radial-gradient(circle at 50% 50%, rgb(0 163 255 / 0.42), transparent 65%);
   --ps-font: 'Inter', system-ui, sans-serif;
   --ps-display: 'Inter', system-ui, sans-serif;
-  --ps-container: min(1200px, calc(100% - 2.5rem));
-  --ps-header-h: 4.25rem;
+  --ps-container: min(1240px, calc(100% - 2.5rem));
+  --ps-header-h: 4.5rem;
 
   min-height: 100vh;
   display: flex;
@@ -41,8 +46,8 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse 80% 50% at 90% 0%, rgb(43 140 255 / 0.12), transparent 55%),
-    radial-gradient(ellipse 60% 40% at 0% 100%, rgb(34 197 94 / 0.06), transparent 50%);
+    radial-gradient(ellipse 70% 45% at 95% 5%, rgb(0 163 255 / 0.14), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 5% 90%, rgb(0 163 255 / 0.06), transparent 50%);
 }
 
 .public-site__main {
@@ -57,4 +62,13 @@
   width: var(--ps-container);
   margin-inline: auto;
   padding-inline: 0;
+}
+
+html:has(.public-site) {
+  scroll-behavior: smooth;
+}
+
+.public-site section[id],
+.public-site [data-section-anchor] {
+  scroll-margin-top: calc(var(--ps-header-h) + 0.75rem);
 }

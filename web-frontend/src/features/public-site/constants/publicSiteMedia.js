@@ -16,6 +16,36 @@ export const PUBLIC_TERMINAL_MEDIA = {
   alt: 'Tablet POS',
 };
 
+export const PUBLIC_FEATURE_MEDIA = {
+  customer: {
+    image: u('photo-1509042239860-f550ce710b93', 800),
+    alt: 'Customer display',
+  },
+  kitchen: {
+    image: u('photo-1556910103-1c02745aae4d', 800),
+    alt: 'Kitchen display',
+  },
+  assembly: {
+    image: u('photo-1565299624946-b28f40a0ae38', 800),
+    alt: 'Order assembly',
+  },
+};
+
+export const PUBLIC_CONTROL_PANEL_MEDIA = {
+  image: u('photo-1551288049-bebda4e38f71', 1000),
+  alt: 'Analytics dashboard',
+};
+
+export const PUBLIC_ABOUT_MEDIA = {
+  image: u('photo-1555396273-367ea4eb4db5', 800),
+  alt: 'Restaurant team',
+};
+
+export const PUBLIC_CONTACTS_MEDIA = {
+  image: u('photo-1554118811-1e0d58220f6d', 800),
+  alt: 'Cafe staff with tablet',
+};
+
 export const PUBLIC_AUDIENCE_ITEMS = [
   { id: 'restaurant', image: u('photo-1517248135467-4c7edcad34c4', 640) },
   { id: 'cafe', image: u('photo-1554118811-1e0d58220f6d', 640) },

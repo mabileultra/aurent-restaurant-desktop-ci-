@@ -1,0 +1,42 @@
+.public-growth-cta {
+  padding: 2.5rem 0;
+}
+
+.public-growth-cta__inner {
+  padding: 3rem 2rem;
+  border-radius: var(--ps-radius-lg);
+  background: linear-gradient(135deg, #0078e6 0%, #00a3ff 50%, #0066cc 100%);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  box-shadow: 0 32px 80px rgb(0 163 255 / 0.28);
+  text-align: center;
+}
+
+.public-growth-cta__title {
+  margin: 0 0 1rem;
+  font-size: clamp(1.35rem, 3vw, 2rem);
+  font-weight: 900;
+  text-transform: uppercase;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+}
+
+.public-growth-cta__text {
+  margin: 0 auto 1.75rem;
+  max-width: 42rem;
+  color: rgb(255 255 255 / 0.9);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.public-growth-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .public-growth-cta__inner {
+    padding: 3.5rem 3rem;
+  }
+}

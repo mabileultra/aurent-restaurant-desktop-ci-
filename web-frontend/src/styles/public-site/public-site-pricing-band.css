@@ -1,42 +1,41 @@
 .public-included-band {
-  width: 100%;
-  padding: 4rem 0;
-  background: rgb(255 255 255 / 0.02);
-  border-block: 1px solid var(--ps-line);
+  padding: 3rem 0;
 }
 
-.public-included-band__inner {
-  width: var(--ps-container);
-  margin: 0 auto;
+.public-included-band__shell {
   display: grid;
-  gap: 1.5rem;
-  border-radius: var(--ps-radius);
+  gap: 0;
+  border-radius: var(--ps-radius-lg);
   overflow: hidden;
+  background: var(--ps-bg-panel);
   border: 1px solid var(--ps-line);
+  box-shadow: var(--ps-shadow);
 }
 
 .public-included-band__left {
-  padding: 2rem 1.75rem;
-  background: var(--ps-bg-card);
+  padding: 2.25rem 2rem;
+  background: var(--ps-bg-panel);
 }
 
 .public-included-band__left h2 {
   margin: 0 0 1rem;
-  font-size: clamp(1.35rem, 3vw, 1.85rem);
-  font-weight: 800;
+  font-size: clamp(1.4rem, 3vw, 2rem);
+  font-weight: 900;
   text-transform: uppercase;
-  line-height: 1.15;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 }
 
 .public-included-band__left p {
   margin: 0 0 1.5rem;
   color: var(--ps-muted);
-  line-height: 1.6;
+  line-height: 1.65;
+  font-size: 0.95rem;
 }
 
 .public-included-band__right {
   padding: 2rem 1.75rem;
-  background: linear-gradient(145deg, var(--ps-green-band), var(--ps-green));
+  background: linear-gradient(145deg, #4caf50, var(--ps-green));
   color: #fff;
 }
 
@@ -44,53 +43,71 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
+  justify-content: space-between;
   gap: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
 }
 
 .public-included-band__right-head h3 {
   margin: 0;
-  font-size: 1.5rem;
-  font-weight: 800;
+  font-size: 1.6rem;
+  font-weight: 900;
   text-transform: uppercase;
 }
 
 .public-included-band__price {
   margin: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  opacity: 0.9;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: var(--ps-green-dark);
+  background: rgb(255 255 255 / 0.9);
+  padding: 0.35rem 0.65rem;
+  border-radius: 8px;
+}
+
+.public-included-band__intro {
+  margin: 0 0 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  opacity: 0.95;
 }
 
 .public-included-band__list {
-  margin: 0 0 1.5rem;
+  margin: 0 0 1.25rem;
   padding-left: 1.1rem;
-  line-height: 1.7;
-  font-size: 0.92rem;
+  line-height: 1.65;
+  font-size: 0.88rem;
+  columns: 1;
 }
 
 .public-included-band__features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.65rem;
 }
 
 .public-included-feature {
   padding: 0.85rem;
   border-radius: var(--ps-radius-sm);
-  background: rgb(0 0 0 / 0.15);
-  font-size: 0.78rem;
+  background: rgb(0 0 0 / 0.18);
+  font-size: 0.75rem;
   line-height: 1.4;
+  color: rgb(255 255 255 / 0.95);
 }
 
 .public-included-feature strong {
   display: block;
   margin-bottom: 0.25rem;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
 }
 
 @media (min-width: 900px) {
-  .public-included-band__inner {
-    grid-template-columns: 1fr 1fr;
+  .public-included-band__shell {
+    grid-template-columns: 1fr 1.05fr;
+  }
+
+  .public-included-band__list {
+    columns: 2;
+    column-gap: 1.5rem;
   }
 }
