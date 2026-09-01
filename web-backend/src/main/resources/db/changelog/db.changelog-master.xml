@@ -27,5 +27,6 @@
     <include file="v20-pharmacy-cashier-fields.xml" relativeToChangelogFile="true"/>
     <include file="v21-company-telegram-bots.xml" relativeToChangelogFile="true"/>
     <include file="v22-product-plu.xml" relativeToChangelogFile="true"/>
+    <include file="v23-cash-register-terminal.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

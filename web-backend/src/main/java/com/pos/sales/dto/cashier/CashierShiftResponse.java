@@ -9,6 +9,8 @@ public record CashierShiftResponse(
     Integer storeId,
     String storeName,
     String cashierName,
+    Long cashRegisterId,
+    Integer registerNumber,
     String status,
     Instant openedAt,
     Instant closedAt,

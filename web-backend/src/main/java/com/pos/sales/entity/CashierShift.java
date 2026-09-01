@@ -60,6 +60,10 @@ public class CashierShift {
     private BigDecimal vatAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cash_register_id")
+    private CashRegister cashRegister;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "z_report_id")
     private ZReport zReport;
 

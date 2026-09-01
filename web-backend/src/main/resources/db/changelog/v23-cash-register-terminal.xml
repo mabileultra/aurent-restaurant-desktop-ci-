@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v23-cash-registers-terminal-fields" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cash_registers" columnName="device_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="cash_registers">
+            <column name="device_id" type="varchar(128)"/>
+            <column name="workstation_name" type="varchar(200)"/>
+            <column name="last_seen_at" type="timestamptz"/>
+        </addColumn>
+        <sql>
+            CREATE UNIQUE INDEX uq_cash_registers_device_id
+            ON cash_registers (device_id)
+            WHERE device_id IS NOT NULL AND TRIM(device_id) &lt;&gt; '';
+        </sql>
+        <sql>
+            CREATE UNIQUE INDEX uq_cash_registers_store_serial
+            ON cash_registers (store_id, equipment_serial)
+            WHERE equipment_serial IS NOT NULL AND TRIM(equipment_serial) &lt;&gt; '';
+        </sql>
+    </changeSet>
+
+    <changeSet id="v23-cashier-shifts-register-fk" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cashier_shifts" columnName="cash_register_id"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="cashier_shifts">
+            <column name="cash_register_id" type="bigint"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="cashier_shifts"
+            baseColumnNames="cash_register_id"
+            referencedTableName="cash_registers"
+            referencedColumnNames="id"
+            constraintName="fk_cashier_shifts_cash_register"
+            onDelete="SET NULL"/>
+        <createIndex tableName="cashier_shifts" indexName="idx_cashier_shifts_cash_register">
+            <column name="cash_register_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

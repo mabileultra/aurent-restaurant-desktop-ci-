@@ -3,7 +3,10 @@ package com.pos.sales.service.cashier.impl;
 import com.pos.sales.dto.cashier.CashierShiftResponse;
 import com.pos.sales.dto.cashier.FinalizeZReportResponse;
 import com.pos.sales.dto.cashier.ShiftReportResponse;
+import com.pos.sales.dto.cashregister.RegisterTerminalRequest;
+import com.pos.sales.entity.CashRegister;
 import com.pos.sales.entity.CashierShift;
+import com.pos.sales.service.CashRegisterTerminalService;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
@@ -39,6 +42,7 @@ public class CashierShiftServiceImpl implements CashierShiftService {
     private final CashierShiftMapper cashierShiftMapper;
     private final CashierShiftAggregateLoader aggregateLoader;
     private final CashierShiftAccessPolicy accessPolicy;
+    private final CashRegisterTerminalService cashRegisterTerminalService;
 
     @Override
     public CashierShiftResponse getCurrent(Integer storeId) {
@@ -52,7 +56,7 @@ public class CashierShiftServiceImpl implements CashierShiftService {
 
     @Override
     @Transactional
-    public CashierShiftResponse openShift(Integer storeId) {
+    public CashierShiftResponse openShift(Integer storeId, RegisterTerminalRequest terminal) {
         User cashier = currentUserProvider.requireCurrentUser();
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
 
@@ -62,13 +66,15 @@ public class CashierShiftServiceImpl implements CashierShiftService {
                 throw new BadRequestException("Смена уже открыта");
             });
 
-        CashierShift saved = persistNewOpenShift(cashier, store);
+        CashRegister register = cashRegisterTerminalService.resolveActiveRegister(storeId, terminal);
+        CashierShift saved = persistNewOpenShift(cashier, store, register);
         LogUtil.info(
             CashierShiftServiceImpl.class,
-            "Shift opened: id={}, storeId={}, cashierId={}",
+            "Shift opened: id={}, storeId={}, cashierId={}, registerId={}",
             saved.getId(),
             store.getId(),
-            cashier.getId()
+            cashier.getId(),
+            register.getId()
         );
         return cashierShiftMapper.toResponse(saved, store.getName(), null);
     }
@@ -162,11 +168,12 @@ public class CashierShiftServiceImpl implements CashierShiftService {
         return shift.getPeriodStartedAt() != null ? shift.getPeriodStartedAt() : shift.getOpenedAt();
     }
 
-    private CashierShift persistNewOpenShift(User cashier, Store store) {
+    private CashierShift persistNewOpenShift(User cashier, Store store, CashRegister register) {
         Instant now = Instant.now();
         CashierShift shift = CashierShift.builder()
             .cashier(cashier)
             .store(store)
+            .cashRegister(register)
             .status(CashierShift.ShiftStatus.OPEN)
             .openedAt(now)
             .periodStartedAt(now)

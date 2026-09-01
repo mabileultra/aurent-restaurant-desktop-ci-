@@ -148,6 +148,8 @@ public interface CashierShiftMapper {
             shift.getStore().getId(),
             storeName,
             shift.getCashier().getFullName(),
+            shift.getCashRegister() != null ? shift.getCashRegister().getId() : null,
+            shift.getCashRegister() != null ? shift.getCashRegister().getRegisterNumber() : null,
             shift.getStatus().name(),
             shift.getOpenedAt(),
             shift.getClosedAt(),

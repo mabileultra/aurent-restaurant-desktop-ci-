@@ -17,6 +17,7 @@ export { zReportApi } from './zReport.api';
 export { orderApi } from './order.api';
 export { saleApi } from './sale.api';
 export { cashierShiftApi } from './cashierShift.api';
+export { cashierTerminalApi } from './cashierTerminal.api';
 export { returnApi } from './return.api';
 export { reportApi } from './report.api';
 export { aiAssistantApi } from './aiAssistant.api';

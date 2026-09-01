@@ -149,6 +149,10 @@ ipcMain.handle('desktop:reload', () => {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   return reloadCashierLogin(mainWindow, refreshDesktopConfig());
 });
+ipcMain.handle('desktop:get-terminal-identity', () => {
+  const { getTerminalIdentity } = require('./identity/deviceIdentity');
+  return getTerminalIdentity();
+});
 ipcMain.handle('desktop:open-server-setup', () => handleOpenServerSettings());
 ipcMain.handle('desktop:toggleFullscreen', () => {
   if (!mainWindow) return false;

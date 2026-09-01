@@ -3,6 +3,7 @@ package com.pos.sales.controller;
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.sales.dto.cashier.CashierShiftResponse;
 import com.pos.sales.dto.cashier.FinalizeZReportResponse;
+import com.pos.sales.dto.cashier.OpenCashierShiftRequest;
 import com.pos.sales.dto.cashier.ShiftReportResponse;
 import com.pos.sales.service.cashier.CashierShiftService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -41,8 +43,12 @@ public class CashierShiftController {
     @PreAuthorize("hasAnyRole('CASHIER', 'WAITER')")
     @Operation(summary = "Открыть смену", description = "Открытие новой кассовой смены")
     @ApiResponse(responseCode = "200", description = "Смена открыта")
-    public ResponseEntity<CashierShiftResponse> open(@RequestParam Integer storeId) {
-        return ResponseEntity.ok(cashierShiftService.openShift(storeId));
+    public ResponseEntity<CashierShiftResponse> open(
+        @RequestParam Integer storeId,
+        @RequestBody(required = false) OpenCashierShiftRequest body
+    ) {
+        var terminal = body != null ? body.terminal() : null;
+        return ResponseEntity.ok(cashierShiftService.openShift(storeId, terminal));
     }
 
     @GetMapping("/{id}/x-report")

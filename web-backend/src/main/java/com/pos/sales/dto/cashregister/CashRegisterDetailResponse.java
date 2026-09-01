@@ -11,6 +11,9 @@ public record CashRegisterDetailResponse(
     String equipmentModel,
     String equipmentSerial,
     String fiscalCardId,
+    String deviceId,
+    String workstationName,
+    Instant lastSeenAt,
     String status,
     Instant createdAt,
     Instant updatedAt

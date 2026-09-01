@@ -18,6 +18,7 @@ import { clearCashierScreenLocked } from '../../../utils/cashierLock';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { cashierLoginPath } from '../../../utils/authLogin';
 import { useCashierShift } from '../../../hooks/useCashierShift';
+import { useCashierTerminalRegistration } from '../../../hooks/useCashierTerminalRegistration';
 import { useOfflineConnectivity } from '../../../hooks/useOfflineConnectivity';
 import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
 import { useCashierPosDesktopLayout } from '../../../hooks/useCashierPosDesktopLayout';
@@ -95,6 +96,7 @@ export function useCashierLayoutShell() {
     typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
 
   useOfflineConnectivity();
+  useCashierTerminalRegistration(storeId);
 
   useEffect(() => {
     if (!isDesktopApp) return undefined;

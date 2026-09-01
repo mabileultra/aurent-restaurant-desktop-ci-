@@ -2,6 +2,7 @@ package com.pos.sales.service;
 
 import com.pos.sales.dto.cashregister.CashRegisterDetailResponse;
 import com.pos.sales.dto.cashregister.CashRegisterRowResponse;
+import com.pos.sales.dto.cashregister.UpsertCashRegisterRequest;
 import com.pos.dto.shared.PageResponse;
 import org.springframework.data.domain.Pageable;
 
@@ -22,4 +23,8 @@ public interface CashRegisterService {
     CashRegisterRowResponse toggleStatus(Long id);
 
     CashRegisterDetailResponse getById(Long id);
+
+    CashRegisterRowResponse create(UpsertCashRegisterRequest request);
+
+    CashRegisterRowResponse update(Long id, UpsertCashRegisterRequest request);
 }

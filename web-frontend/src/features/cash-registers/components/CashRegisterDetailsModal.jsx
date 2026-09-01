@@ -28,7 +28,7 @@ function DetailRow({ icon: Icon, label, value, valueClassName = '' }) {
   );
 }
 
-export default function CashRegisterDetailsModal({ registerId, onClose }) {
+export default function CashRegisterDetailsModal({ registerId, onClose, onEdit }) {
   const { t } = useTranslation();
 
   const { data, isPending, isError } = useQuery({
@@ -70,6 +70,13 @@ export default function CashRegisterDetailsModal({ registerId, onClose }) {
                   <DetailRow icon={Tag} label={t('cashRegisters.detailsModel')} value={data.equipmentModel} />
                   <DetailRow icon={Tag} label={t('cashRegisters.detailsSerial')} value={data.equipmentSerial} />
                   <DetailRow icon={CreditCard} label={t('cashRegisters.detailsFiscal')} value={data.fiscalCardId} />
+                  <DetailRow label={t('cashRegisters.formDeviceId')} value={data.deviceId} />
+                  <DetailRow label={t('cashRegisters.formWorkstation')} value={data.workstationName} />
+                  <DetailRow
+                    icon={Calendar}
+                    label={t('cashRegisters.detailsLastSeen')}
+                    value={fmtDateTime(data.lastSeenAt)}
+                  />
                   <div className="cr-details-modal__row">
                     <span className="cr-details-modal__label">{t('cashRegisters.detailsStatus')}</span>
                     <span className="cr-details-modal__value">
@@ -117,6 +124,15 @@ export default function CashRegisterDetailsModal({ registerId, onClose }) {
         </div>
 
         <footer className="cr-details-modal__footer">
+          {onEdit && data ? (
+            <button
+              type="button"
+              onClick={() => onEdit(data.id)}
+              className="rounded-lg border border-emerald-700 bg-emerald-50 px-5 py-2 text-sm font-medium text-emerald-800 shadow-sm hover:bg-emerald-100 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
+            >
+              {t('common.edit')}
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onClose}

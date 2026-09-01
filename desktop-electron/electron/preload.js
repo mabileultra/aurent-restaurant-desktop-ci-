@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   getApiBaseUrl: () => invoke('desktop:getApiBaseUrl'),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),
   openServerSetup: () => invoke('desktop:open-server-setup'),
+  getTerminalIdentity: () => invoke('desktop:get-terminal-identity'),
   reload: () => invoke('desktop:reload'),
   toggleFullscreen: () => invoke('desktop:toggleFullscreen'),
   quit: () => invoke('desktop:quit'),

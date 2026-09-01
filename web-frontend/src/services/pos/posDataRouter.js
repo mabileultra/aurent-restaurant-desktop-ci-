@@ -2,6 +2,7 @@
  * Единый роутер POS: все операции кассы идут через этот модуль (API или SQLite).
  */
 import { categoryApi, productApi, saleApi, cashierShiftApi } from '../api';
+import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../utils/cashierTerminalIdentity';
 import { POS_PRODUCT_PAGE_SIZE } from '../../features/cashier/components/pos/posCatalogConstants';
 import { POS_CATALOG_ONLINE_TIMEOUT_MS } from '../offline/posCatalogConstants';
 import { isApiUnreachableError } from '../../utils/apiNetworkError';
@@ -184,7 +185,10 @@ export async function posOpenShift(storeId, user, storeName = '') {
     return shift;
   }
   try {
-    const res = await cashierShiftApi.open(storeId);
+    const identity = await resolveCashierTerminalIdentity();
+    const terminal = buildTerminalRequest(identity);
+    const body = terminal ? { terminal } : null;
+    const res = await cashierShiftApi.open(storeId, body);
     const shift = res.data;
     if (isDesktopOfflineBridge() && user?.id) {
       try {

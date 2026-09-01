@@ -5,6 +5,7 @@ import CashRegistersTable from '../components/CashRegistersTable';
 import CashRegistersListFooter from '../components/CashRegistersListFooter';
 import CashRegistersFiltersDrawer from '../components/CashRegistersFiltersDrawer';
 import CashRegisterDetailsModal from '../components/CashRegisterDetailsModal';
+import CashRegisterFormModal from '../components/CashRegisterFormModal';
 import { useCashRegistersListPage } from '../hooks/useCashRegistersListPage';
 
 export default function CashRegistersListPage() {
@@ -30,6 +31,8 @@ export default function CashRegistersListPage() {
         placeholder={p.t('cashRegisters.searchPlaceholder')}
         filterLabel={p.t('products.toolbar.filters')}
         onOpenFilters={() => p.setFiltersOpen(true)}
+        addLabel={p.t('cashRegisters.addRegister')}
+        onAdd={p.openCreateForm}
       />
 
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
@@ -56,7 +59,13 @@ export default function CashRegistersListPage() {
         />
       </div>
 
-      <CashRegisterDetailsModal registerId={p.detailId} onClose={() => p.setDetailId(null)} />
+      <CashRegisterDetailsModal
+        registerId={p.detailId}
+        onClose={() => p.setDetailId(null)}
+        onEdit={p.openEditForm}
+      />
+
+      <CashRegisterFormModal open={p.formOpen} registerId={p.formRegisterId} onClose={p.closeForm} />
 
       <CashRegistersFiltersDrawer
         open={p.filtersOpen}

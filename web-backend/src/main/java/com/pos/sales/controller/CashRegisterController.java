@@ -3,6 +3,7 @@ package com.pos.sales.controller;
 import com.pos.config.openapi.StandardApiResponses;
 import com.pos.sales.dto.cashregister.CashRegisterDetailResponse;
 import com.pos.sales.dto.cashregister.CashRegisterRowResponse;
+import com.pos.sales.dto.cashregister.UpsertCashRegisterRequest;
 import com.pos.sales.dto.cashregister.CashTransferRowResponse;
 import com.pos.dto.shared.PageResponse;
 import com.pos.sales.service.CashRegisterService;
@@ -12,6 +13,7 @@ import com.pos.spreadsheet.SpreadsheetDownloadSupport;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -21,6 +23,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -80,6 +85,25 @@ public class CashRegisterController {
         return ResponseEntity.ok(
             cashTransferService.list(search, registerNumber, closedFrom, closedTo, pageable)
         );
+    }
+
+    @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Создать кассу", description = "Ручная регистрация кассового аппарата")
+    @ApiResponse(responseCode = "200", description = "Касса создана")
+    public ResponseEntity<CashRegisterRowResponse> create(@Valid @RequestBody UpsertCashRegisterRequest request) {
+        return ResponseEntity.ok(cashRegisterService.create(request));
+    }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Обновить кассу", description = "Редактирование данных кассы")
+    @ApiResponse(responseCode = "200", description = "Касса обновлена")
+    public ResponseEntity<CashRegisterRowResponse> update(
+        @PathVariable Long id,
+        @Valid @RequestBody UpsertCashRegisterRequest request
+    ) {
+        return ResponseEntity.ok(cashRegisterService.update(id, request));
     }
 
     @GetMapping("/{id}")

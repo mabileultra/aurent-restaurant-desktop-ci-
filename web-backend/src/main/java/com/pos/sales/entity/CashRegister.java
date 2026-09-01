@@ -38,6 +38,16 @@ public class CashRegister {
     @Column(name = "fiscal_card_id", length = 100)
     private String fiscalCardId;
 
+    /** Уникальный ID desktop/терминала (UUID из Electron или ручной код). */
+    @Column(name = "device_id", length = 128)
+    private String deviceId;
+
+    @Column(name = "workstation_name", length = 200)
+    private String workstationName;
+
+    @Column(name = "last_seen_at")
+    private Instant lastSeenAt;
+
     /** ACTIVE — касса в работе (иконка «старт»), INACTIVE — выключена */
     @Column(name = "status", nullable = false, length = 20)
     private String status = "ACTIVE";

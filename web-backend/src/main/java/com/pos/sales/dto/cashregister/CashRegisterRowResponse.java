@@ -8,5 +8,7 @@ public record CashRegisterRowResponse(
     String equipmentModel,
     String equipmentSerial,
     String fiscalCardId,
+    String deviceId,
+    String workstationName,
     String status
 ) {}

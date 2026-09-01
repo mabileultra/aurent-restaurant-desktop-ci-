@@ -22,6 +22,8 @@ export function useCashRegistersListPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [filters, setFilters] = useState(CASH_REGISTERS_DEFAULT_FILTERS);
   const [applied, setApplied] = useState(CASH_REGISTERS_DEFAULT_FILTERS);
+  const [formOpen, setFormOpen] = useState(false);
+  const [formRegisterId, setFormRegisterId] = useState(null);
 
   const queryParams = useMemo(
     () => ({
@@ -86,6 +88,22 @@ export function useCashRegistersListPage() {
     setPage(0);
   }, []);
 
+  const openCreateForm = useCallback(() => {
+    setFormRegisterId(null);
+    setFormOpen(true);
+  }, []);
+
+  const openEditForm = useCallback((id) => {
+    setDetailId(null);
+    setFormRegisterId(id);
+    setFormOpen(true);
+  }, []);
+
+  const closeForm = useCallback(() => {
+    setFormOpen(false);
+    setFormRegisterId(null);
+  }, []);
+
   return {
     t,
     search,
@@ -114,5 +132,10 @@ export function useCashRegistersListPage() {
     isError,
     error,
     handleToggleStatus,
+    formOpen,
+    formRegisterId,
+    openCreateForm,
+    openEditForm,
+    closeForm,
   };
 }

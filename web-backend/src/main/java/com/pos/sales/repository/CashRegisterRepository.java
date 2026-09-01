@@ -53,4 +53,22 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     Optional<CashRegister> findDetailById(@Param("id") Long id);
 
     Optional<CashRegister> findFirstByStore_IdOrderByRegisterNumberAsc(Integer storeId);
+
+    Optional<CashRegister> findByDeviceId(String deviceId);
+
+    Optional<CashRegister> findByStore_IdAndEquipmentSerialIgnoreCase(Integer storeId, String equipmentSerial);
+
+    @Query("""
+        SELECT COALESCE(MAX(c.registerNumber), 0) FROM CashRegister c
+        WHERE c.store.id = :storeId
+        """)
+    int findMaxRegisterNumberByStoreId(@Param("storeId") Integer storeId);
+
+    boolean existsByStore_IdAndRegisterNumberAndIdNot(Integer storeId, Integer registerNumber, Long id);
+
+    boolean existsByStore_IdAndRegisterNumber(Integer storeId, Integer registerNumber);
+
+    boolean existsByDeviceIdAndIdNot(String deviceId, Long id);
+
+    boolean existsByDeviceId(String deviceId);
 }

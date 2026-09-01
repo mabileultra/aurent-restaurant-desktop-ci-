@@ -50,9 +50,12 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         Integer storeId = store.getId();
         int nextZ = zReportRepository.findMaxZNumberByStoreId(storeId) + 1;
 
-        CashRegister register = cashRegisterRepository
-            .findFirstByStore_IdOrderByRegisterNumberAsc(storeId)
-            .orElse(null);
+        CashRegister register = shift.getCashRegister();
+        if (register == null) {
+            register = cashRegisterRepository
+                .findFirstByStore_IdOrderByRegisterNumberAsc(storeId)
+                .orElse(null);
+        }
 
         String fiscalCardId = register != null && StringUtils.hasText(register.getFiscalCardId())
             ? register.getFiscalCardId().trim()
@@ -136,9 +139,12 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         Integer storeId = store.getId();
         int nextZ = zReportRepository.findMaxZNumberByStoreId(storeId) + 1;
 
-        CashRegister register = cashRegisterRepository
-            .findFirstByStore_IdOrderByRegisterNumberAsc(storeId)
-            .orElse(null);
+        CashRegister register = shift.getCashRegister();
+        if (register == null) {
+            register = cashRegisterRepository
+                .findFirstByStore_IdOrderByRegisterNumberAsc(storeId)
+                .orElse(null);
+        }
 
         String fiscalCardId = register != null && StringUtils.hasText(register.getFiscalCardId())
             ? register.getFiscalCardId().trim()
