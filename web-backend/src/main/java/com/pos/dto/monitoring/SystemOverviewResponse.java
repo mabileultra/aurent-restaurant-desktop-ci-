@@ -57,7 +57,8 @@ public record SystemOverviewResponse(
     public record HttpInfo(
         long totalRequests,
         Double avgResponseMs,
-        Double maxResponseMs
+        Double maxResponseMs,
+        Double p95ResponseMs
     ) {
     }
 }

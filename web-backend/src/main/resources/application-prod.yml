@@ -27,6 +27,19 @@ management:
     mail:
       # SMTP не должен блокировать liveness (Gmail rate-limit ломает /actuator/health).
       enabled: false
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.95
+
+ops:
+  backup:
+    dir: ${OPS_BACKUP_DIR:}
+  disk:
+    check-path: ${OPS_DISK_CHECK_PATH:}
+    warn-percent: ${OPS_ALERT_DISK_WARN_PERCENT:85}
 
 logging:
   level:

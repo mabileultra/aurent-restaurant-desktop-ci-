@@ -6,6 +6,12 @@ package com.pos.dto.monitoring;
 public record OpsHealthInfo(
     long financeOutboxPending,
     long financeOutboxFailed,
-    boolean sentryEnabled
+    boolean sentryEnabled,
+    boolean identitySentryEnabled,
+    Integer diskUsedPercent,
+    int diskWarnPercent,
+    Long lastBackupAgeHours,
+    String lastBackupFileName,
+    boolean backupDirConfigured
 ) {
 }

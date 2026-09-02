@@ -85,3 +85,11 @@ logging:
   level:
     root: INFO
     com.pos.identity: INFO
+
+# Sentry disabled when SENTRY_DSN is empty (no behavior change in dev/local).
+sentry:
+  dsn: ${SENTRY_DSN:}
+  environment: ${SENTRY_ENVIRONMENT:local}
+  release: ${SENTRY_RELEASE:}
+  send-default-pii: false
+  traces-sample-rate: ${SENTRY_TRACES_SAMPLE_RATE:0.05}

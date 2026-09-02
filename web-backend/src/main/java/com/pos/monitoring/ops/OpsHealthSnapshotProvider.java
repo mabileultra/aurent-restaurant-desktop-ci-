@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 public class OpsHealthSnapshotProvider {
 
     private final FinanceSyncOutboxRepository financeSyncOutboxRepository;
+    private final HostOpsSignalsReader hostOpsSignalsReader;
 
     @Value("${sentry.dsn:}")
     private String sentryDsn;
@@ -19,6 +20,27 @@ public class OpsHealthSnapshotProvider {
         long pending = financeSyncOutboxRepository.countByStatus("PENDING");
         long failed = financeSyncOutboxRepository.countByStatus("FAILED");
         boolean sentryEnabled = sentryDsn != null && !sentryDsn.isBlank();
-        return new OpsHealthInfo(pending, failed, sentryEnabled);
+        boolean identitySentryEnabled = sentryEnabled;
+
+        Integer diskPercent = hostOpsSignalsReader.diskUsedPercent().orElse(null);
+        Long backupAgeHours = null;
+        String backupFileName = null;
+        var backup = hostOpsSignalsReader.latestBackup();
+        if (backup.isPresent()) {
+            backupAgeHours = backup.get().ageHours();
+            backupFileName = backup.get().fileName();
+        }
+
+        return new OpsHealthInfo(
+            pending,
+            failed,
+            sentryEnabled,
+            identitySentryEnabled,
+            diskPercent,
+            hostOpsSignalsReader.diskWarnPercent(),
+            backupAgeHours,
+            backupFileName,
+            hostOpsSignalsReader.isBackupDirConfigured()
+        );
     }
 }

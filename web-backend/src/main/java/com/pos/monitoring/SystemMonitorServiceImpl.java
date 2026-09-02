@@ -162,14 +162,24 @@ public class SystemMonitorServiceImpl implements SystemMonitorService {
         long total = 0;
         double totalTimeMs = 0;
         double maxMs = 0;
+        Double p95Ms = null;
         for (Timer timer : search.timers()) {
             total += timer.count();
             totalTimeMs += timer.totalTime(java.util.concurrent.TimeUnit.MILLISECONDS);
             double m = timer.max(java.util.concurrent.TimeUnit.MILLISECONDS);
             if (m > maxMs) maxMs = m;
+            double p95 = timer.percentile(0.95, java.util.concurrent.TimeUnit.MILLISECONDS);
+            if (!Double.isNaN(p95) && p95 > 0) {
+                p95Ms = p95Ms == null ? p95 : Math.max(p95Ms, p95);
+            }
         }
         Double avg = total > 0 ? totalTimeMs / total : null;
-        return new SystemOverviewResponse.HttpInfo(total, avg, maxMs > 0 ? maxMs : null);
+        return new SystemOverviewResponse.HttpInfo(
+            total,
+            avg,
+            maxMs > 0 ? maxMs : null,
+            p95Ms
+        );
     }
 
     private String primaryProfile() {

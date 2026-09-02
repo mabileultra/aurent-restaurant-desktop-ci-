@@ -160,6 +160,10 @@ services:
       POS_CORE_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       LOGIN_RATE_LIMIT_ENABLED: ${LOGIN_RATE_LIMIT_ENABLED:-true}
       LOGIN_RATE_LIMIT_PER_MINUTE: ${LOGIN_RATE_LIMIT_PER_MINUTE:-15}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
+      SENTRY_RELEASE: ${SENTRY_RELEASE:-}
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - '127.0.0.1:8081:8081'
@@ -447,9 +451,13 @@ services:
       SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
       SENTRY_TRACES_SAMPLE_RATE: ${SENTRY_TRACES_SAMPLE_RATE:-0.05}
       SENTRY_RELEASE: ${SENTRY_RELEASE:-}
+      OPS_BACKUP_DIR: /ops/backups
+      OPS_DISK_CHECK_PATH: /ops/backups
+      OPS_ALERT_DISK_WARN_PERCENT: ${OPS_ALERT_DISK_WARN_PERCENT:-85}
     volumes:
       - backend_uploads:/app/uploads
       - backend_logs:/app/logs
+      - ${BACKUP_HOST_DIR:-./backups/postgres}:/ops/backups:ro
     healthcheck:
       test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:8080/api/v1/actuator/health | grep -q UP || exit 1']
       interval: 15s

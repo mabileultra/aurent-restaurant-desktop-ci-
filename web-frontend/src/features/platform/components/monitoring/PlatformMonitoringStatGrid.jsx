@@ -75,8 +75,20 @@ export default function PlatformMonitoringStatGrid({ t, overview, cpuPercent }) 
         label={t('platform.monitoring.httpReq')}
         value={formatNumber(overview?.http?.totalRequests)}
         hint={
-          overview?.http?.avgResponseMs != null
-            ? `${t('platform.monitoring.avg')}: ${overview.http.avgResponseMs.toFixed(0)} ms · max ${overview.http.maxResponseMs?.toFixed(0) ?? '—'} ms`
+          overview?.http
+            ? [
+                overview.http.p95ResponseMs != null
+                  ? `p95: ${overview.http.p95ResponseMs.toFixed(0)} ms`
+                  : null,
+                overview.http.avgResponseMs != null
+                  ? `${t('platform.monitoring.avg')}: ${overview.http.avgResponseMs.toFixed(0)} ms`
+                  : null,
+                overview.http.maxResponseMs != null
+                  ? `max ${overview.http.maxResponseMs.toFixed(0)} ms`
+                  : null,
+              ]
+                .filter(Boolean)
+                .join(' · ') || '—'
             : '—'
         }
       />
