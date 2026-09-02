@@ -4,10 +4,10 @@
 
 .cashier-app.cashier-app--pos-screen,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
-  --pos-keypad-key-h: 42px;
-  --pos-keypad-gap: 5px;
-  --pos-keypad-digit-size: 1.125rem;
-  --pos-keypad-action-size: 0.6875rem;
+  --pos-keypad-key-h: 48px;
+  --pos-keypad-gap: 6px;
+  --pos-keypad-digit-size: 1.1875rem;
+  --pos-keypad-action-size: 0.75rem;
   --pos-keypad-quick-h: 36px;
   --pos-keypad-clear-h: 38px;
   --pos-keypad-radius: 10px;
@@ -47,8 +47,8 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box {
-  min-height: 40px;
-  padding: 6px 10px;
+  min-height: 42px;
+  padding: 0 10px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
@@ -76,16 +76,16 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-footer__sale,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer__sale {
-  min-height: 42px;
-  padding: 8px 12px;
+  min-height: 48px;
+  padding: 0 12px;
   border-radius: 10px;
-  font-size: 0.8125rem;
+  font-size: 0.875rem;
   gap: 8px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer {
-  min-height: 42px;
+  min-height: 48px;
   padding: 6px 8px;
   border-radius: 10px;
   flex: 0 0 6.5rem;
