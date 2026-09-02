@@ -38,7 +38,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 8px;
-  margin-top: auto;
+  margin-top: 0;
 }
 
 .pos-register-pay-rail .pos-register-pay-footer {
