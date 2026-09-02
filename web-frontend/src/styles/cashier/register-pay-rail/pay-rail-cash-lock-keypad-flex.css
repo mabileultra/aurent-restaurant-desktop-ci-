@@ -1,0 +1,149 @@
+/*
+ * Pay rail: фиксированный блок «К оплате / Получено / Сдача»,
+ * клавиатура занимает оставшуюся высоту и масштабируется.
+ */
+
+.cashier-app.cashier-app--pos-screen,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+  --pos-pay-cash-lock-gap: 3px;
+  --pos-pay-cash-lock-pad: 6px 8px;
+  --pos-pay-cash-summary-font: 0.8125rem;
+  --pos-pay-cash-summary-strong: 1.125rem;
+  --pos-pay-cash-received-h: 36px;
+  --pos-pay-cash-received-font: 1.375rem;
+  --pos-pay-cash-change-font: 1rem;
+  --pos-keypad-key-min: 34px;
+  --pos-keypad-key-max: 58px;
+  --pos-pay-footer-h: 36px;
+}
+
+/* ── Блок сумм — фиксированный, не растёт ── */
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-register-pay-cash,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-register-pay-cash {
+  flex: 0 0 auto;
+  flex-shrink: 0;
+  gap: var(--pos-pay-cash-lock-gap);
+  padding: var(--pos-pay-cash-lock-pad);
+  border-radius: 10px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row {
+  font-size: var(--pos-pay-cash-summary-font);
+  line-height: 1.2;
+  min-height: 20px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row strong,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row strong {
+  font-size: var(--pos-pay-cash-summary-strong);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box {
+  min-height: var(--pos-pay-cash-received-h);
+  height: var(--pos-pay-cash-received-h);
+  max-height: var(--pos-pay-cash-received-h);
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-label,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-label {
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
+  font-size: var(--pos-pay-cash-received-font);
+  line-height: 1;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row {
+  min-height: 20px;
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
+  font-size: var(--pos-pay-cash-change-font);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__card-remainder-value,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__card-remainder-value {
+  font-size: var(--pos-pay-cash-change-font);
+}
+
+/* ── Клавиатура — flex, растёт/сжимается ── */
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap {
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  min-height: calc(
+    (var(--pos-keypad-key-min) * 4) + (var(--pos-keypad-gap, 5px) * 3)
+  );
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__grid,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  grid-template-rows: repeat(4, minmax(var(--pos-keypad-key-min), 1fr));
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+  height: 100%;
+  min-height: var(--pos-keypad-key-min);
+  max-height: var(--pos-keypad-key-max);
+  font-size: clamp(0.875rem, 5cqi, var(--pos-keypad-digit-size, 1.125rem));
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
+  font-size: clamp(0.625rem, 2.8cqi, var(--pos-keypad-action-size, 0.6875rem));
+}
+
+/* ── Продажа + печать — чуть ниже ── */
+.cashier-app.cashier-app--pos-screen .pos-register-pay-footer__sale,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer__sale {
+  min-height: var(--pos-pay-footer-h);
+  max-height: var(--pos-pay-footer-h);
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  gap: 6px;
+  letter-spacing: 0.04em;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer {
+  min-height: var(--pos-pay-footer-h);
+  max-height: var(--pos-pay-footer-h);
+  padding: 0 6px;
+  border-radius: 8px;
+  flex: 0 0 6rem;
+  min-width: 6rem;
+  max-width: 6.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-register-pay-footer,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer {
+  gap: 6px;
+}
