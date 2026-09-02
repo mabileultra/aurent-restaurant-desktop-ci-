@@ -106,8 +106,9 @@ recreate_service() {
   compose stop "$service" 2>/dev/null || true
   compose rm -f "$service" 2>/dev/null || true
 
+  # Точное имя: compose иногда теряет ghost-контейнер после сбоя/ручного up.
   if [[ -n "$cname" ]]; then
-    docker ps -aq --filter "name=${cname}" | xargs -r docker rm -f
+    docker rm -f "$cname" 2>/dev/null || true
   fi
 
   compose up -d --no-deps --force-recreate "$service"
