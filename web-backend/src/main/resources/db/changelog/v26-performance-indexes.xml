@@ -19,7 +19,7 @@
         ON sale_items (sale_id);
 
       CREATE INDEX IF NOT EXISTS idx_products_company_active
-        ON products (company_id, active);
+        ON products (company_id, is_active);
 
       CREATE INDEX IF NOT EXISTS idx_stock_movements_store_created
         ON stock_movements (store_id, created_at DESC);
