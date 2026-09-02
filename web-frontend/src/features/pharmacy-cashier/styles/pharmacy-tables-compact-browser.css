@@ -1,0 +1,61 @@
+/* Аптека в браузере/планшете (<1024) — компактные таблицы без горизонтального «терминала» */
+
+@media (max-width: 1023px) {
+  .pharmacy-cashier.pharmacy-cashier--compact {
+    --pharm-row-py: 3px;
+    --pharm-row-px: 5px;
+    --pharm-head-py: 4px;
+    --pharm-name-lines: 2;
+    --pharm-row-min-h: 24px;
+    --pharm-action-btn: 26px;
+    --pharm-action-gap: 4px;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
+    grid-template-rows: minmax(84px, 0.88fr) minmax(112px, 1.12fr);
+    gap: 4px;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__table,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table {
+    font-size: 0.75rem;
+    line-height: 1.2;
+    min-width: 880px;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table {
+    min-width: 920px;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__table thead th,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table thead th {
+    padding: var(--pharm-head-py) var(--pharm-row-px);
+    font-size: 0.5625rem;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__table tbody td,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table tbody td {
+    padding: var(--pharm-row-py) var(--pharm-row-px);
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__row,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__row {
+    min-height: var(--pharm-row-min-h);
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__name,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__name {
+    font-size: 0.75rem;
+    line-height: 1.2;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field-wrap {
+    padding: 4px 6px;
+  }
+
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field,
+  .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact {
+    height: 28px;
+    font-size: 0.75rem;
+  }
+}

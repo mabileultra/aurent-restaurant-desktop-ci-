@@ -1,0 +1,121 @@
+/*
+ * Оплата на планшете/в браузере — компактнее, чем POS-терминал.
+ * Electron/desktop app сохраняет крупные touch-таргеты.
+ */
+
+@media (max-width: 1279px) {
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop),
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+    --pos-keypad-key-h: 42px;
+    --pos-keypad-gap: 5px;
+    --pos-keypad-digit-size: 1.125rem;
+    --pos-keypad-action-size: 0.6875rem;
+    --pos-keypad-quick-h: 36px;
+    --pos-keypad-clear-h: 38px;
+    --pos-keypad-radius: 10px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-methods__tile,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-methods__tile {
+    min-height: 44px;
+    padding: 5px 6px;
+    border-radius: 10px;
+    gap: 3px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-methods__tile-icon,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-methods__tile-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-methods__tile-label,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-methods__tile-label {
+    font-size: 0.625rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-card-providers__btn,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-card-providers__btn {
+    min-height: 40px;
+    padding: 4px 6px;
+    border-radius: 10px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-pay-cash__hint,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__hint {
+    display: none;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-pay-cash__received-box,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box {
+    min-height: 40px;
+    padding: 6px 10px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
+    font-size: 1.375rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-pay-cash__change-row,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row {
+    min-height: 28px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-pay-cash__change-value--ready,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value--ready {
+    font-size: 1.125rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail__tool,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__tool {
+    min-height: 38px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    border-radius: 10px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-footer__sale,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer__sale {
+    min-height: 42px;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    gap: 8px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-footer .pos-pay-print-toggle--footer,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer {
+    min-height: 42px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    flex: 0 0 6.5rem;
+    min-width: 6.5rem;
+    max-width: 7.5rem;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-register-pay-rail .pos-register-pay-cash,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-register-pay-cash {
+    gap: 4px;
+    padding: 6px 10px;
+  }
+
+  .cashier-app.cashier-app--pos-screen:not(.cashier-app--desktop) .pos-pay-card-type--register,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-pay-card-type--register {
+    min-height: 48px;
+    padding: 10px 12px;
+  }
+}
+
+/* Полноэкранная оплата на телефоне */
+@media (max-width: 799px) {
+  .cashier-app.cashier-app--pos-screen .cashier-register__actions-col--pay .pos-register-pay-rail {
+    max-width: 26rem;
+    margin-inline: auto;
+  }
+
+  .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap {
+    padding-inline: 8px;
+  }
+}

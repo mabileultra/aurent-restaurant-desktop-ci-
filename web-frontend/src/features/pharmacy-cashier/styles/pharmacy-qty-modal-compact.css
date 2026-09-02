@@ -1,0 +1,39 @@
+/* Модалка количества — компактнее, как смена кассы */
+.pharmacy-qty-modal__panel {
+  width: min(92vw, 360px);
+  padding: 1.1rem 1.25rem 1.25rem;
+  border-radius: 14px;
+}
+
+.pharmacy-qty-modal__title {
+  font-size: 1rem;
+}
+
+.pharmacy-qty-modal__meta p {
+  font-size: 0.8125rem;
+}
+
+.pharmacy-qty-modal__label {
+  margin-top: 1rem;
+}
+
+.pharmacy-qty-modal__input {
+  height: 44px;
+  font-size: 1.125rem;
+  border-radius: 10px;
+}
+
+.pharmacy-qty-modal__preview {
+  font-size: 0.875rem;
+}
+
+.pharmacy-qty-modal__actions {
+  gap: 8px;
+  margin-top: 1rem;
+}
+
+.pharmacy-qty-modal__btn {
+  min-height: 40px;
+  font-size: 0.8125rem;
+  border-radius: 10px;
+}

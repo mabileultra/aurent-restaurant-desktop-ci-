@@ -4,6 +4,7 @@
 @import './pharmacy-tables-layout.css';
 @import './pharmacy-viewport.css';
 @import './pharmacy-tables-compact.css';
+@import './pharmacy-tables-compact-browser.css';
 @import './pharmacy-compact-shell.css';
 
 .pharmacy-cashier__split {

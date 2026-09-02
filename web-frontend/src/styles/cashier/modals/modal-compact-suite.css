@@ -1,0 +1,79 @@
+/* Компактные модалки кассы (скидка, возврат) — не терминал на весь экран */
+
+.pos-pay-modal--discount,
+.pos-pay-modal--discount-terminal {
+  width: min(92vw, 360px) !important;
+  max-width: 360px !important;
+}
+
+.pos-pay-modal--discount .pos-pay-modal__title,
+.pos-pay-modal--discount-terminal .pos-pay-modal__title {
+  font-size: 0.9375rem;
+}
+
+.pos-order-discount-modal__head {
+  padding: 12px 14px 10px;
+}
+
+.pos-order-discount-modal__body {
+  padding: 12px 14px;
+  gap: 10px;
+}
+
+.pos-order-discount-modal__editor {
+  grid-template-columns: 38px 1fr 38px;
+}
+
+.pos-order-discount-modal__step {
+  width: 38px;
+  height: 38px;
+}
+
+.pos-order-discount-modal__input {
+  min-height: 42px;
+  font-size: 1.0625rem;
+}
+
+.pos-order-discount-modal__foot {
+  padding: 10px 14px 14px;
+}
+
+.pos-order-discount-modal__btn {
+  min-height: 40px;
+  font-size: 0.8125rem;
+}
+
+.pos-return-modal--terminal {
+  width: min(92vw, 400px) !important;
+  max-width: 400px !important;
+}
+
+.pos-return-modal--terminal.pos-return-modal--partial {
+  width: min(92vw, 400px) !important;
+  max-width: 400px !important;
+  max-height: min(88dvh, 36rem);
+}
+
+.pos-return-modal--terminal .pos-return-modal__header {
+  padding: 12px 14px 10px;
+}
+
+.pos-return-modal--terminal .pos-return-modal__title {
+  font-size: 0.9375rem;
+}
+
+.pos-return-modal--terminal .pos-return-modal__footer {
+  padding: 10px 14px 14px;
+  gap: 8px;
+}
+
+.pos-return-modal--terminal .pos-return-modal__cancel,
+.pos-return-modal--terminal .pos-return-modal__submit {
+  min-height: 40px;
+  font-size: 0.8125rem;
+}
+
+.pos-return-modal--terminal .pos-return-qty-stepper__btn {
+  width: 36px;
+  height: 36px;
+}

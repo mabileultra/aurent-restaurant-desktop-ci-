@@ -1,0 +1,26 @@
+/* Мои продажи — компактнее на планшете */
+
+@media (max-width: 900px) {
+  .cashier-sales-filters--toolbar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cashier-sales-filters--toolbar .cashier-sales-filters__field:first-child {
+    grid-column: 1 / -1;
+  }
+
+  .cashier-sales-master.has-selection .cashier-sales-receipt-pane {
+    max-height: 38vh;
+  }
+
+  .cashier-sales-receipt-pane__footer {
+    padding: 8px 10px;
+  }
+
+  .cashier-sales-receipt-pane__print,
+  .cashier-sales-receipt-pane__return {
+    min-height: 38px;
+    font-size: 0.8125rem;
+    border-radius: 8px;
+  }
+}

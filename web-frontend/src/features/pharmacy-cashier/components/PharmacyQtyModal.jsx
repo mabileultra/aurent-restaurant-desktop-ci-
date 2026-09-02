@@ -4,6 +4,7 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { roundQty } from '../../../utils/quantityFormat';
 import { round2 } from '../../../utils/taxAmounts';
 import '../styles/pharmacy-qty-modal.css';
+import '../styles/pharmacy-qty-modal-compact.css';
 
 export default function PharmacyQtyModal({
   open,
