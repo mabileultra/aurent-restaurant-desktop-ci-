@@ -1,0 +1,433 @@
+/*
+ * Плотный POS — браузер, Electron, 16" ноутбук, планшетный POS-монитор.
+ * Эталон: больше товаров на экране, компактный чек и нижняя панель.
+ */
+
+.cashier-app.cashier-app--pos-screen,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+  --cashier-gap: 5px;
+  --cashier-pad: 6px;
+  --cashier-bottom-nav-h: 48px;
+  --pos-keypad-key-h: 42px;
+  --pos-keypad-gap: 5px;
+  --pos-keypad-digit-size: 1.125rem;
+  --pos-keypad-action-size: 0.6875rem;
+  --pos-keypad-quick-h: 36px;
+  --pos-keypad-clear-h: 38px;
+  --pos-keypad-cell-min: 36px;
+  --cashier-touch-min: 36px;
+
+  --pos-density-catalog-search-h: 34px;
+  --pos-density-catalog-head-pad: 6px 8px 4px;
+  --pos-density-catalog-body-pad: 4px 8px 8px;
+  --pos-density-grid-gap: 4px;
+  --pos-density-list-gap: 3px;
+
+  --pos-density-product-cols: repeat(auto-fill, minmax(min(100%, 96px), 1fr));
+  --pos-density-product-min-h: 54px;
+  --pos-density-product-pad: 5px 7px;
+  --pos-density-product-gap: 2px;
+  --pos-density-product-code: 0.5625rem;
+  --pos-density-product-name: 0.6875rem;
+  --pos-density-product-name-lines: 2;
+  --pos-density-product-price: 0.6875rem;
+
+  --pos-density-row-pad: 4px 8px;
+  --pos-density-row-gap: 8px;
+  --pos-density-row-name: 0.6875rem;
+  --pos-density-row-name-lines: 1;
+  --pos-density-row-code: 0.5625rem;
+  --pos-density-row-price: 0.6875rem;
+
+  --pos-density-cart-head-pad: 6px 10px;
+  --pos-density-cart-col-pad: 4px 5px;
+  --pos-density-cart-head-font: 0.5625rem;
+  --pos-density-cart-name: 0.6875rem;
+  --pos-density-cart-sku: 0.5625rem;
+  --pos-density-cart-money: 0.75rem;
+  --pos-density-cart-remove: 28px;
+  --pos-density-qty-h: 28px;
+  --pos-density-qty-btn: 26px;
+  --pos-density-qty-font: 0.75rem;
+
+  --pos-density-nav-btn-pad: 3px 4px;
+  --pos-density-nav-font: 0.5625rem;
+  --pos-density-nav-icon: 16px;
+  --pos-density-nav-radius: 8px;
+  --pos-density-nav-gap: 4px;
+}
+
+/* Перебиваем pos-profiles на Full HD и pos-desktop */
+@media (min-width: 1280px) {
+  .cashier-app.cashier-app--pos-screen,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+    --cashier-gap: 5px;
+    --cashier-pad: 6px;
+    --cashier-bottom-nav-h: 48px;
+    --pos-keypad-key-h: 42px;
+    --pos-keypad-digit-size: 1.125rem;
+  }
+}
+
+@media (min-width: 1600px) {
+  .cashier-app.cashier-app--pos-screen,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
+    --cashier-gap: 5px;
+    --cashier-pad: 6px;
+    --cashier-bottom-nav-h: 48px;
+    --pos-keypad-key-h: 42px;
+    --pos-keypad-digit-size: 1.125rem;
+  }
+}
+
+.cashier-app.cashier-app--pos-desktop.cashier-app--pos-screen {
+  --cashier-bottom-nav-h: 48px;
+  --cashier-gap: 5px;
+  --cashier-pad: 6px;
+}
+
+/* ── Каталог: поиск, категории ── */
+.cashier-app.cashier-app--pos-screen .pos-catalog-panel__head,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-panel__head {
+  padding: var(--pos-density-catalog-head-pad);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-search-bar__field,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-search-bar__field {
+  height: var(--pos-density-catalog-search-h);
+  padding: 0 8px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-search-bar__input,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-search-bar__input {
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-search-bar__scan,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-search-bar__scan {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-nav,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-nav {
+  padding: 0 8px 4px;
+  gap: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-nav__pill,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-nav__pill {
+  padding: 3px 8px;
+  font-size: 0.625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-catalog-panel__body,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-panel__body {
+  padding: var(--pos-density-catalog-body-pad);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-catalog-toolbar,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-toolbar {
+  padding: 0 8px 4px;
+  gap: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-catalog-toolbar__title,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-toolbar__title {
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-catalog-toolbar__view-btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-toolbar__view-btn {
+  width: 28px;
+  height: 26px;
+}
+
+/* ── Сетка товаров: 4–5 в ряд ── */
+.cashier-app.cashier-app--pos-screen .pos-product-grid,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-grid {
+  grid-template-columns: var(--pos-density-product-cols);
+  gap: var(--pos-density-grid-gap);
+}
+
+@container pos-catalog (min-width: 420px) {
+  .cashier-app.cashier-app--pos-screen .pos-product-grid,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  }
+}
+
+@container pos-catalog (min-width: 560px) {
+  .cashier-app.cashier-app--pos-screen .pos-product-grid,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  }
+}
+
+@container pos-catalog (min-width: 720px) {
+  .cashier-app.cashier-app--pos-screen .pos-product-grid,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-card,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card {
+  --pos-product-card-min-h: var(--pos-density-product-min-h);
+  min-height: var(--pos-density-product-min-h);
+  height: auto;
+  padding: var(--pos-density-product-pad);
+  gap: var(--pos-density-product-gap);
+  border-radius: 8px;
+}
+
+@container pos-catalog (min-width: 640px) {
+  .cashier-app.cashier-app--pos-screen .pos-product-card,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card {
+    --pos-product-card-min-h: 58px;
+    min-height: 58px;
+  }
+}
+
+@container pos-catalog (min-width: 900px) {
+  .cashier-app.cashier-app--pos-screen .pos-product-card,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card {
+    --pos-product-card-min-h: 60px;
+    min-height: 60px;
+  }
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-card__code,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card__code {
+  font-size: var(--pos-density-product-code);
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  overflow: hidden;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-card__name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card__name {
+  font-size: var(--pos-density-product-name);
+  line-height: 1.2;
+  -webkit-line-clamp: var(--pos-density-product-name-lines);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-card__price,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-card__price {
+  padding-top: 1px;
+  font-size: var(--pos-density-product-price);
+  font-weight: 800;
+}
+
+/* ── Список товаров: 10–13 строк ── */
+.cashier-app.cashier-app--pos-screen .pos-product-list,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-list {
+  gap: var(--pos-density-list-gap);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-row,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-row {
+  padding: var(--pos-density-row-pad);
+  gap: var(--pos-density-row-gap);
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-row__name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-row__name {
+  font-size: var(--pos-density-row-name);
+  line-height: 1.2;
+  font-weight: 600;
+  -webkit-line-clamp: var(--pos-density-row-name-lines);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-row__code,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-row__code {
+  margin-top: 1px;
+  font-size: var(--pos-density-row-code);
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-product-row__price,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-product-row__price {
+  font-size: var(--pos-density-row-price);
+  font-weight: 800;
+}
+
+/* ── Текущий чек ── */
+.cashier-app.cashier-app--pos-screen .pos-order-panel__head,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel__head {
+  padding: var(--pos-density-cart-head-pad);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel__title,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel__title {
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col {
+  padding: var(--pos-density-cart-col-pad);
+  font-size: var(--pos-density-cart-head-font);
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col {
+  padding: var(--pos-density-cart-col-pad);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col--name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col--name,
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__head .pos-cart-table__col--name {
+  padding-left: 8px;
+  padding-right: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col--qty,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__col--qty {
+  padding: 3px 2px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__name {
+  font-size: var(--pos-density-cart-name);
+  line-height: 1.2;
+  font-weight: 600;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__sku,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__sku {
+  margin-top: 1px;
+  font-size: var(--pos-density-cart-sku);
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__price-btn span,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__price-btn span {
+  font-size: var(--pos-density-cart-money);
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__sum,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__sum {
+  font-size: var(--pos-density-cart-money);
+  line-height: 1.15;
+  font-weight: 800;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__remove-btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__remove-btn {
+  width: var(--pos-density-cart-remove);
+  height: var(--pos-density-cart-remove);
+  min-width: var(--pos-density-cart-remove);
+  min-height: var(--pos-density-cart-remove);
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__remove-btn svg,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-cart-table__remove-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control {
+  max-width: 6.5rem;
+  min-height: var(--pos-density-qty-h);
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__btn {
+  width: var(--pos-density-qty-btn);
+  height: var(--pos-density-qty-btn);
+  min-width: var(--pos-density-qty-btn);
+  min-height: var(--pos-density-qty-btn);
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__val,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control--compact .pos-qty-control__val,
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control__input,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-order-panel--register .pos-qty-control__input {
+  min-height: var(--pos-density-qty-btn);
+  font-size: var(--pos-density-qty-font);
+  padding: 2px;
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__name {
+  font-size: var(--pos-density-cart-name);
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn,
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__price-btn span,
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-cart-table__sum {
+  font-size: var(--pos-density-cart-money);
+}
+
+.cashier-app.cashier-app--pos-desktop .pos-order-panel--register .pos-order-panel__head {
+  padding: var(--pos-density-cart-head-pad);
+}
+
+/* ── Нижняя навигация ── */
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed),
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: 48px;
+}
+
+@media (min-width: 1024px) {
+  .cashier-app.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed),
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed) {
+    --cashier-bottom-nav-h: 48px;
+  }
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav {
+  gap: var(--pos-density-nav-gap);
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn {
+  gap: 2px;
+  padding: var(--pos-density-nav-btn-pad);
+  border-radius: var(--pos-density-nav-radius);
+  font-size: var(--pos-density-nav-font);
+  line-height: 1.1;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn span,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  word-break: normal;
+  overflow-wrap: normal;
+  hyphens: none;
+  line-height: 1.1;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn svg,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn svg {
+  width: var(--pos-density-nav-icon) !important;
+  height: var(--pos-density-nav-icon) !important;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
+  font-size: 0.5625rem;
+}
