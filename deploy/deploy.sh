@@ -13,10 +13,15 @@ cd "$ROOT"
 
 COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.prod.yml}"
 ENV_FILE="${ENV_FILE:-.env}"
+STAGING_OVERLAY="${STAGING_OVERLAY:-docker-compose.staging.yml}"
 SUBCOMMAND="${1:-deploy}"
 
 compose() {
-  docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+  if [[ "${STAGING:-}" == "1" ]]; then
+    docker compose -f "$COMPOSE_FILE" -f "$STAGING_OVERLAY" --env-file "$ENV_FILE" "$@"
+  else
+    docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" "$@"
+  fi
 }
 
 # --- .env: безопасная загрузка (только строки KEY=VALUE, без выполнения мусора) ---

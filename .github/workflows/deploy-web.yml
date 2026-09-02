@@ -16,6 +16,7 @@ on:
       - 'shared-kernel/**'
       - 'deploy/**'
       - 'docker-compose.prod.yml'
+      - 'docker-compose.staging.yml'
       - '.github/workflows/deploy-web.yml'
   workflow_dispatch:
     inputs:

@@ -45,6 +45,21 @@ bash deploy/update.sh
 
 Или merge в `main` → CI сам деплоит.
 
+## Staging (проверка до production)
+
+Отдельный стек на **других портах** и **своих volumes** — не трогает prod.
+
+```bash
+cp .env.staging.example .env.staging
+nano .env.staging   # пароли, JWT_SECRET (другие, чем на проде!)
+
+STAGING=1 ENV_FILE=.env.staging bash deploy/deploy.sh check
+STAGING=1 ENV_FILE=.env.staging bash deploy/deploy.sh
+```
+
+Проверка: `http://127.0.0.1:9080` (API gateway: `:9081`).  
+Telegram-боты на staging **выключены** по умолчанию.
+
 ### GitHub Actions secrets
 
 | Secret | Назначение |

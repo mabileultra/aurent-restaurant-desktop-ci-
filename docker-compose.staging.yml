@@ -1,0 +1,122 @@
+# Staging overlay — изолированный стек на том же сервере (другие порты, volumes, container names).
+# Запуск:
+#   cp .env.staging.example .env.staging && nano .env.staging
+#   STAGING=1 ENV_FILE=.env.staging bash deploy/deploy.sh check
+#   STAGING=1 ENV_FILE=.env.staging bash deploy/deploy.sh
+#
+# Или вручную:
+#   docker compose -f docker-compose.prod.yml -f docker-compose.staging.yml --env-file .env.staging up -d --build
+
+name: aurent-pos-staging
+
+services:
+  postgres:
+    container_name: aurent-staging-pos-db
+    ports:
+      - '127.0.0.1:15432:5432'
+    volumes:
+      - staging_pos_pg_data:/var/lib/postgresql/data
+
+  finance-db:
+    container_name: aurent-staging-finance-db
+    ports:
+      - '127.0.0.1:15435:5432'
+    volumes:
+      - staging_finance_pg_data:/var/lib/postgresql/data
+
+  redpanda:
+    container_name: aurent-staging-redpanda
+    ports:
+      - '127.0.0.1:29092:19092'
+
+  finance-service:
+    container_name: aurent-staging-finance-service
+
+  identity-db:
+    container_name: aurent-staging-identity-db
+    ports:
+      - '127.0.0.1:15433:5432'
+    volumes:
+      - staging_identity_pg_data:/var/lib/postgresql/data
+
+  identity-service:
+    container_name: aurent-staging-identity-service
+    ports:
+      - '127.0.0.1:18081:8081'
+
+  platform-db:
+    container_name: aurent-staging-platform-db
+    ports:
+      - '127.0.0.1:15436:5432'
+    volumes:
+      - staging_platform_pg_data:/var/lib/postgresql/data
+
+  platform-service:
+    container_name: aurent-staging-platform-service
+    ports:
+      - '127.0.0.1:18084:8084'
+
+  reporting-db:
+    container_name: aurent-staging-reporting-db
+    ports:
+      - '127.0.0.1:15437:5432'
+    volumes:
+      - staging_reporting_pg_data:/var/lib/postgresql/data
+
+  reporting-service:
+    container_name: aurent-staging-reporting-service
+    ports:
+      - '127.0.0.1:18085:8085'
+
+  crm-db:
+    container_name: aurent-staging-crm-db
+    ports:
+      - '127.0.0.1:15434:5432'
+    volumes:
+      - staging_crm_pg_data:/var/lib/postgresql/data
+
+  crm-service:
+    container_name: aurent-staging-crm-service
+    ports:
+      - '127.0.0.1:18083:8083'
+
+  ai-service:
+    container_name: aurent-staging-ai-service
+    ports:
+      - '127.0.0.1:18086:8086'
+
+  backend:
+    container_name: aurent-staging-backend
+    environment:
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-staging}
+      OPS_BACKUP_DIR: /ops/backups
+      OPS_DISK_CHECK_PATH: /ops/backups
+    volumes:
+      - staging_backend_uploads:/app/uploads
+      - staging_backend_logs:/app/logs
+      - ${BACKUP_HOST_DIR:-./backups/postgres-staging}:/ops/backups:ro
+
+  api-gateway:
+    container_name: aurent-staging-api-gateway
+
+  frontend:
+    container_name: aurent-staging-frontend
+    build:
+      args:
+        VITE_SENTRY_ENVIRONMENT: ${VITE_SENTRY_ENVIRONMENT:-staging}
+
+  telegram-support-bot:
+    profiles: [staging-telegram]
+
+  telegram-web-support-bot:
+    profiles: [staging-telegram]
+
+volumes:
+  staging_pos_pg_data:
+  staging_finance_pg_data:
+  staging_identity_pg_data:
+  staging_platform_pg_data:
+  staging_reporting_pg_data:
+  staging_crm_pg_data:
+  staging_backend_uploads:
+  staging_backend_logs:
