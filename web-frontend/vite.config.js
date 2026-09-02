@@ -22,17 +22,15 @@ export default defineConfig({
           if (id.includes('node_modules')) {
             if (id.includes('recharts')) return 'charts';
             if (id.includes('@tanstack/react-query')) return 'query';
-            if (
-              id.includes('react-hook-form')
-              || id.includes('zod')
-              || id.includes('@hookform')
-            ) {
-              return 'forms';
-            }
+            // react-hook-form + zod must stay with React — separate "forms" chunk causes
+            // "Cannot access before initialization" in production (circular chunk deps).
             if (
               id.includes('react')
               || id.includes('react-dom')
               || id.includes('react-router')
+              || id.includes('react-hook-form')
+              || id.includes('zod')
+              || id.includes('@hookform')
             ) {
               return 'vendor';
             }
