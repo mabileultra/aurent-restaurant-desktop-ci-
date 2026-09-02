@@ -5,15 +5,15 @@
 
 .cashier-app.cashier-app--pos-screen,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
-  --pos-pay-cash-lock-gap: 4px;
-  --pos-pay-cash-lock-pad: 8px 10px;
-  --pos-pay-cash-summary-font: 0.875rem;
-  --pos-pay-cash-summary-strong: 1.25rem;
-  --pos-pay-cash-received-h: 42px;
-  --pos-pay-cash-received-font: 1.5rem;
-  --pos-pay-cash-change-font: 1.0625rem;
-  --pos-keypad-key-h: 48px;
-  --pos-pay-footer-h: 48px;
+  --pos-pay-cash-lock-gap: 5px;
+  --pos-pay-cash-lock-pad: 10px 12px;
+  --pos-pay-cash-summary-font: 0.9375rem;
+  --pos-pay-cash-summary-strong: 1.3125rem;
+  --pos-pay-cash-received-h: 48px;
+  --pos-pay-cash-received-font: 1.625rem;
+  --pos-pay-cash-change-font: 1.125rem;
+  --pos-keypad-key-h: 52px;
+  --pos-pay-footer-h: 52px;
 }
 
 /* ── Блок сумм — фиксированный, не растёт ── */
@@ -30,7 +30,7 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row {
   font-size: var(--pos-pay-cash-summary-font);
   line-height: 1.2;
-  min-height: 22px;
+  min-height: 24px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row strong,
@@ -60,7 +60,7 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row {
-  min-height: 22px;
+  min-height: 24px;
   font-size: 0.75rem;
 }
 
@@ -85,13 +85,13 @@
   flex: 0 0 auto;
   flex-shrink: 0;
   min-height: calc(
-    (var(--pos-keypad-key-h, 48px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
   );
   height: calc(
-    (var(--pos-keypad-key-h, 48px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
   );
   max-height: calc(
-    (var(--pos-keypad-key-h, 48px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
+    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
   );
   display: flex;
   flex-direction: column;
@@ -113,15 +113,15 @@
   flex: 0 0 auto;
   min-height: 0;
   height: auto;
-  grid-template-rows: repeat(4, var(--pos-keypad-key-h, 48px));
+  grid-template-rows: repeat(4, var(--pos-keypad-key-h, 52px));
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
-  height: var(--pos-keypad-key-h, 48px);
-  min-height: var(--pos-keypad-key-h, 48px);
-  max-height: var(--pos-keypad-key-h, 48px);
-  font-size: var(--pos-keypad-digit-size, 1.1875rem);
+  height: var(--pos-keypad-key-h, 52px);
+  min-height: var(--pos-keypad-key-h, 52px);
+  max-height: var(--pos-keypad-key-h, 52px);
+  font-size: var(--pos-keypad-digit-size, 1.25rem);
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
@@ -137,7 +137,7 @@
   max-height: var(--pos-pay-footer-h);
   padding: 0 12px;
   border-radius: 10px;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   gap: 8px;
   letter-spacing: 0.04em;
 }
@@ -149,9 +149,10 @@
   max-height: var(--pos-pay-footer-h);
   padding: 0 8px;
   border-radius: 10px;
-  flex: 0 0 6.75rem;
-  min-width: 6.75rem;
-  max-width: 7.5rem;
+  flex: 0 0 7.25rem;
+  min-width: 7.25rem;
+  max-width: 8rem;
+  font-size: 0.6875rem;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__tools,
@@ -165,13 +166,13 @@
 }
 
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
-  --pos-pay-cash-lock-gap: 4px;
-  --pos-pay-cash-lock-pad: 8px 10px;
-  --pos-pay-cash-summary-font: 0.875rem;
-  --pos-pay-cash-summary-strong: 1.25rem;
-  --pos-pay-cash-received-h: 42px;
-  --pos-pay-cash-received-font: 1.5rem;
-  --pos-pay-cash-change-font: 1.0625rem;
-  --pos-keypad-key-h: 48px;
-  --pos-pay-footer-h: 48px;
+  --pos-pay-cash-lock-gap: 5px;
+  --pos-pay-cash-lock-pad: 10px 12px;
+  --pos-pay-cash-summary-font: 0.9375rem;
+  --pos-pay-cash-summary-strong: 1.3125rem;
+  --pos-pay-cash-received-h: 48px;
+  --pos-pay-cash-received-font: 1.625rem;
+  --pos-pay-cash-change-font: 1.125rem;
+  --pos-keypad-key-h: 52px;
+  --pos-pay-footer-h: 52px;
 }
