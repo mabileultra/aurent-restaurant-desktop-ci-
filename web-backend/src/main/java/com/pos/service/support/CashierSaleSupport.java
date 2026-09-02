@@ -42,18 +42,22 @@ public class CashierSaleSupport {
             return store;
         }
 
-        Set<Integer> allowed = cashier.getStores().stream().map(Store::getId).collect(Collectors.toSet());
-        if (!allowed.isEmpty() && !allowed.contains(storeId)) {
-            throw new BadRequestException("You are not assigned to this store");
-        }
-        if (allowed.isEmpty() && cashier.getCompany() != null && store.getCompany() != null
-            && cashier.getCompany().getId().equals(store.getCompany().getId())) {
+        if ("CASHIER".equals(role) || "WAITER".equals(role)) {
+            Set<Integer> allowed = cashier.getStores().stream().map(Store::getId).collect(Collectors.toSet());
+            if (allowed.isEmpty()) {
+                throw new BadRequestException("No store assigned to your account");
+            }
+            if (!allowed.contains(storeId)) {
+                throw new BadRequestException("You are not assigned to this store");
+            }
+            if (cashier.getCompany() != null && store.getCompany() != null
+                && !cashier.getCompany().getId().equals(store.getCompany().getId())) {
+                throw new BadRequestException("Store does not belong to your company");
+            }
             return store;
         }
-        if (allowed.isEmpty()) {
-            throw new BadRequestException("No store assigned to your account");
-        }
-        return store;
+
+        throw new BadRequestException("You are not allowed to use this store");
     }
 
     public BigDecimal resolveUnitPrice(Product product, Integer storeId) {

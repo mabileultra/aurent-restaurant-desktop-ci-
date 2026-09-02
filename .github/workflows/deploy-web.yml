@@ -44,6 +44,9 @@ jobs:
       - name: Tenant isolation check
         run: node scripts/check-tenant-isolation.mjs
 
+      - name: Cashier security check
+        run: node scripts/check-cashier-security.mjs
+
       - name: Setup SSH
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}

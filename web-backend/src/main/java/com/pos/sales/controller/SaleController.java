@@ -36,6 +36,7 @@ public class SaleController {
     private final SaleService saleService;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Создать продажу", description = "Оформление новой продажи (чека)")
     @ApiResponse(responseCode = "201", description = "Продажа создана")
     public ResponseEntity<SaleResponse> createSale(

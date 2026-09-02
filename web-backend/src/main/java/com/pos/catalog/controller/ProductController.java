@@ -104,6 +104,7 @@ public class ProductController {
     }
 
     @GetMapping("/{id}/lifecycle")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Жизненный цикл товара", description = "История движений и операций по товару")
     @ApiResponse(responseCode = "200", description = "История товара")
     public ResponseEntity<ProductLifecycleResponse> getProductLifecycle(
