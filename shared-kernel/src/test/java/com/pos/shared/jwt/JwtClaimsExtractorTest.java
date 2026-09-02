@@ -46,6 +46,16 @@ class JwtClaimsExtractorTest {
         assertEquals(42, JwtClaimsExtractor.resolveCompanyIdSecure(null, "SUPER_ADMIN", "42"));
     }
 
+    @Test
+    void resolveCompanyIdSecure_allowsHeaderForPlatformAdmin() {
+        assertEquals(15, JwtClaimsExtractor.resolveCompanyIdSecure(null, "PLATFORM_ADMIN", "15"));
+    }
+
+    @Test
+    void resolveCompanyIdSecure_prefersJwtOverHeaderForSuperAdmin() {
+        assertEquals(7, JwtClaimsExtractor.resolveCompanyIdSecure(7, "SUPER_ADMIN", "999"));
+    }
+
     private static String tokenWithClaims(Integer companyId, List<String> roles) {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
         return Jwts.builder()

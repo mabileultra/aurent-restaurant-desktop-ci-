@@ -40,6 +40,9 @@ jobs:
       - name: Module sync check
         run: node scripts/check-module-sync.mjs
 
+      - name: Tenant isolation check
+        run: node scripts/check-tenant-isolation.mjs
+
       - name: Setup SSH
         env:
           DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}

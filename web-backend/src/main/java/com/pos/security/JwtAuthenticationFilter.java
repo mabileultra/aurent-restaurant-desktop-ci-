@@ -3,6 +3,8 @@ package com.pos.security;
 import com.pos.entity.User;
 import com.pos.security.cache.AuthenticatedUserCache;
 import com.pos.service.identity.AuthenticatedUserBootstrapService;
+import com.pos.shared.http.TenantHeaders;
+import com.pos.shared.jwt.JwtClaimsExtractor;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -81,10 +83,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
-            Integer companyId = jwtService.extractCompanyId(jwt);
-            if (companyId == null && user.getCompany() != null) {
-                companyId = user.getCompany().getId();
+            Integer claimsCompanyId = jwtService.extractCompanyId(jwt);
+            if (claimsCompanyId == null && user.getCompany() != null) {
+                claimsCompanyId = user.getCompany().getId();
             }
+            String role = jwtService.extractPrimaryRole(jwt);
+            Integer companyId = JwtClaimsExtractor.resolveCompanyIdSecure(
+                claimsCompanyId,
+                role,
+                request.getHeader(TenantHeaders.COMPANY_ID)
+            );
             boolean bypassRls = currentUserProvider.isSuperAdmin(user);
             TenantContext.set(companyId, bypassRls);
         } catch (Exception ignored) {

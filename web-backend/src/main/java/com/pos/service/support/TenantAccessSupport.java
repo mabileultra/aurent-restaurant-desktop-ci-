@@ -129,9 +129,31 @@ public class TenantAccessSupport {
         if (product == null || product.getCompany() == null) {
             return;
         }
-        Integer companyId = effectiveCompanyIdOrNull();
-        if (companyId != null && !product.getCompany().getId().equals(companyId)) {
+        Integer productCompanyId = product.getCompany().getId();
+        User actor = currentUser();
+        if (currentUserProvider.isSuperAdmin(actor)) {
+            Integer scopedCompanyId = TenantContext.companyId().orElse(null);
+            if (scopedCompanyId != null && !productCompanyId.equals(scopedCompanyId)) {
+                throw new BadRequestException("Access denied to this product");
+            }
+            return;
+        }
+        Integer companyId = requireEffectiveCompanyId();
+        if (!productCompanyId.equals(companyId)) {
             throw new BadRequestException("Access denied to this product");
         }
+    }
+
+    /**
+     * Query/path companyId: super-admin may scope freely; others must match their tenant.
+     */
+    public Integer resolveScopedCompanyId(Integer requestedCompanyId) {
+        if (isSuperAdmin()) {
+            return requestedCompanyId;
+        }
+        if (requestedCompanyId != null) {
+            assertCanAccessCompany(requestedCompanyId);
+        }
+        return requireEffectiveCompanyId();
     }
 }

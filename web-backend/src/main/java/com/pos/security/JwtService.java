@@ -39,6 +39,14 @@ public class JwtService {
         return JwtClaimsExtractor.extractCompanyId(extractAllClaims(token));
     }
 
+    public String extractPrimaryRole(String token) {
+        return JwtClaimsExtractor.extractPrimaryRole(extractAllClaims(token));
+    }
+
+    public Claims extractClaims(String token) {
+        return extractAllClaims(token);
+    }
+
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
         String subject = userDetails instanceof User userEntity
             ? userEntity.getId().toString()

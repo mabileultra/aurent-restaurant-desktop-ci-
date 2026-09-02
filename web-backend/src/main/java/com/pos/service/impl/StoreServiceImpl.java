@@ -79,7 +79,7 @@ public class StoreServiceImpl implements StoreService {
         String businessType,
         Pageable pageable
     ) {
-        Integer scopedCompanyId = resolveListCompanyId(companyId);
+        Integer scopedCompanyId = tenantAccess.resolveScopedCompanyId(companyId);
         Pageable sorted = PageRequest.of(
             pageable.getPageNumber(),
             pageable.getPageSize(),
@@ -215,13 +215,6 @@ public class StoreServiceImpl implements StoreService {
                 "Нельзя удалить магазин: есть связанные данные (" + String.join("; ", blocks) + ")"
             );
         }
-    }
-
-    private Integer resolveListCompanyId(Integer companyId) {
-        if (tenantAccess.isSuperAdmin()) {
-            return companyId;
-        }
-        return tenantAccess.requireEffectiveCompanyId();
     }
 
     private Store requireStore(Integer id) {
