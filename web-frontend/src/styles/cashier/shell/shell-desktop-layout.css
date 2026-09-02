@@ -47,6 +47,30 @@ html.cashier-shell--desktop #root {
   padding-inline: 12px;
 }
 
+.cashier-app.cashier-app--desktop .cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: 48px;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__btn {
+  gap: 2px;
+  padding: 3px 4px;
+  border-radius: 8px;
+  font-size: 0.5625rem;
+  line-height: 1.1;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__btn span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  hyphens: none;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__btn svg {
+  width: 16px !important;
+  height: 16px !important;
+}
+
 /* Мои продажи — master-detail на широком десктопе */
 @media (min-width: 1200px) {
   .cashier-app.cashier-app--desktop .cashier-sales-master.has-selection {
@@ -60,19 +84,28 @@ html.cashier-shell--desktop #root {
   }
 }
 
-/* Electron: токены под типичное окно 1024–1920 */
+/* Electron: те же компактные токены, что и в браузере POS */
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
-  --cashier-bottom-nav-h: clamp(96px, 11vh, 112px);
+  --cashier-bottom-nav-h: 48px;
+  --cashier-gap: 5px;
+  --cashier-pad: 6px;
+  --pos-keypad-key-h: 42px;
+  --pos-keypad-gap: 5px;
+  --pos-keypad-digit-size: 1.125rem;
+  --pos-keypad-action-size: 0.6875rem;
+  --pos-keypad-cell-min: 36px;
+  --cashier-touch-min: 36px;
 }
 
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register__bottom-nav {
-  padding-bottom: 8px;
+  padding-bottom: 4px;
 }
 
 @media (min-width: 1600px) and (min-height: 900px) {
   .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
-    --cashier-pay-w: clamp(320px, 22vw, 440px);
-    --cashier-gap: 10px;
+    --cashier-pay-w: clamp(300px, 22vw, 400px);
+    --cashier-gap: 5px;
+    --cashier-bottom-nav-h: 48px;
   }
 }
 

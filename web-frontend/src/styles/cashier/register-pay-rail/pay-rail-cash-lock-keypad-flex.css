@@ -147,3 +147,16 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer {
   gap: 6px;
 }
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen {
+  --pos-pay-cash-lock-gap: 3px;
+  --pos-pay-cash-lock-pad: 6px 8px;
+  --pos-pay-cash-summary-font: 0.8125rem;
+  --pos-pay-cash-summary-strong: 1.125rem;
+  --pos-pay-cash-received-h: 36px;
+  --pos-pay-cash-received-font: 1.375rem;
+  --pos-pay-cash-change-font: 1rem;
+  --pos-keypad-key-min: 34px;
+  --pos-keypad-key-max: 58px;
+  --pos-pay-footer-h: 36px;
+}

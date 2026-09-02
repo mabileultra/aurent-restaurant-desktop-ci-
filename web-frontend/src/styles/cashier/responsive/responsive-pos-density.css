@@ -86,6 +86,31 @@
   --cashier-pad: 6px;
 }
 
+/* Electron — перебиваем shell-desktop и pos-profiles */
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen {
+  --cashier-bottom-nav-h: 48px;
+  --cashier-gap: 5px;
+  --cashier-pad: 6px;
+  --cashier-pay-w: clamp(280px, 28%, 380px);
+  --pos-keypad-key-h: 42px;
+  --pos-keypad-gap: 5px;
+  --pos-keypad-digit-size: 1.125rem;
+  --pos-keypad-action-size: 0.6875rem;
+  --pos-keypad-quick-h: 36px;
+  --pos-keypad-clear-h: 38px;
+  --pos-keypad-cell-min: 36px;
+  --cashier-touch-min: 36px;
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .pos-product-grid {
+  grid-template-columns: var(--pos-density-product-cols);
+  gap: var(--pos-density-grid-gap);
+}
+
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-bottom-nav-shell:not(.is-collapsed) {
+  --cashier-bottom-nav-h: 48px;
+}
+
 /* ── Каталог: поиск, категории ── */
 .cashier-app.cashier-app--pos-screen .pos-catalog-panel__head,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-catalog-panel__head {
