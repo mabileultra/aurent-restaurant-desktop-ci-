@@ -16,9 +16,9 @@
 }
 
 .cashier-app.cashier-app--light .pos-pay-register-rail__back:hover {
-  border-color: rgb(0 104 71 / 0.35);
-  color: var(--pos-green);
-  background: var(--pos-green-soft);
+  border-color: rgb(30 58 95 / 0.28);
+  color: var(--pos-ink);
+  background: var(--pos-surface-hover);
 }
 
 .cashier-app.cashier-app--light .pos-pay-register-rail__title {

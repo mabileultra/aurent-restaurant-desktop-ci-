@@ -10,6 +10,6 @@
 }
 
 .cashier-app.cashier-app--light .cashier-lock-overlay__icon {
-  color: var(--pos-green);
+  color: var(--pos-ink);
 }
 

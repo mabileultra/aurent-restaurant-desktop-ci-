@@ -116,15 +116,29 @@
   color: var(--pos-ink);
 }
 
-.cashier-app.cashier-app--light .pos-keypad__key {
+.cashier-app.cashier-app--light .pos-keypad__key,
+.cashier-app.cashier-app--light .pos-keypad__quick-btn {
+  background: var(--pos-surface);
+  border-color: var(--pos-border);
+  color: var(--pos-ink);
+  box-shadow: none;
+}
+
+.cashier-app.cashier-app--light .pos-keypad__key:hover:not(:disabled),
+.cashier-app.cashier-app--light .pos-keypad__quick-btn:hover:not(:disabled) {
   background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+}
+
+.cashier-app.cashier-app--light .pos-keypad__key--action,
+.cashier-app.cashier-app--light .pos-keypad__key--clear {
+  background: var(--pos-surface-hover);
   border-color: var(--pos-border);
   color: var(--pos-ink);
 }
 
-.cashier-app.cashier-app--light .pos-keypad__key--clear {
-  background: var(--pos-surface-hover);
-  color: var(--pos-ink);
+.cashier-app.cashier-app--light .pos-keypad__key--icon {
+  color: var(--pos-muted);
 }
 
 /* Нижнее меню */

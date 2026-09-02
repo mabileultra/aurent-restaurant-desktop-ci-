@@ -8,9 +8,9 @@
   --cashier-gap: 5px;
   --cashier-pad: 6px;
   --cashier-bottom-nav-h: 48px;
-  --pos-keypad-key-h: 52px;
+  --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 6px;
-  --pos-keypad-digit-size: 1.125rem;
+  --pos-keypad-digit-size: 1.3125rem;
   --pos-keypad-action-size: 0.6875rem;
   --pos-keypad-quick-h: 36px;
   --pos-keypad-clear-h: 38px;
@@ -64,8 +64,8 @@
     --cashier-gap: 5px;
     --cashier-pad: 6px;
     --cashier-bottom-nav-h: 48px;
-    --pos-keypad-key-h: 52px;
-    --pos-keypad-digit-size: 1.125rem;
+    --pos-keypad-key-h: 56px;
+    --pos-keypad-digit-size: 1.1875rem;
   }
 }
 
@@ -75,8 +75,8 @@
     --cashier-gap: 5px;
     --cashier-pad: 6px;
     --cashier-bottom-nav-h: 48px;
-    --pos-keypad-key-h: 52px;
-    --pos-keypad-digit-size: 1.125rem;
+    --pos-keypad-key-h: 56px;
+    --pos-keypad-digit-size: 1.1875rem;
   }
 }
 
@@ -92,9 +92,9 @@
   --cashier-gap: 5px;
   --cashier-pad: 6px;
   --cashier-pay-w: clamp(280px, 28%, 380px);
-  --pos-keypad-key-h: 52px;
+  --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 6px;
-  --pos-keypad-digit-size: 1.125rem;
+  --pos-keypad-digit-size: 1.3125rem;
   --pos-keypad-action-size: 0.6875rem;
   --pos-keypad-quick-h: 36px;
   --pos-keypad-clear-h: 38px;

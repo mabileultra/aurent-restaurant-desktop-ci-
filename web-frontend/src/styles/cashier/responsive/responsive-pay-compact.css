@@ -4,9 +4,9 @@
 
 .cashier-app.cashier-app--pos-screen,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
-  --pos-keypad-key-h: 52px;
+  --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 6px;
-  --pos-keypad-digit-size: 1.25rem;
+  --pos-keypad-digit-size: 1.3125rem;
   --pos-keypad-action-size: 0.75rem;
   --pos-keypad-quick-h: 36px;
   --pos-keypad-clear-h: 38px;
@@ -47,15 +47,15 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box {
-  min-height: 48px;
-  height: 48px;
-  max-height: 48px;
+  min-height: 52px;
+  height: 52px;
+  max-height: 52px;
   padding: 0 10px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: 1.625rem;
+  font-size: 1.6875rem;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-row,
@@ -65,7 +65,7 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value--ready,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value--ready {
-  font-size: 1.125rem;
+  font-size: 1.1875rem;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__tool,
@@ -78,20 +78,20 @@
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-footer__sale,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer__sale {
-  min-height: 52px;
-  height: 52px;
-  max-height: 52px;
+  min-height: 56px;
+  height: 56px;
+  max-height: 56px;
   padding: 0 12px;
   border-radius: 10px;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   gap: 8px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-footer .pos-pay-print-toggle--footer {
-  min-height: 52px;
-  height: 52px;
-  max-height: 52px;
+  min-height: 56px;
+  height: 56px;
+  max-height: 56px;
   padding: 0 8px;
   border-radius: 10px;
   flex: 0 0 7.25rem;

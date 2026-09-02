@@ -51,7 +51,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__mobile-nav .nav-link.active {
-  background: var(--pos-green);
+  background: var(--pos-ink);
   color: #fff;
 }
 

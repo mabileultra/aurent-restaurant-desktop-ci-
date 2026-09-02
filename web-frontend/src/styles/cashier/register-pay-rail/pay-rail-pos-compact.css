@@ -12,13 +12,7 @@
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key {
-  color: #0f172a;
-}
-
-.cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
-.cashier-app .pos-pay-panel--register-rail .pos-keypad__key--action {
-  color: #1e293b;
-  font-weight: 800;
+  color: var(--pos-ink, #1e3a5f);
 }
 
 .cashier-app .pos-register-pay-rail .pos-pay-cash__summary-row strong,
