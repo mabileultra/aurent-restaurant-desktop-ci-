@@ -1,26 +1,217 @@
-/* Мои продажи — компактнее на планшете */
+/*
+ * Мои продажи — плотный режим (POS, Electron, планшет, 16" ноутбук).
+ */
 
-@media (max-width: 900px) {
-  .cashier-sales-filters--toolbar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-my-sales-toolbar--stacked {
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales h1.h5 {
+  font-size: 0.875rem;
+  margin-bottom: 0.375rem !important;
+}
+
+/* Фильтры */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__head {
+  padding: 4px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__title {
+  font-size: 0.6875rem;
+  gap: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__badge {
+  padding: 1px 6px;
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__reset {
+  padding: 3px 8px;
+  font-size: 0.625rem;
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__body {
+  padding: 4px 8px 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters--toolbar {
+  grid-template-columns: minmax(96px, 1fr) repeat(4, minmax(0, 1fr));
+  gap: 4px 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__label {
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__input,
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__select {
+  min-height: 28px;
+  padding: 3px 6px;
+  font-size: 0.6875rem;
+  border-radius: 6px;
+}
+
+/* Полоска смены */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-shift-strip {
+  min-height: 28px;
+  padding: 4px 8px;
+  gap: 4px 10px;
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-shift-strip__icon {
+  width: 12px;
+  height: 12px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-shift-strip__title {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-shift-strip__label {
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-shift-strip__value {
+  font-size: 0.6875rem;
+}
+
+/* Заголовок списка */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-card__head {
+  padding: 6px 8px;
+  gap: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-card__head-title {
+  font-size: 0.6875rem;
+}
+
+/* Сетка карточек продаж — 4–5 в ряд */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-list-card.is-view-cards .cashier-sales-mobile-list {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 5px;
+  padding: 6px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-mobile-card {
+  padding: 6px 8px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-mobile-card__top {
+  margin-bottom: 3px;
+  gap: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-mobile-card__receipt {
+  font-size: 0.6875rem;
+  line-height: 1.2;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-mobile-card__amount {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-mobile-card__meta {
+  gap: 3px 6px;
+  font-size: 0.5625rem;
+  line-height: 1.2;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-pill {
+  padding: 1px 5px;
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-badge {
+  padding: 1px 4px;
+  font-size: 0.5rem;
+  margin-left: 0;
+}
+
+/* Таблица (режим списка) */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table thead th {
+  padding: 4px 6px;
+  font-size: 0.5625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table tbody td {
+  padding: 4px 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table__receipt {
+  font-size: 0.625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table__return {
+  font-size: 0.625rem;
+  padding: 2px 5px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-table__empty {
+  padding: 1.25rem 0.75rem !important;
+  font-size: 0.75rem;
+}
+
+/* Пагинация */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-pagination {
+  gap: 6px;
+  padding: 5px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-pagination__info {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-pagination__btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  font-size: 0.6875rem;
+  border-radius: 6px;
+}
+
+/* Master-detail */
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-master {
+  gap: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-receipt-pane__head {
+  padding: 5px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-receipt-pane__close {
+  font-size: 0.6875rem;
+  padding: 4px 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-receipt-pane__footer {
+  padding: 6px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-receipt-pane__print,
+.cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-receipt-pane__return {
+  min-height: 32px;
+  font-size: 0.6875rem;
+  border-radius: 6px;
+}
+
+@media (max-width: 1024px) {
+  .cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-filters--toolbar {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
+}
 
-  .cashier-sales-filters--toolbar .cashier-sales-filters__field:first-child {
-    grid-column: 1 / -1;
-  }
-
-  .cashier-sales-master.has-selection .cashier-sales-receipt-pane {
-    max-height: 38vh;
-  }
-
-  .cashier-sales-receipt-pane__footer {
-    padding: 8px 10px;
-  }
-
-  .cashier-sales-receipt-pane__print,
-  .cashier-sales-receipt-pane__return {
-    min-height: 38px;
-    font-size: 0.8125rem;
-    border-radius: 8px;
+@media (max-width: 640px) {
+  .cashier-app.cashier-app--pos-screen .cashier-page--my-sales .cashier-sales-list-card.is-view-cards .cashier-sales-mobile-list {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
   }
 }

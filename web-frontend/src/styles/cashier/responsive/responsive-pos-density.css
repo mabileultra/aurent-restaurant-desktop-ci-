@@ -431,3 +431,72 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
   font-size: 0.5625rem;
 }
+
+/* ── Папки категорий (первый экран «Товары») ── */
+.cashier-app.cashier-app--pos-screen .pos-category-browse,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-browse {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 92px), 1fr));
+  gap: 4px;
+}
+
+@container pos-catalog (min-width: 420px) {
+  .cashier-app.cashier-app--pos-screen .pos-category-browse,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-browse {
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  }
+}
+
+@container pos-catalog (min-width: 560px) {
+  .cashier-app.cashier-app--pos-screen .pos-category-browse,
+  .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-browse {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  }
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile:not(.pos-category-tile--all),
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile:not(.pos-category-tile--all) {
+  min-height: 50px;
+  padding: 5px 7px;
+  gap: 3px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile--all,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile--all {
+  min-height: 40px;
+  padding: 6px 8px;
+  gap: 6px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile__icon,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile--all .pos-category-tile__icon,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile--all .pos-category-tile__icon {
+  width: 28px;
+  height: 28px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile__name,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile__name {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-line-clamp: 2;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile__hint,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile__hint {
+  font-size: 0.5625rem;
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-category-tile--all .pos-category-tile__hint,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-category-tile--all .pos-category-tile__hint {
+  font-size: 0.5625rem;
+}
