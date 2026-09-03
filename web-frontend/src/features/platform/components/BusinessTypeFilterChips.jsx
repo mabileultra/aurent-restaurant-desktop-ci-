@@ -13,9 +13,18 @@ const CHIP_ORDER = [
   'OTHER',
 ];
 
-function chipLabel(t, code) {
-  if (code === 'UNIVERSAL') return t('platform.businessTypeChipUniversal');
-  return t(`productTemplates.businessTypes.${code}`, code);
+function normalizeCode(code) {
+  const raw = String(code || '').trim().toUpperCase();
+  if (!raw || raw === 'RETAIL') return 'UNIVERSAL';
+  return raw;
+}
+
+function chipLabel(t, code, types) {
+  const normalized = normalizeCode(code);
+  const fromApi = types.find((bt) => normalizeCode(bt.code) === normalized);
+  if (fromApi?.name) return fromApi.name;
+  if (normalized === 'UNIVERSAL') return t('platform.businessTypeChipUniversal');
+  return t(`productTemplates.businessTypes.${normalized}`, normalized);
 }
 
 export default function BusinessTypeFilterChips({
@@ -24,31 +33,39 @@ export default function BusinessTypeFilterChips({
   onChange,
 }) {
   const { t } = useTranslation();
+  const activeTypes = types.filter((bt) => bt && bt.active !== false && bt.code);
 
-  const codes = types.length
+  const codes = activeTypes.length
     ? [
-        ...CHIP_ORDER.filter((code) => types.some((bt) => bt.code === code)),
-        ...types.map((bt) => bt.code).filter((code) => !CHIP_ORDER.includes(code)),
+        ...CHIP_ORDER.filter((code) =>
+          activeTypes.some((bt) => normalizeCode(bt.code) === code)
+        ),
+        ...activeTypes
+          .map((bt) => normalizeCode(bt.code))
+          .filter((code) => !CHIP_ORDER.includes(code)),
       ]
     : CHIP_ORDER;
+
+  const uniqueCodes = [...new Set(codes)];
+  const current = value ? normalizeCode(value) : '';
 
   return (
     <div className="business-type-filters" role="group" aria-label={t('platform.filterBusinessType')}>
       <button
         type="button"
-        className={`business-type-filters__chip${!value ? ' is-active' : ''}`}
+        className={`business-type-filters__chip${!current ? ' is-active' : ''}`}
         onClick={() => onChange('')}
       >
         {t('platform.filterAllBusinessTypes')}
       </button>
-      {codes.map((code) => (
+      {uniqueCodes.map((code) => (
         <button
           key={code}
           type="button"
-          className={`business-type-filters__chip${value === code ? ' is-active' : ''}`}
-          onClick={() => onChange(code === value ? '' : code)}
+          className={`business-type-filters__chip${current === code ? ' is-active' : ''}`}
+          onClick={() => onChange(code === current ? '' : code)}
         >
-          {chipLabel(t, code)}
+          {chipLabel(t, code, activeTypes)}
         </button>
       ))}
     </div>

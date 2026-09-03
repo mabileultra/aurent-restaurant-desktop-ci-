@@ -1792,6 +1792,7 @@
       "selectAllVisible": "Выбрать всех в списке ({{count}})",
       "enableAll": "Включить все модули",
       "disableAll": "Выключить все",
+      "businessTypeModulesHint": "Показаны модули для типа: {{type}}",
       "allOn": "Все вкл.",
       "allOff": "Все выкл.",
       "applyToSelected": "Применить к выбранным ({{count}})",

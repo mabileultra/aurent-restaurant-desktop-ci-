@@ -168,13 +168,35 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     private List<AdminModule> modulesForUserRole(User user) {
         String role = user.getRole().getName();
+        List<AdminModule> scope;
         if ("CASHIER".equals(role) || "WAITER".equals(role)) {
-            return AdminModule.cashierScope();
+            scope = AdminModule.cashierScope();
+        } else if ("ACCOUNTANT".equals(role)) {
+            scope = AdminModule.financeScope();
+        } else {
+            scope = AdminModule.adminScope();
         }
-        if ("ACCOUNTANT".equals(role)) {
-            return AdminModule.financeScope();
+        return filterByCompanyBusinessType(scope, user.getCompanyId());
+    }
+
+    private List<AdminModule> filterByCompanyBusinessType(List<AdminModule> scope, Integer companyId) {
+        if (companyId == null || scope.isEmpty()) {
+            return scope;
         }
-        return AdminModule.adminScope();
+        String businessType = resolveCompanyBusinessType(companyId);
+        if (AdminModule.businessTypeAllowsRestaurant(businessType)) {
+            return scope;
+        }
+        return scope.stream().filter(m -> !AdminModule.isRestaurantModule(m)).toList();
+    }
+
+    private String resolveCompanyBusinessType(Integer companyId) {
+        try {
+            CompanyDto company = posCoreClient.getCompanyById(companyId);
+            return company != null ? company.businessType() : null;
+        } catch (Exception ex) {
+            return null;
+        }
     }
 
     private User requireTenantUser(UUID userId) {

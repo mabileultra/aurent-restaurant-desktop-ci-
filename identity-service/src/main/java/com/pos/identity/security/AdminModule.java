@@ -115,4 +115,22 @@ public enum AdminModule {
             .map(AdminModule::key)
             .collect(Collectors.toSet());
     }
+
+    public static boolean isRestaurantModule(AdminModule module) {
+        return module != null && ("restaurant".equals(module.group()) || "restaurantPos".equals(module.key()));
+    }
+
+    public static boolean businessTypeAllowsRestaurant(String businessType) {
+        if (businessType == null || businessType.isBlank()) {
+            return true;
+        }
+        String code = businessType.trim().toUpperCase();
+        if ("RETAIL".equals(code)) {
+            code = "UNIVERSAL";
+        }
+        return "UNIVERSAL".equals(code)
+            || "OTHER".equals(code)
+            || "RESTAURANT".equals(code)
+            || "CANTEEN".equals(code);
+    }
 }

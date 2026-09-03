@@ -27,6 +27,9 @@ export default function PlatformModuleAccessPage() {
           companies={p.companies}
           companyId={p.companyId}
           onCompanyChange={p.handleCompanyChange}
+          businessTypes={p.businessTypes}
+          businessType={p.businessType}
+          onBusinessTypeChange={p.handleBusinessTypeChange}
         />
       )}
     >

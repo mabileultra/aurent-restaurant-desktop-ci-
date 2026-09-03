@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { companyApi, platformBusinessTypeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
+import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 
 export function useUsersPage({ mode = 'tenant' } = {}) {
@@ -41,10 +42,11 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     enabled: isPlatform,
   });
 
-  const companyBusinessTypeById = useMemo(() => {
+  const companyById = useMemo(() => {
     const map = new Map();
     companies.forEach((company) => {
-      map.set(company.id, company.businessType ?? 'UNIVERSAL');
+      if (company?.id == null) return;
+      map.set(String(company.id), company);
     });
     return map;
   }, [companies]);
@@ -75,15 +77,15 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     const q = search.trim().toLowerCase();
     return users.filter((user) => {
       if (businessType) {
-        const companyType = companyBusinessTypeById.get(user.companyId) ?? '';
-        if (companyType !== businessType) return false;
+        const company = companyById.get(String(user.companyId ?? ''));
+        if (!companyHasBusinessType(company, businessType)) return false;
       }
       if (!q) return true;
       return [user.fullName, user.username, user.email, user.role, user.companyName, user.companyLoginCode]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [users, search, businessType, companyBusinessTypeById]);
+  }, [users, search, businessType, companyById]);
 
   const total = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
@@ -158,6 +160,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     closeModal,
     handleSearchChange,
     handleBusinessTypeChange,
+    companyById,
     toggleUser,
     deleteTarget,
     openDelete,

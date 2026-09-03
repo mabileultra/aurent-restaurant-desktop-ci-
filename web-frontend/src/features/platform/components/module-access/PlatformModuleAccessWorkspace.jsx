@@ -38,6 +38,7 @@ export default function PlatformModuleAccessWorkspace({ p }) {
         onReset={() => p.resetMutation.mutate()}
         isSaving={p.isSaving}
         resetPending={p.resetMutation.isPending}
+        businessTypeCode={p.selectedCompanyBusinessType}
       />
     </div>
   );

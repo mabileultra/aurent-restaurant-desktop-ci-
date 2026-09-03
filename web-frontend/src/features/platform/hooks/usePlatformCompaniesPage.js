@@ -88,10 +88,14 @@ export function usePlatformCompaniesPage() {
 
       const companyId = editing?.id ?? companyRes.data?.id;
       if (companyId && businessTypeIds.length > 0) {
-        await companyBusinessTypeApi.setForCompany(companyId, {
+        const assigned = await companyBusinessTypeApi.setForCompany(companyId, {
           businessTypeIds,
           defaultBusinessTypeId: defaultBusinessTypeId ?? businessTypeIds[0],
-        });
+        }).then((r) => r.data);
+        const syncedType = assigned?.defaultTypeCode || defaultType?.code;
+        if (syncedType && String(syncedType).toUpperCase() !== String(payload.businessType || '').toUpperCase()) {
+          await companyApi.update(companyId, { businessType: syncedType });
+        }
       }
     },
     onSuccess: () => {

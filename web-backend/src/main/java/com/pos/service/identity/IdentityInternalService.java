@@ -50,7 +50,13 @@ public class IdentityInternalService {
     }
 
     private static CompanyRefDto toCompanyRef(Company company) {
-        return new CompanyRefDto(company.getId(), company.getName(), company.getLoginCode(), company.isActive());
+        return new CompanyRefDto(
+            company.getId(),
+            company.getName(),
+            company.getLoginCode(),
+            company.isActive(),
+            company.getBusinessType()
+        );
     }
 
     @Transactional(rollbackFor = Exception.class)

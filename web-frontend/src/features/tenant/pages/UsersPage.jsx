@@ -56,6 +56,7 @@ export default function UsersPage({ mode = 'tenant' }) {
         onToggleActive={p.toggleUser}
         onDelete={p.openDelete}
         actorRole={actorRole}
+        companyById={p.companyById}
       />
 
       <UserDeleteConfirmModal

@@ -1582,6 +1582,7 @@
       "selectAllVisible": "Ro‘yxatdagi hammasini tanlash ({{count}})",
       "enableAll": "Barcha modullarni yoqish",
       "disableAll": "Hammasini o‘chirish",
+      "businessTypeModulesHint": "Modullar kompaniya turi bo‘yicha: {{type}}",
       "allOn": "Hammasi yoq.",
       "allOff": "Hammasi o‘ch.",
       "applyToSelected": "Tanlanganlarga qo‘llash ({{count}})",

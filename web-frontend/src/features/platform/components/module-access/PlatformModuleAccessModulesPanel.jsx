@@ -19,6 +19,7 @@ export default function PlatformModuleAccessModulesPanel({
   onReset,
   isSaving,
   resetPending,
+  businessTypeCode,
 }) {
   if (!selectedUserId) {
     return <PlatformModuleAccessModulesPlaceholder message={t('platform.moduleAccess.pickUser')} />;
@@ -28,6 +29,9 @@ export default function PlatformModuleAccessModulesPanel({
     return <PlatformModuleAccessModulesPlaceholder message={t('common.loading')} />;
   }
 
+  const typeCode = businessTypeCode || 'UNIVERSAL';
+  const businessTypeLabel = t(`productTemplates.businessTypes.${typeCode}`, typeCode);
+
   return (
     <div className="module-access-panel rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
       <PlatformModuleAccessModulesHeader
@@ -35,6 +39,7 @@ export default function PlatformModuleAccessModulesPanel({
         fullName={selectedUser?.fullName}
         role={detail.role}
         companyName={selectedUser?.companyName}
+        businessTypeLabel={businessTypeLabel}
         customAccess={customAccess}
         onCustomAccessChange={onCustomAccessChange}
         onSetAllModules={onSetAllModules}

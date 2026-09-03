@@ -3,6 +3,7 @@ export default function PlatformModuleAccessModulesHeader({
   fullName,
   role,
   companyName,
+  businessTypeLabel,
   customAccess,
   onCustomAccessChange,
   onSetAllModules,
@@ -12,6 +13,11 @@ export default function PlatformModuleAccessModulesHeader({
       <p className="font-semibold text-slate-900 dark:text-white">{fullName}</p>
       <p className="text-xs text-slate-500">{t(`roles.${role}`, role)}</p>
       {companyName ? <p className="text-xs text-slate-500">{companyName}</p> : null}
+      {businessTypeLabel ? (
+        <p className="mt-1 text-xs text-emerald-700 dark:text-emerald-400">
+          {t('platform.moduleAccess.businessTypeModulesHint', { type: businessTypeLabel })}
+        </p>
+      ) : null}
       <label className="mt-3 flex cursor-pointer items-center gap-2 text-sm">
         <input
           type="checkbox"

@@ -5,11 +5,13 @@ import com.pos.dto.company.CompanyBusinessTypeItemResponse;
 import com.pos.dto.company.CompanyBusinessTypesResponse;
 import com.pos.dto.company.SetCompanyBusinessTypesRequest;
 import com.pos.entity.BusinessTypeDefinition;
+import com.pos.entity.Company;
 import com.pos.entity.CompanyBusinessType;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.repository.BusinessTypeDefinitionRepository;
 import com.pos.repository.CompanyBusinessTypeRepository;
+import com.pos.repository.CompanyRepository;
 import com.pos.service.CompanyBusinessTypeAssignmentService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.BusinessTypeParser;
@@ -33,6 +35,7 @@ public class CompanyBusinessTypeAssignmentServiceImpl implements CompanyBusiness
 
     private final CompanyBusinessTypeRepository assignmentRepository;
     private final BusinessTypeDefinitionRepository typeRepository;
+    private final CompanyRepository companyRepository;
     private final TenantAccessSupport tenantAccess;
 
     @Override
@@ -44,7 +47,7 @@ public class CompanyBusinessTypeAssignmentServiceImpl implements CompanyBusiness
 
     @Override
     public CompanyBusinessTypesResponse setForCompany(Integer companyId, SetCompanyBusinessTypesRequest request) {
-        tenantAccess.requireCompany(companyId);
+        Company company = tenantAccess.requireCompany(companyId);
         List<Integer> typeIds = request.businessTypeIds().stream().distinct().toList();
         List<BusinessTypeDefinition> types = typeRepository.findAllById(typeIds);
         if (types.size() != typeIds.size()) {
@@ -76,8 +79,17 @@ public class CompanyBusinessTypeAssignmentServiceImpl implements CompanyBusiness
                 .build());
         }
         assignmentRepository.saveAll(rows);
+
+        BusinessTypeDefinition defaultType = typesById.get(defaultId);
+        if (defaultType != null) {
+            String code = BusinessTypeParser.parseOrDefault(defaultType.getCode(), BusinessTypeCodes.UNIVERSAL);
+            company.setBusinessType(code);
+            companyRepository.save(company);
+        }
+
         LogUtil.info(CompanyBusinessTypeAssignmentServiceImpl.class,
-            "Company business types updated: companyId={}, count={}", companyId, rows.size());
+            "Company business types updated: companyId={}, count={}, default={}",
+            companyId, rows.size(), defaultType != null ? defaultType.getCode() : null);
         return toResponse(rows);
     }
 

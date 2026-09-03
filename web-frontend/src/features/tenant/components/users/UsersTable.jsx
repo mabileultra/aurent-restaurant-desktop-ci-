@@ -22,8 +22,16 @@ export default function UsersTable({
   onToggleActive,
   onDelete,
   actorRole,
+  companyById,
 }) {
-  const colSpan = isPlatform ? 11 : 8;
+  const colSpan = isPlatform ? 12 : 8;
+
+  const businessTypeLabel = (user) => {
+    const company = companyById?.get?.(String(user.companyId ?? ''));
+    const code = String(company?.businessType || 'UNIVERSAL').toUpperCase();
+    const normalized = code === 'RETAIL' ? 'UNIVERSAL' : code;
+    return t(`productTemplates.businessTypes.${normalized}`, normalized);
+  };
 
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
@@ -36,6 +44,7 @@ export default function UsersTable({
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCompanyCode')}</th>}
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCredentials')}</th>}
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCompany')}</th>}
+            {isPlatform && <th className="px-4 py-3 font-medium">{t('platform.colBusinessType')}</th>}
             <th className="px-4 py-3 font-medium">{t('users.colStores')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colRole')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colActive')}</th>
@@ -81,6 +90,11 @@ export default function UsersTable({
                   </td>
                 )}
                 {isPlatform && <td className="px-4 py-3">{user.companyName || '—'}</td>}
+                {isPlatform && (
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                    {businessTypeLabel(user)}
+                  </td>
+                )}
                 <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
                   {user.storeNames?.length ? user.storeNames.join(', ') : '—'}
                 </td>

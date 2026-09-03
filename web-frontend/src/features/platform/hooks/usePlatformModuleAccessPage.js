@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { companyApi, platformModuleAccessApi } from '../../../api';
+import { companyApi, platformBusinessTypeApi, platformModuleAccessApi } from '../../../api';
 import { MODULE_ACCESS_GROUP_ORDER, MODULE_ACCESS_USER_FILTER_LABELS, MODULE_ACCESS_USER_FILTERS } from '../constants';
 import {
   buildTogglesFromDetail,
@@ -13,11 +13,17 @@ import {
   filterModuleAccessUsers,
   withCompanyNames,
 } from '../utils/moduleAccessUserFilters';
+import {
+  companyHasBusinessType,
+  filterModulesForBusinessType,
+  normalizeBusinessTypeCode,
+} from '../utils/moduleAccessByBusinessType';
 
 export function usePlatformModuleAccessPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [companyId, setCompanyId] = useState('');
+  const [businessType, setBusinessType] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [selectedUserIds, setSelectedUserIds] = useState(() => new Set());
   const [userSearch, setUserSearch] = useState('');
@@ -28,6 +34,12 @@ export function usePlatformModuleAccessPage() {
   const { data: companies = [] } = useQuery({
     queryKey: ['companies-all'],
     queryFn: () => companyApi.listAll().then((r) => r.data),
+  });
+
+  const { data: businessTypes = [] } = useQuery({
+    queryKey: ['platform-business-types-options'],
+    queryFn: () => platformBusinessTypeApi.list().then((r) => r.data),
+    staleTime: 300_000,
   });
 
   const { data: catalog = [] } = useQuery({
@@ -43,6 +55,19 @@ export function usePlatformModuleAccessPage() {
     return map;
   }, [catalog]);
 
+  const companyById = useMemo(() => {
+    const map = new Map();
+    companies.forEach((c) => {
+      if (c?.id != null) map.set(String(c.id), c);
+    });
+    return map;
+  }, [companies]);
+
+  const visibleCompanies = useMemo(() => {
+    if (!businessType) return companies;
+    return companies.filter((c) => companyHasBusinessType(c, businessType));
+  }, [companies, businessType]);
+
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['platform-module-access-users'],
     queryFn: () => platformModuleAccessApi.listUsers().then((r) => r.data),
@@ -50,20 +75,36 @@ export function usePlatformModuleAccessPage() {
 
   const namedUsers = useMemo(() => withCompanyNames(users, companies), [users, companies]);
 
+  const typedUsers = useMemo(() => {
+    if (!businessType) return namedUsers;
+    return namedUsers.filter((user) => {
+      const company = companyById.get(String(user.companyId ?? ''));
+      return companyHasBusinessType(company, businessType);
+    });
+  }, [namedUsers, businessType, companyById]);
+
   const companyUsers = useMemo(
-    () => filterModuleAccessUsers(namedUsers, { companyId }),
-    [namedUsers, companyId]
+    () => filterModuleAccessUsers(typedUsers, { companyId }),
+    [typedUsers, companyId]
   );
 
   const filteredUsers = useMemo(
-    () => filterModuleAccessUsers(namedUsers, { companyId, search: userSearch, filter: userFilter }),
-    [namedUsers, companyId, userSearch, userFilter]
+    () => filterModuleAccessUsers(typedUsers, { companyId, search: userSearch, filter: userFilter }),
+    [typedUsers, companyId, userSearch, userFilter]
   );
 
   const unconfiguredCount = useMemo(
     () => companyUsers.filter((u) => !u.moduleAccessCustom).length,
     [companyUsers]
   );
+
+  const selectedUser = namedUsers.find((u) => u.userId === selectedUserId);
+
+  const selectedCompany =
+    companyById.get(String(companyId || ''))
+    || companyById.get(String(selectedUser?.companyId ?? ''));
+
+  const selectedCompanyBusinessType = normalizeBusinessTypeCode(selectedCompany?.businessType);
 
   const { data: detail, isLoading: detailLoading } = useQuery({
     queryKey: ['platform-module-access-detail', selectedUserId],
@@ -77,10 +118,14 @@ export function usePlatformModuleAccessPage() {
     setModuleToggles(buildTogglesFromDetail(detail));
   }, [detail]);
 
+  const visibleDetailModules = useMemo(
+    () => filterModulesForBusinessType(detail?.modules ?? [], selectedCompanyBusinessType),
+    [detail, selectedCompanyBusinessType]
+  );
+
   const groupedModules = useMemo(() => {
-    const modules = detail?.modules ?? [];
     const byGroup = {};
-    for (const row of modules) {
+    for (const row of visibleDetailModules) {
       const cat = catalogGroupFor(row.id, catalogById);
       if (!byGroup[cat]) byGroup[cat] = [];
       byGroup[cat].push(row);
@@ -89,7 +134,7 @@ export function usePlatformModuleAccessPage() {
       group: g,
       items: byGroup[g],
     }));
-  }, [detail, catalogById]);
+  }, [visibleDetailModules, catalogById]);
 
   const saveMutation = useMutation({
     mutationFn: (payload) => platformModuleAccessApi.updateUser(selectedUserId, payload),
@@ -134,7 +179,13 @@ export function usePlatformModuleAccessPage() {
 
   const buildModulesPayload = () => {
     const modules = {};
+    // Preserve hidden (e.g. restaurant) modules from detail; only overwrite visible ones.
     for (const row of detail?.modules ?? []) {
+      modules[row.id] = Object.prototype.hasOwnProperty.call(moduleToggles, row.id)
+        ? !!moduleToggles[row.id]
+        : !!row.allowed;
+    }
+    for (const row of visibleDetailModules) {
       modules[row.id] = !!moduleToggles[row.id];
     }
     return modules;
@@ -181,11 +232,11 @@ export function usePlatformModuleAccessPage() {
   };
 
   const setAllModules = (enabled, groupFilter = null) => {
-    if (!detail?.modules?.length) return;
+    if (!visibleDetailModules.length) return;
     setCustomAccess(true);
     setModuleToggles((prev) => {
       const next = { ...prev };
-      for (const row of detail.modules) {
+      for (const row of visibleDetailModules) {
         const group = catalogGroupFor(row.id, catalogById);
         if (groupFilter && group !== groupFilter) continue;
         next[row.id] = enabled;
@@ -216,7 +267,13 @@ export function usePlatformModuleAccessPage() {
     setSelectedUserIds(new Set());
   };
 
-  const selectedUser = namedUsers.find((u) => u.userId === selectedUserId);
+  const handleBusinessTypeChange = (code) => {
+    setBusinessType(code || '');
+    setCompanyId('');
+    setSelectedUserId(null);
+    setSelectedUserIds(new Set());
+  };
+
   const isSaving = saveMutation.isPending || resetMutation.isPending || bulkSaveMutation.isPending;
 
   const filterOptions = useMemo(
@@ -226,9 +283,13 @@ export function usePlatformModuleAccessPage() {
 
   return {
     t,
-    companies,
+    companies: visibleCompanies,
     companyId,
     handleCompanyChange,
+    businessType,
+    businessTypes,
+    handleBusinessTypeChange,
+    selectedCompanyBusinessType,
     usersLoading,
     filteredUsers,
     unconfiguredCount,

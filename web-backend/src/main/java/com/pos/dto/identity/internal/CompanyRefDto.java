@@ -4,5 +4,6 @@ public record CompanyRefDto(
     Integer id,
     String name,
     String loginCode,
-    boolean active
+    boolean active,
+    String businessType
 ) {}
