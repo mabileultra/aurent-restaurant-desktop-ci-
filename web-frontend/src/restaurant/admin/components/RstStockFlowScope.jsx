@@ -1,4 +1,4 @@
-import { StockFlowPathsProvider, RST_STOCK_FLOW_PATHS } from '../../features/stock/stockFlowPaths';
+import { StockFlowPathsProvider, RST_STOCK_FLOW_PATHS } from '../../../features/stock/stockFlowPaths';
 import '../styles/analytics-admin.css';
 
 /** Mounts shared warehouse/report pages under Restaurant OS without leaving the shell. */

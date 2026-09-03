@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, createElement, useContext } from 'react';
 
 /** Default paths for Aurent AppShell (pharmacy/retail). */
 export const DEFAULT_STOCK_FLOW_PATHS = {
@@ -27,10 +27,10 @@ export const RST_STOCK_FLOW_PATHS = {
 const StockFlowPathsContext = createContext(DEFAULT_STOCK_FLOW_PATHS);
 
 export function StockFlowPathsProvider({ value, children }) {
-  return (
-    <StockFlowPathsContext.Provider value={value ?? DEFAULT_STOCK_FLOW_PATHS}>
-      {children}
-    </StockFlowPathsContext.Provider>
+  return createElement(
+    StockFlowPathsContext.Provider,
+    { value: value ?? DEFAULT_STOCK_FLOW_PATHS },
+    children
   );
 }
 
