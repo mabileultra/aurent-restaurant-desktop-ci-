@@ -35,6 +35,7 @@ import com.pos.integrations.finance.service.FinanceSaleIntegrationService;
 import com.pos.catalog.service.product.ProductQueryService;
 import com.pos.sales.service.sale.support.CheckoutQuantityResolver;
 import com.pos.sales.service.sale.support.SaleEnumParser;
+import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
@@ -83,6 +84,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
+    private final SaleFiscalApplier saleFiscalApplier;
 
     @Override
     @Transactional(readOnly = true)
@@ -300,6 +302,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
 
         items.forEach(saleItem -> saleItem.setSale(sale));
         sale.setItems(items);
+        saleFiscalApplier.apply(sale, shift, req.fiscal(), false);
 
         Sale saved = saleRepository.save(sale);
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {

@@ -36,7 +36,13 @@ public record SaleResponse(
     Instant shiftOpenedAt,
     Instant shiftClosedAt,
     String shiftStatus,
-    Long shiftZReportId
+    Long shiftZReportId,
+    String fiscalStatus,
+    String fiscalSign,
+    String fiscalReceiptSeq,
+    String multikassaSaleId,
+    String fiscalQrUrl,
+    Instant fiscalizedAt
 ) {
     public record SaleLineDto(
         UUID id,

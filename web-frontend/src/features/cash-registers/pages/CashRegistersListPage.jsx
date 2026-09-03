@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import CashRegisterErrorBanner from '../components/CashRegisterErrorBanner';
 import CashRegisterHintBanner from '../components/CashRegisterHintBanner';
 import CashRegisterSearchField from '../components/CashRegisterSearchField';
@@ -6,10 +7,12 @@ import CashRegistersListFooter from '../components/CashRegistersListFooter';
 import CashRegistersFiltersDrawer from '../components/CashRegistersFiltersDrawer';
 import CashRegisterDetailsModal from '../components/CashRegisterDetailsModal';
 import CashRegisterFormModal from '../components/CashRegisterFormModal';
+import MultikassaSettingsModal from '../components/MultikassaSettingsModal';
 import { useCashRegistersListPage } from '../hooks/useCashRegistersListPage';
 
 export default function CashRegistersListPage() {
   const p = useCashRegistersListPage();
+  const [multikassaRegisterId, setMultikassaRegisterId] = useState(null);
 
   const errorMessage =
     p.error?.response?.data?.message ?? p.error?.message ?? p.t('cashRegisters.loadError');
@@ -63,6 +66,16 @@ export default function CashRegistersListPage() {
         registerId={p.detailId}
         onClose={() => p.setDetailId(null)}
         onEdit={p.openEditForm}
+        onMultikassa={(id) => {
+          setMultikassaRegisterId(id);
+          p.setDetailId(null);
+        }}
+      />
+
+      <MultikassaSettingsModal
+        open={Boolean(multikassaRegisterId)}
+        cashRegisterId={multikassaRegisterId}
+        onClose={() => setMultikassaRegisterId(null)}
       />
 
       <CashRegisterFormModal open={p.formOpen} registerId={p.formRegisterId} onClose={p.closeForm} />

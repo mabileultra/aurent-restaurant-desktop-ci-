@@ -12,6 +12,8 @@ import SaleReturnLinesEditor, {
   getReturnableLines,
   useReturnQtyState,
 } from './SaleReturnLinesEditor';
+import { posReturnSaleItems } from '../../services/pos/posReturnWithFiscal';
+import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
 
 export default function SalePartialReturnModal({
   open,
@@ -41,7 +43,7 @@ export default function SalePartialReturnModal({
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return saleApi.returnItems(s.id, payload).then((r) => r.data);
+      return posReturnSaleItems({ sale: s, payload, storeId: s.storeId });
     },
     onSuccess: async (_data, vars) => {
       const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');
@@ -60,8 +62,7 @@ export default function SalePartialReturnModal({
       onSuccess?.();
     },
     onError: (e) => {
-      const msg = e?.response?.data?.message ?? e?.message ?? t('pos.returnFailed');
-      toast.error(msg);
+      toast.error(resolveMultikassaFiscalErrorMessage(e, t, 'pos.returnFailed'));
     },
   });
 

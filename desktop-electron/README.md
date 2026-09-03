@@ -21,7 +21,9 @@ AURENT_WEB_URL=http://localhost:5173/cashier/login npm start
 npm run dist
 ```
 
-macOS собирается как **universal** `.dmg` (Intel + Apple Silicon). На CI (`macos-latest`) не используйте только `arm64` — Intel Mac не откроет такой установщик.
+macOS собирается как **universal** `.dmg` (ручная установка) + `.zip` (автообновление через `electron-updater`). На CI (`macos-latest`) не используйте только `arm64` — Intel Mac не откроет такой установщик.
+
+В `latest-mac.yml` для обновлений должен быть **zip**, не dmg — иначе ошибка `ZIP file not provided`.
 
 В production-сборке (`app.isPackaged`) UI грузится с `https://aurent.uz/cashier/login`, API — `https://aurent.uz/api/v1` (см. `config/desktopUrls.js`).
 

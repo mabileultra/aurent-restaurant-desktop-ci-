@@ -62,6 +62,7 @@ export function buildOfflineSaleResponse({
   cartItems,
   orderDiscountAmount,
   orderDiscountPercent,
+  fiscal = null,
 }) {
   const items = mapLineItems(cartItems);
   const linesTotal = round2(cartItems.reduce((acc, item) => acc + lineSubtotal(item), 0));
@@ -109,6 +110,12 @@ export function buildOfflineSaleResponse({
     shiftStatus: shift?.status || 'OPEN',
     shiftZReportId: null,
     offlinePendingSync: true,
+    fiscalStatus: fiscal?.fiscalStatus || null,
+    fiscalSign: fiscal?.fiscalSign || null,
+    fiscalReceiptSeq: fiscal?.fiscalReceiptSeq || null,
+    multikassaSaleId: fiscal?.multikassaSaleId || null,
+    fiscalQrUrl: fiscal?.fiscalQrUrl || null,
+    fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
   };
 }
 
@@ -118,7 +125,25 @@ export function buildOfflineCheckoutPayload({
   cartItems,
   orderDiscountAmount,
   orderDiscountPercent,
+  fiscal = null,
 }) {
+  const fiscalBlock = fiscal
+    ? {
+        fiscalStatus: fiscal.fiscalStatus,
+        fiscalSign: fiscal.fiscalSign,
+        fiscalReceiptSeq: fiscal.fiscalReceiptSeq,
+        multikassaSaleId: fiscal.multikassaSaleId,
+        fiscalQrUrl: fiscal.fiscalQrUrl,
+        fiscalError: fiscal.fiscalError,
+        ...(fiscal.multikassaRetryBody
+          ? {
+              multikassaRetryBody: fiscal.multikassaRetryBody,
+              clientOperationId: fiscal.clientOperationId || null,
+            }
+          : {}),
+      }
+    : undefined;
+
   return {
     storeId: Number(storeId),
     paymentMethod: payment.paymentMethod,
@@ -131,5 +156,6 @@ export function buildOfflineCheckoutPayload({
     items: resolveCheckoutLineItems(cartItems),
     orderDiscountAmount: orderDiscountAmount ?? 0,
     orderDiscountPercent: orderDiscountPercent ?? 0,
+    ...(fiscalBlock ? { fiscal: fiscalBlock } : {}),
   };
 }

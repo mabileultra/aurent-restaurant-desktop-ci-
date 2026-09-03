@@ -165,3 +165,6 @@ ipcMain.handle('desktop:showOnScreenKeyboard', () => {
   showOnScreenKeyboard();
   return true;
 });
+
+const { multikassaRequest } = require('./multikassa/multikassaProxy');
+ipcMain.handle('desktop:multikassaRequest', (_event, payload) => multikassaRequest(payload));

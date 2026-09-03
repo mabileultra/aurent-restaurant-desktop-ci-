@@ -44,4 +44,6 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   prepareForPrint: notImplemented('prepareForPrint'),
   offline_getCatalog: notImplemented('offline_getCatalog'),
   offline_saveSale: notImplemented('offline_saveSale'),
+
+  multikassaRequest: (payload) => invoke('desktop:multikassaRequest', payload),
 });

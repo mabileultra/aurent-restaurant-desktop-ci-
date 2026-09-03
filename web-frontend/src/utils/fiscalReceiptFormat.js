@@ -1,8 +1,11 @@
 /** Данные для QR / фискального признака на чеке. */
 export { fmtMoney, fmtQty } from './formatMoney';
 
-/** Уникальный фискальный признак (до интеграции с ОФД — детерминированно из данных чека). */
+/** Уникальный фискальный признак: из Multikassa, иначе локальный fallback. */
 export function buildFiscalSign(sale) {
+  if (sale?.fiscalSign) {
+    return String(sale.fiscalSign);
+  }
   const base = `${sale.receiptNumber}|${sale.id}|${sale.totalAmount}|${sale.createdAt}`;
   let h = 0;
   for (let i = 0; i < base.length; i += 1) {
@@ -13,6 +16,9 @@ export function buildFiscalSign(sale) {
 
 /** Payload для QR (проверка чека / призовые игры). */
 export function buildQrPayload(sale) {
+  if (sale?.fiscalQrUrl) {
+    return String(sale.fiscalQrUrl);
+  }
   const customBase = import.meta.env.VITE_FISCAL_QR_BASE?.trim();
   const sign = buildFiscalSign(sale);
   const total = Number(sale.totalAmount) || 0;

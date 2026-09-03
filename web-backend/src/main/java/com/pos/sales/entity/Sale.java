@@ -138,6 +138,29 @@ public class Sale {
     @Builder.Default
     private ServiceMode serviceMode = ServiceMode.RETAIL;
 
+    /** NOT_REQUIRED | PENDING_FISCAL | FISCALIZED | FISCAL_FAILED */
+    @Column(name = "fiscal_status", nullable = false, length = 32)
+    @Builder.Default
+    private String fiscalStatus = "NOT_REQUIRED";
+
+    @Column(name = "fiscal_sign", length = 128)
+    private String fiscalSign;
+
+    @Column(name = "fiscal_receipt_seq", length = 64)
+    private String fiscalReceiptSeq;
+
+    @Column(name = "multikassa_sale_id", length = 128)
+    private String multikassaSaleId;
+
+    @Column(name = "fiscal_qr_url", length = 1024)
+    private String fiscalQrUrl;
+
+    @Column(name = "fiscalized_at")
+    private Instant fiscalizedAt;
+
+    @Column(name = "fiscal_error", length = 1000)
+    private String fiscalError;
+
     public enum SaleSource {
         ONLINE,
         OFFLINE_SYNC

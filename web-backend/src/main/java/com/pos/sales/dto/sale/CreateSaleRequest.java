@@ -27,5 +27,7 @@ public record CreateSaleRequest(
     /** Скидка на чек, % (опционально, для отчётов). */
     @DecimalMin("0") BigDecimal orderDiscountPercent,
     /** Оплата с аванса клиента (для SALE с customerId). */
-    @DecimalMin("0") BigDecimal advanceAmount
+    @DecimalMin("0") BigDecimal advanceAmount,
+    /** Результат Multikassa (касса шлёт после POST /api/v1/operations). */
+    @Valid SaleFiscalPayload fiscal
 ) {}

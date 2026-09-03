@@ -9,6 +9,7 @@ import {
   posCloseShift,
   posFetchCurrentShift,
   posOpenShift,
+  posXReport,
 } from '../services/pos/posDataRouter';
 import { resolvePosRoute } from '../services/pos/posRouteResolver';
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
@@ -58,8 +59,8 @@ export async function openCashierShift(storeId, user, offlineShift = false, stor
   return posOpenShift(storeId, user, storeName);
 }
 
-export async function closeCashierShift(shiftId, storeId, user) {
-  return posCloseShift(shiftId, storeId, user);
+export async function closeCashierShift(shiftId, storeId, user, shiftHint = null) {
+  return posCloseShift(shiftId, storeId, user, shiftHint);
 }
 
 export function useOpenCashierShift(storeId) {
@@ -82,12 +83,22 @@ export function useCloseCashierShift(storeId) {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (shiftId) => posCloseShift(shiftId, storeId, user),
+    mutationFn: ({ shiftId, shift } = {}) =>
+      posCloseShift(shiftId, storeId, user, shift || null),
     onSuccess: () => {
       qc.setQueryData(shiftQueryKey(storeId, userId), null);
       qc.invalidateQueries({ queryKey: ['z-reports'] });
       qc.invalidateQueries({ queryKey: ['my-sales'] });
     },
+  });
+}
+
+export function useXReportCashierShift(storeId) {
+  const user = useAuthStore((s) => s.user);
+
+  return useMutation({
+    mutationFn: ({ shiftId, shift } = {}) =>
+      posXReport(shiftId, storeId, user, shift || null),
   });
 }
 

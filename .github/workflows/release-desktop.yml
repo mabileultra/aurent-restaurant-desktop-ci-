@@ -81,6 +81,7 @@ jobs:
           name: desktop-mac
           path: |
             desktop-electron/dist/*.dmg
+            desktop-electron/dist/*.zip
             desktop-electron/dist/*.blockmap
             desktop-electron/dist/latest-mac.yml
           if-no-files-found: error

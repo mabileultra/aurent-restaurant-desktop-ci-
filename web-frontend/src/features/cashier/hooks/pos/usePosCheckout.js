@@ -2,7 +2,9 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { CASHIER_ESCPOS_TOAST } from '../../../../config/cashierEscposConfig';
+import {
+  CASHIER_ESCPOS_TOAST,
+} from '../../../../config/cashierEscposConfig';
 import {
   isCashierEscposPrintAvailable,
   printFiscalReceipt,
@@ -17,6 +19,7 @@ import { useConnectivityStore } from '../../../../store/connectivityStore';
 import { isApiUnreachableError } from '../../../../utils/apiNetworkError';
 import { useAuthStore } from '../../../../store/authStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
+import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
 
 export function usePosCheckout({
   storeId,
@@ -95,6 +98,14 @@ export function usePosCheckout({
     onError: (e) => {
       if (e?.message === 'OFFLINE_SHIFT_REQUIRED') {
         toast.error(t('pos.shiftRequired'));
+        return;
+      }
+      if (e?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || e?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {
+        toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
+        return;
+      }
+      if (e?.code === 'MULTIKASSA_FISCAL_FAILED') {
+        toast.error(resolveMultikassaFiscalErrorMessage(e, t));
         return;
       }
       if (

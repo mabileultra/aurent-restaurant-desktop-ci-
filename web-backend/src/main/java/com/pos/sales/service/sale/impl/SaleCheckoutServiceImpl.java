@@ -23,9 +23,9 @@ import com.pos.repository.UserRepository;
 import com.pos.sales.service.sale.SaleCheckoutService;
 import com.pos.sales.service.sale.support.CheckoutProductLoader;
 import com.pos.sales.service.sale.support.SaleEnumParser;
+import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
-import com.pos.sales.service.sale.support.SaleVatCalculator;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
@@ -75,6 +75,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final FinanceSaleIntegrationService financeSaleIntegrationService;
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
+    private final SaleFiscalApplier saleFiscalApplier;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -196,6 +197,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
 
         items.forEach(item -> item.setSale(sale));
         sale.setItems(items);
+        saleFiscalApplier.apply(sale, shift, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {

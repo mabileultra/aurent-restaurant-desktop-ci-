@@ -15,6 +15,8 @@ import SaleReturnLinesEditor, {
   getReturnableLines,
   useReturnQtyState,
 } from '../sale-return/SaleReturnLinesEditor';
+import { posReturnSaleItems } from '../../services/pos/posReturnWithFiscal';
+import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
 
 const RECEIPT_LOOKUP_DEBOUNCE_MS = 450;
 
@@ -138,7 +140,7 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return saleApi.returnItems(s.id, payload).then((r) => r.data);
+      return posReturnSaleItems({ sale: s, payload, storeId: s.storeId });
     },
     onSuccess: async (_data, vars) => {
       const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');
@@ -161,7 +163,7 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
       onClose();
       onSuccess?.();
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? e?.message ?? t('pos.returnFailed')),
+    onError: (e) => toast.error(resolveMultikassaFiscalErrorMessage(e, t, 'pos.returnFailed')),
   });
 
   const handleReceiptChange = (e) => {

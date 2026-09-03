@@ -20,6 +20,14 @@ import {
 import { processOfflineCheckout } from './offlineCheckout';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
+import {
+  fiscalizeSaleBeforeCommit,
+  fiscalizeShiftOperation,
+  loadMultikassaCapabilities,
+  wrapMultikassaFiscalError,
+} from '../multikassa';
+import { lineSubtotal } from '../../store/cartStore';
+import { round2 } from '../../utils/taxAmounts';
 
 function connectivityState() {
   return useConnectivityStore.getState();
@@ -203,8 +211,37 @@ export async function posOpenShift(storeId, user, storeName = '') {
         /* ignore */
       }
     }
+
+    try {
+      const capabilities = await loadMultikassaCapabilities(storeId, shift?.cashRegisterId);
+      await fiscalizeShiftOperation({
+        kind: 'open',
+        capabilities,
+        shiftId: shift?.id,
+        cashierName: user?.fullName || user?.username || shift?.cashierName || 'CASHIER',
+        zReportNumber: shift?.zReportId,
+      });
+    } catch (fiscalErr) {
+      try {
+        await cashierShiftApi.close(shift.id);
+      } catch {
+        /* best-effort rollback */
+      }
+      if (isDesktopOfflineBridge() && user?.id) {
+        try {
+          await offlineCloseShift({ storeId, cashierId: user.id });
+        } catch {
+          /* ignore */
+        }
+      }
+      throw wrapMultikassaFiscalError(fiscalErr);
+    }
+
     return shift;
   } catch (e) {
+    if (e?.code === 'MULTIKASSA_FISCAL_FAILED' || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED') {
+      throw e;
+    }
     const msg = String(e.response?.data?.message ?? '');
     if (e.response?.status === 400 && /открыта/i.test(msg)) {
       const res = await cashierShiftApi.current(storeId);
@@ -224,12 +261,29 @@ export async function posOpenShift(storeId, user, storeName = '') {
   }
 }
 
-export async function posCloseShift(shiftId, storeId, user) {
+export async function posCloseShift(shiftId, storeId, user, shiftHint = null) {
   const { route } = routeFor(storeId);
   if (route === 'local' && user?.id) {
     await offlineCloseShift({ storeId, cashierId: user.id });
     return { id: shiftId, status: 'CLOSED' };
   }
+
+  try {
+    const capabilities = await loadMultikassaCapabilities(
+      storeId,
+      shiftHint?.cashRegisterId ?? null,
+    );
+    await fiscalizeShiftOperation({
+      kind: 'close',
+      capabilities,
+      shiftId,
+      cashierName: user?.fullName || user?.username || shiftHint?.cashierName || 'CASHIER',
+      zReportNumber: shiftHint?.zReportId,
+    });
+  } catch (fiscalErr) {
+    throw wrapMultikassaFiscalError(fiscalErr);
+  }
+
   const closed = await cashierShiftApi.close(shiftId).then((r) => r.data);
   if (isDesktopOfflineBridge() && user?.id) {
     try {
@@ -239,6 +293,24 @@ export async function posCloseShift(shiftId, storeId, user) {
     }
   }
   return closed;
+}
+
+export async function posXReport(shiftId, storeId, user, shiftHint = null) {
+  try {
+    const capabilities = await loadMultikassaCapabilities(
+      storeId,
+      shiftHint?.cashRegisterId ?? null,
+    );
+    await fiscalizeShiftOperation({
+      kind: 'x',
+      capabilities,
+      shiftId,
+      cashierName: user?.fullName || user?.username || shiftHint?.cashierName || 'CASHIER',
+    });
+  } catch (fiscalErr) {
+    throw wrapMultikassaFiscalError(fiscalErr);
+  }
+  return cashierShiftApi.xReport(shiftId).then((r) => r.data);
 }
 
 export async function posCreateSale({
@@ -253,8 +325,48 @@ export async function posCreateSale({
   items,
 }) {
   const { route } = routeFor(storeId);
+  const offline = route === 'local';
+  const cartItems = items || [];
+  const linesTotal = round2(cartItems.reduce((acc, item) => acc + lineSubtotal(item), 0));
+  const orderDiscount = round2(
+    Math.min(Math.max(0, Number(getCheckoutOrderDiscountAmount?.() || 0)), linesTotal),
+  );
+  const total = round2(Math.max(0, linesTotal - orderDiscount));
+  const clientSaleId =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `sale-${Date.now()}`;
 
-  if (route === 'local') {
+  let fiscalPayload = null;
+  try {
+    const cashRegisterId = cachedShift?.cashRegisterId ?? null;
+    const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId);
+    fiscalPayload = await fiscalizeSaleBeforeCommit({
+      capabilities,
+      cartItems,
+      payment,
+      total,
+      shiftId: cachedShift?.id,
+      cashierName: user?.fullName || user?.name || 'CASHIER',
+      offline,
+      clientSaleId,
+    });
+  } catch (err) {
+    throw wrapMultikassaFiscalError(err);
+  }
+
+  const fiscalForApi = fiscalPayload
+    ? {
+        fiscalStatus: fiscalPayload.fiscalStatus,
+        fiscalSign: fiscalPayload.fiscalSign,
+        fiscalReceiptSeq: fiscalPayload.fiscalReceiptSeq,
+        multikassaSaleId: fiscalPayload.multikassaSaleId,
+        fiscalQrUrl: fiscalPayload.fiscalQrUrl,
+        fiscalError: fiscalPayload.fiscalError,
+      }
+    : null;
+
+  if (offline) {
     return processOfflineCheckout({
       storeId,
       payment,
@@ -264,6 +376,7 @@ export async function posCreateSale({
       getCheckoutOrderDiscountAmount,
       getCheckoutOrderDiscountPercent,
       items,
+      fiscal: fiscalPayload || undefined,
     });
   }
 
@@ -286,6 +399,7 @@ export async function posCreateSale({
         items: getCheckoutLineItems(),
         orderDiscountAmount: getCheckoutOrderDiscountAmount(),
         orderDiscountPercent: getCheckoutOrderDiscountPercent(),
+        ...(fiscalForApi ? { fiscal: fiscalForApi } : {}),
       },
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
@@ -300,6 +414,7 @@ export async function posCreateSale({
         getCheckoutOrderDiscountAmount,
         getCheckoutOrderDiscountPercent,
         items,
+        fiscal: fiscalPayload || undefined,
       });
     }
     throw err;

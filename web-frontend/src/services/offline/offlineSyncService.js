@@ -8,6 +8,9 @@ import {
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
 import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
+import { retryPendingFiscalOnPayload } from '../multikassa/retryPendingFiscalOnPayload';
+import { toSaleFiscalPayload } from '../multikassa/parseMultikassaResult';
+import { FISCAL_STATUS } from '../multikassa/multikassaConstants';
 
 /** Отправка очереди продаж — часто (лёгкий запрос). */
 export const SALES_SYNC_INTERVAL_MS = 60_000;
@@ -70,14 +73,41 @@ export async function pushPendingSales() {
   const status = await offlineGetStatus();
   const deviceId = status.deviceId;
 
-  const sales = pending.map((row) => ({
-    clientSaleId: row.clientSaleId,
-    offlineDeviceId: deviceId,
-    createdAt: row.createdAt,
-    clientShiftId: row.clientShiftId,
-    shiftOpenedAt: row.shiftOpenedAt,
-    sale: row.payload,
-  }));
+  const sales = [];
+  for (const row of pending) {
+    let payload = row.payload || {};
+    try {
+      payload = await retryPendingFiscalOnPayload(payload, {
+        storeId: payload.storeId,
+        cashRegisterId: null,
+      });
+    } catch {
+      /* keep pending fiscal */
+    }
+
+    const fiscal = payload.fiscal
+      ? toSaleFiscalPayload({
+          fiscalStatus: payload.fiscal.fiscalStatus || FISCAL_STATUS.PENDING,
+          fiscalSign: payload.fiscal.fiscalSign,
+          fiscalReceiptSeq: payload.fiscal.fiscalReceiptSeq,
+          multikassaSaleId: payload.fiscal.multikassaSaleId,
+          fiscalQrUrl: payload.fiscal.fiscalQrUrl,
+          fiscalError: payload.fiscal.fiscalError,
+        })
+      : undefined;
+
+    const sale = { ...payload, ...(fiscal ? { fiscal } : {}) };
+    delete sale.multikassaRetryBody;
+
+    sales.push({
+      clientSaleId: row.clientSaleId,
+      offlineDeviceId: deviceId,
+      createdAt: row.createdAt,
+      clientShiftId: row.clientShiftId,
+      shiftOpenedAt: row.shiftOpenedAt,
+      sale,
+    });
+  }
 
   const res = await syncApi.pushSalesBatch({ sales });
   markApiReachable();

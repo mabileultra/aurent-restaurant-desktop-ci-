@@ -4,6 +4,18 @@ import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { findProductByMarkingCode } from '../utils/pharmacyMarkingProductMatch';
 import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
+import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
+
+function withFiscalMark(product, rawCode) {
+  if (!product) return product;
+  const mark = preserveMarkingCodeForFiscal(rawCode);
+  return {
+    ...product,
+    productMark: mark,
+    markCode: mark,
+    markedProduct: true,
+  };
+}
 
 export function usePharmacyMarkingScan({
   storeId,
@@ -22,14 +34,14 @@ export function usePharmacyMarkingScan({
 
     const localProduct = findProductByMarkingCode(products, rawCode);
     if (localProduct) {
-      onProductFound?.(localProduct);
+      onProductFound?.(withFiscalMark(localProduct, rawCode));
       if (!silent) {
         toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: localProduct.name }));
       }
     }
 
     if (!aslMarkingEnabled || !storeId) {
-      onOpenMarkingModal?.(code);
+      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode));
       if (!silent && !localProduct) {
         toast(t('pharmacyCashier.integrations.markingScanHint'), { icon: 'ℹ️' });
       }
@@ -42,7 +54,7 @@ export function usePharmacyMarkingScan({
         .verifyMarking({ storeId, code })
         .then((r) => r.data);
 
-      setLastScan({ code, result: data, product: localProduct });
+      setLastScan({ code: preserveMarkingCodeForFiscal(rawCode), result: data, product: localProduct });
 
       if (data.found) {
         const label = data.productName || data.gtin || code.slice(0, 18);
@@ -54,17 +66,17 @@ export function usePharmacyMarkingScan({
       if (!localProduct && data.gtin) {
         const byGtin = findProductByMarkingCode(products, `01${data.gtin}`);
         if (byGtin) {
-          onProductFound?.(byGtin);
+          onProductFound?.(withFiscalMark(byGtin, rawCode));
           toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: byGtin.name }));
         }
       }
 
-      onOpenMarkingModal?.(code, data);
+      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode), data);
       return true;
     } catch (error) {
       const message = error.response?.data?.message ?? error.message;
       if (!silent) toast.error(message);
-      onOpenMarkingModal?.(code, { found: false, error: message });
+      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode), { found: false, error: message });
       return true;
     } finally {
       setVerifying(false);

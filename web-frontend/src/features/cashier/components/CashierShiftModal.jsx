@@ -9,8 +9,9 @@ import PosModalPortal from '../../../components/shared/PosModalPortal';
 import ShiftReportPrintBody from './ShiftReportPrintBody';
 import ThermalReportPrintPortal from '../../../components/shared/ThermalReportPrintPortal';
 import { useAuthStore } from '../../../store/authStore';
-import { useOpenCashierShift, useCloseCashierShift, shiftQueryKey } from '../../../hooks/useCashierShift';
+import { useOpenCashierShift, useCloseCashierShift, useXReportCashierShift, shiftQueryKey } from '../../../hooks/useCashierShift';
 import { resolvePosShiftOpenErrorMessage } from '../../../utils/resolvePosShiftOpenError';
+import { resolveMultikassaFiscalErrorMessage } from '../../../services/multikassa';
 
 export default function CashierShiftModal({
   open,
@@ -34,19 +35,7 @@ export default function CashierShiftModal({
     setPrintReport(data);
   };
 
-  const xMutation = useMutation({
-    mutationFn: () => cashierShiftApi.xReport(shiftId).then((r) => r.data),
-    onSuccess: (data) => {
-      if (printAfterLoadRef.current === 'X') {
-        printAfterLoadRef.current = null;
-        queuePrint(data);
-      }
-    },
-    onError: (e) => {
-      printAfterLoadRef.current = null;
-      toast.error(e.response?.data?.message ?? t('pos.reportFailed'));
-    },
-  });
+  const xMutation = useXReportCashierShift(storeId);
 
   const applyNewShift = (newShift) => {
     qc.setQueryData(shiftQueryKey(storeId, userId), newShift);
@@ -75,14 +64,20 @@ export default function CashierShiftModal({
 
   const closeMutation = useCloseCashierShift(storeId);
   const handleCloseShift = () => {
-    closeMutation.mutate(shiftId, {
-      onSuccess: (closedShift) => {
-        toast.success(t('pos.shiftClosedWithZReport'));
-        onShiftUpdated?.(closedShift);
-        onClose();
+    closeMutation.mutate(
+      { shiftId, shift },
+      {
+        onSuccess: (closedShift) => {
+          toast.success(t('pos.shiftClosedWithZReport'));
+          onShiftUpdated?.(closedShift);
+          onClose();
+        },
+        onError: (e) =>
+          toast.error(
+            resolveMultikassaFiscalErrorMessage(e, t, 'pos.shiftCloseFailed'),
+          ),
       },
-      onError: (e) => toast.error(e.response?.data?.message ?? t('pos.shiftCloseFailed')),
-    });
+    );
   };
 
   useEffect(() => {
@@ -102,7 +97,21 @@ export default function CashierShiftModal({
 
   const handleXReport = () => {
     printAfterLoadRef.current = 'X';
-    xMutation.mutate();
+    xMutation.mutate(
+      { shiftId, shift },
+      {
+        onSuccess: (data) => {
+          if (printAfterLoadRef.current === 'X') {
+            printAfterLoadRef.current = null;
+            queuePrint(data);
+          }
+        },
+        onError: (e) => {
+          printAfterLoadRef.current = null;
+          toast.error(resolveMultikassaFiscalErrorMessage(e, t, 'pos.reportFailed'));
+        },
+      },
+    );
   };
 
   const handleZReport = () => {
@@ -192,9 +201,14 @@ export default function CashierShiftModal({
                       onClose();
                     },
                     onError: (e) =>
-                      toast.error(resolvePosShiftOpenErrorMessage(e, t, storeId), {
-                        id: 'pos-shift-open-error',
-                      }),
+                      toast.error(
+                        e?.code === 'MULTIKASSA_FISCAL_FAILED' || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED'
+                          ? resolveMultikassaFiscalErrorMessage(e, t)
+                          : resolvePosShiftOpenErrorMessage(e, t, storeId),
+                        {
+                          id: 'pos-shift-open-error',
+                        },
+                      ),
                   })
                 }
               >

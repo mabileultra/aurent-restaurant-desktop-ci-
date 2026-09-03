@@ -33,6 +33,7 @@ export async function processOfflineCheckout({
   getCheckoutOrderDiscountAmount,
   getCheckoutOrderDiscountPercent,
   items,
+  fiscal = null,
 }) {
   if (!isDesktopOfflineBridge()) {
     throw new Error('OFFLINE_SALE_SAVE_FAILED');
@@ -53,6 +54,7 @@ export async function processOfflineCheckout({
     cartItems: items,
     orderDiscountAmount,
     orderDiscountPercent,
+    fiscal,
   });
 
   const response = buildOfflineSaleResponse({
@@ -67,6 +69,7 @@ export async function processOfflineCheckout({
     cartItems: items,
     orderDiscountAmount,
     orderDiscountPercent,
+    fiscal,
   });
 
   const saved = await withCheckoutTimeout(

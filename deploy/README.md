@@ -121,8 +121,8 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 1. Поднимите версию в `desktop-electron/package.json` (`version`)
 2. Push в `main` с изменениями в `desktop-electron/**` → workflow **Release Desktop**
-3. CI собирает `.exe` (Windows) и `.dmg` (macOS), публикует в `/downloads/desktop/`:
-   - `latest.yml` / `latest-mac.yml` — для `electron-updater`
+3. CI собирает `.exe` (Windows) и `.dmg` + `.zip` (macOS), публикует в `/downloads/desktop/`:
+   - `latest.yml` / `latest-mac.yml` — для `electron-updater` (на Mac в фиде должен быть **zip**)
    - `manifest.json` — для страницы `/install`
 4. Установленная касса проверяет обновления автоматически и через «Вид → Проверить обновления»
 5. Новые пользователи: `https://домен/install`
