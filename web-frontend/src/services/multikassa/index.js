@@ -26,6 +26,7 @@ export {
   toSaleFiscalPayload,
   hasRealFiscalProof,
   isSyntheticFiscalSign,
+  ensureFiscalQrUrl,
 } from './parseMultikassaResult';
 export { runMultikassaOperation } from './runMultikassaOperation';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';

@@ -15,10 +15,12 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
   const [highlightIndex, setHighlightIndex] = useState(-1);
   const [menuStyle, setMenuStyle] = useState({ top: 0, left: 0, width: 0 });
 
-  const close = useCallback(() => {
+  const close = useCallback((options = {}) => {
     setOpen(false);
     setHighlightIndex(-1);
-    triggerRef.current?.focus();
+    if (options.restoreFocus) {
+      triggerRef.current?.focus();
+    }
     onBlur?.({ target: { value, name } });
   }, [name, onBlur, setOpen, value]);
 
@@ -96,7 +98,7 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
     const onKeyDown = (event) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        close();
+        close({ restoreFocus: true });
         return;
       }
 

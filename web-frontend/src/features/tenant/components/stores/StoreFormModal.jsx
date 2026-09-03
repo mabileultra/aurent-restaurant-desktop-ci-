@@ -6,6 +6,7 @@ import { X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../../components/ui';
 import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
+import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
   focus:outline-none focus:ring-2 focus:ring-emerald-500
@@ -161,10 +162,8 @@ export default function StoreFormModal({
               onChange={(e) => setValue('companyId', e.target.value, { shouldValidate: true })}
               error={errors.companyId?.message}
               placeholder={t('stores.selectCompany')}
-              options={[
-                { value: '', label: t('stores.selectCompany') },
-                ...companies.map((c) => ({ value: String(c.id), label: c.name })),
-              ]}
+              searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
+              options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
             />
             </>
           ) : null}

@@ -89,6 +89,10 @@ export function buildSaleOperationBody({
     receipt_gnk_time: now,
     shift_id: shiftId ? String(shiftId) : '',
     items: (cartItems || []).map(buildItem),
+    location: {
+      Latitude: Number(capabilities?.latitude) || 41.3111,
+      Longitude: Number(capabilities?.longitude) || 69.2797,
+    },
   };
 
   const contractor = String(contractorName || '').trim();

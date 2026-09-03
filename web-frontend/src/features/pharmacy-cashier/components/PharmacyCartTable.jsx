@@ -4,7 +4,6 @@ import { lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import {
-  formatExpiryRemaining,
   productBatch,
   productCountry,
   productDosageForm,
@@ -13,10 +12,10 @@ import {
 } from '../utils/pharmacyProductMeta';
 import {
   pharmacyCellToneClass,
-  pharmacyExpiryTone,
   pharmacyShelfTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
+import PharmacyExpiryCell from './PharmacyExpiryCell';
 import '../styles/pharmacy-cart-table.css';
 import '../styles/pharmacy-cart-table-columns.css';
 
@@ -80,10 +79,8 @@ export default function PharmacyCartTable({
               const form = productDosageForm(item) || '—';
               const country = productCountry(item) || '—';
               const shelf = productStorageLocation(item) || '—';
-              const expiry = formatExpiryRemaining(item, daysLabel) || '—';
               const batch = productBatch(item) || '—';
               const stockTone = pharmacyStockTone(item, { stockKey: 'maxStock' });
-              const expiryTone = pharmacyExpiryTone(item);
               const shelfTone = pharmacyShelfTone(item);
               return (
                 <tr
@@ -148,15 +145,14 @@ export default function PharmacyCartTable({
                   <td className="pharmacy-cart-table__num">
                     <span className="pharmacy-cart-table__money">{fmt(lineSubtotal(item))}</span>
                   </td>
-                  <td
-                    className={[
-                      'pharmacy-cart-table__mono',
-                      pharmacyCellToneClass(expiryTone, 'pharmacy-cart-table__cell'),
-                    ].filter(Boolean).join(' ')}
-                  >
-                    {expiry}
+                  <PharmacyExpiryCell
+                    product={item}
+                    daysLabel={daysLabel}
+                    classPrefix="pharmacy-cart-table"
+                  />
+                  <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={batch}>
+                    <span className="pharmacy-cart-table__cell-text">{batch}</span>
                   </td>
-                  <td className="pharmacy-cart-table__mono">{batch}</td>
                   <td
                     className={[
                       'pharmacy-cart-table__num',

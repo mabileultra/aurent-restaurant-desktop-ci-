@@ -1,13 +1,31 @@
 import { BaseSelect } from '../../../../components/ui';
+import { buildCompanySelectOptions } from '../../../tenant/utils/companySelectOptions';
 
 function companyOptionLabel(t, company) {
   const code = String(company?.businessType || 'UNIVERSAL').trim().toUpperCase();
   const normalized = !code || code === 'RETAIL' ? 'UNIVERSAL' : code;
   const typeLabel = t(`productTemplates.businessTypes.${normalized}`, normalized);
-  return `${company.name} · ${typeLabel}`;
+  const name = company.name || `#${company.id}`;
+  return `${name} · ${typeLabel}`;
 }
 
 export default function PlatformModuleAccessCompanySelect({ t, companies, companyId, onChange }) {
+  const options = buildCompanySelectOptions(companies, {
+    emptyLabel: t('platform.moduleAccess.allCompanies'),
+    includeLoginCode: false,
+  }).map((option) => {
+    if (!option.value) return option;
+    const company = companies.find((c) => String(c.id) === String(option.value));
+    if (!company) return option;
+    return {
+      ...option,
+      label: companyOptionLabel(t, company),
+      keywords: [company.name, company.loginCode, companyOptionLabel(t, company)]
+        .filter(Boolean)
+        .join(' '),
+    };
+  });
+
   return (
     <BaseSelect
       className="module-access-toolbar__company"
@@ -16,13 +34,8 @@ export default function PlatformModuleAccessCompanySelect({ t, companies, compan
       value={companyId}
       onChange={(e) => onChange(e.target.value)}
       placeholder={t('platform.moduleAccess.allCompanies')}
-      options={[
-        { value: '', label: t('platform.moduleAccess.allCompanies') },
-        ...companies
-          .slice()
-          .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' }))
-          .map((c) => ({ value: String(c.id), label: companyOptionLabel(t, c) })),
-      ]}
+      searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
+      options={options}
     />
   );
 }

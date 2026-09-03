@@ -1,6 +1,8 @@
+import { useMemo, useState } from 'react';
 import { Loader, Eye, EyeOff } from 'lucide-react';
 import { BaseSelect } from '../../../../components/ui';
 import { userFormInputCls } from '../../utils/userFormModalUtils';
+import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 
 export default function UserFormModalFields({
   t,
@@ -36,6 +38,14 @@ export default function UserFormModalFields({
   handleSubmit,
   onSubmit,
 }) {
+  const [storeSearch, setStoreSearch] = useState('');
+  const filteredStoreOptions = useMemo(() => {
+    const q = storeSearch.trim().toLowerCase();
+    if (!q) return storeOptions;
+    return storeOptions.filter((s) =>
+      [s.name, s.code].filter(Boolean).some((part) => String(part).toLowerCase().includes(q))
+    );
+  }, [storeOptions, storeSearch]);
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 p-5">
       {isPlatform && isEdit ? (
@@ -150,10 +160,8 @@ export default function UserFormModalFields({
             }}
             disabled={isEdit}
             placeholder={t('stores.selectCompany')}
-            options={[
-              { value: '', label: t('stores.selectCompany') },
-              ...companies.map((c) => ({ value: String(c.id), label: c.name })),
-            ]}
+            searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
+            options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.selectCompany') })}
           />
         </div>
       )}
@@ -195,10 +203,16 @@ export default function UserFormModalFields({
                 <span className="text-red-400">* </span>
                 {t('users.colStores')}
               </label>
-              <select
-                className={userFormInputCls}
+              <BaseSelect
                 value={selectedStoreId}
                 disabled={storesLoading || (storeOptions.length === 0 && !storesError)}
+                placeholder={
+                  storesLoading
+                    ? t('common.loading')
+                    : storeOptions.length === 0
+                      ? t('users.noStoresAvailable')
+                      : t('users.selectStore')
+                }
                 onChange={(e) => {
                   const next = e.target.value;
                   if (!next) {
@@ -207,20 +221,22 @@ export default function UserFormModalFields({
                   }
                   toggleStore(next);
                 }}
-              >
-                <option value="">
-                  {storesLoading
-                    ? t('common.loading')
-                    : storeOptions.length === 0
-                      ? t('users.noStoresAvailable')
-                      : t('users.selectStore')}
-                </option>
-                {storeOptions.map((s) => (
-                  <option key={s.id} value={String(s.id)}>
-                    {`${s.name}${s.active === false ? ` (${t('users.storeInactive')})` : ''}`}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  {
+                    value: '',
+                    label: storesLoading
+                      ? t('common.loading')
+                      : storeOptions.length === 0
+                        ? t('users.noStoresAvailable')
+                        : t('users.selectStore'),
+                  },
+                  ...storeOptions.map((s) => ({
+                    value: String(s.id),
+                    label: `${s.name}${s.active === false ? ` (${t('users.storeInactive')})` : ''}`,
+                    keywords: [s.name, s.code].filter(Boolean).join(' '),
+                  })),
+                ]}
+              />
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('users.cashierStoreHint')}</p>
               {storesError ? (
                 <p className="mt-1 text-xs text-red-500">{t('users.storesLoadFailed')}</p>
@@ -238,13 +254,24 @@ export default function UserFormModalFields({
           ) : (
             <>
               <label className="mb-2 block text-xs font-medium text-slate-500 dark:text-slate-400">{t('users.colStores')}</label>
+              {storeOptions.length > 8 ? (
+                <input
+                  type="search"
+                  value={storeSearch}
+                  onChange={(e) => setStoreSearch(e.target.value)}
+                  placeholder={t('stores.searchPlaceholder')}
+                  className={`${userFormInputCls} mb-2`}
+                />
+              ) : null}
               <div className="max-h-40 space-y-2 overflow-y-auto rounded-lg border p-3 dark:border-slate-700">
                 {storesLoading ? (
                   <p className="text-xs text-slate-500">{t('common.loading')}</p>
                 ) : storeOptions.length === 0 ? (
                   <p className="text-xs text-slate-500">{t('users.noStoresAvailable')}</p>
+                ) : filteredStoreOptions.length === 0 ? (
+                  <p className="text-xs text-slate-500">{t('platform.noSearchResults')}</p>
                 ) : (
-                  storeOptions.map((s) => (
+                  filteredStoreOptions.map((s) => (
                     <label key={s.id} className="flex items-center gap-2 text-sm">
                       <input
                         type="checkbox"

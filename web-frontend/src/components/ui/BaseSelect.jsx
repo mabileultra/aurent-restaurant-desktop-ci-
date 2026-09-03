@@ -1,7 +1,8 @@
-import { forwardRef, useImperativeHandle, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import clsx from 'clsx';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Search } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useBaseSelect } from './useBaseSelect';
 
 function toOptionValue(value) {
@@ -9,11 +10,12 @@ function toOptionValue(value) {
   return String(value);
 }
 
-function fireNativeChange(selectEl, nextValue) {
-  if (!selectEl) return;
-  selectEl.value = nextValue;
-  selectEl.dispatchEvent(new Event('change', { bubbles: true }));
-  selectEl.dispatchEvent(new Event('input', { bubbles: true }));
+function optionSearchText(option) {
+  return [option?.label, option?.value, option?.keywords]
+    .flat()
+    .filter((part) => part != null && String(part).trim() !== '')
+    .join(' ')
+    .toLowerCase();
 }
 
 const BaseSelect = forwardRef(function BaseSelect(
@@ -23,6 +25,8 @@ const BaseSelect = forwardRef(function BaseSelect(
     required,
     options = [],
     placeholder = '',
+    searchPlaceholder,
+    emptyMessage,
     value,
     onChange,
     onBlur,
@@ -32,23 +36,17 @@ const BaseSelect = forwardRef(function BaseSelect(
     className,
     size = 'md',
     emptyValue = '',
+    searchable = true,
   },
   forwardedRef
 ) {
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const nativeRef = useRef(null);
+  const searchRef = useRef(null);
   const isControlled = value !== undefined;
-  const [uncontrolledValue, setUncontrolledValue] = useState(emptyValue);
-
-  useImperativeHandle(forwardedRef, () => nativeRef.current);
-
-  useLayoutEffect(() => {
-    if (isControlled) return;
-    const el = nativeRef.current;
-    if (!el) return;
-    const domValue = toOptionValue(el.value ?? emptyValue);
-    setUncontrolledValue((prev) => (prev !== domValue ? domValue : prev));
-  });
+  const [uncontrolledValue, setUncontrolledValue] = useState(() => toOptionValue(emptyValue));
 
   const effectiveValue = isControlled
     ? toOptionValue(value ?? emptyValue)
@@ -57,11 +55,12 @@ const BaseSelect = forwardRef(function BaseSelect(
   const closeMenuRef = useRef(() => {});
 
   const commitSelection = (optionValue) => {
+    const next = toOptionValue(optionValue);
     if (!isControlled) {
-      setUncontrolledValue(optionValue);
-      fireNativeChange(nativeRef.current, optionValue);
+      setUncontrolledValue(next);
     }
-    onChange?.({ target: { value: optionValue, name } });
+    onChange?.({ target: { value: next, name } });
+    setQuery('');
     closeMenuRef.current();
   };
 
@@ -73,6 +72,15 @@ const BaseSelect = forwardRef(function BaseSelect(
   const fieldId = id || name;
   const displayLabel = selectedOption?.label ?? (effectiveValue ? effectiveValue : '');
 
+  const visibleOptions = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options;
+    return options.filter((option) => {
+      if (toOptionValue(option.value) === '') return false;
+      return optionSearchText(option).includes(q);
+    });
+  }, [options, query]);
+
   const {
     listId,
     rootRef,
@@ -81,10 +89,9 @@ const BaseSelect = forwardRef(function BaseSelect(
     highlightIndex,
     setHighlightIndex,
     menuStyle,
-    toggle,
     close,
   } = useBaseSelect({
-    options,
+    options: visibleOptions,
     open,
     setOpen,
     disabled,
@@ -94,7 +101,53 @@ const BaseSelect = forwardRef(function BaseSelect(
     onSelectOption: commitSelection,
   });
 
-  closeMenuRef.current = close;
+  const closeMenu = (opts) => {
+    setQuery('');
+    close(opts);
+  };
+
+  closeMenuRef.current = closeMenu;
+
+  useEffect(() => {
+    if (!open || !searchable) return undefined;
+    const id = window.setTimeout(() => searchRef.current?.focus?.(), 0);
+    return () => window.clearTimeout(id);
+  }, [open, searchable]);
+
+  useImperativeHandle(forwardedRef, () => ({
+    get value() {
+      return effectiveValue;
+    },
+    set value(next) {
+      const normalized = toOptionValue(next ?? emptyValue);
+      if (!isControlled) {
+        setUncontrolledValue(normalized);
+      }
+      if (nativeRef.current) {
+        nativeRef.current.value = normalized;
+      }
+    },
+    focus() {
+      triggerRef.current?.focus?.();
+    },
+    blur() {
+      triggerRef.current?.blur?.();
+    },
+    get type() {
+      return 'select-one';
+    },
+    get name() {
+      return name;
+    },
+  }), [effectiveValue, emptyValue, isControlled, name]);
+
+  const hasEmptyOption = options.some((option) => toOptionValue(option.value) === '');
+  const searchPh = searchPlaceholder || t('common.search', { defaultValue: 'Поиск…' });
+
+  const openMenu = () => {
+    if (disabled) return;
+    setOpen(true);
+  };
 
   const menu = open
     ? createPortal(
@@ -110,36 +163,67 @@ const BaseSelect = forwardRef(function BaseSelect(
             width: menuStyle.width,
           }}
         >
-          {options.map((option, index) => {
-            const optionValue = toOptionValue(option.value);
-            const isSelected = optionValue === effectiveValue;
-            const isHighlighted = index === highlightIndex;
-
-            return (
-              <button
-                key={`${optionValue}-${index}`}
-                type="button"
-                role="option"
-                aria-selected={isSelected}
-                disabled={option.disabled}
-                className={clsx(
-                  'base-select__option',
-                  isSelected && 'base-select__option--selected',
-                  isHighlighted && 'base-select__option--highlight'
-                )}
-                onMouseEnter={() => setHighlightIndex(index)}
-                onMouseDown={(event) => {
-                  event.preventDefault();
+          {searchable ? (
+            <div className="base-select__search-wrap">
+              <Search size={14} className="base-select__search-icon" aria-hidden />
+              <input
+                ref={searchRef}
+                type="search"
+                className="base-select__search"
+                value={query}
+                placeholder={searchPh}
+                autoComplete="off"
+                spellCheck={false}
+                aria-autocomplete="list"
+                aria-controls={listId}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (['ArrowDown', 'ArrowUp', 'Enter', 'Escape'].includes(event.key)) {
+                    event.preventDefault();
+                  }
                   event.stopPropagation();
-                  if (option.disabled) return;
-                  commitSelection(optionValue);
                 }}
-              >
-                <Check size={14} className="base-select__check" aria-hidden />
-                <span className="base-select__option-label">{option.label}</span>
-              </button>
-            );
-          })}
+                onMouseDown={(event) => event.stopPropagation()}
+              />
+            </div>
+          ) : null}
+
+          <div className="base-select__options">
+            {visibleOptions.length === 0 ? (
+              <div className="base-select__empty">{emptyMessage || t('platform.noSearchResults')}</div>
+            ) : (
+              visibleOptions.map((option, index) => {
+                const optionValue = toOptionValue(option.value);
+                const isSelected = optionValue === effectiveValue;
+                const isHighlighted = index === highlightIndex;
+
+                return (
+                  <button
+                    key={`${optionValue}-${index}`}
+                    type="button"
+                    role="option"
+                    aria-selected={isSelected}
+                    disabled={option.disabled}
+                    className={clsx(
+                      'base-select__option',
+                      isSelected && 'base-select__option--selected',
+                      isHighlighted && 'base-select__option--highlight'
+                    )}
+                    onMouseEnter={() => setHighlightIndex(index)}
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (option.disabled) return;
+                      commitSelection(optionValue);
+                    }}
+                  >
+                    <Check size={14} className="base-select__check" aria-hidden />
+                    <span className="base-select__option-label">{option.label}</span>
+                  </button>
+                );
+              })
+            )}
+          </div>
         </div>,
         document.body
       )
@@ -152,6 +236,7 @@ const BaseSelect = forwardRef(function BaseSelect(
         'base-select',
         size === 'sm' && 'base-select--sm',
         open && 'base-select--open',
+        disabled && 'base-select--disabled',
         error && 'base-select--invalid',
         className
       )}
@@ -172,15 +257,15 @@ const BaseSelect = forwardRef(function BaseSelect(
         aria-expanded={open}
         aria-controls={open ? listId : undefined}
         className="base-select__trigger"
-        onClick={toggle}
+        onClick={() => {
+          if (disabled) return;
+          if (open) closeMenu();
+          else openMenu();
+        }}
         onKeyDown={(event) => {
-          if (event.key === 'Enter' || event.key === ' ') {
-            event.preventDefault();
-            toggle();
-          }
           if (event.key === 'ArrowDown' && !open) {
             event.preventDefault();
-            setOpen(true);
+            openMenu();
           }
         }}
       >
@@ -190,7 +275,7 @@ const BaseSelect = forwardRef(function BaseSelect(
             !displayLabel && placeholder && 'base-select__value--placeholder'
           )}
         >
-          {displayLabel || placeholder || '—'}
+          {displayLabel || placeholder || ''}
         </span>
         <ChevronDown size={16} className="base-select__chevron" aria-hidden />
       </button>
@@ -198,14 +283,21 @@ const BaseSelect = forwardRef(function BaseSelect(
       <select
         ref={nativeRef}
         name={name}
-        {...(isControlled ? { value: effectiveValue } : {})}
+        value={effectiveValue}
         disabled={disabled}
         className="base-select__native"
         tabIndex={-1}
         aria-hidden="true"
-        onChange={onChange}
+        onChange={(event) => {
+          const next = toOptionValue(event.target.value);
+          if (!isControlled) {
+            setUncontrolledValue(next);
+          }
+          onChange?.(event);
+        }}
         onBlur={onBlur}
       >
+        {hasEmptyOption ? null : <option value="">{placeholder || ''}</option>}
         {options.map((option, index) => (
           <option key={`${toOptionValue(option.value)}-${index}`} value={toOptionValue(option.value)} disabled={option.disabled}>
             {option.label}

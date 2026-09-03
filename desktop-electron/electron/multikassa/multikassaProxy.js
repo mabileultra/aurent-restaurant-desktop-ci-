@@ -19,7 +19,24 @@ async function multikassaRequest(payload = {}) {
     init.body = typeof payload.body === 'string' ? payload.body : JSON.stringify(payload.body);
   }
 
-  const response = await fetch(url, init);
+  let response;
+  try {
+    response = await fetch(url, init);
+  } catch (cause) {
+    const msg = String(cause?.message || cause || 'fetch failed');
+    return {
+      ok: false,
+      status: 0,
+      data: {
+        message:
+          /ECONNREFUSED|Failed to fetch|NetworkError|ENOTFOUND/i.test(msg)
+            ? `Не удалось связаться с Multikassa (${url}). Запустите агент на кассе (localhost:8080 / :12346).`
+            : msg,
+        error: msg,
+      },
+    };
+  }
+
   const text = await response.text();
   let data = null;
   if (text) {

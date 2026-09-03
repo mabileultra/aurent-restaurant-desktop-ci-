@@ -20,9 +20,16 @@ export function buildQrPayload(sale) {
   if (fromModule && (isOfdCheckUrl(fromModule) || /^https?:\/\//i.test(fromModule))) {
     return fromModule;
   }
+  // Перепечати: terminal мог не сохраниться в sale — пробуем env / branding fallbacks.
+  const terminalId =
+    sale?.fiscalTerminalId ||
+    sale?.terminalId ||
+    import.meta.env.VITE_FISCAL_CARD_ID ||
+    import.meta.env.VITE_FISCAL_MODULE_NUMBER ||
+    '';
   return (
     buildOfdCheckUrl({
-      terminalId: sale?.fiscalTerminalId || sale?.terminalId,
+      terminalId,
       receiptSeq: sale?.fiscalReceiptSeq,
       fiscalSign: sale?.fiscalSign,
       datetime: sale?.fiscalizedAt || sale?.createdAt,

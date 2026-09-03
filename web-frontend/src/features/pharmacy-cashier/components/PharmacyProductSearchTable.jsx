@@ -5,7 +5,6 @@ import { formatQty } from '../../../utils/quantityFormat';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
 import {
   formatExpiryDisplay,
-  formatExpiryRemaining,
   productArrivalDate,
   productBatch,
   productCountry,
@@ -17,10 +16,10 @@ import {
 } from '../utils/pharmacyProductMeta';
 import {
   pharmacyCellToneClass,
-  pharmacyExpiryTone,
   pharmacyShelfTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
+import PharmacyExpiryCell from './PharmacyExpiryCell';
 import '../styles/pharmacy-search-table.css';
 
 const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTable(
@@ -125,12 +124,10 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const country = productCountry(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
                 const pack = productUnitsInPack(product);
-                const expiry = formatExpiryRemaining(product, daysLabel) || '—';
                 const batch = productBatch(product) || '—';
                 const arrival = formatExpiryDisplay(productArrivalDate(product)) || '—';
                 const sellByUnit = productSellByUnitHint(product);
                 const stockTone = disabled ? null : pharmacyStockTone(product);
-                const expiryTone = disabled ? null : pharmacyExpiryTone(product);
                 const shelfTone = disabled ? null : pharmacyShelfTone(product);
                 return (
                   <tr
@@ -181,15 +178,15 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                       {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                     </td>
                     <td className="pharmacy-search__num">{pack != null ? pack : '—'}</td>
-                    <td
-                      className={[
-                        'pharmacy-search__mono',
-                        pharmacyCellToneClass(expiryTone, 'pharmacy-search__cell'),
-                      ].filter(Boolean).join(' ')}
-                    >
-                      {expiry}
+                    <PharmacyExpiryCell
+                      product={product}
+                      daysLabel={daysLabel}
+                      classPrefix="pharmacy-search"
+                      muteTone={disabled}
+                    />
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={batch}>
+                      <span className="pharmacy-search__cell-text">{batch}</span>
                     </td>
-                    <td className="pharmacy-search__mono">{batch}</td>
                     <td className="pharmacy-search__mono">{arrival}</td>
                     <td className="pharmacy-search__mono">{product.ikpu || '—'}</td>
                   </tr>

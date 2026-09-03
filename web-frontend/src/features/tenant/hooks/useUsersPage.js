@@ -2,10 +2,11 @@ import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { companyApi, platformBusinessTypeApi, userApi } from '../../../api';
+import { companyApi, platformBusinessTypeApi, storeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
+import { asEntityList } from '../utils/companySelectOptions';
 
 export function useUsersPage({ mode = 'tenant' } = {}) {
   const isPlatform = mode === 'platform';
@@ -22,16 +23,23 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const modalOpen = formMode !== null;
 
-  const { data: users = [], isLoading } = useQuery({
+  const { data: usersRaw = [], isLoading } = useQuery({
     queryKey: isPlatform ? ['users', 'platform'] : tenantKey('users'),
     queryFn: () => userApi.getAll().then((r) => r.data),
     enabled: isPlatform || tenantReady,
   });
 
-  const { data: companies = [] } = useQuery({
+  const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
     queryFn: () => companyApi.listAll().then((r) => r.data),
     enabled: isPlatform,
+    staleTime: 60_000,
+  });
+
+  const { data: storesRaw = [] } = useQuery({
+    queryKey: isPlatform ? ['stores', 'platform-users'] : tenantKey('stores'),
+    queryFn: () => storeApi.getAll().then((r) => r.data ?? []),
+    enabled: isPlatform || tenantReady,
     staleTime: 60_000,
   });
 
@@ -42,6 +50,10 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     enabled: isPlatform,
   });
 
+  const users = useMemo(() => asEntityList(usersRaw), [usersRaw]);
+  const companies = useMemo(() => asEntityList(companiesRaw), [companiesRaw]);
+  const stores = useMemo(() => asEntityList(storesRaw), [storesRaw]);
+
   const companyById = useMemo(() => {
     const map = new Map();
     companies.forEach((company) => {
@@ -50,6 +62,37 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     });
     return map;
   }, [companies]);
+
+  const storeById = useMemo(() => {
+    const map = new Map();
+    stores.forEach((store) => {
+      if (store?.id == null) return;
+      map.set(String(store.id), store);
+    });
+    return map;
+  }, [stores]);
+
+  const displayUsers = useMemo(() => users.map((user) => {
+    const company = companyById.get(String(user.companyId ?? ''));
+    const rawStoreIds = Array.isArray(user.storeIds)
+      ? user.storeIds
+      : Array.isArray(user.stores)
+        ? user.stores.map((s) => (s && typeof s === 'object' ? s.id : s))
+        : [];
+    const fromApiNames = Array.isArray(user.storeNames)
+      ? user.storeNames.filter(Boolean)
+      : [];
+    const fromIds = rawStoreIds
+      .map((id) => storeById.get(String(id))?.name)
+      .filter(Boolean);
+    const storeNames = fromApiNames.length ? fromApiNames : fromIds;
+    return {
+      ...user,
+      companyName: user.companyName || company?.name || '',
+      companyLoginCode: user.companyLoginCode || company?.loginCode || '',
+      storeNames,
+    };
+  }), [users, companyById, storeById]);
 
   const { mutate: toggleUser } = useMutation({
     mutationFn: (id) => userApi.toggle(id),
@@ -75,17 +118,25 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
 
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return users.filter((user) => {
+    return displayUsers.filter((user) => {
       if (businessType) {
         const company = companyById.get(String(user.companyId ?? ''));
         if (!companyHasBusinessType(company, businessType)) return false;
       }
       if (!q) return true;
-      return [user.fullName, user.username, user.email, user.role, user.companyName, user.companyLoginCode]
+      return [
+        user.fullName,
+        user.username,
+        user.email,
+        user.role,
+        user.companyName,
+        user.companyLoginCode,
+        ...(user.storeNames ?? []),
+      ]
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [users, search, businessType, companyById]);
+  }, [displayUsers, search, businessType, companyById]);
 
   const total = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);

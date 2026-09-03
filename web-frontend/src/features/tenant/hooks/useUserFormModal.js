@@ -12,6 +12,7 @@ import {
   cashierStoreSet,
   toStoreIdSet,
 } from '../utils/userFormModalUtils';
+import { asEntityList } from '../utils/companySelectOptions';
 
 export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser }) {
   const { t } = useTranslation();
@@ -48,11 +49,12 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
   const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
   const showPasswordField = !isCashierRole && (isPlatform || fieldOn('password') || !isEdit);
 
-  const { data: companies = [] } = useQuery({
+  const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
     queryFn: () => companyApi.listAll().then((r) => r.data),
     enabled: isPlatform && open,
   });
+  const companies = useMemo(() => asEntityList(companiesRaw), [companiesRaw]);
 
   const { data: storesRaw, isLoading: storesLoading, isError: storesError } = useQuery({
     queryKey: isPlatform

@@ -30,19 +30,38 @@
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.base-select__trigger:hover:not(:disabled) {
+.base-select:not(.base-select--disabled) .base-select__trigger:hover {
   border-color: rgb(148 163 184);
 }
 
-.base-select__trigger:focus-visible {
+.base-select__trigger:focus-within {
   outline: none;
   border-color: rgb(16 185 129);
   box-shadow: 0 0 0 3px rgb(16 185 129 / 0.15);
 }
 
-.base-select__trigger:disabled {
+.base-select--disabled .base-select__trigger {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.base-select__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  line-height: inherit;
+  outline: none;
+  box-shadow: none;
+}
+
+.base-select__input::placeholder,
+.base-select__input--placeholder {
+  color: rgb(148 163 184);
 }
 
 .base-select--sm .base-select__trigger {
@@ -92,9 +111,10 @@
 .base-select__menu {
   position: fixed;
   z-index: 100000;
+  display: flex;
+  flex-direction: column;
   min-width: 8rem;
-  max-height: min(18rem, 50dvh);
-  overflow-y: auto;
+  max-height: min(20rem, 55dvh);
   padding: 0.375rem;
   border: 1px solid rgb(226 232 240);
   border-radius: 0.625rem;
@@ -102,6 +122,50 @@
   box-shadow:
     0 12px 32px rgb(15 23 42 / 0.14),
     0 0 0 1px rgb(15 23 42 / 0.04);
+}
+
+.base-select__search-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: -0.125rem -0.125rem 0.375rem;
+  padding: 0.375rem 0.5rem;
+  border-bottom: 1px solid rgb(226 232 240);
+  background: #fff;
+  border-radius: 0.5rem 0.5rem 0 0;
+}
+
+.base-select__search-icon {
+  flex-shrink: 0;
+  color: rgb(148 163 184);
+}
+
+.base-select__search {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  padding: 0.25rem 0;
+  margin: 0;
+  background: transparent;
+  color: rgb(15 23 42);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.base-select__search::placeholder {
+  color: rgb(148 163 184);
+  font-weight: 500;
+}
+
+.base-select__options {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .base-select__option {
@@ -157,6 +221,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.base-select__empty {
+  padding: 0.625rem 0.75rem;
+  font-size: 0.8125rem;
+  color: rgb(148 163 184);
 }
 
 .base-select__error {

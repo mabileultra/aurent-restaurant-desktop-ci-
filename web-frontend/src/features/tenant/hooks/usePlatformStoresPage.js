@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { companyApi } from '../../../api';
+import { asEntityList } from '../utils/companySelectOptions';
 
 export function usePlatformStoresPage() {
   const companiesQuery = useQuery({
@@ -8,7 +9,7 @@ export function usePlatformStoresPage() {
   });
 
   return {
-    companies: companiesQuery.data ?? [],
+    companies: asEntityList(companiesQuery.data),
     isLoading: companiesQuery.isLoading,
   };
 }

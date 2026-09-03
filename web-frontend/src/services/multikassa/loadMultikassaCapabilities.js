@@ -16,6 +16,12 @@ export function wrapMultikassaFiscalError(err) {
     e.code = 'MULTIKASSA_OFFLINE_BLOCKED';
     return e;
   }
+  if (err?.code === 'MULTIKASSA_BROWSER_LOCALHOST') {
+    const e = new Error(err.message || 'MULTIKASSA_BROWSER_LOCALHOST');
+    e.code = 'MULTIKASSA_BROWSER_LOCALHOST';
+    e.cause = err;
+    return e;
+  }
   const e = new Error(err?.message || 'MULTIKASSA_FISCAL_FAILED');
   e.code = 'MULTIKASSA_FISCAL_FAILED';
   e.cause = err;

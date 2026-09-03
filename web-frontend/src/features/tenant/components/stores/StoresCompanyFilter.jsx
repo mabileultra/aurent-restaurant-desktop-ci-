@@ -1,16 +1,7 @@
 import { BaseSelect } from '../../../../components/ui';
+import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 
 export default function StoresCompanyFilter({ t, companies = [], companyId, onChange }) {
-  const options = [
-    { value: '', label: t('stores.allCompanies') },
-    ...companies
-      .slice()
-      .sort((a, b) =>
-        String(a.name || '').localeCompare(String(b.name || ''), undefined, { sensitivity: 'base' })
-      )
-      .map((company) => ({ value: String(company.id), label: company.name })),
-  ];
-
   return (
     <BaseSelect
       className="stores-filters__company"
@@ -19,7 +10,8 @@ export default function StoresCompanyFilter({ t, companies = [], companyId, onCh
       value={companyId}
       onChange={(e) => onChange(e.target.value)}
       placeholder={t('stores.allCompanies')}
-      options={options}
+      searchPlaceholder={t('stores.searchCompany', { defaultValue: 'Поиск компании…' })}
+      options={buildCompanySelectOptions(companies, { emptyLabel: t('stores.allCompanies') })}
     />
   );
 }

@@ -75,7 +75,9 @@ export default function UsersTable({
                 <td className="px-4 py-3 font-mono text-xs">{user.username}</td>
                 {isPlatform && (
                   <td className="px-4 py-3 font-mono text-xs tracking-wide text-slate-600 dark:text-slate-400">
-                    {user.companyLoginCode || '—'}
+                    {user.companyLoginCode
+                      || companyById?.get?.(String(user.companyId ?? ''))?.loginCode
+                      || '—'}
                   </td>
                 )}
                 {isPlatform && (
@@ -89,7 +91,13 @@ export default function UsersTable({
                     </span>
                   </td>
                 )}
-                {isPlatform && <td className="px-4 py-3">{user.companyName || '—'}</td>}
+                {isPlatform && (
+                  <td className="px-4 py-3">
+                    {user.companyName
+                      || companyById?.get?.(String(user.companyId ?? ''))?.name
+                      || '—'}
+                  </td>
+                )}
                 {isPlatform && (
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                     {businessTypeLabel(user)}
