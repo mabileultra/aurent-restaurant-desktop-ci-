@@ -159,24 +159,37 @@ export function daysUntilExpiry(raw, now = new Date()) {
 }
 
 /**
- * Срок + оставшиеся дни: `01.06.2026 · 280 дн.` или `280 / 365 дн.`
+ * Срок и дни отдельно — в таблице кассы две строки, чтобы не наезжать на «серию».
+ * В ячейке без «дн.» (есть в заголовке): `767/730`. В title — полная строка.
  */
-export function formatExpiryRemaining(productOrLine, daysLabel = 'дн.') {
+export function formatExpiryRemainingParts(productOrLine, daysLabel = 'дн.') {
   const expiryRaw = productExpiry(productOrLine);
-  const dateStr = formatExpiryDisplay(expiryRaw);
+  const date = formatExpiryDisplay(expiryRaw);
   const left = daysUntilExpiry(expiryRaw);
   const shelf = productShelfLifeDays(productOrLine);
 
-  if (dateStr && left != null && shelf != null) {
-    return `${dateStr} · ${left} / ${shelf} ${daysLabel}`;
-  }
-  if (dateStr && left != null) {
-    return `${dateStr} · ${left} ${daysLabel}`;
-  }
-  if (dateStr) return dateStr;
+  let days = '';
   if (left != null && shelf != null) {
-    return `${left} / ${shelf} ${daysLabel}`;
+    days = `${left}/${shelf}`;
+  } else if (left != null) {
+    days = String(left);
   }
-  if (left != null) return `${left} ${daysLabel}`;
-  return '';
+
+  let titleDays = '';
+  if (left != null && shelf != null) {
+    titleDays = `${left} / ${shelf} ${daysLabel}`;
+  } else if (left != null) {
+    titleDays = `${left} ${daysLabel}`;
+  }
+
+  return { date, days, titleDays };
+}
+
+/**
+ * Срок + оставшиеся дни: `01.06.2026 · 280 дн.` или `280 / 365 дн.`
+ */
+export function formatExpiryRemaining(productOrLine, daysLabel = 'дн.') {
+  const { date, titleDays } = formatExpiryRemainingParts(productOrLine, daysLabel);
+  if (date && titleDays) return `${date} · ${titleDays}`;
+  return date || titleDays || '';
 }
