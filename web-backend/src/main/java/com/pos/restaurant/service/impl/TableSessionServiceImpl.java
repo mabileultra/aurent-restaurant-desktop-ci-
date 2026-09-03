@@ -209,7 +209,8 @@ public class TableSessionServiceImpl implements TableSessionService {
             request.cardType(),
             request.orderDiscountAmount(),
             request.orderDiscountPercent(),
-            request.advanceAmount()
+            request.advanceAmount(),
+            null
         );
         User cashier = currentUserProvider.requireCurrentUser();
         SaleResponse saleResponse = saleCheckoutService.processSale(saleRequest, cashier.getId());
