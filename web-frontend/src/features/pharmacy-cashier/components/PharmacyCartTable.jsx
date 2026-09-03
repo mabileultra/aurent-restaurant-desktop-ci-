@@ -122,7 +122,14 @@ export default function PharmacyCartTable({
                         className="pharmacy-cart-table__piece-qty"
                         title={t('pharmacyCashier.packOf', { count: item.unitsInPack })}
                       >
-                        {t('pharmacyCashier.pieceCount', { count: Math.round(item.quantity) })}
+                        <span className="pharmacy-cart-table__piece-qty-main">
+                          {t('pharmacyCashier.pieceCount', { count: Math.round(item.quantity) })}
+                        </span>
+                        {item.unitsInPack > 1 ? (
+                          <span className="pharmacy-cart-table__piece-qty-pack">
+                            {t('pharmacyCashier.packOf', { count: item.unitsInPack })}
+                          </span>
+                        ) : null}
                       </span>
                     ) : (
                       <span className="pharmacy-cart-table__money">

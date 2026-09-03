@@ -11,6 +11,19 @@ export function resolvePharmacyPackSale(product) {
   const unitsInPack = productUnitsInPack(product);
   if (!unitsInPack || unitsInPack <= 1) return null;
 
+  // Уже сконвертировано (не делить цену/остаток повторно).
+  if (product?.pharmacySellByPiece === true && product?.packUnitPrice != null) {
+    const packUnitPrice = Number(product.packUnitPrice);
+    const stockPieces = Number(product.stockQuantity ?? 0);
+    return {
+      unitsInPack,
+      packUnitPrice,
+      pieceUnitPrice: pharmacyPieceUnitPrice(packUnitPrice, unitsInPack),
+      stockPieces: Number.isFinite(stockPieces) ? Math.max(0, Math.floor(stockPieces)) : 0,
+      alreadyConverted: true,
+    };
+  }
+
   const packUnitPrice = Number(product.sellingPrice ?? 0);
   const stockPacks = Number(product.stockQuantity ?? 0);
 
@@ -19,6 +32,7 @@ export function resolvePharmacyPackSale(product) {
     packUnitPrice,
     pieceUnitPrice: pharmacyPieceUnitPrice(packUnitPrice, unitsInPack),
     stockPieces: pharmacyStockPieces(stockPacks, unitsInPack),
+    alreadyConverted: false,
   };
 }
 
@@ -48,6 +62,17 @@ export function applyPharmacyPackSaleToCartProduct(product) {
       pharmacySellByPiece: false,
       unitsInPack: null,
       packUnitPrice: null,
+    };
+  }
+
+  if (mode.alreadyConverted) {
+    return {
+      ...product,
+      sellingPrice: mode.pieceUnitPrice,
+      stockQuantity: mode.stockPieces,
+      pharmacySellByPiece: true,
+      unitsInPack: mode.unitsInPack,
+      packUnitPrice: mode.packUnitPrice,
     };
   }
 
