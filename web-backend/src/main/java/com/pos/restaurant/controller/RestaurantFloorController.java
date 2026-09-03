@@ -4,7 +4,6 @@ import com.pos.config.openapi.StandardApiResponses;
 import com.pos.restaurant.dto.BookingTableOptionResponse;
 import com.pos.restaurant.dto.DiningHallResponse;
 import com.pos.restaurant.dto.DiningTableResponse;
-import com.pos.restaurant.dto.RestaurantFloorSnapshotResponse;
 import com.pos.restaurant.dto.SaveDiningHallRequest;
 import com.pos.restaurant.dto.SaveDiningTableRequest;
 import com.pos.restaurant.dto.SaveTableReservationRequest;
@@ -39,21 +38,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/restaurant")
 @RequiredArgsConstructor
-@Tag(name = "Restaurant", description = "Залы, столы и бронирование")
+@Tag(name = "Restaurant booking", description = "Столы для брони и бронирование")
 @StandardApiResponses
 public class RestaurantFloorController {
 
     private final DiningHallService hallService;
     private final DiningTableService tableService;
     private final TableReservationService reservationService;
-
-    @GetMapping("/stores/{storeId}/floor")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
-    @Operation(summary = "Снимок плана зала", description = "Залы и столы магазина для кассы и админки")
-    @ApiResponse(responseCode = "200", description = "План зала")
-    public RestaurantFloorSnapshotResponse getFloorSnapshot(@PathVariable Integer storeId) {
-        return hallService.getFloorSnapshot(storeId);
-    }
 
     @GetMapping("/stores/{storeId}/halls")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")

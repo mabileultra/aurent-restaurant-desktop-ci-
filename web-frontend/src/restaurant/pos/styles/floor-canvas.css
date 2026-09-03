@@ -1,0 +1,34 @@
+.rst-floor-canvas {
+  flex: 1;
+  min-height: 420px;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background:
+    linear-gradient(180deg, #1e2228, #191c21),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 47px,
+      rgb(255 255 255 / 0.03) 48px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 47px,
+      rgb(255 255 255 / 0.03) 48px
+    );
+  overflow: auto;
+}
+
+.rst-floor-canvas--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rst-muted);
+}
+
+.rst-floor-canvas__plane {
+  position: relative;
+  min-width: 760px;
+  min-height: 460px;
+}

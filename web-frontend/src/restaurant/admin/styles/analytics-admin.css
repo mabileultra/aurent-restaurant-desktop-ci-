@@ -1,0 +1,116 @@
+.rst-dash__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.rst-dash__card {
+  padding: 1rem;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background: linear-gradient(180deg, #2a2f36, var(--rst-surface));
+}
+
+.rst-dash__card strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 1.45rem;
+  line-height: 1.1;
+  color: var(--rst-accent);
+}
+
+.rst-dash__card span {
+  color: var(--rst-muted);
+  font-size: 0.8rem;
+}
+
+.rst-dash__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  font-size: 0.85rem;
+}
+
+.rst-dash__chip.is-open {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+}
+
+.rst-report__tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.rst-report__tab {
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface);
+  color: inherit;
+  font-weight: 600;
+}
+
+.rst-report__tab.is-active {
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-report__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  align-items: end;
+}
+
+.rst-report__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--rst-muted);
+}
+
+.rst-audit__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rst-audit__row {
+  display: grid;
+  grid-template-columns: 160px 120px minmax(0, 1fr);
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background: var(--rst-surface);
+  font-size: 0.88rem;
+}
+
+.rst-audit__time {
+  color: var(--rst-muted);
+}
+
+.rst-audit__type {
+  font-weight: 700;
+  color: var(--rst-accent);
+}
+
+@media (max-width: 1000px) {
+  .rst-dash__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rst-audit__row {
+    grid-template-columns: 1fr;
+  }
+}

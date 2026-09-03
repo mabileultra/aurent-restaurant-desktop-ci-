@@ -56,7 +56,6 @@ export function useRestaurantBookingPage() {
   const invalidate = useCallback(() => {
     qc.invalidateQueries({ queryKey: ['restaurant-booking', effectiveStoreId] });
     qc.invalidateQueries({ queryKey: ['restaurant-booking-tables', effectiveStoreId] });
-    qc.invalidateQueries({ queryKey: ['restaurant-hall', effectiveStoreId] });
   }, [qc, effectiveStoreId]);
 
   const saveMutation = useMutation({

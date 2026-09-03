@@ -94,7 +94,6 @@
 }
 
 .cashier-app main.flex-grow-1 > .cashier-register,
-.cashier-app main.flex-grow-1 > .restaurant-cashier,
 .cashier-app main.flex-grow-1 > .cashier-page {
   flex: 1;
   min-height: 0;

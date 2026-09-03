@@ -6,9 +6,7 @@ export const DesktopInstallerPage = lazy(() => import('../features/desktop/pages
 export const ReceiptPage = lazy(() => import('../features/receipt/pages/ReceiptPage'));
 
 export const PosPage = lazy(() => import('../features/cashier/pages/PosPage'));
-export const RestaurantPosPage = lazy(() => import('../features/restaurant-cashier/pages/RestaurantPosPage'));
 export const PharmacyPosPage = lazy(() => import('../features/pharmacy-cashier/pages/PharmacyPosPage'));
-export const KitchenDisplayPage = lazy(() => import('../features/restaurant-kitchen/pages/KitchenDisplayPage'));
 export const CashierMySalesPage = lazy(() => import('../features/cashier/pages/CashierMySalesPage'));
 export const HandbookPage = lazy(() => import('../features/handbook/pages/HandbookPage'));
 export const SupportPage = lazy(() => import('../features/support/pages/SupportPage'));
@@ -75,7 +73,6 @@ export const ZReportsPage = lazy(() => import('../features/cash-registers/pages/
 export const CashRegisterTransferPage = lazy(() => import('../features/cash-registers/pages/CashRegisterTransferPage'));
 export const CashRegisterConfigPage = lazy(() => import('../features/cash-registers/pages/CashRegisterConfigPage'));
 export const StoresPage = lazy(() => import('../features/tenant/pages/StoresPage'));
-export const RestaurantHallPage = lazy(() => import('../features/restaurant-hall/pages/RestaurantHallPage'));
 export const RestaurantBookingPage = lazy(() => import('../features/restaurant-booking/pages/RestaurantBookingPage'));
 export const RestaurantDeliveryPage = lazy(() => import('../features/restaurant-delivery/pages/RestaurantDeliveryPage'));
 export const UsersPage = lazy(() => import('../features/tenant/pages/UsersPage'));

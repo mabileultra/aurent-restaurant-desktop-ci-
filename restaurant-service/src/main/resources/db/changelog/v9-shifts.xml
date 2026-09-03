@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-030-restaurant-shifts" author="pos">
+        <createTable tableName="restaurant_shifts">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(16)" defaultValue="OPEN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="opened_by_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="closed_by_user_id" type="UUID"/>
+            <column name="opened_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="closed_at" type="TIMESTAMPTZ"/>
+            <column name="opening_cash" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="closing_cash" type="NUMERIC(18, 2)"/>
+            <column name="sale_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_amount" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cash_amount" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_amount" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="VARCHAR(500)"/>
+        </createTable>
+        <createIndex indexName="idx_restaurant_shifts_store_opened" tableName="restaurant_shifts">
+            <column name="store_id"/>
+            <column name="opened_at"/>
+        </createIndex>
+        <sql>
+            CREATE UNIQUE INDEX uq_restaurant_shifts_open_store
+            ON restaurant_shifts (store_id)
+            WHERE status = 'OPEN';
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-031-floor-orders-shift" author="pos">
+        <addColumn tableName="floor_orders">
+            <column name="shift_id" type="UUID"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="floor_orders"
+            baseColumnNames="shift_id"
+            constraintName="fk_floor_orders_shift"
+            referencedTableName="restaurant_shifts"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_floor_orders_shift" tableName="floor_orders">
+            <column name="shift_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

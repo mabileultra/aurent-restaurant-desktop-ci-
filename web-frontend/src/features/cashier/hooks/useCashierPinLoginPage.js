@@ -10,7 +10,7 @@ import {
   persistCompanyLoginCode,
   cashierSessionMatchesCompany,
   resolveCashierCompanyCode,
-  isDesktopCashier,
+  shouldShowCashierCompanyCodeField,
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
@@ -83,7 +83,7 @@ export function useCashierPinLoginPage() {
     if (!canSubmit || loading) return;
     const loginCode = normalizedCompanyCode;
     if (!loginCode) {
-      if (!isDesktopCashier()) setCompanyPopoverOpen(true);
+      if (shouldShowCashierCompanyCodeField()) setCompanyPopoverOpen(true);
       toast.error(t('cashierLogin.companyCodeRequired', { defaultValue: 'Укажите код компании' }));
       return;
     }
@@ -178,7 +178,7 @@ export function useCashierPinLoginPage() {
     setCompanyCode,
     companyPopoverOpen,
     setCompanyPopoverOpen,
-    showCompanyCodeField: !isDesktopCashier(),
+    showCompanyCodeField: shouldShowCashierCompanyCodeField(),
     pressDigit,
     backspace,
     clear,

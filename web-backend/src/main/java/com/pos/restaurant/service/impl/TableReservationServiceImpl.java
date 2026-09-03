@@ -12,8 +12,6 @@ import com.pos.restaurant.entity.DiningTable;
 import com.pos.restaurant.entity.TableReservation;
 import com.pos.restaurant.repository.DiningTableRepository;
 import com.pos.restaurant.repository.TableReservationRepository;
-import com.pos.restaurant.repository.TableSessionRepository;
-import com.pos.restaurant.domain.TableSessionStatus;
 import com.pos.restaurant.service.TableReservationService;
 import com.pos.restaurant.support.RestaurantStoreSupport;
 import com.pos.restaurant.support.TableReservationMapper;
@@ -39,7 +37,6 @@ public class TableReservationServiceImpl implements TableReservationService {
 
     private final TableReservationRepository reservationRepository;
     private final DiningTableRepository tableRepository;
-    private final TableSessionRepository sessionRepository;
     private final RestaurantStoreSupport storeSupport;
     private final TableReservationMapper mapper;
     private final CurrentUserProvider currentUserProvider;
@@ -128,9 +125,6 @@ public class TableReservationServiceImpl implements TableReservationService {
             throw new BadRequestException("Only pending reservations can be confirmed");
         }
         DiningTable table = reservation.getTable();
-        if (sessionRepository.findByTableIdAndStatus(table.getId(), TableSessionStatus.OPEN).isPresent()) {
-            throw new BadRequestException("Table is occupied");
-        }
         reservation.setStatus(TableReservationStatus.CONFIRMED);
         table.setStatus(DiningTableStatus.RESERVED);
         LogUtil.info(TableReservationServiceImpl.class, "Table reservation confirmed: {}", reservationId);
@@ -188,9 +182,6 @@ public class TableReservationServiceImpl implements TableReservationService {
     }
 
     private void assertTableAvailable(Integer tableId, UUID excludeReservationId) {
-        if (sessionRepository.findByTableIdAndStatus(tableId, TableSessionStatus.OPEN).isPresent()) {
-            throw new BadRequestException("Table is occupied");
-        }
         if (excludeReservationId != null
             && reservationRepository.existsByTableIdAndStatusInAndIdNot(tableId, ACTIVE_STATUSES, excludeReservationId)) {
             throw new BadRequestException("Table already has an active reservation");
@@ -202,8 +193,7 @@ public class TableReservationServiceImpl implements TableReservationService {
     }
 
     private void releaseTableIfReserved(DiningTable table) {
-        if (table.getStatus() == DiningTableStatus.RESERVED
-            && sessionRepository.findByTableIdAndStatus(table.getId(), TableSessionStatus.OPEN).isEmpty()) {
+        if (table.getStatus() == DiningTableStatus.RESERVED) {
             table.setStatus(DiningTableStatus.FREE);
         }
     }

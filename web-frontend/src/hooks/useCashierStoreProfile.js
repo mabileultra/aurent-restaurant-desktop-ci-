@@ -8,7 +8,7 @@ import { resolveCashierRegisterPath } from '../utils/cashierRegisterRoute';
 export function useCashierStoreProfile() {
   const location = useLocation();
   const { storeId } = useCashierStore();
-  const onRestaurantRoute = location.pathname.startsWith('/cashier/restaurant');
+  const onRestaurantRoute = location.pathname.startsWith('/rst/pos');
   const query = useQuery({
     queryKey: ['cashier-store', storeId],
     queryFn: () => storeApi.getById(storeId).then((r) => r.data),

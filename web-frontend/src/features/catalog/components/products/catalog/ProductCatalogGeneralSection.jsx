@@ -16,6 +16,8 @@ export default function ProductCatalogGeneralSection({
   isEdit,
   saleTypeWatch,
   productTypeWatch,
+  categoryId,
+  setValue,
   showSection,
   configUnits = null,
 }) {
@@ -43,7 +45,9 @@ export default function ProductCatalogGeneralSection({
         </ProductCatalogField>
         <ProductCatalogField label={t('productModal.category')} error={errors.categoryId?.message}>
           <BaseSelect
-            {...register('categoryId')}
+            name="categoryId"
+            value={categoryId ?? ''}
+            onChange={(e) => setValue('categoryId', e.target.value, { shouldDirty: true, shouldValidate: true })}
             placeholder={t('productModal.noneCategory')}
             options={[
               { value: '', label: t('productModal.noneCategory') },

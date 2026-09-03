@@ -23,7 +23,6 @@ export default function PosOrderPanelLine({
   setEditingQtyLineId,
   t,
   priceEditable = true,
-  resolveDepartmentLabel,
 }) {
   const lineSum = lineSubtotal(item);
   const isWeight = item.saleType === 'WEIGHT';
@@ -44,21 +43,6 @@ export default function PosOrderPanelLine({
         {item.sku ? (
           <span className="pos-cart-table__sku" title={item.sku}>
             {item.sku}
-          </span>
-        ) : null}
-        {item.kitchenDepartment ? (
-          <span
-            className={`pos-cart-table__kitchen-meta${item.kitchenRoutable === false ? ' pos-cart-table__kitchen-meta--none' : ''}`}
-          >
-            {resolveDepartmentLabel
-              ? resolveDepartmentLabel(item.kitchenDepartment)
-              : item.kitchenDepartment}
-            {item.kitchenStatus && item.kitchenStatusLabelKey ? (
-              <span className="pos-cart-table__kitchen-status">
-                {' · '}
-                {t(item.kitchenStatusLabelKey)}
-              </span>
-            ) : null}
           </span>
         ) : null}
       </div>

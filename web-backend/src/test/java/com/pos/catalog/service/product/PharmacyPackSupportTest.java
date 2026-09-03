@@ -85,6 +85,34 @@ class PharmacyPackSupportTest {
     }
 
     @Test
+    void reportableUnits_twoPackFractions_countsTwoPieces() {
+        Product product = Product.builder()
+            .sellingPrice(new BigDecimal("22000"))
+            .build();
+        long units = PharmacyPackSupport.reportableUnits(
+            product,
+            new BigDecimal("22000"),
+            new BigDecimal("0.0667"),
+            Map.of("units_in_pack", "30")
+        );
+        assertEquals(2L, units);
+    }
+
+    @Test
+    void reportableUnits_twoPieceEncoded_countsQuantity() {
+        Product product = Product.builder()
+            .sellingPrice(new BigDecimal("22000"))
+            .build();
+        long units = PharmacyPackSupport.reportableUnits(
+            product,
+            new BigDecimal("733.20"),
+            new BigDecimal("2"),
+            Map.of("units_in_pack", "30")
+        );
+        assertEquals(2L, units);
+    }
+
+    @Test
     void quantityValidator_allowsFractionWhenPackRules() {
         Product product = Product.builder()
             .saleType(SaleType.PIECE)

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-011-modifier-groups" author="pos">
+        <createTable tableName="modifier_groups">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="min_select" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_select" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_modifier_groups_store" tableName="modifier_groups">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-012-modifier-options" author="pos">
+        <createTable tableName="modifier_options">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="group_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_delta" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="modifier_options"
+            baseColumnNames="group_id"
+            constraintName="fk_modifier_options_group"
+            referencedTableName="modifier_groups"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_modifier_options_group" tableName="modifier_options">
+            <column name="group_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-013-menu-item-modifier-groups" author="pos">
+        <createTable tableName="menu_item_modifier_groups">
+            <column name="menu_item_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="group_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="menu_item_modifier_groups" columnNames="menu_item_id, group_id"/>
+        <addForeignKeyConstraint
+            baseTableName="menu_item_modifier_groups"
+            baseColumnNames="menu_item_id"
+            constraintName="fk_mim_item"
+            referencedTableName="menu_items"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="menu_item_modifier_groups"
+            baseColumnNames="group_id"
+            constraintName="fk_mim_group"
+            referencedTableName="modifier_groups"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="rst-014-order-item-modifiers" author="pos">
+        <createTable tableName="floor_order_item_modifiers">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_item_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="option_id" type="UUID"/>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price_delta" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_item_modifiers"
+            baseColumnNames="order_item_id"
+            constraintName="fk_foim_item"
+            referencedTableName="floor_order_items"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_foim_item" tableName="floor_order_item_modifiers">
+            <column name="order_item_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

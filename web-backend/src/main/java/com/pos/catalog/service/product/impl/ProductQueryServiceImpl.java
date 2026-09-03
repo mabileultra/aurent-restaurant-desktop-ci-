@@ -109,6 +109,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     private PageResponse<ProductResponse> mapPage(Page<Product> page, Integer storeId) {
         List<Product> content = page.getContent();
+        content.forEach(catalogLoader::initCollections);
         Map<UUID, Integer> storeCounts = catalogLoader.loadStoreCounts(content);
         Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(content);
         if (storeId == null) {

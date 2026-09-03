@@ -80,6 +80,18 @@ services:
     ports:
       - '127.0.0.1:18083:8083'
 
+  restaurant-db:
+    container_name: aurent-staging-restaurant-db
+    ports:
+      - '127.0.0.1:15440:5432'
+    volumes:
+      - staging_restaurant_pg_data:/var/lib/postgresql/data
+
+  restaurant-service:
+    container_name: aurent-staging-restaurant-service
+    ports:
+      - '127.0.0.1:18087:8087'
+
   ai-service:
     container_name: aurent-staging-ai-service
     ports:
@@ -118,5 +130,6 @@ volumes:
   staging_platform_pg_data:
   staging_reporting_pg_data:
   staging_crm_pg_data:
+  staging_restaurant_pg_data:
   staging_backend_uploads:
   staging_backend_logs:

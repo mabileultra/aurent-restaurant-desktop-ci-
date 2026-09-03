@@ -14,6 +14,8 @@ public interface StockMovementRepository extends JpaRepository<StockMovement, UU
 
     long countByStore_Id(Integer storeId);
 
+    boolean existsByReferenceId(UUID referenceId);
+
     @Query("""
         SELECT m FROM StockMovement m
         JOIN FETCH m.product

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-004-floor-orders" author="pos">
+        <createTable tableName="floor_orders">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_no" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(24)" defaultValue="OPEN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="guest_count" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="adult_count" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="children_count" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="opened_by_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="waiter_user_id" type="UUID"/>
+            <column name="comment" type="VARCHAR(500)"/>
+            <column name="opened_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="closed_at" type="TIMESTAMPTZ"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_orders"
+            baseColumnNames="table_id"
+            constraintName="fk_floor_orders_table"
+            referencedTableName="floor_tables"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_floor_orders_company_store" tableName="floor_orders">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_floor_orders_table_status" tableName="floor_orders">
+            <column name="table_id"/>
+            <column name="status"/>
+        </createIndex>
+        <addUniqueConstraint
+            tableName="floor_orders"
+            columnNames="store_id, order_no"
+            constraintName="uq_floor_orders_store_no"/>
+        <sql>
+            CREATE UNIQUE INDEX uq_floor_orders_open_table
+            ON floor_orders (table_id)
+            WHERE status = 'OPEN';
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-005-floor-order-items" author="pos">
+        <createTable tableName="floor_order_items">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="menu_item_id" type="UUID"/>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18, 3)" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="NUMERIC(18, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="note" type="VARCHAR(300)"/>
+            <column name="item_status" type="VARCHAR(24)" defaultValue="NEW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_items"
+            baseColumnNames="order_id"
+            constraintName="fk_floor_order_items_order"
+            referencedTableName="floor_orders"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_items"
+            baseColumnNames="menu_item_id"
+            constraintName="fk_floor_order_items_menu"
+            referencedTableName="menu_items"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_floor_order_items_order" tableName="floor_order_items">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

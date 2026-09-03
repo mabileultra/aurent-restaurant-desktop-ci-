@@ -155,13 +155,13 @@ export const USER_CHILDREN = [
   { to: '/users/barcode-print', key: 'usersBarcodePrint', icon: ICONS.Barcode, moduleId: 'usersBarcodePrint' },
 ];
 
-export const RESTAURANT_ROUTES = ['/restaurant/hall', '/restaurant/kitchen', '/restaurant/booking', '/restaurant/delivery'];
+export const RESTAURANT_ROUTES = ['/rst/admin/halls', '/rst/kitchen', '/rst/admin/booking', '/rst/admin/delivery'];
 
 export const RESTAURANT_CHILDREN = [
-  { to: '/restaurant/hall', key: 'restaurantHall', icon: ICONS.LayoutGrid, moduleId: 'restaurantFloor' },
-  { to: '/restaurant/kitchen', key: 'restaurantKitchen', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantKitchen' },
-  { to: '/restaurant/booking', key: 'restaurantBooking', icon: ICONS.CalendarClock, moduleId: 'restaurantBooking' },
-  { to: '/restaurant/delivery', key: 'restaurantDelivery', icon: ICONS.Truck, moduleId: 'restaurantDelivery' },
+  { to: '/rst/admin/halls', key: 'rstOs', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantFloor' },
+  { to: '/rst/kitchen', key: 'restaurantKitchen', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantKitchen' },
+  { to: '/rst/admin/booking', key: 'restaurantBooking', icon: ICONS.CalendarClock, moduleId: 'restaurantBooking' },
+  { to: '/rst/admin/delivery', key: 'restaurantDelivery', icon: ICONS.Truck, moduleId: 'restaurantDelivery' },
 ];
 
 export const REST_NAV = [

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-040-floor-reservations" author="pos">
+        <createTable tableName="floor_reservations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_phone" type="VARCHAR(40)"/>
+            <column name="guest_count" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reserved_at" type="TIMESTAMPTZ">
+                <constraints nullable="false"/>
+            </column>
+            <column name="duration_minutes" type="INT" defaultValueNumeric="120">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by_user_id" type="UUID"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_reservations"
+            baseColumnNames="table_id"
+            constraintName="fk_floor_reservations_table"
+            referencedTableName="floor_tables"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_floor_reservations_store_time" tableName="floor_reservations">
+            <column name="store_id"/>
+            <column name="reserved_at"/>
+        </createIndex>
+        <createIndex indexName="idx_floor_reservations_table_status" tableName="floor_reservations">
+            <column name="table_id"/>
+            <column name="status"/>
+        </createIndex>
+        <sql>
+            CREATE UNIQUE INDEX uq_floor_reservations_active_table
+            ON floor_reservations (table_id)
+            WHERE status IN ('PENDING', 'CONFIRMED');
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

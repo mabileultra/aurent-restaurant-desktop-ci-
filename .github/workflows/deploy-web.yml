@@ -12,6 +12,7 @@ on:
       - 'identity-service/**'
       - 'platform-service/**'
       - 'reporting-service/**'
+      - 'restaurant-service/**'
       - 'api-gateway/**'
       - 'shared-kernel/**'
       - 'deploy/**'

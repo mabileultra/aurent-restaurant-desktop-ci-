@@ -28,13 +28,13 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
 @Tag(name = "Users", description = "Управление пользователями компании")
 public class UserController {
 
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     @Operation(summary = "Список пользователей")
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     public ResponseEntity<List<UserResponse>> list() {
@@ -42,6 +42,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MANAGER')")
     @Operation(summary = "Пользователь по ID")
     @ApiResponse(responseCode = "200", description = "Данные пользователя")
     public ResponseEntity<UserResponse> get(@PathVariable UUID id) {
@@ -49,6 +50,7 @@ public class UserController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Создать пользователя")
     @ApiResponse(responseCode = "201", description = "Пользователь создан")
     public ResponseEntity<UserResponse> create(@Valid @RequestBody CreateUserRequest request) {
@@ -56,6 +58,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Обновить пользователя")
     @ApiResponse(responseCode = "200", description = "Пользователь обновлён")
     public ResponseEntity<UserResponse> update(
@@ -66,6 +69,7 @@ public class UserController {
     }
 
     @PatchMapping("/{id}/toggle-active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Переключить активность")
     @ApiResponse(responseCode = "200", description = "Статус пользователя изменён")
     public ResponseEntity<UserResponse> toggle(@PathVariable UUID id) {
@@ -73,6 +77,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     @Operation(summary = "Удалить пользователя")
     @ApiResponse(responseCode = "204", description = "Пользователь удалён")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {

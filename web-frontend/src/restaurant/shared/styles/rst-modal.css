@@ -1,0 +1,34 @@
+.rst-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(8 9 11 / 0.72);
+}
+
+.rst-modal__card {
+  width: min(420px, 100%);
+  padding: 1.25rem;
+  border-radius: 16px;
+  background: var(--rst-surface);
+  border: 1px solid var(--rst-line);
+}
+
+.rst-modal__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.2rem;
+}
+
+.rst-modal__text {
+  margin: 0 0 1rem;
+  color: var(--rst-muted);
+}
+
+.rst-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}

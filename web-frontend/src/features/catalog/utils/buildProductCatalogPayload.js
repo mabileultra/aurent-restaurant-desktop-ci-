@@ -15,7 +15,7 @@ export function buildProductCatalogPayload({
   return {
     name: values.name,
     description: values.description || undefined,
-    categoryId: values.categoryId || null,
+    categoryId: values.categoryId ? Number(values.categoryId) : null,
     costPrice: values.costPrice,
     sellingPrice: values.sellingPrice,
     defaultDiscountPercent: values.defaultDiscountPercent ?? 0,

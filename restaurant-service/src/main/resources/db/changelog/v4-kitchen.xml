@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-006-kitchen-stations" author="pos">
+        <createTable tableName="kitchen_stations">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint
+            tableName="kitchen_stations"
+            columnNames="store_id, code"
+            constraintName="uq_kitchen_stations_store_code"/>
+        <createIndex indexName="idx_kitchen_stations_company_store" tableName="kitchen_stations">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-007-menu-station" author="pos">
+        <addColumn tableName="menu_items">
+            <column name="station_id" type="UUID"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="menu_items"
+            baseColumnNames="station_id"
+            constraintName="fk_menu_items_station"
+            referencedTableName="kitchen_stations"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+    </changeSet>
+
+    <changeSet id="rst-008-order-item-station" author="pos">
+        <addColumn tableName="floor_order_items">
+            <column name="station_id" type="UUID"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="rst-009-kitchen-tickets" author="pos">
+        <createTable tableName="kitchen_tickets">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="station_id" type="UUID"/>
+            <column name="status" type="VARCHAR(24)" defaultValue="NEW">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sent_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="order_id"
+            constraintName="fk_kitchen_tickets_order"
+            referencedTableName="floor_orders"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_tickets"
+            baseColumnNames="station_id"
+            constraintName="fk_kitchen_tickets_station"
+            referencedTableName="kitchen_stations"
+            referencedColumnNames="id"
+            onDelete="SET NULL"/>
+        <createIndex indexName="idx_kitchen_tickets_store_status" tableName="kitchen_tickets">
+            <column name="store_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex indexName="idx_kitchen_tickets_sent" tableName="kitchen_tickets">
+            <column name="sent_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-010-kitchen-ticket-lines" author="pos">
+        <createTable tableName="kitchen_ticket_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="ticket_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_item_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_ticket_lines"
+            baseColumnNames="ticket_id"
+            constraintName="fk_kitchen_ticket_lines_ticket"
+            referencedTableName="kitchen_tickets"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="kitchen_ticket_lines"
+            baseColumnNames="order_item_id"
+            constraintName="fk_kitchen_ticket_lines_item"
+            referencedTableName="floor_order_items"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <addUniqueConstraint
+            tableName="kitchen_ticket_lines"
+            columnNames="order_item_id"
+            constraintName="uq_kitchen_ticket_lines_item"/>
+        <createIndex indexName="idx_kitchen_ticket_lines_ticket" tableName="kitchen_ticket_lines">
+            <column name="ticket_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

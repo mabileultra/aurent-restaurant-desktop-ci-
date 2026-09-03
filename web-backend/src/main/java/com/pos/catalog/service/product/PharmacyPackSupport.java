@@ -136,7 +136,7 @@ public final class PharmacyPackSupport {
         return quantity
             .multiply(BigDecimal.valueOf(units))
             .setScale(0, RoundingMode.HALF_UP)
-            .max(BigDecimal.ONE)
+            .max(BigDecimal.ZERO)
             .longValue();
     }
 

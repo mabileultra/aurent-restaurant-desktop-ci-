@@ -51,10 +51,6 @@ import {
   CashRegisterTransferPage,
   CashRegisterConfigPage,
   StoresPage,
-  RestaurantHallPage,
-  RestaurantBookingPage,
-  RestaurantDeliveryPage,
-  KitchenDisplayPage,
   UsersPage,
   UsersPrinterSettingsPage,
   UsersBrandingSettingsPage,
@@ -469,40 +465,12 @@ export const adminRoutes = (
       )}
     />
     <Route path="cash-registers" element={<Navigate to="/cash-registers/list" replace />} />
-    <Route
-      path="restaurant/hall"
-      element={(
-        <ProtectedRoute requiredRole="MANAGER" module="restaurantFloor">
-          <RestaurantHallPage />
-        </ProtectedRoute>
-      )}
-    />
-    <Route path="restaurant/floor" element={<Navigate to="/restaurant/hall" replace />} />
-    <Route
-      path="restaurant/kitchen"
-      element={(
-        <ProtectedRoute module="restaurantKitchen">
-          <KitchenDisplayPage />
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="restaurant/booking"
-      element={(
-        <ProtectedRoute module="restaurantBooking">
-          <RestaurantBookingPage />
-        </ProtectedRoute>
-      )}
-    />
-    <Route
-      path="restaurant/delivery"
-      element={(
-        <ProtectedRoute module="restaurantDelivery">
-          <RestaurantDeliveryPage />
-        </ProtectedRoute>
-      )}
-    />
-    <Route path="restaurant" element={<Navigate to="/restaurant/hall" replace />} />
+    <Route path="restaurant/hall" element={<Navigate to="/rst/admin/halls" replace />} />
+    <Route path="restaurant/floor" element={<Navigate to="/rst/admin/halls" replace />} />
+    <Route path="restaurant/kitchen" element={<Navigate to="/rst/kitchen" replace />} />
+    <Route path="restaurant/booking" element={<Navigate to="/rst/admin/booking" replace />} />
+    <Route path="restaurant/delivery" element={<Navigate to="/rst/admin/delivery" replace />} />
+    <Route path="restaurant" element={<Navigate to="/rst/admin/halls" replace />} />
     <Route
       path="stores"
       element={(

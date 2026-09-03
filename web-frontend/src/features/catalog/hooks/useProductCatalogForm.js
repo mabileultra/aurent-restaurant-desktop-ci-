@@ -89,7 +89,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       sku: full.sku,
       name: full.name,
       description: full.description ?? '',
-      categoryId: full.categoryId != null ? full.categoryId : '',
+    categoryId: full.categoryId != null && full.categoryId !== '' ? String(full.categoryId) : '',
       costPrice: full.costPrice,
       sellingPrice: full.sellingPrice,
       defaultDiscountPercent: full.defaultDiscountPercent ?? 0,
@@ -145,6 +145,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const saleTypeWatch = watch('saleType');
   const productTypeWatch = watch('productType');
   const unitCodeWatch = watch('unitCode');
+  const categoryId = watch('categoryId');
 
   useEffect(() => {
     if (saleTypeWatch === 'SERVICE') {
@@ -303,6 +304,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     sellingPriceWatch,
     saleTypeWatch,
     productTypeWatch,
+    categoryId,
     businessConfig,
     businessConfigLoading,
     priceRulesConfig,

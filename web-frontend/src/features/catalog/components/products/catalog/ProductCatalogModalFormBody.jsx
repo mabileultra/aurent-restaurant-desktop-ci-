@@ -44,6 +44,8 @@ export default function ProductCatalogModalFormBody({
         isEdit={form.isEdit}
         saleTypeWatch={form.saleTypeWatch}
         productTypeWatch={form.productTypeWatch}
+        categoryId={form.categoryId}
+        setValue={form.setValue}
         showSection={form.showSection}
         configUnits={form.businessConfig?.units}
       />

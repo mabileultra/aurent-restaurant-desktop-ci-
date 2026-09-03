@@ -160,9 +160,15 @@ public final class DomainEventMappers {
             if (item.getQuantity() == null) {
                 continue;
             }
+            BigDecimal itemQty = item.getQuantity();
+            BigDecimal returnedQty = item.getReturnedQuantity() != null ? item.getReturnedQuantity() : BigDecimal.ZERO;
+            BigDecimal netQty = itemQty.subtract(returnedQty);
+            if (netQty.signum() <= 0) {
+                continue;
+            }
             Product product = item.getProduct();
             total += PharmacyPackSupport.reportableUnits(
-                product, item.getUnitPrice(), item.getQuantity(), productAttrs(product, attrs)
+                product, item.getUnitPrice(), netQty, productAttrs(product, attrs)
             );
         }
         return total;

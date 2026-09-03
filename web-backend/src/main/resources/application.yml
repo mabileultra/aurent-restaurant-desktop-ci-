@@ -86,6 +86,8 @@ app:
     internal-api-key: ${CRM_INTERNAL_API_KEY:crm-internal-dev-key-change-in-prod}
     connect-timeout-ms: 5000
     read-timeout-ms: 15000
+  restaurant:
+    internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
   cache:
     window-months: 2
     refresh-cron: "0 0 1 * * *"

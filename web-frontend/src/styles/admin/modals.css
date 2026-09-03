@@ -3,10 +3,15 @@
  */
 
 html.app-theme--admin .base-select__menu,
-html.app-theme--admin .base-select__trigger {
+html.app-theme--admin .base-select__trigger,
+html.app-theme--admin .base-select__input {
   color-scheme: light;
   background-color: #ffffff;
   color: #0f172a;
+}
+
+html.app-theme--admin .base-select__input {
+  background-color: transparent;
 }
 
 html.app-theme--admin .base-select__option {

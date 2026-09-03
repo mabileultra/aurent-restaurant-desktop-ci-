@@ -14,6 +14,5 @@ public record DiningTableResponse(
     int width,
     int height,
     DiningTableStatus status,
-    boolean active,
-    TableSessionSummaryResponse activeSession
+    boolean active
 ) {}

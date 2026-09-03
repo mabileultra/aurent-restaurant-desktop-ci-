@@ -19,6 +19,7 @@
         <module>platform-service</module>
         <module>reporting-service</module>
         <module>crm-service</module>
+        <module>restaurant-service</module>
         <module>ai-service</module>
     </modules>
 

@@ -11,7 +11,7 @@ export function isCashierRegisterScreen(pathname) {
 
 export function resolveCashierRegisterPath(businessType) {
   const type = normalizeBusinessTypeCode(businessType);
-  if (type === 'RESTAURANT') return '/cashier/restaurant';
+  if (type === 'RESTAURANT') return '/rst/pos';
   if (type === 'PHARMACY') return '/cashier/pharmacy';
   return '/cashier/pos';
 }

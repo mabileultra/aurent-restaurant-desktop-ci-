@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-040-recipes" author="pos">
+        <createTable tableName="recipes">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="menu_item_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="output_qty" type="NUMERIC(18, 3)" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="recipes"
+            baseColumnNames="menu_item_id"
+            constraintName="fk_recipes_menu_item"
+            referencedTableName="menu_items"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <addUniqueConstraint tableName="recipes" columnNames="menu_item_id" constraintName="uq_recipes_menu_item"/>
+    </changeSet>
+
+    <changeSet id="rst-041-recipe-lines" author="pos">
+        <createTable tableName="recipe_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="recipe_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit" type="VARCHAR(24)" defaultValue="kg">
+                <constraints nullable="false"/>
+            </column>
+            <column name="qty_gross" type="NUMERIC(18, 3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="waste_percent" type="NUMERIC(6, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="qty_net" type="NUMERIC(18, 3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="recipe_lines"
+            baseColumnNames="recipe_id"
+            constraintName="fk_recipe_lines_recipe"
+            referencedTableName="recipes"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_recipe_lines_recipe" tableName="recipe_lines">
+            <column name="recipe_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

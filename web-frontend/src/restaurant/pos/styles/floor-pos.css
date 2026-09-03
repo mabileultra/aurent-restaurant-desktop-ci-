@@ -1,0 +1,73 @@
+.rst-pos {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.rst-pos__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+}
+
+.rst-pos__brand {
+  display: flex;
+  flex-direction: column;
+}
+
+.rst-pos__brand-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.rst-pos__brand-meta {
+  font-size: 0.8rem;
+  color: var(--rst-muted);
+}
+
+.rst-pos__modes {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.rst-pos__mode {
+  padding: 0.55rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: transparent;
+  font-weight: 600;
+}
+
+.rst-pos__mode.is-active {
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-pos__mode:disabled {
+  opacity: 0.45;
+}
+
+.rst-pos__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.rst-pos__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .rst-pos__top {
+    flex-wrap: wrap;
+  }
+}

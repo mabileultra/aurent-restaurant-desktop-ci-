@@ -1,0 +1,120 @@
+.rst-tech__split {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 520px;
+}
+
+.rst-tech__dishes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  overflow: auto;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background: var(--rst-surface);
+  padding: 0.5rem;
+}
+
+.rst-tech__dish {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.15rem;
+  padding: 0.7rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+}
+
+.rst-tech__dish span {
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+}
+
+.rst-tech__dish.is-active {
+  background: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-tech__dish.is-active span {
+  color: rgb(27 18 8 / 0.7);
+}
+
+.rst-tech__card {
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background: var(--rst-surface);
+  padding: 1rem;
+  overflow: auto;
+}
+
+.rst-tech__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rst-tech__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rst-tech__table th,
+.rst-tech__table td {
+  padding: 0.45rem 0.35rem;
+  border-bottom: 1px solid var(--rst-line);
+  vertical-align: top;
+}
+
+.rst-tech__table th {
+  color: var(--rst-muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.rst-tech__suggest {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.3rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 8px;
+  background: var(--rst-surface-2);
+  max-height: 160px;
+  overflow: auto;
+}
+
+.rst-tech__suggest button {
+  text-align: left;
+  padding: 0.45rem 0.6rem;
+  background: transparent;
+  border: 0;
+  color: inherit;
+}
+
+.rst-tech__suggest button:hover {
+  background: var(--rst-accent-soft);
+}
+
+.rst-tech__suggest-empty {
+  padding: 0.55rem 0.6rem;
+  color: var(--rst-muted);
+  font-size: 0.8rem;
+}
+
+.rst-tech__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 900px) {
+  .rst-tech__split {
+    grid-template-columns: 1fr;
+  }
+}

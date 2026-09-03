@@ -10,13 +10,12 @@ export default function CashierBottomNavTables({ t }) {
   const navigate = useNavigate();
   const { registerPath } = useCashierStoreProfile();
   const { shell } = usePosShell() ?? {};
-  const onRestaurantPage = location.pathname.startsWith('/cashier/restaurant');
   const onRegisterScreen = isCashierRegisterScreen(location.pathname);
-  const isTablesActive = onRestaurantPage && shell?.posPane === 'tables' && !shell?.payOpen;
+  const isTablesActive = onRegisterScreen && shell?.posPane === 'tables' && !shell?.payOpen;
 
   const openTables = () => {
-    if (onRestaurantPage && shell && !shell.payOpen) {
-      shell.onGoToTables?.();
+    if (registerPath.startsWith('/rst/')) {
+      navigate(registerPath);
       return;
     }
     if (onRegisterScreen && shell) {

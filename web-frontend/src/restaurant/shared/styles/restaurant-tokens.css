@@ -1,0 +1,91 @@
+.rst-app {
+  --rst-bg: #1a1c20;
+  --rst-bg-deep: #121418;
+  --rst-surface: #22262c;
+  --rst-surface-2: #2a2f36;
+  --rst-ink: #f3efe6;
+  --rst-muted: #9b968c;
+  --rst-line: #3a4049;
+  --rst-accent: #ff7a1a;
+  --rst-accent-hover: #ff8d38;
+  --rst-accent-soft: rgb(255 122 26 / 0.18);
+  --rst-free: #3dba74;
+  --rst-free-bg: #1c3d2c;
+  --rst-occupied: #ff7a1a;
+  --rst-occupied-bg: #4a2d12;
+  --rst-reserved: #4d8fd6;
+  --rst-reserved-bg: #1c334d;
+  --rst-pay: #c084fc;
+  --rst-pay-bg: #3b2a52;
+  --rst-clean: #8b8680;
+  --rst-clean-bg: #2f3236;
+  --rst-blocked: #ef4444;
+  --rst-blocked-bg: #4a1d1d;
+  --rst-radius: 8px;
+  --rst-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  min-height: 100dvh;
+  color: var(--rst-ink);
+  background: var(--rst-bg-deep);
+  font-family: "Segoe UI", "PT Sans", system-ui, sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.01em;
+}
+
+.rst-app a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rst-app .bg-emerald-500,
+.rst-app .bg-emerald-600,
+.rst-app .dark\:bg-emerald-600 {
+  background-color: var(--rst-accent) !important;
+}
+
+.rst-app .hover\:bg-emerald-600:hover,
+.rst-app .dark\:hover\:bg-emerald-700:hover {
+  background-color: var(--rst-accent-hover) !important;
+}
+
+.rst-app button.btn-primary,
+.rst-app .btn-primary {
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+  color: #1b1208;
+  font-weight: 700;
+}
+
+.rst-app button.btn-primary:hover,
+.rst-app .btn-primary:hover {
+  background: var(--rst-accent-hover);
+  border-color: var(--rst-accent-hover);
+  color: #1b1208;
+}
+
+.rst-app .text-slate-500,
+.rst-app .text-slate-700,
+.rst-app .dark\:text-slate-400 {
+  color: var(--rst-muted) !important;
+}
+
+.rst-app .hover\:text-slate-800:hover,
+.rst-app .dark\:hover\:text-white:hover {
+  color: var(--rst-ink) !important;
+}
+
+.rst-app .form-select,
+.rst-app input:not([type="checkbox"]):not([type="radio"]),
+.rst-app textarea,
+.rst-app select {
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  border-color: var(--rst-line);
+}
+
+.rst-app .form-select:focus,
+.rst-app input:focus,
+.rst-app textarea:focus,
+.rst-app select:focus {
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft);
+}

@@ -12,4 +12,4 @@ FROM product_snapshot_facts p
 LEFT JOIN stock_balance sb ON sb.product_id = p.product_id
 WHERE p.company_id = :companyId
   AND p.is_active = true
-  AND COALESCE(sb.stock_qty, 0) < p.low_stock_alert
+  AND COALESCE(sb.stock_qty, 0) <= p.low_stock_alert

@@ -1,0 +1,106 @@
+package com.pos.restaurant.order.entity;
+
+import com.pos.restaurant.floor.entity.FloorTable;
+import com.pos.restaurant.order.domain.OrderStatus;
+import com.pos.restaurant.shift.entity.RestaurantShift;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+import java.time.Instant;
+import java.util.UUID;
+
+@Entity
+@Table(name = "floor_orders")
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class FloorOrder {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(name = "company_id", nullable = false)
+    private Integer companyId;
+
+    @Column(name = "store_id", nullable = false)
+    private Integer storeId;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "table_id", nullable = false)
+    private FloorTable table;
+
+    @Column(name = "order_no", nullable = false)
+    private int orderNo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 24)
+    @Builder.Default
+    private OrderStatus status = OrderStatus.OPEN;
+
+    @Column(name = "guest_count", nullable = false)
+    @Builder.Default
+    private int guestCount = 1;
+
+    @Column(name = "adult_count", nullable = false)
+    @Builder.Default
+    private int adultCount = 1;
+
+    @Column(name = "children_count", nullable = false)
+    @Builder.Default
+    private int childrenCount = 0;
+
+    @Column(name = "opened_by_user_id", nullable = false)
+    private UUID openedByUserId;
+
+    @Column(name = "waiter_user_id")
+    private UUID waiterUserId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "shift_id")
+    private RestaurantShift shift;
+
+    @Column(length = 500)
+    private String comment;
+
+    @Column(name = "opened_at", nullable = false)
+    private Instant openedAt;
+
+    @Column(name = "closed_at")
+    private Instant closedAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
+
+    @PrePersist
+    void prePersist() {
+        Instant now = Instant.now();
+        if (openedAt == null) {
+            openedAt = now;
+        }
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        updatedAt = Instant.now();
+    }
+}

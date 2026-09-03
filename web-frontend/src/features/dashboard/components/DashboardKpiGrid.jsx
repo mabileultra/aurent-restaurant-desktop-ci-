@@ -29,14 +29,14 @@ export default function DashboardKpiGrid({ t, isSingleDay, kpis }) {
         icon={ShoppingCart}
         label={isSingleDay ? t('dashboard.itemsSoldToday') : t('dashboard.periodItemsSold')}
         value={kpis.itemsSold}
-        sub={t('dashboard.unitsSubtitle')}
+        sub={t('dashboard.unitsSubtitle', { count: kpis.txCount })}
         color="blue"
       />
       <DashboardStatCard
         icon={Receipt}
         label={t('dashboard.avgCheck')}
         value={kpis.avgCheck}
-        sub={t('dashboard.avgCheckSubtitle')}
+        sub={t('dashboard.avgCheckSubtitle', { count: kpis.txCount })}
         color="blue"
       />
       <DashboardStatCard

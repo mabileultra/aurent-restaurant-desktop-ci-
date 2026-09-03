@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-020-active-order-unique" author="pos">
+        <sql>
+            DROP INDEX IF EXISTS uq_floor_orders_open_table;
+            CREATE UNIQUE INDEX uq_floor_orders_active_table
+            ON floor_orders (table_id)
+            WHERE status IN ('OPEN', 'BILLING');
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-021-floor-order-payments" author="pos">
+        <createTable tableName="floor_order_payments">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="method" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(18, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_by_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="paid_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_payments"
+            baseColumnNames="order_id"
+            constraintName="fk_floor_order_payments_order"
+            referencedTableName="floor_orders"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <createIndex indexName="idx_floor_order_payments_order" tableName="floor_order_payments">
+            <column name="order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

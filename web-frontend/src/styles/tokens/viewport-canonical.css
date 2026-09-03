@@ -36,13 +36,6 @@ html.app-viewport--canonical .platform-email-page__grid {
   grid-template-columns: 1fr;
 }
 
-/* Pharmacy / restaurant — базовый размер на каноне */
-html.app-viewport--canonical .pharmacy-cashier,
-html.app-viewport--canonical .restaurant-cashier {
+html.app-viewport--canonical .pharmacy-cashier {
   font-size: var(--shell-font-size);
-}
-
-html.app-viewport--canonical .restaurant-cashier__split--tables .cashier-register__stage,
-html.app-viewport--canonical .restaurant-cashier__split--catalog .cashier-register__stage {
-  grid-template-columns: minmax(0, 1fr) minmax(260px, var(--cashier-pay-w, 340px));
 }

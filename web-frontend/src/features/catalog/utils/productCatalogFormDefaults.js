@@ -15,6 +15,7 @@ export const defaultProductCatalogFormValues = {
   unitCode: 'PCS',
   quantityScale: 0,
   allowFraction: false,
+  categoryId: '',
 };
 
 export function attributeFormValue(value, fieldType) {

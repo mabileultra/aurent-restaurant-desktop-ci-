@@ -18,7 +18,7 @@ export default function CashierHomeRedirect() {
   });
 
   if (user?.role === 'WAITER') {
-    return <Navigate to="/cashier/restaurant" replace />;
+    return <Navigate to="/rst/pos" replace />;
   }
 
   if (storeId == null) {
@@ -31,7 +31,7 @@ export default function CashierHomeRedirect() {
 
   const type = normalizeBusinessTypeCode(store?.businessType);
   if (type === 'RESTAURANT') {
-    return <Navigate to="/cashier/restaurant" replace />;
+    return <Navigate to="/rst/pos" replace />;
   }
   if (type === 'PHARMACY') {
     return <Navigate to="/cashier/pharmacy" replace />;

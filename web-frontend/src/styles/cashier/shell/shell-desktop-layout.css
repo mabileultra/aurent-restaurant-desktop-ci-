@@ -26,14 +26,12 @@ html.cashier-shell--desktop #root {
 }
 
 /* POS: сцена на всю высоту под шапкой */
-.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register,
-.cashier-app.cashier-app--desktop.cashier-app--pos-screen .restaurant-cashier {
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register {
   min-height: 0;
 }
 
 .cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register__workspace,
-.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register__stage,
-.cashier-app.cashier-app--desktop.cashier-app--pos-screen .restaurant-cashier__workspace {
+.cashier-app.cashier-app--desktop.cashier-app--pos-screen .cashier-register__stage {
   min-height: 0;
 }
 

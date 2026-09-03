@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-001-floor-halls" author="pos">
+        <createTable tableName="floor_halls">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_floor_halls_company_store" tableName="floor_halls">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_floor_halls_store_active" tableName="floor_halls">
+            <column name="store_id"/>
+            <column name="active"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-002-floor-tables" author="pos">
+        <createTable tableName="floor_tables">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="hall_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="label" type="VARCHAR(100)"/>
+            <column name="seat_count" type="INT" defaultValueNumeric="4">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pos_x" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pos_y" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="width" type="INT" defaultValueNumeric="80">
+                <constraints nullable="false"/>
+            </column>
+            <column name="height" type="INT" defaultValueNumeric="80">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(24)" defaultValue="FREE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="floor_tables"
+            baseColumnNames="hall_id"
+            constraintName="fk_floor_tables_hall"
+            referencedTableName="floor_halls"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_floor_tables_hall" tableName="floor_tables">
+            <column name="hall_id"/>
+        </createIndex>
+        <createIndex indexName="idx_floor_tables_company_store" tableName="floor_tables">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_floor_tables_status" tableName="floor_tables">
+            <column name="store_id"/>
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

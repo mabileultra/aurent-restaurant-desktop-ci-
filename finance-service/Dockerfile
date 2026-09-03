@@ -11,6 +11,7 @@ COPY platform-service/pom.xml platform-service/pom.xml
 COPY reporting-service/pom.xml reporting-service/pom.xml
 COPY ai-service/pom.xml ai-service/pom.xml
 COPY crm-service/pom.xml crm-service/pom.xml
+COPY restaurant-service/pom.xml restaurant-service/pom.xml
 RUN mvn -pl shared-kernel,finance-service -am dependency:go-offline -q
 
 COPY finance-service/src finance-service/src

@@ -20,7 +20,7 @@ export default function CashierPosTopbar({
   toggleCashierTheme,
 }) {
   const location = useLocation();
-  const isRestaurantRegister = location.pathname.startsWith('/cashier/restaurant');
+  const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
   const shiftOpen = shift?.status === 'OPEN';
 
   return (

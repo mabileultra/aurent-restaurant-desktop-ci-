@@ -19,7 +19,6 @@ export default function PosOrderPanel({
   taxTotal,
   priceEditable = true,
   hideHeader = false,
-  resolveDepartmentLabel,
 }) {
   const { t } = useTranslation();
   const p = usePosOrderPanel({
@@ -87,7 +86,6 @@ export default function PosOrderPanel({
                   startQtyEdit={p.startQtyEdit}
                   commitQty={p.commitQty}
                   priceEditable={priceEditable}
-                  resolveDepartmentLabel={resolveDepartmentLabel}
                   t={t}
                 />
               ))

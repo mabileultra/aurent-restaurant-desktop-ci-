@@ -45,6 +45,9 @@ public class ProductCatalogLoader {
         if (product.getExtraBarcodes() != null) {
             product.getExtraBarcodes().size();
         }
+        if (product.getCategory() != null) {
+            product.getCategory().getName();
+        }
     }
 
     public Map<UUID, Integer> loadStoreCounts(List<Product> products) {

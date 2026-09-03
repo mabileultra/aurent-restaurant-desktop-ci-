@@ -3,20 +3,13 @@ package com.pos.restaurant.service.impl;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
-import com.pos.restaurant.domain.TableSessionStatus;
 import com.pos.restaurant.dto.BookingTableOptionResponse;
 import com.pos.restaurant.dto.DiningHallResponse;
-import com.pos.restaurant.dto.DiningTableResponse;
-import com.pos.restaurant.dto.RestaurantFloorSnapshotResponse;
 import com.pos.restaurant.dto.SaveDiningHallRequest;
 import com.pos.restaurant.entity.DiningHall;
-import com.pos.restaurant.entity.TableSession;
-import com.pos.restaurant.entity.TableSessionLine;
 import com.pos.restaurant.mapper.RestaurantFloorMapper;
 import com.pos.restaurant.repository.DiningHallRepository;
 import com.pos.restaurant.repository.DiningTableRepository;
-import com.pos.restaurant.repository.TableSessionLineRepository;
-import com.pos.restaurant.repository.TableSessionRepository;
 import com.pos.restaurant.service.DiningHallService;
 import com.pos.restaurant.support.RestaurantStoreSupport;
 import com.pos.shared.log.LogUtil;
@@ -25,9 +18,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +26,6 @@ public class DiningHallServiceImpl implements DiningHallService {
 
     private final DiningHallRepository hallRepository;
     private final DiningTableRepository tableRepository;
-    private final TableSessionRepository sessionRepository;
-    private final TableSessionLineRepository sessionLineRepository;
     private final RestaurantFloorMapper mapper;
     private final RestaurantStoreSupport storeSupport;
 
@@ -47,35 +35,6 @@ public class DiningHallServiceImpl implements DiningHallService {
         return hallRepository.findByStoreIdOrderBySortOrderAscNameAsc(storeId).stream()
             .map(hall -> mapper.toHallResponse(hall, countActiveTables(hall.getId())))
             .toList();
-    }
-
-    @Override
-    public RestaurantFloorSnapshotResponse getFloorSnapshot(Integer storeId) {
-        Store store = storeSupport.requireRestaurantStore(storeId);
-        List<TableSession> openSessions = sessionRepository.findWithLinesByStoreIdAndStatus(
-            storeId, TableSessionStatus.OPEN);
-        Map<Integer, TableSession> sessionsByTableId = openSessions.stream()
-            .collect(Collectors.toMap(s -> s.getTable().getId(), s -> s, (a, b) -> a));
-        Map<UUID, List<TableSessionLine>> linesBySessionId = openSessions.stream()
-            .collect(Collectors.toMap(
-                TableSession::getId,
-                s -> sessionLineRepository.findBySessionIdOrderBySortOrderAscCreatedAtAsc(s.getId())
-            ));
-        List<RestaurantFloorSnapshotResponse.DiningHallWithTablesResponse> halls =
-            hallRepository.findByStoreIdAndActiveTrueOrderBySortOrderAscNameAsc(storeId).stream()
-                .map(hall -> new RestaurantFloorSnapshotResponse.DiningHallWithTablesResponse(
-                    hall.getId(),
-                    hall.getName(),
-                    hall.getSortOrder(),
-                    hall.isActive(),
-                    mapper.toTableResponses(
-                        tableRepository.findByHallIdAndActiveTrueOrderByCodeAsc(hall.getId()),
-                        sessionsByTableId,
-                        linesBySessionId
-                    )
-                ))
-                .toList();
-        return new RestaurantFloorSnapshotResponse(store.getId(), store.getName(), halls);
     }
 
     @Override

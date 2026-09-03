@@ -1,0 +1,45 @@
+import { BaseButton } from '../../../components/ui';
+import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import '../styles/order-workspace.css';
+
+export default function OrderLines({ items, onQty, onRemove, locked = false, t }) {
+  if (!items.length) {
+    return <div className="rst-order-empty">{t('rst.order.emptyLines')}</div>;
+  }
+
+  return (
+    <div className="rst-order-lines">
+      {items.map((line) => {
+        const lineLocked = locked || line.itemStatus !== 'NEW';
+        return (
+          <div key={line.id} className="rst-order-line">
+            <div>
+              <strong>{line.name}</strong>
+              <div className="rst-order-line__meta">
+                {fmtMoneyCompact(line.unitPrice)} × {line.quantity}
+                {' · '}
+                {t(`rst.order.itemStatus.${line.itemStatus}`)}
+                {(line.modifiers ?? []).length
+                  ? ` · ${(line.modifiers ?? []).map((mod) => mod.name).join(', ')}`
+                  : ''}
+              </div>
+            </div>
+            <div className="rst-order-line__actions">
+              {lineLocked ? null : (
+                <>
+                  <button type="button" className="rst-qty" onClick={() => onQty(line, Number(line.quantity) - 1)}>-</button>
+                  <span>{Number(line.quantity)}</span>
+                  <button type="button" className="rst-qty" onClick={() => onQty(line, Number(line.quantity) + 1)}>+</button>
+                  <BaseButton type="button" variant="ghost" size="sm" onClick={() => onRemove(line.id)}>
+                    {t('common.delete')}
+                  </BaseButton>
+                </>
+              )}
+            </div>
+            <strong>{fmtMoneyCompact(line.lineTotal)}</strong>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

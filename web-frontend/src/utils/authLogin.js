@@ -11,6 +11,15 @@ export function isDesktopCashier() {
   return typeof navigator !== 'undefined' && /Electron/i.test(navigator.userAgent);
 }
 
+/** Код компании на PIN-экране: скрываем только если десктоп реально отдаёт код из настроек. */
+export function shouldShowCashierCompanyCodeField() {
+  if (typeof window === 'undefined') return true;
+  if (window.desktopCashier?.isDesktop && typeof window.desktopCashier.getCompanyLoginCode === 'function') {
+    return false;
+  }
+  return true;
+}
+
 export function isAuthPage(pathname = '') {
   const p = pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
   return p.startsWith(CASHIER_LOGIN_PATH) || p.startsWith('/login');
