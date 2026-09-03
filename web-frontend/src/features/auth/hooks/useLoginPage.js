@@ -11,10 +11,16 @@ import { resetClientSessionState } from '../../../utils/authSession';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 
-import { resolveRoleHomePath } from '../../../utils/roleHomePath';
+import { resolveAppHomePath } from '../../../utils/appHomePath';
+import { companyBusinessTypeApi } from '../../../api';
 
-function resolvePostLoginPath(role) {
-  return resolveRoleHomePath(role);
+async function resolvePostLoginPath(role) {
+  try {
+    const res = await companyBusinessTypeApi.get();
+    return resolveAppHomePath(role, res.data?.defaultTypeCode);
+  } catch {
+    return resolveAppHomePath(role, null);
+  }
 }
 
 export function useLoginPage() {
@@ -34,7 +40,12 @@ export function useLoginPage() {
 
   useEffect(() => {
     if (!hasHydrated || !token) return;
-    navigate(resolvePostLoginPath(user?.role), { replace: true });
+    let cancelled = false;
+    (async () => {
+      const path = await resolvePostLoginPath(user?.role);
+      if (!cancelled) navigate(path, { replace: true });
+    })();
+    return () => { cancelled = true; };
   }, [hasHydrated, token, user, navigate]);
 
   const schema = useMemo(
@@ -67,7 +78,8 @@ export function useLoginPage() {
       resetClientSessionState();
       setAuth(accessToken, profile);
       toast.success(t('login.welcome', { name: profile.fullName }));
-      navigate(resolvePostLoginPath(profile.role), { replace: true });
+      const path = await resolvePostLoginPath(profile.role);
+      navigate(path, { replace: true });
     } catch (err) {
       const apiMsg = err.response?.data?.message;
       if (!err.response) {

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import { useRecipesAdminPage } from '../hooks/useRecipesAdminPage';
 import '../../shared/styles/rst-blocks.css';
@@ -20,6 +21,9 @@ export default function RecipesAdminPage() {
           <h1 className="rst-coming__title">{p.t('rst.admin.recipesTitle')}</h1>
           <p className="rst-coming__text mb-0">{p.t('rst.admin.recipesSubtitle')}</p>
         </div>
+        <BaseButton type="button" onClick={() => p.setWizardOpen(true)}>
+          {p.t('rst.admin.recipeWizardOpen')}
+        </BaseButton>
       </div>
 
       {p.workspace.canPickStore ? (
@@ -38,8 +42,48 @@ export default function RecipesAdminPage() {
         </label>
       ) : null}
 
+      {p.wizardOpen ? (
+        <div className="rst-tech__card mb-4">
+          <h2 className="rst-coming__title">{p.t('rst.admin.recipeWizardTitle')}</h2>
+          <p className="rst-coming__text">{p.t('rst.admin.recipeWizardHint')}</p>
+          <div className="row g-2 align-items-end mb-3">
+            <label className="col-md-4">
+              <span className="d-block mb-1 small">{p.t('rst.admin.dishName')}</span>
+              <BaseInput value={p.wizard.name} onChange={(e) => p.setWizard({ ...p.wizard, name: e.target.value })} />
+            </label>
+            <label className="col-md-2">
+              <span className="d-block mb-1 small">{p.t('rst.admin.price')}</span>
+              <BaseInput type="number" min="0" step="0.01" value={p.wizard.price} onChange={(e) => p.setWizard({ ...p.wizard, price: e.target.value })} />
+            </label>
+            <label className="col-md-3">
+              <span className="d-block mb-1 small">{p.t('rst.admin.dishCategory')}</span>
+              <BaseInput
+                value={p.wizard.category}
+                placeholder={p.t('rst.admin.dishCategoryHint')}
+                onChange={(e) => p.setWizard({ ...p.wizard, category: e.target.value })}
+              />
+            </label>
+            <label className="col-md-3">
+              <span className="d-block mb-1 small">{p.t('rst.admin.dishImage')}</span>
+              <input type="file" accept="image/*" onChange={(e) => p.onWizardImage(e.target.files?.[0])} />
+            </label>
+          </div>
+          {p.wizard.imageUrl ? (
+            <img src={p.wizard.imageUrl} alt="" className="rst-tech__preview mb-3" />
+          ) : null}
+          <p className="small mb-2">
+            {p.t('rst.admin.recipeWizardIngredients')}
+            {' · '}
+            <Link to="/products">{p.t('rst.admin.toStockProducts')}</Link>
+          </p>
+        </div>
+      ) : null}
+
       <div className="rst-tech__split">
         <aside className="rst-tech__dishes">
+          {p.dishes.length === 0 ? (
+            <div className="rst-empty">{p.t('rst.admin.recipeNoDishes')}</div>
+          ) : null}
           {p.dishes.map((dish) => {
             const hasRecipe = p.recipes.some((recipe) => recipe.menuItemId === dish.id);
             return (
@@ -49,20 +93,26 @@ export default function RecipesAdminPage() {
                 className={`rst-tech__dish${p.selectedId === dish.id ? ' is-active' : ''}`}
                 onClick={() => p.setSelectedId(dish.id)}
               >
+                {dish.imageUrl ? <img src={dish.imageUrl} alt="" className="rst-tech__dish-thumb" /> : null}
                 <strong>{dish.name}</strong>
-                <span>{hasRecipe ? p.t('rst.admin.recipeReady') : p.t('rst.admin.recipeEmpty')}</span>
+                <span>
+                  {dish.category ? `${dish.category} · ` : ''}
+                  {hasRecipe ? p.t('rst.admin.recipeReady') : p.t('rst.admin.recipeEmpty')}
+                </span>
               </button>
             );
           })}
         </aside>
         <div className="rst-tech__card">
-          {!selectedDish ? (
+          {!selectedDish && !p.wizardOpen ? (
             <div className="rst-empty">{p.t('rst.admin.recipePickDish')}</div>
           ) : (
             <>
               <header className="rst-tech__head">
                 <div>
-                  <h2 className="rst-coming__title">{selectedDish.name}</h2>
+                  <h2 className="rst-coming__title">
+                    {p.wizardOpen ? p.t('rst.admin.recipeWizardIngredients') : selectedDish?.name}
+                  </h2>
                   <p className="rst-coming__text mb-0">{p.t('rst.admin.recipeOutput')}</p>
                 </div>
                 <label>
@@ -76,6 +126,7 @@ export default function RecipesAdminPage() {
                     <th>{p.t('rst.admin.ingredient')}</th>
                     <th>{p.t('rst.admin.qtyGross')}</th>
                     <th>{p.t('rst.admin.wastePercent')}</th>
+                    <th>{p.t('rst.admin.qtyNet')}</th>
                     <th>{p.t('rst.admin.unit')}</th>
                     <th />
                   </tr>
@@ -99,7 +150,11 @@ export default function RecipesAdminPage() {
                         {p.activeLineIndex === index && p.search.trim().length > 0 ? (
                           <div className="rst-tech__suggest">
                             {p.products.length === 0 ? (
-                              <span className="rst-tech__suggest-empty">{p.t('rst.admin.ingredientEmpty')}</span>
+                              <span className="rst-tech__suggest-empty">
+                                {p.t('rst.admin.ingredientEmpty')}
+                                {' '}
+                                <Link to="/products">{p.t('rst.admin.toStockProducts')}</Link>
+                              </span>
                             ) : p.products.map((product) => (
                               <button key={product.id} type="button" onClick={() => p.pickProduct(index, product)}>
                                 {product.name}
@@ -115,6 +170,7 @@ export default function RecipesAdminPage() {
                       <td>
                         <BaseInput type="number" min="0" step="0.1" value={line.wastePercent} onChange={(e) => p.setLines((current) => current.map((row, i) => (i === index ? { ...row, wastePercent: e.target.value } : row)))} />
                       </td>
+                      <td>{p.qtyNetOf(line).toFixed(3)}</td>
                       <td>
                         <BaseInput value={line.unit} onChange={(e) => p.setLines((current) => current.map((row, i) => (i === index ? { ...row, unit: e.target.value } : row)))} />
                       </td>
@@ -127,9 +183,18 @@ export default function RecipesAdminPage() {
               </table>
               <div className="rst-tech__actions">
                 <BaseButton type="button" variant="ghost" onClick={p.addLine}>{p.t('rst.admin.addIngredient')}</BaseButton>
-                <BaseButton type="button" onClick={() => p.saveMutation.mutate()} disabled={p.saveMutation.isPending}>
-                  {p.t('common.save')}
-                </BaseButton>
+                {p.wizardOpen ? (
+                  <>
+                    <BaseButton type="button" variant="ghost" onClick={() => p.setWizardOpen(false)}>{p.t('common.cancel')}</BaseButton>
+                    <BaseButton type="button" onClick={() => p.wizardMutation.mutate()} disabled={p.wizardMutation.isPending}>
+                      {p.t('rst.admin.recipeWizardSave')}
+                    </BaseButton>
+                  </>
+                ) : (
+                  <BaseButton type="button" onClick={() => p.saveMutation.mutate()} disabled={p.saveMutation.isPending || !selectedDish}>
+                    {p.t('common.save')}
+                  </BaseButton>
+                )}
               </div>
             </>
           )}

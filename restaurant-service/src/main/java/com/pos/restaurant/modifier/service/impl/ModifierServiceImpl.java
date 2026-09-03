@@ -75,31 +75,37 @@ public class ModifierServiceImpl implements ModifierService {
     }
 
     @Override
+    @Transactional
     public ModifierGroupResponse createGroup(Integer storeId, SaveModifierGroupRequest request) {
         return createGroupHandler.handle(storeId, request);
     }
 
     @Override
+    @Transactional
     public ModifierGroupResponse updateGroup(UUID groupId, SaveModifierGroupRequest request) {
         return updateGroupHandler.handle(groupId, request);
     }
 
     @Override
+    @Transactional
     public void deactivateGroup(UUID groupId) {
         deactivateGroupHandler.handle(groupId);
     }
 
     @Override
+    @Transactional
     public ModifierOptionResponse createOption(UUID groupId, SaveModifierOptionRequest request) {
         return createOptionHandler.handle(groupId, request);
     }
 
     @Override
+    @Transactional
     public ModifierOptionResponse updateOption(UUID optionId, SaveModifierOptionRequest request) {
         return updateOptionHandler.handle(optionId, request);
     }
 
     @Override
+    @Transactional
     public void deactivateOption(UUID optionId) {
         deactivateOptionHandler.handle(optionId);
     }

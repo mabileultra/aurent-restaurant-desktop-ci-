@@ -3,6 +3,7 @@ package com.pos.restaurant.menu.dto;
 import com.pos.restaurant.menu.domain.MenuItemType;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public record MenuItemResponse(
@@ -16,5 +17,7 @@ public record MenuItemResponse(
     boolean available,
     int sortOrder,
     UUID stationId,
-    java.util.List<UUID> modifierGroupIds
+    String category,
+    String imageUrl,
+    List<UUID> modifierGroupIds
 ) {}

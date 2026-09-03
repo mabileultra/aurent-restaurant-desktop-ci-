@@ -10,7 +10,10 @@ export function useRestaurantStores() {
   });
 
   const restaurantStores = useMemo(
-    () => stores.filter((s) => normalizeBusinessTypeCode(s.businessType) === 'RESTAURANT'),
+    () => stores.filter((s) => {
+      const type = normalizeBusinessTypeCode(s.businessType);
+      return type === 'RESTAURANT' || type === 'CANTEEN';
+    }),
     [stores]
   );
 

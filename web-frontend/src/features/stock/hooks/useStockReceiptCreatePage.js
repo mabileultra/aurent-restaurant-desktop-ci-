@@ -7,10 +7,12 @@ import { supplierApi, warehouseApi } from '../../../api';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import { emptyReceiptLine } from '../utils/stockDocumentFormUtils';
+import { useStockFlowPaths } from '../stockFlowPaths';
 
 export function useStockReceiptCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const paths = useStockFlowPaths();
   const qc = useQueryClient();
   const [supplierId, setSupplierId] = useState('');
   const [storeId, setStoreId] = useState('');
@@ -37,7 +39,7 @@ export function useStockReceiptCreatePage() {
     onSuccess: (res) => {
       toast.success(t('stockReports.receiptCreated', { no: res.data.receiptNumber }));
       invalidateProductCaches(qc);
-      navigate('/reports/stock/receipts');
+      navigate(paths.receiptsReport);
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('stockReports.receiptFailed')),
   });

@@ -30,7 +30,7 @@ export default function CashierHomeRedirect() {
   }
 
   const type = normalizeBusinessTypeCode(store?.businessType);
-  if (type === 'RESTAURANT') {
+  if (type === 'RESTAURANT' || type === 'CANTEEN') {
     return <Navigate to="/rst/pos" replace />;
   }
   if (type === 'PHARMACY') {

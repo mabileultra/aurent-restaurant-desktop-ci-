@@ -1,9 +1,6 @@
-/** Домашний маршрут после входа / при отказе в доступе. */
+import { resolveAppHomePath } from './appHomePath';
+
+/** Домашний маршрут после входа / при отказе в доступе (без типа бизнеса — платформа). */
 export function resolveRoleHomePath(role) {
-  if (role === 'SUPER_ADMIN') return '/platform';
-  if (role === 'CASHIER') return '/cashier';
-  if (role === 'WAITER') return '/rst/pos';
-  if (role === 'COOK') return '/rst/kitchen';
-  if (role === 'ACCOUNTANT') return '/finance/dashboard';
-  return '/dashboard';
+  return resolveAppHomePath(role, null);
 }

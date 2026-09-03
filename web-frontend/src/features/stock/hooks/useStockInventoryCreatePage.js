@@ -7,10 +7,12 @@ import { warehouseApi } from '../../../api';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import { emptyInventoryLine } from '../utils/stockDocumentFormUtils';
+import { useStockFlowPaths } from '../stockFlowPaths';
 
 export function useStockInventoryCreatePage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const paths = useStockFlowPaths();
   const qc = useQueryClient();
   const [storeId, setStoreId] = useState('');
   const [notes, setNotes] = useState('');
@@ -28,7 +30,7 @@ export function useStockInventoryCreatePage() {
     onSuccess: (res) => {
       toast.success(t('stockReports.inventoryCreated', { no: res.data.inventoryNumber }));
       invalidateProductCaches(qc);
-      navigate('/reports/stock/inventories');
+      navigate(paths.inventoriesReport);
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('stockReports.inventoryFailed')),
   });

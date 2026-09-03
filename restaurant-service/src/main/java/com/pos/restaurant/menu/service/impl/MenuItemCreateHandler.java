@@ -40,6 +40,8 @@ public class MenuItemCreateHandler {
             .available(request.available() == null || request.available())
             .sortOrder(request.sortOrder() == null ? 100 : request.sortOrder())
             .stationId(stationLookup.resolveOptional(request.stationId(), companyId, storeId))
+            .category(blankToNull(request.category()))
+            .imageUrl(blankToNull(request.imageUrl()))
             .active(true)
             .build());
         modifierBinder.replace(saved.getId(), companyId, storeId, request.modifierGroupIds());

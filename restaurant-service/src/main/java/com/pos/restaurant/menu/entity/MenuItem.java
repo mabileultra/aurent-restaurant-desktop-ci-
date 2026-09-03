@@ -66,6 +66,12 @@ public class MenuItem {
     @Column(name = "station_id")
     private UUID stationId;
 
+    @Column(length = 80)
+    private String category;
+
+    @Column(name = "image_url", columnDefinition = "text")
+    private String imageUrl;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 100;

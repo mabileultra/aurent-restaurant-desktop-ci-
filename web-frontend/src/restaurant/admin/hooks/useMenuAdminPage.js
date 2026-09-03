@@ -6,6 +6,7 @@ import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { readImageDataUrl } from '../../../utils/readImageDataUrl';
 
 const emptyForm = () => ({
   name: '',
@@ -14,6 +15,8 @@ const emptyForm = () => ({
   available: true,
   sortOrder: 100,
   stationId: '',
+  category: '',
+  imageUrl: '',
   modifierGroupIds: [],
 });
 
@@ -52,6 +55,8 @@ export function useMenuAdminPage() {
         sortOrder: Number(form.sortOrder) || 100,
         itemType: 'DISH',
         stationId: form.stationId || null,
+        category: form.category.trim() || null,
+        imageUrl: form.imageUrl || null,
         modifierGroupIds: form.modifierGroupIds,
       };
       if (editingId) return rstMenuApi.update(editingId, body);
@@ -86,6 +91,8 @@ export function useMenuAdminPage() {
       available: item.available,
       sortOrder: item.sortOrder,
       stationId: item.stationId ?? '',
+      category: item.category ?? '',
+      imageUrl: item.imageUrl ?? '',
       modifierGroupIds: item.modifierGroupIds ?? [],
     });
   };
@@ -98,6 +105,16 @@ export function useMenuAdminPage() {
         ? current.filter((id) => id !== groupId)
         : [...current, groupId],
     });
+  };
+
+  const onImageFile = async (file) => {
+    if (!file) return;
+    try {
+      const dataUrl = await readImageDataUrl(file, 400 * 1024);
+      setForm((current) => ({ ...current, imageUrl: dataUrl }));
+    } catch {
+      toast.error(t('rst.admin.imageUploadFailed'));
+    }
   };
 
   return {
@@ -114,6 +131,7 @@ export function useMenuAdminPage() {
     deactivateMutation,
     startEdit,
     toggleGroup,
+    onImageFile,
     resetForm: () => {
       setEditingId(null);
       setForm(emptyForm());

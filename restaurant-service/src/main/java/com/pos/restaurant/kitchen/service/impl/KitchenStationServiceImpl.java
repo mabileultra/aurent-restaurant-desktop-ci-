@@ -35,16 +35,19 @@ public class KitchenStationServiceImpl implements KitchenStationService {
     }
 
     @Override
+    @Transactional
     public StationResponse create(Integer storeId, SaveStationRequest request) {
         return createHandler.handle(storeId, request);
     }
 
     @Override
+    @Transactional
     public StationResponse update(UUID stationId, SaveStationRequest request) {
         return updateHandler.handle(stationId, request);
     }
 
     @Override
+    @Transactional
     public void deactivate(UUID stationId) {
         deactivateHandler.handle(stationId);
     }

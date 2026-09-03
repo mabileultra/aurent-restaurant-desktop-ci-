@@ -36,6 +36,7 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
     private final UpdateKitchenTicketStatusHandler updateStatusHandler;
 
     @Override
+    @Transactional
     public OrderResponse send(UUID orderId) {
         return sendHandler.handle(orderId);
     }
@@ -61,6 +62,7 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
     }
 
     @Override
+    @Transactional
     public KitchenTicketResponse updateStatus(UUID ticketId, KitchenTicketStatus status) {
         return updateStatusHandler.handle(ticketId, status);
     }

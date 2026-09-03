@@ -31,6 +31,7 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderCancelHandler cancelHandler;
 
     @Override
+    @Transactional
     public OrderResponse open(Integer tableId, OpenOrderRequest request) {
         return openHandler.handle(tableId, request);
     }
@@ -42,26 +43,31 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request) {
         return updateGuestsHandler.handle(orderId, request);
     }
 
     @Override
+    @Transactional
     public OrderResponse addItem(UUID orderId, AddOrderItemRequest request) {
         return addItemHandler.handle(orderId, request);
     }
 
     @Override
+    @Transactional
     public OrderResponse updateItem(UUID orderId, UUID itemId, UpdateOrderItemRequest request) {
         return updateItemHandler.handle(orderId, itemId, request);
     }
 
     @Override
+    @Transactional
     public OrderResponse removeItem(UUID orderId, UUID itemId) {
         return removeItemHandler.handle(orderId, itemId);
     }
 
     @Override
+    @Transactional
     public void cancel(UUID orderId) {
         cancelHandler.handle(orderId);
     }

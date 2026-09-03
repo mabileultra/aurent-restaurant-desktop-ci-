@@ -1,4 +1,5 @@
 import { useStockInventoryCreatePage } from '../hooks/useStockInventoryCreatePage';
+import { useStockFlowPaths } from '../stockFlowPaths';
 import StockDocumentPageHeader from '../components/document-create/StockDocumentPageHeader';
 import StockInventoryMetaPanel from '../components/document-create/StockInventoryMetaPanel';
 import StockInventoryLinesEditor from '../components/document-create/StockInventoryLinesEditor';
@@ -21,11 +22,12 @@ export default function StockInventoryCreatePage() {
     removeLine,
     submit,
   } = useStockInventoryCreatePage();
+  const paths = useStockFlowPaths();
 
   return (
     <div className="admin-page admin-page--full space-y-6">
       <StockDocumentPageHeader
-        backTo="/reports/stock/inventories"
+        backTo={paths.inventoriesReport}
         backLabel={t('stockReports.inventoriesTitle')}
         title={t('stockReports.inventoryCreateTitle')}
       />

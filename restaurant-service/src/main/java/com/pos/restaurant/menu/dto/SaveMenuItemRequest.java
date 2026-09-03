@@ -5,8 +5,10 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.UUID;
 
 public record SaveMenuItemRequest(
@@ -17,5 +19,7 @@ public record SaveMenuItemRequest(
     Boolean available,
     @Min(0) Integer sortOrder,
     UUID stationId,
-    java.util.List<java.util.UUID> modifierGroupIds
+    @Size(max = 80) String category,
+    String imageUrl,
+    List<UUID> modifierGroupIds
 ) {}

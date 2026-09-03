@@ -1,4 +1,5 @@
 import { useStockReceiptCreatePage } from '../hooks/useStockReceiptCreatePage';
+import { useStockFlowPaths } from '../stockFlowPaths';
 import StockDocumentPageHeader from '../components/document-create/StockDocumentPageHeader';
 import StockReceiptMetaPanel from '../components/document-create/StockReceiptMetaPanel';
 import StockReceiptLinesEditor from '../components/document-create/StockReceiptLinesEditor';
@@ -27,11 +28,12 @@ export default function StockReceiptCreatePage() {
     removeLine,
     submit,
   } = useStockReceiptCreatePage();
+  const paths = useStockFlowPaths();
 
   return (
     <div className="admin-page admin-page--full space-y-6">
       <StockDocumentPageHeader
-        backTo="/reports/stock/receipts"
+        backTo={paths.receiptsReport}
         backLabel={t('stockReports.receiptsTitle')}
         title={t('stockReports.receiptCreateTitle')}
       />

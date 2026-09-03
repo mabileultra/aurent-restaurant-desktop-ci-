@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v11-menu-image-category" author="aurent">
+        <addColumn tableName="menu_items">
+            <column name="category" type="varchar(80)"/>
+            <column name="image_url" type="text"/>
+        </addColumn>
+        <createIndex indexName="idx_menu_items_store_category" tableName="menu_items">
+            <column name="company_id"/>
+            <column name="store_id"/>
+            <column name="category"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -5,17 +5,19 @@ import ReportTableCard from '../components/ReportTableCard';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { useLowStockReportPage } from '../hooks/useLowStockReportPage';
+import { useStockFlowPaths } from '../../stock/stockFlowPaths';
 
 export default function LowStockReportPage() {
   const { t } = useTranslation();
   const r = useLowStockReportPage();
+  const paths = useStockFlowPaths();
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.lowStockTitle')}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.lowStockSubtitle')}</p>
-        <Link to="/reports/stock" className="mt-2 inline-block text-sm text-emerald-700 hover:underline dark:text-emerald-400">
+        <Link to={paths.stockDashboard} className="mt-2 inline-block text-sm text-emerald-700 hover:underline dark:text-emerald-400">
           ← {t('stockReports.backDashboard')}
         </Link>
       </div>

@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { BaseButton } from '../../components/ui';
+import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
+import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
 import { RST_ADMIN_NAV } from './restaurantAdminNav';
 import '../shared/styles/restaurant-tokens.css';
 import '../admin/styles/admin-shell.css';
@@ -10,6 +12,8 @@ import '../admin/styles/admin-shell.css';
 export default function RestaurantAdminLayout() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const { businessType } = useCompanyBusinessType();
+  const restaurantOnly = isRestaurantWorldBusiness(businessType);
 
   return (
     <div className="rst-app rst-shell">
@@ -33,7 +37,9 @@ export default function RestaurantAdminLayout() {
         <div className="rst-shell__footer">
           <Link to="/rst/pos">{t('rst.pos.toFloor')}</Link>
           <Link to="/rst/kitchen">{t('rst.pos.toKitchen')}</Link>
-          <Link to="/dashboard">{t('rst.admin.toPlatform')}</Link>
+          {!restaurantOnly ? (
+            <Link to="/dashboard">{t('rst.admin.toPlatform')}</Link>
+          ) : null}
         </div>
       </aside>
       <div className="rst-shell__main">

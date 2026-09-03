@@ -21,6 +21,8 @@ public class MenuItemResponseFactory {
             base.available(),
             base.sortOrder(),
             base.stationId(),
+            base.category(),
+            base.imageUrl(),
             groupIds == null ? List.of() : List.copyOf(groupIds)
         );
     }

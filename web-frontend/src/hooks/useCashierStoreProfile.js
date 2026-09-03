@@ -17,7 +17,7 @@ export function useCashierStoreProfile() {
   });
 
   const businessType = normalizeBusinessTypeCode(query.data?.businessType);
-  const isRestaurant = businessType === 'RESTAURANT' || onRestaurantRoute;
+  const isRestaurant = businessType === 'RESTAURANT' || businessType === 'CANTEEN' || onRestaurantRoute;
   const isPharmacy = businessType === 'PHARMACY' || location.pathname.startsWith('/cashier/pharmacy');
   const registerPath = resolveCashierRegisterPath(query.data?.businessType);
 

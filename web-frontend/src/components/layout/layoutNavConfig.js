@@ -155,15 +155,6 @@ export const USER_CHILDREN = [
   { to: '/users/barcode-print', key: 'usersBarcodePrint', icon: ICONS.Barcode, moduleId: 'usersBarcodePrint' },
 ];
 
-export const RESTAURANT_ROUTES = ['/rst/admin/halls', '/rst/kitchen', '/rst/admin/booking', '/rst/admin/delivery'];
-
-export const RESTAURANT_CHILDREN = [
-  { to: '/rst/admin/halls', key: 'rstOs', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantFloor' },
-  { to: '/rst/kitchen', key: 'restaurantKitchen', icon: ICONS.UtensilsCrossed, moduleId: 'restaurantKitchen' },
-  { to: '/rst/admin/booking', key: 'restaurantBooking', icon: ICONS.CalendarClock, moduleId: 'restaurantBooking' },
-  { to: '/rst/admin/delivery', key: 'restaurantDelivery', icon: ICONS.Truck, moduleId: 'restaurantDelivery' },
-];
-
 export const REST_NAV = [
   { to: '/stores', icon: ICONS.Store, key: 'stores', moduleId: 'stores' },
 ];

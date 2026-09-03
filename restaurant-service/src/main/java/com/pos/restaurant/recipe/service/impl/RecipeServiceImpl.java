@@ -54,6 +54,7 @@ public class RecipeServiceImpl implements RecipeService {
     }
 
     @Override
+    @Transactional
     public RecipeResponse save(UUID menuItemId, SaveRecipeRequest request) {
         return saveHandler.handle(menuItemId, request);
     }

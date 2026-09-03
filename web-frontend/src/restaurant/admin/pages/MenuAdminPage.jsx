@@ -1,8 +1,10 @@
+import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { useMenuAdminPage } from '../hooks/useMenuAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
+import '../styles/tech-card.css';
 
 export default function MenuAdminPage() {
   const p = useMenuAdminPage();
@@ -18,6 +20,7 @@ export default function MenuAdminPage() {
           <h1 className="rst-coming__title">{p.t('rst.admin.menuTitle')}</h1>
           <p className="rst-coming__text mb-0">{p.t('rst.admin.menuSubtitle')}</p>
         </div>
+        <Link className="rst-shell__footer-link" to="/rst/admin/recipes">{p.t('rst.admin.toRecipes')}</Link>
       </div>
 
       {p.workspace.canPickStore ? (
@@ -43,9 +46,17 @@ export default function MenuAdminPage() {
           p.saveMutation.mutate();
         }}
       >
-        <label className="col-md-4">
+        <label className="col-md-3">
           <span className="d-block mb-1 small">{p.t('rst.admin.dishName')}</span>
           <BaseInput value={p.form.name} onChange={(e) => p.setForm({ ...p.form, name: e.target.value })} required />
+        </label>
+        <label className="col-md-2">
+          <span className="d-block mb-1 small">{p.t('rst.admin.dishCategory')}</span>
+          <BaseInput
+            value={p.form.category}
+            placeholder={p.t('rst.admin.dishCategoryHint')}
+            onChange={(e) => p.setForm({ ...p.form, category: e.target.value })}
+          />
         </label>
         <label className="col-md-2">
           <span className="d-block mb-1 small">{p.t('rst.admin.sku')}</span>
@@ -75,6 +86,20 @@ export default function MenuAdminPage() {
             ))}
           </select>
         </label>
+        <label className="col-md-3">
+          <span className="d-block mb-1 small">{p.t('rst.admin.dishImage')}</span>
+          <input type="file" accept="image/*" onChange={(e) => p.onImageFile(e.target.files?.[0])} />
+          {p.form.imageUrl ? (
+            <button type="button" className="btn btn-link btn-sm px-0" onClick={() => p.setForm({ ...p.form, imageUrl: '' })}>
+              {p.t('rst.admin.clearImage')}
+            </button>
+          ) : null}
+        </label>
+        {p.form.imageUrl ? (
+          <div className="col-md-2">
+            <img src={p.form.imageUrl} alt="" className="rst-tech__preview" />
+          </div>
+        ) : null}
         <label className="col-md-4">
           <span className="d-block mb-1 small">{p.t('rst.admin.modifierGroups')}</span>
           <div className="d-flex flex-wrap gap-2">
@@ -103,19 +128,26 @@ export default function MenuAdminPage() {
       <div className="rst-halls__table-list">
         {p.items.filter((item) => item.active).map((item) => (
           <div key={item.id} className="rst-halls__row">
-            <div>
-              <strong>{item.name}</strong>
-              <div className="rst-halls__row-meta">
-                {fmtMoneyCompact(item.price)}
-                {item.sku ? ` · ${item.sku}` : ''}
-                {p.stations.find((s) => s.id === item.stationId)?.name ? ` · ${p.stations.find((s) => s.id === item.stationId).name}` : ''}
-                {item.available ? '' : ` · ${p.t('rst.admin.unavailable')}`}
+            <div className="d-flex gap-3 align-items-center">
+              {item.imageUrl ? <img src={item.imageUrl} alt="" className="rst-tech__dish-thumb" /> : null}
+              <div>
+                <strong>{item.name}</strong>
+                <div className="rst-halls__row-meta">
+                  {item.category ? `${item.category} · ` : ''}
+                  {fmtMoneyCompact(item.price)}
+                  {item.sku ? ` · ${item.sku}` : ''}
+                  {p.stations.find((s) => s.id === item.stationId)?.name ? ` · ${p.stations.find((s) => s.id === item.stationId).name}` : ''}
+                  {item.available ? '' : ` · ${p.t('rst.admin.unavailable')}`}
+                </div>
               </div>
             </div>
             <div className="d-flex gap-2">
               <BaseButton type="button" variant="ghost" onClick={() => p.startEdit(item)}>
                 {p.t('common.edit')}
               </BaseButton>
+              <Link to="/rst/admin/recipes" className="btn btn-sm btn-outline-secondary">
+                {p.t('rst.admin.toRecipe')}
+              </Link>
               <BaseButton
                 type="button"
                 variant="ghost"

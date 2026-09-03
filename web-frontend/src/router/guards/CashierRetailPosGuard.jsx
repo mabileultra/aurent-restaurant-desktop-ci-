@@ -24,7 +24,7 @@ export default function CashierRetailPosGuard({ children }) {
   }
 
   const type = normalizeBusinessTypeCode(store?.businessType);
-  if (type === 'RESTAURANT') {
+  if (type === 'RESTAURANT' || type === 'CANTEEN') {
     return <Navigate to="/rst/pos" replace />;
   }
   if (type === 'PHARMACY') {

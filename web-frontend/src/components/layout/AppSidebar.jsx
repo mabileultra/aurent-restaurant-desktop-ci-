@@ -65,11 +65,6 @@ export default function AppSidebar(props) {
     reportsStockNav,
     reportsHubActive,
     usersNav,
-    restaurantNav,
-    showRestaurant,
-    inRestaurantSection,
-    restaurantOpen,
-    setRestaurantOpen,
     visibleRest,
   } = props;
 
@@ -256,23 +251,6 @@ export default function AppSidebar(props) {
                 />
               ) : (
                 <SidebarGroupCompact t={t} items={usersNav} />
-              )
-            : null}
-
-          {showRestaurant
-            ? navLabelsVisible ? (
-                <SidebarGroupExpanded
-                  t={t}
-                  label={t('nav.restaurantGroup')}
-                  icon={ICONS.UtensilsCrossed}
-                  isOpen={restaurantOpen}
-                  onToggle={() => setRestaurantOpen((o) => !o)}
-                  isActive={inRestaurantSection}
-                  items={restaurantNav}
-                  subLinkClass={subLinkClass}
-                />
-              ) : (
-                <SidebarGroupCompact t={t} items={restaurantNav} />
               )
             : null}
 

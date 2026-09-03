@@ -35,16 +35,19 @@ public class FloorHallServiceImpl implements FloorHallService {
     }
 
     @Override
+    @Transactional
     public HallResponse create(Integer storeId, SaveHallRequest request) {
         return createHandler.handle(storeId, request);
     }
 
     @Override
+    @Transactional
     public HallResponse update(Integer hallId, SaveHallRequest request) {
         return updateHandler.handle(hallId, request);
     }
 
     @Override
+    @Transactional
     public void deactivate(Integer hallId) {
         deactivateHandler.handle(hallId);
     }

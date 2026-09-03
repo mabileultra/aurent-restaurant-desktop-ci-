@@ -89,3 +89,23 @@
   border-color: var(--rst-accent);
   box-shadow: 0 0 0 3px var(--rst-accent-soft);
 }
+
+/* Shared stock/report pages mounted inside OS keep dark shell look */
+.rst-app .rst-embedded-stock .bg-white,
+.rst-app .rst-embedded-stock .bg-slate-50,
+.rst-app .rst-embedded-stock .bg-slate-100,
+.rst-app .rst-embedded-stock .dark\:bg-slate-950,
+.rst-app .rst-embedded-stock .dark\:bg-slate-900 {
+  background-color: var(--rst-surface) !important;
+}
+
+.rst-app .rst-embedded-stock .shadow,
+.rst-app .rst-embedded-stock .shadow-sm {
+  box-shadow: var(--rst-shadow) !important;
+}
+
+.rst-app .rst-embedded-stock .text-slate-900,
+.rst-app .rst-embedded-stock .text-black,
+.rst-app .rst-embedded-stock .dark\:text-white {
+  color: var(--rst-ink) !important;
+}

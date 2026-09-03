@@ -61,16 +61,19 @@ public class MenuItemServiceImpl implements MenuItemService {
     }
 
     @Override
+    @Transactional
     public MenuItemResponse create(Integer storeId, SaveMenuItemRequest request) {
         return createHandler.handle(storeId, request);
     }
 
     @Override
+    @Transactional
     public MenuItemResponse update(UUID itemId, SaveMenuItemRequest request) {
         return updateHandler.handle(itemId, request);
     }
 
     @Override
+    @Transactional
     public void deactivate(UUID itemId) {
         deactivateHandler.handle(itemId);
     }

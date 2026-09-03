@@ -35,21 +35,25 @@ public class FloorTableServiceImpl implements FloorTableService {
     }
 
     @Override
+    @Transactional
     public TableResponse create(Integer hallId, SaveTableRequest request) {
         return createHandler.handle(hallId, request);
     }
 
     @Override
+    @Transactional
     public TableResponse update(Integer tableId, SaveTableRequest request) {
         return updateHandler.handle(tableId, request);
     }
 
     @Override
+    @Transactional
     public List<TableResponse> updateLayout(Integer hallId, UpdateTableLayoutRequest request) {
         return layoutUpdateHandler.handle(hallId, request);
     }
 
     @Override
+    @Transactional
     public void deactivate(Integer tableId) {
         deactivateHandler.handle(tableId);
     }

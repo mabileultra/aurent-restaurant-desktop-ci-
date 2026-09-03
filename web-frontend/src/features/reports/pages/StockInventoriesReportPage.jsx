@@ -9,10 +9,12 @@ import ReportDateBar from '../../../components/shared/ReportDateBar';
 import ReportExportButton from '../components/ReportExportButton';
 import ReportStoreSelect from '../components/ReportStoreSelect';
 import { useStockInventoriesReportPage } from '../hooks/useStockInventoriesReportPage';
+import { useStockFlowPaths } from '../../stock/stockFlowPaths';
 
 export default function StockInventoriesReportPage() {
   const { t } = useTranslation();
   const r = useStockInventoriesReportPage();
+  const paths = useStockFlowPaths();
 
   return (
     <div className="space-y-6">
@@ -27,7 +29,7 @@ export default function StockInventoriesReportPage() {
             filenamePrefix="stock_inventories"
             disabled={!r.from || !r.to}
           />
-          <Link to="/stock/inventories/new" className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+          <Link to={paths.inventoriesNew} className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
             <Plus size={16} />
             {t('stockReports.newInventoryDoc')}
           </Link>

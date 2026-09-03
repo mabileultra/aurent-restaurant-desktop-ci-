@@ -1,4 +1,5 @@
 import { Filter, Plus } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import {
   BaseButton,
   ErrorBanner,
@@ -8,15 +9,28 @@ import {
 import StockProductsTable from '../components/StockProductsTable';
 import StockProductsModals from '../components/StockProductsModals';
 import { useStockProductsPage } from '../hooks/useStockProductsPage';
+import { useStockFlowPaths } from '../stockFlowPaths';
 
 export default function StockProductsPage() {
   const p = useStockProductsPage();
+  const paths = useStockFlowPaths();
+  const inRst = paths.products.startsWith('/rst/');
 
   return (
     <PageLayout
       title={p.t('stockModule.title')}
       actions={(
         <>
+          {inRst ? (
+            <>
+              <Link to={paths.inventoriesNew} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+                {p.t('rst.admin.stockInventory')}
+              </Link>
+              <Link to={paths.receiptsNew} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+                {p.t('rst.admin.stockReceipt')}
+              </Link>
+            </>
+          ) : null}
           {p.manage && (
             <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
               <Plus size={16} />

@@ -46,6 +46,8 @@ public class MenuItemUpdateHandler {
             item.setSortOrder(request.sortOrder());
         }
         item.setStationId(stationLookup.resolveOptional(request.stationId(), companyId, item.getStoreId()));
+        item.setCategory(blankToNull(request.category()));
+        item.setImageUrl(blankToNull(request.imageUrl()));
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);
         return itemMapper.toResponse(item);

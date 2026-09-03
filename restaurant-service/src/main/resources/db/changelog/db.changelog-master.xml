@@ -15,5 +15,6 @@
     <include file="db/changelog/v8-recipes.xml"/>
     <include file="db/changelog/v9-shifts.xml"/>
     <include file="db/changelog/v10-booking.xml"/>
+    <include file="db/changelog/v11-menu-image-category.xml"/>
 
 </databaseChangeLog>
