@@ -1,34 +1,29 @@
 /** Данные для QR / фискального признака на чеке. */
 export { fmtMoney, fmtQty } from './formatMoney';
 
-/** Уникальный фискальный признак: из Multikassa, иначе локальный fallback. */
-export function buildFiscalSign(sale) {
-  if (sale?.fiscalSign) {
-    return String(sale.fiscalSign);
-  }
-  const base = `${sale.receiptNumber}|${sale.id}|${sale.totalAmount}|${sale.createdAt}`;
-  let h = 0;
-  for (let i = 0; i < base.length; i += 1) {
-    h = (Math.imul(31, h) + base.charCodeAt(i)) >>> 0;
-  }
-  return String(h % 1_000_000_000_000).padStart(12, '0');
+function isSyntheticFiscalSign(sign) {
+  const s = String(sign || '').trim();
+  if (!s) return true;
+  if (/^MK-\d+$/i.test(s)) return true;
+  if (/^LOCAL-/i.test(s)) return true;
+  return false;
 }
 
-/** Payload для QR (проверка чека / призовые игры). */
+/** Настоящий фискальный признак Multikassa/ГНК — без локальных MK-/hash fallback. */
+export function buildFiscalSign(sale) {
+  if (sale?.fiscalSign && !isSyntheticFiscalSign(sale.fiscalSign)) {
+    return String(sale.fiscalSign);
+  }
+  return '';
+}
+
+/** QR только из ответа Multikassa — самодельный ofd.soliq.uz с фейковым sign не строим. */
 export function buildQrPayload(sale) {
   if (sale?.fiscalQrUrl) {
-    return String(sale.fiscalQrUrl);
+    const url = String(sale.fiscalQrUrl).trim();
+    if (url) return url;
   }
-  const customBase = import.meta.env.VITE_FISCAL_QR_BASE?.trim();
-  const sign = buildFiscalSign(sale);
-  const total = Number(sale.totalAmount) || 0;
-  const r = encodeURIComponent(sale.receiptNumber || '');
-  if (customBase) {
-    const sep = customBase.includes('?') ? '&' : '?';
-    return `${customBase}${sep}r=${r}&s=${total}&f=${sign}`;
-  }
-  const t = sale.createdAt ? new Date(sale.createdAt).getTime() : Date.now();
-  return `https://ofd.soliq.uz/check?r=${r}&s=${total}&t=${t}&f=${sign}`;
+  return '';
 }
 
 /** Отдельный документ возврата (печатается при оформлении возврата на кассе). */

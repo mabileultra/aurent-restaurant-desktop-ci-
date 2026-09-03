@@ -1,6 +1,10 @@
 import { buildSaleOperationBody } from './buildMultikassaOperations';
 import { postOperation } from './multikassaHttpClient';
-import { parseMultikassaOperationResult, toSaleFiscalPayload } from './parseMultikassaResult';
+import {
+  hasRealFiscalProof,
+  parseMultikassaOperationResult,
+  toSaleFiscalPayload,
+} from './parseMultikassaResult';
 import { FISCAL_STATUS } from './multikassaConstants';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
@@ -9,9 +13,32 @@ function buildIdempotencyKey({ shiftId, clientSaleId }) {
   return `sale:${Date.now()}`;
 }
 
+function pendingPayload(body, idempotencyKey, message) {
+  return {
+    fiscalStatus: FISCAL_STATUS.PENDING,
+    fiscalSign: null,
+    fiscalReceiptSeq: null,
+    multikassaSaleId: null,
+    fiscalQrUrl: null,
+    fiscalError: message || 'Pending fiscal sync',
+    multikassaRetryBody: body,
+    clientOperationId: idempotencyKey,
+  };
+}
+
+function rejectIncompleteFiscal(parsed) {
+  const err = new Error(
+    parsed?.fiscalError ||
+      'Multikassa не вернула фискальный признак. Чек не фискализирован — продажа отменена.',
+  );
+  err.code = 'MULTIKASSA_FISCAL_FAILED';
+  err.data = parsed?.raw ?? null;
+  throw err;
+}
+
 /**
  * Фискализация продажи на Multikassa (до commit в POS).
- * POS-offline: всё равно пробуем localhost ФМ; при ошибке → PENDING_FISCAL.
+ * Без настоящего fiscalSign / saleId / QR — не помечаем как FISCALIZED (никаких MK-*).
  */
 export async function fiscalizeSaleBeforeCommit({
   capabilities,
@@ -42,40 +69,32 @@ export async function fiscalizeSaleBeforeCommit({
   try {
     const raw = await postOperation(capabilities.baseUrl, body);
     const parsed = parseMultikassaOperationResult(raw);
-    if (!parsed.fiscalSign && !parsed.multikassaSaleId) {
-      parsed.fiscalSign = `MK-${Date.now()}`;
+
+    if (!hasRealFiscalProof(parsed) || parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
+      if (offline) {
+        return pendingPayload(body, idempotencyKey, parsed.fiscalError);
+      }
+      if (capabilities.requireBeforeSale) {
+        rejectIncompleteFiscal(parsed);
+      }
+      return pendingPayload(body, idempotencyKey, parsed.fiscalError);
     }
-    const payload = toSaleFiscalPayload(parsed);
+
     return {
-      ...payload,
+      ...toSaleFiscalPayload(parsed),
       multikassaRetryBody: body,
       clientOperationId: idempotencyKey,
     };
   } catch (err) {
+    if (err?.code === 'MULTIKASSA_FISCAL_FAILED') {
+      throw err;
+    }
     if (offline) {
-      return {
-        fiscalStatus: FISCAL_STATUS.PENDING,
-        fiscalSign: null,
-        fiscalReceiptSeq: null,
-        multikassaSaleId: null,
-        fiscalQrUrl: null,
-        fiscalError: err?.message || 'Pending fiscal sync',
-        multikassaRetryBody: body,
-        clientOperationId: idempotencyKey,
-      };
+      return pendingPayload(body, idempotencyKey, err?.message);
     }
     if (capabilities.requireBeforeSale) {
       throw err;
     }
-    return {
-      fiscalStatus: FISCAL_STATUS.PENDING,
-      fiscalSign: null,
-      fiscalReceiptSeq: null,
-      multikassaSaleId: null,
-      fiscalQrUrl: null,
-      fiscalError: err?.message || 'Pending fiscal sync',
-      multikassaRetryBody: body,
-      clientOperationId: idempotencyKey,
-    };
+    return pendingPayload(body, idempotencyKey, err?.message);
   }
 }

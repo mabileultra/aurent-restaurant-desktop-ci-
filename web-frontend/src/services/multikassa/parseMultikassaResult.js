@@ -15,7 +15,7 @@ function pick(obj, keys) {
 
 /** Рекурсивный поиск первого непустого значения по списку ключей. */
 function deepPick(node, keys, depth = 0) {
-  if (!isPlainObject(node) || depth > 4) return null;
+  if (!isPlainObject(node) || depth > 6) return null;
   const direct = pick(node, keys);
   if (direct) return direct;
   for (const value of Object.values(node)) {
@@ -37,6 +37,8 @@ function unwrapRoot(raw) {
   if (!isPlainObject(raw)) return raw;
   if (isPlainObject(raw.data)) return raw.data;
   if (isPlainObject(raw.Data)) return raw.Data;
+  if (isPlainObject(raw.result)) return raw.result;
+  if (isPlainObject(raw.Result)) return raw.Result;
   return raw;
 }
 
@@ -48,6 +50,8 @@ const SIGN_KEYS = [
   'Fiscalsign',
   'FISCAL_SIGN',
   'AppletFiscalSign',
+  'GNKFiscalSign',
+  'gnk_fiscal_sign',
 ];
 
 const SALE_ID_KEYS = [
@@ -75,15 +79,68 @@ const QR_KEYS = [
   'QrCodeUrl',
   'qrCodeUrl',
   'qr_url',
+  'QRCodeUrl',
+  'qrCodeURL',
   'QR',
   'QrCode',
   'FiscalQR',
   'fiscalQrUrl',
+  'CheckUrl',
+  'checkUrl',
+  'OfdUrl',
+  'ofdUrl',
 ];
+
+/** Наш старый fallback — не настоящий признак ГНК. */
+export function isSyntheticFiscalSign(sign) {
+  const s = String(sign || '').trim();
+  if (!s) return true;
+  if (/^MK-\d+$/i.test(s)) return true;
+  if (/^LOCAL-/i.test(s)) return true;
+  return false;
+}
+
+export function hasRealFiscalProof(parsed) {
+  if (!parsed) return false;
+  const sign = String(parsed.fiscalSign || '').trim();
+  const saleId = String(parsed.multikassaSaleId || '').trim();
+  const qr = String(parsed.fiscalQrUrl || '').trim();
+  if (sign && !isSyntheticFiscalSign(sign)) return true;
+  if (saleId && !isSyntheticFiscalSign(saleId)) return true;
+  if (qr && /ofd\.soliq\.uz|mkfiscal|multikassa/i.test(qr)) return true;
+  return false;
+}
+
+function detectOperationError(root) {
+  if (!isPlainObject(root)) return null;
+  const code = root.Code ?? root.code ?? root.ErrorCode ?? root.errorCode;
+  const message =
+    pick(root, ['Message', 'message', 'Error', 'error', 'error_message', 'ErrorMessage']) || null;
+  if (code != null && Number(code) !== 0 && String(code).toUpperCase() !== 'OK') {
+    return message || `Multikassa error code ${code}`;
+  }
+  if (root.Success === false || root.success === false || root.ok === false) {
+    return message || 'Multikassa operation failed';
+  }
+  return null;
+}
 
 /** Нормализация ответа Multikassa operations → payload для нашего /sales. */
 export function parseMultikassaOperationResult(raw) {
   const root = unwrapRoot(raw);
+  const opError = detectOperationError(isPlainObject(raw) ? raw : {}) || detectOperationError(root);
+  if (opError) {
+    return {
+      fiscalStatus: FISCAL_STATUS.FAILED,
+      fiscalSign: null,
+      fiscalReceiptSeq: null,
+      multikassaSaleId: null,
+      fiscalQrUrl: null,
+      fiscalError: opError,
+      raw,
+    };
+  }
+
   const nestedCandidates = [
     root,
     root?.Result,
@@ -94,6 +151,10 @@ export function parseMultikassaOperationResult(raw) {
     root?.receipt,
     root?.Operation,
     root?.operation,
+    root?.Response,
+    root?.response,
+    root?.Data,
+    root?.data,
   ].filter(isPlainObject);
 
   let fiscalSign = null;
@@ -113,12 +174,15 @@ export function parseMultikassaOperationResult(raw) {
   fiscalReceiptSeq = fiscalReceiptSeq || deepPick(root, SEQ_KEYS);
   fiscalQrUrl = fiscalQrUrl || deepPick(root, QR_KEYS);
 
-  // Не брать голый `id` из корня — часто это id операции, не ReceiptSaleId.
   if (!multikassaSaleId && isPlainObject(root?.Receipt)) {
     multikassaSaleId = pick(root.Receipt, SALE_ID_KEYS);
   }
 
-  return {
+  if (isSyntheticFiscalSign(fiscalSign)) {
+    fiscalSign = null;
+  }
+
+  const parsed = {
     fiscalStatus: FISCAL_STATUS.FISCALIZED,
     fiscalSign,
     fiscalReceiptSeq,
@@ -127,11 +191,24 @@ export function parseMultikassaOperationResult(raw) {
     fiscalError: null,
     raw,
   };
+
+  if (!hasRealFiscalProof(parsed)) {
+    return {
+      ...parsed,
+      fiscalStatus: FISCAL_STATUS.FAILED,
+      fiscalSign: null,
+      fiscalError:
+        'Multikassa не вернула фискальный признак / ID чека. Проверьте ФМ, смену и ответ агента.',
+    };
+  }
+
+  parsed.fiscalStatus = FISCAL_STATUS.FISCALIZED;
+  return parsed;
 }
 
 export function toSaleFiscalPayload(parsed) {
   return {
-    fiscalStatus: parsed.fiscalStatus || FISCAL_STATUS.FISCALIZED,
+    fiscalStatus: parsed.fiscalStatus || FISCAL_STATUS.PENDING,
     fiscalSign: parsed.fiscalSign || null,
     fiscalReceiptSeq: parsed.fiscalReceiptSeq || null,
     multikassaSaleId: parsed.multikassaSaleId || null,

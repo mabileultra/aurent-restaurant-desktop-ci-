@@ -1,10 +1,15 @@
 import { FISCAL_STATUS } from './multikassaConstants';
 import { postOperation } from './multikassaHttpClient';
-import { parseMultikassaOperationResult, toSaleFiscalPayload } from './parseMultikassaResult';
+import {
+  hasRealFiscalProof,
+  parseMultikassaOperationResult,
+  toSaleFiscalPayload,
+} from './parseMultikassaResult';
 import { loadMultikassaCapabilities } from './loadMultikassaCapabilities';
 
 /**
  * Дожим PENDING_FISCAL перед sync: повторный POST operations по сохранённому body.
+ * Без реального признака — оставляем PENDING (не подставляем MK-*).
  */
 export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegisterId } = {}) {
   const fiscal = payload?.fiscal;
@@ -24,8 +29,14 @@ export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegist
   try {
     const raw = await postOperation(capabilities.baseUrl, retryBody);
     const parsed = parseMultikassaOperationResult(raw);
-    if (!parsed.fiscalSign && !parsed.multikassaSaleId) {
-      parsed.fiscalSign = `MK-${Date.now()}`;
+    if (!hasRealFiscalProof(parsed) || parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
+      return {
+        ...payload,
+        fiscal: {
+          ...fiscal,
+          fiscalError: parsed.fiscalError || fiscal.fiscalError,
+        },
+      };
     }
     const nextFiscal = {
       ...toSaleFiscalPayload(parsed),

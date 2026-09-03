@@ -330,7 +330,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={`№${sale.receiptNumber}`} />
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
-              <span className="receipt-fiscal-sign receipt-row__value">{fiscalSign}</span>
+              <span className="receipt-fiscal-sign receipt-row__value">
+                {fiscalSign || '—'}
+              </span>
             </div>
           </section>
         </>
@@ -338,7 +340,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
 
       {(isOn('qrCode') || isOn('footer')) && (
         <footer className="receipt-section mt-4 border-t border-dashed border-black pt-3 text-center">
-          {isOn('qrCode') ? <ReceiptQrCode value={qrValue} sizePx={112} /> : null}
+          {isOn('qrCode') && qrValue ? <ReceiptQrCode value={qrValue} sizePx={112} /> : null}
           {isOn('footer') ? (
             <>
               <p className="receipt-footer mt-2">{t('fiscalReceipt.footer')}</p>

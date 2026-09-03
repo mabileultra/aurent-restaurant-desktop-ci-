@@ -93,6 +93,17 @@ public class SaleFiscalApplier {
         if (!StringUtils.hasText(fiscal.fiscalSign()) && !StringUtils.hasText(fiscal.multikassaSaleId())) {
             throw PosExceptions.badRequest("Нет фискального признака / ID чека Multikassa");
         }
+        if (isSyntheticFiscalSign(fiscal.fiscalSign())) {
+            throw PosExceptions.badRequest("Поддельный фискальный признак (MK-*) не принимается");
+        }
+    }
+
+    private static boolean isSyntheticFiscalSign(String sign) {
+        if (!StringUtils.hasText(sign)) {
+            return false;
+        }
+        String s = sign.trim();
+        return s.regionMatches(true, 0, "MK-", 0, 3) || s.regionMatches(true, 0, "LOCAL-", 0, 6);
     }
 
     private static String normalizeStatus(String raw) {

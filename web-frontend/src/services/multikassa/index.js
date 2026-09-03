@@ -20,7 +20,12 @@ export {
   buildXReportBody,
   buildRefundBody,
 } from './buildMultikassaOperations';
-export { parseMultikassaOperationResult, toSaleFiscalPayload } from './parseMultikassaResult';
+export {
+  parseMultikassaOperationResult,
+  toSaleFiscalPayload,
+  hasRealFiscalProof,
+  isSyntheticFiscalSign,
+} from './parseMultikassaResult';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';
 export { fiscalizeShiftOperation } from './fiscalizeShiftOperation';
 export { fiscalizeRefundBeforeCommit } from './fiscalizeRefundBeforeCommit';
