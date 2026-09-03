@@ -40,7 +40,8 @@ public final class QuantityValidator {
         switch (saleType) {
             case WEIGHT -> validateWeightMinimum(rules.unitCode(), q);
             case PIECE, SERVICE -> {
-                if (!matchesScale(q, 0)) {
+                // allowFraction=true: дробное списание упаковки (аптека, шт из пачки)
+                if (!rules.allowFraction() && !matchesScale(q, 0)) {
                     throw new BadRequestException(
                         saleType == SaleType.SERVICE
                             ? "Для услуги количество указывается целым числом"

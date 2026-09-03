@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tasnifApi } from '../../../api';
-import { resolveLabelBarcodeFromTasnif } from '../../../utils/labelBarcode';
+import { resolveCatalogBarcodeFromTasnif } from '../../../utils/labelBarcode';
+import {
+  buildTasnifExternalId,
+  buildTasnifSku,
+  isAutoTasnifExternalId,
+  isAutoTasnifSku,
+} from '../../../utils/tasnifProductIds';
 
 export function useTasnifSearchPanel({ setValue, getValues, isEdit }) {
   const { t, i18n } = useTranslation();
@@ -20,10 +26,10 @@ export function useTasnifSearchPanel({ setValue, getValues, isEdit }) {
     if (item.mxik) {
       setValue('ikpu', item.mxik, { shouldDirty: true });
     }
-    const barcode = resolveLabelBarcodeFromTasnif(item, searchQuery, pkg);
-    if (barcode) {
-      setValue('barcode', barcode, { shouldDirty: true });
-    }
+
+    const barcode = resolveCatalogBarcodeFromTasnif(item, searchQuery, pkg);
+    setValue('barcode', barcode, { shouldDirty: true });
+
     if (pkg) {
       const unit =
         lang === 'ru'
@@ -36,16 +42,27 @@ export function useTasnifSearchPanel({ setValue, getValues, isEdit }) {
         setValue('unitMeasureCode', pkg.packageType, { shouldDirty: true });
       }
       if (pkg.code) {
-        setValue('packageCode', pkg.code, { shouldDirty: true });
+        setValue('packageCode', String(pkg.code).trim(), { shouldDirty: true });
       }
     }
+
     setValue('markedProduct', !!item.markedProduct, { shouldDirty: true });
+
     if (!isEdit && item.mxik) {
-      const sku = getValues('sku');
-      if (!sku?.trim()) {
-        setValue('sku', `IKPU-${item.mxik}`, { shouldDirty: true });
+      const packageCode = pkg?.code != null ? String(pkg.code).trim() : '';
+      const nextSku = buildTasnifSku(item.mxik, packageCode);
+      const currentSku = getValues('sku');
+      if (!currentSku?.trim() || isAutoTasnifSku(currentSku)) {
+        setValue('sku', nextSku, { shouldDirty: true, shouldValidate: true });
+      }
+
+      const nextExtId = buildTasnifExternalId(item.mxik, packageCode);
+      const currentExtId = getValues('externalProductId');
+      if (isAutoTasnifExternalId(currentExtId, item.mxik)) {
+        setValue('externalProductId', nextExtId, { shouldDirty: true });
       }
     }
+
     toast.success(t('productCatalog.mxikApplied'));
     setResults([]);
     setQuery('');

@@ -1,4 +1,5 @@
 import { format, subDays, startOfMonth } from 'date-fns';
+import { fmtMoney } from '../../../utils/formatMoney';
 
 export const SALES_DASHBOARD_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -7,8 +8,7 @@ export const SALES_CHART_TOOLTIP_BG = '#ffffff';
 export const SALES_CHART_TOOLTIP_BORDER = '#e2e8f0';
 export const SALES_CHART_LEGEND_LABEL = '#64748b';
 
-export const formatSalesCurrency = (n) =>
-  new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES' }).format(n ?? 0);
+export const formatSalesCurrency = (n) => `${fmtMoney(n)} сум`;
 
 export function getSalesDatePresets() {
   return [

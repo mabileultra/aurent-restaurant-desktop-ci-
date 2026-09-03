@@ -2,6 +2,7 @@ package com.pos.service.event.support;
 
 import com.pos.sales.entity.CashierShift;
 import com.pos.catalog.entity.Product;
+import com.pos.catalog.service.product.PharmacyPackSupport;
 import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.SaleItem;
 import com.pos.inventory.entity.StockInventory;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public final class DomainEventMappers {
@@ -37,9 +39,19 @@ public final class DomainEventMappers {
     }
 
     public static SaleCompletedEvent toSaleCompleted(Sale sale) {
+        return toSaleCompleted(sale, Map.of());
+    }
+
+    public static SaleCompletedEvent toSaleCompleted(
+        Sale sale,
+        Map<UUID, Map<String, String>> attributesByProductId
+    ) {
         if (sale == null || sale.getId() == null) {
             return null;
         }
+        Map<UUID, Map<String, String>> attrs = attributesByProductId != null
+            ? attributesByProductId
+            : Map.of();
         Integer companyId = sale.getCompany() != null
             ? sale.getCompany().getId()
             : sale.getStore() != null && sale.getStore().getCompany() != null
@@ -63,15 +75,15 @@ public final class DomainEventMappers {
             sale.getPaymentMethod() != null ? sale.getPaymentMethod().name() : null,
             transactionDate,
             createdBy,
-            sumItemsSold(sale),
+            sumItemsSold(sale, attrs),
             storeName,
             cashierName,
             sale.getStatus() != null ? sale.getStatus().name() : "COMPLETED",
-            mapLines(sale)
+            mapLines(sale, attrs)
         );
     }
 
-    private static List<SaleLineSnapshot> mapLines(Sale sale) {
+    private static List<SaleLineSnapshot> mapLines(Sale sale, Map<UUID, Map<String, String>> attrs) {
         if (sale.getItems() == null || sale.getItems().isEmpty()) {
             return List.of();
         }
@@ -82,15 +94,22 @@ public final class DomainEventMappers {
             }
             BigDecimal itemQty = item.getQuantity() != null ? item.getQuantity() : BigDecimal.ZERO;
             BigDecimal returnedQty = item.getReturnedQuantity() != null ? item.getReturnedQuantity() : BigDecimal.ZERO;
-            long quantity = itemQty.setScale(0, RoundingMode.HALF_UP).longValue();
-            long quantityReturned = returnedQty.setScale(0, RoundingMode.HALF_UP).longValue();
             BigDecimal netQty = itemQty.subtract(returnedQty);
             if (netQty.signum() < 0) {
                 netQty = BigDecimal.ZERO;
             }
-            BigDecimal revenue = proportionalRevenue(item, netQty);
-            BigDecimal costEstimate = proportionalCost(item, netQty);
             Product product = item.getProduct();
+            Map<String, String> productAttrs = productAttrs(product, attrs);
+            long quantity = PharmacyPackSupport.reportableUnits(
+                product, item.getUnitPrice(), itemQty, productAttrs
+            );
+            long quantityReturned = PharmacyPackSupport.reportableUnits(
+                product, item.getUnitPrice(), returnedQty, productAttrs
+            );
+            BigDecimal revenue = proportionalRevenue(item, netQty);
+            BigDecimal costEstimate = PharmacyPackSupport.costEstimate(
+                product, item.getUnitPrice(), netQty, productAttrs
+            );
             UUID productId = product != null ? product.getId() : null;
             String sku = product != null ? product.getSku() : null;
             String barcode = product != null ? product.getBarcode() : null;
@@ -116,6 +135,13 @@ public final class DomainEventMappers {
         return lines;
     }
 
+    private static Map<String, String> productAttrs(Product product, Map<UUID, Map<String, String>> attrs) {
+        if (product == null || product.getId() == null || attrs == null) {
+            return Map.of();
+        }
+        return attrs.getOrDefault(product.getId(), Map.of());
+    }
+
     private static BigDecimal proportionalRevenue(SaleItem item, BigDecimal netQty) {
         if (item.getLineTotal() == null || item.getQuantity() == null || item.getQuantity().signum() == 0) {
             return BigDecimal.ZERO;
@@ -125,15 +151,7 @@ public final class DomainEventMappers {
             .divide(item.getQuantity(), 2, RoundingMode.HALF_UP);
     }
 
-    private static BigDecimal proportionalCost(SaleItem item, BigDecimal netQty) {
-        Product product = item.getProduct();
-        if (product == null || product.getCostPrice() == null) {
-            return BigDecimal.ZERO;
-        }
-        return product.getCostPrice().multiply(netQty).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static long sumItemsSold(Sale sale) {
+    private static long sumItemsSold(Sale sale, Map<UUID, Map<String, String>> attrs) {
         if (sale.getItems() == null || sale.getItems().isEmpty()) {
             return 0L;
         }
@@ -142,7 +160,10 @@ public final class DomainEventMappers {
             if (item.getQuantity() == null) {
                 continue;
             }
-            total += item.getQuantity().setScale(0, RoundingMode.HALF_UP).longValue();
+            Product product = item.getProduct();
+            total += PharmacyPackSupport.reportableUnits(
+                product, item.getUnitPrice(), item.getQuantity(), productAttrs(product, attrs)
+            );
         }
         return total;
     }

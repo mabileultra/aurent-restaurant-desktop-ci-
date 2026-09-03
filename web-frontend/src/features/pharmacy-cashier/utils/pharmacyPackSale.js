@@ -63,12 +63,27 @@ export function applyPharmacyPackSaleToCartProduct(product) {
 
 /** Позиция для API: количество в упаковках, цена за упаковку. */
 export function pharmacyCheckoutLineFromCartItem(item) {
-  if (!item?.pharmacySellByPiece || !item.unitsInPack || item.unitsInPack <= 1) {
+  const fromLine = Number(item?.unitsInPack);
+  const unitsInPack = fromLine > 1 ? fromLine : productUnitsInPack(item);
+  if (!unitsInPack || unitsInPack <= 1) {
     return null;
   }
 
-  const packUnitPrice = round2(item.unitPrice * item.unitsInPack);
-  const packQty = roundQty(Number(item.quantity) / item.unitsInPack);
+  // Явный режим «по штукам» или цена в корзине уже за штуку (packUnitPrice задан).
+  const sellByPiece = item.pharmacySellByPiece === true || item.packUnitPrice != null;
+  if (!sellByPiece) {
+    return null;
+  }
+
+  const piecePrice = Number(item.unitPrice);
+  const packUnitPrice = item.packUnitPrice != null
+    ? round2(item.packUnitPrice)
+    : round2(piecePrice * unitsInPack);
+  const packQty = roundQty(Number(item.quantity) / unitsInPack);
+
+  if (!Number.isFinite(packQty) || packQty <= 0) {
+    return null;
+  }
 
   return {
     quantity: packQty,

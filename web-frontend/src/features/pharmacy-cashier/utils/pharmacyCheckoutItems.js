@@ -2,6 +2,7 @@ import { lineDiscountAmount } from '../../../store/cartStore';
 import { buildCheckoutLineItems } from '../../../store/cartStore';
 import { round2 } from '../../../utils/taxAmounts';
 import { roundQty } from '../../../utils/quantityFormat';
+import { productUnitsInPack } from './pharmacyProductMeta';
 import { pharmacyCheckoutLineFromCartItem } from './pharmacyPackSale';
 
 export function buildPharmacyCheckoutLineItems(items) {
@@ -25,8 +26,16 @@ export function buildPharmacyCheckoutLineItems(items) {
   });
 }
 
+function needsPharmacyPackCheckout(items) {
+  return items.some((line) => {
+    if (line.pharmacySellByPiece) return true;
+    const units = line.unitsInPack || productUnitsInPack(line);
+    return units != null && units > 1;
+  });
+}
+
 export function resolveCheckoutLineItems(items) {
-  if (items.some((line) => line.pharmacySellByPiece)) {
+  if (needsPharmacyPackCheckout(items)) {
     return buildPharmacyCheckoutLineItems(items);
   }
   return buildCheckoutLineItems(items);
