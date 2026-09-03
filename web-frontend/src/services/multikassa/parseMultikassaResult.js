@@ -1,45 +1,65 @@
 import { FISCAL_STATUS } from './multikassaConstants';
+import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign } from '../../utils/ofdQrUrl';
+
+export { isSyntheticFiscalSign };
 
 function isPlainObject(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
+}
+
+function maybeParseJson(value) {
+  if (typeof value !== 'string') return value;
+  const s = value.trim();
+  if (!s) return value;
+  const looksJson =
+    (s.startsWith('{') && s.endsWith('}')) || (s.startsWith('[') && s.endsWith(']'));
+  if (!looksJson) return value;
+  try {
+    return JSON.parse(s);
+  } catch {
+    return value;
+  }
+}
+
+function unwrapRoot(raw) {
+  const parsed = maybeParseJson(raw);
+  if (!isPlainObject(parsed)) return parsed;
+  const nested =
+    parsed.data ?? parsed.Data ?? parsed.result ?? parsed.Result ?? parsed.response ?? parsed.Response;
+  const nestedParsed = maybeParseJson(nested);
+  if (isPlainObject(nestedParsed) || Array.isArray(nestedParsed)) return nestedParsed;
+  return parsed;
 }
 
 function pick(obj, keys) {
   if (!isPlainObject(obj)) return null;
   for (const key of keys) {
     const value = obj[key];
-    if (value != null && String(value).trim() !== '') return String(value);
+    if (value == null) continue;
+    if (typeof value === 'string' && value.trim() !== '') return value.trim();
+    if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   }
   return null;
 }
 
-/** Рекурсивный поиск первого непустого значения по списку ключей. */
 function deepPick(node, keys, depth = 0) {
   if (!isPlainObject(node) || depth > 6) return null;
   const direct = pick(node, keys);
   if (direct) return direct;
   for (const value of Object.values(node)) {
-    if (isPlainObject(value)) {
-      const nested = deepPick(value, keys, depth + 1);
+    const parsed = maybeParseJson(value);
+    if (isPlainObject(parsed)) {
+      const nested = deepPick(parsed, keys, depth + 1);
       if (nested) return nested;
     }
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        const nested = deepPick(item, keys, depth + 1);
+    if (Array.isArray(parsed)) {
+      for (const item of parsed) {
+        const nested = deepPick(maybeParseJson(item), keys, depth + 1);
         if (nested) return nested;
       }
     }
   }
   return null;
-}
-
-function unwrapRoot(raw) {
-  if (!isPlainObject(raw)) return raw;
-  if (isPlainObject(raw.data)) return raw.data;
-  if (isPlainObject(raw.Data)) return raw.Data;
-  if (isPlainObject(raw.result)) return raw.result;
-  if (isPlainObject(raw.Result)) return raw.Result;
-  return raw;
 }
 
 const SIGN_KEYS = [
@@ -72,6 +92,27 @@ const SEQ_KEYS = [
   'ZReportNumber',
   'ReceiptNumber',
   'receipt_number',
+  'ReceiptNo',
+  'receiptNo',
+];
+
+const TERMINAL_KEYS = [
+  'receipt_gnk_terminalid',
+  'module_gnk_terminalid',
+  'TerminalID',
+  'TerminalId',
+  'terminalId',
+  'terminal_id',
+  'FM_TERMINAL_ID',
+];
+
+const TIME_KEYS = [
+  'receipt_gnk_time',
+  'receipt_gnk_datetime',
+  'DateTime',
+  'dateTime',
+  'date_time',
+  'datetime',
 ];
 
 const QR_KEYS = [
@@ -81,8 +122,12 @@ const QR_KEYS = [
   'qr_url',
   'QRCodeUrl',
   'qrCodeURL',
+  'qr_code_url',
+  'qrcode_url',
+  'QRCODEURL',
   'QR',
   'QrCode',
+  'QRCode',
   'FiscalQR',
   'fiscalQrUrl',
   'CheckUrl',
@@ -91,13 +136,67 @@ const QR_KEYS = [
   'ofdUrl',
 ];
 
-/** Наш старый fallback — не настоящий признак ГНК. */
-export function isSyntheticFiscalSign(sign) {
-  const s = String(sign || '').trim();
-  if (!s) return true;
-  if (/^MK-\d+$/i.test(s)) return true;
-  if (/^LOCAL-/i.test(s)) return true;
-  return false;
+function coerceQrUrl(value) {
+  if (value == null) return null;
+  if (typeof value === 'number') return null;
+  if (typeof value === 'string') {
+    const s = value.trim();
+    if (!s || s === '[object Object]') return null;
+    if (isOfdCheckUrl(s)) return s.startsWith('http') ? s : `https://${s.replace(/^\/+/, '')}`;
+    if (/^https?:\/\/ofd\.soliq\.uz/i.test(s)) return s;
+    if (/ofd\.soliq\.uz/i.test(s)) return s.startsWith('http') ? s : `https://${s.replace(/^\/+/, '')}`;
+    if (/^[?]?t=.+&r=.+&c=.+&s=/.test(s)) {
+      return `https://ofd.soliq.uz/check?${s.replace(/^\?/, '')}`;
+    }
+    return null;
+  }
+  if (isPlainObject(value)) {
+    for (const key of QR_KEYS) {
+      const nested = coerceQrUrl(value[key]);
+      if (nested) return nested;
+    }
+    return coerceQrUrl(value.url || value.URL || value.href || value.Href || null);
+  }
+  return null;
+}
+
+function deepPickQr(node, depth = 0) {
+  if (!node || depth > 6) return null;
+  const parsed = maybeParseJson(node);
+  if (typeof parsed === 'string') return coerceQrUrl(parsed);
+  if (Array.isArray(parsed)) {
+    for (let i = parsed.length - 1; i >= 0; i -= 1) {
+      const found = deepPickQr(parsed[i], depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+  if (!isPlainObject(parsed)) return null;
+  for (const key of QR_KEYS) {
+    const found = coerceQrUrl(parsed[key]);
+    if (found) return found;
+  }
+  for (const value of Object.values(parsed)) {
+    const found = deepPickQr(value, depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
+const SUCCESS_CODES = new Set([0, 200, 201, '0', '200', '201', 'OK', 'SUCCESS', 'Success', 'ok']);
+
+function detectOperationError(root) {
+  if (!isPlainObject(root)) return null;
+  const code = root.Code ?? root.code ?? root.ErrorCode ?? root.errorCode;
+  const message =
+    pick(root, ['Message', 'message', 'Error', 'error', 'error_message', 'ErrorMessage']) || null;
+  if (code != null && String(code).trim() !== '' && !SUCCESS_CODES.has(code) && !SUCCESS_CODES.has(Number(code))) {
+    return message || `Multikassa error code ${code}`;
+  }
+  if (root.Success === false || root.success === false || root.ok === false) {
+    return message || 'Multikassa operation failed';
+  }
+  return null;
 }
 
 export function hasRealFiscalProof(parsed) {
@@ -107,41 +206,12 @@ export function hasRealFiscalProof(parsed) {
   const qr = String(parsed.fiscalQrUrl || '').trim();
   if (sign && !isSyntheticFiscalSign(sign)) return true;
   if (saleId && !isSyntheticFiscalSign(saleId)) return true;
-  if (qr && /ofd\.soliq\.uz|mkfiscal|multikassa/i.test(qr)) return true;
+  if (isOfdCheckUrl(qr) || /ofd\.soliq\.uz|mkfiscal|multikassa/i.test(qr)) return true;
   return false;
 }
 
-function detectOperationError(root) {
-  if (!isPlainObject(root)) return null;
-  const code = root.Code ?? root.code ?? root.ErrorCode ?? root.errorCode;
-  const message =
-    pick(root, ['Message', 'message', 'Error', 'error', 'error_message', 'ErrorMessage']) || null;
-  if (code != null && Number(code) !== 0 && String(code).toUpperCase() !== 'OK') {
-    return message || `Multikassa error code ${code}`;
-  }
-  if (root.Success === false || root.success === false || root.ok === false) {
-    return message || 'Multikassa operation failed';
-  }
-  return null;
-}
-
-/** Нормализация ответа Multikassa operations → payload для нашего /sales. */
-export function parseMultikassaOperationResult(raw) {
-  const root = unwrapRoot(raw);
-  const opError = detectOperationError(isPlainObject(raw) ? raw : {}) || detectOperationError(root);
-  if (opError) {
-    return {
-      fiscalStatus: FISCAL_STATUS.FAILED,
-      fiscalSign: null,
-      fiscalReceiptSeq: null,
-      multikassaSaleId: null,
-      fiscalQrUrl: null,
-      fiscalError: opError,
-      raw,
-    };
-  }
-
-  const nestedCandidates = [
+function collectNodes(root) {
+  return [
     root,
     root?.Result,
     root?.result,
@@ -155,39 +225,121 @@ export function parseMultikassaOperationResult(raw) {
     root?.response,
     root?.Data,
     root?.data,
-  ].filter(isPlainObject);
+  ]
+    .map(maybeParseJson)
+    .filter(isPlainObject);
+}
 
+function pickLatestListItem(raw) {
+  const parsed = maybeParseJson(raw);
+  const root = unwrapRoot(parsed);
+  const list = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray(root)
+      ? root
+      : Array.isArray(root?.items)
+        ? root.items
+        : Array.isArray(root?.operations)
+          ? root.operations
+          : Array.isArray(root?.Operations)
+            ? root.Operations
+            : Array.isArray(root?.data)
+              ? root.data
+              : Array.isArray(root?.Result)
+                ? root.Result
+                : null;
+  if (!list || list.length === 0) return isPlainObject(root) ? root : parsed;
+  const withType = (item) => {
+    const node = maybeParseJson(item);
+    const type = String(
+      node?.module_operation_type ?? node?.ModuleOperationType ?? node?.operationType ?? '',
+    );
+    return { node, type };
+  };
+  const mapped = list.map(withType);
+  const sales = mapped.filter((row) => ['3', '4', '8', '10'].includes(row.type));
+  const pool = sales.length ? sales : mapped;
+  return pool[pool.length - 1].node;
+}
+
+function extractFields(root) {
+  const nodes = collectNodes(root);
   let fiscalSign = null;
   let multikassaSaleId = null;
   let fiscalReceiptSeq = null;
-  let fiscalQrUrl = null;
+  let terminalId = null;
+  let datetime = null;
 
-  for (const node of nestedCandidates) {
+  for (const node of nodes) {
     fiscalSign = fiscalSign || pick(node, SIGN_KEYS);
     multikassaSaleId = multikassaSaleId || pick(node, SALE_ID_KEYS);
     fiscalReceiptSeq = fiscalReceiptSeq || pick(node, SEQ_KEYS);
-    fiscalQrUrl = fiscalQrUrl || pick(node, QR_KEYS);
+    terminalId = terminalId || pick(node, TERMINAL_KEYS);
+    datetime = datetime || pick(node, TIME_KEYS);
   }
 
   fiscalSign = fiscalSign || deepPick(root, SIGN_KEYS);
   multikassaSaleId = multikassaSaleId || deepPick(root, SALE_ID_KEYS);
   fiscalReceiptSeq = fiscalReceiptSeq || deepPick(root, SEQ_KEYS);
-  fiscalQrUrl = fiscalQrUrl || deepPick(root, QR_KEYS);
-
-  if (!multikassaSaleId && isPlainObject(root?.Receipt)) {
-    multikassaSaleId = pick(root.Receipt, SALE_ID_KEYS);
-  }
+  terminalId = terminalId || deepPick(root, TERMINAL_KEYS);
+  datetime = datetime || deepPick(root, TIME_KEYS);
 
   if (isSyntheticFiscalSign(fiscalSign)) {
     fiscalSign = null;
   }
 
+  const fiscalQrUrl =
+    deepPickQr(root) ||
+    buildOfdCheckUrl({
+      terminalId,
+      receiptSeq: fiscalReceiptSeq,
+      fiscalSign,
+      datetime,
+    }) ||
+    null;
+
+  return { fiscalSign, multikassaSaleId, fiscalReceiptSeq, terminalId, datetime, fiscalQrUrl };
+}
+
+function applyQrHints(fields, hints = {}) {
+  const fiscalQrUrl =
+    coerceQrUrl(fields.fiscalQrUrl) ||
+    buildOfdCheckUrl({
+      terminalId: fields.terminalId || hints.terminalId,
+      receiptSeq: fields.fiscalReceiptSeq,
+      fiscalSign: fields.fiscalSign,
+      datetime: fields.datetime || hints.datetime,
+    }) ||
+    null;
+  return { ...fields, fiscalQrUrl };
+}
+
+/** Нормализация ответа Multikassa operations → payload для нашего /sales. */
+export function parseMultikassaOperationResult(raw, hints = {}) {
+  const parsedRaw = maybeParseJson(raw);
+  const root = unwrapRoot(parsedRaw);
+  const opError =
+    detectOperationError(isPlainObject(parsedRaw) ? parsedRaw : {}) || detectOperationError(root);
+  if (opError) {
+    return {
+      fiscalStatus: FISCAL_STATUS.FAILED,
+      fiscalSign: null,
+      fiscalReceiptSeq: null,
+      multikassaSaleId: null,
+      fiscalQrUrl: null,
+      fiscalError: opError,
+      raw,
+    };
+  }
+
+  const fields = applyQrHints(extractFields(isPlainObject(root) ? root : parsedRaw), hints);
+
   const parsed = {
     fiscalStatus: FISCAL_STATUS.FISCALIZED,
-    fiscalSign,
-    fiscalReceiptSeq,
-    multikassaSaleId,
-    fiscalQrUrl,
+    fiscalSign: fields.fiscalSign,
+    fiscalReceiptSeq: fields.fiscalReceiptSeq,
+    multikassaSaleId: fields.multikassaSaleId,
+    fiscalQrUrl: fields.fiscalQrUrl,
     fiscalError: null,
     raw,
   };
@@ -204,6 +356,39 @@ export function parseMultikassaOperationResult(raw) {
 
   parsed.fiscalStatus = FISCAL_STATUS.FISCALIZED;
   return parsed;
+}
+
+/** Разбор GET /api/v1/operations — берём последнюю операцию, если POST не отдал QR. */
+export function parseMultikassaOperationsList(raw, hints = {}) {
+  const item = pickLatestListItem(raw);
+  return parseMultikassaOperationResult(item, hints);
+}
+
+export function mergeFiscalParse(base, extra, hints = {}) {
+  if (!extra) return base;
+  const merged = {
+    ...base,
+    fiscalSign: base?.fiscalSign || extra.fiscalSign || null,
+    fiscalReceiptSeq: base?.fiscalReceiptSeq || extra.fiscalReceiptSeq || null,
+    multikassaSaleId: base?.multikassaSaleId || extra.multikassaSaleId || null,
+    fiscalQrUrl: coerceQrUrl(base?.fiscalQrUrl) || extra.fiscalQrUrl || null,
+    fiscalError: extra.fiscalStatus === FISCAL_STATUS.FISCALIZED ? null : base?.fiscalError,
+    raw: extra.raw ?? base?.raw,
+  };
+  if (!merged.fiscalQrUrl) {
+    merged.fiscalQrUrl =
+      buildOfdCheckUrl({
+        terminalId: hints.terminalId,
+        receiptSeq: merged.fiscalReceiptSeq,
+        fiscalSign: merged.fiscalSign,
+        datetime: hints.datetime,
+      }) || null;
+  }
+  if (hasRealFiscalProof(merged)) {
+    merged.fiscalStatus = FISCAL_STATUS.FISCALIZED;
+    merged.fiscalError = null;
+  }
+  return merged;
 }
 
 export function toSaleFiscalPayload(parsed) {

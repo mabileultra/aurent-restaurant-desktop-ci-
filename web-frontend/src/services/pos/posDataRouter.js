@@ -348,6 +348,7 @@ export async function posCreateSale({
       total,
       shiftId: cachedShift?.id,
       cashierName: user?.fullName || user?.name || 'CASHIER',
+      contractorName: storeName,
       offline,
       clientSaleId,
     });

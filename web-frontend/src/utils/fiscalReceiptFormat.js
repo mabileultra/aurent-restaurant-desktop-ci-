@@ -1,13 +1,7 @@
+import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign } from './ofdQrUrl';
+
 /** Данные для QR / фискального признака на чеке. */
 export { fmtMoney, fmtQty } from './formatMoney';
-
-function isSyntheticFiscalSign(sign) {
-  const s = String(sign || '').trim();
-  if (!s) return true;
-  if (/^MK-\d+$/i.test(s)) return true;
-  if (/^LOCAL-/i.test(s)) return true;
-  return false;
-}
 
 /** Настоящий фискальный признак Multikassa/ГНК — без локальных MK-/hash fallback. */
 export function buildFiscalSign(sale) {
@@ -17,13 +11,23 @@ export function buildFiscalSign(sale) {
   return '';
 }
 
-/** QR только из ответа Multikassa — самодельный ofd.soliq.uz с фейковым sign не строим. */
+/**
+ * QR чека = официальная ссылка ГНК (ofd.soliq.uz/check?t&r&c&s).
+ * Берём URL из ответа модуля; если его нет — собираем из фискальных полей.
+ */
 export function buildQrPayload(sale) {
-  if (sale?.fiscalQrUrl) {
-    const url = String(sale.fiscalQrUrl).trim();
-    if (url) return url;
+  const fromModule = String(sale?.fiscalQrUrl || '').trim();
+  if (fromModule && (isOfdCheckUrl(fromModule) || /^https?:\/\//i.test(fromModule))) {
+    return fromModule;
   }
-  return '';
+  return (
+    buildOfdCheckUrl({
+      terminalId: sale?.fiscalTerminalId || sale?.terminalId,
+      receiptSeq: sale?.fiscalReceiptSeq,
+      fiscalSign: sale?.fiscalSign,
+      datetime: sale?.fiscalizedAt || sale?.createdAt,
+    }) || ''
+  );
 }
 
 /** Отдельный документ возврата (печатается при оформлении возврата на кассе). */

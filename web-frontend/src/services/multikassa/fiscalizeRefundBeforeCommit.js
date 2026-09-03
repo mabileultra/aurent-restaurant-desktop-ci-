@@ -1,6 +1,5 @@
 import { buildRefundBody } from './buildMultikassaOperations';
-import { postOperation } from './multikassaHttpClient';
-import { parseMultikassaOperationResult } from './parseMultikassaResult';
+import { runMultikassaOperation } from './runMultikassaOperation';
 
 /**
  * Возврат в Multikassa (op 4) до partial return в POS.
@@ -27,6 +26,7 @@ export async function fiscalizeRefundBeforeCommit({
   }
 
   const body = buildRefundBody({ receiptSaleId });
-  const raw = await postOperation(capabilities.baseUrl, body);
-  return parseMultikassaOperationResult(raw);
+  return runMultikassaOperation(capabilities.baseUrl, body, {
+    terminalId: capabilities.terminalId,
+  });
 }

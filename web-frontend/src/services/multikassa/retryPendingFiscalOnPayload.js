@@ -1,10 +1,6 @@
 import { FISCAL_STATUS } from './multikassaConstants';
-import { postOperation } from './multikassaHttpClient';
-import {
-  hasRealFiscalProof,
-  parseMultikassaOperationResult,
-  toSaleFiscalPayload,
-} from './parseMultikassaResult';
+import { runMultikassaOperation } from './runMultikassaOperation';
+import { hasRealFiscalProof, toSaleFiscalPayload } from './parseMultikassaResult';
 import { loadMultikassaCapabilities } from './loadMultikassaCapabilities';
 
 /**
@@ -27,8 +23,10 @@ export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegist
   }
 
   try {
-    const raw = await postOperation(capabilities.baseUrl, retryBody);
-    const parsed = parseMultikassaOperationResult(raw);
+    const parsed = await runMultikassaOperation(capabilities.baseUrl, retryBody, {
+      terminalId: capabilities.terminalId || retryBody.receipt_gnk_terminalid,
+      datetime: retryBody.receipt_gnk_time,
+    });
     if (!hasRealFiscalProof(parsed) || parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
       return {
         ...payload,

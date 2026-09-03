@@ -1,10 +1,6 @@
 import { buildSaleOperationBody } from './buildMultikassaOperations';
-import { postOperation } from './multikassaHttpClient';
-import {
-  hasRealFiscalProof,
-  parseMultikassaOperationResult,
-  toSaleFiscalPayload,
-} from './parseMultikassaResult';
+import { runMultikassaOperation } from './runMultikassaOperation';
+import { hasRealFiscalProof, toSaleFiscalPayload } from './parseMultikassaResult';
 import { FISCAL_STATUS } from './multikassaConstants';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
@@ -38,7 +34,7 @@ function rejectIncompleteFiscal(parsed) {
 
 /**
  * Фискализация продажи на Multikassa (до commit в POS).
- * Без настоящего fiscalSign / saleId / QR — не помечаем как FISCALIZED (никаких MK-*).
+ * QR чека — QRCodeURL модуля или официальный ofd.soliq.uz/check из t/r/c/s.
  */
 export async function fiscalizeSaleBeforeCommit({
   capabilities,
@@ -47,6 +43,7 @@ export async function fiscalizeSaleBeforeCommit({
   total,
   shiftId,
   cashierName,
+  contractorName,
   offline = false,
   clientSaleId = null,
 }) {
@@ -61,14 +58,19 @@ export async function fiscalizeSaleBeforeCommit({
     capabilities,
     shiftId,
     cashierName,
+    contractorName,
   });
   const idempotencyKey = buildIdempotencyKey({ shiftId, clientSaleId });
   body.client_operation_id = idempotencyKey;
   body.external_id = idempotencyKey;
 
+  const hints = {
+    terminalId: capabilities.terminalId || body.receipt_gnk_terminalid,
+    datetime: body.receipt_gnk_time,
+  };
+
   try {
-    const raw = await postOperation(capabilities.baseUrl, body);
-    const parsed = parseMultikassaOperationResult(raw);
+    const parsed = await runMultikassaOperation(capabilities.baseUrl, body, hints);
 
     if (!hasRealFiscalProof(parsed) || parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
       if (offline) {

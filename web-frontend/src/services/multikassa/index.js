@@ -12,6 +12,7 @@ export {
   selectFiscalDrive,
   getPrinters,
   postOperation,
+  getOperations,
 } from './multikassaHttpClient';
 export {
   buildSaleOperationBody,
@@ -26,6 +27,7 @@ export {
   hasRealFiscalProof,
   isSyntheticFiscalSign,
 } from './parseMultikassaResult';
+export { runMultikassaOperation } from './runMultikassaOperation';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';
 export { fiscalizeShiftOperation } from './fiscalizeShiftOperation';
 export { fiscalizeRefundBeforeCommit } from './fiscalizeRefundBeforeCommit';

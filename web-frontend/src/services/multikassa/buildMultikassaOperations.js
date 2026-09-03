@@ -70,6 +70,7 @@ export function buildSaleOperationBody({
   capabilities,
   shiftId,
   cashierName,
+  contractorName,
 }) {
   const cash = Number(payment?.cashAmount ?? (payment?.paymentMethod === 'CASH' ? total : 0)) || 0;
   const card = Number(payment?.cardAmount ?? (payment?.paymentMethod === 'CARD' ? total : 0)) || 0;
@@ -89,6 +90,11 @@ export function buildSaleOperationBody({
     shift_id: shiftId ? String(shiftId) : '',
     items: (cartItems || []).map(buildItem),
   };
+
+  const contractor = String(contractorName || '').trim();
+  if (contractor) {
+    body.contractor_name = contractor;
+  }
 
   if (opType === MULTIKASSA_OPERATION_TYPE.ADVANCE || opType === MULTIKASSA_OPERATION_TYPE.CREDIT) {
     const paid = card !== 0 ? toTiyin(card) : toTiyin(cash);

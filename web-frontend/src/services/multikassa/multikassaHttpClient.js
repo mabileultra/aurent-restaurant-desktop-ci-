@@ -84,3 +84,11 @@ export function postOperation(baseUrl, body) {
     body,
   });
 }
+
+export function getOperations(baseUrl) {
+  return multikassaHttpRequest({
+    baseUrl,
+    method: 'GET',
+    path: '/api/v1/operations',
+  });
+}
