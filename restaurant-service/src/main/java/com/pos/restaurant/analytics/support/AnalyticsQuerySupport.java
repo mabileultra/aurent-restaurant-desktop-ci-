@@ -200,8 +200,8 @@ public class AnalyticsQuerySupport {
     @SuppressWarnings("unchecked")
     public List<Object[]> salesByHour(Integer companyId, Integer storeId, Instant from, Instant to) {
         return em.createNativeQuery("""
-            select extract(hour from p.paid_at)::int as hr,
-                   count(*)::bigint,
+            select cast(extract(hour from p.paid_at) as integer) as hr,
+                   cast(count(*) as bigint),
                    coalesce(sum(p.amount), 0)
             from floor_order_payments p
             join floor_orders o on o.id = p.order_id
