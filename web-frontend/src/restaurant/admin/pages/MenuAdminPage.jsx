@@ -1,4 +1,7 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MoreVertical } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { useInfiniteScrollSlice } from '../../shared/hooks/useInfiniteScrollSlice';
@@ -8,8 +11,61 @@ import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
 import '../styles/menu-admin.css';
 
+function MenuCardMenu({ menu, onClose, onEdit, onDelete, t }) {
+  useEffect(() => {
+    if (!menu) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [menu, onClose]);
+
+  if (!menu) return null;
+
+  return createPortal(
+    <>
+      <button
+        type="button"
+        className="rst-menu-card-menu__backdrop"
+        aria-label={t('common.close')}
+        onClick={onClose}
+      />
+      <div
+        role="menu"
+        className="rst-menu-card-menu"
+        style={{
+          top: `${menu.rect.bottom + 4}px`,
+          right: `${Math.max(8, window.innerWidth - menu.rect.right)}px`,
+        }}
+      >
+        <button type="button" role="menuitem" onClick={() => onEdit(menu.item)}>
+          {t('common.edit')}
+        </button>
+        <Link
+          role="menuitem"
+          to="/rst/admin/recipes"
+          onClick={onClose}
+        >
+          {t('rst.admin.toRecipe')}
+        </Link>
+        <button
+          type="button"
+          role="menuitem"
+          className="is-danger"
+          onClick={() => onDelete(menu.item)}
+        >
+          {t('common.delete')}
+        </button>
+      </div>
+    </>,
+    document.body
+  );
+}
+
 export default function MenuAdminPage() {
   const p = useMenuAdminPage();
+  const [cardMenu, setCardMenu] = useState(null);
   const {
     visibleItems,
     hasMore,
@@ -29,7 +85,7 @@ export default function MenuAdminPage() {
 
   return (
     <section className="rst-menu">
-      <div className="rst-halls__toolbar">
+      <div className="rst-halls__toolbar rst-menu__toolbar">
         <div>
           <h1 className="rst-coming__title">{p.t('rst.admin.menuTitle')}</h1>
           <p className="rst-coming__text mb-0">{p.t('rst.admin.menuSubtitle')}</p>
@@ -38,7 +94,7 @@ export default function MenuAdminPage() {
       </div>
 
       {p.workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-3">
+        <label className="rst-admin-field rst-admin-field--full mb-2">
           <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
           <select
             className="form-select"
@@ -53,7 +109,7 @@ export default function MenuAdminPage() {
         </label>
       ) : null}
 
-      <div className="rst-admin-filters">
+      <div className="rst-admin-filters rst-menu__filters">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('common.search')}</span>
           <BaseInput
@@ -106,7 +162,7 @@ export default function MenuAdminPage() {
       </div>
 
       <form
-        className="rst-admin-form"
+        className="rst-admin-form rst-menu__form"
         onSubmit={(e) => {
           e.preventDefault();
           p.saveMutation.mutate();
@@ -258,34 +314,27 @@ export default function MenuAdminPage() {
                       {!item.available ? (
                         <span className="rst-menu-card__badge is-off">{p.t('rst.admin.unavailable')}</span>
                       ) : null}
+                      <button
+                        type="button"
+                        className="rst-menu-card__more"
+                        aria-label={p.t('common.actions')}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setCardMenu((cur) => (
+                            cur?.item?.id === item.id ? null : { item, rect }
+                          ));
+                        }}
+                      >
+                        <MoreVertical size={16} />
+                      </button>
                     </div>
                     <div className="rst-menu-card__body">
                       <h3 className="rst-menu-card__title">{item.name}</h3>
                       <p className="rst-menu-card__meta">
                         {metaParts.length ? metaParts.join(' · ') : p.t('rst.admin.noStation')}
                       </p>
-                      <div className="rst-menu-card__footer">
-                        <p className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</p>
-                        <div className="rst-menu-card__actions">
-                          <BaseButton type="button" variant="ghost" onClick={() => p.startEdit(item)}>
-                            {p.t('common.edit')}
-                          </BaseButton>
-                          <Link to="/rst/admin/recipes" className="btn btn-sm btn-outline-secondary">
-                            {p.t('rst.admin.toRecipe')}
-                          </Link>
-                          <BaseButton
-                            type="button"
-                            variant="ghost"
-                            onClick={() => {
-                              if (window.confirm(p.t('rst.admin.confirmDeactivateDish'))) {
-                                p.deactivateMutation.mutate(item.id);
-                              }
-                            }}
-                          >
-                            {p.t('common.delete')}
-                          </BaseButton>
-                        </div>
-                      </div>
+                      <p className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</p>
                     </div>
                   </article>
                 );
@@ -299,6 +348,23 @@ export default function MenuAdminPage() {
           )}
         </div>
       </div>
+
+      <MenuCardMenu
+        menu={cardMenu}
+        t={p.t}
+        onClose={() => setCardMenu(null)}
+        onEdit={(item) => {
+          setCardMenu(null);
+          p.startEdit(item);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onDelete={(item) => {
+          setCardMenu(null);
+          if (window.confirm(p.t('rst.admin.confirmDeactivateDish'))) {
+            p.deactivateMutation.mutate(item.id);
+          }
+        }}
+      />
     </section>
   );
 }

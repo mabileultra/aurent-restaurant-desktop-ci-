@@ -5,7 +5,7 @@ import './i18n/config';
 import { initSentry } from './observability/initSentry';
 import App from './App.jsx';
 import './index.css';
-import { syncRootTheme, syncPublicTheme } from './store/themeStore';
+import { syncRootTheme, syncPublicTheme, syncRestaurantTheme } from './store/themeStore';
 import { isPublicAppPath } from './utils/publicAppPaths';
 import { readCashierTheme, syncCashierThemeDocument } from './utils/cashierTheme';
 import { usePrintSettingsStore } from './store/printSettingsStore';
@@ -18,8 +18,12 @@ initSentry();
 
 const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');
+const isRstRoute =
+  typeof window !== 'undefined' && window.location.pathname.startsWith('/rst');
 if (isCashierRoute) {
   syncCashierThemeDocument(readCashierTheme());
+} else if (isRstRoute) {
+  syncRestaurantTheme();
 } else if (typeof window !== 'undefined' && isPublicAppPath(window.location.pathname)) {
   syncPublicTheme();
 } else {

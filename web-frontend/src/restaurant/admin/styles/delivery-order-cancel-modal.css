@@ -6,7 +6,7 @@
 
 .delivery-order-cancel-modal__text {
   font-size: 0.9rem;
-  color: var(--rest-text-muted);
+  color: var(--rst-muted);
   line-height: 1.5;
 }
 

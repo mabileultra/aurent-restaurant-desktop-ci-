@@ -12,7 +12,7 @@ import { useStockProductsPage } from '../hooks/useStockProductsPage';
 import { useStockFlowPaths } from '../stockFlowPaths';
 import { useRestaurantWorkspaceStore } from '../../../restaurant/shared/hooks/useRestaurantWorkspaceStore';
 
-export default function StockProductsPage() {
+export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
   const paths = useStockFlowPaths();
   const inRst = paths.products.startsWith('/rst/');
   const workspace = useRestaurantWorkspaceStore();
@@ -20,39 +20,47 @@ export default function StockProductsPage() {
     preferredStoreId: inRst ? workspace.storeId : null,
   });
 
+  const actions = (
+    <>
+      {!embeddedInRstHub && inRst ? (
+        <>
+          <Link to={paths.inventoriesNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+            {p.t('rst.admin.stockInventory')}
+          </Link>
+          <Link to={paths.receiptsNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+            {p.t('rst.admin.stockReceipt')}
+          </Link>
+        </>
+      ) : null}
+      {p.manage && !embeddedInRstHub ? (
+        <BaseButton onClick={p.handleAddProduct}>
+          <Plus size={16} />
+          {p.t('products.add')}
+        </BaseButton>
+      ) : null}
+      {!inRst && p.manage ? (
+        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
+          <Plus size={16} />
+          {p.t('stockModule.add')}
+        </BaseButton>
+      ) : null}
+      {embeddedInRstHub && p.manage ? (
+        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
+          <Plus size={16} />
+          {p.t('stockModule.add')}
+        </BaseButton>
+      ) : null}
+      <BaseButton variant="secondary" onClick={() => p.setFiltersOpen(true)}>
+        <Filter size={16} />
+        {p.t('products.toolbar.filters')}
+      </BaseButton>
+    </>
+  );
+
   return (
     <PageLayout
-      title={p.t('stockModule.title')}
-      actions={(
-        <>
-          {inRst ? (
-            <>
-              <Link to={paths.inventoriesNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
-                {p.t('rst.admin.stockInventory')}
-              </Link>
-              <Link to={paths.receiptsNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
-                {p.t('rst.admin.stockReceipt')}
-              </Link>
-            </>
-          ) : null}
-          {p.manage && (
-            <BaseButton onClick={p.handleAddProduct}>
-              <Plus size={16} />
-              {p.t('products.add')}
-            </BaseButton>
-          )}
-          {!inRst && p.manage ? (
-            <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
-              <Plus size={16} />
-              {p.t('stockModule.add')}
-            </BaseButton>
-          ) : null}
-          <BaseButton variant="secondary" onClick={() => p.setFiltersOpen(true)}>
-            <Filter size={16} />
-            {p.t('products.toolbar.filters')}
-          </BaseButton>
-        </>
-      )}
+      title={embeddedInRstHub ? null : p.t('stockModule.title')}
+      actions={actions}
       filters={(
         <PageSearchField
           value={p.search}
@@ -63,20 +71,22 @@ export default function StockProductsPage() {
     >
       {p.isError && <ErrorBanner message={p.errorMessage} />}
 
-      <StockProductsTable
-        t={p.t}
-        rows={p.rows}
-        loading={p.loading}
-        showEmptyHint={p.showEmptyHint}
-        displayBarcode={p.displayBarcode}
-        onOpenRowMenu={p.openRowMenu}
-        page={p.page}
-        pageSize={p.pageSize}
-        total={p.total}
-        totalPages={p.totalPages}
-        onPageChange={p.setPage}
-        onPageSizeChange={p.setPageSize}
-      />
+      <div className="rst-products-table-shell overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+        <StockProductsTable
+          t={p.t}
+          rows={p.rows}
+          loading={p.loading}
+          showEmptyHint={p.showEmptyHint}
+          displayBarcode={p.displayBarcode}
+          onOpenRowMenu={p.openRowMenu}
+          page={p.page}
+          pageSize={p.pageSize}
+          total={p.total}
+          totalPages={p.totalPages}
+          onPageChange={p.setPage}
+          onPageSizeChange={p.setPageSize}
+        />
+      </div>
 
       <StockProductsModals
         t={p.t}

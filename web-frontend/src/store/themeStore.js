@@ -4,6 +4,7 @@ export function syncRootTheme() {
   const root = document.documentElement;
   root.classList.remove(
     'dark',
+    'rst-theme',
     'cashier-theme--light',
     'cashier-theme--dark',
     'app-theme--cashier',
@@ -22,12 +23,37 @@ export function syncRootTheme() {
   }
 }
 
+/** Restaurant OS — тёмная оболочка + Tailwind dark: для встроенных Aurent UI. */
+export function syncRestaurantTheme() {
+  if (typeof document === 'undefined') return;
+  const root = document.documentElement;
+  root.classList.remove(
+    'cashier-theme--light',
+    'cashier-theme--dark',
+    'app-theme--cashier',
+    'app-theme--public',
+    'app-theme--admin',
+  );
+  root.classList.add('dark', 'rst-theme');
+  root.style.colorScheme = 'dark';
+  root.style.backgroundColor = '#121418';
+  if (document.body) {
+    document.body.style.backgroundColor = '#121418';
+    document.body.style.color = '#f3efe6';
+  }
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) {
+    meta.setAttribute('content', '#121418');
+  }
+}
+
 /** Лендинг / login — светлая тема с зелёным акцентом. */
 export function syncPublicTheme() {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
   root.classList.remove(
     'dark',
+    'rst-theme',
     'cashier-theme--light',
     'cashier-theme--dark',
     'app-theme--cashier',

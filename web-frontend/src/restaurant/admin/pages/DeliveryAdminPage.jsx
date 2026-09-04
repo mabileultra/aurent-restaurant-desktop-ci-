@@ -1,8 +1,8 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import OrdersModals from '../../../features/orders/components/OrdersModals';
-import DeliveryOrderCancelModal from '../../../features/restaurant-delivery/components/DeliveryOrderCancelModal';
-import DeliveryOrderEditModal from '../../../features/restaurant-delivery/components/DeliveryOrderEditModal';
+import DeliveryOrderCancelModal from '../components/DeliveryOrderCancelModal';
+import DeliveryOrderEditModal from '../components/DeliveryOrderEditModal';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
 import { useDeliveryAdminPage } from '../hooks/useDeliveryAdminPage';

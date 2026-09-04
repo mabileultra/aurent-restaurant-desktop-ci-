@@ -7,19 +7,21 @@ import CategoryDeleteModal from '../components/categories/CategoryDeleteModal';
 import CategoryRowMenu from '../components/categories/CategoryRowMenu';
 import { useCategoriesPage } from '../hooks/useCategoriesPage';
 
-export default function CategoriesPage() {
+export default function CategoriesPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const c = useCategoriesPage();
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('categories.title')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {t('categories.subtitle', { count: c.categories.length })}
-          </p>
-        </div>
+        {hideTitle ? <div /> : (
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('categories.title')}</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {t('categories.subtitle', { count: c.categories.length })}
+            </p>
+          </div>
+        )}
         <div className="flex flex-wrap items-end gap-3">
           {c.companyBusinessTypes.length > 1 ? (
             <div className="min-w-[220px]">
@@ -46,19 +48,21 @@ export default function CategoriesPage() {
         </div>
       </div>
 
-      <CategoriesTable
-        manage={c.manage}
-        isLoading={c.isLoading}
-        pageRows={c.pageRows}
-        categories={c.categories}
-        page={c.page}
-        pageSize={c.pageSize}
-        total={c.total}
-        totalPages={c.totalPages}
-        onPageChange={c.setPage}
-        onPageSizeChange={c.setPageSize}
-        onToggleRowMenu={c.toggleRowMenu}
-      />
+      <div className="rst-products-table-shell overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+        <CategoriesTable
+          manage={c.manage}
+          isLoading={c.isLoading}
+          pageRows={c.pageRows}
+          categories={c.categories}
+          page={c.page}
+          pageSize={c.pageSize}
+          total={c.total}
+          totalPages={c.totalPages}
+          onPageChange={c.setPage}
+          onPageSizeChange={c.setPageSize}
+          onToggleRowMenu={c.toggleRowMenu}
+        />
+      </div>
 
       {c.modalOpen && (
         <CategoryModal

@@ -3,6 +3,7 @@ import { createContext, createElement, useContext } from 'react';
 /** Default paths for Aurent AppShell (pharmacy/retail). */
 export const DEFAULT_STOCK_FLOW_PATHS = {
   products: '/stock/products',
+  categories: '/categories',
   inventoriesReport: '/reports/stock/inventories',
   inventoriesNew: '/stock/inventories/new',
   receiptsReport: '/reports/stock/receipts',
@@ -15,14 +16,15 @@ export const DEFAULT_STOCK_FLOW_PATHS = {
 
 /** Paths when the same warehouse/report UIs live inside Restaurant OS. */
 export const RST_STOCK_FLOW_PATHS = {
-  products: '/rst/admin/stock',
-  inventoriesReport: '/rst/admin/reports/inventories',
+  products: '/rst/admin/stock/products',
+  categories: '/rst/admin/stock/categories',
+  inventoriesReport: '/rst/admin/stock/inventories',
   inventoriesNew: '/rst/admin/stock/inventories/new',
-  receiptsReport: '/rst/admin/reports/inventories',
+  receiptsReport: '/rst/admin/stock/receipts',
   receiptsNew: '/rst/admin/stock/receipts/new',
-  balancesReport: '/rst/admin/reports/balances',
+  balancesReport: '/rst/admin/stock/balances',
   lowStockReport: '/rst/admin/reports/low',
-  stockDashboard: '/rst/admin/reports',
+  stockDashboard: '/rst/admin/stock/products',
   lifecycleReport: null,
 };
 

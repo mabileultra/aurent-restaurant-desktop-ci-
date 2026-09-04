@@ -14,7 +14,7 @@ export default function RecipesAdminPage() {
   }
 
   const selectedDish = p.dishes.find((dish) => dish.id === p.selectedId);
-  const stockProductsPath = '/rst/admin/stock';
+  const stockProductsPath = '/rst/admin/stock/products';
 
   return (
     <section className="rst-tech">

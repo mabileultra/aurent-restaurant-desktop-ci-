@@ -74,15 +74,15 @@
 }
 
 .table-pagination__page-btn:hover:not(:disabled) {
-  border-color: rgb(16 185 129);
-  background: rgb(236 253 245);
+  border-color: rgb(148 163 184);
+  background: rgb(241 245 249);
 }
 
 .table-pagination__page-btn--active {
-  border-color: rgb(5 150 105);
-  background: rgb(236 253 245);
+  border-color: rgb(71 85 105);
+  background: rgb(241 245 249);
   font-weight: 700;
-  color: rgb(4 120 87);
+  color: rgb(15 23 42);
 }
 
 .table-pagination__ellipsis {

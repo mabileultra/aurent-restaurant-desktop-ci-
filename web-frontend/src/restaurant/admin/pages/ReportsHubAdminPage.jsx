@@ -21,13 +21,13 @@ const SALES_LINKS = [
 
 const STOCK_LINKS = [
   {
-    to: '/rst/admin/reports/inventories',
+    to: '/rst/admin/stock/inventories',
     titleKey: 'reportsInventoriesCard',
     hintKey: 'reportsInventoriesHint',
     icon: ClipboardList,
   },
   {
-    to: '/rst/admin/reports/balances',
+    to: '/rst/admin/stock/balances',
     titleKey: 'reportsBalancesCard',
     hintKey: 'reportsBalancesHint',
     icon: Package,

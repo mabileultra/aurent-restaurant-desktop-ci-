@@ -10,7 +10,7 @@ import ReportStoreSelect from '../components/ReportStoreSelect';
 import { useStockReceiptsReportPage } from '../hooks/useStockReceiptsReportPage';
 import { useStockFlowPaths } from '../../stock/stockFlowPaths';
 
-export default function StockReceiptsReportPage() {
+export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const r = useStockReceiptsReportPage();
   const paths = useStockFlowPaths();
@@ -18,10 +18,12 @@ export default function StockReceiptsReportPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.receiptsTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.receiptsSubtitle')}</p>
-        </div>
+        {hideTitle ? <div /> : (
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.receiptsTitle')}</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.receiptsSubtitle')}</p>
+          </div>
+        )}
         <Link
           to={paths.receiptsNew}
           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"

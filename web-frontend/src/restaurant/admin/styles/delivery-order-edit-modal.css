@@ -7,7 +7,7 @@
 .delivery-order-edit-modal__loading {
   padding: 1.5rem 0;
   text-align: center;
-  color: var(--rest-text-muted);
+  color: var(--rst-muted);
 }
 
 .delivery-order-edit-modal__field {
@@ -18,24 +18,24 @@
   display: block;
   margin-bottom: 0.35rem;
   font-size: 0.875rem;
-  color: var(--rest-text-muted);
+  color: var(--rst-muted);
 }
 
 .delivery-order-edit-modal__textarea {
   width: 100%;
   resize: vertical;
   border-radius: 0.5rem;
-  border: 1px solid var(--rest-border, #cbd5e1);
-  background: var(--rest-surface, #fff);
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: var(--rest-text);
+  color: var(--rst-ink);
 }
 
 .delivery-order-edit-modal__hint {
   margin-top: 0.35rem;
   font-size: 0.75rem;
-  color: #dc2626;
+  color: #fca5a5;
 }
 
 .delivery-order-edit-modal__actions {

@@ -28,7 +28,7 @@ const emptyFilters = () => ({
   availability: 'all',
 });
 
-export const MENU_CARD_PAGE_SIZE = 12;
+export const MENU_CARD_PAGE_SIZE = 24;
 
 export function useMenuAdminPage() {
   const { t } = useTranslation();

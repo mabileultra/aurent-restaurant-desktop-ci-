@@ -73,8 +73,6 @@ export const ZReportsPage = lazy(() => import('../features/cash-registers/pages/
 export const CashRegisterTransferPage = lazy(() => import('../features/cash-registers/pages/CashRegisterTransferPage'));
 export const CashRegisterConfigPage = lazy(() => import('../features/cash-registers/pages/CashRegisterConfigPage'));
 export const StoresPage = lazy(() => import('../features/tenant/pages/StoresPage'));
-export const RestaurantBookingPage = lazy(() => import('../features/restaurant-booking/pages/RestaurantBookingPage'));
-export const RestaurantDeliveryPage = lazy(() => import('../features/restaurant-delivery/pages/RestaurantDeliveryPage'));
 export const UsersPage = lazy(() => import('../features/tenant/pages/UsersPage'));
 export const UsersPrinterSettingsPage = lazy(() => import('../features/tenant/pages/UsersPrinterSettingsPage'));
 export const UsersBrandingSettingsPage = lazy(() => import('../features/tenant/pages/UsersBrandingSettingsPage'));

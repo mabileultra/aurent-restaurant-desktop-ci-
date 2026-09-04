@@ -21,10 +21,12 @@ import RstStockFlowScope from '../admin/components/RstStockFlowScope';
 import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
 import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
+import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
+import RstWarehouseBalancesPage from '../admin/pages/RstWarehouseBalancesPage';
+import RstStockInventoriesPage from '../admin/pages/RstStockInventoriesPage';
+import RstStockReceiptsPage from '../admin/pages/RstStockReceiptsPage';
 import StockInventoryCreatePage from '../../features/stock/pages/StockInventoryCreatePage';
 import StockReceiptCreatePage from '../../features/stock/pages/StockReceiptCreatePage';
-import StockInventoriesReportPage from '../../features/reports/pages/StockInventoriesReportPage';
-import StockBalancesReportPage from '../../features/reports/pages/StockBalancesReportPage';
 import LowStockReportPage from '../../features/reports/pages/LowStockReportPage';
 
 export const restaurantRoutes = (
@@ -71,26 +73,19 @@ export const restaurantRoutes = (
         path="stock"
         element={(
           <RstStockFlowScope>
-            <RstCatalogProductsPage />
+            <Outlet />
           </RstStockFlowScope>
         )}
-      />
-      <Route
-        path="stock/inventories/new"
-        element={(
-          <RstStockFlowScope>
-            <StockInventoryCreatePage />
-          </RstStockFlowScope>
-        )}
-      />
-      <Route
-        path="stock/receipts/new"
-        element={(
-          <RstStockFlowScope>
-            <StockReceiptCreatePage />
-          </RstStockFlowScope>
-        )}
-      />
+      >
+        <Route index element={<Navigate to="products" replace />} />
+        <Route path="products" element={<RstCatalogProductsPage />} />
+        <Route path="categories" element={<RstCategoriesPage />} />
+        <Route path="balances" element={<RstWarehouseBalancesPage />} />
+        <Route path="inventories" element={<RstStockInventoriesPage />} />
+        <Route path="receipts" element={<RstStockReceiptsPage />} />
+        <Route path="inventories/new" element={<StockInventoryCreatePage />} />
+        <Route path="receipts/new" element={<StockReceiptCreatePage />} />
+      </Route>
       <Route path="recipes" element={<RecipesAdminPage />} />
       <Route path="staff" element={<StaffAdminPage />} />
       <Route path="shifts" element={<ShiftsAdminPage />} />
@@ -100,19 +95,11 @@ export const restaurantRoutes = (
       <Route path="reports/sales" element={<ReportsAdminPage />} />
       <Route
         path="reports/inventories"
-        element={(
-          <RstStockFlowScope>
-            <StockInventoriesReportPage />
-          </RstStockFlowScope>
-        )}
+        element={<Navigate to="/rst/admin/stock/inventories" replace />}
       />
       <Route
         path="reports/balances"
-        element={(
-          <RstStockFlowScope>
-            <StockBalancesReportPage />
-          </RstStockFlowScope>
-        )}
+        element={<Navigate to="/rst/admin/stock/balances" replace />}
       />
       <Route
         path="reports/low"

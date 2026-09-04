@@ -7,48 +7,26 @@
 
 .rst-embedded-stock .admin-page,
 .rst-embedded-stock .space-y-6,
+.rst-embedded-stock .space-y-4,
 .rst-embedded-stock .page-layout,
 .rst-embedded-stock [class*="PageLayout"] {
   color: var(--rst-ink);
 }
 
-/* Titles & body text — readable on dark */
-.rst-embedded-stock h1,
-.rst-embedded-stock h2,
-.rst-embedded-stock h3,
-.rst-embedded-stock .text-slate-900,
-.rst-embedded-stock .text-slate-800,
-.rst-embedded-stock .text-black,
-.rst-embedded-stock .dark\:text-white,
-.rst-embedded-stock .dark\:text-slate-200,
-.rst-embedded-stock .font-bold,
-.rst-embedded-stock .font-semibold,
-.rst-embedded-stock .font-medium {
-  color: var(--rst-ink) !important;
-}
-
-.rst-embedded-stock .text-slate-700,
-.rst-embedded-stock .text-slate-600,
-.rst-embedded-stock .text-slate-500,
-.rst-embedded-stock .text-slate-400,
-.rst-embedded-stock .text-slate-300,
-.rst-embedded-stock .dark\:text-slate-400,
-.rst-embedded-stock .dark\:text-slate-300 {
-  color: var(--rst-muted) !important;
-}
-
-.rst-embedded-stock label,
-.rst-embedded-stock .text-sm {
-  color: var(--rst-ink);
-}
-
-/* Surfaces */
+/* Surfaces — no white cards/rows */
 .rst-embedded-stock .bg-white,
 .rst-embedded-stock .bg-slate-50,
 .rst-embedded-stock .bg-slate-100,
+.rst-embedded-stock .bg-white\/95,
+.rst-embedded-stock [class*="bg-white"] {
+  background-color: var(--rst-surface) !important;
+}
+
 .rst-embedded-stock .dark\:bg-slate-950,
 .rst-embedded-stock .dark\:bg-slate-900,
-.rst-embedded-stock .dark\:bg-slate-800\/80 {
+.rst-embedded-stock .dark\:bg-slate-800,
+.rst-embedded-stock .dark\:bg-slate-800\/80,
+.rst-embedded-stock .dark\:bg-slate-800\/50 {
   background-color: var(--rst-surface) !important;
 }
 
@@ -66,7 +44,7 @@
   border-color: var(--rst-line) !important;
 }
 
-/* Search field — no emerald ring, no black inner input */
+/* Search */
 .rst-embedded-stock .page-search-field {
   width: 100%;
   background: var(--rst-surface-2) !important;
@@ -96,15 +74,12 @@
   color: var(--rst-muted) !important;
 }
 
-/* Inputs / selects — full width, restaurant palette */
+/* Inputs / selects */
 .rst-embedded-stock input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .rst-embedded-stock select,
 .rst-embedded-stock textarea,
 .rst-embedded-stock .form-select,
-.rst-embedded-stock .base-select,
-.rst-embedded-stock .base-select select {
-  width: 100%;
-  max-width: 100%;
+.rst-embedded-stock .base-select__trigger {
   background: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
@@ -115,7 +90,8 @@
 .rst-embedded-stock input:focus,
 .rst-embedded-stock select:focus,
 .rst-embedded-stock textarea:focus,
-.rst-embedded-stock .base-select:focus-within {
+.rst-embedded-stock .base-select--open .base-select__trigger,
+.rst-embedded-stock .base-select__trigger:focus {
   border-color: var(--rst-accent) !important;
   box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
   outline: none !important;
@@ -125,62 +101,36 @@
   accent-color: var(--rst-accent);
 }
 
-/* Filter rows */
-.rst-embedded-stock .flex.flex-wrap.gap-3 {
-  gap: 0.85rem;
-  width: 100%;
-  align-items: end;
+.rst-embedded-stock .base-select__label,
+.rst-embedded-stock .base-select__value--placeholder,
+.rst-embedded-stock .base-select__chevron {
+  color: var(--rst-muted) !important;
 }
 
-.rst-embedded-stock .flex.flex-wrap.gap-3 > * {
-  min-width: 0;
-}
-
-.rst-embedded-stock .flex.flex-wrap.gap-3 > input,
-.rst-embedded-stock .flex.flex-wrap.gap-3 > .base-select,
-.rst-embedded-stock .flex.flex-wrap.gap-3 > label {
-  flex: 1 1 12rem;
-}
-
-/* Header action buttons — spaced, same style */
-.rst-embedded-stock .flex.flex-wrap.items-center.gap-2 {
-  gap: 0.65rem !important;
-}
-
-.rst-embedded-stock a.inline-flex,
-.rst-embedded-stock a.rounded-lg.border {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.5rem 0.85rem;
-  border: 1px solid var(--rst-line) !important;
-  border-radius: 8px;
-  background: var(--rst-surface-2) !important;
-  color: var(--rst-ink) !important;
-  font-size: 0.875rem;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.rst-embedded-stock a.inline-flex:hover,
-.rst-embedded-stock a.rounded-lg.border:hover {
-  border-color: var(--rst-accent) !important;
+.rst-embedded-stock .base-select__value {
   color: var(--rst-ink) !important;
 }
 
+/* Primary / emerald → orange accent */
+.rst-embedded-stock button.bg-emerald-500,
+.rst-embedded-stock a.bg-emerald-500,
+.rst-embedded-stock .bg-emerald-500,
 .rst-embedded-stock button.bg-emerald-600,
 .rst-embedded-stock a.bg-emerald-600,
 .rst-embedded-stock .bg-emerald-600,
-.rst-embedded-stock .bg-emerald-700 {
+.rst-embedded-stock .bg-emerald-700,
+.rst-embedded-stock .dark\:bg-emerald-600 {
   background: var(--rst-accent) !important;
   border-color: var(--rst-accent) !important;
   color: #1b1208 !important;
 }
 
+.rst-embedded-stock .hover\:bg-emerald-600:hover,
 .rst-embedded-stock .hover\:bg-emerald-700:hover,
 .rst-embedded-stock a.hover\:bg-emerald-700:hover,
 .rst-embedded-stock .hover\:bg-emerald-800:hover {
   background: var(--rst-accent-hover) !important;
+  color: #1b1208 !important;
 }
 
 .rst-embedded-stock a.text-emerald-700,
@@ -190,6 +140,27 @@
   color: var(--rst-accent) !important;
 }
 
+.rst-embedded-stock .border-emerald-500,
+.rst-embedded-stock .border-emerald-600 {
+  border-color: var(--rst-accent) !important;
+}
+
+/* Selected radio cards in import modal — dark tint, readable text */
+.rst-embedded-stock .bg-emerald-50,
+.rst-embedded-stock .dark\:bg-emerald-500\/10,
+.rst-embedded-stock [class*="bg-emerald-50"],
+.rst-embedded-stock [class*="bg-emerald-500/10"] {
+  background: var(--rst-accent-soft) !important;
+}
+
+.rst-embedded-stock .bg-sky-50,
+.rst-embedded-stock .bg-sky-50\/40,
+.rst-embedded-stock .dark\:bg-sky-950\/40,
+.rst-embedded-stock .dark\:bg-sky-950\/30,
+.rst-embedded-stock .dark\:bg-sky-950\/20 {
+  background: var(--rst-surface-2) !important;
+}
+
 .rst-embedded-stock .ring-emerald-500,
 .rst-embedded-stock .focus\:ring-emerald-500:focus,
 .rst-embedded-stock [class*="ring-emerald"] {
@@ -197,12 +168,14 @@
   box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
 }
 
-/* Tables — all values readable */
+/* Tables */
+.rst-embedded-stock .rst-products-table-shell,
+.rst-embedded-stock .rst-products-table-shell > div,
 .rst-embedded-stock table,
 .rst-embedded-stock .rounded-lg,
-.rst-embedded-stock .rounded-xl,
-.rst-embedded-stock [class*="ReportTable"] {
+.rst-embedded-stock .rounded-xl {
   border-color: var(--rst-line) !important;
+  background-color: var(--rst-surface) !important;
 }
 
 .rst-embedded-stock thead,
@@ -213,20 +186,20 @@
 .rst-embedded-stock th {
   color: var(--rst-muted) !important;
   border-color: var(--rst-line) !important;
+  background: transparent !important;
 }
 
-.rst-embedded-stock td {
+.rst-embedded-stock tbody,
+.rst-embedded-stock tbody tr,
+.rst-embedded-stock tbody td {
+  background-color: var(--rst-surface) !important;
   color: var(--rst-ink) !important;
   border-color: var(--rst-line) !important;
 }
 
-.rst-embedded-stock tbody tr {
-  background: transparent;
-  border-color: var(--rst-line) !important;
-}
-
+.rst-embedded-stock tbody tr:hover,
 .rst-embedded-stock tbody tr:hover td {
-  background: rgb(255 255 255 / 0.03);
+  background-color: var(--rst-surface-2) !important;
 }
 
 .rst-embedded-stock .text-amber-700,
@@ -235,7 +208,8 @@
 }
 
 .rst-embedded-stock .text-red-600,
-.rst-embedded-stock .text-red-500 {
+.rst-embedded-stock .text-red-500,
+.rst-embedded-stock .dark\:text-red-300 {
   color: #fca5a5 !important;
 }
 
@@ -243,7 +217,7 @@
   color: var(--rst-ink) !important;
 }
 
-/* Pagination — orange active, no green */
+/* Pagination */
 .rst-embedded-stock .table-pagination {
   border-color: var(--rst-line) !important;
   background: var(--rst-surface-2) !important;
@@ -280,47 +254,51 @@
   font-weight: 700;
 }
 
-.rst-embedded-stock .table-pagination__page-size .base-select,
-.rst-embedded-stock .table-pagination__page-size select {
+.rst-embedded-stock .table-pagination__page-size {
+  width: auto;
+}
+
+.rst-embedded-stock .table-pagination__page-size .base-select {
   width: 5.5rem !important;
   min-width: 5.5rem;
-  background: var(--rst-surface) !important;
-  color: var(--rst-ink) !important;
-  border-color: var(--rst-line) !important;
 }
 
-/* Document create: store/notes panels */
-.rst-embedded-stock .admin-page .grid.gap-4 {
+.rst-embedded-stock .table-pagination__page-size .base-select__trigger {
   width: 100%;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.55rem;
 }
 
-.rst-embedded-stock .admin-page .grid.gap-4 > * {
-  min-width: 0;
+/* Links / secondary actions */
+.rst-embedded-stock a.inline-flex,
+.rst-embedded-stock a.rounded-lg.border {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 8px;
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.rst-embedded-stock .admin-page select,
-.rst-embedded-stock .admin-page input,
-.rst-embedded-stock .admin-page textarea {
-  width: 100% !important;
-}
-
-/* White toolbar on inventory lines → restaurant surface */
-.rst-embedded-stock .bg-white\/95,
-.rst-embedded-stock [class*="bg-white"] {
-  background-color: var(--rst-surface) !important;
+.rst-embedded-stock a.inline-flex:hover,
+.rst-embedded-stock a.rounded-lg.border:hover {
+  border-color: var(--rst-accent) !important;
   color: var(--rst-ink) !important;
 }
 
 .rst-embedded-stock .empty-hint,
-.rst-embedded-stock .border-t.border-sky-100,
-.rst-embedded-stock .bg-sky-50,
-.rst-embedded-stock .dark\:bg-sky-950\/40 {
+.rst-embedded-stock .border-t.border-sky-100 {
   background: var(--rst-surface-2) !important;
   border-color: var(--rst-line) !important;
   color: var(--rst-ink) !important;
 }
 
-/* Stock document create (inventory / receipt) */
+/* Stock document create */
 .rst-embedded-stock .stock-doc-lines {
   border-color: var(--rst-line) !important;
   background: var(--rst-surface) !important;
@@ -400,21 +378,6 @@
   color: var(--rst-accent);
 }
 
-.rst-catalog-stock__chrome {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 0.85rem;
-  padding-bottom: 0.25rem;
-}
-
-.rst-catalog-stock__actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
 .rst-embedded-stock .rst-products-table-shell {
   border-color: var(--rst-line) !important;
   background: var(--rst-surface);
@@ -423,4 +386,15 @@
 
 .rst-embedded-stock .rst-products-table-shell table {
   margin: 0;
+}
+
+/* Import / export / filter modals inside stock */
+.rst-embedded-stock .product-import-modal,
+.rst-embedded-stock .fixed.inset-0 > div {
+  border-color: var(--rst-line);
+}
+
+.rst-embedded-stock .product-import-modal {
+  background: var(--rst-surface) !important;
+  color: var(--rst-ink) !important;
 }

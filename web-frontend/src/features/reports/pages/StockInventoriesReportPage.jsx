@@ -11,7 +11,7 @@ import ReportStoreSelect from '../components/ReportStoreSelect';
 import { useStockInventoriesReportPage } from '../hooks/useStockInventoriesReportPage';
 import { useStockFlowPaths } from '../../stock/stockFlowPaths';
 
-export default function StockInventoriesReportPage() {
+export default function StockInventoriesReportPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const r = useStockInventoriesReportPage();
   const paths = useStockFlowPaths();
@@ -19,10 +19,12 @@ export default function StockInventoriesReportPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.inventoriesTitle')}</h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.inventoriesSubtitle')}</p>
-        </div>
+        {hideTitle ? <div /> : (
+          <div>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.inventoriesTitle')}</h1>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.inventoriesSubtitle')}</p>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           <ReportExportButton
             fetchBlob={() => stockReportApi.exportInventories(r.exportParams)}
