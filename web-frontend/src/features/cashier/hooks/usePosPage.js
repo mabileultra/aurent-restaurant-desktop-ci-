@@ -43,6 +43,10 @@ export function usePosPage() {
   const setOrderDiscountAmount = useCartStore((s) => s.setOrderDiscountAmount);
   const setOrderDiscountPercent = useCartStore((s) => s.setOrderDiscountPercent);
   const clearOrderDiscount = useCartStore((s) => s.clearOrderDiscount);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const holdCart = useCartStore((s) => s.holdCart);
+  const parkedCart = useCartStore((s) => s.parkedCart);
+  const hasParkedCart = Boolean(parkedCart);
 
   const { viewMode, handleViewModeChange } = usePosCatalogViewMode();
   const catalog = usePosProductsCatalog({ storeId });
@@ -183,6 +187,39 @@ export function usePosPage() {
     setDiscountOpen(true);
   };
 
+  const handleHoldCart = useCallback(() => {
+    if (returnOpen || discountOpen || payOpen) return;
+    const result = holdCart();
+    setSelectedLineId(null);
+    if (result === 'held' || result === 'replaced') {
+      toast.success(t('pos.holdReceiptDone'));
+      return;
+    }
+    if (result === 'restored') {
+      toast.success(t('pos.restoreReceiptDone'));
+      return;
+    }
+    toast.error(t('pos.holdReceiptEmpty'));
+  }, [discountOpen, holdCart, payOpen, returnOpen, t]);
+
+  const handleClearCart = useCallback(() => {
+    if (items.length === 0) return;
+    if (!window.confirm(t('pos.clearOrderConfirm'))) return;
+    clearCart();
+    setSelectedLineId(null);
+    toast.success(t('pos.clearOrderDone'));
+  }, [clearCart, items.length, t]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      if (e.key !== 'F6' || e.repeat) return;
+      e.preventDefault();
+      handleHoldCart();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleHoldCart]);
+
   return {
     t,
     storeId,
@@ -212,6 +249,9 @@ export function usePosPage() {
     shiftIsOpen,
     handleReturnSuccess,
     handleDiscount,
+    handleHoldCart,
+    handleClearCart,
+    hasParkedCart,
     handleOpenPaymentFlow,
     handlePayFlowClosed,
     payFlowOptions,

@@ -1,29 +1,168 @@
-/* POS topbar — смена, кассир; без дублей из сайдбара */
+/* POS topbar — бренд, смена, кассир, тема, язык, выход */
 
-.cashier-pos-topbar__cashier {
+.cashier-topbar__brand {
+  display: inline-flex;
   align-items: center;
   gap: 8px;
-  max-width: min(220px, 28vw);
-  min-height: 28px;
-  padding: 4px 12px;
+  flex-shrink: 0;
+}
+
+.cashier-topbar__brand-icon {
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.cashier-topbar__brand-name {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pos-text);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.cashier-topbar__pro-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--pos-green-soft, rgb(0 104 71 / 0.12));
+  color: var(--pos-green, #006847);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cashier-topbar__brand-divider {
+  width: 1px;
+  height: 28px;
+  margin: 0 4px;
+  background: var(--pos-border);
+  flex-shrink: 0;
+}
+
+.cashier-topbar__store-pill {
+  align-items: center;
+  gap: 10px;
+  max-width: min(42vw, 520px);
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 0 14px;
   border: 1px solid var(--pos-border);
   border-radius: 999px;
   background: var(--pos-surface-elevated, #fff);
   color: var(--pos-text);
-  font-size: 0.8125rem;
-  font-weight: 700;
-  line-height: 1.2;
 }
 
-.cashier-pos-topbar__cashier svg {
+.cashier-topbar__store-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--pos-green, #006847);
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
+  flex-shrink: 0;
+}
+
+.cashier-topbar__store-name {
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cashier-topbar__store-sep {
+  width: 1px;
+  height: 18px;
+  background: var(--pos-border);
+  flex-shrink: 0;
+}
+
+.cashier-topbar__shift-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pos-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cashier-topbar__shift-meta svg {
   flex-shrink: 0;
   color: var(--pos-muted);
+}
+
+.cashier-pos-topbar__cashier {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  max-width: min(280px, 32vw);
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 4px 10px 4px 6px;
+  border: 1px solid var(--pos-border);
+  border-radius: 14px;
+  background: var(--pos-surface-elevated, #fff);
+  color: var(--pos-text);
+}
+
+.cashier-pos-topbar__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+.cashier-pos-topbar__cashier-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
 }
 
 .cashier-pos-topbar__cashier-name {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.cashier-pos-topbar__cashier-role {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--pos-green, #006847);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.cashier-pos-topbar__role-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.cashier-pos-topbar__cashier-chevron {
+  flex-shrink: 0;
+  color: var(--pos-muted);
+  margin-left: 2px;
 }
 
 .cashier-pos-topbar__open-shift {
@@ -32,7 +171,7 @@
   justify-content: center;
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
-  border: 1px solid rgb(0 166 126 / 0.35);
+  border: 1px solid rgb(0 104 71 / 0.35);
   border-radius: 999px;
   background: var(--pos-green-soft);
   color: var(--pos-green);
@@ -45,20 +184,22 @@
 }
 
 .cashier-pos-topbar__open-shift:hover {
-  background: rgb(0 166 126 / 0.18);
+  background: rgb(0 104 71 / 0.18);
   border-color: var(--pos-green);
-  box-shadow: 0 2px 10px rgb(0 166 126 / 0.14);
+  box-shadow: 0 2px 10px rgb(0 104 71 / 0.14);
 }
 
 .cashier-pos-topbar__logout {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
-  border: 1px solid var(--pos-border);
+  border: 1px solid #fecaca;
   border-radius: 999px;
-  background: #fff;
-  color: var(--pos-muted);
+  background: #fef2f2;
+  color: #dc2626;
   font-size: 0.8125rem;
   font-weight: 700;
   line-height: 1;
@@ -68,7 +209,83 @@
 }
 
 .cashier-pos-topbar__logout:hover {
-  background: #fef2f2;
-  border-color: #fecaca;
+  background: #fee2e2;
+  border-color: #fca5a5;
   color: #b91c1c;
+}
+
+/* Theme segmented control */
+.cashier-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  min-height: var(--cashier-topbar-control-h, 40px);
+  border: 1px solid var(--pos-border);
+  border-radius: 999px;
+  background: var(--pos-surface-elevated, #fff);
+}
+
+.cashier-theme-toggle__opt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 30px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--pos-muted);
+  cursor: pointer;
+}
+
+.cashier-theme-toggle__opt.is-active {
+  background: #fff;
+  color: var(--pos-text);
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
+}
+
+.cashier-app.cashier-app--terminal .cashier-theme-toggle__opt.is-active {
+  background: var(--pos-surface);
+  color: var(--pos-green);
+  box-shadow: 0 0 0 1px rgb(61 255 168 / 0.2);
+}
+
+.cashier-app.cashier-app--light .cashier-topbar--pos {
+  background: #fff !important;
+  border-bottom: 1px solid var(--pos-border) !important;
+  box-shadow: 0 1px 0 rgb(15 23 42 / 0.03);
+}
+
+.cashier-app.cashier-app--light .cashier-topbar__brand-name {
+  color: #0f172a;
+}
+
+.cashier-app.cashier-app--light .cashier-topbar__store-pill,
+.cashier-app.cashier-app--light .cashier-pos-topbar__cashier,
+.cashier-app.cashier-app--light .cashier-theme-toggle,
+.cashier-app.cashier-app--light .cashier-lang-switch {
+  background: #fff;
+  border-color: var(--pos-border);
+}
+
+.cashier-app.cashier-app--terminal .cashier-topbar__brand-name {
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-topbar__store-pill,
+.cashier-app.cashier-app--terminal .cashier-pos-topbar__cashier {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+}
+
+.cashier-app.cashier-app--terminal .cashier-pos-topbar__logout {
+  background: rgb(239 68 68 / 0.12);
+  border-color: rgb(239 68 68 / 0.35);
+  color: #f87171;
+}
+
+.cashier-app.cashier-app--terminal .cashier-theme-toggle {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
 }

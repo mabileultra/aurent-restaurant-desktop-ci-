@@ -4,34 +4,37 @@
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key {
-  background: var(--pos-surface, #f4f6fa);
-  border-color: var(--pos-border, #d1d9e6);
-  color: var(--pos-ink, #1e3a5f);
-  box-shadow: none;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #0f172a;
+  border-radius: 14px;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  font-weight: 700;
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key:hover:not(:disabled),
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key:hover:not(:disabled) {
-  background: var(--pos-surface-elevated, #eef2f8);
-  border-color: var(--pos-border, #d1d9e6);
+  background: #e2e8f0;
+  border-color: #cbd5e1;
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key--action {
-  background: var(--pos-surface-hover, #eef2f8);
-  border-color: var(--pos-border, #d1d9e6);
-  color: var(--pos-ink, #1e3a5f);
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__key--icon,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__key--icon {
-  color: var(--pos-muted, #5a6f8c);
+  color: #475569;
+  background: #e2e8f0;
 }
 
 .cashier-app.cashier-app--light .pos-register-pay-rail__keypad-wrap .pos-keypad__quick-btn,
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-keypad__quick-btn {
-  background: var(--pos-surface, #f4f6fa);
-  border-color: var(--pos-border, #d1d9e6);
-  color: var(--pos-ink, #1e3a5f);
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #0f172a;
   box-shadow: none;
 }

@@ -41,7 +41,7 @@
 .cashier-lang-switch__btn.is-active {
   background: var(--pos-green);
   color: var(--pos-on-green, #fff);
-  box-shadow: 0 1px 3px rgb(0 166 126 / 0.28);
+  box-shadow: 0 1px 3px rgb(0 104 71 / 0.28);
 }
 
 .cashier-lang-switch__btn:focus {

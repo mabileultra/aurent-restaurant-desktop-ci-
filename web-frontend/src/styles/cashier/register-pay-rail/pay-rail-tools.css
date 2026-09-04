@@ -20,14 +20,14 @@
 }
 
 .pos-register-pay-rail__tool--discount {
-  border-color: #6ee7b7;
-  background: #ecfdf5;
-  color: #047857;
+  border-color: #c4b5fd;
+  background: #f5f3ff;
+  color: #6d28d9;
 }
 
 .pos-register-pay-rail__tool--discount:hover:not(:disabled) {
-  background: #d1fae5;
-  border-color: #34d399;
+  background: #ede9fe;
+  border-color: #a78bfa;
 }
 
 .pos-register-pay-rail__tool--return {

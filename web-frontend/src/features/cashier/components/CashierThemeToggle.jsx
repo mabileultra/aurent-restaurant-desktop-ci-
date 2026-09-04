@@ -8,18 +8,37 @@ import clsx from 'clsx';
 export default function CashierThemeToggle({ theme, onToggle, className = '', compact = false }) {
   const { t } = useTranslation();
   const isDark = theme === 'dark';
-  const label = isDark ? t('pos.themeLight') : t('pos.themeDark');
 
   return (
-    <button
-      type="button"
+    <div
       className={clsx('cashier-theme-toggle', compact && 'cashier-theme-toggle--compact', className)}
-      onClick={onToggle}
+      role="group"
       aria-label={t('pos.themeToggle')}
-      title={label}
     >
-      {isDark ? <Sun size={compact ? 18 : 20} strokeWidth={2} aria-hidden /> : <Moon size={compact ? 18 : 20} strokeWidth={2} aria-hidden />}
-      {!compact ? <span className="cashier-theme-toggle__label">{label}</span> : null}
-    </button>
+      <button
+        type="button"
+        className={clsx('cashier-theme-toggle__opt', !isDark && 'is-active')}
+        onClick={() => {
+          if (isDark) onToggle();
+        }}
+        aria-label={t('pos.themeLight')}
+        title={t('pos.themeLight')}
+        aria-pressed={!isDark}
+      >
+        <Sun size={compact ? 16 : 18} strokeWidth={2} aria-hidden />
+      </button>
+      <button
+        type="button"
+        className={clsx('cashier-theme-toggle__opt', isDark && 'is-active')}
+        onClick={() => {
+          if (!isDark) onToggle();
+        }}
+        aria-label={t('pos.themeDark')}
+        title={t('pos.themeDark')}
+        aria-pressed={isDark}
+      >
+        <Moon size={compact ? 16 : 18} strokeWidth={2} aria-hidden />
+      </button>
+    </div>
   );
 }

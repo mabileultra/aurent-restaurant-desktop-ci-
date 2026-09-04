@@ -3,6 +3,9 @@
 .cashier-bottom-nav-shell {
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
 }
 
 .cashier-bottom-nav-shell.is-collapsed {
@@ -19,9 +22,11 @@
 }
 
 .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  flex: 1 1 auto;
+  min-width: 0;
   grid-template-columns:
-    minmax(44px, 5cqi)
-    minmax(44px, 5cqi)
+    minmax(0, 1.1fr)
+    minmax(0, 1.15fr)
     repeat(6, minmax(0, 1fr))
     minmax(44px, 5cqi);
 }
@@ -33,8 +38,8 @@
 }
 
 .cashier-bottom-nav__btn--keyboard .cashier-bottom-nav__keyboard-label {
-  display: block;
-  font-size: clamp(0.625rem, 2cqi, 0.75rem);
+  display: inline;
+  font-size: inherit;
   font-weight: 800;
   letter-spacing: 0.04em;
   line-height: 1;
@@ -44,9 +49,60 @@
   padding: 0;
 }
 
+.cashier-bottom-nav__aside {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.cashier-bottom-nav__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--cashier-bottom-nav-h, 52px);
+  padding: 0 14px;
+  border: 1px solid var(--pos-border);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--pos-text);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cashier-bottom-nav__status:disabled {
+  cursor: default;
+}
+
+.cashier-bottom-nav__status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  background: var(--pos-green, #006847);
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
+}
+
+.cashier-bottom-nav__status--offline .cashier-bottom-nav__status-dot {
+  background: #f59e0b;
+  box-shadow: 0 0 0 3px rgb(245 158 11 / 0.18);
+}
+
+.cashier-bottom-nav__status--offline {
+  color: #92400e;
+}
+
+.cashier-app.cashier-app--terminal .cashier-bottom-nav__status {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+  color: var(--pos-text);
+}
+
 .cashier-register__bottom-nav.cashier-bottom-nav-shell,
 .cashier-app__bottom-nav.cashier-bottom-nav-shell {
-  padding-bottom: 4px;
+  padding: 8px 10px;
 }
 
 .cashier-app.cashier-app--touch .cashier-bottom-nav-shell .cashier-bottom-nav__btn {

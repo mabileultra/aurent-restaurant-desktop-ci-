@@ -58,6 +58,11 @@ export function usePosCatalogPanel({
     onBrowseChange?.('products');
   };
 
+  const selectQuickFilter = (categoryId) => {
+    if (search.trim()) onSearchChange('');
+    openCategory(categoryId);
+  };
+
   const goBackToCategories = () => {
     onBrowseChange?.('categories');
     onSearchChange('');
@@ -107,6 +112,7 @@ export function usePosCatalogPanel({
     showProducts,
     productsTitle,
     openCategory,
+    selectQuickFilter,
     goBackToCategories,
     handleCatalogScroll,
     handleSearchInput,

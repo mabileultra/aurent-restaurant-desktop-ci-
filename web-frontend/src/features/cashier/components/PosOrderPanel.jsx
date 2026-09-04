@@ -19,6 +19,9 @@ export default function PosOrderPanel({
   taxTotal,
   priceEditable = true,
   hideHeader = false,
+  onHold,
+  onClear,
+  hasParkedCart = false,
 }) {
   const { t } = useTranslation();
   const p = usePosOrderPanel({
@@ -31,6 +34,8 @@ export default function PosOrderPanel({
   });
 
   const panelTitle = title ?? t('pos.currentCheck');
+  const showFoot = showTotalsFoot && (items.length > 0 || hasParkedCart);
+  const holdIsRestore = items.length === 0 && hasParkedCart;
 
   return (
     <section className={`pos-order-panel pos-order-panel--register${className ? ` ${className}` : ''}`}>
@@ -54,7 +59,9 @@ export default function PosOrderPanel({
             {items.length === 0 ? (
               <li className="pos-cart-table__row pos-cart-table__row--empty" role="row">
                 <div className="pos-cart-table__col pos-cart-table__col--name">
-                  <span className="pos-cart-table__empty-hint">{t('pos.cartEmpty')}</span>
+                  <span className="pos-cart-table__empty-hint">
+                    {hasParkedCart ? t('pos.parkedCartHint') : t('pos.cartEmpty')}
+                  </span>
                 </div>
                 <div className="pos-cart-table__col pos-cart-table__col--price" aria-hidden />
                 <div className="pos-cart-table__col pos-cart-table__col--qty" aria-hidden />
@@ -94,13 +101,18 @@ export default function PosOrderPanel({
         </div>
       </div>
 
-      {showTotalsFoot && items.length > 0 ? (
+      {showFoot ? (
         <PosOrderPanelTotalsFoot
           t={t}
-          subtotalBeforeTax={p.subtotalBeforeTax}
+          positionsCount={p.positionsCount}
+          totalQty={p.totalQty}
           taxTotal={p.taxTotal}
           taxRateLabel={p.taxRateLabel}
-          payableTotal={p.payableTotal}
+          onHold={onHold}
+          onClear={onClear}
+          holdDisabled={!onHold || (items.length === 0 && !hasParkedCart)}
+          clearDisabled={!onClear || items.length === 0}
+          holdIsRestore={holdIsRestore}
         />
       ) : null}
     </section>

@@ -24,11 +24,11 @@ export default function CashierBottomNavProducts({ t }) {
   return (
     <button
       type="button"
-      className={bottomNavLinkClass(isCatalogActive, { primary: true })}
+      className={`${bottomNavLinkClass(isCatalogActive, { primary: true })} cashier-bottom-nav__btn--products`}
       onClick={openCatalog}
       title={t('pos.tabCatalog')}
     >
-      <Package size={22} strokeWidth={2} aria-hidden />
+      <Package size={20} strokeWidth={2} aria-hidden />
       <span>{t('pos.tabCatalog')}</span>
     </button>
   );

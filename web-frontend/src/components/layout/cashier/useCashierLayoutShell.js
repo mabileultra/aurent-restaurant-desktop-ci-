@@ -87,6 +87,11 @@ export function useCashierLayoutShell() {
     return time ? t('pos.shiftOpenedAt', { time }) : t('pos.shiftOpen');
   }, [shift, t]);
 
+  const cashierRoleLabel = useMemo(() => {
+    if (!user?.role) return '';
+    return t(`roles.${user.role}`, { defaultValue: user.role });
+  }, [t, user?.role]);
+
   const handleLogout = () => {
     clearCashierScreenLocked(user?.id);
     logoutAndResetSession();
@@ -140,6 +145,7 @@ export function useCashierLayoutShell() {
     isDesktopApp,
     shiftOpenBadge,
     zoom,
+    cashierRoleLabel,
     displayCashierName: () => displayCashierName(user),
   };
 }

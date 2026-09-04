@@ -3,6 +3,7 @@ import { ArrowLeft, Search } from 'lucide-react';
 import { usePosCatalogPanel } from '../hooks/usePosCatalogPanel';
 import PosCatalogCategoryBrowse from './pos-catalog/PosCatalogCategoryBrowse';
 import PosCatalogProductBrowse from './pos-catalog/PosCatalogProductBrowse';
+import PosCatalogQuickFilters from './pos-catalog/PosCatalogQuickFilters';
 import PosCatalogViewToggle from './pos-catalog/PosCatalogViewToggle';
 
 const PosCatalogPanel = forwardRef(function PosCatalogPanel(
@@ -73,6 +74,15 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
           />
         </div>
       </header>
+
+      <PosCatalogQuickFilters
+        t={panel.t}
+        categories={categories}
+        categoriesLoading={categoriesLoading}
+        selectedCategoryId={selectedCategoryId}
+        searchActive={searchActive}
+        onSelect={panel.selectQuickFilter}
+      />
 
       {panel.showProducts && !searchActive ? (
         <div className="pos-catalog-toolbar">

@@ -48,11 +48,26 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: clamp(24px, 8cqi, 30px);
-  height: clamp(24px, 8cqi, 30px);
-  border-radius: 8px;
+  width: clamp(28px, 8.5cqi, 34px);
+  height: clamp(28px, 8.5cqi, 34px);
+  border-radius: 10px;
   background: #eef2f7;
   color: #1e3a5f;
+}
+
+.pos-register-pay-methods__tile--cashless .pos-register-pay-methods__tile-icon {
+  background: linear-gradient(135deg, #dbeafe 0%, #fce7f3 100%);
+  color: #2563eb;
+}
+
+.pos-register-pay-methods__tile--credit .pos-register-pay-methods__tile-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.pos-register-pay-methods__tile--advance .pos-register-pay-methods__tile-icon {
+  background: #ffedd5;
+  color: #ea580c;
 }
 
 .pos-register-pay-methods__tile-label {

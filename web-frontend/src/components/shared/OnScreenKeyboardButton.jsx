@@ -27,8 +27,12 @@ export default function OnScreenKeyboardButton({
         title={title ?? label}
         aria-label={label}
       >
-        <Keyboard size={22} strokeWidth={2} aria-hidden />
-        <span className="cashier-bottom-nav__keyboard-label">ABC</span>
+        <Keyboard size={20} strokeWidth={2} aria-hidden />
+        <span>
+          <span className="cashier-bottom-nav__keyboard-label">ABC</span>
+          {' '}
+          {t('common.keyboardWord')}
+        </span>
       </button>
     );
   }

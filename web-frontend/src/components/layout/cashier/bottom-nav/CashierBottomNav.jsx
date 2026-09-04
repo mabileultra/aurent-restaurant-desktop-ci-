@@ -1,6 +1,14 @@
 import { NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { BookOpen, ChevronDown, ChevronUp, Clock, Headphones, Lock, Receipt } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  CircleDollarSign,
+  Clock,
+  Headphones,
+  Lock,
+} from 'lucide-react';
 import { useCashierStore } from '../../../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../../../contexts/CashierShiftModalContext';
 import { useCashierLock } from '../../../../contexts/CashierLockContext';
@@ -10,6 +18,7 @@ import { bottomNavLinkClass } from './bottomNavClass';
 import CashierBottomNavProducts from './CashierBottomNavProducts';
 import CashierBottomNavRegister from './CashierBottomNavRegister';
 import CashierBottomNavTables from './CashierBottomNavTables';
+import CashierBottomNavAside from './CashierBottomNavAside';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 
 function navClass(isActive) {
@@ -36,12 +45,13 @@ export default function CashierBottomNav({ className = '' }) {
       <nav className="cashier-bottom-nav" aria-label={t('nav.handbook')}>
         <button
           type="button"
-          className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon"
+          className="cashier-bottom-nav__btn cashier-bottom-nav__btn--lock"
           onClick={lock}
           title={t('pos.lockScreen')}
           aria-label={t('pos.lockScreen')}
         >
-          <Lock size={22} strokeWidth={2} aria-hidden />
+          <Lock size={20} strokeWidth={2} aria-hidden />
+          {!collapsed ? <span>{t('pos.lockScreen')}</span> : null}
         </button>
 
         <OnScreenKeyboardButton variant="bottom-nav" />
@@ -50,36 +60,36 @@ export default function CashierBottomNav({ className = '' }) {
           <>
             <NavLink
               to="/cashier/support"
-              className={({ isActive }) => navClass(isActive)}
+              className={({ isActive }) => `${navClass(isActive)} cashier-bottom-nav__btn--support`}
               title={t('nav.support')}
             >
-              <Headphones size={22} strokeWidth={2} aria-hidden />
+              <Headphones size={20} strokeWidth={2} aria-hidden />
               <span>{t('nav.support')}</span>
             </NavLink>
             <NavLink
               to="/cashier/handbook/cashierPos"
-              className={({ isActive }) => navClass(isActive)}
+              className={({ isActive }) => `${navClass(isActive)} cashier-bottom-nav__btn--handbook`}
               title={t('nav.handbook')}
             >
-              <BookOpen size={22} strokeWidth={2} aria-hidden />
+              <BookOpen size={20} strokeWidth={2} aria-hidden />
               <span>{t('nav.handbook')}</span>
             </NavLink>
             <button
               type="button"
-              className={bottomNavLinkClass(false)}
+              className={`${bottomNavLinkClass(false)} cashier-bottom-nav__btn--shift`}
               onClick={openShift}
               disabled={!storeId}
               title={t('pos.navShift')}
             >
-              <Clock size={22} strokeWidth={2} aria-hidden />
+              <Clock size={20} strokeWidth={2} aria-hidden />
               <span>{t('pos.navShift')}</span>
             </button>
             <NavLink
               to="/cashier/sales"
-              className={({ isActive }) => navClass(isActive)}
+              className={({ isActive }) => `${navClass(isActive)} cashier-bottom-nav__btn--sales`}
               title={t('pos.navMySales')}
             >
-              <Receipt size={22} strokeWidth={2} aria-hidden />
+              <CircleDollarSign size={20} strokeWidth={2} aria-hidden />
               <span>{t('pos.navMySales')}</span>
             </NavLink>
             {!isPharmacy ? <CashierBottomNavProducts t={t} /> : null}
@@ -95,9 +105,11 @@ export default function CashierBottomNav({ className = '' }) {
           aria-label={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
           aria-expanded={!collapsed}
         >
-          {collapsed ? <ChevronUp size={22} strokeWidth={2} /> : <ChevronDown size={22} strokeWidth={2} />}
+          {collapsed ? <ChevronUp size={20} strokeWidth={2} /> : <ChevronDown size={20} strokeWidth={2} />}
         </button>
       </nav>
+
+      {!collapsed ? <CashierBottomNavAside t={t} /> : null}
     </div>
   );
 }

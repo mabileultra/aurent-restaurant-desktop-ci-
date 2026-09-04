@@ -51,6 +51,9 @@ export default function PosRegisterWorkspace({
     updateQuantity,
     updateUnitPrice,
     removeItem,
+    onHold,
+    onClear,
+    hasParkedCart,
   } = cart;
 
   const { checkoutMutation, handleConfirmPayment } = checkout;
@@ -103,7 +106,7 @@ export default function PosRegisterWorkspace({
 
       <div className="cashier-register__order-col">
         <PosOrderPanel
-          showTotalsFoot={items.length > 0}
+          showTotalsFoot={items.length > 0 || hasParkedCart}
           items={items}
           total={total}
           selectedLineId={selectedLineId}
@@ -112,6 +115,9 @@ export default function PosRegisterWorkspace({
           onUpdateQuantity={updateQuantity}
           onUpdatePrice={updateUnitPrice}
           onRemove={removeItem}
+          onHold={onHold}
+          onClear={onClear}
+          hasParkedCart={hasParkedCart}
         />
       </div>
     </CashierRegisterShell>

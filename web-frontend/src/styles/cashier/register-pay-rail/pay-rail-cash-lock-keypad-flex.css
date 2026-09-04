@@ -27,6 +27,12 @@
   border-radius: 10px;
 }
 
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__due-value,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__due-value {
+  font-size: var(--pos-pay-cash-summary-strong);
+  line-height: 1.15;
+}
+
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__summary-row {
   font-size: var(--pos-pay-cash-summary-font);
@@ -40,22 +46,28 @@
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box,
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box {
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-box,
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-box,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-box {
   min-height: var(--pos-pay-cash-received-h);
-  height: var(--pos-pay-cash-received-h);
-  max-height: var(--pos-pay-cash-received-h);
-  padding: 0 8px;
-  border-radius: 8px;
+  height: auto;
+  max-height: none;
+  padding: 8px 10px;
+  border-radius: 10px;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-label,
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-label {
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-label,
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-label,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-label {
   font-size: 0.5625rem;
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  font-size: var(--pos-pay-cash-received-font);
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
+.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner,
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
+  font-size: clamp(1rem, 4.5cqi, var(--pos-pay-cash-received-font));
   line-height: 1;
 }
 
@@ -65,14 +77,9 @@
   font-size: 0.75rem;
 }
 
-.cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner,
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
-  font-size: var(--pos-pay-cash-change-font);
-}
-
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__card-remainder-value,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail .pos-pay-cash__card-remainder-value {
-  font-size: var(--pos-pay-cash-change-font);
+  font-size: clamp(1rem, 4.5cqi, var(--pos-pay-cash-change-font));
 }
 
 /* ── Клавиатура — фикс. высота, контент сверху ── */

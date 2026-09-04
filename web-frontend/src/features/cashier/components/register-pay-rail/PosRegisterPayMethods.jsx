@@ -22,7 +22,7 @@ export default function PosRegisterPayMethods({
           <button
             key={id}
             type="button"
-            className="pos-register-pay-methods__tile"
+            className={`pos-register-pay-methods__tile pos-register-pay-methods__tile--${id}`}
             disabled={disabled}
             onClick={handlers[action]}
           >

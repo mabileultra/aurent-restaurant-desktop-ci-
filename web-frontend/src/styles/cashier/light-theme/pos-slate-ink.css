@@ -1,7 +1,7 @@
 /* Light POS — серо-синяя палитра (фон, чек, pay rail, нижнее меню) */
 
 .cashier-app.cashier-app--light.cashier-app--pos-screen .cashier-topbar {
-  background: var(--pos-surface) !important;
+  background: #fff !important;
   border-bottom-color: var(--pos-border) !important;
 }
 
@@ -17,21 +17,26 @@
 }
 
 .cashier-app.cashier-app--light .cashier-pos-topbar__cashier {
-  background: var(--pos-surface-elevated);
+  background: #fff;
   border-color: var(--pos-border);
   color: var(--pos-ink);
 }
 
 .cashier-app.cashier-app--light .cashier-pos-topbar__open-shift {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-ink);
+  background: var(--pos-green-soft);
+  border-color: rgb(0 104 71 / 0.35);
+  color: var(--pos-green);
 }
 
-.cashier-app.cashier-app--light .cashier-pos-topbar__logout,
+.cashier-app.cashier-app--light .cashier-pos-topbar__logout {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
+}
+
 .cashier-app.cashier-app--light .cashier-theme-toggle,
 .cashier-app.cashier-app--light .cashier-lang-switch {
-  background: var(--pos-surface-elevated);
+  background: #f1f5f9;
   border-color: var(--pos-border);
   color: var(--pos-muted);
 }
@@ -144,13 +149,39 @@
 
 /* Нижнее меню */
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn {
-  background: var(--pos-surface);
+  background: #fff;
   border-color: var(--pos-border);
   color: var(--pos-ink);
 }
 
-.cashier-app.cashier-app--light .cashier-bottom-nav__btn svg {
-  color: var(--pos-ink);
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--lock:not(.is-active) svg,
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--keyboard:not(.is-active) svg,
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--toggle:not(.is-active) svg {
+  color: #64748b;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--support:not(.is-active) svg {
+  color: #38bdf8;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--handbook:not(.is-active) svg {
+  color: #6366f1;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--shift:not(.is-active) svg {
+  color: #d97706;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--sales:not(.is-active) svg {
+  color: #059669;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--products:not(.is-active) svg {
+  color: #7c3aed;
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__btn--register:not(.is-active) svg {
+  color: #006847;
 }
 
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn:hover:not(:disabled):not(.is-active) {
@@ -163,12 +194,22 @@
   background: var(--pos-green);
   border-color: var(--pos-green);
   color: var(--pos-on-green);
-  box-shadow: 0 2px 10px rgb(0 166 126 / 0.28);
+  box-shadow: 0 2px 10px rgb(0 104 71 / 0.28);
 }
 
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn.is-active svg,
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn--primary.is-active svg {
   color: var(--pos-on-green);
+}
+
+.cashier-app.cashier-app--light .cashier-bottom-nav__status {
+  background: #fff;
+  border-color: var(--pos-border);
+  color: var(--pos-ink);
+}
+
+.cashier-app.cashier-app--light .cashier-zoom {
+  min-height: var(--cashier-bottom-nav-h, 52px);
 }
 
 .cashier-app.cashier-app--light .cashier-app__main {

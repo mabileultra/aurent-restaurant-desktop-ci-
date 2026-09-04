@@ -157,3 +157,10 @@
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
 }
 
+.cashier-topbar__terminal-strip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+

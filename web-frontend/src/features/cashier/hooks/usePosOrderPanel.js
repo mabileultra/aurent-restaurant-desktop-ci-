@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { lineSubtotal, useCartStore } from '../../../store/cartStore';
+import { round2 } from '../../../utils/taxAmounts';
 import {
   parseQtyInput,
   qtyToEditString,
@@ -20,6 +21,12 @@ export function usePosOrderPanel({
   const subtotalBeforeTax = Math.max(0, payableTotal - taxTotal);
   const taxRateLabel =
     items.length === 0 ? 0 : Math.round(items.reduce((s, i) => s + (i.taxRate ?? 0), 0) / items.length);
+  const positionsCount = items.length;
+  const totalQtyRaw = items.reduce((s, i) => s + (Number(i.quantity) || 0), 0);
+  const totalQty =
+    Math.abs(totalQtyRaw - Math.round(totalQtyRaw)) < 1e-9
+      ? Math.round(totalQtyRaw)
+      : round2(totalQtyRaw);
 
   const rowRefs = useRef({});
   const [editingPriceLineId, setEditingPriceLineId] = useState(null);
@@ -54,6 +61,8 @@ export function usePosOrderPanel({
     payableTotal,
     subtotalBeforeTax,
     taxRateLabel,
+    positionsCount,
+    totalQty,
     rowRefs,
     editingPriceLineId,
     setEditingPriceLineId,

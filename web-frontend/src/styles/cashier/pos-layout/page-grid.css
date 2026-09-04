@@ -57,7 +57,7 @@
   height: 100%;
 }
 
-/* Каталог: слева товары + нижнее меню, справа оплата */
+/* Каталог: сверху товары | оплата, снизу меню на всю ширину */
 .cashier-register__split--catalog .cashier-register__order-col {
   display: none;
 }
@@ -77,15 +77,16 @@
   min-height: 0;
 }
 
-.cashier-register__split--catalog .cashier-register__bottom-nav {
-  grid-column: 1;
-  grid-row: 2;
-}
-
 .cashier-register__split--catalog .cashier-register__actions-col {
   display: flex;
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1;
+  min-height: 0;
+}
+
+.cashier-register__split--catalog .cashier-register__bottom-nav {
+  grid-column: 1 / -1;
+  grid-row: 2;
 }
 
 .cashier-register__split--catalog .cashier-register__actions-col,
@@ -103,7 +104,7 @@
   background: transparent;
 }
 
-/* Чек: слева таблица + нижнее меню, справа оплата на всю высоту */
+/* Чек: сверху таблица | оплата, снизу меню на всю ширину */
 .cashier-register__split--register .cashier-register__catalog-col {
   display: none;
 }
@@ -123,14 +124,15 @@
   grid-row: 1;
 }
 
-.cashier-register__split--register .cashier-register__bottom-nav {
-  grid-column: 1;
-  grid-row: 2;
-}
-
 .cashier-register__split--register .cashier-register__actions-col {
   grid-column: 2;
-  grid-row: 1 / span 2;
+  grid-row: 1;
+  min-height: 0;
+}
+
+.cashier-register__split--register .cashier-register__bottom-nav {
+  grid-column: 1 / -1;
+  grid-row: 2;
 }
 
 .cashier-register__split--register .cashier-register__actions-col,

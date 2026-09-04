@@ -15,14 +15,15 @@
   color: var(--pos-ink, #1e3a5f);
 }
 
+.cashier-app .pos-register-pay-rail .pos-pay-cash__due-value,
 .cashier-app .pos-register-pay-rail .pos-pay-cash__summary-row strong,
 .cashier-app .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
 .cashier-app .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
-  color: #0f172a;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
 
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__due-value,
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__summary-row strong,
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {

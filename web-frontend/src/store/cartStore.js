@@ -76,6 +76,8 @@ export function buildCheckoutLineItems(items) {
 export const useCartStore = create((set, get) => ({
   items: [],
   orderDiscountAmount: 0,
+  /** Один отложенный чек: { items, orderDiscountAmount, parkedAt } | null */
+  parkedCart: null,
 
   /** Штучный / услуга: +1, объединение строк по productId. */
   addPieceItem: (product, quantity = 1) => {
@@ -177,6 +179,36 @@ export const useCartStore = create((set, get) => ({
   },
 
   clearCart: () => set({ items: [], orderDiscountAmount: 0 }),
+
+  /**
+   * F6: отложить текущий чек или вернуть отложенный, если корзина пуста.
+   * @returns {'held'|'replaced'|'restored'|'empty'}
+   */
+  holdCart: () => {
+    const { items, orderDiscountAmount, parkedCart } = get();
+    if (items.length > 0) {
+      const nextParked = {
+        items: items.map((item) => ({ ...item })),
+        orderDiscountAmount,
+        parkedAt: Date.now(),
+      };
+      set({
+        parkedCart: nextParked,
+        items: [],
+        orderDiscountAmount: 0,
+      });
+      return parkedCart ? 'replaced' : 'held';
+    }
+    if (parkedCart) {
+      set({
+        items: parkedCart.items,
+        orderDiscountAmount: parkedCart.orderDiscountAmount,
+        parkedCart: null,
+      });
+      return 'restored';
+    }
+    return 'empty';
+  },
 
   getLinesTotal: () =>
     round2(get().items.reduce((acc, item) => acc + lineSubtotal(item), 0)),

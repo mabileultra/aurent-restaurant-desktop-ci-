@@ -12,13 +12,13 @@
 }
 
 .cashier-app.cashier-app--light .cashier-pos-topbar__logout {
-  background: #fff;
-  border-color: var(--pos-border);
-  color: var(--pos-muted);
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #dc2626;
 }
 
 .cashier-app.cashier-app--light .cashier-topbar {
-  background: var(--pos-surface) !important;
+  background: #fff !important;
   border-bottom-color: var(--pos-border) !important;
 }
 
@@ -28,8 +28,7 @@
   color: var(--pos-muted);
 }
 
-.cashier-app.cashier-app--light .cashier-topbar__menu:hover,
-.cashier-app.cashier-app--light .cashier-theme-toggle:hover {
+.cashier-app.cashier-app--light .cashier-topbar__menu:hover {
   background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
   color: var(--pos-ink);
@@ -66,14 +65,13 @@
 }
 
 .cashier-app.cashier-app--light .cashier-theme-toggle {
-  background: #fff;
+  background: #f1f5f9;
   border-color: var(--pos-border);
-  color: var(--pos-muted);
 }
 
-.cashier-app.cashier-app--light .cashier-theme-toggle:hover {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-ink);
+.cashier-app.cashier-app--light .cashier-theme-toggle__opt.is-active {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
 }
 

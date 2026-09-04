@@ -97,15 +97,31 @@
 
 .cashier-register__bottom-nav {
   grid-area: bottom-nav;
-  align-self: end;
+  align-self: stretch;
   flex-shrink: 0;
-  padding-bottom: 6px;
+  padding: 8px 10px;
   box-sizing: border-box;
   overflow: visible;
+  background: var(--pos-surface-elevated, #fff);
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: var(--cashier-block-radius, 12px);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
 }
 
 .cashier-app .cashier-app__bottom-nav {
   flex-shrink: 0;
+}
+
+.cashier-app.cashier-app--light .cashier-register__bottom-nav {
+  background: #fff;
+  border-color: var(--pos-border);
+  box-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
+}
+
+.cashier-app.cashier-app--terminal .cashier-register__bottom-nav {
+  background: var(--pos-surface);
+  border-color: var(--pos-border);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
 }
 
 .cashier-app.cashier-app--light .cashier-bottom-nav__btn {

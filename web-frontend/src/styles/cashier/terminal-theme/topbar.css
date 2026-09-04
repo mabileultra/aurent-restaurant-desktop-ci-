@@ -12,15 +12,15 @@
 }
 
 .cashier-app.cashier-app--terminal .cashier-pos-topbar__logout {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-muted);
-}
-
-.cashier-app.cashier-app--terminal .cashier-pos-topbar__logout:hover {
   background: rgb(239 68 68 / 0.12);
   border-color: rgb(239 68 68 / 0.35);
   color: #f87171;
+}
+
+.cashier-app.cashier-app--terminal .cashier-pos-topbar__logout:hover {
+  background: rgb(239 68 68 / 0.18);
+  border-color: rgb(239 68 68 / 0.45);
+  color: #fca5a5;
 }
 
 .cashier-app.cashier-app--terminal .cashier-topbar {

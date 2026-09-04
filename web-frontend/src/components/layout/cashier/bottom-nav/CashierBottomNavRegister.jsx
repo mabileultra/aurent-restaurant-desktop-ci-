@@ -1,4 +1,4 @@
-import { ScanLine } from 'lucide-react';
+import { ScanSearch } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 import { usePosShell } from '../../../../contexts/PosShellContext';
@@ -33,11 +33,11 @@ export default function CashierBottomNavRegister({ t }) {
   return (
     <button
       type="button"
-      className={bottomNavLinkClass(isRegisterActive, { primary: true })}
+      className={`${bottomNavLinkClass(isRegisterActive, { primary: true })} cashier-bottom-nav__btn--register`}
       onClick={openRegister}
       title={t('pos.navSale')}
     >
-      <ScanLine size={22} strokeWidth={2} aria-hidden />
+      <ScanSearch size={20} strokeWidth={2} aria-hidden />
       <span>{t('pos.navSale')}</span>
     </button>
   );

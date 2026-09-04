@@ -29,12 +29,12 @@ function CashierLayoutShell() {
               shiftOpenBadge={p.shiftOpenBadge}
               shift={p.shift}
               cashierName={p.displayCashierName()}
+              cashierRoleLabel={p.cashierRoleLabel}
               openShift={p.openShift}
               storeId={p.storeId}
               onLogout={p.handleLogout}
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
-              zoom={p.zoom}
             />
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />
@@ -50,10 +50,10 @@ function CashierLayoutShell() {
               shiftOpenBadge={p.shiftOpenBadge}
               shift={p.shift}
               cashierName={p.displayCashierName()}
+              cashierRoleLabel={p.cashierRoleLabel}
               onLogout={p.handleLogout}
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
-              zoom={p.zoom}
             />
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />

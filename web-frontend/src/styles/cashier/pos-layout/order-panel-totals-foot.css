@@ -1,72 +1,243 @@
-/* Order panel — итоги внизу чека (светло-серый блок) */
+/* Order panel — soft footer: stats + Hold / Clear */
 .pos-order-panel--register .pos-order-panel__totals-foot {
   flex-shrink: 0;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 20px;
-  min-height: clamp(76px, 18cqi, 92px);
-  padding: clamp(12px, 3cqi, 16px) clamp(14px, 3.5cqi, 18px) clamp(14px, 3.5cqi, 18px);
-  border-top: 1.5px solid var(--pos-border, #e5e7eb);
-  background: var(--pos-surface-elevated, #f3f4f6);
+  gap: 16px;
+  flex-wrap: wrap;
+  min-height: 72px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--pos-border, #e5e7eb);
+  background: #eef1f5;
   border-radius: 0 0 14px 14px;
 }
 
-.pos-order-panel--register .pos-order-panel__totals-meta {
+.pos-order-panel--register .pos-order-panel__totals-stats {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-stat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-stat-label {
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-stat-box {
+  display: inline-flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  min-height: 2.25rem;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+  line-height: 1.1;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-stat-unit {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 0.02em;
+}
+
+.pos-order-panel--register .pos-order-panel__totals-stat--tax {
   gap: 6px;
 }
 
-.pos-order-panel--register .pos-order-panel__totals-meta p {
-  margin: 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.8125rem;
-  line-height: 1.35;
-  color: var(--pos-muted, #6b7280);
+.pos-order-panel--register .pos-order-panel__totals-stat-tax {
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+  white-space: nowrap;
 }
 
-.pos-order-panel--register .pos-order-panel__totals-meta span {
-  color: var(--pos-text, #111827);
-  font-weight: 600;
-}
-
-.pos-order-panel--register .pos-order-panel__totals-hero {
+.pos-order-panel--register .pos-order-panel__totals-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 10px;
   flex-shrink: 0;
 }
 
-.pos-order-panel--register .pos-order-panel__totals-hero-label {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--pos-muted, #6b7280);
+.pos-order-panel--register .pos-order-panel__foot-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 12px;
+  border: 1px solid transparent;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, opacity 0.12s;
 }
 
-.pos-order-panel--register .pos-order-panel__totals-hero-value {
-  font-size: clamp(1.5rem, 8cqi, 2.5rem);
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--pos-text, #111827);
-  line-height: 1;
+.pos-order-panel--register .pos-order-panel__foot-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn-label {
+  text-align: left;
+  max-width: 9.5rem;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn--hold {
+  background: #fff;
+  border-color: #cfe0f5;
+  color: #1f2937;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn--hold:hover:not(:disabled) {
+  background: #f8fbff;
+  border-color: #b6d0ef;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn-icon--hold {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn--clear {
+  background: #fff1f2;
+  border-color: #fecdd3;
+  color: #dc2626;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn--clear:hover:not(:disabled) {
+  background: #ffe4e6;
+  border-color: #fda4af;
+}
+
+.pos-order-panel--register .pos-order-panel__foot-btn-icon--clear {
+  background: #ef4444;
+  color: #fff;
 }
 
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-order-panel__totals-foot {
-  background: var(--pos-surface-elevated);
+  background: #eef1f5;
   border-top-color: var(--pos-border);
+}
+
+/* Dark / terminal — как на Aurent desktop (жёлтый Hold, красный Clear, без салатового) */
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-foot {
+  align-items: center;
+  background: #121820;
+  border-top-color: #2a3548;
+  border-radius: 0 0 14px 14px;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-label {
+  color: #8b97ab;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-box {
+  background: #1a2333;
+  border-color: #2a3548;
+  box-shadow: none;
+  color: #f1f5f9;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-unit {
+  color: #7c8aa0;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__totals-stat-tax {
+  color: #f1f5f9;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--hold {
+  background: #151c28;
+  border-color: #e5b84a;
+  color: #f1f5f9;
+  box-shadow: none;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--hold:hover:not(:disabled) {
+  background: #1a2433;
+  border-color: #f0c65a;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn-icon--hold {
+  background: transparent;
+  color: #f5c842;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--clear {
+  background: #151c28;
+  border-color: #d94c5a;
+  color: #f1f5f9;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn--clear:hover:not(:disabled) {
+  background: #1a2433;
+  border-color: #f0717c;
+}
+
+.cashier-app.cashier-app--terminal .pos-order-panel--register .pos-order-panel__foot-btn-icon--clear {
+  background: transparent;
+  color: #f0717c;
+}
+
+@media (max-width: 1100px) {
+  .pos-order-panel--register .pos-order-panel__totals-foot {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pos-order-panel--register .pos-order-panel__totals-actions {
+    width: 100%;
+  }
+
+  .pos-order-panel--register .pos-order-panel__foot-btn {
+    flex: 1 1 auto;
+  }
 }
 
 @media (max-height: 720px) {
   .pos-order-panel--register .pos-order-panel__totals-foot {
-    min-height: 72px;
+    min-height: 64px;
     gap: 12px;
+    padding: 10px 12px 12px;
   }
 
-  .pos-order-panel--register .pos-order-panel__totals-hero-value {
-    font-size: clamp(1.35rem, 7cqi, 2rem);
+  .pos-order-panel--register .pos-order-panel__foot-btn {
+    min-height: 44px;
   }
 }

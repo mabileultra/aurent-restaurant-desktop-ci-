@@ -32,6 +32,9 @@ export default function PosPage() {
               updateQuantity: p.updateQuantity,
               updateUnitPrice: p.updateUnitPrice,
               removeItem: p.removeItem,
+              onHold: p.handleHoldCart,
+              onClear: p.handleClearCart,
+              hasParkedCart: p.hasParkedCart,
             }}
             checkout={{ checkoutMutation: p.checkoutMutation, handleConfirmPayment: p.handleConfirmPayment }}
             shiftIsOpen={p.shiftIsOpen}
