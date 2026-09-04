@@ -6,6 +6,8 @@ import FloorHallTabs from '../components/FloorHallTabs';
 import FloorCanvas from '../components/FloorCanvas';
 import FloorStatusLegend from '../components/FloorStatusLegend';
 import OpenTableModal from '../components/OpenTableModal';
+import OpenCounterOrderModal from '../components/OpenCounterOrderModal';
+import CounterOrdersBoard from '../components/CounterOrdersBoard';
 import ModifierPickModal from '../components/ModifierPickModal';
 import OrderWorkspace from '../components/OrderWorkspace';
 import ShiftModal from '../components/ShiftModal';
@@ -15,6 +17,7 @@ import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/floor-pos.css';
 import '../styles/shift-bar.css';
+import '../styles/counter-board.css';
 
 export default function RestaurantFloorPosPage() {
   const user = useAuthStore((s) => s.user);
@@ -47,11 +50,25 @@ export default function RestaurantFloorPosPage() {
           </span>
         </div>
         <div className="rst-pos__modes">
-          <span className="rst-pos__mode is-active">{p.t('rst.pos.floor')}</span>
-          <button type="button" className="rst-pos__mode" disabled>
+          <button
+            type="button"
+            className={`rst-pos__mode${p.posMode === 'floor' ? ' is-active' : ''}`}
+            onClick={() => p.changePosMode('floor')}
+          >
+            {p.t('rst.pos.floor')}
+          </button>
+          <button
+            type="button"
+            className={`rst-pos__mode${p.posMode === 'takeaway' ? ' is-active' : ''}`}
+            onClick={() => p.changePosMode('takeaway')}
+          >
             {p.t('rst.pos.takeaway')}
           </button>
-          <button type="button" className="rst-pos__mode" disabled>
+          <button
+            type="button"
+            className={`rst-pos__mode${p.posMode === 'delivery' ? ' is-active' : ''}`}
+            onClick={() => p.changePosMode('delivery')}
+          >
             {p.t('rst.pos.delivery')}
           </button>
         </div>
@@ -117,38 +134,39 @@ export default function RestaurantFloorPosPage() {
 
         {p.activeOrderId ? (
           p.order ? (
-          <OrderWorkspace
-            order={p.order}
-            menuItems={p.menuItems}
-            onBack={() => p.setActiveOrderId(null)}
-            onAddItem={p.handleAddItem}
-            onQty={p.handleQty}
-            onRemove={(itemId) => p.removeItemMutation.mutate(itemId)}
-            onCancel={() => {
-              if (window.confirm(p.t('rst.order.confirmCancel'))) {
-                p.cancelMutation.mutate();
-              }
-            }}
-            canCancel={p.canCancel}
-            canSendKitchen={p.canSendKitchen}
-            sendingKitchen={p.sendKitchenMutation.isPending}
-            onSendKitchen={() => p.sendKitchenMutation.mutate()}
-            canRequestBill={p.canRequestBill}
-            canPay={p.canPay}
-            onRequestBill={() => p.billMutation.mutate()}
-            onPay={(method) => {
-              if (window.confirm(p.t('rst.order.confirmPay', { amount: p.order.subtotal }))) {
-                p.payMutation.mutate(method);
-              }
-            }}
-            billingPending={p.billMutation.isPending}
-            paying={p.payMutation.isPending}
-            t={p.t}
-          />
+            <OrderWorkspace
+              order={p.order}
+              menuItems={p.menuItems}
+              onBack={() => p.setActiveOrderId(null)}
+              backLabel={p.t(p.backLabelKey)}
+              onAddItem={p.handleAddItem}
+              onQty={p.handleQty}
+              onRemove={(itemId) => p.removeItemMutation.mutate(itemId)}
+              onCancel={() => {
+                if (window.confirm(p.t('rst.order.confirmCancel'))) {
+                  p.cancelMutation.mutate();
+                }
+              }}
+              canCancel={p.canCancel}
+              canSendKitchen={p.canSendKitchen}
+              sendingKitchen={p.sendKitchenMutation.isPending}
+              onSendKitchen={() => p.sendKitchenMutation.mutate()}
+              canRequestBill={p.canRequestBill}
+              canPay={p.canPay}
+              onRequestBill={() => p.billMutation.mutate()}
+              onPay={(method) => {
+                if (window.confirm(p.t('rst.order.confirmPay', { amount: p.order.subtotal }))) {
+                  p.payMutation.mutate(method);
+                }
+              }}
+              billingPending={p.billMutation.isPending}
+              paying={p.payMutation.isPending}
+              t={p.t}
+            />
           ) : (
             <div className="rst-notice">{p.t('common.loading')}</div>
           )
-        ) : (
+        ) : p.posMode === 'floor' ? (
           <>
             {p.isError ? <div className="rst-notice">{p.t('rst.floor.loadFailed')}</div> : null}
             {p.halls.length > 0 ? (
@@ -166,6 +184,18 @@ export default function RestaurantFloorPosPage() {
             />
             <FloorStatusLegend t={p.t} />
           </>
+        ) : (
+          <>
+            {p.isError ? <div className="rst-notice">{p.t('rst.pos.counterLoadFailed')}</div> : null}
+            <CounterOrdersBoard
+              channel={p.channel}
+              orders={p.counterOrders}
+              loading={p.counterLoading}
+              onOpenNew={p.handleOpenCounter}
+              onSelect={p.setActiveOrderId}
+              t={p.t}
+            />
+          </>
         )}
       </div>
 
@@ -177,6 +207,16 @@ export default function RestaurantFloorPosPage() {
         onClose={() => p.setOpenTable(null)}
         onSubmit={() => p.openMutation.mutate()}
         isPending={p.openMutation.isPending}
+        t={p.t}
+      />
+      <OpenCounterOrderModal
+        open={p.counterModalOpen}
+        channel={p.channel}
+        form={p.counterForm}
+        onChange={p.setCounterForm}
+        onClose={() => p.setCounterModalOpen(false)}
+        onSubmit={() => p.openCounterMutation.mutate()}
+        isPending={p.openCounterMutation.isPending}
         t={p.t}
       />
       <ModifierPickModal

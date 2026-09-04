@@ -3,7 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { orderApi } from '../../../api';
-import { ORDERS_DEFAULT_FILTERS, ORDERS_PAGE_SIZE_DEFAULT } from '../../../features/orders/constants';
+import { ORDERS_PAGE_SIZE_DEFAULT } from '../../../features/orders/constants';
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 
 const emptyEditForm = () => ({
@@ -14,12 +15,19 @@ const emptyEditForm = () => ({
   courierId: '',
 });
 
+const emptyFilters = () => ({
+  search: '',
+  status: 'all',
+  createdFrom: '',
+  createdTo: '',
+});
+
 export function useDeliveryAdminPage() {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
   const workspace = useRestaurantWorkspaceStore();
-  const [search, setSearch] = useState('');
-  const [appliedSearch, setAppliedSearch] = useState('');
+  const [filters, setFilters] = useState(emptyFilters);
+  const [applied, setApplied] = useState(emptyFilters);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ORDERS_PAGE_SIZE_DEFAULT);
   const [addOpen, setAddOpen] = useState(false);
@@ -31,9 +39,11 @@ export function useDeliveryAdminPage() {
     storeId: workspace.storeId ?? undefined,
     page,
     size: pageSize,
-    search: appliedSearch.trim() || undefined,
-    status: ORDERS_DEFAULT_FILTERS.status.trim() || undefined,
-  }), [workspace.storeId, page, pageSize, appliedSearch]);
+    search: applied.search.trim() || undefined,
+    status: applied.status !== 'all' ? applied.status : undefined,
+    createdFrom: applied.createdFrom || undefined,
+    createdTo: applied.createdTo || undefined,
+  }), [workspace.storeId, page, pageSize, applied]);
 
   const { data, isPending, isError, error } = useQuery({
     queryKey: ['rst-delivery', queryParams],
@@ -96,25 +106,48 @@ export function useDeliveryAdminPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.delivery.cancelFailed')),
   });
 
+  const rows = data?.content ?? [];
+  const stats = useMemo(() => ({
+    total: data?.totalElements ?? 0,
+    newCount: rows.filter((r) => r.status === 'NEW').length,
+    active: rows.filter((r) => r.status !== 'CANCELLED' && r.status !== 'COMPLETED').length,
+    cancelled: rows.filter((r) => r.status === 'CANCELLED').length,
+  }), [data?.totalElements, rows]);
+
+  const applyFilters = useCallback(() => {
+    setApplied({ ...filters });
+    setPage(0);
+  }, [filters]);
+
+  const resetFilters = useCallback(() => {
+    const next = emptyFilters();
+    setFilters(next);
+    setApplied(next);
+    setPage(0);
+  }, []);
+
   return {
     t,
     workspace,
-    search,
-    setSearch,
-    applySearch: () => {
-      setAppliedSearch(search.trim());
-      setPage(0);
-    },
-    rows: data?.content ?? [],
+    filters,
+    setFilters,
+    applyFilters,
+    resetFilters,
+    rows,
+    stats,
     loading: isPending,
     isError,
     error,
     page,
     pageSize,
+    pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
     total: data?.totalElements ?? 0,
     totalPages: data?.totalPages ?? 0,
     setPage,
-    setPageSize,
+    setPageSize: (size) => {
+      setPageSize(size);
+      setPage(0);
+    },
     addOpen,
     setAddOpen,
     onOrderCreated: invalidate,

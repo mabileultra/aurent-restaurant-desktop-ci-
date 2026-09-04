@@ -5,6 +5,7 @@ import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
@@ -54,6 +55,7 @@ public class OrderOpenHandler {
             .companyId(table.getCompanyId())
             .storeId(table.getStoreId())
             .table(table)
+            .channel(OrderChannel.DINE_IN)
             .shift(shift)
             .orderNo(orderRepository.findMaxOrderNo(table.getStoreId()) + 1)
             .status(OrderStatus.OPEN)

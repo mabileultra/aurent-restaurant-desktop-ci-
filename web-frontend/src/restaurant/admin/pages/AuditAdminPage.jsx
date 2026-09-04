@@ -1,133 +1,153 @@
-import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput } from '../../../components/ui';
-import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { rstAnalyticsApi } from '../../api/analytics.api';
-import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import TablePagination from '../../../components/shared/TablePagination';
+import { AUDIT_TYPE_FILTERS, useAuditAdminPage } from '../hooks/useAuditAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
+import '../styles/stations-admin.css';
 import '../styles/analytics-admin.css';
 
-function toDateInput(date) {
-  const d = date instanceof Date ? date : new Date(date);
-  const pad = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-}
-
-function formatActivity(t, event) {
-  const parts = String(event.summary ?? '').split('|');
-  switch (event.type) {
-    case 'PAYMENT':
-      return t('rst.audit.evtPayment', {
-        method: parts[0],
-        amount: fmtMoneyCompact(parts[1]),
-        orderNo: parts[2],
-      });
-    case 'ORDER_OPEN':
-      return t('rst.audit.evtOrderOpen', { orderNo: event.summary });
-    case 'ORDER_CLOSE':
-      return t('rst.audit.evtOrderClose', { orderNo: event.summary });
-    case 'ORDER_CANCEL':
-      return t('rst.audit.evtOrderCancel', { orderNo: event.summary });
-    case 'SHIFT_OPEN':
-      return t('rst.audit.evtShiftOpen', { cash: fmtMoneyCompact(event.summary) });
-    case 'SHIFT_CLOSE':
-      return t('rst.audit.evtShiftClose', { revenue: fmtMoneyCompact(event.summary) });
-    case 'RESERVATION':
-      return t('rst.audit.evtReservation', {
-        status: parts[0],
-        client: parts[1],
-        table: parts[2],
-      });
-    default:
-      return event.summary;
-  }
-}
-
 export default function AuditAdminPage() {
-  const { t } = useTranslation();
-  const workspace = useRestaurantWorkspaceStore();
-  const [fromDate, setFromDate] = useState(() => toDateInput(new Date()));
-  const [toDate, setToDate] = useState(() => toDateInput(new Date()));
+  const p = useAuditAdminPage();
+  const locale = p.t('common.locale', { defaultValue: 'ru-RU' });
 
-  const params = useMemo(() => {
-    const from = new Date(`${fromDate}T00:00:00`);
-    const to = new Date(`${toDate}T00:00:00`);
-    to.setDate(to.getDate() + 1);
-    return { from: from.toISOString(), to: to.toISOString() };
-  }, [fromDate, toDate]);
-
-  const activityQuery = useQuery({
-    queryKey: ['rst-activity', workspace.storeId, params],
-    queryFn: () => rstAnalyticsApi.activity(workspace.storeId, params).then((r) => r.data),
-    enabled: workspace.storeId != null,
-  });
-
-  if (workspace.noAssignment) {
-    return <div className="rst-notice">{t('rst.floor.noStore')}</div>;
+  if (p.workspace.noAssignment) {
+    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
   }
 
   return (
-    <section>
+    <section className="rst-audit">
       <div className="rst-halls__toolbar">
         <div>
-          <h1 className="rst-coming__title">{t('rst.admin.auditTitle')}</h1>
-          <p className="rst-coming__text mb-0">{t('rst.admin.auditSubtitle')}</p>
+          <h1 className="rst-coming__title">{p.t('rst.admin.auditTitle')}</h1>
+          <p className="rst-coming__text mb-0">{p.t('rst.admin.auditSubtitle')}</p>
         </div>
       </div>
 
-      {workspace.canPickStore ? (
-        <label className="rst-shell__store d-block mb-3">
-          <span className="d-block mb-1 small">{t('rst.admin.selectStore')}</span>
+      {p.workspace.canPickStore ? (
+        <label className="rst-admin-field rst-admin-field--full mb-3">
+          <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
           <select
             className="form-select"
-            value={workspace.pickedStoreId}
-            onChange={(e) => workspace.setPickedStoreId(e.target.value)}
+            value={p.workspace.pickedStoreId}
+            onChange={(e) => p.workspace.setPickedStoreId(e.target.value)}
           >
-            <option value="">{t('rst.admin.selectStore')}</option>
-            {workspace.restaurantStores.map((store) => (
+            <option value="">{p.t('rst.admin.selectStore')}</option>
+            {p.workspace.restaurantStores.map((store) => (
               <option key={store.id} value={store.id}>{store.name}</option>
             ))}
           </select>
         </label>
       ) : null}
 
-      {!workspace.storeId ? (
-        <div className="rst-notice">{t('rst.admin.selectStore')}</div>
+      {!p.workspace.storeId ? (
+        <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (
         <>
-          <div className="rst-report__filters">
-            <label>
-              {t('rst.reports.from')}
-              <BaseInput type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          <div className="rst-admin-filters">
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('common.search')}</span>
+              <BaseInput
+                value={p.filters.search}
+                onChange={(e) => p.setFilters({ ...p.filters, search: e.target.value })}
+                placeholder={p.t('rst.audit.searchPh')}
+              />
             </label>
-            <label>
-              {t('rst.reports.to')}
-              <BaseInput type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('rst.audit.type')}</span>
+              <select
+                className="form-select"
+                value={p.filters.type}
+                onChange={(e) => p.setFilters({ ...p.filters, type: e.target.value })}
+              >
+                {AUDIT_TYPE_FILTERS.map((type) => (
+                  <option key={type} value={type}>
+                    {type === 'all'
+                      ? p.t('rst.admin.filterAll')
+                      : p.t(`rst.audit.type_${type}`, { defaultValue: type })}
+                  </option>
+                ))}
+              </select>
             </label>
-            <BaseButton type="button" variant="ghost" onClick={() => activityQuery.refetch()}>
-              {t('common.refresh')}
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('rst.reports.from')}</span>
+              <BaseInput
+                type="date"
+                value={p.filters.fromDate}
+                onChange={(e) => p.setFilters({ ...p.filters, fromDate: e.target.value })}
+              />
+            </label>
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('rst.reports.to')}</span>
+              <BaseInput
+                type="date"
+                value={p.filters.toDate}
+                onChange={(e) => p.setFilters({ ...p.filters, toDate: e.target.value })}
+              />
+            </label>
+            <BaseButton type="button" variant="ghost" onClick={p.refetch}>
+              {p.t('common.refresh')}
+            </BaseButton>
+            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={p.resetFilters}>
+              {p.t('rst.admin.filterReset')}
             </BaseButton>
           </div>
 
-          {activityQuery.isError ? <div className="rst-notice">{t('rst.admin.auditLoadFailed')}</div> : null}
+          {p.isError ? <div className="rst-notice">{p.t('rst.admin.auditLoadFailed')}</div> : null}
 
-          {activityQuery.isPending ? (
-            <div className="rst-empty">{t('common.loading')}</div>
-          ) : (activityQuery.data ?? []).length === 0 ? (
-            <div className="rst-empty">{t('rst.audit.empty')}</div>
-          ) : (
-            <div className="rst-audit__list">
-              {(activityQuery.data ?? []).map((event) => (
-                <div key={`${event.type}-${event.entityId}-${event.at}`} className="rst-audit__row">
-                  <div className="rst-audit__time">{new Date(event.at).toLocaleString()}</div>
-                  <div className="rst-audit__type">{t(`rst.audit.type_${event.type}`, { defaultValue: event.type })}</div>
-                  <div>{formatActivity(t, event)}</div>
-                </div>
-              ))}
+          <div className="rst-data-card">
+            <div className="rst-data-card__head">
+              <strong>{p.t('rst.audit.listTitle')}</strong>
+              <span>{p.total}</span>
             </div>
-          )}
+            <div className="rst-data-card__table-wrap">
+              <table className="rst-data-table">
+                <thead>
+                  <tr>
+                    <th className="rst-data-table__num">#</th>
+                    <th>{p.t('rst.audit.colTime')}</th>
+                    <th>{p.t('rst.audit.type')}</th>
+                    <th>{p.t('rst.audit.colDetail')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {p.isLoading ? (
+                    <tr>
+                      <td colSpan={4} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                    </tr>
+                  ) : p.rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="rst-data-table__empty">{p.t('rst.audit.empty')}</td>
+                    </tr>
+                  ) : (
+                    p.rows.map((event, index) => (
+                      <tr key={`${event.type}-${event.entityId}-${event.at}-${index}`}>
+                        <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
+                        <td>{event.at ? new Date(event.at).toLocaleString(locale) : '—'}</td>
+                        <td>
+                          <span className={`rst-audit__badge rst-audit__badge--${event.type}`}>
+                            {p.t(`rst.audit.type_${event.type}`, { defaultValue: event.type })}
+                          </span>
+                        </td>
+                        <td className="rst-data-table__wrap">{p.formatActivity(event)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {p.total > 0 ? (
+              <TablePagination
+                className="rst-data-card__pagination"
+                page={p.page}
+                pageSize={p.pageSize}
+                total={p.total}
+                totalPages={p.totalPages}
+                pageSizeOptions={p.pageSizeOptions}
+                onPageChange={p.setPage}
+                onPageSizeChange={p.setPageSize}
+              />
+            ) : null}
+          </div>
         </>
       )}
     </section>

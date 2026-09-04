@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-012-order-channels" author="pos">
+        <addColumn tableName="floor_orders">
+            <column name="channel" type="VARCHAR(24)" defaultValue="DINE_IN">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_name" type="VARCHAR(160)"/>
+            <column name="client_phone" type="VARCHAR(40)"/>
+            <column name="delivery_address" type="VARCHAR(400)"/>
+        </addColumn>
+        <dropNotNullConstraint tableName="floor_orders" columnName="table_id" columnDataType="INT"/>
+        <sql>
+            DROP INDEX IF EXISTS uq_floor_orders_open_table;
+            CREATE UNIQUE INDEX uq_floor_orders_open_table
+            ON floor_orders (table_id)
+            WHERE table_id IS NOT NULL AND status IN ('OPEN', 'BILLING');
+            CREATE INDEX idx_floor_orders_channel_status
+            ON floor_orders (company_id, store_id, channel, status);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

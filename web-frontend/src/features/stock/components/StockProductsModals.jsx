@@ -16,8 +16,12 @@ export default function StockProductsModals({
   receiveOpen,
   onReceiveClose,
   onInvalidateCaches,
+  showCreate,
+  createStore,
+  catalogModalKey,
+  onCreateStoreChange,
+  onCatalogClose,
   editProduct,
-  onEditClose,
   categories,
   stores,
   stockProduct,
@@ -57,19 +61,21 @@ export default function StockProductsModals({
         onSaved={onInvalidateCaches}
       />
 
-      {editProduct && (
+      {(showCreate || editProduct) ? (
         <ProductCatalogModal
-          key={editProduct.id}
+          key={catalogModalKey}
           product={editProduct}
           categories={categories}
           stores={stores}
-          onClose={onEditClose}
+          selectedStore={editProduct ? null : createStore}
+          onCreateStoreChange={onCreateStoreChange}
+          onClose={onCatalogClose}
           onSaved={() => {
             onInvalidateCaches();
-            onEditClose();
+            onCatalogClose();
           }}
         />
-      )}
+      ) : null}
 
       {stockProduct && (
         <StockAdjustModal

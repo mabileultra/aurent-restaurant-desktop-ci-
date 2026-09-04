@@ -1,21 +1,39 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { rstAnalyticsApi } from '../../api/analytics.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import DashboardCharts from '../components/DashboardCharts';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/analytics-admin.css';
 
+function dayRangeIso() {
+  const from = new Date();
+  from.setHours(0, 0, 0, 0);
+  const to = new Date(from);
+  to.setDate(to.getDate() + 1);
+  return { from: from.toISOString(), to: to.toISOString() };
+}
+
 export default function DashboardAdminPage() {
   const { t } = useTranslation();
   const workspace = useRestaurantWorkspaceStore();
+  const range = useMemo(() => dayRangeIso(), []);
 
   const dashQuery = useQuery({
     queryKey: ['rst-dashboard', workspace.storeId],
     queryFn: () => rstAnalyticsApi.dashboard(workspace.storeId).then((r) => r.data),
     enabled: workspace.storeId != null,
     refetchInterval: 30_000,
+  });
+
+  const salesQuery = useQuery({
+    queryKey: ['rst-dashboard-sales', workspace.storeId, range.from, range.to],
+    queryFn: () => rstAnalyticsApi.salesReport(workspace.storeId, range).then((r) => r.data),
+    enabled: workspace.storeId != null,
+    refetchInterval: 60_000,
   });
 
   if (workspace.noAssignment) {
@@ -76,6 +94,16 @@ export default function DashboardAdminPage() {
             <div className="rst-dash__card"><span>{t('rst.dashboard.cancelled')}</span><strong>{d.cancelledOrders}</strong></div>
             <div className="rst-dash__card"><span>{t('rst.dashboard.freeTables')}</span><strong>{d.freeTables}</strong></div>
           </div>
+
+          {salesQuery.isError ? (
+            <div className="rst-notice">{t('rst.admin.reportsLoadFailed')}</div>
+          ) : (
+            <DashboardCharts
+              t={t}
+              byHour={salesQuery.data?.byHour}
+              byDish={salesQuery.data?.byDish}
+            />
+          )}
         </>
       )}
     </section>

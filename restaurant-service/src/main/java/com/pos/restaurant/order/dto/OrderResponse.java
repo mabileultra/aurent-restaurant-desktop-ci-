@@ -1,5 +1,6 @@
 package com.pos.restaurant.order.dto;
 
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 
 import java.math.BigDecimal;
@@ -10,6 +11,7 @@ import java.util.UUID;
 public record OrderResponse(
     UUID id,
     int orderNo,
+    OrderChannel channel,
     Integer tableId,
     String tableCode,
     Integer storeId,
@@ -17,6 +19,9 @@ public record OrderResponse(
     int guestCount,
     int adultCount,
     int childrenCount,
+    String clientName,
+    String clientPhone,
+    String deliveryAddress,
     UUID openedByUserId,
     UUID waiterUserId,
     String comment,

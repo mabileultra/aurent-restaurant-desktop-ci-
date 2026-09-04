@@ -1,11 +1,16 @@
 import ProductRowActionsMenu from '../ProductRowActionsMenu';
+import { useStockFlowPaths } from '../../../../stock/stockFlowPaths';
 
 export default function ProductsRowActionsOverlay({ p }) {
+  const paths = useStockFlowPaths();
+  const lifecycleReportPath = paths.lifecycleReport;
+
   return (
     <ProductRowActionsMenu
       rowMenu={p.rowMenu}
       manage={p.manage}
       t={p.t}
+      showLifecycleReport={Boolean(lifecycleReportPath)}
       onClose={() => p.setRowMenu(null)}
       onOpenInfo={(product) => {
         p.setInfoTab('details');
@@ -18,7 +23,9 @@ export default function ProductsRowActionsOverlay({ p }) {
         p.setRowMenu(null);
       }}
       onLifecycleReport={(product) => {
-        p.navigate(`/reports/stock/lifecycle?productId=${product.id}`);
+        if (!lifecycleReportPath) return;
+        const sep = lifecycleReportPath.includes('?') ? '&' : '?';
+        p.navigate(`${lifecycleReportPath}${sep}productId=${product.id}`);
         p.setRowMenu(null);
       }}
       onEdit={(product) => {

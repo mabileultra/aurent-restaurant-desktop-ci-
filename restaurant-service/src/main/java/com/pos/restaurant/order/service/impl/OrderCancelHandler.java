@@ -39,7 +39,9 @@ public class OrderCancelHandler {
         }
         order.setStatus(OrderStatus.CANCELLED);
         order.setClosedAt(Instant.now());
-        order.getTable().setStatus(TableStatus.FREE);
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.FREE);
+        }
         for (KitchenTicket ticket : ticketRepository.findByOrderId(orderId)) {
             if (ticket.getStatus() == KitchenTicketStatus.SERVED || ticket.getStatus() == KitchenTicketStatus.CANCELLED) {
                 continue;

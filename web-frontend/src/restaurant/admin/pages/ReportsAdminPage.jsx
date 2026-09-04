@@ -2,13 +2,14 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput } from '../../../components/ui';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { rstAnalyticsApi } from '../../api/analytics.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
-import '../styles/tech-card.css';
 import '../styles/analytics-admin.css';
+import '../styles/stations-admin.css';
 
 function toDateInput(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -22,6 +23,8 @@ export default function ReportsAdminPage() {
   const [tab, setTab] = useState('dish');
   const [fromDate, setFromDate] = useState(() => toDateInput(new Date()));
   const [toDate, setToDate] = useState(() => toDateInput(new Date()));
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(14);
 
   const params = useMemo(() => {
     const from = new Date(`${fromDate}T00:00:00`);
@@ -36,24 +39,33 @@ export default function ReportsAdminPage() {
     enabled: workspace.storeId != null,
   });
 
+  const report = reportQuery.data;
+  const sourceRows = tab === 'dish' ? (report?.byDish ?? []) : (report?.byHour ?? []);
+  const total = sourceRows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
+  const rows = sourceRows.slice(page * pageSize, page * pageSize + pageSize);
+
   if (workspace.noAssignment) {
     return <div className="rst-notice">{t('rst.floor.noStore')}</div>;
   }
 
-  const report = reportQuery.data;
+  const changeTab = (next) => {
+    setTab(next);
+    setPage(0);
+  };
 
   return (
     <section>
       <div className="rst-halls__toolbar">
         <div>
-          <h1 className="rst-coming__title">{t('rst.admin.reportsTitle')}</h1>
+          <h1 className="rst-coming__title">{t('rst.admin.reportsSalesCard')}</h1>
           <p className="rst-coming__text mb-0">{t('rst.admin.reportsSubtitle')}</p>
         </div>
       </div>
 
       {workspace.canPickStore ? (
-        <label className="rst-shell__store d-block mb-3">
-          <span className="d-block mb-1 small">{t('rst.admin.selectStore')}</span>
+        <label className="rst-admin-field rst-admin-field--full mb-3">
+          <span className="rst-admin-field__label">{t('rst.admin.selectStore')}</span>
           <select
             className="form-select"
             value={workspace.pickedStoreId}
@@ -71,16 +83,30 @@ export default function ReportsAdminPage() {
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (
         <>
-          <div className="rst-report__filters">
-            <label>
-              {t('rst.reports.from')}
-              <BaseInput type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          <div className="rst-admin-filters">
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{t('rst.reports.from')}</span>
+              <BaseInput
+                type="date"
+                value={fromDate}
+                onChange={(e) => {
+                  setFromDate(e.target.value);
+                  setPage(0);
+                }}
+              />
             </label>
-            <label>
-              {t('rst.reports.to')}
-              <BaseInput type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{t('rst.reports.to')}</span>
+              <BaseInput
+                type="date"
+                value={toDate}
+                onChange={(e) => {
+                  setToDate(e.target.value);
+                  setPage(0);
+                }}
+              />
             </label>
-            <BaseButton type="button" variant="ghost" onClick={() => reportQuery.refetch()}>
+            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={() => reportQuery.refetch()}>
               {t('common.refresh')}
             </BaseButton>
           </div>
@@ -97,59 +123,85 @@ export default function ReportsAdminPage() {
           ) : null}
 
           <div className="rst-report__tabs">
-            <button type="button" className={`rst-report__tab${tab === 'dish' ? ' is-active' : ''}`} onClick={() => setTab('dish')}>
+            <button type="button" className={`rst-report__tab${tab === 'dish' ? ' is-active' : ''}`} onClick={() => changeTab('dish')}>
               {t('rst.reports.byDish')}
             </button>
-            <button type="button" className={`rst-report__tab${tab === 'hour' ? ' is-active' : ''}`} onClick={() => setTab('hour')}>
+            <button type="button" className={`rst-report__tab${tab === 'hour' ? ' is-active' : ''}`} onClick={() => changeTab('hour')}>
               {t('rst.reports.byHour')}
             </button>
           </div>
 
-          {!report && reportQuery.isPending ? (
-            <div className="rst-empty">{t('common.loading')}</div>
-          ) : tab === 'dish' ? (
-            <table className="rst-tech__table">
-              <thead>
-                <tr>
-                  <th>{t('rst.reports.dish')}</th>
-                  <th>{t('rst.reports.qty')}</th>
-                  <th>{t('rst.reports.amount')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(report?.byDish ?? []).length === 0 ? (
-                  <tr><td colSpan={3}>{t('rst.reports.empty')}</td></tr>
-                ) : (report?.byDish ?? []).map((row) => (
-                  <tr key={row.dishName}>
-                    <td>{row.dishName}</td>
-                    <td>{row.quantity}</td>
-                    <td>{fmtMoneyCompact(row.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <table className="rst-tech__table">
-              <thead>
-                <tr>
-                  <th>{t('rst.reports.hour')}</th>
-                  <th>{t('rst.reports.payments')}</th>
-                  <th>{t('rst.reports.amount')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(report?.byHour ?? []).length === 0 ? (
-                  <tr><td colSpan={3}>{t('rst.reports.empty')}</td></tr>
-                ) : (report?.byHour ?? []).map((row) => (
-                  <tr key={row.hour}>
-                    <td>{String(row.hour).padStart(2, '0')}:00</td>
-                    <td>{row.paymentCount}</td>
-                    <td>{fmtMoneyCompact(row.amount)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <div className="rst-data-card">
+            <div className="rst-data-card__head">
+              <strong>{tab === 'dish' ? t('rst.reports.byDish') : t('rst.reports.byHour')}</strong>
+              <span>{total}</span>
+            </div>
+            <div className="rst-data-card__table-wrap">
+              <table className="rst-data-table">
+                <thead>
+                  {tab === 'dish' ? (
+                    <tr>
+                      <th className="rst-data-table__num">#</th>
+                      <th>{t('rst.reports.dish')}</th>
+                      <th>{t('rst.reports.qty')}</th>
+                      <th>{t('rst.reports.amount')}</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th className="rst-data-table__num">#</th>
+                      <th>{t('rst.reports.hour')}</th>
+                      <th>{t('rst.reports.payments')}</th>
+                      <th>{t('rst.reports.amount')}</th>
+                    </tr>
+                  )}
+                </thead>
+                <tbody>
+                  {reportQuery.isPending && !report ? (
+                    <tr>
+                      <td colSpan={4} className="rst-data-table__empty">{t('common.loading')}</td>
+                    </tr>
+                  ) : rows.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="rst-data-table__empty">{t('rst.reports.empty')}</td>
+                    </tr>
+                  ) : tab === 'dish' ? (
+                    rows.map((row, index) => (
+                      <tr key={row.dishName}>
+                        <td className="rst-data-table__num">{page * pageSize + index + 1}</td>
+                        <td>{row.dishName}</td>
+                        <td>{row.quantity}</td>
+                        <td>{fmtMoneyCompact(row.amount)}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    rows.map((row, index) => (
+                      <tr key={row.hour}>
+                        <td className="rst-data-table__num">{page * pageSize + index + 1}</td>
+                        <td>{String(row.hour).padStart(2, '0')}:00</td>
+                        <td>{row.paymentCount}</td>
+                        <td>{fmtMoneyCompact(row.amount)}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+            {total > 0 ? (
+              <TablePagination
+                className="rst-data-card__pagination"
+                page={page}
+                pageSize={pageSize}
+                total={total}
+                totalPages={totalPages}
+                pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
+                onPageChange={setPage}
+                onPageSizeChange={(size) => {
+                  setPageSize(size);
+                  setPage(0);
+                }}
+              />
+            ) : null}
+          </div>
         </>
       )}
     </section>

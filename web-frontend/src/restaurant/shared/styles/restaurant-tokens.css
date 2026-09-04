@@ -90,6 +90,54 @@
   box-shadow: 0 0 0 3px var(--rst-accent-soft);
 }
 
+.rst-app .page-search-field {
+  background: var(--rst-surface-2);
+  border: 1px solid var(--rst-line);
+  box-shadow: none;
+}
+
+.rst-app .page-search-field:focus-within {
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft);
+}
+
+.rst-app .page-search-field__input,
+.rst-app .page-search-field input {
+  background: transparent !important;
+  color: var(--rst-ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.rst-app .page-search-field__icon {
+  color: var(--rst-muted);
+}
+
+.rst-app .table-pagination__page-btn {
+  background: var(--rst-surface-2);
+  border: 1px solid var(--rst-line);
+  color: var(--rst-ink);
+}
+
+.rst-app .table-pagination__page-btn:hover:not(:disabled) {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
+}
+
+.rst-app .table-pagination__page-btn--active {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent);
+  color: #1b1208;
+  font-weight: 700;
+}
+
+.rst-app .table-pagination__range,
+.rst-app .table-pagination__page-size-label,
+.rst-app .table-pagination__nav-btn {
+  color: var(--rst-muted);
+}
+
 /* Shared stock/report pages mounted inside OS keep dark shell look */
 .rst-app .rst-embedded-stock .bg-white,
 .rst-app .rst-embedded-stock .bg-slate-50,

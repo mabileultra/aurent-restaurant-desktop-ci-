@@ -32,7 +32,9 @@ public class RequestBillHandler {
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         eligibilityPolicy.assertCanRequestBill(order, items);
         order.setStatus(OrderStatus.BILLING);
-        order.getTable().setStatus(TableStatus.WAITING_PAYMENT);
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.WAITING_PAYMENT);
+        }
         LogUtil.info(RequestBillHandler.class, "Bill requested: orderId={}", orderId);
         return assembler.toResponse(order, items);
     }

@@ -31,6 +31,7 @@ export function useRecipesAdminPage() {
     price: '',
     category: '',
     imageUrl: '',
+    imageName: '',
   });
 
   const dishesQuery = useQuery({
@@ -133,7 +134,7 @@ export function useRecipesAdminPage() {
     onSuccess: (created) => {
       toast.success(t('rst.admin.recipeWizardSaved'));
       setWizardOpen(false);
-      setWizard({ name: '', price: '', category: '', imageUrl: '' });
+      setWizard({ name: '', price: '', category: '', imageUrl: '', imageName: '' });
       qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
       qc.invalidateQueries({ queryKey: ['rst-menu-pos', workspace.storeId] });
       qc.invalidateQueries({ queryKey: ['rst-recipes', workspace.storeId] });
@@ -174,7 +175,7 @@ export function useRecipesAdminPage() {
     if (!file) return;
     try {
       const dataUrl = await readImageDataUrl(file, 400 * 1024);
-      setWizard((current) => ({ ...current, imageUrl: dataUrl }));
+      setWizard((current) => ({ ...current, imageUrl: dataUrl, imageName: file.name }));
     } catch {
       toast.error(t('rst.admin.imageUploadFailed'));
     }

@@ -1,5 +1,6 @@
 package com.pos.restaurant.order.repository;
 
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,18 +14,32 @@ import java.util.UUID;
 
 public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID> {
 
-    @Query("select o from FloorOrder o join fetch o.table left join fetch o.shift where o.id = :id and o.companyId = :companyId")
+    @Query("select o from FloorOrder o left join fetch o.table left join fetch o.shift where o.id = :id and o.companyId = :companyId")
     Optional<FloorOrder> findByIdAndCompanyId(@Param("id") UUID id, @Param("companyId") Integer companyId);
 
     boolean existsByTableIdAndStatusIn(Integer tableId, Collection<OrderStatus> statuses);
 
     @Query("""
-        select o from FloorOrder o join fetch o.table
+        select o from FloorOrder o left join fetch o.table
         where o.companyId = :companyId and o.storeId = :storeId and o.status in :statuses
+          and o.table is not null
         """)
-    List<FloorOrder> findByCompanyIdAndStoreIdAndStatusIn(
+    List<FloorOrder> findTableOrdersByCompanyIdAndStoreIdAndStatusIn(
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId,
+        @Param("statuses") Collection<OrderStatus> statuses
+    );
+
+    @Query("""
+        select o from FloorOrder o left join fetch o.table
+        where o.companyId = :companyId and o.storeId = :storeId
+          and o.channel = :channel and o.status in :statuses
+        order by o.openedAt desc
+        """)
+    List<FloorOrder> findByCompanyIdAndStoreIdAndChannelAndStatusIn(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("channel") OrderChannel channel,
         @Param("statuses") Collection<OrderStatus> statuses
     );
 

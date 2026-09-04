@@ -42,7 +42,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         Map<Integer, FloorOrder> openOrders = orderRepository
-            .findByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, List.of(OrderStatus.OPEN, OrderStatus.BILLING))
+            .findTableOrdersByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, List.of(OrderStatus.OPEN, OrderStatus.BILLING))
             .stream()
             .collect(Collectors.toMap(order -> order.getTable().getId(), order -> order, (a, b) -> a));
         Map<UUID, List<FloorOrderItem>> itemsByOrder = openOrders.values().stream()

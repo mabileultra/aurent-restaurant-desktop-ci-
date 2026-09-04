@@ -8,6 +8,7 @@ export default function OrderWorkspace({
   order,
   menuItems,
   onBack,
+  backLabel,
   onAddItem,
   onQty,
   onRemove,
@@ -25,6 +26,23 @@ export default function OrderWorkspace({
   t,
 }) {
   const billing = order.status === 'BILLING';
+  const channel = order.channel || 'DINE_IN';
+  const ticketTitle = channel === 'TAKEAWAY'
+    ? t('rst.pos.takeawayTicket', { no: order.orderNo })
+    : channel === 'DELIVERY'
+      ? t('rst.pos.deliveryTicket', { no: order.orderNo })
+      : t('rst.order.ticketTitle', { code: order.tableCode, no: order.orderNo });
+  const ticketMeta = channel === 'DELIVERY'
+    ? [order.clientName, order.clientPhone, order.deliveryAddress].filter(Boolean).join(' · ')
+    : channel === 'TAKEAWAY'
+      ? (order.clientName
+        ? order.clientName
+        : t('rst.pos.takeawayMeta'))
+      : t('rst.order.ticketMeta', {
+        guests: order.guestCount,
+        adults: order.adultCount,
+        children: order.childrenCount,
+      });
 
   return (
     <div className="rst-order">
@@ -34,7 +52,9 @@ export default function OrderWorkspace({
             <h2 className="rst-coming__title">{t('rst.order.menu')}</h2>
             <p className="rst-order__meta">{billing ? t('rst.order.billingHint') : t('rst.order.addHint')}</p>
           </div>
-          <BaseButton type="button" variant="ghost" onClick={onBack}>{t('rst.order.backToFloor')}</BaseButton>
+          <BaseButton type="button" variant="ghost" onClick={onBack}>
+            {backLabel || t('rst.order.backToFloor')}
+          </BaseButton>
         </div>
         {billing ? (
           <div className="rst-order-empty">{t('rst.order.billingHint')}</div>
@@ -45,16 +65,8 @@ export default function OrderWorkspace({
       <aside className="rst-order__ticket">
         <div className="rst-order__head">
           <div>
-            <h2 className="rst-coming__title">
-              {t('rst.order.ticketTitle', { code: order.tableCode, no: order.orderNo })}
-            </h2>
-            <p className="rst-order__meta">
-              {t('rst.order.ticketMeta', {
-                guests: order.guestCount,
-                adults: order.adultCount,
-                children: order.childrenCount,
-              })}
-            </p>
+            <h2 className="rst-coming__title">{ticketTitle}</h2>
+            <p className="rst-order__meta">{ticketMeta}</p>
           </div>
         </div>
         <OrderLines

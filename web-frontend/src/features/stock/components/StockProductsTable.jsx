@@ -1,5 +1,5 @@
 import { Info, MoreVertical } from 'lucide-react';
-import TablePagination from '../../../components/shared/TablePagination';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 
 const COL_COUNT = 9;
@@ -17,6 +17,7 @@ export default function StockProductsTable({
   totalPages,
   onPageChange,
   onPageSizeChange,
+  pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
@@ -93,6 +94,7 @@ export default function StockProductsTable({
         totalPages={totalPages}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        pageSizeOptions={pageSizeOptions}
       />
     </div>
   );

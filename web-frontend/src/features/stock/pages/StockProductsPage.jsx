@@ -10,11 +10,15 @@ import StockProductsTable from '../components/StockProductsTable';
 import StockProductsModals from '../components/StockProductsModals';
 import { useStockProductsPage } from '../hooks/useStockProductsPage';
 import { useStockFlowPaths } from '../stockFlowPaths';
+import { useRestaurantWorkspaceStore } from '../../../restaurant/shared/hooks/useRestaurantWorkspaceStore';
 
 export default function StockProductsPage() {
-  const p = useStockProductsPage();
   const paths = useStockFlowPaths();
   const inRst = paths.products.startsWith('/rst/');
+  const workspace = useRestaurantWorkspaceStore();
+  const p = useStockProductsPage({
+    preferredStoreId: inRst ? workspace.storeId : null,
+  });
 
   return (
     <PageLayout
@@ -23,21 +27,27 @@ export default function StockProductsPage() {
         <>
           {inRst ? (
             <>
-              <Link to={paths.inventoriesNew} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+              <Link to={paths.inventoriesNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
                 {p.t('rst.admin.stockInventory')}
               </Link>
-              <Link to={paths.receiptsNew} className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
+              <Link to={paths.receiptsNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
                 {p.t('rst.admin.stockReceipt')}
               </Link>
             </>
           ) : null}
           {p.manage && (
+            <BaseButton onClick={p.handleAddProduct}>
+              <Plus size={16} />
+              {p.t('products.add')}
+            </BaseButton>
+          )}
+          {!inRst && p.manage ? (
             <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
               <Plus size={16} />
               {p.t('stockModule.add')}
             </BaseButton>
-          )}
-          <BaseButton onClick={() => p.setFiltersOpen(true)}>
+          ) : null}
+          <BaseButton variant="secondary" onClick={() => p.setFiltersOpen(true)}>
             <Filter size={16} />
             {p.t('products.toolbar.filters')}
           </BaseButton>
@@ -80,8 +90,12 @@ export default function StockProductsPage() {
         receiveOpen={p.receiveOpen}
         onReceiveClose={() => p.setReceiveOpen(false)}
         onInvalidateCaches={p.invalidateCaches}
+        showCreate={p.showCreate}
+        createStore={p.createStore}
+        catalogModalKey={p.catalogModalKey}
+        onCreateStoreChange={p.handleCreateStoreChange}
+        onCatalogClose={p.closeCatalogModal}
         editProduct={p.editProduct}
-        onEditClose={() => p.setEditProduct(null)}
         categories={p.categories}
         stores={p.stores}
         stockProduct={p.stockProduct}

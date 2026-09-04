@@ -1,6 +1,7 @@
 package com.pos.restaurant.order.entity;
 
 import com.pos.restaurant.floor.entity.FloorTable;
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.shift.entity.RestaurantShift;
 import jakarta.persistence.Column;
@@ -44,9 +45,14 @@ public class FloorOrder {
     @Column(name = "store_id", nullable = false)
     private Integer storeId;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "table_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "table_id")
     private FloorTable table;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 24)
+    @Builder.Default
+    private OrderChannel channel = OrderChannel.DINE_IN;
 
     @Column(name = "order_no", nullable = false)
     private int orderNo;
@@ -67,6 +73,15 @@ public class FloorOrder {
     @Column(name = "children_count", nullable = false)
     @Builder.Default
     private int childrenCount = 0;
+
+    @Column(name = "client_name", length = 160)
+    private String clientName;
+
+    @Column(name = "client_phone", length = 40)
+    private String clientPhone;
+
+    @Column(name = "delivery_address", length = 400)
+    private String deliveryAddress;
 
     @Column(name = "opened_by_user_id", nullable = false)
     private UUID openedByUserId;
@@ -97,6 +112,9 @@ public class FloorOrder {
             openedAt = now;
         }
         updatedAt = now;
+        if (channel == null) {
+            channel = OrderChannel.DINE_IN;
+        }
     }
 
     @PreUpdate

@@ -7,6 +7,8 @@ import { useAuthStore } from '../../../store/authStore';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 
 export const RST_STAFF_ROLES = ['WAITER', 'COOK', 'CASHIER', 'MANAGER'];
+export const STAFF_PAGE_SIZE_OPTIONS = [10, 14, 20];
+const DEFAULT_PAGE_SIZE = 14;
 
 function userStoreIds(user) {
   if (Array.isArray(user.storeIds)) return user.storeIds.map(Number);
@@ -26,9 +28,11 @@ export function useStaffAdminPage() {
   const [search, setSearch] = useState('');
   const [formMode, setFormMode] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const usersQuery = useQuery({
-    queryKey: ['rst-staff-users'],
+    queryKey: ['rst-staff-users', workspace.storeId],
     queryFn: () => userApi.getAll().then((r) => r.data ?? []),
     enabled: workspace.storeId != null,
   });
@@ -41,7 +45,7 @@ export function useStaffAdminPage() {
       .filter((user) => RST_STAFF_ROLES.includes(user.role))
       .filter((user) => {
         const ids = userStoreIds(user);
-        if (user.role === 'MANAGER' && ids.length === 0) return true;
+        // Only staff assigned to this restaurant store (no company-wide manager leak).
         return ids.includes(Number(storeId));
       })
       .filter((user) => !roleFilter || user.role === roleFilter)
@@ -52,6 +56,14 @@ export function useStaffAdminPage() {
       })
       .sort((a, b) => String(a.fullName || a.username).localeCompare(String(b.fullName || b.username)));
   }, [usersQuery.data, workspace.storeId, roleFilter, search]);
+
+  const total = staff.length;
+  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+  const safePage = Math.min(page, Math.max(0, totalPages - 1));
+  const rows = useMemo(() => {
+    const start = safePage * pageSize;
+    return staff.slice(start, start + pageSize);
+  }, [staff, safePage, pageSize]);
 
   const stats = useMemo(() => ({
     total: staff.length,
@@ -84,13 +96,30 @@ export function useStaffAdminPage() {
     workspace,
     canManage,
     staff,
+    rows,
     stats,
+    page: safePage,
+    pageSize,
+    total,
+    totalPages,
+    setPage: (next) => setPage(Math.max(0, Math.min(next, totalPages - 1))),
+    setPageSize: (nextSize) => {
+      setPageSize(nextSize);
+      setPage(0);
+    },
+    pageSizeOptions: STAFF_PAGE_SIZE_OPTIONS,
     isLoading: usersQuery.isLoading,
     isError: usersQuery.isError,
     roleFilter,
-    setRoleFilter,
+    setRoleFilter: (value) => {
+      setRoleFilter(value);
+      setPage(0);
+    },
     search,
-    setSearch,
+    setSearch: (value) => {
+      setSearch(value);
+      setPage(0);
+    },
     formMode,
     editingUser,
     openCreate: () => {

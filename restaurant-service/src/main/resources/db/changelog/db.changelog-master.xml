@@ -16,5 +16,6 @@
     <include file="db/changelog/v9-shifts.xml"/>
     <include file="db/changelog/v10-booking.xml"/>
     <include file="db/changelog/v11-menu-image-category.xml"/>
+    <include file="db/changelog/v12-order-channels.xml"/>
 
 </databaseChangeLog>

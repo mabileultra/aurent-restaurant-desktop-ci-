@@ -11,7 +11,7 @@ import {
   canManageStock,
 } from '../constants';
 
-export function useStockProductsPage() {
+export function useStockProductsPage({ preferredStoreId = null } = {}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { user } = useAuthStore();
@@ -22,6 +22,8 @@ export function useStockProductsPage() {
   const [pageSize, setPageSize] = useState(STOCK_PAGE_SIZE_DEFAULT);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [receiveOpen, setReceiveOpen] = useState(false);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createStore, setCreateStore] = useState(null);
   const [filters, setFilters] = useState(STOCK_PRODUCT_DEFAULT_FILTERS);
   const [applied, setApplied] = useState(STOCK_PRODUCT_DEFAULT_FILTERS);
 
@@ -116,6 +118,35 @@ export function useStockProductsPage() {
 
   const invalidateCaches = useCallback(() => invalidateProductCaches(qc), [qc]);
 
+  const resolveCreateStore = useCallback(() => {
+    if (preferredStoreId != null) {
+      const preferred = stores.find((store) => Number(store.id) === Number(preferredStoreId));
+      if (preferred) return preferred;
+    }
+    return stores[0] ?? null;
+  }, [preferredStoreId, stores]);
+
+  const handleAddProduct = useCallback(() => {
+    if (stores.length === 0) {
+      toast.error(t('productTemplates.noStoresHint'));
+      return;
+    }
+    setEditProduct(null);
+    setCreateStore(resolveCreateStore());
+    setShowCreate(true);
+  }, [stores, resolveCreateStore, t]);
+
+  const handleCreateStoreChange = useCallback((store) => {
+    if (!createStore || !store || store.id === createStore.id) return;
+    setCreateStore(store);
+  }, [createStore]);
+
+  const closeCatalogModal = useCallback(() => {
+    setEditProduct(null);
+    setShowCreate(false);
+    setCreateStore(null);
+  }, []);
+
   const confirmDelete = async () => {
     if (!deleteProduct) return;
     try {
@@ -143,11 +174,21 @@ export function useStockProductsPage() {
     setFiltersOpen,
     receiveOpen,
     setReceiveOpen,
+    showCreate,
+    createStore,
+    handleAddProduct,
+    handleCreateStoreChange,
+    closeCatalogModal,
+    catalogModalKey: editProduct?.id ?? (showCreate ? `new-${createStore?.id ?? 'x'}` : 'closed'),
     filters,
     setFilters,
     rowMenu,
     editProduct,
-    setEditProduct,
+    setEditProduct: (product) => {
+      setShowCreate(false);
+      setCreateStore(null);
+      setEditProduct(product);
+    },
     stockProduct,
     setStockProduct,
     receiveProduct,

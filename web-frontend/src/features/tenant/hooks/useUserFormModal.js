@@ -14,7 +14,7 @@ import {
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
 
-export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser }) {
+export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser, allowedRoles, defaultStoreIds }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { tenantKey } = useTenantScope();
@@ -44,6 +44,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form;
   const selectedRole = watch('role');
+  const roleAllowList = Array.isArray(allowedRoles) && allowedRoles.length > 0 ? allowedRoles : null;
+  const defaultCreateRole = roleAllowList?.[0] ?? (isPlatform ? 'ADMIN' : 'MANAGER');
   const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
   const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
@@ -140,8 +142,11 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
       setStoreIds(role === 'CASHIER' || role === 'WAITER' ? cashierStoreSet(initialStores) : initialStores);
       setCompanyId(user.companyId != null ? String(user.companyId) : '');
     } else {
+      const initialStores = Array.isArray(defaultStoreIds)
+        ? new Set(defaultStoreIds.map(Number).filter((id) => !Number.isNaN(id)))
+        : new Set();
       reset({
-        role: isPlatform ? 'ADMIN' : 'MANAGER',
+        role: defaultCreateRole,
         firstName: '',
         lastName: '',
         patronymic: '',
@@ -150,10 +155,10 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
         pin: '',
         password: '',
       });
-      setStoreIds(new Set());
+      setStoreIds(initialStores);
       setCompanyId('');
     }
-  }, [open, isEdit, user?.id, isPlatform, reset]);
+  }, [open, isEdit, user?.id, isPlatform, reset, defaultCreateRole, defaultStoreIds]);
 
   useEffect(() => {
     if (!isCashierRole) return;
@@ -170,6 +175,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['rst-staff-users'] });
       if (!isEdit && isPlatform && createCredentialsRef.current) {
         setCreatedCredentials(createCredentialsRef.current);
         createCredentialsRef.current = null;
@@ -331,6 +337,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser 
     register,
     setValue,
     selectedRole,
+    roleAllowList,
     handleSubmit,
     errors,
     onSubmit,

@@ -1,5 +1,6 @@
 package com.pos.restaurant.order.support;
 
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.OrderItemModifierResponse;
 import com.pos.restaurant.order.dto.OrderItemResponse;
 import com.pos.restaurant.order.dto.OrderResponse;
@@ -32,16 +33,23 @@ public class OrderResponseAssembler {
         List<OrderItemResponse> itemResponses = items.stream()
             .map(item -> toItem(item, modifiers.getOrDefault(item.getId(), List.of())))
             .toList();
+        OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
+        Integer tableId = order.getTable() == null ? null : order.getTable().getId();
+        String tableCode = order.getTable() == null ? displayCode(channel, order) : order.getTable().getCode();
         return new OrderResponse(
             order.getId(),
             order.getOrderNo(),
-            order.getTable().getId(),
-            order.getTable().getCode(),
+            channel,
+            tableId,
+            tableCode,
             order.getStoreId(),
             order.getStatus(),
             order.getGuestCount(),
             order.getAdultCount(),
             order.getChildrenCount(),
+            order.getClientName(),
+            order.getClientPhone(),
+            order.getDeliveryAddress(),
             order.getOpenedByUserId(),
             order.getWaiterUserId(),
             order.getComment(),
@@ -74,5 +82,15 @@ public class OrderResponseAssembler {
 
     public BigDecimal lineTotal(BigDecimal quantity, BigDecimal unitPrice) {
         return quantity.multiply(unitPrice).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public static String displayCode(OrderChannel channel, FloorOrder order) {
+        if (channel == OrderChannel.DELIVERY) {
+            return "DLV";
+        }
+        if (channel == OrderChannel.TAKEAWAY) {
+            return "TW";
+        }
+        return "—";
     }
 }

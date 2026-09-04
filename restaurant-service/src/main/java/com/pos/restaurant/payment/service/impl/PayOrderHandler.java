@@ -58,7 +58,9 @@ public class PayOrderHandler {
             .build());
         order.setStatus(OrderStatus.CLOSED);
         order.setClosedAt(Instant.now());
-        order.getTable().setStatus(TableStatus.CLEANING);
+        if (order.getTable() != null) {
+            order.getTable().setStatus(TableStatus.CLEANING);
+        }
         if (order.getShift() != null) {
             shiftSaleAccumulator.applyPayment(order.getShift(), payment.getMethod(), payment.getAmount());
         } else {

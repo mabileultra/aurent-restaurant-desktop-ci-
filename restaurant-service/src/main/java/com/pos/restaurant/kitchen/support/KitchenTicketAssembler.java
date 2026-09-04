@@ -4,7 +4,10 @@ import com.pos.restaurant.kitchen.dto.KitchenTicketLineResponse;
 import com.pos.restaurant.kitchen.dto.KitchenTicketResponse;
 import com.pos.restaurant.kitchen.entity.KitchenTicket;
 import com.pos.restaurant.kitchen.entity.KitchenTicketLine;
+import com.pos.restaurant.order.domain.OrderChannel;
+import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
+import com.pos.restaurant.order.support.OrderResponseAssembler;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -16,12 +19,20 @@ public class KitchenTicketAssembler {
     public KitchenTicketResponse toResponse(KitchenTicket ticket, List<KitchenTicketLine> lines) {
         UUID stationId = ticket.getStation() == null ? null : ticket.getStation().getId();
         String stationName = ticket.getStation() == null ? null : ticket.getStation().getName();
+        FloorOrder order = ticket.getOrder();
+        Integer tableId = order.getTable() == null ? null : order.getTable().getId();
+        String tableCode = order.getTable() == null
+            ? OrderResponseAssembler.displayCode(
+                order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel(),
+                order
+            )
+            : order.getTable().getCode();
         return new KitchenTicketResponse(
             ticket.getId(),
-            ticket.getOrder().getId(),
-            ticket.getOrder().getOrderNo(),
-            ticket.getOrder().getTable().getId(),
-            ticket.getOrder().getTable().getCode(),
+            order.getId(),
+            order.getOrderNo(),
+            tableId,
+            tableCode,
             stationId,
             stationName,
             ticket.getStatus(),

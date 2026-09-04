@@ -5,11 +5,25 @@ import FloorStatusLegend from '../../pos/components/FloorStatusLegend';
 import HallFormModal from '../components/HallFormModal';
 import TableFormModal from '../components/TableFormModal';
 import { useHallsAdminPage } from '../hooks/useHallsAdminPage';
+import { useInfiniteScrollSlice } from '../../shared/hooks/useInfiniteScrollSlice';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 
+const TABLES_LIST_PAGE_SIZE = 20;
+
 export default function HallsAdminPage() {
   const p = useHallsAdminPage();
+  const tables = p.selectedHall?.tables ?? [];
+  const {
+    visibleItems: visibleTables,
+    hasMore: hasMoreTables,
+    rootRef: tableListRef,
+    sentinelRef: tableSentinelRef,
+  } = useInfiniteScrollSlice(tables, {
+    pageSize: TABLES_LIST_PAGE_SIZE,
+    resetKey: p.selectedHall?.id,
+    rootMargin: '80px',
+  });
 
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
@@ -75,49 +89,66 @@ export default function HallsAdminPage() {
         <div className="rst-empty">{p.t('rst.floor.selectHall')}</div>
       )}
 
-      <FloorCanvas
-        hall={p.selectedHall}
-        onTableClick={(table) => p.setTableModal({
-          mode: 'edit',
-          form: {
-            id: table.id,
-            code: table.code,
-            label: table.label ?? '',
-            seatCount: table.seatCount,
-            status: table.status,
-            posX: table.posX,
-            posY: table.posY,
-            width: table.width,
-            height: table.height,
-          },
-        })}
-        t={p.t}
-      />
+      <div className="rst-halls__plan">
+        <FloorCanvas
+          variant="admin"
+          hall={p.selectedHall}
+          onTableClick={(table) => p.setTableModal({
+            mode: 'edit',
+            form: {
+              id: table.id,
+              code: table.code,
+              label: table.label ?? '',
+              seatCount: table.seatCount,
+              status: table.status,
+              posX: table.posX,
+              posY: table.posY,
+              width: table.width,
+              height: table.height,
+            },
+          })}
+          t={p.t}
+        />
+      </div>
       <FloorStatusLegend t={p.t} />
 
-      {p.selectedHall?.tables?.length ? (
-        <div className="rst-halls__table-list">
-          {p.selectedHall.tables.map((table) => (
-            <div key={table.id} className="rst-halls__row">
-              <div>
-                <strong>{table.code}</strong>
-                <div className="rst-halls__row-meta">
-                  {p.t(`rst.status.${table.status}`)} · {table.seatCount}
+      {tables.length ? (
+        <div className="rst-halls__table-panel">
+          <div className="rst-halls__table-panel-head">
+            <strong>{p.t('rst.admin.tablesList')}</strong>
+            <span>
+              {visibleTables.length}
+              {hasMoreTables ? ` / ${tables.length}` : ` · ${tables.length}`}
+            </span>
+          </div>
+          <div ref={tableListRef} className="rst-halls__table-list">
+            {visibleTables.map((table) => (
+              <div key={table.id} className="rst-halls__row">
+                <div>
+                  <strong>{table.code}</strong>
+                  <div className="rst-halls__row-meta">
+                    {p.t(`rst.status.${table.status}`)} · {table.seatCount}
+                  </div>
                 </div>
+                <BaseButton
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    if (window.confirm(p.t('rst.admin.confirmDeactivateTable'))) {
+                      p.deactivateTableMutation.mutate(table.id);
+                    }
+                  }}
+                >
+                  {p.t('common.delete')}
+                </BaseButton>
               </div>
-              <BaseButton
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  if (window.confirm(p.t('rst.admin.confirmDeactivateTable'))) {
-                    p.deactivateTableMutation.mutate(table.id);
-                  }
-                }}
-              >
-                {p.t('common.delete')}
-              </BaseButton>
-            </div>
-          ))}
+            ))}
+            {hasMoreTables ? (
+              <div ref={tableSentinelRef} className="rst-halls__scroll-sentinel" aria-hidden>
+                {p.t('rst.admin.loadingMore')}
+              </div>
+            ) : null}
+          </div>
         </div>
       ) : null}
 

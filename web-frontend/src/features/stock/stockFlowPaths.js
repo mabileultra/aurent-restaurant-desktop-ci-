@@ -10,6 +10,7 @@ export const DEFAULT_STOCK_FLOW_PATHS = {
   balancesReport: '/reports/stock/balances',
   lowStockReport: '/reports/stock/low',
   stockDashboard: '/reports/stock',
+  lifecycleReport: '/reports/stock/lifecycle',
 };
 
 /** Paths when the same warehouse/report UIs live inside Restaurant OS. */
@@ -22,6 +23,7 @@ export const RST_STOCK_FLOW_PATHS = {
   balancesReport: '/rst/admin/reports/balances',
   lowStockReport: '/rst/admin/reports/low',
   stockDashboard: '/rst/admin/reports',
+  lifecycleReport: null,
 };
 
 const StockFlowPathsContext = createContext(DEFAULT_STOCK_FLOW_PATHS);

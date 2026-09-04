@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
+import { PageSearchField } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { fmtMoney } from '../../../utils/formatMoney';
 import { useLowStockReportPage } from '../hooks/useLowStockReportPage';
@@ -20,6 +21,15 @@ export default function LowStockReportPage() {
         <Link to={paths.stockDashboard} className="mt-2 inline-block text-sm text-emerald-700 hover:underline dark:text-emerald-400">
           ← {t('stockReports.backDashboard')}
         </Link>
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+        <PageSearchField
+          value={r.search}
+          onChange={r.handleSearchChange}
+          placeholder={t('stockModule.searchPh')}
+          className="min-w-[12rem] flex-1"
+        />
       </div>
 
       <ReportTableCard

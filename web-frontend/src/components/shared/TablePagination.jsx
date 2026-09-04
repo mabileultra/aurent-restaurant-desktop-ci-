@@ -3,7 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../ui';
 import '../../styles/shared/table-pagination.css';
 
-export const TABLE_PAGE_SIZE_OPTIONS = [10, 14, 20, 50];
+export const TABLE_PAGE_SIZE_OPTIONS = [10, 14, 20];
+export const TABLE_PAGE_SIZE_OPTIONS_EXTENDED = [10, 14, 20, 50];
 
 function buildPageButtons(totalPages, page) {
   if (totalPages <= 0) return [0];

@@ -42,6 +42,10 @@
   color: var(--rst-muted);
 }
 
+.rst-halls__plan {
+  margin-bottom: 0.75rem;
+}
+
 .rst-halls__table-list {
   display: flex;
   flex-direction: column;
@@ -61,6 +65,59 @@
 }
 
 .rst-halls__row-meta {
+  color: var(--rst-muted);
+  font-size: 0.8rem;
+}
+
+.rst-halls__table-panel {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  max-height: min(42vh, 380px);
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius);
+  background: var(--rst-surface);
+  overflow: hidden;
+}
+
+.rst-halls__table-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+}
+
+.rst-halls__table-panel-head span {
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+}
+
+.rst-halls__table-panel .rst-halls__table-list {
+  margin-top: 0;
+  gap: 0;
+  overflow: auto;
+  flex: 1;
+  min-height: 0;
+}
+
+.rst-halls__table-panel .rst-halls__row {
+  border: 0;
+  border-bottom: 1px solid var(--rst-line);
+  border-radius: 0;
+  background: transparent;
+  padding: 0.7rem 0.9rem;
+}
+
+.rst-halls__table-panel .rst-halls__row:last-child {
+  border-bottom: 0;
+}
+
+.rst-halls__scroll-sentinel {
+  padding: 0.65rem 0.9rem 0.85rem;
+  text-align: center;
   color: var(--rst-muted);
   font-size: 0.8rem;
 }

@@ -1,6 +1,8 @@
 package com.pos.restaurant.order.controller;
 
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
+import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
@@ -22,14 +24,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/rst")
 @RequiredArgsConstructor
-@Tag(name = "Restaurant orders", description = "Заказы на столах")
+@Tag(name = "Restaurant orders", description = "Заказы зала, с собой и доставки")
 public class FloorOrderController {
 
     private final FloorOrderService orderService;
@@ -43,6 +47,40 @@ public class FloorOrderController {
         @Valid @RequestBody OpenOrderRequest request
     ) {
         return ResponseEntity.status(HttpStatus.CREATED).body(orderService.open(tableId, request));
+    }
+
+    @PostMapping("/stores/{storeId}/orders/takeaway")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Открыть заказ с собой")
+    @ApiResponse(responseCode = "201", description = "Заказ создан")
+    public ResponseEntity<OrderResponse> openTakeaway(
+        @PathVariable Integer storeId,
+        @Valid @RequestBody(required = false) OpenCounterOrderRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(orderService.openCounter(storeId, OrderChannel.TAKEAWAY, request));
+    }
+
+    @PostMapping("/stores/{storeId}/orders/delivery")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Открыть заказ доставки")
+    @ApiResponse(responseCode = "201", description = "Заказ создан")
+    public ResponseEntity<OrderResponse> openDelivery(
+        @PathVariable Integer storeId,
+        @Valid @RequestBody OpenCounterOrderRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+            .body(orderService.openCounter(storeId, OrderChannel.DELIVERY, request));
+    }
+
+    @GetMapping("/stores/{storeId}/orders/active")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Активные заказы канала (с собой / доставка)")
+    public List<OrderResponse> listActive(
+        @PathVariable Integer storeId,
+        @RequestParam OrderChannel channel
+    ) {
+        return orderService.listActiveByChannel(storeId, channel);
     }
 
     @GetMapping("/orders/{orderId}")

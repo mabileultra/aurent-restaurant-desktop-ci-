@@ -23,6 +23,7 @@ export default function UserFormModalFields({
   register,
   setValue,
   selectedRole,
+  roleAllowList,
   errors,
   isPending,
   storeIds,
@@ -172,26 +173,24 @@ export default function UserFormModalFields({
             label={t('users.role')}
             value={selectedRole}
             onChange={(e) => setValue('role', e.target.value, { shouldDirty: true, shouldValidate: true })}
-            options={
-              isPlatform
-                ? [
-                    { value: 'ADMIN', label: t('users.roleAdmin') },
-                    { value: 'MANAGER', label: t('users.roleManager') },
-                    { value: 'CASHIER', label: t('users.roleCashier') },
-                    { value: 'WAITER', label: t('users.roleWaiter') },
-                    { value: 'COURIER', label: t('users.roleCourier') },
-                    { value: 'COOK', label: t('users.roleCook') },
-                    { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
-                  ]
-                : [
-                    { value: 'MANAGER', label: t('users.roleManager') },
-                    { value: 'CASHIER', label: t('users.roleCashier') },
-                    { value: 'WAITER', label: t('users.roleWaiter') },
-                    { value: 'COURIER', label: t('users.roleCourier') },
-                    { value: 'COOK', label: t('users.roleCook') },
-                    { value: 'ACCOUNTANT', label: t('users.roleAccountant') },
-                  ]
-            }
+            options={(
+              roleAllowList?.length
+                ? roleAllowList
+                : isPlatform
+                  ? ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
+                  : ['MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
+            ).map((role) => ({
+              value: role,
+              label: ({
+                ADMIN: t('users.roleAdmin'),
+                MANAGER: t('users.roleManager'),
+                CASHIER: t('users.roleCashier'),
+                WAITER: t('users.roleWaiter'),
+                COURIER: t('users.roleCourier'),
+                COOK: t('users.roleCook'),
+                ACCOUNTANT: t('users.roleAccountant'),
+              })[role] ?? t(`roles.${role}`, { defaultValue: role }),
+            }))}
           />
         </div>
       ) : null}

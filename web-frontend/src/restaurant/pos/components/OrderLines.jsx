@@ -27,16 +27,32 @@ export default function OrderLines({ items, onQty, onRemove, locked = false, t }
             <div className="rst-order-line__actions">
               {lineLocked ? null : (
                 <>
-                  <button type="button" className="rst-qty" onClick={() => onQty(line, Number(line.quantity) - 1)}>-</button>
-                  <span>{Number(line.quantity)}</span>
-                  <button type="button" className="rst-qty" onClick={() => onQty(line, Number(line.quantity) + 1)}>+</button>
+                  <div className="rst-qty-stepper">
+                    <button
+                      type="button"
+                      className="rst-qty"
+                      aria-label="-"
+                      onClick={() => onQty(line, Number(line.quantity) - 1)}
+                    >
+                      −
+                    </button>
+                    <span className="rst-qty-stepper__value">{Number(line.quantity)}</span>
+                    <button
+                      type="button"
+                      className="rst-qty"
+                      aria-label="+"
+                      onClick={() => onQty(line, Number(line.quantity) + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
                   <BaseButton type="button" variant="ghost" size="sm" onClick={() => onRemove(line.id)}>
                     {t('common.delete')}
                   </BaseButton>
                 </>
               )}
             </div>
-            <strong>{fmtMoneyCompact(line.lineTotal)}</strong>
+            <strong className="rst-order-line__total">{fmtMoneyCompact(line.lineTotal)}</strong>
           </div>
         );
       })}

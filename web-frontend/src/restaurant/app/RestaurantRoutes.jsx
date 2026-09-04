@@ -20,7 +20,7 @@ import StaffAdminPage from '../admin/pages/StaffAdminPage';
 import RstStockFlowScope from '../admin/components/RstStockFlowScope';
 import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
-import StockProductsPage from '../../features/stock/pages/StockProductsPage';
+import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
 import StockInventoryCreatePage from '../../features/stock/pages/StockInventoryCreatePage';
 import StockReceiptCreatePage from '../../features/stock/pages/StockReceiptCreatePage';
 import StockInventoriesReportPage from '../../features/reports/pages/StockInventoriesReportPage';
@@ -71,7 +71,7 @@ export const restaurantRoutes = (
         path="stock"
         element={(
           <RstStockFlowScope>
-            <StockProductsPage />
+            <RstCatalogProductsPage />
           </RstStockFlowScope>
         )}
       />

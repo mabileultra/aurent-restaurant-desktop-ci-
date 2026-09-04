@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
-export function useProductsPageCreateFlow({ t, activeStores }) {
+export function useProductsPageCreateFlow({ t, activeStores, preferredStoreId = null }) {
   const [editProduct, setEditProduct] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createStore, setCreateStore] = useState(null);
@@ -22,7 +22,10 @@ export function useProductsPageCreateFlow({ t, activeStores }) {
       return;
     }
     resetCreateFlow();
-    startCreateFlow(activeStores[0]);
+    const preferred = preferredStoreId != null
+      ? activeStores.find((store) => Number(store.id) === Number(preferredStoreId))
+      : null;
+    startCreateFlow(preferred ?? activeStores[0]);
   };
 
   const handleCreateStoreChange = (store) => {

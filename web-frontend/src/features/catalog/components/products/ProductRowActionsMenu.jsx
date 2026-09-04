@@ -12,6 +12,7 @@ export default function ProductRowActionsMenu({
   onAdjustStock,
   onReceive,
   onDelete,
+  showLifecycleReport = true,
 }) {
   if (!rowMenu) return null;
 
@@ -45,7 +46,7 @@ export default function ProductRowActionsMenu({
         >
           {t('products.info.openLifecycle')}
         </button>
-        {manage && (
+        {manage && showLifecycleReport ? (
           <button
             type="button"
             className="block w-full px-3 py-2 text-left text-xs text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-700"
@@ -53,7 +54,7 @@ export default function ProductRowActionsMenu({
           >
             {t('products.rowLifecycleReport')}
           </button>
-        )}
+        ) : null}
         {manage && (
           <button
             type="button"

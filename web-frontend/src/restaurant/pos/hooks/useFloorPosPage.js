@@ -11,15 +11,24 @@ import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWor
 import { useAuthStore } from '../../../store/authStore';
 
 const emptyGuestForm = () => ({ guestCount: 2, adultCount: 2, childrenCount: 0 });
+const emptyCounterForm = () => ({
+  clientName: '',
+  clientPhone: '',
+  deliveryAddress: '',
+  comment: '',
+});
 
 export function useFloorPosPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const workspace = useRestaurantWorkspaceStore();
+  const [posMode, setPosMode] = useState('floor');
   const [selectedHallId, setSelectedHallId] = useState(null);
   const [openTable, setOpenTable] = useState(null);
   const [guestForm, setGuestForm] = useState(emptyGuestForm());
+  const [counterModalOpen, setCounterModalOpen] = useState(false);
+  const [counterForm, setCounterForm] = useState(emptyCounterForm());
   const [activeOrderId, setActiveOrderId] = useState(null);
   const [pendingMenuItem, setPendingMenuItem] = useState(null);
   const [selectedModifierIds, setSelectedModifierIds] = useState([]);
@@ -27,11 +36,20 @@ export function useFloorPosPage() {
   const [openingCash, setOpeningCash] = useState('0');
   const [closingCash, setClosingCash] = useState('0');
 
+  const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
+
   const floorQuery = useQuery({
     queryKey: ['rst-floor', workspace.storeId],
     queryFn: () => rstFloorApi.getFloorSnapshot(workspace.storeId).then((r) => r.data),
-    enabled: workspace.storeId != null,
-    refetchInterval: activeOrderId ? false : 15_000,
+    enabled: workspace.storeId != null && posMode === 'floor',
+    refetchInterval: activeOrderId || posMode !== 'floor' ? false : 15_000,
+  });
+
+  const counterQuery = useQuery({
+    queryKey: ['rst-counter-orders', workspace.storeId, channel],
+    queryFn: () => rstOrderApi.listActive(workspace.storeId, channel).then((r) => r.data),
+    enabled: workspace.storeId != null && !!channel && !activeOrderId,
+    refetchInterval: 10_000,
   });
 
   const shiftQuery = useQuery({
@@ -62,7 +80,25 @@ export function useFloorPosPage() {
   const shift = shiftQuery.data ?? null;
 
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', workspace.storeId] });
+  const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', workspace.storeId] });
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', workspace.storeId] });
+
+  const ensureShift = () => {
+    if (shift) return true;
+    toast.error(t('rst.shift.required'));
+    setShiftModal('open');
+    setOpeningCash('0');
+    return false;
+  };
+
+  const changePosMode = (mode) => {
+    if (activeOrderId) {
+      setActiveOrderId(null);
+    }
+    setPosMode(mode);
+    setCounterModalOpen(false);
+    setOpenTable(null);
+  };
 
   const openMutation = useMutation({
     mutationFn: () => {
@@ -75,6 +111,29 @@ export function useFloorPosPage() {
       setOpenTable(null);
       setActiveOrderId(order.id);
       invalidateFloor();
+      invalidateShift();
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.openFailed')),
+  });
+
+  const openCounterMutation = useMutation({
+    mutationFn: () => {
+      const payload = {
+        clientName: counterForm.clientName.trim() || undefined,
+        clientPhone: counterForm.clientPhone.trim() || undefined,
+        deliveryAddress: counterForm.deliveryAddress.trim() || undefined,
+        comment: counterForm.comment.trim() || undefined,
+      };
+      if (channel === 'DELIVERY') {
+        return rstOrderApi.openDelivery(workspace.storeId, payload).then((r) => r.data);
+      }
+      return rstOrderApi.openTakeaway(workspace.storeId, payload).then((r) => r.data);
+    },
+    onSuccess: (order) => {
+      setCounterModalOpen(false);
+      setCounterForm(emptyCounterForm());
+      setActiveOrderId(order.id);
+      invalidateCounter();
       invalidateShift();
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.openFailed')),
@@ -150,6 +209,7 @@ export function useFloorPosPage() {
     onSuccess: () => {
       setActiveOrderId(null);
       invalidateFloor();
+      invalidateCounter();
       invalidateShift();
       toast.success(t('rst.order.cancelled'));
     },
@@ -161,6 +221,7 @@ export function useFloorPosPage() {
     onSuccess: (res) => {
       qc.setQueryData(['rst-order', activeOrderId], res.data);
       invalidateFloor();
+      invalidateCounter();
       toast.success(t('rst.order.billRequested'));
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.billFailed')),
@@ -174,6 +235,7 @@ export function useFloorPosPage() {
     onSuccess: () => {
       setActiveOrderId(null);
       invalidateFloor();
+      invalidateCounter();
       invalidateShift();
       toast.success(t('rst.order.paid'));
     },
@@ -181,26 +243,28 @@ export function useFloorPosPage() {
   });
 
   const handleTableClick = (table) => {
-    if (table.activeOrderId) {
-      setActiveOrderId(table.activeOrderId);
+    const openOrderId = table.activeOrder?.id ?? table.activeOrderId;
+    if (openOrderId) {
+      setActiveOrderId(openOrderId);
       return;
     }
     if (table.status === 'BLOCKED') {
       toast.error(t('rst.order.blocked'));
       return;
     }
-    if (!shift) {
-      toast.error(t('rst.shift.required'));
-      setShiftModal('open');
-      setOpeningCash('0');
-      return;
-    }
+    if (!ensureShift()) return;
     if (table.status === 'OCCUPIED' || table.status === 'WAITING_PAYMENT') {
       toast.error(t('rst.order.alreadyOpen'));
       return;
     }
     setGuestForm(emptyGuestForm());
     setOpenTable(table);
+  };
+
+  const handleOpenCounter = () => {
+    if (!ensureShift()) return;
+    setCounterForm(emptyCounterForm());
+    setCounterModalOpen(true);
   };
 
   const handleQty = (line, nextQty) => {
@@ -238,9 +302,26 @@ export function useFloorPosPage() {
     && !(orderQuery.data?.items ?? []).some((item) => item.itemStatus === 'NEW');
   const canPay = orderQuery.data?.status === 'BILLING';
 
+  const backLabelKey = posMode === 'takeaway'
+    ? 'rst.pos.backToTakeaway'
+    : posMode === 'delivery'
+      ? 'rst.pos.backToDelivery'
+      : 'rst.order.backToFloor';
+
   return {
     t,
     workspace,
+    posMode,
+    changePosMode,
+    channel,
+    counterOrders: counterQuery.data ?? [],
+    counterLoading: counterQuery.isPending,
+    counterModalOpen,
+    setCounterModalOpen,
+    counterForm,
+    setCounterForm,
+    handleOpenCounter,
+    openCounterMutation,
     halls,
     selectedHall,
     selectedHallId: selectedHall?.id ?? null,
@@ -253,8 +334,8 @@ export function useFloorPosPage() {
     setActiveOrderId,
     order: orderQuery.data,
     menuItems: menuQuery.data ?? [],
-    isLoading: workspace.isLoading || floorQuery.isLoading,
-    isError: floorQuery.isError,
+    isLoading: workspace.isLoading || (posMode === 'floor' ? floorQuery.isLoading : counterQuery.isLoading),
+    isError: posMode === 'floor' ? floorQuery.isError : counterQuery.isError,
     handleTableClick,
     handleAddItem,
     openMutation,
@@ -282,6 +363,7 @@ export function useFloorPosPage() {
     canRequestBill,
     canPay,
     canAdmin: canManage,
+    backLabelKey,
     shift,
     shiftModal,
     setShiftModal,

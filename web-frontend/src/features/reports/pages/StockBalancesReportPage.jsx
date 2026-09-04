@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { stockReportApi } from '../../../api';
-import { BaseSelect } from '../../../components/ui';
+import { BaseSelect, PageSearchField } from '../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
@@ -25,11 +25,11 @@ export default function StockBalancesReportPage() {
         />
       </div>
       <div className="flex flex-wrap gap-3">
-        <input
+        <PageSearchField
           value={r.search}
-          onChange={(e) => r.handleSearchChange(e.target.value)}
-          placeholder={t('common.search')}
-          className="min-w-[10rem] flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
+          onChange={r.handleSearchChange}
+          placeholder={t('stockModule.searchPh')}
+          className="min-w-[12rem] flex-1"
         />
         <BaseSelect
           value={r.categoryId}

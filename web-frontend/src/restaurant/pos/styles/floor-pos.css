@@ -39,7 +39,9 @@
   border-radius: 999px;
   border: 1px solid var(--rst-line);
   background: transparent;
+  color: inherit;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .rst-pos__mode.is-active {
@@ -48,8 +50,8 @@
   color: #1b1208;
 }
 
-.rst-pos__mode:disabled {
-  opacity: 0.45;
+.rst-pos__mode:hover:not(.is-active) {
+  border-color: var(--rst-accent);
 }
 
 .rst-pos__actions {

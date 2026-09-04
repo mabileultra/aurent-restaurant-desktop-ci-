@@ -1,6 +1,6 @@
-import TablePagination from '../../../components/shared/TablePagination';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 
-export default function ReportTableCard({ children, pagination }) {
+export default function ReportTableCard({ children, pagination, pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS }) {
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
       <div className="overflow-x-auto">{children}</div>
@@ -12,6 +12,7 @@ export default function ReportTableCard({ children, pagination }) {
           totalPages={pagination.totalPages}
           onPageChange={pagination.onPageChange}
           onPageSizeChange={pagination.onPageSizeChange}
+          pageSizeOptions={pagination.pageSizeOptions ?? pageSizeOptions}
         />
       ) : null}
     </div>

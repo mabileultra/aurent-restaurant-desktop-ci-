@@ -10,7 +10,7 @@ import { useProductsPageFilters } from './products-page/useProductsPageFilters';
 import { useProductsPageModals } from './products-page/useProductsPageModals';
 import { useProductsPageSelection } from './products-page/useProductsPageSelection';
 
-export function useProductsPage() {
+export function useProductsPage({ preferredStoreId = null } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -27,7 +27,11 @@ export function useProductsPage() {
     page: data.page,
     search: data.search,
   });
-  const createFlow = useProductsPageCreateFlow({ t, activeStores: data.activeStores });
+  const createFlow = useProductsPageCreateFlow({
+    t,
+    activeStores: data.activeStores,
+    preferredStoreId,
+  });
   const modals = useProductsPageModals({ t, selectedIds: selection.selectedIds });
 
   const invalidateProducts = () => invalidateProductCaches(qc);

@@ -17,7 +17,7 @@ export default function BookingFormModal({
 
   return (
     <div className="rst-modal" role="dialog" aria-modal="true">
-      <div className="rst-modal__card" style={{ width: 'min(480px, 100%)' }}>
+      <div className="rst-modal__card">
         <h2 className="rst-modal__title">
           {mode === 'edit' ? t('rst.booking.editTitle') : t('rst.booking.addTitle')}
         </h2>
@@ -28,8 +28,8 @@ export default function BookingFormModal({
             onSubmit();
           }}
         >
-          <label>
-            <span>{t('rst.booking.table')}</span>
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.booking.table')}</span>
             <select
               className="form-select"
               value={form.tableId}
@@ -48,19 +48,26 @@ export default function BookingFormModal({
             </select>
           </label>
 
-          <label>
-            <span>{t('rst.booking.clientName')}</span>
-            <BaseInput value={form.clientName} onChange={(e) => onChange({ ...form, clientName: e.target.value })} required />
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.booking.clientName')}</span>
+            <BaseInput
+              value={form.clientName}
+              onChange={(e) => onChange({ ...form, clientName: e.target.value })}
+              required
+            />
           </label>
 
-          <label>
-            <span>{t('rst.booking.clientPhone')}</span>
-            <BaseInput value={form.clientPhone} onChange={(e) => onChange({ ...form, clientPhone: e.target.value })} />
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.booking.clientPhone')}</span>
+            <BaseInput
+              value={form.clientPhone}
+              onChange={(e) => onChange({ ...form, clientPhone: e.target.value })}
+            />
           </label>
 
           <div className="rst-booking-form__row">
-            <label>
-              <span>{t('rst.booking.guestCount')}</span>
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{t('rst.booking.guestCount')}</span>
               <BaseInput
                 type="number"
                 min={1}
@@ -69,8 +76,8 @@ export default function BookingFormModal({
                 required
               />
             </label>
-            <label>
-              <span>{t('rst.booking.duration')}</span>
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{t('rst.booking.duration')}</span>
               <BaseInput
                 type="number"
                 min={30}
@@ -81,8 +88,8 @@ export default function BookingFormModal({
             </label>
           </div>
 
-          <label>
-            <span>{t('rst.booking.reservedAt')}</span>
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.booking.reservedAt')}</span>
             <BaseInput
               type="datetime-local"
               value={form.reservedAt}
@@ -91,9 +98,12 @@ export default function BookingFormModal({
             />
           </label>
 
-          <label>
-            <span>{t('rst.booking.notes')}</span>
-            <BaseInput value={form.notes} onChange={(e) => onChange({ ...form, notes: e.target.value })} />
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.booking.notes')}</span>
+            <BaseInput
+              value={form.notes}
+              onChange={(e) => onChange({ ...form, notes: e.target.value })}
+            />
           </label>
 
           <div className="rst-modal__actions">

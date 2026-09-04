@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -17,8 +17,18 @@ const emptyForm = () => ({
   stationId: '',
   category: '',
   imageUrl: '',
+  imageName: '',
   modifierGroupIds: [],
 });
+
+const emptyFilters = () => ({
+  search: '',
+  category: '',
+  stationId: '',
+  availability: 'all',
+});
+
+export const MENU_CARD_PAGE_SIZE = 12;
 
 export function useMenuAdminPage() {
   const { t } = useTranslation();
@@ -26,6 +36,7 @@ export function useMenuAdminPage() {
   const workspace = useRestaurantWorkspaceStore();
   const [form, setForm] = useState(emptyForm());
   const [editingId, setEditingId] = useState(null);
+  const [filters, setFilters] = useState(emptyFilters());
 
   const itemsQuery = useQuery({
     queryKey: ['rst-menu-admin', workspace.storeId],
@@ -44,6 +55,47 @@ export function useMenuAdminPage() {
     queryFn: () => rstModifierApi.listGroups(workspace.storeId).then((r) => r.data),
     enabled: workspace.storeId != null,
   });
+
+  const stations = stationsQuery.data ?? [];
+  const items = useMemo(
+    () => (itemsQuery.data ?? []).filter((item) => item.active),
+    [itemsQuery.data],
+  );
+
+  const categories = useMemo(() => {
+    const set = new Set();
+    for (const item of items) {
+      const value = String(item.category ?? '').trim();
+      if (value) set.add(value);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+  }, [items]);
+
+  const filteredItems = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    return items.filter((item) => {
+      if (filters.category && String(item.category ?? '') !== filters.category) return false;
+      if (filters.stationId && String(item.stationId ?? '') !== filters.stationId) return false;
+      if (filters.availability === 'available' && !item.available) return false;
+      if (filters.availability === 'unavailable' && item.available) return false;
+      if (!q) return true;
+      const hay = `${item.name ?? ''} ${item.sku ?? ''} ${item.category ?? ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [items, filters]);
+
+  const filterKey = [
+    workspace.storeId,
+    filters.search,
+    filters.category,
+    filters.stationId,
+    filters.availability,
+  ].join('|');
+
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
+    qc.invalidateQueries({ queryKey: ['rst-menu-pos', workspace.storeId] });
+  };
 
   const saveMutation = useMutation({
     mutationFn: () => {
@@ -66,8 +118,7 @@ export function useMenuAdminPage() {
       toast.success(t('rst.admin.menuSaved'));
       setForm(emptyForm());
       setEditingId(null);
-      qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
-      qc.invalidateQueries({ queryKey: ['rst-menu-pos', workspace.storeId] });
+      invalidate();
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
   });
@@ -76,8 +127,7 @@ export function useMenuAdminPage() {
     mutationFn: (itemId) => rstMenuApi.deactivate(itemId),
     onSuccess: () => {
       toast.success(t('rst.admin.menuDeactivated'));
-      qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
-      qc.invalidateQueries({ queryKey: ['rst-menu-pos', workspace.storeId] });
+      invalidate();
     },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
   });
@@ -93,6 +143,7 @@ export function useMenuAdminPage() {
       stationId: item.stationId ?? '',
       category: item.category ?? '',
       imageUrl: item.imageUrl ?? '',
+      imageName: item.imageUrl ? t('rst.admin.imageAttached') : '',
       modifierGroupIds: item.modifierGroupIds ?? [],
     });
   };
@@ -111,18 +162,26 @@ export function useMenuAdminPage() {
     if (!file) return;
     try {
       const dataUrl = await readImageDataUrl(file, 400 * 1024);
-      setForm((current) => ({ ...current, imageUrl: dataUrl }));
+      setForm((current) => ({ ...current, imageUrl: dataUrl, imageName: file.name }));
     } catch {
       toast.error(t('rst.admin.imageUploadFailed'));
     }
   };
 
+  const stationName = (stationId) => stations.find((s) => s.id === stationId)?.name ?? '';
+
   return {
     t,
     workspace,
-    items: itemsQuery.data ?? [],
-    stations: stationsQuery.data ?? [],
+    items,
+    filteredItems,
+    filterKey,
+    stations,
+    categories,
     groups: (groupsQuery.data ?? []).filter((group) => group.active),
+    filters,
+    setFilters,
+    resetFilters: () => setFilters(emptyFilters()),
     form,
     setForm,
     editingId,
@@ -132,6 +191,8 @@ export function useMenuAdminPage() {
     startEdit,
     toggleGroup,
     onImageFile,
+    stationName,
+    isLoading: workspace.isLoading || itemsQuery.isLoading,
     resetForm: () => {
       setEditingId(null);
       setForm(emptyForm());

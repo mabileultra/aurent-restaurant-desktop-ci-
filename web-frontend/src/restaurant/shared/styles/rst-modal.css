@@ -10,16 +10,20 @@
 }
 
 .rst-modal__card {
-  width: min(420px, 100%);
+  width: min(480px, 100%);
+  max-height: min(90vh, 820px);
+  overflow: auto;
   padding: 1.25rem;
   border-radius: 16px;
   background: var(--rst-surface);
   border: 1px solid var(--rst-line);
+  box-shadow: var(--rst-shadow);
 }
 
 .rst-modal__title {
-  margin: 0 0 0.35rem;
+  margin: 0 0 1rem;
   font-size: 1.2rem;
+  color: var(--rst-ink);
 }
 
 .rst-modal__text {
@@ -30,5 +34,36 @@
 .rst-modal__actions {
   display: flex;
   justify-content: flex-end;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+}
+
+.rst-modal__card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.rst-modal__card select,
+.rst-modal__card textarea,
+.rst-modal__card .form-select {
+  width: 100%;
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+}
+
+.rst-modal__card input:focus,
+.rst-modal__card select:focus,
+.rst-modal__card textarea:focus {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+  outline: none !important;
+}
+
+.rst-modal__card label > div {
+  width: 100%;
+}
+
+.rst-modal__card label span,
+.rst-modal__card .rst-admin-field__label {
+  color: var(--rst-muted);
 }
