@@ -177,7 +177,11 @@
       "statusBilling": "Hisob",
       "linesCount": "{{count}} poz.",
       "backToTakeaway": "Olib ketishga",
-      "backToDelivery": "Yetkazib berishga"
+      "backToDelivery": "Yetkazib berishga",
+      "zoomLabel": "Interfeys masshtabi",
+      "zoomIn": "Kattalashtirish",
+      "zoomOut": "Kichiklashtirish",
+      "zoomReset": "Masshtabni tiklash"
     },
     "order": {
       "open": "Stolni ochish",
@@ -242,7 +246,7 @@
       "hallsSubtitle": "Restoran kassasi uchun o‘tirish rejas",
       "selectStore": "Restoranni tanlang",
       "addHall": "Zal qo‘shish",
-      "editHall": "Zalni tahrirlash",
+      "editHall": "Zalni o‘zgartirish",
       "addTable": "Stol qo‘shish",
       "tablesList": "Stollar ro‘yxati",
       "loadingMore": "Yuklanmoqda…",
@@ -260,7 +264,7 @@
       "deactivateHall": "Zalni o‘chirish",
       "confirmDeactivateHall": "Zalni o‘chirasizmi? Avval stollarni olib tashlang.",
       "confirmDeactivateTable": "Stolni o‘chirasizmi?",
-      "arrangeTables": "Avtomatik joylash",
+      "arrangeTables": "Joylashtirish",
       "tablesArranged": "Stollar joylashtirildi",
       "saveFailed": "Saqlab bo‘lmadi",
       "deleteFailed": "O‘chirib bo‘lmadi",
@@ -3015,6 +3019,10 @@
   },
   "pos": {
     "navSale": "Kassa",
+    "zoomLabel": "Interfeys masshtabi",
+    "zoomIn": "Kattalashtirish",
+    "zoomOut": "Kichiklashtirish",
+    "zoomReset": "Masshtabni tiklash",
     "tabCatalog": "Tovarlar",
     "tabRegister": "Kassa",
     "tabReceipt": "Chek",

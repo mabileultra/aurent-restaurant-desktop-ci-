@@ -87,12 +87,12 @@
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary {
-  background: var(--pos-ink);
-  color: #fff;
+  background: var(--pos-green);
+  color: var(--pos-on-green);
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary:hover:not(:disabled) {
-  background: #152d4a;
+  background: var(--pos-green-hover);
 }
 
 .cashier-app.cashier-app--light .pos-pay-panel--register-rail .pos-pay-panel__primary:disabled {

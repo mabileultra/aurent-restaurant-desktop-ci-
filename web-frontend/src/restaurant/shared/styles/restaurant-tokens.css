@@ -23,11 +23,12 @@
   --rst-blocked-bg: #4a1d1d;
   --rst-radius: 8px;
   --rst-shadow: 0 8px 24px rgb(0 0 0 / 0.35);
+  --rst-ui-scale: 1;
   min-height: 100dvh;
   color: var(--rst-ink);
   background: var(--rst-bg-deep);
   font-family: "Segoe UI", "PT Sans", system-ui, sans-serif;
-  font-size: 14px;
+  font-size: calc(14px * var(--rst-ui-scale));
   letter-spacing: 0.01em;
 }
 

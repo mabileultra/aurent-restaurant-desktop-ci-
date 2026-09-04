@@ -11,7 +11,9 @@ import CounterOrdersBoard from '../components/CounterOrdersBoard';
 import ModifierPickModal from '../components/ModifierPickModal';
 import OrderWorkspace from '../components/OrderWorkspace';
 import ShiftModal from '../components/ShiftModal';
+import PosZoomControls from '../components/PosZoomControls';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
+import { usePosUiScale } from '../hooks/usePosUiScale';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
@@ -22,10 +24,11 @@ import '../styles/counter-board.css';
 export default function RestaurantFloorPosPage() {
   const user = useAuthStore((s) => s.user);
   const p = useFloorPosPage();
+  const zoom = usePosUiScale();
 
   if (p.workspace.noAssignment) {
     return (
-      <div className="rst-app rst-pos">
+      <div className="rst-app rst-pos" style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('rst.floor.noStore')}</div>
       </div>
     );
@@ -33,14 +36,14 @@ export default function RestaurantFloorPosPage() {
 
   if (p.workspace.multipleAssignment) {
     return (
-      <div className="rst-app rst-pos">
+      <div className="rst-app rst-pos" style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('rst.floor.pickStoreHint')}</div>
       </div>
     );
   }
 
   return (
-    <div className="rst-app rst-pos">
+    <div className="rst-app rst-pos" style={zoom.rootStyle}>
       <header className="rst-pos__top">
         <div className="rst-pos__brand">
           <span className="rst-pos__brand-name">{p.t('rst.brand')}</span>
@@ -83,6 +86,7 @@ export default function RestaurantFloorPosPage() {
               </Link>
             </>
           ) : null}
+          <PosZoomControls zoom={zoom} t={p.t} />
           <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
             {p.t('nav.logout')}
           </BaseButton>

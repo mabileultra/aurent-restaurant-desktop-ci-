@@ -51,8 +51,8 @@
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__mobile-nav .nav-link.active {
-  background: var(--pos-ink);
-  color: #fff;
+  background: var(--pos-green);
+  color: var(--pos-on-green);
 }
 
 .cashier-app.cashier-app--light .cashier-lang-switch {
@@ -61,8 +61,8 @@
 }
 
 .cashier-app.cashier-app--light .cashier-lang-switch__btn.is-active {
-  background: var(--pos-ink);
-  color: #fff;
+  background: var(--pos-green);
+  color: var(--pos-on-green);
 }
 
 .cashier-app.cashier-app--light .cashier-theme-toggle {

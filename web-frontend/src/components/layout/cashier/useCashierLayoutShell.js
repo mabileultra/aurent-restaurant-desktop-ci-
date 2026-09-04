@@ -26,9 +26,11 @@ import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocument
 import { syncAuthSession } from '../../../utils/syncAuthSession';
 import { isCashierRegisterScreen } from '../../../utils/cashierRegisterRoute';
 import { displayCashierName, formatShiftOpenedAt } from './cashierLayoutUtils';
+import { useCashierUiScale } from '../../../features/cashier/hooks/useCashierUiScale';
 
 export function useCashierLayoutShell() {
   const [cashierTheme, setCashierTheme] = useState(readCashierTheme);
+  const zoom = useCashierUiScale();
 
   useLayoutEffect(() => {
     syncCashierThemeDocument(cashierTheme);
@@ -137,6 +139,7 @@ export function useCashierLayoutShell() {
     shellClassName,
     isDesktopApp,
     shiftOpenBadge,
+    zoom,
     displayCashierName: () => displayCashierName(user),
   };
 }

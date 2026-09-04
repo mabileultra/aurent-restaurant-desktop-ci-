@@ -35,8 +35,8 @@
 
 .rst-floor-canvas--admin {
   flex: 0 1 auto;
-  max-height: min(52vh, 540px);
-  min-height: 300px;
+  max-height: min(62vh, 640px);
+  min-height: 320px;
 }
 
 .rst-floor-canvas--admin .rst-floor-canvas__plane,

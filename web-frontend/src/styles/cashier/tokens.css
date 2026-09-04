@@ -3,6 +3,8 @@
 .cashier-app {
   font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
   line-height: 1.45;
+  --pos-ui-scale: 1;
+  zoom: var(--pos-ui-scale);
   --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 8px;
   --pos-keypad-radius: 14px;
@@ -50,29 +52,29 @@
   --pos-keypad-muted: var(--pos-muted);
 }
 
-/* Светлая тема кассы — светло-серый фон, тёмно-синий текст */
+/* Светлая тема кассы — soft gray + mint/green (Aurent soft-UI) */
 .cashier-app.cashier-app--light {
   --pos-ink: #1e3a5f;
-  --pos-green: var(--pos-ink);
-  --pos-green-hover: #152d4a;
-  --pos-green-soft: var(--pos-surface-hover);
+  --pos-green: #00a67e;
+  --pos-green-hover: #00916e;
+  --pos-green-soft: rgb(0 166 126 / 0.14);
   --pos-bg: #e9eef4;
   --pos-surface: #f4f6fa;
   --pos-surface-elevated: #fbfcfe;
   --pos-surface-hover: #eef2f8;
   --pos-surface-active: #e4eaf3;
-  --pos-surface-accent: #f0f4f9;
+  --pos-surface-accent: #eef8f4;
   --pos-border: #d1d9e6;
   --pos-text: #1e3a5f;
   --pos-muted: #5a6f8c;
-  --pos-money: #1e3a5f;
+  --pos-money: #0f766e;
   --pos-danger: #dc2626;
   --pos-on-green: #ffffff;
   --pos-radius: 10px;
   --pos-radius-lg: 12px;
   --cashier-block-radius: 12px;
-  --bs-primary: var(--pos-ink);
-  --bs-success: var(--pos-ink);
+  --bs-primary: var(--pos-green);
+  --bs-success: var(--pos-green);
   --bs-body-bg: var(--pos-bg);
   --bs-border-color: var(--pos-border);
   --bs-body-color: var(--pos-text);
@@ -81,7 +83,7 @@
   background: var(--pos-bg) !important;
 
   --pos-keypad-border: var(--pos-border);
-  --pos-keypad-bg: var(--pos-surface);
+  --pos-keypad-bg: #fff;
   --pos-keypad-bg-hover: var(--pos-surface-elevated);
   --pos-keypad-text: var(--pos-ink);
   --pos-keypad-muted: var(--pos-muted);

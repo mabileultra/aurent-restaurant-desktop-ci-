@@ -17,13 +17,14 @@
 }
 
 .cashier-app.cashier-app--light .pos-product-card:hover {
-  border-color: var(--pos-border);
-  box-shadow: 0 2px 8px rgb(30 58 95 / 0.08);
+  border-color: rgb(0 166 126 / 0.35);
+  box-shadow: 0 2px 10px rgb(0 166 126 / 0.1);
 }
 
 .cashier-app.cashier-app--light .pos-product-card.is-active {
-  border-color: var(--pos-ink);
-  box-shadow: inset 3px 0 0 var(--pos-ink);
+  border-color: var(--pos-green);
+  box-shadow: inset 3px 0 0 var(--pos-green);
+  background: var(--pos-green-soft);
 }
 
 .cashier-app.cashier-app--light .pos-product-card__name {

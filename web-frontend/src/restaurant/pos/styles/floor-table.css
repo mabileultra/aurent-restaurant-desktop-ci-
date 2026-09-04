@@ -39,36 +39,42 @@
 }
 
 .rst-table--FREE {
+  z-index: 1;
   background: var(--rst-free-bg);
   border-color: var(--rst-free);
   color: #b7f0cc;
 }
 
 .rst-table--OCCUPIED {
+  z-index: 2;
   background: var(--rst-occupied-bg);
   border-color: var(--rst-occupied);
   color: #ffd4a8;
 }
 
 .rst-table--RESERVED {
+  z-index: 2;
   background: var(--rst-reserved-bg);
   border-color: var(--rst-reserved);
   color: #c5ddf7;
 }
 
 .rst-table--WAITING_PAYMENT {
+  z-index: 2;
   background: var(--rst-pay-bg);
   border-color: var(--rst-pay);
   color: #e9d5ff;
 }
 
 .rst-table--CLEANING {
+  z-index: 1;
   background: var(--rst-clean-bg);
   border-color: var(--rst-clean);
   color: #d0ccc6;
 }
 
 .rst-table--BLOCKED {
+  z-index: 1;
   background: var(--rst-blocked-bg);
   border-color: var(--rst-blocked);
   color: #fecaca;

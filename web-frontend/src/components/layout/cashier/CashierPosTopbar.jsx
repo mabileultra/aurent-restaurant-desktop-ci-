@@ -1,4 +1,5 @@
 import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
+import CashierZoomControls from '../../../features/cashier/components/CashierZoomControls';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import BrandMark from '../../shared/BrandMark';
 import { useLocation } from 'react-router-dom';
@@ -18,6 +19,7 @@ export default function CashierPosTopbar({
   onLogout,
   cashierTheme,
   toggleCashierTheme,
+  zoom,
 }) {
   const location = useLocation();
   const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
@@ -60,6 +62,7 @@ export default function CashierPosTopbar({
             className="cashier-topbar__theme"
           />
           <LanguageSwitcher variant="cashier" className="cashier-topbar__lang" />
+          {zoom ? <CashierZoomControls zoom={zoom} t={t} /> : null}
           <button
             type="button"
             className="cashier-pos-topbar__logout d-none d-md-inline-flex"

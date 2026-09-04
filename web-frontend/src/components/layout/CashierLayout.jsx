@@ -17,7 +17,7 @@ function CashierLayoutShell() {
   const p = useCashierLayoutShell();
 
   return (
-    <div className={p.shellClassName}>
+    <div className={p.shellClassName} style={p.zoom.rootStyle}>
       <div className="cashier-app__body d-flex flex-column flex-grow-1 min-vw-0 min-h-0 w-100">
         {p.isPosRoute ? (
           <>
@@ -34,6 +34,7 @@ function CashierLayoutShell() {
               onLogout={p.handleLogout}
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
+              zoom={p.zoom}
             />
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />
@@ -52,6 +53,7 @@ function CashierLayoutShell() {
               onLogout={p.handleLogout}
               cashierTheme={p.cashierTheme}
               toggleCashierTheme={p.toggleCashierTheme}
+              zoom={p.zoom}
             />
             <main className="cashier-app__main flex-grow-1 overflow-hidden p-2 p-lg-3 d-flex flex-column min-h-0">
               <Outlet />

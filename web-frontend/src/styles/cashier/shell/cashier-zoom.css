@@ -1,0 +1,75 @@
+/* UI scale controls in cashier topbar */
+.cashier-zoom {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--pos-border);
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--pos-surface-elevated, #fff);
+  flex-shrink: 0;
+  min-height: var(--cashier-topbar-control-h, 40px);
+}
+
+.cashier-zoom__btn,
+.cashier-zoom__value {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  min-height: inherit;
+  padding: 0 0.55rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cashier-zoom__btn:hover:not(:disabled),
+.cashier-zoom__value:hover {
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
+}
+
+.cashier-zoom__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cashier-zoom__value {
+  gap: 0.3rem;
+  min-width: 4.4rem;
+  border-left: 1px solid var(--pos-border);
+  border-right: 1px solid var(--pos-border);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--pos-muted);
+}
+
+.cashier-zoom__icon {
+  width: 0.95rem;
+  height: 0.95rem;
+  flex-shrink: 0;
+}
+
+.cashier-app.cashier-app--light .cashier-zoom {
+  background: #fff;
+  border-color: var(--pos-border);
+}
+
+.cashier-app.cashier-app--terminal .cashier-zoom {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+  color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-zoom__value {
+  color: var(--pos-muted);
+}
+
+.cashier-app.cashier-app--terminal .cashier-zoom__btn:hover:not(:disabled),
+.cashier-app.cashier-app--terminal .cashier-zoom__value:hover {
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
+}

@@ -103,8 +103,8 @@ export function useHallsAdminPage() {
       return rstFloorApi.updateLayout(selectedHall.id, {
         tables: tables.map((table, index) => ({
           id: table.id,
-          width: table.width || TABLE_DEFAULT_SIZE,
-          height: table.height || TABLE_DEFAULT_SIZE,
+          width: TABLE_DEFAULT_SIZE,
+          height: TABLE_DEFAULT_SIZE,
           ...gridSlot(index),
         })),
       });

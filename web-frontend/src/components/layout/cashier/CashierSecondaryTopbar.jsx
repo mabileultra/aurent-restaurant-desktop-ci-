@@ -1,4 +1,5 @@
 import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
+import CashierZoomControls from '../../../features/cashier/components/CashierZoomControls';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import BrandMark from '../../shared/BrandMark';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
@@ -15,6 +16,7 @@ export default function CashierSecondaryTopbar({
   onLogout,
   cashierTheme,
   toggleCashierTheme,
+  zoom,
 }) {
   return (
     <header className="cashier-topbar cashier-topbar--pos border-bottom">
@@ -45,6 +47,7 @@ export default function CashierSecondaryTopbar({
             className="cashier-topbar__theme"
           />
           <LanguageSwitcher variant="cashier" className="cashier-topbar__lang" />
+          {zoom ? <CashierZoomControls zoom={zoom} t={t} /> : null}
           <button
             type="button"
             className="cashier-pos-topbar__logout d-none d-md-inline-flex"

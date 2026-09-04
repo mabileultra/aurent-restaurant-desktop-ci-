@@ -13,13 +13,27 @@ function sortTablesForScroll(tables) {
   });
 }
 
-function scaleFloorTable(table, scale, minSize = 96) {
+function scaleFloorTable(table, scale, minSize = 96, maxSize = Number.POSITIVE_INFINITY, uniform = false) {
+  if (uniform) {
+    return {
+      ...table,
+      posX: Math.round(table.posX * scale),
+      posY: Math.round(table.posY * scale),
+      width: minSize,
+      height: minSize,
+    };
+  }
+  const width = Math.min(Math.max(Math.round(table.width * scale), minSize), maxSize);
+  const height = Math.min(
+    Math.max(Math.round(table.height * scale), Math.round(minSize * 0.85)),
+    maxSize,
+  );
   return {
     ...table,
     posX: Math.round(table.posX * scale),
     posY: Math.round(table.posY * scale),
-    width: Math.max(Math.round(table.width * scale), minSize),
-    height: Math.max(Math.round(table.height * scale), Math.round(minSize * 0.85)),
+    width,
+    height,
   };
 }
 
@@ -31,8 +45,9 @@ export default function FloorCanvas({
   variant = 'pos',
 }) {
   const isAdmin = variant === 'admin';
-  const scale = isAdmin ? 1.4 : 1.55;
-  const minSize = isAdmin ? 96 : 128;
+  const scale = isAdmin ? 1.15 : 1.55;
+  const minSize = isAdmin ? 88 : 140;
+  const maxSize = isAdmin ? 112 : 140;
   const resolved = resolveFloorPositions(hall?.tables ?? []);
   const sorted = isAdmin ? sortTablesForScroll(resolved) : resolved;
 
@@ -65,11 +80,12 @@ export default function FloorCanvas({
   }
 
   const tablesToRender = isAdmin ? visibleItems : resolved;
+  const scaleOpts = [scale, minSize, maxSize, !isAdmin];
   const planeTables = (isAdmin ? sorted : resolved).map((table) => (
-    scaleFloorTable(table, scale, minSize)
+    scaleFloorTable(table, ...scaleOpts)
   ));
   const renderedTables = tablesToRender.map((table) => (
-    scaleFloorTable(table, scale, minSize)
+    scaleFloorTable(table, ...scaleOpts)
   ));
   const maxX = planeTables.reduce((acc, table) => Math.max(acc, table.posX + table.width), 0);
   const maxY = planeTables.reduce((acc, table) => Math.max(acc, table.posY + table.height), 0);

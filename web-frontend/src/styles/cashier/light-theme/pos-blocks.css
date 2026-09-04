@@ -2,6 +2,7 @@
 .cashier-app.cashier-app--light .cashier-register__split--register .cashier-register__actions-col,
 .cashier-app.cashier-app--light .cashier-register__split--register .cashier-register__order-col,
 .cashier-app.cashier-app--light .cashier-register__split--catalog .cashier-register__catalog-col {
-  box-shadow: 0 1px 4px rgb(15 23 42 / 0.08);
-  background: var(--pos-surface);
+  box-shadow: 0 2px 12px rgb(15 23 42 / 0.06);
+  background: var(--pos-surface-elevated);
+  border-radius: var(--cashier-block-radius);
 }
