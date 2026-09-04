@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstKitchenApi } from '../../api/kitchen.api';
+import { rstShiftApi } from '../../api/shift.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
@@ -20,9 +21,29 @@ export function useKitchenPosPage() {
     refetchInterval: 5_000,
   });
 
+  const shiftQuery = useQuery({
+    queryKey: ['rst-shift-current', workspace.storeId],
+    queryFn: async () => {
+      try {
+        const res = await rstShiftApi.current(workspace.storeId);
+        return res.data ?? null;
+      } catch {
+        return null;
+      }
+    },
+    enabled: workspace.storeId != null,
+    refetchInterval: 30_000,
+    retry: false,
+  });
+
   const statusMutation = useMutation({
     mutationFn: ({ ticketId, status }) => rstKitchenApi.updateTicketStatus(ticketId, status),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['rst-kitchen-tickets', workspace.storeId] }),
+    onSuccess: (_data, vars) => {
+      qc.invalidateQueries({ queryKey: ['rst-kitchen-tickets', workspace.storeId] });
+      if (vars.status === 'SERVED') {
+        toast.success(t('rst.kitchen.servedCleared'));
+      }
+    },
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.kitchen.statusFailed')),
   });
 
@@ -33,6 +54,7 @@ export function useKitchenPosPage() {
     t,
     workspace,
     columns,
+    shift: shiftQuery.data ?? null,
     isLoading: workspace.isLoading || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,
     canAdvance,

@@ -37,6 +37,8 @@ export default function RestaurantKitchenPage() {
           <span className="rst-pos__brand-meta">
             {p.workspace.storeName ?? p.t('rst.floor.hall')}
             {user?.fullName || user?.username ? ` · ${user.fullName || user.username}` : ''}
+            {' · '}
+            {p.shift ? p.t('rst.kitchen.shiftOpen') : p.t('rst.kitchen.shiftClosed')}
           </span>
         </div>
         <div className="rst-pos__actions">
@@ -74,7 +76,7 @@ export default function RestaurantKitchenPage() {
                       </li>
                     ))}
                   </ul>
-                  {p.canAdvance && status !== 'SERVED' ? (
+                  {p.canAdvance ? (
                     <BaseButton
                       type="button"
                       disabled={p.advancing}

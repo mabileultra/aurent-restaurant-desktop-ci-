@@ -586,6 +586,9 @@
       "title": "Oshxona",
       "loadFailed": "Ticketlarni yuklab bo‘lmadi",
       "statusFailed": "Holatni o‘zgartirib bo‘lmadi",
+      "servedCleared": "Berildi — doskadan olib tashlandi",
+      "shiftOpen": "Smena ochiq",
+      "shiftClosed": "Smena yopiq (zalda oching)",
       "table": "Stol {{code}} · №{{no}}",
       "noStation": "Umumiy",
       "status": {

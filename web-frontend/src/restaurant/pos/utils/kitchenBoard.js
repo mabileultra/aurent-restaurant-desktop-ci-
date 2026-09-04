@@ -1,4 +1,4 @@
-export const KDS_COLUMNS = ['NEW', 'ACCEPTED', 'PREPARING', 'READY', 'SERVED'];
+export const KDS_COLUMNS = ['NEW', 'ACCEPTED', 'PREPARING', 'READY'];
 
 export const NEXT_TICKET_STATUS = {
   NEW: 'ACCEPTED',

@@ -31,7 +31,7 @@ public class RestaurantShiftController {
     private final RestaurantShiftService shiftService;
 
     @GetMapping("/stores/{storeId}/shifts/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
     @Operation(summary = "Текущая открытая смена")
     public ResponseEntity<ShiftResponse> current(@PathVariable Integer storeId) {
         return shiftService.findCurrent(storeId)

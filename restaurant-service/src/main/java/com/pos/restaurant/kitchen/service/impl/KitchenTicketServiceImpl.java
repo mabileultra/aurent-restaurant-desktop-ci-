@@ -47,7 +47,7 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
         List<KitchenTicket> tickets = ticketRepository.findActiveBoard(
             companyId,
             storeId,
-            KitchenTicketStatus.CANCELLED,
+            List.of(KitchenTicketStatus.SERVED, KitchenTicketStatus.CANCELLED),
             Instant.now().minus(BOARD_WINDOW)
         );
         if (tickets.isEmpty()) {
