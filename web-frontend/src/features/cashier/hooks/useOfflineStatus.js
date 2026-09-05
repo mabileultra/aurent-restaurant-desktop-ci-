@@ -71,61 +71,53 @@ export function useOfflineStatus() {
       return;
     }
 
-    let ready = canSellOffline || posRoute.hasCatalog;
-    if (!ready) {
-      if (!isDesktopOfflineBridge()) {
-        toast.error(t('offline.desktopBridgeRequired'), { id: toastId });
-        return;
-      }
+    let ready = Boolean(canSellOffline || posRoute.hasCatalog);
 
+    // Как раньше: без каталога не включаем офлайн. Если есть desktop offline bridge —
+    // один раз тянем каталог онлайн, затем включаем (без ложного «нужен десктоп»).
+    if (!ready && storeId && isDesktopOfflineBridge()) {
       const st0 = useConnectivityStore.getState();
       const canFetchCatalog =
-        Boolean(storeId)
-        && st0.apiOnline
+        st0.apiOnline
         && !st0.offlineMode
         && (typeof navigator === 'undefined' || navigator.onLine !== false);
 
-      if (!canFetchCatalog) {
-        toast.error(t('offline.noCatalog'), { id: toastId });
-        return;
-      }
-
-      useConnectivityStore.getState().setSyncingCatalog(true);
-      toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
-      try {
-        const result = await refreshCatalogBootstrap(storeId, { force: true });
-        if (result?.skipped && result?.reason === 'error') {
-          throw new Error(t('offline.updateCatalogFailed'));
-        }
-        if (result?.skipped && result?.reason === 'not-desktop') {
-          throw new Error(t('offline.noCatalog'));
-        }
-        await refreshConnectivityStatus();
-        const st = useConnectivityStore.getState();
-        ready =
-          Boolean(st.canSellOffline)
-          || Boolean(st.bootstrapReady)
-          || Number(st.productCount) > 0;
-        if (
-          ready
-          && st.storeId != null
-          && storeId != null
-          && Number(st.storeId) !== Number(storeId)
-        ) {
-          ready = false;
-        }
-        if (!ready) {
-          toast.error(t('offline.noCatalog'), { id: toastId });
+      if (canFetchCatalog) {
+        useConnectivityStore.getState().setSyncingCatalog(true);
+        toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
+        try {
+          const result = await refreshCatalogBootstrap(storeId, { force: true });
+          if (result?.skipped && result?.reason === 'error') {
+            throw new Error(t('offline.updateCatalogFailed'));
+          }
+          await refreshConnectivityStatus();
+          const st = useConnectivityStore.getState();
+          ready =
+            Boolean(st.canSellOffline)
+            || Boolean(st.bootstrapReady)
+            || Number(st.productCount) > 0;
+          if (
+            ready
+            && st.storeId != null
+            && storeId != null
+            && Number(st.storeId) !== Number(storeId)
+          ) {
+            ready = false;
+          }
+        } catch (err) {
+          const message =
+            err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
+          toast.error(message, { id: toastId });
           return;
+        } finally {
+          useConnectivityStore.getState().setSyncingCatalog(false);
         }
-      } catch (err) {
-        const message =
-          err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
-        toast.error(message, { id: toastId });
-        return;
-      } finally {
-        useConnectivityStore.getState().setSyncingCatalog(false);
       }
+    }
+
+    if (!ready) {
+      toast.error(t('offline.noCatalog'), { id: toastId });
+      return;
     }
 
     useConnectivityStore.getState().setForceOfflineMode(true);
