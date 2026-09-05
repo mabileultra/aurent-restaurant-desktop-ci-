@@ -1,10 +1,10 @@
 import { Banknote, Check, CreditCard, Loader, Percent, RotateCcw, ShieldCheck, Split } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { fmtMoney as fmt } from '../../../../utils/formatMoney';
-import NumericKeypad from '../../../cashier/components/NumericKeypad';
-import PrintReceiptToggle from '../../../cashier/components/payment/PrintReceiptToggle';
-import PosRegisterCardProviders from '../../../cashier/components/register-pay-rail/PosRegisterCardProviders';
-import { usePharmacyPayRail } from '../../hooks/usePharmacyPayRail';
+import { fmtMoney as fmt } from '../../../utils/formatMoney';
+import NumericKeypad from '../../cashier/components/NumericKeypad';
+import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
+import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
+import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-rail.css';
 
 const METHOD_META = [

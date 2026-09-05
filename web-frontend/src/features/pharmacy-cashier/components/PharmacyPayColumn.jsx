@@ -1,4 +1,4 @@
-import PosPaymentFlow from '../../../cashier/components/PosPaymentFlow';
+import PosPaymentFlow from '../../cashier/components/PosPaymentFlow';
 import PharmacyPayRail from './PharmacyPayRail';
 
 /**

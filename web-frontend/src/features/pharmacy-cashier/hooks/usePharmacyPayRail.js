@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { round2 } from '../../../../utils/taxAmounts';
+import { round2 } from '../../../utils/taxAmounts';
 import {
   isPosReceiptPrintEnabled,
   setPosReceiptPrintEnabled,
-} from '../../../../utils/receiptPrintPreference';
-import { parseTenderedInput } from '../../../cashier/components/payment/posPaymentConstants';
-import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../../cashier/constants/paymentCardProviders';
+} from '../../../utils/receiptPrintPreference';
+import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
+import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
 
 export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'insurance'];
 
