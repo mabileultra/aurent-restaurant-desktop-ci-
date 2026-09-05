@@ -63,11 +63,11 @@ export default function CashierDesktopMenuPanel({
           />
         ) : (
           <>
-            <BrandMark variant="full" height={28} className="cashier-desktop-menu__logo" />
+            <BrandMark variant="full" height={BRAND_LOGO_SIZES.fullDesktop} className="cashier-desktop-menu__logo" />
             <span className="cashier-desktop-menu__label">{label}</span>
           </>
         )}
-        <ChevronDown size={16} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
+        <ChevronDown size={14} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
       </button>
       <div className="cashier-desktop-menu__panel" role="menu">
         <button
@@ -76,7 +76,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={openServerSetup}
         >
-          <Server size={18} strokeWidth={2} aria-hidden />
+          <Server size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.serverSetup')}</span>
         </button>
 
@@ -89,7 +89,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={openPrinterPicker}
         >
-          <Printer size={18} strokeWidth={2} aria-hidden />
+          <Printer size={15} strokeWidth={2} aria-hidden />
           <span className="cashier-desktop-menu__item-text">
             <span>{t('desktop.receiptPrinter')}</span>
             <span className="cashier-desktop-menu__item-meta">
@@ -103,7 +103,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={runTestPrint}
         >
-          <FileText size={18} strokeWidth={2} aria-hidden />
+          <FileText size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.testReceipt')}</span>
         </button>
         <div className="cashier-desktop-menu__sep" role="separator" />
@@ -113,7 +113,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={openLabelPicker}
         >
-          <Tag size={18} strokeWidth={2} aria-hidden />
+          <Tag size={15} strokeWidth={2} aria-hidden />
           <span className="cashier-desktop-menu__item-text">
             <span>{t('desktop.labelPrinter')}</span>
             <span className="cashier-desktop-menu__item-meta">
@@ -127,7 +127,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={openBarcodePage}
         >
-          <Barcode size={18} strokeWidth={2} aria-hidden />
+          <Barcode size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.barcodePrint')}</span>
         </button>
         <button
@@ -136,7 +136,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={openScalePicker}
         >
-          <Scale size={18} strokeWidth={2} aria-hidden />
+          <Scale size={15} strokeWidth={2} aria-hidden />
           <span className="cashier-desktop-menu__item-text">
             <span>{t('desktop.scale')}</span>
             <span className="cashier-desktop-menu__item-meta">
@@ -151,7 +151,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={checkAppUpdates}
         >
-          <Download size={18} strokeWidth={2} aria-hidden />
+          <Download size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.checkUpdates')}</span>
         </button>
         <button
@@ -160,7 +160,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={() => run(() => window.desktopCashier.reload())}
         >
-          <RefreshCw size={18} strokeWidth={2} aria-hidden />
+          <RefreshCw size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.reload')}</span>
         </button>
         <button
@@ -169,7 +169,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={() => run(() => window.desktopCashier.toggleFullscreen())}
         >
-          <Maximize size={18} strokeWidth={2} aria-hidden />
+          <Maximize size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.fullscreen')}</span>
         </button>
         <div className="cashier-desktop-menu__sep" role="separator" />
@@ -179,7 +179,7 @@ export default function CashierDesktopMenuPanel({
           role="menuitem"
           onClick={() => run(() => window.desktopCashier.quit())}
         >
-          <LogOut size={18} strokeWidth={2} aria-hidden />
+          <LogOut size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.quit')}</span>
         </button>
       </div>

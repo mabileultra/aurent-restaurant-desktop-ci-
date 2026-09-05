@@ -25,7 +25,7 @@ export default function CashierSecondaryTopbar({
         <div className="cashier-topbar__brand-block">
           <CashierDesktopMenu appName={displayAppName()} />
           <div className="cashier-topbar__brand">
-            <BrandMark variant="icon" size={34} className="cashier-topbar__brand-icon" />
+            <BrandMark variant="icon" size={22} className="cashier-topbar__brand-icon" />
             <span className="cashier-topbar__brand-name">{BRAND_NAME}.</span>
             <span className="cashier-topbar__pro-badge">{t('pos.proBadge')}</span>
           </div>

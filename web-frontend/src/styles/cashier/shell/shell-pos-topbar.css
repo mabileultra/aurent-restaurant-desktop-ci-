@@ -3,17 +3,17 @@
 .cashier-topbar__brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .cashier-topbar__brand-icon {
-  border-radius: 10px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
 .cashier-topbar__brand-name {
-  font-size: 1.2rem;
+  font-size: 1.05rem;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--pos-text);
@@ -24,11 +24,11 @@
 .cashier-topbar__pro-badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: var(--pos-control-radius, 10px);
+  padding: 2px 6px;
+  border-radius: 6px;
   background: var(--pos-green-soft, rgb(0 104 71 / 0.12));
   color: var(--pos-green, #006847);
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1;

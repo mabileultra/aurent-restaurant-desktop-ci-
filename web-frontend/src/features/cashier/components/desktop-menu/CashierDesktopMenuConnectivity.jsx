@@ -20,6 +20,13 @@ export default function CashierDesktopMenuConnectivity({ t }) {
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
   const needsCatalog = !status.canSellOffline && !status.forceOfflineMode;
+  const statusMeta = status.syncingCatalog
+    ? t('offline.preparingCatalogForOffline')
+    : (status.tone === 'pending' || status.tone === 'warn')
+      ? status.message
+      : canToggle
+        ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
+        : (status.message || t('offline.onlineOk'));
 
   return (
     <div className="cashier-desktop-menu__connectivity">
@@ -52,16 +59,12 @@ export default function CashierDesktopMenuConnectivity({ t }) {
         }}
       >
         <span className="cashier-desktop-menu__mode-icon" aria-hidden>
-          {isOffline ? <CloudOff size={18} strokeWidth={2.25} /> : <Cloud size={18} strokeWidth={2.25} />}
+          {isOffline ? <CloudOff size={14} strokeWidth={2.25} /> : <Cloud size={14} strokeWidth={2.25} />}
         </span>
         <span className="cashier-desktop-menu__item-text">
           <span>{modeLabel}</span>
           <span className="cashier-desktop-menu__item-meta">
-            {status.syncingCatalog
-              ? t('offline.preparingCatalogForOffline')
-              : canToggle
-                ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
-                : (status.message || t('offline.onlineOk'))}
+            {statusMeta}
           </span>
         </span>
         <span className="cashier-desktop-menu__mode-switch" aria-hidden>
@@ -77,7 +80,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
           onClick={() => status.handlers.refreshCatalog()}
         >
           <RefreshCw
-            size={18}
+            size={15}
             strokeWidth={2}
             className={status.syncingCatalog ? 'cashier-desktop-menu__spin' : undefined}
             aria-hidden

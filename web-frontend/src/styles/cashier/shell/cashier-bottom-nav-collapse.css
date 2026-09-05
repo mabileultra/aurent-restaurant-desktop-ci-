@@ -132,9 +132,13 @@
   transition: transform 0.15s;
 }
 
+.cashier-bottom-nav__status--online.is-toggle .cashier-bottom-nav__status-knob {
+  transform: translateX(14px);
+}
+
 .cashier-bottom-nav__status.is-forced .cashier-bottom-nav__status-knob,
 .cashier-bottom-nav__status--offline.is-toggle .cashier-bottom-nav__status-knob {
-  transform: translateX(14px);
+  transform: translateX(0);
 }
 
 .cashier-app.cashier-app--terminal .cashier-bottom-nav__status {

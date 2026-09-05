@@ -3,14 +3,15 @@ const localDb = require('./index.cjs');
 const { completeLocalCheckout } = require('./checkout.cjs');
 
 const IPC_TIMEOUT_MS = 16_000;
+const BOOTSTRAP_IPC_TIMEOUT_MS = 60_000;
 const CHECKOUT_IPC_TIMEOUT_MS = 8_000;
 
-async function safeOffline(fn, fallback) {
+async function safeOffline(fn, fallback, timeoutMs = IPC_TIMEOUT_MS) {
   try {
     return await Promise.race([
       fn(),
       new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('offline_ipc_timeout')), IPC_TIMEOUT_MS);
+        setTimeout(() => reject(new Error('offline_ipc_timeout')), timeoutMs);
       }),
     ]);
   } catch (err) {
@@ -53,7 +54,11 @@ function registerOfflineIpc(getConfig, probeBackendOnlineQuick) {
   });
 
   ipcMain.handle('offline:import-bootstrap', async (_e, payload) =>
-    safeOffline(() => localDb.importBootstrap(payload), { ok: false, error: 'offline_db_unavailable' }),
+    safeOffline(
+      () => localDb.importBootstrap(payload),
+      { ok: false, error: 'offline_db_unavailable' },
+      BOOTSTRAP_IPC_TIMEOUT_MS,
+    ),
   );
 
   ipcMain.handle('offline:list-categories', async () =>

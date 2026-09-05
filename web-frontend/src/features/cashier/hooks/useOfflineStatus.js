@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useAuthStore } from '../../../store/authStore';
 import { userHasCashierOfflineAccess } from '../../../utils/cashierOfflineAccess';
+import { isDesktopCashier } from '../../../utils/authLogin';
 import {
   useConnectivityStore,
   usePosRoute,
@@ -49,17 +50,20 @@ export function useOfflineStatus() {
   const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
   const lastCatalogSyncAt = useConnectivityStore((s) => s.lastCatalogSyncAt);
   const productCount = useConnectivityStore((s) => s.productCount);
+  const lastSyncError = useConnectivityStore((s) => s.lastSyncError);
   const user = useAuthStore((s) => s.user);
   const offlineAllowed = userHasCashierOfflineAccess(user);
   const posRoute = usePosRoute(storeId);
 
   const visible = isDesktopOfflineBridge();
+  const desktopShell = isDesktopCashier();
   const notAllowed = !offlineAllowed && (offlineMode || forceOfflineMode);
   const networkOffline = offlineMode || !apiOnline;
   const showOffline = forceOfflineMode || networkOffline || posRoute.route === 'local';
   const showPending = apiOnline && pendingSales > 0;
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
+  const catalogBusy = Boolean(syncingCatalog || (syncing && !bootstrapReady && visible));
 
   const handleToggleForceOffline = useCallback(async (enabled) => {
     const toastId = 'pos-force-offline';
@@ -185,6 +189,10 @@ export function useOfflineStatus() {
     message = t('offline.notAllowed');
     shortLabel = t('offline.topbarDenied');
     tone = 'warn';
+  } else if (desktopShell && !visible) {
+    message = t('offline.desktopBridgeRequired');
+    shortLabel = t('offline.topbarDenied');
+    tone = 'warn';
   } else if (forceOfflineMode && !posRoute.hasCatalog) {
     message = t('offline.forceOfflineNoCatalog');
     shortLabel = t('offline.topbarNoCatalog');
@@ -205,10 +213,18 @@ export function useOfflineStatus() {
     message = t('offline.pendingSales', { count: pendingSales });
     shortLabel = t('offline.topbarPending', { count: pendingSales });
     tone = 'pending';
-  } else if (!bootstrapReady && apiOnline) {
+  } else if (catalogBusy) {
     message = t('offline.preparingCatalog');
     shortLabel = t('offline.topbarSyncing');
     tone = 'pending';
+  } else if (visible && !bootstrapReady && apiOnline && lastSyncError) {
+    message = t('offline.updateCatalogFailed');
+    shortLabel = t('offline.topbarNoCatalog');
+    tone = 'warn';
+  } else if (visible && !bootstrapReady && apiOnline) {
+    message = t('offline.catalogNotReady');
+    shortLabel = t('offline.topbarNoCatalog');
+    tone = 'warn';
   } else if (showCatalogStrip && catalogLabel) {
     message = t('offline.catalogFresh', {
       date: catalogLabel,

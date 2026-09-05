@@ -134,7 +134,8 @@ export async function runSalesSyncOnly() {
 export async function runCatalogSyncIfNeeded(storeId, { force = false } = {}) {
   try {
     return await refreshCatalogBootstrap(storeId, { force });
-  } catch {
-    return { skipped: true, reason: 'error' };
+  } catch (err) {
+    const error = err?.response?.data?.message || err?.message || String(err);
+    return { skipped: true, reason: 'error', error };
   }
 }

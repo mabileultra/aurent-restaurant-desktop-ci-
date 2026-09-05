@@ -134,7 +134,8 @@ app.whenReady().then(async () => {
   registerOfflineIpc(
     () => refreshDesktopConfig(),
     async (cfg, { timeoutMs = 2000 } = {}) => {
-      const url = cfg?.apiHealthUrl || (cfg?.backendOrigin ? `${cfg.backendOrigin}/api/v1/health` : '');
+      const url = cfg?.apiHealthUrl
+        || (cfg?.backendOrigin ? `${cfg.backendOrigin}/api/v1/actuator/health` : '');
       if (!url) return false;
       try {
         const controller = new AbortController();

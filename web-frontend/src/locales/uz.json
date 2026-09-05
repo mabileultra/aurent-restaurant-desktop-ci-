@@ -3970,6 +3970,7 @@
     "preparingCatalogForOffline": "Oflayn uchun katalog yuklanmoqda…",
     "desktopBridgeRequired": "Oflayn rejim faqat mahalliy bazali desktop kassada ishlaydi. Ilovani yangilang.",
     "preparingCatalog": "Oflayn katalog tayyorlanmoqda…",
+    "catalogNotReady": "Oflayn katalog hali yuklanmagan. «Katalogni yangilash»ni bosing.",
     "syncNow": "Sinxronlash",
     "syncSales": "Savdolarni yuborish",
     "updateCatalog": "Katalogni yangilash",

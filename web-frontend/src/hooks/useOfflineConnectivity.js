@@ -45,6 +45,7 @@ export function useOfflineConnectivity() {
 
     const runInitialSync = async () => {
       useConnectivityStore.getState().setSyncing(true);
+      useConnectivityStore.getState().setSyncingCatalog(true);
       try {
         let forceCatalog = storeChanged;
         if (!forceCatalog) {
@@ -57,10 +58,17 @@ export function useOfflineConnectivity() {
             forceCatalog = true;
           }
         }
-        await runCatalogSyncIfNeeded(storeId, { force: forceCatalog });
+        const catalogResult = await runCatalogSyncIfNeeded(storeId, { force: forceCatalog });
         await runSalesSyncOnly();
         if (!cancelled) {
-          useConnectivityStore.getState().setSyncResult({ ok: true });
+          if (catalogResult?.skipped && catalogResult?.reason === 'error') {
+            useConnectivityStore.getState().setSyncResult({
+              ok: false,
+              error: catalogResult.error || 'catalog_sync_failed',
+            });
+          } else {
+            useConnectivityStore.getState().setSyncResult({ ok: true });
+          }
           await refreshConnectivityStatus();
         }
       } catch (err) {
@@ -70,6 +78,8 @@ export function useOfflineConnectivity() {
             error: err?.message || String(err),
           });
         }
+      } finally {
+        useConnectivityStore.getState().setSyncingCatalog(false);
       }
     };
 
@@ -89,7 +99,15 @@ export function useOfflineConnectivity() {
       if (cancelled) return;
       try {
         const result = await runCatalogSyncIfNeeded(storeId, { force: false });
+        if (result?.skipped && result?.reason === 'error') {
+          useConnectivityStore.getState().setSyncResult({
+            ok: false,
+            error: result.error || 'catalog_sync_failed',
+          });
+          return;
+        }
         if (!result?.skipped) {
+          useConnectivityStore.getState().setSyncResult({ ok: true });
           await refreshConnectivityStatus();
         }
       } catch {
