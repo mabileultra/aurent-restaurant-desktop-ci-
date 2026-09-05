@@ -1,241 +1,230 @@
-/* Light theme — return modal (soft gray + green) */
-.cashier-theme--light .pos-return-modal--terminal,
-.cashier-app.cashier-app--light .pos-return-modal--terminal {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
-  box-shadow: 0 16px 48px rgb(0 80 55 / 0.12);
-  border-radius: var(--pos-radius-lg, 12px);
+/* Light theme — return modal portal (body → html.cashier-theme--light) */
+html.cashier-theme--light .pos-return-modal--terminal {
+  width: min(96vw, 540px);
+  max-height: min(92dvh, 44rem);
+  background: #ffffff;
+  border: 1px solid #c5ccd6;
+  color: #1e3a5f;
+  box-shadow: 0 16px 48px rgb(30 58 95 / 0.14);
+  border-radius: 14px;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__header,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__header {
-  background: linear-gradient(180deg, #eef8f3 0%, var(--pos-surface-elevated) 100%);
+html.cashier-theme--light .pos-return-modal--terminal.pos-return-modal--partial {
+  width: min(96vw, 44rem);
+  max-height: min(94dvh, 52rem);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__header-icon,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__header-icon {
-  background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green, #fff);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__header {
+  background: linear-gradient(180deg, #eef8f3 0%, #ffffff 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__header-icon {
+  background: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
+  color: #ffffff;
   box-shadow: none;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__title,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__title {
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__title {
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__body,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__body {
-  background: var(--pos-surface-elevated);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__hint,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__label,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input-icon,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__receipt-hint {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__textarea,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__input,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__textarea {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__body {
+  background: #ffffff;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input:focus,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__textarea:focus,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__input:focus,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__textarea:focus {
-  border-color: var(--pos-green);
-  box-shadow: 0 0 0 3px var(--pos-green-soft);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__textarea {
+  background: #ffffff;
+  border: 1.5px solid #c5ccd6;
+  color: #1e3a5f;
+  box-shadow: 0 1px 2px rgb(30 58 95 / 0.04);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__placeholder,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__placeholder {
-  background: var(--pos-surface);
-  border-color: var(--pos-border);
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input::placeholder,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__textarea::placeholder {
+  color: #94a3b8;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__find,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__find {
-  background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green, #fff);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input:focus,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__textarea:focus {
+  border-color: #006847;
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.15);
+  outline: none;
+}
+
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__placeholder {
+  background: #f4f6fa;
+  border: 1px solid #e2e8f0;
+  color: #5a6f8c;
+}
+
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__placeholder svg,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__placeholder p {
+  color: #5a6f8c;
+}
+
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__find {
+  background: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
+  color: #ffffff;
   border-color: transparent;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__find:hover:not(:disabled),
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__find:hover:not(:disabled) {
-  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__find:hover:not(:disabled) {
+  background: linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__hint,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__label,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input-icon,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__receipt-hint,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__hint,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__label,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__input-icon,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__receipt-hint {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__close {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__close,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__close {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__close:hover {
+  background: #eef2f8;
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__close:hover,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__close:hover {
-  background: var(--pos-surface-hover);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__receipt-prefix {
+  color: #5a6f8c;
+  background: #eef2f8;
+  border-color: #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__receipt-prefix,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__receipt-prefix {
-  color: var(--pos-muted);
-  background: var(--pos-surface-hover);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input-spinner {
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__input-spinner,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__input-spinner {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview {
+  background: linear-gradient(135deg, #eef2f8 0%, #ffffff 100%);
+  border: 1px solid #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview {
-  background: linear-gradient(135deg, var(--pos-surface-hover) 0%, var(--pos-surface-elevated) 100%);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal.pos-return-modal--partial .pos-return-modal__preview-head {
+  background: #e4eaf3;
+  border-color: #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal.pos-return-modal--partial .pos-return-modal__preview-head,
-.cashier-app.cashier-app--light .pos-return-modal--terminal.pos-return-modal--partial .pos-return-modal__preview-head {
-  background: var(--pos-surface-active);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-badge {
+  background: rgb(0 104 71 / 0.12);
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-badge,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-badge {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-receipt,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-meta,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-currency,
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-total-inline {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-receipt,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-meta,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-currency,
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-total-inline,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-receipt,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-meta,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-currency,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-total-inline {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-total {
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__preview-total,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__preview-total {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__select-all {
+  background: #eef2f8;
+  border-color: #c5ccd6;
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__select-all,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__select-all {
-  background: var(--pos-surface-hover);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__select-all:hover {
+  background: #e4eaf3;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__select-all:hover,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__select-all:hover {
-  background: var(--pos-surface-active);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__lines--select .pos-return-line-select {
+  background: #f4f6fa;
+  border-color: #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__lines--select .pos-return-line-select,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__lines--select .pos-return-line-select {
-  background: var(--pos-surface);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__line-name {
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__line-name,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__line-name {
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__meta {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__meta,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__meta {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__sum {
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__sum,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__sum {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper {
+  background: #ffffff;
+  border-color: #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-qty-stepper {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__btn {
+  background: #eef2f8;
+  color: #1e3a5f;
+  border-color: #c5ccd6;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__btn,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-qty-stepper__btn {
-  background: var(--pos-surface-hover);
-  color: var(--pos-text);
-  border-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__btn:hover:not(:disabled) {
+  background: rgb(0 104 71 / 0.12);
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__btn:hover:not(:disabled),
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-qty-stepper__btn:hover:not(:disabled) {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__value {
+  background: #ffffff;
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-qty-stepper__value,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-qty-stepper__value {
-  background: var(--pos-surface-elevated);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max {
+  background: rgb(0 104 71 / 0.1);
+  border-color: rgb(0 104 71 / 0.4);
+  color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__footer,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__footer {
-  background: var(--pos-surface);
-  border-top-color: var(--pos-border);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max:hover:not(:disabled) {
+  background: rgb(0 104 71 / 0.18);
+  border-color: #006847;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__cancel,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__cancel {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__footer {
+  background: #f4f6fa;
+  border-top: 1px solid #e2e8f0;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__cancel:hover,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__cancel:hover {
-  background: var(--pos-surface-hover);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__cancel {
+  background: #ffffff;
+  border: 1.5px solid #c5ccd6;
+  color: #1e3a5f;
+}
+
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__cancel:hover {
+  background: #eef2f8;
   border-color: rgb(0 104 71 / 0.28);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__submit {
-  background: var(--pos-green-gradient, var(--pos-green));
-  color: var(--pos-on-green, #fff);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit {
+  background: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
+  color: #ffffff;
   border-color: transparent;
   box-shadow: 0 4px 12px rgb(0 80 55 / 0.22);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit:hover:not(:disabled),
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__submit:hover:not(:disabled) {
-  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%);
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit:disabled,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__submit:disabled {
-  background: var(--pos-surface-active);
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__submit:disabled {
+  background: #e4eaf3;
+  color: #5a6f8c;
   opacity: 1;
+  box-shadow: none;
 }
 
-.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__status .is-open,
-.cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-modal__status .is-open {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-return-modal--terminal .pos-return-modal__status .is-open {
+  color: #006847;
 }
 
-.cashier-topbar__actions .cashier-topbar__theme {
-  flex-shrink: 0;
+html.cashier-theme--light .pos-pay-overlay {
+  background: rgb(30 58 95 / 0.35);
+  backdrop-filter: blur(4px);
 }
+

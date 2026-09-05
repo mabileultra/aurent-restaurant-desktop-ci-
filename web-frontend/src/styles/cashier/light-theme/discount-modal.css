@@ -1,139 +1,126 @@
-/* Light theme — cart discount portal (soft gray + green) */
-.cashier-theme--light .pos-pay-modal--discount-terminal,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
-  box-shadow: 0 16px 48px rgb(0 80 55 / 0.12);
-  border-radius: var(--pos-radius-lg, 12px);
+/* Light theme — cart discount portal (body portal → html.cashier-theme--light) */
+html.cashier-theme--light .pos-pay-modal--discount-terminal {
+  background: #ffffff;
+  border: 1px solid #c5ccd6;
+  color: #1e3a5f;
+  box-shadow: 0 16px 48px rgb(30 58 95 / 0.14);
+  border-radius: 14px;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__head,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__head {
-  border-bottom-color: var(--pos-border);
-  background: linear-gradient(180deg, #eef8f3 0%, var(--pos-surface-elevated) 100%);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__head {
+  border-bottom: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #eef8f3 0%, #ffffff 100%);
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__title,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-pay-modal__title {
-  color: var(--pos-text);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__title {
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__close,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-pay-modal__close {
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__close {
   position: static;
   width: 40px;
   height: 40px;
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-muted);
-  border-radius: var(--pos-control-radius, 10px);
+  background: #ffffff;
+  border: 1px solid #c5ccd6;
+  color: #5a6f8c;
+  border-radius: 10px;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__close:hover,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-pay-modal__close:hover {
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-pay-modal__close:hover {
   border-color: rgb(220 38 38 / 0.35);
   background: #fef2f2;
   color: #b91c1c;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base strong,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base strong {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__base strong {
+  color: #006847;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
-  color: var(--pos-text);
-  border-radius: var(--pos-control-radius, 10px);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost {
+  background: #ffffff;
+  border: 1.5px solid #c5ccd6;
+  color: #1e3a5f;
+  border-radius: 10px;
+  box-shadow: 0 1px 2px rgb(30 58 95 / 0.04);
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button.is-active,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset.is-active,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button.is-active,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset.is-active {
-  border-color: rgb(0 104 71 / 0.35);
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__mode button.is-active,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset.is-active {
+  border-color: rgb(0 104 71 / 0.45);
+  background: #e8f5ef;
+  color: #006847;
+  box-shadow: inset 0 0 0 1px rgb(0 104 71 / 0.12);
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step:hover,
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset:hover,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step:hover,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset:hover {
-  border-color: rgb(0 104 71 / 0.35);
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__step:hover,
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preset:hover {
+  border-color: rgb(0 104 71 / 0.4);
+  background: #eef8f3;
+  color: #006847;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input:focus,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input:focus {
-  border-color: var(--pos-green);
-  box-shadow: 0 0 0 3px var(--pos-green-soft);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input {
+  font-weight: 800;
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__suffix,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__suffix {
-  color: var(--pos-muted);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__input:focus {
+  border-color: #006847;
+  box-shadow: 0 0 0 3px rgb(0 104 71 / 0.15);
+  outline: none;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview {
-  background: var(--pos-green-soft);
-  color: var(--pos-text);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__suffix {
+  color: #5a6f8c;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview strong,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview strong {
-  color: var(--pos-text);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview {
+  background: #e8f5ef;
+  color: #1e3a5f;
+  border: 1px solid rgb(0 104 71 / 0.18);
+  border-radius: 10px;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview-total strong,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview-total strong {
-  color: var(--pos-green);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview strong {
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__foot,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__foot {
-  border-top-color: var(--pos-border);
-  background: var(--pos-surface);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__preview-total strong {
+  color: #006847;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost:hover,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost:hover {
-  background: var(--pos-surface-hover);
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__foot {
+  border-top: 1px solid #e2e8f0;
+  background: #f4f6fa;
+}
+
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--ghost:hover {
+  background: #eef2f8;
   border-color: rgb(0 104 71 / 0.28);
+  color: #1e3a5f;
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary {
-  background: var(--pos-green-gradient, var(--pos-green));
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary {
+  background: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
   border-color: transparent;
-  color: var(--pos-on-green);
-  box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.22);
 }
 
-.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary:hover,
-.cashier-app.cashier-app--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary:hover {
-  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
+html.cashier-theme--light .pos-pay-modal--discount-terminal .pos-order-discount-modal__btn--primary:hover {
+  background: linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%);
   border-color: transparent;
 }
 
+/* Topbar (остаётся в этом файле из прежнего пакета) */
 .cashier-app.cashier-app--light .pos-topbar-nav__btn,
 .cashier-app.cashier-app--light .pos-topbar-views__btn {
   background: transparent;
