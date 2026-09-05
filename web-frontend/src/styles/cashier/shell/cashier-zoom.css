@@ -3,7 +3,7 @@
   display: inline-flex;
   align-items: stretch;
   border: 1px solid var(--pos-border);
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   overflow: hidden;
   background: var(--pos-surface-elevated, #fff);
   flex-shrink: 0;

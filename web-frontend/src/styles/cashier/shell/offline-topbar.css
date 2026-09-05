@@ -8,7 +8,7 @@
   max-width: min(18rem, 34vw);
   min-height: 28px;
   padding: 2px 4px 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   border: 1px solid transparent;
   font-size: 0.6875rem;
   font-weight: 700;
@@ -49,7 +49,7 @@
   height: 26px;
   padding: 0;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -101,9 +101,9 @@
 }
 
 .cashier-app.cashier-app--terminal .offline-topbar--ok {
-  color: #3dffa8;
-  background: rgb(61 255 168 / 0.12);
-  border-color: rgb(61 255 168 / 0.35);
+  color: #2ec4b6;
+  background: rgb(46 196 182 / 0.12);
+  border-color: rgb(46 196 182 / 0.35);
 }
 
 .cashier-app.cashier-app--terminal .offline-topbar--offline {

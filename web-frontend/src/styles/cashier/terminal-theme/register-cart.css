@@ -22,7 +22,7 @@
 
 .cashier-app.cashier-app--terminal .pos-order-panel__badge {
   background: var(--pos-green-soft);
-  border-color: rgb(61 255 168 / 0.25);
+  border-color: rgb(46 196 182 / 0.25);
   color: var(--pos-green);
 }
 
@@ -47,7 +47,7 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-cart-table__row.is-active {
-  background: rgb(61 255 168 / 0.08);
+  background: rgb(46 196 182 / 0.08);
   box-shadow: inset 4px 0 0 var(--pos-green);
 }
 

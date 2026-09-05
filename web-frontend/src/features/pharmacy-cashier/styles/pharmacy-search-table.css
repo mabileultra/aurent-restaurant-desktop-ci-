@@ -30,7 +30,7 @@
 
 .pharmacy-search__field:focus {
   border-color: var(--pharm-accent);
-  box-shadow: 0 0 0 2px rgb(61 255 168 / 0.18);
+  box-shadow: 0 0 0 2px rgb(46 196 182 / 0.18);
 }
 
 .cashier-app.cashier-app--light .pharmacy-search__field:focus {

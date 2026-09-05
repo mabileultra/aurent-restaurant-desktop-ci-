@@ -172,7 +172,7 @@ export function useOfflineStatus() {
     syncing,
     syncingCatalog,
     actions: {
-      showSwitchOffline: offlineAllowed && !forceOfflineMode && canSellOffline,
+      showSwitchOffline: offlineAllowed && !forceOfflineMode && (canSellOffline || visible),
       showSwitchOnline: offlineAllowed && forceOfflineMode,
       showSyncSales: showPending && apiOnline,
       showRefreshCatalog: apiOnline && !forceOfflineMode && !networkOffline,

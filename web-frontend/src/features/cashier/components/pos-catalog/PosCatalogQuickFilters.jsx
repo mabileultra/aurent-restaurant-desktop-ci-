@@ -14,6 +14,7 @@ import {
 import { ALL_CATEGORY_ID } from '../../hooks/usePosCatalogPanel';
 
 const CHIP_ICONS = [Sprout, Leaf, Droplets, Shield, Wrench, Package, FlaskConical, Tag, FolderOpen];
+const MAX_CHIPS = 8;
 
 export default function PosCatalogQuickFilters({
   t,
@@ -22,10 +23,19 @@ export default function PosCatalogQuickFilters({
   selectedCategoryId,
   searchActive,
   onSelect,
+  /** When set, overrides active highlight (register finder). */
+  activeId,
 }) {
   if (categoriesLoading || !categories?.length) return null;
 
-  const activeId = searchActive ? null : selectedCategoryId;
+  const resolvedActive =
+    activeId !== undefined
+      ? activeId
+      : searchActive
+        ? null
+        : selectedCategoryId;
+
+  const visible = categories.slice(0, MAX_CHIPS);
 
   return (
     <div className="pos-quick-filters" role="toolbar" aria-label={t('pos.quickFilter')}>
@@ -36,7 +46,7 @@ export default function PosCatalogQuickFilters({
       <div className="pos-quick-filters__scroller">
         <button
           type="button"
-          className={`pos-quick-filters__chip${activeId === ALL_CATEGORY_ID ? ' is-active' : ''}`}
+          className={`pos-quick-filters__chip${resolvedActive === ALL_CATEGORY_ID ? ' is-active' : ''}`}
           onClick={() => onSelect(ALL_CATEGORY_ID)}
         >
           <span className="pos-quick-filters__chip-icon" data-tone="0" aria-hidden>
@@ -44,14 +54,14 @@ export default function PosCatalogQuickFilters({
           </span>
           <span className="pos-quick-filters__chip-name">{t('pos.allProducts')}</span>
         </button>
-        {categories.map((cat, index) => {
+        {visible.map((cat, index) => {
           const Icon = CHIP_ICONS[index % CHIP_ICONS.length];
           const tone = String((index % 5) + 1);
           return (
             <button
               key={cat.id}
               type="button"
-              className={`pos-quick-filters__chip${activeId === cat.id ? ' is-active' : ''}`}
+              className={`pos-quick-filters__chip${resolvedActive === cat.id ? ' is-active' : ''}`}
               onClick={() => onSelect(cat.id)}
               title={cat.name}
             >

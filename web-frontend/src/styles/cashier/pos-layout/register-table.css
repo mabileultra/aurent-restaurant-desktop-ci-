@@ -178,8 +178,8 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-order-panel--register .pos-cart-table__row.is-active {
-  background: rgb(61 255 168 / 0.06);
-  box-shadow: inset 3px 0 0 var(--pos-green, #3dffa8);
+  background: rgb(46 196 182 / 0.06);
+  box-shadow: inset 3px 0 0 var(--pos-green, #2ec4b6);
 }
 
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-cart-table__row.is-active {
@@ -214,7 +214,7 @@
   font-weight: 500;
   letter-spacing: 0.02em;
   line-height: 1.25;
-  color: var(--pos-green, #3dffa8);
+  color: var(--pos-green, #2ec4b6);
 }
 
 .cashier-app .pos-order-panel--register .pos-cart-table__price-btn,

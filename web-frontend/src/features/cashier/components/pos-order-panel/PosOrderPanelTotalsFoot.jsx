@@ -12,6 +12,7 @@ export default function PosOrderPanelTotalsFoot({
   holdDisabled = false,
   clearDisabled = false,
   holdIsRestore = false,
+  holdChoose = false,
 }) {
   return (
     <footer className="pos-order-panel__totals-foot">
@@ -46,7 +47,11 @@ export default function PosOrderPanelTotalsFoot({
             <Clock size={16} strokeWidth={2.25} />
           </span>
           <span className="pos-order-panel__foot-btn-label">
-            {holdIsRestore ? t('pos.restoreReceiptF6') : t('pos.holdReceiptF6')}
+            {holdChoose
+              ? t('pos.parkedCartsOpenF6')
+              : holdIsRestore
+                ? t('pos.restoreReceiptF6')
+                : t('pos.holdReceiptF6')}
           </span>
         </button>
         <button

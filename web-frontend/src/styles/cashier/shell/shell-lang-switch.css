@@ -14,7 +14,7 @@
   padding: 2px;
   gap: 2px;
   border: 1px solid var(--pos-border);
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: #f9fafb;
 }
 
@@ -22,7 +22,7 @@
   min-width: 2.25rem;
   padding: 4px 10px;
   border: none;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: transparent;
   font-size: 0.75rem;
   font-weight: 700;

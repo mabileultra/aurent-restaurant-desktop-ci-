@@ -39,13 +39,13 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-category-tile:hover {
-  border-color: rgb(61 255 168 / 0.45);
+  border-color: rgb(46 196 182 / 0.45);
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.35);
 }
 
 .cashier-app.cashier-app--terminal .pos-category-tile--all {
-  background: linear-gradient(135deg, rgb(61 255 168 / 0.12) 0%, var(--pos-surface-elevated) 60%);
-  border-color: rgb(61 255 168 / 0.25);
+  background: linear-gradient(135deg, rgb(46 196 182 / 0.12) 0%, var(--pos-surface-elevated) 60%);
+  border-color: rgb(46 196 182 / 0.25);
 }
 
 .cashier-app.cashier-app--terminal .pos-category-tile__icon {
@@ -86,8 +86,8 @@
 
 .cashier-app.cashier-app--terminal .pos-product-card:hover {
   border-color: var(--pos-green);
-  box-shadow: 0 0 0 1px rgb(61 255 168 / 0.35), 0 8px 24px rgb(0 0 0 / 0.4);
-  background: rgb(61 255 168 / 0.06);
+  box-shadow: 0 0 0 1px rgb(46 196 182 / 0.35), 0 8px 24px rgb(0 0 0 / 0.4);
+  background: rgb(46 196 182 / 0.06);
 }
 
 .cashier-app.cashier-app--terminal .pos-product-card__price {

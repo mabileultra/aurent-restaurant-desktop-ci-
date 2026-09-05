@@ -71,7 +71,7 @@
 }
 
 .cashier-app .pos-order-panel--register .pos-qty-control__val--editable:hover {
-  background: rgb(61 255 168 / 0.08);
+  background: rgb(46 196 182 / 0.08);
 }
 
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-qty-control__val--editable:hover {
@@ -92,8 +92,8 @@
 }
 
 .cashier-app .pos-order-panel--register .pos-qty-control__input:focus {
-  background: rgb(61 255 168 / 0.1);
-  box-shadow: inset 0 0 0 1px rgb(61 255 168 / 0.35);
+  background: rgb(46 196 182 / 0.1);
+  box-shadow: inset 0 0 0 1px rgb(46 196 182 / 0.35);
 }
 
 .cashier-app.cashier-app--light .pos-order-panel--register .pos-qty-control__input {
@@ -118,8 +118,8 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-order-panel--register .pos-qty-control__btn:hover {
-  background: rgb(61 255 168 / 0.12);
-  color: var(--pos-green, #3dffa8);
+  background: rgb(46 196 182 / 0.12);
+  color: var(--pos-green, #2ec4b6);
 }
 
 .cashier-app.cashier-app--terminal .pos-order-panel--register .pos-qty-control__val {

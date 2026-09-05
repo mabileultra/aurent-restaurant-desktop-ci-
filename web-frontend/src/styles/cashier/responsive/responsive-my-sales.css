@@ -62,7 +62,7 @@
 
 .cashier-sales-filters-card__badge {
   padding: 2px 8px;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 8px);
   background: var(--pos-green-soft, #e8f5ef);
   color: var(--pos-green, #006847);
   font-size: 0.6875rem;
@@ -123,7 +123,7 @@
   min-height: 36px;
   padding: 6px 10px;
   border: 1px solid #d1d5db;
-  border-radius: 8px;
+  border-radius: var(--pos-control-radius, 10px);
   background: #fff;
   font-size: 0.8125rem;
   color: var(--pos-text, #111827);

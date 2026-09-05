@@ -64,10 +64,10 @@
 }
 
 .cashier-bottom-nav__btn.is-active {
-  border-color: var(--pos-green);
-  background: var(--pos-green);
+  border-color: transparent;
+  background: var(--pos-green-gradient, var(--pos-green));
   color: var(--pos-on-green, #fff);
-  box-shadow: 0 2px 12px rgb(0 104 71 / 0.2);
+  box-shadow: 0 2px 12px rgb(0 80 55 / 0.22);
 }
 
 .cashier-bottom-nav__btn.is-active svg {
@@ -136,7 +136,7 @@
 }
 
 .cashier-app.cashier-app--terminal .cashier-bottom-nav__btn.is-active {
-  background: var(--pos-green);
+  background: var(--pos-green-gradient, var(--pos-green));
   color: var(--pos-on-green);
 }
 

@@ -7,8 +7,8 @@
 /* Возврат по чеку (portal) — терминальная тема кассы */
 .pos-return-modal--terminal {
   --pos-border: #2a3548;
-  --pos-green: #3dffa8;
-  --pos-green-hover: #2ee896;
+  --pos-green: #2ec4b6;
+  --pos-green-hover: #26b3a6;
   --pos-muted: #94a3b8;
   --pos-text: #f1f5f9;
   --pos-money: #f5c842;
@@ -30,19 +30,19 @@
 }
 
 .pos-return-modal--terminal.pos-return-modal--partial .pos-return-modal__preview-head {
-  background: rgb(61 255 168 / 0.08);
+  background: rgb(46 196 182 / 0.08);
   border: 1px solid var(--pos-border);
 }
 
 .pos-return-modal--terminal .pos-return-modal__header {
-  background: linear-gradient(180deg, rgb(61 255 168 / 0.12) 0%, #151b26 100%);
+  background: linear-gradient(180deg, rgb(46 196 182 / 0.12) 0%, #151b26 100%);
   border-bottom: 1px solid var(--pos-border);
 }
 
 .pos-return-modal--terminal .pos-return-modal__header-icon {
   background: var(--pos-green);
   color: #0a1218;
-  box-shadow: 0 0 20px rgb(61 255 168 / 0.35);
+  box-shadow: 0 0 20px rgb(46 196 182 / 0.35);
 }
 
 .pos-return-modal--terminal .pos-return-modal__title {
@@ -88,8 +88,8 @@
 
 .pos-return-modal--terminal .pos-return-modal__input:focus,
 .pos-return-modal--terminal .pos-return-modal__textarea:focus {
-  border-color: rgb(61 255 168 / 0.55);
-  box-shadow: 0 0 0 3px rgb(61 255 168 / 0.15);
+  border-color: rgb(46 196 182 / 0.55);
+  box-shadow: 0 0 0 3px rgb(46 196 182 / 0.15);
 }
 
 .pos-return-modal--terminal .pos-return-modal__find {
@@ -121,11 +121,11 @@
 
 .pos-return-modal--terminal .pos-return-modal__preview {
   background: #1c2433;
-  border: 1px solid rgb(61 255 168 / 0.25);
+  border: 1px solid rgb(46 196 182 / 0.25);
 }
 
 .pos-return-modal--terminal .pos-return-modal__preview-badge {
-  background: rgb(61 255 168 / 0.15);
+  background: rgb(46 196 182 / 0.15);
   color: var(--pos-green);
 }
 
@@ -141,13 +141,13 @@
 }
 
 .pos-return-modal--terminal .pos-return-modal__select-all {
-  background: rgb(61 255 168 / 0.12);
-  border-color: rgb(61 255 168 / 0.35);
+  background: rgb(46 196 182 / 0.12);
+  border-color: rgb(46 196 182 / 0.35);
   color: var(--pos-green);
 }
 
 .pos-return-modal--terminal .pos-return-modal__select-all:hover {
-  background: rgb(61 255 168 / 0.2);
+  background: rgb(46 196 182 / 0.2);
 }
 
 .pos-return-modal--terminal .pos-return-modal__lines--select .pos-return-line-select {
@@ -179,7 +179,7 @@
 }
 
 .pos-return-modal--terminal .pos-return-qty-stepper__btn:hover:not(:disabled) {
-  background: rgb(61 255 168 / 0.15);
+  background: rgb(46 196 182 / 0.15);
   color: var(--pos-green);
 }
 
@@ -218,7 +218,7 @@
 .pos-return-modal--terminal .pos-return-modal__submit {
   background: linear-gradient(180deg, #5dffb0 0%, var(--pos-green) 100%);
   color: #0a1218;
-  box-shadow: 0 4px 16px rgb(61 255 168 / 0.35);
+  box-shadow: 0 4px 16px rgb(46 196 182 / 0.35);
 }
 
 .pos-return-modal--terminal .pos-return-modal__submit:hover:not(:disabled) {

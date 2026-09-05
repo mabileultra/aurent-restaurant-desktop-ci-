@@ -93,6 +93,6 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-methods__tile-icon {
-  background: rgb(61 255 168 / 0.12);
-  color: var(--pos-green, #3dffa8);
+  background: rgb(46 196 182 / 0.12);
+  color: var(--pos-green, #2ec4b6);
 }

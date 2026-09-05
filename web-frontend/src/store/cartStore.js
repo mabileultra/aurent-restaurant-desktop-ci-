@@ -26,6 +26,26 @@ const newLineId = () =>
     ? crypto.randomUUID()
     : `line-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
+export const MAX_PARKED_CARTS = 6;
+
+const snapshotActiveCart = (state) => ({
+  id: newLineId(),
+  items: state.items.map((item) => ({ ...item })),
+  orderDiscountAmount: state.orderDiscountAmount,
+  customerId: state.customerId,
+  customerName: state.customerName,
+  checkNo: state.checkNo,
+  parkedAt: Date.now(),
+});
+
+const clearActiveCartFields = {
+  items: [],
+  orderDiscountAmount: 0,
+  customerId: null,
+  customerName: null,
+  checkNo: null,
+};
+
 const buildLine = (product, quantity) => {
   const saleType = product.saleType || 'PIECE';
   return {
@@ -76,11 +96,38 @@ export function buildCheckoutLineItems(items) {
 export const useCartStore = create((set, get) => ({
   items: [],
   orderDiscountAmount: 0,
-  /** Один отложенный чек: { items, orderDiscountAmount, parkedAt } | null */
-  parkedCart: null,
+  /** Отложенные чеки (до MAX_PARKED_CARTS): [{ id, items, orderDiscountAmount, customerId, customerName, checkNo, parkedAt }] */
+  parkedCarts: [],
+  customerId: null,
+  customerName: null,
+  /** Локальный номер черновика чека (до продажи) */
+  checkNo: null,
+
+  ensureCheckNo: () => {
+    if (get().checkNo) return get().checkNo;
+    let seq = 1;
+    try {
+      seq = Number(localStorage.getItem('pos-draft-check-seq') || '0') + 1;
+      localStorage.setItem('pos-draft-check-seq', String(seq));
+    } catch {
+      seq = Math.floor(Math.random() * 9000) + 1000;
+    }
+    const checkNo = String(seq).padStart(4, '0');
+    set({ checkNo });
+    return checkNo;
+  },
+
+  setCustomer: (customerId, customerName) =>
+    set({
+      customerId: customerId ?? null,
+      customerName: customerName ? String(customerName) : null,
+    }),
+
+  clearCustomer: () => set({ customerId: null, customerName: null }),
 
   /** Штучный / услуга: +1, объединение строк по productId. */
   addPieceItem: (product, quantity = 1) => {
+    get().ensureCheckNo();
     const qty = roundQty(quantity);
     const { items } = get();
     const existing = items.find(
@@ -112,6 +159,7 @@ export const useCartStore = create((set, get) => ({
 
   /** Весовой: всегда отдельная строка. */
   addWeightLine: (product, quantityKg) => {
+    get().ensureCheckNo();
     const line = syncDiscountFromPercent(buildLine(product, quantityKg));
     const nextItems = [...get().items, line];
     set({
@@ -178,37 +226,67 @@ export const useCartStore = create((set, get) => ({
     });
   },
 
-  clearCart: () => set({ items: [], orderDiscountAmount: 0 }),
+  clearCart: () =>
+    set({
+      items: [],
+      orderDiscountAmount: 0,
+      customerId: null,
+      customerName: null,
+      checkNo: null,
+    }),
 
   /**
-   * F6: отложить текущий чек или вернуть отложенный, если корзина пуста.
-   * @returns {'held'|'replaced'|'restored'|'empty'}
+   * F6: отложить текущий чек; если корзина пуста и один отложенный — вернуть;
+   * если несколько — 'choose' (открыть список в UI).
+   * @returns {'held'|'restored'|'choose'|'full'|'empty'}
    */
   holdCart: () => {
-    const { items, orderDiscountAmount, parkedCart } = get();
-    if (items.length > 0) {
-      const nextParked = {
-        items: items.map((item) => ({ ...item })),
-        orderDiscountAmount,
-        parkedAt: Date.now(),
-      };
+    const state = get();
+    if (state.items.length > 0) {
+      if (state.parkedCarts.length >= MAX_PARKED_CARTS) return 'full';
       set({
-        parkedCart: nextParked,
-        items: [],
-        orderDiscountAmount: 0,
+        parkedCarts: [...state.parkedCarts, snapshotActiveCart(state)],
+        ...clearActiveCartFields,
       });
-      return parkedCart ? 'replaced' : 'held';
+      return 'held';
     }
-    if (parkedCart) {
-      set({
-        items: parkedCart.items,
-        orderDiscountAmount: parkedCart.orderDiscountAmount,
-        parkedCart: null,
-      });
+    if (state.parkedCarts.length === 1) {
+      get().restoreParkedCart(state.parkedCarts[0].id);
       return 'restored';
     }
+    if (state.parkedCarts.length > 1) return 'choose';
     return 'empty';
   },
+
+  restoreParkedCart: (parkedId) => {
+    const state = get();
+    const ticket = state.parkedCarts.find((p) => p.id === parkedId);
+    if (!ticket) return 'missing';
+
+    let nextParked = state.parkedCarts.filter((p) => p.id !== parkedId);
+    if (state.items.length > 0) {
+      if (nextParked.length >= MAX_PARKED_CARTS) return 'full';
+      nextParked = [...nextParked, snapshotActiveCart(state)];
+    }
+
+    set({
+      items: ticket.items,
+      orderDiscountAmount: ticket.orderDiscountAmount ?? 0,
+      customerId: ticket.customerId ?? null,
+      customerName: ticket.customerName ?? null,
+      checkNo: ticket.checkNo ?? null,
+      parkedCarts: nextParked,
+    });
+    return 'restored';
+  },
+
+  removeParkedCart: (parkedId) => {
+    set({
+      parkedCarts: get().parkedCarts.filter((p) => p.id !== parkedId),
+    });
+  },
+
+  clearParkedCarts: () => set({ parkedCarts: [] }),
 
   getLinesTotal: () =>
     round2(get().items.reduce((acc, item) => acc + lineSubtotal(item), 0)),

@@ -17,7 +17,7 @@
   margin-bottom: 0 !important;
 }
 
-/* Toolbar filters — one horizontal row */
+/* Toolbar filters — receipt full width, rest compact */
 .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__head {
   padding: 6px 10px;
 }
@@ -31,9 +31,14 @@
 }
 
 .cashier-sales-filters--toolbar {
-  grid-template-columns: minmax(110px, 1.1fr) repeat(4, minmax(0, 1fr));
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px 8px;
   align-items: end;
+}
+
+.cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
+  grid-column: 1 / -1;
 }
 
 .cashier-sales-filters--toolbar .cashier-sales-filters__label {
@@ -46,6 +51,7 @@
   min-height: 32px;
   padding: 4px 8px;
   font-size: 0.75rem;
+  border-radius: var(--pos-control-radius, 10px);
 }
 
 /* Compact shift strip */
@@ -56,7 +62,7 @@
   gap: 6px 14px;
   min-height: 34px;
   padding: 6px 12px;
-  border-radius: 8px;
+  border-radius: var(--pos-control-radius, 10px);
   border: 1px solid rgb(0 104 71 / 0.18);
   background: linear-gradient(90deg, #eef8f3 0%, #f9fffc 100%);
 }
@@ -110,10 +116,10 @@
 
 @media (max-width: 1024px) {
   .cashier-sales-filters--toolbar {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .cashier-sales-filters--toolbar .cashier-sales-filters__field:first-child {
+  .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
     grid-column: 1 / -1;
   }
 }

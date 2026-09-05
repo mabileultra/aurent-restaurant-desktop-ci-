@@ -67,7 +67,7 @@
   background: var(--pos-surface-elevated);
   border-color: var(--pos-green);
   color: var(--pos-text);
-  box-shadow: 0 0 0 0.2rem rgb(61 255 168 / 0.15);
+  box-shadow: 0 0 0 0.2rem rgb(46 196 182 / 0.15);
 }
 
 .cashier-app.cashier-app--terminal .text-muted {

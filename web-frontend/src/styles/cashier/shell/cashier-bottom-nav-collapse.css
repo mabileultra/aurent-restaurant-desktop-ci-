@@ -61,25 +61,32 @@
   align-items: center;
   gap: 8px;
   min-height: var(--cashier-bottom-nav-h, 52px);
-  padding: 0 14px;
+  padding: 0 12px;
   border: 1px solid var(--pos-border);
-  border-radius: 12px;
+  border-radius: var(--pos-control-radius, 12px);
   background: #fff;
   color: var(--pos-text);
   font-size: 0.75rem;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+}
+
+.cashier-bottom-nav__status.is-toggle:not(:disabled):hover {
+  border-color: color-mix(in srgb, var(--pos-green) 40%, var(--pos-border));
+  box-shadow: 0 1px 6px rgb(0 80 55 / 0.12);
 }
 
 .cashier-bottom-nav__status:disabled {
   cursor: default;
+  opacity: 0.92;
 }
 
 .cashier-bottom-nav__status-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   flex-shrink: 0;
   background: var(--pos-green, #006847);
   box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
@@ -94,10 +101,53 @@
   color: #92400e;
 }
 
+.cashier-bottom-nav__status-switch {
+  position: relative;
+  width: 28px;
+  height: 16px;
+  border-radius: 999px;
+  background: #d1d5db;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.cashier-bottom-nav__status--online.is-toggle .cashier-bottom-nav__status-switch {
+  background: color-mix(in srgb, var(--pos-green) 55%, #9ca3af);
+}
+
+.cashier-bottom-nav__status.is-forced .cashier-bottom-nav__status-switch,
+.cashier-bottom-nav__status--offline.is-toggle .cashier-bottom-nav__status-switch {
+  background: #f59e0b;
+}
+
+.cashier-bottom-nav__status-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.2);
+  transition: transform 0.15s;
+}
+
+.cashier-bottom-nav__status.is-forced .cashier-bottom-nav__status-knob,
+.cashier-bottom-nav__status--offline.is-toggle .cashier-bottom-nav__status-knob {
+  transform: translateX(12px);
+}
+
 .cashier-app.cashier-app--terminal .cashier-bottom-nav__status {
   background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
   color: var(--pos-text);
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 1.15fr)
+    repeat(6, minmax(0, 1fr));
 }
 
 .cashier-register__bottom-nav.cashier-bottom-nav-shell,

@@ -1,7 +1,7 @@
 /* Cashier shift modal — dark theme (portal on body → html.cashier-theme--dark) */
 html.cashier-theme--dark .pos-pay-modal--shift-terminal {
-  --pos-green: #3dffa8;
-  --pos-green-hover: #2ee896;
+  --pos-green: #2ec4b6;
+  --pos-green-hover: #26b3a6;
   --pos-border: #2a3548;
   --pos-text: #f1f5f9;
   --pos-muted: #94a3b8;
@@ -24,7 +24,7 @@ html.cashier-theme--dark .pos-pay-modal--shift-terminal .cashier-shift-modal__he
   gap: 12px;
   padding: 16px 18px 12px;
   border-bottom: 1px solid var(--pos-border);
-  background: linear-gradient(180deg, rgb(61 255 168 / 0.12) 0%, #151b26 100%);
+  background: linear-gradient(180deg, rgb(46 196 182 / 0.12) 0%, #151b26 100%);
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-pay-modal__title {
@@ -114,13 +114,13 @@ html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action {
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action:hover:not(:disabled) {
-  border-color: rgb(61 255 168 / 0.45);
-  background: rgb(61 255 168 / 0.1);
+  border-color: rgb(46 196 182 / 0.45);
+  background: rgb(46 196 182 / 0.1);
   color: var(--pos-green);
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action--primary {
-  border-color: rgb(61 255 168 / 0.45);
+  border-color: rgb(46 196 182 / 0.45);
   background: var(--pos-green);
   color: #0a1218;
 }

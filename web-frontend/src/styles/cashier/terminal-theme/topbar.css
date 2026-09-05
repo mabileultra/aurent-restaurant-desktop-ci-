@@ -7,7 +7,7 @@
 
 .cashier-app.cashier-app--terminal .cashier-pos-topbar__open-shift {
   background: var(--pos-green-soft);
-  border-color: rgb(61 255 168 / 0.35);
+  border-color: rgb(46 196 182 / 0.35);
   color: var(--pos-green);
 }
 
@@ -36,7 +36,7 @@
 
 .cashier-app.cashier-app--terminal .cashier-topbar__menu:hover {
   background: var(--pos-green-soft);
-  border-color: rgb(61 255 168 / 0.3);
+  border-color: rgb(46 196 182 / 0.3);
   color: var(--pos-green);
 }
 
@@ -49,8 +49,8 @@
 .cashier-app.cashier-app--terminal .cashier-desktop-menu:hover .cashier-desktop-menu__trigger,
 .cashier-app.cashier-app--terminal .cashier-desktop-menu.is-open .cashier-desktop-menu__trigger {
   background: var(--pos-green-soft);
-  border-color: rgb(61 255 168 / 0.35);
-  box-shadow: 0 2px 14px rgb(61 255 168 / 0.15);
+  border-color: rgb(46 196 182 / 0.35);
+  box-shadow: 0 2px 14px rgb(46 196 182 / 0.15);
 }
 
 .cashier-app.cashier-app--terminal .cashier-desktop-menu__panel {
@@ -124,7 +124,7 @@
 .cashier-app.cashier-app--terminal .cashier-lang-switch__btn.is-active {
   background: var(--pos-green);
   color: #0a1218;
-  box-shadow: 0 0 12px rgb(61 255 168 / 0.25);
+  box-shadow: 0 0 12px rgb(46 196 182 / 0.25);
 }
 
 .cashier-app.cashier-app--terminal .cashier-topbar__mobile-nav .nav-link {
@@ -144,7 +144,7 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-topbar-nav__btn--catalog {
-  border-color: rgb(61 255 168 / 0.35);
+  border-color: color-mix(in srgb, var(--pos-green) 40%, var(--pos-border));
   color: var(--pos-green);
   font-weight: 800;
 }
@@ -160,7 +160,7 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-topbar-views__btn.is-active {
-  background: var(--pos-green);
-  color: #0a1218;
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
 }
 

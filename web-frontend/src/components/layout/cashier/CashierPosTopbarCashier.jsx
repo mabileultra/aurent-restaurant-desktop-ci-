@@ -1,5 +1,3 @@
-import { ChevronDown } from 'lucide-react';
-
 function initialsFromName(name) {
   if (!name) return '?';
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
@@ -26,7 +24,6 @@ export default function CashierPosTopbarCashier({ name, roleLabel }) {
           </span>
         ) : null}
       </span>
-      <ChevronDown size={16} strokeWidth={2} className="cashier-pos-topbar__cashier-chevron" aria-hidden />
     </div>
   );
 }

@@ -18,6 +18,7 @@ export default function CashierPayColumn({
   payFlowOptions = null,
   payFlowSession = 0,
   payFlowKeyPrefix = 'pay-flow',
+  cartCustomer = null,
   className = '',
 }) {
   const asideClass = [
@@ -53,6 +54,7 @@ export default function CashierPayColumn({
               isPending={isPending}
               onConfirm={onConfirm}
               openOptions={payFlowOptions}
+              cartCustomer={cartCustomer}
             />
           </div>
         ) : null}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
 const STORAGE_KEY = 'cashier-pos-ui-scale';
 const MIN = 0.8;
@@ -30,25 +30,45 @@ function persistScale(value) {
   }
 }
 
-export function useCashierUiScale() {
-  const [scale, setScaleState] = useState(readStoredScale);
+let currentScale = readStoredScale();
+const listeners = new Set();
 
-  const setScale = (next) => {
-    setScaleState((prev) => {
-      const value = clampScale(typeof next === 'function' ? next(prev) : next);
-      persistScale(value);
-      return value;
-    });
-  };
+function subscribe(listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}
+
+function getSnapshot() {
+  return currentScale;
+}
+
+function setScale(next) {
+  const value = clampScale(typeof next === 'function' ? next(currentScale) : next);
+  if (value === currentScale) return;
+  currentScale = value;
+  persistScale(value);
+  listeners.forEach((listener) => listener());
+}
+
+/**
+ * Shared UI scale for cashier shell + bottom-dock controls.
+ * Must be a singleton — two useState instances previously desynced zoom.
+ */
+export function useCashierUiScale() {
+  const scale = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+
+  const zoomIn = useCallback(() => setScale((s) => s + STEP), []);
+  const zoomOut = useCallback(() => setScale((s) => s - STEP), []);
+  const reset = useCallback(() => setScale(DEFAULT), []);
 
   return {
     scale,
     percent: Math.round(scale * 100),
     canZoomIn: scale < MAX - 1e-9,
     canZoomOut: scale > MIN + 1e-9,
-    zoomIn: () => setScale((s) => s + STEP),
-    zoomOut: () => setScale((s) => s - STEP),
-    reset: () => setScale(DEFAULT),
+    zoomIn,
+    zoomOut,
+    reset,
     rootStyle: { '--pos-ui-scale': String(scale) },
   };
 }

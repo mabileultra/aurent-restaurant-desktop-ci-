@@ -119,6 +119,6 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-register-card-providers--remainder .pos-register-card-providers__btn:not(:disabled):not(.is-soon) {
-  border-color: var(--pos-green, #3dffa8);
-  box-shadow: 0 0 0 1px rgb(61 255 168 / 0.2), 0 2px 8px rgb(61 255 168 / 0.12);
+  border-color: var(--pos-green, #2ec4b6);
+  box-shadow: 0 0 0 1px rgb(46 196 182 / 0.2), 0 2px 8px rgb(46 196 182 / 0.12);
 }

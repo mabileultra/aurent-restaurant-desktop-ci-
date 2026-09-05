@@ -10,11 +10,11 @@
   --pharm-elevated: var(--pos-surface-elevated, #1c2433);
   --pharm-hover: var(--pos-surface-hover, #243044);
   --pharm-active: var(--pos-surface-active, #2a384f);
-  --pharm-accent: var(--pos-accent, #3dffa8);
+  --pharm-accent: var(--pos-accent, #2ec4b6);
   --pharm-cell-bg: var(--pos-surface-elevated, #1c2433);
 
-  --pharm-ok: rgb(61 255 168 / 0.18);
-  --pharm-ok-strong: rgb(61 255 168 / 0.28);
+  --pharm-ok: rgb(46 196 182 / 0.18);
+  --pharm-ok-strong: rgb(46 196 182 / 0.28);
   --pharm-ok-text: #9bffd4;
 
   --pharm-warn: rgb(255 196 60 / 0.2);

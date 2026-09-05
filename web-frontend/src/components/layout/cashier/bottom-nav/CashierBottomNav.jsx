@@ -25,13 +25,19 @@ function navClass(isActive) {
   return bottomNavLinkClass(isActive);
 }
 
+function readIsDesktopApp() {
+  return typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
+}
+
 export default function CashierBottomNav({ className = '' }) {
   const { t } = useTranslation();
   const { storeId } = useCashierStore();
   const { isRestaurant, isPharmacy } = useCashierStoreProfile();
   const { openShift } = useCashierShiftModal();
   const { lock } = useCashierLock();
-  const { collapsed, toggleCollapsed } = useCashierBottomNavCollapsedState();
+  const { collapsed: collapsedState, toggleCollapsed } = useCashierBottomNavCollapsedState();
+  const isDesktopApp = readIsDesktopApp();
+  const collapsed = isDesktopApp ? false : collapsedState;
 
   return (
     <div
@@ -97,16 +103,18 @@ export default function CashierBottomNav({ className = '' }) {
           </>
         ) : null}
 
-        <button
-          type="button"
-          className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon cashier-bottom-nav__btn--toggle"
-          onClick={toggleCollapsed}
-          title={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
-          aria-label={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
-          aria-expanded={!collapsed}
-        >
-          {collapsed ? <ChevronUp size={20} strokeWidth={2} /> : <ChevronDown size={20} strokeWidth={2} />}
-        </button>
+        {!isDesktopApp ? (
+          <button
+            type="button"
+            className="cashier-bottom-nav__btn cashier-bottom-nav__btn--icon cashier-bottom-nav__btn--toggle"
+            onClick={toggleCollapsed}
+            title={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
+            aria-label={collapsed ? t('pos.bottomNavExpand') : t('pos.bottomNavCollapse')}
+            aria-expanded={!collapsed}
+          >
+            {collapsed ? <ChevronUp size={20} strokeWidth={2} /> : <ChevronDown size={20} strokeWidth={2} />}
+          </button>
+        ) : null}
       </nav>
 
       {!collapsed ? <CashierBottomNavAside t={t} /> : null}

@@ -1,4 +1,6 @@
 @import './order-panel.css';
+@import './register-finder.css';
+@import './parked-bar.css';
 @import './cart-table.css';
 @import './qty-control.css';
 @import './footer-totals.css';

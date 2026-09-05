@@ -45,8 +45,15 @@ export function usePosPage() {
   const clearOrderDiscount = useCartStore((s) => s.clearOrderDiscount);
   const clearCart = useCartStore((s) => s.clearCart);
   const holdCart = useCartStore((s) => s.holdCart);
-  const parkedCart = useCartStore((s) => s.parkedCart);
-  const hasParkedCart = Boolean(parkedCart);
+  const restoreParkedCart = useCartStore((s) => s.restoreParkedCart);
+  const removeParkedCart = useCartStore((s) => s.removeParkedCart);
+  const clearParkedCarts = useCartStore((s) => s.clearParkedCarts);
+  const parkedCarts = useCartStore((s) => s.parkedCarts);
+  const hasParkedCart = parkedCarts.length > 0;
+  const checkNo = useCartStore((s) => s.checkNo);
+  const customerId = useCartStore((s) => s.customerId);
+  const customerName = useCartStore((s) => s.customerName);
+  const setCustomer = useCartStore((s) => s.setCustomer);
 
   const { viewMode, handleViewModeChange } = usePosCatalogViewMode();
   const catalog = usePosProductsCatalog({ storeId });
@@ -160,6 +167,7 @@ export function usePosPage() {
     categoriesError: catalog.categoriesError,
     selectedCategoryId: catalog.selectedCategoryId,
     handleSelectCategory: catalog.handleSelectCategory,
+    setSelectedCategoryId: catalog.setSelectedCategoryId,
     searchActive: catalog.searchActive,
     catalogBrowse: catalog.catalogBrowse,
     setCatalogBrowse: catalog.setCatalogBrowse,
@@ -191,7 +199,7 @@ export function usePosPage() {
     if (returnOpen || discountOpen || payOpen) return;
     const result = holdCart();
     setSelectedLineId(null);
-    if (result === 'held' || result === 'replaced') {
+    if (result === 'held') {
       toast.success(t('pos.holdReceiptDone'));
       return;
     }
@@ -199,8 +207,48 @@ export function usePosPage() {
       toast.success(t('pos.restoreReceiptDone'));
       return;
     }
+    if (result === 'full') {
+      toast.error(t('pos.holdReceiptFull'));
+      return;
+    }
+    if (result === 'choose') {
+      toast(t('pos.holdReceiptChoose'));
+      return;
+    }
     toast.error(t('pos.holdReceiptEmpty'));
   }, [discountOpen, holdCart, payOpen, returnOpen, t]);
+
+  const handleRestoreParked = useCallback(
+    (parkedId) => {
+      const result = restoreParkedCart(parkedId);
+      setSelectedLineId(null);
+      if (result === 'restored') {
+        toast.success(t('pos.restoreReceiptDone'));
+        return;
+      }
+      if (result === 'full') {
+        toast.error(t('pos.holdReceiptFull'));
+        return;
+      }
+      toast.error(t('pos.holdReceiptEmpty'));
+    },
+    [restoreParkedCart, t]
+  );
+
+  const handleRemoveParked = useCallback(
+    (parkedId) => {
+      removeParkedCart(parkedId);
+      toast.success(t('pos.parkedCartRemoved'));
+    },
+    [removeParkedCart, t]
+  );
+
+  const handleClearParked = useCallback(() => {
+    if (!parkedCarts.length) return;
+    if (!window.confirm(t('pos.parkedCartsClearConfirm'))) return;
+    clearParkedCarts();
+    toast.success(t('pos.parkedCartsCleared'));
+  }, [clearParkedCarts, parkedCarts.length, t]);
 
   const handleClearCart = useCallback(() => {
     if (items.length === 0) return;
@@ -212,13 +260,28 @@ export function usePosPage() {
 
   useEffect(() => {
     const onKeyDown = (e) => {
+      if (e.key === 'F2' && !e.repeat) {
+        e.preventDefault();
+        if (posPane !== 'register') handleGoToRegister();
+        queueMicrotask(() => searchInputRef.current?.focus?.());
+        return;
+      }
       if (e.key !== 'F6' || e.repeat) return;
       e.preventDefault();
       handleHoldCart();
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleHoldCart]);
+  }, [handleGoToRegister, handleHoldCart, posPane]);
+
+  const handleSetCustomer = useCallback(
+    (id, name) => {
+      setCustomer(id, name);
+      if (id) toast.success(t('pos.customerCardApplied', { name: name || '' }));
+      else toast.success(t('pos.customerCardCleared'));
+    },
+    [setCustomer, t]
+  );
 
   return {
     t,
@@ -252,6 +315,14 @@ export function usePosPage() {
     handleHoldCart,
     handleClearCart,
     hasParkedCart,
+    parkedCarts,
+    handleRestoreParked,
+    handleRemoveParked,
+    handleClearParked,
+    checkNo,
+    customerId,
+    customerName,
+    handleSetCustomer,
     handleOpenPaymentFlow,
     handlePayFlowClosed,
     payFlowOptions,

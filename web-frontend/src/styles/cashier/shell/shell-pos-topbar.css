@@ -25,7 +25,7 @@
   display: inline-flex;
   align-items: center;
   padding: 3px 8px;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-green-soft, rgb(0 104 71 / 0.12));
   color: var(--pos-green, #006847);
   font-size: 0.65rem;
@@ -50,7 +50,7 @@
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
   border: 1px solid var(--pos-border);
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-surface-elevated, #fff);
   color: var(--pos-text);
 }
@@ -58,7 +58,7 @@
 .cashier-topbar__store-dot {
   width: 8px;
   height: 8px;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-green, #006847);
   box-shadow: 0 0 0 3px rgb(0 104 71 / 0.16);
   flex-shrink: 0;
@@ -154,15 +154,9 @@
 .cashier-pos-topbar__role-dot {
   width: 6px;
   height: 6px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: currentColor;
   flex-shrink: 0;
-}
-
-.cashier-pos-topbar__cashier-chevron {
-  flex-shrink: 0;
-  color: var(--pos-muted);
-  margin-left: 2px;
 }
 
 .cashier-pos-topbar__open-shift {
@@ -172,7 +166,7 @@
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
   border: 1px solid rgb(0 104 71 / 0.35);
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-green-soft);
   color: var(--pos-green);
   font-size: 0.8125rem;
@@ -197,7 +191,7 @@
   min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 14px;
   border: 1px solid #fecaca;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: #fef2f2;
   color: #dc2626;
   font-size: 0.8125rem;
@@ -222,7 +216,7 @@
   padding: 3px;
   min-height: var(--cashier-topbar-control-h, 40px);
   border: 1px solid var(--pos-border);
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: var(--pos-surface-elevated, #fff);
 }
 
@@ -233,7 +227,7 @@
   width: 32px;
   height: 30px;
   border: 0;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: transparent;
   color: var(--pos-muted);
   cursor: pointer;
@@ -248,7 +242,7 @@
 .cashier-app.cashier-app--terminal .cashier-theme-toggle__opt.is-active {
   background: var(--pos-surface);
   color: var(--pos-green);
-  box-shadow: 0 0 0 1px rgb(61 255 168 / 0.2);
+  box-shadow: 0 0 0 1px rgb(46 196 182 / 0.2);
 }
 
 .cashier-app.cashier-app--light .cashier-topbar--pos {

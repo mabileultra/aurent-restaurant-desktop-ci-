@@ -30,8 +30,8 @@
   align-items: center;
   min-height: 72px;
   padding: 14px 16px;
-  background: linear-gradient(90deg, rgb(61 255 168 / 0.1) 0%, var(--pos-surface-elevated, #1c2433) 55%);
-  border: 1px solid rgb(61 255 168 / 0.35);
+  background: linear-gradient(90deg, rgb(46 196 182 / 0.1) 0%, var(--pos-surface-elevated, #1c2433) 55%);
+  border: 1px solid rgb(46 196 182 / 0.35);
   border-radius: 12px;
 }
 

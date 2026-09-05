@@ -49,8 +49,8 @@
 }
 
 .pos-pay-register-rail__back:hover {
-  border-color: rgb(61 255 168 / 0.4);
-  color: var(--pos-green, #3dffa8);
+  border-color: rgb(46 196 182 / 0.4);
+  color: var(--pos-green, #2ec4b6);
 }
 
 .pos-pay-register-rail__back--spacer,
@@ -124,7 +124,7 @@
   min-height: clamp(44px, 12cqi, 58px);
   border: none;
   border-radius: 16px;
-  background: var(--pos-green, #006847);
+  background: var(--pos-green-gradient, var(--pos-green, #006847));
   color: #fff;
   font-size: 0.9375rem;
   font-weight: 800;

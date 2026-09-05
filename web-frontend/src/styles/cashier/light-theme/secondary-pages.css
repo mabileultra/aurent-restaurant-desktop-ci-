@@ -29,6 +29,23 @@
   color: var(--pos-ink);
 }
 
+.cashier-app.cashier-app--light .cashier-sales-shift-strip {
+  border-color: var(--pos-border);
+  background: var(--pos-surface-elevated);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-strip__icon {
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-shift-strip__value--sum {
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-mobile-card {
+  border-radius: var(--pos-control-radius, 10px);
+}
+
 .cashier-app.cashier-app--light .cashier-sales-filters-card.is-active {
   border-color: rgb(30 58 95 / 0.28);
   box-shadow: 0 0 0 3px rgb(30 58 95 / 0.08);

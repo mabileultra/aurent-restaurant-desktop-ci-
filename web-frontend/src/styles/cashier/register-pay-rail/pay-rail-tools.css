@@ -42,9 +42,9 @@
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--discount {
-  border-color: rgb(61 255 168 / 0.35);
-  background: rgb(61 255 168 / 0.1);
-  color: var(--pos-green, #3dffa8);
+  border-color: rgb(46 196 182 / 0.35);
+  background: rgb(46 196 182 / 0.1);
+  color: var(--pos-green, #2ec4b6);
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail__tool--return {

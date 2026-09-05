@@ -1,6 +1,10 @@
+import { useCallback, useEffect, useState } from 'react';
 import PosCatalogPanel from '../PosCatalogPanel';
 import PosOrderPanel from '../PosOrderPanel';
+import PosCustomerCardModal from '../pos-order-panel/PosCustomerCardModal';
 import CashierRegisterShell from '../shell/CashierRegisterShell';
+import { ALL_CATEGORY_ID } from '../../hooks/usePosCatalogPanel';
+import { useCartStore } from '../../../../store/cartStore';
 
 export default function PosRegisterWorkspace({
   posPane,
@@ -28,6 +32,7 @@ export default function PosRegisterWorkspace({
     categoriesError,
     selectedCategoryId,
     handleSelectCategory,
+    setSelectedCategoryId,
     searchActive,
     catalogBrowse,
     setCatalogBrowse,
@@ -54,9 +59,78 @@ export default function PosRegisterWorkspace({
     onHold,
     onClear,
     hasParkedCart,
+    parkedCarts,
+    onRestoreParked,
+    onRemoveParked,
+    onClearParked,
+    checkNo,
+    customerId,
+    customerName,
+    onSetCustomer,
   } = cart;
 
   const { checkoutMutation, handleConfirmPayment } = checkout;
+  const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [customerCardOpen, setCustomerCardOpen] = useState(false);
+
+  useEffect(() => {
+    if (!checkNo) ensureCheckNo();
+  }, [checkNo, ensureCheckNo]);
+
+  useEffect(() => {
+    if (posPane !== 'register') setPickerOpen(false);
+  }, [posPane]);
+
+  const openPicker = useCallback(() => setPickerOpen(true), []);
+
+  const closePicker = useCallback(() => {
+    setPickerOpen(false);
+    setSearch('');
+    setSelectedCategoryId?.(ALL_CATEGORY_ID);
+    setCatalogBrowse?.('categories');
+  }, [setCatalogBrowse, setSearch, setSelectedCategoryId]);
+
+  const handleSearchChange = useCallback(
+    (value) => {
+      setSearch(value);
+      if (String(value).trim()) openPicker();
+    },
+    [openPicker, setSearch]
+  );
+
+  const handleQuickFilter = useCallback(
+    (categoryId) => {
+      const sameChip =
+        pickerOpen && !searchActive && selectedCategoryId === categoryId;
+      if (sameChip) {
+        closePicker();
+        return;
+      }
+      setSearch('');
+      handleSelectCategory(categoryId);
+      openPicker();
+    },
+    [
+      closePicker,
+      handleSelectCategory,
+      openPicker,
+      pickerOpen,
+      searchActive,
+      selectedCategoryId,
+      setSearch,
+    ]
+  );
+
+  const handleAddFromPicker = useCallback(
+    (product) => {
+      addProductToCart(product);
+    },
+    [addProductToCart]
+  );
+
+  const showRegisterFinder = posPane === 'register';
+  const pickerVisible = pickerOpen || searchActive;
 
   return (
     <CashierRegisterShell
@@ -75,11 +149,14 @@ export default function PosRegisterWorkspace({
         payFlowOptions,
         payFlowSession,
         onPayFlowClosed,
+        cartCustomer: customerId
+          ? { id: customerId, name: customerName || '' }
+          : null,
       }}
     >
       <div className="cashier-register__catalog-col">
         <PosCatalogPanel
-          ref={searchInputRef}
+          ref={showRegisterFinder ? undefined : searchInputRef}
           search={search}
           onSearchChange={setSearch}
           onSearchEnter={handleSearchEnter}
@@ -101,6 +178,7 @@ export default function PosRegisterWorkspace({
           onAddProduct={addProductToCart}
           viewMode={viewMode}
           onViewModeChange={handleViewModeChange}
+          hideQuickFilters
         />
       </div>
 
@@ -118,8 +196,49 @@ export default function PosRegisterWorkspace({
           onHold={onHold}
           onClear={onClear}
           hasParkedCart={hasParkedCart}
+          parkedCarts={parkedCarts}
+          onRestoreParked={onRestoreParked}
+          onRemoveParked={onRemoveParked}
+          onClearParked={onClearParked}
+          searchInputRef={showRegisterFinder ? searchInputRef : null}
+          registerFinder={
+            showRegisterFinder
+              ? {
+                  checkNo,
+                  customerName,
+                  onOpenCustomerCard: () => setCustomerCardOpen(true),
+                  search,
+                  onSearchChange: handleSearchChange,
+                  onSearchEnter: handleSearchEnter,
+                  scanDisabled: !storeId,
+                  categories,
+                  categoriesLoading,
+                  selectedCategoryId,
+                  searchActive,
+                  onSelectQuickFilter: handleQuickFilter,
+                  pickerOpen: pickerVisible,
+                  onClosePicker: closePicker,
+                  products,
+                  productsLoading,
+                  productsError,
+                  productsLoadingMore,
+                  productsHasMore: Boolean(productsHasMore),
+                  onLoadMoreProducts: () => fetchMoreProducts(),
+                  onAddProduct: handleAddFromPicker,
+                  viewMode: 'list',
+                }
+              : null
+          }
         />
       </div>
+
+      <PosCustomerCardModal
+        open={customerCardOpen}
+        onClose={() => setCustomerCardOpen(false)}
+        initialCustomerId={customerId}
+        initialCustomerName={customerName}
+        onSelect={({ id, name }) => onSetCustomer?.(id, name)}
+      />
     </CashierRegisterShell>
   );
 }

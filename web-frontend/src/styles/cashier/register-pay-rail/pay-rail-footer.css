@@ -13,24 +13,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   min-height: clamp(44px, 11cqi, 56px);
-  padding: clamp(8px, 2.2cqi, 12px) clamp(12px, 3cqi, 16px);
+  padding: clamp(8px, 2.2cqi, 12px) clamp(10px, 2.4cqi, 14px);
   border: none;
   border-radius: 14px;
-  background: var(--pos-green, #006847);
-  color: #fff;
-  font-size: clamp(0.875rem, 3.6cqi, 1rem);
+  background: var(--pos-green-gradient, var(--pos-green, #006847));
+  color: var(--pos-on-green, #fff);
+  font-size: clamp(0.8125rem, 3.2cqi, 0.9375rem);
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgb(0 104 71 / 0.28);
-  transition: background 0.12s, box-shadow 0.12s, transform 0.08s;
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.28);
+  transition: background 0.12s, box-shadow 0.12s, transform 0.08s, filter 0.12s;
 }
 
 .pos-register-pay-footer__sale:hover:not(:disabled) {
-  background: var(--pos-green-hover, #005538);
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover, #005538));
+  filter: brightness(1.03);
 }
 
 .pos-register-pay-footer__sale:active:not(:disabled) {
@@ -41,6 +42,7 @@
   opacity: 0.45;
   cursor: not-allowed;
   box-shadow: none;
+  filter: none;
 }
 
 .pos-register-pay-footer__sale svg {
@@ -52,18 +54,18 @@
 }
 
 .cashier-app .pos-register-pay-footer .pos-pay-print-toggle--footer {
-  flex: 0 0 clamp(7rem, 28%, 9rem);
+  flex: 0 0 clamp(5.5rem, 22%, 7.25rem);
   width: auto;
-  max-width: 9rem;
-  min-width: 7rem;
+  max-width: 7.25rem;
+  min-width: 5.25rem;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-footer__sale {
-  background: var(--pos-green, #3dffa8);
-  color: var(--pos-on-green, #0a1218);
-  box-shadow: 0 2px 8px rgb(61 255 168 / 0.2);
+  background: var(--pos-green-gradient, var(--pos-green));
+  color: var(--pos-on-green, #f0fdf9);
+  box-shadow: 0 2px 10px rgb(10 60 50 / 0.35);
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-footer__sale:hover:not(:disabled) {
-  background: var(--pos-green-hover, #2ee896);
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
 }

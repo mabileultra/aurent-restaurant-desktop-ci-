@@ -38,7 +38,7 @@
 
 .pos-order-panel__badge {
   padding: 4px 10px;
-  border-radius: 999px;
+  border-radius: var(--pos-control-radius, 10px);
   background: #ede9fe;
   border: 1px solid #ddd6fe;
   font-size: 0.6875rem;

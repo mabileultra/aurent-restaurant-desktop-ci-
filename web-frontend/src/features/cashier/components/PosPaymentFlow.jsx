@@ -16,9 +16,17 @@ export default function PosPaymentFlow({
   onConfirm,
   isPending,
   openOptions = null,
+  cartCustomer = null,
   className = '',
 }) {
-  const p = usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOptions });
+  const p = usePosPaymentFlow({
+    onClose,
+    total,
+    onConfirm,
+    isPending,
+    openOptions,
+    cartCustomer,
+  });
 
   const printToggle = p.showPrintToggle ? (
     <PrintReceiptToggle

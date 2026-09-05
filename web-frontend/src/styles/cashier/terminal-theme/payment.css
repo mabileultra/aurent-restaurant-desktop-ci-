@@ -38,7 +38,7 @@
 
 .cashier-app.cashier-app--terminal .pos-pay-panel .pos-pay-cash__display--ok {
   border-color: var(--pos-green);
-  box-shadow: 0 0 16px rgb(61 255 168 / 0.15);
+  box-shadow: 0 0 16px rgb(46 196 182 / 0.15);
 }
 
 .cashier-app.cashier-app--terminal .pos-pay-method-card--row,
@@ -57,7 +57,7 @@
 .cashier-app.cashier-app--terminal .pos-pay-method-card--row:hover,
 .cashier-app.cashier-app--terminal .pos-pay-method-card--register:hover,
 .cashier-app.cashier-app--terminal .pos-pay-method-card--tile:hover {
-  background: rgb(61 255 168 / 0.08);
+  background: rgb(46 196 182 / 0.08);
   border-color: var(--pos-green);
 }
 

@@ -46,7 +46,7 @@ export default function CashierSalesFilters({
       </div>
       <form className="cashier-sales-filters-card__body" onSubmit={(e) => e.preventDefault()}>
         <div className={`cashier-sales-filters${filtersClass}`}>
-          <div className="cashier-sales-filters__field">
+          <div className="cashier-sales-filters__field cashier-sales-filters__field--receipt">
             <label className="cashier-sales-filters__label" htmlFor="sales-filter-receipt">
               {t('pos.receipt')}
             </label>

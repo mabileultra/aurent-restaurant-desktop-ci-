@@ -12,7 +12,14 @@ import {
 } from '../components/payment/posPaymentConstants';
 import { usePosCreditCustomerPicker } from './usePosCreditCustomerPicker';
 
-export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOptions = null }) {
+export function usePosPaymentFlow({
+  onClose,
+  total,
+  onConfirm,
+  isPending,
+  openOptions = null,
+  cartCustomer = null,
+}) {
   const { t } = useTranslation();
   const initialState = buildPaymentFlowState(openOptions);
 
@@ -53,6 +60,17 @@ export function usePosPaymentFlow({ onClose, total, onConfirm, isPending, openOp
     if (!openOptions?.step) return;
     reset(openOptions);
   }, [openOptions]);
+
+  useEffect(() => {
+    if (step !== 'creditCustomer' || !cartCustomer?.id) return;
+    if (creditCustomer.selectedId) return;
+    creditCustomer.selectCustomer({
+      id: cartCustomer.id,
+      name: cartCustomer.name || '',
+    });
+    // Prefill once when entering credit/advance customer step
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally omit creditCustomer object
+  }, [step, cartCustomer?.id, cartCustomer?.name, creditCustomer.selectedId, creditCustomer.selectCustomer]);
 
   const goToCash = () => {
     setPayMethod((prev) => (prev === 'advance' ? 'advance' : 'cash'));

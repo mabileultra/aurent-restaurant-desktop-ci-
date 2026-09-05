@@ -1,8 +1,8 @@
-/* Secondary cashier pages — shared terminal panel tokens */
+/* Secondary cashier pages — dark terminal panels (no orange cream) */
 .cashier-app.cashier-app--terminal {
-  --cashier-panel-surface: #fff7ed;
-  --cashier-panel-surface-2: #ffedd5;
-  --cashier-panel-border: #fdba74;
-  --cashier-panel-text: #431407;
-  --cashier-panel-muted: #9a3412;
+  --cashier-panel-surface: #151b26;
+  --cashier-panel-surface-2: #1c2433;
+  --cashier-panel-border: #2a3548;
+  --cashier-panel-text: #f1f5f9;
+  --cashier-panel-muted: #94a3b8;
 }

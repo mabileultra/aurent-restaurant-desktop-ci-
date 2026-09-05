@@ -35,6 +35,14 @@ export default function PosPage() {
               onHold: p.handleHoldCart,
               onClear: p.handleClearCart,
               hasParkedCart: p.hasParkedCart,
+              parkedCarts: p.parkedCarts,
+              onRestoreParked: p.handleRestoreParked,
+              onRemoveParked: p.handleRemoveParked,
+              onClearParked: p.handleClearParked,
+              checkNo: p.checkNo,
+              customerId: p.customerId,
+              customerName: p.customerName,
+              onSetCustomer: p.handleSetCustomer,
             }}
             checkout={{ checkoutMutation: p.checkoutMutation, handleConfirmPayment: p.handleConfirmPayment }}
             shiftIsOpen={p.shiftIsOpen}

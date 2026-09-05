@@ -29,6 +29,7 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
     onAddProduct,
     viewMode = 'grid',
     onViewModeChange,
+    hideQuickFilters = false,
   },
   searchInputRef
 ) {
@@ -75,14 +76,16 @@ const PosCatalogPanel = forwardRef(function PosCatalogPanel(
         </div>
       </header>
 
-      <PosCatalogQuickFilters
-        t={panel.t}
-        categories={categories}
-        categoriesLoading={categoriesLoading}
-        selectedCategoryId={selectedCategoryId}
-        searchActive={searchActive}
-        onSelect={panel.selectQuickFilter}
-      />
+      {!hideQuickFilters ? (
+        <PosCatalogQuickFilters
+          t={panel.t}
+          categories={categories}
+          categoriesLoading={categoriesLoading}
+          selectedCategoryId={selectedCategoryId}
+          searchActive={searchActive}
+          onSelect={panel.selectQuickFilter}
+        />
+      ) : null}
 
       {panel.showProducts && !searchActive ? (
         <div className="pos-catalog-toolbar">
