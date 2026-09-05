@@ -23,37 +23,41 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Клавиатура: фиксированные ряды, без схлопывания в flex-колонке */
+/* Клавиатура: занимает оставшееся место, ПРОДАЖА всегда внизу колонки */
 .cashier-app .pos-register-pay-rail__keypad-wrap {
-  flex: 0 0 auto;
-  flex-shrink: 0;
-  min-height: calc(
-    (var(--pos-keypad-key-h, 52px) * 4) + (var(--pos-keypad-gap, 6px) * 3)
-  );
-  overflow: visible;
+  flex: 1 1 auto;
+  flex-shrink: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
   min-height: 0;
   max-height: none;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
-  flex: 0 0 auto;
+  flex: 1 1 auto;
+  min-height: 0;
   width: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(4, var(--pos-keypad-key-h, 52px));
+  grid-template-rows: repeat(4, minmax(0, 1fr));
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
   width: 100%;
-  height: var(--pos-keypad-key-h, 52px);
-  min-height: var(--pos-keypad-key-h, 52px);
-  max-height: var(--pos-keypad-key-h, 52px);
+  height: auto;
+  min-height: 0;
+  max-height: none;
   aspect-ratio: auto;
   font-size: var(--pos-keypad-digit-size, 1.25rem);
+}
+
+.cashier-app .pos-register-pay-rail .pos-register-pay-footer {
+  flex-shrink: 0;
+  margin-top: auto;
 }
 
 @media (min-width: 1024px) and (max-width: 1366px) and (max-height: 820px) {

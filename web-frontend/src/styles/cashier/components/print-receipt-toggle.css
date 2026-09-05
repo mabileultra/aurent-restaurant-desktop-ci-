@@ -74,10 +74,10 @@
 
 /* Компактный вариант рядом с кнопкой продажи — раскладка: print-receipt-toggle-footer-compact.css */
 .cashier-app .pos-pay-print-toggle--footer {
-  flex: 0 0 clamp(7rem, 28%, 9rem);
+  flex: 0 1 auto;
   width: auto;
   max-width: 9rem;
-  min-width: 7rem;
+  min-width: 4.75rem;
   min-height: clamp(44px, 11cqi, 56px);
   box-sizing: border-box;
 }

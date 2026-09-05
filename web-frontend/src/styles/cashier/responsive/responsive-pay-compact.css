@@ -94,8 +94,8 @@
   max-height: 56px;
   padding: 0 8px;
   border-radius: 10px;
-  flex: 0 0 7.25rem;
-  min-width: 7.25rem;
+  flex: 0 1 auto;
+  min-width: 4.75rem;
   max-width: 8rem;
 }
 
