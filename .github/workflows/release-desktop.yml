@@ -55,6 +55,7 @@ jobs:
             desktop-electron/dist/*.blockmap
             desktop-electron/dist/latest.yml
           if-no-files-found: error
+          retention-days: 3
 
   build-mac:
     runs-on: macos-latest
@@ -85,6 +86,7 @@ jobs:
             desktop-electron/dist/*.blockmap
             desktop-electron/dist/latest-mac.yml
           if-no-files-found: error
+          retention-days: 3
 
   publish:
     needs: [build-win, build-mac]
@@ -110,12 +112,6 @@ jobs:
 
       - name: Publish to downloads/desktop
         run: bash deploy/publish-desktop.sh
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: desktop-release-bundle
-          path: downloads/desktop/
-          retention-days: 30
 
       - name: Setup SSH
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
