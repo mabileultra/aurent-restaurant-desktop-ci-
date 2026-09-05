@@ -1,11 +1,10 @@
-import { isDesktopCashier } from '../../../../utils/authLogin';
 import { useCashierUiScale } from '../../../../features/cashier/hooks/useCashierUiScale';
 import CashierZoomControls from '../../../../features/cashier/components/CashierZoomControls';
 import { useOfflineStatus } from '../../../../features/cashier/hooks/useOfflineStatus';
 
 /**
  * Right side of bottom dock: zoom + cloud online/offline pill.
- * On desktop (Electron) toggle works whenever cashier has offline access — same as before.
+ * Toggle only when desktop exposes offline SQLite bridge.
  */
 export default function CashierBottomNavAside({ t }) {
   const zoom = useCashierUiScale();
@@ -15,8 +14,7 @@ export default function CashierBottomNavAside({ t }) {
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
 
-  const desktop = isDesktopCashier();
-  const canToggle = Boolean(status.offlineAllowed && desktop);
+  const canToggle = Boolean(status.offlineAllowed && status.visible);
 
   return (
     <div className="cashier-bottom-nav__aside">

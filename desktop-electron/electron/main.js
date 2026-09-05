@@ -130,6 +130,31 @@ app.whenReady().then(async () => {
     checkForUpdates: checkForUpdatesNow,
   });
 
+  const { registerOfflineIpc } = require('./offline/ipc.cjs');
+  registerOfflineIpc(
+    () => refreshDesktopConfig(),
+    async (cfg, { timeoutMs = 2000 } = {}) => {
+      const url = cfg?.apiHealthUrl || (cfg?.backendOrigin ? `${cfg.backendOrigin}/api/v1/health` : '');
+      if (!url) return false;
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const res = await fetch(url, { method: 'GET', signal: controller.signal });
+        clearTimeout(timer);
+        return Boolean(res?.ok);
+      } catch {
+        return false;
+      }
+    },
+  );
+
+  try {
+    const localDb = require('./offline/index.cjs');
+    await localDb.getDb();
+  } catch (err) {
+    console.error('[offline] db prewarm failed:', err?.message || err);
+  }
+
   createWindow(getStartupLoginUrl());
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
 

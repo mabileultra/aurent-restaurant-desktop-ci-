@@ -1,12 +1,13 @@
 /** Desktop offline bridge (Electron IPC). */
 
 const OFFLINE_IPC_TIMEOUT_MS = 6_000;
+const OFFLINE_BOOTSTRAP_IPC_TIMEOUT_MS = 60_000;
 
-function withOfflineTimeout(promise) {
+function withOfflineTimeout(promise, timeoutMs = OFFLINE_IPC_TIMEOUT_MS) {
   return Promise.race([
     promise,
     new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('offline_ipc_timeout')), OFFLINE_IPC_TIMEOUT_MS);
+      setTimeout(() => reject(new Error('offline_ipc_timeout')), timeoutMs);
     }),
   ]);
 }
@@ -28,7 +29,10 @@ export async function offlineGetStatus() {
 
 export async function offlineImportBootstrap(payload) {
   if (!isDesktopOfflineBridge()) return null;
-  return withOfflineTimeout(window.desktopCashier.offlineImportBootstrap(payload));
+  return withOfflineTimeout(
+    window.desktopCashier.offlineImportBootstrap(payload),
+    OFFLINE_BOOTSTRAP_IPC_TIMEOUT_MS,
+  );
 }
 
 export async function offlineListCategories() {

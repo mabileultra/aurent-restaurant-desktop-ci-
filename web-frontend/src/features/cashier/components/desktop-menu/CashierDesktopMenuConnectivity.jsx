@@ -14,7 +14,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
 
   if (!desktop) return null;
 
-  const canToggle = Boolean(status.offlineAllowed);
+  const canToggle = Boolean(status.offlineAllowed && status.visible);
   const isOffline = status.showOffline || status.tone === 'offline' || status.forceOfflineMode;
   const modeLabel = isOffline
     ? t('offline.bottomCloudOffline')

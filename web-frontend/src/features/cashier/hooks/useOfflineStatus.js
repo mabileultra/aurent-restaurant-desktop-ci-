@@ -71,47 +71,55 @@ export function useOfflineStatus() {
       return;
     }
 
+    if (!isDesktopOfflineBridge()) {
+      toast.error(t('offline.desktopBridgeRequired'), { id: toastId });
+      return;
+    }
+
+    if (!storeId) {
+      toast.error(t('offline.noCatalog'), { id: toastId });
+      return;
+    }
+
     let ready = Boolean(canSellOffline || posRoute.hasCatalog);
 
-    // Как раньше: без каталога не включаем офлайн. Если есть desktop offline bridge —
-    // один раз тянем каталог онлайн, затем включаем (без ложного «нужен десктоп»).
-    if (!ready && storeId && isDesktopOfflineBridge()) {
-      const st0 = useConnectivityStore.getState();
-      const canFetchCatalog =
-        st0.apiOnline
-        && !st0.offlineMode
-        && (typeof navigator === 'undefined' || navigator.onLine !== false);
+    if (!ready) {
+      const browserOnline =
+        typeof navigator === 'undefined' || navigator.onLine !== false;
 
-      if (canFetchCatalog) {
-        useConnectivityStore.getState().setSyncingCatalog(true);
-        toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
-        try {
-          const result = await refreshCatalogBootstrap(storeId, { force: true });
-          if (result?.skipped && result?.reason === 'error') {
-            throw new Error(t('offline.updateCatalogFailed'));
-          }
-          await refreshConnectivityStatus();
-          const st = useConnectivityStore.getState();
-          ready =
-            Boolean(st.canSellOffline)
-            || Boolean(st.bootstrapReady)
-            || Number(st.productCount) > 0;
-          if (
-            ready
-            && st.storeId != null
-            && storeId != null
-            && Number(st.storeId) !== Number(storeId)
-          ) {
-            ready = false;
-          }
-        } catch (err) {
-          const message =
-            err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
-          toast.error(message, { id: toastId });
-          return;
-        } finally {
-          useConnectivityStore.getState().setSyncingCatalog(false);
+      if (!browserOnline) {
+        toast.error(t('offline.noCatalog'), { id: toastId });
+        return;
+      }
+
+      useConnectivityStore.getState().setSyncingCatalog(true);
+      toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
+      try {
+        const result = await refreshCatalogBootstrap(storeId, { force: true });
+        if (result?.skipped && result?.reason === 'error') {
+          throw new Error(t('offline.updateCatalogFailed'));
         }
+        await refreshConnectivityStatus();
+        const st = useConnectivityStore.getState();
+        ready =
+          Boolean(st.canSellOffline)
+          || Boolean(st.bootstrapReady)
+          || Number(st.productCount) > 0;
+        if (
+          ready
+          && st.storeId != null
+          && storeId != null
+          && Number(st.storeId) !== Number(storeId)
+        ) {
+          ready = false;
+        }
+      } catch (err) {
+        const message =
+          err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
+        toast.error(message, { id: toastId });
+        return;
+      } finally {
+        useConnectivityStore.getState().setSyncingCatalog(false);
       }
     }
 

@@ -24,25 +24,41 @@
       "electron/**/*",
       "config/**/*",
       "build/**/*",
-      "package.json"
+      "package.json",
+      "node_modules/sql.js/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/sql.js/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "node_modules/sql.js/dist/sql-wasm.wasm",
+        "to": "sql.js/sql-wasm.wasm"
+      }
     ],
     "mac": {
       "icon": "build/icon.png",
       "target": [
         {
           "target": "dmg",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
         },
         {
           "target": "zip",
-          "arch": ["universal"]
+          "arch": [
+            "universal"
+          ]
         }
       ],
       "category": "public.app-category.business"
     },
     "win": {
       "icon": "build/icon.ico",
-      "target": ["nsis"]
+      "target": [
+        "nsis"
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -58,7 +74,8 @@
     "artifactName": "Aurent-Cashier-${version}-${os}-${arch}.${ext}"
   },
   "dependencies": {
-    "electron-updater": "^6.3.9"
+    "electron-updater": "^6.3.9",
+    "sql.js": "^1.14.2"
   },
   "devDependencies": {
     "electron": "^33.2.0",

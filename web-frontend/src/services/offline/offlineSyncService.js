@@ -35,7 +35,10 @@ export async function pullCatalogBootstrap(storeId) {
   const data = res.data;
   markApiReachable();
   if (isDesktopOfflineBridge()) {
-    await offlineImportBootstrap(data);
+    const imported = await offlineImportBootstrap(data);
+    if (imported && imported.ok === false) {
+      throw new Error(imported.error || 'offline_db_unavailable');
+    }
   }
   return data;
 }
