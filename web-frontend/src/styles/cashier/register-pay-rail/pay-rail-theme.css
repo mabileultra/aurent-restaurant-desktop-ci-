@@ -1,0 +1,128 @@
+/*
+ * Pay rail theme tokens — layout shared; light/dark only swap colors.
+ * Defaults = light. Terminal overrides variables only.
+ */
+
+.pos-register-pay-rail {
+  --pay-rail-bg: #ffffff;
+  --pay-cash-bg: #ffffff;
+  --pay-cash-border: var(--pos-border, #d1d9e6);
+  --pay-cash-shadow: 0 1px 4px rgb(15 23 42 / 0.06);
+
+  --pay-label: var(--pos-muted, #6b7280);
+  --pay-label-icon: var(--pos-green, #006847);
+  --pay-due-value: #0f172a;
+
+  --pay-discount-bg: #e8f5ef;
+  --pay-discount-fg: #006847;
+  --pay-currency-bg: #e8f5ef;
+  --pay-currency-fg: #006847;
+  --pay-currency-border: rgb(0 104 71 / 0.28);
+
+  --pay-received-bg: #eff6ff;
+  --pay-received-border: #93c5fd;
+  --pay-received-value: #1d4ed8;
+  --pay-received-icon: #2563eb;
+
+  --pay-change-bg: #f0fdf4;
+  --pay-change-border: #86efac;
+  --pay-change-value: #166534;
+  --pay-change-icon: #16a34a;
+  --pay-change-ready-border: #22c55e;
+
+  --pay-block-bg: #eef2f7;
+  --pay-block-border: #dbe3ee;
+
+  --pay-tile-fg: #64748b;
+  --pay-tile-hover-bg: rgb(255 255 255 / 0.65);
+  --pay-tile-hover-fg: #334155;
+  --pay-tile-active-bg: #ffffff;
+  --pay-tile-active-border: #e2e8f0;
+  --pay-tile-active-fg: #0f172a;
+  --pay-tile-active-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
+  --pay-tile-cashless: #059669;
+  --pay-tile-credit: #7c3aed;
+  --pay-tile-advance: #ea580c;
+
+  --pay-provider-bg: #ffffff;
+  --pay-provider-border: #c5ccd6;
+  --pay-provider-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
+  --pay-provider-payme-bg: #e6fffb;
+  --pay-provider-payme-border: #14b8a6;
+  --pay-provider-click-bg: #eff6ff;
+  --pay-provider-click-border: #3b82f6;
+  --pay-provider-uzcard-bg: #eff6ff;
+  --pay-provider-uzcard-border: #2563eb;
+  --pay-provider-humo-bg: #fff7ed;
+  --pay-provider-humo-border: #f59e0b;
+  --pay-provider-logo-filter: none;
+
+  --pay-tool-discount-bg: #f5f3ff;
+  --pay-tool-discount-border: #c4b5fd;
+  --pay-tool-discount-fg: #6d28d9;
+  --pay-tool-return-bg: #fef2f2;
+  --pay-tool-return-border: #fca5a5;
+  --pay-tool-return-fg: #b91c1c;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail {
+  --pay-rail-bg: var(--pos-surface-elevated, #1c2433);
+  --pay-cash-bg: var(--pos-surface, #151b26);
+  --pay-cash-border: var(--pos-border, #2a3548);
+  --pay-cash-shadow: 0 2px 12px rgb(0 0 0 / 0.28);
+
+  --pay-label: var(--pos-muted, #94a3b8);
+  --pay-label-icon: var(--pos-green, #2ec4b6);
+  --pay-due-value: #f8fafc;
+
+  --pay-discount-bg: rgb(46 196 182 / 0.16);
+  --pay-discount-fg: #2ec4b6;
+  --pay-currency-bg: rgb(46 196 182 / 0.12);
+  --pay-currency-fg: #2ec4b6;
+  --pay-currency-border: rgb(46 196 182 / 0.4);
+
+  --pay-received-bg: rgb(14 165 233 / 0.12);
+  --pay-received-border: rgb(56 189 248 / 0.45);
+  --pay-received-value: #38bdf8;
+  --pay-received-icon: #38bdf8;
+
+  --pay-change-bg: rgb(46 196 182 / 0.12);
+  --pay-change-border: rgb(46 196 182 / 0.45);
+  --pay-change-value: #2ec4b6;
+  --pay-change-icon: #2ec4b6;
+  --pay-change-ready-border: rgb(46 196 182 / 0.7);
+
+  --pay-block-bg: #0f141c;
+  --pay-block-border: var(--pos-border, #2a3548);
+
+  --pay-tile-fg: var(--pos-muted, #94a3b8);
+  --pay-tile-hover-bg: rgb(28 36 51 / 0.7);
+  --pay-tile-hover-fg: var(--pos-text, #f1f5f9);
+  --pay-tile-active-bg: var(--pos-surface-elevated, #1c2433);
+  --pay-tile-active-border: rgb(148 163 184 / 0.35);
+  --pay-tile-active-fg: #f8fafc;
+  --pay-tile-active-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+  --pay-tile-cashless: #2ec4b6;
+  --pay-tile-credit: #c4b5fd;
+  --pay-tile-advance: #fdba74;
+
+  --pay-provider-bg: var(--pos-surface, #151b26);
+  --pay-provider-border: var(--pos-border, #2a3548);
+  --pay-provider-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
+  --pay-provider-payme-bg: rgb(20 184 166 / 0.14);
+  --pay-provider-payme-border: #14b8a6;
+  --pay-provider-click-bg: rgb(59 130 246 / 0.12);
+  --pay-provider-click-border: #3b82f6;
+  --pay-provider-uzcard-bg: rgb(37 99 235 / 0.12);
+  --pay-provider-uzcard-border: #60a5fa;
+  --pay-provider-humo-bg: rgb(245 158 11 / 0.14);
+  --pay-provider-humo-border: #f59e0b;
+  --pay-provider-logo-filter: none;
+
+  --pay-tool-discount-bg: rgb(167 139 250 / 0.14);
+  --pay-tool-discount-border: rgb(167 139 250 / 0.4);
+  --pay-tool-discount-fg: #c4b5fd;
+  --pay-tool-return-bg: rgb(248 113 113 / 0.12);
+  --pay-tool-return-border: rgb(248 113 113 / 0.45);
+  --pay-tool-return-fg: var(--pos-danger, #f87171);
+}

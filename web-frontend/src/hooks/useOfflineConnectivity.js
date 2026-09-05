@@ -50,9 +50,11 @@ export function useOfflineConnectivity() {
         if (!forceCatalog) {
           try {
             const status = await offlineGetStatus();
-            forceCatalog = isCatalogStoreMismatch(status.storeId, storeId);
+            forceCatalog =
+              isCatalogStoreMismatch(status.storeId, storeId)
+              || !(status.bootstrapReady || status.canSellOffline || Number(status.productCount) > 0);
           } catch {
-            forceCatalog = false;
+            forceCatalog = true;
           }
         }
         await runCatalogSyncIfNeeded(storeId, { force: forceCatalog });

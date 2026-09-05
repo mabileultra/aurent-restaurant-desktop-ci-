@@ -1,4 +1,16 @@
-/* Pay rail — method tiles */
+/* Pay rail — method tiles (shared layout; colors via --pay-*) */
+
+.pos-register-pay-rail__pay-block {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--pay-block-border);
+  background: var(--pay-block-bg);
+}
+
 .pos-register-pay-methods {
   flex-shrink: 0;
 }
@@ -6,7 +18,10 @@
 .pos-register-pay-methods__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(5px, 1.8cqi, 8px);
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: transparent;
 }
 
 .pos-register-pay-methods__tile {
@@ -15,27 +30,21 @@
   align-items: center;
   justify-content: center;
   gap: clamp(3px, 1.2cqi, 5px);
-  min-height: clamp(52px, 16cqi, 68px);
+  min-height: clamp(48px, 14cqi, 60px);
   height: auto;
   padding: clamp(6px, 2cqi, 8px) clamp(4px, 1.5cqi, 8px);
-  border: 1.5px solid #c5ccd6;
-  border-radius: 14px;
-  background: #fff;
-  color: #374151;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--pay-tile-fg);
   cursor: pointer;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 0.06);
-  transition: background 0.12s, border-color 0.12s, transform 0.1s, box-shadow 0.12s;
+  box-shadow: none;
+  transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
 }
 
-.pos-register-pay-methods__tile:hover:not(:disabled) {
-  transform: translateY(-1px);
-  border-color: #9ca3af;
-  background: #f9fafb;
-  box-shadow: 0 2px 6px rgb(15 23 42 / 0.1);
-}
-
-.pos-register-pay-methods__tile:active:not(:disabled) {
-  transform: translateY(0);
+.pos-register-pay-methods__tile:hover:not(:disabled):not(.is-active) {
+  background: var(--pay-tile-hover-bg);
+  color: var(--pay-tile-hover-fg);
 }
 
 .pos-register-pay-methods__tile:disabled {
@@ -43,31 +52,35 @@
   cursor: not-allowed;
 }
 
+.pos-register-pay-methods__tile.is-active {
+  background: var(--pay-tile-active-bg);
+  border-color: var(--pay-tile-active-border);
+  color: var(--pay-tile-active-fg);
+  box-shadow: var(--pay-tile-active-shadow);
+}
+
 .pos-register-pay-methods__tile-icon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: clamp(28px, 8.5cqi, 34px);
-  height: clamp(28px, 8.5cqi, 34px);
-  border-radius: 10px;
-  background: #eef2f7;
-  color: #1e3a5f;
+  width: clamp(26px, 8cqi, 32px);
+  height: clamp(26px, 8cqi, 32px);
+  border-radius: 9px;
+  background: transparent;
+  color: inherit;
 }
 
 .pos-register-pay-methods__tile--cashless .pos-register-pay-methods__tile-icon {
-  background: linear-gradient(135deg, #dbeafe 0%, #fce7f3 100%);
-  color: #2563eb;
+  color: var(--pay-tile-cashless);
 }
 
 .pos-register-pay-methods__tile--credit .pos-register-pay-methods__tile-icon {
-  background: #ede9fe;
-  color: #7c3aed;
+  color: var(--pay-tile-credit);
 }
 
 .pos-register-pay-methods__tile--advance .pos-register-pay-methods__tile-icon {
-  background: #ffedd5;
-  color: #ea580c;
+  color: var(--pay-tile-advance);
 }
 
 .pos-register-pay-methods__tile-label {
@@ -79,20 +92,4 @@
   text-align: center;
   white-space: nowrap;
   text-overflow: ellipsis;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-methods__tile {
-  background: var(--pos-surface, #151b26);
-  border-color: var(--pos-border, #2a3548);
-  color: var(--pos-text, #f1f5f9);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-methods__tile:hover:not(:disabled) {
-  background: var(--pos-surface-elevated, #1c2433);
-  border-color: rgb(148 163 184 / 0.45);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-methods__tile-icon {
-  background: rgb(46 196 182 / 0.12);
-  color: var(--pos-green, #2ec4b6);
 }

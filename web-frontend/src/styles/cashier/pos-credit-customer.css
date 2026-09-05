@@ -106,16 +106,17 @@
   gap: 6px;
   height: 38px;
   border: none;
-  border-radius: 8px;
-  background: var(--pos-green);
+  border-radius: var(--pos-control-radius, 8px);
+  background: var(--pos-green-gradient, var(--pos-green));
   color: var(--pos-on-green);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  box-shadow: 0 2px 8px rgb(0 80 55 / 0.18);
 }
 
 .cashier-app .pos-pay-credit-customer__create-btn:hover:not(:disabled) {
-  background: var(--pos-green-hover);
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
 }
 
 .cashier-app .pos-pay-credit-customer__create-btn:disabled {

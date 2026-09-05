@@ -1,5 +1,7 @@
+import { ArrowDownCircle, CheckCircle2, CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../../utils/formatMoney';
+import { useCartStore } from '../../../../store/cartStore';
 import { PosPayCashChangeValue, PosPayCashReceivedValue } from '../payment/PosPayCashAmountFields';
 
 export default function PosRegisterPayCashPanel({
@@ -11,17 +13,35 @@ export default function PosRegisterPayCashPanel({
   hasPartialCash,
 }) {
   const { t } = useTranslation();
+  const linesTotal = useCartStore((s) => s.getLinesTotal());
+  const orderDiscount = useCartStore((s) => s.getOrderDiscount());
+  const discountPercent =
+    linesTotal > 0 ? Math.round((Number(orderDiscount) / linesTotal) * 100) : 0;
 
   return (
     <div className="pos-register-pay-cash pos-pay-cash-panel pos-pay-cash-panel--terminal">
       <div className="pos-pay-cash__due">
-        <span className="pos-pay-cash__due-label">{t('pos.amountToPay')}</span>
-        <strong className="pos-pay-cash__due-value">{fmt(toPay)}</strong>
+        <div className="pos-pay-cash__due-head">
+          <span className="pos-pay-cash__due-label">
+            <CreditCard size={14} strokeWidth={2.25} aria-hidden />
+            {t('pos.amountToPay')}
+          </span>
+          <span className="pos-pay-cash__discount-badge">
+            {t('pos.discountAppliedBadge', { percent: discountPercent })}
+          </span>
+        </div>
+        <div className="pos-pay-cash__due-row">
+          <strong className="pos-pay-cash__due-value">{fmt(toPay)}</strong>
+          <span className="pos-pay-cash__currency-badge">{t('pos.currencyCode')}</span>
+        </div>
       </div>
 
       <div className="pos-pay-cash__pair">
         <div className="pos-pay-cash__received-box" aria-live="polite">
-          <span className="pos-pay-cash__received-label">{t('pos.receivedLabel')}</span>
+          <span className="pos-pay-cash__received-label">
+            {t('pos.receivedLabel')}
+            <ArrowDownCircle size={16} strokeWidth={2.25} aria-hidden />
+          </span>
           <PosPayCashReceivedValue tendered={tendered} />
         </div>
         {hasPartialCash ? (
@@ -29,7 +49,10 @@ export default function PosRegisterPayCashPanel({
             className="pos-pay-cash__change-box pos-pay-cash__change-box--remainder"
             aria-live="polite"
           >
-            <span className="pos-pay-cash__change-label">{t('pos.cardRemainderRail')}</span>
+            <span className="pos-pay-cash__change-label">
+              {t('pos.cardRemainderRail')}
+              <ArrowDownCircle size={16} strokeWidth={2.25} aria-hidden />
+            </span>
             <strong className="pos-pay-cash__card-remainder-value">{fmt(cardRemainder)}</strong>
           </div>
         ) : (
@@ -37,19 +60,14 @@ export default function PosRegisterPayCashPanel({
             className={`pos-pay-cash__change-box${cashPaidEnough ? ' is-ready' : ''}`}
             aria-live="polite"
           >
-            <span className="pos-pay-cash__change-label">{t('pos.change')}</span>
+            <span className="pos-pay-cash__change-label">
+              {t('pos.change')}
+              <CheckCircle2 size={16} strokeWidth={2.25} aria-hidden />
+            </span>
             <PosPayCashChangeValue changeDue={changeDue} ready={cashPaidEnough} />
           </div>
         )}
       </div>
-
-      {hasPartialCash ? (
-        <p className="pos-pay-cash__hint pos-pay-cash__hint--card-remainder" role="status">
-          {t('pos.cardRemainderHint')}
-        </p>
-      ) : (
-        <p className="pos-pay-cash__hint">{t('pos.cashTenderHint')}</p>
-      )}
     </div>
   );
 }

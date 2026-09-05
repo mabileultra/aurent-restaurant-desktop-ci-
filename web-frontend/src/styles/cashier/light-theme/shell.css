@@ -50,7 +50,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-topbar__mobile-nav .nav-link.active {
-  background: var(--pos-green);
+  background: var(--pos-green-gradient, var(--pos-green));
   color: var(--pos-on-green);
 }
 
@@ -60,7 +60,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-lang-switch__btn.is-active {
-  background: var(--pos-green);
+  background: var(--pos-green-gradient, var(--pos-green));
   color: var(--pos-on-green);
 }
 

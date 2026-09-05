@@ -23,21 +23,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__due-value,
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__summary-row strong,
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner,
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
-  color: #0a3d30;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  color: #1d4ed8;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner {
-  color: #166534;
-}
-
 /* Клавиатура: фиксированные ряды, без схлопывания в flex-колонке */
 .cashier-app .pos-register-pay-rail__keypad-wrap {
   flex: 0 0 auto;

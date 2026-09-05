@@ -1,13 +1,17 @@
-/* Модал веса — светлая панель, серо-синяя палитра */
+/* Модал веса — soft gray + тёмно-зелёный акцент */
 
 .weight-entry-modal {
   --wem-ink: #1e3a5f;
   --wem-muted: #5a6f8c;
+  --wem-green: #006847;
+  --wem-green-soft: rgb(0 104 71 / 0.12);
+  --wem-green-gradient: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
+  --wem-green-gradient-hover: linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%);
   --wem-surface: #f4f6fa;
   --wem-surface-elevated: #fbfcfe;
   --wem-border: #d1d9e6;
   --wem-hover: #eef2f8;
-  --wem-active: #e4eaf3;
+  --wem-active: #e8f5ef;
 
   position: fixed;
   inset: 0;
@@ -22,7 +26,7 @@
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(15, 23, 42, 0.45);
   cursor: pointer;
 }
 
@@ -35,7 +39,7 @@
   color: var(--wem-ink);
   border: 1px solid var(--wem-border);
   border-radius: 16px;
-  box-shadow: 0 25px 60px rgb(30 58 95 / 0.2);
+  box-shadow: 0 24px 48px rgb(0 80 55 / 0.14);
   padding: 1.75rem 2rem 2rem;
 }
 
@@ -63,7 +67,7 @@
 }
 
 .weight-entry-modal__stock {
-  color: var(--wem-ink);
+  color: var(--wem-green);
 }
 
 .weight-entry-modal__tabs {
@@ -90,15 +94,15 @@
 }
 
 .weight-entry-modal__tab:hover {
-  border-color: var(--wem-ink);
-  color: var(--wem-ink);
-  background: var(--wem-hover);
+  border-color: rgb(0 104 71 / 0.35);
+  color: var(--wem-green);
+  background: var(--wem-green-soft);
 }
 
 .weight-entry-modal__tab.is-active {
-  border-color: var(--wem-ink);
-  background: var(--wem-active);
-  color: var(--wem-ink);
+  border-color: rgb(0 104 71 / 0.4);
+  background: var(--wem-green-soft);
+  color: var(--wem-green);
 }
 
 .weight-entry-modal__field {
@@ -129,8 +133,8 @@
 }
 
 .weight-entry-modal__input:focus {
-  border-color: var(--wem-ink);
-  box-shadow: 0 0 0 4px rgb(30 58 95 / 0.12);
+  border-color: var(--wem-green);
+  box-shadow: 0 0 0 4px var(--wem-green-soft);
   background: var(--wem-surface-elevated);
 }
 
@@ -146,7 +150,7 @@
   width: 100%;
   text-align: center;
   padding: 1.25rem 1rem;
-  background: linear-gradient(180deg, var(--wem-hover) 0%, var(--wem-active) 100%);
+  background: linear-gradient(180deg, #eef8f3 0%, var(--wem-active) 100%);
   border: 2px solid var(--wem-border);
   border-radius: 14px;
 }
@@ -156,7 +160,7 @@
   font-size: 3rem;
   font-weight: 800;
   line-height: 1.1;
-  color: var(--wem-ink);
+  color: var(--wem-green);
   font-variant-numeric: tabular-nums;
 }
 
@@ -180,7 +184,7 @@
 }
 
 .weight-entry-modal__scale-status.is-stable {
-  color: var(--wem-ink);
+  color: var(--wem-green);
 }
 
 .weight-entry-modal__scale-hint {
@@ -197,7 +201,7 @@
   font-size: 1.125rem;
   font-weight: 700;
   color: var(--wem-ink);
-  background: var(--wem-hover);
+  background: var(--wem-green-soft);
   border-radius: 10px;
   text-align: center;
 }
@@ -235,16 +239,17 @@
 
 .weight-entry-modal__btn--ghost:hover {
   background: var(--wem-hover);
-  border-color: var(--wem-ink);
+  border-color: rgb(0 104 71 / 0.28);
 }
 
 .weight-entry-modal__btn--primary {
-  background: var(--wem-ink);
+  background: var(--wem-green-gradient);
   color: #fff;
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
 }
 
 .weight-entry-modal__btn--primary:hover:not(:disabled) {
-  background: #152d4a;
+  background: var(--wem-green-gradient-hover);
 }
 
 .weight-entry-modal__btn--primary:disabled {
@@ -252,16 +257,18 @@
   color: var(--wem-muted);
   opacity: 1;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .weight-entry-modal__btn--scale {
   width: 100%;
-  background: var(--wem-ink);
+  background: var(--wem-green-gradient);
   color: #fff;
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.2);
 }
 
 .weight-entry-modal__btn--scale:hover:not(:disabled) {
-  background: #152d4a;
+  background: var(--wem-green-gradient-hover);
 }
 
 .weight-entry-modal__btn--scale:disabled {
@@ -269,6 +276,7 @@
   color: var(--wem-muted);
   opacity: 1;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .weight-entry-modal__btn--block {

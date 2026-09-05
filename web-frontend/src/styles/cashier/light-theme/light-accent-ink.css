@@ -31,8 +31,8 @@
 }
 
 .cashier-app.cashier-app--light .cashier-sales-pagination__btn.is-active {
-  background: var(--pos-green);
-  border-color: var(--pos-green);
+  background: var(--pos-green-gradient, var(--pos-green));
+  border-color: transparent;
   color: var(--pos-on-green);
 }
 

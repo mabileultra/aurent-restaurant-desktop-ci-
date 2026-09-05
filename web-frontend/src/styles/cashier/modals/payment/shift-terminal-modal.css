@@ -120,13 +120,13 @@ html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action:hover:
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action--primary {
-  border-color: rgb(46 196 182 / 0.45);
-  background: var(--pos-green);
-  color: #0a1218;
+  border-color: transparent;
+  background: var(--pos-green-gradient, var(--pos-green));
+  color: var(--pos-on-green, #0a1218);
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action--primary:hover:not(:disabled) {
-  background: var(--pos-green-hover);
+  background: var(--pos-green-gradient-hover, var(--pos-green-hover));
 }
 
 html.cashier-theme--dark .pos-pay-modal--shift-terminal .pos-shift-action--danger {

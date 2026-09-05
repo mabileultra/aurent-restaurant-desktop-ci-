@@ -1,4 +1,4 @@
-/* Pay rail — card provider buttons with brand logos */
+/* Pay rail — card providers (shared layout; colors via --pay-*) */
 .pos-register-card-providers {
   flex-shrink: 0;
   display: grid;
@@ -13,20 +13,19 @@
   min-height: clamp(40px, 12cqi, 52px);
   height: auto;
   padding: clamp(6px, 2cqi, 10px) clamp(6px, 2cqi, 12px);
-  border: 1.5px solid #c5ccd6;
+  border: 1.5px solid var(--pay-provider-border);
   border-radius: 16px;
-  background: #fff;
+  background: var(--pay-provider-bg);
   cursor: pointer;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 0.07);
+  box-shadow: var(--pay-provider-shadow);
   overflow: hidden;
-  transition: transform 0.1s, border-color 0.12s, background 0.12s, box-shadow 0.12s;
+  transition: transform 0.1s, border-color 0.12s, background 0.12s, box-shadow 0.12s, filter 0.12s;
 }
 
 .pos-register-card-providers__btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  border-color: #9ca3af;
-  background: #f9fafb;
-  box-shadow: 0 2px 6px rgb(15 23 42 / 0.1);
+  filter: brightness(0.98);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.1);
 }
 
 .pos-register-card-providers__btn:active:not(:disabled) {
@@ -51,6 +50,7 @@
   object-position: center;
   pointer-events: none;
   user-select: none;
+  filter: var(--pay-provider-logo-filter);
 }
 
 .pos-register-card-providers__btn--humo .pos-register-card-providers__logo {
@@ -58,67 +58,27 @@
 }
 
 .pos-register-card-providers__btn--payme {
-  background: #e6fffb;
-  border-color: #14b8a6;
+  background: var(--pay-provider-payme-bg);
+  border-color: var(--pay-provider-payme-border);
 }
 
 .pos-register-card-providers__btn--click {
-  background: #eff6ff;
-  border-color: #3b82f6;
+  background: var(--pay-provider-click-bg);
+  border-color: var(--pay-provider-click-border);
 }
 
 .pos-register-card-providers__btn--uzcard {
-  background: #eff6ff;
-  border-color: #2563eb;
+  background: var(--pay-provider-uzcard-bg);
+  border-color: var(--pay-provider-uzcard-border);
 }
 
 .pos-register-card-providers__btn--humo {
-  background: #fff7ed;
-  border-color: #f59e0b;
-}
-
-.pos-register-card-providers__btn--click:hover:not(:disabled) {
-  background: #dbeafe;
-}
-
-.pos-register-card-providers__btn--payme:hover:not(:disabled) {
-  background: #ccfbf1;
-}
-
-.pos-register-card-providers__btn--humo:hover:not(:disabled) {
-  background: #ffedd5;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn {
-  background: var(--pos-surface, #151b26);
-  border-color: var(--pos-border, #2a3548);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--click {
-  background: var(--pos-surface-elevated, #1c2433);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme {
-  background: #fff;
-  border-color: #c5ccd6;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn--payme:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers__btn:hover:not(:disabled) {
-  background: var(--pos-surface-elevated, #1c2433);
-  border-color: rgb(148 163 184 / 0.45);
+  background: var(--pay-provider-humo-bg);
+  border-color: var(--pay-provider-humo-border);
 }
 
 .pos-register-card-providers--remainder .pos-register-card-providers__btn:not(:disabled):not(.is-soon) {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 1px rgb(37 99 235 / 0.2), 0 2px 8px rgb(37 99 235 / 0.15);
-}
-
-.cashier-app.cashier-app--terminal .pos-register-card-providers--remainder .pos-register-card-providers__btn:not(:disabled):not(.is-soon) {
-  border-color: var(--pos-green, #2ec4b6);
-  box-shadow: 0 0 0 1px rgb(46 196 182 / 0.2), 0 2px 8px rgb(46 196 182 / 0.12);
+  border-color: var(--pay-provider-uzcard-border);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--pay-provider-uzcard-border) 25%, transparent),
+    0 2px 8px color-mix(in srgb, var(--pay-provider-uzcard-border) 18%, transparent);
 }

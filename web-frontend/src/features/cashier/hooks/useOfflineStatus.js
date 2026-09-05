@@ -61,14 +61,76 @@ export function useOfflineStatus() {
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
 
-  const handleToggleForceOffline = useCallback((enabled) => {
-    if (enabled && !canSellOffline && !posRoute.hasCatalog) {
-      toast.error(t('offline.noCatalog'));
+  const handleToggleForceOffline = useCallback(async (enabled) => {
+    const toastId = 'pos-force-offline';
+
+    if (!enabled) {
+      useConnectivityStore.getState().setForceOfflineMode(false);
+      invalidatePosData(qc, storeId);
+      toast.success(t('offline.forceOfflineOff'), { id: toastId });
       return;
     }
-    useConnectivityStore.getState().setForceOfflineMode(enabled);
+
+    let ready = canSellOffline || posRoute.hasCatalog;
+    if (!ready) {
+      if (!isDesktopOfflineBridge()) {
+        toast.error(t('offline.desktopBridgeRequired'), { id: toastId });
+        return;
+      }
+
+      const st0 = useConnectivityStore.getState();
+      const canFetchCatalog =
+        Boolean(storeId)
+        && st0.apiOnline
+        && !st0.offlineMode
+        && (typeof navigator === 'undefined' || navigator.onLine !== false);
+
+      if (!canFetchCatalog) {
+        toast.error(t('offline.noCatalog'), { id: toastId });
+        return;
+      }
+
+      useConnectivityStore.getState().setSyncingCatalog(true);
+      toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
+      try {
+        const result = await refreshCatalogBootstrap(storeId, { force: true });
+        if (result?.skipped && result?.reason === 'error') {
+          throw new Error(t('offline.updateCatalogFailed'));
+        }
+        if (result?.skipped && result?.reason === 'not-desktop') {
+          throw new Error(t('offline.noCatalog'));
+        }
+        await refreshConnectivityStatus();
+        const st = useConnectivityStore.getState();
+        ready =
+          Boolean(st.canSellOffline)
+          || Boolean(st.bootstrapReady)
+          || Number(st.productCount) > 0;
+        if (
+          ready
+          && st.storeId != null
+          && storeId != null
+          && Number(st.storeId) !== Number(storeId)
+        ) {
+          ready = false;
+        }
+        if (!ready) {
+          toast.error(t('offline.noCatalog'), { id: toastId });
+          return;
+        }
+      } catch (err) {
+        const message =
+          err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
+        toast.error(message, { id: toastId });
+        return;
+      } finally {
+        useConnectivityStore.getState().setSyncingCatalog(false);
+      }
+    }
+
+    useConnectivityStore.getState().setForceOfflineMode(true);
     invalidatePosData(qc, storeId);
-    toast.success(enabled ? t('offline.forceOfflineOn') : t('offline.forceOfflineOff'));
+    toast.success(t('offline.forceOfflineOn'), { id: toastId });
   }, [canSellOffline, posRoute.hasCatalog, qc, storeId, t]);
 
   const handleSyncSales = useCallback(async () => {

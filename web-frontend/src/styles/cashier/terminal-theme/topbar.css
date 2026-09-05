@@ -157,8 +157,8 @@
 
 .cashier-app.cashier-app--terminal .pos-topbar-nav__btn,
 .cashier-app.cashier-app--terminal .pos-topbar-views__btn {
-  background: var(--pos-surface-elevated);
-  border-color: var(--pos-border);
+  background: transparent;
+  border-color: transparent;
   color: var(--pos-muted);
 }
 
@@ -172,14 +172,15 @@
   color: var(--pos-text);
 }
 
-.cashier-app.cashier-app--terminal .pos-topbar-nav__btn:hover,
-.cashier-app.cashier-app--terminal .pos-topbar-views__btn:hover {
+.cashier-app.cashier-app--terminal .pos-topbar-nav__btn:hover:not(.is-active),
+.cashier-app.cashier-app--terminal .pos-topbar-views__btn:hover:not(.is-active) {
   background: var(--pos-green-soft);
   color: var(--pos-green);
 }
 
 .cashier-app.cashier-app--terminal .pos-topbar-views__btn.is-active {
-  background: var(--pos-green-soft);
-  color: var(--pos-green);
+  background: var(--pos-green-gradient, var(--pos-green));
+  color: var(--pos-on-green, #fff);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.28);
 }
 

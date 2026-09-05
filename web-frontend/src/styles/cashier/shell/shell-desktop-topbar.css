@@ -315,6 +315,14 @@
   transform: translateX(16px);
 }
 
+@keyframes cashier-desktop-menu-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cashier-desktop-menu__spin {
+  animation: cashier-desktop-menu-spin 0.8s linear infinite;
+}
+
 .cashier-topbar__pos-title {
   font-size: 1rem;
   color: var(--pos-text);

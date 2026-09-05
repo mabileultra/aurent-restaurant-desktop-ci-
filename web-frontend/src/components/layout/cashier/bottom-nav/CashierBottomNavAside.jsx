@@ -34,10 +34,10 @@ export default function CashierBottomNavAside({ t }) {
             ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
             : (status.message || label)
         }
-        disabled={!canToggle}
+        disabled={!canToggle || status.syncingCatalog}
         aria-pressed={Boolean(status.forceOfflineMode)}
         onClick={() => {
-          if (!canToggle) return;
+          if (!canToggle || status.syncingCatalog) return;
           status.handlers.toggleForceOffline(!status.forceOfflineMode);
         }}
       >

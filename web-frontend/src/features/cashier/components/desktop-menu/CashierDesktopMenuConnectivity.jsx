@@ -1,4 +1,4 @@
-import { Cloud, CloudOff } from 'lucide-react';
+import { Cloud, CloudOff, RefreshCw } from 'lucide-react';
 import { isDesktopCashier } from '../../../../utils/authLogin';
 import { useCashierUiScale } from '../../hooks/useCashierUiScale';
 import { useOfflineStatus } from '../../hooks/useOfflineStatus';
@@ -19,6 +19,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
   const modeLabel = isOffline
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
+  const needsCatalog = !status.canSellOffline && !status.forceOfflineMode;
 
   return (
     <div className="cashier-desktop-menu__connectivity">
@@ -38,7 +39,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
           status.forceOfflineMode ? 'is-forced' : '',
         ].filter(Boolean).join(' ')}
         role="menuitem"
-        disabled={!canToggle}
+        disabled={!canToggle || status.syncingCatalog}
         aria-pressed={Boolean(status.forceOfflineMode)}
         title={
           canToggle
@@ -46,7 +47,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
             : (status.message || modeLabel)
         }
         onClick={() => {
-          if (!canToggle) return;
+          if (!canToggle || status.syncingCatalog) return;
           status.handlers.toggleForceOffline(!status.forceOfflineMode);
         }}
       >
@@ -56,15 +57,36 @@ export default function CashierDesktopMenuConnectivity({ t }) {
         <span className="cashier-desktop-menu__item-text">
           <span>{modeLabel}</span>
           <span className="cashier-desktop-menu__item-meta">
-            {canToggle
-              ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
-              : (status.message || t('offline.onlineOk'))}
+            {status.syncingCatalog
+              ? t('offline.preparingCatalogForOffline')
+              : canToggle
+                ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
+                : (status.message || t('offline.onlineOk'))}
           </span>
         </span>
         <span className="cashier-desktop-menu__mode-switch" aria-hidden>
           <span className="cashier-desktop-menu__mode-knob" />
         </span>
       </button>
+      {status.actions.showRefreshCatalog || needsCatalog ? (
+        <button
+          type="button"
+          className="cashier-desktop-menu__item"
+          role="menuitem"
+          disabled={status.syncingCatalog || status.forceOfflineMode || status.networkOffline}
+          onClick={() => status.handlers.refreshCatalog()}
+        >
+          <RefreshCw
+            size={18}
+            strokeWidth={2}
+            className={status.syncingCatalog ? 'cashier-desktop-menu__spin' : undefined}
+            aria-hidden
+          />
+          <span>
+            {status.syncingCatalog ? t('offline.updatingCatalog') : t('offline.updateCatalog')}
+          </span>
+        </button>
+      ) : null}
     </div>
   );
 }
