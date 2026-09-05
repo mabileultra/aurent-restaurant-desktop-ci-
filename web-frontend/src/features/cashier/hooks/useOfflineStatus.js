@@ -64,6 +64,8 @@ export function useOfflineStatus() {
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
   const catalogBusy = Boolean(syncingCatalog || (syncing && !bootstrapReady && visible));
+  // Клик всегда: выключить офлайн можно без bridge; включить — handler проверит bridge.
+  const canToggle = Boolean(forceOfflineMode || offlineAllowed);
 
   const handleToggleForceOffline = useCallback(async (enabled) => {
     const toastId = 'pos-force-offline';
@@ -77,6 +79,13 @@ export function useOfflineStatus() {
 
     if (!isDesktopOfflineBridge()) {
       toast.error(t('offline.desktopBridgeRequired'), { id: toastId });
+      try {
+        if (typeof window.desktopCashier?.checkForUpdates === 'function') {
+          await window.desktopCashier.checkForUpdates();
+        }
+      } catch {
+        /* ignore */
+      }
       return;
     }
 
@@ -249,9 +258,11 @@ export function useOfflineStatus() {
     networkOffline,
     syncing,
     syncingCatalog,
+    canToggle,
+    hasOfflineBridge: visible,
     actions: {
       // Desktop: allow force-offline even before canSellOffline is true; handler toasts if no catalog.
-      showSwitchOffline: offlineAllowed && !forceOfflineMode && (canSellOffline || visible),
+      showSwitchOffline: offlineAllowed && !forceOfflineMode && (canSellOffline || visible || desktopShell),
       showSwitchOnline: offlineAllowed && forceOfflineMode,
       showSyncSales: showPending && apiOnline,
       showRefreshCatalog: apiOnline && !forceOfflineMode && !networkOffline,

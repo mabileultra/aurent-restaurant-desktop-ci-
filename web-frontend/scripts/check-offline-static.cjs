@@ -59,12 +59,13 @@ test('toggle: always tries refreshCatalogBootstrap when not ready', () => {
   assert.doesNotMatch(status, /st0\.apiOnline/);
 });
 
-test('UI: bottom toggle gated by status.visible (bridge)', () => {
-  assert.match(aside, /status\.offlineAllowed && status\.visible/);
+test('UI: bottom/menu use status.canToggle', () => {
+  assert.match(aside, /status\.canToggle/);
+  assert.match(menu, /status\.canToggle/);
 });
 
-test('UI: desktop menu toggle gated by status.visible', () => {
-  assert.match(menu, /status\.offlineAllowed && status\.visible/);
+test('toggle: canToggle allows forceOffline without bridge gate', () => {
+  assert.match(status, /canToggle = Boolean\(\s*forceOfflineMode\s*\|\|\s*offlineAllowed\s*\)/);
 });
 
 test('status: preparing only while catalogBusy (not forever)', () => {

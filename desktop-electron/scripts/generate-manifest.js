@@ -30,10 +30,46 @@ function sha256File(filePath) {
   return hash.digest('hex');
 }
 
-function pickNewest(distDir, pattern) {
+function parseSemver(name) {
+  const match = String(name).match(/(\d+)\.(\d+)\.(\d+)/);
+  if (!match) return null;
+  return {
+    major: Number(match[1]),
+    minor: Number(match[2]),
+    patch: Number(match[3]),
+    raw: match[0],
+  };
+}
+
+function semverScore(v) {
+  if (!v) return -1;
+  return v.major * 1_000_000 + v.minor * 1_000 + v.patch;
+}
+
+function readPackageVersion() {
+  const pkgPath = path.join(__dirname, '../package.json');
+  if (!fs.existsSync(pkgPath)) return null;
+  return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version || null;
+}
+
+/**
+ * Prefer: exact package version in name → highest semver in name → newest mtime.
+ * Avoids old Setup-*.exe winning after scp flattens mtimes.
+ */
+function pickBest(distDir, pattern, preferredVersion = null) {
   const matched = fs.readdirSync(distDir).filter((name) => pattern.test(name));
   if (matched.length === 0) return null;
+
   matched.sort((a, b) => {
+    const verA = parseSemver(a);
+    const verB = parseSemver(b);
+    if (preferredVersion) {
+      const prefA = a.includes(preferredVersion) ? 1 : 0;
+      const prefB = b.includes(preferredVersion) ? 1 : 0;
+      if (prefA !== prefB) return prefB - prefA;
+    }
+    const scoreDiff = semverScore(verB) - semverScore(verA);
+    if (scoreDiff !== 0) return scoreDiff;
     const statA = fs.statSync(path.join(distDir, a));
     const statB = fs.statSync(path.join(distDir, b));
     return statB.mtimeMs - statA.mtimeMs;
@@ -53,10 +89,8 @@ function buildEntry(distDir, fileName) {
 }
 
 function readVersion(distDir) {
-  const pkgPath = path.join(__dirname, '../package.json');
-  if (fs.existsSync(pkgPath)) {
-    return JSON.parse(fs.readFileSync(pkgPath, 'utf8')).version || '0.0.0';
-  }
+  const pkgVersion = readPackageVersion();
+  if (pkgVersion) return pkgVersion;
   const yml = fs.readdirSync(distDir).find((name) => name === 'latest.yml');
   if (yml) {
     const content = fs.readFileSync(path.join(distDir, yml), 'utf8');
@@ -73,15 +107,23 @@ function main() {
     process.exit(1);
   }
 
-  const winName = pickNewest(dist, /\.exe$/i);
+  const preferredVersion = readPackageVersion();
+  const winName = pickBest(dist, /\.exe$/i, preferredVersion);
   const macName =
-    pickNewest(dist, /mac-universal\.dmg$/i)
-    || pickNewest(dist, /mac-x64\.dmg$/i)
-    || pickNewest(dist, /\.dmg$/i);
-  const zipName = pickNewest(dist, /\.zip$/i);
+    pickBest(dist, /mac-universal\.dmg$/i, preferredVersion)
+    || pickBest(dist, /mac-x64\.dmg$/i, preferredVersion)
+    || pickBest(dist, /\.dmg$/i, preferredVersion);
+  const zipName = pickBest(dist, /\.zip$/i, preferredVersion);
+
+  const fileVersion =
+    parseSemver(winName || '')?.raw
+    || parseSemver(macName || '')?.raw
+    || parseSemver(zipName || '')?.raw
+    || preferredVersion
+    || '0.0.0';
 
   const manifest = {
-    version: readVersion(dist),
+    version: fileVersion,
     releasedAt: new Date().toISOString(),
   };
 
@@ -92,6 +134,7 @@ function main() {
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`manifest → ${out} (v${manifest.version})`);
+  console.log(`  win=${winName || '-'} mac=${macName || '-'} zip=${zipName || '-'}`);
 }
 
 main();

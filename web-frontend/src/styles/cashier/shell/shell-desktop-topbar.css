@@ -333,7 +333,8 @@
   transition: background 0.15s;
 }
 
-.cashier-desktop-menu__mode.is-online .cashier-desktop-menu__mode-switch {
+/* Без offline-bridge тумблер кликабелен, но не «вкл» зелёным — только с has-bridge. */
+.cashier-desktop-menu__mode.is-toggle.is-online.has-bridge .cashier-desktop-menu__mode-switch {
   background: color-mix(in srgb, var(--pos-green) 70%, #86efac);
 }
 
@@ -342,9 +343,8 @@
   background: #f59e0b;
 }
 
-/* Без offline-bridge тумблер не «вкл» — серый и без сдвига knoba. */
 .cashier-desktop-menu__mode:disabled .cashier-desktop-menu__mode-switch,
-.cashier-desktop-menu__mode:not(.is-toggle) .cashier-desktop-menu__mode-switch {
+.cashier-desktop-menu__mode.is-toggle:not(.has-bridge):not(.is-forced):not(.is-offline) .cashier-desktop-menu__mode-switch {
   background: #d1d5db;
 }
 
@@ -360,8 +360,8 @@
   transition: transform 0.15s;
 }
 
-/* Онлайн = тумблер справа (вкл), офлайн = слева. */
-.cashier-desktop-menu__mode.is-toggle.is-online .cashier-desktop-menu__mode-knob {
+/* Онлайн = тумблер справа только когда bridge готов. */
+.cashier-desktop-menu__mode.is-toggle.is-online.has-bridge .cashier-desktop-menu__mode-knob {
   transform: translateX(16px);
 }
 
@@ -371,7 +371,7 @@
 }
 
 .cashier-desktop-menu__mode:disabled .cashier-desktop-menu__mode-knob,
-.cashier-desktop-menu__mode:not(.is-toggle) .cashier-desktop-menu__mode-knob {
+.cashier-desktop-menu__mode.is-toggle:not(.has-bridge):not(.is-forced):not(.is-offline) .cashier-desktop-menu__mode-knob {
   transform: translateX(0);
 }
 

@@ -4,7 +4,6 @@ import { useOfflineStatus } from '../../../../features/cashier/hooks/useOfflineS
 
 /**
  * Right side of bottom dock: zoom + cloud online/offline pill.
- * Toggle only when desktop exposes offline SQLite bridge.
  */
 export default function CashierBottomNavAside({ t }) {
   const zoom = useCashierUiScale();
@@ -14,7 +13,8 @@ export default function CashierBottomNavAside({ t }) {
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
 
-  const canToggle = Boolean(status.offlineAllowed && status.visible);
+  const canToggle = Boolean(status.canToggle);
+  const bridgeReady = Boolean(status.hasOfflineBridge);
 
   return (
     <div className="cashier-bottom-nav__aside">
@@ -25,6 +25,7 @@ export default function CashierBottomNavAside({ t }) {
           'cashier-bottom-nav__status',
           `cashier-bottom-nav__status--${isOffline ? 'offline' : 'online'}`,
           canToggle ? 'is-toggle' : '',
+          bridgeReady ? 'has-bridge' : '',
           status.forceOfflineMode ? 'is-forced' : '',
         ].filter(Boolean).join(' ')}
         title={

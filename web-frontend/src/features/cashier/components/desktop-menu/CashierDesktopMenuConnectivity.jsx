@@ -14,7 +14,8 @@ export default function CashierDesktopMenuConnectivity({ t }) {
 
   if (!desktop) return null;
 
-  const canToggle = Boolean(status.offlineAllowed && status.visible);
+  const canToggle = Boolean(status.canToggle);
+  const bridgeReady = Boolean(status.hasOfflineBridge);
   const isOffline = status.showOffline || status.tone === 'offline' || status.forceOfflineMode;
   const modeLabel = isOffline
     ? t('offline.bottomCloudOffline')
@@ -24,7 +25,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
     ? t('offline.preparingCatalogForOffline')
     : (status.tone === 'pending' || status.tone === 'warn')
       ? status.message
-      : canToggle
+      : canToggle && bridgeReady
         ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
         : (status.message || t('offline.onlineOk'));
 
@@ -43,6 +44,7 @@ export default function CashierDesktopMenuConnectivity({ t }) {
           'cashier-desktop-menu__mode',
           isOffline ? 'is-offline' : 'is-online',
           canToggle ? 'is-toggle' : '',
+          bridgeReady ? 'has-bridge' : '',
           status.forceOfflineMode ? 'is-forced' : '',
         ].filter(Boolean).join(' ')}
         role="menuitem"

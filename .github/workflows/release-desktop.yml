@@ -18,6 +18,11 @@ on:
         required: false
         default: false
         type: boolean
+      manifest_only:
+        description: 'Only regenerate manifest.json on server (no rebuild)'
+        required: false
+        default: false
+        type: boolean
 
 concurrency:
   group: desktop-release-${{ github.ref }}
@@ -28,6 +33,7 @@ env:
 
 jobs:
   build-win:
+    if: ${{ inputs.manifest_only != true }}
     runs-on: windows-latest
     timeout-minutes: 30
     steps:
@@ -81,6 +87,7 @@ jobs:
         run: rm -f ~/.ssh/deploy_key
 
   build-mac:
+    if: ${{ inputs.manifest_only != true }}
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
@@ -133,11 +140,13 @@ jobs:
 
   publish-manifest:
     needs: [build-win, build-mac]
+    if: >-
+      always() &&
+      (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
+      (inputs.manifest_only == true || (needs.build-win.result == 'success' && needs.build-mac.result == 'success')) &&
+      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/desktop-v') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: >-
-      (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
-      (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/desktop-v') || github.event_name == 'workflow_dispatch')
     steps:
       - uses: actions/checkout@v4
 
@@ -164,11 +173,19 @@ jobs:
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/*" \
             desktop-electron/dist/ || true
+          # Drop legacy installers that steal manifest slots from current builds.
+          rm -f desktop-electron/dist/Aurent-Cashier-Setup-*.exe \
+            desktop-electron/dist/Aurent-Cashier-1.2.1-* || true
           bash deploy/publish-desktop.sh
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             downloads/desktop/manifest.json \
             "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/manifest.json"
+          # Also remove legacy files on the server so auto-update / install stay clean.
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            'rm -f /opt/aurent-pos/downloads/desktop/Aurent-Cashier-Setup-*.exe /opt/aurent-pos/downloads/desktop/Aurent-Cashier-1.2.1-* || true'
           echo "Desktop installers published on server"
+          cat downloads/desktop/manifest.json
 
       - name: Cleanup SSH key
         if: always()
