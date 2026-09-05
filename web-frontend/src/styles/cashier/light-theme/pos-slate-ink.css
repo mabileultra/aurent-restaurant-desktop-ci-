@@ -213,7 +213,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-app__main {
-  background: var(--pos-bg);
+  background: transparent;
 }
 
 .cashier-app.cashier-app--light .pos-catalog-panel,
@@ -235,7 +235,7 @@
 }
 
 .cashier-app.cashier-app--light .cashier-app__bottom-nav {
-  background: var(--pos-bg);
+  background: transparent;
   border-top-color: var(--pos-border);
 }
 

@@ -138,47 +138,53 @@
   display: none;
 }
 
-.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-register-pay-cash {
-  background: var(--pos-surface, #151b26);
-  border-color: var(--pos-border, #2a3548);
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-register-pay-cash,
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash-panel--terminal {
+  background: #f3faf6;
+  border-color: rgba(10, 61, 48, 0.14);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.18);
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__due-label {
-  color: var(--pos-muted, #94a3b8);
+  color: #5a6f8c;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__due-value {
-  color: var(--pos-text, #f1f5f9);
+  color: #0a3d30;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-box {
-  border-color: rgb(96 165 250 / 0.45);
-  background: rgb(37 99 235 / 0.12);
+  border-color: #93c5fd;
+  background: #eff6ff;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-box {
-  border-color: rgb(46 196 182 / 0.35);
-  background: rgb(46 196 182 / 0.08);
+  border-color: #86efac;
+  background: #f0fdf4;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-label,
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-label {
-  color: var(--pos-muted, #94a3b8);
+  color: #5a6f8c;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__received-value .auto-fit-text__inner {
-  color: #93c5fd;
+  color: #1d4ed8;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value .auto-fit-text__inner,
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__change-value--ready {
-  color: var(--pos-green, #2ec4b6);
+  color: #166534;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__card-remainder-value {
-  color: #93c5fd;
+  color: #1d4ed8;
 }
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__hint--card-remainder {
-  color: var(--pos-green, #2ec4b6);
+  color: #0a7a52;
+}
+
+.cashier-app.cashier-app--terminal .pos-register-pay-rail .pos-pay-cash__hint {
+  color: #5a6f8c;
 }

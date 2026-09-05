@@ -172,6 +172,7 @@ export function useOfflineStatus() {
     syncing,
     syncingCatalog,
     actions: {
+      // Desktop: allow force-offline even before canSellOffline is true; handler toasts if no catalog.
       showSwitchOffline: offlineAllowed && !forceOfflineMode && (canSellOffline || visible),
       showSwitchOnline: offlineAllowed && forceOfflineMode,
       showSyncSales: showPending && apiOnline,

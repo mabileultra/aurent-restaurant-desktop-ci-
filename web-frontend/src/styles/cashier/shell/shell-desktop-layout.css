@@ -69,16 +69,11 @@ html.cashier-shell--desktop #root {
   height: 16px !important;
 }
 
-/* Мои продажи — master-detail на широком десктопе */
-@media (min-width: 1200px) {
-  .cashier-app.cashier-app--desktop .cashier-sales-master.has-selection {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, 34%);
-  }
-}
-
-@media (min-width: 1600px) {
-  .cashier-app.cashier-app--desktop .cashier-sales-master.has-selection {
-    grid-template-columns: minmax(0, 1fr) minmax(340px, 30%);
+/* Мои продажи — master-detail 50/50 на всю высоту */
+@media (min-width: 901px) {
+  .cashier-app.cashier-app--desktop .cashier-sales-master.has-selection,
+  .cashier-app .cashier-sales-master.has-selection {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 }
 

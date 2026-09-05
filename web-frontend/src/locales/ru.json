@@ -492,6 +492,8 @@
   },
   "desktop": {
     "serverSetup": "Настройка сервера…",
+    "displaySection": "Экран",
+    "connectionSection": "Связь",
     "reload": "Обновить",
     "fullscreen": "На весь экран",
     "quit": "Выход",

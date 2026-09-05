@@ -972,6 +972,8 @@
   },
   "desktop": {
     "serverSetup": "Server sozlamalari…",
+    "displaySection": "Ekran",
+    "connectionSection": "Aloqa",
     "reload": "Yangilash",
     "fullscreen": "To‘liq ekran",
     "quit": "Chiqish",

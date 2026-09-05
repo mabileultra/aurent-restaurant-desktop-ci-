@@ -17,40 +17,55 @@
   margin-bottom: 0 !important;
 }
 
-/* Toolbar filters — receipt full width, rest compact */
+/* Toolbar filters — one compact row */
 .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__head {
-  padding: 6px 10px;
+  padding: 4px 8px;
+  min-height: 0;
 }
 
 .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__title {
-  font-size: 0.8125rem;
+  font-size: 0.6875rem;
 }
 
 .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__body {
-  padding: 8px 10px 10px;
+  padding: 4px 8px 6px;
 }
 
 .cashier-sales-filters--toolbar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 6px 8px;
+  grid-template-columns: minmax(7rem, 1.4fr) repeat(4, minmax(0, 1fr));
+  gap: 4px 6px;
   align-items: end;
 }
 
 .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
-  grid-column: 1 / -1;
+  grid-column: auto;
 }
 
 .cashier-sales-filters--toolbar .cashier-sales-filters__label {
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   margin-bottom: 0;
+  line-height: 1.1;
 }
 
 .cashier-sales-filters--toolbar .cashier-sales-filters__input,
 .cashier-sales-filters--toolbar .cashier-sales-filters__select {
-  min-height: 32px;
-  padding: 4px 8px;
-  font-size: 0.75rem;
+  min-height: 28px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
+  border-radius: var(--pos-control-radius, 10px);
+}
+
+.cashier-sales-filters--toolbar .base-select__label {
+  font-size: 0.5625rem;
+  margin-bottom: 0;
+  line-height: 1.1;
+}
+
+.cashier-sales-filters--toolbar .base-select__trigger {
+  min-height: 28px;
+  padding: 2px 6px;
+  font-size: 0.6875rem;
   border-radius: var(--pos-control-radius, 10px);
 }
 

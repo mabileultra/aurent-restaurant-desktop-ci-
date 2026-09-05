@@ -15,7 +15,8 @@
 }
 
 .cashier-sales-master.has-selection {
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 38%);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: stretch;
 }
 
 .cashier-sales-list-pane {
@@ -23,6 +24,7 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  height: 100%;
 }
 
 .cashier-sales-list-card {
@@ -86,6 +88,8 @@
   flex-direction: column;
   min-height: 0;
   min-width: 0;
+  height: 100%;
+  align-self: stretch;
   border-radius: 12px;
   border: 1px solid var(--pos-border, #e5e7eb);
   background: #fff;
@@ -146,15 +150,17 @@
   flex: 1 1 auto;
   min-height: 0;
   overflow: auto;
-  padding: 12px;
+  padding: 12px 16px;
   display: flex;
   justify-content: center;
-  background: #f3f4f6;
+  align-items: flex-start;
+  background: linear-gradient(180deg, #eef2f7 0%, #e8edf4 100%);
 }
 
 .cashier-sales-receipt-pane__paper {
   width: 100%;
-  max-width: var(--print-paper-w, 80mm);
+  max-width: min(100%, 22rem);
+  margin-inline: auto;
 }
 
 .cashier-sales-receipt-pane__card {
@@ -242,19 +248,24 @@
 }
 
 @media (max-width: 900px) {
-  .cashier-sales-master,
   .cashier-sales-master.has-selection {
     grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) auto;
-    overflow: auto;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .cashier-sales-master.has-selection .cashier-sales-list-pane {
+    display: none;
   }
 
   .cashier-sales-master.has-selection .cashier-sales-receipt-pane {
-    max-height: 42vh;
+    max-height: none;
+    height: 100%;
+    min-height: 0;
   }
 
   .cashier-page--my-sales .cashier-page__scroll {
-    overflow: auto;
+    overflow: hidden;
   }
 }
 

@@ -13,49 +13,45 @@
 }
 
 /* Фильтры */
-.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__head {
-  padding: 4px 8px;
+.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar:not(.is-active) .cashier-sales-filters-card__head {
+  display: none;
 }
 
-.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__title {
-  font-size: 0.6875rem;
-  gap: 6px;
+.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar.is-active .cashier-sales-filters-card__head {
+  display: flex;
+  padding: 2px 6px;
+  min-height: 0;
 }
 
-.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__badge {
-  padding: 1px 6px;
-  font-size: 0.5625rem;
+.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__body {
+  padding: 4px 6px;
 }
 
-.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__reset {
-  padding: 3px 8px;
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar {
+  grid-template-columns: minmax(6.5rem, 1.35fr) repeat(4, minmax(0, 1fr));
+  gap: 3px 5px;
+}
+
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
+  grid-column: auto;
+}
+
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__label,
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .base-select__label {
+  font-size: 0.5rem;
+}
+
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__input,
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__select,
+.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .base-select__trigger {
+  min-height: 26px;
+  padding: 2px 5px;
   font-size: 0.625rem;
   border-radius: 6px;
 }
 
-.cashier-app .cashier-page--my-sales .cashier-sales-filters-card--toolbar .cashier-sales-filters-card__body {
-  padding: 4px 8px 6px;
-}
-
-.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 4px 6px;
-}
-
-.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
-  grid-column: 1 / -1;
-}
-
-.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__label {
-  font-size: 0.5625rem;
-}
-
-.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__input,
-.cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__select {
-  min-height: 28px;
-  padding: 3px 6px;
-  font-size: 0.6875rem;
-  border-radius: 6px;
+.cashier-app .cashier-page--my-sales .cashier-sales-filters-card__hint {
+  display: none;
 }
 
 /* Полоска смены */
@@ -182,9 +178,16 @@
   border-radius: 6px;
 }
 
-/* Master-detail */
+/* Master-detail — чек на половину ширины, на всю высоту */
 .cashier-app .cashier-page--my-sales .cashier-sales-master {
   gap: 6px;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+}
+
+.cashier-app .cashier-page--my-sales .cashier-sales-master.has-selection {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 .cashier-app .cashier-page--my-sales .cashier-sales-receipt-pane__head {
@@ -210,6 +213,10 @@
 @media (max-width: 1024px) {
   .cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .cashier-app .cashier-page--my-sales .cashier-sales-filters--toolbar .cashier-sales-filters__field--receipt {
+    grid-column: 1 / -1;
   }
 }
 

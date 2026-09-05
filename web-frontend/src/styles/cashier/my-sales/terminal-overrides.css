@@ -290,7 +290,7 @@
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-receipt-pane__body {
-  background: var(--pos-bg, #0c1018);
+  background: linear-gradient(180deg, #101826 0%, #0c1018 100%);
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-receipt-pane__footer {

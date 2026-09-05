@@ -112,6 +112,15 @@
   box-shadow: 0 6px 16px rgb(30 58 95 / 0.28);
 }
 
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane__body {
+  background: linear-gradient(180deg, #eef3f8 0%, #e6edf5 100%);
+}
+
+.cashier-app.cashier-app--light .cashier-sales-receipt-pane {
+  background: var(--pos-surface-elevated);
+  border-color: var(--pos-border);
+}
+
 .cashier-theme--light .pos-return-modal--terminal .pos-return-line-select__max,
 .cashier-app.cashier-app--light .pos-return-modal--terminal .pos-return-line-select__max {
   background: var(--pos-surface-hover);

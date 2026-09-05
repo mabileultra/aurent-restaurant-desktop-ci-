@@ -27,6 +27,7 @@
   --pos-green-gradient: linear-gradient(135deg, #0b3d34 0%, #146b5c 42%, #1fa892 100%);
   --pos-green-gradient-hover: linear-gradient(135deg, #0a342c 0%, #11584c 42%, #1a9480 100%);
   --pos-bg: #0c1018;
+  --pos-bg-gradient: linear-gradient(165deg, #0e141c 0%, #0c1018 45%, #0a1218 100%);
   --pos-surface: #151b26;
   --pos-surface-elevated: #1c2433;
   --pos-border: #2a3548;
@@ -46,7 +47,7 @@
   --bs-body-color: var(--pos-text);
 
   color: var(--pos-text);
-  background: var(--pos-bg) !important;
+  background: var(--pos-bg-gradient) !important;
 
   --pos-keypad-border: var(--pos-border);
   --pos-keypad-bg: var(--pos-surface);
@@ -64,6 +65,7 @@
   --pos-green-gradient: linear-gradient(135deg, #004530 0%, #006847 48%, #0a8a5c 100%);
   --pos-green-gradient-hover: linear-gradient(135deg, #003826 0%, #005538 48%, #087a52 100%);
   --pos-bg: #e9eef4;
+  --pos-bg-gradient: linear-gradient(165deg, #eef6f2 0%, #e9eef4 42%, #e3ebf5 100%);
   --pos-surface: #f4f6fa;
   --pos-surface-elevated: #fbfcfe;
   --pos-surface-hover: #eef2f8;
@@ -86,7 +88,7 @@
   --bs-body-color: var(--pos-text);
 
   color: var(--pos-text);
-  background: var(--pos-bg) !important;
+  background: var(--pos-bg-gradient) !important;
 
   --pos-keypad-border: var(--pos-border);
   --pos-keypad-bg: #fff;

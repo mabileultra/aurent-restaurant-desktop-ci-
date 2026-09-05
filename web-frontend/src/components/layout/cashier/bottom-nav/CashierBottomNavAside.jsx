@@ -1,21 +1,22 @@
-import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
+import { isDesktopCashier } from '../../../../utils/authLogin';
 import { useCashierUiScale } from '../../../../features/cashier/hooks/useCashierUiScale';
 import CashierZoomControls from '../../../../features/cashier/components/CashierZoomControls';
 import { useOfflineStatus } from '../../../../features/cashier/hooks/useOfflineStatus';
 
 /**
  * Right side of bottom dock: zoom + cloud online/offline pill.
- * Cloud status is always visible; toggle works on desktop when offline is allowed.
+ * On desktop (Electron) toggle works whenever cashier has offline access — same as before.
  */
 export default function CashierBottomNavAside({ t }) {
   const zoom = useCashierUiScale();
   const status = useOfflineStatus();
-  const isOffline = status.showOffline || status.tone === 'offline';
+  const isOffline = status.showOffline || status.tone === 'offline' || status.forceOfflineMode;
   const label = isOffline
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
 
-  const toggleEnabled = status.offlineAllowed && isDesktopOfflineBridge();
+  const desktop = isDesktopCashier();
+  const canToggle = Boolean(status.offlineAllowed && desktop);
 
   return (
     <div className="cashier-bottom-nav__aside">
@@ -25,24 +26,24 @@ export default function CashierBottomNavAside({ t }) {
         className={[
           'cashier-bottom-nav__status',
           `cashier-bottom-nav__status--${isOffline ? 'offline' : 'online'}`,
-          toggleEnabled ? 'is-toggle' : '',
+          canToggle ? 'is-toggle' : '',
           status.forceOfflineMode ? 'is-forced' : '',
         ].filter(Boolean).join(' ')}
         title={
-          toggleEnabled
-            ? (status.forceOfflineMode ? t('offline.forceOfflineOff') : t('offline.forceOfflineOn'))
+          canToggle
+            ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
             : (status.message || label)
         }
-        disabled={!toggleEnabled}
+        disabled={!canToggle}
         aria-pressed={Boolean(status.forceOfflineMode)}
         onClick={() => {
-          if (!toggleEnabled) return;
+          if (!canToggle) return;
           status.handlers.toggleForceOffline(!status.forceOfflineMode);
         }}
       >
         <span className="cashier-bottom-nav__status-dot" aria-hidden />
         <span className="cashier-bottom-nav__status-label">{label}</span>
-        {toggleEnabled ? (
+        {canToggle ? (
           <span className="cashier-bottom-nav__status-switch" aria-hidden>
             <span className="cashier-bottom-nav__status-knob" />
           </span>
