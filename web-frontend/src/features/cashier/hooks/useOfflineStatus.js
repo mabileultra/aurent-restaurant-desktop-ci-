@@ -78,7 +78,7 @@ export function useOfflineStatus() {
     }
 
     if (!isDesktopOfflineBridge()) {
-      toast.error(t('offline.desktopBridgeRequired'), { id: toastId });
+      toast.error(t('offline.desktopBridgeRequired'), { id: toastId, duration: 6000 });
       try {
         if (typeof window.desktopCashier?.checkForUpdates === 'function') {
           await window.desktopCashier.checkForUpdates();

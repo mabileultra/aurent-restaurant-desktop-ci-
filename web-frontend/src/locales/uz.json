@@ -824,12 +824,24 @@
       "subtitle": "Kafe dan do‘konlar tarmog‘igacha — sizga mos ssenariyni tanlaymiz.",
       "more": "Batafsil →",
       "items": {
-        "restaurant": { "title": "Restoranlar uchun" },
-        "cafe": { "title": "Kafeler uchun" },
-        "retail": { "title": "Do‘konlar uchun" },
-        "pharmacy": { "title": "Dorixonalar uchun" },
-        "fastfood": { "title": "Fastfood uchun" },
-        "market": { "title": "Supermarketlar uchun" }
+        "restaurant": {
+          "title": "Restoranlar uchun"
+        },
+        "cafe": {
+          "title": "Kafeler uchun"
+        },
+        "retail": {
+          "title": "Do‘konlar uchun"
+        },
+        "pharmacy": {
+          "title": "Dorixonalar uchun"
+        },
+        "fastfood": {
+          "title": "Fastfood uchun"
+        },
+        "market": {
+          "title": "Supermarketlar uchun"
+        }
       }
     },
     "terminal": {
@@ -852,10 +864,22 @@
       "list5": "Desktop kassa va brauzer",
       "list6": "Va boshqalar",
       "features": {
-        "support": { "title": "Qo‘llab-quvvatlash", "text": "Joriy etish va ish vaqtida yordam" },
-        "cloud": { "title": "Bulut", "text": "Har qanday qurilmadan brauzer orqali kirish" },
-        "backup": { "title": "Zaxira nusxalar", "text": "Ma'lumotlar himoyalangan serverda" },
-        "updates": { "title": "Yangilanishlar", "text": "Qayta o‘rnatmasdan yangi funksiyalar" }
+        "support": {
+          "title": "Qo‘llab-quvvatlash",
+          "text": "Joriy etish va ish vaqtida yordam"
+        },
+        "cloud": {
+          "title": "Bulut",
+          "text": "Har qanday qurilmadan brauzer orqali kirish"
+        },
+        "backup": {
+          "title": "Zaxira nusxalar",
+          "text": "Ma'lumotlar himoyalangan serverda"
+        },
+        "updates": {
+          "title": "Yangilanishlar",
+          "text": "Qayta o‘rnatmasdan yangi funksiyalar"
+        }
       }
     },
     "downloadStrip": {
@@ -3134,7 +3158,8 @@
     "parkedCartUntitled": "Kechiktirilgan chek",
     "parkedCartMeta": "{{count}} ta · {{sum}}",
     "parkedCartsOpenF6": "Kechiktirilgan [F6]",
-    "totalPositions": "Jami pozitsiyalar:",    "totalQty": "Umumiy miqdor:",
+    "totalPositions": "Jami pozitsiyalar:",
+    "totalQty": "Umumiy miqdor:",
     "unitPcsShort": "bir.",
     "total": "Jami",
     "checkout": "To'lash",
@@ -3969,7 +3994,7 @@
     "notAllowed": "Hisobingiz uchun oflayn rejim o‘chirilgan. Platforma administratoriga murojaat qiling.",
     "pendingSales": "Serverga yuborish kutilmoqda: {{count}}",
     "preparingCatalogForOffline": "Oflayn uchun katalog yuklanmoqda…",
-    "desktopBridgeRequired": "Kerak: lokal bazali desktop kassa. Aurent Cashier ni yangilang (Yangilanishlarni tekshirish).",
+    "desktopBridgeRequired": "Kerak: kassa 1.2.2+ lokal baza bilan. Qayta yuklang: aurent.uz/install (eski 1.2.1 oflaynsiz o‘zi yangilanmaydi).",
     "preparingCatalog": "Oflayn katalog tayyorlanmoqda…",
     "catalogNotReady": "Oflayn katalog hali yuklanmagan. «Katalogni yangilash»ni bosing.",
     "syncNow": "Sinxronlash",
