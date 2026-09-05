@@ -3277,6 +3277,7 @@
     "mixedCardPart": "Karta summa",
     "amountToPay": "To'lov",
     "discountAppliedBadge": "Chegirma qo'llandi ({{percent}}%)",
+    "discountAppliedShort": "Chegirma {{percent}}%",
     "currencyCode": "UZS",
     "receivedLabel": "Qabul qilindi",
     "cashTenderHint": "Xaridor bergan summani kiriting — qaytim avtomatik hisoblanadi",

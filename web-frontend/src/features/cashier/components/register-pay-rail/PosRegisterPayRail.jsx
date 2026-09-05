@@ -35,6 +35,7 @@ export default function PosRegisterPayRail({
         cashPaidEnough={rail.cashPaidEnough}
         cardRemainder={rail.cardRemainder}
         hasPartialCash={rail.hasPartialCash}
+        onDiscount={onDiscount}
       />
 
       <div className="pos-register-pay-rail__pay-block">

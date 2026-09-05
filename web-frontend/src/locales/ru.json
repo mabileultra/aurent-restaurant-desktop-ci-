@@ -3585,6 +3585,7 @@
     "mixedCardPart": "Сумма картой",
     "amountToPay": "К оплате",
     "discountAppliedBadge": "Скидка применена ({{percent}}%)",
+    "discountAppliedShort": "Скидка {{percent}}%",
     "currencyCode": "UZS",
     "receivedLabel": "Получено",
     "cashTenderHint": "Введите сумму, которую дал покупатель — сдача посчитается автоматически",

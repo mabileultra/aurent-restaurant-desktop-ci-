@@ -11,12 +11,20 @@ export default function PosRegisterPayCashPanel({
   cashPaidEnough,
   cardRemainder,
   hasPartialCash,
+  onDiscount,
 }) {
   const { t } = useTranslation();
-  const linesTotal = useCartStore((s) => s.getLinesTotal());
-  const orderDiscount = useCartStore((s) => s.getOrderDiscount());
-  const discountPercent =
-    linesTotal > 0 ? Math.round((Number(orderDiscount) / linesTotal) * 100) : 0;
+  const orderDiscount = useCartStore((s) => {
+    void s.items;
+    void s.orderDiscountAmount;
+    return s.getOrderDiscount();
+  });
+  const discountPercent = useCartStore((s) => {
+    void s.items;
+    void s.orderDiscountAmount;
+    return s.getCheckoutOrderDiscountPercent();
+  });
+  const hasDiscount = Number(orderDiscount) > 0;
 
   return (
     <div className="pos-register-pay-cash pos-pay-cash-panel pos-pay-cash-panel--terminal">
@@ -26,9 +34,25 @@ export default function PosRegisterPayCashPanel({
             <CreditCard size={14} strokeWidth={2.25} aria-hidden />
             {t('pos.amountToPay')}
           </span>
-          <span className="pos-pay-cash__discount-badge">
-            {t('pos.discountAppliedBadge', { percent: discountPercent })}
-          </span>
+          {hasDiscount ? (
+            onDiscount ? (
+              <button
+                type="button"
+                className="pos-pay-cash__discount-badge"
+                onClick={onDiscount}
+                title={t('pos.discountAppliedBadge', { percent: discountPercent })}
+              >
+                {t('pos.discountAppliedShort', { percent: discountPercent })}
+              </button>
+            ) : (
+              <span
+                className="pos-pay-cash__discount-badge"
+                title={t('pos.discountAppliedBadge', { percent: discountPercent })}
+              >
+                {t('pos.discountAppliedShort', { percent: discountPercent })}
+              </span>
+            )
+          ) : null}
         </div>
         <div className="pos-pay-cash__due-row">
           <strong className="pos-pay-cash__due-value">{fmt(toPay)}</strong>

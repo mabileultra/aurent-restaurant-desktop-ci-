@@ -54,18 +54,30 @@
 
 .pos-register-pay-rail .pos-pay-cash__discount-badge {
   flex-shrink: 0;
-  max-width: 55%;
+  max-width: min(48%, 9.5rem);
   padding: 4px 8px;
+  border: none;
   border-radius: 999px;
   background: var(--pay-discount-bg);
   color: var(--pay-discount-fg);
-  font-size: 0.5625rem;
+  font: inherit;
+  font-size: 0.625rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.pos-register-pay-rail button.pos-pay-cash__discount-badge:hover {
+  filter: brightness(0.96);
+}
+
+.pos-register-pay-rail button.pos-pay-cash__discount-badge:focus-visible {
+  outline: 2px solid var(--pay-discount-fg);
+  outline-offset: 2px;
 }
 
 .pos-register-pay-rail .pos-pay-cash__due-row {
