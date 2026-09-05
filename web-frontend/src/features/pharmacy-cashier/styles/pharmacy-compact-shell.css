@@ -5,6 +5,11 @@
   gap: 4px;
 }
 
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__cart-pane,
+.pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__search-pane {
+  border-radius: var(--pharm-radius-sm, 8px);
+}
+
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head {
   padding: 4px 8px;
   gap: 6px;
@@ -18,8 +23,9 @@
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head--search {
   display: grid;
-  grid-template-columns: auto minmax(120px, 1fr) auto;
+  grid-template-columns: auto minmax(160px, 1fr);
   align-items: center;
+  gap: 8px;
 }
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact {
@@ -42,7 +48,7 @@
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__field--compact:focus {
   border-color: var(--pharm-accent);
-  box-shadow: 0 0 0 2px rgb(47 111 237 / 0.14);
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) .cashier-bottom-nav {
@@ -68,6 +74,57 @@
 .cashier-app--pharmacy-pos .cashier-bottom-nav__btn svg {
   width: 18px !important;
   height: 18px !important;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside {
+  gap: 6px;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  border-radius: 999px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-muted, var(--pos-muted));
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-ok {
+  color: var(--pharm-ok-text, #0b5c3a);
+  background: var(--pharm-ok, #d8f5e3);
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 25%, transparent);
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-ok .cashier-bottom-nav__kkm-dot {
+  background: var(--pharm-brand, #006847);
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-warn {
+  color: var(--pharm-warn-text, #7a5b00);
+  background: var(--pharm-warn, #fff3cd);
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__kkm.is-warn .cashier-bottom-nav__kkm-dot {
+  background: #d97706;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__store-pill--pharmacy .cashier-topbar__store-name {
+  max-width: min(36vw, 280px);
 }
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav-shell.is-collapsed {

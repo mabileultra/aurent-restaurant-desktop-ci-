@@ -1,0 +1,79 @@
+/**
+ * Chrome аптечной кассы вне таблиц: topbar бейдж, pay-колонка, focus.
+ * Только .cashier-app--pharmacy-pos — retail не трогаем.
+ */
+
+.cashier-app--pharmacy-pos .cashier-topbar__store-pill {
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__store-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--pharm-teal, #0d9488);
+  box-shadow: 0 0 0 3px var(--pharm-teal-soft, rgb(13 148 136 / 0.16));
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__store-name {
+  font-size: 0.6875rem;
+  letter-spacing: 0.03em;
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__store-pill {
+  background: var(--pharm-teal-soft, rgb(15 118 110 / 0.12));
+  border-color: color-mix(in srgb, var(--pharm-teal, #0f766e) 35%, #d5ddd8);
+  color: var(--pharm-teal, #0f766e);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__store-name {
+  color: var(--pharm-teal, #0f766e);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__brand-name {
+  color: #1a2e28;
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__pro-badge {
+  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
+  color: var(--pharm-brand, #006847);
+}
+
+/* Pay column: чуть уже и плотнее на аптеке */
+.cashier-app--pharmacy-pos {
+  --cashier-pay-w: 300px;
+}
+
+.cashier-app--pharmacy-pos .cashier-register__actions-col--pay {
+  border-radius: var(--pharm-radius, 10px);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-register__actions-col--pay {
+  background: #fff;
+  border-color: var(--pharm-border, #d5ddd8);
+  box-shadow: 0 1px 4px rgb(15 40 30 / 0.05);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pos-pay-print-toggle {
+  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.1));
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d5ddd8);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pos-pay-print-toggle:hover:not(:has(input:disabled)) {
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 16%, #fff);
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 40%, #d5ddd8);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pos-pay-print-toggle__box {
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d5ddd8);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pos-pay-print-toggle__icon {
+  color: var(--pharm-brand, #006847);
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pos-pay-print-toggle__text {
+  color: var(--pharm-ink, #1a2e28);
+}

@@ -28,6 +28,7 @@ import {
 } from '../multikassa';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
+import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
 
 function connectivityState() {
   return useConnectivityStore.getState();
@@ -386,6 +387,7 @@ export async function posCreateSale({
     : undefined;
 
   try {
+    const pharmacyExtras = buildPharmacySaleExtras(payment);
     return await saleApi.create(
       {
         storeId: Number(storeId),
@@ -400,6 +402,10 @@ export async function posCreateSale({
         items: getCheckoutLineItems(),
         orderDiscountAmount: getCheckoutOrderDiscountAmount(),
         orderDiscountPercent: getCheckoutOrderDiscountPercent(),
+        ...(pharmacyExtras?.notes ? { notes: pharmacyExtras.notes } : {}),
+        ...(pharmacyExtras?.patientPinfl ? { patientPinfl: pharmacyExtras.patientPinfl } : {}),
+        ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
+        ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
         ...(fiscalForApi ? { fiscal: fiscalForApi } : {}),
       },
       onlineTimeout ? { timeout: onlineTimeout } : undefined,

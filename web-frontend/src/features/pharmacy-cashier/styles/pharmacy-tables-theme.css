@@ -1,59 +1,103 @@
 /**
- * Тема аптечных таблиц: тёмная касса по умолчанию, light — через .cashier-app--light.
+ * Тема аптечных таблиц / chrome.
+ * Light — эталон макета (Aurent green + teal chrome).
+ * Dark — те же семантики на тёмных surfaces.
+ *
+ * Токены на `.cashier-app--pharmacy-pos` — для topbar/pay;
+ * дублируются на `.pharmacy-cashier` — для таблиц.
  */
 
+.cashier-app.cashier-app--pharmacy-pos,
 .pharmacy-cashier {
-  --pharm-ink: var(--pos-text, #f1f5f9);
+  /* Brand */
+  --pharm-brand: #006847;
+  --pharm-brand-hover: #005538;
+  --pharm-brand-soft: rgb(0 104 71 / 0.14);
+  --pharm-teal: #0d9488;
+  --pharm-teal-soft: rgb(13 148 136 / 0.16);
+
+  --pharm-ink: var(--pos-text, #e8eef7);
   --pharm-muted: var(--pos-muted, #94a3b8);
   --pharm-border: var(--pos-border, #2a3548);
   --pharm-surface: var(--pos-surface, #151b26);
   --pharm-elevated: var(--pos-surface-elevated, #1c2433);
   --pharm-hover: var(--pos-surface-hover, #243044);
   --pharm-active: var(--pos-surface-active, #2a384f);
-  --pharm-accent: var(--pos-accent, #2ec4b6);
+  --pharm-accent: var(--pharm-brand);
+  --pharm-accent-soft: var(--pharm-brand-soft);
   --pharm-cell-bg: var(--pos-surface-elevated, #1c2433);
 
-  --pharm-ok: rgb(46 196 182 / 0.18);
-  --pharm-ok-strong: rgb(46 196 182 / 0.28);
-  --pharm-ok-text: #9bffd4;
+  /* OK — остаток в норме */
+  --pharm-ok: rgb(0 168 107 / 0.2);
+  --pharm-ok-strong: rgb(0 168 107 / 0.32);
+  --pharm-ok-text: #7dffc4;
 
+  /* Warn — низкий остаток / РЕЦЕПТ */
   --pharm-warn: rgb(255 196 60 / 0.2);
-  --pharm-warn-strong: rgb(255 196 60 / 0.32);
+  --pharm-warn-strong: rgb(255 196 60 / 0.34);
   --pharm-warn-text: #ffd666;
+  --pharm-recipe: rgb(255 196 60 / 0.18);
+  --pharm-recipe-border: rgb(255 196 60 / 0.45);
 
+  /* Danger — просрочка */
   --pharm-danger: rgb(255 90 90 / 0.22);
-  --pharm-danger-strong: rgb(255 90 90 / 0.34);
+  --pharm-danger-strong: rgb(255 90 90 / 0.36);
   --pharm-danger-text: #ff9b94;
 
-  --pharm-info: rgb(80 140 255 / 0.22);
-  --pharm-info-strong: rgb(80 140 255 / 0.34);
-  --pharm-info-text: #9ec0ff;
+  /* Info — DMED / полка */
+  --pharm-info: rgb(45 160 170 / 0.22);
+  --pharm-info-strong: rgb(45 160 170 / 0.34);
+  --pharm-info-text: #8ee0e8;
+
+  --pharm-focus-ring: rgb(0 104 71 / 0.28);
+  --pharm-radius: 10px;
+  --pharm-radius-sm: 6px;
 }
 
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light,
 .cashier-app.cashier-app--light .pharmacy-cashier {
-  --pharm-ink: #1e3a5f;
-  --pharm-muted: #5a6f8c;
-  --pharm-border: #d1d9e6;
-  --pharm-surface: #f4f6fa;
-  --pharm-elevated: #fbfcfe;
-  --pharm-hover: #eef2f8;
-  --pharm-active: #e4eaf3;
-  --pharm-accent: #2f6fed;
+  --pharm-brand: #006847;
+  --pharm-brand-hover: #005538;
+  --pharm-brand-soft: rgb(0 104 71 / 0.12);
+  --pharm-teal: #0f766e;
+  --pharm-teal-soft: rgb(15 118 110 / 0.12);
+
+  --pharm-ink: #1a2e28;
+  --pharm-muted: #5b6f68;
+  --pharm-border: #d5ddd8;
+  --pharm-surface: #f3f6f4;
+  --pharm-elevated: #ffffff;
+  --pharm-hover: #eaf2ee;
+  --pharm-active: #dcebe3;
+  --pharm-accent: var(--pharm-brand);
+  --pharm-accent-soft: var(--pharm-brand-soft);
   --pharm-cell-bg: #ffffff;
 
-  --pharm-ok: #d8f3dc;
-  --pharm-ok-strong: #b7e4c0;
-  --pharm-ok-text: #1e3a5f;
+  --pharm-ok: #d8f5e3;
+  --pharm-ok-strong: #b6e9c9;
+  --pharm-ok-text: #0b5c3a;
 
   --pharm-warn: #fff3cd;
   --pharm-warn-strong: #ffe08a;
   --pharm-warn-text: #7a5b00;
+  --pharm-recipe: #fff8e1;
+  --pharm-recipe-border: #f0d78c;
 
   --pharm-danger: #fde2e1;
   --pharm-danger-strong: #f5c2c0;
   --pharm-danger-text: #8a1f1a;
 
-  --pharm-info: #d6e6ff;
-  --pharm-info-strong: #b3d0ff;
-  --pharm-info-text: #1a3f8a;
+  --pharm-info: #d9f3f1;
+  --pharm-info-strong: #b6e6e2;
+  --pharm-info-text: #0f5c56;
+
+  --pharm-focus-ring: rgb(0 104 71 / 0.2);
+}
+
+/* Аптечный shell: бренд и pay наследуют зелёный Aurent, не синий admin */
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light {
+  --pos-accent: #006847;
+  --pos-green: #006847;
+  --pos-green-hover: #005538;
+  --pos-green-soft: rgb(0 104 71 / 0.12);
 }

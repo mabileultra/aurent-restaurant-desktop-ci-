@@ -26,7 +26,7 @@
 
 .pharmacy-integration-toolbar__btn:hover:not(:disabled) {
   background: var(--pharm-hover);
-  border-color: rgb(47 111 237 / 0.35);
+  border-color: color-mix(in srgb, var(--pharm-accent, #006847) 40%, var(--pharm-border));
   box-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
 }
 

@@ -19,6 +19,12 @@ public record CreateSaleRequest(
     BigDecimal cardAmount,
     BigDecimal amountTendered,
     String notes,
+    /** ПИНФЛ пациента (аптека), опционально. */
+    String patientPinfl,
+    /** Телефон лояльности (аптека), опционально. */
+    String loyaltyPhone,
+    /** Чек через DMED / страхование. */
+    Boolean pharmacyDmed,
     UUID customerId,
     String receiptType,
     String cardType,

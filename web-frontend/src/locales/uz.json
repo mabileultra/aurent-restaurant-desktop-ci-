@@ -1995,6 +1995,49 @@
     "qtyPiecesLabel": "Miqdor (dona)",
     "pieceCount": "{{count}} dona",
     "perPieceShort": "/ dona",
+    "colDiscount": "Chegirma",
+    "colExpiryDays": "Muddati / kun",
+    "colExpiryShort": "Yaroqli",
+    "sellByUnitHintShort": "Dona",
+    "storeBadge": "Dorixona · {{name}}",
+    "bottom": {
+      "kkm": "KKM",
+      "kkmOk": "Bulut aloqasi bor — KKM/fiskal onlayn",
+      "kkmWarn": "Aloqa yo‘q — internet yoki oflayn rejimni tekshiring"
+    },
+    "hotkeys": {
+      "title": "Issiq tugmalar",
+      "search": "Qidiruv",
+      "pay": "To‘lov",
+      "analogs": "Analoglar"
+    },
+    "searchStrip": {
+      "scanActive": "KM skan",
+      "asl": "ASL",
+      "dmed": "DMED",
+      "ikpu": "IKPU"
+    },
+    "pay": {
+      "methodCash": "Naqd",
+      "methodCard": "Karta",
+      "methodMixed": "Aralash",
+      "methodInsurance": "DMED",
+      "cashPart": "Naqd",
+      "cardPart": "Karta",
+      "stillDue": "Qoldi",
+      "dmedNote": "DMED elektron retsept bo‘yicha to‘lov",
+      "pinfl": "Bemor PINFL",
+      "pinflPh": "14 raqam",
+      "pinflRequired": "DMED uchun bemor PINFL kiriting",
+      "loyaltyPhone": "Loyalty telefon",
+      "saleAction": "SOTISH",
+      "needFullCash": "Naqd summani to‘liq kiriting",
+      "needMixedCover": "Naqd+karta jami summani yopishi kerak",
+      "hintPickOrSaleCard": "Terminalni tanlang yoki Sotish bosing",
+      "hintMixedFill": "Naqd va kartani jami gacha to‘ldiring",
+      "hintMixedCard": "Karta bilan to‘ldiring — keyin Sotish",
+      "hintDmed": "PINFL ni tekshiring va sotishni tasdiqlang"
+    },
     "integrations": {
       "toolbar": "Tezkor havolalar",
       "adminTitle": "Admin panel (brauzerda kirish)",

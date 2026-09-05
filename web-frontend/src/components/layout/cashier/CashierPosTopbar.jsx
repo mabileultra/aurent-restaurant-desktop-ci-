@@ -6,6 +6,7 @@ import { BRAND_NAME } from '../../../config/brandLogos';
 import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
+import PharmacyTopbarShortcuts from '../../../features/pharmacy-cashier/components/PharmacyTopbarShortcuts';
 
 export default function CashierPosTopbar({
   t,
@@ -24,6 +25,7 @@ export default function CashierPosTopbar({
 }) {
   const location = useLocation();
   const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
+  const isPharmacyRegister = location.pathname.startsWith('/cashier/pharmacy');
   const shiftOpen = shift?.status === 'OPEN';
 
   return (
@@ -32,7 +34,7 @@ export default function CashierPosTopbar({
         <div className="cashier-topbar__brand-block">
           <CashierDesktopMenu appName={displayAppName()} />
           <div className="cashier-topbar__brand">
-            <BrandMark variant="icon" size={22} className="cashier-topbar__brand-icon" />
+            <BrandMark variant="icon" size={34} className="cashier-topbar__brand-icon" />
             <span className="cashier-topbar__brand-name">{BRAND_NAME}.</span>
             <span className="cashier-topbar__pro-badge">{t('pos.proBadge')}</span>
           </div>
@@ -43,11 +45,19 @@ export default function CashierPosTopbar({
               storeName={storeName}
               shiftOpenBadge={shiftOpenBadge}
               shift={shift}
+              pharmacyBadge={isPharmacyRegister}
             />
+            {isPharmacyRegister ? <PharmacyTopbarShortcuts /> : null}
             {isDesktopApp ? <OfflineStatusTopbar /> : null}
           </div>
           <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">
-            {t(isRestaurantRegister ? 'restaurantCashier.title' : 'pos.navSale')}
+            {t(
+              isPharmacyRegister
+                ? 'pharmacyCashier.title'
+                : isRestaurantRegister
+                  ? 'restaurantCashier.title'
+                  : 'pos.navSale',
+            )}
           </p>
         </div>
         <div className="cashier-topbar__actions">

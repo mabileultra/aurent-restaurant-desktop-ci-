@@ -2125,6 +2125,49 @@
     "qtyPiecesLabel": "Количество (шт.)",
     "pieceCount": "{{count}} шт.",
     "perPieceShort": "/ шт.",
+    "colDiscount": "Скидка",
+    "colExpiryDays": "Срок / дн.",
+    "colExpiryShort": "Годен",
+    "sellByUnitHintShort": "Поштучно",
+    "storeBadge": "Аптека · {{name}}",
+    "bottom": {
+      "kkm": "ККМ",
+      "kkmOk": "Связь с облаком есть — ККМ/фискализация доступны онлайн",
+      "kkmWarn": "Нет связи — проверьте интернет или офлайн-режим"
+    },
+    "hotkeys": {
+      "title": "Горячие клавиши",
+      "search": "Поиск",
+      "pay": "Оплата",
+      "analogs": "Аналоги"
+    },
+    "searchStrip": {
+      "scanActive": "Скан КМ",
+      "asl": "ASL",
+      "dmed": "DMED",
+      "ikpu": "ИКПУ"
+    },
+    "pay": {
+      "methodCash": "Нал",
+      "methodCard": "Карта",
+      "methodMixed": "Смеш.",
+      "methodInsurance": "DMED",
+      "cashPart": "Наличные",
+      "cardPart": "Карта",
+      "stillDue": "Осталось",
+      "dmedNote": "Оплата по электронному рецепту DMED",
+      "pinfl": "ПИНФЛ пациента",
+      "pinflPh": "14 цифр",
+      "pinflRequired": "Укажите ПИНФЛ пациента для DMED",
+      "loyaltyPhone": "Телефон лояльности",
+      "saleAction": "ПРОДАЖА",
+      "needFullCash": "Введите полную сумму наличными",
+      "needMixedCover": "Сумма нал+карта должна покрывать итог",
+      "hintPickOrSaleCard": "Выберите терминал или нажмите Продажа",
+      "hintMixedFill": "Заполните нал и карту до итога",
+      "hintMixedCard": "Доплата картой — затем Продажа",
+      "hintDmed": "Проверьте ПИНФЛ и подтвердите продажу"
+    },
     "integrations": {
       "toolbar": "Быстрые ссылки",
       "adminTitle": "Админка (вход в браузере)",

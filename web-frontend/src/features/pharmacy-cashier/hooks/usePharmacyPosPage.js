@@ -17,6 +17,7 @@ import { usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
 import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
 import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
 import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
+import { usePharmacyHotkeys } from './usePharmacyHotkeys';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -197,34 +198,24 @@ export function usePharmacyPosPage() {
     focusSearch,
   ]);
 
-  useEffect(() => {
-    const onKey = (e) => {
-      if (e.key !== 'Escape') return;
-      if (payOpen) {
-        e.preventDefault();
-        handleClosePayment();
-        return;
-      }
-      if (returnOpen || discountOpen || cartHandlers.qtyModalProduct || cartHandlers.weightModalProduct) {
-        return;
-      }
-      catalog.setSearch('');
-      focusSearch();
-    };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
-  }, [
+  usePharmacyHotkeys({
+    t,
+    enabled: Boolean(storeId) && !(noAssignment || multipleAssignment),
+    focusSearch,
+    itemsLength: items.length,
+    total,
+    shiftIsOpen,
+    checkoutPending: checkoutMutation.isPending,
     payOpen,
     returnOpen,
     discountOpen,
-    cartHandlers.qtyModalProduct,
-    cartHandlers.weightModalProduct,
-    handleClosePayment,
-    catalog.setSearch,
-    focusSearch,
-  ]);
-
-  const storeBlocked = noAssignment || multipleAssignment;
+    qtyModalOpen: Boolean(cartHandlers.qtyModalProduct),
+    weightModalOpen: Boolean(cartHandlers.weightModalProduct),
+    markingOpen: Boolean(markingModal?.open),
+    onConfirmPayment: handleConfirmPayment,
+    onClosePayment: handleClosePayment,
+    clearSearch: () => catalog.setSearch(''),
+  });
 
   const handleReturnSuccess = () => {
     qc.invalidateQueries({ queryKey: ['sales-ledger'] });
@@ -239,6 +230,8 @@ export function usePharmacyPosPage() {
     }
     setDiscountOpen(true);
   };
+
+  const storeBlocked = noAssignment || multipleAssignment;
 
   return {
     t,

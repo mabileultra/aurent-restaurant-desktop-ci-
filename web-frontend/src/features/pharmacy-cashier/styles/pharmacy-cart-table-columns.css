@@ -1,52 +1,32 @@
-/* Ширины колонок чека (colgroup) + выравнивание чисел */
+/* Ширины колонок чека (макет: имя / форма / цена / qty / скидка / сумма) */
 
-.pharmacy-cart-table__table {
-  min-width: 1180px;
+.pharmacy-cart-table__table--receipt {
+  min-width: 720px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--name {
-  width: 168px;
+.pharmacy-cart-table__table--receipt .pharmacy-col--idx {
+  width: 36px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--unit {
-  width: 76px;
+.pharmacy-cart-table__table--receipt .pharmacy-col--name {
+  width: auto;
+  min-width: 180px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--form,
-.pharmacy-cart-table__table .pharmacy-col--country {
-  width: 58px;
+.pharmacy-cart-table__table--receipt .pharmacy-col--form {
+  width: 88px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--shelf {
-  width: 52px;
+.pharmacy-cart-table__table--receipt .pharmacy-col--money {
+  width: 92px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--qty {
-  width: 54px;
-}
-
-.pharmacy-cart-table__table .pharmacy-col--money {
-  width: 98px;
-}
-
-.pharmacy-cart-table__table .pharmacy-col--expiry {
-  width: 108px;
-}
-
-.pharmacy-cart-table__table .pharmacy-col--batch {
-  width: 64px;
-}
-
-.pharmacy-cart-table__table .pharmacy-col--stock {
-  width: 58px;
-}
-
-.pharmacy-cart-table__table .pharmacy-col--ikpu {
+.pharmacy-cart-table__table--receipt .pharmacy-col--qty-ctrl {
   width: 118px;
 }
 
-.pharmacy-cart-table__table .pharmacy-col--actions {
-  width: 108px;
+.pharmacy-cart-table__table--receipt .pharmacy-col--actions {
+  width: 44px;
 }
 
 .pharmacy-cart-table__table thead th.pharmacy-cart-table__num {
@@ -62,6 +42,12 @@
   vertical-align: middle;
 }
 
+.pharmacy-cart-table__idx {
+  color: var(--pharm-muted);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
 .pharmacy-cart-table__money {
   display: block;
   width: 100%;
@@ -71,17 +57,39 @@
   line-height: 1.25;
 }
 
-.pharmacy-cart-table__num .pharmacy-cart-table__piece-qty,
+.pharmacy-cart-table__name-block {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+
+.pharmacy-cart-table__name-meta {
+  display: block;
+  width: 100%;
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--pharm-muted);
+  line-height: 1.25;
+}
+
+.pharmacy-cart-table__qty-ctrl {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  width: 100%;
+}
+
+.pharmacy-cart-table__qty-val {
+  min-width: 2rem;
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
 .pharmacy-cart-table__num .pharmacy-cart-table__piece-price-hint {
   display: block;
   width: 100%;
   text-align: right;
-}
-
-.pharmacy-cart-table__mono.pharmacy-cart-table__ikpu {
-  font-size: 0.6875rem;
-}
-
-.pharmacy-cart-table__mono.pharmacy-cart-table__ikpu .pharmacy-cart-table__cell-text {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }

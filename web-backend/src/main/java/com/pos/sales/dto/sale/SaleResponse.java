@@ -31,6 +31,10 @@ public record SaleResponse(
     BigDecimal amountTendered,
     BigDecimal changeGiven,
     String status,
+    String notes,
+    String patientPinfl,
+    String loyaltyPhone,
+    Boolean pharmacyDmed,
     /** Смена кассира, в которой оформлен чек (для журнала продаж и передачи кассы). */
     UUID shiftId,
     Instant shiftOpenedAt,

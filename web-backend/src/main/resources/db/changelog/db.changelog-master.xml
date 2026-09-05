@@ -32,5 +32,6 @@
     <include file="v25-store-pharmacy-integration.xml" relativeToChangelogFile="true"/>
     <include file="v26-performance-indexes.xml" relativeToChangelogFile="true"/>
     <include file="v27-multikassa.xml" relativeToChangelogFile="true"/>
+    <include file="v28-sale-pharmacy-patient.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

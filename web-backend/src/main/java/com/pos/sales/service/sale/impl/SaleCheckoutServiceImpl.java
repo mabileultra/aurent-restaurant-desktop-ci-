@@ -26,6 +26,7 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
+import com.pos.sales.service.sale.support.PharmacySalePatientSupport;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
@@ -76,6 +77,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
+    private final PharmacySalePatientSupport pharmacySalePatientSupport;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -193,6 +195,9 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .changeGiven(amounts.change())
             .status(Sale.SaleStatus.COMPLETED)
             .notes(req.notes())
+            .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
+            .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
+            .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
             .build();
 
         items.forEach(item -> item.setSale(sale));

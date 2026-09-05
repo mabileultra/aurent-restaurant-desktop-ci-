@@ -38,6 +38,7 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
+import com.pos.sales.service.sale.support.PharmacySalePatientSupport;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
@@ -85,6 +86,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
+    private final PharmacySalePatientSupport pharmacySalePatientSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -294,6 +296,9 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             .changeGiven(amounts.change())
             .status(Sale.SaleStatus.COMPLETED)
             .notes(notes)
+            .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
+            .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
+            .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
             .clientSaleId(item.clientSaleId())
             .offlineDeviceId(item.offlineDeviceId())
             .saleSource(Sale.SaleSource.OFFLINE_SYNC)

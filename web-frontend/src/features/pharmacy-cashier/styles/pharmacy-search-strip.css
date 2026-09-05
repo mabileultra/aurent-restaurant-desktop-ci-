@@ -1,0 +1,128 @@
+/* Полоса поиска аптеки — только .pharmacy-search-strip */
+
+.pharmacy-search-strip {
+  display: grid;
+  grid-template-columns: auto minmax(140px, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.pharmacy-search-strip__scan {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--pharm-ok, #d8f5e3);
+  color: var(--pharm-ok-text, #0b5c3a);
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pharmacy-search-strip__field {
+  width: 100%;
+  min-width: 0;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.pharmacy-search-strip__field::placeholder {
+  color: var(--pharm-muted);
+}
+
+.pharmacy-search-strip__field:focus {
+  border-color: var(--pharm-accent);
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+}
+
+.pharmacy-search-strip__toggles {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.pharmacy-search-strip__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pharmacy-search-strip__toggle.is-on {
+  background: var(--pharm-brand-soft, var(--pos-green-soft));
+  border-color: color-mix(in srgb, var(--pharm-brand, var(--pos-green)) 40%, var(--pharm-border));
+  color: var(--pharm-brand, var(--pos-green));
+}
+
+.pharmacy-search-strip__toggle .pharmacy-integration-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.pharmacy-search-strip__toggle .pharmacy-integration-icon--dmed {
+  width: 28px;
+  height: 12px;
+}
+
+.pharmacy-search-strip__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-surface);
+  color: var(--pharm-ink);
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.pharmacy-search-strip__icon-btn.is-on {
+  border-color: color-mix(in srgb, var(--pharm-brand, var(--pos-green)) 40%, var(--pharm-border));
+  background: var(--pharm-brand-soft);
+}
+
+.pharmacy-search-strip__more-wrap {
+  position: relative;
+}
+
+@media (max-width: 1100px) {
+  .pharmacy-search-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pharmacy-search-strip__scan {
+    display: none;
+  }
+
+  .pharmacy-search-strip__toggles {
+    flex-wrap: wrap;
+  }
+}

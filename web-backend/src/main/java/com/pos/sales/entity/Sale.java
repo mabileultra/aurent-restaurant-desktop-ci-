@@ -115,6 +115,19 @@ public class Sale {
 
     private String notes;
 
+    /** ПИНФЛ пациента (аптека / DMED), опционально. */
+    @Column(name = "patient_pinfl", length = 14)
+    private String patientPinfl;
+
+    /** Телефон лояльности (аптека), опционально. */
+    @Column(name = "loyalty_phone", length = 32)
+    private String loyaltyPhone;
+
+    /** Продажа через DMED / страхование. */
+    @Column(name = "pharmacy_dmed", nullable = false)
+    @Builder.Default
+    private boolean pharmacyDmed = false;
+
     /** Idempotency key from desktop offline queue. */
     @Column(name = "client_sale_id", unique = true)
     private UUID clientSaleId;

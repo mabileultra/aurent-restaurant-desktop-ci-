@@ -1,6 +1,7 @@
 import PharmacyCartTable from './PharmacyCartTable';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
-import PharmacyIntegrationToolbar from './PharmacyIntegrationToolbar';
+import PharmacySearchStrip from './PharmacySearchStrip';
+import PharmacyPayColumn from './PharmacyPayColumn';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
 import '../styles/pharmacy-cashier.css';
@@ -31,6 +32,7 @@ export default function PharmacyRegisterWorkspace({
   return (
     <CashierRegisterShell
       splitClassName="cashier-register__split--register pharmacy-cashier__split"
+      PayColumn={PharmacyPayColumn}
       pay={{
         payOpen,
         total: cart.total,
@@ -65,23 +67,12 @@ export default function PharmacyRegisterWorkspace({
         <section className="pharmacy-cashier__search-pane" aria-label={t('pharmacyCashier.searchTitle')}>
           <div className="pharmacy-cashier__pane-head pharmacy-cashier__pane-head--search">
             <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
-            <input
-              ref={searchInputRef}
-              type="search"
-              className="pharmacy-search__field pharmacy-search__field--compact"
-              value={catalog.search}
-              disabled={!catalog.storeId}
-              placeholder={t('pharmacyCashier.searchPhMarking')}
-              aria-label={t('pos.searchProducts')}
-              onChange={(e) => catalog.setSearch(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  catalog.handleSearchEnter?.();
-                }
-              }}
-            />
-            <PharmacyIntegrationToolbar
+            <PharmacySearchStrip
+              searchInputRef={searchInputRef}
+              search={catalog.search}
+              onSearchChange={catalog.setSearch}
+              onSearchEnter={catalog.handleSearchEnter}
+              scanDisabled={!catalog.storeId}
               storeId={catalog.storeId}
               capabilities={integration.capabilities}
               externalUrls={integration.externalUrls}

@@ -4,24 +4,33 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
 import {
+  daysUntilExpiry,
   formatExpiryDisplay,
-  productArrivalDate,
   productBatch,
-  productCountry,
   productDosageForm,
+  productExpiry,
+  productRequiresPrescription,
   productSellByUnitHint,
+  productShelfLifeDays,
   productStorageLocation,
-  productUnitLabel,
-  productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
 import {
   pharmacyCellToneClass,
+  pharmacyExpiryTone,
   pharmacyShelfTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
-import PharmacyExpiryCell from './PharmacyExpiryCell';
 import '../styles/pharmacy-search-table.css';
 
+function formatStockExpiryDays(daysLeft, shelfLife, daysLabel) {
+  if (daysLeft == null) return '—';
+  if (shelfLife != null) return `${daysLeft}/${shelfLife} ${daysLabel}`;
+  return `${daysLeft} ${daysLabel}`;
+}
+
+/**
+ * Остатки склада аптеки — колонки как в макете (только pharmacy-cashier).
+ */
 const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTable(
   {
     storeId,
@@ -95,21 +104,16 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
               : t('pharmacyCashier.searchHint')}
           </p>
         ) : (
-          <table className="pharmacy-search__table">
+          <table className="pharmacy-search__table pharmacy-search__table--stock">
             <thead>
               <tr>
                 <th>{t('pharmacyCashier.colName')}</th>
-                <th>{t('pharmacyCashier.colUnit')}</th>
                 <th>{t('pharmacyCashier.colForm')}</th>
-                <th>{t('pharmacyCashier.colCountry')}</th>
                 <th>{t('pharmacyCashier.colShelf')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
-                <th className="pharmacy-search__num">{t('pharmacyCashier.colPack')}</th>
-                <th>{t('pharmacyCashier.colExpiry')}</th>
+                <th>{t('pharmacyCashier.colExpiryDays')}</th>
                 <th>{t('pharmacyCashier.colBatch')}</th>
-                <th>{t('pharmacyCashier.colArrival')}</th>
-                <th>{t('pharmacyCashier.colIkpu')}</th>
               </tr>
             </thead>
             <tbody>
@@ -119,44 +123,52 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                   && Number(product.stockQuantity) <= 0;
                 const inactive = product.active === false;
                 const disabled = outOfStock || inactive;
-                const unit = productUnitLabel(product) || '—';
                 const form = productDosageForm(product) || '—';
-                const country = productCountry(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
-                const pack = productUnitsInPack(product);
                 const batch = productBatch(product) || '—';
-                const arrival = formatExpiryDisplay(productArrivalDate(product)) || '—';
+                const expiryDate = formatExpiryDisplay(productExpiry(product));
                 const sellByUnit = productSellByUnitHint(product);
                 const stockTone = disabled ? null : pharmacyStockTone(product);
                 const shelfTone = disabled ? null : pharmacyShelfTone(product);
+                const expiryTone = disabled ? null : pharmacyExpiryTone(product);
+                const needsRx = productRequiresPrescription(product);
+                const daysLeft = daysUntilExpiry(productExpiry(product));
+                const shelfLife = productShelfLifeDays(product);
+                const daysLabelText = formatStockExpiryDays(daysLeft, shelfLife, daysLabel);
+                const meta = [
+                  expiryDate ? `${t('pharmacyCashier.colExpiryShort')}: ${expiryDate}` : '',
+                  sellByUnit ? t('pharmacyCashier.sellByUnitHintShort') : '',
+                ].filter(Boolean).join(' · ');
+
                 return (
                   <tr
                     key={product.id}
-                    className={['pharmacy-search__row', disabled ? 'is-disabled' : ''].filter(Boolean).join(' ')}
+                    className={[
+                      'pharmacy-search__row',
+                      disabled ? 'is-disabled' : '',
+                      needsRx ? 'is-recipe' : '',
+                    ].filter(Boolean).join(' ')}
                     onClick={() => {
                       if (!disabled) onSelectProduct(product);
                     }}
                   >
                     <td className="pharmacy-search__name" title={product.name}>
-                      <span className="pharmacy-search__cell-text pharmacy-search__cell-text--name">
-                        {product.name}
-                      </span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={unit}>
-                      <span className="pharmacy-search__cell-text">
-                        {unit}
-                        {sellByUnit ? (
-                          <span className="pharmacy-search__hint" title={t('pharmacyCashier.sellByUnitHint')}>
-                            {' '}· 1
+                      <div className="pharmacy-search__name-block">
+                        <span className="pharmacy-search__cell-text pharmacy-search__cell-text--name">
+                          {product.name}
+                        </span>
+                        {needsRx ? (
+                          <span className="pharmacy-search__recipe-tag">
+                            {t('pharmacyCashier.recipeTag')}
                           </span>
                         ) : null}
-                      </span>
+                        {meta ? (
+                          <span className="pharmacy-search__name-meta">{meta}</span>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={form}>
                       <span className="pharmacy-search__cell-text">{form}</span>
-                    </td>
-                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
-                      <span className="pharmacy-search__cell-text">{country}</span>
                     </td>
                     <td
                       className={[
@@ -164,7 +176,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         pharmacyCellToneClass(shelfTone, 'pharmacy-search__cell'),
                       ].filter(Boolean).join(' ')}
                     >
-                      {shelf}
+                      <span className="pharmacy-search__badge">{shelf}</span>
                     </td>
                     <td className="pharmacy-search__num">
                       {fmt(resolveProductUnitPrice(product, storeId))}
@@ -175,20 +187,22 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         pharmacyCellToneClass(stockTone, 'pharmacy-search__cell'),
                       ].filter(Boolean).join(' ')}
                     >
-                      {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
+                      <span className="pharmacy-search__badge">
+                        {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
+                      </span>
                     </td>
-                    <td className="pharmacy-search__num">{pack != null ? pack : '—'}</td>
-                    <PharmacyExpiryCell
-                      product={product}
-                      daysLabel={daysLabel}
-                      classPrefix="pharmacy-search"
-                      muteTone={disabled}
-                    />
+                    <td
+                      className={[
+                        'pharmacy-search__mono',
+                        pharmacyCellToneClass(expiryTone, 'pharmacy-search__cell'),
+                      ].filter(Boolean).join(' ')}
+                      title={expiryDate || undefined}
+                    >
+                      <span className="pharmacy-search__badge">{daysLabelText}</span>
+                    </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={batch}>
                       <span className="pharmacy-search__cell-text">{batch}</span>
                     </td>
-                    <td className="pharmacy-search__mono">{arrival}</td>
-                    <td className="pharmacy-search__mono">{product.ikpu || '—'}</td>
                   </tr>
                 );
               })}

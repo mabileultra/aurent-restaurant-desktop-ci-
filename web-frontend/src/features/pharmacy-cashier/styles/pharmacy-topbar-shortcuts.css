@@ -1,0 +1,49 @@
+/* Хоткеи в topbar — только .pharmacy-topbar-shortcuts / pharmacy-pos */
+
+.pharmacy-topbar-shortcuts {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  margin-left: 8px;
+  min-width: 0;
+}
+
+.pharmacy-topbar-shortcuts__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pharmacy-topbar-shortcuts__kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6rem;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
+  border-radius: 5px;
+  background: var(--pharm-elevated, var(--pos-surface-elevated, #fff));
+  color: var(--pharm-brand, var(--pos-green, #006847));
+  font-family: inherit;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-topbar-shortcuts__kbd {
+  background: #fff;
+  border-color: color-mix(in srgb, var(--pharm-teal, #0f766e) 28%, #d5ddd8);
+  color: var(--pharm-teal, #0f766e);
+}
+
+.cashier-app.cashier-app--pharmacy-pos .cashier-topbar__terminal-strip {
+  align-items: center;
+  gap: 8px;
+}

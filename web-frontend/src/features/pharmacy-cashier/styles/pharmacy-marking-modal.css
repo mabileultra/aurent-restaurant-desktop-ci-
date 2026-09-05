@@ -117,7 +117,7 @@
 
 .pharmacy-marking-modal__btn--primary {
   border: 0;
-  background: #2f6fed;
+  background: var(--pharm-brand, #006847);
   color: #fff;
 }
 

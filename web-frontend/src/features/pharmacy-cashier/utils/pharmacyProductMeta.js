@@ -105,6 +105,34 @@ export function productStorageLocation(productOrLine) {
   );
 }
 
+/** Нужен рецепт (для подсветки строки и тега РЕЦЕПТ). */
+export function productRequiresPrescription(productOrLine) {
+  const raw = productAttr(
+    productOrLine,
+    'requires_prescription',
+    'requiresPrescription',
+    'prescription_required',
+    'prescriptionRequired',
+    'rx_required',
+    'rxRequired',
+    'рецепт',
+  );
+  if (!raw) {
+    const flag = productOrLine?.requiresPrescription
+      ?? productOrLine?.prescriptionRequired
+      ?? productOrLine?.retailExtras?.requiresPrescription;
+    if (flag === true || flag === 1 || flag === '1') return true;
+    return false;
+  }
+  const normalized = String(raw).trim().toLowerCase();
+  return normalized === '1'
+    || normalized === 'true'
+    || normalized === 'yes'
+    || normalized === 'да'
+    || normalized === 'rx'
+    || normalized === 'рецепт';
+}
+
 /** Можно продавать дробно / по 1 из пачки (лента). */
 export function productSellByUnitHint(productOrLine) {
   if (productOrLine?.allowFraction) return true;

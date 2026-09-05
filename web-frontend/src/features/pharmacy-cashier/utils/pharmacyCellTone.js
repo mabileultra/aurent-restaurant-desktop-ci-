@@ -1,6 +1,6 @@
 /**
  * Подсветка ячеек аптечной таблицы (не всей строки).
- * green — норма, yellow — внимание, red — критично, blue — полка/навигация.
+ * ok — норма, warn — внимание, danger — критично, info — полка/навигация (teal).
  */
 
 import {
@@ -40,7 +40,7 @@ export function pharmacyExpiryTone(productOrLine) {
 }
 
 /**
- * Полка — синий маркер, чтобы быстро найти товар.
+ * Полка — teal/info маркер, чтобы быстро найти товар.
  * @returns {'info' | null}
  */
 export function pharmacyShelfTone(productOrLine) {

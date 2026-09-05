@@ -4,6 +4,7 @@ import {
   lineSubtotal,
 } from '../../store/cartStore';
 import { resolveCheckoutLineItems } from '../../features/pharmacy-cashier/utils/pharmacyCheckoutItems';
+import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
 
 function mapLineItems(cartItems) {
   return cartItems.map((item) => {
@@ -144,6 +145,8 @@ export function buildOfflineCheckoutPayload({
       }
     : undefined;
 
+  const pharmacyExtras = buildPharmacySaleExtras(payment);
+
   return {
     storeId: Number(storeId),
     paymentMethod: payment.paymentMethod,
@@ -156,6 +159,10 @@ export function buildOfflineCheckoutPayload({
     items: resolveCheckoutLineItems(cartItems),
     orderDiscountAmount: orderDiscountAmount ?? 0,
     orderDiscountPercent: orderDiscountPercent ?? 0,
+    ...(pharmacyExtras?.notes ? { notes: pharmacyExtras.notes } : {}),
+    ...(pharmacyExtras?.patientPinfl ? { patientPinfl: pharmacyExtras.patientPinfl } : {}),
+    ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
+    ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
     ...(fiscalBlock ? { fiscal: fiscalBlock } : {}),
   };
 }

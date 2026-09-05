@@ -1,0 +1,312 @@
+/* Аптечная панель оплаты — только .pharmacy-pay-rail / .pharmacy-pay-column */
+
+.pharmacy-pay-column .cashier-register__pay-pane--rail {
+  min-height: 0;
+}
+
+.pharmacy-pay-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+  padding: 10px;
+  color: var(--pharm-ink, var(--pos-text));
+}
+
+.pharmacy-pay-rail__total {
+  padding: 8px 10px;
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  border-radius: var(--pharm-radius, 10px);
+  background: var(--pharm-surface, var(--pos-surface));
+}
+
+.pharmacy-pay-rail__total-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pharm-muted, var(--pos-muted));
+}
+
+.pharmacy-pay-rail__total-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.pharmacy-pay-rail__total-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--pharm-ink, var(--pos-text));
+  line-height: 1.1;
+}
+
+.pharmacy-pay-rail__currency {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--pharm-muted, var(--pos-muted));
+}
+
+.pharmacy-pay-rail__methods {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.pharmacy-pay-rail__hint {
+  margin: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: var(--pharm-surface, var(--pos-surface));
+  color: var(--pharm-muted, var(--pos-muted));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.pharmacy-pay-rail__dmed-note {
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--pharm-info-text, #0f5c56) 28%, var(--pharm-border, #d5ddd8));
+  border-radius: 8px;
+  background: var(--pharm-info, #d9f3f1);
+  color: var(--pharm-info-text, #0f5c56);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.pharmacy-pay-rail__change--warn {
+  background: var(--pharm-warn, #fff3cd);
+  border-color: var(--pharm-recipe-border, #f0d78c);
+  color: var(--pharm-warn-text, #7a5b00);
+}
+
+.pharmacy-pay-rail__change--warn strong {
+  color: var(--pharm-warn-text, #7a5b00);
+}
+
+.pharmacy-pay-rail__patient.is-required .pharmacy-pay-rail__field:first-child span {
+  color: var(--pharm-brand, var(--pos-green));
+}
+
+
+.pharmacy-pay-rail__method {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 48px;
+  padding: 4px 2px;
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-muted, var(--pos-muted));
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.pharmacy-pay-rail__method.is-active {
+  background: var(--pharm-brand-soft, var(--pos-green-soft));
+  border-color: color-mix(in srgb, var(--pharm-brand, var(--pos-green)) 45%, var(--pharm-border, #d5ddd8));
+  color: var(--pharm-brand, var(--pos-green));
+}
+
+.pharmacy-pay-rail__method:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.pharmacy-pay-rail__split,
+.pharmacy-pay-rail__cash-summary,
+.pharmacy-pay-rail__patient {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pharmacy-pay-rail__cash-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.pharmacy-pay-rail__field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin: 0;
+  font-size: 0.625rem;
+  font-weight: 700;
+  color: var(--pharm-muted, var(--pos-muted));
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.pharmacy-pay-rail__field input {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, var(--pos-text));
+  font-size: 0.875rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.pharmacy-pay-rail__field input:focus {
+  border-color: var(--pharm-brand, var(--pos-green));
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+}
+
+.pharmacy-pay-rail__change {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--pharm-surface, var(--pos-surface));
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--pharm-muted, var(--pos-muted));
+}
+
+.pharmacy-pay-rail__change strong {
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--pharm-ink, var(--pos-text));
+}
+
+.pharmacy-pay-rail__change.is-ready {
+  background: var(--pharm-ok, #d8f5e3);
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 25%, #d5ddd8);
+}
+
+.pharmacy-pay-rail__change.is-ready strong {
+  color: var(--pharm-ok-text, #0b5c3a);
+}
+
+.pharmacy-pay-rail__keypad {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.pharmacy-pay-rail__keypad .pos-keypad {
+  min-height: 0;
+}
+
+.pharmacy-pay-rail__cards {
+  flex-shrink: 0;
+}
+
+.pharmacy-pay-rail__tools {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-top: auto;
+}
+
+.pharmacy-pay-rail__tool {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border, var(--pos-border));
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, var(--pos-text));
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-pay-rail__tool--return {
+  color: #b42318;
+}
+
+.pharmacy-pay-rail__footer {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.pharmacy-pay-rail__sale {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 52px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: var(--pos-green-gradient, var(--pharm-brand, #006847));
+  color: var(--pos-on-green, #fff);
+  font-size: 0.8125rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgb(0 80 55 / 0.28);
+}
+
+.pharmacy-pay-rail__sale span {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  line-height: 1.15;
+}
+
+.pharmacy-pay-rail__sale em {
+  font-style: normal;
+  font-size: 0.9375rem;
+  font-variant-numeric: tabular-nums;
+  opacity: 0.95;
+}
+
+.pharmacy-pay-rail__sale:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.pharmacy-pay-rail__print {
+  flex: 0 0 auto;
+  max-width: 5.5rem;
+}
+
+.pharmacy-pay-rail__spin {
+  animation: pharmacy-pay-rail-spin 0.8s linear infinite;
+}
+
+@keyframes pharmacy-pay-rail-spin {
+  to { transform: rotate(360deg); }
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-pay-rail__method.is-active {
+  background: var(--pharm-brand-soft);
+  color: var(--pharm-brand);
+}
+
+.cashier-app.cashier-app--pharmacy-pos .pharmacy-pay-rail__keypad .pos-keypad__quick-btn {
+  min-height: 30px;
+  font-size: 0.6875rem;
+}
