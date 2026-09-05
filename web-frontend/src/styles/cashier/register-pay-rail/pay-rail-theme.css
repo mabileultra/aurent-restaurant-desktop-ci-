@@ -36,10 +36,10 @@
   --pay-tile-fg: #64748b;
   --pay-tile-hover-bg: rgb(255 255 255 / 0.65);
   --pay-tile-hover-fg: #334155;
-  --pay-tile-active-bg: #ffffff;
-  --pay-tile-active-border: #e2e8f0;
-  --pay-tile-active-fg: #0f172a;
-  --pay-tile-active-shadow: 0 2px 8px rgb(15 23 42 / 0.08);
+  --pay-tile-active-bg: transparent;
+  --pay-tile-active-border: transparent;
+  --pay-tile-active-fg: #64748b;
+  --pay-tile-active-shadow: none;
   --pay-tile-cashless: #059669;
   --pay-tile-credit: #7c3aed;
   --pay-tile-advance: #ea580c;
@@ -67,12 +67,13 @@
 
 .cashier-app.cashier-app--terminal .pos-register-pay-rail {
   --pay-rail-bg: var(--pos-surface-elevated, #1c2433);
-  --pay-cash-bg: var(--pos-surface, #151b26);
-  --pay-cash-border: var(--pos-border, #2a3548);
+  /* Явный тёмный фон — сумма всегда читается */
+  --pay-cash-bg: #151b26;
+  --pay-cash-border: #2a3548;
   --pay-cash-shadow: 0 2px 12px rgb(0 0 0 / 0.28);
 
-  --pay-label: var(--pos-muted, #94a3b8);
-  --pay-label-icon: var(--pos-green, #2ec4b6);
+  --pay-label: #94a3b8;
+  --pay-label-icon: #2ec4b6;
   --pay-due-value: #f8fafc;
 
   --pay-discount-bg: rgb(46 196 182 / 0.16);
@@ -93,29 +94,30 @@
   --pay-change-ready-border: rgb(46 196 182 / 0.7);
 
   --pay-block-bg: #0f141c;
-  --pay-block-border: var(--pos-border, #2a3548);
+  --pay-block-border: #2a3548;
 
-  --pay-tile-fg: var(--pos-muted, #94a3b8);
-  --pay-tile-hover-bg: rgb(28 36 51 / 0.7);
-  --pay-tile-hover-fg: var(--pos-text, #f1f5f9);
-  --pay-tile-active-bg: var(--pos-surface-elevated, #1c2433);
-  --pay-tile-active-border: rgb(148 163 184 / 0.35);
-  --pay-tile-active-fg: #f8fafc;
-  --pay-tile-active-shadow: 0 2px 8px rgb(0 0 0 / 0.3);
+  --pay-tile-fg: #94a3b8;
+  --pay-tile-hover-bg: rgb(28 36 51 / 0.85);
+  --pay-tile-hover-fg: #f1f5f9;
+  --pay-tile-active-bg: transparent;
+  --pay-tile-active-border: transparent;
+  --pay-tile-active-fg: #94a3b8;
+  --pay-tile-active-shadow: none;
   --pay-tile-cashless: #2ec4b6;
   --pay-tile-credit: #c4b5fd;
   --pay-tile-advance: #fdba74;
 
-  --pay-provider-bg: var(--pos-surface, #151b26);
-  --pay-provider-border: var(--pos-border, #2a3548);
+  /* Светлые pastel-кнопки — тёмные логотипы читаются */
+  --pay-provider-bg: #f8fafc;
+  --pay-provider-border: #64748b;
   --pay-provider-shadow: 0 1px 3px rgb(0 0 0 / 0.28);
-  --pay-provider-payme-bg: rgb(20 184 166 / 0.14);
+  --pay-provider-payme-bg: #e6fffb;
   --pay-provider-payme-border: #14b8a6;
-  --pay-provider-click-bg: rgb(59 130 246 / 0.12);
+  --pay-provider-click-bg: #eff6ff;
   --pay-provider-click-border: #3b82f6;
-  --pay-provider-uzcard-bg: rgb(37 99 235 / 0.12);
-  --pay-provider-uzcard-border: #60a5fa;
-  --pay-provider-humo-bg: rgb(245 158 11 / 0.14);
+  --pay-provider-uzcard-bg: #eff6ff;
+  --pay-provider-uzcard-border: #2563eb;
+  --pay-provider-humo-bg: #fff7ed;
   --pay-provider-humo-border: #f59e0b;
   --pay-provider-logo-filter: none;
 

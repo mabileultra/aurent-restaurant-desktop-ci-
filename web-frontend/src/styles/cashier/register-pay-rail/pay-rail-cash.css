@@ -19,6 +19,12 @@
   flex-direction: column;
   gap: 6px;
   min-width: 0;
+  /* Сброс leak из payment-modal.css (mint bg + padding) */
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-size: inherit;
 }
 
 .pos-register-pay-rail .pos-pay-cash__due-head {

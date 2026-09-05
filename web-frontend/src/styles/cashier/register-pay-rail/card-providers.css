@@ -24,8 +24,13 @@
 
 .pos-register-card-providers__btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  filter: brightness(0.98);
-  box-shadow: 0 2px 8px rgb(15 23 42 / 0.1);
+  filter: brightness(0.97);
+  box-shadow: 0 2px 8px rgb(15 23 42 / 0.12);
+}
+
+.cashier-app.cashier-app--terminal .pos-register-card-providers__btn:hover:not(:disabled) {
+  filter: brightness(0.96);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.35);
 }
 
 .pos-register-card-providers__btn:active:not(:disabled) {

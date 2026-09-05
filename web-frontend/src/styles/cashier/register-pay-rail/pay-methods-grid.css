@@ -42,7 +42,7 @@
   transition: background 0.12s, border-color 0.12s, color 0.12s, box-shadow 0.12s;
 }
 
-.pos-register-pay-methods__tile:hover:not(:disabled):not(.is-active) {
+.pos-register-pay-methods__tile:hover:not(:disabled) {
   background: var(--pay-tile-hover-bg);
   color: var(--pay-tile-hover-fg);
 }
@@ -50,13 +50,6 @@
 .pos-register-pay-methods__tile:disabled {
   opacity: 0.45;
   cursor: not-allowed;
-}
-
-.pos-register-pay-methods__tile.is-active {
-  background: var(--pay-tile-active-bg);
-  border-color: var(--pay-tile-active-border);
-  color: var(--pay-tile-active-fg);
-  box-shadow: var(--pay-tile-active-shadow);
 }
 
 .pos-register-pay-methods__tile-icon {
