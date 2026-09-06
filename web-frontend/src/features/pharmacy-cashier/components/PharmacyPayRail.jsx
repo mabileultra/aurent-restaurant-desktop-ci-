@@ -13,9 +13,11 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
 import PharmacyPayQuickCash from './PharmacyPayQuickCash';
+import PharmacyPayPatientCards from './PharmacyPayPatientCards';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-rail.css';
+import '../styles/pharmacy-pay-patient.css';
 
 const METHOD_META = [
   { id: 'cash', icon: Banknote, labelKey: 'pharmacyCashier.pay.methodCash', kbd: 'F6' },
@@ -153,35 +155,14 @@ export default function PharmacyPayRail({
         </div>
       ) : null}
 
-      <div className={`pharmacy-pay-rail__patient${pinflRequired ? ' is-required' : ''}`}>
-        <label className="pharmacy-pay-rail__field">
-          <span>
-            {t('pharmacyCashier.pay.pinfl')}
-            {pinflRequired ? ' *' : ''}
-          </span>
-          <input
-            type="text"
-            inputMode="numeric"
-            maxLength={14}
-            value={rail.pinfl}
-            disabled={checkoutDisabled || isPending}
-            onChange={(e) => rail.setPinfl(e.target.value.replace(/\D/g, '').slice(0, 14))}
-            placeholder={t('pharmacyCashier.pay.pinflPh')}
-            autoComplete="off"
-          />
-        </label>
-        <label className="pharmacy-pay-rail__field">
-          <span>{t('pharmacyCashier.pay.loyaltyPhone')}</span>
-          <input
-            type="tel"
-            value={rail.loyaltyPhone}
-            disabled={checkoutDisabled || isPending}
-            onChange={(e) => rail.setLoyaltyPhone(e.target.value)}
-            placeholder="+998 __ ___ __ __"
-            autoComplete="tel"
-          />
-        </label>
-      </div>
+      <PharmacyPayPatientCards
+        pinfl={rail.pinfl}
+        onPinflChange={rail.setPinfl}
+        loyaltyPhone={rail.loyaltyPhone}
+        onLoyaltyPhoneChange={rail.setLoyaltyPhone}
+        disabled={checkoutDisabled || isPending}
+        pinflRequired={pinflRequired}
+      />
 
       <div className="pharmacy-pay-rail__tools">
         <button type="button" className="pharmacy-pay-rail__tool" onClick={onDiscount}>

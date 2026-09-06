@@ -149,7 +149,11 @@ export function useCashierDesktopMenu() {
       } else if (result?.ok) {
         toast.success(t('desktop.checkUpdatesLatest'));
       } else if (result?.reason !== 'dev') {
-        toast.error(t('desktop.checkUpdatesFailed'));
+        toast.error(
+          result?.error
+            ? `${t('desktop.checkUpdatesFailed')}: ${result.error}`
+            : t('desktop.checkUpdatesFailed'),
+        );
       }
     } catch {
       toast.error(t('desktop.checkUpdatesFailed'));

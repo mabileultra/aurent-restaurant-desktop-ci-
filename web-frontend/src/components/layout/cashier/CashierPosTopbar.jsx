@@ -1,5 +1,5 @@
 import { LogOut } from 'lucide-react';
-import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
+import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import BrandMark from '../../shared/BrandMark';
 import { BRAND_NAME } from '../../../config/brandLogos';
@@ -48,7 +48,6 @@ export default function CashierPosTopbar({
               pharmacyBadge={isPharmacyRegister}
             />
             {isPharmacyRegister ? <PharmacyTopbarShortcuts /> : null}
-            {isDesktopApp ? <OfflineStatusTopbar /> : null}
           </div>
           <p className="cashier-topbar__pos-title mb-0 fw-semibold d-md-none">
             {t(

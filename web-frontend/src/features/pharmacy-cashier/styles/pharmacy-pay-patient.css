@@ -1,0 +1,261 @@
+/* DMED + loyalty cards in pharmacy pay rail */
+
+.pharmacy-pay-patient {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pharmacy-pay-patient__card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--ppr-border, #d5dbe3);
+}
+
+.pharmacy-pay-patient__card--dmed {
+  border-color: #bfd6fb;
+  background: #f5f9ff;
+}
+
+.pharmacy-pay-patient__card--dmed.is-required {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #2f6fed 35%, transparent);
+}
+
+.pharmacy-pay-patient__card--loyalty {
+  border-color: #ddd0f3;
+  background: #fbf8ff;
+}
+
+.pharmacy-pay-patient__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.pharmacy-pay-patient__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.75rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pharmacy-pay-patient__card--dmed .pharmacy-pay-patient__title {
+  color: #1d4f91;
+}
+
+.pharmacy-pay-patient__card--loyalty .pharmacy-pay-patient__title {
+  color: #6b3fa0;
+}
+
+.pharmacy-pay-patient__title svg {
+  flex-shrink: 0;
+}
+
+.pharmacy-pay-patient__badge {
+  flex-shrink: 0;
+  padding: 3px 7px;
+  border-radius: 6px;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.pharmacy-pay-patient__badge--dmed.is-online {
+  color: #1d4f91;
+  background: #e3eefc;
+  border: 1px solid #b7d0f5;
+}
+
+.pharmacy-pay-patient__badge--dmed.is-offline {
+  color: #92400e;
+  background: #fff3cd;
+  border: 1px solid #f0d48a;
+}
+
+.pharmacy-pay-patient__badge--loyalty {
+  color: #6b3fa0;
+  background: #f0e7fb;
+  border: 1px solid #d8c4f0;
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.625rem;
+}
+
+.pharmacy-pay-patient__row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pharmacy-pay-patient__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 1.5px solid #d5dbe3;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ppr-ink, #142033);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  outline: none;
+}
+
+.pharmacy-pay-patient__input--dmed {
+  border-color: #9fc0f0;
+}
+
+.pharmacy-pay-patient__input:focus {
+  border-color: #2f6fed;
+  box-shadow: 0 0 0 2px rgb(47 111 237 / 0.16);
+}
+
+.pharmacy-pay-patient__card--loyalty .pharmacy-pay-patient__input:focus {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgb(139 92 246 / 0.16);
+}
+
+.pharmacy-pay-patient__btn {
+  flex: 0 0 auto;
+  min-width: 5.5rem;
+  height: 36px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pharmacy-pay-patient__btn--dmed {
+  background: #2f6fed;
+  border-color: #2f6fed;
+  color: #fff;
+}
+
+.pharmacy-pay-patient__btn--dmed:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.pharmacy-pay-patient__btn--loyalty {
+  background: #f3eaff;
+  border-color: #cbb6ea;
+  color: #5b2d91;
+}
+
+.pharmacy-pay-patient__btn--loyalty:hover:not(:disabled) {
+  background: #ebe0fb;
+}
+
+.pharmacy-pay-patient__btn:disabled,
+.pharmacy-pay-patient__link:disabled,
+.pharmacy-pay-patient__input:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.pharmacy-pay-patient__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ppr-muted, #64748b);
+}
+
+.pharmacy-pay-patient__link {
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #2f6fed;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.pharmacy-pay-patient__link:hover:not(:disabled) {
+  text-decoration: underline;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__card {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: var(--pos-border, #2a3548);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__card--dmed {
+  background: color-mix(in srgb, #2f6fed 14%, var(--pos-surface-elevated, #1c2433));
+  border-color: color-mix(in srgb, #2f6fed 40%, var(--pos-border, #2a3548));
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__card--loyalty {
+  background: color-mix(in srgb, #8b5cf6 14%, var(--pos-surface-elevated, #1c2433));
+  border-color: color-mix(in srgb, #8b5cf6 40%, var(--pos-border, #2a3548));
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__input {
+  background: var(--pos-surface, #151b26);
+  border-color: var(--pos-border, #2a3548);
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__input--dmed {
+  border-color: color-mix(in srgb, #2f6fed 45%, var(--pos-border, #2a3548));
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__card--dmed .pharmacy-pay-patient__title {
+  color: #93c5fd;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__card--loyalty .pharmacy-pay-patient__title {
+  color: #d8b4fe;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__badge--dmed.is-online {
+  color: #93c5fd;
+  background: rgb(47 111 237 / 0.2);
+  border-color: rgb(47 111 237 / 0.4);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__badge--dmed.is-offline {
+  color: #fcd34d;
+  background: rgb(245 158 11 / 0.18);
+  border-color: rgb(245 158 11 / 0.4);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__badge--loyalty {
+  color: #d8b4fe;
+  background: rgb(139 92 246 / 0.2);
+  border-color: rgb(139 92 246 / 0.4);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__btn--loyalty {
+  background: rgb(139 92 246 / 0.22);
+  border-color: rgb(139 92 246 / 0.45);
+  color: #e9d5ff;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__meta {
+  color: var(--pos-muted, #94a3b8);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-patient__link {
+  color: #93c5fd;
+}

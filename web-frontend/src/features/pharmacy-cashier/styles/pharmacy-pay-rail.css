@@ -293,45 +293,6 @@
   flex-shrink: 0;
 }
 
-.pharmacy-pay-rail__patient {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.pharmacy-pay-rail__patient.is-required .pharmacy-pay-rail__field:first-child span {
-  color: var(--ppr-green);
-}
-
-.pharmacy-pay-rail__field {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  margin: 0;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--ppr-muted);
-}
-
-.pharmacy-pay-rail__field input {
-  height: 36px;
-  padding: 0 10px;
-  border: 1.5px solid var(--ppr-border);
-  border-radius: 8px;
-  background: #fff;
-  color: var(--ppr-ink);
-  font-size: 0.875rem;
-  font-weight: 700;
-  outline: none;
-}
-
-.pharmacy-pay-rail__field input:focus {
-  border-color: var(--ppr-green);
-  box-shadow: 0 0 0 2px rgb(0 104 71 / 0.16);
-}
-
 .pharmacy-pay-rail__tools {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -462,4 +423,86 @@
   .pharmacy-pay-rail__method {
     min-height: 50px;
   }
+}
+
+/* —— тёмная тема —— */
+.cashier-app.cashier-app--terminal .pharmacy-pay-column .cashier-register__pay-pane--rail,
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail {
+  background: var(--pos-surface, #151b26);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail {
+  --ppr-border: var(--pos-border, #2a3548);
+  --ppr-ink: var(--pos-text, #f1f5f9);
+  --ppr-muted: var(--pos-muted, #94a3b8);
+  --ppr-green: var(--pos-green, #1a8f7a);
+  --ppr-green-soft: var(--pos-green-soft, rgb(26 143 122 / 0.16));
+  --ppr-gold: #c4a35a;
+  --ppr-surface: var(--pos-surface-elevated, #1c2433);
+  --ppr-btn: var(--pos-surface-hover, #243044);
+  color: var(--ppr-ink);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__tool,
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box,
+.cashier-app.cashier-app--terminal .pharmacy-pay-quick {
+  background: var(--ppr-surface);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn {
+  background: var(--pos-surface-hover, #243044);
+  border-color: var(--pos-border, #2a3548);
+  color: var(--pos-text, #f1f5f9);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn:hover:not(:disabled) {
+  background: var(--pos-surface-active, #2a3548);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn--reset {
+  background: rgb(248 113 113 / 0.12);
+  border-color: rgb(248 113 113 / 0.35);
+  color: #fca5a5;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-quick__btn--reset:hover:not(:disabled) {
+  background: rgb(248 113 113 / 0.2);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-ready {
+  background: rgb(26 143 122 / 0.18);
+  border-color: rgb(26 143 122 / 0.4);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-ready .pharmacy-pay-rail__box-value {
+  color: #7dffc4;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-remainder {
+  background: rgb(13 148 136 / 0.16);
+  border-color: rgb(13 148 136 / 0.4);
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__box.is-remainder .pharmacy-pay-rail__box-value {
+  color: #5eead4;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__dmed-note {
+  background: rgb(47 111 237 / 0.14);
+  border-color: rgb(47 111 237 / 0.35);
+  color: #93c5fd;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__tool--return {
+  color: #fca5a5;
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print {
+  background: var(--ppr-green-soft);
+  border-color: color-mix(in srgb, var(--ppr-green) 40%, var(--ppr-border));
+}
+
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print .pos-pay-print-toggle__text,
+.cashier-app.cashier-app--terminal .pharmacy-pay-rail__print .pos-pay-print-toggle__icon {
+  color: #7dffc4;
 }

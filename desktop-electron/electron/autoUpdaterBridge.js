@@ -1,5 +1,9 @@
 /**
  * Автообновление Electron через electron-updater (generic feed на /downloads/desktop/).
+ *
+ * Сборки сейчас без Apple/Windows code-signing (нет CSC_* в CI).
+ * Без отключения verifyUpdateCodeSignature Mac часто скачивает zip и падает
+ * с ошибкой подписи; Windows иногда тоже валидирует publisherName.
  */
 const { app, ipcMain, BrowserWindow } = require('electron');
 const { autoUpdater } = require('electron-updater');
@@ -36,9 +40,17 @@ function isUpdaterEnabled() {
   return app.isPackaged && Boolean(feedUrl);
 }
 
-function registerAutoUpdaterHandlers() {
+function configureUpdaterForUnsignedBuilds() {
   autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
+  // Полный файл надёжнее blockmap на нестабильной сети / CDN.
+  autoUpdater.disableDifferentialDownload = true;
+  // Unsigned CI builds — иначе после скачивания часто «code signature» / publisher mismatch.
+  autoUpdater.verifyUpdateCodeSignature = false;
+}
+
+function registerAutoUpdaterHandlers() {
+  configureUpdaterForUnsignedBuilds();
 
   autoUpdater.on('update-available', (info) => {
     broadcastUpdate({ type: 'available', version: info.version });
@@ -56,7 +68,9 @@ function registerAutoUpdaterHandlers() {
   });
 
   autoUpdater.on('error', (error) => {
-    broadcastUpdate({ type: 'error', message: error?.message || String(error) });
+    const message = error?.message || String(error);
+    console.error('[autoUpdater]', message);
+    broadcastUpdate({ type: 'error', message });
   });
 }
 
@@ -100,8 +114,14 @@ function registerAutoUpdaterIpc() {
 
   ipcMain.handle('desktop:quitAndInstallUpdate', () => {
     if (!isUpdaterEnabled()) return false;
-    autoUpdater.quitAndInstall(false, true);
-    return true;
+    try {
+      // isSilent=false → показать UI установщика при необходимости прав
+      autoUpdater.quitAndInstall(false, true);
+      return true;
+    } catch (error) {
+      broadcastUpdate({ type: 'error', message: error?.message || String(error) });
+      return false;
+    }
   });
 }
 

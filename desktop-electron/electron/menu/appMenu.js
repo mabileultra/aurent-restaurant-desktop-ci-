@@ -29,7 +29,7 @@ function buildAppMenu({ openServerSettings, reloadPage, checkForUpdates }) {
                     type: 'info',
                     title: 'Aurent — обновление',
                     message: `Доступна версия ${result.version}`,
-                    detail: 'Загрузка начнётся автоматически.',
+                    detail: 'Загрузка начнётся автоматически. После скачивания перезапустите кассу.',
                     buttons: ['OK'],
                   }).catch(() => {});
                 } else if (result?.ok) {
@@ -37,6 +37,9 @@ function buildAppMenu({ openServerSettings, reloadPage, checkForUpdates }) {
                     type: 'info',
                     title: 'Aurent — обновление',
                     message: 'Установлена последняя версия',
+                    detail: result?.currentVersion
+                      ? `Текущая версия: ${result.currentVersion}`
+                      : undefined,
                     buttons: ['OK'],
                   }).catch(() => {});
                 } else if (result?.reason !== 'dev') {
@@ -44,12 +47,20 @@ function buildAppMenu({ openServerSettings, reloadPage, checkForUpdates }) {
                     type: 'warning',
                     title: 'Aurent — обновление',
                     message: 'Не удалось проверить обновления',
-                    detail: String(result?.reason || ''),
+                    detail: String(result?.error || result?.reason || 'unknown'),
                     buttons: ['OK'],
                   }).catch(() => {});
                 }
               })
-              .catch(() => {});
+              .catch((error) => {
+                dialog.showMessageBox({
+                  type: 'warning',
+                  title: 'Aurent — обновление',
+                  message: 'Не удалось проверить обновления',
+                  detail: String(error?.message || error || 'unknown'),
+                  buttons: ['OK'],
+                }).catch(() => {});
+              });
           },
         },
         { type: 'separator' },

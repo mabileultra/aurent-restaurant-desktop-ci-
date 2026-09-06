@@ -1,5 +1,5 @@
 import { LogOut } from 'lucide-react';
-import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell, OfflineStatusTopbar } from '../../../features/cashier';
+import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
 import BrandMark from '../../shared/BrandMark';
 import { BRAND_NAME } from '../../../config/brandLogos';
@@ -37,7 +37,6 @@ export default function CashierSecondaryTopbar({
               shiftOpenBadge={shiftOpenBadge}
               shift={shift}
             />
-            {isDesktopApp ? <OfflineStatusTopbar /> : null}
           </div>
         </div>
         <div className="cashier-topbar__actions">
