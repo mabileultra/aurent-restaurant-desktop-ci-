@@ -13,15 +13,16 @@ import { appendKeypadDigit } from '../../cashier/components/NumericKeypad';
 export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'insurance'];
 
 export const PHARMACY_QUICK_CASH = [
-  { amount: 10000, mode: 'add', label: '+10k' },
-  { amount: 20000, mode: 'add', label: '+20k' },
-  { amount: 50000, mode: 'add', label: '+50k' },
-  { amount: 100000, mode: 'add', label: '+100k' },
-  { amount: 200000, mode: 'add', label: '+200k' },
+  { amount: 10000, mode: 'add', label: '+10 000' },
+  { amount: 20000, mode: 'add', label: '+20 000' },
+  { amount: 50000, mode: 'add', label: '+50 000' },
+  { amount: 100000, mode: 'add', label: '+100 000' },
+  { amount: 200000, mode: 'add', label: '+200 000' },
 ];
 
 /**
- * Аптечная оплата. Смешанная — как в продукте: часть налом (keypad) + остаток картой (провайдер).
+ * Аптечная оплата. Смешанная — как в продукте: часть налом + остаток картой.
+ * Экранного numpad нет — сумма с физклавиатуры и быстрого ввода купюр.
  */
 export function usePharmacyPayRail({
   total,

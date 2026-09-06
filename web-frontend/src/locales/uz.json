@@ -2046,11 +2046,14 @@
       "needFullCash": "Naqd summani to‘liq kiriting",
       "needMixedCover": "Naqd+karta jami summani yopishi kerak",
       "hintPickOrSaleCard": "Terminalni tanlang yoki Sotish [Enter]",
-      "hintMixedProduct": "Naqd qismini kiriting (klaviatura), keyin terminalni tanlang",
+      "hintMixedProduct": "Naqd qismini kiriting (raqamlar / tezkor tugmalar), keyin terminalni tanlang",
       "hintMixedPickCard": "Qoldiq kartada — terminal yoki Enter",
       "hintMixedFill": "Naqd va kartani jami gacha to‘ldiring",
       "hintMixedCard": "Karta bilan to‘ldiring — keyin Sotish",
-      "hintDmed": "PINFL ni tekshiring va sotishni tasdiqlang [Enter]"
+      "hintDmed": "PINFL ni tekshiring va sotishni tasdiqlang [Enter]",
+      "quickTitle": "Tezkor kupyura kiritish (so‘m)",
+      "exact": "Aniq",
+      "reset": "Tozalash"
     },
     "integrations": {
       "toolbar": "Tezkor havolalar",

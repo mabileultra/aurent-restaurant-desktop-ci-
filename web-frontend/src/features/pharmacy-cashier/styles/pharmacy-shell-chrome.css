@@ -3,10 +3,20 @@
  * Только .cashier-app--pharmacy-pos — retail не трогаем.
  */
 
+/* Размеры шапки как обычно; чуть мельче только внутренности контролов */
+.cashier-app--pharmacy-pos .cashier-topbar__brand-name {
+  font-size: 1.05rem;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__pro-badge {
+  padding: 2px 6px;
+  font-size: 0.5625rem;
+}
+
 .cashier-app--pharmacy-pos .cashier-topbar__store-pill {
   gap: 8px;
-  min-height: 30px;
-  padding: 0 10px;
+  min-height: var(--cashier-topbar-control-h, 40px);
+  padding: 0 12px;
   border-radius: 999px;
 }
 
@@ -14,12 +24,46 @@
   width: 7px;
   height: 7px;
   background: var(--pharm-teal, #0d9488);
-  box-shadow: 0 0 0 3px var(--pharm-teal-soft, rgb(13 148 136 / 0.16));
+  box-shadow: 0 0 0 2px var(--pharm-teal-soft, rgb(13 148 136 / 0.16));
 }
 
 .cashier-app--pharmacy-pos .cashier-topbar__store-name {
   font-size: 0.6875rem;
   letter-spacing: 0.03em;
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__avatar {
+  width: 30px;
+  height: 30px;
+  font-size: 0.6875rem;
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-name {
+  font-size: 0.8125rem;
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-role {
+  font-size: 0.6875rem;
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__logout {
+  font-size: 0.8125rem;
+  gap: 6px;
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__logout svg {
+  width: 14px;
+  height: 14px;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__theme svg,
+.cashier-app--pharmacy-pos .cashier-topbar__actions svg {
+  width: 15px;
+  height: 15px;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__lang {
+  font-size: 0.6875rem;
 }
 
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__store-pill {

@@ -233,43 +233,50 @@
 
 .cashier-desktop-menu__zoom-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-width: 0;
   padding: 6px 8px;
   border: 1px solid var(--pos-border);
   border-radius: 8px;
   background: var(--pos-surface, #f4f6fa);
+  box-sizing: border-box;
 }
 
 .cashier-desktop-menu__zoom-caption {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: var(--pos-text);
-  white-space: nowrap;
+  line-height: 1.2;
+  min-width: 0;
 }
 
 .cashier-desktop-menu__zoom-row .cashier-zoom {
-  flex-shrink: 0;
-  min-height: 28px;
+  width: 100%;
+  min-width: 0;
+  min-height: 26px;
   border-radius: 6px;
+  flex-shrink: 1;
 }
 
 .cashier-desktop-menu__zoom-row .cashier-zoom__btn,
 .cashier-desktop-menu__zoom-row .cashier-zoom__value {
-  min-width: 1.6rem;
-  padding: 0 0.35rem;
-  font-size: 0.75rem;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0 0.25rem;
+  font-size: 0.6875rem;
 }
 
 .cashier-desktop-menu__zoom-row .cashier-zoom__value {
-  min-width: 3.4rem;
-  font-size: 0.7rem;
+  flex: 1.4 1 0;
+  gap: 0.2rem;
+  font-size: 0.625rem;
 }
 
 .cashier-desktop-menu__zoom-row .cashier-zoom__icon {
-  width: 0.8rem;
-  height: 0.8rem;
+  width: 0.7rem;
+  height: 0.7rem;
 }
 
 .cashier-desktop-menu__mode {

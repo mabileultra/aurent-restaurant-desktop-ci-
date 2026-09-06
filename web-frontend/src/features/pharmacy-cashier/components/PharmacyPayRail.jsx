@@ -12,7 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
-import PharmacyPayKeypad from './PharmacyPayKeypad';
+import PharmacyPayQuickCash from './PharmacyPayQuickCash';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-rail.css';
@@ -25,8 +25,9 @@ const METHOD_META = [
 ];
 
 /**
- * Панель оплаты аптеки — UI строго по макету (cash rail).
- * Смешанная логика как в продукте: нал keypad → остаток картой.
+ * Панель оплаты аптеки без экранного numpad.
+ * Сумма: быстрый ввод купюр + физклавиатура ПК.
+ * Смешанная — как в продукте: часть налом → остаток картой.
  */
 export default function PharmacyPayRail({
   total,
@@ -107,7 +108,11 @@ export default function PharmacyPayRail({
               <span className="pharmacy-pay-rail__box-label">{t('pos.receivedLabel')}</span>
               <strong className="pharmacy-pay-rail__box-value">{receivedDisplay}</strong>
             </div>
-            <div className={`pharmacy-pay-rail__box${rail.cashPaidEnough ? ' is-ready' : ''}${rail.hasPartialCash ? ' is-remainder' : ''}`}>
+            <div
+              className={`pharmacy-pay-rail__box${rail.cashPaidEnough ? ' is-ready' : ''}${
+                rail.hasPartialCash ? ' is-remainder' : ''
+              }`}
+            >
               <span className="pharmacy-pay-rail__box-label">
                 {rail.hasPartialCash ? t('pos.cardRemainderRail') : t('pos.change')}
               </span>
@@ -117,11 +122,17 @@ export default function PharmacyPayRail({
             </div>
           </div>
 
-          <PharmacyPayKeypad
+          <PharmacyPayQuickCash
             value={rail.cashInput}
             onChange={rail.setCashInput}
+            exactAmount={rail.toPay}
+            onExact={rail.setExactAmount}
+            onReset={rail.clearCash}
             quickActions={rail.quickCash}
             disabled={checkoutDisabled || isPending}
+            title={t('pharmacyCashier.pay.quickTitle')}
+            exactLabel={t('pharmacyCashier.pay.exact')}
+            resetLabel={t('pharmacyCashier.pay.reset')}
           />
         </>
       ) : null}

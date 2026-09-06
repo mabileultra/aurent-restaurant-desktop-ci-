@@ -80,6 +80,22 @@
   gap: 6px;
 }
 
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar {
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__label {
+  font-size: 0.6875rem;
+}
+
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__icon svg,
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__btn svg {
+  width: 13px;
+  height: 13px;
+}
+
 .cashier-app--pharmacy-pos .cashier-bottom-nav__kkm {
   display: inline-flex;
   align-items: center;

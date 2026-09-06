@@ -56,6 +56,34 @@
   flex: 0 0 auto;
 }
 
+.cashier-bottom-nav__aside .offline-topbar {
+  min-height: var(--cashier-bottom-nav-h, 52px);
+  padding: 0 10px;
+  border-radius: var(--pos-control-radius, 12px);
+  box-sizing: border-box;
+}
+
+.cashier-bottom-nav__aside .offline-topbar__label {
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar {
+  min-height: 28px;
+  padding: 0 8px;
+  border-radius: 999px;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__label {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__icon svg,
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__btn svg {
+  width: 13px;
+  height: 13px;
+}
+
 .cashier-bottom-nav__status {
   display: inline-flex;
   align-items: center;

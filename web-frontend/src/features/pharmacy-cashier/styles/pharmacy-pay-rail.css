@@ -196,87 +196,95 @@
   color: #0f5c56;
 }
 
-/* —— собственная клавиатура —— */
-.pharmacy-pay-keys {
+/* —— быстрый ввод купюр (без numpad 0–9) —— */
+.pharmacy-pay-quick {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  flex: 1 1 auto;
-  min-height: 0;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  border: 1.5px solid var(--ppr-border);
+  border-radius: var(--ppr-radius);
+  background: var(--ppr-surface);
 }
 
-.pharmacy-pay-keys__quick {
+.pharmacy-pay-quick__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.pharmacy-pay-quick__title {
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ppr-muted);
+}
+
+.pharmacy-pay-quick__exact {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ppr-green);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-pay-quick__exact kbd {
+  padding: 1px 4px;
+  border: 1px solid color-mix(in srgb, var(--ppr-green) 35%, #d5dbe3);
+  border-radius: 4px;
+  background: var(--ppr-green-soft);
+  font-family: inherit;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.pharmacy-pay-quick__exact:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pharmacy-pay-quick__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
-.pharmacy-pay-keys__quick-btn {
-  min-height: 34px;
-  padding: 0 8px;
+.pharmacy-pay-quick__btn {
+  min-height: 36px;
+  padding: 0 6px;
   border: 1.5px solid #cfd8e3;
   border-radius: 8px;
   background: #eef3f8;
   color: #243447;
   font-size: 0.75rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   cursor: pointer;
 }
 
-.pharmacy-pay-keys__quick-btn:nth-child(5) {
-  grid-column: 1 / -1;
-}
-
-.pharmacy-pay-keys__quick-btn:hover:not(:disabled) {
+.pharmacy-pay-quick__btn:hover:not(:disabled) {
   background: #e4ebf3;
 }
 
-.pharmacy-pay-keys__grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
-  flex: 1 1 auto;
-  min-height: 0;
-  align-content: stretch;
+.pharmacy-pay-quick__btn--reset {
+  background: #fff1f0;
+  border-color: #f0c2bd;
+  color: #b42318;
 }
 
-.pharmacy-pay-keys__key {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  height: 100%;
-  border: 1.5px solid #d0d7e0;
-  border-radius: 10px;
-  background: #fff;
-  color: var(--ppr-ink);
-  font-size: 1.125rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  cursor: pointer;
-  user-select: none;
+.pharmacy-pay-quick__btn--reset:hover:not(:disabled) {
+  background: #ffe8e6;
 }
 
-.pharmacy-pay-keys__key:hover:not(:disabled) {
-  background: #f3f5f8;
-}
-
-.pharmacy-pay-keys__key:active:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.pharmacy-pay-keys__key--clear {
-  font-size: 0.6875rem;
-  font-weight: 700;
-  color: #5a6575;
-}
-
-.pharmacy-pay-keys__key--icon {
-  color: #5a6575;
-}
-
-.pharmacy-pay-keys__key:disabled,
-.pharmacy-pay-keys__quick-btn:disabled {
+.pharmacy-pay-quick__btn:disabled {
   opacity: 0.45;
   cursor: default;
 }
@@ -447,13 +455,8 @@
 }
 
 @media (max-height: 820px) {
-  .pharmacy-pay-keys__key {
-    min-height: 36px;
-    font-size: 1rem;
-  }
-
-  .pharmacy-pay-keys__quick-btn {
-    min-height: 30px;
+  .pharmacy-pay-quick__btn {
+    min-height: 32px;
   }
 
   .pharmacy-pay-rail__method {

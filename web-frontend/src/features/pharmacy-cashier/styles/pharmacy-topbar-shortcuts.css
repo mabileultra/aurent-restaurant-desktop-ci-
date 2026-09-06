@@ -4,7 +4,7 @@
   display: inline-flex;
   align-items: center;
   flex-wrap: nowrap;
-  gap: 8px 12px;
+  gap: 6px 10px;
   margin-left: 4px;
   min-width: 0;
   max-width: min(42vw, 520px);
@@ -14,9 +14,9 @@
 .pharmacy-topbar-shortcuts__item {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   color: var(--pharm-muted, var(--pos-muted, #64748b));
-  font-size: 0.6875rem;
+  font-size: 0.625rem;
   font-weight: 600;
   white-space: nowrap;
   flex-shrink: 0;
@@ -26,15 +26,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.75rem;
+  min-width: 1.55rem;
   height: 22px;
-  padding: 0 6px;
+  padding: 0 5px;
   border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--pharm-elevated, var(--pos-surface-elevated, #fff));
   color: var(--pharm-ink, var(--pos-text, #1a2e28));
   font-family: inherit;
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1;
@@ -42,7 +42,7 @@
 }
 
 .pharmacy-topbar-shortcuts__kbd--pay {
-  min-width: 2.75rem;
+  min-width: 2.5rem;
   border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
   background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
   color: var(--pharm-brand, #006847);
@@ -73,7 +73,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  min-height: 30px;
+  min-height: var(--cashier-topbar-control-h, 40px);
   padding: 0 10px;
   border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
   border-radius: 8px;
@@ -87,6 +87,8 @@
 
 .cashier-app--pharmacy-pos .cashier-topbar__shift-chip svg {
   flex-shrink: 0;
+  width: 13px;
+  height: 13px;
   color: var(--pharm-muted, var(--pos-muted, #64748b));
 }
 

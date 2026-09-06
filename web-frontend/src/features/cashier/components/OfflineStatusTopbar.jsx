@@ -1,14 +1,18 @@
-import { CloudOff, RefreshCw, Wifi } from 'lucide-react';
+import { RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useOfflineStatus } from '../hooks/useOfflineStatus';
 
-export default function OfflineStatusTopbar() {
+/**
+ * Compact online/offline status for topbar (and pharmacy bottom dock).
+ * No cloud icons — offline switch stays in desktop menu only.
+ */
+export default function OfflineStatusTopbar({ forceVisible = false }) {
   const { t } = useTranslation();
   const status = useOfflineStatus();
 
-  if (!status.visible) return null;
+  if (!forceVisible && !status.visible) return null;
 
-  const StatusIcon = status.showOffline ? CloudOff : Wifi;
+  const StatusIcon = status.showOffline ? WifiOff : Wifi;
 
   return (
     <div
@@ -24,17 +28,6 @@ export default function OfflineStatusTopbar() {
       </span>
 
       <span className="offline-topbar__actions">
-        {status.actions.showSwitchOffline ? (
-          <button
-            type="button"
-            className="offline-topbar__btn"
-            title={t('offline.switchToOffline')}
-            onClick={() => status.handlers.toggleForceOffline(true)}
-          >
-            <CloudOff size={14} strokeWidth={2.25} aria-hidden />
-            <span className="visually-hidden">{t('offline.switchToOffline')}</span>
-          </button>
-        ) : null}
         {status.actions.showSwitchOnline ? (
           <button
             type="button"
