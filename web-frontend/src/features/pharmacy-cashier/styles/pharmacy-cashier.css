@@ -10,6 +10,8 @@
 @import './pharmacy-search-strip.css';
 @import './pharmacy-pay-rail.css';
 @import './pharmacy-topbar-shortcuts.css';
+@import './pharmacy-cart-pane-head.css';
+@import '../../../styles/cashier/cart/parked-bar.css';
 
 .pharmacy-cashier__split {
   flex: 1 1 auto;

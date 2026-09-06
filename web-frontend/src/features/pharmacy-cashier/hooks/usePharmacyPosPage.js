@@ -18,10 +18,6 @@ import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
 import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
 import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 import { usePharmacyHotkeys } from './usePharmacyHotkeys';
-import {
-  bumpPharmacyDraftReceiptNo,
-  readPharmacyDraftReceiptNo,
-} from '../utils/pharmacyDraftReceiptNo';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -53,12 +49,13 @@ export function usePharmacyPosPage() {
   const setOrderDiscountPercent = useCartStore((s) => s.setOrderDiscountPercent);
   const clearOrderDiscount = useCartStore((s) => s.clearOrderDiscount);
   const clearCart = useCartStore((s) => s.clearCart);
-
-  const [draftReceiptNo, setDraftReceiptNo] = useState(() => readPharmacyDraftReceiptNo(storeId));
-
-  useEffect(() => {
-    setDraftReceiptNo(readPharmacyDraftReceiptNo(storeId));
-  }, [storeId]);
+  const holdCart = useCartStore((s) => s.holdCart);
+  const restoreParkedCart = useCartStore((s) => s.restoreParkedCart);
+  const removeParkedCart = useCartStore((s) => s.removeParkedCart);
+  const clearParkedCarts = useCartStore((s) => s.clearParkedCarts);
+  const parkedCarts = useCartStore((s) => s.parkedCarts);
+  const checkNo = useCartStore((s) => s.checkNo);
+  const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
 
   const catalog = usePosProductsCatalog({ storeId });
   const integration = usePharmacyIntegrationConfig(storeId);
@@ -103,18 +100,71 @@ export function usePharmacyPosPage() {
     return true;
   }, [clearCart, items.length, t]);
 
+  /** Новый чек = свернуть текущий (hold), как в продукте — не удалять. */
   const handleNewReceipt = useCallback(() => {
-    if (items.length > 0) {
-      if (!window.confirm(t('pharmacyCashier.newReceiptConfirm'))) return;
-      clearCart();
-      setSelectedLineId(null);
+    if (returnOpen || discountOpen || payOpen) return;
+    if (items.length === 0) {
+      ensureCheckNo();
+      focusSearch();
+      toast(t('pharmacyCashier.newReceiptEmpty'));
+      return;
     }
-    const next = bumpPharmacyDraftReceiptNo(storeId);
-    setDraftReceiptNo(next);
-    catalog.setSearch('');
-    focusSearch();
-    toast.success(t('pharmacyCashier.newReceiptDone', { n: next }));
-  }, [catalog.setSearch, clearCart, focusSearch, items.length, storeId, t]);
+    const result = holdCart();
+    setSelectedLineId(null);
+    if (result === 'held') {
+      catalog.setSearch('');
+      focusSearch();
+      toast.success(t('pos.holdReceiptDone'));
+      return;
+    }
+    if (result === 'full') {
+      toast.error(t('pos.holdReceiptFull'));
+      return;
+    }
+    toast.error(t('pos.holdReceiptEmpty'));
+  }, [
+    catalog.setSearch,
+    discountOpen,
+    ensureCheckNo,
+    focusSearch,
+    holdCart,
+    items.length,
+    payOpen,
+    returnOpen,
+    t,
+  ]);
+
+  const handleRestoreParked = useCallback(
+    (parkedId) => {
+      const result = restoreParkedCart(parkedId);
+      setSelectedLineId(null);
+      if (result === 'restored') {
+        toast.success(t('pos.restoreReceiptDone'));
+        return;
+      }
+      if (result === 'full') {
+        toast.error(t('pos.holdReceiptFull'));
+        return;
+      }
+      toast.error(t('pos.holdReceiptEmpty'));
+    },
+    [restoreParkedCart, t],
+  );
+
+  const handleRemoveParked = useCallback(
+    (parkedId) => {
+      removeParkedCart(parkedId);
+      toast.success(t('pos.parkedCartRemoved'));
+    },
+    [removeParkedCart, t],
+  );
+
+  const handleClearParked = useCallback(() => {
+    if (!parkedCarts.length) return;
+    if (!window.confirm(t('pos.parkedCartsClearConfirm'))) return;
+    clearParkedCarts();
+    toast.success(t('pos.parkedCartsCleared'));
+  }, [clearParkedCarts, parkedCarts.length, t]);
 
   const handleGoToCatalog = useCallback(() => {
     setPayOpen(false);
@@ -168,11 +218,6 @@ export function usePharmacyPosPage() {
     shift,
     getCheckoutLineItems: getPharmacyCheckoutLineItems,
   });
-
-  useEffect(() => {
-    if (!checkoutMutation.isSuccess) return;
-    setDraftReceiptNo(bumpPharmacyDraftReceiptNo(storeId));
-  }, [checkoutMutation.isSuccess, checkoutMutation.dataUpdatedAt, storeId]);
 
   const cartHandlers = usePharmacyCartHandlers({
     storeId,
@@ -292,7 +337,11 @@ export function usePharmacyPosPage() {
     handleClosePayment,
     handleClearCart,
     handleNewReceipt,
-    draftReceiptNo,
+    handleRestoreParked,
+    handleRemoveParked,
+    handleClearParked,
+    parkedCarts,
+    checkNo: checkNo || '—',
     items,
     total,
     linesTotal,

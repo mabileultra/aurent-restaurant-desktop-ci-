@@ -3,6 +3,7 @@ import PharmacyCartPaneHead from './PharmacyCartPaneHead';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacySearchStrip from './PharmacySearchStrip';
 import PharmacyPayColumn from './PharmacyPayColumn';
+import PosParkedCartsBar from '../../cashier/components/pos-order-panel/PosParkedCartsBar';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
 import '../styles/pharmacy-cashier.css';
@@ -58,11 +59,19 @@ export default function PharmacyRegisterWorkspace({
           tabIndex={-1}
         >
           <PharmacyCartPaneHead
-            receiptNo={cart.draftReceiptNo}
+            receiptNo={cart.checkNo}
             itemsCount={cart.items.length}
+            parkedCount={cart.parkedCarts?.length ?? 0}
             onNewReceipt={cart.onNewReceipt}
             onClear={cart.onClearCart}
             disabled={checkoutMutation.isPending}
+          />
+          <PosParkedCartsBar
+            t={t}
+            parkedCarts={cart.parkedCarts}
+            onRestore={cart.onRestoreParked}
+            onRemove={cart.onRemoveParked}
+            onClearAll={cart.onClearParked}
           />
           <PharmacyCartTable
             items={cart.items}

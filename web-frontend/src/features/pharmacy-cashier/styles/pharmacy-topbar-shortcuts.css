@@ -1,4 +1,4 @@
-/* Хоткеи в topbar — только .pharmacy-topbar-shortcuts / pharmacy-pos */
+/* Хоткеи в topbar — только аптека; адаптив под ширину */
 
 .pharmacy-topbar-shortcuts {
   display: inline-flex;
@@ -7,6 +7,8 @@
   gap: 8px 12px;
   margin-left: 4px;
   min-width: 0;
+  max-width: min(42vw, 520px);
+  overflow: hidden;
 }
 
 .pharmacy-topbar-shortcuts__item {
@@ -17,6 +19,7 @@
   font-size: 0.6875rem;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .pharmacy-topbar-shortcuts__kbd {
@@ -60,10 +63,12 @@
 .cashier-app.cashier-app--pharmacy-pos .cashier-topbar__terminal-strip {
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
-/* Аптека: смена отдельно от бейджа точки (как на макете) */
 .cashier-app--pharmacy-pos .cashier-topbar__shift-chip {
   display: inline-flex;
   align-items: center;
@@ -77,6 +82,7 @@
   font-size: 0.6875rem;
   font-weight: 600;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cashier-app--pharmacy-pos .cashier-topbar__shift-chip svg {
@@ -87,4 +93,58 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__shift-chip {
   background: #fff;
   border-color: #d8e0dc;
+}
+
+/* Адаптив: сначала прячем подписи хоткеев, потом часть хоткеев, потом смену */
+@media (max-width: 1480px) {
+  .pharmacy-topbar-shortcuts__label {
+    display: none;
+  }
+
+  .pharmacy-topbar-shortcuts {
+    gap: 6px;
+    max-width: none;
+  }
+}
+
+@media (max-width: 1280px) {
+  .pharmacy-topbar-shortcuts__item:not(.pharmacy-topbar-shortcuts__item--pay):nth-child(n + 3) {
+    display: none;
+  }
+
+  .cashier-app--pharmacy-pos .cashier-topbar__store-pill--pharmacy .cashier-topbar__store-name {
+    max-width: 9rem;
+  }
+}
+
+@media (max-width: 1100px) {
+  .cashier-app--pharmacy-pos .cashier-topbar__shift-chip {
+    display: none;
+  }
+
+  .pharmacy-topbar-shortcuts__item:not(.pharmacy-topbar-shortcuts__item--pay) {
+    display: none;
+  }
+}
+
+@media (max-width: 992px) {
+  .pharmacy-topbar-shortcuts {
+    display: none !important;
+  }
+}
+
+.cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-name {
+  max-width: 11rem;
+}
+
+@media (max-width: 1360px) {
+  .cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-name {
+    max-width: 7.5rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  .cashier-app--pharmacy-pos .cashier-pos-topbar__cashier-text {
+    display: none;
+  }
 }

@@ -52,10 +52,17 @@
   color: var(--pharm-muted, #64748b);
 }
 
-.pharmacy-cart-pane-head__count {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  color: var(--pharm-muted, #64748b);
+.pharmacy-cart-pane-head__parked {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3730a3;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 

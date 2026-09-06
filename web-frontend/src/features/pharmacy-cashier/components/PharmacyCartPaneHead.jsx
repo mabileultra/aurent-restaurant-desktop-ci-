@@ -3,11 +3,12 @@ import { useTranslation } from 'react-i18next';
 import '../styles/pharmacy-cart-pane-head.css';
 
 /**
- * Шапка чека аптеки: номер, статус, позиции + Новый чек / Очистить.
+ * Шапка чека аптеки: номер, статус, позиции + Новый чек (hold) / Очистить.
  */
 export default function PharmacyCartPaneHead({
   receiptNo,
   itemsCount,
+  parkedCount = 0,
   onNewReceipt,
   onClear,
   disabled = false,
@@ -29,6 +30,11 @@ export default function PharmacyCartPaneHead({
         <span className="pharmacy-cart-pane-head__count">
           {t('pharmacyCashier.receiptItems', { count: itemsCount })}
         </span>
+        {parkedCount > 0 ? (
+          <span className="pharmacy-cart-pane-head__parked">
+            {t('pharmacyCashier.parkedCount', { count: parkedCount })}
+          </span>
+        ) : null}
       </div>
 
       <div className="pharmacy-cart-pane-head__actions">
@@ -37,6 +43,7 @@ export default function PharmacyCartPaneHead({
           className="pharmacy-cart-pane-head__btn pharmacy-cart-pane-head__btn--new"
           disabled={disabled}
           onClick={onNewReceipt}
+          title={t('pharmacyCashier.newReceiptHint')}
         >
           <Plus size={14} strokeWidth={2.5} aria-hidden />
           {t('pharmacyCashier.newReceipt')}
