@@ -41,9 +41,9 @@
   color: var(--pharm-brand, #006847);
 }
 
-/* Pay column: чуть уже и плотнее на аптеке */
+/* Pay column: чуть шире под макет */
 .cashier-app--pharmacy-pos {
-  --cashier-pay-w: 300px;
+  --cashier-pay-w: 320px;
 }
 
 .cashier-app--pharmacy-pos .cashier-register__actions-col--pay {
