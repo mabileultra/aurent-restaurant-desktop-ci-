@@ -1,14 +1,33 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { userApi } from '../../../api';
 import { rstFloorApi } from '../../api/floor.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { rstModifierApi } from '../../api/modifier.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstShiftApi } from '../../api/shift.api';
+import { rstCommissionApi } from '../../api/commission.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
+import { formatShiftOpenDuration } from '../utils/formatElapsed';
+
+function userStoreIds(user) {
+  if (Array.isArray(user.storeIds)) return user.storeIds.map(Number);
+  if (Array.isArray(user.stores)) {
+    return user.stores.map((s) => Number(s && typeof s === 'object' ? s.id : s));
+  }
+  return [];
+}
+
+function displayUserName(user) {
+  return user.fullName
+    || [user.lastName, user.firstName, user.patronymic].filter(Boolean).join(' ')
+    || user.username
+    || String(user.id);
+}
+
 
 const emptyGuestForm = () => ({ guestCount: 2, adultCount: 2, childrenCount: 0 });
 const emptyCounterForm = () => ({
@@ -35,6 +54,7 @@ export function useFloorPosPage() {
   const [shiftModal, setShiftModal] = useState(null);
   const [openingCash, setOpeningCash] = useState('0');
   const [closingCash, setClosingCash] = useState('0');
+  const [floorSearch, setFloorSearch] = useState('');
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
 
@@ -74,10 +94,64 @@ export function useFloorPosPage() {
     enabled: !!activeOrderId,
   });
 
+  const commissionQuery = useQuery({
+    queryKey: ['rst-waiter-commission', workspace.storeId],
+    queryFn: () => rstCommissionApi.getSettings(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null && !!activeOrderId,
+  });
+
+  const staffQuery = useQuery({
+    queryKey: ['rst-pos-staff', workspace.storeId],
+    queryFn: () => userApi.getAll().then((r) => r.data ?? []),
+    enabled: workspace.storeId != null,
+    staleTime: 60_000,
+  });
+
   const halls = floorQuery.data?.halls ?? [];
   const selectedHall = halls.find((hall) => hall.id === selectedHallId) ?? halls[0] ?? null;
   const canManage = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const shift = shiftQuery.data ?? null;
+  const order = orderQuery.data;
+
+  const waiters = useMemo(() => {
+    const storeId = workspace.storeId;
+    if (storeId == null) return [];
+    return (staffQuery.data ?? [])
+      .filter((row) => row.role === 'WAITER' && row.active !== false)
+      .filter((row) => userStoreIds(row).includes(Number(storeId)))
+      .map((row) => ({ id: row.id, name: displayUserName(row) }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [staffQuery.data, workspace.storeId]);
+
+  const waiterNameById = useMemo(() => {
+    const map = new Map();
+    for (const row of staffQuery.data ?? []) {
+      map.set(String(row.id), displayUserName(row));
+    }
+    return map;
+  }, [staffQuery.data]);
+
+  const commissionPreview = useMemo(() => {
+    if (!order || order.channel !== 'DINE_IN') return null;
+    if (order.commissionPercent != null) {
+      return {
+        percent: Number(order.commissionPercent),
+        amount: Number(order.commissionAmount ?? 0),
+      };
+    }
+    const settings = commissionQuery.data;
+    if (!settings) return null;
+    const waiterId = order.waiterUserId ? String(order.waiterUserId) : null;
+    const override = (settings.overrides ?? []).find((row) => String(row.userId) === waiterId);
+    const percent = Number(override?.percent ?? settings.defaultPercent ?? 0);
+    const subtotal = Number(order.subtotal ?? 0);
+    const amount = Math.round(((subtotal * percent) / 100) * 100) / 100;
+    return { percent, amount };
+  }, [order, commissionQuery.data]);
+
+  const shiftOpenLabel = shift?.openedAt
+    ? formatShiftOpenDuration(shift.openedAt)
+    : null;
 
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', workspace.storeId] });
   const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', workspace.storeId] });
@@ -195,6 +269,16 @@ export function useFloorPosPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.saveFailed')),
   });
 
+  const assignWaiterMutation = useMutation({
+    mutationFn: (waiterUserId) => rstOrderApi.assignWaiter(activeOrderId, { waiterUserId }),
+    onSuccess: (res) => {
+      qc.setQueryData(['rst-order', activeOrderId], res.data);
+      invalidateFloor();
+      toast.success(t('rst.order.waiterAssigned'));
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.waiterAssignFailed')),
+  });
+
   const sendKitchenMutation = useMutation({
     mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
     onSuccess: (res) => {
@@ -267,6 +351,15 @@ export function useFloorPosPage() {
     setCounterModalOpen(true);
   };
 
+  const handleFloorNewOrder = () => {
+    if (!ensureShift()) return;
+    setActiveOrderId(null);
+    setPosMode('takeaway');
+    setOpenTable(null);
+    setCounterForm(emptyCounterForm());
+    setCounterModalOpen(true);
+  };
+
   const handleQty = (line, nextQty) => {
     if (orderQuery.data?.status === 'BILLING' || line.itemStatus !== 'NEW') return;
     if (nextQty < 1) {
@@ -322,6 +415,7 @@ export function useFloorPosPage() {
     setCounterForm,
     handleOpenCounter,
     openCounterMutation,
+    handleFloorNewOrder,
     halls,
     selectedHall,
     selectedHallId: selectedHall?.id ?? null,
@@ -365,6 +459,13 @@ export function useFloorPosPage() {
     canAdmin: canManage,
     backLabelKey,
     shift,
+    shiftOpenLabel,
+    floorSearch,
+    setFloorSearch,
+    waiters,
+    waiterNameById,
+    assignWaiterMutation,
+    commissionPreview,
     shiftModal,
     setShiftModal,
     openingCash,

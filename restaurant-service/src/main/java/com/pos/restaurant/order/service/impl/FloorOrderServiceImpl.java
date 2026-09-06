@@ -4,6 +4,7 @@ import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
+import com.pos.restaurant.order.dto.AssignWaiterRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
@@ -39,6 +40,7 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderUpdateItemHandler updateItemHandler;
     private final OrderRemoveItemHandler removeItemHandler;
     private final OrderCancelHandler cancelHandler;
+    private final OrderAssignWaiterHandler assignWaiterHandler;
 
     @Override
     @Transactional
@@ -79,6 +81,12 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Transactional
     public OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request) {
         return updateGuestsHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request) {
+        return assignWaiterHandler.handle(orderId, request);
     }
 
     @Override

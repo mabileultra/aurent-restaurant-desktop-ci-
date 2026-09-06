@@ -23,6 +23,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -88,6 +89,15 @@ public class FloorOrder {
 
     @Column(name = "waiter_user_id")
     private UUID waiterUserId;
+
+    @Column(name = "commission_percent", precision = 6, scale = 2)
+    private BigDecimal commissionPercent;
+
+    @Column(name = "commission_base_amount", precision = 18, scale = 2)
+    private BigDecimal commissionBaseAmount;
+
+    @Column(name = "commission_amount", precision = 18, scale = 2)
+    private BigDecimal commissionAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shift_id")

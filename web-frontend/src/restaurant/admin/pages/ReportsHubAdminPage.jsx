@@ -5,6 +5,7 @@ import {
   ClipboardList,
   Package,
   AlertTriangle,
+  Percent,
 } from 'lucide-react';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -16,6 +17,12 @@ const SALES_LINKS = [
     titleKey: 'reportsSalesCard',
     hintKey: 'reportsSalesHint',
     icon: Receipt,
+  },
+  {
+    to: '/rst/admin/reports/waiter-commission',
+    titleKey: 'reportsCommissionCard',
+    hintKey: 'reportsCommissionHint',
+    icon: Percent,
   },
 ];
 

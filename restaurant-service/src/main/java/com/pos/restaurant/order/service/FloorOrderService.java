@@ -2,6 +2,7 @@ package com.pos.restaurant.order.service;
 
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
+import com.pos.restaurant.order.dto.AssignWaiterRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
@@ -22,6 +23,8 @@ public interface FloorOrderService {
     OrderResponse get(UUID orderId);
 
     OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request);
+
+    OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request);
 
     OrderResponse addItem(UUID orderId, AddOrderItemRequest request);
 

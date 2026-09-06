@@ -2,9 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
-import FloorHallTabs from '../components/FloorHallTabs';
-import FloorCanvas from '../components/FloorCanvas';
-import FloorStatusLegend from '../components/FloorStatusLegend';
+import FloorTableGrid from '../components/FloorTableGrid';
 import OpenTableModal from '../components/OpenTableModal';
 import OpenCounterOrderModal from '../components/OpenCounterOrderModal';
 import CounterOrdersBoard from '../components/CounterOrdersBoard';
@@ -12,6 +10,7 @@ import ModifierPickModal from '../components/ModifierPickModal';
 import OrderWorkspace from '../components/OrderWorkspace';
 import ShiftModal from '../components/ShiftModal';
 import PosZoomControls from '../components/PosZoomControls';
+import PosHardwareBar from '../components/PosHardwareBar';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
@@ -49,6 +48,7 @@ export default function RestaurantFloorPosPage() {
           <span className="rst-pos__brand-name">{p.t('rst.brand')}</span>
           <span className="rst-pos__brand-meta">
             {p.workspace.storeName ?? p.t('rst.floor.hall')}
+            {p.shift ? ` · ${p.t('rst.shift.shiftShort', { id: String(p.shift.id).slice(0, 4) })}` : ''}
             {user?.fullName || user?.username ? ` · ${user.fullName || user.username}` : ''}
           </span>
         </div>
@@ -87,7 +87,16 @@ export default function RestaurantFloorPosPage() {
             </>
           ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />
-          <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
+          <span className="rst-pos__online">
+            <span className="rst-pos__online-dot" aria-hidden />
+            ONLINE
+          </span>
+          <BaseButton
+            type="button"
+            variant="ghost"
+            className="rst-pos__exit"
+            onClick={() => logoutAndResetSession()}
+          >
             {p.t('nav.logout')}
           </BaseButton>
         </div>
@@ -99,11 +108,14 @@ export default function RestaurantFloorPosPage() {
             <div className="rst-shift-bar__meta">
               {p.shift ? (
                 <>
-                  <span>{p.t('rst.shift.openLabel')}</span>
+                  <span>
+                    {p.t('rst.shift.openLabel')}
+                    {p.shiftOpenLabel ? `: ${p.shiftOpenLabel}` : ''}
+                  </span>
                   <span>{p.t('rst.shift.sales')}: <strong>{p.shift.saleCount}</strong></span>
                   <span>{p.t('rst.shift.total')}: <strong>{fmtMoneyCompact(p.shift.totalAmount)}</strong></span>
-                  <span>{p.t('rst.shift.cash')}: <strong>{fmtMoneyCompact(p.shift.cashAmount)}</strong></span>
                   <span>{p.t('rst.shift.card')}: <strong>{fmtMoneyCompact(p.shift.cardAmount)}</strong></span>
+                  <span>{p.t('rst.shift.cash')}: <strong>{fmtMoneyCompact(p.shift.cashAmount)}</strong></span>
                 </>
               ) : (
                 <span>{p.t('rst.shift.closedLabel')}</span>
@@ -165,6 +177,10 @@ export default function RestaurantFloorPosPage() {
               }}
               billingPending={p.billMutation.isPending}
               paying={p.payMutation.isPending}
+              commissionPreview={p.commissionPreview}
+              waiters={p.waiters}
+              onAssignWaiter={(waiterUserId) => p.assignWaiterMutation.mutate(waiterUserId)}
+              assigningWaiter={p.assignWaiterMutation.isPending}
               t={p.t}
             />
           ) : (
@@ -173,20 +189,19 @@ export default function RestaurantFloorPosPage() {
         ) : p.posMode === 'floor' ? (
           <>
             {p.isError ? <div className="rst-notice">{p.t('rst.floor.loadFailed')}</div> : null}
-            {p.halls.length > 0 ? (
-              <FloorHallTabs
-                halls={p.halls}
-                selectedHallId={p.selectedHallId}
-                onSelect={p.setSelectedHallId}
-              />
-            ) : null}
-            <FloorCanvas
+            <FloorTableGrid
               hall={p.selectedHall}
+              halls={p.halls}
+              selectedHallId={p.selectedHall?.id}
+              onSelectHall={p.setSelectedHallId}
               selectedTableId={p.openTable?.id}
               onTableClick={p.handleTableClick}
+              search={p.floorSearch}
+              onSearchChange={p.setFloorSearch}
+              onNewOrder={p.handleFloorNewOrder}
+              waiterNameById={p.waiterNameById}
               t={p.t}
             />
-            <FloorStatusLegend t={p.t} />
           </>
         ) : (
           <>
@@ -202,6 +217,8 @@ export default function RestaurantFloorPosPage() {
           </>
         )}
       </div>
+
+      <PosHardwareBar t={p.t} />
 
       <OpenTableModal
         open={!!p.openTable}

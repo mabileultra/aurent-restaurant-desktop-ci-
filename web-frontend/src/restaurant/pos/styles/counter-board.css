@@ -59,29 +59,31 @@
   display: flex;
   flex-direction: column;
   gap: 0.7rem;
-  min-height: 150px;
+  min-height: 160px;
   padding: 1rem;
-  border: 2px solid var(--rst-line);
-  border-radius: 16px;
-  background: linear-gradient(180deg, #2a3038, var(--rst-surface));
+  border: 1.5px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
   color: inherit;
   text-align: left;
-  transition: border-color 0.12s ease, transform 0.12s ease;
+  transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .rst-counter__card:hover,
 .rst-counter__card:focus-visible {
   transform: translateY(-2px);
   border-color: var(--rst-accent);
+  box-shadow: var(--rst-glow-occupied);
 }
 
 .rst-counter__card.is-open {
   border-color: var(--rst-occupied);
-  background: linear-gradient(180deg, #3a2a1c, var(--rst-occupied-bg));
+  box-shadow: var(--rst-glow-occupied);
 }
 
 .rst-counter__card.is-billing {
   border-color: var(--rst-pay);
+  box-shadow: var(--rst-glow-pay);
   background: linear-gradient(180deg, #2d2438, var(--rst-pay-bg));
 }
 

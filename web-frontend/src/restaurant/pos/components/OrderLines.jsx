@@ -19,6 +19,9 @@ export default function OrderLines({ items, onQty, onRemove, locked = false, t }
                 {fmtMoneyCompact(line.unitPrice)} × {line.quantity}
                 {' · '}
                 {t(`rst.order.itemStatus.${line.itemStatus}`)}
+                {line.itemStatus === 'SENT_TO_KITCHEN' || line.itemStatus === 'ACCEPTED' || line.itemStatus === 'PREPARING' || line.itemStatus === 'READY' ? (
+                  <span className="rst-order-line__kitchen">{t('rst.order.onKitchen')}</span>
+                ) : null}
                 {(line.modifiers ?? []).length
                   ? ` · ${(line.modifiers ?? []).map((mod) => mod.name).join(', ')}`
                   : ''}

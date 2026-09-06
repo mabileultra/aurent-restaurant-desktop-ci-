@@ -12,5 +12,6 @@ public interface FloorTableMapper {
     @Mapping(target = "hallId", source = "hall.id")
     @Mapping(target = "hallName", source = "hall.name")
     @Mapping(target = "activeOrder", ignore = true)
+    @Mapping(target = "reservation", ignore = true)
     TableResponse toResponse(FloorTable table);
 }

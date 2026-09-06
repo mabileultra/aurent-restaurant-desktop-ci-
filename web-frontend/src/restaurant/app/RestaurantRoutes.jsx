@@ -15,6 +15,7 @@ import DeliveryAdminPage from '../admin/pages/DeliveryAdminPage';
 import DashboardAdminPage from '../admin/pages/DashboardAdminPage';
 import ReportsAdminPage from '../admin/pages/ReportsAdminPage';
 import ReportsHubAdminPage from '../admin/pages/ReportsHubAdminPage';
+import WaiterCommissionReportPage from '../admin/pages/WaiterCommissionReportPage';
 import AuditAdminPage from '../admin/pages/AuditAdminPage';
 import StaffAdminPage from '../admin/pages/StaffAdminPage';
 import RstStockFlowScope from '../admin/components/RstStockFlowScope';
@@ -93,6 +94,7 @@ export const restaurantRoutes = (
       <Route path="delivery" element={<DeliveryAdminPage />} />
       <Route path="reports" element={<ReportsHubAdminPage />} />
       <Route path="reports/sales" element={<ReportsAdminPage />} />
+      <Route path="reports/waiter-commission" element={<WaiterCommissionReportPage />} />
       <Route
         path="reports/inventories"
         element={<Navigate to="/rst/admin/stock/inventories" replace />}

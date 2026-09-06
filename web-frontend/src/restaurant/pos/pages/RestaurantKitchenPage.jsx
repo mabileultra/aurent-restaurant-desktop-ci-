@@ -3,6 +3,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
 import PosZoomControls from '../components/PosZoomControls';
+import PosHardwareBar from '../components/PosHardwareBar';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { KDS_COLUMNS } from '../utils/kitchenBoard';
@@ -51,6 +52,10 @@ export default function RestaurantKitchenPage() {
             </Link>
           ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />
+          <span className="rst-pos__online">
+            <span className="rst-pos__online-dot" aria-hidden />
+            ONLINE
+          </span>
           <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
             {p.t('nav.logout')}
           </BaseButton>
@@ -95,6 +100,8 @@ export default function RestaurantKitchenPage() {
           </section>
         ))}
       </div>
+
+      <PosHardwareBar t={p.t} />
     </div>
   );
 }

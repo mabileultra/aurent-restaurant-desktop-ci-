@@ -2,6 +2,7 @@ package com.pos.restaurant.order.controller;
 
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
+import com.pos.restaurant.order.dto.AssignWaiterRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
@@ -98,6 +99,16 @@ public class FloorOrderController {
         @Valid @RequestBody UpdateGuestsRequest request
     ) {
         return orderService.updateGuests(orderId, request);
+    }
+
+    @PatchMapping("/orders/{orderId}/waiter")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Назначить официанта на заказ")
+    public OrderResponse assignWaiter(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody AssignWaiterRequest request
+    ) {
+        return orderService.assignWaiter(orderId, request);
     }
 
     @PostMapping("/orders/{orderId}/items")

@@ -1,7 +1,11 @@
 package com.pos.restaurant.floor.service.impl;
 
+import com.pos.restaurant.booking.entity.FloorReservation;
+import com.pos.restaurant.booking.repository.FloorReservationRepository;
+import com.pos.restaurant.booking.support.ReservationLookup;
 import com.pos.restaurant.floor.dto.ActiveOrderSummary;
 import com.pos.restaurant.floor.dto.FloorSnapshotResponse;
+import com.pos.restaurant.floor.dto.TableReservationSummary;
 import com.pos.restaurant.floor.dto.TableResponse;
 import com.pos.restaurant.floor.entity.FloorHall;
 import com.pos.restaurant.floor.mapper.FloorTableMapper;
@@ -20,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +41,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     private final FloorTenantSupport tenantSupport;
     private final FloorOrderRepository orderRepository;
     private final FloorOrderItemRepository itemRepository;
+    private final FloorReservationRepository reservationRepository;
     private final OrderTotals orderTotals;
 
     @Override
@@ -50,6 +56,14 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                 FloorOrder::getId,
                 order -> itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId())
             ));
+        Map<Integer, FloorReservation> reservations = new HashMap<>();
+        for (FloorReservation reservation : reservationRepository.findByStoreAndStatuses(
+            companyId,
+            storeId,
+            ReservationLookup.ACTIVE_STATUSES
+        )) {
+            reservations.putIfAbsent(reservation.getTable().getId(), reservation);
+        }
         List<FloorHall> halls = hallRepository.findByCompanyIdAndStoreIdAndActiveTrueOrderBySortOrderAscNameAsc(
             companyId,
             storeId
@@ -61,8 +75,35 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                     .map(table -> {
                         TableResponse mapped = tableMapper.toResponse(table);
                         FloorOrder order = openOrders.get(table.getId());
+                        FloorReservation reservation = reservations.get(table.getId());
+                        TableReservationSummary reservationSummary = reservation == null
+                            ? null
+                            : new TableReservationSummary(
+                                reservation.getId(),
+                                reservation.getClientName(),
+                                reservation.getClientPhone(),
+                                reservation.getGuestCount(),
+                                reservation.getReservedAt(),
+                                reservation.getNotes()
+                            );
                         if (order == null) {
-                            return mapped;
+                            return new TableResponse(
+                                mapped.id(),
+                                mapped.hallId(),
+                                mapped.hallName(),
+                                mapped.code(),
+                                mapped.label(),
+                                mapped.seatCount(),
+                                mapped.posX(),
+                                mapped.posY(),
+                                mapped.width(),
+                                mapped.height(),
+                                mapped.status(),
+                                mapped.active(),
+                                mapped.updatedAt(),
+                                null,
+                                reservationSummary
+                            );
                         }
                         List<FloorOrderItem> items = itemsByOrder.getOrDefault(order.getId(), List.of());
                         BigDecimal subtotal = orderTotals.billable(items);
@@ -79,15 +120,20 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                             mapped.height(),
                             mapped.status(),
                             mapped.active(),
+                            mapped.updatedAt(),
                             new ActiveOrderSummary(
                                 order.getId(),
                                 order.getOrderNo(),
+                                order.getStatus(),
                                 order.getGuestCount(),
                                 order.getAdultCount(),
                                 order.getChildrenCount(),
                                 subtotal,
-                                items.size()
-                            )
+                                items.size(),
+                                order.getWaiterUserId(),
+                                order.getOpenedAt()
+                            ),
+                            reservationSummary
                         );
                     })
                     .toList();

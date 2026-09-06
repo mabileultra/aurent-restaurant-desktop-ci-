@@ -56,6 +56,37 @@ export default function StaffAdminPage() {
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (
         <>
+          <div className="rst-staff__commission">
+            <div>
+              <strong>{p.t('rst.staff.commissionTitle')}</strong>
+              <p className="rst-staff__commission-hint mb-0">{p.t('rst.staff.commissionHint')}</p>
+            </div>
+            <div className="rst-staff__commission-controls">
+              <label className="rst-admin-field">
+                <span className="rst-admin-field__label">{p.t('rst.staff.commissionDefault')}</span>
+                <BaseInput
+                  type="number"
+                  min={0}
+                  max={100}
+                  step="0.01"
+                  value={p.draftDefault}
+                  disabled={!p.canEditCommission || p.commissionBusy || p.commissionLoading}
+                  onChange={(e) => p.setDefaultPercentDraft(e.target.value)}
+                />
+              </label>
+              {p.canEditCommission ? (
+                <div className="rst-staff__commission-actions">
+                  <BaseButton type="button" variant="ghost" disabled={p.commissionBusy} onClick={p.saveDefault}>
+                    {p.t('rst.staff.commissionSaveDefault')}
+                  </BaseButton>
+                  <BaseButton type="button" disabled={p.commissionBusy} onClick={p.applyAll}>
+                    {p.t('rst.staff.commissionApplyAll')}
+                  </BaseButton>
+                </div>
+              ) : null}
+            </div>
+          </div>
+
           <div className="rst-staff__stats">
             <div className="rst-staff__stat"><strong>{p.stats.total}</strong><span>{p.t('rst.staff.statTotal')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.waiters}</strong><span>{p.t('roles.WAITER')}</span></div>
@@ -88,7 +119,7 @@ export default function StaffAdminPage() {
                   className={`rst-staff__role${p.roleFilter === role ? ' is-active' : ''}`}
                   onClick={() => p.setRoleFilter(role)}
                 >
-                  {p.t(`roles.${role}`)}
+                  {p.t(`roles.${role}`, { defaultValue: role })}
                 </button>
               ))}
             </div>
@@ -109,6 +140,7 @@ export default function StaffAdminPage() {
                     <th>{p.t('rst.staff.name')}</th>
                     <th>{p.t('rst.staff.username')}</th>
                     <th>{p.t('rst.staff.role')}</th>
+                    <th>{p.t('rst.staff.commissionCol')}</th>
                     <th>{p.t('rst.staff.status')}</th>
                     <th className="rst-data-table__actions">{p.t('common.actions')}</th>
                   </tr>
@@ -116,48 +148,98 @@ export default function StaffAdminPage() {
                 <tbody>
                   {p.isLoading ? (
                     <tr>
-                      <td colSpan={6} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                      <td colSpan={7} className="rst-data-table__empty">{p.t('common.loading')}</td>
                     </tr>
                   ) : p.rows.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="rst-data-table__empty">{p.t('rst.staff.empty')}</td>
+                      <td colSpan={7} className="rst-data-table__empty">{p.t('rst.staff.empty')}</td>
                     </tr>
                   ) : (
-                    p.rows.map((user, index) => (
-                      <tr key={user.id}>
-                        <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
-                        <td className="rst-data-table__wrap">{p.displayName(user)}</td>
-                        <td><code>{user.username || '—'}</code></td>
-                        <td>
-                          <span className={`rst-staff__badge rst-staff__badge--${user.role}`}>
-                            {p.t(`roles.${user.role}`, { defaultValue: user.role })}
-                          </span>
-                        </td>
-                        <td>
-                          <span className={`rst-staff__status${user.active !== false ? ' is-on' : ' is-off'}`}>
-                            {user.active !== false ? p.t('rst.staff.active') : p.t('rst.staff.inactive')}
-                          </span>
-                        </td>
-                        <td className="rst-data-table__actions">
-                          {p.canManage ? (
-                            <div className="rst-staff__actions">
-                              <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.openEdit(user)}>
-                                {p.t('common.edit')}
-                              </BaseButton>
-                              <BaseButton
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                disabled={p.toggleMutation.isPending}
-                                onClick={() => p.toggleMutation.mutate(user.id)}
-                              >
-                                {user.active !== false ? p.t('rst.staff.deactivate') : p.t('rst.staff.activate')}
-                              </BaseButton>
-                            </div>
-                          ) : null}
-                        </td>
-                      </tr>
-                    ))
+                    p.rows.map((user, index) => {
+                      const rate = p.waiterRate(user.id);
+                      const isWaiter = user.role === 'WAITER';
+                      return (
+                        <tr key={user.id}>
+                          <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
+                          <td className="rst-data-table__wrap">{p.displayName(user)}</td>
+                          <td><code>{user.username || '—'}</code></td>
+                          <td>
+                            <span className={`rst-staff__badge rst-staff__badge--${user.role}`}>
+                              {p.t(`roles.${user.role}`, { defaultValue: user.role })}
+                            </span>
+                          </td>
+                          <td>
+                            {isWaiter ? (
+                              <div className="rst-staff__rate">
+                                <BaseInput
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  step="0.01"
+                                  value={p.waiterDraft(user.id)}
+                                  disabled={!p.canEditCommission || p.commissionBusy}
+                                  onChange={(e) => p.setWaiterDraft(user.id, e.target.value)}
+                                />
+                                <span className="rst-staff__rate-meta">
+                                  {rate.custom
+                                    ? p.t('rst.staff.commissionCustom')
+                                    : p.t('rst.staff.commissionInherited')}
+                                </span>
+                                {p.canEditCommission ? (
+                                  <div className="rst-staff__rate-actions">
+                                    <BaseButton
+                                      type="button"
+                                      size="sm"
+                                      variant="ghost"
+                                      disabled={p.commissionBusy}
+                                      onClick={() => p.saveWaiterPercent(user.id)}
+                                    >
+                                      {p.t('common.save')}
+                                    </BaseButton>
+                                    {rate.custom ? (
+                                      <BaseButton
+                                        type="button"
+                                        size="sm"
+                                        variant="ghost"
+                                        disabled={p.commissionBusy}
+                                        onClick={() => p.clearWaiterPercent(user.id)}
+                                      >
+                                        {p.t('rst.staff.commissionUseDefault')}
+                                      </BaseButton>
+                                    ) : null}
+                                  </div>
+                                ) : null}
+                              </div>
+                            ) : (
+                              <span className="rst-staff__rate-na">—</span>
+                            )}
+                          </td>
+                          <td>
+                            <span className={`rst-staff__status${user.active !== false ? ' is-on' : ' is-off'}`}>
+                              {user.active !== false ? p.t('rst.staff.active') : p.t('rst.staff.inactive')}
+                            </span>
+                          </td>
+                          <td className="rst-data-table__actions">
+                            {p.canManage ? (
+                              <div className="rst-staff__actions">
+                                <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.openEdit(user)}>
+                                  {p.t('common.edit')}
+                                </BaseButton>
+                                <BaseButton
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  disabled={p.toggleMutation.isPending}
+                                  onClick={() => p.toggleMutation.mutate(user.id)}
+                                >
+                                  {user.active !== false ? p.t('rst.staff.deactivate') : p.t('rst.staff.activate')}
+                                </BaseButton>
+                              </div>
+                            ) : null}
+                          </td>
+                        </tr>
+                      );
+                    })
                   )}
                 </tbody>
               </table>

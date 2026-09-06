@@ -56,6 +56,9 @@ public class OrderResponseAssembler {
             order.getOpenedAt(),
             order.getClosedAt(),
             orderTotals.billable(items),
+            order.getCommissionPercent(),
+            order.getCommissionBaseAmount(),
+            order.getCommissionAmount(),
             itemResponses.size(),
             itemResponses
         );

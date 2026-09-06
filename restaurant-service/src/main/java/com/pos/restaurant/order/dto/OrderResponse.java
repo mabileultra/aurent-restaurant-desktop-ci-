@@ -28,6 +28,9 @@ public record OrderResponse(
     Instant openedAt,
     Instant closedAt,
     BigDecimal subtotal,
+    BigDecimal commissionPercent,
+    BigDecimal commissionBaseAmount,
+    BigDecimal commissionAmount,
     int linesCount,
     List<OrderItemResponse> items
 ) {}

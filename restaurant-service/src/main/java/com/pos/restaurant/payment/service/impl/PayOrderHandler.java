@@ -2,6 +2,7 @@ package com.pos.restaurant.payment.service.impl;
 
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.commission.service.WaiterCommissionService;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -43,6 +44,7 @@ public class PayOrderHandler {
     private final RecipeConsumePublicationService recipeConsumePublicationService;
     private final ShiftLookup shiftLookup;
     private final ShiftSaleAccumulator shiftSaleAccumulator;
+    private final WaiterCommissionService waiterCommissionService;
 
     @Transactional
     public OrderResponse handle(UUID orderId, PayOrderRequest request) {
@@ -58,6 +60,7 @@ public class PayOrderHandler {
             .build());
         order.setStatus(OrderStatus.CLOSED);
         order.setClosedAt(Instant.now());
+        waiterCommissionService.applyOnPayment(order, due);
         if (order.getTable() != null) {
             order.getTable().setStatus(TableStatus.CLEANING);
         }

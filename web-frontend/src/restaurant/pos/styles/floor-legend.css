@@ -13,6 +13,12 @@
   color: var(--rst-muted);
 }
 
+.rst-legend__count {
+  color: var(--rst-ink);
+  font-weight: 800;
+}
+
+
 .rst-legend__dot {
   width: 0.7rem;
   height: 0.7rem;

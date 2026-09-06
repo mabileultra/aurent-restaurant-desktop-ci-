@@ -5,7 +5,7 @@
   min-height: 0;
   flex: 1;
   overflow: auto;
-  padding: 0 1.25rem 1.25rem;
+  padding: 0 1.15rem 0.75rem;
 }
 
 .rst-kds__col {
@@ -13,17 +13,26 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
+  border-radius: var(--rst-radius-lg);
   background: var(--rst-surface);
   padding: 0.75rem;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
 }
 
 .rst-kds__col-title {
   display: flex;
   justify-content: space-between;
   gap: 0.5rem;
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   margin: 0 0 0.75rem;
+  color: var(--rst-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rst-kds__col-title span {
+  color: var(--rst-accent);
+  font-weight: 800;
 }
 
 .rst-kds__cards {
@@ -37,10 +46,10 @@
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  padding: 0.7rem;
+  padding: 0.75rem;
   border: 1px solid var(--rst-line);
-  border-radius: 12px;
-  background: var(--rst-surface-2);
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1b2230, #141925);
 }
 
 .rst-kds-card__head {
@@ -50,7 +59,12 @@
   font-size: 0.8rem;
   color: var(--rst-muted);
   border-bottom: 2px solid var(--rst-accent);
-  padding-bottom: 0.4rem;
+  padding-bottom: 0.45rem;
+}
+
+.rst-kds-card__head strong {
+  color: var(--rst-ink);
+  font-size: 0.95rem;
 }
 
 .rst-kds-card__lines {

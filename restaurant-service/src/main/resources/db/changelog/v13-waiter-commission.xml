@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-040-waiter-commission-settings" author="pos">
+        <createTable tableName="waiter_commission_settings">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID"/>
+            <column name="percent" type="NUMERIC(6, 2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <sql>
+            CREATE UNIQUE INDEX uq_waiter_commission_store_default
+            ON waiter_commission_settings (store_id)
+            WHERE user_id IS NULL;
+
+            CREATE UNIQUE INDEX uq_waiter_commission_store_user
+            ON waiter_commission_settings (store_id, user_id)
+            WHERE user_id IS NOT NULL;
+        </sql>
+        <createIndex indexName="idx_waiter_commission_store" tableName="waiter_commission_settings">
+            <column name="store_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-041-floor-orders-commission" author="pos">
+        <addColumn tableName="floor_orders">
+            <column name="commission_percent" type="NUMERIC(6, 2)"/>
+            <column name="commission_base_amount" type="NUMERIC(18, 2)"/>
+            <column name="commission_amount" type="NUMERIC(18, 2)"/>
+        </addColumn>
+        <createIndex indexName="idx_floor_orders_commission_closed" tableName="floor_orders">
+            <column name="store_id"/>
+            <column name="closed_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

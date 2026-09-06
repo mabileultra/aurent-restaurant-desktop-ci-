@@ -2,6 +2,8 @@ package com.pos.restaurant.floor.dto;
 
 import com.pos.restaurant.floor.domain.TableStatus;
 
+import java.time.Instant;
+
 public record TableResponse(
     Integer id,
     Integer hallId,
@@ -15,5 +17,7 @@ public record TableResponse(
     int height,
     TableStatus status,
     boolean active,
-    ActiveOrderSummary activeOrder
+    Instant updatedAt,
+    ActiveOrderSummary activeOrder,
+    TableReservationSummary reservation
 ) {}

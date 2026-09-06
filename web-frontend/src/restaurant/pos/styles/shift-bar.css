@@ -4,26 +4,28 @@
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.85rem;
-  padding: 0.65rem 0.85rem;
+  padding: 0.7rem 0.95rem;
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: linear-gradient(90deg, #2a241c, var(--rst-surface));
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(90deg, #221910, var(--rst-surface));
 }
 
 .rst-shift-bar.is-closed {
-  background: linear-gradient(90deg, #2a1c1c, var(--rst-surface));
+  background: linear-gradient(90deg, #2a1515, var(--rst-surface));
   border-color: #5a3030;
 }
 
 .rst-shift-bar__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  font-size: 0.85rem;
+  gap: 0.65rem 1.15rem;
+  font-size: 0.84rem;
+  color: var(--rst-muted);
 }
 
 .rst-shift-bar__meta strong {
-  color: var(--rst-accent);
+  color: #fbbf24;
+  font-weight: 800;
 }
 
 .rst-shift-bar__actions {
