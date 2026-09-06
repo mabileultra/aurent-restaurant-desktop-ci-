@@ -93,20 +93,23 @@ export default function HallsAdminPage() {
         <FloorCanvas
           variant="admin"
           hall={p.selectedHall}
-          onTableClick={(table) => p.setTableModal({
-            mode: 'edit',
-            form: {
-              id: table.id,
-              code: table.code,
-              label: table.label ?? '',
-              seatCount: table.seatCount,
-              status: table.status,
-              posX: table.posX,
-              posY: table.posY,
-              width: table.width,
-              height: table.height,
-            },
-          })}
+          onTableClick={(table) => {
+            const source = p.selectedHall?.tables?.find((row) => row.id === table.id) ?? table;
+            p.setTableModal({
+              mode: 'edit',
+              form: {
+                id: source.id,
+                code: source.code,
+                label: source.label ?? '',
+                seatCount: source.seatCount,
+                status: source.status,
+                posX: source.posX,
+                posY: source.posY,
+                width: source.width,
+                height: source.height,
+              },
+            });
+          }}
           t={p.t}
         />
       </div>

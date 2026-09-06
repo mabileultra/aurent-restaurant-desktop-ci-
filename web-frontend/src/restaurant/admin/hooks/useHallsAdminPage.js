@@ -4,12 +4,16 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstFloorApi } from '../../api/floor.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
-import { gridSlot, TABLE_DEFAULT_SIZE } from '../../pos/utils/resolveFloorPositions';
+import {
+  findFreeGridSlot,
+  gridSlot,
+  TABLE_DEFAULT_SIZE,
+} from '../../pos/utils/resolveFloorPositions';
 
 const emptyHallForm = () => ({ name: '', sortOrder: 100 });
 
 const nextTableForm = (existingTables = []) => {
-  const slot = gridSlot(existingTables.length);
+  const slot = findFreeGridSlot(existingTables, TABLE_DEFAULT_SIZE);
   return {
     code: '',
     label: '',
@@ -58,14 +62,18 @@ export function useHallsAdminPage() {
 
   const saveTableMutation = useMutation({
     mutationFn: (payload) => {
+      // Never persist canvas-scaled geometry from FloorCanvas — keep server layout on edit.
+      const existing = payload.id
+        ? selectedHall?.tables?.find((table) => table.id === payload.id)
+        : null;
       const body = {
         code: payload.code,
         label: payload.label || null,
         seatCount: Number(payload.seatCount),
-        posX: Number(payload.posX),
-        posY: Number(payload.posY),
-        width: Number(payload.width),
-        height: Number(payload.height),
+        posX: existing ? Number(existing.posX) : Number(payload.posX),
+        posY: existing ? Number(existing.posY) : Number(payload.posY),
+        width: existing ? Number(existing.width) : Number(payload.width),
+        height: existing ? Number(existing.height) : Number(payload.height),
         status: payload.status,
       };
       if (payload.id) return rstFloorApi.updateTable(payload.id, body);
@@ -99,7 +107,9 @@ export function useHallsAdminPage() {
 
   const arrangeMutation = useMutation({
     mutationFn: () => {
-      const tables = selectedHall?.tables ?? [];
+      const tables = [...(selectedHall?.tables ?? [])].sort((a, b) =>
+        String(a.code ?? '').localeCompare(String(b.code ?? ''), undefined, { numeric: true }),
+      );
       return rstFloorApi.updateLayout(selectedHall.id, {
         tables: tables.map((table, index) => ({
           id: table.id,
