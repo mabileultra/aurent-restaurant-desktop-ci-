@@ -38,7 +38,7 @@ export default function CashRegistersListPage() {
         onAdd={p.openCreateForm}
       />
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+      <div className="admin-table-shell">
         <CashRegistersTable
           t={p.t}
           rows={p.rows}

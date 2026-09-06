@@ -13,7 +13,7 @@ export default function StockDashboardQuickLinks({ t }) {
   return (
     <div className="flex flex-wrap gap-3 text-sm">
       {LINKS.map(({ to, key }) => (
-        <Link key={to} to={to} className="text-emerald-700 hover:underline dark:text-emerald-400">
+        <Link key={to} to={to} className="admin-link">
           {t(`stockReports.${key}`)}
         </Link>
       ))}

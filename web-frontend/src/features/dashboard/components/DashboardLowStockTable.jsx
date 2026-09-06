@@ -12,9 +12,11 @@ export default function DashboardLowStockTable({ t, lowStock }) {
   if (!lowStock?.length) return null;
 
   return (
-    <div className="rounded-xl border border-red-200 bg-red-50/50 p-5 dark:border-red-900/40 dark:bg-slate-900">
-      <h2 className="mb-4 flex items-center gap-2 font-semibold text-slate-900 dark:text-white">
-        <AlertTriangle size={16} className="text-amber-500 dark:text-amber-400" />
+    <div className="admin-card border-[color:rgb(252_165_165)] bg-red-50/60 p-5 dark:border-red-900/40 dark:bg-red-950/20">
+      <h2 className="admin-page-title mb-4 flex items-center gap-2 text-base">
+        <span className="admin-icon-tile admin-icon-tile--sm admin-icon-tile--warn" aria-hidden>
+          <AlertTriangle size={16} strokeWidth={2} />
+        </span>
         {t('dashboard.lowStockTitle')}
       </h2>
       <div className="overflow-x-auto">

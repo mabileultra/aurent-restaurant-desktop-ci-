@@ -34,7 +34,7 @@ export default function PlatformMonitoringStatGrid({ t, overview, cpuPercent }) 
       />
       <PlatformMonitoringStatCard
         icon={MemoryStick}
-        color="bg-emerald-500"
+        color="bg-[color:var(--color-brand)]"
         label={t('platform.monitoring.heap')}
         value={formatPercent(overview?.memory?.heapUsedPercent)}
         hint={

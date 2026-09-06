@@ -11,22 +11,24 @@ export default function ReportDateBar({ from, to, onFrom, onTo }) {
     { key: 'presetMonth', from: () => format(startOfMonth(new Date()), 'yyyy-MM-dd'), to: () => format(new Date(), 'yyyy-MM-dd') },
   ];
 
+  const isActive = (p) => from === p.from() && to === p.to();
+
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
-        <Calendar size={14} className="text-slate-500" />
+      <div className="admin-card flex items-center gap-2 px-3 py-2 !shadow-none">
+        <Calendar size={14} className="admin-icon" aria-hidden />
         <input
           type="date"
           value={from}
           onChange={(e) => onFrom(e.target.value)}
-          className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
+          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
         />
-        <span className="text-slate-400">—</span>
+        <span className="text-[color:var(--admin-muted)]">—</span>
         <input
           type="date"
           value={to}
           onChange={(e) => onTo(e.target.value)}
-          className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
+          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
         />
       </div>
       <div className="flex flex-wrap gap-2">
@@ -38,7 +40,7 @@ export default function ReportDateBar({ from, to, onFrom, onTo }) {
               onFrom(p.from());
               onTo(p.to());
             }}
-            className="rounded-lg bg-slate-200 px-3 py-2 text-xs text-slate-800 transition hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
+            className={`admin-chip ${isActive(p) ? 'admin-chip--active' : ''}`}
           >
             {t(`reports.${p.key}`)}
           </button>

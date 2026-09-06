@@ -23,12 +23,13 @@ export default function PlatformCompanyFormModal({
       size="lg"
       footer={(
         <>
-          <BaseButton variant="secondary" onClick={onClose}>
+          <BaseButton variant="secondary" onClick={onClose} className="admin-btn-secondary">
             {t('common.cancel')}
           </BaseButton>
           <BaseButton
             disabled={!form.name.trim() || isSaving || form.businessTypeIds.length === 0}
             onClick={onSave}
+            className="admin-btn-primary"
           >
             {t('common.save')}
           </BaseButton>
@@ -36,7 +37,7 @@ export default function PlatformCompanyFormModal({
       )}
     >
       {!editing ? (
-        <p className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-100">
+        <p className="admin-soft-panel mb-4 px-3 py-2 text-xs">
           {t('platform.field_loginCodeAutoHint')}
         </p>
       ) : (
@@ -95,7 +96,7 @@ export default function PlatformCompanyFormModal({
                     type="button"
                     className={`rounded px-2 py-0.5 text-xs ${
                       isDefault
-                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                        ? 'bg-[color:var(--color-brand-soft)] text-[color:var(--color-brand-deep)]'
                         : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                     }`}
                     onClick={() => onSetDefaultBusinessType(bt.id)}

@@ -23,7 +23,7 @@ export default function PlatformModuleAccessUsersPanel(props) {
   } = props;
 
   return (
-    <div className="module-access-panel rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div className="module-access-panel admin-card">
       <PlatformModuleAccessUsersPanelHeader
         t={t}
         unconfiguredCount={unconfiguredCount}

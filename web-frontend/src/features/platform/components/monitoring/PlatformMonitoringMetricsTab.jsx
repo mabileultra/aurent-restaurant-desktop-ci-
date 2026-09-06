@@ -34,7 +34,7 @@ export default function PlatformMonitoringMetricsTab({
                 onClick={() => setSelectedMetric(m.name)}
                 className={`w-full px-3 py-2 text-left text-sm transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60 ${
                   selectedMetric === m.name
-                    ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                    ? 'bg-[color:var(--color-brand-soft)] text-[color:var(--color-brand-deep)]'
                     : 'text-slate-700 dark:text-slate-300'
                 }`}
               >

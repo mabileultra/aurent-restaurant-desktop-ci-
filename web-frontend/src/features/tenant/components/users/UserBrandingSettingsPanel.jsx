@@ -43,7 +43,7 @@ export default function UserBrandingSettingsPanel() {
   }, [fetchFromServer]);
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="admin-card">
       <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <UserCog size={18} className="text-emerald-600 dark:text-emerald-400" />
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
@@ -89,7 +89,7 @@ export default function UserBrandingSettingsPanel() {
         ) : null}
 
         <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-800/40">
-          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500">
+          <div className="admin-icon-tile !h-12 !w-12 !rounded-xl">
             <BrandMark size={28} />
           </div>
           <div className="min-w-0">

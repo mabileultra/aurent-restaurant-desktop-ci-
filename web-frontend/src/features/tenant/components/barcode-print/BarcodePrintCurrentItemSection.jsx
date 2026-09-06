@@ -60,7 +60,7 @@ export default function BarcodePrintCurrentItemSection({
             <button
               type="button"
               onClick={onOpenPrint}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-700 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+              className="admin-btn-primary px-4 py-2.5 text-sm"
             >
               <Printer size={18} aria-hidden />
               {t('usersBarcodePrint.openPrint')}

@@ -38,14 +38,14 @@ export default function PlatformBusinessTypeDetail({
 }) {
   if (!detail) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="admin-card">
         <p className="p-6 text-sm text-slate-500">{t('platform.businessTypes.selectType')}</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div className="admin-card">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 dark:border-slate-800">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{detail.name}</h2>

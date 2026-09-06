@@ -215,7 +215,7 @@ export default function StoreFormModal({
               {t('common.cancel')}
             </button>
             <button type="submit" disabled={isPending}
-              className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-emerald-500 py-2.5 text-sm font-semibold text-white hover:bg-emerald-600 disabled:opacity-50">
+              className="admin-btn-primary flex flex-1 items-center justify-center gap-2 py-2.5 text-sm">
               {isPending && <Loader size={14} className="animate-spin" />}
               {t('common.save')}
             </button>

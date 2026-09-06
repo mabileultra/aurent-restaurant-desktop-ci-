@@ -33,7 +33,7 @@ export default function BarcodePrintSearchSection({
         />
         <button
           type="button"
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
+          className="admin-btn-primary shrink-0 px-4 py-2 text-sm"
           onClick={() => onLookup()}
           disabled={loading}
         >

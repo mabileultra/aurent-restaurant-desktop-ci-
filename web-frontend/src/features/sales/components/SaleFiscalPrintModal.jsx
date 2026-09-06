@@ -75,7 +75,7 @@ export default function SaleFiscalPrintModal({ saleId, onClose }) {
               type="button"
               onClick={handlePrint}
               disabled={!sale || printing}
-              className="inline-flex items-center gap-1 rounded-lg border border-emerald-700 bg-white px-3 py-1.5 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 disabled:opacity-50 dark:border-emerald-500 dark:bg-slate-900 dark:text-emerald-300 dark:hover:bg-slate-800"
+              className="admin-btn-secondary px-3 py-1.5 text-xs disabled:opacity-50"
             >
               <Printer size={14} />
               {printing ? t('common.loading') : t('receipt.print')}

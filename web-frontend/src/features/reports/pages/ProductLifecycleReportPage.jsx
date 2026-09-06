@@ -29,7 +29,7 @@ export default function ProductLifecycleReportPage() {
       />
 
       {r.selectedProduct && (
-        <div className="flex flex-wrap items-center gap-3 rounded-xl border border-emerald-200/60 bg-emerald-50/50 px-4 py-3 dark:border-emerald-900/50 dark:bg-emerald-950/30">
+        <div className="admin-soft-panel flex flex-wrap items-center gap-3 px-4 py-3">
           <History size={20} className="text-emerald-700 dark:text-emerald-400" />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-slate-900 dark:text-white">{r.selectedProduct.name}</p>
@@ -40,7 +40,7 @@ export default function ProductLifecycleReportPage() {
           </div>
           <Link
             to="/products"
-            className="text-sm text-emerald-700 hover:underline dark:text-emerald-400"
+            className="admin-link text-sm"
           >
             {t('stockReports.lifecycleOpenCatalog')}
           </Link>

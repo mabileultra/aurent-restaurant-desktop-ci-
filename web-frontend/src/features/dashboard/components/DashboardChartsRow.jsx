@@ -24,8 +24,8 @@ export default function DashboardChartsRow({ t, periodReport, topProducts }) {
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none lg:col-span-2">
-        <h2 className="mb-4 font-semibold text-slate-900 dark:text-white">{t('dashboard.revenueChart')}</h2>
+      <div className="admin-card p-5 lg:col-span-2">
+        <h2 className="admin-page-title mb-4 text-base">{t('dashboard.revenueChart')}</h2>
         <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={periodReport?.dailyBreakdown ?? []}>
             <defs>
@@ -57,8 +57,8 @@ export default function DashboardChartsRow({ t, periodReport, topProducts }) {
         </ResponsiveContainer>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
-        <h2 className="mb-4 font-semibold text-slate-900 dark:text-white">{t('dashboard.topProducts')}</h2>
+      <div className="admin-card p-5">
+        <h2 className="admin-page-title mb-4 text-base">{t('dashboard.topProducts')}</h2>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart
             data={topProducts ?? []}

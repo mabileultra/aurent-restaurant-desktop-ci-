@@ -33,24 +33,24 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
         </>
       ) : null}
       {p.manage && !embeddedInRstHub ? (
-        <BaseButton onClick={p.handleAddProduct}>
+        <BaseButton onClick={p.handleAddProduct} className="admin-btn-primary">
           <Plus size={16} />
           {p.t('products.add')}
         </BaseButton>
       ) : null}
       {!inRst && p.manage ? (
-        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
+        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)} className="admin-btn-secondary">
           <Plus size={16} />
           {p.t('stockModule.add')}
         </BaseButton>
       ) : null}
       {embeddedInRstHub && p.manage ? (
-        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)}>
+        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)} className="admin-btn-secondary">
           <Plus size={16} />
           {p.t('stockModule.add')}
         </BaseButton>
       ) : null}
-      <BaseButton variant="secondary" onClick={() => p.setFiltersOpen(true)}>
+      <BaseButton variant="secondary" onClick={() => p.setFiltersOpen(true)} className="admin-btn-secondary">
         <Filter size={16} />
         {p.t('products.toolbar.filters')}
       </BaseButton>
@@ -71,7 +71,7 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
     >
       {p.isError && <ErrorBanner message={p.errorMessage} />}
 
-      <div className="rst-products-table-shell overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="rst-products-table-shell admin-table-shell">
         <StockProductsTable
           t={p.t}
           rows={p.rows}

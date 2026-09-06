@@ -11,6 +11,26 @@
   font-size: 0.875rem;
 }
 
+.admin-data-table thead th {
+  background: var(--color-brand-soft, #e6f2ec);
+  color: var(--color-brand-deep, #043d2c);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.dark .admin-data-table thead th {
+  background: rgb(0 104 71 / 0.22);
+  color: #a7f3d0;
+}
+
+.admin-data-table tbody tr:hover td {
+  background: rgb(230 242 236 / 0.45);
+}
+
+.dark .admin-data-table tbody tr:hover td {
+  background: rgb(0 104 71 / 0.12);
+}
+
 html.app-viewport--canonical .admin-data-table {
   font-size: 0.8125rem;
 }

@@ -16,8 +16,8 @@ export default function CategoriesPage({ hideTitle = false } = {}) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         {hideTitle ? <div /> : (
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('categories.title')}</h1>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
+            <h1 className="admin-page-title text-xl">{t('categories.title')}</h1>
+            <p className="admin-page-subtitle text-sm">
               {t('categories.subtitle', { count: c.categories.length })}
             </p>
           </div>
@@ -40,7 +40,7 @@ export default function CategoriesPage({ hideTitle = false } = {}) {
             </div>
           ) : null}
           {c.manage ? (
-            <BaseButton onClick={c.openCreate}>
+            <BaseButton onClick={c.openCreate} className="admin-btn-primary">
               <Plus size={16} />
               {t('categories.add')}
             </BaseButton>
@@ -48,7 +48,7 @@ export default function CategoriesPage({ hideTitle = false } = {}) {
         </div>
       </div>
 
-      <div className="rst-products-table-shell overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="rst-products-table-shell admin-table-shell">
         <CategoriesTable
           manage={c.manage}
           isLoading={c.isLoading}

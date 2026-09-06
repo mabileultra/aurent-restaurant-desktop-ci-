@@ -16,7 +16,7 @@ export default function ReportsTopProductsPanel({ t, products, formatCurrency })
                 </div>
                 <div className="h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
                   <div
-                    className="h-full bg-emerald-500 rounded-full"
+                    className="h-full rounded-full bg-[color:var(--color-brand)]"
                     style={{ width: `${(product.quantitySold / products[0].quantitySold) * 100}%` }}
                   />
                 </div>

@@ -23,7 +23,7 @@ export default function PlatformCompaniesTable({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

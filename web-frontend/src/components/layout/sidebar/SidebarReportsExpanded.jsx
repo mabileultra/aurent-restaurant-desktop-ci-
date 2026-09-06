@@ -25,11 +25,7 @@ export default function SidebarReportsExpanded({
       <button
         type="button"
         onClick={onReportsToggle}
-        className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-          inReportsSection
-            ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-white'
-            : 'text-slate-700 hover:bg-slate-200/80 dark:text-slate-200 dark:hover:bg-emerald-900/30'
-        }`}
+        className={`admin-nav-group-btn ${inReportsSection ? 'admin-nav-group-btn--active' : ''}`}
       >
         <span className="flex min-w-0 items-center gap-3">
           <ICONS.BarChart2 size={18} className="flex-shrink-0 opacity-90" />
@@ -41,16 +37,12 @@ export default function SidebarReportsExpanded({
         />
       </button>
       {reportsOpen ? (
-        <div className="ml-4 mt-1 space-y-1 border-l border-slate-300 pl-1 dark:border-emerald-800/50">
+        <div className="admin-nav-group-rail space-y-1">
           <NavLink
             to={REPORT_HUB.to}
             end
             className={({ isActive }) =>
-              `ml-2 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                isActive || reportsHubActive
-                  ? 'border-emerald-500 bg-white text-emerald-900 shadow-sm dark:border-sky-500 dark:bg-slate-950 dark:text-white'
-                  : 'border-transparent text-slate-700 hover:bg-slate-200/80 dark:text-slate-300 dark:hover:bg-emerald-900/30'
-              }`
+              `admin-nav-sublink ${isActive || reportsHubActive ? 'admin-nav-sublink--active' : ''}`
             }
           >
             <REPORT_HUB.icon size={16} className="flex-shrink-0 opacity-80" />
@@ -62,10 +54,8 @@ export default function SidebarReportsExpanded({
               <button
                 type="button"
                 onClick={onReportsSalesToggle}
-                className={`ml-2 flex w-[calc(100%-0.5rem)] items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide transition-colors ${
-                  inReportsSalesSection
-                    ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200'
-                    : 'text-slate-600 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:bg-emerald-900/20'
+                className={`admin-nav-group-btn ml-2 w-[calc(100%-0.5rem)] !py-2 !text-xs !font-semibold uppercase tracking-wide ${
+                  inReportsSalesSection ? 'admin-nav-group-btn--active' : ''
                 }`}
               >
                 <span className="truncate">{t('nav.reportsSalesGroup')}</span>
@@ -75,7 +65,7 @@ export default function SidebarReportsExpanded({
                 />
               </button>
               {reportsSalesOpen ? (
-                <div className="ml-3 space-y-0.5 border-l border-slate-200 pl-1 dark:border-emerald-900/40">
+                <div className="admin-nav-group-rail ml-3 space-y-0.5">
                   {reportsSalesNav.map(({ to, key, icon: Icon }) => (
                     <NavLink key={to} to={to} className={subLinkClass}>
                       <Icon size={16} className="flex-shrink-0 opacity-80" />
@@ -92,10 +82,8 @@ export default function SidebarReportsExpanded({
               <button
                 type="button"
                 onClick={onReportsStockToggle}
-                className={`ml-2 flex w-[calc(100%-0.5rem)] items-center justify-between gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide transition-colors ${
-                  inReportsStockSection
-                    ? 'bg-emerald-50 text-emerald-900 dark:bg-emerald-900/30 dark:text-emerald-200'
-                    : 'text-slate-600 hover:bg-slate-200/80 dark:text-slate-400 dark:hover:bg-emerald-900/20'
+                className={`admin-nav-group-btn ml-2 w-[calc(100%-0.5rem)] !py-2 !text-xs !font-semibold uppercase tracking-wide ${
+                  inReportsStockSection ? 'admin-nav-group-btn--active' : ''
                 }`}
               >
                 <span className="truncate">{t('nav.reportsStockGroup')}</span>
@@ -105,7 +93,7 @@ export default function SidebarReportsExpanded({
                 />
               </button>
               {reportsStockOpen ? (
-                <div className="ml-3 space-y-0.5 border-l border-slate-200 pl-1 dark:border-emerald-900/40">
+                <div className="admin-nav-group-rail ml-3 space-y-0.5">
                   {reportsStockNav.map(({ to, key, icon: Icon }) => (
                     <NavLink key={to} to={to} className={subLinkClass}>
                       <Icon size={16} className="flex-shrink-0 opacity-80" />

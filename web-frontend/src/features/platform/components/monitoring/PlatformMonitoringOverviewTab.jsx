@@ -27,7 +27,7 @@ export default function PlatformMonitoringOverviewTab() {
       {isPending ? (
         <p className="text-sm text-slate-500">{t('common.loading')}</p>
       ) : data.length === 0 ? (
-        <p className="rounded-lg bg-emerald-50 px-3 py-6 text-center text-sm text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+        <p className="admin-soft-panel px-3 py-6 text-center text-sm">
           {t('platform.monitoring.noErrors')}
         </p>
       ) : (

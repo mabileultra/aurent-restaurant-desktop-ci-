@@ -125,7 +125,7 @@ export default function OrdersFiltersDrawer({
           <button
             type="button"
             onClick={onApply}
-            className="flex-1 rounded-lg bg-emerald-800 py-2.5 text-sm font-medium text-white hover:bg-emerald-900 dark:bg-emerald-700 dark:hover:bg-emerald-600"
+            className="admin-btn-primary flex-1 py-2.5 text-sm"
           >
             {t('orders.filterApply')}
           </button>

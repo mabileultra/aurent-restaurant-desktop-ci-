@@ -1,10 +1,10 @@
 import { fmtMoney } from '../../utils/formatMoney';
 
-export const DASHBOARD_CHART_GRID = '#e2e8f0';
+export const DASHBOARD_CHART_GRID = '#d7e5dd';
 export const DASHBOARD_CHART_TOOLTIP_BG = '#ffffff';
 export const DASHBOARD_CHART_TOOLTIP_BORDER = '#e2e8f0';
 export const DASHBOARD_CHART_TOOLTIP_LABEL = '#64748b';
-export const DASHBOARD_CHART_ACCENT = '#10b981';
+export const DASHBOARD_CHART_ACCENT = '#006847';
 
 /** Деньги дашборда: сум (как в остальном UI), без KES. */
 export const formatDashboardMoney = (n) => `${fmtMoney(n)} сум`;

@@ -116,7 +116,7 @@ export default function SupplierModal({ open, onClose }) {
             <button
               type="submit"
               disabled={mutation.isPending}
-              className="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60 dark:bg-emerald-600"
+              className="admin-btn-primary px-4 py-2 text-sm"
             >
               {mutation.isPending ? t('common.processing') : t('suppliersModule.add')}
             </button>

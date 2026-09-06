@@ -45,7 +45,7 @@ export default function CashRegistersListFooter({
             disabled={totalPages <= 1}
             className={`min-w-[2rem] rounded border px-2 py-1 text-xs ${
               page === i
-                ? 'border-emerald-600 bg-emerald-50 font-semibold text-emerald-800 dark:border-emerald-500 dark:bg-emerald-950/50 dark:text-emerald-200'
+                ? 'border-[color:var(--color-brand)] bg-[color:var(--color-brand-soft)] font-semibold text-[color:var(--color-brand-deep)]'
                 : 'border-slate-300 dark:border-slate-600'
             }`}
           >

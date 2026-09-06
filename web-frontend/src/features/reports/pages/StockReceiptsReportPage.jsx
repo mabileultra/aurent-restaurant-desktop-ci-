@@ -26,7 +26,7 @@ export default function StockReceiptsReportPage({ hideTitle = false } = {}) {
         )}
         <Link
           to={paths.receiptsNew}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+          className="admin-btn-primary px-4 py-2 text-sm"
         >
           <Plus size={16} />
           {t('stockReports.newReceiptDoc')}

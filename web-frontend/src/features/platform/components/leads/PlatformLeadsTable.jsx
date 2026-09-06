@@ -20,7 +20,7 @@ function statusBadgeClass(status) {
     case 'IN_PROGRESS':
       return 'bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200';
     case 'DONE':
-      return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200';
+      return 'bg-[color:var(--color-brand-soft)] text-[color:var(--color-brand-deep)]';
     case 'REJECTED':
       return 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-200';
     default:
@@ -46,7 +46,7 @@ export default function PlatformLeadsTable({
   );
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>

@@ -32,7 +32,7 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
       <div className="w-full max-w-md rounded-2xl border bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">{t('users.credentialsCreatedTitle')}</h2>
         <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{t('users.credentialsCreatedHint')}</p>
-        <div className="mt-4 space-y-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm dark:border-emerald-900/50 dark:bg-emerald-950/30">
+        <div className="admin-soft-panel mt-4 space-y-2 p-3 text-sm">
           {credentials.companyLoginCode ? (
             <p>
               <span className="text-slate-500">{t('users.platformCompanyCode')}:</span>{' '}
@@ -66,7 +66,7 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
           </button>
           <button
             type="button"
-            className="flex-1 rounded-lg bg-emerald-500 py-2.5 font-semibold text-white"
+            className="admin-btn-primary flex-1 py-2.5 text-sm"
             onClick={onClose}
           >
             {t('common.close')}

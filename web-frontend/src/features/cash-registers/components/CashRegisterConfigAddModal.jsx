@@ -298,14 +298,14 @@ export default function CashRegisterConfigAddModal({ open, onClose, onSaved }) {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+              className="admin-btn-secondary flex-1 py-2.5 text-sm"
             >
               {t('common.cancel')}
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50 dark:bg-emerald-600"
+              className="admin-btn-primary flex-1 py-2.5 text-sm"
             >
               {t('cashRegisters.configModalAdd')}
             </button>

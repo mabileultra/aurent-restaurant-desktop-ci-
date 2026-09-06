@@ -5,9 +5,9 @@ export default function StockDocumentAddLineButton({ label, onClick, iconSize = 
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex items-center gap-1 text-sm text-emerald-700"
+      className="admin-link inline-flex items-center gap-1 text-sm"
     >
-      <Plus size={iconSize} /> {label}
+      <Plus size={iconSize} className="admin-icon" aria-hidden /> {label}
     </button>
   );
 }

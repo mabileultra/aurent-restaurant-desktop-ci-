@@ -3,11 +3,11 @@ import { Link } from 'react-router-dom';
 export default function StockDocumentPageHeader({ backTo, backLabel, title, subtitle }) {
   return (
     <div>
-      <Link to={backTo} className="text-sm text-emerald-700 hover:underline dark:text-emerald-400">
+      <Link to={backTo} className="admin-link text-sm">
         ← {backLabel}
       </Link>
-      <h1 className="mt-2 text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
-      {subtitle ? <p className="text-sm text-slate-500">{subtitle}</p> : null}
+      <h1 className="admin-page-title mt-2 text-xl">{title}</h1>
+      {subtitle ? <p className="admin-page-subtitle text-sm">{subtitle}</p> : null}
     </div>
   );
 }

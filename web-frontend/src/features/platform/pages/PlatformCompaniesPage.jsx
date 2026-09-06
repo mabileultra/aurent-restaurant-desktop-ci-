@@ -13,7 +13,7 @@ export default function PlatformCompaniesPage() {
       spacing="space-y-4"
       title={p.t('platform.companiesTitle')}
       actions={(
-        <BaseButton variant="secondary" onClick={p.openCreate}>
+        <BaseButton onClick={p.openCreate} className="admin-btn-primary">
           <Plus size={16} />
           {p.t('platform.addCompany')}
         </BaseButton>

@@ -23,11 +23,11 @@ export default function ProductsTable({
   onOpenRowMenu,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="admin-data-table admin-data-table--wide w-full text-sm">
           <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-600 dark:border-slate-800 dark:text-slate-500">
+            <tr className="border-b border-[color:var(--admin-line)] text-left text-xs uppercase tracking-wide">
               <th className="px-3 py-3 w-10">
                 <input
                   ref={selectAllRef}

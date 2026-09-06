@@ -19,8 +19,17 @@ html.app-theme--admin .base-select__option {
 }
 
 html.app-theme--admin .base-select__option:hover,
-html.app-theme--admin .base-select__option.is-highlighted {
-  background-color: #f1f5f9;
+html.app-theme--admin .base-select__option.is-highlighted,
+html.app-theme--admin .base-select__option--highlight {
+  background-color: var(--color-brand-soft);
+  color: var(--color-brand-deep);
+}
+
+html.app-theme--admin .base-select__trigger:focus,
+html.app-theme--admin .base-select__trigger:focus-within,
+html.app-theme--admin .base-select--open .base-select__trigger {
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 /* BaseModal и любые fixed-оверлеи (модалки admin/platform) */

@@ -85,7 +85,7 @@ export default function ProductExportModal({ stores, onClose }) {
             type="button"
             onClick={runExport}
             disabled={exporting}
-            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:opacity-50"
+            className="admin-btn-primary px-4 py-2 text-sm"
           >
             {exporting ? '…' : t('products.export.submit')}
           </button>

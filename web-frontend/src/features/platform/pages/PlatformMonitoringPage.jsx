@@ -17,7 +17,7 @@ export default function PlatformMonitoringPage() {
       actions={(
         <div className="flex items-center gap-2">
           <span className="inline-flex items-center gap-1 text-xs text-slate-500">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
+            <span className="h-2 w-2 animate-pulse rounded-full bg-[color:var(--color-brand)]" />
             {p.t('platform.monitoring.autoRefresh')}
           </span>
           <BaseButton variant="secondary" onClick={p.refreshAll}>

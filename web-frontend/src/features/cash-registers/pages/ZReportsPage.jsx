@@ -32,7 +32,7 @@ export default function ZReportsPage() {
           <button
             type="button"
             onClick={() => p.setFiltersOpen(true)}
-            className="flex items-center gap-2 rounded-lg bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-600"
+            className="admin-btn-primary px-3 py-2 text-sm"
           >
             <Filter size={16} />
             {p.t('products.toolbar.filters')}

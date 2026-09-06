@@ -1,0 +1,430 @@
+/* Admin shell chrome — sidebar, header, main canvas */
+
+.admin-shell .admin-sidebar {
+  background: var(--admin-surface);
+  border-right: 1px solid var(--admin-line);
+  color: var(--admin-text);
+}
+
+.dark .admin-shell .admin-sidebar {
+  background: #0f1a15;
+  border-right-color: rgb(0 104 71 / 0.35);
+}
+
+.admin-shell .admin-sidebar__brand {
+  border-bottom: 1px solid var(--admin-line);
+}
+
+.dark .admin-shell .admin-sidebar__brand {
+  border-bottom-color: rgb(0 104 71 / 0.35);
+}
+
+.admin-shell .admin-sidebar__brand-name {
+  color: var(--admin-ink);
+  font-weight: 700;
+}
+
+.dark .admin-shell .admin-sidebar__brand-name {
+  color: #f8fafc;
+}
+
+.admin-shell .admin-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border-radius: var(--admin-radius-sm);
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-shell .admin-nav-link:hover {
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand-deep);
+}
+
+.admin-shell .admin-nav-link--active {
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand-deep);
+  box-shadow: inset 3px 0 0 var(--admin-brand);
+}
+
+.dark .admin-shell .admin-nav-link {
+  color: #cbd5e1;
+}
+
+.dark .admin-shell .admin-nav-link:hover,
+.dark .admin-shell .admin-nav-link--active {
+  background: rgb(0 104 71 / 0.22);
+  color: #a7f3d0;
+}
+
+.admin-shell .admin-nav-group-btn {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-radius: var(--admin-radius-sm);
+  padding: 0.625rem 0.75rem;
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #334155;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-shell .admin-nav-group-btn:hover {
+  background: rgb(226 232 240 / 0.8);
+}
+
+.admin-shell .admin-nav-group-btn--active {
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand-deep);
+}
+
+.dark .admin-shell .admin-nav-group-btn {
+  color: #e2e8f0;
+}
+
+.dark .admin-shell .admin-nav-group-btn:hover {
+  background: rgb(0 104 71 / 0.18);
+}
+
+.dark .admin-shell .admin-nav-group-btn--active {
+  background: rgb(0 104 71 / 0.28);
+  color: #fff;
+}
+
+.admin-shell .admin-nav-group-rail {
+  margin-left: 1rem;
+  margin-top: 0.25rem;
+  border-left: 1px solid var(--admin-line);
+  padding-left: 0.25rem;
+}
+
+.dark .admin-shell .admin-nav-group-rail {
+  border-left-color: rgb(0 104 71 / 0.35);
+}
+
+.admin-shell .admin-nav-sublink {
+  margin-left: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid transparent;
+  border-radius: var(--admin-radius-sm);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #475569;
+  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-shell .admin-nav-sublink:hover {
+  background: rgb(226 232 240 / 0.7);
+  color: #0f172a;
+}
+
+.admin-shell .admin-nav-sublink--active {
+  border-color: var(--admin-brand);
+  background: var(--admin-surface);
+  color: var(--admin-brand-deep);
+  box-shadow: var(--admin-shadow);
+}
+
+.dark .admin-shell .admin-nav-sublink {
+  color: #cbd5e1;
+}
+
+.dark .admin-shell .admin-nav-sublink:hover {
+  background: rgb(30 41 59 / 0.6);
+  color: #fff;
+}
+
+.dark .admin-shell .admin-nav-sublink--active {
+  border-color: var(--admin-brand-mid, #0a7a52);
+  background: #020617;
+  color: #fff;
+}
+
+.admin-shell .admin-sidebar__footer {
+  border-top: 1px solid var(--admin-line);
+}
+
+.dark .admin-shell .admin-sidebar__footer {
+  border-top-color: rgb(0 104 71 / 0.35);
+}
+
+.admin-shell .admin-topbar {
+  min-height: var(--admin-header-h);
+  height: auto;
+  border-bottom: 1px solid var(--admin-line);
+  background: var(--admin-surface);
+}
+
+@media (min-width: 640px) {
+  .admin-shell .admin-topbar {
+    min-height: 4rem;
+  }
+}
+
+.dark .admin-shell .admin-topbar {
+  background: #0f172a;
+  border-bottom-color: #1e293b;
+}
+
+.admin-shell .admin-topbar__avatar {
+  display: flex;
+  height: 2rem;
+  width: 2rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  background: var(--admin-gradient);
+  font-weight: 700;
+  color: var(--admin-brand-on);
+}
+
+.admin-shell .admin-main {
+  background: var(--admin-canvas) !important;
+}
+
+.dark .admin-shell .admin-main {
+  background: var(--admin-canvas) !important;
+}
+
+/* Primary / secondary actions inside admin */
+.admin-shell .admin-btn-primary,
+html.app-theme--admin .admin-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 0;
+  border-radius: var(--admin-radius-sm, 0.5rem);
+  background: var(--admin-gradient, var(--color-brand-gradient));
+  color: var(--color-brand-on);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgb(15 42 31 / 0.12);
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+.admin-shell .admin-btn-primary:hover:not(:disabled),
+html.app-theme--admin .admin-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.admin-shell .admin-btn-primary:disabled,
+html.app-theme--admin .admin-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.admin-shell .admin-btn-primary svg,
+html.app-theme--admin .admin-btn-primary svg {
+  color: currentColor;
+}
+
+.admin-shell .admin-btn-secondary svg,
+html.app-theme--admin .admin-btn-secondary svg {
+  color: var(--admin-brand, var(--color-brand));
+}
+
+.admin-shell .admin-btn-secondary,
+html.app-theme--admin .admin-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--admin-line, var(--color-border));
+  border-radius: var(--admin-radius-sm, 0.5rem);
+  background: var(--admin-surface, #fff);
+  color: var(--admin-text, #0f172a);
+  font-weight: 500;
+  box-shadow: var(--admin-shadow);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-shell .admin-btn-secondary:hover:not(:disabled),
+html.app-theme--admin .admin-btn-secondary:hover:not(:disabled) {
+  background: var(--admin-brand-soft, var(--color-brand-soft));
+  border-color: rgb(0 104 71 / 0.25);
+}
+
+.admin-shell .admin-chip {
+  border-radius: var(--admin-radius-sm, 0.5rem);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--admin-surface-2, #f1f5f9);
+  color: var(--admin-text);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.admin-shell .admin-chip:hover {
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand-deep);
+}
+
+.admin-shell .admin-chip--active {
+  background: var(--admin-gradient, var(--color-brand));
+  color: var(--admin-brand-on);
+}
+
+.admin-shell .admin-table-shell {
+  overflow: hidden;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow);
+}
+
+/* Icons — единый язык для плиток, ссылок и навигации */
+.admin-shell .admin-icon {
+  color: var(--admin-brand);
+  flex-shrink: 0;
+}
+
+.admin-shell .admin-icon--muted {
+  color: var(--admin-muted);
+}
+
+.admin-shell .admin-icon-tile {
+  display: inline-flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand);
+}
+
+.admin-shell .admin-icon-tile--sm {
+  height: 2rem;
+  width: 2rem;
+}
+
+.admin-shell .admin-icon-tile--amber {
+  background: rgb(245 158 11 / 0.14);
+  color: #d97706;
+}
+
+.admin-shell .admin-icon-tile--red {
+  background: rgb(239 68 68 / 0.12);
+  color: #dc2626;
+}
+
+.admin-shell .admin-icon-tile--warn {
+  background: rgb(245 158 11 / 0.14);
+  color: #d97706;
+}
+
+.admin-shell .admin-link {
+  color: var(--admin-brand);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.admin-shell .admin-link:hover {
+  color: var(--admin-brand-hover);
+  text-decoration: underline;
+}
+
+.admin-shell .admin-nav-link svg,
+.admin-shell .admin-nav-sublink svg,
+.admin-shell .admin-nav-group-btn svg {
+  color: inherit;
+  opacity: 0.9;
+}
+
+.admin-shell .admin-nav-link--active svg,
+.admin-shell .admin-nav-sublink--active svg,
+.admin-shell .admin-nav-group-btn--active svg {
+  color: var(--admin-brand);
+  opacity: 1;
+}
+
+.dark .admin-shell .admin-nav-link--active svg,
+.dark .admin-shell .admin-nav-sublink--active svg,
+.dark .admin-shell .admin-nav-group-btn--active svg {
+  color: #6ee7b7;
+}
+
+.admin-shell .admin-hub-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  padding: 1rem;
+  box-shadow: var(--admin-shadow);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.admin-shell .admin-hub-card:hover {
+  border-color: rgb(0 104 71 / 0.35);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-shell .admin-soft-panel {
+  border: 1px solid rgb(0 104 71 / 0.2);
+  border-radius: var(--admin-radius);
+  background: var(--admin-brand-soft);
+  color: var(--admin-brand-deep);
+}
+
+.dark .admin-shell .admin-soft-panel {
+  border-color: rgb(0 104 71 / 0.4);
+  background: rgb(0 104 71 / 0.2);
+  color: #d1fae5;
+}
+
+.admin-shell .admin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  border: 1px solid rgb(0 104 71 / 0.35);
+  border-radius: 9999px;
+  background: var(--admin-brand-soft);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--admin-brand-deep);
+}
+
+.admin-shell .admin-pill:hover {
+  background: var(--color-brand-soft-2);
+}
+
+.dark .admin-shell .admin-pill {
+  border-color: rgb(16 185 129 / 0.4);
+  background: rgb(0 104 71 / 0.28);
+  color: #a7f3d0;
+}
+
+.admin-shell .on-screen-keyboard-btn--header {
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius-sm);
+  background: var(--admin-surface);
+  color: var(--admin-brand-deep);
+}
+
+.admin-shell .on-screen-keyboard-btn--header:hover {
+  background: var(--admin-brand-soft);
+  border-color: rgb(0 104 71 / 0.28);
+}
+
+html.app-theme--admin .base-btn--primary {
+  background: var(--color-brand);
+  color: var(--color-brand-on);
+}
+
+html.app-theme--admin .base-btn--primary:hover:not(:disabled) {
+  background: var(--color-brand-hover);
+}

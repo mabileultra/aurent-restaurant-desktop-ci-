@@ -62,7 +62,7 @@ export default function CashRegistersTable({
                       disabled={togglingId === row.id}
                       title={t('cashRegisters.statusToggleActive')}
                       onClick={(e) => onToggleStatus(e, row)}
-                      className="inline-flex items-center gap-1 rounded-full border border-emerald-500/80 bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 transition-colors hover:bg-emerald-100 disabled:opacity-50 dark:border-emerald-500/50 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50"
+                      className="admin-pill disabled:opacity-50"
                     >
                       <Play size={12} className="shrink-0" strokeWidth={2.5} aria-hidden />
                       {t('cashRegisters.statusActive')}

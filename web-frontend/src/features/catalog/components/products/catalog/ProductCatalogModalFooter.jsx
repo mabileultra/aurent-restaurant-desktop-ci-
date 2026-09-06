@@ -11,14 +11,14 @@ export default function ProductCatalogModalFooter({ t, isEdit, isPending, onClos
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 rounded-lg bg-slate-100 py-2.5 text-sm text-slate-800 transition hover:bg-slate-200 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700"
+          className="admin-btn-secondary flex-1 py-2.5 text-sm"
         >
           {t('common.cancel')}
         </button>
         <button
           type="submit"
           disabled={isPending}
-          className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-emerald-500 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+          className="admin-btn-primary flex flex-1 py-2.5 text-sm"
         >
           {isPending && <Loader size={14} className="animate-spin" />}
           {isEdit ? t('productModal.saveChanges') : t('productCatalog.submitAdd')}

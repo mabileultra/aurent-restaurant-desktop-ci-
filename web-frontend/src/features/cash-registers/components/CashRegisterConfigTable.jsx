@@ -18,7 +18,7 @@ export default function CashRegisterConfigTable({
   onDelete,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <thead>

@@ -597,7 +597,11 @@
     "colProduct": "Товар",
     "colSku": "SKU",
     "colInStock": "На складе",
-    "colMinAlert": "Мин. порог"
+    "colMinAlert": "Мин. порог",
+    "heroGreeting": "Обзор торговли",
+    "heroGreetingNamed": "Отличный темп, {{name}}",
+    "heroHintToday": "Ключевые цифры за выбранный день — выручка, средний чек и продажи.",
+    "heroHintPeriod": "Сводка по выбранному периоду: динамика выручки и активность продаж."
   },
   "aiAssistant": {
     "title": "ИИ-ассистент директора",

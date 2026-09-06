@@ -18,7 +18,7 @@ export default function LowStockReportPage() {
       <div>
         <h1 className="text-xl font-bold text-slate-900 dark:text-white">{t('stockReports.lowStockTitle')}</h1>
         <p className="text-sm text-slate-600 dark:text-slate-400">{t('stockReports.lowStockSubtitle')}</p>
-        <Link to={paths.stockDashboard} className="mt-2 inline-block text-sm text-emerald-700 hover:underline dark:text-emerald-400">
+        <Link to={paths.stockDashboard} className="admin-link mt-2 inline-block text-sm">
           ← {t('stockReports.backDashboard')}
         </Link>
       </div>

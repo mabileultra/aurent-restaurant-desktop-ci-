@@ -20,7 +20,7 @@ export default function SuppliersPage() {
       title={t('suppliersModule.title')}
       actions={
         s.manage ? (
-          <BaseButton variant="secondary" onClick={() => s.setAddOpen(true)}>
+          <BaseButton onClick={() => s.setAddOpen(true)} className="admin-btn-primary">
             <Plus size={16} />
             {t('suppliersModule.add')}
           </BaseButton>
@@ -34,7 +34,11 @@ export default function SuppliersPage() {
             onChange={s.handleSearchChange}
             placeholder={t('suppliersModule.searchPh')}
           />
-          <BaseButton onClick={() => s.setFiltersOpen(true)} className="shrink-0">
+          <BaseButton
+            variant="secondary"
+            onClick={() => s.setFiltersOpen(true)}
+            className="admin-btn-secondary shrink-0"
+          >
             <Filter size={16} />
             {t('products.toolbar.filters')}
           </BaseButton>

@@ -25,7 +25,7 @@ export default function ZReportsTable({
   onOpenRowMenu,
 }) {
   return (
-    <div className="z-reports-table-wrap overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div className="z-reports-table-wrap admin-table-shell">
       <div className="overflow-x-auto">
         <table className="z-reports-table w-full text-sm">
           <thead>

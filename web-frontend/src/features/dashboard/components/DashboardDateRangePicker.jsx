@@ -12,22 +12,22 @@ export default function DashboardDateRangePicker({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
-        <Calendar size={14} className="text-slate-500 dark:text-slate-400" />
+      <div className="admin-card flex items-center gap-2 px-3 py-2 !shadow-none">
+        <Calendar size={14} className="admin-icon" aria-hidden />
         <input
           type="date"
           value={from}
           max={to}
           onChange={(e) => onFromChange(e.target.value)}
-          className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
+          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
         />
-        <span className="text-slate-400 dark:text-slate-500">—</span>
+        <span className="text-[color:var(--admin-muted)]">—</span>
         <input
           type="date"
           value={to}
           min={from}
           onChange={(e) => onToChange(e.target.value)}
-          className="bg-transparent text-sm text-slate-900 focus:outline-none dark:text-white"
+          className="bg-transparent text-sm text-[color:var(--admin-text)] focus:outline-none"
         />
       </div>
       <div className="flex flex-wrap gap-2">
@@ -38,11 +38,7 @@ export default function DashboardDateRangePicker({
               key={preset.key}
               type="button"
               onClick={() => onPreset(preset)}
-              className={`rounded-lg px-3 py-2 text-xs font-medium transition ${
-                active
-                  ? 'bg-emerald-600 text-white dark:bg-emerald-500'
-                  : 'bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'
-              }`}
+              className={`admin-chip ${active ? 'admin-chip--active' : ''}`}
             >
               {t(`reports.${preset.key}`)}
             </button>

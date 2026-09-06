@@ -93,13 +93,13 @@ export default function PlatformReferenceBooksPage() {
       title={t('platform.referenceBooks.title')}
       subtitle={t('platform.referenceBooks.subtitle')}
       actions={(
-        <BaseButton onClick={openCreate}>
+        <BaseButton onClick={openCreate} className="admin-btn-primary">
           <Plus size={16} />
           {t('platform.referenceBooks.add')}
         </BaseButton>
       )}
     >
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+      <div className="admin-table-shell overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="text-left text-xs uppercase tracking-wide text-slate-500">

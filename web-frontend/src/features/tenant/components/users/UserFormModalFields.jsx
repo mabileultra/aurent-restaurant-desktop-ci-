@@ -70,7 +70,7 @@ export default function UserFormModalFields({
         </div>
       ) : null}
       {isPlatform && !isEdit && companyLoginCode ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-900 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-100">
+        <div className="admin-soft-panel px-3 py-2 text-xs">
           {t('users.platformCompanyCode')}: <span className="font-mono font-semibold">{companyLoginCode}</span>
         </div>
       ) : null}
@@ -300,7 +300,7 @@ export default function UserFormModalFields({
         <button
           type="submit"
           disabled={isPending}
-          className="flex-1 rounded-lg bg-emerald-500 py-2.5 font-semibold text-white hover:bg-emerald-600 disabled:opacity-50"
+          className="admin-btn-primary flex-1 py-2.5 text-sm"
         >
           {isPending && <Loader size={14} className="mr-1 inline animate-spin" />}
           {isEdit ? t('common.save') : t('users.createUser')}

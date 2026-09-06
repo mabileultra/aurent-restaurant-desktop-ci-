@@ -12,7 +12,7 @@ export default function ProductsPage({ preferredStoreId = null, hideTitle = fals
       <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
         {hideTitle ? <div /> : (
           <div>
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">{p.t('products.title')}</h1>
+            <h1 className="admin-page-title text-xl">{p.t('products.title')}</h1>
           </div>
         )}
         <ProductsToolbar
@@ -34,7 +34,7 @@ export default function ProductsPage({ preferredStoreId = null, hideTitle = fals
         />
       </div>
 
-      <div className="rst-products-table-shell overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+      <div className="rst-products-table-shell admin-table-shell">
         <ProductsTable
           t={p.t}
           isLoading={p.isLoading}

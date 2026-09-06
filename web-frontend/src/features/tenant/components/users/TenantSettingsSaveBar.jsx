@@ -37,7 +37,7 @@ export default function TenantSettingsSaveBar() {
           type="button"
           disabled={isSaving || isLoading || !isDirty}
           onClick={handleSave}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+          className="admin-btn-primary px-5 py-2 text-sm"
         >
           <Save size={16} aria-hidden />
           {isSaving ? t('tenantSettings.saving') : t('tenantSettings.save')}

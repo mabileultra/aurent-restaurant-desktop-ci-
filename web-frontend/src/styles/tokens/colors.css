@@ -1,18 +1,31 @@
 /* Semantic brand colors — единый источник для всех оболочек */
 
 :root {
+  /* Brand — deep retail green (Aurent) */
   --color-brand: #006847;
   --color-brand-hover: #005538;
-  --color-brand-soft: #e8edf3;
+  --color-brand-deep: #043d2c;
+  --color-brand-mid: #0a7a52;
+  --color-brand-soft: #e6f2ec;
+  --color-brand-soft-2: #d1e8dc;
   --color-brand-on: #ffffff;
-  --color-ink: #1e3a5f;
+
+  --color-ink: #0f2a1f;
   --color-text: #0f172a;
   --color-muted: #64748b;
   --color-border: #e2e8f0;
   --color-surface: #ffffff;
-  --color-surface-muted: #f1f5f9;
+  --color-surface-muted: #f4f7f5;
   --color-danger: #dc2626;
-  --color-money: #1e3a5f;
+  --color-money: #0f2a1f;
+
+  --color-focus-ring: rgb(0 104 71 / 0.18);
+  --color-brand-gradient: linear-gradient(
+    135deg,
+    var(--color-brand-deep) 0%,
+    var(--color-brand) 52%,
+    var(--color-brand-mid) 100%
+  );
 }
 
 .dark {
@@ -20,5 +33,10 @@
   --color-muted: #94a3b8;
   --color-border: #334155;
   --color-surface: #0f172a;
-  --color-surface-muted: #1e293b;
+  --color-surface-muted: #12201a;
+  --color-brand-soft: rgb(0 104 71 / 0.22);
+  --color-brand-soft-2: rgb(0 104 71 / 0.35);
+  --color-focus-ring: rgb(16 185 129 / 0.22);
+  --color-ink: #e8f5ef;
+  --color-money: #e8f5ef;
 }

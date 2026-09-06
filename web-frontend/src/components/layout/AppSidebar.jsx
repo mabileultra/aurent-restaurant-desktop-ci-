@@ -81,18 +81,18 @@ export default function AppSidebar(props) {
 
       <aside
         onTransitionEnd={onSidebarTransitionEnd}
-        className={`print:hidden fixed inset-y-0 left-0 z-40 flex max-w-[min(100vw,20rem)] flex-col overflow-hidden border-r border-slate-200 bg-slate-50 shadow-xl transition-[transform,width] duration-200 ease-out dark:border-emerald-900/70 dark:bg-emerald-950 lg:static lg:z-auto lg:max-w-none lg:shadow-none ${
+        className={`admin-sidebar print:hidden fixed inset-y-0 left-0 z-40 flex max-w-[min(100vw,20rem)] flex-col overflow-hidden shadow-xl transition-[transform,width] duration-200 ease-out lg:static lg:z-auto lg:max-w-none lg:shadow-none ${
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         } ${sidebarOpen ? 'w-[min(100vw,20rem)] lg:w-60' : 'w-[min(100vw,20rem)] lg:w-16'}`}
       >
-        <div className="admin-sidebar__brand flex h-16 items-center gap-3 border-b border-slate-200 px-4 dark:border-emerald-900/60">
+        <div className="admin-sidebar__brand flex h-16 items-center gap-3 px-4">
           <BrandMark
             variant="full"
             size={32}
             height={navLabelsVisible ? 32 : 28}
           />
           {navLabelsVisible ? (
-            <span className="truncate text-lg font-bold text-slate-900 dark:text-white">{displayAppName()}</span>
+            <span className="admin-sidebar__brand-name truncate text-lg">{displayAppName()}</span>
           ) : null}
         </div>
 
@@ -262,7 +262,7 @@ export default function AppSidebar(props) {
           ))}
         </nav>
 
-        <div className="border-t border-slate-200 p-2 dark:border-emerald-900/60">
+        <div className="admin-sidebar__footer p-2">
           <button
             type="button"
             onClick={onLogout}

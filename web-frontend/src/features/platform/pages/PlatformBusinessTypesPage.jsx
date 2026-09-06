@@ -14,7 +14,7 @@ export default function PlatformBusinessTypesPage() {
       title={p.t('platform.businessTypes.title')}
       subtitle={p.t('platform.businessTypes.subtitle')}
       actions={(
-        <BaseButton onClick={p.openCreateType}>
+        <BaseButton onClick={p.openCreateType} className="admin-btn-primary">
           <Plus size={16} />
           {p.t('platform.businessTypes.addType')}
         </BaseButton>

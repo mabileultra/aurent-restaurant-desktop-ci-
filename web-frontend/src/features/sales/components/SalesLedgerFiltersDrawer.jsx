@@ -105,14 +105,14 @@ export default function SalesLedgerFiltersDrawer({
           <button
             type="button"
             onClick={onReset}
-            className="flex-1 rounded-lg border border-slate-300 py-2.5 text-sm text-slate-800 hover:bg-slate-50 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+            className="admin-btn-secondary flex-1 py-2.5 text-sm"
           >
             {t('products.filters.reset')}
           </button>
           <button
             type="button"
             onClick={onApply}
-            className="flex-1 rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 dark:bg-emerald-600 dark:hover:bg-emerald-500"
+            className="admin-btn-primary flex-1 py-2.5 text-sm"
           >
             {t('common.apply')}
           </button>

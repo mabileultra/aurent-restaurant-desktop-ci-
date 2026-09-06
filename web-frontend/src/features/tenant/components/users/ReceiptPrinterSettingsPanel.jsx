@@ -42,7 +42,7 @@ export default function ReceiptPrinterSettingsPanel() {
   }, [fetchFromServer]);
 
   return (
-    <section className="rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900">
+    <section className="admin-card">
       <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
         <Printer size={18} className="text-emerald-600 dark:text-emerald-400" />
         <h2 className="text-sm font-semibold text-slate-900 dark:text-white">

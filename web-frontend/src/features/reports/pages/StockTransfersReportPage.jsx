@@ -27,7 +27,7 @@ export default function StockTransfersReportPage() {
             filenamePrefix="stock_transfers"
             disabled={!r.from || !r.to}
           />
-          <Link to="/stock/transfers/new" className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">
+          <Link to="/stock/transfers/new" className="admin-btn-primary px-4 py-2 text-sm">
             <Plus size={16} />
             {t('stockReports.newTransferDoc')}
           </Link>

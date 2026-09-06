@@ -41,7 +41,7 @@ export default function LogoUploadField({ label, hint, dataUrl, onSet, onClear, 
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
-            className="rounded-lg border border-emerald-600 bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-900 hover:bg-emerald-100 dark:border-emerald-500 dark:bg-emerald-950/40 dark:text-emerald-200"
+            className="admin-btn-secondary px-3 py-1.5 text-xs"
           >
             {t('tenantSettings.uploadLogo')}
           </button>

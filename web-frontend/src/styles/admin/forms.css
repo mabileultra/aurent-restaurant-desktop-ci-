@@ -36,8 +36,9 @@ html.app-theme--admin .form-control:focus,
 html.app-theme--admin .form-select:focus {
   background-color: #ffffff;
   color: #0f172a;
-  border-color: #10b981;
+  border-color: var(--color-brand);
   outline: none;
+  box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
 /* Shell-обёртки (дублируют html.app-theme--admin для specificity) */
@@ -77,8 +78,8 @@ html.app-theme--admin .form-select:focus {
 .platform-shell .form-select:focus {
   background-color: #ffffff;
   color: #0f172a;
-  border-color: #10b981;
-  box-shadow: 0 0 0 0.2rem rgb(16 185 129 / 0.15);
+  border-color: var(--color-brand);
+  box-shadow: 0 0 0 0.2rem var(--color-focus-ring);
 }
 
 html:not(.cashier-theme--dark):not(.cashier-theme--light):not(.app-theme--cashier) {

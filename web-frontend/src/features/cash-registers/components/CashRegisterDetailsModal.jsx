@@ -137,7 +137,7 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
             <button
               type="button"
               onClick={() => onEdit(data.id)}
-              className="rounded-lg border border-emerald-700 bg-emerald-50 px-5 py-2 text-sm font-medium text-emerald-800 shadow-sm hover:bg-emerald-100 dark:border-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-300"
+              className="admin-btn-secondary px-5 py-2 text-sm"
             >
               {t('common.edit')}
             </button>

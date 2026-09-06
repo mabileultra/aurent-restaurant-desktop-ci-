@@ -40,14 +40,10 @@ export default function SuperAdminLayout() {
   };
 
   const linkClass = ({ isActive }) =>
-    `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-      isActive
-        ? 'bg-emerald-500 text-white shadow-sm'
-        : 'text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white'
-    }`;
+    `admin-nav-link ${isActive ? 'admin-nav-link--active' : ''}`;
 
   return (
-    <div className="platform-shell admin-shell flex min-h-0 overflow-hidden bg-slate-100 dark:bg-slate-950">
+    <div className="platform-shell admin-shell flex min-h-0 overflow-hidden">
       {mobileNavOpen ? (
         <button
           type="button"
@@ -58,15 +54,15 @@ export default function SuperAdminLayout() {
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-[min(100vw,16rem)] flex-col border-r border-slate-200 bg-white shadow-xl transition-transform duration-200 dark:border-slate-800 dark:bg-slate-900 lg:static lg:z-auto lg:w-64 lg:translate-x-0 lg:shadow-none ${
+        className={`admin-sidebar fixed inset-y-0 left-0 z-40 flex w-[min(100vw,16rem)] flex-col shadow-xl transition-transform duration-200 lg:static lg:z-auto lg:w-64 lg:translate-x-0 lg:shadow-none ${
           mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="platform-shell__brand flex items-center gap-2 border-b border-slate-200 px-4 py-5 dark:border-slate-800">
+        <div className="admin-sidebar__brand flex items-center gap-2 px-4 py-5">
           <BrandMark variant="full" height={28} className="shrink-0" />
-          <div className="min-w-0 lg:hidden">
-            <p className="truncate text-sm font-bold text-slate-900 dark:text-white">{t('platform.title')}</p>
-            <p className="truncate text-xs text-slate-500">{t('platform.subtitle')}</p>
+          <div className="min-w-0">
+            <p className="admin-sidebar__brand-name truncate text-sm">{t('platform.title')}</p>
+            <p className="admin-page-subtitle truncate text-xs">{t('platform.subtitle')}</p>
           </div>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -77,8 +73,8 @@ export default function SuperAdminLayout() {
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-slate-200 p-3 dark:border-slate-800">
-          <p className="mb-2 truncate px-2 text-xs text-slate-500">{user?.fullName}</p>
+        <div className="admin-sidebar__footer p-3">
+          <p className="admin-page-subtitle mb-2 truncate px-2 text-xs">{user?.fullName}</p>
           <button
             type="button"
             onClick={handleLogout}
@@ -91,23 +87,26 @@ export default function SuperAdminLayout() {
       </aside>
 
       <main className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-3 sm:h-auto sm:px-4 sm:py-3 dark:border-slate-800 dark:bg-slate-900">
+        <header className="admin-topbar flex shrink-0 items-center justify-between gap-2 px-3 sm:px-4 sm:py-3">
           <button
             type="button"
-            className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden"
+            className="rounded-lg p-2 text-slate-600 hover:bg-[color:var(--color-brand-soft)] hover:text-[color:var(--color-brand-deep)] lg:hidden"
             onClick={() => setMobileNavOpen(true)}
             aria-label={t('nav.expandMenu')}
           >
             <Menu size={20} />
           </button>
-          <p className="truncate text-sm font-semibold text-slate-900 lg:hidden dark:text-white">{t('platform.title')}</p>
+          <p className="admin-page-title truncate text-sm lg:hidden">{t('platform.title')}</p>
           <div className="ml-auto flex items-center gap-2">
             <BrandMark variant="full" height={26} className="lg:hidden" />
             <OnScreenKeyboardButton variant="header" />
             <LanguageSwitcher />
+            <div className="admin-topbar__avatar hidden sm:flex" aria-hidden>
+              {user?.fullName?.[0] ?? 'S'}
+            </div>
             <button
               type="button"
-              className="hidden rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:inline-flex"
+              className="hidden rounded-lg p-2 text-slate-600 hover:bg-[color:var(--color-brand-soft)] hover:text-[color:var(--color-brand-deep)] lg:inline-flex"
               onClick={handleLogout}
               aria-label={t('nav.logout')}
             >

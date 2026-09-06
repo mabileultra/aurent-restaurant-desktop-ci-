@@ -26,8 +26,8 @@ export default function PlatformMonitoringLogsTab({
               onClick={() => setLogLevel(opt.v)}
               className={`rounded px-3 py-1 font-medium transition-colors ${
                 logLevel === opt.v
-                  ? 'bg-emerald-500 text-white'
-                  : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                  ? 'admin-chip admin-chip--active'
+                  : 'admin-chip'
               }`}
             >
               {opt.label}

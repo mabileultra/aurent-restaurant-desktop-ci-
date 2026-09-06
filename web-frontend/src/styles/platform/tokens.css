@@ -8,3 +8,14 @@
 html.app-viewport--canonical .platform-shell {
   --platform-sidebar-w: var(--shell-sidebar-w, 200px);
 }
+
+.platform-shell.admin-shell .admin-sidebar {
+  width: min(100vw, 16rem);
+}
+
+@media (min-width: 1024px) {
+  .platform-shell.admin-shell .admin-sidebar {
+    width: var(--platform-sidebar-w);
+  }
+}
+

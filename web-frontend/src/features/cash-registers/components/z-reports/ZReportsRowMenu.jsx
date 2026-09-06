@@ -28,14 +28,14 @@ export default function ZReportsRowMenu({
         <div className="flex flex-wrap gap-1 px-2">
           <button
             type="button"
-            className="flex-1 rounded px-2 py-2 text-left text-xs font-medium text-emerald-800 hover:bg-emerald-50 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+            className="admin-link flex-1 rounded px-2 py-2 text-left text-xs hover:bg-[color:var(--admin-brand-soft)]"
             onClick={onExportSales}
           >
             {t('zReports.rowExportSales')}
           </button>
           <button
             type="button"
-            className="flex-1 rounded px-2 py-2 text-left text-xs font-medium text-emerald-800 hover:bg-emerald-50 dark:text-emerald-200 dark:hover:bg-emerald-950/40"
+            className="admin-link flex-1 rounded px-2 py-2 text-left text-xs hover:bg-[color:var(--admin-brand-soft)]"
             onClick={onPrint}
           >
             {t('receipt.print')}

@@ -33,7 +33,7 @@ export default function PlatformModuleAccessModulesPanel({
   const businessTypeLabel = t(`productTemplates.businessTypes.${typeCode}`, typeCode);
 
   return (
-    <div className="module-access-panel rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+    <div className="module-access-panel admin-card">
       <PlatformModuleAccessModulesHeader
         t={t}
         fullName={selectedUser?.fullName}

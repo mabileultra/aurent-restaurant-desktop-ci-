@@ -4,4 +4,64 @@
   --admin-sidebar-w-collapsed: var(--shell-sidebar-w-collapsed, 64px);
   --admin-header-h: var(--shell-header-h, 56px);
   --admin-main-pad: var(--shell-pad, 16px);
+
+  --admin-brand: var(--color-brand);
+  --admin-brand-hover: var(--color-brand-hover);
+  --admin-brand-deep: var(--color-brand-deep);
+  --admin-brand-mid: var(--color-brand-mid);
+  --admin-brand-soft: var(--color-brand-soft);
+  --admin-brand-on: var(--color-brand-on);
+  --admin-gradient: var(--color-brand-gradient);
+
+  --admin-ink: var(--color-ink);
+  --admin-text: var(--color-text);
+  --admin-muted: var(--color-muted);
+  --admin-line: var(--color-border);
+  --admin-surface: var(--color-surface);
+  --admin-surface-2: var(--color-surface-muted);
+  --admin-canvas: #eef3f0;
+
+  --admin-radius: 0.75rem;
+  --admin-radius-sm: 0.5rem;
+  --admin-shadow: 0 1px 2px rgb(15 42 31 / 0.04), 0 1px 3px rgb(15 42 31 / 0.03);
+  --admin-shadow-md: 0 8px 24px rgb(15 42 31 / 0.08);
+  --admin-focus: var(--color-focus-ring);
+
+  color: var(--admin-text);
+  background: var(--admin-canvas);
+}
+
+.dark .admin-shell {
+  --admin-canvas: #0b1210;
+  --admin-shadow: none;
+  --admin-shadow-md: 0 8px 24px rgb(0 0 0 / 0.35);
+}
+
+/* Shared surfaces used across admin pages */
+.admin-shell .admin-card {
+  border: 1px solid var(--admin-line);
+  border-radius: var(--admin-radius);
+  background: var(--admin-surface);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-shell .admin-hero {
+  border-radius: var(--admin-radius);
+  background: var(--admin-gradient);
+  color: var(--admin-brand-on);
+  box-shadow: var(--admin-shadow-md);
+}
+
+.admin-shell .admin-page-title {
+  color: var(--admin-ink);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.dark .admin-shell .admin-page-title {
+  color: var(--admin-text);
+}
+
+.admin-shell .admin-page-subtitle {
+  color: var(--admin-muted);
 }

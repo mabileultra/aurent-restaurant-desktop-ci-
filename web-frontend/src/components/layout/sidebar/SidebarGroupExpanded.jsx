@@ -16,11 +16,7 @@ export default function SidebarGroupExpanded({
       <button
         type="button"
         onClick={onToggle}
-        className={`flex w-full items-center justify-between gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-medium transition-colors ${
-          isActive
-            ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-900/40 dark:text-white'
-            : 'text-slate-700 hover:bg-slate-200/80 dark:text-slate-200 dark:hover:bg-emerald-900/30'
-        }`}
+        className={`admin-nav-group-btn ${isActive ? 'admin-nav-group-btn--active' : ''}`}
       >
         <span className="flex min-w-0 items-center gap-3">
           <Icon size={18} className="flex-shrink-0 opacity-90" />
@@ -32,7 +28,7 @@ export default function SidebarGroupExpanded({
         />
       </button>
       {isOpen ? (
-        <div className="ml-4 mt-1 space-y-0.5 border-l border-slate-300 pl-1 dark:border-emerald-800/50">
+        <div className="admin-nav-group-rail space-y-0.5">
           {items.map(({ to, key, icon: ItemIcon }) => (
             <NavLink key={to} to={to} className={subLinkClass}>
               <ItemIcon size={16} className="flex-shrink-0 opacity-80" />

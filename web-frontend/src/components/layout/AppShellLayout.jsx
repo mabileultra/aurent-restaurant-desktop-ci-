@@ -146,22 +146,16 @@ export default function AppShellLayout() {
   const onSidebarTransitionEnd = (e) => {
     if (e.propertyName === 'width') setSidebarNavExpanded(sidebarOpen);
   };
-  const topLinkClass = ({ isActive }) => `flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
-    isActive
-      ? 'bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300'
-      : 'text-slate-700 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white'
-  }`;
-  const subLinkClass = ({ isActive }) => `ml-2 flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-    isActive
-      ? 'border-emerald-500 bg-white text-emerald-900 shadow-sm dark:border-sky-500 dark:bg-slate-950 dark:text-white dark:shadow-[0_0_0_1px_rgba(56,189,248,0.15)]'
-      : 'border-transparent text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/60 dark:hover:text-white'
-  }`;
+  const topLinkClass = ({ isActive }) =>
+    `admin-nav-link ${isActive ? 'admin-nav-link--active' : ''}`;
+  const subLinkClass = ({ isActive }) =>
+    `admin-nav-sublink ${isActive ? 'admin-nav-sublink--active' : ''}`;
 
   const visibleRest = filterByModule(REST_NAV);
   const roleLabel = user?.role ? t(`roles.${user.role}`, user.role) : '';
 
   return (
-    <div className="admin-shell flex overflow-hidden bg-slate-100 text-slate-900 print:!bg-white print:!text-black print:min-h-0 dark:bg-slate-950 dark:text-slate-100">
+    <div className="admin-shell flex overflow-hidden text-[color:var(--admin-text)] print:!bg-white print:!text-black print:min-h-0">
       <AppSidebar
         t={t}
         user={user}
@@ -236,7 +230,7 @@ export default function AppShellLayout() {
           mobileNavOpen={mobileNavOpen}
           onToggleSidebar={toggleSidebar}
         />
-        <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-slate-100 p-3 sm:p-4 md:p-6 print:!bg-white print:p-4 dark:bg-slate-950">
+        <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 print:!bg-white print:p-4">
           <Outlet />
         </main>
       </div>

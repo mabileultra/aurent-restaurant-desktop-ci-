@@ -29,7 +29,7 @@ export default function SalesLedgerTable({
   onOpenRowMenu,
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900 dark:shadow-none">
+    <div className="admin-table-shell">
       <div className="overflow-x-auto">
         <table className="admin-data-table admin-data-table--xl w-full text-sm">
           <thead>

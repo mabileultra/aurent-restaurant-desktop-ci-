@@ -26,8 +26,8 @@ export default function PlatformLeadsPage() {
                 onClick={() => p.handleStatusFilter(value)}
                 className={`rounded px-3 py-1 font-medium transition-colors ${
                   p.status === value
-                    ? 'bg-emerald-500 text-white'
-                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-white'
+                    ? 'admin-chip admin-chip--active'
+                    : 'admin-chip'
                 }`}
               >
                 {value ? p.t(`platform.leads.statuses.${value}`) : p.t('platform.leads.filterAll')}

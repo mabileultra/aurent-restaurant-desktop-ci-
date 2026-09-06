@@ -3,10 +3,10 @@ export default function PageHeader({ title, subtitle, actions }) {
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div>
         {title && (
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white">{title}</h1>
+          <h1 className="admin-page-title text-xl">{title}</h1>
         )}
         {subtitle && (
-          <p className="text-sm text-slate-600 dark:text-slate-400">{subtitle}</p>
+          <p className="admin-page-subtitle text-sm">{subtitle}</p>
         )}
       </div>
       {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
