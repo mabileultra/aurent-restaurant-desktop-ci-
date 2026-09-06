@@ -1,0 +1,116 @@
+/* Шапка чека — только pharmacy */
+
+.pharmacy-cart-pane-head {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 5px 8px 5px 10px;
+  border-bottom: 1px solid var(--pharm-border, #d5ddd8);
+  background: var(--pharm-surface, #f4f7f5);
+  min-height: 36px;
+}
+
+.pharmacy-cart-pane-head__meta {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  min-width: 0;
+}
+
+.pharmacy-cart-pane-head__title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--pharm-ink, #1a2e28);
+  white-space: nowrap;
+}
+
+.pharmacy-cart-pane-head__status {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 999px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.pharmacy-cart-pane-head__status.is-open {
+  background: var(--pharm-ok, #d8f5e3);
+  color: var(--pharm-ok-text, #0b5c3a);
+}
+
+.pharmacy-cart-pane-head__status.is-idle {
+  background: var(--pharm-elevated, #fff);
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-cart-pane-head__count {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--pharm-muted, #64748b);
+  white-space: nowrap;
+}
+
+.pharmacy-cart-pane-head__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pharmacy-cart-pane-head__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 7px;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, #1a2e28);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.pharmacy-cart-pane-head__btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.pharmacy-cart-pane-head__btn--new:hover:not(:disabled) {
+  background: var(--pharm-hover, #eef5f1);
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d5ddd8);
+}
+
+.pharmacy-cart-pane-head__btn--clear {
+  color: #b42318;
+  border-color: color-mix(in srgb, #b42318 28%, #d5ddd8);
+}
+
+.pharmacy-cart-pane-head__btn--clear:hover:not(:disabled) {
+  background: #fff5f5;
+}
+
+.pharmacy-cart-pane-head__kbd {
+  margin-left: 2px;
+  padding: 1px 4px;
+  border: 1px solid color-mix(in srgb, #b42318 22%, #d5ddd8);
+  border-radius: 4px;
+  background: rgb(180 35 24 / 0.06);
+  color: inherit;
+  font-family: inherit;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  line-height: 1.2;
+}

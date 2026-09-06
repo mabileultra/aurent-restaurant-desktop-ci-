@@ -4,18 +4,20 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import NumericKeypad from '../../cashier/components/NumericKeypad';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
+import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
 import '../styles/pharmacy-pay-rail.css';
 
 const METHOD_META = [
-  { id: 'cash', icon: Banknote, labelKey: 'pharmacyCashier.pay.methodCash' },
-  { id: 'card', icon: CreditCard, labelKey: 'pharmacyCashier.pay.methodCard' },
-  { id: 'mixed', icon: Split, labelKey: 'pharmacyCashier.pay.methodMixed' },
-  { id: 'insurance', icon: ShieldCheck, labelKey: 'pharmacyCashier.pay.methodInsurance' },
+  { id: 'cash', icon: Banknote, labelKey: 'pharmacyCashier.pay.methodCash', kbd: 'F6' },
+  { id: 'card', icon: CreditCard, labelKey: 'pharmacyCashier.pay.methodCard', kbd: 'F7' },
+  { id: 'mixed', icon: Split, labelKey: 'pharmacyCashier.pay.methodMixed', kbd: 'F8' },
+  { id: 'insurance', icon: ShieldCheck, labelKey: 'pharmacyCashier.pay.methodInsurance', kbd: null },
 ];
 
 /**
- * Правая панель оплаты аптеки (только pharmacy) — не retail PosRegisterPayRail.
+ * Правая панель оплаты аптеки (только pharmacy).
+ * Смешанная — как в продукте: часть налом + остаток картой (провайдер).
  */
 export default function PharmacyPayRail({
   total,
@@ -33,10 +35,30 @@ export default function PharmacyPayRail({
     onConfirm,
   });
 
+  usePharmacyPayKeyboard({
+    enabled: !checkoutDisabled,
+    method: rail.method,
+    setMethod: rail.setMethod,
+    setExactAmount: rail.setExactAmount,
+    appendCashDigit: rail.appendCashDigit,
+    backspaceCash: rail.backspaceCash,
+    clearCash: rail.clearCash,
+    submitSale: rail.submitSale,
+    saleDisabled: rail.saleDisabled,
+  });
+
   const showCashPad = rail.method === 'cash' || rail.method === 'mixed';
-  const showCardProviders = rail.method === 'card' || rail.method === 'mixed';
-  const showPatient = rail.method === 'insurance' || rail.method === 'cash' || rail.method === 'card' || rail.method === 'mixed';
+  const showCashSummary = showCashPad;
+  const showCardProviders =
+    rail.method === 'card'
+    || rail.method === 'mixed'
+    || (rail.method === 'cash' && rail.hasPartialCash);
+  const showPatient = true;
   const pinflRequired = rail.method === 'insurance';
+
+  const receivedDisplay = rail.cashInput
+    ? fmt(Number(String(rail.cashInput).replace(',', '.')) || 0)
+    : '—';
 
   return (
     <aside className="pharmacy-pay-rail" aria-label={t('pos.paymentTitle')}>
@@ -49,18 +71,21 @@ export default function PharmacyPayRail({
       </div>
 
       <div className="pharmacy-pay-rail__methods" role="tablist" aria-label={t('pos.paymentTitle')}>
-        {METHOD_META.map(({ id, icon: Icon, labelKey }) => (
+        {METHOD_META.map(({ id, icon: Icon, labelKey, kbd }) => (
           <button
             key={id}
             type="button"
             role="tab"
             aria-selected={rail.method === id}
+            aria-keyshortcuts={kbd || undefined}
+            title={kbd ? `${t(labelKey)} [${kbd}]` : t(labelKey)}
             className={`pharmacy-pay-rail__method${rail.method === id ? ' is-active' : ''}`}
             disabled={checkoutDisabled || isPending}
             onClick={() => rail.setMethod(id)}
           >
             <Icon size={16} strokeWidth={2.25} aria-hidden />
             <span>{t(labelKey)}</span>
+            {kbd ? <kbd className="pharmacy-pay-rail__method-kbd">{kbd}</kbd> : null}
           </button>
         ))}
       </div>
@@ -69,54 +94,23 @@ export default function PharmacyPayRail({
         <p className="pharmacy-pay-rail__hint">{rail.saleHint}</p>
       ) : null}
 
-      {rail.method === 'mixed' ? (
-        <div className="pharmacy-pay-rail__split">
-          <label className="pharmacy-pay-rail__field">
-            <span>{t('pharmacyCashier.pay.cashPart')}</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={rail.cashInput}
-              disabled={checkoutDisabled || isPending}
-              onChange={(e) => rail.setCashInput(e.target.value.replace(/[^\d.,]/g, ''))}
-              placeholder="0"
-            />
-          </label>
-          <label className="pharmacy-pay-rail__field">
-            <span>{t('pharmacyCashier.pay.cardPart')}</span>
-            <input
-              type="text"
-              inputMode="decimal"
-              value={rail.cardInput}
-              disabled={checkoutDisabled || isPending}
-              onChange={(e) => rail.setCardInput(e.target.value.replace(/[^\d.,]/g, ''))}
-              placeholder="0"
-            />
-          </label>
-          {rail.mixedShortfall > 0 ? (
-            <div className="pharmacy-pay-rail__change pharmacy-pay-rail__change--warn">
-              <span>{t('pharmacyCashier.pay.stillDue')}</span>
-              <strong>{fmt(rail.mixedShortfall)}</strong>
+      {showCashSummary ? (
+        <div className="pharmacy-pay-rail__cash-summary">
+          <div className="pharmacy-pay-rail__change">
+            <span>{t('pos.receivedLabel')}</span>
+            <strong>{receivedDisplay}</strong>
+          </div>
+          {rail.hasPartialCash ? (
+            <div className="pharmacy-pay-rail__change pharmacy-pay-rail__change--remainder">
+              <span>{t('pos.cardRemainderRail')}</span>
+              <strong>{fmt(rail.cardRemainder)}</strong>
             </div>
           ) : (
-            <div className={`pharmacy-pay-rail__change${rail.mixedCovered ? ' is-ready' : ''}`}>
+            <div className={`pharmacy-pay-rail__change${rail.cashPaidEnough ? ' is-ready' : ''}`}>
               <span>{t('pos.change')}</span>
               <strong>{fmt(rail.changeDue)}</strong>
             </div>
           )}
-        </div>
-      ) : null}
-
-      {rail.method === 'cash' ? (
-        <div className="pharmacy-pay-rail__cash-summary">
-          <div className="pharmacy-pay-rail__change">
-            <span>{t('pos.receivedLabel')}</span>
-            <strong>{rail.cashInput ? fmt(Number(String(rail.cashInput).replace(',', '.')) || 0) : '—'}</strong>
-          </div>
-          <div className={`pharmacy-pay-rail__change${rail.cashPaidEnough ? ' is-ready' : ''}`}>
-            <span>{t('pos.change')}</span>
-            <strong>{fmt(rail.changeDue)}</strong>
-          </div>
         </div>
       ) : null}
 
@@ -141,12 +135,12 @@ export default function PharmacyPayRail({
       ) : null}
 
       {showCardProviders ? (
-        <div className={`pharmacy-pay-rail__cards${rail.selectedCardType ? ' has-selection' : ''}`}>
+        <div className={`pharmacy-pay-rail__cards${rail.hasPartialCash ? ' has-remainder' : ''}`}>
           <PosRegisterCardProviders
             disabled={checkoutDisabled}
             isPending={isPending}
-            cardPayBlocked={false}
-            hasCardRemainder={rail.method === 'mixed'}
+            cardPayBlocked={rail.cardPayBlocked}
+            hasCardRemainder={rail.hasPartialCash}
             onSelectCard={rail.submitCard}
           />
         </div>
@@ -167,6 +161,7 @@ export default function PharmacyPayRail({
               disabled={checkoutDisabled || isPending}
               onChange={(e) => rail.setPinfl(e.target.value.replace(/\D/g, '').slice(0, 14))}
               placeholder={t('pharmacyCashier.pay.pinflPh')}
+              autoComplete="off"
             />
           </label>
           <label className="pharmacy-pay-rail__field">
@@ -177,6 +172,7 @@ export default function PharmacyPayRail({
               disabled={checkoutDisabled || isPending}
               onChange={(e) => rail.setLoyaltyPhone(e.target.value)}
               placeholder="+998 __ ___-__-__"
+              autoComplete="tel"
             />
           </label>
         </div>
@@ -207,6 +203,7 @@ export default function PharmacyPayRail({
           className="pharmacy-pay-rail__sale"
           disabled={rail.saleDisabled}
           onClick={rail.submitSale}
+          title={`${t('pharmacyCashier.pay.saleAction')} [Enter]`}
         >
           {isPending ? (
             <Loader size={18} className="pharmacy-pay-rail__spin" aria-hidden />
@@ -217,6 +214,7 @@ export default function PharmacyPayRail({
             {t('pharmacyCashier.pay.saleAction')}
             <em>{fmt(rail.toPay)}</em>
           </span>
+          <kbd className="pharmacy-pay-rail__sale-kbd">Enter</kbd>
         </button>
         <PrintReceiptToggle
           checked={rail.printReceiptEnabled}

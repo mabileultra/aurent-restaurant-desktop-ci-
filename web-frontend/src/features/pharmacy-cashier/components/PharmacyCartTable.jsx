@@ -117,7 +117,7 @@ export default function PharmacyCartTable({
                         aria-label="−"
                         onClick={() => onQtyDelta(item.lineId, -1)}
                       >
-                        <Minus size={14} strokeWidth={2.5} aria-hidden />
+                        <Minus size={12} strokeWidth={2.5} aria-hidden />
                       </button>
                       <span className="pharmacy-cart-table__qty-val">
                         {item.pharmacySellByPiece
@@ -130,7 +130,7 @@ export default function PharmacyCartTable({
                         aria-label="+"
                         onClick={() => onQtyDelta(item.lineId, 1)}
                       >
-                        <Plus size={14} strokeWidth={2.5} aria-hidden />
+                        <Plus size={12} strokeWidth={2.5} aria-hidden />
                       </button>
                     </div>
                   </td>
@@ -149,7 +149,7 @@ export default function PharmacyCartTable({
                       aria-label={t('common.delete')}
                       onClick={() => onRemove(item.lineId)}
                     >
-                      <Trash2 size={15} strokeWidth={2.25} aria-hidden />
+                      <Trash2 size={13} strokeWidth={2.25} aria-hidden />
                     </button>
                   </td>
                 </tr>

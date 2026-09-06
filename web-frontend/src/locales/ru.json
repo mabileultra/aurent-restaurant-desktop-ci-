@@ -2091,6 +2091,14 @@
   "pharmacyCashier": {
     "title": "Аптечная касса",
     "receiptTitle": "Чек",
+    "receiptNo": "Чек #{{n}}",
+    "receiptOpen": "Открыт",
+    "receiptIdle": "Пустой",
+    "receiptItems": "Позиций: {{count}} шт.",
+    "newReceipt": "Новый чек",
+    "newReceiptConfirm": "Открыть новый чек? Текущие позиции будут удалены.",
+    "newReceiptDone": "Открыт чек #{{n}}",
+    "clearReceipt": "Очистить",
     "searchTitle": "Остатки аптечного склада",
     "recipeTag": "Рецепт",
     "searchPh": "Поиск: название, штрихкод, артикул…",
@@ -2129,7 +2137,7 @@
     "colExpiryDays": "Срок / дн.",
     "colExpiryShort": "Годен",
     "sellByUnitHintShort": "Поштучно",
-    "storeBadge": "Аптека · {{name}}",
+    "storeBadge": "АПТЕКА · {{name}}",
     "bottom": {
       "kkm": "ККМ",
       "kkmOk": "Связь с облаком есть — ККМ/фискализация доступны онлайн",
@@ -2137,9 +2145,10 @@
     },
     "hotkeys": {
       "title": "Горячие клавиши",
-      "search": "Поиск",
-      "pay": "Оплата",
-      "analogs": "Аналоги"
+      "search": "Поиск/Скан",
+      "analogs": "МНН Аналоги",
+      "receipt": "Чек",
+      "pay": "Оплата"
     },
     "searchStrip": {
       "scanActive": "Скан КМ",
@@ -2163,10 +2172,12 @@
       "saleAction": "ПРОДАЖА",
       "needFullCash": "Введите полную сумму наличными",
       "needMixedCover": "Сумма нал+карта должна покрывать итог",
-      "hintPickOrSaleCard": "Выберите терминал или нажмите Продажа",
+      "hintPickOrSaleCard": "Выберите терминал или нажмите Продажа [Enter]",
+      "hintMixedProduct": "Введите часть наличными (клавиатура), затем выберите терминал",
+      "hintMixedPickCard": "Остаток картой — терминал или Enter",
       "hintMixedFill": "Заполните нал и карту до итога",
       "hintMixedCard": "Доплата картой — затем Продажа",
-      "hintDmed": "Проверьте ПИНФЛ и подтвердите продажу"
+      "hintDmed": "Проверьте ПИНФЛ и подтвердите продажу [Enter]"
     },
     "integrations": {
       "toolbar": "Быстрые ссылки",

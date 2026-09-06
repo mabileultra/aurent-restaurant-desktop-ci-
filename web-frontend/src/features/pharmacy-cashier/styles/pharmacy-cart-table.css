@@ -14,8 +14,8 @@
 .pharmacy-cart-table__table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.8125rem;
-  line-height: 1.25;
+  font-size: 0.75rem;
+  line-height: 1.2;
   color: var(--pharm-ink);
 }
 
@@ -23,9 +23,9 @@
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 5px 8px;
+  padding: 3px 6px;
   text-align: left;
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -62,7 +62,7 @@
 }
 
 .pharmacy-cart-table__table tbody td {
-  padding: 5px 8px;
+  padding: 2px 6px;
   border: 1px solid var(--pharm-border);
   color: var(--pharm-ink);
   vertical-align: middle;
@@ -71,7 +71,7 @@
 
 .pharmacy-cart-table__row {
   cursor: pointer;
-  min-height: 36px;
+  min-height: 28px;
 }
 
 .pharmacy-cart-table__row:hover td:not([class*='pharmacy-cart-table__cell--']) {
@@ -84,8 +84,8 @@
 
 .pharmacy-cart-table__name {
   font-weight: 700;
-  font-size: 0.8125rem;
-  line-height: 1.3;
+  font-size: 0.75rem;
+  line-height: 1.2;
   vertical-align: middle;
 }
 
@@ -96,12 +96,13 @@
 .pharmacy-cart-table__recipe-tag {
   display: inline-flex;
   align-items: center;
-  margin-left: 6px;
-  padding: 1px 6px;
+  margin-left: 4px;
+  padding: 0 5px;
+  height: 16px;
   border-radius: 999px;
   background: var(--pharm-warn-strong);
   color: var(--pharm-warn-text);
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -174,12 +175,12 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
-  min-width: 28px;
-  min-height: 28px;
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  min-height: 22px;
   border: 1px solid var(--pharm-border);
-  border-radius: 6px;
+  border-radius: 5px;
   background: var(--pharm-surface);
   color: var(--pharm-ink);
   cursor: pointer;

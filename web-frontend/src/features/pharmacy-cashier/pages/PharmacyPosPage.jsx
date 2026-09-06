@@ -36,6 +36,9 @@ export default function PharmacyPosPage() {
           setSelectedLineId: p.setSelectedLineId,
           handleQtyDelta: p.cartHandlers.handleQtyDelta,
           removeItem: p.removeItem,
+          draftReceiptNo: p.draftReceiptNo,
+          onNewReceipt: p.handleNewReceipt,
+          onClearCart: p.handleClearCart,
         }}
         checkout={{
           checkoutMutation: p.checkoutMutation,

@@ -18,6 +18,10 @@ import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
 import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
 import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 import { usePharmacyHotkeys } from './usePharmacyHotkeys';
+import {
+  bumpPharmacyDraftReceiptNo,
+  readPharmacyDraftReceiptNo,
+} from '../utils/pharmacyDraftReceiptNo';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -48,6 +52,13 @@ export function usePharmacyPosPage() {
   const setOrderDiscountAmount = useCartStore((s) => s.setOrderDiscountAmount);
   const setOrderDiscountPercent = useCartStore((s) => s.setOrderDiscountPercent);
   const clearOrderDiscount = useCartStore((s) => s.clearOrderDiscount);
+  const clearCart = useCartStore((s) => s.clearCart);
+
+  const [draftReceiptNo, setDraftReceiptNo] = useState(() => readPharmacyDraftReceiptNo(storeId));
+
+  useEffect(() => {
+    setDraftReceiptNo(readPharmacyDraftReceiptNo(storeId));
+  }, [storeId]);
 
   const catalog = usePosProductsCatalog({ storeId });
   const integration = usePharmacyIntegrationConfig(storeId);
@@ -75,6 +86,35 @@ export function usePharmacyPosPage() {
   const focusSearch = useCallback(() => {
     searchInputRef.current?.focus();
   }, []);
+
+  const focusCart = useCallback(() => {
+    const pane = document.querySelector('.pharmacy-cashier__cart-pane');
+    if (!(pane instanceof HTMLElement)) return;
+    pane.focus({ preventScroll: false });
+    pane.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }, []);
+
+  const handleClearCart = useCallback(() => {
+    if (items.length === 0) return false;
+    if (!window.confirm(t('pos.clearOrderConfirm'))) return false;
+    clearCart();
+    setSelectedLineId(null);
+    toast.success(t('pos.clearOrderDone'));
+    return true;
+  }, [clearCart, items.length, t]);
+
+  const handleNewReceipt = useCallback(() => {
+    if (items.length > 0) {
+      if (!window.confirm(t('pharmacyCashier.newReceiptConfirm'))) return;
+      clearCart();
+      setSelectedLineId(null);
+    }
+    const next = bumpPharmacyDraftReceiptNo(storeId);
+    setDraftReceiptNo(next);
+    catalog.setSearch('');
+    focusSearch();
+    toast.success(t('pharmacyCashier.newReceiptDone', { n: next }));
+  }, [catalog.setSearch, clearCart, focusSearch, items.length, storeId, t]);
 
   const handleGoToCatalog = useCallback(() => {
     setPayOpen(false);
@@ -128,6 +168,11 @@ export function usePharmacyPosPage() {
     shift,
     getCheckoutLineItems: getPharmacyCheckoutLineItems,
   });
+
+  useEffect(() => {
+    if (!checkoutMutation.isSuccess) return;
+    setDraftReceiptNo(bumpPharmacyDraftReceiptNo(storeId));
+  }, [checkoutMutation.isSuccess, checkoutMutation.dataUpdatedAt, storeId]);
 
   const cartHandlers = usePharmacyCartHandlers({
     storeId,
@@ -202,18 +247,16 @@ export function usePharmacyPosPage() {
     t,
     enabled: Boolean(storeId) && !(noAssignment || multipleAssignment),
     focusSearch,
+    focusCart,
     itemsLength: items.length,
-    total,
-    shiftIsOpen,
-    checkoutPending: checkoutMutation.isPending,
     payOpen,
     returnOpen,
     discountOpen,
     qtyModalOpen: Boolean(cartHandlers.qtyModalProduct),
     weightModalOpen: Boolean(cartHandlers.weightModalProduct),
     markingOpen: Boolean(markingModal?.open),
-    onConfirmPayment: handleConfirmPayment,
     onClosePayment: handleClosePayment,
+    onClearCart: handleClearCart,
     clearSearch: () => catalog.setSearch(''),
   });
 
@@ -247,6 +290,9 @@ export function usePharmacyPosPage() {
     selectedLineId,
     setSelectedLineId,
     handleClosePayment,
+    handleClearCart,
+    handleNewReceipt,
+    draftReceiptNo,
     items,
     total,
     linesTotal,

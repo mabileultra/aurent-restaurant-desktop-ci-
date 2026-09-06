@@ -39,6 +39,11 @@
   border: 1px solid var(--pharm-border);
   border-radius: var(--pharm-radius, 10px);
   overflow: hidden;
+  outline: none;
+}
+
+.pharmacy-cashier__cart-pane:focus-visible {
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.28));
 }
 
 .pharmacy-cashier__pane-head {
@@ -47,7 +52,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-bottom: 1px solid var(--pharm-border);
   background: var(--pharm-surface);
 }

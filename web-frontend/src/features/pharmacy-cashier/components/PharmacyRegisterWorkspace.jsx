@@ -1,4 +1,5 @@
 import PharmacyCartTable from './PharmacyCartTable';
+import PharmacyCartPaneHead from './PharmacyCartPaneHead';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacySearchStrip from './PharmacySearchStrip';
 import PharmacyPayColumn from './PharmacyPayColumn';
@@ -51,10 +52,18 @@ export default function PharmacyRegisterWorkspace({
       }}
     >
       <div className="cashier-register__order-col pharmacy-cashier__main">
-        <section className="pharmacy-cashier__cart-pane" aria-label={t('pharmacyCashier.receiptTitle')}>
-          <div className="pharmacy-cashier__pane-head">
-            <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.receiptTitle')}</h2>
-          </div>
+        <section
+          className="pharmacy-cashier__cart-pane"
+          aria-label={t('pharmacyCashier.receiptTitle')}
+          tabIndex={-1}
+        >
+          <PharmacyCartPaneHead
+            receiptNo={cart.draftReceiptNo}
+            itemsCount={cart.items.length}
+            onNewReceipt={cart.onNewReceipt}
+            onClear={cart.onClearCart}
+            disabled={checkoutMutation.isPending}
+          />
           <PharmacyCartTable
             items={cart.items}
             selectedLineId={cart.selectedLineId}

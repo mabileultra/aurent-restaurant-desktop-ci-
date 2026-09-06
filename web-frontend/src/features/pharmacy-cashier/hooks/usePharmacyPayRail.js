@@ -8,6 +8,7 @@ import {
 } from '../../../utils/receiptPrintPreference';
 import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
+import { appendKeypadDigit } from '../../cashier/components/NumericKeypad';
 
 export const PHARMACY_PAY_METHODS = ['cash', 'card', 'mixed', 'insurance'];
 
@@ -20,7 +21,7 @@ export const PHARMACY_QUICK_CASH = [
 ];
 
 /**
- * Состояние аптечной панели оплаты (отдельно от retail pay rail).
+ * Аптечная оплата. Смешанная — как в продукте: часть налом (keypad) + остаток картой (провайдер).
  */
 export function usePharmacyPayRail({
   total,
@@ -31,7 +32,6 @@ export function usePharmacyPayRail({
   const { t } = useTranslation();
   const [method, setMethod] = useState('cash');
   const [cashInput, setCashInput] = useState('');
-  const [cardInput, setCardInput] = useState('');
   const [selectedCardType, setSelectedCardType] = useState(null);
   const [pinfl, setPinfl] = useState('');
   const [loyaltyPhone, setLoyaltyPhone] = useState('');
@@ -43,7 +43,6 @@ export function usePharmacyPayRail({
   useEffect(() => {
     if (toPay <= 0) {
       setCashInput('');
-      setCardInput('');
       setSelectedCardType(null);
     }
   }, [toPay]);
@@ -52,44 +51,20 @@ export function usePharmacyPayRail({
     if (method !== 'card' && method !== 'mixed') {
       setSelectedCardType(null);
     }
+    if (method === 'card') {
+      setCashInput('');
+    }
   }, [method]);
 
-  useEffect(() => {
-    if (method === 'mixed' && toPay > 0) {
-      const cash = parseTenderedInput(cashInput);
-      if (cash > 0 && cash < toPay) {
-        setCardInput(String(round2(toPay - cash)));
-      } else if (cash <= 0) {
-        setCardInput('');
-      } else if (cash >= toPay) {
-        setCardInput('0');
-      }
-    }
-  }, [cashInput, method, toPay]);
-
   const cashNum = parseTenderedInput(cashInput);
-  const cardNum = parseTenderedInput(cardInput);
   const cardType = selectedCardType || defaultCardType;
 
-  const changeDue = useMemo(() => {
-    if (method === 'cash') {
-      return round2(Math.max(0, cashNum - toPay));
-    }
-    if (method === 'mixed') {
-      const paid = round2(cashNum + cardNum);
-      return round2(Math.max(0, paid - toPay));
-    }
-    return 0;
-  }, [cardNum, cashNum, method, toPay]);
-
-  const mixedShortfall = useMemo(() => {
-    if (method !== 'mixed') return 0;
-    return round2(Math.max(0, toPay - cashNum - cardNum));
-  }, [cardNum, cashNum, method, toPay]);
-
-  const cashPaidEnough = method === 'cash' && cashNum >= toPay && cashNum > 0;
-  const mixedCovered =
-    method === 'mixed' && cashNum > 0 && cardNum > 0 && round2(cashNum + cardNum) >= toPay;
+  const changeDue = round2(Math.max(0, cashNum - toPay));
+  const cashPaidEnough = cashNum >= toPay && cashNum > 0;
+  const cardRemainder =
+    cashNum > 0 && cashNum < toPay ? round2(toPay - cashNum) : 0;
+  const hasPartialCash = cardRemainder > 0;
+  const cardPayBlocked = cashNum >= toPay && cashNum > 0;
 
   const guardCheckout = useCallback(() => {
     if (checkoutDisabled || isPending) return false;
@@ -116,28 +91,47 @@ export function usePharmacyPayRail({
     [loyaltyPhone, method, pinfl],
   );
 
+  const setExactAmount = useCallback(() => {
+    if (toPay <= 0) return;
+    const n = Math.round(toPay * 100) / 100;
+    setCashInput(Number.isInteger(n) ? String(n) : n.toFixed(2));
+  }, [toPay]);
+
+  const appendCashDigit = useCallback((digit) => {
+    setCashInput((prev) => appendKeypadDigit(prev, digit));
+  }, []);
+
+  const backspaceCash = useCallback(() => {
+    setCashInput((prev) => (prev ? prev.slice(0, -1) : ''));
+  }, []);
+
+  const clearCash = useCallback(() => {
+    setCashInput('');
+  }, []);
+
   const submitCard = useCallback(
     (type) => {
       if (!guardCheckout()) return;
       const resolved = type || cardType;
       if (!resolved) return;
+      if (cardPayBlocked && method !== 'mixed') return;
 
       setSelectedCardType(resolved);
 
-      if (method === 'mixed') {
-        const cash = clampCash(cashNum, toPay);
-        const card = round2(Math.max(0, toPay - cash));
-        if (cash <= 0 || card <= 0) {
-          toast.error(t('pharmacyCashier.pay.needMixedCover'));
+      // Продуктовая смешанная: частичный нал + карта
+      if (hasPartialCash || method === 'mixed') {
+        if (!hasPartialCash) {
+          toast.error(t('pharmacyCashier.pay.hintMixedProduct'));
           return;
         }
+        const entered = cashNum;
         onConfirm({
           paymentMethod: 'MIXED',
           receiptType: 'SALE',
           cardType: resolved,
-          cashAmount: cash,
-          cardAmount: card,
-          amountTendered: cash,
+          cashAmount: entered,
+          cardAmount: cardRemainder,
+          amountTendered: entered,
           printReceipt: printReceiptEnabled,
           ...extras,
         });
@@ -153,13 +147,31 @@ export function usePharmacyPayRail({
         ...extras,
       });
     },
-    [cardType, cashNum, extras, guardCheckout, method, onConfirm, printReceiptEnabled, t, toPay],
+    [
+      cardPayBlocked,
+      cardRemainder,
+      cardType,
+      cashNum,
+      extras,
+      guardCheckout,
+      hasPartialCash,
+      method,
+      onConfirm,
+      printReceiptEnabled,
+      t,
+      toPay,
+    ],
   );
 
   const submitSale = useCallback(() => {
     if (!guardCheckout()) return;
 
     if (method === 'cash') {
+      if (hasPartialCash) {
+        if (!cardType) return;
+        submitCard(cardType);
+        return;
+      }
       const amountTendered = cashNum > 0 ? cashNum : toPay;
       if (amountTendered < toPay) {
         toast.error(t('pharmacyCashier.pay.needFullCash'));
@@ -183,8 +195,8 @@ export function usePharmacyPayRail({
     }
 
     if (method === 'mixed') {
-      if (!mixedCovered) {
-        toast.error(t('pharmacyCashier.pay.needMixedCover'));
+      if (!hasPartialCash) {
+        toast.error(t('pharmacyCashier.pay.hintMixedProduct'));
         return;
       }
       if (!cardType) return;
@@ -211,8 +223,8 @@ export function usePharmacyPayRail({
     cashNum,
     extras,
     guardCheckout,
+    hasPartialCash,
     method,
-    mixedCovered,
     onConfirm,
     pinfl,
     printReceiptEnabled,
@@ -223,19 +235,21 @@ export function usePharmacyPayRail({
 
   const saleHint = useMemo(() => {
     if (method === 'card') return t('pharmacyCashier.pay.hintPickOrSaleCard');
-    if (method === 'mixed' && !mixedCovered) return t('pharmacyCashier.pay.hintMixedFill');
-    if (method === 'mixed') return t('pharmacyCashier.pay.hintMixedCard');
+    if ((method === 'mixed' || method === 'cash') && hasPartialCash) {
+      return t('pharmacyCashier.pay.hintMixedPickCard');
+    }
+    if (method === 'mixed' && !hasPartialCash) return t('pharmacyCashier.pay.hintMixedProduct');
     if (method === 'insurance') return t('pharmacyCashier.pay.hintDmed');
     return null;
-  }, [method, mixedCovered, t]);
+  }, [hasPartialCash, method, t]);
 
   const saleDisabled =
     checkoutDisabled ||
     isPending ||
     toPay <= 0 ||
-    (method === 'cash' && cashNum > 0 && cashNum < toPay) ||
+    (method === 'cash' && cashNum > 0 && cashNum < toPay && !cardType) ||
     (method === 'card' && !cardType) ||
-    (method === 'mixed' && (!mixedCovered || !cardType)) ||
+    (method === 'mixed' && (!hasPartialCash || !cardType)) ||
     (method === 'insurance' && pinfl.trim().length < 14);
 
   return {
@@ -243,8 +257,6 @@ export function usePharmacyPayRail({
     setMethod,
     cashInput,
     setCashInput,
-    cardInput,
-    setCardInput,
     selectedCardType,
     pinfl,
     setPinfl,
@@ -252,21 +264,20 @@ export function usePharmacyPayRail({
     setLoyaltyPhone,
     toPay,
     changeDue,
-    mixedShortfall,
     cashPaidEnough,
-    mixedCovered,
+    cardRemainder,
+    hasPartialCash,
+    cardPayBlocked,
     printReceiptEnabled,
     handlePrintReceiptChange,
     submitSale,
     submitCard,
     saleDisabled,
     saleHint,
+    setExactAmount,
+    appendCashDigit,
+    backspaceCash,
+    clearCash,
     quickCash: PHARMACY_QUICK_CASH,
   };
-}
-
-function clampCash(cash, total) {
-  const n = Number(cash);
-  if (!Number.isFinite(n) || n <= 0) return 0;
-  return round2(Math.min(n, total));
 }

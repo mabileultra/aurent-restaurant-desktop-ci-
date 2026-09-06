@@ -3,16 +3,16 @@
 .pharmacy-topbar-shortcuts {
   display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 6px 10px;
-  margin-left: 8px;
+  flex-wrap: nowrap;
+  gap: 8px 12px;
+  margin-left: 4px;
   min-width: 0;
 }
 
 .pharmacy-topbar-shortcuts__item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   color: var(--pharm-muted, var(--pos-muted, #64748b));
   font-size: 0.6875rem;
   font-weight: 600;
@@ -23,27 +23,68 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.6rem;
-  height: 20px;
-  padding: 0 5px;
+  min-width: 1.75rem;
+  height: 22px;
+  padding: 0 6px;
   border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
-  border-radius: 5px;
+  border-radius: 6px;
   background: var(--pharm-elevated, var(--pos-surface-elevated, #fff));
-  color: var(--pharm-brand, var(--pos-green, #006847));
+  color: var(--pharm-ink, var(--pos-text, #1a2e28));
   font-family: inherit;
   font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.02em;
   line-height: 1;
+  box-shadow: 0 1px 0 rgb(15 40 30 / 0.06);
 }
 
-.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-topbar-shortcuts__kbd {
+.pharmacy-topbar-shortcuts__kbd--pay {
+  min-width: 2.75rem;
+  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 45%, #d5ddd8);
+  background: var(--pharm-brand-soft, rgb(0 104 71 / 0.12));
+  color: var(--pharm-brand, #006847);
+  box-shadow: none;
+}
+
+.pharmacy-topbar-shortcuts__item--pay .pharmacy-topbar-shortcuts__label {
+  color: var(--pharm-brand, #006847);
+  font-weight: 700;
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .pharmacy-topbar-shortcuts__kbd:not(.pharmacy-topbar-shortcuts__kbd--pay) {
   background: #fff;
-  border-color: color-mix(in srgb, var(--pharm-teal, #0f766e) 28%, #d5ddd8);
-  color: var(--pharm-teal, #0f766e);
+  border-color: #d8e0dc;
+  color: #334155;
 }
 
 .cashier-app.cashier-app--pharmacy-pos .cashier-topbar__terminal-strip {
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Аптека: смена отдельно от бейджа точки (как на макете) */
+.cashier-app--pharmacy-pos .cashier-topbar__shift-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--pharm-border, var(--pos-border, #d5ddd8));
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cashier-app--pharmacy-pos .cashier-topbar__shift-chip svg {
+  flex-shrink: 0;
+  color: var(--pharm-muted, var(--pos-muted, #64748b));
+}
+
+.cashier-app.cashier-app--pharmacy-pos.cashier-app--light .cashier-topbar__shift-chip {
+  background: #fff;
+  border-color: #d8e0dc;
 }

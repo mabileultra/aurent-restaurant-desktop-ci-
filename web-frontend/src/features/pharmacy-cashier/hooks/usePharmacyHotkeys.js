@@ -1,49 +1,32 @@
 import { useEffect } from 'react';
 import toast from 'react-hot-toast';
-import { isPosReceiptPrintEnabled } from '../../../utils/receiptPrintPreference';
-
-function isEditableTarget(target) {
-  if (!target || !(target instanceof Element)) return false;
-  const tag = target.tagName;
-  if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
-  if (target.isContentEditable) return true;
-  return Boolean(target.closest('[contenteditable="true"], input, textarea, select'));
-}
 
 /**
  * Хоткеи аптечной кассы (только пока смонтирован PharmacyPosPage).
- * F2 — поиск, F3 — МНН/аналоги, Enter вне полей — быстрая продажа налом.
+ * F2 — поиск/скан, F3 — МНН/аналоги, F9 — фокус чека.
+ * Esc — очистить чек (если есть позиции), иначе сброс поиска.
+ * Enter / F5–F8 / цифры — в usePharmacyPayKeyboard (панель оплаты).
  */
 export function usePharmacyHotkeys({
   t,
   enabled,
   focusSearch,
+  focusCart,
   itemsLength,
-  total,
-  shiftIsOpen,
-  checkoutPending,
   payOpen,
   returnOpen,
   discountOpen,
   qtyModalOpen,
   weightModalOpen,
   markingOpen,
-  onConfirmPayment,
   onClosePayment,
+  onClearCart,
   clearSearch,
 }) {
   useEffect(() => {
     if (!enabled) return undefined;
 
     const onKey = (e) => {
-      const blocked =
-        payOpen
-        || returnOpen
-        || discountOpen
-        || qtyModalOpen
-        || weightModalOpen
-        || markingOpen;
-
       if (e.key === 'Escape') {
         if (payOpen) {
           e.preventDefault();
@@ -54,6 +37,10 @@ export function usePharmacyHotkeys({
           return;
         }
         e.preventDefault();
+        if (itemsLength > 0) {
+          onClearCart?.();
+          return;
+        }
         clearSearch?.();
         focusSearch?.();
         return;
@@ -72,20 +59,9 @@ export function usePharmacyHotkeys({
         return;
       }
 
-      if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        if (isEditableTarget(e.target)) return;
-        if (blocked || checkoutPending || !shiftIsOpen) return;
-        if (!itemsLength || total <= 0) return;
+      if (e.key === 'F9') {
         e.preventDefault();
-        onConfirmPayment?.({
-          paymentMethod: 'CASH',
-          receiptType: 'SALE',
-          cardType: null,
-          amountTendered: total,
-          printReceipt: isPosReceiptPrintEnabled(),
-          pharmacyPayMethod: 'cash',
-          pharmacyHotkey: 'Enter',
-        });
+        focusCart?.();
       }
     };
 
@@ -95,18 +71,16 @@ export function usePharmacyHotkeys({
     enabled,
     t,
     focusSearch,
+    focusCart,
     itemsLength,
-    total,
-    shiftIsOpen,
-    checkoutPending,
     payOpen,
     returnOpen,
     discountOpen,
     qtyModalOpen,
     weightModalOpen,
     markingOpen,
-    onConfirmPayment,
     onClosePayment,
+    onClearCart,
     clearSearch,
   ]);
 }
