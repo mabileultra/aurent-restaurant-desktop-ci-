@@ -55,7 +55,7 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
             />
           )}
 
-          <input ref={imp.fileRef} type="file" className="hidden" accept=".xlsx,.xls,.json" onChange={imp.onFile} />
+          <input ref={imp.fileRef} type="file" className="hidden" accept=".xlsx,.xls,.json,.pdf,application/pdf" onChange={imp.onFile} />
         </div>
 
         <ProductImportModalFooter

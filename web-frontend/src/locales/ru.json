@@ -771,7 +771,7 @@
       "question": "Как вы хотите импортировать?",
       "sourceLabel": "Формат файла",
       "source": {
-        "UZ_INVOICE": "Счёт-фактура (.xls / .xlsx / .json)",
+        "UZ_INVOICE": "Счёт-фактура (.xls / .xlsx / .json / .pdf)",
         "CATALOG": "Шаблон номенклатуры (.xlsx / .json)"
       },
       "downloadTemplate": "Скачать шаблон файла импорта",

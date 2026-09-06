@@ -21,19 +21,19 @@ export default function ProductImportPreviewTable({
   setRowStorageLocation,
 }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700">
-      <div className="max-h-80 overflow-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="sticky top-0 bg-slate-100 text-xs uppercase text-slate-600 dark:bg-slate-800 dark:text-slate-400">
+    <div className="product-import-preview-table">
+      <div className="product-import-preview-table__scroll">
+        <table>
+          <thead>
             <tr>
-              <th className="px-2 py-2">#</th>
-              <th className="px-2 py-2">{t('products.import.colName')}</th>
-              <th className="px-2 py-2">{t('products.import.colLocation')}</th>
-              <th className="px-2 py-2 text-right">{t('products.import.colFilePrice')}</th>
-              <th className="px-2 py-2 text-right">{t('products.import.colImportPrice')}</th>
-              <th className="px-2 py-2">{t('products.import.colCategory')}</th>
-              <th className="px-2 py-2">{t('products.import.colStore')}</th>
-              <th className="px-2 py-2">{t('products.import.colStatus')}</th>
+              <th>#</th>
+              <th>{t('products.import.colName')}</th>
+              <th>{t('products.import.colLocation')}</th>
+              <th className="text-right">{t('products.import.colFilePrice')}</th>
+              <th className="text-right">{t('products.import.colImportPrice')}</th>
+              <th>{t('products.import.colCategory')}</th>
+              <th>{t('products.import.colStore')}</th>
+              <th>{t('products.import.colStatus')}</th>
             </tr>
           </thead>
           <tbody>
@@ -45,19 +45,19 @@ export default function ProductImportPreviewTable({
               return (
                 <tr
                   key={r.rowNum}
-                  className={`border-t border-slate-100 dark:border-slate-800 ${
+                  className={
                     isDup
                       ? 'product-import-row--duplicate bg-amber-100/80 dark:bg-amber-500/15'
                       : isInv
                         ? 'bg-red-50/40 dark:bg-red-500/5'
                         : ''
-                  }`}
+                  }
                 >
-                  <td className="px-2 py-2 text-slate-500">{r.rowNum}</td>
-                  <td className="px-2 py-2">
+                  <td className="text-slate-500">{r.rowNum}</td>
+                  <td>
                     <ProductImportNameCell row={r} />
                   </td>
-                  <td className="px-2 py-2">
+                  <td>
                     {isNew && ed ? (
                       <input
                         type="text"
@@ -70,7 +70,7 @@ export default function ProductImportPreviewTable({
                       <span className="text-slate-500">{r.storageLocation || '—'}</span>
                     )}
                   </td>
-                  <td className="px-2 py-2 text-right text-slate-600 dark:text-slate-400">
+                  <td className="text-right text-slate-600 dark:text-slate-400">
                     {formatImportMoney(r.fileSellingPrice)}
                     {isDup && r.existingSellingPrice != null && (
                       <div className="text-xs text-amber-600 dark:text-amber-400">
@@ -78,7 +78,7 @@ export default function ProductImportPreviewTable({
                       </div>
                     )}
                   </td>
-                  <td className="px-2 py-2 text-right">
+                  <td className="text-right">
                     {isNew && ed ? (
                       <input
                         type="text"
@@ -90,11 +90,10 @@ export default function ProductImportPreviewTable({
                       '—'
                     )}
                   </td>
-                  <td className="px-2 py-2">
+                  <td>
                     {isNew && ed ? (
                       <BaseSelect
                         size="sm"
-                        className="min-w-[8rem]"
                         value={ed.categoryId ?? ''}
                         onChange={(e) => setRowCategory(r.rowNum, e.target.value)}
                         placeholder={t('products.import.noCategory')}
@@ -107,11 +106,10 @@ export default function ProductImportPreviewTable({
                       '—'
                     )}
                   </td>
-                  <td className="px-2 py-2">
+                  <td>
                     {isNew && ed ? (
                       <BaseSelect
                         size="sm"
-                        className="min-w-[8rem]"
                         value={ed.storeId ?? ''}
                         onChange={(e) => setRowStore(r.rowNum, e.target.value)}
                         placeholder={t('products.import.noStore')}
@@ -124,7 +122,7 @@ export default function ProductImportPreviewTable({
                       '—'
                     )}
                   </td>
-                  <td className="px-2 py-2">
+                  <td>
                     {productImportStatusBadge(r.status, t)}
                     {r.message && !isNew && (
                       <div

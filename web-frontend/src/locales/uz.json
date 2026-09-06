@@ -1250,7 +1250,7 @@
       "question": "Qanday import qilmoqchisiz?",
       "sourceLabel": "Fayl formati",
       "source": {
-        "UZ_INVOICE": "Hisob-faktura (.xls / .xlsx / .json)",
+        "UZ_INVOICE": "Hisob-faktura (.xls / .xlsx / .json / .pdf)",
         "CATALOG": "Nomenklatura shabloni (.xlsx / .json)"
       },
       "downloadTemplate": "Import fayl shablonini yuklab olish",

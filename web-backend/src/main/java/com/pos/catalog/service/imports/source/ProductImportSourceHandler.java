@@ -3,6 +3,7 @@ package com.pos.catalog.service.imports.source;
 import com.pos.catalog.dto.product.ProductImportPreviewRow;
 import com.pos.catalog.service.imports.ProductImportParseOptions;
 import com.pos.catalog.service.imports.ProductImportSource;
+import com.pos.exception.BadRequestException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,16 @@ public interface ProductImportSourceHandler {
     List<Map<String, String>> parseSpreadsheet(InputStream in) throws IOException;
 
     List<Map<String, String>> parseJson(byte[] bytes);
+
+    /**
+     * PDF (текстовый слой). По умолчанию источник PDF не поддерживает —
+     * только счёт-фактура UZ переопределяет.
+     */
+    default List<Map<String, String>> parsePdf(byte[] bytes) {
+        throw new BadRequestException(
+            "PDF поддерживается только для импорта счёт-фактуры (UZ_INVOICE)"
+        );
+    }
 
     /** Номер документа/фактуры на уровне файла, либо null если источник не оперирует таким понятием. */
     String resolveFileInvoiceId(List<Map<String, String>> rows);

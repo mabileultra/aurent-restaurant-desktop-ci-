@@ -38,12 +38,17 @@ public class UzInvoiceSpreadsheetParser {
             } else {
                 grid = readPoiGrid(bytes);
             }
-            return parseProductGrid(grid);
+            return parseFromGrid(grid);
         } catch (BadRequestException e) {
             throw e;
         } catch (IOException e) {
             throw new BadRequestException("Не удалось прочитать Excel: " + e.getMessage());
         }
+    }
+
+    /** Общий разбор сетки (Excel / HTML / PDF) в строки номенклатуры. */
+    public List<Map<String, String>> parseFromGrid(List<List<String>> grid) {
+        return parseProductGrid(grid);
     }
 
     private List<List<String>> readPoiGrid(byte[] bytes) throws IOException {

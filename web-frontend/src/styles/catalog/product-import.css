@@ -8,7 +8,103 @@
 }
 
 .product-import-row--duplicate input,
-.product-import-row--duplicate select {
+.product-import-row--duplicate select,
+.product-import-row--duplicate .base-select {
   pointer-events: none;
   opacity: 0.45;
+}
+
+/* Preview table: sticky header above row selects (collapse breaks sticky th). */
+.product-import-preview-table {
+  overflow: hidden;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(226 232 240);
+}
+
+.dark .product-import-preview-table {
+  border-color: rgb(51 65 85);
+}
+
+.product-import-preview-table__scroll {
+  max-height: 20rem;
+  overflow: auto;
+  scrollbar-gutter: stable;
+}
+
+.product-import-preview-table table {
+  width: 100%;
+  min-width: 64rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.product-import-preview-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+  padding: 0.5rem;
+  background: rgb(241 245 249);
+  color: rgb(71 85 105);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 0 rgb(226 232 240);
+}
+
+.dark .product-import-preview-table thead th {
+  background: rgb(30 41 59);
+  color: rgb(148 163 184);
+  box-shadow: 0 1px 0 0 rgb(51 65 85);
+}
+
+.product-import-preview-table tbody td {
+  position: relative;
+  z-index: 0;
+  padding: 0.5rem;
+  vertical-align: middle;
+  border-top: 1px solid rgb(241 245 249);
+}
+
+.dark .product-import-preview-table tbody td {
+  border-top-color: rgb(30 41 59);
+}
+
+.product-import-preview-table tbody .base-select {
+  z-index: 0;
+  min-width: 0;
+  max-width: 11rem;
+}
+
+.product-import-preview-table tbody .base-select__trigger {
+  min-width: 0;
+}
+
+.product-import-preview-table th:nth-child(1),
+.product-import-preview-table td:nth-child(1) {
+  width: 2.25rem;
+  white-space: nowrap;
+}
+
+.product-import-preview-table th:nth-child(4),
+.product-import-preview-table td:nth-child(4),
+.product-import-preview-table th:nth-child(5),
+.product-import-preview-table td:nth-child(5) {
+  white-space: nowrap;
+}
+
+.product-import-preview-table th:nth-child(6),
+.product-import-preview-table td:nth-child(6),
+.product-import-preview-table th:nth-child(7),
+.product-import-preview-table td:nth-child(7) {
+  width: 11rem;
+  min-width: 10rem;
+}
+
+.product-import-preview-table th:last-child,
+.product-import-preview-table td:last-child {
+  padding-right: 0.75rem;
 }

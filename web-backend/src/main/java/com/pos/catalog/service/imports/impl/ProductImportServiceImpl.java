@@ -22,6 +22,7 @@ import com.pos.catalog.service.imports.source.ProductImportSourceHandlers;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.spreadsheet.parser.HtmlExcelTableParser;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
+import com.pos.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.domain.ProductQuantityRules;
 import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.util.ProductImportParseUtil;
@@ -330,17 +331,22 @@ public class ProductImportServiceImpl implements ProductImportService {
         try {
             byte[] bytes = file.getBytes();
             boolean htmlInvoice = HtmlExcelTableParser.isHtmlSpreadsheet(bytes);
+            boolean pdf = UzInvoicePdfParser.looksLikePdf(bytes) || lower.endsWith(".pdf");
             boolean json = UzInvoiceJsonParser.looksLikeJson(bytes)
                 && !htmlInvoice
+                && !pdf
                 && (lower.endsWith(".json") || !lower.endsWith(".xls") && !lower.endsWith(".xlsx"));
-            boolean excel = lower.endsWith(".xlsx") || lower.endsWith(".xls") || htmlInvoice;
-            if (!json && !excel) {
+            boolean excel = !pdf && (lower.endsWith(".xlsx") || lower.endsWith(".xls") || htmlInvoice);
+            if (!json && !excel && !pdf) {
                 throw new BadRequestException(
-                    "Поддерживаются файлы Excel (.xls, .xlsx), HTML-счёт-фактура (.xls) или JSON (.json)"
+                    "Поддерживаются файлы Excel (.xls, .xlsx), PDF счёт-фактура (.pdf), HTML-счёт-фактура (.xls) или JSON (.json)"
                 );
             }
             if (json) {
                 return handler.parseJson(bytes);
+            }
+            if (pdf) {
+                return handler.parsePdf(bytes);
             }
             try (InputStream in = new java.io.ByteArrayInputStream(bytes)) {
                 return handler.parseSpreadsheet(in);

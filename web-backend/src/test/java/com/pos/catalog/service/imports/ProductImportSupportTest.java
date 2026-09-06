@@ -11,6 +11,7 @@ import com.pos.spreadsheet.ExcelSpreadsheetReader;
 import com.pos.spreadsheet.parser.CatalogJsonParser;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
+import com.pos.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.spreadsheet.parser.UzInvoiceSpreadsheetParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,7 @@ class ProductImportSupportTest {
     @Mock CatalogJsonParser catalogJsonParser;
     @Mock UzInvoiceSpreadsheetParser uzInvoiceSpreadsheetParser;
     @Mock UzInvoiceJsonParser uzInvoiceJsonParser;
+    @Mock UzInvoicePdfParser uzInvoicePdfParser;
     @Mock TenantAccessSupport tenantAccess;
 
     private static final int COMPANY_ID = 1;
@@ -58,7 +60,7 @@ class ProductImportSupportTest {
             excelSpreadsheetReader, catalogJsonParser, productLookup, tenantAccess
         );
         uzInvoice = new UzInvoiceImportSourceHandler(
-            uzInvoiceSpreadsheetParser, uzInvoiceJsonParser, productLookup, tenantAccess
+            uzInvoiceSpreadsheetParser, uzInvoiceJsonParser, uzInvoicePdfParser, productLookup, tenantAccess
         );
     }
 

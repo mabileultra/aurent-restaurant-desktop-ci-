@@ -10,6 +10,7 @@ import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.spreadsheet.parser.UzInvoiceJsonParser;
+import com.pos.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.spreadsheet.parser.UzInvoiceSpreadsheetParser;
 import com.pos.util.ProductImportParseUtil;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ public class UzInvoiceImportSourceHandler implements ProductImportSourceHandler 
 
     private final UzInvoiceSpreadsheetParser uzInvoiceSpreadsheetParser;
     private final UzInvoiceJsonParser uzInvoiceJsonParser;
+    private final UzInvoicePdfParser uzInvoicePdfParser;
     private final ProductLookupSupport productLookup;
     private final TenantAccessSupport tenantAccess;
 
@@ -46,6 +48,11 @@ public class UzInvoiceImportSourceHandler implements ProductImportSourceHandler 
     @Override
     public List<Map<String, String>> parseJson(byte[] bytes) {
         return uzInvoiceJsonParser.parse(bytes);
+    }
+
+    @Override
+    public List<Map<String, String>> parsePdf(byte[] bytes) {
+        return uzInvoicePdfParser.parse(bytes);
     }
 
     @Override
