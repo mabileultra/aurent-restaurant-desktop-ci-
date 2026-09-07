@@ -13,6 +13,7 @@ import {
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { cardTypeLabel } from '../../utils/salePaymentLabel';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
+import { parseOfdCheckParams } from '../../utils/ofdQrUrl';
 
 function lineVatRatePercent(item) {
   const rate = item?.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
@@ -78,7 +79,12 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
     import.meta.env.VITE_FISCAL_CARD_ID || t('fiscalReceipt.fiscalCardPlaceholder');
   const virtualRegister =
     import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '1';
-  const fmNumber = import.meta.env.VITE_FISCAL_MODULE_NUMBER || fiscalCardId;
+  const qrParts = parseOfdCheckParams(sale.fiscalQrUrl);
+  const fmNumber =
+    sale.fiscalTerminalId ||
+    qrParts?.terminalId ||
+    import.meta.env.VITE_FISCAL_MODULE_NUMBER ||
+    fiscalCardId;
   const shiftNo =
     import.meta.env.VITE_SHIFT_NO ||
     String(sale.receiptNumber || '').replace(/\D/g, '').slice(-3).padStart(3, '0') ||
@@ -344,7 +350,11 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
           {isOn('footer') ? (
             <>
               <p className="receipt-footer mt-2">{t('fiscalReceipt.footer')}</p>
-              <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrHint')}</p>
+              {qrValue ? (
+                <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrHint')}</p>
+              ) : (
+                <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrMissing')}</p>
+              )}
             </>
           ) : null}
         </footer>

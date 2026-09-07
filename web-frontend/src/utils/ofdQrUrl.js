@@ -42,3 +42,20 @@ export function isOfdCheckUrl(value) {
   if (!url) return false;
   return /ofd\.soliq\.uz\/(check|epi)\?/i.test(url) && /[?&]t=/i.test(url) && /[?&]s=/i.test(url);
 }
+
+/** Разобрать t/r/c/s из готового URL ГНК (для пересборки / ФМ на чеке). */
+export function parseOfdCheckParams(value) {
+  const raw = String(value || '').trim();
+  if (!raw || !/ofd\.soliq\.uz/i.test(raw)) return null;
+  try {
+    const u = new URL(raw.startsWith('http') ? raw : `https://${raw.replace(/^\/+/, '')}`);
+    const t = u.searchParams.get('t');
+    const r = u.searchParams.get('r');
+    const c = u.searchParams.get('c');
+    const s = u.searchParams.get('s');
+    if (!t || !r || !s) return null;
+    return { terminalId: t, receiptSeq: r, datetime: c || null, fiscalSign: s };
+  } catch {
+    return null;
+  }
+}

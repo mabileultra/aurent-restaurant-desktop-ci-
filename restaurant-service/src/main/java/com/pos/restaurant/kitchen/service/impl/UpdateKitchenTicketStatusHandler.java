@@ -11,13 +11,17 @@ import com.pos.restaurant.kitchen.repository.KitchenTicketRepository;
 import com.pos.restaurant.kitchen.support.KitchenItemStatusMapper;
 import com.pos.restaurant.kitchen.support.KitchenTicketAssembler;
 import com.pos.restaurant.kitchen.support.KitchenTicketStatusPolicy;
+import com.pos.restaurant.order.entity.FloorOrderItemModifier;
+import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class UpdateKitchenTicketStatusHandler {
 
     private final KitchenTicketRepository ticketRepository;
     private final KitchenTicketLineRepository ticketLineRepository;
+    private final FloorOrderItemModifierRepository itemModifierRepository;
     private final FloorTenantSupport tenantSupport;
     private final KitchenTicketStatusPolicy statusPolicy;
     private final KitchenItemStatusMapper itemStatusMapper;
@@ -42,7 +47,12 @@ public class UpdateKitchenTicketStatusHandler {
         for (KitchenTicketLine line : lines) {
             line.getOrderItem().setItemStatus(itemStatus);
         }
+        List<UUID> itemIds = lines.stream().map(line -> line.getOrderItem().getId()).toList();
+        Map<UUID, List<FloorOrderItemModifier>> modifiersByItem = itemIds.isEmpty()
+            ? Map.of()
+            : itemModifierRepository.findByOrderItemIdIn(itemIds).stream()
+                .collect(Collectors.groupingBy(mod -> mod.getOrderItem().getId()));
         LogUtil.info(UpdateKitchenTicketStatusHandler.class, "Kitchen ticket status {}: id={}", nextStatus, ticketId);
-        return assembler.toResponse(ticket, lines);
+        return assembler.toResponse(ticket, lines, modifiersByItem);
     }
 }

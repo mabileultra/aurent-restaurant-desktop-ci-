@@ -17,7 +17,8 @@ public interface KitchenTicketRepository extends JpaRepository<KitchenTicket, UU
     @Query("""
         select distinct t from KitchenTicket t
         join fetch t.order o
-        left join fetch o.table
+        left join fetch o.table tbl
+        left join fetch tbl.hall
         left join fetch t.station
         where t.id = :id and t.companyId = :companyId
         """)
@@ -27,7 +28,8 @@ public interface KitchenTicketRepository extends JpaRepository<KitchenTicket, UU
     @Query("""
         select distinct t from KitchenTicket t
         join fetch t.order o
-        left join fetch o.table
+        left join fetch o.table tbl
+        left join fetch tbl.hall
         left join fetch t.station
         where t.companyId = :companyId
           and t.storeId = :storeId

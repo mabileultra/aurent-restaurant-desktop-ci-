@@ -341,7 +341,9 @@ export async function posCreateSale({
   let fiscalPayload = null;
   try {
     const cashRegisterId = cachedShift?.cashRegisterId ?? null;
-    const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId);
+    const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId, {
+      allowLoadFailureAsDisabled: offline,
+    });
     fiscalPayload = await fiscalizeSaleBeforeCommit({
       capabilities,
       cartItems,
@@ -365,6 +367,7 @@ export async function posCreateSale({
         multikassaSaleId: fiscalPayload.multikassaSaleId,
         fiscalQrUrl: fiscalPayload.fiscalQrUrl,
         fiscalError: fiscalPayload.fiscalError,
+        fiscalTerminalId: fiscalPayload.fiscalTerminalId || fiscalPayload.terminalId || null,
       }
     : null;
 

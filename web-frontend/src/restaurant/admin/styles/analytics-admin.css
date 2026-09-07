@@ -7,9 +7,10 @@
 
 .rst-dash__card {
   padding: 1rem;
-  border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: linear-gradient(180deg, #2a2f36, var(--rst-surface));
+  border: 1.5px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.18);
 }
 
 .rst-dash__card strong {
@@ -17,7 +18,8 @@
   margin-top: 0.35rem;
   font-size: 1.45rem;
   line-height: 1.1;
-  color: var(--rst-accent);
+  color: #fbbf24;
+  font-weight: 900;
 }
 
 .rst-dash__card span {
@@ -164,17 +166,19 @@
   align-items: flex-start;
   gap: 0.75rem;
   padding: 1rem;
-  border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: linear-gradient(180deg, #2a2f36, var(--rst-surface));
+  border: 1.5px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
   color: inherit;
   text-decoration: none;
-  transition: border-color 0.12s ease, transform 0.12s ease;
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.16);
+  transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 .rst-report-hub__link:hover {
   border-color: var(--rst-accent);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.2), 0 12px 28px rgb(255 122 26 / 0.12);
 }
 
 .rst-report-hub__icon {
@@ -216,10 +220,11 @@
 
 .rst-dash__chart-card {
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: linear-gradient(180deg, #2a2f36, var(--rst-surface));
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
   padding: 1rem 1rem 0.75rem;
   min-height: 360px;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.18);
 }
 
 .rst-dash__chart-card--wide {

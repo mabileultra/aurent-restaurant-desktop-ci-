@@ -475,5 +475,6 @@ export function toSaleFiscalPayload(parsed) {
     multikassaSaleId: parsed.multikassaSaleId || null,
     fiscalQrUrl: parsed.fiscalQrUrl || null,
     fiscalError: parsed.fiscalError || null,
+    fiscalTerminalId: parsed.terminalId || parsed.fiscalTerminalId || null,
   };
 }

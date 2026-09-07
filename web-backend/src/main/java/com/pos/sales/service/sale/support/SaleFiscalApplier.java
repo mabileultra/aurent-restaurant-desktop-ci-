@@ -69,6 +69,7 @@ public class SaleFiscalApplier {
         sale.setFiscalReceiptSeq(trimToNull(fiscal.fiscalReceiptSeq()));
         sale.setMultikassaSaleId(trimToNull(fiscal.multikassaSaleId()));
         sale.setFiscalQrUrl(trimToNull(fiscal.fiscalQrUrl()));
+        sale.setFiscalTerminalId(trimToNull(fiscal.fiscalTerminalId()));
         sale.setFiscalError(trimToNull(fiscal.fiscalError()));
         if (STATUS_FISCALIZED.equals(status)) {
             sale.setFiscalizedAt(Instant.now());

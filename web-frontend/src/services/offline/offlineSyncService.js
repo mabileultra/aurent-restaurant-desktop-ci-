@@ -96,6 +96,8 @@ export async function pushPendingSales() {
           multikassaSaleId: payload.fiscal.multikassaSaleId,
           fiscalQrUrl: payload.fiscal.fiscalQrUrl,
           fiscalError: payload.fiscal.fiscalError,
+          terminalId: payload.fiscal.fiscalTerminalId || payload.fiscal.terminalId,
+          fiscalTerminalId: payload.fiscal.fiscalTerminalId || payload.fiscal.terminalId,
         })
       : undefined;
 

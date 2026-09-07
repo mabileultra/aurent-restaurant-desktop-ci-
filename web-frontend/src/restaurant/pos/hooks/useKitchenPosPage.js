@@ -1,11 +1,20 @@
+import { useMemo } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { userApi } from '../../../api';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstShiftApi } from '../../api/shift.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
+
+function displayUserName(user) {
+  return user.fullName
+    || [user.lastName, user.firstName, user.patronymic].filter(Boolean).join(' ')
+    || user.username
+    || String(user.id);
+}
 
 export function useKitchenPosPage() {
   const { t } = useTranslation();
@@ -21,12 +30,19 @@ export function useKitchenPosPage() {
     refetchInterval: 5_000,
   });
 
+  const staffQuery = useQuery({
+    queryKey: ['rst-pos-staff', workspace.storeId],
+    queryFn: () => userApi.getAll().then((r) => r.data ?? []),
+    enabled: workspace.storeId != null,
+    staleTime: 60_000,
+  });
+
   const shiftQuery = useQuery({
     queryKey: ['rst-shift-current', workspace.storeId],
     queryFn: async () => {
       try {
         const res = await rstShiftApi.current(workspace.storeId);
-        return res.data ?? null;
+        return res.status === 204 ? null : (res.data ?? null);
       } catch {
         return null;
       }
@@ -49,11 +65,19 @@ export function useKitchenPosPage() {
 
   const tickets = ticketsQuery.data ?? [];
   const columns = groupTicketsByStatus(tickets);
+  const waiterNameById = useMemo(() => {
+    const map = new Map();
+    for (const row of staffQuery.data ?? []) {
+      map.set(String(row.id), displayUserName(row));
+    }
+    return map;
+  }, [staffQuery.data]);
 
   return {
     t,
     workspace,
     columns,
+    waiterNameById,
     shift: shiftQuery.data ?? null,
     isLoading: workspace.isLoading || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,

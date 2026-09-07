@@ -8,6 +8,7 @@ import OpenCounterOrderModal from '../components/OpenCounterOrderModal';
 import CounterOrdersBoard from '../components/CounterOrdersBoard';
 import ModifierPickModal from '../components/ModifierPickModal';
 import OrderWorkspace from '../components/OrderWorkspace';
+import RestaurantReceiptModal from '../components/RestaurantReceiptModal';
 import ShiftModal from '../components/ShiftModal';
 import PosZoomControls from '../components/PosZoomControls';
 import PosHardwareBar from '../components/PosHardwareBar';
@@ -155,6 +156,12 @@ export default function RestaurantFloorPosPage() {
               menuItems={p.menuItems}
               onBack={() => p.setActiveOrderId(null)}
               backLabel={p.t(p.backLabelKey)}
+              hallName={p.orderHallName}
+              waiterName={
+                p.order.waiterUserId
+                  ? p.waiterNameById.get(String(p.order.waiterUserId))
+                  : null
+              }
               onAddItem={p.handleAddItem}
               onQty={p.handleQty}
               onRemove={(itemId) => p.removeItemMutation.mutate(itemId)}
@@ -170,13 +177,17 @@ export default function RestaurantFloorPosPage() {
               canRequestBill={p.canRequestBill}
               canPay={p.canPay}
               onRequestBill={() => p.billMutation.mutate()}
-              onPay={(method) => {
-                if (window.confirm(p.t('rst.order.confirmPay', { amount: p.order.subtotal }))) {
-                  p.payMutation.mutate(method);
+              onPay={(method, amount) => {
+                if (window.confirm(p.t('rst.order.confirmPay', { amount }))) {
+                  p.payMutation.mutate({ method, amount });
                 }
               }}
+              onGuestsChange={(guestCount) => p.updateGuestsMutation.mutate(guestCount)}
+              guestsPending={p.updateGuestsMutation.isPending}
               billingPending={p.billMutation.isPending}
               paying={p.payMutation.isPending}
+              printReceiptEnabled={p.printReceiptEnabled}
+              onPrintReceiptChange={p.setPrintReceiptEnabled}
               commissionPreview={p.commissionPreview}
               waiters={p.waiters}
               onAssignWaiter={(waiterUserId) => p.assignWaiterMutation.mutate(waiterUserId)}
@@ -260,6 +271,14 @@ export default function RestaurantFloorPosPage() {
         isPending={p.openShiftMutation.isPending || p.closeShiftMutation.isPending}
         t={p.t}
       />
+      {p.paidReceipt?.sale ? (
+        <RestaurantReceiptModal
+          sale={p.paidReceipt.sale}
+          autoPrint={Boolean(p.paidReceipt.autoPrint)}
+          onClose={p.closePaidReceipt}
+          t={p.t}
+        />
+      ) : null}
     </div>
   );
 }

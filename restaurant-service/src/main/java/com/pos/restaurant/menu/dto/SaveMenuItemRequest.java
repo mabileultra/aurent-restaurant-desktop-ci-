@@ -21,5 +21,8 @@ public record SaveMenuItemRequest(
     UUID stationId,
     @Size(max = 80) String category,
     String imageUrl,
+    @Size(max = 280) String description,
+    @Min(0) Integer prepMinutes,
+    @Size(max = 120) String tags,
     List<UUID> modifierGroupIds
 ) {}

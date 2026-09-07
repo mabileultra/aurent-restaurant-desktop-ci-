@@ -6,6 +6,9 @@ export function resolveMultikassaFiscalErrorMessage(e, t, fallbackKey = 'cashReg
   if (e?.code === 'MULTIKASSA_BROWSER_LOCALHOST') {
     return e.message;
   }
+  if (e?.code === 'MULTIKASSA_CAPABILITIES_LOAD_FAILED') {
+    return e.message || t('cashRegisters.multikassa.capabilitiesLoadFailed');
+  }
   if (e?.code === 'MULTIKASSA_FISCAL_FAILED') {
     return e.message || t(fallbackKey);
   }

@@ -4,23 +4,23 @@
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 0.85rem;
-  padding: 0.7rem 0.95rem;
-  border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius-lg);
-  background: linear-gradient(90deg, #221910, var(--rst-surface));
+  padding: 0.72rem 1rem;
+  border: 1px solid #2a3140;
+  border-radius: 14px;
+  background: #141820;
 }
 
 .rst-shift-bar.is-closed {
-  background: linear-gradient(90deg, #2a1515, var(--rst-surface));
+  background: #1a1416;
   border-color: #5a3030;
 }
 
 .rst-shift-bar__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem 1.15rem;
+  gap: 0.65rem 1.25rem;
   font-size: 0.84rem;
-  color: var(--rst-muted);
+  color: #93a0b8;
 }
 
 .rst-shift-bar__meta strong {
@@ -32,4 +32,11 @@
   display: flex;
   gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.rst-shift-bar__actions .btn,
+.rst-shift-bar__actions button {
+  color: #f4f6fb !important;
+  border-color: #3a4356 !important;
+  background: #1a2030 !important;
 }

@@ -23,6 +23,9 @@ public class MenuItemResponseFactory {
             base.stationId(),
             base.category(),
             base.imageUrl(),
+            base.description(),
+            base.prepMinutes(),
+            base.tags(),
             groupIds == null ? List.of() : List.copyOf(groupIds)
         );
     }

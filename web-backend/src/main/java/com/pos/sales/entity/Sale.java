@@ -168,6 +168,9 @@ public class Sale {
     @Column(name = "fiscal_qr_url", length = 1024)
     private String fiscalQrUrl;
 
+    @Column(name = "fiscal_terminal_id", length = 128)
+    private String fiscalTerminalId;
+
     @Column(name = "fiscalized_at")
     private Instant fiscalizedAt;
 

@@ -1,0 +1,154 @@
+/* Экран фискального чека после оплаты (ресторан) */
+
+.rst-receipt-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rst-receipt-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 0.62);
+  cursor: pointer;
+}
+
+.rst-receipt-modal__dialog {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 28rem);
+  max-height: 92vh;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: #fff;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
+  color: #111;
+}
+
+.rst-receipt-modal__toolbar,
+.rst-receipt-modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-color: #e5e7eb;
+  background: #f8fafc;
+}
+
+.rst-receipt-modal__toolbar {
+  justify-content: space-between;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rst-receipt-modal__footer {
+  justify-content: flex-end;
+  border-top: 1px solid #e5e7eb;
+}
+
+.rst-receipt-modal__title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.rst-receipt-modal__title strong {
+  font-size: 0.9rem;
+  color: #0f172a;
+}
+
+.rst-receipt-modal__title span {
+  font-size: 0.75rem;
+  color: #64748b;
+  word-break: break-all;
+}
+
+.rst-receipt-modal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rst-receipt-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rst-receipt-modal__btn:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.rst-receipt-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rst-receipt-modal__btn--primary {
+  border-color: #006847;
+  background: #006847;
+  color: #fff;
+}
+
+.rst-receipt-modal__btn--primary:hover:not(:disabled) {
+  background: #005538;
+}
+
+.rst-receipt-modal__btn--icon {
+  padding: 0.4rem;
+}
+
+.rst-receipt-modal__btn.is-active {
+  border-color: #006847;
+  background: #e8f5ef;
+  color: #005538;
+}
+
+.rst-receipt-modal__settings {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.rst-receipt-modal__body {
+  overflow: auto;
+  padding: 1rem 1.15rem;
+  background: #fff;
+}
+
+@media print {
+  .rst-receipt-modal {
+    padding: 0;
+    background: #fff;
+  }
+
+  .rst-receipt-modal__dialog {
+    max-height: none;
+    width: 100%;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .rst-receipt-modal__body {
+    overflow: visible;
+    padding: 0;
+  }
+}

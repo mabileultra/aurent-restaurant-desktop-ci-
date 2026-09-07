@@ -50,7 +50,10 @@ public class PayOrderHandler {
     public OrderResponse handle(UUID orderId, PayOrderRequest request) {
         FloorOrder order = orderLookup.requireBilling(orderId);
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
-        BigDecimal due = orderTotals.billable(items);
+        BigDecimal subtotal = orderTotals.billable(items);
+        waiterCommissionService.applyOnPayment(order, subtotal);
+        BigDecimal service = order.getCommissionAmount() == null ? BigDecimal.ZERO : order.getCommissionAmount();
+        BigDecimal due = subtotal.add(service);
         eligibilityPolicy.assertCanPay(order, due, request.amount());
         FloorOrderPayment payment = paymentRepository.save(FloorOrderPayment.builder()
             .order(order)
@@ -60,7 +63,6 @@ public class PayOrderHandler {
             .build());
         order.setStatus(OrderStatus.CLOSED);
         order.setClosedAt(Instant.now());
-        waiterCommissionService.applyOnPayment(order, due);
         if (order.getTable() != null) {
             order.getTable().setStatus(TableStatus.CLEANING);
         }

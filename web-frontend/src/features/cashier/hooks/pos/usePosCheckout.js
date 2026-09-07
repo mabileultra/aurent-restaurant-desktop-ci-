@@ -104,6 +104,10 @@ export function usePosCheckout({
         toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
         return;
       }
+      if (e?.code === 'MULTIKASSA_CAPABILITIES_LOAD_FAILED') {
+        toast.error(resolveMultikassaFiscalErrorMessage(e, t));
+        return;
+      }
       if (e?.code === 'MULTIKASSA_FISCAL_FAILED') {
         toast.error(resolveMultikassaFiscalErrorMessage(e, t));
         return;

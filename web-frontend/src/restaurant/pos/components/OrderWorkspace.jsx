@@ -1,16 +1,27 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { formatElapsed } from '../utils/formatElapsed';
+import { formatDigitalTimer } from '../utils/formatElapsed';
 import MenuPicker from './MenuPicker';
 import OrderLines from './OrderLines';
 import '../styles/order-workspace.css';
+
+function useLiveClock() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return now;
+}
 
 export default function OrderWorkspace({
   order,
   menuItems,
   onBack,
   backLabel,
+  hallName,
+  waiterName,
   onAddItem,
   onQty,
   onRemove,
@@ -18,6 +29,8 @@ export default function OrderWorkspace({
   onSendKitchen,
   onRequestBill,
   onPay,
+  onGuestsChange,
+  guestsPending,
   canCancel,
   canSendKitchen,
   canRequestBill,
@@ -25,12 +38,15 @@ export default function OrderWorkspace({
   sendingKitchen,
   billingPending,
   paying,
+  printReceiptEnabled = true,
+  onPrintReceiptChange,
   commissionPreview,
   waiters = [],
   onAssignWaiter,
   assigningWaiter,
   t,
 }) {
+  const now = useLiveClock();
   const billing = order.status === 'BILLING';
   const channel = order.channel || 'DINE_IN';
   const ticketTitle = channel === 'TAKEAWAY'
@@ -50,7 +66,13 @@ export default function OrderWorkspace({
         children: order.childrenCount,
       });
 
-  const elapsed = formatElapsed(order.openedAt);
+  const digitalTimer = formatDigitalTimer(order.openedAt, now);
+  const clockLabel = new Date(now).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  });
+
   const qtyByMenuId = useMemo(() => {
     const map = {};
     for (const line of order.items ?? []) {
@@ -60,38 +82,63 @@ export default function OrderWorkspace({
     return map;
   }, [order.items]);
 
-  const linesCount = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED').length;
-  const showCommission = channel === 'DINE_IN' && (
-    order.commissionPercent != null
-    || (commissionPreview && Number(commissionPreview.percent) > 0)
-  );
+  const activeLines = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED');
+  const linesCount = activeLines.length;
+  const newCount = activeLines.filter((line) => line.itemStatus === 'NEW').length;
+  const kitchenCount = activeLines.filter((line) => line.itemStatus !== 'NEW').length;
+  const progress = linesCount === 0
+    ? 0
+    : Math.round((kitchenCount / linesCount) * 100);
+
   const commissionPercent = order.commissionPercent != null
     ? Number(order.commissionPercent)
     : Number(commissionPreview?.percent ?? 0);
   const commissionAmount = order.commissionAmount != null
     ? Number(order.commissionAmount)
     : Number(commissionPreview?.amount ?? 0);
-  const payAmount = order.subtotal;
+  const subtotalAmount = Number(order.subtotal ?? 0);
+  const payAmount = channel === 'DINE_IN'
+    ? Math.round((subtotalAmount + Number(commissionAmount || 0)) * 100) / 100
+    : subtotalAmount;
+  const resolvedWaiter = waiterName
+    || waiters.find((row) => String(row.id) === String(order.waiterUserId))?.name
+    || null;
+
+  const bumpGuests = (delta) => {
+    if (!onGuestsChange || billing) return;
+    const next = Math.max(1, Math.min(99, Number(order.guestCount || 1) + delta));
+    if (next === order.guestCount) return;
+    onGuestsChange(next);
+  };
 
   return (
     <div className="rst-order">
       <section className="rst-order__catalog">
-        <div className="rst-order__head">
-          <div>
-            <button type="button" className="rst-order__back" onClick={onBack}>
-              ← {backLabel || t('rst.order.backToFloor')}
-            </button>
-            <h2 className="rst-order__title">
-              {channel === 'DINE_IN'
-                ? t('rst.order.tableHeading', { code: order.tableCode })
-                : t('rst.order.menu')}
-            </h2>
-            <p className="rst-order__meta">
-              {billing ? t('rst.order.billingHint') : ticketMeta}
-              {elapsed ? ` · ${elapsed}` : ''}
-            </p>
+        <div className="rst-order__context">
+          <button type="button" className="rst-order__back" onClick={onBack}>
+            ← {backLabel || t('rst.order.backToFloor')}
+          </button>
+          <div className="rst-order__context-main">
+            {channel === 'DINE_IN' ? (
+              <h2 className="rst-order__context-title">
+                <em>{t('rst.order.tableHeading', { code: order.tableCode })}</em>
+                {hallName ? <span> / {hallName}</span> : null}
+              </h2>
+            ) : (
+              <h2 className="rst-order__context-title">
+                <em>{t('rst.order.menu')}</em>
+              </h2>
+            )}
+            <span className="rst-order__context-waiter">
+              {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
+            </span>
+          </div>
+          <div className="rst-order__live">
+            <strong>{clockLabel}</strong>
+            <span>LIVE</span>
           </div>
         </div>
+
         {billing ? (
           <div className="rst-order-empty">{t('rst.order.billingHint')}</div>
         ) : (
@@ -102,10 +149,24 @@ export default function OrderWorkspace({
       <aside className="rst-order__ticket">
         <div className="rst-order__ticket-head">
           <div>
-            <div className="rst-order__ticket-kicker">TICKET #{order.orderNo}</div>
+            <div className="rst-order__ticket-kicker">
+              TICKET #{order.orderNo}
+              {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
+            </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
             <p className="rst-order__meta">{ticketMeta}</p>
-            {channel === 'DINE_IN' && waiters.length > 0 ? (
+          </div>
+          {digitalTimer ? <span className="rst-order__timer">{digitalTimer}</span> : null}
+        </div>
+
+        {channel === 'DINE_IN' ? (
+          <div className="rst-order__guest-row">
+            <div className="rst-order__guest-stepper">
+              <button type="button" disabled={billing || guestsPending || order.guestCount <= 1} onClick={() => bumpGuests(-1)}>−</button>
+              <span>{t('rst.order.guestsShort', { count: order.guestCount })}</span>
+              <button type="button" disabled={billing || guestsPending} onClick={() => bumpGuests(1)}>+</button>
+            </div>
+            {waiters.length > 0 ? (
               <label className="rst-order__waiter">
                 <span>{t('rst.floor.waiter')}</span>
                 <select
@@ -124,7 +185,13 @@ export default function OrderWorkspace({
               </label>
             ) : null}
           </div>
-          {elapsed ? <span className="rst-order__timer">{elapsed}</span> : null}
+        ) : null}
+
+        <div className="rst-order__progress" aria-hidden>
+          <i style={{ width: `${progress}%` }} />
+          {newCount > 0 && kitchenCount > 0 ? (
+            <b style={{ width: `${Math.round((newCount / linesCount) * 100)}%`, left: `${progress}%` }} />
+          ) : null}
         </div>
 
         <OrderLines
@@ -137,18 +204,22 @@ export default function OrderWorkspace({
 
         <div className="rst-order__totals">
           <div className="rst-order__total-row">
-            <span>{t('rst.order.subtotal', { count: linesCount })}</span>
-            <span>{fmtMoneyCompact(order.subtotal)}</span>
+            <span>{t('rst.order.subtotal', { count: linesCount })}:</span>
+            <strong className="rst-order__total-val">{fmtMoneyCompact(order.subtotal)}</strong>
           </div>
-          {showCommission ? (
-            <div className="rst-order__total-row rst-order__total-row--info">
+          {channel === 'DINE_IN' ? (
+            <div className="rst-order__total-row rst-order__total-row--service">
               <span>
-                {t('rst.order.commissionInfo', { percent: commissionPercent })}
+                {t('rst.order.serviceLine', { percent: commissionPercent || 0 })}
                 <em className="rst-order__auto">AUTO</em>
               </span>
-              <span>{fmtMoneyCompact(commissionAmount)}</span>
+              <strong className="rst-order__total-val">{fmtMoneyCompact(commissionAmount || 0)}</strong>
             </div>
           ) : null}
+          <div className="rst-order__total-row rst-order__total-row--loyalty">
+            <span>{t('rst.order.loyalty')}:</span>
+            <span className="rst-order__loyalty-val">{t('rst.order.loyaltyZero')}</span>
+          </div>
           <div className="rst-order__total-row rst-order__total-row--grand">
             <span>{t('rst.order.totalDue')}</span>
             <strong>{fmtMoneyCompact(payAmount)}</strong>
@@ -186,7 +257,7 @@ export default function OrderWorkspace({
               <button
                 type="button"
                 className="rst-order__action rst-order__action--pay"
-                onClick={() => onPay('CARD')}
+                onClick={() => onPay('CARD', payAmount)}
                 disabled={paying}
               >
                 {t('rst.order.pay')}
@@ -199,7 +270,16 @@ export default function OrderWorkspace({
           </div>
           {canPay ? (
             <div className="rst-order__pay-extra">
-              <BaseButton type="button" variant="ghost" onClick={() => onPay('CASH')} disabled={paying}>
+              <label className="rst-order__print-toggle" title={t('pos.printReceiptAfterSale')}>
+                <input
+                  type="checkbox"
+                  checked={printReceiptEnabled}
+                  onChange={(e) => onPrintReceiptChange?.(e.target.checked)}
+                  disabled={paying}
+                />
+                <span>{t('pos.printReceiptShort')}</span>
+              </label>
+              <BaseButton type="button" variant="ghost" onClick={() => onPay('CASH', payAmount)} disabled={paying}>
                 {t('rst.order.payCash')}
               </BaseButton>
             </div>

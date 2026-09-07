@@ -1,8 +1,9 @@
 .rst-notice {
   padding: 0.9rem 1rem;
-  border-radius: var(--rst-radius);
+  border-radius: var(--rst-radius-lg);
   border: 1px solid var(--rst-line);
-  background: var(--rst-surface);
+  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.18);
 }
 
 .rst-empty {
@@ -14,6 +15,9 @@
   min-height: 240px;
   color: var(--rst-muted);
   text-align: center;
+  border: 1px dashed var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: var(--rst-surface);
 }
 
 .rst-coming {
@@ -21,13 +25,15 @@
 }
 
 .rst-coming__title {
-  margin: 0 0 0.4rem;
+  margin: 0 0 0.35rem;
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.01em;
 }
 
 .rst-coming__text {
   margin: 0;
   color: var(--rst-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
 }

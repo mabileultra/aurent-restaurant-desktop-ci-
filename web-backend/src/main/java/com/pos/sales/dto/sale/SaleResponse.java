@@ -46,6 +46,7 @@ public record SaleResponse(
     String fiscalReceiptSeq,
     String multikassaSaleId,
     String fiscalQrUrl,
+    String fiscalTerminalId,
     Instant fiscalizedAt
 ) {
     public record SaleLineDto(

@@ -5,8 +5,9 @@
   margin-bottom: 1.25rem;
   padding: 1rem;
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: var(--rst-surface);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
 }
 
 .rst-admin-form__grid {
@@ -22,11 +23,17 @@
 
   .rst-admin-form__grid--menu {
     grid-template-columns:
-      minmax(0, 1.4fr)
-      minmax(120px, 0.9fr)
+      minmax(0, 1.2fr)
       minmax(100px, 0.7fr)
-      minmax(100px, 0.65fr)
-      minmax(120px, 0.9fr);
+      minmax(90px, 0.55fr)
+      minmax(90px, 0.55fr)
+      minmax(110px, 0.8fr)
+      minmax(90px, 0.5fr)
+      minmax(140px, 0.9fr);
+  }
+
+  .rst-admin-field--wide {
+    grid-column: 1 / -1;
   }
 
   .rst-admin-form__grid--menu-extra {
@@ -105,8 +112,9 @@
   margin-bottom: 1rem;
   padding: 0.9rem 1rem;
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: var(--rst-surface);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.16);
 }
 
 @media (min-width: 900px) {
@@ -230,9 +238,10 @@
 
 .rst-data-card {
   border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: var(--rst-surface);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
   overflow: hidden;
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
 }
 
 .rst-data-card__head {
@@ -240,14 +249,20 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.05rem;
   border-bottom: 1px solid var(--rst-line);
-  background: var(--rst-surface-2);
+  background: rgb(12 16 24 / 0.85);
+}
+
+.rst-data-card__head strong {
+  font-weight: 800;
+  letter-spacing: 0.01em;
 }
 
 .rst-data-card__head span {
   color: var(--rst-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .rst-data-card__table-wrap {
@@ -256,28 +271,48 @@
 
 .rst-data-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   table-layout: fixed;
 }
 
-.rst-data-table th,
-.rst-data-table td {
-  padding: 0.75rem 1rem;
+.rst-data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0.7rem 1rem;
   border-bottom: 1px solid var(--rst-line);
   text-align: left;
   vertical-align: middle;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #9aa6bf;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  background: #141a24;
 }
 
-.rst-data-table th {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--rst-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: transparent;
+.rst-data-table td {
+  padding: 0.82rem 1rem;
+  border-bottom: 1px solid rgb(42 51 68 / 0.85);
+  text-align: left;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: var(--rst-ink);
+}
+
+.rst-data-table tbody tr {
+  transition: background 0.12s ease;
+}
+
+.rst-data-table tbody tr:nth-child(even) td {
+  background: rgb(255 255 255 / 0.015);
 }
 
 .rst-data-table tbody tr:last-child td {
@@ -285,12 +320,14 @@
 }
 
 .rst-data-table tbody tr:hover td {
-  background: rgb(255 255 255 / 0.03);
+  background: rgb(255 122 26 / 0.08);
 }
 
 .rst-data-table__num {
   width: 3.5rem;
-  color: var(--rst-muted);
+  color: #7b879e;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
 }
 
 .rst-data-table__thumb {
@@ -301,16 +338,17 @@
   width: 40px;
   height: 40px;
   object-fit: cover;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--rst-line);
   background: var(--rst-bg-deep);
+  box-shadow: 0 4px 10px rgb(0 0 0 / 0.25);
 }
 
 .rst-data-table__thumb-empty {
   display: inline-block;
   width: 40px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px dashed var(--rst-line);
   background: var(--rst-surface-2);
 }
@@ -332,44 +370,78 @@
 }
 
 .rst-data-table code {
-  font-size: 0.85rem;
+  display: inline-block;
+  padding: 0.12rem 0.4rem;
+  border-radius: 6px;
+  background: rgb(255 122 26 / 0.12);
+  font-size: 0.82rem;
   color: var(--rst-accent);
+  font-weight: 700;
 }
 
 .rst-data-table__empty {
-  padding: 2rem 1rem !important;
+  padding: 2.4rem 1rem !important;
   text-align: center;
   color: var(--rst-muted);
   white-space: normal !important;
+  font-weight: 600;
 }
 
 .rst-data-table__wrap {
   white-space: normal !important;
+  line-height: 1.35;
 }
 
 .rst-data-card__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem !important;
   border-top: 1px solid var(--rst-line) !important;
   border-color: var(--rst-line) !important;
-  background: var(--rst-surface-2);
+  background: #121822;
 }
 
 .rst-app .rst-data-card__pagination.table-pagination {
   border-color: var(--rst-line);
 }
 
+.rst-app .rst-data-card .table-pagination__page-btn {
+  border-radius: 8px;
+  border: 1px solid var(--rst-line);
+  background: #161c28;
+  color: var(--rst-ink);
+  font-weight: 700;
+}
+
+.rst-app .rst-data-card .table-pagination__page-btn:hover:not(:disabled) {
+  border-color: rgb(255 122 26 / 0.45);
+  background: var(--rst-accent-soft);
+}
+
 .rst-app .rst-data-card .table-pagination__page-btn--active {
   background: var(--rst-accent);
   border-color: var(--rst-accent);
   color: #1b1208;
+  box-shadow: 0 6px 14px rgb(255 122 26 / 0.25);
+}
+
+.rst-app .rst-data-card .table-pagination__nav-btn {
+  border-radius: 8px;
+  border: 1px solid var(--rst-line);
+  background: #161c28;
+  color: var(--rst-muted);
 }
 
 .rst-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.15rem 0.45rem;
+  padding: 0.18rem 0.5rem;
   border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
 }
 
 .rst-badge--ok {

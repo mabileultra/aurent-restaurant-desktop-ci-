@@ -48,6 +48,9 @@ public class MenuItemUpdateHandler {
         item.setStationId(stationLookup.resolveOptional(request.stationId(), companyId, item.getStoreId()));
         item.setCategory(blankToNull(request.category()));
         item.setImageUrl(blankToNull(request.imageUrl()));
+        item.setDescription(blankToNull(request.description()));
+        item.setPrepMinutes(normalizePrep(request.prepMinutes()));
+        item.setTags(normalizeTags(request.tags()));
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);
         return itemMapper.toResponse(item);
@@ -58,5 +61,27 @@ public class MenuItemUpdateHandler {
             return null;
         }
         return value.trim();
+    }
+
+    private static Integer normalizePrep(Integer value) {
+        if (value == null || value < 0) {
+            return null;
+        }
+        return value;
+    }
+
+    private static String normalizeTags(String value) {
+        String trimmed = blankToNull(value);
+        if (trimmed == null) {
+            return null;
+        }
+        String[] parts = trimmed.toUpperCase().split("[,;\\s]+");
+        StringBuilder out = new StringBuilder();
+        for (String part : parts) {
+            if (part.isBlank()) continue;
+            if (out.length() > 0) out.append(',');
+            out.append(part);
+        }
+        return out.length() == 0 ? null : out.toString();
     }
 }

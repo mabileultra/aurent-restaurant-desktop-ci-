@@ -213,6 +213,32 @@ export default function MenuAdminPage() {
               ))}
             </select>
           </label>
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{p.t('rst.admin.prepMinutes')}</span>
+            <BaseInput
+              type="number"
+              min={0}
+              value={p.form.prepMinutes}
+              onChange={(e) => p.setForm({ ...p.form, prepMinutes: e.target.value })}
+              placeholder="15"
+            />
+          </label>
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{p.t('rst.admin.dishTags')}</span>
+            <BaseInput
+              value={p.form.tags}
+              onChange={(e) => p.setForm({ ...p.form, tags: e.target.value })}
+              placeholder={p.t('rst.admin.dishTagsHint')}
+            />
+          </label>
+          <label className="rst-admin-field rst-admin-field--wide">
+            <span className="rst-admin-field__label">{p.t('rst.admin.dishDescription')}</span>
+            <BaseInput
+              value={p.form.description}
+              onChange={(e) => p.setForm({ ...p.form, description: e.target.value })}
+              placeholder={p.t('rst.admin.dishDescriptionHint')}
+            />
+          </label>
         </div>
 
         <div className="rst-admin-form__grid rst-admin-form__grid--menu-extra">
@@ -304,7 +330,7 @@ export default function MenuAdminPage() {
                 ].filter(Boolean);
 
                 return (
-                  <article key={item.id} className="rst-menu-card">
+                  <article key={item.id} className={`rst-menu-card${!item.available ? ' is-off' : ''}`}>
                     <div className="rst-menu-card__media">
                       {item.imageUrl ? (
                         <img src={item.imageUrl} alt="" />
@@ -313,6 +339,9 @@ export default function MenuAdminPage() {
                       )}
                       {!item.available ? (
                         <span className="rst-menu-card__badge is-off">{p.t('rst.admin.unavailable')}</span>
+                      ) : null}
+                      {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                        <span className="rst-menu-card__prep">~{item.prepMinutes} {p.t('rst.order.prepMin')}</span>
                       ) : null}
                       <button
                         type="button"
@@ -330,7 +359,24 @@ export default function MenuAdminPage() {
                       </button>
                     </div>
                     <div className="rst-menu-card__body">
+                      {String(item.tags || '').trim() ? (
+                        <div className="rst-menu-card__tags">
+                          {String(item.tags)
+                            .split(/[,;|\s]+/)
+                            .map((part) => part.trim().toUpperCase())
+                            .filter(Boolean)
+                            .slice(0, 4)
+                            .map((code) => (
+                              <span key={code} className={`rst-menu-card__tag rst-menu-card__tag--${code.toLowerCase()}`}>
+                                {p.t(`rst.order.tag.${code}`, { defaultValue: code })}
+                              </span>
+                            ))}
+                        </div>
+                      ) : null}
                       <h3 className="rst-menu-card__title">{item.name}</h3>
+                      {item.description ? (
+                        <p className="rst-menu-card__desc">{item.description}</p>
+                      ) : null}
                       <p className="rst-menu-card__meta">
                         {metaParts.length ? metaParts.join(' · ') : p.t('rst.admin.noStation')}
                       </p>

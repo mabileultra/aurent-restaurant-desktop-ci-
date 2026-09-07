@@ -18,5 +18,6 @@
     <include file="db/changelog/v11-menu-image-category.xml"/>
     <include file="db/changelog/v12-order-channels.xml"/>
     <include file="db/changelog/v13-waiter-commission.xml"/>
+    <include file="db/changelog/v14-menu-card-meta.xml"/>
 
 </databaseChangeLog>

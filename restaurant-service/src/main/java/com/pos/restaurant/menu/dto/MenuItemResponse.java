@@ -19,5 +19,8 @@ public record MenuItemResponse(
     UUID stationId,
     String category,
     String imageUrl,
+    String description,
+    Integer prepMinutes,
+    String tags,
     List<UUID> modifierGroupIds
 ) {}

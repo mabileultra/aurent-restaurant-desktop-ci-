@@ -10,6 +10,8 @@ import com.pos.restaurant.kitchen.repository.KitchenTicketRepository;
 import com.pos.restaurant.kitchen.service.KitchenTicketService;
 import com.pos.restaurant.kitchen.support.KitchenTicketAssembler;
 import com.pos.restaurant.order.dto.OrderResponse;
+import com.pos.restaurant.order.entity.FloorOrderItemModifier;
+import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
 
     private final KitchenTicketRepository ticketRepository;
     private final KitchenTicketLineRepository ticketLineRepository;
+    private final FloorOrderItemModifierRepository itemModifierRepository;
     private final FloorTenantSupport tenantSupport;
     private final KitchenTicketAssembler assembler;
     private final SendToKitchenHandler sendHandler;
@@ -56,8 +59,21 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
         List<UUID> ids = tickets.stream().map(KitchenTicket::getId).toList();
         Map<UUID, List<KitchenTicketLine>> linesByTicket = ticketLineRepository.findByTicketIdIn(ids).stream()
             .collect(Collectors.groupingBy(line -> line.getTicket().getId()));
+        List<UUID> itemIds = linesByTicket.values().stream()
+            .flatMap(List::stream)
+            .map(line -> line.getOrderItem().getId())
+            .distinct()
+            .toList();
+        Map<UUID, List<FloorOrderItemModifier>> modifiersByItem = itemIds.isEmpty()
+            ? Map.of()
+            : itemModifierRepository.findByOrderItemIdIn(itemIds).stream()
+                .collect(Collectors.groupingBy(mod -> mod.getOrderItem().getId()));
         return tickets.stream()
-            .map(ticket -> assembler.toResponse(ticket, linesByTicket.getOrDefault(ticket.getId(), List.of())))
+            .map(ticket -> assembler.toResponse(
+                ticket,
+                linesByTicket.getOrDefault(ticket.getId(), List.of()),
+                modifiersByItem
+            ))
             .toList();
     }
 

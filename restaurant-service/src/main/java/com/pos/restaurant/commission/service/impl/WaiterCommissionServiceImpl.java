@@ -118,9 +118,7 @@ public class WaiterCommissionServiceImpl implements WaiterCommissionService {
         UUID waiterId = order.getWaiterUserId();
         BigDecimal percent = rateResolver.resolvePercent(order.getCompanyId(), order.getStoreId(), waiterId);
         BigDecimal base = subtotal == null ? BigDecimal.ZERO : subtotal;
-        BigDecimal amount = waiterId == null
-            ? BigDecimal.ZERO
-            : calculator.amount(base, percent);
+        BigDecimal amount = calculator.amount(base, percent);
         order.setCommissionPercent(percent);
         order.setCommissionBaseAmount(base);
         order.setCommissionAmount(amount);

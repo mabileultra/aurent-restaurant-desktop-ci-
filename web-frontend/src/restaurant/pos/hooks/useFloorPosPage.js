@@ -12,6 +12,18 @@ import { rstCommissionApi } from '../../api/commission.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
+import {
+  isCashierEscposPrintAvailable,
+  printFiscalReceipt,
+  resolveEscposPrintErrorMessage,
+} from '../../../services/cashierEscpos';
+import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
+import {
+  isPosReceiptPrintEnabled,
+  setPosReceiptPrintEnabled,
+} from '../../../utils/receiptPrintPreference';
+import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFiscal';
+import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 
 function userStoreIds(user) {
   if (Array.isArray(user.storeIds)) return user.storeIds.map(Number);
@@ -55,13 +67,15 @@ export function useFloorPosPage() {
   const [openingCash, setOpeningCash] = useState('0');
   const [closingCash, setClosingCash] = useState('0');
   const [floorSearch, setFloorSearch] = useState('');
+  const [printReceiptEnabled, setPrintReceiptEnabledState] = useState(() => isPosReceiptPrintEnabled());
+  const [paidReceipt, setPaidReceipt] = useState(null);
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
 
   const floorQuery = useQuery({
     queryKey: ['rst-floor', workspace.storeId],
     queryFn: () => rstFloorApi.getFloorSnapshot(workspace.storeId).then((r) => r.data),
-    enabled: workspace.storeId != null && posMode === 'floor',
+    enabled: workspace.storeId != null && (posMode === 'floor' || !!activeOrderId),
     refetchInterval: activeOrderId || posMode !== 'floor' ? false : 15_000,
   });
 
@@ -112,6 +126,16 @@ export function useFloorPosPage() {
   const canManage = user?.role === 'ADMIN' || user?.role === 'MANAGER';
   const shift = shiftQuery.data ?? null;
   const order = orderQuery.data;
+
+  const orderHallName = useMemo(() => {
+    if (!order?.tableId) return selectedHall?.name ?? null;
+    for (const hall of halls) {
+      if ((hall.tables ?? []).some((table) => table.id === order.tableId)) {
+        return hall.name;
+      }
+    }
+    return selectedHall?.name ?? null;
+  }, [halls, order?.tableId, selectedHall?.name]);
 
   const waiters = useMemo(() => {
     const storeId = workspace.storeId;
@@ -279,6 +303,19 @@ export function useFloorPosPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.waiterAssignFailed')),
   });
 
+  const updateGuestsMutation = useMutation({
+    mutationFn: (guestCount) => rstOrderApi.updateGuests(activeOrderId, {
+      guestCount,
+      adultCount: guestCount,
+      childrenCount: 0,
+    }),
+    onSuccess: (res) => {
+      qc.setQueryData(['rst-order', activeOrderId], res.data);
+      invalidateFloor();
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.saveFailed')),
+  });
+
   const sendKitchenMutation = useMutation({
     mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
     onSuccess: (res) => {
@@ -311,20 +348,101 @@ export function useFloorPosPage() {
     onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.billFailed')),
   });
 
+  const setPrintReceiptEnabled = (enabled) => {
+    setPrintReceiptEnabledState(enabled);
+    setPosReceiptPrintEnabled(enabled);
+  };
+
   const payMutation = useMutation({
-    mutationFn: (method) => rstOrderApi.pay(activeOrderId, {
-      method,
-      amount: orderQuery.data?.subtotal,
-    }),
-    onSuccess: () => {
+    mutationFn: async ({ method, amount }) => {
+      const currentOrder = orderQuery.data;
+      if (!currentOrder?.id) {
+        throw new Error('ORDER_MISSING');
+      }
+      const orderForPay = {
+        ...currentOrder,
+        commissionPercent:
+          currentOrder.commissionPercent != null
+            ? currentOrder.commissionPercent
+            : (commissionPreview?.percent ?? 0),
+        commissionAmount:
+          currentOrder.commissionAmount != null
+            ? currentOrder.commissionAmount
+            : (currentOrder.channel === 'DINE_IN' ? (commissionPreview?.amount ?? 0) : 0),
+      };
+      const waiterName = orderForPay.waiterUserId
+        ? waiterNameById.get(String(orderForPay.waiterUserId))
+        : null;
+      const customerLabel = orderForPay.channel === 'DINE_IN'
+        ? (orderForPay.tableCode
+          ? t('rst.order.receiptTable', { code: orderForPay.tableCode })
+          : null)
+        : (orderForPay.clientName || null);
+      const serviceLabel = orderForPay.channel === 'DINE_IN' && Number(orderForPay.commissionAmount) > 0
+        ? t('rst.order.serviceLine', {
+          percent: Number(orderForPay.commissionPercent ?? 0),
+        })
+        : null;
+
+      return payRestaurantOrderWithFiscal({
+        order: orderForPay,
+        method,
+        amount: amount ?? restaurantPayTotal(orderForPay),
+        storeId: workspace.storeId,
+        storeName: workspace.storeName,
+        shiftId: shift?.id ?? null,
+        cashRegisterId: shift?.cashRegisterId ?? null,
+        cashierName: user?.fullName || user?.username || undefined,
+        waiterName,
+        customerLabel,
+        serviceLabel,
+        t,
+      });
+    },
+    onSuccess: async ({ sale }) => {
       setActiveOrderId(null);
       invalidateFloor();
       invalidateCounter();
       invalidateShift();
       toast.success(t('rst.order.paid'));
+
+      const shouldPrint = printReceiptEnabled;
+      if (shouldPrint && isCashierEscposPrintAvailable()) {
+        try {
+          await printFiscalReceipt({ sale, t });
+          toast.success(t('receipt.printSent'), {
+            id: CASHIER_ESCPOS_TOAST.toastId,
+            duration: CASHIER_ESCPOS_TOAST.successDurationMs,
+          });
+        } catch (err) {
+          toast.error(resolveEscposPrintErrorMessage(err, t), {
+            id: CASHIER_ESCPOS_TOAST.toastId,
+            duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
+          });
+        }
+        setPaidReceipt({ sale, autoPrint: false });
+        return;
+      }
+
+      setPaidReceipt({
+        sale,
+        autoPrint: shouldPrint && !isCashierEscposPrintAvailable(),
+      });
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.payFailed')),
+    onError: (err) => {
+      if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {
+        toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
+        return;
+      }
+      if (err?.code === 'MULTIKASSA_FISCAL_FAILED') {
+        toast.error(err.message || t('cashRegisters.multikassa.fiscalFailed'));
+        return;
+      }
+      toast.error(err?.response?.data?.message ?? err?.message ?? t('rst.order.payFailed'));
+    },
   });
+
+  const closePaidReceipt = () => setPaidReceipt(null);
 
   const handleTableClick = (table) => {
     const openOrderId = table.activeOrder?.id ?? table.activeOrderId;
@@ -418,6 +536,7 @@ export function useFloorPosPage() {
     handleFloorNewOrder,
     halls,
     selectedHall,
+    orderHallName,
     selectedHallId: selectedHall?.id ?? null,
     setSelectedHallId,
     openTable,
@@ -440,6 +559,10 @@ export function useFloorPosPage() {
     sendKitchenMutation,
     billMutation,
     payMutation,
+    printReceiptEnabled,
+    setPrintReceiptEnabled,
+    paidReceipt,
+    closePaidReceipt,
     pendingMenuItem,
     modifierGroups: modifierQuery.data ?? [],
     selectedModifierIds,
@@ -465,6 +588,7 @@ export function useFloorPosPage() {
     waiters,
     waiterNameById,
     assignWaiterMutation,
+    updateGuestsMutation,
     commissionPreview,
     shiftModal,
     setShiftModal,

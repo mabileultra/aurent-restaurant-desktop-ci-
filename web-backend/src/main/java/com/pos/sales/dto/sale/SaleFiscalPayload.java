@@ -12,6 +12,8 @@ public record SaleFiscalPayload(
     @Size(max = 64) String fiscalReceiptSeq,
     @Size(max = 128) String multikassaSaleId,
     @Size(max = 1024) String fiscalQrUrl,
-    @Size(max = 1000) String fiscalError
+    @Size(max = 1000) String fiscalError,
+    /** Terminal ID ФМ (параметр t в ofd.soliq.uz) — нужен для пересборки QR. */
+    @Size(max = 128) String fiscalTerminalId
 ) {
 }

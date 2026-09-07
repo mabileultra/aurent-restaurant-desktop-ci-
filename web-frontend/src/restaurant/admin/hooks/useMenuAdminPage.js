@@ -18,6 +18,9 @@ const emptyForm = () => ({
   category: '',
   imageUrl: '',
   imageName: '',
+  description: '',
+  prepMinutes: '',
+  tags: '',
   modifierGroupIds: [],
 });
 
@@ -109,6 +112,9 @@ export function useMenuAdminPage() {
         stationId: form.stationId || null,
         category: form.category.trim() || null,
         imageUrl: form.imageUrl || null,
+        description: form.description.trim() || null,
+        prepMinutes: form.prepMinutes === '' ? null : Number(form.prepMinutes),
+        tags: form.tags.trim() || null,
         modifierGroupIds: form.modifierGroupIds,
       };
       if (editingId) return rstMenuApi.update(editingId, body);
@@ -144,6 +150,9 @@ export function useMenuAdminPage() {
       category: item.category ?? '',
       imageUrl: item.imageUrl ?? '',
       imageName: item.imageUrl ? t('rst.admin.imageAttached') : '',
+      description: item.description ?? '',
+      prepMinutes: item.prepMinutes == null ? '' : String(item.prepMinutes),
+      tags: item.tags ?? '',
       modifierGroupIds: item.modifierGroupIds ?? [],
     });
   };

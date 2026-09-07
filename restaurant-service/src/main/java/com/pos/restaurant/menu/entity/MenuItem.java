@@ -72,6 +72,16 @@ public class MenuItem {
     @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
 
+    @Column(length = 280)
+    private String description;
+
+    @Column(name = "prep_minutes")
+    private Integer prepMinutes;
+
+    /** Comma-separated codes: HIT,SPICY,CHEF,GRILL,FRESH,TEA */
+    @Column(length = 120)
+    private String tags;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 100;

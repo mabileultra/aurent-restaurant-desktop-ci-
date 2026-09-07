@@ -1,4 +1,4 @@
-import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign } from './ofdQrUrl';
+import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign, parseOfdCheckParams } from './ofdQrUrl';
 
 /** Данные для QR / фискального признака на чеке. */
 export { fmtMoney, fmtQty } from './formatMoney';
@@ -20,19 +20,20 @@ export function buildQrPayload(sale) {
   if (fromModule && (isOfdCheckUrl(fromModule) || /^https?:\/\//i.test(fromModule))) {
     return fromModule;
   }
-  // Перепечати: terminal мог не сохраниться в sale — пробуем env / branding fallbacks.
+  const fromUrl = parseOfdCheckParams(fromModule);
   const terminalId =
     sale?.fiscalTerminalId ||
     sale?.terminalId ||
+    fromUrl?.terminalId ||
     import.meta.env.VITE_FISCAL_CARD_ID ||
     import.meta.env.VITE_FISCAL_MODULE_NUMBER ||
     '';
   return (
     buildOfdCheckUrl({
       terminalId,
-      receiptSeq: sale?.fiscalReceiptSeq,
-      fiscalSign: sale?.fiscalSign,
-      datetime: sale?.fiscalizedAt || sale?.createdAt,
+      receiptSeq: sale?.fiscalReceiptSeq || fromUrl?.receiptSeq,
+      fiscalSign: sale?.fiscalSign || fromUrl?.fiscalSign,
+      datetime: sale?.fiscalizedAt || sale?.createdAt || fromUrl?.datetime,
     }) || ''
   );
 }

@@ -116,6 +116,7 @@ export function buildOfflineSaleResponse({
     fiscalReceiptSeq: fiscal?.fiscalReceiptSeq || null,
     multikassaSaleId: fiscal?.multikassaSaleId || null,
     fiscalQrUrl: fiscal?.fiscalQrUrl || null,
+    fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
   };
 }
@@ -136,6 +137,7 @@ export function buildOfflineCheckoutPayload({
         multikassaSaleId: fiscal.multikassaSaleId,
         fiscalQrUrl: fiscal.fiscalQrUrl,
         fiscalError: fiscal.fiscalError,
+        fiscalTerminalId: fiscal.fiscalTerminalId || fiscal.terminalId || null,
         ...(fiscal.multikassaRetryBody
           ? {
               multikassaRetryBody: fiscal.multikassaRetryBody,

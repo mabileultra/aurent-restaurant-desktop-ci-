@@ -6,16 +6,18 @@
 }
 
 .rst-staff__stat {
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--rst-line);
-  border-radius: var(--rst-radius);
-  background: var(--rst-surface);
+  padding: 0.9rem 1rem;
+  border: 1.5px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  box-shadow: 0 8px 22px rgb(0 0 0 / 0.16);
 }
 
 .rst-staff__stat strong {
   display: block;
   font-size: 1.35rem;
-  color: var(--rst-accent);
+  color: #fbbf24;
+  font-weight: 900;
 }
 
 .rst-staff__stat span {
