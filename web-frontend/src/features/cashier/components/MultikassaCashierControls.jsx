@@ -3,15 +3,15 @@ import { QrCode, Settings2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { multikassaApi } from '../../../../api/multikassa.api';
-import MultikassaSettingsModal from '../../../cash-registers/components/MultikassaSettingsModal';
+import { multikassaApi } from '../../../api/multikassa.api';
+import MultikassaSettingsModal from '../../cash-registers/components/MultikassaSettingsModal';
 import {
   describeMultikassaStatus,
   useMultikassaCashierStatus,
-} from '../../hooks/useMultikassaCashierStatus';
-import { useCashierStore } from '../../../../hooks/useCashierStore';
-import { useCashierShift } from '../../../../hooks/useCashierShift';
-import { getApiErrorMessage } from '../../../../utils/apiError';
+} from '../hooks/useMultikassaCashierStatus';
+import { useCashierStore } from '../../../hooks/useCashierStore';
+import { useCashierShift } from '../../../hooks/useCashierShift';
+import { getApiErrorMessage } from '../../../utils/apiError';
 
 const GENERIC_SERVER_ERROR = 'An unexpected error occurred';
 
