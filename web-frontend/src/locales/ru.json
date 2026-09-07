@@ -538,7 +538,14 @@
     "scale": "Весы",
     "scaleHint": "Порт: {{port}}",
     "scaleNotSet": "не настроены — найти автоматически",
-    "scaleSaved": "Весы сохранены"
+    "scaleSaved": "Весы сохранены",
+    "multikassaSection": "Multikassa / QR",
+    "multikassaPrintQr": "Печатать фискальный QR",
+    "multikassaPrintQrOn": "вкл — на чеке будет QR ОФД",
+    "multikassaPrintQrOff": "выкл — обычный чек без QR",
+    "multikassaQrOnToast": "Фискальный QR включён",
+    "multikassaQrOffToast": "Фискальный QR выключен — чек без QR",
+    "multikassaQrSaveFailed": "Не удалось сохранить настройку QR"
   },
   "notifications": {
     "bellAria": "Уведомления",

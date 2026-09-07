@@ -85,6 +85,20 @@ describe('buildQrPayload / receipt', () => {
     const url = 'https://ofd.soliq.uz/check?t=T1&r=9&c=20260907120000&s=S1';
     expect(buildQrPayload({ fiscalQrUrl: url })).toBe(url);
   });
+  it('respects printFiscalQr=false — receipt must not build QR payload for UI', () => {
+    const sale = {
+      fiscalSign: 'SIGN99',
+      fiscalReceiptSeq: '42',
+      fiscalTerminalId: 'TERM1',
+      fiscalizedAt: '2026-09-07T05:26:36',
+      fiscalQrUrl: 'https://ofd.soliq.uz/check?t=TERM1&r=42&c=20260907122636&s=SIGN99',
+      printFiscalQr: false,
+    };
+    const printFiscalQr = sale.printFiscalQr !== false;
+    const qrValue = printFiscalQr ? buildQrPayload(sale) : '';
+    expect(printFiscalQr).toBe(false);
+    expect(qrValue).toBe('');
+  });
 });
 
 describe('parseMultikassaOperationResult', () => {

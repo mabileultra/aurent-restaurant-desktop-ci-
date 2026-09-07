@@ -11,6 +11,7 @@ public record SaveMultikassaSettingsRequest(
     @Size(max = 128) String selectedDriveId,
     @Size(max = 200) String cashierNameOverride,
     boolean requireBeforeSale,
-    boolean printFiscalQr
+    /** null / отсутствует в старом клиенте → печатать QR (true). */
+    Boolean printFiscalQr
 ) {
 }

@@ -4,10 +4,10 @@ import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import ReceiptQrCode from './ReceiptQrCode';
 import {
   buildFiscalSign,
-  buildQrPayload,
   fmtMoney,
   fmtQty,
   resolveFiscalReceiptTypeLabel,
+  resolveReceiptQrValue,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
@@ -94,7 +94,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const { date, time } = splitDateTime(sale.createdAt);
   const fiscalSign = buildFiscalSign(sale);
   const printFiscalQr = sale.printFiscalQr !== false;
-  const qrValue = printFiscalQr ? buildQrPayload(sale) : '';
+  const qrValue = resolveReceiptQrValue(sale);
   const showQrBlock = printFiscalQr && isOn('qrCode');
 
   const method = sale.paymentMethod;

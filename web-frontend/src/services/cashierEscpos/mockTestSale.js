@@ -2,6 +2,8 @@
  * Тестовая продажа для «Тестовая печать» в меню Aurent.
  */
 export function buildEscposTestSale() {
+  const fiscalQrUrl =
+    'https://ofd.soliq.uz/check?t=TESTTERM&r=1&c=20260907120000&s=TESTSIGN01';
   return {
     id: 'escpos-test',
     receiptNumber: String(Date.now()).slice(-6),
@@ -14,6 +16,11 @@ export function buildEscposTestSale() {
     paymentMethod: 'CASH',
     amountTendered: 1000,
     changeGiven: 0,
+    fiscalSign: 'TESTSIGN01',
+    fiscalReceiptSeq: '1',
+    fiscalTerminalId: 'TESTTERM',
+    fiscalQrUrl,
+    printFiscalQr: true,
     items: [
       {
         productName: 'Test item / Тест',

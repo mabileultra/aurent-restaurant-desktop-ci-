@@ -4,11 +4,14 @@ import {
   CreditCard,
   Loader,
   Percent,
+  QrCode,
   RotateCcw,
   ShieldCheck,
   Split,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
@@ -22,6 +25,7 @@ import {
 } from '../../cashier/hooks/useMultikassaCashierStatus';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShift } from '../../../hooks/useCashierShift';
+import { multikassaApi } from '../../../api/multikassa.api';
 import '../styles/pharmacy-pay-rail.css';
 import '../styles/pharmacy-pay-patient.css';
 
@@ -48,12 +52,30 @@ export default function PharmacyPayRail({
   const { t } = useTranslation();
   const { storeId } = useCashierStore();
   const { data: shift } = useCashierShift(storeId);
+  const cashRegisterId = shift?.cashRegisterId ?? null;
+  const qc = useQueryClient();
   const { data: mkCaps } = useMultikassaCashierStatus({
     storeId,
-    cashRegisterId: shift?.cashRegisterId ?? null,
+    cashRegisterId,
     enabled: storeId != null,
   });
   const mkStatus = describeMultikassaStatus(mkCaps, t);
+  const printQr = mkCaps?.printFiscalQr !== false;
+  const qrToggle = useMutation({
+    mutationFn: (next) =>
+      multikassaApi.updateCashierFlags(storeId, cashRegisterId, { printFiscalQr: next }).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.setQueryData(['multikassa-cashier-caps', storeId, cashRegisterId], data);
+      toast.success(
+        data?.printFiscalQr === false
+          ? t('desktop.multikassaQrOffToast')
+          : t('desktop.multikassaQrOnToast'),
+      );
+    },
+    onError: (e) => {
+      toast.error(e?.response?.data?.message || t('desktop.multikassaQrSaveFailed'));
+    },
+  });
   const rail = usePharmacyPayRail({
     total,
     checkoutDisabled,
@@ -86,12 +108,25 @@ export default function PharmacyPayRail({
 
   return (
     <aside className="pharmacy-pay-rail" aria-label={t('pos.paymentTitle')}>
-      <p
-        className={`pharmacy-pay-rail__mk pharmacy-pay-rail__mk--${mkStatus.tone}`}
-        title={mkStatus.label}
-      >
-        {mkStatus.label}
-      </p>
+      <div className="pharmacy-pay-rail__mk-row">
+        <p
+          className={`pharmacy-pay-rail__mk pharmacy-pay-rail__mk--${mkStatus.tone}`}
+          title={mkStatus.label}
+        >
+          {mkStatus.label}
+        </p>
+        <button
+          type="button"
+          className={`pharmacy-pay-rail__qr-toggle${printQr ? ' is-on' : ''}`}
+          aria-pressed={printQr}
+          disabled={qrToggle.isPending || storeId == null}
+          onClick={() => qrToggle.mutate(!printQr)}
+          title={t('cashRegisters.multikassa.printFiscalQr')}
+        >
+          <QrCode size={14} strokeWidth={2.25} aria-hidden />
+          <span>{printQr ? 'QR' : 'QR off'}</span>
+        </button>
+      </div>
       <div className="pharmacy-pay-rail__total">
         <span className="pharmacy-pay-rail__total-label">{t('pos.amountToPay')}</span>
         <div className="pharmacy-pay-rail__total-row">

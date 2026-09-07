@@ -382,6 +382,31 @@
   transform: translateX(0);
 }
 
+.cashier-desktop-menu__mk-status {
+  margin: 0 0 6px;
+  padding: 0 2px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--pos-muted, #64748b);
+}
+
+.cashier-desktop-menu__mk-status--ok {
+  color: color-mix(in srgb, var(--pos-green) 85%, #166534);
+}
+
+.cashier-desktop-menu__mk-status--warn {
+  color: #b45309;
+}
+
+.cashier-desktop-menu__mk-status--danger {
+  color: #b91c1c;
+}
+
+.cashier-desktop-menu__mk-status--muted {
+  color: var(--pos-muted, #64748b);
+}
+
 @keyframes cashier-desktop-menu-spin {
   to { transform: rotate(360deg); }
 }

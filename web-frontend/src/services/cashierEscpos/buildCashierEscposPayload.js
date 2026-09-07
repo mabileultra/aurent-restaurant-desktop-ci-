@@ -4,7 +4,7 @@
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
+import { resolveFiscalReceiptTypeLabel, resolveReceiptQrValue } from '../../utils/fiscalReceiptFormat';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -127,13 +127,23 @@ export function buildCashierEscposPayload(sale, t) {
   branding.shiftNo =
     import.meta.env.VITE_SHIFT_NO || shiftFromReceipt || branding.shiftNo || '001';
 
+  const printFiscalQr = sale.printFiscalQr !== false;
+  const qrValue = resolveReceiptQrValue(sale);
+  const receiptFields = readReceiptFields();
+  if (!printFiscalQr) {
+    receiptFields.qrCode = false;
+  }
+
   return {
     sale: {
       ...sale,
+      printFiscalQr,
+      fiscalQrUrl: sale.fiscalQrUrl || qrValue || null,
       receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, t),
     },
     branding,
-    receiptFields: readReceiptFields(),
+    receiptFields,
+    qrValue,
     labels: buildEscposLabels(t),
     locale: String(i18n.language || 'ru').split('-')[0],
   };

@@ -1132,7 +1132,14 @@
     "scale": "Tarozilar",
     "scaleHint": "Port: {{port}}",
     "scaleNotSet": "sozlanmagan — avtomatik qidirish",
-    "scaleSaved": "Tarozilar saqlandi"
+    "scaleSaved": "Tarozilar saqlandi",
+    "multikassaSection": "Multikassa / QR",
+    "multikassaPrintQr": "Fiskal QR chop etish",
+    "multikassaPrintQrOn": "yoqilgan — chekda OFD QR bo‘ladi",
+    "multikassaPrintQrOff": "o‘chirilgan — oddiy chek, QR yo‘q",
+    "multikassaQrOnToast": "Fiskal QR yoqildi",
+    "multikassaQrOffToast": "Fiskal QR o‘chirildi — chek QRsiz",
+    "multikassaQrSaveFailed": "QR sozlamasini saqlab bo‘lmadi"
   },
   "notifications": {
     "bellAria": "Bildirishnomalar",

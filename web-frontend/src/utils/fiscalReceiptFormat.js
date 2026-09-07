@@ -38,6 +38,15 @@ export function buildQrPayload(sale) {
   );
 }
 
+/**
+ * Что реально рисуем на чеке: учитывает printFiscalQr с кассы.
+ * Пустая строка = QR не печатать (офлайн / тумблер выкл / нет фискала).
+ */
+export function resolveReceiptQrValue(sale) {
+  if (sale?.printFiscalQr === false) return '';
+  return buildQrPayload(sale);
+}
+
 /** Отдельный документ возврата (печатается при оформлении возврата на кассе). */
 export function isReturnReceipt(sale) {
   return sale?.receiptDocumentType === 'RETURN';

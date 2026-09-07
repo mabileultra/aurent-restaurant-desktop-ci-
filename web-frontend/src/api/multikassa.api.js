@@ -12,4 +12,11 @@ export const multikassaApi = {
         ...(cashRegisterId != null ? { cashRegisterId } : {}),
       },
     }),
+  updateCashierFlags: (storeId, cashRegisterId, payload) =>
+    api.patch('/cashier/multikassa/flags', payload, {
+      params: {
+        storeId,
+        ...(cashRegisterId != null ? { cashRegisterId } : {}),
+      },
+    }),
 };

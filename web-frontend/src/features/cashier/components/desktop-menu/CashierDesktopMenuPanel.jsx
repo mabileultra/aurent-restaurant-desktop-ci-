@@ -15,6 +15,7 @@ import BrandMark from '../../../../components/shared/BrandMark';
 import { isDesktopCashier } from '../../../../utils/authLogin';
 import { BRAND_LOGO_SIZES } from '../../../../config/brandLogos';
 import CashierDesktopMenuConnectivity from './CashierDesktopMenuConnectivity';
+import CashierDesktopMenuMultikassa from './CashierDesktopMenuMultikassa';
 
 export default function CashierDesktopMenuPanel({
   appName,
@@ -81,6 +82,8 @@ export default function CashierDesktopMenuPanel({
         </button>
 
         <CashierDesktopMenuConnectivity t={t} />
+
+        <CashierDesktopMenuMultikassa t={t} />
 
         <div className="cashier-desktop-menu__sep" role="separator" />
         <button

@@ -7,6 +7,7 @@ import com.pos.exception.ResourceNotFoundException;
 import com.pos.integrations.multikassa.dto.AdminMultikassaSettingsResponse;
 import com.pos.integrations.multikassa.dto.CashierMultikassaCapabilitiesResponse;
 import com.pos.integrations.multikassa.dto.SaveMultikassaSettingsRequest;
+import com.pos.integrations.multikassa.dto.UpdateCashierMultikassaFlagsRequest;
 import com.pos.integrations.multikassa.entity.CashRegisterMultikassaSettings;
 import com.pos.integrations.multikassa.repository.CashRegisterMultikassaSettingsRepository;
 import com.pos.integrations.multikassa.service.MultikassaSettingsService;
@@ -66,7 +67,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         entity.setSelectedDriveId(trimToNull(request.selectedDriveId()));
         entity.setCashierNameOverride(trimToNull(request.cashierNameOverride()));
         entity.setRequireBeforeSale(request.requireBeforeSale());
-        entity.setPrintFiscalQr(request.printFiscalQr());
+        entity.setPrintFiscalQr(request.printFiscalQr() == null || Boolean.TRUE.equals(request.printFiscalQr()));
         entity.setUpdatedAt(Instant.now());
 
         settingsRepository.save(entity);
@@ -88,31 +89,57 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
       Long cashRegisterId
   ) {
       Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
-      CashRegister register = resolveRegister(storeId, cashRegisterId);
-      if (register == null) {
-          register = cashierShiftRepository
-              .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
-              .map(CashierShift::getCashRegister)
-              .orElse(null);
-      }
+      CashRegister register = resolveRegisterForCashier(cashier, store, cashRegisterId);
       if (register == null) {
           return disabledCapabilities(null);
       }
       CashRegisterMultikassaSettings settings = findOrDefault(register);
       if (!settings.isEnabled()) {
-          return disabledCapabilities(register.getId());
+          return disabledCapabilities(register.getId(), settings.isPrintFiscalQr());
       }
-      return new CashierMultikassaCapabilitiesResponse(
-          true,
-          register.getId(),
-          normalizeBaseUrl(settings.getBaseUrl()),
-          settings.getTerminalId(),
-          settings.getModuleNumber(),
-          settings.getSelectedDriveId(),
-          settings.getCashierNameOverride(),
-          settings.isRequireBeforeSale(),
-          settings.isPrintFiscalQr()
-      );
+      return toCashierCapabilities(register, settings);
+  }
+
+  @Override
+  @Transactional
+  public CashierMultikassaCapabilitiesResponse updateCashierFlags(
+      User cashier,
+      Integer storeId,
+      Long cashRegisterId,
+      UpdateCashierMultikassaFlagsRequest request
+  ) {
+      if (request == null || (request.printFiscalQr() == null && request.requireBeforeSale() == null)) {
+          throw new BadRequestException("Укажите printFiscalQr и/или requireBeforeSale");
+      }
+      Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
+      CashRegister register = resolveRegisterForCashier(cashier, store, cashRegisterId);
+      if (register == null) {
+          throw new BadRequestException("Нет открытой смены / кассы для настроек Multikassa");
+      }
+
+      CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
+          .orElseGet(() -> CashRegisterMultikassaSettings.builder()
+              .cashRegister(register)
+              .cashRegisterId(register.getId())
+              .enabled(false)
+              .baseUrl(MultikassaDefaults.DEFAULT_BASE_URL)
+              .requireBeforeSale(false)
+              .printFiscalQr(true)
+              .build());
+
+      if (request.printFiscalQr() != null) {
+          entity.setPrintFiscalQr(Boolean.TRUE.equals(request.printFiscalQr()));
+      }
+      if (request.requireBeforeSale() != null) {
+          entity.setRequireBeforeSale(Boolean.TRUE.equals(request.requireBeforeSale()));
+      }
+      entity.setUpdatedAt(Instant.now());
+      settingsRepository.save(entity);
+
+      if (!entity.isEnabled()) {
+          return disabledCapabilities(register.getId(), entity.isPrintFiscalQr());
+      }
+      return toCashierCapabilities(register, entity);
   }
 
     @Override
@@ -139,6 +166,34 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             return register;
         }
         return null;
+    }
+
+    private CashRegister resolveRegisterForCashier(User cashier, Store store, Long cashRegisterId) {
+        CashRegister register = resolveRegister(store.getId(), cashRegisterId);
+        if (register == null) {
+            register = cashierShiftRepository
+                .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
+                .map(CashierShift::getCashRegister)
+                .orElse(null);
+        }
+        return register;
+    }
+
+    private CashierMultikassaCapabilitiesResponse toCashierCapabilities(
+        CashRegister register,
+        CashRegisterMultikassaSettings settings
+    ) {
+        return new CashierMultikassaCapabilitiesResponse(
+            true,
+            register.getId(),
+            normalizeBaseUrl(settings.getBaseUrl()),
+            settings.getTerminalId(),
+            settings.getModuleNumber(),
+            settings.getSelectedDriveId(),
+            settings.getCashierNameOverride(),
+            settings.isRequireBeforeSale(),
+            settings.isPrintFiscalQr()
+        );
     }
 
     private CashRegisterMultikassaSettings findOrDefault(CashRegister register) {
@@ -177,6 +232,10 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     }
 
     private CashierMultikassaCapabilitiesResponse disabledCapabilities(Long cashRegisterId) {
+        return disabledCapabilities(cashRegisterId, true);
+    }
+
+    private CashierMultikassaCapabilitiesResponse disabledCapabilities(Long cashRegisterId, boolean printFiscalQr) {
         return new CashierMultikassaCapabilitiesResponse(
             false,
             cashRegisterId,
@@ -186,7 +245,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             null,
             null,
             false,
-            true
+            printFiscalQr
         );
     }
 
