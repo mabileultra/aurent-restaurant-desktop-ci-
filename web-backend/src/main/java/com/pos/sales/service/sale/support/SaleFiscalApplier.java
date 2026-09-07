@@ -44,8 +44,9 @@ public class SaleFiscalApplier {
             return;
         }
 
-        CashRegisterMultikassaSettings settings = enabled.get();
-        if (enforceRequired && settings.isRequireBeforeSale()) {
+        // Касса с включённой Multikassa: онлайн (enforceRequired) — только FISCALIZED + QR.
+        // Offline sync передаёт enforceRequired=false и может дожать PENDING позже.
+        if (enforceRequired) {
             requireFiscalizedPayload(fiscal);
         }
 
@@ -55,7 +56,7 @@ public class SaleFiscalApplier {
         }
 
         String status = normalizeStatus(fiscal.fiscalStatus());
-        if (enforceRequired && settings.isRequireBeforeSale() && !STATUS_FISCALIZED.equals(status)) {
+        if (enforceRequired && !STATUS_FISCALIZED.equals(status)) {
             throw PosExceptions.badRequest("Требуется успешная фискализация Multikassa перед продажей");
         }
 
@@ -96,6 +97,9 @@ public class SaleFiscalApplier {
         }
         if (isSyntheticFiscalSign(fiscal.fiscalSign())) {
             throw PosExceptions.badRequest("Поддельный фискальный признак (MK-*) не принимается");
+        }
+        if (!StringUtils.hasText(fiscal.fiscalQrUrl())) {
+            throw PosExceptions.badRequest("Нет QR-кода ГНК (fiscalQrUrl) от Multikassa");
         }
     }
 

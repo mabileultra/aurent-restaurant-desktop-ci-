@@ -946,7 +946,13 @@
       "fiscalRequired": "Нужна фискализация Multikassa. Проверьте ФМ / localhost.",
       "fiscalOfflineBlocked": "Multikassa включена: офлайн-продажа заблокирована",
       "fiscalFailed": "Ошибка фискализации Multikassa",
-      "capabilitiesLoadFailed": "Не удалось загрузить настройки Multikassa"
+      "capabilitiesLoadFailed": "Не удалось загрузить настройки Multikassa",
+      "statusUnknown": "Multikassa: …",
+      "statusLoadFailed": "Multikassa: нет связи с настройками",
+      "statusOff": "Multikassa выкл — QR не будет",
+      "statusNoTerminal": "Multikassa: укажите Terminal ID",
+      "statusBrowserLocalhost": "Multikassa: откройте Aurent Desktop (localhost из браузера недоступен)",
+      "statusOn": "Multikassa вкл — чек с QR"
     },
     "searchPlaceholder": "Поиск по названию магазина",
     "filterPanelTitle": "Панель фильтров",

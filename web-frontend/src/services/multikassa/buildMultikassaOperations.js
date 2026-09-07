@@ -1,6 +1,7 @@
 import { lineDiscountAmount, lineSubtotal } from '../../store/cartStore';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
+import { round2 } from '../../utils/taxAmounts';
 
 function numericProductId(productId) {
   if (productId == null) return 0;
@@ -14,12 +15,34 @@ function numericProductId(productId) {
   return Math.abs(h) || 1;
 }
 
+/** Наличные / карта по доке Multikassa (тийины считаются снаружи). */
+export function resolveReceivedCashCard(payment, total) {
+  const method = String(payment?.paymentMethod || 'CASH').toUpperCase();
+  const due = round2(total);
+  let cash = Number(payment?.cashAmount);
+  let card = Number(payment?.cardAmount);
+  if (!Number.isFinite(cash) || cash < 0) cash = 0;
+  if (!Number.isFinite(card) || card < 0) card = 0;
+
+  if (method === 'CASH') {
+    if (cash <= 0 && card <= 0) cash = due;
+  } else if (method === 'CARD' || method === 'CASHLESS' || method === 'MPESA') {
+    if (cash <= 0 && card <= 0) card = due;
+  } else if (method === 'MIXED') {
+    if (cash > 0 && card <= 0) card = round2(Math.max(0, due - cash));
+    else if (card > 0 && cash <= 0) cash = round2(Math.max(0, due - card));
+  }
+
+  return { cash: round2(cash), card: round2(card) };
+}
+
 function buildItem(line) {
   const barcode = line.barcode || line.sku || '';
   const mark = line.productMark || line.markCode || '';
   const label = line.productLabel || '';
-  // Маркировка — без обрезки (как со сканера).
-  const productMark = mark;
+  const ikpu = line.ikpu != null && String(line.ikpu).trim() !== '' ? String(line.ikpu) : '';
+  const classifier =
+    (line.classifierClassCode && String(line.classifierClassCode).trim()) || ikpu;
   const price = toSum(line.unitPrice);
   const discount = toSum(lineDiscountAmount(line));
   const total = toSum(lineSubtotal(line));
@@ -29,15 +52,15 @@ function buildItem(line) {
 
   return {
     product_id: numericProductId(line.productId),
-    classifier_class_code: line.classifierClassCode || '',
-    product_mark: productMark,
+    classifier_class_code: classifier,
+    product_mark: mark,
     product_label: label,
     product_name: line.name || 'Товар',
     product_barcode: barcode ? String(barcode) : '',
     no_check_mark: Boolean(line.noCheckMark),
     fixed_qty: Number(line.fixedQty) || 0,
     is_bottling: Boolean(line.isBottling),
-    ikpu: line.ikpu != null ? String(line.ikpu) : '',
+    ikpu,
     packageCode: line.packageCode != null ? String(line.packageCode) : '',
     product_barcodes: barcodes,
     product_price: price,
@@ -61,7 +84,8 @@ function resolveOperationType(receiptType) {
 }
 
 /**
- * Body продажи / аванса / кредита для POST /api/v1/operations.
+ * Body продажи / аванса / кредита для POST /api/v1/operations (док Multikassa).
+ * receipt_* money → тийины; items prices → сумы.
  */
 export function buildSaleOperationBody({
   cartItems,
@@ -72,15 +96,15 @@ export function buildSaleOperationBody({
   cashierName,
   contractorName,
 }) {
-  const cash = Number(payment?.cashAmount ?? (payment?.paymentMethod === 'CASH' ? total : 0)) || 0;
-  const card = Number(payment?.cardAmount ?? (payment?.paymentMethod === 'CARD' ? total : 0)) || 0;
-  const terminalId = capabilities?.terminalId || '';
+  const due = round2(total);
+  const { cash, card } = resolveReceivedCashCard(payment, due);
+  const terminalId = String(capabilities?.terminalId || '').trim();
   const now = formatMultikassaDateTime();
   const opType = resolveOperationType(payment?.receiptType);
 
   const body = {
     module_operation_type: opType,
-    receipt_sum: toTiyin(total),
+    receipt_sum: toTiyin(due),
     receipt_gnk_terminalid: terminalId,
     module_gnk_terminalid: terminalId,
     receipt_cashier_name: capabilities?.cashierNameOverride || cashierName || 'CASHIER',
@@ -107,7 +131,7 @@ export function buildSaleOperationBody({
       avansed: isAdvance ? paid : 0,
       paid,
       receipt_gnk_fiscalsign: '',
-      total_sum: toTiyin(total),
+      total_sum: toTiyin(due),
       credited: isAdvance ? 0 : paid,
       receipt_gnk_receiptseq: 0,
       type: isAdvance ? 'avance' : 'credit',
@@ -119,7 +143,7 @@ export function buildSaleOperationBody({
 
 export function buildOpenShiftBody({ capabilities, shiftId, cashierName, zReportNumber }) {
   const now = formatMultikassaDateTime();
-  const terminalId = capabilities?.terminalId || '';
+  const terminalId = String(capabilities?.terminalId || '').trim();
   return {
     module_operation_type: MULTIKASSA_OPERATION_TYPE.OPEN_SHIFT,
     receipt_gnk_time: now,

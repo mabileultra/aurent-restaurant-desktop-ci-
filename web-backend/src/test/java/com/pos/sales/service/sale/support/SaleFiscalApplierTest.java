@@ -101,7 +101,7 @@ class SaleFiscalApplierTest {
     }
 
     @Test
-    void apply_enabledWithoutRequire_allowsPending() {
+    void apply_enabledWithoutRequire_stillRequiresFiscalOnline() {
         Sale sale = new Sale();
         CashierShift shift = shiftWithRegister(14L);
         when(multikassaSettingsService.findEnabledByCashRegisterId(14L))
@@ -117,7 +117,28 @@ class SaleFiscalApplierTest {
             null
         );
 
-        applier.apply(sale, shift, pending);
+        assertThatThrownBy(() -> applier.apply(sale, shift, pending))
+            .isInstanceOf(BadRequestException.class);
+    }
+
+    @Test
+    void apply_enabledOfflineSync_allowsPending() {
+        Sale sale = new Sale();
+        CashierShift shift = shiftWithRegister(16L);
+        when(multikassaSettingsService.findEnabledByCashRegisterId(16L))
+            .thenReturn(Optional.of(enabledSettings(true)));
+
+        SaleFiscalPayload pending = new SaleFiscalPayload(
+            SaleFiscalApplier.STATUS_PENDING,
+            null,
+            null,
+            null,
+            null,
+            "offline",
+            null
+        );
+
+        applier.apply(sale, shift, pending, false);
 
         assertThat(sale.getFiscalStatus()).isEqualTo(SaleFiscalApplier.STATUS_PENDING);
         assertThat(sale.getFiscalQrUrl()).isNull();

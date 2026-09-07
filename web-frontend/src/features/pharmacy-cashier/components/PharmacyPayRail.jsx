@@ -16,6 +16,12 @@ import PharmacyPayQuickCash from './PharmacyPayQuickCash';
 import PharmacyPayPatientCards from './PharmacyPayPatientCards';
 import { usePharmacyPayKeyboard } from '../hooks/usePharmacyPayKeyboard';
 import { usePharmacyPayRail } from '../hooks/usePharmacyPayRail';
+import {
+  describeMultikassaStatus,
+  useMultikassaCashierStatus,
+} from '../../cashier/hooks/useMultikassaCashierStatus';
+import { useCashierStore } from '../../../hooks/useCashierStore';
+import { useCashierShift } from '../../../hooks/useCashierShift';
 import '../styles/pharmacy-pay-rail.css';
 import '../styles/pharmacy-pay-patient.css';
 
@@ -40,6 +46,14 @@ export default function PharmacyPayRail({
   isPending,
 }) {
   const { t } = useTranslation();
+  const { storeId } = useCashierStore();
+  const { data: shift } = useCashierShift(storeId);
+  const { data: mkCaps } = useMultikassaCashierStatus({
+    storeId,
+    cashRegisterId: shift?.cashRegisterId ?? null,
+    enabled: storeId != null,
+  });
+  const mkStatus = describeMultikassaStatus(mkCaps, t);
   const rail = usePharmacyPayRail({
     total,
     checkoutDisabled,
@@ -72,6 +86,12 @@ export default function PharmacyPayRail({
 
   return (
     <aside className="pharmacy-pay-rail" aria-label={t('pos.paymentTitle')}>
+      <p
+        className={`pharmacy-pay-rail__mk pharmacy-pay-rail__mk--${mkStatus.tone}`}
+        title={mkStatus.label}
+      >
+        {mkStatus.label}
+      </p>
       <div className="pharmacy-pay-rail__total">
         <span className="pharmacy-pay-rail__total-label">{t('pos.amountToPay')}</span>
         <div className="pharmacy-pay-rail__total-row">

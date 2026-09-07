@@ -21,6 +21,7 @@ function pendingPayload(body, idempotencyKey, message) {
     fiscalReceiptSeq: null,
     multikassaSaleId: null,
     fiscalQrUrl: null,
+    fiscalTerminalId: null,
     fiscalError: message || 'Pending fiscal sync',
     multikassaRetryBody: body,
     clientOperationId: idempotencyKey,
@@ -56,8 +57,16 @@ function assertCapabilitiesReady(capabilities) {
 }
 
 /**
+ * Онлайн + Multikassa enabled → всегда жёстко требуем фискал+QR.
+ * Soft PENDING только для offline (дожим при sync).
+ */
+function mustHardRequireFiscal(capabilities, offline) {
+  return Boolean(capabilities?.enabled) && !offline;
+}
+
+/**
  * Фискализация продажи на Multikassa (до commit в POS).
- * QR чека — QRCodeURL модуля или официальный ofd.soliq.uz/check из t/r/c/s.
+ * POST $BASE_URL/api/v1/operations — как в доке Multikassa Operations API.
  */
 export async function fiscalizeSaleBeforeCommit({
   capabilities,
@@ -74,13 +83,15 @@ export async function fiscalizeSaleBeforeCommit({
     return null;
   }
 
+  const hardRequire = mustHardRequireFiscal(capabilities, offline);
+
   try {
     assertCapabilitiesReady(capabilities);
   } catch (err) {
     if (offline) {
       return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
     }
-    if (capabilities.requireBeforeSale) throw err;
+    if (hardRequire || capabilities.requireBeforeSale) throw err;
     return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
   }
 
@@ -94,6 +105,7 @@ export async function fiscalizeSaleBeforeCommit({
     contractorName,
   });
   const idempotencyKey = buildIdempotencyKey({ shiftId, clientSaleId });
+  // Идемпотентность для повторных попыток (модуль игнорирует неизвестные поля).
   body.client_operation_id = idempotencyKey;
   body.external_id = idempotencyKey;
 
@@ -108,21 +120,24 @@ export async function fiscalizeSaleBeforeCommit({
     parsed = ensureFiscalQrUrl(parsed, hints);
 
     const hasProof = hasRealFiscalProof(parsed) && parsed.fiscalStatus === FISCAL_STATUS.FISCALIZED;
-    const hasQr = Boolean(parsed.fiscalQrUrl && (isOfdCheckUrl(parsed.fiscalQrUrl) || /^https?:\/\//i.test(parsed.fiscalQrUrl)));
+    const hasQr = Boolean(
+      parsed.fiscalQrUrl &&
+        (isOfdCheckUrl(parsed.fiscalQrUrl) || /^https?:\/\//i.test(parsed.fiscalQrUrl)),
+    );
 
     if (!hasProof) {
       if (offline) {
         return pendingPayload(body, idempotencyKey, parsed.fiscalError);
       }
-      if (capabilities.requireBeforeSale) {
+      if (hardRequire || capabilities.requireBeforeSale) {
         rejectIncompleteFiscal(parsed);
       }
       return pendingPayload(body, idempotencyKey, parsed.fiscalError);
     }
 
-    if (!hasQr && capabilities.requireBeforeSale) {
+    if (!hasQr && (hardRequire || capabilities.requireBeforeSale)) {
       const err = new Error(
-        'Фискальный признак получен, но QR-код ГНК не сформирован. Проверьте Terminal ID, номер чека в ответе модуля и смену.',
+        'Фискальный признак получен, но QR-код ГНК не сформирован. Проверьте Terminal ID, номер чека в ответе модуля и смену ФМ.',
       );
       err.code = 'MULTIKASSA_FISCAL_FAILED';
       err.data = parsed?.raw ?? null;
@@ -141,8 +156,10 @@ export async function fiscalizeSaleBeforeCommit({
     if (offline) {
       return pendingPayload(body, idempotencyKey, err?.message);
     }
-    if (capabilities.requireBeforeSale) {
-      throw err;
+    if (hardRequire || capabilities.requireBeforeSale) {
+      const wrapped = err;
+      if (!wrapped.code) wrapped.code = 'MULTIKASSA_FISCAL_FAILED';
+      throw wrapped;
     }
     return pendingPayload(body, idempotencyKey, err?.message);
   }

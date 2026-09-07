@@ -1539,7 +1539,13 @@
       "fiscalRequired": "Multikassa fiskalizatsiyasi kerak. FM / localhost ni tekshiring.",
       "fiscalOfflineBlocked": "Multikassa yoqilgan: offline sotuv bloklangan",
       "fiscalFailed": "Multikassa fiskalizatsiya xatosi",
-      "capabilitiesLoadFailed": "Multikassa sozlamalarini yuklab bo‘lmadi"
+      "capabilitiesLoadFailed": "Multikassa sozlamalarini yuklab bo‘lmadi",
+      "statusUnknown": "Multikassa: …",
+      "statusLoadFailed": "Multikassa: sozlamalar yo‘q",
+      "statusOff": "Multikassa o‘chiq — QR bo‘lmaydi",
+      "statusNoTerminal": "Multikassa: Terminal ID kiriting",
+      "statusBrowserLocalhost": "Multikassa: Aurent Desktop oching (brauzerdan localhost ishlamaydi)",
+      "statusOn": "Multikassa yoqilgan — QR bo‘ladi"
     },
     "searchPlaceholder": "Do‘kon nomi bo‘yicha qidiruv",
     "filterPanelTitle": "Filtrlar paneli",
