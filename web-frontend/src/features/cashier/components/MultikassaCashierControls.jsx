@@ -1,10 +1,9 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { QrCode, Settings2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { multikassaApi } from '../../../api/multikassa.api';
-import MultikassaSettingsModal from '../../cash-registers/components/MultikassaSettingsModal';
 import {
   describeMultikassaStatus,
   useMultikassaCashierStatus,
@@ -12,6 +11,10 @@ import {
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShift } from '../../../hooks/useCashierShift';
 import { getApiErrorMessage } from '../../../utils/apiError';
+
+const MultikassaSettingsModal = lazy(() =>
+  import('../../cash-registers/components/MultikassaSettingsModal'),
+);
 
 const GENERIC_SERVER_ERROR = 'An unexpected error occurred';
 
@@ -121,14 +124,18 @@ export default function MultikassaCashierControls({ className = '' }) {
         </div>
       </div>
 
-      <MultikassaSettingsModal
-        open={settingsOpen && Boolean(cashRegisterId)}
-        cashRegisterId={cashRegisterId}
-        onClose={() => {
-          setSettingsOpen(false);
-          qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
-        }}
-      />
+      {settingsOpen && cashRegisterId ? (
+        <Suspense fallback={null}>
+          <MultikassaSettingsModal
+            open={settingsOpen}
+            cashRegisterId={cashRegisterId}
+            onClose={() => {
+              setSettingsOpen(false);
+              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
+            }}
+          />
+        </Suspense>
+      ) : null}
     </>
   );
 }

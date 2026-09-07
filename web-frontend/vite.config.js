@@ -64,7 +64,17 @@ export default defineConfig({
             }
             return 'cashier-pos';
           }
-          if (id.includes('/src/features/cash-registers/')) return 'cash-registers';
+          if (id.includes('/src/features/cash-registers/')) {
+            // Multikassa modal is opened from cashier shell — keep it out of cash-registers
+            // chunk or we get "Cannot access before initialization" (circular chunk deps).
+            if (
+              id.includes('MultikassaSettingsModal')
+              || id.includes('useMultikassaSettings')
+            ) {
+              return 'multikassa-settings';
+            }
+            return 'cash-registers';
+          }
 
           // catalog, sales, tenant, stock, reports share components/receipt,
           // product-stock, tasnif — keep in default chunks to avoid cycles
