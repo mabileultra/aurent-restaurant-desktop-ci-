@@ -127,6 +127,10 @@ export function usePosCheckout({
         return;
       }
       const msg = e.response?.data?.message ?? e.message ?? t('pos.saleFailed');
+      if (msg === 'An unexpected error occurred' || e?.response?.data?.code === 'INTERNAL_ERROR') {
+        toast.error(t('pos.saleFailed'), { id: 'pos-checkout-error' });
+        return;
+      }
       toast.error(msg, { id: 'pos-checkout-error' });
     },
   });

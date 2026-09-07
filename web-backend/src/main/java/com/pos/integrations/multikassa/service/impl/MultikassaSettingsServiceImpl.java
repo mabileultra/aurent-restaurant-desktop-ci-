@@ -11,6 +11,7 @@ import com.pos.integrations.multikassa.dto.UpdateCashierMultikassaFlagsRequest;
 import com.pos.integrations.multikassa.entity.CashRegisterMultikassaSettings;
 import com.pos.integrations.multikassa.repository.CashRegisterMultikassaSettingsRepository;
 import com.pos.integrations.multikassa.service.MultikassaSettingsService;
+import com.pos.integrations.multikassa.support.MultikassaCashierRegisterGuard;
 import com.pos.integrations.multikassa.support.MultikassaDefaults;
 import com.pos.sales.entity.CashRegister;
 import com.pos.sales.entity.CashierShift;
@@ -36,12 +37,14 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     private final CashierShiftRepository cashierShiftRepository;
     private final TenantAccessSupport tenantAccess;
     private final CashierSaleSupport cashierSaleSupport;
+    private final MultikassaCashierRegisterGuard cashierRegisterGuard;
 
     @Override
     @Transactional(readOnly = true)
     public AdminMultikassaSettingsResponse getAdminSettings(Long cashRegisterId) {
         CashRegister register = requireRegister(cashRegisterId);
         tenantAccess.assertCanAccessStore(register.getStore());
+        cashierRegisterGuard.assertCashierMayConfigureRegister(tenantAccess.currentUser(), register);
         return toAdminResponse(register, findOrDefault(register));
     }
 
@@ -53,6 +56,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     ) {
         CashRegister register = requireRegister(cashRegisterId);
         tenantAccess.assertCanAccessStore(register.getStore());
+        cashierRegisterGuard.assertCashierMayConfigureRegister(tenantAccess.currentUser(), register);
 
         CashRegisterMultikassaSettings entity = settingsRepository.findById(cashRegisterId)
             .orElseGet(() -> CashRegisterMultikassaSettings.builder()

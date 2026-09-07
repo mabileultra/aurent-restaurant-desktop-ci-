@@ -73,6 +73,31 @@
   cursor: default;
 }
 
+.pharmacy-pay-rail__mk--btn {
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.pharmacy-pay-rail__mk-settings {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--ppr-border);
+  background: #fff;
+  color: var(--ppr-muted);
+  cursor: pointer;
+}
+
+.pharmacy-pay-rail__mk-settings:hover {
+  border-color: #9dceb5;
+  color: var(--ppr-green);
+}
+
 .pharmacy-pay-rail__mk--ok {
   border-color: #9dceb5;
   background: var(--ppr-green-soft);

@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/admin/cash-registers/{cashRegisterId}/multikassa")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'MANAGER', 'CASHIER')")
 @Tag(name = "Multikassa", description = "Настройки Multikassa / ОФД для кассы")
 @StandardApiResponses
 public class AdminMultikassaSettingsController {

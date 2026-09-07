@@ -959,11 +959,13 @@
       "capabilitiesLoadFailed": "Не удалось загрузить настройки Multikassa",
       "statusUnknown": "Multikassa: …",
       "statusLoadFailed": "Multikassa: нет связи с настройками",
-      "statusOff": "Multikassa выкл — QR не будет",
+      "statusOff": "Multikassa выкл — QR не будет (откройте настройки)",
       "statusQrOff": "QR на чеке выкл — обычный чек",
       "statusNoTerminal": "Multikassa: укажите Terminal ID",
       "statusBrowserLocalhost": "Multikassa: откройте Aurent Desktop (localhost из браузера недоступен)",
-      "statusOn": "Multikassa вкл — чек с QR"
+      "statusOn": "Multikassa вкл — чек с QR",
+      "enableFirstForQr": "Сначала включите Multikassa в настройках кассы — иначе QR не появится",
+      "needOpenShift": "Откройте смену на кассе, чтобы настроить Multikassa"
     },
     "searchPlaceholder": "Поиск по названию магазина",
     "filterPanelTitle": "Панель фильтров",

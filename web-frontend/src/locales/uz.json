@@ -1552,11 +1552,13 @@
       "capabilitiesLoadFailed": "Multikassa sozlamalarini yuklab bo‘lmadi",
       "statusUnknown": "Multikassa: …",
       "statusLoadFailed": "Multikassa: sozlamalar yo‘q",
-      "statusOff": "Multikassa o‘chiq — QR bo‘lmaydi",
+      "statusOff": "Multikassa o‘chiq — QR bo‘lmaydi (sozlamalarni oching)",
       "statusQrOff": "Chekda QR o‘chiq — oddiy chek",
       "statusNoTerminal": "Multikassa: Terminal ID kiriting",
       "statusBrowserLocalhost": "Multikassa: Aurent Desktop oching (brauzerdan localhost ishlamaydi)",
-      "statusOn": "Multikassa yoqilgan — QR bo‘ladi"
+      "statusOn": "Multikassa yoqilgan — QR bo‘ladi",
+      "enableFirstForQr": "Avval Multikassani kassa sozlamalarida yoqing — aks holda QR chiqmaydi",
+      "needOpenShift": "Multikassani sozlash uchun smenani oching"
     },
     "searchPlaceholder": "Do‘kon nomi bo‘yicha qidiruv",
     "filterPanelTitle": "Filtrlar paneli",
