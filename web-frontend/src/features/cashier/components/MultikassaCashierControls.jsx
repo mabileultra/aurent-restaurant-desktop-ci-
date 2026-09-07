@@ -25,6 +25,7 @@ function resolveQrToggleError(e, t) {
 
 /**
  * Статус Multikassa + QR-тумблер + открытие настроек (если Multikassa выкл — QR не появится).
+ * Касса: настройки открываются с pay rail / desktop menu без админки касс.
  */
 export default function MultikassaCashierControls({ className = '' }) {
   const { t } = useTranslation();
