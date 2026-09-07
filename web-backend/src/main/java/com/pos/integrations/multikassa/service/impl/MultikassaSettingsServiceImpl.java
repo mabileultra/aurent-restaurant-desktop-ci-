@@ -20,6 +20,8 @@ import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.service.support.CashierSaleSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
+import com.pos.util.DbExceptionTranslator;
+import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +40,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     private final TenantAccessSupport tenantAccess;
     private final CashierSaleSupport cashierSaleSupport;
     private final MultikassaCashierRegisterGuard cashierRegisterGuard;
+    private final EntityManager entityManager;
 
     @Override
     @Transactional(readOnly = true)
@@ -59,10 +62,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         cashierRegisterGuard.assertCashierMayConfigureRegister(tenantAccess.currentUser(), register);
 
         CashRegisterMultikassaSettings entity = settingsRepository.findById(cashRegisterId)
-            .orElseGet(() -> CashRegisterMultikassaSettings.builder()
-                .cashRegister(register)
-                .cashRegisterId(cashRegisterId)
-                .build());
+            .orElseGet(() -> newSettingsRow(register));
 
         entity.setEnabled(request.enabled());
         entity.setBaseUrl(normalizeBaseUrl(request.baseUrl()));
@@ -74,7 +74,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         entity.setPrintFiscalQr(request.printFiscalQr() == null || Boolean.TRUE.equals(request.printFiscalQr()));
         entity.setUpdatedAt(Instant.now());
 
-        settingsRepository.save(entity);
+        DbExceptionTranslator.persist(() -> settingsRepository.save(entity));
         LogUtil.info(
             MultikassaSettingsServiceImpl.class,
             "Multikassa settings saved: registerId={}, enabled={}, baseUrl={}",
@@ -121,30 +121,78 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
           throw new BadRequestException("Нет открытой смены / кассы для настроек Multikassa");
       }
 
-      CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
-          .orElseGet(() -> CashRegisterMultikassaSettings.builder()
-              .cashRegister(register)
-              .cashRegisterId(register.getId())
-              .enabled(false)
-              .baseUrl(MultikassaDefaults.DEFAULT_BASE_URL)
-              .requireBeforeSale(false)
-              .printFiscalQr(true)
-              .build());
-
-      if (request.printFiscalQr() != null) {
-          entity.setPrintFiscalQr(Boolean.TRUE.equals(request.printFiscalQr()));
+      ensurePrintFiscalQrColumnIfNeeded();
+      try {
+          return persistCashierFlags(register, request);
+      } catch (RuntimeException ex) {
+          throw translateDb(ex);
       }
-      if (request.requireBeforeSale() != null) {
-          entity.setRequireBeforeSale(Boolean.TRUE.equals(request.requireBeforeSale()));
-      }
-      entity.setUpdatedAt(Instant.now());
-      settingsRepository.save(entity);
-
-      if (!entity.isEnabled()) {
-          return disabledCapabilities(register.getId(), entity.isPrintFiscalQr());
-      }
-      return toCashierCapabilities(register, entity);
   }
+
+    private CashierMultikassaCapabilitiesResponse persistCashierFlags(
+        CashRegister register,
+        UpdateCashierMultikassaFlagsRequest request
+    ) {
+        settingsRepository.upsertFlags(
+            register.getId(),
+            MultikassaDefaults.DEFAULT_BASE_URL,
+            request.printFiscalQr(),
+            request.requireBeforeSale()
+        );
+        entityManager.clear();
+        CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
+            .orElseThrow(() -> new BadRequestException("Не удалось сохранить флаги Multikassa"));
+        if (!entity.isEnabled()) {
+            return disabledCapabilities(register.getId(), entity.isPrintFiscalQr());
+        }
+        return toCashierCapabilities(register, entity);
+    }
+
+    /** До INSERT/UPDATE — иначе после SQL-ошибки PostgreSQL abort'ит всю транзакцию. */
+    private void ensurePrintFiscalQrColumnIfNeeded() {
+        Number settingsCol = (Number) entityManager.createNativeQuery(
+            "SELECT COUNT(*) FROM information_schema.columns "
+                + "WHERE table_schema = current_schema() "
+                + "AND table_name = 'cash_register_multikassa_settings' "
+                + "AND column_name = 'print_fiscal_qr'"
+        ).getSingleResult();
+        if (settingsCol.longValue() == 0) {
+            LogUtil.info(
+                MultikassaSettingsServiceImpl.class,
+                "Adding missing column cash_register_multikassa_settings.print_fiscal_qr"
+            );
+            entityManager.createNativeQuery(
+                "ALTER TABLE cash_register_multikassa_settings "
+                    + "ADD COLUMN print_fiscal_qr BOOLEAN NOT NULL DEFAULT TRUE"
+            ).executeUpdate();
+        }
+        Number salesCol = (Number) entityManager.createNativeQuery(
+            "SELECT COUNT(*) FROM information_schema.columns "
+                + "WHERE table_schema = current_schema() "
+                + "AND table_name = 'sales' "
+                + "AND column_name = 'print_fiscal_qr'"
+        ).getSingleResult();
+        if (salesCol.longValue() == 0) {
+            entityManager.createNativeQuery(
+                "ALTER TABLE sales ADD COLUMN print_fiscal_qr BOOLEAN NOT NULL DEFAULT TRUE"
+            ).executeUpdate();
+        }
+    }
+
+    private static RuntimeException translateDb(Throwable ex) {
+        return DbExceptionTranslator.toClientException(ex);
+    }
+
+    private CashRegisterMultikassaSettings newSettingsRow(CashRegister register) {
+        CashRegisterMultikassaSettings entity = new CashRegisterMultikassaSettings();
+        entity.setCashRegister(register);
+        entity.setEnabled(false);
+        entity.setBaseUrl(MultikassaDefaults.DEFAULT_BASE_URL);
+        entity.setRequireBeforeSale(false);
+        entity.setPrintFiscalQr(true);
+        entity.setUpdatedAt(Instant.now());
+        return entity;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -202,14 +250,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
 
     private CashRegisterMultikassaSettings findOrDefault(CashRegister register) {
         return settingsRepository.findById(register.getId())
-            .orElseGet(() -> CashRegisterMultikassaSettings.builder()
-                .cashRegister(register)
-                .cashRegisterId(register.getId())
-                .enabled(false)
-                .baseUrl(MultikassaDefaults.DEFAULT_BASE_URL)
-                .requireBeforeSale(false)
-                .printFiscalQr(true)
-                .build());
+            .orElseGet(() -> newSettingsRow(register));
     }
 
     private AdminMultikassaSettingsResponse toAdminResponse(

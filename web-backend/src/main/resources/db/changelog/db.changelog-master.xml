@@ -35,5 +35,6 @@
     <include file="v28-sale-pharmacy-patient.xml" relativeToChangelogFile="true"/>
     <include file="v29-sales-fiscal-terminal.xml" relativeToChangelogFile="true"/>
     <include file="v30-multikassa-print-qr.xml" relativeToChangelogFile="true"/>
+    <include file="v31-ensure-print-fiscal-qr.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

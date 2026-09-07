@@ -228,7 +228,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
         PersistenceException.class,
         InvalidDataAccessResourceUsageException.class,
-        LazyInitializationException.class
+        LazyInitializationException.class,
+        org.springframework.orm.jpa.JpaSystemException.class
     })
     public ResponseEntity<ApiErrorResponse> handlePersistence(
         Exception ex,
