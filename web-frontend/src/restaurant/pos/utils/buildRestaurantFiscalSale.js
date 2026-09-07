@@ -138,5 +138,6 @@ export function buildRestaurantFiscalSale({
     fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? new Date().toISOString() : null,
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     serviceAmount,
+    printFiscalQr: true,
   };
 }

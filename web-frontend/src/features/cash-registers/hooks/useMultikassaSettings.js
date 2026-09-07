@@ -18,7 +18,8 @@ const EMPTY_FORM = {
   moduleNumber: '',
   selectedDriveId: '',
   cashierNameOverride: '',
-  requireBeforeSale: true,
+  requireBeforeSale: false,
+  printFiscalQr: true,
 };
 
 function normalizeDrivesList(raw) {
@@ -92,7 +93,8 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
       moduleNumber: data.moduleNumber || '',
       selectedDriveId: data.selectedDriveId || '',
       cashierNameOverride: data.cashierNameOverride || '',
-      requireBeforeSale: data.requireBeforeSale !== false,
+      requireBeforeSale: Boolean(data.requireBeforeSale),
+      printFiscalQr: data.printFiscalQr !== false,
     });
     setTestMessage('');
   }, [data]);
@@ -161,6 +163,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
       selectedDriveId: form.selectedDriveId.trim() || null,
       cashierNameOverride: form.cashierNameOverride.trim() || null,
       requireBeforeSale: form.requireBeforeSale,
+      printFiscalQr: form.printFiscalQr,
     });
   };
 

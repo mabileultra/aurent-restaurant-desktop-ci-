@@ -31,6 +31,7 @@ public class SaleFiscalApplier {
 
     /**
      * @param enforceRequired если false — разрешаем PENDING_FISCAL (offline sync).
+     *                        если true — жёстко требуем фискал только когда requireBeforeSale=true.
      */
     public void apply(Sale sale, CashierShift shift, SaleFiscalPayload fiscal, boolean enforceRequired) {
         Optional<CashRegisterMultikassaSettings> enabled = resolveEnabledSettings(shift);
@@ -39,14 +40,13 @@ public class SaleFiscalApplier {
                 sale.setFiscalStatus(STATUS_NOT_REQUIRED);
                 return;
             }
-            // Даже без настроек на кассе сохраняем пришедший fiscal с offline-клиента.
             writeFiscalFields(sale, fiscal);
             return;
         }
 
-        // Касса с включённой Multikassa: онлайн (enforceRequired) — только FISCALIZED + QR.
-        // Offline sync передаёт enforceRequired=false и может дожать PENDING позже.
-        if (enforceRequired) {
+        CashRegisterMultikassaSettings settings = enabled.get();
+        boolean requireFiscal = enforceRequired && settings.isRequireBeforeSale();
+        if (requireFiscal) {
             requireFiscalizedPayload(fiscal);
         }
 
@@ -56,7 +56,7 @@ public class SaleFiscalApplier {
         }
 
         String status = normalizeStatus(fiscal.fiscalStatus());
-        if (enforceRequired && !STATUS_FISCALIZED.equals(status)) {
+        if (requireFiscal && !STATUS_FISCALIZED.equals(status)) {
             throw PosExceptions.badRequest("Требуется успешная фискализация Multikassa перед продажей");
         }
 

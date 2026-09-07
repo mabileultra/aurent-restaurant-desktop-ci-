@@ -47,7 +47,8 @@ public record SaleResponse(
     String multikassaSaleId,
     String fiscalQrUrl,
     String fiscalTerminalId,
-    Instant fiscalizedAt
+    Instant fiscalizedAt,
+    Boolean printFiscalQr
 ) {
     public record SaleLineDto(
         UUID id,

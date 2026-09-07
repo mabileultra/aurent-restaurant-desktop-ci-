@@ -24,6 +24,9 @@ export function describeMultikassaStatus(caps, t) {
   if (!caps.enabled) {
     return { tone: 'muted', label: t('cashRegisters.multikassa.statusOff') };
   }
+  if (caps.printFiscalQr === false) {
+    return { tone: 'warn', label: t('cashRegisters.multikassa.statusQrOff') };
+  }
   if (!String(caps.terminalId || '').trim()) {
     return { tone: 'danger', label: t('cashRegisters.multikassa.statusNoTerminal') };
   }

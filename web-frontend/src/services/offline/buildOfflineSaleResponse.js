@@ -64,6 +64,7 @@ export function buildOfflineSaleResponse({
   orderDiscountAmount,
   orderDiscountPercent,
   fiscal = null,
+  printFiscalQr = true,
 }) {
   const items = mapLineItems(cartItems);
   const linesTotal = round2(cartItems.reduce((acc, item) => acc + lineSubtotal(item), 0));
@@ -118,6 +119,7 @@ export function buildOfflineSaleResponse({
     fiscalQrUrl: fiscal?.fiscalQrUrl || null,
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? createdAt : null,
+    printFiscalQr: printFiscalQr !== false,
   };
 }
 

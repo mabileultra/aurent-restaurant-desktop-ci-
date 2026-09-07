@@ -57,6 +57,11 @@ public class CashRegisterMultikassaSettings {
     @Builder.Default
     private boolean requireBeforeSale = true;
 
+    /** Печатать фискальный QR на чеке (можно выкл. при офлайне / без ФМ). */
+    @Column(name = "print_fiscal_qr", nullable = false)
+    @Builder.Default
+    private boolean printFiscalQr = true;
+
     @Column(name = "updated_at")
     private Instant updatedAt;
 }

@@ -34,6 +34,8 @@ public record CreateSaleRequest(
     @DecimalMin("0") BigDecimal orderDiscountPercent,
     /** Оплата с аванса клиента (для SALE с customerId). */
     @DecimalMin("0") BigDecimal advanceAmount,
+    /** Печатать фискальный QR (снимок настройки кассы; null = true). */
+    Boolean printFiscalQr,
     /** Результат Multikassa (касса шлёт после POST /api/v1/operations). */
     @Valid SaleFiscalPayload fiscal
 ) {}

@@ -66,6 +66,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         entity.setSelectedDriveId(trimToNull(request.selectedDriveId()));
         entity.setCashierNameOverride(trimToNull(request.cashierNameOverride()));
         entity.setRequireBeforeSale(request.requireBeforeSale());
+        entity.setPrintFiscalQr(request.printFiscalQr());
         entity.setUpdatedAt(Instant.now());
 
         settingsRepository.save(entity);
@@ -109,7 +110,8 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
           settings.getModuleNumber(),
           settings.getSelectedDriveId(),
           settings.getCashierNameOverride(),
-          settings.isRequireBeforeSale()
+          settings.isRequireBeforeSale(),
+          settings.isPrintFiscalQr()
       );
   }
 
@@ -146,7 +148,8 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
                 .cashRegisterId(register.getId())
                 .enabled(false)
                 .baseUrl(MultikassaDefaults.DEFAULT_BASE_URL)
-                .requireBeforeSale(true)
+                .requireBeforeSale(false)
+                .printFiscalQr(true)
                 .build());
     }
 
@@ -165,6 +168,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             entity.getSelectedDriveId(),
             entity.getCashierNameOverride(),
             entity.isRequireBeforeSale(),
+            entity.isPrintFiscalQr(),
             MultikassaDefaults.LOCAL_BASE_URL_8080,
             MultikassaDefaults.LOCAL_BASE_URL_12346,
             MultikassaDefaults.CLOUD_V3_BASE_URL,
@@ -181,6 +185,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             null,
             null,
             null,
+            false,
             true
         );
     }

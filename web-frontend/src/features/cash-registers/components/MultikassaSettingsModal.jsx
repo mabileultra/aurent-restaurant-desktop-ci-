@@ -131,11 +131,22 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
               <label className="multikassa-settings__check">
                 <input
                   type="checkbox"
+                  checked={p.form.printFiscalQr}
+                  onChange={(e) => p.updateField('printFiscalQr', e.target.checked)}
+                />
+                {p.t('cashRegisters.multikassa.printFiscalQr')}
+              </label>
+              <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.printFiscalQrHint')}</p>
+
+              <label className="multikassa-settings__check">
+                <input
+                  type="checkbox"
                   checked={p.form.requireBeforeSale}
                   onChange={(e) => p.updateField('requireBeforeSale', e.target.checked)}
                 />
                 {p.t('cashRegisters.multikassa.requireBeforeSale')}
               </label>
+              <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.requireBeforeSaleHint')}</p>
 
               {p.testMessage ? <p className="multikassa-settings__test">{p.testMessage}</p> : null}
 

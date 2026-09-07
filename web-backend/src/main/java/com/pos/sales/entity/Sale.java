@@ -177,6 +177,11 @@ public class Sale {
     @Column(name = "fiscal_error", length = 1000)
     private String fiscalError;
 
+    /** Печатать фискальный QR на этом чеке (снимок настройки кассы). */
+    @Column(name = "print_fiscal_qr", nullable = false)
+    @Builder.Default
+    private boolean printFiscalQr = true;
+
     public enum SaleSource {
         ONLINE,
         OFFLINE_SYNC

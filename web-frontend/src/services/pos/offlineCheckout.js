@@ -34,6 +34,7 @@ export async function processOfflineCheckout({
   getCheckoutOrderDiscountPercent,
   items,
   fiscal = null,
+  printFiscalQr = true,
 }) {
   if (!isDesktopOfflineBridge()) {
     throw new Error('OFFLINE_SALE_SAVE_FAILED');
@@ -70,6 +71,7 @@ export async function processOfflineCheckout({
     orderDiscountAmount,
     orderDiscountPercent,
     fiscal,
+    printFiscalQr,
   });
 
   const saved = await withCheckoutTimeout(

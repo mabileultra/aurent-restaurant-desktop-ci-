@@ -8,6 +8,7 @@ public record CashierMultikassaCapabilitiesResponse(
     String moduleNumber,
     String selectedDriveId,
     String cashierNameOverride,
-    boolean requireBeforeSale
+    boolean requireBeforeSale,
+    boolean printFiscalQr
 ) {
 }

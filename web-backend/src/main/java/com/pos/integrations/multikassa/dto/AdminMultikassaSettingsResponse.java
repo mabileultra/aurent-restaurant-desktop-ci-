@@ -11,6 +11,7 @@ public record AdminMultikassaSettingsResponse(
     String selectedDriveId,
     String cashierNameOverride,
     boolean requireBeforeSale,
+    boolean printFiscalQr,
     String suggestedLocalUrl8080,
     String suggestedLocalUrl12346,
     String suggestedCloudV3,

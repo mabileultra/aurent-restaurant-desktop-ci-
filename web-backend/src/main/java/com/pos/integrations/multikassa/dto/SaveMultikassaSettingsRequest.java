@@ -10,6 +10,7 @@ public record SaveMultikassaSettingsRequest(
     @Size(max = 128) String moduleNumber,
     @Size(max = 128) String selectedDriveId,
     @Size(max = 200) String cashierNameOverride,
-    boolean requireBeforeSale
+    boolean requireBeforeSale,
+    boolean printFiscalQr
 ) {
 }

@@ -198,6 +198,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
             .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
             .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
+            .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()))
             .build();
 
         items.forEach(item -> item.setSale(sale));

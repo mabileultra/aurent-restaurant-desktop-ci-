@@ -93,7 +93,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const { date, time } = splitDateTime(sale.createdAt);
   const fiscalSign = buildFiscalSign(sale);
-  const qrValue = buildQrPayload(sale);
+  const printFiscalQr = sale.printFiscalQr !== false;
+  const qrValue = printFiscalQr ? buildQrPayload(sale) : '';
+  const showQrBlock = printFiscalQr && isOn('qrCode');
 
   const method = sale.paymentMethod;
   const total = Number(sale.totalAmount) || 0;
@@ -344,17 +346,18 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         </>
       ) : null}
 
-      {(isOn('qrCode') || isOn('footer')) && (
+      {(showQrBlock || isOn('footer')) && (
         <footer className="receipt-section mt-4 border-t border-dashed border-black pt-3 text-center">
-          {isOn('qrCode') && qrValue ? <ReceiptQrCode value={qrValue} sizePx={112} /> : null}
+          {showQrBlock && qrValue ? <ReceiptQrCode value={qrValue} sizePx={112} /> : null}
           {isOn('footer') ? (
             <>
               <p className="receipt-footer mt-2">{t('fiscalReceipt.footer')}</p>
-              {qrValue ? (
+              {showQrBlock && qrValue ? (
                 <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrHint')}</p>
-              ) : (
+              ) : null}
+              {showQrBlock && !qrValue ? (
                 <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrMissing')}</p>
-              )}
+              ) : null}
             </>
           ) : null}
         </footer>

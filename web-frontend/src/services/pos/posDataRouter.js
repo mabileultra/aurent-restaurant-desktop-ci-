@@ -339,9 +339,10 @@ export async function posCreateSale({
       : `sale-${Date.now()}`;
 
   let fiscalPayload = null;
+  let capabilities = { enabled: false, printFiscalQr: true };
   try {
     const cashRegisterId = cachedShift?.cashRegisterId ?? null;
-    const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId, {
+    capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId, {
       allowLoadFailureAsDisabled: offline,
     });
     fiscalPayload = await fiscalizeSaleBeforeCommit({
@@ -382,6 +383,7 @@ export async function posCreateSale({
       getCheckoutOrderDiscountPercent,
       items,
       fiscal: fiscalPayload || undefined,
+      printFiscalQr: capabilities?.printFiscalQr !== false,
     });
   }
 
@@ -410,6 +412,7 @@ export async function posCreateSale({
         ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
         ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
         ...(fiscalForApi ? { fiscal: fiscalForApi } : {}),
+        printFiscalQr: capabilities?.printFiscalQr !== false,
       },
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
@@ -425,6 +428,7 @@ export async function posCreateSale({
         getCheckoutOrderDiscountPercent,
         items,
         fiscal: fiscalPayload || undefined,
+        printFiscalQr: capabilities?.printFiscalQr !== false,
       });
     }
     throw err;
