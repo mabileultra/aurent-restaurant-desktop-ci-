@@ -32,6 +32,19 @@ app:
     grace-days: ${BILLING_GRACE_DAYS:3}
     upload-dir: ${BILLING_UPLOAD_DIR:./data/billing-uploads}
     charge-cron: ${BILLING_CHARGE_CRON:0 0 3 * * *}
+    payments:
+      return-url: ${BILLING_PAYMENT_RETURN_URL:https://aurent.uz/billing}
+      click:
+        enabled: ${CLICK_ENABLED:false}
+        merchant-id: ${CLICK_MERCHANT_ID:}
+        service-id: ${CLICK_SERVICE_ID:}
+        secret-key: ${CLICK_SECRET_KEY:}
+        pay-url: ${CLICK_PAY_URL:https://my.click.uz/services/pay}
+      payme:
+        enabled: ${PAYME_ENABLED:false}
+        merchant-id: ${PAYME_MERCHANT_ID:}
+        secret-key: ${PAYME_SECRET_KEY:}
+        checkout-url: ${PAYME_CHECKOUT_URL:https://checkout.paycom.uz}
   internal:
     api-key: ${PLATFORM_INTERNAL_API_KEY:platform-internal-dev-key-change-in-prod}
   pos-core:

@@ -165,31 +165,65 @@ export default function TenantBillingPage() {
               onChange={(e) => p.setAmount(e.target.value)}
               placeholder={p.t('billing.customAmount')}
             />
-            <textarea
-              className="billing-textarea"
-              rows={2}
-              value={p.comment}
-              onChange={(e) => p.setComment(e.target.value)}
-              placeholder={p.t('billing.comment')}
-            />
-            <label className="billing-drop">
-              <input
-                type="file"
-                accept=".pdf,.png,.jpg,.jpeg,.webp"
-                className="hidden"
-                onChange={(e) => p.setFile(e.target.files?.[0] || null)}
-              />
-              {p.file ? p.file.name : p.t('billing.attachFile')}
-            </label>
+
+            <div className="flex flex-col gap-2 mb-3">
+              <button
+                type="button"
+                className="billing-btn billing-btn--accent"
+                disabled={p.paying || !p.amount}
+                onClick={p.payClick}
+              >
+                {p.paying ? p.t('common.saving') : p.t('billing.payClick')}
+              </button>
+              <button
+                type="button"
+                className="billing-btn billing-btn--primary"
+                disabled={p.paying || !p.amount}
+                onClick={p.payPayme}
+              >
+                {p.paying ? p.t('common.saving') : p.t('billing.payPayme')}
+              </button>
+            </div>
+            <p className="text-xs text-slate-500 mb-3">{p.t('billing.autoPayHint')}</p>
+
             <button
               type="button"
-              className="billing-btn billing-btn--accent"
-              disabled={p.submitting || !p.amount}
-              onClick={p.submit}
+              className="text-sm font-semibold text-slate-600 underline mb-2"
+              onClick={() => p.setShowManual((v) => !v)}
             >
-              {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}
+              {p.showManual ? p.t('billing.hideManual') : p.t('billing.showManual')}
             </button>
-            <p className="mt-2 text-xs text-slate-500">{p.t('billing.topUpHint')}</p>
+
+            {p.showManual ? (
+              <>
+                <textarea
+                  className="billing-textarea"
+                  rows={2}
+                  value={p.comment}
+                  onChange={(e) => p.setComment(e.target.value)}
+                  placeholder={p.t('billing.comment')}
+                />
+                <label className="billing-drop">
+                  <input
+                    type="file"
+                    accept=".pdf,.png,.jpg,.jpeg,.webp"
+                    className="hidden"
+                    onChange={(e) => p.setFile(e.target.files?.[0] || null)}
+                  />
+                  {p.file ? p.file.name : p.t('billing.attachFile')}
+                </label>
+                <button
+                  type="button"
+                  className="billing-btn billing-btn--accent"
+                  disabled={p.submitting || !p.amount}
+                  onClick={p.submit}
+                >
+                  {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}
+                </button>
+                <p className="mt-2 text-xs text-slate-500">{p.t('billing.topUpHint')}</p>
+              </>
+            ) : null}
+
             {p.pendingTopUps.length > 0 ? (
               <p className="mt-3 text-sm text-amber-700">
                 {p.t('billing.pendingCount', { count: p.pendingTopUps.length })}

@@ -63,7 +63,7 @@ spring:
         - id: platform-service
           uri: ${PLATFORM_SERVICE_URL:http://127.0.0.1:8084}
           predicates:
-            - Path=/api/v1/companies/**, /api/v1/platform/**, /api/v1/billing/**, /api/v1/public/site/**
+            - Path=/api/v1/companies/**, /api/v1/platform/**, /api/v1/billing/**, /api/v1/public/**
           order: 1
           filters:
             - PreserveHostHeader

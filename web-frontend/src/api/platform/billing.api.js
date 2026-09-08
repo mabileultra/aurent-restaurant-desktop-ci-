@@ -32,4 +32,5 @@ export const tenantBillingApi = {
     if (file) fd.append('file', file);
     return api.post('/billing/me/top-ups', fd);
   },
+  createPayment: (payload) => api.post('/billing/me/payments', payload),
 };

@@ -9,5 +9,6 @@
     <include file="db/changelog/v2-platform-tables.xml"/>
     <include file="db/changelog/v3-site-leads.xml"/>
     <include file="db/changelog/v4-saas-billing.xml"/>
+    <include file="db/changelog/v5-billing-payments.xml"/>
 
 </databaseChangeLog>

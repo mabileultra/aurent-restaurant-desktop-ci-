@@ -25,6 +25,7 @@ export function useTenantBillingPage() {
   const [comment, setComment] = useState('');
   const [file, setFile] = useState(null);
   const [ledgerType, setLedgerType] = useState(null);
+  const [showManual, setShowManual] = useState(false);
 
   const meQ = useQuery({
     queryKey: ['tenant-billing-me'],
@@ -44,6 +45,12 @@ export function useTenantBillingPage() {
     queryFn: () => tenantBillingApi.topUps({ size: 10 }).then((r) => r.data),
   });
 
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['tenant-billing-me'] });
+    qc.invalidateQueries({ queryKey: ['tenant-billing-topups'] });
+    qc.invalidateQueries({ queryKey: ['tenant-billing-ledger'] });
+  };
+
   const submitM = useMutation({
     mutationFn: () =>
       tenantBillingApi.submitTopUp({
@@ -55,11 +62,27 @@ export function useTenantBillingPage() {
       toast.success(t('billing.topUpSent'));
       setComment('');
       setFile(null);
-      qc.invalidateQueries({ queryKey: ['tenant-billing-me'] });
-      qc.invalidateQueries({ queryKey: ['tenant-billing-topups'] });
-      qc.invalidateQueries({ queryKey: ['tenant-billing-ledger'] });
+      refresh();
     },
     onError: (e) => toast.error(e?.response?.data?.message || t('billing.topUpFailed')),
+  });
+
+  const payM = useMutation({
+    mutationFn: (provider) =>
+      tenantBillingApi.createPayment({
+        provider,
+        amount: Number(amount),
+      }),
+    onSuccess: (res) => {
+      const url = res?.data?.paymentUrl;
+      if (!url) {
+        toast.error(t('billing.payUrlMissing'));
+        return;
+      }
+      toast.success(t('billing.redirectingPay'));
+      window.location.assign(url);
+    },
+    onError: (e) => toast.error(e?.response?.data?.message || t('billing.payFailed')),
   });
 
   const me = meQ.data;
@@ -93,7 +116,12 @@ export function useTenantBillingPage() {
     remaining,
     progress,
     statusLabel,
+    showManual,
+    setShowManual,
     submit: () => submitM.mutate(),
     submitting: submitM.isPending,
+    payClick: () => payM.mutate('CLICK'),
+    payPayme: () => payM.mutate('PAYME'),
+    paying: payM.isPending,
   };
 }
