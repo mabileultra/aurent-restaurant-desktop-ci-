@@ -1,6 +1,7 @@
 import '../../../styles/billing.css';
 import { PageLayout, PageSearchField } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
+import BillingPeriodCalendar from '../components/BillingPeriodCalendar';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 export default function PlatformBillingPage() {
@@ -143,10 +144,37 @@ export default function PlatformBillingPage() {
                     ))}
                   </select>
                 </div>
+                <label className="billing-field-label">
+                  {p.t('platform.billing.periodStart')}
+                </label>
+                <BillingPeriodCalendar
+                  value={p.periodStartOn}
+                  onChange={p.setPeriodStartOn}
+                  locale={p.dateLocale}
+                  t={p.t}
+                />
+                <p className="billing-manage__hint">
+                  {p.t('platform.billing.periodStartHint', {
+                    date: p.periodStartOn
+                      ? new Date(`${p.periodStartOn}T12:00:00`).toLocaleDateString(p.dateLocale)
+                      : '—',
+                  })}
+                </p>
+                {p.prepaidCover?.kind === 'ok' ? (
+                  <p className="billing-manage__hint billing-manage__hint--ok">
+                    {p.t('platform.billing.prepaidHint', p.prepaidCover)}
+                  </p>
+                ) : null}
+                {p.prepaidCover?.kind === 'empty' ? (
+                  <p className="billing-manage__hint">{p.t('platform.billing.prepaidHintEmpty')}</p>
+                ) : null}
+                {p.prepaidCover?.kind === 'zero' ? (
+                  <p className="billing-manage__hint">{p.t('platform.billing.prepaidHintZero')}</p>
+                ) : null}
                 <button
                   type="button"
                   className="billing-btn billing-btn--accent"
-                  disabled={p.busy || !p.monthlyAmountValid}
+                  disabled={p.busy || !p.monthlyAmountValid || !p.periodStartValid}
                   onClick={p.assignPlan}
                 >
                   {p.t('platform.billing.saveMonthly')}

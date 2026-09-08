@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { platformBillingApi } from '../../../api';
 import { parseMoneyInput } from '../../billing/utils/parseMoneyInput';
+import { shiftIsoDate, toIsoDate } from '../components/BillingPeriodCalendar';
 
 const STATUS_FILTERS = [null, 'ACTIVE', 'GRACE', 'BLOCKED', 'TRIAL'];
 const COMPANIES_PAGE_SIZE = 10;
@@ -17,6 +18,11 @@ function sameMoney(a, b) {
   return Number(a || 0) === Number(b || 0);
 }
 
+function periodStartFromCharge(iso) {
+  if (!iso) return toIsoDate(new Date());
+  return shiftIsoDate(toIsoDate(iso), -30);
+}
+
 export function usePlatformBillingPage() {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language?.startsWith('uz') ? 'uz-UZ' : 'ru-RU';
@@ -28,6 +34,7 @@ export function usePlatformBillingPage() {
   const [adjustNote, setAdjustNote] = useState('');
   const [assignPlanId, setAssignPlanId] = useState('');
   const [monthlyAmount, setMonthlyAmount] = useState('');
+  const [periodStartOn, setPeriodStartOn] = useState(() => toIsoDate(new Date()));
   const [companiesPage, setCompaniesPage] = useState(0);
 
   const overviewQ = useQuery({
@@ -86,6 +93,9 @@ export function usePlatformBillingPage() {
       if (monthly == null) {
         throw new Error(t('platform.billing.invalidAmount'));
       }
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(periodStartOn || '')) {
+        throw new Error(t('platform.billing.invalidPeriodStart'));
+      }
       const plan = plans.find((item) => item.id === assignPlanId);
       const usePlan = Boolean(plan && sameMoney(monthly, plan.monthlyPrice));
       return platformBillingApi.assignPlan(selectedCompanyId, {
@@ -93,6 +103,7 @@ export function usePlatformBillingPage() {
         addonMonthlyAmount: usePlan ? 0 : monthly,
         billingEnabled: true,
         autoChargeEnabled: true,
+        periodStartOn,
       });
     },
     onSuccess: () => {
@@ -168,9 +179,24 @@ export function usePlatformBillingPage() {
     setSelectedCompanyId(row.companyId);
     setAssignPlanId(row.planId || '');
     setMonthlyAmount(String(Math.round(Number(row.monthlyTotal || 0))));
+    setPeriodStartOn(row.periodStartOn || periodStartFromCharge(row.nextChargeAt));
     setAdjustAmount('');
     setAdjustNote('');
   };
+
+  const prepaidCover = useMemo(() => {
+    const monthly = parseMoneyInput(monthlyAmount, { allowZero: true });
+    const balance = Number(selected?.balance || 0);
+    if (monthly == null) return null;
+    if (monthly <= 0) return { kind: 'zero' };
+    if (balance < monthly) return { kind: 'empty' };
+    return {
+      kind: 'ok',
+      balance: money(balance),
+      monthly: money(monthly),
+      months: Math.floor(balance / monthly),
+    };
+  }, [monthlyAmount, selected]);
 
   const pickPlan = (planId) => {
     setAssignPlanId(planId);
@@ -217,6 +243,10 @@ export function usePlatformBillingPage() {
     monthlyAmount,
     setMonthlyAmount,
     monthlyAmountValid: parseMoneyInput(monthlyAmount, { allowZero: true }) != null,
+    periodStartOn,
+    setPeriodStartOn,
+    periodStartValid: /^\d{4}-\d{2}-\d{2}$/.test(periodStartOn || ''),
+    prepaidCover,
     approve: (id) => approveM.mutate(id),
     reject: (id) => rejectM.mutate(id),
     assignPlan: () => assignM.mutate(),

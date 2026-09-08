@@ -15,11 +15,14 @@ function money(v) {
   return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 });
 }
 
-function daysLeft(paidUntil) {
-  if (!paidUntil) return null;
-  const ms = new Date(paidUntil).getTime() - Date.now();
+function daysLeft(paidUntil, nextChargeAt) {
+  const end = paidUntil || nextChargeAt;
+  if (!end) return null;
+  const ms = new Date(end).getTime() - Date.now();
   return Math.max(0, Math.ceil(ms / (24 * 60 * 60 * 1000)));
 }
+
+const EMPTY_CARD = { pan: '', exp: '', cvv: '', holder: '' };
 
 export function useTenantBillingPage() {
   const { t, i18n } = useTranslation();
@@ -30,6 +33,9 @@ export function useTenantBillingPage() {
   const [file, setFile] = useState(null);
   const [ledgerType, setLedgerType] = useState(null);
   const [showManual, setShowManual] = useState(false);
+  const [payOpen, setPayOpen] = useState(false);
+  const [payMethod, setPayMethod] = useState('HUMO');
+  const [card, setCard] = useState(EMPTY_CARD);
   const [ledgerPage, setLedgerPage] = useState(0);
   const [ledgerPageSize, setLedgerPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -154,12 +160,19 @@ export function useTenantBillingPage() {
       if (value == null) {
         throw new Error(t('billing.invalidAmount'));
       }
+      if (provider === 'HUMO' || provider === 'UZCARD') {
+        return Promise.resolve({ data: { stub: true, provider } });
+      }
       return tenantBillingApi.createPayment({
         provider,
         amount: value,
       });
     },
-    onSuccess: (res) => {
+    onSuccess: (res, provider) => {
+      if (provider === 'HUMO' || provider === 'UZCARD') {
+        toast.success(t('billing.payIntegrationSoon'));
+        return;
+      }
       const url = res?.data?.paymentUrl;
       if (!url) {
         toast.error(t('billing.payUrlMissing'));
@@ -172,7 +185,7 @@ export function useTenantBillingPage() {
   });
 
   const me = meQ.data;
-  const remaining = daysLeft(me?.paidUntil);
+  const remaining = daysLeft(me?.paidUntil, me?.nextChargeAt);
   const progress = remaining == null ? 0 : Math.min(100, Math.round((remaining / 30) * 100));
 
   const statusLabel = useMemo(() => {
@@ -180,7 +193,9 @@ export function useTenantBillingPage() {
     if (me.status === 'BLOCKED') return t('billing.statusBlocked');
     if (me.status === 'GRACE') return t('billing.statusGrace');
     return t('billing.statusActive', {
-      date: me.paidUntil ? new Date(me.paidUntil).toLocaleDateString(dateLocale) : '—',
+      date: (me.paidUntil || me.nextChargeAt)
+        ? new Date(me.paidUntil || me.nextChargeAt).toLocaleDateString(dateLocale)
+        : '—',
     });
   }, [me, t, dateLocale]);
 
@@ -308,6 +323,16 @@ export function useTenantBillingPage() {
     statusLabel,
     showManual,
     setShowManual,
+    payOpen,
+    openPay: (method) => {
+      if (method) setPayMethod(method);
+      setPayOpen(true);
+    },
+    closePay: () => setPayOpen(false),
+    payMethod,
+    setPayMethod,
+    card,
+    setCard,
     submit: () => submitM.mutate(),
     submitting: submitM.isPending,
     pay: (provider) => payM.mutate(provider),

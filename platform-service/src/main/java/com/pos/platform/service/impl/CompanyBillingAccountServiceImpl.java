@@ -21,16 +21,20 @@ import com.pos.platform.service.CompanyBillingAccountService;
 import com.pos.platform.service.support.BillingMapper;
 import com.pos.platform.service.support.BillingMoney;
 import com.pos.platform.service.support.BillingTenantSupport;
+import com.pos.platform.service.support.BillingTime;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -43,6 +47,9 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
     private final BillingTopUpRequestRepository topUpRepository;
     private final BillingPlanService planService;
     private final BillingLedgerService ledgerService;
+
+    @Value("${app.billing.grace-days:3}")
+    private int graceDays;
 
     @Override
     @Transactional(readOnly = true)
@@ -117,12 +124,12 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         if (request.billingEnabled() != null) {
             billing.setBillingEnabled(request.billingEnabled());
         }
-        if (billing.getNextChargeAt() == null) {
-            advancePeriod(billing, Instant.now());
-        }
-        if (billing.getStatus() == null) {
+        applyChargeStart(billing, request.periodStartOn());
+        if (billing.getStatus() == null || billing.getStatus() == BillingAccountStatus.BLOCKED) {
             billing.setStatus(BillingAccountStatus.ACTIVE);
+            billing.setGraceUntil(null);
         }
+        applyDueCharges(billing, Instant.now());
         return BillingMapper.toCompany(companyBillingRepository.save(billing));
     }
 
@@ -226,9 +233,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             if (billing.getBalance().compareTo(total) >= 0) {
                 billing.setStatus(BillingAccountStatus.ACTIVE);
                 billing.setGraceUntil(null);
-                if (billing.getNextChargeAt() == null || billing.getNextChargeAt().isBefore(now)) {
-                    advancePeriod(billing, now);
-                }
+                applyDueCharges(billing, now);
             }
             return;
         }
@@ -237,15 +242,100 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             if (billing.getBalance().compareTo(total) >= 0) {
                 billing.setStatus(BillingAccountStatus.ACTIVE);
                 billing.setGraceUntil(null);
+                applyDueCharges(billing, now);
             }
         }
     }
 
     @Override
+    public int applyDueCharges(CompanyBilling billing, Instant now) {
+        if (!billing.isBillingEnabled() || !billing.isAutoChargeEnabled()) {
+            return 0;
+        }
+        if (billing.getStatus() == BillingAccountStatus.BLOCKED) {
+            return 0;
+        }
+        int charged = 0;
+        for (int i = 0; i < BillingTime.MAX_CATCH_UP_PERIODS; i++) {
+            Instant due = billing.getNextChargeAt();
+            if (due == null || due.isAfter(now)) {
+                break;
+            }
+            BigDecimal total = BillingMapper.monthlyTotal(billing);
+            if (total.signum() <= 0) {
+                advanceFromDue(billing, due);
+                billing.setStatus(BillingAccountStatus.ACTIVE);
+                billing.setGraceUntil(null);
+                break;
+            }
+            if (billing.getBalance().compareTo(total) >= 0) {
+                String planName = billing.getPlan() != null ? billing.getPlan().getName() : "тариф";
+                ledgerService.record(
+                    billing,
+                    total.negate(),
+                    BillingLedgerType.CHARGE,
+                    "Ежемесячное списание: " + planName
+                );
+                advanceFromDue(billing, due);
+                billing.setStatus(BillingAccountStatus.ACTIVE);
+                billing.setGraceUntil(null);
+                charged++;
+                continue;
+            }
+            enterGraceOrBlock(billing, now);
+            break;
+        }
+        return charged;
+    }
+
+    @Override
     public void advancePeriod(CompanyBilling billing, Instant from) {
-        Instant next = from.plus(30, ChronoUnit.DAYS);
+        Instant base = billing.getNextChargeAt() != null && !billing.getNextChargeAt().isAfter(from)
+            ? billing.getNextChargeAt()
+            : from;
+        advanceFromDue(billing, base);
+    }
+
+    private void applyChargeStart(CompanyBilling billing, LocalDate periodStartOn) {
+        Instant now = Instant.now();
+        if (periodStartOn == null) {
+            if (billing.getNextChargeAt() == null) {
+                billing.setNextChargeAt(now);
+                billing.setPaidUntil(now.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS));
+            }
+            return;
+        }
+        boolean periodChanged = !Objects.equals(periodStartOn, billing.getPeriodStartOn())
+            || billing.getNextChargeAt() == null;
+        billing.setPeriodStartOn(periodStartOn);
+        if (!periodChanged) {
+            return;
+        }
+        Instant start = BillingTime.startOfDay(periodStartOn);
+        billing.setNextChargeAt(start);
+        if (start.isAfter(now)) {
+            billing.setPaidUntil(start);
+        } else {
+            billing.setPaidUntil(start.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS));
+        }
+    }
+
+    private void advanceFromDue(CompanyBilling billing, Instant due) {
+        Instant next = due.plus(BillingTime.PERIOD_DAYS, ChronoUnit.DAYS);
         billing.setNextChargeAt(next);
         billing.setPaidUntil(next);
+    }
+
+    private void enterGraceOrBlock(CompanyBilling billing, Instant now) {
+        if (billing.getStatus() != BillingAccountStatus.GRACE
+            && billing.getStatus() != BillingAccountStatus.BLOCKED) {
+            billing.setStatus(BillingAccountStatus.GRACE);
+            billing.setGraceUntil(now.plus(Math.max(graceDays, 0), ChronoUnit.DAYS));
+            return;
+        }
+        if (billing.getGraceUntil() != null && now.isAfter(billing.getGraceUntil())) {
+            billing.setStatus(BillingAccountStatus.BLOCKED);
+        }
     }
 
     private Company requireCompany(Integer companyId) {
@@ -271,6 +361,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             BillingAccountStatus.ACTIVE,
             false,
             true,
+            null,
             null,
             null,
             null,

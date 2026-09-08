@@ -60,6 +60,7 @@ public final class BillingMapper {
             billing.getStatus() != null ? billing.getStatus() : BillingAccountStatus.ACTIVE,
             billing.isBillingEnabled(),
             billing.isAutoChargeEnabled(),
+            billing.getPeriodStartOn(),
             billing.getNextChargeAt(),
             billing.getPaidUntil(),
             billing.getGraceUntil(),

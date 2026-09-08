@@ -20,6 +20,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 @Entity
@@ -63,6 +64,9 @@ public class CompanyBilling {
     @Column(name = "auto_charge_enabled", nullable = false)
     @Builder.Default
     private boolean autoChargeEnabled = true;
+
+    @Column(name = "period_start_on")
+    private LocalDate periodStartOn;
 
     @Column(name = "next_charge_at")
     private Instant nextChargeAt;

@@ -5,7 +5,7 @@ import { useAuthStore } from '../../../store/authStore';
 import BillingLedgerConfirmModal from '../components/BillingLedgerConfirmModal';
 import BillingLedgerDetailModal from '../components/BillingLedgerDetailModal';
 import BillingLedgerSection from '../components/BillingLedgerSection';
-import BillingPayProviders from '../components/BillingPayProviders';
+import BillingPayModal from '../components/BillingPayModal';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
 
 function periodStart(paidUntil) {
@@ -79,20 +79,24 @@ export default function TenantBillingPage() {
             <div>
               <p className="text-sm text-white/80">{p.t('billing.periodLeft')}</p>
               <p className="text-2xl font-bold mt-1">
-                {p.remaining == null ? '—' : p.t('billing.daysLeft', { count: p.remaining })}
+                {p.remaining == null ? p.t('billing.periodNotStarted') : p.t('billing.daysLeft', { count: p.remaining })}
               </p>
               <div className="billing-progress mt-3">
                 <span style={{ width: `${p.progress}%` }} />
               </div>
-              <div className="billing-hero__period">
-                <span>{formatDateObj(start)}</span>
-                <span>{formatDate(end)}</span>
-              </div>
+              {end ? (
+                <div className="billing-hero__period">
+                  <span>{formatDateObj(start)}</span>
+                  <span>{formatDate(end)}</span>
+                </div>
+              ) : (
+                <p className="billing-hero__period">{p.t('billing.periodHint')}</p>
+              )}
             </div>
             <div className="billing-hero__actions">
-              <a href="#billing-topup" className="billing-btn billing-btn--primary">
+              <button type="button" className="billing-btn billing-btn--primary" onClick={() => p.openPay()}>
                 + {p.t('billing.topUp')}
-              </a>
+              </button>
             </div>
           </div>
         </section>
@@ -128,10 +132,12 @@ export default function TenantBillingPage() {
               {p.money(me?.monthlyTotal)} {p.t('billing.currency')}
             </div>
             <div className="billing-metric__sub">
-              {p.t('billing.monthlyBreakdown', {
-                plan: p.money(me?.planMonthlyPrice),
-                addon: p.money(me?.addonMonthlyAmount),
-              })}
+              {Number(me?.planMonthlyPrice) > 0
+                ? p.t('billing.monthlyBreakdown', {
+                    plan: p.money(me?.planMonthlyPrice),
+                    addon: p.money(me?.addonMonthlyAmount),
+                  })
+                : p.t('billing.monthlyCustom', { amount: p.money(me?.monthlyTotal) })}
             </div>
           </div>
           <div className="billing-metric billing-metric--status">
@@ -203,12 +209,14 @@ export default function TenantBillingPage() {
               placeholder={p.t('billing.customAmount')}
             />
 
-            <BillingPayProviders
-              t={p.t}
+            <button
+              type="button"
+              className="billing-btn billing-btn--accent"
               disabled={!p.amountValid}
-              paying={p.paying}
-              onPay={p.pay}
-            />
+              onClick={() => p.openPay()}
+            >
+              {p.t('billing.choosePayMethod')}
+            </button>
             <p className="text-xs text-slate-500 mb-3">{p.t('billing.autoPayHint')}</p>
 
             <div className="billing-manual">
@@ -284,6 +292,22 @@ export default function TenantBillingPage() {
         </section>
       </div>
 
+      <BillingPayModal
+        open={p.payOpen}
+        onClose={p.closePay}
+        t={p.t}
+        money={p.money}
+        amount={p.amount}
+        setAmount={p.setAmount}
+        amountValid={p.amountValid}
+        presets={p.presets}
+        method={p.payMethod}
+        setMethod={p.setPayMethod}
+        card={p.card}
+        setCard={p.setCard}
+        paying={p.paying}
+        onPay={p.pay}
+      />
       <BillingLedgerDetailModal
         open={!!p.detailRow}
         onClose={p.closeDetail}

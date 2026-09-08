@@ -4,6 +4,7 @@ import com.pos.platform.domain.BillingAccountStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.UUID;
 
 public record CompanyBillingResponse(
@@ -19,6 +20,7 @@ public record CompanyBillingResponse(
     BillingAccountStatus status,
     boolean billingEnabled,
     boolean autoChargeEnabled,
+    LocalDate periodStartOn,
     Instant nextChargeAt,
     Instant paidUntil,
     Instant graceUntil,

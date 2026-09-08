@@ -35,5 +35,7 @@ public interface CompanyBillingAccountService {
 
     void refreshAccessStatus(CompanyBilling billing, Instant now);
 
+    int applyDueCharges(CompanyBilling billing, Instant now);
+
     void advancePeriod(CompanyBilling billing, Instant from);
 }
