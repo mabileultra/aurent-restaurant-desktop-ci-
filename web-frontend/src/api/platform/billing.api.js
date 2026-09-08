@@ -33,4 +33,8 @@ export const tenantBillingApi = {
     return api.post('/billing/me/top-ups', fd, { timeout: 60000 });
   },
   createPayment: (payload) => api.post('/billing/me/payments', payload),
+  ledgerEntry: (id) => api.get(`/billing/me/ledger/${id}`),
+  deleteLedgerEntry: (id) => api.delete(`/billing/me/ledger/${id}`),
+  deleteLedgerEntries: (ids) => api.post('/billing/me/ledger/bulk-delete', { ids }),
+  deleteAllLedger: () => api.delete('/billing/me/ledger'),
 };

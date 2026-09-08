@@ -8,6 +8,7 @@ import com.pos.platform.dto.billing.BillingPlanResponse;
 import com.pos.platform.dto.billing.BillingTopUpResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.dto.billing.CreateBillingPaymentRequest;
+import com.pos.platform.dto.billing.DeleteBillingLedgerRequest;
 import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.service.BillingPaymentService;
 import com.pos.platform.service.BillingService;
@@ -20,7 +21,9 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/billing")
@@ -70,6 +74,37 @@ public class TenantBillingController {
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(billingService.tenantLedger(type, pageable));
+    }
+
+    @GetMapping("/me/ledger/{entryId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Детали записи истории")
+    public ResponseEntity<BillingLedgerResponse> ledgerEntry(@PathVariable UUID entryId) {
+        return ResponseEntity.ok(billingService.tenantLedgerEntry(entryId));
+    }
+
+    @DeleteMapping("/me/ledger/{entryId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Удалить одну запись истории. Баланс не меняется.")
+    public ResponseEntity<Void> deleteLedgerEntry(@PathVariable UUID entryId) {
+        billingService.tenantDeleteLedgerEntry(entryId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/me/ledger/bulk-delete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Удалить выбранные записи истории. Баланс не меняется.")
+    public ResponseEntity<Void> deleteLedgerEntries(@Valid @RequestBody DeleteBillingLedgerRequest request) {
+        billingService.tenantDeleteLedgerEntries(request.ids());
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/me/ledger")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Удалить всю историю операций. Баланс не меняется.")
+    public ResponseEntity<Void> deleteAllLedger() {
+        billingService.tenantDeleteAllLedger();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me/top-ups")

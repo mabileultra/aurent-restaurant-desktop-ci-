@@ -1,8 +1,10 @@
 import { CalendarDays, CreditCard, FileText, MessageCircle, Package, ShieldCheck, Wallet } from 'lucide-react';
 import '../../../styles/billing.css';
 import { PageLayout } from '../../../components/ui';
-import TablePagination from '../../../components/shared/TablePagination';
 import { useAuthStore } from '../../../store/authStore';
+import BillingLedgerConfirmModal from '../components/BillingLedgerConfirmModal';
+import BillingLedgerDetailModal from '../components/BillingLedgerDetailModal';
+import BillingLedgerSection from '../components/BillingLedgerSection';
 import BillingPayProviders from '../components/BillingPayProviders';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
 
@@ -56,7 +58,10 @@ export default function TenantBillingPage() {
                 ID {me?.companyId || user?.companyId || '—'}
               </span>
               <span className="billing-chip billing-chip--violet">
-                {me?.planName || p.t('billing.noPlan')}
+                {me?.planName
+                  || (Number(me?.monthlyTotal) > 0
+                    ? `${p.money(me.monthlyTotal)} ${p.t('billing.currency')} ${p.t('billing.perMonth')}`
+                    : p.t('billing.noPlan'))}
               </span>
             </div>
             <p className="text-sm text-white/80 mb-1">{p.t('billing.availableBalance')}</p>
@@ -96,7 +101,12 @@ export default function TenantBillingPage() {
           <div className="billing-metric billing-metric--plan">
             <div className="billing-metric__icon"><Package size={16} /></div>
             <div className="billing-metric__label">{p.t('billing.metricPlan')}</div>
-            <div className="billing-metric__value">{me?.planName || '—'}</div>
+            <div className="billing-metric__value">
+              {me?.planName
+                || (Number(me?.monthlyTotal) > 0
+                  ? `${p.money(me.monthlyTotal)} ${p.t('billing.perMonth')}`
+                  : '—')}
+            </div>
             <div className="billing-metric__sub">
               {me?.maxRegisters ? p.t('billing.registersCount', { count: me.maxRegisters }) : '—'}
               {' · '}
@@ -137,71 +147,33 @@ export default function TenantBillingPage() {
         </section>
 
         <section className="billing-grid">
-          <div className="billing-panel">
-            <div className="billing-panel__head">
-              <div>
-                <h3 className="billing-panel__title">{p.t('billing.ledgerTitle')}</h3>
-                <p className="billing-panel__sub">{p.t('billing.ledgerSub')}</p>
-              </div>
-            </div>
-            <div className="billing-tabs">
-              {p.ledgerTabs.map((tab) => (
-                <button
-                  key={tab || 'all'}
-                  type="button"
-                  className={`billing-tab ${tabTone(tab)} ${p.ledgerType === tab ? `billing-tab--active ${tabTone(tab)}` : ''}`}
-                  onClick={() => p.setLedgerType(tab)}
-                >
-                  {tab ? p.t(`billing.ledgerTypes.${tab}`) : p.t('billing.ledgerAll')}
-                </button>
-              ))}
-            </div>
-            <div className="overflow-x-auto">
-              <table className="billing-table">
-                <thead>
-                  <tr>
-                    <th>{p.t('billing.colDate')}</th>
-                    <th>{p.t('billing.colType')}</th>
-                    <th>{p.t('billing.colDesc')}</th>
-                    <th>{p.t('billing.colAmount')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {p.ledgerLoading ? (
-                    <tr><td colSpan={4}>{p.t('common.loading')}</td></tr>
-                  ) : p.ledger.length === 0 ? (
-                    <tr><td colSpan={4}>{p.t('billing.ledgerEmpty')}</td></tr>
-                  ) : (
-                    p.ledger.map((row) => {
-                      const plus = Number(row.amount) >= 0;
-                      return (
-                        <tr key={row.id}>
-                          <td>{formatDateTime(row.createdAt)}</td>
-                          <td>
-                            <span className={`billing-badge billing-badge--${row.entryType}`}>
-                              {p.t(`billing.ledgerTypes.${row.entryType}`, { defaultValue: row.entryType })}
-                            </span>
-                          </td>
-                          <td>{row.description || '—'}</td>
-                          <td className={plus ? 'billing-amount--plus' : 'billing-amount--minus'}>
-                            {plus ? '+' : ''}{p.money(row.amount)} {p.t('billing.currency')}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
-            <TablePagination
-              page={p.ledgerPage}
-              pageSize={p.ledgerPageSize}
-              total={p.ledgerTotal}
-              onPageChange={p.setLedgerPage}
-              onPageSizeChange={p.setLedgerPageSize}
-              pageSizeOptions={p.pageSizeOptions}
-            />
-          </div>
+          <BillingLedgerSection
+            t={p.t}
+            money={p.money}
+            formatDateTime={formatDateTime}
+            ledgerTabs={p.ledgerTabs}
+            ledgerType={p.ledgerType}
+            setLedgerType={p.setLedgerType}
+            tabTone={tabTone}
+            ledger={p.ledger}
+            ledgerLoading={p.ledgerLoading}
+            ledgerPage={p.ledgerPage}
+            ledgerPageSize={p.ledgerPageSize}
+            ledgerTotal={p.ledgerTotal}
+            setLedgerPage={p.setLedgerPage}
+            setLedgerPageSize={p.setLedgerPageSize}
+            pageSizeOptions={p.pageSizeOptions}
+            selectedIds={p.selectedIds}
+            allPageSelected={p.allPageSelected}
+            selectAllRef={p.selectAllRef}
+            toggleSelect={p.toggleSelect}
+            toggleSelectAllPage={p.toggleSelectAllPage}
+            openDetail={p.openDetail}
+            openDeleteOne={p.openDeleteOne}
+            openDeleteSelected={p.openDeleteSelected}
+            openDeleteAll={p.openDeleteAll}
+            deleting={p.deleting}
+          />
 
           <div id="billing-topup" className="billing-topup">
             <h3 className="billing-topup__title">{p.t('billing.quickTopUp')}</h3>
@@ -311,6 +283,28 @@ export default function TenantBillingPage() {
           </div>
         </section>
       </div>
+
+      <BillingLedgerDetailModal
+        open={!!p.detailRow}
+        onClose={p.closeDetail}
+        row={p.detailRow}
+        t={p.t}
+        money={p.money}
+        formatDateTime={formatDateTime}
+        onDelete={p.openDeleteOne}
+        deleting={p.deleting}
+      />
+      <BillingLedgerConfirmModal
+        open={!!p.confirm}
+        onClose={p.closeConfirm}
+        title={p.t('billing.ledgerDeleteTitle')}
+        hint={p.confirmHint}
+        note={p.t('billing.ledgerDeleteNote')}
+        confirmLabel={p.t('common.delete')}
+        cancelLabel={p.t('common.cancel')}
+        onConfirm={p.confirmDelete}
+        isPending={p.deleting}
+      />
     </PageLayout>
   );
 }

@@ -6,6 +6,13 @@ import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 export default function PlatformBillingPage() {
   const p = usePlatformBillingPage();
   const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(p.dateLocale) : '—');
+  const planLabel = (row) => {
+    if (row.planName) return row.planName;
+    if (Number(row.monthlyTotal) > 0) {
+      return p.t('platform.billing.customMonthly', { amount: p.money(row.monthlyTotal) });
+    }
+    return '—';
+  };
 
   return (
     <PageLayout
@@ -58,7 +65,7 @@ export default function PlatformBillingPage() {
           <div className="billing-panel">
             <h3 className="billing-panel__title">{p.t('platform.billing.companiesTitle')}</h3>
             <div className="overflow-x-auto">
-              <table className="billing-table">
+              <table className="billing-table billing-table--compact">
                 <thead>
                   <tr>
                     <th>{p.t('platform.billing.colCompany')}</th>
@@ -77,15 +84,11 @@ export default function PlatformBillingPage() {
                     p.companies.map((row) => (
                       <tr
                         key={row.companyId}
-                        onClick={() => {
-                          p.setSelectedCompanyId(row.companyId);
-                          p.setAssignPlanId(row.planId || '');
-                          p.setAddonAmount(String(row.addonMonthlyAmount || 0));
-                        }}
+                        onClick={() => p.selectCompany(row)}
                         className={p.selectedCompanyId === row.companyId ? 'billing-row--selected cursor-pointer' : 'cursor-pointer'}
                       >
                         <td>{row.companyName || `#${row.companyId}`}</td>
-                        <td>{row.planName || '—'}</td>
+                        <td>{planLabel(row)}</td>
                         <td>{p.money(row.balance)} {p.t('billing.currency')}</td>
                         <td>{formatDate(row.nextChargeAt)}</td>
                         <td>
@@ -100,78 +103,94 @@ export default function PlatformBillingPage() {
               </table>
             </div>
             <TablePagination
+              className="billing-pagination--compact"
               page={p.companiesPage}
               pageSize={p.companiesPageSize}
               total={p.companiesTotal}
               onPageChange={p.setCompaniesPage}
-              onPageSizeChange={p.setCompaniesPageSize}
-              pageSizeOptions={p.pageSizeOptions}
             />
 
             {p.selected ? (
-              <div className="mt-4 space-y-3 rounded-xl border border-slate-200 p-3">
+              <div className="billing-manage">
                 <p className="text-sm font-semibold text-slate-800">
                   {p.t('platform.billing.manageCompany', { name: p.selected.companyName })}
                 </p>
+                <p className="billing-manage__hint">{p.t('platform.billing.monthlyHint')}</p>
+                <label className="billing-field-label" htmlFor="platform-monthly-amount">
+                  {p.t('platform.billing.monthlyAmount')}
+                </label>
                 <div className="grid gap-2 md:grid-cols-2">
+                  <input
+                    id="platform-monthly-amount"
+                    className="billing-input"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={p.monthlyAmount}
+                    onChange={(e) => p.setMonthlyAmount(e.target.value)}
+                    placeholder={p.t('platform.billing.monthlyAmountPlaceholder')}
+                  />
                   <select
                     className="billing-select"
                     value={p.assignPlanId}
-                    onChange={(e) => p.setAssignPlanId(e.target.value)}
+                    onChange={(e) => p.pickPlan(e.target.value)}
                   >
-                    <option value="">{p.t('platform.billing.pickPlan')}</option>
+                    <option value="">{p.t('platform.billing.pickPlanOptional')}</option>
                     {p.plans.map((plan) => (
                       <option key={plan.id} value={plan.id}>
                         {plan.name} — {p.money(plan.monthlyPrice)}
                       </option>
                     ))}
                   </select>
-                  <input
-                    className="billing-input"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    value={p.addonAmount}
-                    onChange={(e) => p.setAddonAmount(e.target.value)}
-                    placeholder={p.t('platform.billing.addonAmount')}
-                  />
                 </div>
-                <button type="button" className="billing-btn billing-btn--accent" disabled={p.busy || !p.assignPlanId} onClick={p.assignPlan}>
-                  {p.t('platform.billing.assignPlan')}
+                <button
+                  type="button"
+                  className="billing-btn billing-btn--accent"
+                  disabled={p.busy || !p.monthlyAmountValid}
+                  onClick={p.assignPlan}
+                >
+                  {p.t('platform.billing.saveMonthly')}
                 </button>
-                <div className="grid gap-2 md:grid-cols-2">
-                  <input
-                    className="billing-input"
-                    type="text"
-                    inputMode="numeric"
-                    autoComplete="off"
-                    value={p.adjustAmount}
-                    onChange={(e) => p.setAdjustAmount(e.target.value)}
-                    placeholder={p.t('platform.billing.amount')}
-                  />
-                  <input
-                    className="billing-input"
-                    value={p.adjustNote}
-                    onChange={(e) => p.setAdjustNote(e.target.value)}
-                    placeholder={p.t('platform.billing.note')}
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
-                    {p.t('platform.billing.credit')}
-                  </button>
-                  <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
-                    {p.t('platform.billing.debit')}
-                  </button>
-                  {p.selected.status === 'BLOCKED' ? (
-                    <button type="button" className="billing-btn billing-btn--violet" disabled={p.busy} onClick={p.unblock}>
-                      {p.t('platform.billing.unblock')}
+
+                <div className="billing-manage__topup">
+                  <label className="billing-field-label" htmlFor="platform-topup-amount">
+                    {p.t('platform.billing.topUpAmount')}
+                  </label>
+                  <div className="grid gap-2 md:grid-cols-2">
+                    <input
+                      id="platform-topup-amount"
+                      className="billing-input"
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      value={p.adjustAmount}
+                      onChange={(e) => p.setAdjustAmount(e.target.value)}
+                      placeholder={p.t('platform.billing.topUpAmountPlaceholder')}
+                    />
+                    <input
+                      className="billing-input"
+                      value={p.adjustNote}
+                      onChange={(e) => p.setAdjustNote(e.target.value)}
+                      placeholder={p.t('platform.billing.note')}
+                    />
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
+                      {p.t('platform.billing.credit')}
                     </button>
-                  ) : (
-                    <button type="button" className="billing-btn billing-btn--danger" disabled={p.busy} onClick={p.block}>
-                      {p.t('platform.billing.block')}
+                    <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
+                      {p.t('platform.billing.debit')}
                     </button>
-                  )}
+                    {p.selected.status === 'BLOCKED' ? (
+                      <button type="button" className="billing-btn billing-btn--violet" disabled={p.busy} onClick={p.unblock}>
+                        {p.t('platform.billing.unblock')}
+                      </button>
+                    ) : (
+                      <button type="button" className="billing-btn billing-btn--danger" disabled={p.busy} onClick={p.block}>
+                        {p.t('platform.billing.block')}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : null}
@@ -210,28 +229,6 @@ export default function PlatformBillingPage() {
                 ))
               )}
             </div>
-          </div>
-        </div>
-
-        <div className="billing-panel">
-          <h3 className="billing-panel__title">{p.t('platform.billing.plansTitle')}</h3>
-          <div className="billing-plan-strip">
-            {p.plans.map((plan) => (
-              <div key={plan.id} className="billing-plan-card">
-                <span className="text-xs uppercase tracking-wide text-slate-500">{plan.code}</span>
-                <strong>{plan.name}</strong>
-                <p className="text-sm text-slate-600">{p.money(plan.monthlyPrice)} {p.t('billing.currency')} {p.t('billing.perMonth')}</p>
-                <p className="text-xs text-slate-500 mt-1">
-                  {plan.maxRegisters
-                    ? p.t('billing.registersCount', { count: plan.maxRegisters })
-                    : p.t('billing.registersUnlimited')}
-                  {' · '}
-                  {plan.maxStores
-                    ? p.t('billing.storesCount', { count: plan.maxStores })
-                    : p.t('billing.storesUnlimited')}
-                </p>
-              </div>
-            ))}
           </div>
         </div>
       </div>

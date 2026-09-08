@@ -2,16 +2,19 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { platformBillingApi } from '../../../api';
 import { parseMoneyInput } from '../../billing/utils/parseMoneyInput';
 
 const STATUS_FILTERS = [null, 'ACTIVE', 'GRACE', 'BLOCKED', 'TRIAL'];
-const DEFAULT_PAGE_SIZE = TABLE_PAGE_SIZE_OPTIONS[1] || 14;
+const COMPANIES_PAGE_SIZE = 10;
 
 function money(v) {
   const n = Number(v || 0);
   return n.toLocaleString('ru-RU', { maximumFractionDigits: 0 });
+}
+
+function sameMoney(a, b) {
+  return Number(a || 0) === Number(b || 0);
 }
 
 export function usePlatformBillingPage() {
@@ -24,9 +27,8 @@ export function usePlatformBillingPage() {
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustNote, setAdjustNote] = useState('');
   const [assignPlanId, setAssignPlanId] = useState('');
-  const [addonAmount, setAddonAmount] = useState('0');
+  const [monthlyAmount, setMonthlyAmount] = useState('');
   const [companiesPage, setCompaniesPage] = useState(0);
-  const [companiesPageSize, setCompaniesPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const overviewQ = useQuery({
     queryKey: ['platform-billing-overview'],
@@ -58,6 +60,8 @@ export function usePlatformBillingPage() {
     qc.invalidateQueries({ queryKey: ['platform-billing-plans'] });
   };
 
+  const plans = plansQ.data || [];
+
   const approveM = useMutation({
     mutationFn: (id) => platformBillingApi.approveTopUp(id),
     onSuccess: () => {
@@ -78,22 +82,24 @@ export function usePlatformBillingPage() {
 
   const assignM = useMutation({
     mutationFn: () => {
-      const addon = parseMoneyInput(addonAmount, { allowZero: true });
-      if (addon == null) {
+      const monthly = parseMoneyInput(monthlyAmount, { allowZero: true });
+      if (monthly == null) {
         throw new Error(t('platform.billing.invalidAmount'));
       }
+      const plan = plans.find((item) => item.id === assignPlanId);
+      const usePlan = Boolean(plan && sameMoney(monthly, plan.monthlyPrice));
       return platformBillingApi.assignPlan(selectedCompanyId, {
-        planId: assignPlanId,
-        addonMonthlyAmount: addon,
+        planId: usePlan ? assignPlanId : null,
+        addonMonthlyAmount: usePlan ? 0 : monthly,
         billingEnabled: true,
         autoChargeEnabled: true,
       });
     },
     onSuccess: () => {
-      toast.success(t('platform.billing.planAssigned'));
+      toast.success(t('platform.billing.monthlySaved'));
       invalidate();
     },
-    onError: (e) => toast.error(e?.response?.data?.message || t('platform.billing.actionFailed')),
+    onError: (e) => toast.error(e?.response?.data?.message || e?.message || t('platform.billing.actionFailed')),
   });
 
   const topUpM = useMutation({
@@ -149,21 +155,36 @@ export function usePlatformBillingPage() {
   const companies = companiesQ.data || [];
   const companiesTotal = companies.length;
   const pagedCompanies = useMemo(() => {
-    const start = companiesPage * companiesPageSize;
-    return companies.slice(start, start + companiesPageSize);
-  }, [companies, companiesPage, companiesPageSize]);
+    const start = companiesPage * COMPANIES_PAGE_SIZE;
+    return companies.slice(start, start + COMPANIES_PAGE_SIZE);
+  }, [companies, companiesPage]);
 
   const selected = useMemo(
     () => companies.find((c) => c.companyId === selectedCompanyId) || null,
     [companies, selectedCompanyId],
   );
 
+  const selectCompany = (row) => {
+    setSelectedCompanyId(row.companyId);
+    setAssignPlanId(row.planId || '');
+    setMonthlyAmount(String(Math.round(Number(row.monthlyTotal || 0))));
+    setAdjustAmount('');
+    setAdjustNote('');
+  };
+
+  const pickPlan = (planId) => {
+    setAssignPlanId(planId);
+    const plan = plans.find((item) => item.id === planId);
+    if (plan) {
+      setMonthlyAmount(String(Math.round(Number(plan.monthlyPrice || 0))));
+    }
+  };
+
   return {
     t,
     dateLocale,
     money,
     statusFilters: STATUS_FILTERS,
-    pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
     search,
     setSearch: (v) => {
       setSearch(v);
@@ -175,30 +196,27 @@ export function usePlatformBillingPage() {
       setCompaniesPage(0);
     },
     overview: overviewQ.data,
-    plans: plansQ.data || [],
+    plans,
     companies: pagedCompanies,
     companiesTotal,
     companiesPage,
     setCompaniesPage,
-    companiesPageSize,
-    setCompaniesPageSize: (size) => {
-      setCompaniesPageSize(size);
-      setCompaniesPage(0);
-    },
+    companiesPageSize: COMPANIES_PAGE_SIZE,
     topUps: topUpsQ.data?.content || [],
     loading: overviewQ.isLoading || companiesQ.isLoading,
     selected,
     selectedCompanyId,
-    setSelectedCompanyId,
+    selectCompany,
     adjustAmount,
     setAdjustAmount,
     adjustAmountValid: parseMoneyInput(adjustAmount) != null,
     adjustNote,
     setAdjustNote,
     assignPlanId,
-    setAssignPlanId,
-    addonAmount,
-    setAddonAmount,
+    pickPlan,
+    monthlyAmount,
+    setMonthlyAmount,
+    monthlyAmountValid: parseMoneyInput(monthlyAmount, { allowZero: true }) != null,
     approve: (id) => approveM.mutate(id),
     reject: (id) => rejectM.mutate(id),
     assignPlan: () => assignM.mutate(),

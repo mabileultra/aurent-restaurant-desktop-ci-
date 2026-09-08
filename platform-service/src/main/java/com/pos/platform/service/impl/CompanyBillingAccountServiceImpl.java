@@ -8,7 +8,6 @@ import com.pos.platform.dto.billing.AssignCompanyPlanRequest;
 import com.pos.platform.dto.billing.BillingAccessResponse;
 import com.pos.platform.dto.billing.BillingOverviewResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
-import com.pos.platform.entity.BillingPlan;
 import com.pos.platform.entity.Company;
 import com.pos.platform.entity.CompanyBilling;
 import com.pos.platform.exception.BadRequestException;
@@ -103,10 +102,12 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
     @Transactional
     public CompanyBillingResponse assignPlan(Integer companyId, AssignCompanyPlanRequest request) {
         requireCompany(companyId);
-        BillingPlan plan = planService.requirePlan(request.planId());
-
         CompanyBilling billing = ensureBillingRow(companyId);
-        billing.setPlan(plan);
+        if (request.planId() != null) {
+            billing.setPlan(planService.requirePlan(request.planId()));
+        } else {
+            billing.setPlan(null);
+        }
         if (request.addonMonthlyAmount() != null) {
             billing.setAddonMonthlyAmount(BillingMoney.of(request.addonMonthlyAmount()));
         }

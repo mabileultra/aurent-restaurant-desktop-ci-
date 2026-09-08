@@ -55,6 +55,14 @@ public interface BillingService {
 
     PageResponse<BillingLedgerResponse> tenantLedger(BillingLedgerType type, Pageable pageable);
 
+    BillingLedgerResponse tenantLedgerEntry(UUID entryId);
+
+    void tenantDeleteLedgerEntry(UUID entryId);
+
+    long tenantDeleteLedgerEntries(List<UUID> ids);
+
+    long tenantDeleteAllLedger();
+
     PageResponse<BillingTopUpResponse> tenantTopUps(Pageable pageable);
 
     BillingTopUpResponse tenantSubmitTopUp(BigDecimal amount, String comment, MultipartFile receipt);

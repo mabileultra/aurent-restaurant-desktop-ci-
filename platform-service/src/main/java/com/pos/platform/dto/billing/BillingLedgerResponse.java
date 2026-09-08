@@ -13,5 +13,6 @@ public record BillingLedgerResponse(
     BigDecimal amount,
     BigDecimal balanceAfter,
     String description,
+    String actorRole,
     Instant createdAt
 ) {}

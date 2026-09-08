@@ -124,6 +124,26 @@ public class BillingServiceImpl implements BillingService {
     }
 
     @Override
+    public BillingLedgerResponse tenantLedgerEntry(UUID entryId) {
+        return ledgerService.get(BillingTenantSupport.requireCompanyId(), entryId);
+    }
+
+    @Override
+    public void tenantDeleteLedgerEntry(UUID entryId) {
+        ledgerService.delete(BillingTenantSupport.requireCompanyId(), entryId);
+    }
+
+    @Override
+    public long tenantDeleteLedgerEntries(List<UUID> ids) {
+        return ledgerService.deleteMany(BillingTenantSupport.requireCompanyId(), ids);
+    }
+
+    @Override
+    public long tenantDeleteAllLedger() {
+        return ledgerService.deleteAll(BillingTenantSupport.requireCompanyId());
+    }
+
+    @Override
     public PageResponse<BillingTopUpResponse> tenantTopUps(Pageable pageable) {
         return topUpService.listForCompany(BillingTenantSupport.requireCompanyId(), pageable);
     }

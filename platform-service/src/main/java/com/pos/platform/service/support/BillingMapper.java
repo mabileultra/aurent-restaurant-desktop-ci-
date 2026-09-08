@@ -77,6 +77,7 @@ public final class BillingMapper {
             entry.getAmount(),
             entry.getBalanceAfter(),
             entry.getDescription(),
+            entry.getActorRole(),
             entry.getCreatedAt()
         );
     }
