@@ -4929,7 +4929,9 @@
     "ledgerTypes": {
       "TOP_UP": "Пополнения",
       "CHARGE": "Списания",
-      "MODULE": "Модули"
+      "MODULE": "Модули",
+      "ADJUST": "Корректировки",
+      "BONUS": "Бонусы"
     },
     "colDate": "Дата / время",
     "colType": "Тип операции",
@@ -4956,6 +4958,19 @@
     "redirectingPay": "Переход к оплате…",
     "payFailed": "Не удалось создать платёж",
     "payUrlMissing": "Платёжная ссылка не получена",
-    "invalidAmount": "Введите корректную сумму больше 0"
+    "invalidAmount": "Введите корректную сумму больше 0",
+    "connected": "Оплата подключена",
+    "amountLabel": "Сумма пополнения",
+    "ledgerSub": "Пополнения, списания и модули",
+    "registersCount": "до {{count}} касс",
+    "storesCount": "до {{count}} филиалов",
+    "registersUnlimited": "∞ касс",
+    "storesUnlimited": "∞ филиалов",
+    "footerGraceTitle": "Гарантия непрерывности",
+    "footerGraceText": "При нехватке средств действует льготный период 3 дня — доступ не обрывается сразу.",
+    "footerDocsTitle": "Электронные документы",
+    "footerDocsText": "Счета и акты можно запросить у поддержки для Didox / Soliq.",
+    "footerSupportTitle": "Поддержка",
+    "footerSupportText": "Вопросы по оплате: Telegram @aurent_support"
   }
 }

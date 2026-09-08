@@ -2,10 +2,12 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { platformBillingApi } from '../../../api';
 import { parseMoneyInput } from '../../billing/utils/parseMoneyInput';
 
 const STATUS_FILTERS = [null, 'ACTIVE', 'GRACE', 'BLOCKED', 'TRIAL'];
+const DEFAULT_PAGE_SIZE = TABLE_PAGE_SIZE_OPTIONS[1] || 14;
 
 function money(v) {
   const n = Number(v || 0);
@@ -23,6 +25,8 @@ export function usePlatformBillingPage() {
   const [adjustNote, setAdjustNote] = useState('');
   const [assignPlanId, setAssignPlanId] = useState('');
   const [addonAmount, setAddonAmount] = useState('0');
+  const [companiesPage, setCompaniesPage] = useState(0);
+  const [companiesPageSize, setCompaniesPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const overviewQ = useQuery({
     queryKey: ['platform-billing-overview'],
@@ -142,9 +146,16 @@ export function usePlatformBillingPage() {
     onError: (e) => toast.error(e?.response?.data?.message || t('platform.billing.actionFailed')),
   });
 
+  const companies = companiesQ.data || [];
+  const companiesTotal = companies.length;
+  const pagedCompanies = useMemo(() => {
+    const start = companiesPage * companiesPageSize;
+    return companies.slice(start, start + companiesPageSize);
+  }, [companies, companiesPage, companiesPageSize]);
+
   const selected = useMemo(
-    () => (companiesQ.data || []).find((c) => c.companyId === selectedCompanyId) || null,
-    [companiesQ.data, selectedCompanyId],
+    () => companies.find((c) => c.companyId === selectedCompanyId) || null,
+    [companies, selectedCompanyId],
   );
 
   return {
@@ -152,13 +163,28 @@ export function usePlatformBillingPage() {
     dateLocale,
     money,
     statusFilters: STATUS_FILTERS,
+    pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
     search,
-    setSearch,
+    setSearch: (v) => {
+      setSearch(v);
+      setCompaniesPage(0);
+    },
     status,
-    setStatus,
+    setStatus: (v) => {
+      setStatus(v);
+      setCompaniesPage(0);
+    },
     overview: overviewQ.data,
     plans: plansQ.data || [],
-    companies: companiesQ.data || [],
+    companies: pagedCompanies,
+    companiesTotal,
+    companiesPage,
+    setCompaniesPage,
+    companiesPageSize,
+    setCompaniesPageSize: (size) => {
+      setCompaniesPageSize(size);
+      setCompaniesPage(0);
+    },
     topUps: topUpsQ.data?.content || [],
     loading: overviewQ.isLoading || companiesQ.isLoading,
     selected,

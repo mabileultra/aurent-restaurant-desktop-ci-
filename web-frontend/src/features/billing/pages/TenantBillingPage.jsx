@@ -1,19 +1,43 @@
+import { CalendarDays, CreditCard, FileText, MessageCircle, Package, ShieldCheck, Wallet } from 'lucide-react';
 import '../../../styles/billing.css';
 import { PageLayout } from '../../../components/ui';
+import TablePagination from '../../../components/shared/TablePagination';
+import { useAuthStore } from '../../../store/authStore';
+import BillingPayProviders from '../components/BillingPayProviders';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
+
+function periodStart(paidUntil) {
+  if (!paidUntil) return null;
+  const end = new Date(paidUntil);
+  const start = new Date(end);
+  start.setDate(start.getDate() - 30);
+  return start;
+}
 
 export default function TenantBillingPage() {
   const p = useTenantBillingPage();
   const me = p.me;
+  const user = useAuthStore((s) => s.user);
 
   const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(p.dateLocale) : '—');
   const formatDateTime = (iso) => (iso ? new Date(iso).toLocaleString(p.dateLocale) : '—');
+  const formatDateObj = (d) => (d ? d.toLocaleDateString(p.dateLocale) : '—');
+
+  const start = periodStart(me?.paidUntil || me?.nextChargeAt);
+  const end = me?.paidUntil || me?.nextChargeAt;
+
+  const tabTone = (tab) => {
+    if (tab === 'TOP_UP') return 'billing-tab--blue';
+    if (tab === 'MODULE') return 'billing-tab--violet';
+    if (tab === 'CHARGE') return 'billing-tab--amber';
+    return '';
+  };
 
   return (
     <PageLayout
       spacing="space-y-4"
       title={p.t('billing.title')}
-      subtitle={p.t('billing.subtitle')}
+      subtitle={me?.companyName || p.t('billing.subtitle')}
     >
       <div className="billing-page space-y-4">
         {me?.status === 'BLOCKED' ? (
@@ -25,13 +49,20 @@ export default function TenantBillingPage() {
         <section className="billing-hero">
           <div>
             <div className="billing-hero__meta">
-              <span className={`billing-chip ${me?.status === 'ACTIVE' || me?.status === 'TRIAL' ? 'billing-chip--ok' : ''}`}>
-                {p.statusLabel}
+              <span className={`billing-chip ${me?.billingEnabled ? 'billing-chip--ok' : ''}`}>
+                {me?.billingEnabled ? p.t('billing.connected') : p.t('billing.statusNotConfigured')}
               </span>
-              <span className="billing-chip">{me?.planName || p.t('billing.noPlan')}</span>
+              <span className="billing-chip billing-chip--sky">
+                ID {me?.companyId || user?.companyId || '—'}
+              </span>
+              <span className="billing-chip billing-chip--violet">
+                {me?.planName || p.t('billing.noPlan')}
+              </span>
             </div>
             <p className="text-sm text-white/80 mb-1">{p.t('billing.availableBalance')}</p>
-            <div className="billing-hero__balance">{p.money(me?.balance)} {p.t('billing.currency')}</div>
+            <div className="billing-hero__balance">
+              {p.money(me?.balance)} {p.t('billing.currency')}
+            </div>
             <p className="billing-hero__hint">
               {p.t('billing.nextChargeHint', {
                 date: formatDate(me?.nextChargeAt),
@@ -48,33 +79,44 @@ export default function TenantBillingPage() {
               <div className="billing-progress mt-3">
                 <span style={{ width: `${p.progress}%` }} />
               </div>
+              <div className="billing-hero__period">
+                <span>{formatDateObj(start)}</span>
+                <span>{formatDate(end)}</span>
+              </div>
             </div>
             <div className="billing-hero__actions">
-              <a href="#billing-topup" className="billing-btn billing-btn--primary">+ {p.t('billing.topUp')}</a>
+              <a href="#billing-topup" className="billing-btn billing-btn--primary">
+                + {p.t('billing.topUp')}
+              </a>
             </div>
           </div>
         </section>
 
         <section className="billing-metrics">
-          <div className="billing-metric">
+          <div className="billing-metric billing-metric--plan">
+            <div className="billing-metric__icon"><Package size={16} /></div>
             <div className="billing-metric__label">{p.t('billing.metricPlan')}</div>
             <div className="billing-metric__value">{me?.planName || '—'}</div>
             <div className="billing-metric__sub">
-              {me?.maxRegisters ? `${me.maxRegisters} касс` : '—'} · {me?.maxStores ? `${me.maxStores} филиала` : '—'}
+              {me?.maxRegisters ? p.t('billing.registersCount', { count: me.maxRegisters }) : '—'}
+              {' · '}
+              {me?.maxStores ? p.t('billing.storesCount', { count: me.maxStores }) : '—'}
             </div>
           </div>
-          <div className="billing-metric">
+          <div className="billing-metric billing-metric--date">
+            <div className="billing-metric__icon"><CalendarDays size={16} /></div>
             <div className="billing-metric__label">{p.t('billing.metricNext')}</div>
-            <div className="billing-metric__value">
-              {me?.nextChargeAt ? new Date(me.nextChargeAt).toLocaleDateString(p.dateLocale) : '—'}
-            </div>
+            <div className="billing-metric__value">{formatDate(me?.nextChargeAt)}</div>
             <div className="billing-metric__sub">
               {me?.autoChargeEnabled ? p.t('billing.autoOn') : p.t('billing.autoOff')}
             </div>
           </div>
-          <div className="billing-metric">
+          <div className="billing-metric billing-metric--monthly">
+            <div className="billing-metric__icon"><Wallet size={16} /></div>
             <div className="billing-metric__label">{p.t('billing.metricMonthly')}</div>
-            <div className="billing-metric__value">{p.money(me?.monthlyTotal)} {p.t('billing.currency')}</div>
+            <div className="billing-metric__value">
+              {p.money(me?.monthlyTotal)} {p.t('billing.currency')}
+            </div>
             <div className="billing-metric__sub">
               {p.t('billing.monthlyBreakdown', {
                 plan: p.money(me?.planMonthlyPrice),
@@ -82,24 +124,32 @@ export default function TenantBillingPage() {
               })}
             </div>
           </div>
-          <div className="billing-metric">
+          <div className="billing-metric billing-metric--status">
+            <div className="billing-metric__icon"><CreditCard size={16} /></div>
             <div className="billing-metric__label">{p.t('billing.metricStatus')}</div>
             <div className="billing-metric__value">
-              <span className={`billing-badge billing-badge--${me?.status || 'ACTIVE'}`}>{me?.status || 'ACTIVE'}</span>
+              <span className={`billing-badge billing-badge--${me?.status || 'ACTIVE'}`}>
+                {p.t(`platform.billing.statuses.${me?.status || 'ACTIVE'}`)}
+              </span>
             </div>
-            <div className="billing-metric__sub">{p.t('billing.graceHint')}</div>
+            <div className="billing-metric__sub">{p.statusLabel}</div>
           </div>
         </section>
 
         <section className="billing-grid">
           <div className="billing-panel">
-            <h3 className="billing-panel__title">{p.t('billing.ledgerTitle')}</h3>
+            <div className="billing-panel__head">
+              <div>
+                <h3 className="billing-panel__title">{p.t('billing.ledgerTitle')}</h3>
+                <p className="billing-panel__sub">{p.t('billing.ledgerSub')}</p>
+              </div>
+            </div>
             <div className="billing-tabs">
               {p.ledgerTabs.map((tab) => (
                 <button
                   key={tab || 'all'}
                   type="button"
-                  className={`billing-tab ${p.ledgerType === tab ? 'billing-tab--active' : ''}`}
+                  className={`billing-tab ${tabTone(tab)} ${p.ledgerType === tab ? `billing-tab--active ${tabTone(tab)}` : ''}`}
                   onClick={() => p.setLedgerType(tab)}
                 >
                   {tab ? p.t(`billing.ledgerTypes.${tab}`) : p.t('billing.ledgerAll')}
@@ -117,7 +167,7 @@ export default function TenantBillingPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {p.loading ? (
+                  {p.ledgerLoading ? (
                     <tr><td colSpan={4}>{p.t('common.loading')}</td></tr>
                   ) : p.ledger.length === 0 ? (
                     <tr><td colSpan={4}>{p.t('billing.ledgerEmpty')}</td></tr>
@@ -127,10 +177,14 @@ export default function TenantBillingPage() {
                       return (
                         <tr key={row.id}>
                           <td>{formatDateTime(row.createdAt)}</td>
-                          <td><span className={`billing-badge billing-badge--${row.entryType}`}>{row.entryType}</span></td>
+                          <td>
+                            <span className={`billing-badge billing-badge--${row.entryType}`}>
+                              {p.t(`billing.ledgerTypes.${row.entryType}`, { defaultValue: row.entryType })}
+                            </span>
+                          </td>
                           <td>{row.description || '—'}</td>
                           <td className={plus ? 'billing-amount--plus' : 'billing-amount--minus'}>
-                            {plus ? '+' : ''}{p.money(row.amount)}
+                            {plus ? '+' : ''}{p.money(row.amount)} {p.t('billing.currency')}
                           </td>
                         </tr>
                       );
@@ -139,6 +193,14 @@ export default function TenantBillingPage() {
                 </tbody>
               </table>
             </div>
+            <TablePagination
+              page={p.ledgerPage}
+              pageSize={p.ledgerPageSize}
+              total={p.ledgerTotal}
+              onPageChange={p.setLedgerPage}
+              onPageSizeChange={p.setLedgerPageSize}
+              pageSizeOptions={p.pageSizeOptions}
+            />
           </div>
 
           <div id="billing-topup" className="billing-topup">
@@ -155,7 +217,11 @@ export default function TenantBillingPage() {
                 </button>
               ))}
             </div>
+            <label className="billing-field-label" htmlFor="billing-amount">
+              {p.t('billing.amountLabel')}
+            </label>
             <input
+              id="billing-amount"
               className="billing-input"
               type="text"
               inputMode="numeric"
@@ -165,69 +231,83 @@ export default function TenantBillingPage() {
               placeholder={p.t('billing.customAmount')}
             />
 
-            <div className="flex flex-col gap-2 mb-3">
-              <button
-                type="button"
-                className="billing-btn billing-btn--accent"
-                disabled={p.paying || !p.amountValid}
-                onClick={p.payClick}
-              >
-                {p.paying ? p.t('common.saving') : p.t('billing.payClick')}
-              </button>
-              <button
-                type="button"
-                className="billing-btn billing-btn--primary"
-                disabled={p.paying || !p.amountValid}
-                onClick={p.payPayme}
-              >
-                {p.paying ? p.t('common.saving') : p.t('billing.payPayme')}
-              </button>
-            </div>
+            <BillingPayProviders
+              t={p.t}
+              disabled={!p.amountValid}
+              paying={p.paying}
+              onPay={p.pay}
+            />
             <p className="text-xs text-slate-500 mb-3">{p.t('billing.autoPayHint')}</p>
 
-            <button
-              type="button"
-              className="text-sm font-semibold text-slate-600 underline mb-2"
-              onClick={() => p.setShowManual((v) => !v)}
-            >
-              {p.showManual ? p.t('billing.hideManual') : p.t('billing.showManual')}
-            </button>
+            <div className="billing-manual">
+              <button
+                type="button"
+                className="text-sm font-semibold text-slate-600 underline mb-2"
+                onClick={() => p.setShowManual((v) => !v)}
+              >
+                {p.showManual ? p.t('billing.hideManual') : p.t('billing.showManual')}
+              </button>
 
-            {p.showManual ? (
-              <>
-                <textarea
-                  className="billing-textarea"
-                  rows={2}
-                  value={p.comment}
-                  onChange={(e) => p.setComment(e.target.value)}
-                  placeholder={p.t('billing.comment')}
-                />
-                <label className="billing-drop">
-                  <input
-                    type="file"
-                    accept=".pdf,.png,.jpg,.jpeg,.webp"
-                    className="hidden"
-                    onChange={(e) => p.setFile(e.target.files?.[0] || null)}
+              {p.showManual ? (
+                <>
+                  <textarea
+                    className="billing-textarea"
+                    rows={2}
+                    value={p.comment}
+                    onChange={(e) => p.setComment(e.target.value)}
+                    placeholder={p.t('billing.comment')}
                   />
-                  {p.file ? p.file.name : p.t('billing.attachFile')}
-                </label>
-                <button
-                  type="button"
-                  className="billing-btn billing-btn--accent"
-                  disabled={p.submitting || !p.amountValid}
-                  onClick={p.submit}
-                >
-                  {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}
-                </button>
-                <p className="mt-2 text-xs text-slate-500">{p.t('billing.topUpHint')}</p>
-              </>
-            ) : null}
+                  <label className="billing-drop">
+                    <input
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.webp"
+                      className="hidden"
+                      onChange={(e) => p.setFile(e.target.files?.[0] || null)}
+                    />
+                    {p.file ? p.file.name : p.t('billing.attachFile')}
+                  </label>
+                  <button
+                    type="button"
+                    className="billing-btn billing-btn--accent"
+                    disabled={p.submitting || !p.amountValid}
+                    onClick={p.submit}
+                  >
+                    {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}
+                  </button>
+                  <p className="mt-2 text-xs text-slate-500">{p.t('billing.topUpHint')}</p>
+                </>
+              ) : null}
+            </div>
 
             {p.pendingTopUps.length > 0 ? (
               <p className="mt-3 text-sm text-amber-700">
                 {p.t('billing.pendingCount', { count: p.pendingTopUps.length })}
               </p>
             ) : null}
+          </div>
+        </section>
+
+        <section className="billing-footer">
+          <div className="billing-footer__card billing-footer__card--grace">
+            <span className="billing-footer__icon"><ShieldCheck size={18} /></span>
+            <div>
+              <p className="billing-footer__title">{p.t('billing.footerGraceTitle')}</p>
+              <p className="billing-footer__text">{p.t('billing.footerGraceText')}</p>
+            </div>
+          </div>
+          <div className="billing-footer__card billing-footer__card--docs">
+            <span className="billing-footer__icon"><FileText size={18} /></span>
+            <div>
+              <p className="billing-footer__title">{p.t('billing.footerDocsTitle')}</p>
+              <p className="billing-footer__text">{p.t('billing.footerDocsText')}</p>
+            </div>
+          </div>
+          <div className="billing-footer__card billing-footer__card--support">
+            <span className="billing-footer__icon"><MessageCircle size={18} /></span>
+            <div>
+              <p className="billing-footer__title">{p.t('billing.footerSupportTitle')}</p>
+              <p className="billing-footer__text">{p.t('billing.footerSupportText')}</p>
+            </div>
           </div>
         </section>
       </div>

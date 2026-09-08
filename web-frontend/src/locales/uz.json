@@ -4620,7 +4620,9 @@
     "ledgerTypes": {
       "TOP_UP": "To‘ldirishlar",
       "CHARGE": "Yechib olishlar",
-      "MODULE": "Modullar"
+      "MODULE": "Modullar",
+      "ADJUST": "Tuzatishlar",
+      "BONUS": "Bonuslar"
     },
     "colDate": "Sana / vaqt",
     "colType": "Operatsiya turi",
@@ -4647,6 +4649,19 @@
     "redirectingPay": "To‘lovga o‘tish…",
     "payFailed": "To‘lov yaratib bo‘lmadi",
     "payUrlMissing": "To‘lov havolasi olinmadi",
-    "invalidAmount": "0 dan katta to‘g‘ri summa kiriting"
+    "invalidAmount": "0 dan katta to‘g‘ri summa kiriting",
+    "connected": "To‘lov ulangan",
+    "amountLabel": "To‘ldirish summasi",
+    "ledgerSub": "To‘ldirishlar, yechib olishlar va modullar",
+    "registersCount": "{{count}} tagacha kassa",
+    "storesCount": "{{count}} tagacha filial",
+    "registersUnlimited": "∞ kassa",
+    "storesUnlimited": "∞ filial",
+    "footerGraceTitle": "Uzluksizlik kafolati",
+    "footerGraceText": "Mablag‘ yetmasa 3 kunlik imtiyozli muddat amal qiladi — kirish darhol yopilmaydi.",
+    "footerDocsTitle": "Elektron hujjatlar",
+    "footerDocsText": "Hisob-faktura va aktlarni Didox / Soliq uchun qo‘llab-quvvatlashdan so‘rang.",
+    "footerSupportTitle": "Qo‘llab-quvvatlash",
+    "footerSupportText": "To‘lov bo‘yicha savollar: Telegram @aurent_support"
   }
 }

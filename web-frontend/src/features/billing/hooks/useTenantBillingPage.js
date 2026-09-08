@@ -2,11 +2,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { tenantBillingApi } from '../../../api';
 import { parseMoneyInput } from '../utils/parseMoneyInput';
 
 const PRESETS = [500000, 850000, 1500000, 3000000];
 const LEDGER_TABS = [null, 'TOP_UP', 'CHARGE', 'MODULE'];
+const DEFAULT_PAGE_SIZE = TABLE_PAGE_SIZE_OPTIONS[1] || 14;
 
 function money(v) {
   const n = Number(v || 0);
@@ -28,6 +30,8 @@ export function useTenantBillingPage() {
   const [file, setFile] = useState(null);
   const [ledgerType, setLedgerType] = useState(null);
   const [showManual, setShowManual] = useState(false);
+  const [ledgerPage, setLedgerPage] = useState(0);
+  const [ledgerPageSize, setLedgerPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const parsedAmount = parseMoneyInput(amount);
 
@@ -37,10 +41,15 @@ export function useTenantBillingPage() {
   });
 
   const ledgerQ = useQuery({
-    queryKey: ['tenant-billing-ledger', ledgerType],
+    queryKey: ['tenant-billing-ledger', ledgerType, ledgerPage, ledgerPageSize],
     queryFn: () =>
       tenantBillingApi
-        .ledger({ type: ledgerType || undefined, size: 30, sort: 'createdAt,desc' })
+        .ledger({
+          type: ledgerType || undefined,
+          page: ledgerPage,
+          size: ledgerPageSize,
+          sort: 'createdAt,desc',
+        })
         .then((r) => r.data),
   });
 
@@ -112,6 +121,11 @@ export function useTenantBillingPage() {
     });
   }, [me, t, dateLocale]);
 
+  const setLedgerTypeAndReset = (type) => {
+    setLedgerType(type);
+    setLedgerPage(0);
+  };
+
   return {
     t,
     i18n,
@@ -119,9 +133,19 @@ export function useTenantBillingPage() {
     money,
     presets: PRESETS,
     ledgerTabs: LEDGER_TABS,
+    pageSizeOptions: TABLE_PAGE_SIZE_OPTIONS,
     me,
     loading: meQ.isLoading,
     ledger: ledgerQ.data?.content || [],
+    ledgerTotal: ledgerQ.data?.totalElements ?? 0,
+    ledgerPage,
+    setLedgerPage,
+    ledgerPageSize,
+    setLedgerPageSize: (size) => {
+      setLedgerPageSize(size);
+      setLedgerPage(0);
+    },
+    ledgerLoading: ledgerQ.isLoading,
     pendingTopUps: (topUpsQ.data?.content || []).filter((x) => x.status === 'PENDING'),
     amount,
     setAmount,
@@ -131,7 +155,7 @@ export function useTenantBillingPage() {
     file,
     setFile,
     ledgerType,
-    setLedgerType,
+    setLedgerType: setLedgerTypeAndReset,
     remaining,
     progress,
     statusLabel,
@@ -139,8 +163,7 @@ export function useTenantBillingPage() {
     setShowManual,
     submit: () => submitM.mutate(),
     submitting: submitM.isPending,
-    payClick: () => payM.mutate('CLICK'),
-    payPayme: () => payM.mutate('PAYME'),
+    pay: (provider) => payM.mutate(provider),
     paying: payM.isPending,
   };
 }

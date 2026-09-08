@@ -1,5 +1,6 @@
 import '../../../styles/billing.css';
 import { PageLayout, PageSearchField } from '../../../components/ui';
+import TablePagination from '../../../components/shared/TablePagination';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 export default function PlatformBillingPage() {
@@ -35,19 +36,19 @@ export default function PlatformBillingPage() {
     >
       <div className="billing-page space-y-4">
         <div className="billing-kpi">
-          <div className="billing-kpi__card">
+          <div className="billing-kpi__card billing-kpi__card--mrr">
             <span className="billing-metric__label">MRR</span>
             <strong>{p.money(p.overview?.mrr)} {p.t('billing.currency')}</strong>
           </div>
-          <div className="billing-kpi__card">
+          <div className="billing-kpi__card billing-kpi__card--active">
             <span className="billing-metric__label">{p.t('platform.billing.kpiActive')}</span>
             <strong>{p.overview?.activeCount ?? '—'}</strong>
           </div>
-          <div className="billing-kpi__card">
+          <div className="billing-kpi__card billing-kpi__card--blocked">
             <span className="billing-metric__label">{p.t('platform.billing.kpiBlocked')}</span>
             <strong>{p.overview?.blockedCount ?? '—'}</strong>
           </div>
-          <div className="billing-kpi__card">
+          <div className="billing-kpi__card billing-kpi__card--pending">
             <span className="billing-metric__label">{p.t('platform.billing.kpiPending')}</span>
             <strong>{p.overview?.pendingTopUps ?? '—'}</strong>
           </div>
@@ -81,19 +82,31 @@ export default function PlatformBillingPage() {
                           p.setAssignPlanId(row.planId || '');
                           p.setAddonAmount(String(row.addonMonthlyAmount || 0));
                         }}
-                        className={p.selectedCompanyId === row.companyId ? 'bg-emerald-50/60' : 'cursor-pointer'}
+                        className={p.selectedCompanyId === row.companyId ? 'billing-row--selected cursor-pointer' : 'cursor-pointer'}
                       >
                         <td>{row.companyName || `#${row.companyId}`}</td>
                         <td>{row.planName || '—'}</td>
-                        <td>{p.money(row.balance)}</td>
+                        <td>{p.money(row.balance)} {p.t('billing.currency')}</td>
                         <td>{formatDate(row.nextChargeAt)}</td>
-                        <td><span className={`billing-badge billing-badge--${row.status}`}>{row.status}</span></td>
+                        <td>
+                          <span className={`billing-badge billing-badge--${row.status}`}>
+                            {p.t(`platform.billing.statuses.${row.status}`)}
+                          </span>
+                        </td>
                       </tr>
                     ))
                   )}
                 </tbody>
               </table>
             </div>
+            <TablePagination
+              page={p.companiesPage}
+              pageSize={p.companiesPageSize}
+              total={p.companiesTotal}
+              onPageChange={p.setCompaniesPage}
+              onPageSizeChange={p.setCompaniesPageSize}
+              pageSizeOptions={p.pageSizeOptions}
+            />
 
             {p.selected ? (
               <div className="mt-4 space-y-3 rounded-xl border border-slate-200 p-3">
@@ -147,11 +160,11 @@ export default function PlatformBillingPage() {
                   <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
                     {p.t('platform.billing.credit')}
                   </button>
-                  <button type="button" className="billing-btn billing-btn--ghost !border-slate-300 !text-slate-700" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
+                  <button type="button" className="billing-btn billing-btn--blue" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
                     {p.t('platform.billing.debit')}
                   </button>
                   {p.selected.status === 'BLOCKED' ? (
-                    <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy} onClick={p.unblock}>
+                    <button type="button" className="billing-btn billing-btn--violet" disabled={p.busy} onClick={p.unblock}>
                       {p.t('platform.billing.unblock')}
                     </button>
                   ) : (
@@ -209,9 +222,13 @@ export default function PlatformBillingPage() {
                 <strong>{plan.name}</strong>
                 <p className="text-sm text-slate-600">{p.money(plan.monthlyPrice)} {p.t('billing.currency')} {p.t('billing.perMonth')}</p>
                 <p className="text-xs text-slate-500 mt-1">
-                  {plan.maxRegisters ? `${plan.maxRegisters} касс` : '∞ касс'}
+                  {plan.maxRegisters
+                    ? p.t('billing.registersCount', { count: plan.maxRegisters })
+                    : p.t('billing.registersUnlimited')}
                   {' · '}
-                  {plan.maxStores ? `${plan.maxStores} филиалов` : '∞ филиалов'}
+                  {plan.maxStores
+                    ? p.t('billing.storesCount', { count: plan.maxStores })
+                    : p.t('billing.storesUnlimited')}
                 </p>
               </div>
             ))}
