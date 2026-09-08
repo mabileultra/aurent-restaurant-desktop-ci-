@@ -102,13 +102,10 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
     @Override
     @Transactional
     public CompanyBillingResponse assignPlan(Integer companyId, AssignCompanyPlanRequest request) {
-        Company company = requireCompany(companyId);
+        requireCompany(companyId);
         BillingPlan plan = planService.requirePlan(request.planId());
 
-        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyId(companyId)
-            .orElseGet(() -> newBilling(company));
-
-        billing.bindCompany(company);
+        CompanyBilling billing = ensureBillingRow(companyId);
         billing.setPlan(plan);
         if (request.addonMonthlyAmount() != null) {
             billing.setAddonMonthlyAmount(BillingMoney.of(request.addonMonthlyAmount()));
@@ -199,23 +196,22 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
     @Override
     @Transactional
     public CompanyBilling requireOrCreateBilling(Integer companyId) {
-        return companyBillingRepository.findDetailedByCompanyId(companyId)
-            .orElseGet(() -> {
-                Company company = requireCompany(companyId);
-                return companyBillingRepository.save(newBilling(company));
-            });
+        return ensureBillingRow(companyId);
     }
 
-    private static CompanyBilling newBilling(Company company) {
-        CompanyBilling billing = CompanyBilling.builder()
-            .balance(BigDecimal.ZERO)
-            .status(BillingAccountStatus.ACTIVE)
-            .billingEnabled(true)
-            .autoChargeEnabled(true)
-            .addonMonthlyAmount(BigDecimal.ZERO)
-            .build();
-        billing.bindCompany(company);
-        return billing;
+    private CompanyBilling ensureBillingRow(Integer companyId) {
+        if (companyId == null) {
+            throw new BadRequestException("Company id is required");
+        }
+        return companyBillingRepository.findDetailedByCompanyId(companyId)
+            .orElseGet(() -> {
+                requireCompany(companyId);
+                companyBillingRepository.insertBlankIfAbsent(companyId);
+                return companyBillingRepository.findDetailedByCompanyId(companyId)
+                    .orElseThrow(() -> new IllegalStateException(
+                        "Не удалось создать billing для компании " + companyId
+                    ));
+            });
     }
 
     @Override
