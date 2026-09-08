@@ -106,9 +106,9 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         BillingPlan plan = planService.requirePlan(request.planId());
 
         CompanyBilling billing = companyBillingRepository.findDetailedByCompanyId(companyId)
-            .orElseGet(() -> CompanyBilling.builder().company(company).companyId(companyId).build());
+            .orElseGet(() -> newBilling(company));
 
-        billing.setCompany(company);
+        billing.bindCompany(company);
         billing.setPlan(plan);
         if (request.addonMonthlyAmount() != null) {
             billing.setAddonMonthlyAmount(BillingMoney.of(request.addonMonthlyAmount()));
@@ -202,16 +202,20 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         return companyBillingRepository.findDetailedByCompanyId(companyId)
             .orElseGet(() -> {
                 Company company = requireCompany(companyId);
-                return companyBillingRepository.save(CompanyBilling.builder()
-                    .company(company)
-                    .companyId(companyId)
-                    .balance(BigDecimal.ZERO)
-                    .status(BillingAccountStatus.ACTIVE)
-                    .billingEnabled(true)
-                    .autoChargeEnabled(true)
-                    .addonMonthlyAmount(BigDecimal.ZERO)
-                    .build());
+                return companyBillingRepository.save(newBilling(company));
             });
+    }
+
+    private static CompanyBilling newBilling(Company company) {
+        CompanyBilling billing = CompanyBilling.builder()
+            .balance(BigDecimal.ZERO)
+            .status(BillingAccountStatus.ACTIVE)
+            .billingEnabled(true)
+            .autoChargeEnabled(true)
+            .addonMonthlyAmount(BigDecimal.ZERO)
+            .build();
+        billing.bindCompany(company);
+        return billing;
     }
 
     @Override

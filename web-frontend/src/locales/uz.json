@@ -2408,6 +2408,7 @@
       "balanceUpdated": "Balans yangilandi",
       "statusUpdated": "Holat yangilandi",
       "actionFailed": "Amalni bajarib bo‘lmadi",
+      "invalidAmount": "0 dan katta to‘g‘ri summa kiriting",
       "statuses": {
         "ACTIVE": "Faol",
         "GRACE": "Imtiyozli muddat",
@@ -4645,6 +4646,7 @@
     "hideManual": "Qo‘lda tasdiqlashni yashirish",
     "redirectingPay": "To‘lovga o‘tish…",
     "payFailed": "To‘lov yaratib bo‘lmadi",
-    "payUrlMissing": "To‘lov havolasi olinmadi"
+    "payUrlMissing": "To‘lov havolasi olinmadi",
+    "invalidAmount": "0 dan katta to‘g‘ri summa kiriting"
   }
 }

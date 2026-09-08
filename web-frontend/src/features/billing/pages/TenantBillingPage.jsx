@@ -157,8 +157,9 @@ export default function TenantBillingPage() {
             </div>
             <input
               className="billing-input"
-              type="number"
-              min="1"
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
               value={p.amount}
               onChange={(e) => p.setAmount(e.target.value)}
               placeholder={p.t('billing.customAmount')}
@@ -168,7 +169,7 @@ export default function TenantBillingPage() {
               <button
                 type="button"
                 className="billing-btn billing-btn--accent"
-                disabled={p.paying || !p.amount}
+                disabled={p.paying || !p.amountValid}
                 onClick={p.payClick}
               >
                 {p.paying ? p.t('common.saving') : p.t('billing.payClick')}
@@ -176,7 +177,7 @@ export default function TenantBillingPage() {
               <button
                 type="button"
                 className="billing-btn billing-btn--primary"
-                disabled={p.paying || !p.amount}
+                disabled={p.paying || !p.amountValid}
                 onClick={p.payPayme}
               >
                 {p.paying ? p.t('common.saving') : p.t('billing.payPayme')}
@@ -213,7 +214,7 @@ export default function TenantBillingPage() {
                 <button
                   type="button"
                   className="billing-btn billing-btn--accent"
-                  disabled={p.submitting || !p.amount}
+                  disabled={p.submitting || !p.amountValid}
                   onClick={p.submit}
                 >
                   {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}

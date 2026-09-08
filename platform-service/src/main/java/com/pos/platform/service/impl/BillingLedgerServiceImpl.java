@@ -36,10 +36,18 @@ public class BillingLedgerServiceImpl implements BillingLedgerService {
     @Override
     @Transactional
     public void record(CompanyBilling billing, BigDecimal delta, BillingLedgerType type, String description) {
+        Integer companyId = billing.getCompanyId();
+        if (companyId == null && billing.getCompany() != null) {
+            companyId = billing.getCompany().getId();
+            billing.setCompanyId(companyId);
+        }
+        if (companyId == null) {
+            throw new IllegalStateException("CompanyBilling.companyId is required before ledger write");
+        }
         BigDecimal next = BillingMoney.of(billing.getBalance().add(delta));
         billing.setBalance(next);
         ledgerRepository.save(BillingLedgerEntry.builder()
-            .companyId(billing.getCompanyId())
+            .companyId(companyId)
             .entryType(type)
             .amount(BillingMoney.of(delta))
             .balanceAfter(next)

@@ -9,7 +9,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.MapsId;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -37,9 +36,9 @@ public class CompanyBilling {
     @Column(name = "company_id")
     private Integer companyId;
 
+    /** Read-only link; PK is companyId (avoid @MapsId null-identifier on first save). */
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_id", insertable = false, updatable = false)
     private Company company;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -86,11 +85,22 @@ public class CompanyBilling {
         return plan != null ? plan.getId() : null;
     }
 
+    public void bindCompany(Company company) {
+        if (company == null || company.getId() == null) {
+            throw new IllegalArgumentException("Company with id is required for billing");
+        }
+        this.company = company;
+        this.companyId = company.getId();
+    }
+
     @PrePersist
     void onCreate() {
         Instant now = Instant.now();
         createdAt = now;
         updatedAt = now;
+        if (companyId == null && company != null) {
+            companyId = company.getId();
+        }
         if (balance == null) {
             balance = BigDecimal.ZERO;
         }

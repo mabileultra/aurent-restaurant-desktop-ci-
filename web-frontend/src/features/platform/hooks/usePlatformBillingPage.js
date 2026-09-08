@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { platformBillingApi } from '../../../api';
+import { parseMoneyInput } from '../../billing/utils/parseMoneyInput';
 
 const STATUS_FILTERS = [null, 'ACTIVE', 'GRACE', 'BLOCKED', 'TRIAL'];
 
@@ -72,13 +73,18 @@ export function usePlatformBillingPage() {
   });
 
   const assignM = useMutation({
-    mutationFn: () =>
-      platformBillingApi.assignPlan(selectedCompanyId, {
+    mutationFn: () => {
+      const addon = parseMoneyInput(addonAmount, { allowZero: true });
+      if (addon == null) {
+        throw new Error(t('platform.billing.invalidAmount'));
+      }
+      return platformBillingApi.assignPlan(selectedCompanyId, {
         planId: assignPlanId,
-        addonMonthlyAmount: Number(addonAmount || 0),
+        addonMonthlyAmount: addon,
         billingEnabled: true,
         autoChargeEnabled: true,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('platform.billing.planAssigned'));
       invalidate();
@@ -87,33 +93,43 @@ export function usePlatformBillingPage() {
   });
 
   const topUpM = useMutation({
-    mutationFn: () =>
-      platformBillingApi.topUp(selectedCompanyId, {
-        amount: Number(adjustAmount),
+    mutationFn: () => {
+      const value = parseMoneyInput(adjustAmount);
+      if (value == null) {
+        throw new Error(t('platform.billing.invalidAmount'));
+      }
+      return platformBillingApi.topUp(selectedCompanyId, {
+        amount: value,
         description: adjustNote || undefined,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('platform.billing.balanceUpdated'));
       setAdjustAmount('');
       setAdjustNote('');
       invalidate();
     },
-    onError: (e) => toast.error(e?.response?.data?.message || t('platform.billing.actionFailed')),
+    onError: (e) => toast.error(e?.response?.data?.message || e?.message || t('platform.billing.actionFailed')),
   });
 
   const chargeM = useMutation({
-    mutationFn: () =>
-      platformBillingApi.charge(selectedCompanyId, {
-        amount: Number(adjustAmount),
+    mutationFn: () => {
+      const value = parseMoneyInput(adjustAmount);
+      if (value == null) {
+        throw new Error(t('platform.billing.invalidAmount'));
+      }
+      return platformBillingApi.charge(selectedCompanyId, {
+        amount: value,
         description: adjustNote || undefined,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('platform.billing.balanceUpdated'));
       setAdjustAmount('');
       setAdjustNote('');
       invalidate();
     },
-    onError: (e) => toast.error(e?.response?.data?.message || t('platform.billing.actionFailed')),
+    onError: (e) => toast.error(e?.response?.data?.message || e?.message || t('platform.billing.actionFailed')),
   });
 
   const blockM = useMutation({
@@ -150,6 +166,7 @@ export function usePlatformBillingPage() {
     setSelectedCompanyId,
     adjustAmount,
     setAdjustAmount,
+    adjustAmountValid: parseMoneyInput(adjustAmount) != null,
     adjustNote,
     setAdjustNote,
     assignPlanId,

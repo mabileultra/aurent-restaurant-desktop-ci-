@@ -115,8 +115,9 @@ export default function PlatformBillingPage() {
                   </select>
                   <input
                     className="billing-input"
-                    type="number"
-                    min="0"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
                     value={p.addonAmount}
                     onChange={(e) => p.setAddonAmount(e.target.value)}
                     placeholder={p.t('platform.billing.addonAmount')}
@@ -128,8 +129,9 @@ export default function PlatformBillingPage() {
                 <div className="grid gap-2 md:grid-cols-2">
                   <input
                     className="billing-input"
-                    type="number"
-                    min="1"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
                     value={p.adjustAmount}
                     onChange={(e) => p.setAdjustAmount(e.target.value)}
                     placeholder={p.t('platform.billing.amount')}
@@ -142,10 +144,10 @@ export default function PlatformBillingPage() {
                   />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmount} onClick={p.credit}>
+                  <button type="button" className="billing-btn billing-btn--ok" disabled={p.busy || !p.adjustAmountValid} onClick={p.credit}>
                     {p.t('platform.billing.credit')}
                   </button>
-                  <button type="button" className="billing-btn billing-btn--ghost !border-slate-300 !text-slate-700" disabled={p.busy || !p.adjustAmount} onClick={p.debit}>
+                  <button type="button" className="billing-btn billing-btn--ghost !border-slate-300 !text-slate-700" disabled={p.busy || !p.adjustAmountValid} onClick={p.debit}>
                     {p.t('platform.billing.debit')}
                   </button>
                   {p.selected.status === 'BLOCKED' ? (

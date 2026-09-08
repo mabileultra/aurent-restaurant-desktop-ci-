@@ -12,7 +12,6 @@ import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -35,7 +34,7 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
             return repository.findSettingsJsonByCompanyId(companyId)
                 .map(this::parsePayload)
                 .orElseGet(TenantDisplaySettingsServiceImpl::emptyPayload);
-        } catch (DataAccessException ex) {
+        } catch (RuntimeException ex) {
             LogUtil.warn(
                 TenantDisplaySettingsServiceImpl.class,
                 "Tenant display settings read failed (companyId={}): {}",
@@ -62,9 +61,12 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
         CompanyTenantDisplaySettings row = repository.findByCompanyId(companyId)
             .orElseGet(() -> {
                 CompanyTenantDisplaySettings created = new CompanyTenantDisplaySettings();
-                created.setCompany(company);
+                created.bindCompany(company);
                 return created;
             });
+        if (row.getCompanyId() == null) {
+            row.bindCompany(company);
+        }
         row.setSettings(json);
         repository.save(row);
 

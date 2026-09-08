@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../../api';
+import { parseMoneyInput } from '../utils/parseMoneyInput';
 
 const PRESETS = [500000, 850000, 1500000, 3000000];
 const LEDGER_TABS = [null, 'TOP_UP', 'CHARGE', 'MODULE'];
@@ -27,6 +28,8 @@ export function useTenantBillingPage() {
   const [file, setFile] = useState(null);
   const [ledgerType, setLedgerType] = useState(null);
   const [showManual, setShowManual] = useState(false);
+
+  const parsedAmount = parseMoneyInput(amount);
 
   const meQ = useQuery({
     queryKey: ['tenant-billing-me'],
@@ -53,27 +56,37 @@ export function useTenantBillingPage() {
   };
 
   const submitM = useMutation({
-    mutationFn: () =>
-      tenantBillingApi.submitTopUp({
-        amount: Number(amount),
+    mutationFn: () => {
+      const value = parseMoneyInput(amount);
+      if (value == null) {
+        throw new Error(t('billing.invalidAmount'));
+      }
+      return tenantBillingApi.submitTopUp({
+        amount: value,
         comment,
         file,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t('billing.topUpSent'));
       setComment('');
       setFile(null);
       refresh();
     },
-    onError: (e) => toast.error(e?.response?.data?.message || t('billing.topUpFailed')),
+    onError: (e) => toast.error(e?.response?.data?.message || e?.message || t('billing.topUpFailed')),
   });
 
   const payM = useMutation({
-    mutationFn: (provider) =>
-      tenantBillingApi.createPayment({
+    mutationFn: (provider) => {
+      const value = parseMoneyInput(amount);
+      if (value == null) {
+        throw new Error(t('billing.invalidAmount'));
+      }
+      return tenantBillingApi.createPayment({
         provider,
-        amount: Number(amount),
-      }),
+        amount: value,
+      });
+    },
     onSuccess: (res) => {
       const url = res?.data?.paymentUrl;
       if (!url) {
@@ -83,7 +96,7 @@ export function useTenantBillingPage() {
       toast.success(t('billing.redirectingPay'));
       window.location.assign(url);
     },
-    onError: (e) => toast.error(e?.response?.data?.message || t('billing.payFailed')),
+    onError: (e) => toast.error(e?.response?.data?.message || e?.message || t('billing.payFailed')),
   });
 
   const me = meQ.data;
@@ -112,6 +125,7 @@ export function useTenantBillingPage() {
     pendingTopUps: (topUpsQ.data?.content || []).filter((x) => x.status === 'PENDING'),
     amount,
     setAmount,
+    amountValid: parsedAmount != null,
     comment,
     setComment,
     file,

@@ -21,9 +21,9 @@ public class CompanyTenantDisplaySettings {
     @Column(name = "company_id")
     private Integer companyId;
 
+    /** Read-only link; PK is companyId (avoid @MapsId null-identifier on first save). */
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
-    @JoinColumn(name = "company_id")
+    @JoinColumn(name = "company_id", insertable = false, updatable = false)
     private Company company;
 
     @JdbcTypeCode(SqlTypes.JSON)
@@ -33,9 +33,20 @@ public class CompanyTenantDisplaySettings {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    public void bindCompany(Company company) {
+        if (company == null || company.getId() == null) {
+            throw new IllegalArgumentException("Company with id is required");
+        }
+        this.company = company;
+        this.companyId = company.getId();
+    }
+
     @PrePersist
     @PreUpdate
     void touchUpdatedAt() {
+        if (companyId == null && company != null) {
+            companyId = company.getId();
+        }
         this.updatedAt = Instant.now();
     }
 }
