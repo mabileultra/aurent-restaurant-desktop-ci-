@@ -59,6 +59,7 @@ import {
   ScalesPluPage,
   HandbookPage,
   SupportPage,
+  TenantBillingPage,
 } from './lazyPages';
 
 export const adminRoutes = (
@@ -471,6 +472,14 @@ export const adminRoutes = (
     <Route path="restaurant/booking" element={<Navigate to="/rst/admin/booking" replace />} />
     <Route path="restaurant/delivery" element={<Navigate to="/rst/admin/delivery" replace />} />
     <Route path="restaurant" element={<Navigate to="/rst/admin/dashboard" replace />} />
+    <Route
+      path="billing"
+      element={(
+        <ProtectedRoute requiredRole="ADMIN">
+          <TenantBillingPage />
+        </ProtectedRoute>
+      )}
+    />
     <Route
       path="stores"
       element={(

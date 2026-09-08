@@ -1,8 +1,10 @@
 package com.pos.platform.controller.internal;
 
+import com.pos.platform.dto.billing.BillingAccessResponse;
 import com.pos.platform.dto.desktop.DesktopBroadcastListResponse;
 import com.pos.platform.dto.platform.security.VerifyCashierServerPasswordRequest;
 import com.pos.platform.dto.platform.security.VerifyCashierServerPasswordResponse;
+import com.pos.platform.service.BillingService;
 import com.pos.platform.service.DesktopBroadcastService;
 import com.pos.platform.service.PlatformSecurityService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -27,12 +29,18 @@ public class PlatformInternalController {
 
     private final PlatformSecurityService platformSecurityService;
     private final DesktopBroadcastService desktopBroadcastService;
+    private final BillingService billingService;
 
     @PostMapping("/security/verify-cashier-password")
     public ResponseEntity<VerifyCashierServerPasswordResponse> verifyCashierPassword(
         @Valid @RequestBody VerifyCashierServerPasswordRequest request
     ) {
         return ResponseEntity.ok(platformSecurityService.verifyCashierServerPassword(request.password()));
+    }
+
+    @GetMapping("/billing/companies/{companyId}/access")
+    public ResponseEntity<BillingAccessResponse> billingAccess(@PathVariable Integer companyId) {
+        return ResponseEntity.ok(billingService.accessForCompany(companyId));
     }
 
     @GetMapping("/desktop-notifications/unread")

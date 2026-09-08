@@ -13,6 +13,7 @@ import {
   PlatformBusinessTypesPage,
   PlatformReferenceBooksPage,
   PlatformLeadsPage,
+  PlatformBillingPage,
 } from './lazyPages';
 
 export const platformRoutes = (
@@ -36,5 +37,6 @@ export const platformRoutes = (
     <Route path="business-types" element={<PlatformBusinessTypesPage />} />
     <Route path="reference-books" element={<PlatformReferenceBooksPage />} />
     <Route path="leads" element={<PlatformLeadsPage />} />
+    <Route path="billing" element={<PlatformBillingPage />} />
   </Route>
 );

@@ -1,4 +1,5 @@
 import { Outlet } from 'react-router-dom';
+import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import {
   CashierLockOverlay,
   CashierShiftModal,
@@ -78,12 +79,14 @@ function CashierLayoutShell() {
 
 export default function CashierLayout() {
   return (
-    <CashierLockProvider>
-      <CashierShiftModalProvider>
-        <PosShellProvider>
-          <CashierLayoutShell />
-        </PosShellProvider>
-      </CashierShiftModalProvider>
-    </CashierLockProvider>
+    <BillingAccessGuard>
+      <CashierLockProvider>
+        <CashierShiftModalProvider>
+          <PosShellProvider>
+            <CashierLayoutShell />
+          </PosShellProvider>
+        </CashierShiftModalProvider>
+      </CashierLockProvider>
+    </BillingAccessGuard>
   );
 }

@@ -1,4 +1,5 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
@@ -151,7 +152,9 @@ export default function AppShellLayout() {
   const subLinkClass = ({ isActive }) =>
     `admin-nav-sublink ${isActive ? 'admin-nav-sublink--active' : ''}`;
 
-  const visibleRest = filterByModule(REST_NAV);
+  const visibleRest = filterByModule(REST_NAV).filter(
+    (item) => item.to !== '/billing' || user?.role === 'ADMIN'
+  );
   const roleLabel = user?.role ? t(`roles.${user.role}`, user.role) : '';
 
   return (
@@ -231,7 +234,9 @@ export default function AppShellLayout() {
           onToggleSidebar={toggleSidebar}
         />
         <main className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6 print:!bg-white print:p-4">
-          <Outlet />
+          <BillingAccessGuard>
+            <Outlet />
+          </BillingAccessGuard>
         </main>
       </div>
     </div>

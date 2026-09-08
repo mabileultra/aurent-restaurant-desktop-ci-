@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v4-001-billing-plans" author="platform">
+        <createTable tableName="billing_plans">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(64)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="monthly_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency" type="VARCHAR(8)" defaultValue="UZS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="max_registers" type="INT"/>
+            <column name="max_stores" type="INT"/>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="v4-002-company-billing" author="platform">
+        <createTable tableName="company_billing">
+            <column name="company_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="plan_id" type="UUID"/>
+            <column name="balance" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="ACTIVE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="addon_monthly_amount" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="auto_charge_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="next_charge_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="paid_until" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="grace_until" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="billing_enabled" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="company_billing"
+            baseColumnNames="company_id"
+            referencedTableName="companies"
+            referencedColumnNames="id"
+            constraintName="fk_company_billing_company"/>
+        <addForeignKeyConstraint
+            baseTableName="company_billing"
+            baseColumnNames="plan_id"
+            referencedTableName="billing_plans"
+            referencedColumnNames="id"
+            constraintName="fk_company_billing_plan"/>
+        <createIndex tableName="company_billing" indexName="idx_company_billing_status">
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="company_billing" indexName="idx_company_billing_next_charge">
+            <column name="next_charge_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v4-003-billing-ledger" author="platform">
+        <createTable tableName="billing_ledger">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="entry_type" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance_after" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)"/>
+            <column name="actor_user_id" type="UUID"/>
+            <column name="actor_role" type="VARCHAR(32)"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="billing_ledger"
+            baseColumnNames="company_id"
+            referencedTableName="companies"
+            referencedColumnNames="id"
+            constraintName="fk_billing_ledger_company"/>
+        <createIndex tableName="billing_ledger" indexName="idx_billing_ledger_company_created">
+            <column name="company_id"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+        <createIndex tableName="billing_ledger" indexName="idx_billing_ledger_type">
+            <column name="entry_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v4-004-billing-topup-requests" author="platform">
+        <createTable tableName="billing_topup_requests">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="VARCHAR(500)"/>
+            <column name="receipt_file_name" type="VARCHAR(255)"/>
+            <column name="receipt_content_type" type="VARCHAR(128)"/>
+            <column name="receipt_storage_path" type="VARCHAR(512)"/>
+            <column name="submitted_by_user_id" type="UUID"/>
+            <column name="reviewed_by_user_id" type="UUID"/>
+            <column name="review_note" type="VARCHAR(500)"/>
+            <column name="reviewed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="billing_topup_requests"
+            baseColumnNames="company_id"
+            referencedTableName="companies"
+            referencedColumnNames="id"
+            constraintName="fk_billing_topup_company"/>
+        <createIndex tableName="billing_topup_requests" indexName="idx_billing_topup_status_created">
+            <column name="status"/>
+            <column name="created_at" descending="true"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v4-005-seed-billing-plans" author="platform">
+        <insert tableName="billing_plans">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="code" value="start"/>
+            <column name="name" value="Aurent Start"/>
+            <column name="description" value="Базовый тариф"/>
+            <column name="monthly_price" valueNumeric="450000"/>
+            <column name="currency" value="UZS"/>
+            <column name="max_registers" valueNumeric="2"/>
+            <column name="max_stores" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="billing_plans">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="code" value="pro"/>
+            <column name="name" value="Aurent Pro"/>
+            <column name="description" value="Ресторан + склад"/>
+            <column name="monthly_price" valueNumeric="700000"/>
+            <column name="currency" value="UZS"/>
+            <column name="max_registers" valueNumeric="5"/>
+            <column name="max_stores" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="20"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+        <insert tableName="billing_plans">
+            <column name="id" valueComputed="gen_random_uuid()"/>
+            <column name="code" value="pro_plus"/>
+            <column name="name" value="Aurent Pro Plus"/>
+            <column name="description" value="Pro + доп. модули"/>
+            <column name="monthly_price" valueNumeric="1100000"/>
+            <column name="currency" value="UZS"/>
+            <column name="max_registers" valueNumeric="10"/>
+            <column name="max_stores" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+            <column name="sort_order" valueNumeric="30"/>
+            <column name="created_at" valueComputed="NOW()"/>
+            <column name="updated_at" valueComputed="NOW()"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>

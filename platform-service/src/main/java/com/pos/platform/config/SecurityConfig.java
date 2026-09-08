@@ -31,6 +31,8 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/internal/platform/**").permitAll()
                 .requestMatchers("/public/site/**").permitAll()
+                .requestMatchers("/billing/me/access").authenticated()
+                .requestMatchers("/billing/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/platform/**").hasRole("SUPER_ADMIN")
                 .requestMatchers("/admin/finance-sync/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .requestMatchers("/companies/**").hasRole("SUPER_ADMIN")

@@ -4,6 +4,7 @@ import RestaurantAdminGuard from './RestaurantAdminGuard';
 import RestaurantPosGuard from './RestaurantPosGuard';
 import RestaurantKitchenGuard from './RestaurantKitchenGuard';
 import RestaurantAdminLayout from './RestaurantAdminLayout';
+import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import HallsAdminPage from '../admin/pages/HallsAdminPage';
 import MenuAdminPage from '../admin/pages/MenuAdminPage';
 import StationsAdminPage from '../admin/pages/StationsAdminPage';
@@ -44,7 +45,9 @@ export const restaurantRoutes = (
       path="pos"
       element={(
         <RestaurantPosGuard>
-          <RestaurantFloorPosPage />
+          <BillingAccessGuard>
+            <RestaurantFloorPosPage />
+          </BillingAccessGuard>
         </RestaurantPosGuard>
       )}
     />
@@ -52,7 +55,9 @@ export const restaurantRoutes = (
       path="kitchen"
       element={(
         <RestaurantKitchenGuard>
-          <RestaurantKitchenPage />
+          <BillingAccessGuard>
+            <RestaurantKitchenPage />
+          </BillingAccessGuard>
         </RestaurantKitchenGuard>
       )}
     />

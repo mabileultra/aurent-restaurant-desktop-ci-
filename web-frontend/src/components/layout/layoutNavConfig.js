@@ -34,6 +34,7 @@ import {
   UtensilsCrossed,
   CalendarClock,
   Scale,
+  Wallet,
 } from 'lucide-react';
 
 export const ICONS = {
@@ -72,6 +73,7 @@ export const ICONS = {
   UtensilsCrossed,
   CalendarClock,
   Scale,
+  Wallet,
 };
 
 export const GOODS_ROUTES = ['/products', '/categories', '/scales/station', '/scales/plu'];
@@ -156,6 +158,7 @@ export const USER_CHILDREN = [
 ];
 
 export const REST_NAV = [
+  { to: '/billing', icon: ICONS.Wallet, key: 'billing' },
   { to: '/stores', icon: ICONS.Store, key: 'stores', moduleId: 'stores' },
 ];
 

@@ -41,6 +41,7 @@ export { platformMonitoringApi } from './platform/monitoring.api';
 export { platformBusinessTypeApi } from './platform/businessType.api';
 export { platformReferenceBookApi } from './platform/referenceBook.api';
 export { platformLeadsApi } from './platform/leads.api';
+export { platformBillingApi, tenantBillingApi } from './platform/billing.api';
 export { publicSiteApi } from './publicSite.api';
 export { pharmacyIntegrationApi } from './pharmacyIntegration.api';
 export { multikassaApi } from './multikassa.api';
