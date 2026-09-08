@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -86,7 +85,7 @@ public class TenantBillingController {
     public ResponseEntity<BillingTopUpResponse> submitTopUp(
         @RequestParam("amount") BigDecimal amount,
         @RequestParam(value = "comment", required = false) String comment,
-        @RequestPart(value = "file", required = false) MultipartFile file
+        @RequestParam(value = "file", required = false) MultipartFile file
     ) {
         return ResponseEntity.ok(billingService.tenantSubmitTopUp(amount, comment, file));
     }

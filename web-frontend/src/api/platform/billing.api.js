@@ -29,8 +29,8 @@ export const tenantBillingApi = {
     const fd = new FormData();
     fd.append('amount', String(amount));
     if (comment) fd.append('comment', comment);
-    if (file) fd.append('file', file);
-    return api.post('/billing/me/top-ups', fd);
+    if (file) fd.append('file', file, file.name || 'receipt.bin');
+    return api.post('/billing/me/top-ups', fd, { timeout: 60000 });
   },
   createPayment: (payload) => api.post('/billing/me/payments', payload),
 };
