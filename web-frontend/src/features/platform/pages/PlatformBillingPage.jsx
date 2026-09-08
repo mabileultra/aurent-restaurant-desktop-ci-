@@ -2,13 +2,9 @@ import '../../../styles/billing.css';
 import { PageLayout, PageSearchField } from '../../../components/ui';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
-function formatDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('ru-RU');
-}
-
 export default function PlatformBillingPage() {
   const p = usePlatformBillingPage();
+  const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(p.dateLocale) : '—');
 
   return (
     <PageLayout
@@ -41,7 +37,7 @@ export default function PlatformBillingPage() {
         <div className="billing-kpi">
           <div className="billing-kpi__card">
             <span className="billing-metric__label">MRR</span>
-            <strong>{p.money(p.overview?.mrr)} сум</strong>
+            <strong>{p.money(p.overview?.mrr)} {p.t('billing.currency')}</strong>
           </div>
           <div className="billing-kpi__card">
             <span className="billing-metric__label">{p.t('platform.billing.kpiActive')}</span>
@@ -180,7 +176,7 @@ export default function PlatformBillingPage() {
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <p className="font-semibold text-slate-900">{item.companyName || `#${item.companyId}`}</p>
-                        <p className="text-sm text-emerald-700 font-bold">+{p.money(item.amount)} сум</p>
+                        <p className="text-sm text-emerald-700 font-bold">+{p.money(item.amount)} {p.t('billing.currency')}</p>
                         <p className="text-xs text-slate-500 mt-1">
                           {item.receiptFileName || p.t('platform.billing.noFile')}
                           {item.comment ? ` · ${item.comment}` : ''}
@@ -209,7 +205,7 @@ export default function PlatformBillingPage() {
               <div key={plan.id} className="billing-plan-card">
                 <span className="text-xs uppercase tracking-wide text-slate-500">{plan.code}</span>
                 <strong>{plan.name}</strong>
-                <p className="text-sm text-slate-600">{p.money(plan.monthlyPrice)} сум / мес</p>
+                <p className="text-sm text-slate-600">{p.money(plan.monthlyPrice)} {p.t('billing.currency')} {p.t('billing.perMonth')}</p>
                 <p className="text-xs text-slate-500 mt-1">
                   {plan.maxRegisters ? `${plan.maxRegisters} касс` : '∞ касс'}
                   {' · '}

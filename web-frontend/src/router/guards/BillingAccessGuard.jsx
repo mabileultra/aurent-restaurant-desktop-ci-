@@ -1,12 +1,14 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 
 /**
- * Если биллинг компании BLOCKED — пускаем только на /billing (админ) или показываем стоп-экран.
+ * Если оплата компании заблокирована — пускаем только на /billing (админ) или показываем стоп-экран.
  */
 export default function BillingAccessGuard({ children }) {
+  const { t } = useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
@@ -33,10 +35,8 @@ export default function BillingAccessGuard({ children }) {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
       <div className="max-w-md rounded-2xl border border-red-200 bg-white p-6 text-center shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">Доступ приостановлен</h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Месячная оплата Aurent не прошла. Попросите администратора компании пополнить счёт в разделе «Биллинг и подписка».
-        </p>
+        <h1 className="text-lg font-semibold text-slate-900">{t('billing.accessBlockedTitle')}</h1>
+        <p className="mt-2 text-sm text-slate-600">{t('billing.accessBlockedBody')}</p>
       </div>
     </div>
   );

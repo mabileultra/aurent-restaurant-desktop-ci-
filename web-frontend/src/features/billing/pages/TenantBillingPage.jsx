@@ -2,14 +2,12 @@ import '../../../styles/billing.css';
 import { PageLayout } from '../../../components/ui';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
 
-function formatDateTime(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleString('ru-RU');
-}
-
 export default function TenantBillingPage() {
   const p = useTenantBillingPage();
   const me = p.me;
+
+  const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(p.dateLocale) : '—');
+  const formatDateTime = (iso) => (iso ? new Date(iso).toLocaleString(p.dateLocale) : '—');
 
   return (
     <PageLayout
@@ -33,10 +31,10 @@ export default function TenantBillingPage() {
               <span className="billing-chip">{me?.planName || p.t('billing.noPlan')}</span>
             </div>
             <p className="text-sm text-white/80 mb-1">{p.t('billing.availableBalance')}</p>
-            <div className="billing-hero__balance">{p.money(me?.balance)} сум</div>
+            <div className="billing-hero__balance">{p.money(me?.balance)} {p.t('billing.currency')}</div>
             <p className="billing-hero__hint">
               {p.t('billing.nextChargeHint', {
-                date: me?.nextChargeAt ? new Date(me.nextChargeAt).toLocaleDateString('ru-RU') : '—',
+                date: formatDate(me?.nextChargeAt),
                 amount: p.money(me?.monthlyTotal),
               })}
             </p>
@@ -68,7 +66,7 @@ export default function TenantBillingPage() {
           <div className="billing-metric">
             <div className="billing-metric__label">{p.t('billing.metricNext')}</div>
             <div className="billing-metric__value">
-              {me?.nextChargeAt ? new Date(me.nextChargeAt).toLocaleDateString('ru-RU') : '—'}
+              {me?.nextChargeAt ? new Date(me.nextChargeAt).toLocaleDateString(p.dateLocale) : '—'}
             </div>
             <div className="billing-metric__sub">
               {me?.autoChargeEnabled ? p.t('billing.autoOn') : p.t('billing.autoOff')}
@@ -76,7 +74,7 @@ export default function TenantBillingPage() {
           </div>
           <div className="billing-metric">
             <div className="billing-metric__label">{p.t('billing.metricMonthly')}</div>
-            <div className="billing-metric__value">{p.money(me?.monthlyTotal)} сум</div>
+            <div className="billing-metric__value">{p.money(me?.monthlyTotal)} {p.t('billing.currency')}</div>
             <div className="billing-metric__sub">
               {p.t('billing.monthlyBreakdown', {
                 plan: p.money(me?.planMonthlyPrice),

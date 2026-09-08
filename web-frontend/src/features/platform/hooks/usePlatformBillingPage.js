@@ -12,7 +12,8 @@ function money(v) {
 }
 
 export function usePlatformBillingPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language?.startsWith('uz') ? 'uz-UZ' : 'ru-RU';
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [status, setStatus] = useState(null);
@@ -132,6 +133,7 @@ export function usePlatformBillingPage() {
 
   return {
     t,
+    dateLocale,
     money,
     statusFilters: STATUS_FILTERS,
     search,

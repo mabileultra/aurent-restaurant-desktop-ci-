@@ -19,7 +19,8 @@ function daysLeft(paidUntil) {
 }
 
 export function useTenantBillingPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = i18n.language?.startsWith('uz') ? 'uz-UZ' : 'ru-RU';
   const qc = useQueryClient();
   const [amount, setAmount] = useState('850000');
   const [comment, setComment] = useState('');
@@ -93,11 +94,15 @@ export function useTenantBillingPage() {
     if (!me?.billingEnabled) return t('billing.statusNotConfigured');
     if (me.status === 'BLOCKED') return t('billing.statusBlocked');
     if (me.status === 'GRACE') return t('billing.statusGrace');
-    return t('billing.statusActive', { date: me.paidUntil ? new Date(me.paidUntil).toLocaleDateString('ru-RU') : '—' });
-  }, [me, t]);
+    return t('billing.statusActive', {
+      date: me.paidUntil ? new Date(me.paidUntil).toLocaleDateString(dateLocale) : '—',
+    });
+  }, [me, t, dateLocale]);
 
   return {
     t,
+    i18n,
+    dateLocale,
     money,
     presets: PRESETS,
     ledgerTabs: LEDGER_TABS,
