@@ -57,7 +57,10 @@ public class BillingReceiptStorage {
                 : contentType;
             return new StoredReceipt(safeName, storedType, target.toString());
         } catch (IOException e) {
-            throw new BadRequestException("Не удалось сохранить файл чека: " + e.getMessage());
+            throw new BadRequestException(
+                "Не удалось сохранить файл чека в " + uploadDir + ": " + e.getClass().getSimpleName()
+                    + (e.getMessage() != null ? " — " + e.getMessage() : "")
+            );
         }
     }
 

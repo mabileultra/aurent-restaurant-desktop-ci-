@@ -221,7 +221,10 @@ services:
       POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-pos_db}
       POS_CORE_DATASOURCE_USERNAME: ${POSTGRES_USER:-pos_user}
       POS_CORE_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+      BILLING_UPLOAD_DIR: ${BILLING_UPLOAD_DIR:-/app/data/billing-uploads}
       TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - platform_billing_uploads:/app/data/billing-uploads
     ports:
       - '127.0.0.1:8084:8084'
     healthcheck:
@@ -647,6 +650,7 @@ volumes:
   finance_pg_data:
   identity_pg_data:
   platform_pg_data:
+  platform_billing_uploads:
   reporting_pg_data:
   crm_pg_data:
   restaurant_pg_data:

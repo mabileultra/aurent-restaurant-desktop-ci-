@@ -23,11 +23,13 @@ WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl \
   && groupadd -r pos && useradd -r -g pos pos \
+  && mkdir -p /app/data/billing-uploads \
+  && chown -R pos:pos /app \
   && rm -rf /var/lib/apt/lists/*
 
-USER pos
+COPY --from=build --chown=pos:pos /app/platform-service/target/platform-service-1.0.0.jar app.jar
 
-COPY --from=build /app/platform-service/target/platform-service-1.0.0.jar app.jar
+USER pos
 
 EXPOSE 8084
 
