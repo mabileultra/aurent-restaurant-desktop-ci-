@@ -230,7 +230,9 @@ public class GlobalExceptionHandler {
         InvalidDataAccessResourceUsageException.class,
         org.springframework.dao.DataAccessException.class,
         LazyInitializationException.class,
-        org.springframework.orm.jpa.JpaSystemException.class
+        org.springframework.orm.jpa.JpaSystemException.class,
+        org.springframework.transaction.UnexpectedRollbackException.class,
+        org.springframework.transaction.TransactionSystemException.class
     })
     public ResponseEntity<ApiErrorResponse> handlePersistence(
         Exception ex,

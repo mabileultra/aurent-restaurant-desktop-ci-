@@ -101,13 +101,13 @@ export function useCashierNotifications() {
   const [loading, setLoading] = useState(false);
 
   const fetchServer = useCallback(async () => {
-    if (!isDesktopCashier()) return;
     try {
       setLoading(true);
       const { data } = await cashierDesktopNotificationsApi.unread();
       setServerItems((data?.items || []).map(mapServerItem));
-    } catch {
-      /* offline or not cashier yet */
+    } catch (err) {
+      // Keep previous items; log so auth/deploy issues are visible in console.
+      console.warn('[cashier-notifications] unread failed', err?.response?.status || err?.message || err);
     } finally {
       setLoading(false);
     }
@@ -115,7 +115,7 @@ export function useCashierNotifications() {
 
   useEffect(() => {
     fetchServer();
-    const timer = window.setInterval(fetchServer, 90_000);
+    const timer = window.setInterval(fetchServer, 60_000);
     return () => window.clearInterval(timer);
   }, [fetchServer]);
 
@@ -183,8 +183,8 @@ export function useCashierNotifications() {
       try {
         await cashierDesktopNotificationsApi.markRead(item.serverId);
         setServerItems((prev) => prev.filter((row) => row.serverId !== item.serverId));
-      } catch {
-        /* ignore */
+      } catch (err) {
+        console.warn('[cashier-notifications] markRead failed', err?.response?.status || err?.message || err);
       }
       return;
     }
@@ -226,10 +226,6 @@ export function useCashierNotifications() {
     if (item.updateState === 'available') return t('notifications.checkUpdate');
     return null;
   };
-
-  if (!isDesktopCashier()) {
-    return null;
-  }
 
   return {
     t,

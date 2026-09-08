@@ -10,10 +10,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.InvalidDataAccessResourceUsageException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 
-import java.util.Optional;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -23,18 +28,25 @@ class TenantDisplaySettingsServiceImplTest {
     private CompanyTenantDisplaySettingsRepository repository;
     @Mock
     private TenantAccessSupport tenantAccess;
+    @Mock
+    private JdbcTemplate jdbcTemplate;
 
     private TenantDisplaySettingsServiceImpl service;
 
     @BeforeEach
     void setUp() {
-        service = new TenantDisplaySettingsServiceImpl(repository, tenantAccess, new ObjectMapper());
+        service = new TenantDisplaySettingsServiceImpl(
+            repository,
+            tenantAccess,
+            new ObjectMapper(),
+            jdbcTemplate
+        );
     }
 
     @Test
     void getReturnsEmptyWhenNoRow() {
         when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
-        when(repository.findSettingsJsonByCompanyId(7)).thenReturn(Optional.empty());
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7))).thenReturn(List.of());
 
         TenantDisplaySettingsPayload payload = service.getForCurrentCompany();
 
@@ -45,8 +57,8 @@ class TenantDisplaySettingsServiceImplTest {
     @Test
     void getMapsValidJson() {
         when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
-        when(repository.findSettingsJsonByCompanyId(7))
-            .thenReturn(Optional.of("{\"systemAppName\":\"Aurent Shop\",\"systemLogoSizePx\":40}"));
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
+            .thenReturn(List.of("{\"systemAppName\":\"Aurent Shop\",\"systemLogoSizePx\":40}"));
 
         TenantDisplaySettingsPayload payload = service.getForCurrentCompany();
 
@@ -57,7 +69,8 @@ class TenantDisplaySettingsServiceImplTest {
     @Test
     void getReturnsEmptyOnCorruptJson() {
         when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
-        when(repository.findSettingsJsonByCompanyId(7)).thenReturn(Optional.of("[1,2,3]"));
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
+            .thenReturn(List.of("[1,2,3]"));
 
         TenantDisplaySettingsPayload payload = service.getForCurrentCompany();
 
@@ -67,7 +80,7 @@ class TenantDisplaySettingsServiceImplTest {
     @Test
     void getReturnsEmptyWhenTableMissing() {
         when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
-        when(repository.findSettingsJsonByCompanyId(7))
+        when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
             .thenThrow(new InvalidDataAccessResourceUsageException("relation does not exist"));
 
         TenantDisplaySettingsPayload payload = service.getForCurrentCompany();

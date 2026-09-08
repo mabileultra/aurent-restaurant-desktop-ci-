@@ -40,7 +40,7 @@ export default function CashierSecondaryTopbar({
           </div>
         </div>
         <div className="cashier-topbar__actions">
-          {isDesktopApp ? <CashierNotificationsBell /> : null}
+          <CashierNotificationsBell />
           <CashierPosTopbarCashier name={cashierName} roleLabel={cashierRoleLabel} />
           <CashierThemeToggle
             theme={cashierTheme}

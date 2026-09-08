@@ -29,7 +29,7 @@ public class CashierDesktopNotificationController {
     private final CurrentUserProvider currentUserProvider;
 
     @GetMapping
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Непрочитанные уведомления", description = "Сообщения от платформы и администратора")
     @ApiResponse(responseCode = "200", description = "Список непрочитанных уведомлений")
     public ResponseEntity<DesktopBroadcastListResponse> unread() {
@@ -39,7 +39,7 @@ public class CashierDesktopNotificationController {
     }
 
     @PostMapping("/{id}/read")
-    @PreAuthorize("hasRole('CASHIER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Отметить прочитанным", description = "Скрыть уведомление для текущего кассира")
     @ApiResponse(responseCode = "204", description = "Отмечено")
     public ResponseEntity<Void> markRead(@PathVariable UUID id) {

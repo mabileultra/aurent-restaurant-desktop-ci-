@@ -12,13 +12,15 @@ import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsService {
 
     private static final int MAX_LOGO_CHARS = 750_000;
@@ -26,15 +28,31 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
     private final CompanyTenantDisplaySettingsRepository repository;
     private final TenantAccessSupport tenantAccess;
     private final ObjectMapper objectMapper;
+    private final JdbcTemplate jdbcTemplate;
 
+    /**
+     * Read outside a Hibernate transaction on purpose: a failed SQL inside
+     * {@code @Transactional} marks the session rollback-only and then commit
+     * throws UnexpectedRollbackException → HTTP 500 even after a catch.
+     */
     @Override
     public TenantDisplaySettingsPayload getForCurrentCompany() {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         try {
-            return repository.findSettingsJsonByCompanyId(companyId)
-                .map(this::parsePayload)
-                .orElseGet(TenantDisplaySettingsServiceImpl::emptyPayload);
-        } catch (RuntimeException ex) {
+            List<String> rows = jdbcTemplate.query(
+                """
+                    SELECT CAST(settings AS text)
+                    FROM company_tenant_display_settings
+                    WHERE company_id = ?
+                    """,
+                (rs, rowNum) -> rs.getString(1),
+                companyId
+            );
+            if (rows.isEmpty() || !StringUtils.hasText(rows.get(0))) {
+                return emptyPayload();
+            }
+            return parsePayload(rows.get(0));
+        } catch (Exception ex) {
             LogUtil.warn(
                 TenantDisplaySettingsServiceImpl.class,
                 "Tenant display settings read failed (companyId={}): {}",
