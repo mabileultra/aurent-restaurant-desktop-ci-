@@ -228,6 +228,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
         PersistenceException.class,
         InvalidDataAccessResourceUsageException.class,
+        org.springframework.dao.DataAccessException.class,
         LazyInitializationException.class,
         org.springframework.orm.jpa.JpaSystemException.class
     })

@@ -12,6 +12,7 @@ import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.TextUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -30,9 +31,19 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
     @Override
     public TenantDisplaySettingsPayload getForCurrentCompany() {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        return repository.findByCompanyId(companyId)
-            .map(row -> toPayload(row.getSettings()))
-            .orElseGet(TenantDisplaySettingsServiceImpl::emptyPayload);
+        try {
+            return repository.findSettingsJsonByCompanyId(companyId)
+                .map(this::parsePayload)
+                .orElseGet(TenantDisplaySettingsServiceImpl::emptyPayload);
+        } catch (DataAccessException ex) {
+            LogUtil.warn(
+                TenantDisplaySettingsServiceImpl.class,
+                "Tenant display settings read failed (companyId={}): {}",
+                companyId,
+                rootMessage(ex)
+            );
+            return emptyPayload();
+        }
     }
 
     @Override
@@ -62,7 +73,7 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
             "Tenant display settings saved: companyId={}",
             companyId
         );
-        return toPayload(row.getSettings());
+        return parsePayload(json);
     }
 
     private TenantDisplaySettingsPayload sanitize(TenantDisplaySettingsPayload payload) {
@@ -94,11 +105,45 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
         }
     }
 
-    private TenantDisplaySettingsPayload toPayload(JsonNode settings) {
-        if (settings == null || settings.isNull()) {
+    private TenantDisplaySettingsPayload parsePayload(String settingsJson) {
+        if (!StringUtils.hasText(settingsJson)) {
             return emptyPayload();
         }
-        return objectMapper.convertValue(settings, TenantDisplaySettingsPayload.class);
+        try {
+            JsonNode node = objectMapper.readTree(settingsJson);
+            return parsePayload(node);
+        } catch (Exception ex) {
+            LogUtil.warn(
+                TenantDisplaySettingsServiceImpl.class,
+                "Tenant display settings JSON parse failed: {}",
+                rootMessage(ex)
+            );
+            return emptyPayload();
+        }
+    }
+
+    private TenantDisplaySettingsPayload parsePayload(JsonNode settings) {
+        if (settings == null || settings.isNull() || settings.isMissingNode()) {
+            return emptyPayload();
+        }
+        if (!settings.isObject()) {
+            LogUtil.warn(
+                TenantDisplaySettingsServiceImpl.class,
+                "Tenant display settings JSON is not an object: {}",
+                settings.getNodeType()
+            );
+            return emptyPayload();
+        }
+        try {
+            return objectMapper.convertValue(settings, TenantDisplaySettingsPayload.class);
+        } catch (IllegalArgumentException ex) {
+            LogUtil.warn(
+                TenantDisplaySettingsServiceImpl.class,
+                "Tenant display settings mapping failed: {}",
+                rootMessage(ex)
+            );
+            return emptyPayload();
+        }
     }
 
     private static TenantDisplaySettingsPayload emptyPayload() {
@@ -107,5 +152,14 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
             null, null, null, null,
             null, null, null
         );
+    }
+
+    private static String rootMessage(Throwable ex) {
+        Throwable cur = ex;
+        while (cur.getCause() != null && cur.getCause() != cur) {
+            cur = cur.getCause();
+        }
+        String msg = cur.getMessage();
+        return msg != null ? msg : cur.getClass().getSimpleName();
     }
 }
