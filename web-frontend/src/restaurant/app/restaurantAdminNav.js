@@ -12,6 +12,7 @@ export const RST_ADMIN_NAV = [
   { to: '/rst/admin/delivery', key: 'delivery', enabled: true },
   { to: '/rst/admin/reports', key: 'reports', enabled: true },
   { to: '/rst/admin/audit', key: 'audit', enabled: true },
+  { to: '/rst/admin/billing', key: 'billing', enabled: true, adminOnly: true },
 ];
 
 export function findRstAdminNav(pathname) {

@@ -4,8 +4,19 @@ import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
 
+const RETAIL_BILLING = '/billing';
+const RESTAURANT_BILLING = '/rst/admin/billing';
+
+function isBillingPath(pathname) {
+  return pathname.startsWith(RETAIL_BILLING) || pathname.startsWith(RESTAURANT_BILLING);
+}
+
+function billingHomeFor(pathname) {
+  return pathname.startsWith('/rst') ? RESTAURANT_BILLING : RETAIL_BILLING;
+}
+
 /**
- * Если оплата компании заблокирована — пускаем только на /billing (админ) или показываем стоп-экран.
+ * Если оплата компании заблокирована — пускаем только на billing (админ) или показываем стоп-экран.
  */
 export default function BillingAccessGuard({ children }) {
   const { t } = useTranslation();
@@ -28,9 +39,10 @@ export default function BillingAccessGuard({ children }) {
   const blocked = data?.billingEnabled && data?.accessAllowed === false;
   if (!blocked) return children;
 
-  const onBillingPage = location.pathname.startsWith('/billing');
-  if (user?.role === 'ADMIN' && onBillingPage) return children;
-  if (user?.role === 'ADMIN') return <Navigate to="/billing" replace />;
+  if (user?.role === 'ADMIN' && isBillingPath(location.pathname)) return children;
+  if (user?.role === 'ADMIN') {
+    return <Navigate to={billingHomeFor(location.pathname)} replace />;
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6">

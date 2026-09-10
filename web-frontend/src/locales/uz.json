@@ -143,7 +143,8 @@
       "booking": "Bron",
       "delivery": "Yetkazib berish",
       "reports": "Hisobotlar",
-      "audit": "Audit"
+      "audit": "Audit",
+      "billing": "To‘lov va obuna"
     },
     "pos": {
       "floor": "Zal",

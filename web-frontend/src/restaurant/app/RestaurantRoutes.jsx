@@ -5,6 +5,8 @@ import RestaurantPosGuard from './RestaurantPosGuard';
 import RestaurantKitchenGuard from './RestaurantKitchenGuard';
 import RestaurantAdminLayout from './RestaurantAdminLayout';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
+import ProtectedRoute from '../../router/guards/ProtectedRoute';
+import { TenantBillingPage } from '../../router/lazyPages';
 import HallsAdminPage from '../admin/pages/HallsAdminPage';
 import MenuAdminPage from '../admin/pages/MenuAdminPage';
 import StationsAdminPage from '../admin/pages/StationsAdminPage';
@@ -117,6 +119,14 @@ export const restaurantRoutes = (
         )}
       />
       <Route path="audit" element={<AuditAdminPage />} />
+      <Route
+        path="billing"
+        element={(
+          <ProtectedRoute requiredRole="ADMIN">
+            <TenantBillingPage />
+          </ProtectedRoute>
+        )}
+      />
     </Route>
   </Route>
 );

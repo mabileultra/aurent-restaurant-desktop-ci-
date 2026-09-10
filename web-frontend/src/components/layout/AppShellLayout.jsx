@@ -91,9 +91,13 @@ export default function AppShellLayout() {
     if (businessTypeLoading) return;
     if (!isRestaurantWorldBusiness(businessType)) return;
     if (user?.role !== 'ADMIN' && user?.role !== 'MANAGER') return;
-    // Restaurant companies live in /rst — bounce platform dashboard home into OS.
+    // Restaurant companies live in /rst — bounce platform home/billing into OS.
     if (location.pathname === '/dashboard') {
       navigate('/rst/admin/dashboard', { replace: true });
+      return;
+    }
+    if (location.pathname === '/billing' || location.pathname.startsWith('/billing/')) {
+      navigate('/rst/admin/billing', { replace: true });
     }
   }, [businessType, businessTypeLoading, location.pathname, navigate, user?.role]);
 

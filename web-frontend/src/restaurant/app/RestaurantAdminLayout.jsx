@@ -25,7 +25,7 @@ export default function RestaurantAdminLayout() {
             <span className="rst-shell__brand-name">{t('rst.brand')}</span>
           </div>
           <nav className="rst-shell__links">
-            {RST_ADMIN_NAV.map((item) => (
+            {RST_ADMIN_NAV.filter((item) => !item.adminOnly || user?.role === 'ADMIN').map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -42,7 +42,6 @@ export default function RestaurantAdminLayout() {
             {!restaurantOnly ? (
               <Link to="/dashboard">{t('rst.admin.toPlatform')}</Link>
             ) : null}
-            {user?.role === 'ADMIN' ? <Link to="/billing">{t('nav.billing')}</Link> : null}
           </div>
         </aside>
         <div className="rst-shell__main">
