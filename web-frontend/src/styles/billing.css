@@ -1,4 +1,5 @@
-.billing-page {
+.billing-page,
+.billing-pay-modal {
   --billing-ink: #0f3d2e;
   --billing-ink-soft: #1a5c45;
   --billing-mint: #e8f5ef;
@@ -144,7 +145,7 @@
 
 .billing-btn--accent {
   width: 100%;
-  background: var(--billing-ink);
+  background: var(--billing-ink, #0f3d2e);
   color: #fff;
 }
 
@@ -1021,11 +1022,43 @@
   background: #f0fdf4;
 }
 
+.billing-pay-method--soon {
+  opacity: 0.55;
+  cursor: pointer;
+}
+
+.billing-pay-method--soon.billing-pay-method--active {
+  opacity: 0.85;
+  border-color: #94a3b8;
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.2);
+  background: #f8fafc;
+}
+
+.billing-pay-method__soon {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.billing-pay-app--soon {
+  background: #f8fafc;
+  color: #334155;
+  border-style: dashed;
+}
+
 .billing-pay-stage {
   display: grid;
   grid-template-columns: 1.35fr 0.85fr;
   gap: 0.85rem;
   margin-bottom: 1rem;
+}
+
+.billing-pay-stage:has(> :only-child) {
+  grid-template-columns: 1fr;
 }
 
 .billing-plastic {

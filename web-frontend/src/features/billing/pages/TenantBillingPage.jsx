@@ -313,8 +313,6 @@ export default function TenantBillingPage() {
         presets={p.presets}
         method={p.payMethod}
         setMethod={p.setPayMethod}
-        card={p.card}
-        setCard={p.setCard}
         paying={p.paying}
         onPay={p.pay}
         clickPaymentUrl={p.clickPaymentUrl}
