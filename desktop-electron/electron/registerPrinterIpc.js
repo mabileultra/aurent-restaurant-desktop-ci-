@@ -42,7 +42,7 @@ function registerPrinterIpc() {
 
   let escposModule = null;
   try {
-    escposModule = require('./cashier-receipt-escpos');
+    escposModule = require('./cashier-receipt-escpos/index.cjs');
   } catch (err) {
     console.warn('[escpos] module load failed:', err?.message || err);
   }
@@ -63,7 +63,7 @@ function registerPrinterIpc() {
   }
 
   try {
-    const { registerLabelTsplIpc } = require('./label-tspl');
+    const { registerLabelTsplIpc } = require('./label-tspl/index.cjs');
     registerLabelTsplIpc(ipcMain);
   } catch (err) {
     console.warn('[label-tspl] module load failed:', err?.message || err);
