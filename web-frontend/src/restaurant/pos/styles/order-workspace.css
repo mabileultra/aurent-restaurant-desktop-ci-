@@ -31,7 +31,9 @@
   background: transparent;
   color: var(--rst-muted);
   font-weight: 700;
-  padding: 0;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.15rem;
+  min-height: 2.5rem;
   cursor: pointer;
   white-space: nowrap;
 }
@@ -139,12 +141,12 @@
 }
 
 .rst-order__guest-stepper button {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2.75rem;
+  height: 2.75rem;
   border: 0;
   background: transparent;
   color: var(--rst-ink);
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 800;
   cursor: pointer;
 }
@@ -155,9 +157,9 @@
 }
 
 .rst-order__guest-stepper span {
-  min-width: 5.5rem;
+  min-width: 5.75rem;
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.86rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -180,12 +182,13 @@
 }
 
 .rst-order__waiter select {
-  height: 2.2rem;
+  height: 2.75rem;
   border-radius: 10px;
   border: 1px solid var(--rst-line);
   background: #10141d;
   color: var(--rst-ink);
-  padding: 0 0.65rem;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
 }
 
 .rst-order__progress {
@@ -245,12 +248,13 @@
 
 .rst-menu__search input {
   width: 100%;
-  height: 2.7rem;
-  padding: 0 7.5rem 0 2.5rem;
+  height: 3.15rem;
+  padding: 0 7.5rem 0 2.65rem;
   border: 1px solid var(--rst-line);
   border-radius: 999px;
   background: #10141d;
   color: var(--rst-ink);
+  font-size: 0.95rem;
 }
 
 .rst-menu__search input:focus {
@@ -284,21 +288,22 @@
 .rst-menu-cats {
   display: flex;
   flex-wrap: nowrap;
-  gap: 0.4rem;
+  gap: 0.5rem;
   overflow: auto;
-  padding-bottom: 0.15rem;
+  padding-bottom: 0.2rem;
 }
 
 .rst-menu-cat {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
   border: 1px solid var(--rst-line);
   border-radius: 999px;
   background: #10141d;
   color: var(--rst-muted);
-  padding: 0.45rem 0.8rem;
-  font-size: 0.8rem;
+  min-height: 2.65rem;
+  padding: 0.55rem 1.05rem;
+  font-size: 0.9rem;
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
@@ -478,15 +483,15 @@
 }
 
 .rst-menu-card__add {
-  width: 1.9rem;
-  height: 1.9rem;
+  width: 2.55rem;
+  height: 2.55rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #243044;
   color: var(--rst-ink);
-  font-size: 1.15rem;
+  font-size: 1.4rem;
   font-weight: 800;
 }
 
@@ -593,8 +598,8 @@
 }
 
 .rst-order-line__remove {
-  width: 2rem;
-  height: 2rem;
+  width: 2.55rem;
+  height: 2.55rem;
   border: 0;
   border-radius: 8px;
   background: transparent;
@@ -613,20 +618,21 @@
 }
 
 .rst-qty {
-  width: 2.1rem;
-  height: 2.1rem;
+  width: 2.55rem;
+  height: 2.55rem;
   border: 0;
   background: transparent;
   color: var(--rst-ink);
-  font-size: 1.05rem;
+  font-size: 1.25rem;
   font-weight: 800;
   cursor: pointer;
 }
 
 .rst-qty-stepper__value {
-  min-width: 1.8rem;
+  min-width: 2rem;
   text-align: center;
   font-weight: 800;
+  font-size: 0.95rem;
 }
 
 .rst-order__totals {
@@ -706,11 +712,12 @@
 
 .rst-order__kds {
   width: 100%;
-  min-height: 3rem;
+  min-height: 3.5rem;
   border: 0;
   border-radius: 14px;
   background: var(--rst-ok);
   color: #04140a;
+  font-size: 0.95rem;
   font-weight: 900;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -726,18 +733,19 @@
 .rst-order__actions {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.45rem;
+  gap: 0.55rem;
 }
 
 .rst-order__action {
-  min-height: 3.1rem;
+  min-height: 3.85rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
   background: #121722;
   color: var(--rst-ink);
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   font-weight: 800;
   cursor: pointer;
+  padding: 0.55rem 0.4rem;
 }
 
 .rst-order__action:disabled {
@@ -763,22 +771,23 @@
 .rst-order__print-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   margin-right: auto;
-  padding: 0.35rem 0.65rem;
+  padding: 0.5rem 0.8rem;
+  min-height: 2.5rem;
   border-radius: 999px;
   border: 1px solid rgb(255 255 255 / 0.12);
   background: rgb(255 255 255 / 0.04);
   color: var(--rst-muted, #a8a29e);
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
   user-select: none;
 }
 
 .rst-order__print-toggle input {
-  width: 0.95rem;
-  height: 0.95rem;
+  width: 1.1rem;
+  height: 1.1rem;
   accent-color: var(--rst-accent, #ff7a1a);
 }
 
