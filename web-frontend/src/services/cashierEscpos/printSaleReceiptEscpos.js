@@ -6,13 +6,20 @@ import { buildCashierEscposPayload } from './buildCashierEscposPayload';
 
 /**
  * Доступна ли тихая ESC/POS печать в этом окружении.
+ * Stub `notImplemented` в desktop shell не считаем реальной печатью.
  */
 export function isCashierEscposPrintAvailable() {
-  return (
-    typeof window !== 'undefined' &&
-    Boolean(window.desktopCashier?.isDesktop) &&
-    typeof window.desktopCashier?.printReceiptEscpos === 'function'
-  );
+  if (typeof window === 'undefined' || !window.desktopCashier?.isDesktop) return false;
+  const fn = window.desktopCashier.printReceiptEscpos;
+  if (typeof fn !== 'function') return false;
+  try {
+    const src = Function.prototype.toString.call(fn);
+    if (/not implemented in desktop shell/i.test(src)) return false;
+  } catch {
+    /* ignore */
+  }
+  if (fn.__aurentNotImplemented) return false;
+  return true;
 }
 
 /**
@@ -24,6 +31,12 @@ export function resolveEscposPrintErrorMessage(err, t) {
   const code = err?.code || '';
   const msg = err?.message || String(err || '');
 
+  if (/not implemented in desktop shell/i.test(msg)) {
+    return t('pos.escposDriverMissing', {
+      defaultValue:
+        'Печать чека недоступна в этой версии приложения. Обновите Aurent Cashier с сайта установки или обратитесь в поддержку.',
+    });
+  }
   if (code === 'NO_PRINTER' || /принтер чека не/i.test(msg)) {
     return t('pos.autoPrintPrinterError', {
       defaultValue:

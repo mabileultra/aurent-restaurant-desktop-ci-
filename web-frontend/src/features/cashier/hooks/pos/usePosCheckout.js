@@ -76,13 +76,18 @@ export function usePosCheckout({
             id: CASHIER_ESCPOS_TOAST.toastId,
             duration: CASHIER_ESCPOS_TOAST.successDurationMs,
           });
+          return;
         } catch (err) {
-          toast.error(resolveEscposPrintErrorMessage(err, t), {
-            id: CASHIER_ESCPOS_TOAST.toastId,
-            duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
-          });
+          const msg = err?.message || String(err || '');
+          if (!/not implemented in desktop shell/i.test(msg)) {
+            toast.error(resolveEscposPrintErrorMessage(err, t), {
+              id: CASHIER_ESCPOS_TOAST.toastId,
+              duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
+            });
+            return;
+          }
+          // stub ESC/POS — ниже обычный экран чека / window.print
         }
-        return;
       }
 
       if (shouldPrint) {
