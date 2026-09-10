@@ -14,6 +14,16 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   quit: () => invoke('desktop:quit'),
   showOnScreenKeyboard: () => invoke('desktop:showOnScreenKeyboard'),
 
+  listPrinters: () => invoke('desktop:list-printers'),
+  getPrinterSettings: () => invoke('desktop:get-printer-settings'),
+  setPrinterSettings: (settings) => invoke('desktop:set-printer-settings', settings),
+  openPrinterPicker: () => invoke('desktop:open-printer-picker'),
+  openLabelPrinterPicker: () => invoke('desktop:open-label-printer-picker'),
+  printReceiptEscpos: (payload) => invoke('desktop:print-receipt-escpos', payload),
+  printZReportEscpos: (payload) => invoke('desktop:print-z-report-escpos', payload),
+  printShiftReportEscpos: (payload) => invoke('desktop:print-shift-report-escpos', payload),
+  printLabelsEscpos: (payload) => invoke('desktop:print-label-escpos', payload),
+
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),
   onDesktopUpdate: (callback) => {

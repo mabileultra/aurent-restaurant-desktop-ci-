@@ -157,11 +157,16 @@ app.whenReady().then(async () => {
   }
 
   createWindow(getStartupLoginUrl());
+  const { setMainWindow } = require('./printers/window-ref.cjs');
+  setMainWindow(mainWindow);
+  const { registerPrinterIpc } = require('./registerPrinterIpc');
+  registerPrinterIpc();
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createWindow(getStartupLoginUrl());
+      setMainWindow(mainWindow);
     }
   });
 });
