@@ -19,6 +19,7 @@ public class BillingPaymentProperties {
         private boolean enabled;
         private String merchantId = "";
         private String serviceId = "";
+        private String merchantUserId = "";
         private String secretKey = "";
         private String payUrl = "https://my.click.uz/services/pay";
     }

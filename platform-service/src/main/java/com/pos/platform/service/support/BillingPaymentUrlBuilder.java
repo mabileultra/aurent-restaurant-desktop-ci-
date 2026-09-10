@@ -20,13 +20,18 @@ public class BillingPaymentUrlBuilder {
     private final BillingPaymentProperties props;
 
     public String click(UUID intentId, BigDecimal amount) {
-        return UriComponentsBuilder
+        UriComponentsBuilder builder = UriComponentsBuilder
             .fromUriString(props.getClick().getPayUrl())
             .queryParam("service_id", props.getClick().getServiceId())
             .queryParam("merchant_id", props.getClick().getMerchantId())
             .queryParam("amount", amount.toPlainString())
             .queryParam("transaction_param", intentId.toString())
-            .queryParam("return_url", props.getReturnUrl())
+            .queryParam("return_url", props.getReturnUrl());
+        String merchantUserId = props.getClick().getMerchantUserId();
+        if (merchantUserId != null && !merchantUserId.isBlank()) {
+            builder.queryParam("merchant_user_id", merchantUserId);
+        }
+        return builder
             .encode(StandardCharsets.UTF_8)
             .build()
             .toUriString();

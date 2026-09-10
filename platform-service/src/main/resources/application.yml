@@ -43,6 +43,7 @@ app:
         enabled: ${CLICK_ENABLED:false}
         merchant-id: ${CLICK_MERCHANT_ID:}
         service-id: ${CLICK_SERVICE_ID:}
+        merchant-user-id: ${CLICK_MERCHANT_USER_ID:}
         secret-key: ${CLICK_SECRET_KEY:}
         pay-url: ${CLICK_PAY_URL:https://my.click.uz/services/pay}
       payme:
