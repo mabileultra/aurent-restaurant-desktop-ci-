@@ -2,7 +2,6 @@ package com.pos.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.dto.tenant.TenantDisplaySettingsPayload;
-import com.pos.repository.CompanyTenantDisplaySettingsRepository;
 import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,8 +24,6 @@ import static org.mockito.Mockito.when;
 class TenantDisplaySettingsServiceImplTest {
 
     @Mock
-    private CompanyTenantDisplaySettingsRepository repository;
-    @Mock
     private TenantAccessSupport tenantAccess;
     @Mock
     private JdbcTemplate jdbcTemplate;
@@ -36,7 +33,6 @@ class TenantDisplaySettingsServiceImplTest {
     @BeforeEach
     void setUp() {
         service = new TenantDisplaySettingsServiceImpl(
-            repository,
             tenantAccess,
             new ObjectMapper(),
             jdbcTemplate

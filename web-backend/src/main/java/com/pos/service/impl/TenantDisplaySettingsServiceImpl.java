@@ -3,10 +3,7 @@ package com.pos.service.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.dto.tenant.TenantDisplaySettingsPayload;
-import com.pos.entity.Company;
-import com.pos.entity.CompanyTenantDisplaySettings;
 import com.pos.exception.BadRequestException;
-import com.pos.repository.CompanyTenantDisplaySettingsRepository;
 import com.pos.service.TenantDisplaySettingsService;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -25,7 +22,6 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
 
     private static final int MAX_LOGO_CHARS = 750_000;
 
-    private final CompanyTenantDisplaySettingsRepository repository;
     private final TenantAccessSupport tenantAccess;
     private final ObjectMapper objectMapper;
     private final JdbcTemplate jdbcTemplate;
@@ -73,27 +69,36 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
         validateLogo(payload.receiptLogoDataUrl());
 
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
-        Company company = tenantAccess.requireCompany(companyId);
-        JsonNode json = objectMapper.valueToTree(sanitize(payload));
+        // Ensure company exists / tenant access (throws if invalid).
+        tenantAccess.requireCompany(companyId);
 
-        CompanyTenantDisplaySettings row = repository.findByCompanyId(companyId)
-            .orElseGet(() -> {
-                CompanyTenantDisplaySettings created = new CompanyTenantDisplaySettings();
-                created.bindCompany(company);
-                return created;
-            });
-        if (row.getCompanyId() == null) {
-            row.bindCompany(company);
+        TenantDisplaySettingsPayload sanitized = sanitize(payload);
+        String json;
+        try {
+            json = objectMapper.writeValueAsString(sanitized);
+        } catch (Exception ex) {
+            throw new BadRequestException("Invalid settings payload");
         }
-        row.setSettings(json);
-        repository.save(row);
+
+        // JDBC upsert avoids Hibernate "null identifier" on first insert of shared-PK entity.
+        jdbcTemplate.update(
+            """
+                INSERT INTO company_tenant_display_settings (company_id, settings, updated_at)
+                VALUES (?, CAST(? AS jsonb), NOW())
+                ON CONFLICT (company_id) DO UPDATE
+                SET settings = EXCLUDED.settings,
+                    updated_at = NOW()
+                """,
+            companyId,
+            json
+        );
 
         LogUtil.info(
             TenantDisplaySettingsServiceImpl.class,
             "Tenant display settings saved: companyId={}",
             companyId
         );
-        return parsePayload(json);
+        return sanitized;
     }
 
     private TenantDisplaySettingsPayload sanitize(TenantDisplaySettingsPayload payload) {
