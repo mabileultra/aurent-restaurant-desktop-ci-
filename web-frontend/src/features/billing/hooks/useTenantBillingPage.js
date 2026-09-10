@@ -34,8 +34,10 @@ export function useTenantBillingPage() {
   const [ledgerType, setLedgerType] = useState(null);
   const [showManual, setShowManual] = useState(false);
   const [payOpen, setPayOpen] = useState(false);
-  const [payMethod, setPayMethod] = useState('HUMO');
+  const [payMethod, setPayMethod] = useState('CLICK');
   const [card, setCard] = useState(EMPTY_CARD);
+  const [clickIntentId, setClickIntentId] = useState(null);
+  const [clickPaymentUrl, setClickPaymentUrl] = useState('');
   const [ledgerPage, setLedgerPage] = useState(0);
   const [ledgerPageSize, setLedgerPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -68,10 +70,27 @@ export function useTenantBillingPage() {
     queryFn: () => tenantBillingApi.topUps({ size: 10 }).then((r) => r.data),
   });
 
+  const paymentsQ = useQuery({
+    queryKey: ['tenant-billing-payments'],
+    queryFn: () => tenantBillingApi.payments({ size: 20, sort: 'createdAt,desc' }).then((r) => r.data),
+  });
+
+  const clickPayQ = useQuery({
+    queryKey: ['tenant-billing-payment', clickIntentId],
+    queryFn: () => tenantBillingApi.payment(clickIntentId).then((r) => r.data),
+    enabled: Boolean(clickIntentId) && payOpen,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      if (status === 'PAID' || status === 'CANCELLED' || status === 'FAILED') return false;
+      return 3000;
+    },
+  });
+
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['tenant-billing-me'] });
     qc.invalidateQueries({ queryKey: ['tenant-billing-topups'] });
     qc.invalidateQueries({ queryKey: ['tenant-billing-ledger'] });
+    qc.invalidateQueries({ queryKey: ['tenant-billing-payments'] });
   };
 
   const ledger = ledgerQ.data?.content || [];
@@ -91,6 +110,25 @@ export function useTenantBillingPage() {
       setLedgerPage((page) => Math.max(0, page - 1));
     }
   }, [ledgerQ.isLoading, ledger.length, ledgerPage]);
+
+  const clickPaid = clickPayQ.data?.status === 'PAID';
+
+  useEffect(() => {
+    if (!clickPaid) return undefined;
+    toast.success(t('billing.payClickPaid'));
+    refresh();
+    const timer = setTimeout(() => {
+      setPayOpen(false);
+      setClickIntentId(null);
+      setClickPaymentUrl('');
+    }, 1200);
+    return () => clearTimeout(timer);
+  }, [clickPaid]);
+
+  const clearClickSession = () => {
+    setClickIntentId(null);
+    setClickPaymentUrl('');
+  };
 
   const onLedgerDeleted = () => {
     setConfirm(null);
@@ -174,8 +212,15 @@ export function useTenantBillingPage() {
         return;
       }
       const url = res?.data?.paymentUrl;
+      const intentId = res?.data?.intentId;
       if (!url) {
         toast.error(t('billing.payUrlMissing'));
+        return;
+      }
+      if (provider === 'CLICK') {
+        setClickIntentId(intentId);
+        setClickPaymentUrl(url);
+        qc.invalidateQueries({ queryKey: ['tenant-billing-payments'] });
         return;
       }
       toast.success(t('billing.redirectingPay'));
@@ -310,7 +355,10 @@ export function useTenantBillingPage() {
     deleting,
     pendingTopUps: (topUpsQ.data?.content || []).filter((x) => x.status === 'PENDING'),
     amount,
-    setAmount,
+    setAmount: (value) => {
+      setAmount(value);
+      clearClickSession();
+    },
     amountValid: parsedAmount != null,
     comment,
     setComment,
@@ -328,14 +376,27 @@ export function useTenantBillingPage() {
       if (method) setPayMethod(method);
       setPayOpen(true);
     },
-    closePay: () => setPayOpen(false),
+    closePay: () => {
+      setPayOpen(false);
+      clearClickSession();
+    },
     payMethod,
-    setPayMethod,
+    setPayMethod: (method) => {
+      setPayMethod(method);
+      clearClickSession();
+    },
     card,
     setCard,
     submit: () => submitM.mutate(),
     submitting: submitM.isPending,
     pay: (provider) => payM.mutate(provider),
     paying: payM.isPending,
+    clickPaymentUrl,
+    clickPaid,
+    openClick: () => {
+      if (clickPaymentUrl) window.open(clickPaymentUrl, '_blank', 'noopener,noreferrer');
+    },
+    payments: paymentsQ.data?.content || [],
+    paymentsLoading: paymentsQ.isLoading,
   };
 }

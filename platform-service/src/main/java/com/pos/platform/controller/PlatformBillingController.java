@@ -2,17 +2,20 @@ package com.pos.platform.controller;
 
 import com.pos.platform.domain.BillingAccountStatus;
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentStatus;
 import com.pos.platform.domain.BillingTopUpStatus;
 import com.pos.platform.dto.billing.AdjustBalanceRequest;
 import com.pos.platform.dto.billing.AssignCompanyPlanRequest;
 import com.pos.platform.dto.billing.BillingLedgerResponse;
 import com.pos.platform.dto.billing.BillingOverviewResponse;
+import com.pos.platform.dto.billing.BillingPaymentIntentResponse;
 import com.pos.platform.dto.billing.BillingPlanResponse;
 import com.pos.platform.dto.billing.BillingTopUpResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.dto.billing.ReviewTopUpRequest;
 import com.pos.platform.dto.billing.UpsertBillingPlanRequest;
 import com.pos.platform.dto.shared.PageResponse;
+import com.pos.platform.service.BillingPaymentService;
 import com.pos.platform.service.BillingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -43,6 +46,7 @@ import java.util.UUID;
 public class PlatformBillingController {
 
     private final BillingService billingService;
+    private final BillingPaymentService paymentService;
 
     @GetMapping("/overview")
     @Operation(summary = "KPI биллинга")
@@ -148,6 +152,16 @@ public class PlatformBillingController {
         @RequestBody(required = false) ReviewTopUpRequest request
     ) {
         return ResponseEntity.ok(billingService.rejectTopUp(requestId, request != null ? request : new ReviewTopUpRequest(null)));
+    }
+
+    @GetMapping("/payments")
+    @Operation(summary = "Онлайн-платежи Click/Payme")
+    public ResponseEntity<PageResponse<BillingPaymentIntentResponse>> payments(
+        @RequestParam(required = false) Integer companyId,
+        @RequestParam(required = false) BillingPaymentStatus status,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(paymentService.list(companyId, status, pageable));
     }
 
     @PostMapping("/run-charges")

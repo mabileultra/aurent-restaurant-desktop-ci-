@@ -2,6 +2,7 @@ import '../../../styles/billing.css';
 import { PageLayout, PageSearchField } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import BillingPeriodCalendar from '../components/BillingPeriodCalendar';
+import BillingPaymentsList from '../../billing/components/BillingPaymentsList';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 export default function PlatformBillingPage() {
@@ -153,13 +154,7 @@ export default function PlatformBillingPage() {
                   locale={p.dateLocale}
                   t={p.t}
                 />
-                <p className="billing-manage__hint">
-                  {p.t('platform.billing.periodStartHint', {
-                    date: p.periodStartOn
-                      ? new Date(`${p.periodStartOn}T12:00:00`).toLocaleDateString(p.dateLocale)
-                      : '—',
-                  })}
-                </p>
+                <p className="billing-manage__hint">{p.t('platform.billing.periodStartHint')}</p>
                 {p.prepaidCover?.kind === 'ok' ? (
                   <p className="billing-manage__hint billing-manage__hint--ok">
                     {p.t('platform.billing.prepaidHint', p.prepaidCover)}
@@ -257,6 +252,15 @@ export default function PlatformBillingPage() {
                 ))
               )}
             </div>
+            <h3 className="billing-topup__title mt-5">{p.t('billing.paymentsTitle')}</h3>
+            <BillingPaymentsList
+              t={p.t}
+              money={p.money}
+              formatDateTime={(iso) => (iso ? new Date(iso).toLocaleString(p.dateLocale) : '—')}
+              rows={p.payments}
+              loading={p.paymentsLoading}
+              showCompany
+            />
           </div>
         </div>
       </div>

@@ -4,11 +4,13 @@ import com.pos.platform.domain.BillingLedgerType;
 import com.pos.platform.domain.BillingPaymentStatus;
 import com.pos.platform.entity.BillingPaymentIntent;
 import com.pos.platform.entity.CompanyBilling;
+import com.pos.platform.exception.ResourceNotFoundException;
 import com.pos.platform.repository.BillingPaymentIntentRepository;
 import com.pos.platform.repository.CompanyBillingRepository;
 import com.pos.platform.service.BillingLedgerService;
 import com.pos.platform.service.BillingPaymentCreditService;
 import com.pos.platform.service.CompanyBillingAccountService;
+import com.pos.platform.service.support.BillingAccessCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,21 +25,30 @@ public class BillingPaymentCreditServiceImpl implements BillingPaymentCreditServ
     private final BillingLedgerService ledgerService;
     private final CompanyBillingRepository companyBillingRepository;
     private final BillingPaymentIntentRepository intentRepository;
+    private final BillingAccessCache accessCache;
 
     @Override
     @Transactional
     public void markPaid(BillingPaymentIntent intent, String providerTransId, String description) {
-        if (intent.getStatus() == BillingPaymentStatus.PAID) {
+        Integer companyId = intent.getCompanyId();
+        // Serialize money ops per company: Click complete retries / double callbacks.
+        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
+            .orElseGet(() -> accountService.requireOrCreateBilling(companyId));
+
+        BillingPaymentIntent locked = intentRepository.findByIdForUpdate(intent.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("Платёж не найден"));
+        if (locked.getStatus() == BillingPaymentStatus.PAID) {
             return;
         }
-        CompanyBilling billing = accountService.requireOrCreateBilling(intent.getCompanyId());
-        ledgerService.record(billing, intent.getAmount(), BillingLedgerType.TOP_UP, description);
+
+        ledgerService.record(billing, locked.getAmount(), BillingLedgerType.TOP_UP, description);
         accountService.refreshAccessStatus(billing, Instant.now());
         companyBillingRepository.save(billing);
 
-        intent.setStatus(BillingPaymentStatus.PAID);
-        intent.setProviderTransId(providerTransId);
-        intent.setPaidAt(Instant.now());
-        intentRepository.save(intent);
+        locked.setStatus(BillingPaymentStatus.PAID);
+        locked.setProviderTransId(providerTransId);
+        locked.setPaidAt(Instant.now());
+        intentRepository.save(locked);
+        accessCache.evict(companyId);
     }
 }

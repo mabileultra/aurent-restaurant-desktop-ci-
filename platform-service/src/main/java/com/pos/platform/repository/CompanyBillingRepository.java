@@ -2,7 +2,9 @@ package com.pos.platform.repository;
 
 import com.pos.platform.domain.BillingAccountStatus;
 import com.pos.platform.entity.CompanyBilling;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,6 +16,15 @@ import java.util.Optional;
 public interface CompanyBillingRepository extends JpaRepository<CompanyBilling, Integer> {
 
     long countByStatus(BillingAccountStatus status);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select b from CompanyBilling b
+        left join fetch b.plan
+        left join fetch b.company
+        where b.companyId = :companyId
+        """)
+    Optional<CompanyBilling> findDetailedByCompanyIdForUpdate(@Param("companyId") Integer companyId);
 
     @Query("""
         select b from CompanyBilling b

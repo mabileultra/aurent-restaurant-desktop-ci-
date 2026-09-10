@@ -6,6 +6,7 @@ import BillingLedgerConfirmModal from '../components/BillingLedgerConfirmModal';
 import BillingLedgerDetailModal from '../components/BillingLedgerDetailModal';
 import BillingLedgerSection from '../components/BillingLedgerSection';
 import BillingPayModal from '../components/BillingPayModal';
+import BillingPaymentsList from '../components/BillingPaymentsList';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
 
 function periodStart(paidUntil) {
@@ -264,6 +265,15 @@ export default function TenantBillingPage() {
                 {p.t('billing.pendingCount', { count: p.pendingTopUps.length })}
               </p>
             ) : null}
+
+            <h3 className="billing-topup__title mt-5">{p.t('billing.paymentsTitle')}</h3>
+            <BillingPaymentsList
+              t={p.t}
+              money={p.money}
+              formatDateTime={formatDateTime}
+              rows={p.payments}
+              loading={p.paymentsLoading}
+            />
           </div>
         </section>
 
@@ -307,6 +317,9 @@ export default function TenantBillingPage() {
         setCard={p.setCard}
         paying={p.paying}
         onPay={p.pay}
+        clickPaymentUrl={p.clickPaymentUrl}
+        clickPaid={p.clickPaid}
+        onOpenClick={p.openClick}
       />
       <BillingLedgerDetailModal
         open={!!p.detailRow}

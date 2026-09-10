@@ -66,17 +66,22 @@ export default function BillingPayModal({
   setCard,
   paying,
   onPay,
+  clickPaymentUrl = '',
+  clickPaid = false,
+  onOpenClick,
 }) {
   const panDigits = digitsOnly(card.pan, 16);
   const cardMethods = method === 'HUMO' || method === 'UZCARD';
   const qrValue = useMemo(() => {
+    if (method === 'CLICK') return clickPaymentUrl || '';
+    if (method === 'PAYME') return '';
     const payload = new URLSearchParams({
       method,
       amount: String(amount || ''),
       source: 'aurent-billing',
     });
     return `https://aurent.uz/billing/pay?${payload.toString()}`;
-  }, [amount, method]);
+  }, [amount, method, clickPaymentUrl]);
 
   const updateCard = (patch) => setCard((prev) => ({ ...prev, ...patch }));
 
@@ -161,18 +166,26 @@ export default function BillingPayModal({
               src={method === 'CLICK' ? PAYMENT_PROVIDER_LOGOS.CLICK : PAYMENT_PROVIDER_LOGOS.PAYME}
               alt=""
             />
-            <p>{t(method === 'CLICK' ? 'billing.payClickHint' : 'billing.payPaymeHint')}</p>
+            <p>
+              {clickPaid
+                ? t('billing.payClickPaid')
+                : t(method === 'CLICK' ? 'billing.payClickHint' : 'billing.payPaymeHint')}
+            </p>
           </div>
         )}
-        <div className="billing-pay-qr">
-          <div className="billing-pay-qr__frame">
-            <ReceiptQrCode value={qrValue} sizePx={148} />
+        {qrValue ? (
+          <div className="billing-pay-qr">
+            <div className="billing-pay-qr__frame">
+              <ReceiptQrCode value={qrValue} sizePx={148} />
+            </div>
+            <p className="billing-pay-qr__title">
+              <QrCode size={14} /> {t('billing.payScanQr')}
+            </p>
+            <p className="billing-pay-qr__hint">
+              {method === 'CLICK' ? t('billing.payScanQrClickHint') : t('billing.payScanQrHint')}
+            </p>
           </div>
-          <p className="billing-pay-qr__title">
-            <QrCode size={14} /> {t('billing.payScanQr')}
-          </p>
-          <p className="billing-pay-qr__hint">{t('billing.payScanQrHint')}</p>
-        </div>
+        ) : null}
       </div>
 
       {cardMethods ? (
@@ -230,15 +243,29 @@ export default function BillingPayModal({
       <button
         type="button"
         className="billing-btn billing-btn--accent billing-pay-modal__cta"
-        disabled={!canPay || paying}
-        onClick={() => onPay(method)}
+        disabled={!canPay || paying || clickPaid}
+        onClick={() => {
+          if (method === 'CLICK' && clickPaymentUrl && onOpenClick) {
+            onOpenClick();
+            return;
+          }
+          onPay(method);
+        }}
       >
-        {paying ? t('billing.redirectingPay') : `${t('billing.payNow')} · ${money(amount)} ${t('billing.currency')}`}
+        {paying
+          ? t('billing.redirectingPay')
+          : clickPaid
+            ? t('billing.payClickPaid')
+            : method === 'CLICK' && clickPaymentUrl
+              ? t('billing.payOpenClick')
+              : `${t('billing.payNow')} · ${money(amount)} ${t('billing.currency')}`}
       </button>
       {panDigits.length > 0 && cardMethods && !cardFormComplete(card) ? (
         <p className="billing-pay-modal__note">{t('billing.payCardIncomplete')}</p>
       ) : (
-        <p className="billing-pay-modal__note">{t('billing.payIntegrationNote')}</p>
+        <p className="billing-pay-modal__note">
+          {method === 'CLICK' ? t('billing.payClickNote') : t('billing.payIntegrationNote')}
+        </p>
       )}
     </BaseModal>
   );

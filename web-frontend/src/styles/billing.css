@@ -577,27 +577,63 @@
   margin-bottom: 0.75rem;
 }
 
+.billing-date {
+  position: relative;
+  margin: 0 0 0.65rem;
+}
+
+.billing-date__field {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0 0.8rem;
+  border: 1px solid var(--billing-line);
+  border-radius: 0.75rem;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+}
+
+.billing-date__field svg {
+  flex-shrink: 0;
+  color: #047857;
+}
+
+.billing-date__field:hover,
+.billing-date__field[aria-expanded='true'] {
+  border-color: #86efac;
+}
+
 .billing-calendar {
-  margin: 0.15rem 0 0.65rem;
-  padding: 0.85rem 0.9rem 1rem;
-  border-radius: 1.1rem;
+  padding: 0.55rem 0.55rem 0.65rem;
+  border-radius: 0.85rem;
   border: 1px solid #dce7e1;
-  background:
-    radial-gradient(circle at 100% 0%, rgba(16, 185, 129, 0.08), transparent 42%),
-    linear-gradient(180deg, #ffffff 0%, #f6fbf8 100%);
-  box-shadow: 0 10px 24px rgba(15, 61, 46, 0.06);
+  background: #fff;
+}
+
+.billing-calendar--pop {
+  position: absolute;
+  z-index: 30;
+  top: calc(100% + 0.3rem);
+  left: 0;
+  width: 16.5rem;
+  box-shadow: 0 12px 28px rgba(15, 61, 46, 0.14);
 }
 
 .billing-calendar__nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 0.7rem;
+  gap: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .billing-calendar__title {
-  font-size: 0.92rem;
+  font-size: 0.78rem;
   font-weight: 800;
   color: #0f3d2e;
   text-transform: capitalize;
@@ -607,9 +643,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 0.65rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 0.45rem;
   color: #14532d;
   background: #ecfdf3;
 }
@@ -622,25 +658,24 @@
 .billing-calendar__grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.28rem;
+  gap: 0.12rem;
 }
 
 .billing-calendar__week {
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.2rem;
 }
 
 .billing-calendar__week span {
   text-align: center;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
   color: #64748b;
 }
 
 .billing-calendar__day {
-  aspect-ratio: 1;
-  border-radius: 0.7rem;
-  font-size: 0.8rem;
+  height: 1.7rem;
+  border-radius: 0.4rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #0f172a;
   background: transparent;
@@ -659,17 +694,16 @@
 }
 
 .billing-calendar__day--today {
-  box-shadow: inset 0 0 0 1.5px #86efac;
+  box-shadow: inset 0 0 0 1px #86efac;
 }
 
 .billing-calendar__day--selected {
-  background: linear-gradient(180deg, #15803d 0%, #0f3d2e 100%);
+  background: #15803d;
   color: #fff;
-  box-shadow: 0 8px 16px rgba(15, 61, 46, 0.22);
 }
 
 .billing-calendar__day--selected:hover {
-  background: linear-gradient(180deg, #16a34a 0%, #14532d 100%);
+  background: #16a34a;
 }
 
 .billing-preset {

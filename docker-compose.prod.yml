@@ -222,6 +222,15 @@ services:
       POS_CORE_DATASOURCE_USERNAME: ${POSTGRES_USER:-pos_user}
       POS_CORE_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       BILLING_UPLOAD_DIR: ${BILLING_UPLOAD_DIR:-/app/data/billing-uploads}
+      BILLING_PAYMENT_RETURN_URL: ${BILLING_PAYMENT_RETURN_URL:-https://aurent.uz/billing}
+      CLICK_ENABLED: ${CLICK_ENABLED:-false}
+      CLICK_MERCHANT_ID: ${CLICK_MERCHANT_ID:-}
+      CLICK_SERVICE_ID: ${CLICK_SERVICE_ID:-}
+      CLICK_SECRET_KEY: ${CLICK_SECRET_KEY:-}
+      CLICK_PAY_URL: ${CLICK_PAY_URL:-https://my.click.uz/services/pay}
+      PAYME_ENABLED: ${PAYME_ENABLED:-false}
+      PAYME_MERCHANT_ID: ${PAYME_MERCHANT_ID:-}
+      PAYME_SECRET_KEY: ${PAYME_SECRET_KEY:-}
       TZ: ${TZ:-Asia/Tashkent}
     volumes:
       - platform_billing_uploads:/app/data/billing-uploads

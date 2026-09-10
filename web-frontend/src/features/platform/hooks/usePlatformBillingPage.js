@@ -60,10 +60,16 @@ export function usePlatformBillingPage() {
     queryFn: () => platformBillingApi.topUps({ status: 'PENDING', size: 30 }).then((r) => r.data),
   });
 
+  const paymentsQ = useQuery({
+    queryKey: ['platform-billing-payments'],
+    queryFn: () => platformBillingApi.payments({ size: 20, sort: 'createdAt,desc' }).then((r) => r.data),
+  });
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['platform-billing-overview'] });
     qc.invalidateQueries({ queryKey: ['platform-billing-companies'] });
     qc.invalidateQueries({ queryKey: ['platform-billing-topups'] });
+    qc.invalidateQueries({ queryKey: ['platform-billing-payments'] });
     qc.invalidateQueries({ queryKey: ['platform-billing-plans'] });
   };
 
@@ -229,6 +235,8 @@ export function usePlatformBillingPage() {
     setCompaniesPage,
     companiesPageSize: COMPANIES_PAGE_SIZE,
     topUps: topUpsQ.data?.content || [],
+    payments: paymentsQ.data?.content || [],
+    paymentsLoading: paymentsQ.isLoading,
     loading: overviewQ.isLoading || companiesQ.isLoading,
     selected,
     selectedCompanyId,

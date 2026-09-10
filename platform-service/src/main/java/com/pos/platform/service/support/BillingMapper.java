@@ -4,10 +4,12 @@ import com.pos.platform.domain.BillingAccountStatus;
 import com.pos.platform.domain.BillingLedgerType;
 import com.pos.platform.domain.BillingTopUpStatus;
 import com.pos.platform.dto.billing.BillingLedgerResponse;
+import com.pos.platform.dto.billing.BillingPaymentIntentResponse;
 import com.pos.platform.dto.billing.BillingPlanResponse;
 import com.pos.platform.dto.billing.BillingTopUpResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.entity.BillingLedgerEntry;
+import com.pos.platform.entity.BillingPaymentIntent;
 import com.pos.platform.entity.BillingPlan;
 import com.pos.platform.entity.BillingTopUpRequest;
 import com.pos.platform.entity.CompanyBilling;
@@ -98,6 +100,27 @@ public final class BillingMapper {
             req.getReviewNote(),
             req.getReviewedAt(),
             req.getCreatedAt()
+        );
+    }
+
+    public static BillingPaymentIntentResponse toPayment(
+        BillingPaymentIntent intent,
+        String companyName,
+        String paymentUrl
+    ) {
+        return new BillingPaymentIntentResponse(
+            intent.getId(),
+            intent.getCompanyId(),
+            companyName,
+            intent.getProvider(),
+            intent.getAmount(),
+            intent.getCurrency(),
+            intent.getStatus(),
+            intent.getProviderTransId(),
+            intent.getErrorNote(),
+            intent.getPaidAt(),
+            intent.getCreatedAt(),
+            paymentUrl
         );
     }
 }

@@ -1,5 +1,6 @@
 package com.pos.platform.service.impl;
 
+import com.pos.platform.config.BillingCacheConfig;
 import com.pos.platform.dto.billing.BillingPlanResponse;
 import com.pos.platform.dto.billing.UpsertBillingPlanRequest;
 import com.pos.platform.entity.BillingPlan;
@@ -10,6 +11,8 @@ import com.pos.platform.service.BillingPlanService;
 import com.pos.platform.service.support.BillingMapper;
 import com.pos.platform.service.support.BillingMoney;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,6 +29,7 @@ public class BillingPlanServiceImpl implements BillingPlanService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = BillingCacheConfig.BILLING_PLANS, key = "#activeOnly")
     public List<BillingPlanResponse> listPlans(boolean activeOnly) {
         List<BillingPlan> plans = activeOnly
             ? planRepository.findAllByActiveTrueOrderBySortOrderAsc()
@@ -37,6 +41,7 @@ public class BillingPlanServiceImpl implements BillingPlanService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = BillingCacheConfig.BILLING_PLANS, allEntries = true)
     public BillingPlanResponse createPlan(UpsertBillingPlanRequest request) {
         String code = BillingMoney.normalizePlanCode(request.code());
         if (planRepository.existsByCodeIgnoreCase(code)) {
@@ -47,6 +52,7 @@ public class BillingPlanServiceImpl implements BillingPlanService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheNames = BillingCacheConfig.BILLING_PLANS, allEntries = true)
     public BillingPlanResponse updatePlan(UUID planId, UpsertBillingPlanRequest request) {
         BillingPlan plan = requirePlan(planId);
         String code = BillingMoney.normalizePlanCode(request.code());

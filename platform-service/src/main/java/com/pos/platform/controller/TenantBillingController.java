@@ -4,12 +4,14 @@ import com.pos.platform.domain.BillingLedgerType;
 import com.pos.platform.dto.billing.BillingAccessResponse;
 import com.pos.platform.dto.billing.BillingLedgerResponse;
 import com.pos.platform.dto.billing.BillingPaymentCreateResponse;
+import com.pos.platform.dto.billing.BillingPaymentIntentResponse;
 import com.pos.platform.dto.billing.BillingPlanResponse;
 import com.pos.platform.dto.billing.BillingTopUpResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
 import com.pos.platform.dto.billing.CreateBillingPaymentRequest;
 import com.pos.platform.dto.billing.DeleteBillingLedgerRequest;
 import com.pos.platform.dto.shared.PageResponse;
+import com.pos.platform.security.PlatformTenantContext;
 import com.pos.platform.service.BillingPaymentService;
 import com.pos.platform.service.BillingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -132,5 +134,22 @@ public class TenantBillingController {
         @Valid @RequestBody CreateBillingPaymentRequest request
     ) {
         return ResponseEntity.ok(paymentService.createPayment(request.provider(), request.amount()));
+    }
+
+    @GetMapping("/me/payments")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @Operation(summary = "Онлайн-платежи текущей компании")
+    public ResponseEntity<PageResponse<BillingPaymentIntentResponse>> payments(
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(paymentService.listForCompany(PlatformTenantContext.getCompanyId(), pageable));
+    }
+
+    @GetMapping("/me/payments/{intentId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<BillingPaymentIntentResponse> payment(
+        @PathVariable UUID intentId
+    ) {
+        return ResponseEntity.ok(paymentService.getForCompany(PlatformTenantContext.getCompanyId(), intentId));
     }
 }

@@ -22,8 +22,10 @@ import com.pos.platform.service.support.BillingMapper;
 import com.pos.platform.service.support.BillingMoney;
 import com.pos.platform.service.support.BillingTenantSupport;
 import com.pos.platform.service.support.BillingTime;
+import com.pos.platform.service.support.BillingAccessCache;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +49,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
     private final BillingTopUpRequestRepository topUpRepository;
     private final BillingPlanService planService;
     private final BillingLedgerService ledgerService;
+    private final BillingAccessCache accessCache;
 
     @Value("${app.billing.grace-days:3}")
     private int graceDays;
@@ -130,13 +133,16 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             billing.setGraceUntil(null);
         }
         applyDueCharges(billing, Instant.now());
-        return BillingMapper.toCompany(companyBillingRepository.save(billing));
+        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
+        accessCache.evict(companyId);
+        return saved;
     }
 
     @Override
     @Transactional
     public CompanyBillingResponse adjustBalance(Integer companyId, AdjustBalanceRequest request, boolean credit) {
-        CompanyBilling billing = requireOrCreateBilling(companyId);
+        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
+            .orElseGet(() -> requireOrCreateBilling(companyId));
         BigDecimal delta = BillingMoney.of(request.amount());
         if (delta.signum() <= 0) {
             throw new BadRequestException("Сумма должна быть больше 0");
@@ -153,7 +159,9 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
                 : (credit ? "Ручное пополнение супер-админом" : "Корректировка / списание супер-админом")
         );
         refreshAccessStatus(billing, Instant.now());
-        return BillingMapper.toCompany(companyBillingRepository.save(billing));
+        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
+        accessCache.evict(companyId);
+        return saved;
     }
 
     @Override
@@ -170,7 +178,9 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
                 advancePeriod(billing, Instant.now());
             }
         }
-        return BillingMapper.toCompany(companyBillingRepository.save(billing));
+        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
+        accessCache.evict(companyId);
+        return saved;
     }
 
     @Override
@@ -184,6 +194,7 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = BillingAccessCache.CACHE_NAME, key = "#companyId")
     public BillingAccessResponse accessForCompany(Integer companyId) {
         return companyBillingRepository.findById(companyId)
             .map(b -> {

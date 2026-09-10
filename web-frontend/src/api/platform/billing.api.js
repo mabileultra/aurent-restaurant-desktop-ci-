@@ -16,6 +16,7 @@ export const platformBillingApi = {
   topUps: (params) => api.get('/platform/billing/top-ups', { params }),
   approveTopUp: (requestId, payload) => api.post(`/platform/billing/top-ups/${requestId}/approve`, payload || {}),
   rejectTopUp: (requestId, payload) => api.post(`/platform/billing/top-ups/${requestId}/reject`, payload || {}),
+  payments: (params) => api.get('/platform/billing/payments', { params }),
   runCharges: () => api.post('/platform/billing/run-charges'),
 };
 
@@ -33,6 +34,8 @@ export const tenantBillingApi = {
     return api.post('/billing/me/top-ups', fd, { timeout: 60000 });
   },
   createPayment: (payload) => api.post('/billing/me/payments', payload),
+  payments: (params) => api.get('/billing/me/payments', { params }),
+  payment: (id) => api.get(`/billing/me/payments/${id}`),
   ledgerEntry: (id) => api.get(`/billing/me/ledger/${id}`),
   deleteLedgerEntry: (id) => api.delete(`/billing/me/ledger/${id}`),
   deleteLedgerEntries: (ids) => api.post('/billing/me/ledger/bulk-delete', { ids }),
