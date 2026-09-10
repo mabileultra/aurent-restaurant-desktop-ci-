@@ -41,10 +41,12 @@ function registerPrinterIpc() {
   });
 
   let escposModule = null;
+  let escposLoadError = '';
   try {
     escposModule = require('./cashier-receipt-escpos/index.cjs');
   } catch (err) {
-    console.warn('[escpos] module load failed:', err?.message || err);
+    escposLoadError = String(err?.message || err);
+    console.warn('[escpos] module load failed:', escposLoadError);
   }
 
   if (escposModule?.registerEscposIpcHandlers) {
@@ -53,9 +55,10 @@ function registerPrinterIpc() {
       resolveLabelPrinterName,
     });
   } else {
+    const detail = escposLoadError ? ` (${escposLoadError})` : '';
     ipcMain.handle('desktop:print-receipt-escpos', async () => {
       const error = new Error(
-        'Печать чека недоступна в этой сборке. Обновите Aurent Cashier или обратитесь в поддержку.',
+        `Печать чека недоступна в этой сборке${detail}. Обновите Aurent Cashier или обратитесь в поддержку.`,
       );
       error.code = 'DRIVER_MISSING';
       throw error;

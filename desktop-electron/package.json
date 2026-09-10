@@ -1,6 +1,6 @@
 {
   "name": "aurent-cashier-desktop",
-  "version": "1.2.6",
+  "version": "1.2.7",
   "private": true,
   "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
@@ -25,11 +25,7 @@
       "config/**/*",
       "build/**/*",
       "package.json",
-      "node_modules/sql.js/**/*",
-      "node_modules/node-thermal-printer/**/*",
-      "node_modules/iconv-lite/**/*",
-      "node_modules/safer-buffer/**/*",
-      "electron/printers/win-raw-print.ps1"
+      "node_modules/**/*"
     ],
     "asarUnpack": [
       "node_modules/sql.js/**/*",

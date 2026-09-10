@@ -59,6 +59,15 @@ spring:
           filters:
             - PreserveHostHeader
 
+        # Desktop cashier server-setup password — web-backend (не platform /public/**).
+        - id: public-cashier-backend
+          uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
+          predicates:
+            - Path=/api/v1/public/cashier/**
+          order: 0
+          filters:
+            - PreserveHostHeader
+
         # Компании, platform UI и публичные заявки — platform-service.
         - id: platform-service
           uri: ${PLATFORM_SERVICE_URL:http://127.0.0.1:8084}

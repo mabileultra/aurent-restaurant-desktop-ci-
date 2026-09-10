@@ -170,17 +170,17 @@ jobs:
           set -euo pipefail
           ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           mkdir -p desktop-electron/dist
+          VERSION="$(node -p "require('./desktop-electron/package.json').version")"
+          # Only pull current version + updater metadata (full * times out / cancels).
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/*" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/Aurent-Cashier-${VERSION}-*" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/latest.yml" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/latest-mac.yml" \
             desktop-electron/dist/ || true
-          # Drop legacy installers that steal manifest slots from current builds.
-          rm -f desktop-electron/dist/Aurent-Cashier-Setup-*.exe \
-            desktop-electron/dist/Aurent-Cashier-1.2.1-* || true
           bash deploy/publish-desktop.sh
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             downloads/desktop/manifest.json \
             "${DEPLOY_USER}@${DEPLOY_HOST}:/opt/aurent-pos/downloads/desktop/manifest.json"
-          # Also remove legacy files on the server so auto-update / install stay clean.
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             'rm -f /opt/aurent-pos/downloads/desktop/Aurent-Cashier-Setup-*.exe /opt/aurent-pos/downloads/desktop/Aurent-Cashier-1.2.1-* || true'
