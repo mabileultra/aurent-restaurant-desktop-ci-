@@ -1,7 +1,8 @@
 /**
- * IPC регистрации печати ESC/POS и выбора принтера.
+ * IPC: принтеры чека/штрихкодов, ESC/POS, TSPL, страница штрихкодов.
  */
 const { ipcMain } = require('electron');
+const { loadDesktopConfig } = require('./config/desktopConfig');
 const { readPrinterSettings, writePrinterSettings } = require('./printers/printer-settings.cjs');
 const { showPrinterPickerWindow } = require('./printers/picker-window.cjs');
 const {
@@ -10,6 +11,7 @@ const {
   resolveLabelPrinterName,
 } = require('./printers/resolve.cjs');
 const { getMainWindow } = require('./printers/window-ref.cjs');
+const { registerLabelPrintIpc } = require('./labelPrintIpc');
 
 function registerPrinterIpc() {
   ipcMain.handle('desktop:list-printers', async () => listSystemPrinters());
@@ -26,6 +28,16 @@ function registerPrinterIpc() {
   ipcMain.handle('desktop:open-label-printer-picker', async () => {
     await showPrinterPickerWindow(getMainWindow(), { kind: 'label' });
     return readPrinterSettings();
+  });
+
+  ipcMain.handle('desktop:open-barcode-page', () => {
+    const mainWindow = getMainWindow();
+    const config = loadDesktopConfig({ isPackaged: require('electron').app.isPackaged });
+    const base = String(config?.cashierUrl || '').replace(/\/$/, '');
+    if (mainWindow && !mainWindow.isDestroyed() && base) {
+      mainWindow.loadURL(`${base}/users/barcode-print`);
+    }
+    return { ok: true };
   });
 
   let escposModule = null;
@@ -48,6 +60,19 @@ function registerPrinterIpc() {
       error.code = 'DRIVER_MISSING';
       throw error;
     });
+  }
+
+  try {
+    const { registerLabelTsplIpc } = require('./label-tspl');
+    registerLabelTsplIpc(ipcMain);
+  } catch (err) {
+    console.warn('[label-tspl] module load failed:', err?.message || err);
+  }
+
+  try {
+    registerLabelPrintIpc();
+  } catch (err) {
+    console.warn('[label-print] register failed:', err?.message || err);
   }
 }
 
