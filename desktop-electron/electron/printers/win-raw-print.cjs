@@ -12,10 +12,11 @@ const IS_WIN = process.platform === 'win32';
 
 function resolvePs1Path() {
   const local = path.join(__dirname, 'win-raw-print.ps1');
-  if (fs.existsSync(local)) return local;
   const unpacked = local.replace(`${path.sep}app.asar${path.sep}`, `${path.sep}app.asar.unpacked${path.sep}`);
+  // PowerShell -File cannot run scripts from inside app.asar; prefer unpacked copy.
   if (unpacked !== local && fs.existsSync(unpacked)) return unpacked;
-  return local;
+  if (!local.includes(`${path.sep}app.asar${path.sep}`) && fs.existsSync(local)) return local;
+  return unpacked !== local ? unpacked : local;
 }
 
 /**
