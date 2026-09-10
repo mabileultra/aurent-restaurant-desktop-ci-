@@ -4,7 +4,7 @@
  */
 const os = require('os');
 const net = require('net');
-const { readPrinterSettings } = require('../core/config.cjs');
+const { readPrinterSettings } = require('../printers/printer-settings.cjs');
 const { readLabelTsplSettings, writeLabelTsplSettings } = require('./tspl-config.cjs');
 
 const LABEL_NAME_RE =

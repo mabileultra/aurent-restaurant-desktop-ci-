@@ -1,16 +1,16 @@
 const { ipcMain } = require('electron');
-const { readPrinterSettings } = require('../printers/printer-settings.cjs');
-const { matchPrinterName } = require('../printers/printer-match.cjs');
+const { readPrinterSettings } = require('./printers/printer-settings.cjs');
+const { matchPrinterName } = require('./printers/printer-match.cjs');
 const {
   waitForLabelImages,
   waitForPaintFrames,
   runSilentLabelPrint,
   MEASURE_LABEL_DIMS_JS,
-} = require('../printers/print-thermal.cjs');
+} = require('./printers/print-thermal.cjs');
 const {
   listSystemPrinters,
   resolveLabelPrinterName,
-} = require('../printers/resolve.cjs');
+} = require('./printers/resolve.cjs');
 
 async function safeExecuteJavaScript(wc, script, stepLabel) {
   try {
