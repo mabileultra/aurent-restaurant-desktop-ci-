@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Printer, Settings2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -73,9 +74,9 @@ export default function RestaurantReceiptModal({ sale, autoPrint = false, onClos
     };
   }, [sale, autoPrint, t]);
 
-  if (!sale) return null;
+  if (!sale || typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div className="rst-receipt-modal fiscal-print-scene" role="presentation">
       <button
         type="button"
@@ -151,6 +152,7 @@ export default function RestaurantReceiptModal({ sale, autoPrint = false, onClos
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

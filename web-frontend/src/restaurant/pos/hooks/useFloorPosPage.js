@@ -406,7 +406,13 @@ export function useFloorPosPage() {
       invalidateShift();
       toast.success(t('rst.order.paid'));
 
+      // Показать чек сразу; печать ESC/POS — параллельно, чтобы UI не ждал принтер.
       const shouldPrint = printReceiptEnabled;
+      setPaidReceipt({
+        sale,
+        autoPrint: shouldPrint && !isCashierEscposPrintAvailable(),
+      });
+
       if (shouldPrint && isCashierEscposPrintAvailable()) {
         try {
           await printFiscalReceipt({ sale, t });
@@ -420,14 +426,7 @@ export function useFloorPosPage() {
             duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
           });
         }
-        setPaidReceipt({ sale, autoPrint: false });
-        return;
       }
-
-      setPaidReceipt({
-        sale,
-        autoPrint: shouldPrint && !isCashierEscposPrintAvailable(),
-      });
     },
     onError: (err) => {
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {

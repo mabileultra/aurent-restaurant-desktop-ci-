@@ -1,5 +1,23 @@
 /* Экран фискального чека после оплаты (ресторан) */
 
+/*
+ * .fiscal-print-scene по умолчанию off-screen (opacity:0) для скрытой печати.
+ * Модалка ресторана тоже использует этот класс (нужен print-thermal-modal),
+ * поэтому явно возвращаем её на экран.
+ */
+.rst-receipt-modal.fiscal-print-scene {
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: auto;
+  max-width: none;
+  opacity: 1;
+  pointer-events: auto;
+  overflow: visible;
+  z-index: 120;
+}
+
 .rst-receipt-modal {
   position: fixed;
   inset: 0;
