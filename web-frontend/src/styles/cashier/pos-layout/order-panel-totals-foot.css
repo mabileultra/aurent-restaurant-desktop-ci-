@@ -232,12 +232,79 @@
 
 @media (max-height: 720px) {
   .pos-order-panel--register .pos-order-panel__totals-foot {
-    min-height: 64px;
-    gap: 12px;
-    padding: 10px 12px 12px;
+    min-height: 52px;
+    gap: 8px;
+    padding: 6px 10px 8px;
   }
 
   .pos-order-panel--register .pos-order-panel__foot-btn {
-    min-height: 44px;
+    min-height: 34px;
   }
+}
+
+/* Компактный футер заказа на POS-экране */
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-foot {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  min-height: 0;
+  padding: 6px 10px 8px;
+  border-radius: 0 0 10px 10px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stats {
+  gap: 6px 10px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stat {
+  gap: 5px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stat-label {
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stat-box {
+  min-width: 1.6rem;
+  min-height: 1.5rem;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stat-unit {
+  font-size: 0.5rem;
+  line-height: 1;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-stat-tax {
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__totals-actions {
+  width: 100%;
+  gap: 6px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__foot-btn {
+  flex: 1 1 0;
+  gap: 6px;
+  min-height: 34px;
+  padding: 4px 10px 4px 6px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__foot-btn-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__foot-btn-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-order-panel--register .pos-order-panel__foot-btn-label {
+  max-width: none;
 }

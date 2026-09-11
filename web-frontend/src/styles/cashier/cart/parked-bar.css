@@ -148,3 +148,72 @@
   border-color: rgba(248, 113, 113, 0.35);
   color: #fca5a5;
 }
+
+/* Компактные отложенные чеки на POS */
+.cashier-app.cashier-app--pos-screen .pos-parked-bar {
+  gap: 4px;
+  padding: 6px 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__title {
+  gap: 6px;
+  font-size: 0.6875rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__count {
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 5px;
+  font-size: 0.625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__clear-all {
+  font-size: 0.625rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__list {
+  gap: 4px;
+  max-height: 4.75rem;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__item {
+  gap: 4px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__restore {
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  min-height: 32px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__restore svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__meta {
+  gap: 0;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__name {
+  font-size: 0.75rem;
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__sub {
+  font-size: 0.625rem;
+  line-height: 1.15;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__remove {
+  width: 30px;
+  min-height: 32px;
+  border-radius: 8px;
+}
+
+.cashier-app.cashier-app--pos-screen .pos-parked-bar__remove svg {
+  width: 14px;
+  height: 14px;
+}
