@@ -31,7 +31,6 @@ import java.util.UUID;
 public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
 
     private static final String DEFAULT_FISCAL_CARD = "—";
-    private static final String DEFAULT_BRAND = "Tinda";
 
     private final ZReportRepository zReportRepository;
     private final CashRegisterRepository cashRegisterRepository;
@@ -67,6 +66,9 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         String companyName = company != null && StringUtils.hasText(company.getLegalName())
             ? company.getLegalName()
             : (company != null ? company.getName() : store.getName());
+        String brandName = company != null && StringUtils.hasText(company.getName())
+            ? company.getName().trim()
+            : companyName;
         String companyAddress = company != null && StringUtils.hasText(company.getAddress())
             ? company.getAddress()
             : store.getAddress();
@@ -88,7 +90,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             .totalAmount(report.totalAmount())
             .vatAmount(report.vatAmount())
             .employeeName(report.cashierName())
-            .brandName(DEFAULT_BRAND)
+            .brandName(brandName)
             .companyName(companyName)
             .companyAddress(companyAddress)
             .tin(tin)
@@ -156,6 +158,9 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
         String companyName = company != null && StringUtils.hasText(company.getLegalName())
             ? company.getLegalName()
             : (company != null ? company.getName() : store.getName());
+        String brandName = company != null && StringUtils.hasText(company.getName())
+            ? company.getName().trim()
+            : companyName;
         String companyAddress = company != null && StringUtils.hasText(company.getAddress())
             ? company.getAddress()
             : store.getAddress();
@@ -177,7 +182,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             .totalAmount(report.totalAmount())
             .vatAmount(report.vatAmount())
             .employeeName(report.cashierName())
-            .brandName(DEFAULT_BRAND)
+            .brandName(brandName)
             .companyName(companyName)
             .companyAddress(companyAddress)
             .tin(tin)

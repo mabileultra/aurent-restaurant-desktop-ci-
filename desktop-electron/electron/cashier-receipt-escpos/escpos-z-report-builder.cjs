@@ -5,6 +5,21 @@ const { fmtMoney, fmtAt } = require('./escpos-format.cjs');
 const { appendRow, appendDivider, appendCenterHeader } = require('./escpos-layout.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
 
+function isOn(fields, key) {
+  return fields?.[key] !== false;
+}
+
+function moneyNum(v) {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function appendMoneyIf(printer, label, amount, cur, opts = {}) {
+  const n = moneyNum(amount);
+  if (!opts.always && n === 0) return;
+  appendRow(printer, label, `${fmtMoney(amount)} ${cur}`, Boolean(opts.bold));
+}
+
 /**
  * @param {object} payload
  */
@@ -24,21 +39,30 @@ function validateZReportPayload(payload) {
  */
 function buildZReportOnPrinter(printer, payload) {
   const safe = sanitizePayloadForPrint(payload);
-  const { z, labels: L = {} } = safe;
+  const { z, labels: L = {}, branding = {}, receiptFields: fields = {} } = safe;
   const cur = L.currency || 'sum';
 
   printer.clear();
   preparePrinterEncoding(printer);
 
-  const brand = z.brandName || safe.branding?.appName || 'Aurent';
-  const company = z.companyName || z.storeName || '—';
+  const company =
+    String(branding.companyName || '').trim() ||
+    String(z.companyName || '').trim() ||
+    String(z.storeName || '').trim() ||
+    'Aurent';
+  const address =
+    String(branding.companyAddress || '').trim() || String(z.companyAddress || '').trim();
+  const phone = String(branding.companyPhone || '').trim();
+  const tin = String(branding.stir || '').trim() || String(z.tin || '').trim();
 
-  appendCenterHeader(printer, [brand, (L.zReportTitle || 'Z-REPORT').toUpperCase(), company]);
-  if (z.companyAddress) {
-    printer.alignCenter();
-    printer.println(String(z.companyAddress));
-    printer.alignLeft();
+  const headerLines = [company, (L.zReportTitle || 'Z-REPORT').toUpperCase()];
+  if (isOn(fields, 'companyAddress') && address) {
+    headerLines.push(address);
   }
+  if (isOn(fields, 'companyPhone') && phone) {
+    headerLines.push(`${L.phoneLabel || 'Tel'}: ${phone}`);
+  }
+  appendCenterHeader(printer, headerLines);
   appendDivider(printer);
 
   appendRow(printer, L.terminalSerial || 'Terminal', z.terminalSerial ?? '—');
@@ -46,42 +70,49 @@ function buildZReportOnPrinter(printer, payload) {
   appendRow(printer, L.employee || 'Employee', z.employeeName ?? '—');
   appendRow(printer, L.storeName || 'Store', z.storeName ?? '—');
   appendRow(printer, L.fiscalCard || 'FM', z.fiscalCardId ?? '—');
-  if (z.tin) appendRow(printer, 'TIN', z.tin);
+  if (isOn(fields, 'stir') && tin) {
+    appendRow(printer, L.stir || 'TIN', tin);
+  }
   appendRow(printer, L.zNumber || 'Z #', String(z.zNumber ?? '—'), true);
   appendDivider(printer);
 
   printer.bold(true);
   printer.println(L.sectionSale || 'Sales');
   printer.bold(false);
-  appendRow(printer, L.saleCash || 'Cash', `${fmtMoney(z.cashTotal)} ${cur}`);
-  appendRow(printer, L.saleCard || 'Card', `${fmtMoney(z.cardTotal)} ${cur}`);
-  appendRow(printer, L.saleHumo || 'Humo', `${fmtMoney(z.humoTotal)} ${cur}`);
-  appendRow(printer, L.saleUzcard || 'Uzcard', `${fmtMoney(z.uzcardTotal)} ${cur}`);
-  appendRow(printer, L.saleCashless || 'Cashless', `${fmtMoney(z.cashlessTotal)} ${cur}`);
-  appendRow(printer, L.saleVat || 'VAT', `${fmtMoney(z.vatAmount)} ${cur}`);
+  appendMoneyIf(printer, L.saleCash || 'Cash', z.cashTotal, cur, { always: true });
+  appendMoneyIf(printer, L.saleCard || 'Card', z.cardTotal, cur);
+  appendMoneyIf(printer, L.saleHumo || 'Humo', z.humoTotal, cur);
+  appendMoneyIf(printer, L.saleUzcard || 'Uzcard', z.uzcardTotal, cur);
+  appendMoneyIf(printer, L.saleCashless || 'Cashless', z.cashlessTotal, cur);
+  appendMoneyIf(printer, L.saleVat || 'VAT', z.vatAmount, cur);
   appendRow(printer, L.saleCount || 'Count', String(z.salesCount ?? 0));
-  if (Number(z.lineDiscountTotal ?? 0) > 0) {
-    appendRow(printer, L.lineDiscountsSum || 'Line disc.', `${fmtMoney(z.lineDiscountTotal)} ${cur}`);
-  }
-  if (Number(z.orderDiscountTotal ?? 0) > 0) {
-    appendRow(printer, L.orderDiscountSum || 'Order disc.', `${fmtMoney(z.orderDiscountTotal)} ${cur}`);
-  }
-  if (Number(z.discountTotal ?? 0) > 0) {
-    appendRow(printer, L.discountsSum || 'Discount', `${fmtMoney(z.discountTotal)} ${cur}`, true);
-  }
+  appendMoneyIf(printer, L.lineDiscountsSum || 'Line disc.', z.lineDiscountTotal, cur);
+  appendMoneyIf(printer, L.orderDiscountSum || 'Order disc.', z.orderDiscountTotal, cur);
+  appendMoneyIf(printer, L.discountsSum || 'Discount', z.discountTotal, cur, { bold: true });
   appendDivider(printer);
 
-  printer.bold(true);
-  printer.println(L.sectionReturn || 'Returns');
-  printer.bold(false);
-  appendRow(printer, L.returnCash || 'Cash', `${fmtMoney(z.returnsCash)} ${cur}`);
-  appendRow(printer, L.returnCard || 'Card', `${fmtMoney(z.returnsCard)} ${cur}`);
-  appendRow(printer, L.returnHumo || 'Humo', `${fmtMoney(z.returnsHumo)} ${cur}`);
-  appendRow(printer, L.returnUzcard || 'Uzcard', `${fmtMoney(z.returnsUzcard)} ${cur}`);
-  appendRow(printer, L.returnCashless || 'Cashless', `${fmtMoney(z.returnsCashless)} ${cur}`);
-  appendRow(printer, L.returnVat || 'VAT', `${fmtMoney(z.vatReturn)} ${cur}`);
-  appendRow(printer, L.returnCount || 'Count', String(z.returnsCount ?? 0));
-  appendDivider(printer);
+  const returnsTotal =
+    moneyNum(z.returnsCash) +
+    moneyNum(z.returnsCard) +
+    moneyNum(z.returnsHumo) +
+    moneyNum(z.returnsUzcard) +
+    moneyNum(z.returnsCashless);
+  const hasReturns = (z.returnsCount ?? 0) > 0 || returnsTotal !== 0 || moneyNum(z.vatReturn) !== 0;
+
+  if (hasReturns) {
+    appendMoneyIf(printer, L.returnTotal || L.sectionReturn || 'Returns', returnsTotal, cur, {
+      always: true,
+      bold: true,
+    });
+    appendMoneyIf(printer, L.returnCash || 'Cash', z.returnsCash, cur);
+    appendMoneyIf(printer, L.returnCard || 'Card', z.returnsCard, cur);
+    appendMoneyIf(printer, L.returnHumo || 'Humo', z.returnsHumo, cur);
+    appendMoneyIf(printer, L.returnUzcard || 'Uzcard', z.returnsUzcard, cur);
+    appendMoneyIf(printer, L.returnCashless || 'Cashless', z.returnsCashless, cur);
+    appendMoneyIf(printer, L.returnVat || 'VAT', z.vatReturn, cur);
+    appendRow(printer, L.returnCount || 'Count', String(z.returnsCount ?? 0));
+    appendDivider(printer);
+  }
 
   appendRow(printer, L.openedAt || 'Opened', fmtAt(z.openedAt));
   appendRow(printer, L.closedAt || 'Closed', fmtAt(z.closedAt));
@@ -91,7 +122,6 @@ function buildZReportOnPrinter(printer, payload) {
 
   appendRow(printer, L.grandTotal || 'TOTAL', `${fmtMoney(z.totalAmount)} ${cur}`, true);
 
-  printer.newLine();
   printer.newLine();
   printer.cut();
 }

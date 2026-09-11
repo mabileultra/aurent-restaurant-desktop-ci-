@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 import { fmtMoney } from '../../../../utils/formatMoney';
+import { useTenantDisplayStore } from '../../../../store/tenantDisplayStore';
 
 const fmtAt = (iso) => {
   if (!iso) return '—';
@@ -12,6 +13,11 @@ const fmtAt = (iso) => {
   }
 };
 
+const moneyNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
 function Row({ label, value, bold = false }) {
   return (
     <div className={`receipt-row${bold ? ' receipt-row--bold' : ''}`}>
@@ -21,82 +27,101 @@ function Row({ label, value, bold = false }) {
   );
 }
 
+function MoneyRow({ label, amount, currency, bold = false, always = false }) {
+  if (!always && moneyNum(amount) === 0) return null;
+  return <Row label={label} value={`${fmtMoney(amount)} ${currency}`} bold={bold} />;
+}
+
 export default function ZReportReceiptBody({ z }) {
   const { t } = useTranslation();
+  const committed = useTenantDisplayStore((s) => s.committed);
+  const isReceiptFieldOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
 
   if (!z) return null;
 
-  const brand = z.brandName || 'Aurent';
-  const company = z.companyName || z.storeName || '—';
   const currency = t('fiscalReceipt.currency');
+  const company =
+    String(committed.receiptCompanyName || '').trim() ||
+    String(z.companyName || '').trim() ||
+    String(z.storeName || '').trim() ||
+    'Aurent';
+  const address =
+    String(committed.receiptCompanyAddress || '').trim() || String(z.companyAddress || '').trim();
+  const phone = String(committed.receiptCompanyPhone || '').trim();
+  const tin = String(committed.receiptStir || '').trim() || String(z.tin || '').trim();
+
+  const returnsTotal =
+    moneyNum(z.returnsCash) +
+    moneyNum(z.returnsCard) +
+    moneyNum(z.returnsHumo) +
+    moneyNum(z.returnsUzcard) +
+    moneyNum(z.returnsCashless);
+  const hasReturns = (z.returnsCount ?? 0) > 0 || returnsTotal !== 0 || moneyNum(z.vatReturn) !== 0;
 
   return (
     <>
-      <header className="receipt-section border-b border-dashed border-black pb-3 text-center">
-        <p className="receipt-title">{brand}</p>
-        <p className="receipt-subtitle mt-1 font-bold uppercase">{t('pos.zReport')}</p>
-        <p className="receipt-subtitle mt-1">{company}</p>
-        {z.companyAddress ? (
-          <p className="receipt-secondary mt-1 whitespace-pre-line">{z.companyAddress}</p>
+      <header className="receipt-section border-b border-dashed border-black pb-2 text-center">
+        <p className="receipt-title">{company}</p>
+        <p className="receipt-subtitle mt-0.5 font-bold uppercase">{t('pos.zReport')}</p>
+        {isReceiptFieldOn('companyAddress') && address ? (
+          <p className="receipt-secondary mt-0.5 whitespace-pre-line">{address}</p>
+        ) : null}
+        {isReceiptFieldOn('companyPhone') && phone ? (
+          <p className="receipt-secondary">
+            {t('fiscalReceipt.phoneLabel')}: {phone}
+          </p>
         ) : null}
       </header>
 
-      <section className="receipt-section mt-2 space-y-0.5">
+      <section className="receipt-section mt-1 space-y-0.5">
         <Row label={t('zReports.printTerminalSerial')} value={z.terminalSerial ?? '—'} />
         <Row label={t('zReports.printAppletVer')} value={z.appletVersion ?? '—'} />
         <Row label={t('zReports.printEmployee')} value={z.employeeName ?? '—'} />
         <Row label={t('zReports.printStoreName')} value={z.storeName ?? '—'} />
         <Row label={t('cashRegisters.colFiscal')} value={z.fiscalCardId ?? '—'} />
-        {z.tin ? <Row label="TIN" value={z.tin} /> : null}
+        {isReceiptFieldOn('stir') && tin ? <Row label={t('fiscalReceipt.stir')} value={tin} /> : null}
         <Row label={t('zReports.printZNumber')} value={String(z.zNumber ?? '—')} bold />
       </section>
 
-      <div className="receipt-divider my-2 border-t border-dashed border-black" />
+      <div className="receipt-divider my-1.5 border-t border-dashed border-black" />
 
       <section className="receipt-section space-y-0.5">
-        <p className="receipt-section-title mb-1">{t('zReports.sectionSale')}</p>
-        <Row label={t('zReports.saleCash')} value={`${fmtMoney(z.cashTotal)} ${currency}`} />
-        <Row label={t('zReports.saleCard')} value={`${fmtMoney(z.cardTotal)} ${currency}`} />
-        <Row label={t('zReports.saleHumo')} value={`${fmtMoney(z.humoTotal)} ${currency}`} />
-        <Row label={t('zReports.saleUzcard')} value={`${fmtMoney(z.uzcardTotal)} ${currency}`} />
-        <Row label={t('zReports.saleCashless')} value={`${fmtMoney(z.cashlessTotal)} ${currency}`} />
-        <Row label={t('zReports.saleVat')} value={`${fmtMoney(z.vatAmount)} ${currency}`} />
+        <p className="receipt-section-title mb-0.5">{t('zReports.sectionSale')}</p>
+        <MoneyRow label={t('zReports.saleCash')} amount={z.cashTotal} currency={currency} always />
+        <MoneyRow label={t('zReports.saleCard')} amount={z.cardTotal} currency={currency} />
+        <MoneyRow label={t('zReports.saleHumo')} amount={z.humoTotal} currency={currency} />
+        <MoneyRow label={t('zReports.saleUzcard')} amount={z.uzcardTotal} currency={currency} />
+        <MoneyRow label={t('zReports.saleCashless')} amount={z.cashlessTotal} currency={currency} />
+        <MoneyRow label={t('zReports.saleVat')} amount={z.vatAmount} currency={currency} />
         <Row label={t('zReports.saleCount')} value={String(z.salesCount ?? 0)} />
-        {Number(z.lineDiscountTotal ?? 0) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.lineDiscountsSum')}
-            value={`${fmtMoney(z.lineDiscountTotal)} ${currency}`}
-          />
-        ) : null}
-        {Number(z.orderDiscountTotal ?? 0) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.orderDiscountSum')}
-            value={`${fmtMoney(z.orderDiscountTotal)} ${currency}`}
-          />
-        ) : null}
-        {Number(z.discountTotal ?? 0) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.discountsSum')}
-            value={`${fmtMoney(z.discountTotal)} ${currency}`}
-            bold
-          />
-        ) : null}
+        <MoneyRow label={t('fiscalReceipt.lineDiscountsSum')} amount={z.lineDiscountTotal} currency={currency} />
+        <MoneyRow label={t('fiscalReceipt.orderDiscountSum')} amount={z.orderDiscountTotal} currency={currency} />
+        <MoneyRow label={t('fiscalReceipt.discountsSum')} amount={z.discountTotal} currency={currency} bold />
       </section>
 
-      <div className="receipt-divider my-2 border-t border-dotted border-black" />
+      {hasReturns ? (
+        <>
+          <div className="receipt-divider my-1.5 border-t border-dotted border-black" />
+          <section className="receipt-section space-y-0.5">
+            <MoneyRow
+              label={t('zReports.sectionReturn')}
+              amount={returnsTotal}
+              currency={currency}
+              bold
+              always
+            />
+            <MoneyRow label={t('zReports.returnCash')} amount={z.returnsCash} currency={currency} />
+            <MoneyRow label={t('zReports.returnCard')} amount={z.returnsCard} currency={currency} />
+            <MoneyRow label={t('zReports.returnHumo')} amount={z.returnsHumo} currency={currency} />
+            <MoneyRow label={t('zReports.returnUzcard')} amount={z.returnsUzcard} currency={currency} />
+            <MoneyRow label={t('zReports.returnCashless')} amount={z.returnsCashless} currency={currency} />
+            <MoneyRow label={t('zReports.returnVat')} amount={z.vatReturn} currency={currency} />
+            <Row label={t('zReports.returnCount')} value={String(z.returnsCount ?? 0)} />
+          </section>
+        </>
+      ) : null}
 
-      <section className="receipt-section space-y-0.5">
-        <p className="receipt-section-title mb-1">{t('zReports.sectionReturn')}</p>
-        <Row label={t('zReports.returnCash')} value={`${fmtMoney(z.returnsCash)} ${currency}`} />
-        <Row label={t('zReports.returnCard')} value={`${fmtMoney(z.returnsCard)} ${currency}`} />
-        <Row label={t('zReports.returnHumo')} value={`${fmtMoney(z.returnsHumo)} ${currency}`} />
-        <Row label={t('zReports.returnUzcard')} value={`${fmtMoney(z.returnsUzcard)} ${currency}`} />
-        <Row label={t('zReports.returnCashless')} value={`${fmtMoney(z.returnsCashless)} ${currency}`} />
-        <Row label={t('zReports.returnVat')} value={`${fmtMoney(z.vatReturn)} ${currency}`} />
-        <Row label={t('zReports.returnCount')} value={String(z.returnsCount ?? 0)} />
-      </section>
-
-      <div className="receipt-divider my-2 border-t border-dotted border-black" />
+      <div className="receipt-divider my-1.5 border-t border-dotted border-black" />
 
       <section className="receipt-section space-y-0.5">
         <Row label={t('zReports.openedAt')} value={fmtAt(z.openedAt)} />
@@ -105,7 +130,7 @@ export default function ZReportReceiptBody({ z }) {
         <Row label={t('zReports.lastReceipt')} value={z.lastReceiptNumber ?? '—'} />
       </section>
 
-      <div className="receipt-divider my-2 border-t border-dashed border-black" />
+      <div className="receipt-divider my-1.5 border-t border-dashed border-black" />
 
       <section className="receipt-section">
         <Row label={t('zReports.grandTotal')} value={`${fmtMoney(z.totalAmount)} ${currency}`} bold />

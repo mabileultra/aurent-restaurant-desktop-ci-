@@ -13,6 +13,11 @@ const fmtAt = (iso) => {
   }
 };
 
+const moneyNum = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
 function Row({ label, value, bold = false }) {
   return (
     <div className={`receipt-row${bold ? ' receipt-row--bold' : ''}`}>
@@ -22,73 +27,109 @@ function Row({ label, value, bold = false }) {
   );
 }
 
+function MoneyRow({ label, amount, currency, bold = false, always = false }) {
+  if (!always && moneyNum(amount) === 0) return null;
+  return <Row label={label} value={`${fmtMoney(amount)} ${currency}`} bold={bold} />;
+}
+
 export default function ShiftReportPrintBody({ report }) {
   const { t } = useTranslation();
-  const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
+  const committed = useTenantDisplayStore((s) => s.committed);
+  const isReceiptFieldOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
 
   if (!report) return null;
 
   const title = report.reportType === 'X' ? t('pos.xReport') : t('pos.zReport');
   const currency = t('fiscalReceipt.currency');
+  const companyName =
+    String(committed.receiptCompanyName || '').trim() ||
+    String(report.storeName || '').trim() ||
+    'Aurent';
+  const address = String(committed.receiptCompanyAddress || '').trim();
+  const phone = String(committed.receiptCompanyPhone || '').trim();
+  const stir = String(committed.receiptStir || '').trim();
+  const storeName = String(report.storeName || '').trim();
+
+  const returnsTotal =
+    moneyNum(report.returnsCash) +
+    moneyNum(report.returnsCard) +
+    moneyNum(report.returnsHumo) +
+    moneyNum(report.returnsUzcard) +
+    moneyNum(report.returnsCashless);
+  const hasReturns =
+    (report.returnsCount ?? 0) > 0 || returnsTotal !== 0 || moneyNum(report.returnsVat) !== 0;
 
   return (
     <>
-      <header className="receipt-section border-b border-dashed border-black pb-3 text-center">
-        <p className="receipt-title">{displayAppName()}</p>
-        <p className="receipt-subtitle mt-1 font-bold uppercase">{title}</p>
-        <p className="receipt-subtitle mt-1">{report.storeName}</p>
-        <p className="receipt-secondary">{report.cashierName}</p>
+      <header className="receipt-section border-b border-dashed border-black pb-2 text-center">
+        <p className="receipt-title">{companyName}</p>
+        <p className="receipt-subtitle mt-0.5 font-bold uppercase">{title}</p>
+        {isReceiptFieldOn('companyAddress') && address ? (
+          <p className="receipt-secondary">{address}</p>
+        ) : null}
+        {isReceiptFieldOn('companyPhone') && phone ? (
+          <p className="receipt-secondary">
+            {t('fiscalReceipt.phoneLabel')}: {phone}
+          </p>
+        ) : null}
+        {isReceiptFieldOn('stir') && stir ? (
+          <p className="receipt-secondary">
+            {t('fiscalReceipt.stir')}: {stir}
+          </p>
+        ) : null}
+        {storeName && storeName.toLowerCase() !== companyName.toLowerCase() ? (
+          <p className="receipt-secondary">{storeName}</p>
+        ) : null}
       </header>
 
-      <section className="receipt-section mt-2 space-y-0.5">
+      {report.cashierName ? (
+        <section className="receipt-section mt-1 space-y-0.5">
+          <Row label={t('users.roleCashier')} value={report.cashierName} />
+        </section>
+      ) : null}
+
+      <section className="receipt-section mt-1 space-y-0.5">
         <Row label={t('zReports.openedAt')} value={fmtAt(report.openedAt)} />
         <Row label={t('pos.reportAt')} value={fmtAt(report.reportAt)} />
       </section>
 
-      <div className="receipt-divider my-2 border-t border-dashed border-black" />
+      <div className="receipt-divider my-1.5 border-t border-dashed border-black" />
 
       <section className="receipt-section space-y-0.5">
         <Row label={t('pos.shiftSales')} value={String(report.saleCount)} />
-        <Row label={t('pos.shiftTotal')} value={`${fmtMoney(report.totalAmount)} ${currency}`} bold />
-        <Row label={t('pos.shiftCash')} value={`${fmtMoney(report.cashAmount)} ${currency}`} />
-        <Row label={t('pos.shiftCard')} value={`${fmtMoney(report.cardAmount)} ${currency}`} />
-        <Row label={t('pos.shiftHumo')} value={`${fmtMoney(report.humoAmount)} ${currency}`} />
-        <Row label={t('pos.shiftUzcard')} value={`${fmtMoney(report.uzcardAmount)} ${currency}`} />
-        <Row label={t('pos.shiftCashless')} value={`${fmtMoney(report.cashlessAmount)} ${currency}`} />
-        <Row label={t('pos.shiftVat')} value={`${fmtMoney(report.vatAmount)} ${currency}`} />
-        {Number(report.lineDiscountTotal ?? 0) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.lineDiscountsSum')}
-            value={`${fmtMoney(report.lineDiscountTotal)} ${currency}`}
-          />
-        ) : null}
-        {Number(report.orderDiscountTotal ?? 0) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.orderDiscountSum')}
-            value={`${fmtMoney(report.orderDiscountTotal)} ${currency}`}
-          />
-        ) : null}
-        {Number(report.discountTotal) > 0 ? (
-          <Row
-            label={t('fiscalReceipt.discountsSum')}
-            value={`${fmtMoney(report.discountTotal)} ${currency}`}
-            bold
-          />
-        ) : null}
+        <MoneyRow label={t('pos.shiftTotal')} amount={report.totalAmount} currency={currency} bold always />
+        <MoneyRow label={t('pos.shiftCash')} amount={report.cashAmount} currency={currency} always />
+        <MoneyRow label={t('pos.shiftCard')} amount={report.cardAmount} currency={currency} />
+        <MoneyRow label={t('pos.shiftHumo')} amount={report.humoAmount} currency={currency} />
+        <MoneyRow label={t('pos.shiftUzcard')} amount={report.uzcardAmount} currency={currency} />
+        <MoneyRow label={t('pos.shiftCashless')} amount={report.cashlessAmount} currency={currency} />
+        <MoneyRow label={t('pos.shiftVat')} amount={report.vatAmount} currency={currency} />
+        <MoneyRow label={t('fiscalReceipt.lineDiscountsSum')} amount={report.lineDiscountTotal} currency={currency} />
+        <MoneyRow label={t('fiscalReceipt.orderDiscountSum')} amount={report.orderDiscountTotal} currency={currency} />
+        <MoneyRow label={t('fiscalReceipt.discountsSum')} amount={report.discountTotal} currency={currency} bold />
       </section>
 
-      <div className="receipt-divider my-2 border-t border-dotted border-black" />
-
-      <section className="receipt-section space-y-0.5">
-        <p className="receipt-section-title mb-1">{t('zReports.sectionReturn')}</p>
-        <Row label={t('zReports.returnCash')} value={`${fmtMoney(report.returnsCash)} ${currency}`} />
-        <Row label={t('zReports.returnCard')} value={`${fmtMoney(report.returnsCard)} ${currency}`} />
-        <Row label={t('zReports.returnHumo')} value={`${fmtMoney(report.returnsHumo)} ${currency}`} />
-        <Row label={t('zReports.returnUzcard')} value={`${fmtMoney(report.returnsUzcard)} ${currency}`} />
-        <Row label={t('zReports.returnCashless')} value={`${fmtMoney(report.returnsCashless)} ${currency}`} />
-        <Row label={t('zReports.returnVat')} value={`${fmtMoney(report.returnsVat)} ${currency}`} />
-        <Row label={t('zReports.returnCount')} value={String(report.returnsCount ?? 0)} />
-      </section>
+      {hasReturns ? (
+        <>
+          <div className="receipt-divider my-1.5 border-t border-dotted border-black" />
+          <section className="receipt-section space-y-0.5">
+            <MoneyRow
+              label={t('zReports.sectionReturn')}
+              amount={returnsTotal}
+              currency={currency}
+              bold
+              always
+            />
+            <MoneyRow label={t('zReports.returnCash')} amount={report.returnsCash} currency={currency} />
+            <MoneyRow label={t('zReports.returnCard')} amount={report.returnsCard} currency={currency} />
+            <MoneyRow label={t('zReports.returnHumo')} amount={report.returnsHumo} currency={currency} />
+            <MoneyRow label={t('zReports.returnUzcard')} amount={report.returnsUzcard} currency={currency} />
+            <MoneyRow label={t('zReports.returnCashless')} amount={report.returnsCashless} currency={currency} />
+            <MoneyRow label={t('zReports.returnVat')} amount={report.returnsVat} currency={currency} />
+            <Row label={t('zReports.returnCount')} value={String(report.returnsCount ?? 0)} />
+          </section>
+        </>
+      ) : null}
     </>
   );
 }
