@@ -283,3 +283,98 @@
   background: var(--pos-surface-elevated);
   border-color: var(--pos-border);
 }
+
+/* Компактная шапка POS — одно меню бренда, усечённые имена, иконка выхода */
+.cashier-app--pos-screen .cashier-topbar--compact,
+.cashier-app--desktop .cashier-topbar--compact {
+  --cashier-topbar-control-h: 34px;
+  min-height: 44px;
+  padding: 6px 10px !important;
+  gap: 8px;
+}
+
+.cashier-topbar--compact .cashier-topbar__row--main {
+  gap: 8px;
+}
+
+.cashier-topbar--compact .cashier-topbar__actions {
+  gap: 6px;
+}
+
+.cashier-topbar--compact .cashier-topbar__store-pill {
+  max-width: min(28vw, 260px);
+  gap: 8px;
+  padding: 0 10px;
+}
+
+.cashier-topbar--compact .cashier-topbar__store-name {
+  font-size: 0.75rem;
+}
+
+.cashier-topbar--compact .cashier-topbar__pro-badge {
+  padding: 2px 6px;
+  font-size: 0.5625rem;
+}
+
+.cashier-topbar--compact .cashier-pos-topbar__cashier {
+  max-width: min(180px, 22vw);
+  gap: 8px;
+  padding: 2px 8px 2px 4px;
+  border-radius: 10px;
+}
+
+.cashier-topbar--compact .cashier-pos-topbar__avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  font-size: 0.6875rem;
+}
+
+.cashier-topbar--compact .cashier-pos-topbar__cashier-name {
+  font-size: 0.75rem;
+}
+
+.cashier-topbar--compact .cashier-pos-topbar__logout {
+  gap: 0;
+  min-width: var(--cashier-topbar-control-h, 34px);
+  width: var(--cashier-topbar-control-h, 34px);
+  padding: 0;
+}
+
+.cashier-topbar--compact .cashier-pos-topbar__logout-text {
+  display: none;
+}
+
+.cashier-topbar--compact .cashier-theme-toggle {
+  padding: 2px;
+}
+
+.cashier-topbar--compact .cashier-theme-toggle__opt {
+  width: 28px;
+  height: 26px;
+}
+
+@media (max-width: 1280px) {
+  .cashier-topbar--compact .cashier-pos-topbar__cashier-text {
+    display: none;
+  }
+
+  .cashier-topbar--compact .cashier-pos-topbar__cashier {
+    max-width: none;
+    padding: 2px;
+  }
+
+  .cashier-topbar--compact .cashier-topbar__store-pill {
+    max-width: min(34vw, 200px);
+  }
+}
+
+@media (max-width: 1100px) {
+  .cashier-topbar--compact .cashier-topbar__shift-meta {
+    display: none;
+  }
+
+  .cashier-topbar--compact .cashier-topbar__store-sep {
+    display: none;
+  }
+}

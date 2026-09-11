@@ -1,15 +1,13 @@
 import { LogOut } from 'lucide-react';
 import { CashierThemeToggle, CashierDesktopMenu, CashierNotificationsBell } from '../../../features/cashier';
 import LanguageSwitcher from '../../shared/LanguageSwitcher';
-import BrandMark from '../../shared/BrandMark';
-import { BRAND_NAME } from '../../../config/brandLogos';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
 
 export default function CashierSecondaryTopbar({
   t,
   displayAppName,
-  isDesktopApp,
+  isDesktopApp: _isDesktopApp,
   storeName,
   shiftOpenBadge,
   shift,
@@ -20,15 +18,13 @@ export default function CashierSecondaryTopbar({
   toggleCashierTheme,
 }) {
   return (
-    <header className="cashier-topbar cashier-topbar--pos">
+    <header className="cashier-topbar cashier-topbar--pos cashier-topbar--compact">
       <div className="cashier-topbar__row cashier-topbar__row--main">
         <div className="cashier-topbar__brand-block">
           <CashierDesktopMenu appName={displayAppName()} />
-          <div className="cashier-topbar__brand">
-            <BrandMark variant="icon" size={34} className="cashier-topbar__brand-icon" />
-            <span className="cashier-topbar__brand-name">{BRAND_NAME}.</span>
-            <span className="cashier-topbar__pro-badge">{t('pos.proBadge')}</span>
-          </div>
+          <span className="cashier-topbar__pro-badge" title={t('pos.proBadge')}>
+            {t('pos.proBadge')}
+          </span>
           <span className="cashier-topbar__brand-divider d-none d-md-inline" aria-hidden />
           <div className="cashier-topbar__terminal-strip d-none d-md-flex">
             <CashierTopbarTerminalMeta
@@ -53,9 +49,11 @@ export default function CashierSecondaryTopbar({
             type="button"
             className="cashier-pos-topbar__logout d-none d-md-inline-flex"
             onClick={onLogout}
+            title={t('nav.logout')}
+            aria-label={t('nav.logout')}
           >
             <LogOut size={16} strokeWidth={2.25} aria-hidden />
-            {t('nav.logout')}
+            <span className="cashier-pos-topbar__logout-text">{t('nav.logout')}</span>
           </button>
         </div>
       </div>

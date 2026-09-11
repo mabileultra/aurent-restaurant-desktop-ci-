@@ -7,6 +7,8 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen {
   --cashier-gap: 5px;
   --cashier-pad: 6px;
+  --cashier-topbar-control-h: 34px;
+  --cashier-pay-w: clamp(280px, 30%, 360px);
   --cashier-bottom-nav-h: 48px;
   --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 6px;

@@ -1,8 +1,17 @@
 /* Desktop Electron topbar — Aurent menu, store/shift badges */
 /* Electron / Windows: одна строка — Aurent + бейджи магазина и смены */
 .cashier-app--desktop .cashier-topbar--pos {
-  min-height: 52px;
-  padding: 8px 12px !important;
+  min-height: 44px;
+  padding: 6px 10px !important;
+}
+
+.cashier-app--desktop .cashier-topbar--compact .cashier-desktop-menu__trigger {
+  padding: 0 8px;
+  gap: 4px;
+}
+
+.cashier-app--desktop .cashier-topbar--compact .cashier-desktop-menu__logo {
+  max-height: 26px;
 }
 
 .cashier-app--desktop .cashier-topbar--pos .cashier-topbar__row--main {
