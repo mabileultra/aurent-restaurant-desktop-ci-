@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!--
+      CONSTRUCTION (стройматериалы): начальный остаток нужен при создании товара,
+      как у UNIVERSAL/PRODUCT. Старый seed v9 скрывал поле.
+    -->
+    <changeSet id="v33-construction-show-initial-stock" author="pos">
+        <sql>
+            DELETE FROM business_type_price_rules pr
+            USING business_types bt
+            WHERE pr.business_type_id = bt.id
+              AND bt.code = 'CONSTRUCTION'
+              AND pr.rule_key = 'price.hideInitialStock';
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

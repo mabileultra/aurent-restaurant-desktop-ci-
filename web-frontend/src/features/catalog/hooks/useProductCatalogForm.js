@@ -82,14 +82,19 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     defaultsAppliedRef.current = true;
   }, [isEdit, businessConfig, reset]);
 
+  const editProductId = isEdit ? full?.id : null;
+  const editHydrationKey = isEdit && full
+    ? `${full.id}:${detail ? 'detail' : 'list'}:${full.saleType || ''}:${full.updatedAt || full.version || ''}`
+    : null;
+
   useEffect(() => {
-    if (!full) return;
+    if (!isEdit || !full || !editProductId) return;
     defaultsAppliedRef.current = true;
     reset({
       sku: full.sku,
       name: full.name,
       description: full.description ?? '',
-    categoryId: full.categoryId != null && full.categoryId !== '' ? String(full.categoryId) : '',
+      categoryId: full.categoryId != null && full.categoryId !== '' ? String(full.categoryId) : '',
       costPrice: full.costPrice,
       sellingPrice: full.sellingPrice,
       defaultDiscountPercent: full.defaultDiscountPercent ?? 0,
@@ -126,7 +131,8 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     const extras = (full.barcodes || []).filter((b) => b && b !== full.barcode);
     setExtraBarcodes(extras.length ? extras : ['']);
     prevSellingRef.current = full.sellingPrice ?? null;
-  }, [full, reset, isEdit]);
+    // Only re-hydrate when product id / detail payload identity changes — not on every new object ref.
+  }, [editHydrationKey, editProductId, isEdit, reset]);
 
   useEffect(() => {
     if (!full?.attributes || !businessConfig?.fields?.length) return;
@@ -145,6 +151,8 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const saleTypeWatch = watch('saleType');
   const productTypeWatch = watch('productType');
   const unitCodeWatch = watch('unitCode');
+  const ownerTypeWatch = watch('ownerType');
+  const taxRateWatch = watch('taxRate');
   const categoryId = watch('categoryId');
 
   useEffect(() => {
@@ -304,6 +312,9 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     sellingPriceWatch,
     saleTypeWatch,
     productTypeWatch,
+    unitCodeWatch,
+    ownerTypeWatch,
+    taxRateWatch,
     categoryId,
     businessConfig,
     businessConfigLoading,

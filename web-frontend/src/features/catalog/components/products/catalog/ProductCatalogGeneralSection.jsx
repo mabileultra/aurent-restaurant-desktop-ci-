@@ -16,6 +16,9 @@ export default function ProductCatalogGeneralSection({
   isEdit,
   saleTypeWatch,
   productTypeWatch,
+  unitCodeWatch,
+  ownerTypeWatch,
+  taxRateWatch,
   categoryId,
   setValue,
   showSection,
@@ -60,7 +63,11 @@ export default function ProductCatalogGeneralSection({
             {isEdit ? (
               <ProductCatalogField label={t('productCatalog.productType')} required error={errors.productType?.message}>
                 <BaseSelect
-                  {...register('productType')}
+                  name="productType"
+                  value={productTypeWatch ?? 'RETAIL'}
+                  onChange={(e) =>
+                    setValue('productType', e.target.value, { shouldDirty: true, shouldValidate: true })
+                  }
                   options={[
                     { value: 'RETAIL', label: t('productCatalog.productTypeRetail') },
                     { value: 'MATERIAL', label: t('productCatalog.productTypeMaterial') },
@@ -72,7 +79,11 @@ export default function ProductCatalogGeneralSection({
             ) : null}
             <ProductCatalogField label={t('productCatalog.saleType')} required error={errors.saleType?.message}>
               <BaseSelect
-                {...register('saleType')}
+                name="saleType"
+                value={saleTypeWatch ?? 'PIECE'}
+                onChange={(e) =>
+                  setValue('saleType', e.target.value, { shouldDirty: true, shouldValidate: true })
+                }
                 options={[
                   { value: 'PIECE', label: t('productCatalog.saleTypePiece') },
                   { value: 'WEIGHT', label: t('productCatalog.saleTypeWeight') },
@@ -82,7 +93,11 @@ export default function ProductCatalogGeneralSection({
             </ProductCatalogField>
             <ProductCatalogField label={t('productCatalog.unitCode')} required error={errors.unitCode?.message}>
               <BaseSelect
-                {...register('unitCode')}
+                name="unitCode"
+                value={unitCodeWatch ?? 'PCS'}
+                onChange={(e) =>
+                  setValue('unitCode', e.target.value, { shouldDirty: true, shouldValidate: true })
+                }
                 options={unitOptions.map((u) => ({
                   value: u.code,
                   label: u.labelRu ? `${u.label} — ${u.labelRu}` : u.label,
@@ -114,7 +129,11 @@ export default function ProductCatalogGeneralSection({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <ProductCatalogField label={t('productCatalog.ownerType')} required error={errors.ownerType?.message}>
             <BaseSelect
-              {...register('ownerType')}
+              name="ownerType"
+              value={ownerTypeWatch ?? 'OWN'}
+              onChange={(e) =>
+                setValue('ownerType', e.target.value, { shouldDirty: true, shouldValidate: true })
+              }
               options={OWNER_TYPES.map((o) => ({
                 value: o,
                 label: t(`productCatalog.owner.${o}`, o),
@@ -123,7 +142,11 @@ export default function ProductCatalogGeneralSection({
           </ProductCatalogField>
           <ProductCatalogField label={t('productCatalog.vat')} error={errors.taxRate?.message}>
             <BaseSelect
-              {...register('taxRate', { valueAsNumber: true })}
+              name="taxRate"
+              value={String(taxRateWatch ?? 0)}
+              onChange={(e) =>
+                setValue('taxRate', Number(e.target.value), { shouldDirty: true, shouldValidate: true })
+              }
               options={VAT_OPTIONS.map((v) => ({
                 value: String(v),
                 label: `${v}%`,

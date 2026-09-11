@@ -44,6 +44,9 @@ export default function ProductCatalogModalFormBody({
         isEdit={form.isEdit}
         saleTypeWatch={form.saleTypeWatch}
         productTypeWatch={form.productTypeWatch}
+        unitCodeWatch={form.unitCodeWatch}
+        ownerTypeWatch={form.ownerTypeWatch}
+        taxRateWatch={form.taxRateWatch}
         categoryId={form.categoryId}
         setValue={form.setValue}
         showSection={form.showSection}

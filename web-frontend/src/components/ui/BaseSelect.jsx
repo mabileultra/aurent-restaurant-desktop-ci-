@@ -59,7 +59,12 @@ const BaseSelect = forwardRef(function BaseSelect(
     if (!isControlled) {
       setUncontrolledValue(next);
     }
-    onChange?.({ target: { value: next, name } });
+    // RHF register + setValue both read target.value / target.name
+    onChange?.({
+      type: 'change',
+      target: { value: next, name: name || '' },
+      currentTarget: { value: next, name: name || '' },
+    });
     setQuery('');
     closeMenuRef.current();
   };

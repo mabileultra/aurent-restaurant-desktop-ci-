@@ -37,5 +37,6 @@
     <include file="v30-multikassa-print-qr.xml" relativeToChangelogFile="true"/>
     <include file="v31-ensure-print-fiscal-qr.xml" relativeToChangelogFile="true"/>
     <include file="v32-ensure-tenant-display-settings.xml" relativeToChangelogFile="true"/>
+    <include file="v33-construction-show-initial-stock.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
