@@ -146,14 +146,10 @@ export function useCashierDesktopMenu() {
       const result = await window.desktopCashier.checkForUpdates();
       if (result?.updateAvailable) {
         toast.success(t('desktop.checkUpdatesAvailable', { version: result.version }));
-      } else if (result?.ok) {
+      } else if (result?.ok && result?.reason !== 'signature') {
         toast.success(t('desktop.checkUpdatesLatest'));
-      } else if (result?.reason !== 'dev') {
-        toast.error(
-          result?.error
-            ? `${t('desktop.checkUpdatesFailed')}: ${result.error}`
-            : t('desktop.checkUpdatesFailed'),
-        );
+      } else if (result?.reason !== 'dev' && result?.reason !== 'signature') {
+        toast.error(t('desktop.checkUpdatesFailed'));
       }
     } catch {
       toast.error(t('desktop.checkUpdatesFailed'));

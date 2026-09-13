@@ -51,6 +51,10 @@ app:
         merchant-id: ${PAYME_MERCHANT_ID:}
         secret-key: ${PAYME_SECRET_KEY:}
         checkout-url: ${PAYME_CHECKOUT_URL:https://checkout.paycom.uz}
+        receipt-title: ${PAYME_RECEIPT_TITLE:Пополнение баланса Aurent}
+        ikpu: ${PAYME_IKPU:10305008003000000}
+        package-code: ${PAYME_PACKAGE_CODE:1546532}
+        vat-percent: ${PAYME_VAT_PERCENT:12}
   internal:
     api-key: ${PLATFORM_INTERNAL_API_KEY:platform-internal-dev-key-change-in-prod}
   pos-core:

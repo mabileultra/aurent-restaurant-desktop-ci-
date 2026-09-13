@@ -2,6 +2,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { cashierDesktopNotificationsApi } from '../../../api/cashier/desktopNotifications.api';
 import { isDesktopCashier } from '../utils/isDesktopCashier';
+import {
+  mapDesktopUpdateEvent,
+  mergeDesktopUpdateItem,
+} from '../utils/desktopUpdateNotifications';
 
 const LOCAL_READ_KEY = 'cashier-desktop-local-notifications-read';
 
@@ -33,62 +37,6 @@ function mapServerItem(item) {
     createdAt: item.createdAt,
     read: Boolean(item.read),
   };
-}
-
-function mapUpdateEvent(event) {
-  const version = event?.version ? ` ${event.version}` : '';
-  if (event?.type === 'available') {
-    return {
-      id: `update-available${version}`,
-      source: 'update',
-      kind: 'UPDATE',
-      titleKey: 'notifications.updateAvailableTitle',
-      titleParams: { version: event.version || '' },
-      bodyKey: 'notifications.updateAvailableBody',
-      createdAt: new Date().toISOString(),
-      updateState: 'available',
-      version: event.version || null,
-    };
-  }
-  if (event?.type === 'progress') {
-    return {
-      id: 'update-progress',
-      source: 'update',
-      kind: 'UPDATE',
-      titleKey: 'notifications.updateDownloadingTitle',
-      bodyKey: 'notifications.updateDownloadingBody',
-      bodyParams: { percent: event.percent || 0 },
-      createdAt: new Date().toISOString(),
-      updateState: 'progress',
-      percent: event.percent || 0,
-    };
-  }
-  if (event?.type === 'downloaded') {
-    return {
-      id: `update-downloaded${version}`,
-      source: 'update',
-      kind: 'UPDATE',
-      titleKey: 'notifications.updateReadyTitle',
-      titleParams: { version: event.version || '' },
-      bodyKey: 'notifications.updateReadyBody',
-      createdAt: new Date().toISOString(),
-      updateState: 'downloaded',
-      version: event.version || null,
-      actionKey: 'notifications.restartNow',
-    };
-  }
-  if (event?.type === 'error') {
-    return {
-      id: `update-error-${Date.now()}`,
-      source: 'update',
-      kind: 'ALERT',
-      titleKey: 'notifications.updateErrorTitle',
-      body: event.message || '',
-      createdAt: new Date().toISOString(),
-      updateState: 'error',
-    };
-  }
-  return null;
 }
 
 export function useCashierNotifications() {
@@ -124,16 +72,9 @@ export function useCashierNotifications() {
       return undefined;
     }
     return window.desktopCashier.onDesktopUpdate((event) => {
-      const mapped = mapUpdateEvent(event);
-      if (!mapped) return;
-      setUpdateItems((prev) => {
-        if (mapped.id === 'update-progress') {
-          const withoutProgress = prev.filter((item) => item.updateState !== 'progress');
-          return [mapped, ...withoutProgress];
-        }
-        const withoutSame = prev.filter((item) => item.id !== mapped.id);
-        return [mapped, ...withoutSame];
-      });
+      const mapped = mapDesktopUpdateEvent(event);
+      if (!mapped || mapped.skip) return;
+      setUpdateItems((prev) => mergeDesktopUpdateItem(prev, mapped));
     });
   }, []);
 
@@ -188,10 +129,11 @@ export function useCashierNotifications() {
       }
       return;
     }
-    markLocalRead(item.id);
-    if (item.updateState === 'progress') {
+    if (item.source === 'update') {
       setUpdateItems((prev) => prev.filter((row) => row.id !== item.id));
+      return;
     }
+    markLocalRead(item.id);
   }, [markLocalRead]);
 
   const runAction = useCallback(async (item) => {
@@ -199,7 +141,7 @@ export function useCashierNotifications() {
       await window.desktopCashier.quitAndInstallUpdate();
       return;
     }
-    if (item.updateState === 'available' && typeof window.desktopCashier?.checkForUpdates === 'function') {
+    if (item.updateState === 'error' && typeof window.desktopCashier?.checkForUpdates === 'function') {
       await window.desktopCashier.checkForUpdates();
       return;
     }
@@ -223,7 +165,7 @@ export function useCashierNotifications() {
     if (item.actionKey) return t(item.actionKey);
     if (item.actionLabel) return item.actionLabel;
     if (item.updateState === 'downloaded') return t('notifications.restartNow');
-    if (item.updateState === 'available') return t('notifications.checkUpdate');
+    if (item.updateState === 'error') return t('notifications.retryUpdate');
     return null;
   };
 

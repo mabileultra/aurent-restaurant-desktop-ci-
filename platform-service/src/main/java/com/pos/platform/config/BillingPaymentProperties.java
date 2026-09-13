@@ -31,5 +31,13 @@ public class BillingPaymentProperties {
         private String merchantId = "";
         private String secretKey = "";
         private String checkoutUrl = "https://checkout.paycom.uz";
+        /** Fiscal item title in CheckPerformTransaction.detail */
+        private String receiptTitle = "Пополнение баланса Aurent";
+        /** MXIK / ИКПУ (tasnif.soliq.uz) */
+        private String ikpu = "10305008003000000";
+        /** Package code linked to IKPU (услуга сум) */
+        private String packageCode = "1546532";
+        /** VAT percent for fiscal receipt */
+        private int vatPercent = 12;
     }
 }

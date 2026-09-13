@@ -1,0 +1,46 @@
+Payme Merchant — ma’lumot kassa yaratish uchun
+==============================================
+
+Assalomu alaykum!
+
+Aurent POS (aurent.uz) SaaS billing uchun Payme Merchant API ulashni so‘raymiz.
+Quyidagi parametrlarni kabinetga kiriting / kassa oching.
+
+1) Endpoint URL (Merchant API, JSON-RPC POST):
+   https://aurent.uz/api/v1/public/billing/payme
+
+2) Account parameters:
+   - order_id  (string, UUID) — bizning billing_payment_intent ID
+
+3) Return URL (mijoz to‘lovdan keyin):
+   https://aurent.uz/billing
+
+4) Amalga oshiriladigan metodlar:
+   - CheckPerformTransaction
+   - CreateTransaction
+   - PerformTransaction
+   - CancelTransaction
+   - CheckTransaction
+   - GetStatement
+
+5) Checkout: REDIRECT (POST/GET chek)
+   amount — tiyinlarda
+   account[order_id] — intent UUID
+
+6) Fiskal detail (CheckPerformTransaction javobi):
+   title: Пополнение баланса Aurent
+   ИКПУ (code): 10305008003000000
+   package_code: 1546532  (услуга сум)
+   vat_percent: 12
+   (tasnif: https://tasnif.soliq.uz/attribute/10305008003000000)
+
+7) Autentifikatsiya: HTTP Basic
+   Login: Paycom
+   Password: (test/prod secret key — siz berasiz)
+
+Iltimos, test va prod kassa uchun:
+   - merchant_id (Cashbox ID)
+   - secret key / test key
+   yuboring.
+
+Kontakt: Aurent POS / aurent.uz

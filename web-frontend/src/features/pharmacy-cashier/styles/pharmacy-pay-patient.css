@@ -3,14 +3,16 @@
 .pharmacy-pay-patient {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  flex: 0 1 auto;
+  min-height: 0;
 }
 
 .pharmacy-pay-patient__card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 10px;
+  gap: 6px;
+  padding: 8px;
   border-radius: 10px;
   background: #fff;
   border: 1px solid var(--ppr-border, #d5dbe3);
@@ -103,7 +105,7 @@
 .pharmacy-pay-patient__input {
   flex: 1 1 auto;
   min-width: 0;
-  height: 36px;
+  height: 32px;
   padding: 0 10px;
   border: 1.5px solid #d5dbe3;
   border-radius: 8px;
@@ -131,7 +133,7 @@
 .pharmacy-pay-patient__btn {
   flex: 0 0 auto;
   min-width: 5.5rem;
-  height: 36px;
+  height: 32px;
   padding: 0 10px;
   border-radius: 8px;
   border: 1.5px solid transparent;
@@ -258,4 +260,37 @@
 
 .cashier-app.cashier-app--terminal .pharmacy-pay-patient__link {
   color: #93c5fd;
+}
+
+@media (max-height: 1100px) {
+  .pharmacy-pay-patient {
+    gap: 5px;
+  }
+
+  .pharmacy-pay-patient__card {
+    gap: 5px;
+    padding: 6px 8px;
+  }
+
+  .pharmacy-pay-patient__input,
+  .pharmacy-pay-patient__btn {
+    height: 28px;
+  }
+}
+
+@media (max-height: 800px) {
+  .pharmacy-pay-patient__meta {
+    display: none;
+  }
+
+  .pharmacy-pay-patient__badge {
+    padding: 2px 5px;
+    font-size: 0.5rem;
+  }
+
+  .pharmacy-pay-patient__btn {
+    min-width: 4.75rem;
+    font-size: 0.6875rem;
+    padding: 0 8px;
+  }
 }

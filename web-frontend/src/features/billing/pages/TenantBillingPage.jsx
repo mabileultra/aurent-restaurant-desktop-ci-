@@ -315,9 +315,9 @@ export default function TenantBillingPage() {
         setMethod={p.setPayMethod}
         paying={p.paying}
         onPay={p.pay}
-        clickPaymentUrl={p.clickPaymentUrl}
-        clickPaid={p.clickPaid}
-        onOpenClick={p.openClick}
+        paymentUrl={p.paymentUrl}
+        paymentPaid={p.paymentPaid}
+        onOpenPayment={p.openPayment}
       />
       <BillingLedgerDetailModal
         open={!!p.detailRow}

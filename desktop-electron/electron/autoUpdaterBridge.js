@@ -36,6 +36,27 @@ function broadcastUpdate(payload) {
   });
 }
 
+function classifyUpdaterError(message) {
+  const text = String(message || '').toLowerCase();
+  if (text.includes('code signature') || text.includes('publisher name') || text.includes('publishername')) {
+    return 'signature';
+  }
+  if (
+    text.includes('net::')
+    || text.includes('enotfound')
+    || text.includes('econn')
+    || text.includes('timed out')
+    || text.includes('offline')
+  ) {
+    return 'network';
+  }
+  return 'generic';
+}
+
+function isBenignUpdaterError(message) {
+  return classifyUpdaterError(message) === 'signature';
+}
+
 function isUpdaterEnabled() {
   return app.isPackaged && Boolean(feedUrl);
 }
@@ -70,7 +91,10 @@ function registerAutoUpdaterHandlers() {
   autoUpdater.on('error', (error) => {
     const message = error?.message || String(error);
     console.error('[autoUpdater]', message);
-    broadcastUpdate({ type: 'error', message });
+    if (isBenignUpdaterError(message)) {
+      return;
+    }
+    broadcastUpdate({ type: 'error', code: classifyUpdaterError(message) });
   });
 }
 
@@ -106,7 +130,13 @@ function checkForUpdatesNow() {
         currentVersion,
       };
     })
-    .catch((error) => ({ ok: false, error: error?.message || String(error) }));
+    .catch((error) => {
+      const message = error?.message || String(error);
+      if (isBenignUpdaterError(message)) {
+        return { ok: true, updateAvailable: false, reason: 'signature' };
+      }
+      return { ok: false, error: classifyUpdaterError(message) };
+    });
 }
 
 function registerAutoUpdaterIpc() {
@@ -119,7 +149,7 @@ function registerAutoUpdaterIpc() {
       autoUpdater.quitAndInstall(false, true);
       return true;
     } catch (error) {
-      broadcastUpdate({ type: 'error', message: error?.message || String(error) });
+      broadcastUpdate({ type: 'error', code: classifyUpdaterError(error?.message || String(error)) });
       return false;
     }
   });

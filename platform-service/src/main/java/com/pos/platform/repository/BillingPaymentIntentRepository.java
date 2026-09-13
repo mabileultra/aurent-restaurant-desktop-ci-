@@ -11,6 +11,8 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -23,6 +25,19 @@ public interface BillingPaymentIntentRepository extends JpaRepository<BillingPay
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select i from BillingPaymentIntent i where i.id = :id")
     Optional<BillingPaymentIntent> findByIdForUpdate(@Param("id") UUID id);
+
+    @Query("""
+        select i from BillingPaymentIntent i
+        where i.provider = :provider
+          and i.createdAt >= :from
+          and i.createdAt <= :to
+        order by i.createdAt asc
+        """)
+    List<BillingPaymentIntent> findPaymeStatement(
+        @Param("provider") BillingPaymentProvider provider,
+        @Param("from") Instant from,
+        @Param("to") Instant to
+    );
 
     Page<BillingPaymentIntent> findByCompanyIdOrderByCreatedAtDesc(Integer companyId, Pageable pageable);
 

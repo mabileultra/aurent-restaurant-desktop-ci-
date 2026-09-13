@@ -8,8 +8,10 @@ const METHODS = [
   { id: 'HUMO', tone: 'humo', logo: PAYMENT_PROVIDER_LOGOS.HUMO, labelKey: 'billing.payHumo', available: false },
   { id: 'UZCARD', tone: 'uzcard', logo: PAYMENT_PROVIDER_LOGOS.UZCARD, labelKey: 'billing.payUzcard', available: false },
   { id: 'CLICK', tone: 'click', logo: PAYMENT_PROVIDER_LOGOS.CLICK, labelKey: 'billing.payClick', available: true },
-  { id: 'PAYME', tone: 'payme', logo: PAYMENT_PROVIDER_LOGOS.PAYME, labelKey: 'billing.payPayme', available: false },
+  { id: 'PAYME', tone: 'payme', logo: PAYMENT_PROVIDER_LOGOS.PAYME, labelKey: 'billing.payPayme', available: true },
 ];
+
+const ONLINE = new Set(['CLICK', 'PAYME']);
 
 export default function BillingPayModal({
   open,
@@ -24,18 +26,23 @@ export default function BillingPayModal({
   setMethod,
   paying,
   onPay,
-  clickPaymentUrl = '',
-  clickPaid = false,
-  onOpenClick,
+  paymentUrl = '',
+  paymentPaid = false,
+  onOpenPayment,
 }) {
   const selected = METHODS.find((item) => item.id === method) || METHODS.find((item) => item.available);
   const methodAvailable = !!selected?.available;
+  const isOnline = ONLINE.has(method);
   const qrValue = useMemo(() => {
-    if (method !== 'CLICK') return '';
-    return clickPaymentUrl || '';
-  }, [method, clickPaymentUrl]);
+    if (!isOnline) return '';
+    return paymentUrl || '';
+  }, [isOnline, paymentUrl]);
 
-  const canPay = amountValid && methodAvailable && !clickPaid;
+  const canPay = amountValid && methodAvailable && !paymentPaid;
+  const hintKey = method === 'PAYME' ? 'billing.payPaymeHint' : 'billing.payClickHint';
+  const noteKey = method === 'PAYME' ? 'billing.payPaymeNote' : 'billing.payClickNote';
+  const qrHintKey = method === 'PAYME' ? 'billing.payScanQrPaymeHint' : 'billing.payScanQrClickHint';
+  const openKey = method === 'PAYME' ? 'billing.payOpenPayme' : 'billing.payOpenClick';
 
   return (
     <BaseModal
@@ -104,11 +111,11 @@ export default function BillingPayModal({
       <div className="billing-pay-stage">
         {methodAvailable ? (
           <div className={`billing-pay-app billing-pay-app--${method.toLowerCase()}`}>
-            <img src={PAYMENT_PROVIDER_LOGOS.CLICK} alt="" />
+            <img src={selected?.logo || PAYMENT_PROVIDER_LOGOS.CLICK} alt="" />
             <p>
-              {clickPaid
+              {paymentPaid
                 ? t('billing.payClickPaid')
-                : t('billing.payClickHint')}
+                : t(hintKey)}
             </p>
           </div>
         ) : (
@@ -128,7 +135,7 @@ export default function BillingPayModal({
             <p className="billing-pay-qr__title">
               <QrCode size={14} /> {t('billing.payScanQr')}
             </p>
-            <p className="billing-pay-qr__hint">{t('billing.payScanQrClickHint')}</p>
+            <p className="billing-pay-qr__hint">{t(qrHintKey)}</p>
           </div>
         ) : null}
       </div>
@@ -139,8 +146,8 @@ export default function BillingPayModal({
         disabled={!canPay || paying}
         onClick={() => {
           if (!methodAvailable) return;
-          if (method === 'CLICK' && clickPaymentUrl && onOpenClick) {
-            onOpenClick();
+          if (isOnline && paymentUrl && onOpenPayment) {
+            onOpenPayment();
             return;
           }
           onPay(method);
@@ -150,15 +157,15 @@ export default function BillingPayModal({
           ? t('billing.payComingSoonCta')
           : paying
             ? t('billing.redirectingPay')
-            : clickPaid
+            : paymentPaid
               ? t('billing.payClickPaid')
-              : method === 'CLICK' && clickPaymentUrl
-                ? t('billing.payOpenClick')
+              : isOnline && paymentUrl
+                ? t(openKey)
                 : `${t('billing.payNow')} · ${money(amount)} ${t('billing.currency')}`}
       </button>
       <p className="billing-pay-modal__note">
         {methodAvailable
-          ? t('billing.payClickNote')
+          ? t(noteKey)
           : t('billing.payComingSoonHint')}
       </p>
     </BaseModal>

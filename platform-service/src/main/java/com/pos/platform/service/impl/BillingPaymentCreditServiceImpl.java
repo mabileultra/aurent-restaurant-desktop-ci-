@@ -51,4 +51,34 @@ public class BillingPaymentCreditServiceImpl implements BillingPaymentCreditServ
         intentRepository.save(locked);
         accessCache.evict(companyId);
     }
+
+    @Override
+    @Transactional
+    public void reversePaid(BillingPaymentIntent intent, String description) {
+        Integer companyId = intent.getCompanyId();
+        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
+            .orElseGet(() -> accountService.requireOrCreateBilling(companyId));
+
+        BillingPaymentIntent locked = intentRepository.findByIdForUpdate(intent.getId())
+            .orElseThrow(() -> new ResourceNotFoundException("Платёж не найден"));
+        if (locked.getStatus() != BillingPaymentStatus.PAID) {
+            locked.setStatus(BillingPaymentStatus.CANCELLED);
+            intentRepository.save(locked);
+            return;
+        }
+
+        ledgerService.record(
+            billing,
+            locked.getAmount().negate(),
+            BillingLedgerType.ADJUST,
+            description
+        );
+        accountService.refreshAccessStatus(billing, Instant.now());
+        companyBillingRepository.save(billing);
+
+        locked.setStatus(BillingPaymentStatus.CANCELLED);
+        locked.setErrorNote(description);
+        intentRepository.save(locked);
+        accessCache.evict(companyId);
+    }
 }

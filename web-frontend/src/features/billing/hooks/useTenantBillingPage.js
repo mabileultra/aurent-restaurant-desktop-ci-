@@ -36,8 +36,8 @@ export function useTenantBillingPage() {
   const [payOpen, setPayOpen] = useState(false);
   const [payMethod, setPayMethod] = useState('CLICK');
   const [card, setCard] = useState(EMPTY_CARD);
-  const [clickIntentId, setClickIntentId] = useState(null);
-  const [clickPaymentUrl, setClickPaymentUrl] = useState('');
+  const [onlineIntentId, setOnlineIntentId] = useState(null);
+  const [onlinePaymentUrl, setOnlinePaymentUrl] = useState('');
   const [ledgerPage, setLedgerPage] = useState(0);
   const [ledgerPageSize, setLedgerPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -75,10 +75,10 @@ export function useTenantBillingPage() {
     queryFn: () => tenantBillingApi.payments({ size: 20, sort: 'createdAt,desc' }).then((r) => r.data),
   });
 
-  const clickPayQ = useQuery({
-    queryKey: ['tenant-billing-payment', clickIntentId],
-    queryFn: () => tenantBillingApi.payment(clickIntentId).then((r) => r.data),
-    enabled: Boolean(clickIntentId) && payOpen,
+  const onlinePayQ = useQuery({
+    queryKey: ['tenant-billing-payment', onlineIntentId],
+    queryFn: () => tenantBillingApi.payment(onlineIntentId).then((r) => r.data),
+    enabled: Boolean(onlineIntentId) && payOpen,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       if (status === 'PAID' || status === 'CANCELLED' || status === 'FAILED') return false;
@@ -111,23 +111,23 @@ export function useTenantBillingPage() {
     }
   }, [ledgerQ.isLoading, ledger.length, ledgerPage]);
 
-  const clickPaid = clickPayQ.data?.status === 'PAID';
+  const onlinePaid = onlinePayQ.data?.status === 'PAID';
 
   useEffect(() => {
-    if (!clickPaid) return undefined;
+    if (!onlinePaid) return undefined;
     toast.success(t('billing.payClickPaid'));
     refresh();
     const timer = setTimeout(() => {
       setPayOpen(false);
-      setClickIntentId(null);
-      setClickPaymentUrl('');
+      setOnlineIntentId(null);
+      setOnlinePaymentUrl('');
     }, 1200);
     return () => clearTimeout(timer);
-  }, [clickPaid]);
+  }, [onlinePaid]);
 
-  const clearClickSession = () => {
-    setClickIntentId(null);
-    setClickPaymentUrl('');
+  const clearOnlineSession = () => {
+    setOnlineIntentId(null);
+    setOnlinePaymentUrl('');
   };
 
   const onLedgerDeleted = () => {
@@ -217,9 +217,9 @@ export function useTenantBillingPage() {
         toast.error(t('billing.payUrlMissing'));
         return;
       }
-      if (provider === 'CLICK') {
-        setClickIntentId(intentId);
-        setClickPaymentUrl(url);
+      if (provider === 'CLICK' || provider === 'PAYME') {
+        setOnlineIntentId(intentId);
+        setOnlinePaymentUrl(url);
         qc.invalidateQueries({ queryKey: ['tenant-billing-payments'] });
         return;
       }
@@ -357,7 +357,7 @@ export function useTenantBillingPage() {
     amount,
     setAmount: (value) => {
       setAmount(value);
-      clearClickSession();
+      clearOnlineSession();
     },
     amountValid: parsedAmount != null,
     comment,
@@ -378,12 +378,12 @@ export function useTenantBillingPage() {
     },
     closePay: () => {
       setPayOpen(false);
-      clearClickSession();
+      clearOnlineSession();
     },
     payMethod,
     setPayMethod: (method) => {
       setPayMethod(method);
-      clearClickSession();
+      clearOnlineSession();
     },
     card,
     setCard,
@@ -391,10 +391,10 @@ export function useTenantBillingPage() {
     submitting: submitM.isPending,
     pay: (provider) => payM.mutate(provider),
     paying: payM.isPending,
-    clickPaymentUrl,
-    clickPaid,
-    openClick: () => {
-      if (clickPaymentUrl) window.open(clickPaymentUrl, '_blank', 'noopener,noreferrer');
+    paymentUrl: onlinePaymentUrl,
+    paymentPaid: onlinePaid,
+    openPayment: () => {
+      if (onlinePaymentUrl) window.open(onlinePaymentUrl, '_blank', 'noopener,noreferrer');
     },
     payments: paymentsQ.data?.content || [],
     paymentsLoading: paymentsQ.isLoading,
