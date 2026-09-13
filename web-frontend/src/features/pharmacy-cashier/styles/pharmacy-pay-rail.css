@@ -325,8 +325,8 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  flex: 0 0 auto;
   min-height: 0;
-  flex: 1 1 auto;
   padding: 6px 8px 8px;
   border: 1.5px solid var(--ppr-border);
   border-radius: var(--ppr-radius);
@@ -380,15 +380,13 @@
 .pharmacy-pay-quick__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 5px;
-  flex: 1 1 auto;
-  min-height: 0;
 }
 
 .pharmacy-pay-quick__btn {
+  height: var(--ppr-quick-btn-h);
   min-height: var(--ppr-quick-btn-h);
-  height: 100%;
+  max-height: var(--ppr-quick-btn-h);
   padding: 0 6px;
   border: 1.5px solid #cfd8e3;
   border-radius: 8px;
@@ -518,29 +516,66 @@
   cursor: default;
 }
 
-.pharmacy-pay-rail__print.pos-pay-print-toggle {
-  flex: 0 0 5.25rem;
-  max-width: 5.25rem;
-  flex-direction: column;
-  gap: 2px;
+.cashier-app .pharmacy-pay-rail__print.pos-pay-print-toggle {
+  flex: 0 0 4.6rem;
+  width: 4.6rem;
+  max-width: 4.6rem;
+  min-width: 4.6rem;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  gap: 2px 4px;
   min-height: 0;
   height: var(--ppr-sale-h);
-  padding: 4px;
+  padding: 4px 3px 3px;
+  overflow: hidden;
   border: 1.5px solid #b7d4c6;
   border-radius: 10px;
   background: var(--ppr-green-soft);
+  box-sizing: border-box;
 }
 
-.pharmacy-pay-rail__print .pos-pay-print-toggle__text {
-  font-size: 0.5625rem;
-  line-height: 1.15;
+.cashier-app .pharmacy-pay-rail__print .pos-pay-print-toggle__box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border-width: 1.5px;
+}
+
+.cashier-app .pharmacy-pay-rail__print .pos-pay-print-toggle__input:checked + .pos-pay-print-toggle__box::after {
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 8px;
+  border-width: 0 1.75px 1.75px 0;
+}
+
+.cashier-app .pharmacy-pay-rail__print .pos-pay-print-toggle__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ppr-green);
+  line-height: 0;
+}
+
+.cashier-app .pharmacy-pay-rail__print .pos-pay-print-toggle__icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.cashier-app .pharmacy-pay-rail__print .pos-pay-print-toggle__text {
+  flex: 1 0 100%;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.5rem;
+  line-height: 1.1;
   text-align: center;
   color: var(--ppr-green);
   font-weight: 700;
-}
-
-.pharmacy-pay-rail__print .pos-pay-print-toggle__icon {
-  color: var(--ppr-green);
 }
 
 .pharmacy-pay-rail__spin {
