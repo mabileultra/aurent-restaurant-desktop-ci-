@@ -11,16 +11,23 @@ export default function ProductCatalogModal({
   onSaved,
   selectedStore = null,
   onCreateStoreChange,
+  catalogProfile = null,
 }) {
   const form = useProductCatalogForm(product, stores, onSaved, {
     selectedStoreId: selectedStore?.id ?? null,
     selectedStoreBusinessType: selectedStore?.businessType ?? null,
+    catalogProfile,
   });
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
       <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900">
-        <ProductCatalogModalHeader t={form.t} isEdit={form.isEdit} onClose={onClose} />
+        <ProductCatalogModalHeader
+          t={form.t}
+          isEdit={form.isEdit}
+          onClose={onClose}
+          catalogProfile={catalogProfile}
+        />
 
         <form onSubmit={form.handleSubmit(form.onSubmit)} className="p-5 space-y-8">
           <ProductCatalogModalFormBody

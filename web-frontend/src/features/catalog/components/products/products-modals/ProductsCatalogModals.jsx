@@ -18,6 +18,7 @@ export default function ProductsCatalogModals({ p }) {
           onCreateStoreChange={p.handleCreateStoreChange}
           onClose={p.closeCatalogModal}
           onSaved={p.onCatalogSaved}
+          catalogProfile={p.catalogProfile}
         />
       ) : null}
     </LazyModalSuspense>

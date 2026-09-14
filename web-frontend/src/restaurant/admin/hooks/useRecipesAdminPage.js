@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { productApi } from '../../../api/product.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { rstRecipeApi } from '../../api/recipe.api';
@@ -33,12 +34,28 @@ export function useRecipesAdminPage() {
     imageUrl: '',
     imageName: '',
   });
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const dishesQuery = useQuery({
     queryKey: ['rst-menu-admin', workspace.storeId],
     queryFn: () => rstMenuApi.list(workspace.storeId, false).then((r) => r.data),
     enabled: workspace.storeId != null,
   });
+
+  useEffect(() => {
+    const dishParam = searchParams.get('dish');
+    if (!dishParam) return;
+    const dishId = Number(dishParam);
+    if (!Number.isFinite(dishId)) return;
+    const dishes = dishesQuery.data ?? [];
+    if (dishes.length === 0) return;
+    if (dishes.some((dish) => Number(dish.id) === dishId)) {
+      setSelectedId(dishId);
+    }
+    const next = new URLSearchParams(searchParams);
+    next.delete('dish');
+    setSearchParams(next, { replace: true });
+  }, [dishesQuery.data, searchParams, setSearchParams]);
 
   const recipesQuery = useQuery({
     queryKey: ['rst-recipes', workspace.storeId],

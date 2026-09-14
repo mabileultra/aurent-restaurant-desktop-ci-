@@ -41,11 +41,39 @@ export function applyBusinessConfigDefaults(businessConfig) {
   };
 }
 
-export function resolveCatalogSectionVisible(section, { productType }) {
+/** Короткая форма ингредиента в ресторанном складе (техкарты). */
+export const CATALOG_PROFILE_RESTAURANT_INGREDIENT = 'restaurantIngredient';
+
+export function resolveCatalogSectionVisible(section, { productType, catalogProfile }) {
+  if (catalogProfile === CATALOG_PROFILE_RESTAURANT_INGREDIENT) {
+    switch (section) {
+      case 'typeSelectors':
+      case 'accounting':
+      case 'accountingCost':
+      case 'accountingStock':
+        return true;
+      case 'skuField':
+      case 'productTypeField':
+      case 'tasnif':
+      case 'retailFlags':
+      case 'ownerVat':
+      case 'accountingSell':
+      case 'accountingDiscount':
+      case 'storePrices':
+      case 'barcodes':
+      case 'dynamicFields':
+        return false;
+      default:
+        return false;
+    }
+  }
+
   switch (section) {
     case 'tasnif':
       return productType === 'RETAIL';
     case 'typeSelectors':
+    case 'productTypeField':
+    case 'skuField':
       return true;
     case 'construction':
     case 'clothing':
@@ -56,8 +84,13 @@ export function resolveCatalogSectionVisible(section, { productType }) {
       return productType === 'RETAIL';
     case 'ownerVat':
     case 'accounting':
+    case 'accountingCost':
+    case 'accountingSell':
+    case 'accountingDiscount':
+    case 'accountingStock':
     case 'storePrices':
     case 'barcodes':
+    case 'dynamicFields':
       return true;
     default:
       return false;

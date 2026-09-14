@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { productApi } from '../../../api';
 import {
   applyBusinessConfigDefaults,
+  CATALOG_PROFILE_RESTAURANT_INGREDIENT,
   normalizeBusinessTypeCode,
   resolveCatalogSectionVisible,
 } from '../../../config/productCatalogConfig';
@@ -28,6 +29,8 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const isEdit = !!product;
   const selectedStoreId = options.selectedStoreId ?? null;
   const selectedStoreBusinessType = options.selectedStoreBusinessType ?? null;
+  const catalogProfile = options.catalogProfile ?? null;
+  const isRestaurantIngredient = catalogProfile === CATALOG_PROFILE_RESTAURANT_INGREDIENT;
   const { businessType: companyBusinessType } = useCompanyBusinessType();
   const effectiveBusinessType = normalizeBusinessTypeCode(
     selectedStoreBusinessType ?? companyBusinessType ?? 'UNIVERSAL'
@@ -58,7 +61,10 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     });
   }, [selectedStoreId, isEdit]);
 
-  const schema = useMemo(() => createProductCatalogFormSchema(t), [t]);
+  const schema = useMemo(
+    () => createProductCatalogFormSchema(t, { catalogProfile }),
+    [t, catalogProfile],
+  );
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -250,11 +256,50 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   });
 
   const showSection = (section) =>
-    resolveCatalogSectionVisible(section, { productType: productTypeWatch });
+    resolveCatalogSectionVisible(section, {
+      productType: productTypeWatch,
+      catalogProfile,
+    });
+
+  const costPriceWatch = watch('costPrice');
+  useEffect(() => {
+    if (!isRestaurantIngredient || isEdit) return;
+    const cost = Number(costPriceWatch);
+    if (!Number.isFinite(cost) || cost < 0) return;
+    setValue('sellingPrice', cost > 0 ? cost : 0.01, { shouldValidate: true });
+  }, [isRestaurantIngredient, isEdit, costPriceWatch, setValue]);
 
   const onSubmit = (values) => {
-    if (priceRulesConfig.minMarginPercent > 0 && values.costPrice > 0 && values.sellingPrice > 0) {
-      const margin = ((values.sellingPrice - values.costPrice) / values.costPrice) * 100;
+    const submitValues = { ...values };
+    if (isRestaurantIngredient) {
+      submitValues.productType = 'DISH';
+      submitValues.ownerType = 'OWN';
+      submitValues.taxRate = 0;
+      submitValues.defaultDiscountPercent = 0;
+      submitValues.soldIndividually = true;
+      submitValues.markedProduct = false;
+      if (!String(submitValues.sku || '').trim()) {
+        const slug = String(submitValues.name || 'ing')
+          .trim()
+          .toUpperCase()
+          .replace(/[^A-Z0-9А-ЯЁ]+/gi, '-')
+          .replace(/^-+|-+$/g, '')
+          .slice(0, 16);
+        submitValues.sku = `ING-${slug || 'ITEM'}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+      }
+      const cost = Number(submitValues.costPrice) || 0;
+      submitValues.sellingPrice = submitValues.sellingPrice > 0
+        ? submitValues.sellingPrice
+        : (cost > 0 ? cost : 0.01);
+    }
+
+    if (
+      !isRestaurantIngredient
+      && priceRulesConfig.minMarginPercent > 0
+      && submitValues.costPrice > 0
+      && submitValues.sellingPrice > 0
+    ) {
+      const margin = ((submitValues.sellingPrice - submitValues.costPrice) / submitValues.costPrice) * 100;
       if (margin < priceRulesConfig.minMarginPercent) {
         toast.error(
           t('productCatalog.minMarginError', { percent: priceRulesConfig.minMarginPercent })
@@ -262,7 +307,10 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
         return;
       }
     }
-    if (values.defaultDiscountPercent > priceRulesConfig.maxDiscountPercent) {
+    if (
+      !isRestaurantIngredient
+      && submitValues.defaultDiscountPercent > priceRulesConfig.maxDiscountPercent
+    ) {
       toast.error(
         t('productCatalog.maxDiscountError', { percent: priceRulesConfig.maxDiscountPercent })
       );
@@ -270,24 +318,26 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     }
 
     const base = buildProductCatalogPayload({
-      values,
-      storeRows,
-      extraBarcodes,
+      values: submitValues,
+      storeRows: isRestaurantIngredient && selectedStoreId
+        ? [{ storeId: String(selectedStoreId), price: String(submitValues.sellingPrice) }]
+        : storeRows,
+      extraBarcodes: isRestaurantIngredient ? [] : extraBarcodes,
       effectiveBusinessType,
-      businessConfigFields: businessConfig?.fields,
+      businessConfigFields: isRestaurantIngredient ? [] : businessConfig?.fields,
       showSection,
     });
-    const stockQty = values.initialStock ?? 0;
+    const stockQty = submitValues.initialStock ?? 0;
 
     if (isEdit) {
       mutate({
-        payload: { ...base, active: values.active },
+        payload: { ...base, active: submitValues.active },
         stockQty,
         isEditMode: true,
       });
     } else {
       mutate({
-        payload: { sku: values.sku, initialStock: stockQty, ...base },
+        payload: { sku: submitValues.sku, initialStock: stockQty, ...base },
         stockQty: 0,
         isEditMode: false,
       });
@@ -297,6 +347,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   return {
     t,
     isEdit,
+    catalogProfile,
     showSection,
     register,
     handleSubmit,

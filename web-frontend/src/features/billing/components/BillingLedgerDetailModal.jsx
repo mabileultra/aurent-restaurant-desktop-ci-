@@ -25,6 +25,7 @@ export default function BillingLedgerDetailModal({
       onClose={onClose}
       title={t('billing.ledgerDetailTitle')}
       size="md"
+      className="billing-detail-modal"
       footer={(
         <div className="flex gap-2">
           <BaseButton variant="secondary" onClick={onClose} disabled={deleting}>

@@ -10,7 +10,7 @@ import { useProductsPageFilters } from './products-page/useProductsPageFilters';
 import { useProductsPageModals } from './products-page/useProductsPageModals';
 import { useProductsPageSelection } from './products-page/useProductsPageSelection';
 
-export function useProductsPage({ preferredStoreId = null } = {}) {
+export function useProductsPage({ preferredStoreId = null, catalogProfile = null } = {}) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -46,6 +46,7 @@ export function useProductsPage({ preferredStoreId = null } = {}) {
     t,
     navigate,
     manage,
+    catalogProfile,
     ...data,
     ...filters,
     ...selection,

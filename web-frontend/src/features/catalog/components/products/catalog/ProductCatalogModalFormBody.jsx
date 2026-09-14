@@ -72,15 +72,17 @@ export default function ProductCatalogModalFormBody({
         />
       ) : null}
 
-      <ProductCatalogDynamicFieldsSection
-        t={form.t}
-        register={form.register}
-        errors={form.errors}
-        fields={form.businessConfig?.fields ?? []}
-        displayRules={form.displayRules}
-        attributeValues={form.attributeValues}
-        loading={form.businessConfigLoading}
-      />
+      {form.showSection('dynamicFields') ? (
+        <ProductCatalogDynamicFieldsSection
+          t={form.t}
+          register={form.register}
+          errors={form.errors}
+          fields={form.businessConfig?.fields ?? []}
+          displayRules={form.displayRules}
+          attributeValues={form.attributeValues}
+          loading={form.businessConfigLoading}
+        />
+      ) : null}
 
       {form.showSection('barcodes') ? (
         <ProductCatalogBarcodesSection

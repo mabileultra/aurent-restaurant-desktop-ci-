@@ -2,7 +2,7 @@ import { AlertTriangle, MoreVertical } from 'lucide-react';
 import { fmtMoney as fmtNum } from '../../../../utils/formatMoney';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
-import { productBusinessTypeLabel } from '../../../../config/productCatalogConfig';
+import { CATALOG_PROFILE_RESTAURANT_INGREDIENT, productBusinessTypeLabel } from '../../../../config/productCatalogConfig';
 
 export default function ProductsTable({
   t,
@@ -21,7 +21,11 @@ export default function ProductsTable({
   toggleSelectAllPage,
   selectAllRef,
   onOpenRowMenu,
+  catalogProfile = null,
 }) {
+  const isIngredient = catalogProfile === CATALOG_PROFILE_RESTAURANT_INGREDIENT;
+  const colSpan = isIngredient ? 8 : 13;
+
   return (
     <div className="admin-table-shell">
       <div className="overflow-x-auto">
@@ -38,29 +42,39 @@ export default function ProductsTable({
                 />
               </th>
               <AdminTableNoIdHeaders />
-              <th className="px-3 py-3 font-medium">{t('products.colIkpuId')}</th>
+              {!isIngredient ? (
+                <th className="px-3 py-3 font-medium">{t('products.colIkpuId')}</th>
+              ) : null}
               <th className="px-3 py-3 font-medium">{t('products.colName')}</th>
               <th className="px-3 py-3 font-medium">{t('products.colCategory')}</th>
-              <th className="px-3 py-3 font-medium text-right">{t('products.colPrices')}</th>
-              <th className="px-3 py-3 font-medium text-right">{t('products.colVat')}</th>
-              <th className="px-3 py-3 font-medium">{t('products.colMarking')}</th>
-              <th className="px-3 py-3 font-medium text-center">{t('products.colStores')}</th>
+              {isIngredient ? (
+                <th className="px-3 py-3 font-medium text-right">{t('productModal.cost')}</th>
+              ) : (
+                <>
+                  <th className="px-3 py-3 font-medium text-right">{t('products.colPrices')}</th>
+                  <th className="px-3 py-3 font-medium text-right">{t('products.colVat')}</th>
+                  <th className="px-3 py-3 font-medium">{t('products.colMarking')}</th>
+                  <th className="px-3 py-3 font-medium text-center">{t('products.colStores')}</th>
+                </>
+              )}
               <th className="px-3 py-3 font-medium text-right">{t('products.colStock')}</th>
-              <th className="px-3 py-3 font-medium text-right">{t('products.colDispatched')}</th>
+              {!isIngredient ? (
+                <th className="px-3 py-3 font-medium text-right">{t('products.colDispatched')}</th>
+              ) : null}
               <th className="px-3 py-3 font-medium w-12" />
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isLoading ? (
               <tr>
-                <td colSpan={13} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : data?.content?.length === 0 ? (
               <tr>
-                <td colSpan={13} className="px-4 py-8 text-center text-slate-500">
-                  {t('products.none')}
+                <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
+                  {isIngredient ? t('products.noneIngredients') : t('products.none')}
                 </td>
               </tr>
             ) : (
@@ -75,39 +89,51 @@ export default function ProductsTable({
                     />
                   </td>
                   <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={p.id} />
-                  <td className="px-3 py-3">
-                    <div className="font-mono text-xs leading-tight text-slate-700 dark:text-slate-300">
-                      {p.ikpu ? <span>{p.ikpu}</span> : <span className="text-slate-400 dark:text-slate-600">—</span>}
-                    </div>
-                  </td>
+                  {!isIngredient ? (
+                    <td className="px-3 py-3">
+                      <div className="font-mono text-xs leading-tight text-slate-700 dark:text-slate-300">
+                        {p.ikpu ? <span>{p.ikpu}</span> : <span className="text-slate-400 dark:text-slate-600">—</span>}
+                      </div>
+                    </td>
+                  ) : null}
                   <td className="px-3 py-3">
                     <div className="font-medium text-slate-900 dark:text-white">{p.name}</div>
-                    {productBusinessTypeLabel(t, p) ? (
+                    {!isIngredient && productBusinessTypeLabel(t, p) ? (
                       <div className="mt-0.5 text-[11px] text-slate-500 dark:text-slate-500">
                         {productBusinessTypeLabel(t, p)}
                       </div>
                     ) : null}
                   </td>
                   <td className="px-3 py-3 text-slate-600 dark:text-slate-400">{p.categoryName ?? '—'}</td>
-                  <td className="px-3 py-3 text-right font-semibold whitespace-nowrap text-emerald-600 dark:text-emerald-400">
-                    {fmtNum(p.sellingPrice)}
-                  </td>
-                  <td className="px-3 py-3 text-right whitespace-nowrap text-slate-700 dark:text-slate-300">
-                    {p.taxRate != null ? `${Number(p.taxRate)}%` : '—'}
-                  </td>
-                  <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
-                    {p.markedProduct ? t('products.markingYes') : '—'}
-                  </td>
-                  <td className="px-3 py-3 text-center text-slate-700 dark:text-slate-300">{p.storesCount ?? 0}</td>
+                  {isIngredient ? (
+                    <td className="px-3 py-3 text-right font-semibold whitespace-nowrap text-slate-800 dark:text-slate-200">
+                      {fmtNum(p.costPrice)}
+                    </td>
+                  ) : (
+                    <>
+                      <td className="px-3 py-3 text-right font-semibold whitespace-nowrap text-emerald-600 dark:text-emerald-400">
+                        {fmtNum(p.sellingPrice)}
+                      </td>
+                      <td className="px-3 py-3 text-right whitespace-nowrap text-slate-700 dark:text-slate-300">
+                        {p.taxRate != null ? `${Number(p.taxRate)}%` : '—'}
+                      </td>
+                      <td className="px-3 py-3 text-slate-600 dark:text-slate-400">
+                        {p.markedProduct ? t('products.markingYes') : '—'}
+                      </td>
+                      <td className="px-3 py-3 text-center text-slate-700 dark:text-slate-300">{p.storesCount ?? 0}</td>
+                    </>
+                  )}
                   <td className="px-3 py-3 text-right">
                     <span className={`font-semibold ${p.lowStock ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-white'}`}>
                       {p.stockQuantity}
                       {p.lowStock && <AlertTriangle size={12} className="inline ml-1" />}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-right font-semibold text-amber-700 dark:text-amber-400">
-                    {p.stockDispatched ?? 0}
-                  </td>
+                  {!isIngredient ? (
+                    <td className="px-3 py-3 text-right font-semibold text-amber-700 dark:text-amber-400">
+                      {p.stockDispatched ?? 0}
+                    </td>
+                  ) : null}
                   <td className="px-2 py-3 text-right">
                     <button
                       type="button"

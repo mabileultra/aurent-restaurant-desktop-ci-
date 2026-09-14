@@ -10,8 +10,10 @@ export default function ProductCatalogAccountingSection({
 }) {
   if (!showSection('accounting')) return null;
 
-  const hideCost = priceRules?.hideCost || template?.hideCost;
-  const hideStock = priceRules?.hideInitialStock || template?.hideStock;
+  const hideCost = !showSection('accountingCost') || priceRules?.hideCost || template?.hideCost;
+  const hideStock = !showSection('accountingStock') || priceRules?.hideInitialStock || template?.hideStock;
+  const hideSell = !showSection('accountingSell');
+  const hideDiscount = !showSection('accountingDiscount');
   const maxDiscount = priceRules?.maxDiscountPercent ?? 100;
   const priceLabel = template?.priceLabelKey ? t(template.priceLabelKey) : t('productModal.price');
   const stockLabel = template?.stockLabelKey ? t(template.stockLabelKey) : t('productModal.initialStock');
@@ -40,19 +42,25 @@ export default function ProductCatalogAccountingSection({
             />
           </ProductCatalogField>
         ) : null}
-        <ProductCatalogField label={priceLabel} error={errors.sellingPrice?.message}>
-          <input {...register('sellingPrice', { valueAsNumber: true })} type="number" step="0.01" className={inputCls} />
-        </ProductCatalogField>
-        <ProductCatalogField label={t('productCatalog.defaultDiscount')} error={errors.defaultDiscountPercent?.message}>
-          <input
-            {...register('defaultDiscountPercent', { valueAsNumber: true })}
-            type="number"
-            min="0"
-            max={maxDiscount}
-            step="0.1"
-            className={inputCls}
-          />
-        </ProductCatalogField>
+        {!hideSell ? (
+          <ProductCatalogField label={priceLabel} error={errors.sellingPrice?.message}>
+            <input {...register('sellingPrice', { valueAsNumber: true })} type="number" step="0.01" className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('sellingPrice', { valueAsNumber: true })} />
+        )}
+        {!hideDiscount ? (
+          <ProductCatalogField label={t('productCatalog.defaultDiscount')} error={errors.defaultDiscountPercent?.message}>
+            <input
+              {...register('defaultDiscountPercent', { valueAsNumber: true })}
+              type="number"
+              min="0"
+              max={maxDiscount}
+              step="0.1"
+              className={inputCls}
+            />
+          </ProductCatalogField>
+        ) : null}
         <ProductCatalogField label={t('productModal.lowStock')} error={errors.lowStockAlert?.message}>
           <input {...register('lowStockAlert', { valueAsNumber: true })} type="number" className={inputCls} />
         </ProductCatalogField>

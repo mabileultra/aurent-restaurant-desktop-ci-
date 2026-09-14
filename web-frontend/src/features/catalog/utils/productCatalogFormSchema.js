@@ -1,8 +1,11 @@
 import { z } from 'zod';
 
-export function createProductCatalogFormSchema(t) {
+export function createProductCatalogFormSchema(t, { catalogProfile } = {}) {
+  const isRestaurantIngredient = catalogProfile === 'restaurantIngredient';
   return z.object({
-    sku: z.string().min(1, t('validation.skuRequired')),
+    sku: isRestaurantIngredient
+      ? z.string().optional().transform((v) => (v == null ? '' : v))
+      : z.string().min(1, t('validation.skuRequired')),
     name: z.string().min(2, t('validation.nameMin')),
     description: z.string().optional(),
     categoryId: z
@@ -10,7 +13,9 @@ export function createProductCatalogFormSchema(t) {
       .optional()
       .transform((v) => (v === '' || v == null ? null : v)),
     costPrice: z.coerce.number().min(0, t('validation.costPrice')),
-    sellingPrice: z.coerce.number().min(0.01, t('validation.sellingPrice')),
+    sellingPrice: isRestaurantIngredient
+      ? z.coerce.number().min(0)
+      : z.coerce.number().min(0.01, t('validation.sellingPrice')),
     defaultDiscountPercent: z.coerce.number().min(0).max(100).optional(),
     taxRate: z.coerce.number().min(0).max(100),
     initialStock: z.coerce.number().min(0).optional(),

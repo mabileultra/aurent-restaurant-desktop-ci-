@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 import '../styles/rst-stock-hub.css';
 
 const TABS = [
-  { to: '/rst/admin/stock/products', key: 'products' },
   { to: '/rst/admin/stock/categories', key: 'categories' },
+  { to: '/rst/admin/stock/products', key: 'products' },
   { to: '/rst/admin/stock/balances', key: 'balances' },
   { to: '/rst/admin/stock/inventories', key: 'inventories' },
   { to: '/rst/admin/stock/receipts', key: 'receipts' },

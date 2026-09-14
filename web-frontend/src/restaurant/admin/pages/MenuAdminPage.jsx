@@ -44,7 +44,7 @@ function MenuCardMenu({ menu, onClose, onEdit, onDelete, t }) {
         </button>
         <Link
           role="menuitem"
-          to="/rst/admin/recipes"
+          to={`/rst/admin/recipes?dish=${menu.item.id}`}
           onClick={onClose}
         >
           {t('rst.admin.toRecipe')}

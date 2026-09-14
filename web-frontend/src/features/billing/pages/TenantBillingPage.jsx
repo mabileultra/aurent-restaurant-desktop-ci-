@@ -17,10 +17,11 @@ function periodStart(paidUntil) {
   return start;
 }
 
-export default function TenantBillingPage() {
+export default function TenantBillingPage({ variant = 'default' }) {
   const p = useTenantBillingPage();
   const me = p.me;
   const user = useAuthStore((s) => s.user);
+  const isRst = variant === 'restaurant';
 
   const formatDate = (iso) => (iso ? new Date(iso).toLocaleDateString(p.dateLocale) : '—');
   const formatDateTime = (iso) => (iso ? new Date(iso).toLocaleString(p.dateLocale) : '—');
@@ -28,6 +29,11 @@ export default function TenantBillingPage() {
 
   const start = periodStart(me?.paidUntil || me?.nextChargeAt);
   const end = me?.paidUntil || me?.nextChargeAt;
+
+  const planLabel = me?.planName
+    || (Number(me?.monthlyTotal) > 0
+      ? `${p.money(me.monthlyTotal)} ${p.t('billing.currency')} ${p.t('billing.perMonth')}`
+      : p.t('billing.noPlan'));
 
   const tabTone = (tab) => {
     if (tab === 'TOP_UP') return 'billing-tab--blue';
@@ -38,13 +44,14 @@ export default function TenantBillingPage() {
 
   return (
     <PageLayout
+      className={`billing-page${isRst ? ' billing-page--rst' : ''}`}
       spacing="space-y-4"
       title={p.t('billing.title')}
       subtitle={me?.companyName || p.t('billing.subtitle')}
     >
-      <div className="billing-page space-y-4">
+      <div className="space-y-4">
         {me?.status === 'BLOCKED' ? (
-          <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+          <div className="billing-alert billing-alert--blocked">
             {p.t('billing.blockedBanner')}
           </div>
         ) : null}
@@ -55,17 +62,14 @@ export default function TenantBillingPage() {
               <span className={`billing-chip ${me?.billingEnabled ? 'billing-chip--ok' : ''}`}>
                 {me?.billingEnabled ? p.t('billing.connected') : p.t('billing.statusNotConfigured')}
               </span>
-              <span className="billing-chip billing-chip--sky">
+              <span className="billing-chip">
                 ID {me?.companyId || user?.companyId || '—'}
               </span>
-              <span className="billing-chip billing-chip--violet">
-                {me?.planName
-                  || (Number(me?.monthlyTotal) > 0
-                    ? `${p.money(me.monthlyTotal)} ${p.t('billing.currency')} ${p.t('billing.perMonth')}`
-                    : p.t('billing.noPlan'))}
+              <span className="billing-chip billing-chip--accent">
+                {planLabel}
               </span>
             </div>
-            <p className="text-sm text-white/80 mb-1">{p.t('billing.availableBalance')}</p>
+            <p className="billing-hero__label">{p.t('billing.availableBalance')}</p>
             <div className="billing-hero__balance">
               {p.money(me?.balance)} {p.t('billing.currency')}
             </div>
@@ -78,8 +82,8 @@ export default function TenantBillingPage() {
           </div>
           <div className="billing-hero__side">
             <div>
-              <p className="text-sm text-white/80">{p.t('billing.periodLeft')}</p>
-              <p className="text-2xl font-bold mt-1">
+              <p className="billing-hero__label">{p.t('billing.periodLeft')}</p>
+              <p className="billing-hero__period-value">
                 {p.remaining == null ? p.t('billing.periodNotStarted') : p.t('billing.daysLeft', { count: p.remaining })}
               </p>
               <div className="billing-progress mt-3">
@@ -102,9 +106,9 @@ export default function TenantBillingPage() {
           </div>
         </section>
 
-        <section className="billing-metrics">
+        <section className={`billing-metrics${isRst ? ' billing-metrics--compact' : ''}`}>
           <div className="billing-metric billing-metric--plan">
-            <div className="billing-metric__icon"><Package size={16} /></div>
+            {!isRst ? <div className="billing-metric__icon"><Package size={16} /></div> : null}
             <div className="billing-metric__label">{p.t('billing.metricPlan')}</div>
             <div className="billing-metric__value">
               {me?.planName
@@ -119,7 +123,7 @@ export default function TenantBillingPage() {
             </div>
           </div>
           <div className="billing-metric billing-metric--date">
-            <div className="billing-metric__icon"><CalendarDays size={16} /></div>
+            {!isRst ? <div className="billing-metric__icon"><CalendarDays size={16} /></div> : null}
             <div className="billing-metric__label">{p.t('billing.metricNext')}</div>
             <div className="billing-metric__value">{formatDate(me?.nextChargeAt)}</div>
             <div className="billing-metric__sub">
@@ -127,7 +131,7 @@ export default function TenantBillingPage() {
             </div>
           </div>
           <div className="billing-metric billing-metric--monthly">
-            <div className="billing-metric__icon"><Wallet size={16} /></div>
+            {!isRst ? <div className="billing-metric__icon"><Wallet size={16} /></div> : null}
             <div className="billing-metric__label">{p.t('billing.metricMonthly')}</div>
             <div className="billing-metric__value">
               {p.money(me?.monthlyTotal)} {p.t('billing.currency')}
@@ -142,7 +146,7 @@ export default function TenantBillingPage() {
             </div>
           </div>
           <div className="billing-metric billing-metric--status">
-            <div className="billing-metric__icon"><CreditCard size={16} /></div>
+            {!isRst ? <div className="billing-metric__icon"><CreditCard size={16} /></div> : null}
             <div className="billing-metric__label">{p.t('billing.metricStatus')}</div>
             <div className="billing-metric__value">
               <span className={`billing-badge billing-badge--${me?.status || 'ACTIVE'}`}>
@@ -218,12 +222,12 @@ export default function TenantBillingPage() {
             >
               {p.t('billing.choosePayMethod')}
             </button>
-            <p className="text-xs text-slate-500 mb-3">{p.t('billing.autoPayHint')}</p>
+            <p className="billing-note">{p.t('billing.autoPayHint')}</p>
 
             <div className="billing-manual">
               <button
                 type="button"
-                className="text-sm font-semibold text-slate-600 underline mb-2"
+                className="billing-link"
                 onClick={() => p.setShowManual((v) => !v)}
               >
                 {p.showManual ? p.t('billing.hideManual') : p.t('billing.showManual')}
@@ -255,18 +259,18 @@ export default function TenantBillingPage() {
                   >
                     {p.submitting ? p.t('common.saving') : p.t('billing.sendToSuperAdmin')}
                   </button>
-                  <p className="mt-2 text-xs text-slate-500">{p.t('billing.topUpHint')}</p>
+                  <p className="billing-note">{p.t('billing.topUpHint')}</p>
                 </>
               ) : null}
             </div>
 
             {p.pendingTopUps.length > 0 ? (
-              <p className="mt-3 text-sm text-amber-700">
+              <p className="billing-note billing-note--warn">
                 {p.t('billing.pendingCount', { count: p.pendingTopUps.length })}
               </p>
             ) : null}
 
-            <h3 className="billing-topup__title mt-5">{p.t('billing.paymentsTitle')}</h3>
+            <h3 className="billing-topup__title billing-topup__title--spaced">{p.t('billing.paymentsTitle')}</h3>
             <BillingPaymentsList
               t={p.t}
               money={p.money}
@@ -277,29 +281,42 @@ export default function TenantBillingPage() {
           </div>
         </section>
 
-        <section className="billing-footer">
-          <div className="billing-footer__card billing-footer__card--grace">
-            <span className="billing-footer__icon"><ShieldCheck size={18} /></span>
-            <div>
-              <p className="billing-footer__title">{p.t('billing.footerGraceTitle')}</p>
-              <p className="billing-footer__text">{p.t('billing.footerGraceText')}</p>
+        {isRst ? (
+          <section className="billing-footer billing-footer--slim">
+            <p className="billing-footer__slim-text">
+              <ShieldCheck size={14} />
+              {p.t('billing.footerGraceText')}
+            </p>
+            <p className="billing-footer__slim-text">
+              <MessageCircle size={14} />
+              {p.t('billing.footerSupportText')}
+            </p>
+          </section>
+        ) : (
+          <section className="billing-footer">
+            <div className="billing-footer__card billing-footer__card--grace">
+              <span className="billing-footer__icon"><ShieldCheck size={18} /></span>
+              <div>
+                <p className="billing-footer__title">{p.t('billing.footerGraceTitle')}</p>
+                <p className="billing-footer__text">{p.t('billing.footerGraceText')}</p>
+              </div>
             </div>
-          </div>
-          <div className="billing-footer__card billing-footer__card--docs">
-            <span className="billing-footer__icon"><FileText size={18} /></span>
-            <div>
-              <p className="billing-footer__title">{p.t('billing.footerDocsTitle')}</p>
-              <p className="billing-footer__text">{p.t('billing.footerDocsText')}</p>
+            <div className="billing-footer__card billing-footer__card--docs">
+              <span className="billing-footer__icon"><FileText size={18} /></span>
+              <div>
+                <p className="billing-footer__title">{p.t('billing.footerDocsTitle')}</p>
+                <p className="billing-footer__text">{p.t('billing.footerDocsText')}</p>
+              </div>
             </div>
-          </div>
-          <div className="billing-footer__card billing-footer__card--support">
-            <span className="billing-footer__icon"><MessageCircle size={18} /></span>
-            <div>
-              <p className="billing-footer__title">{p.t('billing.footerSupportTitle')}</p>
-              <p className="billing-footer__text">{p.t('billing.footerSupportText')}</p>
+            <div className="billing-footer__card billing-footer__card--support">
+              <span className="billing-footer__icon"><MessageCircle size={18} /></span>
+              <div>
+                <p className="billing-footer__title">{p.t('billing.footerSupportTitle')}</p>
+                <p className="billing-footer__text">{p.t('billing.footerSupportText')}</p>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
       </div>
 
       <BillingPayModal

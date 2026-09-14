@@ -9,6 +9,7 @@ import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import { RST_ADMIN_NAV } from './restaurantAdminNav';
 import '../shared/styles/restaurant-tokens.css';
 import '../admin/styles/admin-shell.css';
+import '../admin/styles/rst-billing.css';
 
 export default function RestaurantAdminLayout() {
   const { t } = useTranslation();

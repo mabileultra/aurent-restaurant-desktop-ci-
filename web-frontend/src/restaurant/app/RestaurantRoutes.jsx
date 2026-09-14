@@ -85,7 +85,7 @@ export const restaurantRoutes = (
           </RstStockFlowScope>
         )}
       >
-        <Route index element={<Navigate to="products" replace />} />
+        <Route index element={<Navigate to="categories" replace />} />
         <Route path="products" element={<RstCatalogProductsPage />} />
         <Route path="categories" element={<RstCategoriesPage />} />
         <Route path="balances" element={<RstWarehouseBalancesPage />} />
@@ -123,7 +123,7 @@ export const restaurantRoutes = (
         path="billing"
         element={(
           <ProtectedRoute requiredRole="ADMIN">
-            <TenantBillingPage />
+            <TenantBillingPage variant="restaurant" />
           </ProtectedRoute>
         )}
       />

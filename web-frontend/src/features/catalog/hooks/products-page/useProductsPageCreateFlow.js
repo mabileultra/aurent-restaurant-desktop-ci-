@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { useSearchParams } from 'react-router-dom';
 
 export function useProductsPageCreateFlow({ t, activeStores, preferredStoreId = null }) {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [editProduct, setEditProduct] = useState(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createStore, setCreateStore] = useState(null);
@@ -27,6 +29,19 @@ export function useProductsPageCreateFlow({ t, activeStores, preferredStoreId = 
       : null;
     startCreateFlow(preferred ?? activeStores[0]);
   };
+
+  useEffect(() => {
+    if (searchParams.get('create') !== '1') return;
+    if (activeStores.length === 0) return;
+    const preferred = preferredStoreId != null
+      ? activeStores.find((store) => Number(store.id) === Number(preferredStoreId))
+      : null;
+    setEditProduct(null);
+    startCreateFlow(preferred ?? activeStores[0]);
+    const next = new URLSearchParams(searchParams);
+    next.delete('create');
+    setSearchParams(next, { replace: true });
+  }, [activeStores, preferredStoreId, searchParams, setSearchParams]);
 
   const handleCreateStoreChange = (store) => {
     if (!createStore || !store || store.id === createStore.id) return;

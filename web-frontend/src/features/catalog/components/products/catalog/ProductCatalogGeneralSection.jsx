@@ -40,9 +40,13 @@ export default function ProductCatalogGeneralSection({
         {t('productCatalog.sectionGeneral')}
       </h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <ProductCatalogField label={t('productModal.sku')} required error={errors.sku?.message}>
-          <input {...register('sku')} disabled={isEdit} className={inputCls} />
-        </ProductCatalogField>
+        {showSection('skuField') ? (
+          <ProductCatalogField label={t('productModal.sku')} required error={errors.sku?.message}>
+            <input {...register('sku')} disabled={isEdit} className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('sku')} />
+        )}
         <ProductCatalogField label={t('productModal.name')} required error={errors.name?.message}>
           <input {...register('name')} className={inputCls} />
         </ProductCatalogField>
@@ -60,7 +64,7 @@ export default function ProductCatalogGeneralSection({
         </ProductCatalogField>
         {showTypeSelectors ? (
           <>
-            {isEdit ? (
+            {isEdit && showSection('productTypeField') ? (
               <ProductCatalogField label={t('productCatalog.productType')} required error={errors.productType?.message}>
                 <BaseSelect
                   name="productType"
@@ -87,7 +91,9 @@ export default function ProductCatalogGeneralSection({
                 options={[
                   { value: 'PIECE', label: t('productCatalog.saleTypePiece') },
                   { value: 'WEIGHT', label: t('productCatalog.saleTypeWeight') },
-                  { value: 'SERVICE', label: t('productCatalog.saleTypeService') },
+                  ...(showSection('productTypeField')
+                    ? [{ value: 'SERVICE', label: t('productCatalog.saleTypeService') }]
+                    : []),
                 ]}
               />
             </ProductCatalogField>

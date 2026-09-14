@@ -4,8 +4,12 @@ import ProductsModals from '../components/products/ProductsModals';
 import ProductsSearchField from '../components/products/ProductsSearchField';
 import { useProductsPage } from '../hooks/useProductsPage';
 
-export default function ProductsPage({ preferredStoreId = null, hideTitle = false } = {}) {
-  const p = useProductsPage({ preferredStoreId });
+export default function ProductsPage({
+  preferredStoreId = null,
+  hideTitle = false,
+  catalogProfile = null,
+} = {}) {
+  const p = useProductsPage({ preferredStoreId, catalogProfile });
 
   return (
     <div className="space-y-4">
@@ -17,6 +21,7 @@ export default function ProductsPage({ preferredStoreId = null, hideTitle = fals
         )}
         <ProductsToolbar
           canManage={p.manage}
+          catalogProfile={catalogProfile}
           onAdd={p.handleAddProduct}
           onImport={() => p.setImportOpen(true)}
           onExport={() => p.setExportOpen(true)}
@@ -51,6 +56,7 @@ export default function ProductsPage({ preferredStoreId = null, hideTitle = fals
           somePageSelected={p.somePageSelected}
           toggleSelectAllPage={p.toggleSelectAllPage}
           selectAllRef={p.selectAllRef}
+          catalogProfile={catalogProfile}
           onOpenRowMenu={(product, rect) =>
             p.setRowMenu((cur) => (cur?.product?.id === product.id ? null : { product, rect }))
           }
