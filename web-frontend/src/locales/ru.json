@@ -954,7 +954,7 @@
       "driveSelected": "ФМ выбран в Multikassa",
       "driveSelectFailed": "Не удалось выбрать ФМ",
       "mkPrinterMissing": "MK Fiscal: принтер не найден. В приложении MK Fiscal выберите любой Windows-принтер (тот же термопринтер или «Microsoft Print to PDF»). force_to_print=false не отключает эту проверку. Печать чека Aurent — отдельно.",
-      "mkPrinterHint": "Большой QR печатает MK Fiscal, не Aurent. В MK Fiscal поставьте принтер «Microsoft Print to PDF» (или отключите печать на термопринтер). Термопринтер оставьте только в Aurent → «Принтер чека» — тогда чек с нормальным (маленьким) QR печатает Aurent.",
+      "mkPrinterHint": "MK Fiscal требует выбранный принтер Windows, даже если чек печатает Aurent. Откройте MK Fiscal → настройки принтера → выберите термопринтер или Print to PDF.",
       "refreshPrinters": "Проверить принтеры MK",
       "printersLoading": "Принтеры MK…",
       "printersLoadFailed": "Не удалось получить принтеры MK Fiscal",

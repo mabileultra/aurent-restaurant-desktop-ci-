@@ -392,8 +392,8 @@ function appendQrAndFooter(printer, payload) {
       buildQrPayload(sale, branding?.qrBase);
     if (qrValue) {
       try {
-        // cellSize 2 ≈ половина прежних 4–5; на 58 мм OFD URL ещё сканируется.
-        printer.printQR(qrValue, { cellSize: 2, correction: 'L', model: 2 });
+        const cellSize = qrValue.length > 100 ? 2 : 3;
+        printer.printQR(qrValue, { cellSize, correction: 'M', model: 2 });
         printer.newLine();
       } catch (err) {
         logWarn('qr', 'QR_SKIP', { message: err?.message, len: qrValue.length });

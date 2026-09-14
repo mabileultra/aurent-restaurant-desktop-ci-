@@ -158,10 +158,8 @@ export function buildSaleOperationBody({
     receipt_gnk_receivedcard: toTiyin(card),
     receipt_gnk_time: now,
     shift_id: shiftId ? String(shiftId) : '',
-    // Печать чека делает Aurent (ESC/POS). MK Fiscal при своём принтере всё равно
-    // может печатать огромный QR — isBigPrinter=false просит компактный шаблон.
+    // Печать чека делает Aurent (ESC/POS). Без этого MK Fiscal падает: «Принтер не найден».
     force_to_print: false,
-    isBigPrinter: false,
     items: (cartItems || []).map(buildItem),
     location: {
       Latitude: Number(capabilities?.latitude) || 41.3111,
@@ -206,7 +204,6 @@ export function buildOpenShiftBody({ capabilities, shiftId, cashierName, zReport
     receipt_gnk_receiptseq: zReportNumber != null ? String(zReportNumber) : '0',
     receipt_gnk_datetime: now,
     force_to_print: false,
-    isBigPrinter: false,
   };
 }
 
@@ -225,7 +222,6 @@ export function buildXReportBody({ capabilities, cashierName }) {
     ),
     receipt_gnk_time: formatMultikassaDateTime(),
     force_to_print: false,
-    isBigPrinter: false,
   };
 }
 
