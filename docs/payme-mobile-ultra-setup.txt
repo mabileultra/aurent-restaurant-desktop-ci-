@@ -1,0 +1,59 @@
+Payme Merchant — подключение Mobile Ultra / Aurent billing
+==========================================================
+
+Ключи от Shohjahon (Mobile Ultra) — только в серверный .env, НЕ в git.
+Секреты с # & ? % — обязательно в кавычках:
+
+  PAYME_ENABLED=true
+  PAYME_MERCHANT_ID=6aa7825732d93974d5db3b9e
+  PAYME_SECRET_KEY="<KEY из кабинета — прод>"
+  PAYME_TEST_SECRET_KEY="<TEST KEY — песочница>"
+  PAYME_CHECKOUT_URL=https://test.paycom.uz
+  # после успешных тестов → https://checkout.paycom.uz
+  # и убрать кавычки только если ключ без спецсимволов
+
+Merchant callback (уже реализован):
+  POST https://aurent.uz/api/v1/public/billing/payme
+  Account: order_id (UUID billing_payment_intent)
+  Auth: Basic Paycom:<TEST KEY или KEY>
+
+Return URL:
+  https://aurent.uz/billing
+
+--- Сообщение Shohjahon (скопировать) ---
+
+Ассалому алейкум!
+
+Aurent POS — пополнение баланса (SaaS billing).
+
+Endpoint URL:
+https://aurent.uz/api/v1/public/billing/payme
+
+Account:
+order_id  (string / UUID)
+
+Return URL:
+https://aurent.uz/billing
+
+Методы: CheckPerformTransaction, CreateTransaction, PerformTransaction,
+CancelTransaction, CheckTransaction, GetStatement
+
+Checkout: m + ac.order_id + a (тийины) + c
+
+Фискальный detail:
+title: Пополнение баланса Aurent
+ИКПУ: 10305008003000000
+package_code: 1546532
+vat_percent: 12
+
+ID кассы получили: 6aa7825732d93974d5db3b9e
+Ключи настроили на стороне Aurent.
+
+Для теста песочницы создадим order_id и пришлём отдельно
+(Биллинг → Пополнить → Payme).
+
+--- После деплоя env ---
+1) Вписать переменные в .env на сервере, перезапустить platform-service
+2) Биллинг → Пополнить → Payme (например 1000 сум) → скопировать order_id / intent UUID
+3) Отправить Shohjahon: order_id=<uuid>
+4) Песочница: https://test.paycom.uz — Merchant ID + TEST KEY

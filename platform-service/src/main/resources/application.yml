@@ -50,6 +50,7 @@ app:
         enabled: ${PAYME_ENABLED:false}
         merchant-id: ${PAYME_MERCHANT_ID:}
         secret-key: ${PAYME_SECRET_KEY:}
+        test-secret-key: ${PAYME_TEST_SECRET_KEY:}
         checkout-url: ${PAYME_CHECKOUT_URL:https://checkout.paycom.uz}
         receipt-title: ${PAYME_RECEIPT_TITLE:Пополнение баланса Aurent}
         ikpu: ${PAYME_IKPU:10305008003000000}

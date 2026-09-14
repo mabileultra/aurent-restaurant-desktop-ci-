@@ -46,12 +46,29 @@ public class BillingPaymentAuth {
         try {
             String decoded = new String(Base64.getDecoder().decode(authHeader.substring(6)), StandardCharsets.UTF_8);
             int idx = decoded.indexOf(':');
+            String login = idx >= 0 ? decoded.substring(0, idx) : "";
             String key = idx >= 0 ? decoded.substring(idx + 1) : decoded;
-            return props.getPayme().getSecretKey().equals(key)
-                || decoded.equals(props.getPayme().getMerchantId() + ":" + props.getPayme().getSecretKey());
+            // Payme: login обычно "Paycom"; password = KEY или TEST KEY
+            if (notBlank(login)
+                && !"Paycom".equalsIgnoreCase(login)
+                && !login.equals(props.getPayme().getMerchantId())) {
+                return false;
+            }
+            return matchesPaymeSecret(key);
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private boolean matchesPaymeSecret(String key) {
+        if (!notBlank(key)) {
+            return false;
+        }
+        var p = props.getPayme();
+        if (key.equals(p.getSecretKey())) {
+            return true;
+        }
+        return notBlank(p.getTestSecretKey()) && key.equals(p.getTestSecretKey());
     }
 
     private static String str(String v) {

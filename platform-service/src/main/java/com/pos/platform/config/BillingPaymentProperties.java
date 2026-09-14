@@ -29,7 +29,11 @@ public class BillingPaymentProperties {
     public static class Payme {
         private boolean enabled;
         private String merchantId = "";
+        /** Production KEY from Payme cabinet */
         private String secretKey = "";
+        /** Optional TEST KEY — sandbox / песочница (Paycom:TEST_KEY) */
+        private String testSecretKey = "";
+        /** checkout.paycom.uz (prod) or test.paycom.uz (sandbox) */
         private String checkoutUrl = "https://checkout.paycom.uz";
         /** Fiscal item title in CheckPerformTransaction.detail */
         private String receiptTitle = "Пополнение баланса Aurent";

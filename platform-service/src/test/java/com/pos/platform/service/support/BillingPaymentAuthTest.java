@@ -79,6 +79,26 @@ class BillingPaymentAuthTest {
         assertThat(auth.verifyClickSign(params, true)).isTrue();
     }
 
+    @Test
+    void verifyPaymeAuth_acceptsPaycomLoginAndTestKey() {
+        props.getPayme().setEnabled(true);
+        props.getPayme().setMerchantId("6aa7825732d93974d5db3b9e");
+        props.getPayme().setSecretKey("prod-key");
+        props.getPayme().setTestSecretKey("test-key");
+
+        String header = "Basic " + java.util.Base64.getEncoder()
+            .encodeToString("Paycom:test-key".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertThat(auth.verifyPaymeAuth(header)).isTrue();
+
+        String prod = "Basic " + java.util.Base64.getEncoder()
+            .encodeToString("Paycom:prod-key".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertThat(auth.verifyPaymeAuth(prod)).isTrue();
+
+        String bad = "Basic " + java.util.Base64.getEncoder()
+            .encodeToString("Paycom:wrong".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertThat(auth.verifyPaymeAuth(bad)).isFalse();
+    }
+
     private static Map<String, String> prepareParams() {
         Map<String, String> params = new LinkedHashMap<>();
         params.put("click_trans_id", "1001");
