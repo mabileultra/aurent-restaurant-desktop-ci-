@@ -70,7 +70,8 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
 
   switch (section) {
     case 'tasnif':
-      return productType === 'RETAIL';
+      // Стройматериалы → productType MATERIAL; без Tasnif нет ИКПУ для Multikassa/ОФД
+      return productType === 'RETAIL' || productType === 'MATERIAL';
     case 'typeSelectors':
     case 'productTypeField':
     case 'skuField':

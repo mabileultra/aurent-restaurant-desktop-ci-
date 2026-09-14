@@ -25,3 +25,14 @@ describe('resolveCatalogSectionVisible restaurantIngredient', () => {
     expect(resolveCatalogSectionVisible('skuField', opts)).toBe(false);
   });
 });
+
+describe('resolveCatalogSectionVisible tasnif', () => {
+  it('shows for retail and construction material products', () => {
+    expect(resolveCatalogSectionVisible('tasnif', { productType: 'RETAIL' })).toBe(true);
+    expect(resolveCatalogSectionVisible('tasnif', { productType: 'MATERIAL' })).toBe(true);
+  });
+
+  it('hides for dish by default', () => {
+    expect(resolveCatalogSectionVisible('tasnif', { productType: 'DISH' })).toBe(false);
+  });
+});
