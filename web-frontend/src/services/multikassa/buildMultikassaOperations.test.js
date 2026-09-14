@@ -54,6 +54,7 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.receipt_gnk_terminalid).toBe('FM_TERMINAL_ID');
     expect(body.module_gnk_terminalid).toBe('FM_TERMINAL_ID');
     expect(body.force_to_print).toBe(false);
+    expect(body.isBigPrinter).toBe(false);
     expect(body.receipt_gnk_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
     expect(body.shift_id).toBe('SHIFT_GUID');
     expect(body.contractor_name).toBe('AURENT');
