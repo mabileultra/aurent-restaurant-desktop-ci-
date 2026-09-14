@@ -81,8 +81,17 @@ function buildItem(line) {
     count: Number(line.quantity) || 0,
     commitent_tin: line.commissionTin || line.commitentTin || '',
     product_vat_percent: Number(line.taxRate ?? 12),
-    product_package: line.unitMeasureCode || '1',
-    product_package_name: line.unitOfMeasure || line.unitLabel || 'шт',
+    // Multikassa: product_package = код упаковки Tasnif (не unitMeasureCode «1» шт/кг)
+    product_package:
+      (line.packageCode != null && String(line.packageCode).trim() !== ''
+        ? String(line.packageCode).trim()
+        : '') ||
+      (line.unitMeasureCode != null && String(line.unitMeasureCode).trim() !== ''
+        ? String(line.unitMeasureCode).trim()
+        : '') ||
+      '1',
+    product_package_name:
+      line.packageName || line.unitOfMeasure || line.unitLabel || 'шт',
     other: toSum(line.other || 0),
   };
 }

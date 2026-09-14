@@ -33,8 +33,8 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
           quantity: 1,
           unitPrice: 133100,
           ikpu: '03002005001000000',
-          packageCode: '1',
-          barcode: '2131415421412',
+          packageCode: '1546940',
+          unitMeasureCode: '1',
           taxRate: 12,
         },
       ],
@@ -62,7 +62,31 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.items[0].ikpu).toBe('03002005001000000');
     expect(body.items[0].classifier_class_code).toBe('03002005001000000');
     expect(body.items[0].product_vat_percent).toBe(12);
+    expect(body.items[0].product_package).toBe('1546940');
     expect(body.items[0].product_barcodes[0].barcode).toBe('2131415421412');
+  });
+
+  it('prefers packageCode over unitMeasureCode for product_package', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        {
+          productId: 1,
+          name: 'Клей',
+          quantity: 1,
+          unitPrice: 1000,
+          ikpu: '03214001014000010',
+          packageCode: '1546940',
+          unitMeasureCode: '1',
+          taxRate: 12,
+        },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 1000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items[0].product_package).toBe('1546940');
   });
 
   it('splits mixed cash/card into received fields', () => {
