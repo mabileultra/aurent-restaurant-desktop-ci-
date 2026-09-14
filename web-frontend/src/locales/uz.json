@@ -3027,7 +3027,7 @@
     "sectionGeneral": "Asosiy ma’lumotlar",
     "sectionStore": "Do‘kon",
     "sectionFiscal": "Soliq va tasnif",
-    "sectionFiscalHint": "IKPU va qadoq kodlari — fiskal chek uchun. Kiyim va qurilish shablonlarida bu blok yashirin.",
+    "sectionFiscalHint": "IKPU va qadoq kodlari — Multikassa/OFD fiskal cheki uchun.",
     "sectionPrices": "Do‘konlar va narxlar",
     "sectionBarcodes": "Shtrix kodlar",
     "pluLabel": "PLU kodi (tarozilar)",

@@ -3313,7 +3313,7 @@
     "sectionBusinessFields": "Дополнительные поля",
     "sectionStore": "Магазин",
     "sectionFiscal": "Налоги и классификатор (tasnif)",
-    "sectionFiscalHint": "ИКПУ и коды упаковки — для фискального чека. В шаблонах одежды и стройки этот блок скрыт.",
+    "sectionFiscalHint": "ИКПУ и коды упаковки — для фискального чека Multikassa/ОФД.",
     "sectionPrices": "Магазины и цены",
     "sectionBarcodes": "Штрихкоды",
     "pluLabel": "Код PLU (весы)",
