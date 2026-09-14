@@ -90,6 +90,51 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.items[0].product_package).toBe('1546940');
   });
 
+  it('parses package code from Tasnif external id when packageCode missing', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        {
+          productId: 1,
+          name: 'Клей',
+          quantity: 1,
+          unitPrice: 1000,
+          ikpu: '03214001014000010',
+          sku: '03214001014000010:1546940',
+          unitMeasureCode: '1',
+          taxRate: 12,
+        },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 1000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items[0].product_package).toBe('1546940');
+  });
+
+  it('does not treat unitMeasureCode 1 as package code', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        {
+          productId: 1,
+          name: 'Клей',
+          quantity: 1,
+          unitPrice: 1000,
+          ikpu: '03214001014000010',
+          unitMeasureCode: '1',
+          taxRate: 12,
+        },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 1000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items[0].product_package).toBe('1');
+  });
+
   it('splits mixed cash/card into received fields', () => {
     expect(resolveReceivedCashCard({ paymentMethod: 'MIXED', cashAmount: 100000, cardAmount: 0 }, 209457.66))
       .toEqual({ cash: 100000, card: 109457.66 });

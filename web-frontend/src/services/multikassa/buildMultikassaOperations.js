@@ -47,6 +47,34 @@ export function resolveReceivedCashCard(payment, total) {
   return { cash: round2(cash), card: round2(card) };
 }
 
+function resolveFiscalPackageCode(line) {
+  const direct =
+    line.packageCode != null && String(line.packageCode).trim() !== ''
+      ? String(line.packageCode).trim()
+      : '';
+  if (direct) return direct;
+
+  const candidates = [line.externalId, line.sku, line.productExternalId, line.id];
+  for (const raw of candidates) {
+    const v = String(raw || '').trim();
+    if (!v) continue;
+    // 03214001014000010:1546940
+    const colon = v.match(/^\d{10,}:(\d{3,})$/);
+    if (colon) return colon[1];
+    // IKPU-03214001014000010-P1546940
+    const ikpuSku = v.match(/^IKPU-\d{10,}-P(\d{3,})$/i);
+    if (ikpuSku) return ikpuSku[1];
+  }
+
+  const unit =
+    line.unitMeasureCode != null && String(line.unitMeasureCode).trim() !== ''
+      ? String(line.unitMeasureCode).trim()
+      : '';
+  // «1» — код единицы измерения, не упаковка Tasnif
+  if (unit && unit !== '1') return unit;
+  return '';
+}
+
 function buildItem(line) {
   const barcode = line.barcode || line.sku || '';
   const mark = line.productMark || line.markCode || '';
@@ -60,6 +88,7 @@ function buildItem(line) {
   const barcodes = barcode
     ? [{ type: null, barcode: String(barcode) }]
     : [];
+  const packageCode = resolveFiscalPackageCode(line);
 
   return {
     product_id: numericProductId(line.productId),
@@ -72,7 +101,7 @@ function buildItem(line) {
     fixed_qty: Number(line.fixedQty) || 0,
     is_bottling: Boolean(line.isBottling),
     ikpu,
-    packageCode: line.packageCode != null ? String(line.packageCode) : '',
+    packageCode,
     product_barcodes: barcodes,
     product_price: price,
     product_without_vat: Boolean(line.productWithoutVat),
@@ -81,15 +110,8 @@ function buildItem(line) {
     count: Number(line.quantity) || 0,
     commitent_tin: line.commissionTin || line.commitentTin || '',
     product_vat_percent: Number(line.taxRate ?? 12),
-    // Multikassa: product_package = код упаковки Tasnif (не unitMeasureCode «1» шт/кг)
-    product_package:
-      (line.packageCode != null && String(line.packageCode).trim() !== ''
-        ? String(line.packageCode).trim()
-        : '') ||
-      (line.unitMeasureCode != null && String(line.unitMeasureCode).trim() !== ''
-        ? String(line.unitMeasureCode).trim()
-        : '') ||
-      '1',
+    // Multikassa: код упаковки Tasnif (не unitMeasureCode «1»)
+    product_package: packageCode || '1',
     product_package_name:
       line.packageName || line.unitOfMeasure || line.unitLabel || 'шт',
     other: toSum(line.other || 0),
