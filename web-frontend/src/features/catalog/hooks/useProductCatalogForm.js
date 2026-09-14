@@ -261,7 +261,6 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       catalogProfile,
     });
 
-  const costPriceWatch = watch('costPrice');
   useEffect(() => {
     if (!isRestaurantIngredient || isEdit) return;
     const cost = Number(costPriceWatch);

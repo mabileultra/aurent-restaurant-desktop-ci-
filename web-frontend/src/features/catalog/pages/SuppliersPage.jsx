@@ -11,13 +11,13 @@ import SupplierModal from '../components/suppliers/SupplierModal';
 import SuppliersTable from '../components/suppliers/SuppliersTable';
 import { useSuppliersPage } from '../hooks/useSuppliersPage';
 
-export default function SuppliersPage() {
+export default function SuppliersPage({ hideTitle = false } = {}) {
   const { t } = useTranslation();
   const s = useSuppliersPage();
 
   return (
     <PageLayout
-      title={t('suppliersModule.title')}
+      title={hideTitle ? undefined : t('suppliersModule.title')}
       actions={
         s.manage ? (
           <BaseButton onClick={() => s.setAddOpen(true)} className="admin-btn-primary">

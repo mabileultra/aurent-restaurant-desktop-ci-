@@ -7,6 +7,7 @@ const TABS = [
   { to: '/rst/admin/stock/products', key: 'products' },
   { to: '/rst/admin/stock/balances', key: 'balances' },
   { to: '/rst/admin/stock/inventories', key: 'inventories' },
+  { to: '/rst/admin/stock/suppliers', key: 'suppliers' },
   { to: '/rst/admin/stock/receipts', key: 'receipts' },
 ];
 

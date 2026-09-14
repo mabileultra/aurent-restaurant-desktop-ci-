@@ -29,6 +29,7 @@ import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
 import RstWarehouseBalancesPage from '../admin/pages/RstWarehouseBalancesPage';
 import RstStockInventoriesPage from '../admin/pages/RstStockInventoriesPage';
 import RstStockReceiptsPage from '../admin/pages/RstStockReceiptsPage';
+import RstSuppliersPage from '../admin/pages/RstSuppliersPage';
 import StockInventoryCreatePage from '../../features/stock/pages/StockInventoryCreatePage';
 import StockReceiptCreatePage from '../../features/stock/pages/StockReceiptCreatePage';
 import LowStockReportPage from '../../features/reports/pages/LowStockReportPage';
@@ -90,6 +91,7 @@ export const restaurantRoutes = (
         <Route path="categories" element={<RstCategoriesPage />} />
         <Route path="balances" element={<RstWarehouseBalancesPage />} />
         <Route path="inventories" element={<RstStockInventoriesPage />} />
+        <Route path="suppliers" element={<RstSuppliersPage />} />
         <Route path="receipts" element={<RstStockReceiptsPage />} />
         <Route path="inventories/new" element={<StockInventoryCreatePage />} />
         <Route path="receipts/new" element={<StockReceiptCreatePage />} />
