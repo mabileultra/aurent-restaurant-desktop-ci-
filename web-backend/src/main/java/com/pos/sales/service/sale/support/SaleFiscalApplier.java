@@ -98,9 +98,7 @@ public class SaleFiscalApplier {
         if (isSyntheticFiscalSign(fiscal.fiscalSign())) {
             throw PosExceptions.badRequest("Поддельный фискальный признак (MK-*) не принимается");
         }
-        if (!StringUtils.hasText(fiscal.fiscalQrUrl())) {
-            throw PosExceptions.badRequest("Нет QR-кода ГНК (fiscalQrUrl) от Multikassa");
-        }
+        // QR желателен, но без него не рвём продажу — иначе касса не печатает чек при сбое сборки QR.
     }
 
     private static boolean isSyntheticFiscalSign(String sign) {

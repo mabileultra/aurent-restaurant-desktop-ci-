@@ -81,7 +81,10 @@ export default function CashierDesktopMenuMultikassa({ t }) {
           type="button"
           className="cashier-desktop-menu__item"
           role="menuitem"
-          onClick={openSettings}
+          onClick={(e) => {
+            e.stopPropagation();
+            openSettings();
+          }}
         >
           <Settings2 size={15} strokeWidth={2} aria-hidden />
           <span>{t('cashRegisters.multikassa.openSettings')}</span>

@@ -378,18 +378,27 @@ function appendFiscalBlock(printer, payload) {
  * @param {object} payload
  */
 function appendQrAndFooter(printer, payload) {
-  const { sale, receiptFields, labels, branding } = payload;
+  const { sale, receiptFields, labels, branding, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
   const L = labels || {};
 
   if (!isOn(fields, 'qrCode') && !isOn(fields, 'footer')) return;
 
   printer.alignCenter();
-  if (isOn(fields, 'qrCode')) {
-    const qrValue = buildQrPayload(sale, branding?.qrBase);
+  if (isOn(fields, 'qrCode') && sale?.printFiscalQr !== false) {
+    const qrValue =
+      String(payloadQr || '').trim() ||
+      String(sale?.fiscalQrUrl || '').trim() ||
+      buildQrPayload(sale, branding?.qrBase);
     if (qrValue) {
-      printer.printQR(qrValue, { cellSize: 5, correction: 'M', model: 2 });
-      printer.newLine();
+      try {
+        // Длинный OFD URL иногда валит драйвер — чек всё равно должен выйти.
+        const cellSize = qrValue.length > 120 ? 4 : 5;
+        printer.printQR(qrValue, { cellSize, correction: 'M', model: 2 });
+        printer.newLine();
+      } catch (err) {
+        logWarn('qr', 'QR_SKIP', { message: err?.message, len: qrValue.length });
+      }
     }
   }
   if (isOn(fields, 'footer')) {

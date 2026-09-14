@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useMultikassaSettings } from '../hooks/useMultikassaSettings';
@@ -6,14 +7,15 @@ import '../../../styles/cash-registers/multikassa-settings.css';
 export default function MultikassaSettingsModal({ open, cashRegisterId, onClose }) {
   const p = useMultikassaSettings({ cashRegisterId, open, onSaved: onClose });
 
-  if (!open || !cashRegisterId) return null;
+  if (!open || !cashRegisterId || typeof document === 'undefined') return null;
 
-  return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4">
       <button type="button" className="absolute inset-0 bg-black/50" aria-label="Close" onClick={onClose} />
       <div
         className="relative flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl dark:border-slate-700 dark:bg-slate-900"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="multikassa-settings-title"
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4 dark:border-slate-800">
@@ -178,6 +180,7 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
           )}
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

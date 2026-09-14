@@ -77,7 +77,7 @@ export async function fiscalizeSaleBeforeCommit({
     return null;
   }
 
-  const requireBeforeSale = capabilities.requireBeforeSale !== false;
+  const requireBeforeSale = Boolean(capabilities.requireBeforeSale);
 
   try {
     assertCapabilitiesReady(capabilities);
@@ -125,12 +125,12 @@ export async function fiscalizeSaleBeforeCommit({
     }
 
     if (!hasQr && requireBeforeSale && !offline) {
-      const err = new Error(
-        'Фискальный признак получен, но QR-код ГНК не сформирован. Проверьте Terminal ID, номер чека в ответе модуля и смену ФМ.',
-      );
-      err.code = 'MULTIKASSA_FISCAL_FAILED';
-      err.data = parsed?.raw ?? null;
-      throw err;
+      // Признак есть, QR URL не собрался — продажу не рвём (иначе чек не печатается).
+      return {
+        ...toSaleFiscalPayload(parsed),
+        multikassaRetryBody: body,
+        clientOperationId: idempotencyKey,
+      };
     }
 
     return {

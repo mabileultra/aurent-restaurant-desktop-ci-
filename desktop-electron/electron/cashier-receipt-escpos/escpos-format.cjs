@@ -60,12 +60,16 @@ function splitDateTime(iso) {
 }
 
 /**
- * Фискальный признак (до ОФД — детерминированно из данных чека).
+ * Фискальный признак: сначала реальный Multikassa/ГНК, иначе локальный hash (тест/офлайн).
  * @param {object} sale
  * @returns {string}
  */
 function buildFiscalSign(sale) {
-  const base = `${sale.receiptNumber}|${sale.id}|${sale.totalAmount}|${sale.createdAt}`;
+  const fromModule = String(sale?.fiscalSign || '').trim();
+  if (fromModule && !/^MK-/i.test(fromModule) && !/^LOCAL-/i.test(fromModule)) {
+    return fromModule;
+  }
+  const base = `${sale?.receiptNumber}|${sale?.id}|${sale?.totalAmount}|${sale?.createdAt}`;
   let h = 0;
   for (let i = 0; i < base.length; i += 1) {
     h = (Math.imul(31, h) + base.charCodeAt(i)) >>> 0;
@@ -75,20 +79,25 @@ function buildFiscalSign(sale) {
 
 /**
  * Строка для QR на чеке.
+ * Приоритет: официальный fiscalQrUrl от Multikassa → qrBase → синтетика.
  * @param {object} sale
  * @param {string} [qrBase] — опционально из payload.branding.qrBase
  * @returns {string}
  */
 function buildQrPayload(sale, qrBase) {
+  const fromModule = String(sale?.fiscalQrUrl || '').trim();
+  if (fromModule && /^https?:\/\//i.test(fromModule)) {
+    return fromModule;
+  }
   const sign = buildFiscalSign(sale);
-  const total = Number(sale.totalAmount) || 0;
-  const r = encodeURIComponent(sale.receiptNumber || '');
+  const total = Number(sale?.totalAmount) || 0;
+  const r = encodeURIComponent(sale?.receiptNumber || '');
   const base = String(qrBase || '').trim();
   if (base) {
     const sep = base.includes('?') ? '&' : '?';
     return `${base}${sep}r=${r}&s=${total}&f=${sign}`;
   }
-  const t = sale.createdAt ? new Date(sale.createdAt).getTime() : Date.now();
+  const t = sale?.createdAt ? new Date(sale.createdAt).getTime() : Date.now();
   return `https://ofd.soliq.uz/check?r=${r}&s=${total}&t=${t}&f=${sign}`;
 }
 

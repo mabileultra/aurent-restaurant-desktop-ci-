@@ -62,13 +62,13 @@ export default function CashRegistersListPage() {
         />
       </div>
 
+      {/* Keep details open underneath — settings modal is portaled to body */}
       <CashRegisterDetailsModal
         registerId={p.detailId}
         onClose={() => p.setDetailId(null)}
         onEdit={p.openEditForm}
         onMultikassa={(id) => {
           setMultikassaRegisterId(id);
-          p.setDetailId(null);
         }}
       />
 
