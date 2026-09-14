@@ -392,8 +392,7 @@ function appendQrAndFooter(printer, payload) {
       buildQrPayload(sale, branding?.qrBase);
     if (qrValue) {
       try {
-        // Длинный OFD URL иногда валит драйвер — чек всё равно должен выйти.
-        const cellSize = qrValue.length > 120 ? 4 : 5;
+        const cellSize = qrValue.length > 100 ? 2 : 3;
         printer.printQR(qrValue, { cellSize, correction: 'M', model: 2 });
         printer.newLine();
       } catch (err) {
@@ -419,7 +418,7 @@ function appendQrAndFooter(printer, payload) {
 async function buildReceiptOnPrinter(printer, payload, jobId) {
   const safePayload = sanitizePayloadForPrint(payload);
   printer.clear();
-  preparePrinterEncoding(printer);
+  preparePrinterEncoding(printer, safePayload.locale);
   await appendHeader(printer, safePayload, jobId);
   appendMeta(printer, safePayload);
   appendReceiptType(printer, safePayload);

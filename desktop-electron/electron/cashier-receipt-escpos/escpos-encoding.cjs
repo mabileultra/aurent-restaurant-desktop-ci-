@@ -3,9 +3,14 @@
  * Xprinter/POS-80: выход из китайского двухбайтового режима перед печатью.
  */
 const { CharacterSet } = require('node-thermal-printer');
+const { hasCyrillic, transliterateCyrillicToLatin } = require('./escpos-transliterate.cjs');
 
 /** FS . — отмена китайского (GBK) режима на многих Xprinter. */
 const EXIT_CHINESE_MODE = Buffer.from([0x1c, 0x2e]);
+/** ESC t 17 — PC866 (Cyrillic #2) на Epson-совместимых. */
+const SELECT_PC866 = Buffer.from([0x1b, 0x74, 0x11]);
+/** ESC t 16 — WPC1252. */
+const SELECT_WPC1252 = Buffer.from([0x1b, 0x74, 0x10]);
 
 const APOSTROPHE_LIKE = /[\u02BB\u02BC\u2018\u2019\u02BF\u0060]/g;
 
@@ -20,12 +25,12 @@ function normalizeLocale(raw) {
 
 /**
  * Таблица символов принтера по языку интерфейса.
- * ru → PC866 (стабильнее WPC1251 на POS-80 / Xprinter).
- * uz → WPC1252 (латиница узбекского алфавита).
+ * ru → PC866; uz без кириллицы → WPC1252; uz с кириллицей в payload → PC866.
  * @param {'ru'|'uz'} locale
+ * @param {boolean} [payloadHasCyrillic]
  */
-function resolveCharacterSet(locale) {
-  if (locale === 'uz') {
+function resolveCharacterSet(locale, payloadHasCyrillic = false) {
+  if (locale === 'uz' && !payloadHasCyrillic) {
     return CharacterSet.WPC1252;
   }
   return CharacterSet.PC866_CYRILLIC2;
@@ -33,6 +38,7 @@ function resolveCharacterSet(locale) {
 
 /**
  * Нормализует строку под выбранную code page принтера.
+ * На uz + кириллица: транслит в латиницу (Xprinter иначе печатает «китайские» глифы).
  * @param {unknown} text
  * @param {'ru'|'uz'} locale
  */
@@ -40,6 +46,7 @@ function normalizePrintText(text, locale) {
   if (text == null) return '';
   let s = String(text);
   if (locale === 'uz') {
+    s = transliterateCyrillicToLatin(s);
     s = s
       .replace(APOSTROPHE_LIKE, "'")
       .replace(/\u2013|\u2014/g, '-')
@@ -69,6 +76,14 @@ function sanitizeValue(value, locale) {
   return value;
 }
 
+function payloadContainsCyrillic(payload) {
+  try {
+    return hasCyrillic(JSON.stringify(payload || {}));
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Подготавливает payload: locale + безопасные строки для принтера.
  * @param {object} payload
@@ -88,9 +103,11 @@ function sanitizePayloadForPrint(payload) {
 /**
  * Команды в начале чека после clear().
  * @param {import('node-thermal-printer').printer} printer
+ * @param {'ru'|'uz'} [locale]
  */
-function preparePrinterEncoding(printer) {
+function preparePrinterEncoding(printer, locale = 'ru') {
   printer.append(EXIT_CHINESE_MODE);
+  printer.append(locale === 'uz' ? SELECT_WPC1252 : SELECT_PC866);
 }
 
 module.exports = {
@@ -99,5 +116,6 @@ module.exports = {
   normalizePrintText,
   sanitizePayloadForPrint,
   preparePrinterEncoding,
+  payloadContainsCyrillic,
   EXIT_CHINESE_MODE,
 };

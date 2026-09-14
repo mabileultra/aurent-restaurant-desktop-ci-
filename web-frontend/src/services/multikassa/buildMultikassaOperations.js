@@ -2,6 +2,7 @@ import { lineDiscountAmount, lineSubtotal } from '../../store/cartStore';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
 import { round2 } from '../../utils/taxAmounts';
+import { transliterateCyrillicToLatin } from '../../utils/transliterateCyrillic';
 
 /** Если в настройках случайно сохранили YZ+YZ — вернуть одну половину. */
 export function normalizeGnkTerminalId(value) {
@@ -95,7 +96,7 @@ function buildItem(line) {
     classifier_class_code: classifier,
     product_mark: mark,
     product_label: label,
-    product_name: line.name || 'Товар',
+    product_name: transliterateCyrillicToLatin(line.name || 'Товар') || 'Tovar',
     product_barcode: barcode ? String(barcode) : '',
     no_check_mark: Boolean(line.noCheckMark),
     fixed_qty: Number(line.fixedQty) || 0,
@@ -112,8 +113,9 @@ function buildItem(line) {
     product_vat_percent: Number(line.taxRate ?? 12),
     // Multikassa: код упаковки Tasnif (не unitMeasureCode «1»)
     product_package: packageCode || '1',
-    product_package_name:
-      line.packageName || line.unitOfMeasure || line.unitLabel || 'шт',
+    product_package_name: transliterateCyrillicToLatin(
+      line.packageName || line.unitOfMeasure || line.unitLabel || 'sht',
+    ),
     other: toSum(line.other || 0),
   };
 }
@@ -149,7 +151,9 @@ export function buildSaleOperationBody({
     receipt_sum: toTiyin(due),
     receipt_gnk_terminalid: terminalId,
     module_gnk_terminalid: terminalId,
-    receipt_cashier_name: capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    receipt_cashier_name: transliterateCyrillicToLatin(
+      capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    ),
     receipt_gnk_receivedcash: toTiyin(cash),
     receipt_gnk_receivedcard: toTiyin(card),
     receipt_gnk_time: now,
@@ -163,7 +167,7 @@ export function buildSaleOperationBody({
     },
   };
 
-  const contractor = String(contractorName || '').trim();
+  const contractor = transliterateCyrillicToLatin(String(contractorName || '').trim());
   if (contractor) {
     body.contractor_name = contractor;
   }
@@ -191,7 +195,9 @@ export function buildOpenShiftBody({ capabilities, shiftId, cashierName, zReport
   return {
     module_operation_type: MULTIKASSA_OPERATION_TYPE.OPEN_SHIFT,
     receipt_gnk_time: now,
-    receipt_cashier_name: capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    receipt_cashier_name: transliterateCyrillicToLatin(
+      capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    ),
     receipt_gnk_terminalid: terminalId,
     shift_id: shiftId ? String(shiftId) : '',
     module_gnk_id: normalizeGnkTerminalId(capabilities?.moduleNumber) || terminalId,
@@ -211,7 +217,9 @@ export function buildCloseShiftBody(args) {
 export function buildXReportBody({ capabilities, cashierName }) {
   return {
     module_operation_type: MULTIKASSA_OPERATION_TYPE.X_REPORT,
-    receipt_cashier_name: capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    receipt_cashier_name: transliterateCyrillicToLatin(
+      capabilities?.cashierNameOverride || cashierName || 'CASHIER',
+    ),
     receipt_gnk_time: formatMultikassaDateTime(),
     force_to_print: false,
   };
