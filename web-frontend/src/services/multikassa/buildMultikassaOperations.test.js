@@ -35,6 +35,7 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
           ikpu: '03002005001000000',
           packageCode: '1546940',
           unitMeasureCode: '1',
+          barcode: '2131415421412',
           taxRate: 12,
         },
       ],
