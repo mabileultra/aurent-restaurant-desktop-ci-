@@ -9,6 +9,7 @@ export {
   multikassaHttpRequest,
   getContragents,
   getFiscalDrives,
+  getFiscalDrivesWithFallback,
   selectFiscalDrive,
   getPrinters,
   postOperation,
@@ -20,6 +21,7 @@ export {
   buildCloseShiftBody,
   buildXReportBody,
   buildRefundBody,
+  normalizeGnkTerminalId,
 } from './buildMultikassaOperations';
 export {
   parseMultikassaOperationResult,

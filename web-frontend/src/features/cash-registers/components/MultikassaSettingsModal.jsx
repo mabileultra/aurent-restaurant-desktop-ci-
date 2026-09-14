@@ -112,14 +112,31 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
                 <button
                   type="button"
                   className="multikassa-settings__preset"
-                  onClick={() => p.loadDrives().catch((e) => toast.error(e?.message || p.t('cashRegisters.multikassa.drivesLoadFailed')))}
+                  onClick={() =>
+                    p
+                      .loadDrives(undefined, { notifyEmpty: true })
+                      .catch((e) => toast.error(e?.message || p.t('cashRegisters.multikassa.drivesLoadFailed')))
+                  }
                   disabled={p.loadingDrives}
                 >
                   {p.loadingDrives
                     ? p.t('cashRegisters.multikassa.drivesLoading')
                     : p.t('cashRegisters.multikassa.refreshDrives')}
                 </button>
+                {p.drives.length === 0 ? (
+                  <button
+                    type="button"
+                    className="multikassa-settings__preset"
+                    onClick={p.applyModuleSerialAsDrive}
+                    disabled={!String(p.form.moduleNumber || '').trim()}
+                  >
+                    {p.t('cashRegisters.multikassa.useModuleAsDrive')}
+                  </button>
+                ) : null}
               </div>
+              {p.drives.length === 0 ? (
+                <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.drivesEmptyHint')}</p>
+              ) : null}
 
               <div className="multikassa-settings__row">
                 <span className="multikassa-settings__label">{p.t('cashRegisters.multikassa.cashierName')}</span>

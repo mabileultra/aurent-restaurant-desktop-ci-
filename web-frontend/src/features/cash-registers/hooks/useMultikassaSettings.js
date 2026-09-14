@@ -7,7 +7,8 @@ import {
   MULTIKASSA_BASE_URL_PRESETS,
   MULTIKASSA_DEFAULT_BASE_URL,
   getContragents,
-  getFiscalDrives,
+  getFiscalDrivesWithFallback,
+  normalizeGnkTerminalId,
   selectFiscalDrive,
 } from '../../../services/multikassa';
 
@@ -22,46 +23,104 @@ const EMPTY_FORM = {
   printFiscalQr: true,
 };
 
+function collectDriveArrays(raw, depth = 0) {
+  if (raw == null || depth > 4) return [];
+  if (Array.isArray(raw)) return [raw];
+  if (typeof raw !== 'object') return [];
+  // Точный формат MK Fiscal 1.2.x: { data: { selected, drives: [...] } }
+  if (Array.isArray(raw?.data?.drives)) return [raw.data.drives];
+  if (Array.isArray(raw?.drives)) return [raw.drives];
+  const keys = [
+    'data',
+    'Data',
+    'Result',
+    'result',
+    'drives',
+    'Drives',
+    'fiscal_drives',
+    'fiscalDrives',
+    'items',
+    'Items',
+    'modules',
+    'Modules',
+    'list',
+    'List',
+  ];
+  const found = [];
+  for (const key of keys) {
+    if (Array.isArray(raw[key])) found.push(raw[key]);
+  }
+  for (const value of Object.values(raw)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      found.push(...collectDriveArrays(value, depth + 1));
+    }
+  }
+  return found;
+}
+
+function pickDriveTerminal(item) {
+  return (
+    item.terminalID ||
+    item.terminalId ||
+    item.TerminalId ||
+    item.TerminalID ||
+    item.receipt_gnk_terminalid ||
+    item.module_gnk_terminalid ||
+    item.module_gnk_id ||
+    ''
+  );
+}
+
 function normalizeDrivesList(raw) {
-  const list = Array.isArray(raw)
-    ? raw
-    : Array.isArray(raw?.data)
-      ? raw.data
-      : Array.isArray(raw?.Result)
-        ? raw.Result
-        : Array.isArray(raw?.drives)
-          ? raw.drives
-          : [];
+  const candidates = collectDriveArrays(raw);
+  const list = candidates.find((arr) => arr.length > 0) || (Array.isArray(raw) ? raw : []);
   return list
     .map((item, index) => {
       if (item == null) return null;
       if (typeof item === 'string' || typeof item === 'number') {
         return { id: String(item), label: String(item) };
       }
+      const terminal = String(pickDriveTerminal(item) || '').trim();
+      const factory =
+        item.factoryId ??
+        item.FactoryID ??
+        item.factory_id ??
+        item.FactoryId ??
+        null;
       const id =
+        factory ??
         item.id ??
         item.Id ??
         item.driveId ??
         item.DriveId ??
         item.module_gnk_id ??
+        item.ModuleGnkId ??
+        (terminal || null) ??
+        item.serial ??
+        item.Serial ??
+        item.serialNumber ??
+        item.SerialNumber ??
         item.ModuleNumber ??
+        item.moduleNumber ??
         item.number ??
         item.Number ??
         null;
-      if (id == null) return null;
+      if (id == null || String(id).trim() === '') return null;
+      const idStr = String(id).trim();
       const name =
         item.name ??
         item.Name ??
         item.title ??
         item.Title ??
-        item.terminalId ??
-        item.TerminalId ??
+        terminal ??
         '';
       return {
-        id: String(id),
-        label: name ? `${id} — ${name}` : String(id),
-        terminalId: item.terminalId || item.TerminalId || item.receipt_gnk_terminalid || '',
-        moduleNumber: item.moduleNumber || item.ModuleNumber || item.module_gnk_id || '',
+        id: idStr,
+        label: terminal && terminal !== idStr ? `${terminal} (${idStr})` : name ? `${idStr} — ${name}` : idStr,
+        terminalId: terminal || idStr,
+        // В чеке GNK / module_gnk_id — серийник YZ…, не factoryId
+        moduleNumber: terminal || idStr,
+        factoryId: factory != null ? String(factory).trim() : idStr,
       };
     })
     .filter(Boolean)
@@ -89,8 +148,8 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setForm({
       enabled: Boolean(data.enabled),
       baseUrl: data.baseUrl || MULTIKASSA_DEFAULT_BASE_URL,
-      terminalId: data.terminalId || '',
-      moduleNumber: data.moduleNumber || '',
+      terminalId: normalizeGnkTerminalId(data.terminalId),
+      moduleNumber: normalizeGnkTerminalId(data.moduleNumber) || normalizeGnkTerminalId(data.terminalId),
       selectedDriveId: data.selectedDriveId || '',
       cashierNameOverride: data.cashierNameOverride || '',
       requireBeforeSale: Boolean(data.requireBeforeSale),
@@ -99,14 +158,28 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setTestMessage('');
   }, [data]);
 
-  const loadDrives = async (baseUrl = form.baseUrl) => {
+  const loadDrives = async (baseUrl = form.baseUrl, { notifyEmpty = false } = {}) => {
     const url = String(baseUrl || '').trim();
     if (!url) return [];
     setLoadingDrives(true);
     try {
-      const raw = await getFiscalDrives(url);
+      const { data: raw } = await getFiscalDrivesWithFallback(url);
       const next = normalizeDrivesList(raw);
       setDrives(next);
+      if (notifyEmpty && next.length === 0) {
+        toast(t('cashRegisters.multikassa.drivesEmptyHint'));
+      }
+      // Один ФМ в ответе — подставить Terminal ID / module автоматически
+      if (next.length === 1) {
+        const only = next[0];
+        const terminal = normalizeGnkTerminalId(only.terminalId);
+        setForm((prev) => ({
+          ...prev,
+          selectedDriveId: prev.selectedDriveId || only.id,
+          terminalId: prev.terminalId || terminal,
+          moduleNumber: prev.moduleNumber || terminal,
+        }));
+      }
       return next;
     } catch (e) {
       setDrives([]);
@@ -121,8 +194,8 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     let cancelled = false;
     (async () => {
       try {
-        const next = await getFiscalDrives(form.baseUrl.trim());
-        if (!cancelled) setDrives(normalizeDrivesList(next));
+        const { data: raw } = await getFiscalDrivesWithFallback(form.baseUrl.trim());
+        if (!cancelled) setDrives(normalizeDrivesList(raw));
       } catch {
         if (!cancelled) setDrives([]);
       }
@@ -155,11 +228,13 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
 
   const submit = (e) => {
     e.preventDefault();
+    const terminalId = normalizeGnkTerminalId(form.terminalId) || null;
+    const moduleNumber = normalizeGnkTerminalId(form.moduleNumber) || terminalId;
     saveMutation.mutate({
       enabled: form.enabled,
       baseUrl: form.baseUrl.trim(),
-      terminalId: form.terminalId.trim() || null,
-      moduleNumber: form.moduleNumber.trim() || null,
+      terminalId,
+      moduleNumber,
       selectedDriveId: form.selectedDriveId.trim() || null,
       cashierNameOverride: form.cashierNameOverride.trim() || null,
       requireBeforeSale: form.requireBeforeSale,
@@ -170,15 +245,22 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   const onSelectDrive = async (driveId) => {
     updateField('selectedDriveId', driveId);
     const drive = drives.find((d) => d.id === driveId);
-    if (drive?.terminalId) updateField('terminalId', drive.terminalId);
-    if (drive?.moduleNumber) updateField('moduleNumber', drive.moduleNumber);
+    const terminal = normalizeGnkTerminalId(drive?.terminalId || '');
+    if (terminal) {
+      updateField('terminalId', terminal);
+      updateField('moduleNumber', terminal);
+    }
     if (!driveId || !form.baseUrl.trim()) return;
     setSelectingDrive(true);
     try {
       await selectFiscalDrive(form.baseUrl.trim(), {
-        id: driveId,
-        driveId,
-        module_gnk_id: driveId,
+        factoryId: drive?.factoryId || driveId,
+        FactoryID: drive?.factoryId || driveId,
+        terminalID: terminal || driveId,
+        terminalId: terminal || driveId,
+        id: drive?.factoryId || driveId,
+        driveId: drive?.factoryId || driveId,
+        module_gnk_id: terminal || driveId,
       });
       toast.success(t('cashRegisters.multikassa.driveSelected'));
     } catch (e) {
@@ -186,6 +268,19 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     } finally {
       setSelectingDrive(false);
     }
+  };
+
+  /** Список ФМ пуст — подставить серийник модуля (YZ…) как drive id вручную. */
+  const applyModuleSerialAsDrive = () => {
+    const serial = normalizeGnkTerminalId(form.moduleNumber || form.terminalId);
+    if (!serial) {
+      toast.error(t('cashRegisters.multikassa.moduleSerialRequired'));
+      return;
+    }
+    updateField('selectedDriveId', serial);
+    updateField('terminalId', serial);
+    updateField('moduleNumber', serial);
+    toast.success(t('cashRegisters.multikassa.driveFilledFromModule', { serial }));
   };
 
   const testConnection = async () => {
@@ -221,6 +316,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     submit,
     testConnection,
     onSelectDrive,
+    applyModuleSerialAsDrive,
     loadDrives,
     drives,
     loadingDrives,

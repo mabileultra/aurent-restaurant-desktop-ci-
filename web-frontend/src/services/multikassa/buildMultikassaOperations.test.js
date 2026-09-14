@@ -1,9 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildSaleOperationBody,
+  normalizeGnkTerminalId,
   resolveReceivedCashCard,
 } from './buildMultikassaOperations';
 import { toTiyin } from './multikassaMoney';
+
+describe('normalizeGnkTerminalId', () => {
+  it('unwraps doubled YZ serial', () => {
+    expect(normalizeGnkTerminalId('YZ231006044579YZ231006044579')).toBe('YZ231006044579');
+  });
+
+  it('keeps normal serial', () => {
+    expect(normalizeGnkTerminalId('YZ231006044579')).toBe('YZ231006044579');
+  });
+});
 
 describe('buildSaleOperationBody (Multikassa Operations API)', () => {
   const capabilities = {
@@ -41,6 +52,7 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.receipt_gnk_receivedcard).toBe(0);
     expect(body.receipt_gnk_terminalid).toBe('FM_TERMINAL_ID');
     expect(body.module_gnk_terminalid).toBe('FM_TERMINAL_ID');
+    expect(body.force_to_print).toBe(false);
     expect(body.receipt_gnk_time).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
     expect(body.shift_id).toBe('SHIFT_GUID');
     expect(body.contractor_name).toBe('AURENT');

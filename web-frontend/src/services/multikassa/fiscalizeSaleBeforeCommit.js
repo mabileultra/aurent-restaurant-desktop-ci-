@@ -1,4 +1,4 @@
-import { buildSaleOperationBody } from './buildMultikassaOperations';
+import { buildSaleOperationBody, normalizeGnkTerminalId } from './buildMultikassaOperations';
 import { runMultikassaOperation } from './runMultikassaOperation';
 import {
   ensureFiscalQrUrl,
@@ -40,7 +40,7 @@ function rejectIncompleteFiscal(parsed) {
 
 function assertCapabilitiesReady(capabilities) {
   if (!capabilities?.enabled) return;
-  const terminalId = String(capabilities.terminalId || '').trim();
+  const terminalId = normalizeGnkTerminalId(capabilities.terminalId);
   if (!terminalId) {
     const err = new Error(
       'В настройках Multikassa не указан Terminal ID. Укажите ID терминала ФМ и выберите fiscal drive.',

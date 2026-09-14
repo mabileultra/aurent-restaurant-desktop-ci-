@@ -122,6 +122,28 @@ export function getFiscalDrives(baseUrl) {
   return multikassaHttpRequest({ baseUrl, method: 'GET', path: '/api/v1/fiscal_drives' });
 }
 
+/** Некоторые сборки MK fiscal отдают drives под другими путями — пробуем по очереди. */
+export async function getFiscalDrivesWithFallback(baseUrl) {
+  const paths = [
+    '/api/v1/fiscal_drives',
+    '/api/v1/fiscal-drives',
+    '/api/v1/fiscal_drives?refresh=1',
+    '/api/v1/modules',
+    '/api/v1/devices/fiscal',
+  ];
+  let lastErr = null;
+  for (const path of paths) {
+    try {
+      const data = await multikassaHttpRequest({ baseUrl, method: 'GET', path });
+      return { data, path };
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return { data: [], path: paths[0] };
+}
+
 export function selectFiscalDrive(baseUrl, body) {
   return multikassaHttpRequest({
     baseUrl,
