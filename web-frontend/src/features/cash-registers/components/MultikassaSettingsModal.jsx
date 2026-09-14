@@ -167,6 +167,21 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
               </label>
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.requireBeforeSaleHint')}</p>
 
+              <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.mkPrinterHint')}</p>
+              <div className="multikassa-settings__row">
+                <button
+                  type="button"
+                  className="multikassa-settings__preset"
+                  onClick={p.checkMkPrinters}
+                  disabled={p.loadingPrinters}
+                >
+                  {p.loadingPrinters
+                    ? p.t('cashRegisters.multikassa.printersLoading')
+                    : p.t('cashRegisters.multikassa.refreshPrinters')}
+                </button>
+              </div>
+              {p.printersNote ? <p className="multikassa-settings__test">{p.printersNote}</p> : null}
+
               {p.testMessage ? <p className="multikassa-settings__test">{p.testMessage}</p> : null}
 
               <div className="multikassa-settings__actions">

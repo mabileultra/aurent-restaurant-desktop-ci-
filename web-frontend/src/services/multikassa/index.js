@@ -12,6 +12,8 @@ export {
   getFiscalDrivesWithFallback,
   selectFiscalDrive,
   getPrinters,
+  getPrintersWithFallback,
+  selectPrinter,
   postOperation,
   getOperations,
 } from './multikassaHttpClient';

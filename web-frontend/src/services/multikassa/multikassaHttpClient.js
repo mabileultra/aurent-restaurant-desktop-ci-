@@ -157,6 +157,35 @@ export function getPrinters(baseUrl) {
   return multikassaHttpRequest({ baseUrl, method: 'GET', path: '/api/v1/devices/printers' });
 }
 
+/** Пробуем известные пути списка принтеров MK Fiscal. */
+export async function getPrintersWithFallback(baseUrl) {
+  const paths = [
+    '/api/v1/devices/printers',
+    '/api/v1/printers',
+    '/api/v1/devices/printer',
+  ];
+  let lastErr = null;
+  for (const path of paths) {
+    try {
+      const data = await multikassaHttpRequest({ baseUrl, method: 'GET', path });
+      return { data, path };
+    } catch (err) {
+      lastErr = err;
+    }
+  }
+  if (lastErr) throw lastErr;
+  return { data: [], path: paths[0] };
+}
+
+export function selectPrinter(baseUrl, body) {
+  return multikassaHttpRequest({
+    baseUrl,
+    method: 'POST',
+    path: '/api/v1/devices/printers/select',
+    body,
+  });
+}
+
 export function postOperation(baseUrl, body) {
   return multikassaHttpRequest({
     baseUrl,

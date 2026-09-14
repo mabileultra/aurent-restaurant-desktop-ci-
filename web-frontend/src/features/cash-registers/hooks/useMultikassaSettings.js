@@ -8,6 +8,7 @@ import {
   MULTIKASSA_DEFAULT_BASE_URL,
   getContragents,
   getFiscalDrivesWithFallback,
+  getPrintersWithFallback,
   normalizeGnkTerminalId,
   selectFiscalDrive,
 } from '../../../services/multikassa';
@@ -136,6 +137,8 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   const [drives, setDrives] = useState([]);
   const [loadingDrives, setLoadingDrives] = useState(false);
   const [selectingDrive, setSelectingDrive] = useState(false);
+  const [loadingPrinters, setLoadingPrinters] = useState(false);
+  const [printersNote, setPrintersNote] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['multikassa-admin', cashRegisterId],
@@ -283,6 +286,42 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     toast.success(t('cashRegisters.multikassa.driveFilledFromModule', { serial }));
   };
 
+  const checkMkPrinters = async () => {
+    const url = String(form.baseUrl || '').trim();
+    if (!url) return;
+    setLoadingPrinters(true);
+    setPrintersNote('');
+    try {
+      const { data: raw } = await getPrintersWithFallback(url);
+      const list = Array.isArray(raw)
+        ? raw
+        : Array.isArray(raw?.data)
+          ? raw.data
+          : Array.isArray(raw?.data?.printers)
+            ? raw.data.printers
+            : Array.isArray(raw?.printers)
+              ? raw.printers
+              : [];
+      const labels = list
+        .map((p) => p?.name || p?.Name || p?.title || p?.id || p?.Id || (typeof p === 'string' ? p : null))
+        .filter(Boolean);
+      if (labels.length === 0) {
+        setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));
+        toast.error(t('cashRegisters.multikassa.printersEmpty'));
+      } else {
+        const note = t('cashRegisters.multikassa.printersFound', { list: labels.join(', ') });
+        setPrintersNote(note);
+        toast.success(note);
+      }
+    } catch (e) {
+      const msg = e?.message || t('cashRegisters.multikassa.printersLoadFailed');
+      setPrintersNote(msg);
+      toast.error(msg);
+    } finally {
+      setLoadingPrinters(false);
+    }
+  };
+
   const testConnection = async () => {
     setTesting(true);
     setTestMessage('');
@@ -318,8 +357,11 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     onSelectDrive,
     applyModuleSerialAsDrive,
     loadDrives,
+    checkMkPrinters,
     drives,
     loadingDrives,
+    loadingPrinters,
+    printersNote,
     selectingDrive,
     isLoading,
     saving: saveMutation.isPending,
