@@ -121,6 +121,79 @@ class PaymeBillingCallbackServiceImplTest {
         assertThat(captor.getValue().getStatus()).isEqualTo(BillingPaymentStatus.PREPARED);
     }
 
+    @Test
+    void checkPerform_allowsAnyPositiveAmount() {
+        BillingPaymentIntent intent = pendingIntent(); // stored as 1000 UZS
+        when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("amount", 777_00L); // 777 UZS — differs from intent
+        params.put("account", Map.of("order_id", ORDER_ID.toString()));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            Map.of("jsonrpc", "2.0", "id", 10, "method", "CheckPerformTransaction", "params", params),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("allow")).isEqualTo(true);
+    }
+
+    @Test
+    void createTransaction_updatesAmountFromPayme() {
+        BillingPaymentIntent intent = pendingIntent(); // 1000 UZS
+        when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_FIRST))
+            .thenReturn(Optional.empty());
+        when(intentRepository.save(intent)).thenAnswer(inv -> inv.getArgument(0));
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("id", PAYME_ID_FIRST);
+        params.put("time", 1_757_862_028_000L);
+        params.put("amount", 500_000L); // 5000 UZS
+        params.put("account", Map.of("order_id", ORDER_ID.toString()));
+
+        service.handle(
+            Map.of("jsonrpc", "2.0", "id", 11, "method", "CreateTransaction", "params", params),
+            authHeader()
+        );
+
+        assertThat(intent.getAmount()).isEqualByComparingTo("5000.00");
+        assertThat(intent.getStatus()).isEqualTo(BillingPaymentStatus.PREPARED);
+    }
+
+    @Test
+    void createTransaction_reopensPaidOrderWithNewPaymeId() {
+        BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
+        intent.setStatus(BillingPaymentStatus.PAID);
+        intent.setPaidAt(Instant.parse("2026-09-14T12:30:00Z"));
+        when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_SECOND))
+            .thenReturn(Optional.empty());
+        when(intentRepository.save(intent)).thenAnswer(inv -> inv.getArgument(0));
+
+        Map<String, Object> params = new LinkedHashMap<>();
+        params.put("id", PAYME_ID_SECOND);
+        params.put("time", 1_757_862_028_000L);
+        params.put("amount", 250_000L);
+        params.put("account", Map.of("order_id", ORDER_ID.toString()));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            Map.of("jsonrpc", "2.0", "id", 12, "method", "CreateTransaction", "params", params),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        assertThat(intent.getProviderTransId()).isEqualTo(PAYME_ID_SECOND);
+        assertThat(intent.getStatus()).isEqualTo(BillingPaymentStatus.PREPARED);
+        assertThat(intent.getAmount()).isEqualByComparingTo("2500.00");
+        assertThat(intent.getPaidAt()).isNull();
+    }
+
     private static BillingPaymentIntent pendingIntent() {
         return BillingPaymentIntent.builder()
             .id(ORDER_ID)

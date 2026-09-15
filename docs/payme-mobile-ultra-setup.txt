@@ -30,7 +30,8 @@ Endpoint URL:
 https://aurent.uz/api/v1/public/billing/payme
 
 Account:
-order_id  (string / UUID)
+order_id  (string / UUID) — пополнение баланса: сумма свободная,
+один order_id можно оплачивать любой суммой (повторно тоже).
 
 Return URL:
 https://aurent.uz/billing
@@ -39,6 +40,7 @@ https://aurent.uz/billing
 CancelTransaction, CheckTransaction, GetStatement
 
 Checkout: m + ac.order_id + a (тийины) + c
+(сумма a не сверяется с «заказом» — зачисляем то, что пришло от Payme)
 
 Фискальный detail:
 title: Пополнение баланса Aurent

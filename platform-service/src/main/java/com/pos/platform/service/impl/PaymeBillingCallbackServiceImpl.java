@@ -69,18 +69,15 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (intent == null) {
             return error(id, -31050, "Order not found");
         }
-        if (intent.getStatus() == BillingPaymentStatus.PAID) {
-            return error(id, -31051, "Already paid");
-        }
-        BigDecimal amountTiyin = toDecimal(params.get("amount"));
-        long expected = BillingPaymentUrlBuilder.toTiyin(intent.getAmount());
-        if (amountTiyin == null || amountTiyin.longValue() != expected) {
+        // Balance top-up: amount is free — client may pay any positive sum for the same order_id.
+        Long amountTiyin = requirePositiveTiyin(params.get("amount"));
+        if (amountTiyin == null) {
             return error(id, -31001, "Invalid amount");
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("allow", true);
-        result.put("detail", buildFiscalDetail(expected));
+        result.put("detail", buildFiscalDetail(amountTiyin));
         return ok(id, result);
     }
 
@@ -114,12 +111,9 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (intent == null) {
             return error(id, -31050, "Order not found");
         }
-        BigDecimal amountTiyin = toDecimal(params.get("amount"));
-        if (amountTiyin == null || amountTiyin.longValue() != BillingPaymentUrlBuilder.toTiyin(intent.getAmount())) {
+        Long amountTiyin = requirePositiveTiyin(params.get("amount"));
+        if (amountTiyin == null) {
             return error(id, -31001, "Invalid amount");
-        }
-        if (intent.getStatus() == BillingPaymentStatus.PAID) {
-            return error(id, -31051, "Already paid");
         }
         String paymeId = paymeId(params);
         if (paymeId == null) {
@@ -136,8 +130,12 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             return createdResult(id, intent);
         }
 
+        // Accept any amount from Payme and credit that sum on Perform.
+        intent.setAmount(fromTiyin(amountTiyin));
         intent.setProviderTransId(paymeId);
         intent.setStatus(BillingPaymentStatus.PREPARED);
+        intent.setPaidAt(null);
+        intent.setErrorNote(null);
         intent.setProviderPrepareId(String.valueOf(intent.getCreatedAt().toEpochMilli()));
         intentRepository.save(intent);
         return createdResult(id, intent);
@@ -272,11 +270,20 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
     }
 
     private Map<String, Object> createdResult(Object id, BillingPaymentIntent intent) {
-        return ok(id, Map.of(
-            "create_time", intent.getCreatedAt().toEpochMilli(),
-            "transaction", intent.getId().toString(),
-            "state", STATE_CREATED
-        ));
+        int state = switch (intent.getStatus()) {
+            case PAID -> STATE_DONE;
+            case CANCELLED -> intent.getPaidAt() != null ? STATE_CANCELLED_AFTER : STATE_CANCELLED;
+            case FAILED -> STATE_CANCELLED;
+            default -> STATE_CREATED;
+        };
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("create_time", intent.getCreatedAt().toEpochMilli());
+        result.put("transaction", intent.getId().toString());
+        result.put("state", state);
+        if (state == STATE_DONE && intent.getPaidAt() != null) {
+            result.put("perform_time", intent.getPaidAt().toEpochMilli());
+        }
+        return ok(id, result);
     }
 
     private BillingPaymentIntent findByPaymeId(String paymeId) {
@@ -298,6 +305,23 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             return null;
         }
         return value;
+    }
+
+    /** Payme amount is in tiyin; null if missing or not positive. */
+    private static Long requirePositiveTiyin(Object raw) {
+        BigDecimal amount = toDecimal(raw);
+        if (amount == null || amount.signum() <= 0) {
+            return null;
+        }
+        try {
+            return amount.longValueExact();
+        } catch (ArithmeticException e) {
+            return null;
+        }
+    }
+
+    private static BigDecimal fromTiyin(long amountTiyin) {
+        return BigDecimal.valueOf(amountTiyin).movePointLeft(2).setScale(2, java.math.RoundingMode.HALF_UP);
     }
 
     private BillingPaymentIntent resolveIntent(Map<String, Object> params) {
