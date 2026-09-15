@@ -121,28 +121,34 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (intent.getStatus() == BillingPaymentStatus.PAID) {
             return error(id, -31051, "Already paid");
         }
-        String paymeId = String.valueOf(params.get("id"));
-        if (intent.getStatus() == BillingPaymentStatus.PREPARED
-            && paymeId.equals(intent.getProviderTransId())) {
-            return ok(id, Map.of(
-                "create_time", intent.getCreatedAt().toEpochMilli(),
-                "transaction", intent.getId().toString(),
-                "state", STATE_CREATED
-            ));
+        String paymeId = paymeId(params);
+        if (paymeId == null) {
+            return error(id, -32602, "Invalid params");
         }
+
+        BillingPaymentIntent existingByPaymeId = findByPaymeId(paymeId);
+        if (existingByPaymeId != null) {
+            return createdResult(id, existingByPaymeId);
+        }
+        if (intent.getStatus() == BillingPaymentStatus.PREPARED
+            && StringUtils.hasText(intent.getProviderTransId())) {
+            // Order already has active Payme transaction — keep first id (sandbox may retry with another).
+            return createdResult(id, intent);
+        }
+
         intent.setProviderTransId(paymeId);
         intent.setStatus(BillingPaymentStatus.PREPARED);
         intent.setProviderPrepareId(String.valueOf(intent.getCreatedAt().toEpochMilli()));
         intentRepository.save(intent);
-        return ok(id, Map.of(
-            "create_time", intent.getCreatedAt().toEpochMilli(),
-            "transaction", intent.getId().toString(),
-            "state", STATE_CREATED
-        ));
+        return createdResult(id, intent);
     }
 
     private Map<String, Object> perform(Object id, Map<String, Object> params) {
-        BillingPaymentIntent intent = findByPaymeId(String.valueOf(params.get("id")));
+        String paymeId = paymeId(params);
+        if (paymeId == null) {
+            return error(id, -32602, "Invalid params");
+        }
+        BillingPaymentIntent intent = findByPaymeId(paymeId);
         if (intent == null) {
             return error(id, -31003, "Transaction not found");
         }
@@ -159,7 +165,6 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             || intent.getStatus() == BillingPaymentStatus.FAILED) {
             return error(id, -31008, "Transaction cancelled");
         }
-        String paymeId = String.valueOf(params.get("id"));
         creditService.markPaid(intent, paymeId, "Пополнение через Payme");
         BillingPaymentIntent paid = intentRepository.findById(intent.getId()).orElse(intent);
         return ok(id, Map.of(
@@ -172,7 +177,11 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
     }
 
     private Map<String, Object> cancel(Object id, Map<String, Object> params) {
-        BillingPaymentIntent intent = findByPaymeId(String.valueOf(params.get("id")));
+        String paymeId = paymeId(params);
+        if (paymeId == null) {
+            return error(id, -32602, "Invalid params");
+        }
+        BillingPaymentIntent intent = findByPaymeId(paymeId);
         if (intent == null) {
             return error(id, -31003, "Transaction not found");
         }
@@ -192,7 +201,11 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
     }
 
     private Map<String, Object> check(Object id, Map<String, Object> params) {
-        BillingPaymentIntent intent = findByPaymeId(String.valueOf(params.get("id")));
+        String paymeId = paymeId(params);
+        if (paymeId == null) {
+            return error(id, -32602, "Invalid params");
+        }
+        BillingPaymentIntent intent = findByPaymeId(paymeId);
         if (intent == null) {
             return error(id, -31003, "Transaction not found");
         }
@@ -258,6 +271,14 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         return ok(id, Map.of("transactions", transactions));
     }
 
+    private Map<String, Object> createdResult(Object id, BillingPaymentIntent intent) {
+        return ok(id, Map.of(
+            "create_time", intent.getCreatedAt().toEpochMilli(),
+            "transaction", intent.getId().toString(),
+            "state", STATE_CREATED
+        ));
+    }
+
     private BillingPaymentIntent findByPaymeId(String paymeId) {
         return intentRepository
             .findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, paymeId)
@@ -265,6 +286,18 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
                 UUID maybe = parseUuid(paymeId);
                 return maybe == null ? null : intentRepository.findById(maybe).orElse(null);
             });
+    }
+
+    private static String paymeId(Map<String, Object> params) {
+        Object raw = params.get("id");
+        if (raw == null) {
+            return null;
+        }
+        String value = String.valueOf(raw).trim();
+        if (value.isEmpty() || "null".equals(value)) {
+            return null;
+        }
+        return value;
     }
 
     private BillingPaymentIntent resolveIntent(Map<String, Object> params) {
