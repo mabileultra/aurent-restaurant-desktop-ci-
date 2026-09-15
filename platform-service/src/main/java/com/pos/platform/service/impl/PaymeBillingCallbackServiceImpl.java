@@ -124,19 +124,15 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (existingByPaymeId != null) {
             return createdResult(id, existingByPaymeId);
         }
-        if (intent.getStatus() == BillingPaymentStatus.PREPARED
-            && StringUtils.hasText(intent.getProviderTransId())) {
-            // Order already has active Payme transaction — keep first id (sandbox may retry with another).
-            return createdResult(id, intent);
-        }
 
-        // Accept any amount from Payme and credit that sum on Perform.
+        // Balance top-up: each new Payme transaction id starts a fresh attempt with current create_time.
+        long createTimeMs = resolveIncomingCreateTime(params);
         intent.setAmount(fromTiyin(amountTiyin));
         intent.setProviderTransId(paymeId);
         intent.setStatus(BillingPaymentStatus.PREPARED);
         intent.setPaidAt(null);
         intent.setErrorNote(null);
-        intent.setProviderPrepareId(String.valueOf(intent.getCreatedAt().toEpochMilli()));
+        intent.setProviderPrepareId(String.valueOf(createTimeMs));
         intentRepository.save(intent);
         return createdResult(id, intent);
     }
@@ -214,7 +210,7 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             default -> STATE_CREATED;
         };
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("create_time", intent.getCreatedAt().toEpochMilli());
+        result.put("create_time", resolveStoredCreateTime(intent));
         result.put("perform_time", intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : 0L);
         result.put(
             "cancel_time",
@@ -250,10 +246,11 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             };
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("id", intent.getProviderTransId());
-            row.put("time", intent.getCreatedAt().toEpochMilli());
+            long createTimeMs = resolveStoredCreateTime(intent);
+            row.put("time", createTimeMs);
             row.put("amount", BillingPaymentUrlBuilder.toTiyin(intent.getAmount()));
             row.put("account", Map.of("order_id", intent.getId().toString()));
-            row.put("create_time", intent.getCreatedAt().toEpochMilli());
+            row.put("create_time", createTimeMs);
             row.put("perform_time", intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : 0L);
             row.put(
                 "cancel_time",
@@ -277,13 +274,40 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             default -> STATE_CREATED;
         };
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("create_time", intent.getCreatedAt().toEpochMilli());
+        result.put("create_time", resolveStoredCreateTime(intent));
         result.put("transaction", intent.getId().toString());
         result.put("state", state);
         if (state == STATE_DONE && intent.getPaidAt() != null) {
             result.put("perform_time", intent.getPaidAt().toEpochMilli());
         }
         return ok(id, result);
+    }
+
+    /**
+     * Payme expects create_time ≈ now at CreateTransaction.
+     * Prefer params.time from Payme; fall back to server clock.
+     */
+    private static long resolveIncomingCreateTime(Map<String, Object> params) {
+        Instant fromParams = millisToInstant(params.get("time"));
+        if (fromParams != null) {
+            return fromParams.toEpochMilli();
+        }
+        return Instant.now().toEpochMilli();
+    }
+
+    /** Stored in providerPrepareId when CreateTransaction succeeds. */
+    private static long resolveStoredCreateTime(BillingPaymentIntent intent) {
+        String raw = intent.getProviderPrepareId();
+        if (StringUtils.hasText(raw)) {
+            try {
+                return Long.parseLong(raw.trim());
+            } catch (NumberFormatException ignored) {
+                // fall through
+            }
+        }
+        return intent.getCreatedAt() != null
+            ? intent.getCreatedAt().toEpochMilli()
+            : Instant.now().toEpochMilli();
     }
 
     private BillingPaymentIntent findByPaymeId(String paymeId) {
