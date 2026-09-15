@@ -66,9 +66,32 @@ class PaymeBillingCallbackServiceImplTest {
     }
 
     @Test
-    void createTransaction_replacesPreparedWithNewPaymeIdAndFreshCreateTime() {
+    void createTransaction_keepsFirstPaymeIdWhenPrepared() {
         BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
-        intent.setProviderPrepareId("1000"); // stale
+        long stored = 1_789_473_165_910L;
+        intent.setProviderPrepareId(String.valueOf(stored));
+        when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_SECOND))
+            .thenReturn(Optional.empty());
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            createBody(PAYME_ID_SECOND),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("state")).isEqualTo(1);
+        assertThat(result.get("create_time")).isEqualTo(stored);
+        assertThat(intent.getProviderTransId()).isEqualTo(PAYME_ID_FIRST);
+        verify(intentRepository, never()).save(any());
+    }
+
+    @Test
+    void createTransaction_usesPaymeTimeAsCreateTimeOnFirstCreate() {
+        BillingPaymentIntent intent = pendingIntent();
         when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
         when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_SECOND))
             .thenReturn(Optional.empty());

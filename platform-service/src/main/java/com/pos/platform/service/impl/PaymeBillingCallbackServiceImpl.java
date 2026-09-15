@@ -124,8 +124,14 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (existingByPaymeId != null) {
             return createdResult(id, existingByPaymeId);
         }
+        if (intent.getStatus() == BillingPaymentStatus.PREPARED
+            && StringUtils.hasText(intent.getProviderTransId())) {
+            // Keep the first Payme id for this order — sandbox may retry Create with another id,
+            // but PerformTransaction still uses the original id (state=1 created).
+            return createdResult(id, intent);
+        }
 
-        // Balance top-up: each new Payme transaction id starts a fresh attempt with current create_time.
+        // New attempt: store Payme params.time as create_time (not order.created_at).
         long createTimeMs = resolveIncomingCreateTime(params);
         intent.setAmount(fromTiyin(amountTiyin));
         intent.setProviderTransId(paymeId);
