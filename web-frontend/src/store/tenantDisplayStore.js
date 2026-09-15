@@ -107,18 +107,23 @@ function payloadToDisplay(payload) {
   };
 }
 
+function cleanText(value) {
+  const text = String(value ?? '').trim();
+  return text || null;
+}
+
 function displayToPayload(display) {
   const d = display ?? emptyDisplayState();
   return {
     systemLogoDataUrl: d.systemLogoDataUrl,
     systemLogoSizePx: d.systemLogoSizePx,
-    systemAppName: d.systemAppName || null,
+    systemAppName: cleanText(d.systemAppName),
     receiptLogoDataUrl: d.receiptLogoDataUrl,
     receiptLogoMaxHeightMm: d.receiptLogoMaxHeightMm,
-    receiptCompanyName: d.receiptCompanyName || null,
-    receiptCompanyAddress: d.receiptCompanyAddress || null,
-    receiptCompanyPhone: d.receiptCompanyPhone || null,
-    receiptStir: d.receiptStir || null,
+    receiptCompanyName: cleanText(d.receiptCompanyName),
+    receiptCompanyAddress: cleanText(d.receiptCompanyAddress),
+    receiptCompanyPhone: cleanText(d.receiptCompanyPhone),
+    receiptStir: cleanText(d.receiptStir),
     receiptFields: d.receiptFields,
     userFormFields: d.userFormFields,
     printSettings: printSettingsToPayload(),
@@ -201,7 +206,8 @@ export const useTenantDisplayStore = create((set, get) => ({
   setSystemLogo: (dataUrl) => patchDraft(set, { systemLogoDataUrl: dataUrl || null }),
   clearSystemLogo: () => patchDraft(set, { systemLogoDataUrl: null }),
   setSystemLogoSizePx: (px) => patchDraft(set, { systemLogoSizePx: clampLogoSize(px) }),
-  setSystemAppName: (name) => patchDraft(set, { systemAppName: String(name ?? '').trim() }),
+  // Do not trim on every keystroke — that removes spaces while typing.
+  setSystemAppName: (name) => patchDraft(set, { systemAppName: String(name ?? '') }),
 
   setReceiptLogo: (dataUrl) => patchDraft(set, { receiptLogoDataUrl: dataUrl || null }),
   clearReceiptLogo: () => patchDraft(set, { receiptLogoDataUrl: null }),
@@ -210,10 +216,10 @@ export const useTenantDisplayStore = create((set, get) => ({
     patchDraft(set, { receiptLogoMaxHeightMm: clamped });
     queueMicrotask(() => syncReceiptDisplayCssVars({ ...get().draft, receiptLogoMaxHeightMm: clamped }));
   },
-  setReceiptCompanyName: (v) => patchDraft(set, { receiptCompanyName: String(v ?? '').trim() }),
-  setReceiptCompanyAddress: (v) => patchDraft(set, { receiptCompanyAddress: String(v ?? '').trim() }),
-  setReceiptCompanyPhone: (v) => patchDraft(set, { receiptCompanyPhone: String(v ?? '').trim() }),
-  setReceiptStir: (v) => patchDraft(set, { receiptStir: String(v ?? '').trim() }),
+  setReceiptCompanyName: (v) => patchDraft(set, { receiptCompanyName: String(v ?? '') }),
+  setReceiptCompanyAddress: (v) => patchDraft(set, { receiptCompanyAddress: String(v ?? '') }),
+  setReceiptCompanyPhone: (v) => patchDraft(set, { receiptCompanyPhone: String(v ?? '') }),
+  setReceiptStir: (v) => patchDraft(set, { receiptStir: String(v ?? '') }),
 
   setReceiptField: (key, enabled) =>
     set((s) => ({
