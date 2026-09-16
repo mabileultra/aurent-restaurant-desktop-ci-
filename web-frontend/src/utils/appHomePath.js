@@ -19,7 +19,8 @@ export function isPharmacyWorldBusiness(code) {
 export function resolveAppHomePath(role, businessType) {
   if (role === 'SUPER_ADMIN') return '/platform';
   if (role === 'CASHIER') {
-    return isPharmacyWorldBusiness(businessType) ? PHARM_POS_PATH : '/cashier';
+    // /cashier без хвоста конфликтует с public/cashier/ в nginx (403 на директории).
+    return isPharmacyWorldBusiness(businessType) ? PHARM_POS_PATH : '/cashier/pos';
   }
   if (role === 'WAITER') return '/rst/pos';
   if (role === 'COOK') return '/rst/kitchen';
