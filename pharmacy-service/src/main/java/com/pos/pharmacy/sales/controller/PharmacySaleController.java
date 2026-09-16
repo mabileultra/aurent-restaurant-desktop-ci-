@@ -34,7 +34,7 @@ public class PharmacySaleController {
     private final PharmacySaleQueryService queryService;
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Оформить аптечную продажу")
     public ResponseEntity<SaleResponse> create(@Valid @RequestBody CreateSaleRequest request) {
         UUID cashierId = PharmacyTenantContext.getUserId();
@@ -43,21 +43,21 @@ public class PharmacySaleController {
     }
 
     @GetMapping("/receipt/{receiptNumber}")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Чек по номеру")
     public ResponseEntity<SaleResponse> getByReceipt(@PathVariable String receiptNumber) {
         return ResponseEntity.ok(queryService.getByReceiptNumber(receiptNumber));
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Продажа по ID")
     public ResponseEntity<SaleResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(queryService.getById(id));
     }
 
     @GetMapping("/my-sales")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Мои продажи")
     public ResponseEntity<PageResponse<SaleResponse>> mySales(
         @RequestParam(required = false) Integer storeId,
@@ -68,7 +68,7 @@ public class PharmacySaleController {
     }
 
     @PostMapping("/{id}/void")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Аннулировать чек")
     public ResponseEntity<SaleResponse> voidSale(
         @PathVariable UUID id,
@@ -78,7 +78,7 @@ public class PharmacySaleController {
     }
 
     @PostMapping("/{id}/return-items")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Частичный возврат")
     public ResponseEntity<SaleResponse> returnItems(
         @PathVariable UUID id,

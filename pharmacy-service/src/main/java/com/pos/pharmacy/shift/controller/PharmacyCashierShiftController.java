@@ -29,7 +29,7 @@ public class PharmacyCashierShiftController {
     private final PharmacyCashierShiftService shiftService;
 
     @GetMapping("/current")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'SUPER_ADMIN')")
     @Operation(summary = "Текущая открытая смена кассира")
     public ResponseEntity<PharmacyShiftResponse> current(@RequestParam Integer storeId) {
         return shiftService.findCurrent(storeId)
@@ -38,7 +38,7 @@ public class PharmacyCashierShiftController {
     }
 
     @PostMapping("/open")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'SUPER_ADMIN')")
     @Operation(summary = "Открыть смену")
     public ResponseEntity<PharmacyShiftResponse> open(
         @RequestParam Integer storeId,
@@ -48,7 +48,7 @@ public class PharmacyCashierShiftController {
     }
 
     @PostMapping("/{shiftId}/close")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'SUPER_ADMIN')")
     @Operation(summary = "Закрыть смену")
     public PharmacyShiftResponse close(
         @PathVariable UUID shiftId,

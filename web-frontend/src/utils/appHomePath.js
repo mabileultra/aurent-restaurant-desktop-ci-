@@ -1,5 +1,5 @@
 import { normalizeBusinessTypeCode } from '../features/platform/utils/moduleAccessByBusinessType';
-import { PHARM_STOCK_PATHS } from '../pharmacy/app/pharmacyPaths';
+import { PHARM_POS_PATH, PHARM_STOCK_PATHS } from '../pharmacy/app/pharmacyPaths';
 
 /** Компания живёт в Restaurant OS, не в платформенном AppShell. */
 export function isRestaurantWorldBusiness(code) {
@@ -18,7 +18,9 @@ export function isPharmacyWorldBusiness(code) {
  */
 export function resolveAppHomePath(role, businessType) {
   if (role === 'SUPER_ADMIN') return '/platform';
-  if (role === 'CASHIER') return '/cashier';
+  if (role === 'CASHIER') {
+    return isPharmacyWorldBusiness(businessType) ? PHARM_POS_PATH : '/cashier';
+  }
   if (role === 'WAITER') return '/rst/pos';
   if (role === 'COOK') return '/rst/kitchen';
   if (role === 'ACCOUNTANT') return '/finance/dashboard';

@@ -25,7 +25,7 @@ import { useCashierPosDesktopLayout } from '../../../hooks/useCashierPosDesktopL
 import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocumentUiState';
 import { syncAuthSession } from '../../../utils/syncAuthSession';
 import { isCashierRegisterScreen } from '../../../utils/cashierRegisterRoute';
-import { isPharmPosPath } from '../../../pharmacy/app/pharmacyPaths';
+import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
 import { displayCashierName, formatShiftOpenedAt } from './cashierLayoutUtils';
 import { useCashierUiScale } from '../../../features/cashier/hooks/useCashierUiScale';
 
@@ -79,8 +79,8 @@ export function useCashierLayoutShell() {
   const location = useLocation();
   const isPosRoute = isCashierRegisterScreen(location.pathname);
 
-  const isPharmacyRoute = isPharmPosPath(location.pathname);
-  const catalogKind = isPharmacyRoute ? 'pharmacy' : 'grocery';
+  const { isPharmacy } = useCashierStoreProfile();
+  const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const { data: shift } = useCashierShift(storeId, { catalogKind });
 
   const shiftOpenBadge = useMemo(() => {

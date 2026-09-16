@@ -27,14 +27,14 @@ public class PharmacyCashierSyncController {
     private final PharmacyCashierSyncService syncService;
 
     @GetMapping("/bootstrap")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Bootstrap каталога аптеки")
     public ResponseEntity<PharmacySyncBootstrapResponse> bootstrap(@RequestParam Integer storeId) {
         return ResponseEntity.ok(syncService.bootstrap(storeId));
     }
 
     @PostMapping("/sales/batch")
-    @PreAuthorize("hasAnyRole('CASHIER', 'ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Синхронизация офлайн-продаж аптеки")
     public ResponseEntity<OfflineSalesBatchResponse> syncSalesBatch(
         @Valid @RequestBody OfflineSalesBatchRequest request
