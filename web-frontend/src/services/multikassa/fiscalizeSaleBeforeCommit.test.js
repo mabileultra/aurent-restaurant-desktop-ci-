@@ -11,6 +11,7 @@ vi.mock('./buildMultikassaOperations', () => ({
     receipt_gnk_terminalid: 'TERM1',
     receipt_gnk_time: '20260907122636',
   }),
+  normalizeGnkTerminalId: (value) => String(value || '').trim(),
 }));
 
 import { FISCAL_STATUS } from './multikassaConstants';

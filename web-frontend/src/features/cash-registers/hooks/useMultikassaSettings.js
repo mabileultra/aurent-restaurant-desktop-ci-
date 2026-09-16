@@ -8,8 +8,10 @@ import {
   MULTIKASSA_DEFAULT_BASE_URL,
   getContragents,
   getFiscalDrivesWithFallback,
+  ensureMkFiscalPrinter,
   getPrintersWithFallback,
   normalizeGnkTerminalId,
+  parseMkFiscalPrinters,
   selectFiscalDrive,
 } from '../../../services/multikassa';
 
@@ -139,6 +141,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
   const [selectingDrive, setSelectingDrive] = useState(false);
   const [loadingPrinters, setLoadingPrinters] = useState(false);
   const [printersNote, setPrintersNote] = useState('');
+  const [mkPrinterReady, setMkPrinterReady] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['multikassa-admin', cashRegisterId],
@@ -159,6 +162,8 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
       printFiscalQr: data.printFiscalQr !== false,
     });
     setTestMessage('');
+    setPrintersNote('');
+    setMkPrinterReady(false);
   }, [data]);
 
   const loadDrives = async (baseUrl = form.baseUrl, { notifyEmpty = false } = {}) => {
@@ -202,11 +207,31 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
       } catch {
         if (!cancelled) setDrives([]);
       }
+      try {
+        const { data: raw } = await getPrintersWithFallback(form.baseUrl.trim());
+        if (cancelled) return;
+        const parsed = parseMkFiscalPrinters(raw);
+        setMkPrinterReady(parsed.selectedValid);
+        if (!parsed.labels.length) {
+          setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));
+        } else {
+          setPrintersNote(
+            t('cashRegisters.multikassa.printersFound', {
+              name: parsed.selectedValid ? parsed.selected : '—',
+              list: parsed.labels.join(', '),
+            }),
+          );
+        }
+      } catch {
+        if (!cancelled) {
+          setMkPrinterReady(false);
+        }
+      }
     })();
     return () => {
       cancelled = true;
     };
-  }, [open, form.baseUrl]);
+  }, [open, form.baseUrl, t]);
 
   const saveMutation = useMutation({
     mutationFn: (payload) =>
@@ -292,29 +317,27 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setLoadingPrinters(true);
     setPrintersNote('');
     try {
-      const { data: raw } = await getPrintersWithFallback(url);
-      const list = Array.isArray(raw)
-        ? raw
-        : Array.isArray(raw?.data)
-          ? raw.data
-          : Array.isArray(raw?.data?.printers)
-            ? raw.data.printers
-            : Array.isArray(raw?.printers)
-              ? raw.printers
-              : [];
-      const labels = list
-        .map((p) => p?.name || p?.Name || p?.title || p?.id || p?.Id || (typeof p === 'string' ? p : null))
-        .filter(Boolean);
-      if (labels.length === 0) {
+      const result = await ensureMkFiscalPrinter(url);
+      setMkPrinterReady(result.selectedValid);
+      if (!result.labels.length) {
         setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));
         toast.error(t('cashRegisters.multikassa.printersEmpty'));
       } else {
-        const note = t('cashRegisters.multikassa.printersFound', { list: labels.join(', ') });
+        const note = t(
+          result.changed
+            ? 'cashRegisters.multikassa.printersAutoSelected'
+            : 'cashRegisters.multikassa.printersFound',
+          {
+            name: result.selectedValid ? result.selected : '—',
+            list: result.labels.join(', '),
+          },
+        );
         setPrintersNote(note);
         toast.success(note);
       }
     } catch (e) {
       const msg = e?.message || t('cashRegisters.multikassa.printersLoadFailed');
+      setMkPrinterReady(false);
       setPrintersNote(msg);
       toast.error(msg);
     } finally {
@@ -362,6 +385,7 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     loadingDrives,
     loadingPrinters,
     printersNote,
+    mkPrinterReady,
     selectingDrive,
     isLoading,
     saving: saveMutation.isPending,

@@ -1,4 +1,5 @@
 import { FISCAL_STATUS } from './multikassaConstants';
+import { ensureMkFiscalPrinter } from './ensureMkFiscalPrinter';
 import { getOperations, postOperation } from './multikassaHttpClient';
 import {
   ensureFiscalQrUrl,
@@ -40,6 +41,11 @@ async function enrichFromOperationsList(baseUrl, parsed, hints) {
  * QR: QRCodeURL модуля или официальный ofd.soliq.uz/check?t&r&c&s.
  */
 export async function runMultikassaOperation(baseUrl, body, hints = {}) {
+  try {
+    await ensureMkFiscalPrinter(baseUrl);
+  } catch {
+    // Нет выбранного принтера MK Fiscal — операция всё равно уйдёт, модуль вернёт свою ошибку.
+  }
   const raw = await postOperation(baseUrl, body);
   let parsed = ensureFiscalQrUrl(parseMultikassaOperationResult(raw, hints), hints);
 

@@ -167,7 +167,9 @@ export default function MultikassaSettingsModal({ open, cashRegisterId, onClose 
               </label>
               <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.requireBeforeSaleHint')}</p>
 
-              <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.mkPrinterHint')}</p>
+              {!p.mkPrinterReady ? (
+                <p className="multikassa-settings__hint">{p.t('cashRegisters.multikassa.mkPrinterHint')}</p>
+              ) : null}
               <div className="multikassa-settings__row">
                 <button
                   type="button"

@@ -1,4 +1,5 @@
 import { buildCloseShiftBody, buildOpenShiftBody, buildXReportBody } from './buildMultikassaOperations';
+import { ensureMkFiscalPrinter } from './ensureMkFiscalPrinter';
 import { postOperation } from './multikassaHttpClient';
 
 /** Фискализация открытия/закрытия смены и X-отчёта (вызывать с кассы). */
@@ -19,5 +20,10 @@ export async function fiscalizeShiftOperation({
   else if (kind === 'x') body = buildXReportBody(args);
   else throw new Error(`Unknown shift fiscal kind: ${kind}`);
 
+  try {
+    await ensureMkFiscalPrinter(capabilities.baseUrl);
+  } catch {
+    // смена всё равно уходит; MK Fiscal сам ответит, если принтер не выбран
+  }
   return postOperation(capabilities.baseUrl, body);
 }
