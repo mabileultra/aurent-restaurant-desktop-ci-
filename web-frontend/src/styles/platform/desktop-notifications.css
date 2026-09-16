@@ -1,185 +1,257 @@
 .platform-desktop-notifications-page__grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  gap: 1rem;
+  align-items: start;
 }
 
 .platform-desktop-notifications-card {
-  border: 1px solid rgb(226 232 240);
-  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
   background: #fff;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
   overflow: hidden;
 }
 
 .dark .platform-desktop-notifications-card {
-  border-color: rgb(51 65 85);
-  background: rgb(15 23 42);
+  border-color: #1e293b;
+  background: #0f172a;
 }
 
 .platform-desktop-notifications-card__head {
-  padding: 14px 16px;
-  border-bottom: 1px solid rgb(226 232 240);
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-height: 3.25rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #eef2f6;
 }
 
 .dark .platform-desktop-notifications-card__head {
-  border-color: rgb(51 65 85);
+  border-color: #1e293b;
+}
+
+.platform-desktop-notifications-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: var(--color-brand-soft, #e6f2ec);
+  color: var(--color-brand, #006847);
+}
+
+.platform-desktop-notifications-card__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .platform-desktop-notifications-card__title {
+  color: #f8fafc;
 }
 
 .platform-desktop-notifications-card__body {
-  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem 1rem;
 }
 
 .platform-desktop-notifications-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.3rem;
 }
 
 .platform-desktop-notifications-field label {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: rgb(71 85 105);
-}
-
-.dark .platform-desktop-notifications-field label {
-  color: rgb(148 163 184);
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #64748b;
 }
 
 .platform-desktop-notifications-field input,
-.platform-desktop-notifications-field textarea,
-.platform-desktop-notifications-field select {
+.platform-desktop-notifications-field textarea {
   width: 100%;
-  border: 1px solid rgb(203 213 225);
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.875rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.8125rem;
   background: #fff;
-  color: rgb(15 23 42);
+  color: #0f172a;
+}
+
+.platform-desktop-notifications-field input {
+  height: 2.15rem;
+}
+
+.platform-desktop-notifications-field input:focus,
+.platform-desktop-notifications-field textarea:focus {
+  outline: none;
+  border-color: var(--color-brand, #006847);
+  box-shadow: 0 0 0 3px var(--color-focus-ring, rgb(0 104 71 / 0.16));
 }
 
 .platform-desktop-notifications-field textarea {
-  min-height: 120px;
+  min-height: 6.5rem;
   resize: vertical;
 }
 
 .dark .platform-desktop-notifications-field input,
-.dark .platform-desktop-notifications-field textarea,
-.dark .platform-desktop-notifications-field select {
-  border-color: rgb(71 85 105);
-  background: rgb(30 41 59);
-  color: rgb(248 250 252);
+.dark .platform-desktop-notifications-field textarea {
+  border-color: #334155;
+  background: #111827;
+  color: #f8fafc;
 }
 
-.platform-desktop-notifications-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 42px;
-  padding: 0 16px;
-  border: none;
-  border-radius: 10px;
-  background: rgb(16 185 129);
-  color: #fff;
-  font-size: 0.875rem;
-  font-weight: 700;
+.platform-desktop-notifications-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.platform-desktop-kind {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.platform-desktop-kind__chip {
+  height: 2.15rem;
+  padding: 0 0.8rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 650;
   cursor: pointer;
 }
 
-.platform-desktop-notifications-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.platform-desktop-kind__chip.is-active {
+  border-color: var(--color-brand, #006847);
+  background: var(--color-brand, #006847);
+  color: #fff;
+}
+
+.dark .platform-desktop-kind__chip {
+  border-color: #334155;
+  background: #111827;
+  color: #cbd5e1;
+}
+
+.platform-desktop-notifications-field--hours {
+  flex: 0 0 8.5rem;
+  width: 8.5rem;
+}
+
+.platform-desktop-notifications-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.platform-desktop-notifications-btn {
+  min-height: 2.15rem;
+  padding-inline: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .platform-desktop-notifications-history {
-  max-height: 560px;
+  max-height: 34rem;
   overflow: auto;
+  gap: 0.55rem;
 }
 
 .platform-desktop-notifications-history__item {
-  padding: 12px 0;
-  border-bottom: 1px solid rgb(226 232 240);
+  padding: 0.7rem 0.75rem;
+  border: 1px solid #eef2f6;
+  border-radius: 0.65rem;
+  background: #f8fafc;
 }
 
 .dark .platform-desktop-notifications-history__item {
-  border-color: rgb(51 65 85);
-}
-
-.platform-desktop-notifications-history__item:last-child {
-  border-bottom: none;
+  border-color: #1e293b;
+  background: #111827;
 }
 
 .platform-desktop-notifications-history__meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: 0.75rem;
-  color: rgb(100 116 139);
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  color: #64748b;
 }
 
 .platform-desktop-notifications-history__kind {
   display: inline-flex;
   align-items: center;
-  min-height: 22px;
-  padding: 0 8px;
+  min-height: 1.35rem;
+  padding: 0 0.5rem;
   border-radius: 999px;
-  font-size: 0.6875rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .platform-desktop-notifications-history__kind--message {
-  background: rgb(226 232 240);
-  color: rgb(51 65 85);
+  background: #e2e8f0;
+  color: #334155;
 }
 
 .platform-desktop-notifications-history__kind--update {
-  background: rgb(209 250 229);
-  color: rgb(4 120 87);
+  background: var(--color-brand-soft, #e6f2ec);
+  color: var(--color-brand-deep, #043d2c);
 }
 
 .platform-desktop-notifications-history__kind--alert {
-  background: rgb(254 226 226);
-  color: rgb(185 28 28);
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .platform-desktop-notifications-history__item h3 {
-  margin: 0 0 4px;
-  font-size: 0.9375rem;
+  margin: 0 0 0.2rem;
+  font-size: 0.85rem;
   font-weight: 700;
-  color: rgb(15 23 42);
+  color: #0f172a;
 }
 
 .dark .platform-desktop-notifications-history__item h3 {
-  color: rgb(248 250 252);
+  color: #f8fafc;
 }
 
 .platform-desktop-notifications-history__item p {
   margin: 0;
-  font-size: 0.8125rem;
-  line-height: 1.5;
-  color: rgb(71 85 105);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: #475569;
   white-space: pre-wrap;
 }
 
 .dark .platform-desktop-notifications-history__item p {
-  color: rgb(148 163 184);
+  color: #94a3b8;
 }
 
 .platform-desktop-notifications-empty {
   margin: 0;
-  padding: 24px 12px;
+  padding: 2rem 0.75rem;
   text-align: center;
-  color: rgb(100 116 139);
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
 @media (max-width: 960px) {
   .platform-desktop-notifications-page__grid {
     grid-template-columns: 1fr;
+  }
+
+  .platform-desktop-notifications-field--hours {
+    flex: 1 1 100%;
+    width: 100%;
   }
 }

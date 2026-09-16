@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -39,4 +40,12 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
     );
 
     Optional<Sale> findByClientSaleId(UUID clientSaleId);
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.status IN :statuses
+        ORDER BY s.createdAt ASC
+        """)
+    Page<Sale> findByStatusIn(@Param("statuses") Collection<com.pos.pharmacy.sales.domain.SaleEnums.SaleStatus> statuses, Pageable pageable);
 }

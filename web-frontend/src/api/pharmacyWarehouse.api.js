@@ -21,6 +21,7 @@ export const pharmacyWarehouseApi = {
   createProduct: (data) => api.post('/pharmacy/products', data),
   updateProduct: (id, data) => api.put(`/pharmacy/products/${id}`, data),
   bulkTaxRate: (body) => api.patch('/pharmacy/products/bulk/tax-rate', body),
+  deactivate: (id) => api.delete(`/pharmacy/products/${id}`),
   activate: (id) => api.post(`/pharmacy/receipts/${id}/activate`),
   importParse: (id, file) => {
     const fd = new FormData();

@@ -68,6 +68,37 @@ class RestaurantSaleCompletedFactoryTest {
     }
 
     @Test
+    void refundedOrderClearsRevenue() {
+        FloorOrder order = FloorOrder.builder()
+            .id(UUID.randomUUID())
+            .companyId(1)
+            .storeId(2)
+            .orderNo(7)
+            .closedAt(Instant.parse("2026-09-03T21:00:00Z"))
+            .build();
+        FloorOrderItem item = FloorOrderItem.builder()
+            .name("Soup")
+            .quantity(new BigDecimal("1"))
+            .unitPrice(new BigDecimal("12000.00"))
+            .itemStatus(OrderItemStatus.SERVED)
+            .build();
+        FloorOrderPayment payment = FloorOrderPayment.builder()
+            .method(PaymentMethod.CASH)
+            .amount(new BigDecimal("12000.00"))
+            .paidByUserId(UUID.randomUUID())
+            .paidAt(Instant.parse("2026-09-03T21:00:00Z"))
+            .build();
+
+        SaleCompletedEvent event = factory.fromRefundedOrder(order, List.of(item), payment);
+
+        assertEquals("REFUNDED", event.saleStatus());
+        assertEquals(new BigDecimal("0.00"), event.totalAmount());
+        assertEquals(0L, event.itemsSold());
+        assertEquals(1L, event.lines().get(0).quantityReturned());
+        assertEquals(new BigDecimal("0.00"), event.lines().get(0).revenue());
+    }
+
+    @Test
     void fractionalQuantityCountsAsOneUnit() {
         assertEquals(1L, RestaurantSaleCompletedFactory.reportableQty(new BigDecimal("0.3")));
         assertEquals(2L, RestaurantSaleCompletedFactory.reportableQty(new BigDecimal("1.5")));

@@ -1,8 +1,9 @@
+# syntax=docker/dockerfile:1
 FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-COPY shared-kernel shared-kernel
+COPY shared-kernel/pom.xml shared-kernel/pom.xml
 COPY api-gateway/pom.xml api-gateway/pom.xml
 COPY web-backend/pom.xml web-backend/pom.xml
 COPY finance-service/pom.xml finance-service/pom.xml
@@ -13,10 +14,11 @@ COPY ai-service/pom.xml ai-service/pom.xml
 COPY crm-service/pom.xml crm-service/pom.xml
 COPY restaurant-service/pom.xml restaurant-service/pom.xml
 COPY pharmacy-service/pom.xml pharmacy-service/pom.xml
-RUN mvn -pl shared-kernel,restaurant-service -am dependency:go-offline -q
+RUN --mount=type=cache,target=/root/.m2 mvn -pl shared-kernel,restaurant-service -am dependency:go-offline -q
 
+COPY shared-kernel/src shared-kernel/src
 COPY restaurant-service/src restaurant-service/src
-RUN mvn -pl restaurant-service -am package -DskipTests -q
+RUN --mount=type=cache,target=/root/.m2 mvn -pl restaurant-service -am package -DskipTests -q
 
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app

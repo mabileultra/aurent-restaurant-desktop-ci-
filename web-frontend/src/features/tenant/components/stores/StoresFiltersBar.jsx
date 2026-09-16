@@ -1,7 +1,6 @@
-import { PageSearchField } from '../../../../components/ui';
 import BusinessTypeFilterChips from '../../../platform/components/BusinessTypeFilterChips';
+import PlatformCompactFilterBar from '../../../platform/components/PlatformCompactFilterBar';
 import StoresCompanyFilter from './StoresCompanyFilter';
-import '../../../../styles/tenant/stores-filters.css';
 
 export default function StoresFiltersBar({
   t,
@@ -16,32 +15,27 @@ export default function StoresFiltersBar({
   onBusinessTypeChange,
 }) {
   return (
-    <div className="stores-filters">
-      <div className="stores-filters__row">
-        <PageSearchField
-          className="stores-filters__search"
-          value={search}
-          onChange={onSearchChange}
-          placeholder={t(
-            showCompanySelect ? 'stores.searchPlaceholderPlatform' : 'stores.searchPlaceholder'
-          )}
-        />
-        {showCompanySelect ? (
-          <StoresCompanyFilter
-            t={t}
-            companies={companies}
-            companyId={companyId}
-            onChange={onCompanyChange}
-          />
-        ) : null}
-      </div>
-      {showCompanySelect ? (
+    <PlatformCompactFilterBar
+      search={search}
+      onSearchChange={onSearchChange}
+      searchPlaceholder={t(
+        showCompanySelect ? 'stores.searchPlaceholderPlatform' : 'stores.searchPlaceholder'
+      )}
+      filters={showCompanySelect ? (
         <BusinessTypeFilterChips
           types={businessTypes}
           value={businessType}
           onChange={onBusinessTypeChange}
         />
       ) : null}
-    </div>
+      extra={showCompanySelect ? (
+        <StoresCompanyFilter
+          t={t}
+          companies={companies}
+          companyId={companyId}
+          onChange={onCompanyChange}
+        />
+      ) : null}
+    />
   );
 }

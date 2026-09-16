@@ -8,6 +8,7 @@ import com.pos.catalog.entity.Product;
 import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.product.ProductCommandService;
+import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.service.support.CatalogIsolationSupport;
@@ -29,6 +30,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
     private final ProductCatalogLoader catalogLoader;
     private final ProductRepository productRepository;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final InactiveBarcodeReleaser barcodeReleaser;
     private final CatalogIsolationSupport catalogIsolation;
 
     @Override
@@ -50,7 +52,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         Product product = catalogLoader.requireById(id);
         catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         product.setActive(false);
-        productRepository.save(product);
+        barcodeReleaser.release(product);
         productSnapshotNotifier.notify(product.getId());
     }
 
@@ -75,6 +77,7 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         for (Product product : products) {
             if (product.isActive()) {
                 product.setActive(false);
+                barcodeReleaser.release(product);
                 updated++;
             }
         }

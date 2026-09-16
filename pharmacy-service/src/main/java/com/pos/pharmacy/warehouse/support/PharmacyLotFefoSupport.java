@@ -91,22 +91,19 @@ public class PharmacyLotFefoSupport {
         if (saleItem.getLotAllocations() == null || saleItem.getLotAllocations().isEmpty()) {
             return;
         }
-        BigDecimal remaining = QuantityUtil.normalize(returnQty);
-        List<SaleItemLot> reverse = new ArrayList<>(saleItem.getLotAllocations());
-        java.util.Collections.reverse(reverse);
-        for (SaleItemLot allocation : reverse) {
-            if (remaining.compareTo(BigDecimal.ZERO) <= 0) {
-                break;
-            }
+        List<SaleItemLot> allocations = saleItem.getLotAllocations();
+        List<BigDecimal> quantities = new ArrayList<>();
+        for (SaleItemLot allocation : allocations) {
+            quantities.add(QuantityUtil.normalize(allocation.getQuantity()));
+        }
+        for (LotReturnAllocation.Restore step : LotReturnAllocation.plan(quantities, QuantityUtil.normalize(returnQty))) {
+            SaleItemLot allocation = allocations.get(step.indexFromEnd());
             StockLot lot = allocation.getLot();
-            if (lot == null) {
-                continue;
+            if (lot != null && step.giveBack().signum() > 0) {
+                lot.setQuantity(QuantityUtil.add(lot.getQuantity(), step.giveBack()));
+                stockLotRepository.save(lot);
             }
-            BigDecimal allocQty = QuantityUtil.normalize(allocation.getQuantity());
-            BigDecimal give = allocQty.min(remaining);
-            lot.setQuantity(QuantityUtil.add(lot.getQuantity(), give));
-            stockLotRepository.save(lot);
-            remaining = QuantityUtil.normalize(remaining.subtract(give));
+            allocation.setQuantity(step.remainingAllocation());
         }
     }
 

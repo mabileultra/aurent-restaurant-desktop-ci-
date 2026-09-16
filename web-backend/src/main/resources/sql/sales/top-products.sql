@@ -1,8 +1,9 @@
-SELECT si.product_name AS productName, CAST(SUM(si.quantity) AS BIGINT) AS quantitySold
+SELECT si.product_name AS productName,
+       CAST(SUM(si.quantity - si.returned_quantity) AS BIGINT) AS quantitySold
 FROM sale_items si
 INNER JOIN sales s ON s.id = si.sale_id
 WHERE CAST(s.created_at AS date) BETWEEN :fromDate AND :toDate
-AND s.status = 'COMPLETED'
+AND s.status IN ('COMPLETED', 'REFUNDED')
 AND (
   s.company_id = :companyId
   OR (

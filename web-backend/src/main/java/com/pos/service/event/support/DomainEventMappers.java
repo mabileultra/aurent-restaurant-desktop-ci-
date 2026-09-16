@@ -12,7 +12,9 @@ import com.pos.inventory.entity.StockTransfer;
 import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.sales.entity.ZReport;
+import com.pos.sales.support.SaleHeaderNet;
 import com.pos.shared.event.SaleCompletedEvent;
+import com.pos.shared.money.TenderNet;
 import com.pos.shared.event.SaleLineSnapshot;
 import com.pos.shared.event.ProductSnapshotEvent;
 import com.pos.shared.event.ShiftClosedEvent;
@@ -64,14 +66,15 @@ public final class DomainEventMappers {
         LocalDate transactionDate = sale.getCreatedAt() != null
             ? sale.getCreatedAt().atZone(DEFAULT_ZONE).toLocalDate()
             : LocalDate.now(DEFAULT_ZONE);
+        TenderNet net = SaleHeaderNet.of(sale);
         return new SaleCompletedEvent(
             companyId,
             storeId,
             sale.getId(),
             sale.getReceiptNumber(),
-            sale.getTotalAmount(),
-            sale.getCashAmount(),
-            sale.getCardAmount(),
+            net.total(),
+            net.cash(),
+            net.card(),
             sale.getPaymentMethod() != null ? sale.getPaymentMethod().name() : null,
             transactionDate,
             createdBy,

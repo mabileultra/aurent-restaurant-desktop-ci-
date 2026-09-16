@@ -4,6 +4,14 @@ import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../componen
 import PlatformBusinessTypeUnitsRules from './PlatformBusinessTypeUnitsRules';
 import PlatformBusinessTypePriceDisplayRules from './PlatformBusinessTypePriceDisplayRules';
 
+function FlagBadge({ on, yes, no }) {
+  return (
+    <span className={`business-constructor__badge${on ? ' business-constructor__badge--on' : ''}`}>
+      {on ? yes : no}
+    </span>
+  );
+}
+
 export default function PlatformBusinessTypeDetail({
   t,
   detail,
@@ -38,23 +46,23 @@ export default function PlatformBusinessTypeDetail({
 }) {
   if (!detail) {
     return (
-      <div className="admin-card">
-        <p className="p-6 text-sm text-slate-500">{t('platform.businessTypes.selectType')}</p>
-      </div>
+      <section className="business-constructor__card">
+        <p className="business-constructor__empty">{t('platform.businessTypes.selectType')}</p>
+      </section>
     );
   }
 
   return (
-    <div className="admin-card">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-200 px-4 py-4 dark:border-slate-800">
+    <section className="business-constructor__card">
+      <div className="business-constructor__hero">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">{detail.name}</h2>
-          <p className="text-sm text-slate-500">{detail.code}</p>
+          <h2 className="business-constructor__title">{detail.name}</h2>
+          <span className="business-constructor__code">{detail.code}</span>
           {detail.description ? (
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{detail.description}</p>
+            <p className="business-constructor__desc">{detail.description}</p>
           ) : null}
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="business-constructor__actions">
           <BaseButton variant="secondary" size="sm" onClick={onEditType}>
             {t('common.edit')}
           </BaseButton>
@@ -62,7 +70,7 @@ export default function PlatformBusinessTypeDetail({
             <BaseButton
               variant="secondary"
               size="sm"
-              className="border-red-300 text-red-700 dark:border-red-800 dark:text-red-300"
+              className="business-constructor__danger"
               onClick={onDeleteType}
             >
               <Trash2 size={14} />
@@ -72,8 +80,8 @@ export default function PlatformBusinessTypeDetail({
         </div>
       </div>
 
-      <div className="flex items-center justify-between px-4 py-3">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+      <div className="business-constructor__section-head">
+        <h3 className="business-constructor__section-title">
           {t('platform.businessTypes.fieldsTitle')}
         </h3>
         <BaseButton size="sm" onClick={onAddField}>
@@ -82,31 +90,27 @@ export default function PlatformBusinessTypeDetail({
         </BaseButton>
       </div>
 
-      <div className="overflow-x-auto px-2 pb-4">
-        <table className="w-full text-sm">
+      <div className="business-constructor__table-wrap">
+        <table className="business-constructor__table">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-slate-500">
+            <tr>
               <AdminTableNoIdHeaders />
-              <th className="px-2 py-2">{t('platform.businessTypes.colLabel')}</th>
-              <th className="px-2 py-2">{t('platform.businessTypes.colKey')}</th>
-              <th className="px-2 py-2">{t('platform.businessTypes.colType')}</th>
-              <th className="px-2 py-2">{t('platform.businessTypes.colRequired')}</th>
-              <th className="px-2 py-2">{t('platform.businessTypes.colEnabled')}</th>
-              <th className="px-2 py-2 text-right">{t('categories.actions')}</th>
+              <th>{t('platform.businessTypes.colLabel')}</th>
+              <th>{t('platform.businessTypes.colKey')}</th>
+              <th>{t('platform.businessTypes.colType')}</th>
+              <th>{t('platform.businessTypes.colRequired')}</th>
+              <th>{t('platform.businessTypes.colEnabled')}</th>
+              <th className="business-constructor__row-actions">{t('categories.actions')}</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody>
             {detailLoading ? (
               <tr>
-                <td colSpan={8} className="px-2 py-6 text-center text-slate-500">
-                  {t('common.loading')}
-                </td>
+                <td colSpan={8} className="business-constructor__muted">{t('common.loading')}</td>
               </tr>
             ) : fields.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-2 py-6 text-center text-slate-500">
-                  {t('platform.businessTypes.noFields')}
-                </td>
+                <td colSpan={8} className="business-constructor__muted">{t('platform.businessTypes.noFields')}</td>
               </tr>
             ) : (
               fields.map((field, index) => (
@@ -117,23 +121,23 @@ export default function PlatformBusinessTypeDetail({
                     index={index}
                     id={field.id}
                   />
-                  <td className="px-2 py-2 font-medium">{field.label}</td>
-                  <td className="px-2 py-2 font-mono text-xs text-slate-500">{field.fieldKey}</td>
-                  <td className="px-2 py-2">{field.fieldType}</td>
-                  <td className="px-2 py-2">{field.required ? t('common.yes') : t('common.no')}</td>
-                  <td className="px-2 py-2">{field.enabled ? t('common.yes') : t('common.no')}</td>
-                  <td className="px-2 py-2 text-right">
-                    <button
-                      type="button"
-                      onClick={() => onEditField(field)}
-                      className="mr-2 text-xs text-emerald-600"
-                    >
+                  <td>{field.label}</td>
+                  <td className="business-constructor__key">{field.fieldKey}</td>
+                  <td>{field.fieldType}</td>
+                  <td>
+                    <FlagBadge on={field.required} yes={t('common.yes')} no={t('common.no')} />
+                  </td>
+                  <td>
+                    <FlagBadge on={field.enabled} yes={t('common.yes')} no={t('common.no')} />
+                  </td>
+                  <td className="business-constructor__row-actions">
+                    <button type="button" className="business-constructor__link" onClick={() => onEditField(field)}>
                       {t('common.edit')}
                     </button>
                     <button
                       type="button"
+                      className="business-constructor__link--danger"
                       onClick={() => onDeleteField(field)}
-                      className="text-xs text-red-600"
                     >
                       {t('common.delete')}
                     </button>
@@ -179,6 +183,6 @@ export default function PlatformBusinessTypeDetail({
           savingDisplayRules={savingDisplayRules}
         />
       ) : null}
-    </div>
+    </section>
   );
 }

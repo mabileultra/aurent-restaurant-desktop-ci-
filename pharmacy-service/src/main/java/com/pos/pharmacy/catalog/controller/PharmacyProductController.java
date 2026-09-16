@@ -75,6 +75,14 @@ public class PharmacyProductController {
         return ResponseEntity.ok(pharmacyProductService.update(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Деактивировать аптечный товар", description = "Мягкое удаление. Штрихкод и артикул освобождаются")
+    public ResponseEntity<ApiResponse> deactivate(@PathVariable UUID id) {
+        pharmacyProductService.deactivate(id);
+        return ResponseEntity.ok(ApiResponse.success("Product deactivated"));
+    }
+
     @PatchMapping("/bulk/tax-rate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Массовое изменение НДС")

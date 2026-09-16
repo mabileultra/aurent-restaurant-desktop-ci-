@@ -40,6 +40,14 @@ public class OrderLookup {
         return order;
     }
 
+    public FloorOrder requireClosed(UUID orderId) {
+        FloorOrder order = require(orderId);
+        if (order.getStatus() != OrderStatus.CLOSED) {
+            throw new BusinessException("Можно вернуть только оплаченный заказ");
+        }
+        return order;
+    }
+
     public FloorOrder requireBilling(UUID orderId) {
         FloorOrder order = require(orderId);
         if (order.getStatus() != OrderStatus.BILLING) {

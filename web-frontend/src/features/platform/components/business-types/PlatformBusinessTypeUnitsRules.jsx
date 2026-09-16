@@ -14,9 +14,9 @@ export default function PlatformBusinessTypeUnitsRules({
   t,
   detail,
   catalogUnits = [],
-  unitCodes,
+  unitCodes = [],
   defaultUnitCode,
-  rules,
+  rules = [],
   onToggleUnit,
   onSetDefaultUnit,
   onToggleRule,
@@ -28,82 +28,64 @@ export default function PlatformBusinessTypeUnitsRules({
   if (!detail) return null;
 
   return (
-    <div className="border-t border-slate-200 px-4 py-4 dark:border-slate-800">
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
-        <section>
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-              {t('platform.businessTypes.unitsTitle')}
-            </h3>
-            <BaseButton size="sm" disabled={savingUnits || unitCodes.length === 0} onClick={onSaveUnits}>
-              {t('common.save')}
-            </BaseButton>
-          </div>
-          <div className="max-h-56 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-            {catalogUnits.map((unit) => {
-              const checked = unitCodes.includes(unit.code);
-              const isDefault = defaultUnitCode === unit.code;
-              return (
-                <label
-                  key={unit.code}
-                  className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                >
-                  <span className="flex items-center gap-2 text-sm">
-                    <input
-                      type="checkbox"
-                      checked={checked}
-                      onChange={() => onToggleUnit(unit.code)}
-                    />
-                    <span>{unit.labelRu}</span>
-                    <span className="font-mono text-xs text-slate-400">{unit.code}</span>
-                  </span>
-                  {checked ? (
-                    <button
-                      type="button"
-                      className={`rounded px-2 py-0.5 text-xs ${
-                        isDefault
-                          ? 'bg-[color:var(--color-brand-soft)] text-[color:var(--color-brand-deep)]'
-                          : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                      onClick={() => onSetDefaultUnit(unit.code)}
-                    >
-                      {isDefault ? t('platform.businessTypeDefault') : t('platform.businessTypeMakeDefault')}
-                    </button>
-                  ) : null}
+    <div className="business-constructor__panels">
+      <section className="business-constructor__panel">
+        <div className="business-constructor__panel-head">
+          <h3 className="business-constructor__section-title">{t('platform.businessTypes.unitsTitle')}</h3>
+          <BaseButton size="sm" disabled={savingUnits || unitCodes.length === 0} onClick={onSaveUnits}>
+            {t('common.save')}
+          </BaseButton>
+        </div>
+        <div className="business-constructor__scroll">
+          {catalogUnits.map((unit) => {
+            const checked = unitCodes.includes(unit.code);
+            const isDefault = defaultUnitCode === unit.code;
+            return (
+              <div key={unit.code} className="business-constructor__row">
+                <label className="business-constructor__check">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggleUnit(unit.code)}
+                  />
+                  <span>{unit.labelRu}</span>
+                  <span className="business-constructor__unit-code">{unit.code}</span>
                 </label>
-              );
-            })}
-          </div>
-        </section>
+                {checked ? (
+                  <button
+                    type="button"
+                    className={`business-constructor__default${isDefault ? ' is-on' : ''}`}
+                    onClick={() => onSetDefaultUnit(unit.code)}
+                  >
+                    {isDefault ? t('platform.businessTypeDefault') : t('platform.businessTypeMakeDefault')}
+                  </button>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      </section>
 
-        <section>
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
-              {t('platform.businessTypes.rulesTitle')}
-            </h3>
-            <BaseButton size="sm" disabled={savingRules} onClick={onSaveRules}>
-              {t('common.save')}
-            </BaseButton>
-          </div>
-          <div className="space-y-2 rounded-lg border border-slate-200 p-3 dark:border-slate-700">
-            {rules.map((rule) => (
-              <label
-                key={rule.ruleKey}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-md px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60"
-              >
-                <span className="text-sm text-slate-800 dark:text-slate-200">
-                  {t(RULE_LABEL_KEYS[rule.ruleKey] ?? rule.ruleKey)}
-                </span>
-                <input
-                  type="checkbox"
-                  checked={rule.enabled}
-                  onChange={() => onToggleRule(rule.ruleKey)}
-                />
-              </label>
-            ))}
-          </div>
-        </section>
-      </div>
+      <section className="business-constructor__panel">
+        <div className="business-constructor__panel-head">
+          <h3 className="business-constructor__section-title">{t('platform.businessTypes.rulesTitle')}</h3>
+          <BaseButton size="sm" disabled={savingRules} onClick={onSaveRules}>
+            {t('common.save')}
+          </BaseButton>
+        </div>
+        <div className="business-constructor__scroll">
+          {rules.map((rule) => (
+            <label key={rule.ruleKey} className="business-constructor__row business-constructor__check">
+              <span>{t(RULE_LABEL_KEYS[rule.ruleKey] ?? rule.ruleKey)}</span>
+              <input
+                type="checkbox"
+                checked={rule.enabled}
+                onChange={() => onToggleRule(rule.ruleKey)}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

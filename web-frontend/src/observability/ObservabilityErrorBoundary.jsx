@@ -1,4 +1,5 @@
 import { Component } from 'react';
+import { isChunkLoadError, shouldAutoReloadChunk } from '../router/chunkLoadError';
 import { Sentry } from './initSentry';
 
 export default class ObservabilityErrorBoundary extends Component {
@@ -7,8 +8,8 @@ export default class ObservabilityErrorBoundary extends Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, chunk: isChunkLoadError(error), reloadSkipped: false };
   }
 
   componentDidCatch(error, info) {
@@ -16,9 +17,18 @@ export default class ObservabilityErrorBoundary extends Component {
       Sentry.captureException(error, { extra: { componentStack: info.componentStack } });
     }
     console.error('UI error:', error, info);
+    if (!isChunkLoadError(error)) return;
+    if (shouldAutoReloadChunk()) {
+      window.location.reload();
+      return;
+    }
+    this.setState({ reloadSkipped: true });
   }
 
   render() {
+    if (this.state.hasError && this.state.chunk && !this.state.reloadSkipped) {
+      return null;
+    }
     if (this.state.hasError) {
       return (
         <div className="flex min-h-[40vh] flex-col items-center justify-center gap-3 p-6 text-center">

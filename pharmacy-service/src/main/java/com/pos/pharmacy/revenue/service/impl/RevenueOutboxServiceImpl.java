@@ -7,6 +7,7 @@ import com.pos.pharmacy.revenue.entity.RevenueOutbox;
 import com.pos.pharmacy.revenue.repository.RevenueOutboxRepository;
 import com.pos.pharmacy.revenue.service.RevenueOutboxService;
 import com.pos.shared.event.SaleCompletedEvent;
+import com.pos.shared.kafka.FinanceIntegrationMessage;
 import com.pos.shared.kafka.KafkaTopics;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -81,6 +82,7 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
         }
         boolean ok = switch (row.getChannel()) {
             case SALE_COMPLETED -> publishSaleCompleted(row);
+            case REFUND_EXPENSE -> publishRefundExpense(row);
         };
         if (ok) {
             row.setStatus("SENT");
@@ -116,6 +118,28 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
             return true;
         } catch (Exception ex) {
             LogUtil.warn(RevenueOutboxServiceImpl.class, "Sale completed publish failed: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    private boolean publishRefundExpense(RevenueOutbox row) {
+        KafkaTemplate<String, Object> template = domainKafka.getIfAvailable();
+        if (template == null) {
+            return false;
+        }
+        try {
+            FinanceIntegrationMessage message = new FinanceIntegrationMessage(
+                row.getId(),
+                "REFUND_EXPENSE",
+                "/internal/finance/expenses/from-refund",
+                row.getIdempotencyKey(),
+                row.getPayload()
+            );
+            template.send(KafkaTopics.FINANCE_INTEGRATION, row.getMessageKey(), message)
+                .get(kafkaProperties.getSendTimeoutMs(), java.util.concurrent.TimeUnit.MILLISECONDS);
+            return true;
+        } catch (Exception ex) {
+            LogUtil.warn(RevenueOutboxServiceImpl.class, "Refund expense publish failed: {}", ex.getMessage());
             return false;
         }
     }

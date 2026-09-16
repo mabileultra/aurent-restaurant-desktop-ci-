@@ -25,10 +25,10 @@ export default function PlatformEmailBroadcastForm({
   return (
     <section className="platform-email-card">
       <div className="platform-email-card__head">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <span className="platform-email-card__icon" aria-hidden>
           <Send size={16} />
-          {t('platform.email.broadcastTitle')}
-        </div>
+        </span>
+        <h2 className="platform-email-card__title">{t('platform.email.broadcastTitle')}</h2>
       </div>
       <div className="platform-email-card__body">
         <div className="platform-email-field">
@@ -68,7 +68,7 @@ export default function PlatformEmailBroadcastForm({
         <div className="platform-email-actions">
           <button
             type="button"
-            className="platform-email-btn platform-email-btn--secondary"
+            className="admin-btn-secondary platform-email-btn"
             onClick={onPreview}
             disabled={previewPending}
           >
@@ -77,7 +77,7 @@ export default function PlatformEmailBroadcastForm({
           </button>
           <button
             type="button"
-            className="platform-email-btn platform-email-btn--primary"
+            className="admin-btn-primary platform-email-btn"
             onClick={onSend}
             disabled={sendPending}
           >

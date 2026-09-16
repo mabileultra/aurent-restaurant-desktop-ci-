@@ -31,9 +31,6 @@ public class AiAssistantGeneralChatService {
         }
 
         if (AiAssistantOfflineReply.isSimpleGreeting(question) && (history == null || history.isEmpty())) {
-            if (properties.isFastMode()) {
-                return AiAssistantOfflineReply.greetingWithoutLlm(language);
-            }
             return answerGreeting(question, language);
         }
 

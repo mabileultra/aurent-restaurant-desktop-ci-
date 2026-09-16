@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazyPage as lazy } from '../../../../../router/lazyWithRetry';
 import ProductDeleteConfirmModal from '../ProductDeleteConfirmModal';
 import LazyModalSuspense from './LazyModalSuspense';
 

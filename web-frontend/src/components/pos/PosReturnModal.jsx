@@ -162,6 +162,9 @@ export default function PosReturnModal({
       qc.invalidateQueries({ queryKey: ['sales-ledger'] });
       qc.invalidateQueries({ queryKey: ['returns'] });
       qc.invalidateQueries({ queryKey: ['cashier-shift'] });
+      qc.invalidateQueries({ queryKey: ['pos-products'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
 
       if (vars?.sale) {
         await printReturnReceiptWithToast({

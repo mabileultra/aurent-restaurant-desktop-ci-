@@ -10,6 +10,7 @@ export default function PlatformEmailPage() {
   return (
     <PageLayout
       className="platform-email-page"
+      spacing="space-y-4"
       title={p.t('platform.email.title')}
       subtitle={p.t('platform.email.subtitle')}
     >

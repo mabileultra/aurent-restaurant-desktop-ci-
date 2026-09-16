@@ -81,13 +81,17 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
         if ("SENT".equals(row.getStatus())) {
             return;
         }
-        if (row.getChannel() != RevenueOutboxChannel.STOCK_CONSUME && !kafkaProperties.isEnabled()) {
+        if (row.getChannel() != RevenueOutboxChannel.STOCK_CONSUME
+            && row.getChannel() != RevenueOutboxChannel.STOCK_RESTORE
+            && !kafkaProperties.isEnabled()) {
             return;
         }
         boolean ok = switch (row.getChannel()) {
             case SALE_COMPLETED -> publishSaleCompleted(row);
             case FINANCE_INCOME -> publishFinanceIncome(row);
+            case REFUND_EXPENSE -> publishRefundExpense(row);
             case STOCK_CONSUME -> publishStockConsume(row);
+            case STOCK_RESTORE -> publishStockRestore(row);
         };
         if (ok) {
             row.setStatus("SENT");
@@ -155,6 +159,38 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
             return posInventoryClient.consumeIngredients(request);
         } catch (Exception ex) {
             LogUtil.warn(RevenueOutboxServiceImpl.class, "Stock consume publish failed: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    private boolean publishRefundExpense(RevenueOutbox row) {
+        KafkaTemplate<String, FinanceIntegrationMessage> template = financeKafka.getIfAvailable();
+        if (template == null) {
+            return false;
+        }
+        try {
+            FinanceIntegrationMessage message = new FinanceIntegrationMessage(
+                row.getId(),
+                "REFUND_EXPENSE",
+                "/internal/finance/expenses/from-refund",
+                row.getIdempotencyKey(),
+                row.getPayload()
+            );
+            template.send(KafkaTopics.FINANCE_INTEGRATION, row.getMessageKey(), message)
+                .get(kafkaProperties.getSendTimeoutMs(), java.util.concurrent.TimeUnit.MILLISECONDS);
+            return true;
+        } catch (Exception ex) {
+            LogUtil.warn(RevenueOutboxServiceImpl.class, "Refund expense publish failed: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    private boolean publishStockRestore(RevenueOutbox row) {
+        try {
+            IngredientConsumeRequest request = objectMapper.readValue(row.getPayload(), IngredientConsumeRequest.class);
+            return posInventoryClient.restoreIngredients(request);
+        } catch (Exception ex) {
+            LogUtil.warn(RevenueOutboxServiceImpl.class, "Stock restore publish failed: {}", ex.getMessage());
             return false;
         }
     }

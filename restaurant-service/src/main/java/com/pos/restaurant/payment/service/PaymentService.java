@@ -10,4 +10,6 @@ public interface PaymentService {
     OrderResponse requestBill(UUID orderId);
 
     OrderResponse pay(UUID orderId, PayOrderRequest request);
+
+    OrderResponse refund(UUID orderId);
 }

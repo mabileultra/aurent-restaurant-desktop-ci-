@@ -41,12 +41,13 @@ export function useProductsPageData() {
     };
   }, [search, page, pageSize, appliedFilters]);
 
-  const { data, isLoading } = useQuery({
+  const { data, isPending, isFetching, isError } = useQuery({
     queryKey: tenantKey('products', queryParams),
     queryFn: () => productApi.getAll(queryParams).then((r) => r.data),
     placeholderData: keepPreviousData,
     enabled: tenantReady,
   });
+  const isLoading = !isError && !data && (isPending || isFetching || !tenantReady);
 
   const { data: categories = [] } = useQuery({
     queryKey: tenantKey('categories'),

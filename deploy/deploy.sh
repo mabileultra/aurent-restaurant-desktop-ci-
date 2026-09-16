@@ -346,7 +346,15 @@ if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
 fi
 
 echo "==> Сборка образов ($COMPOSE_FILE)..."
-compose build --pull
+export DOCKER_BUILDKIT=1
+export COMPOSE_DOCKER_CLI_BUILD=1
+# Два Maven сразу, не десять: иначе сервер уходит в swap и деплой растягивается.
+export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-2}"
+if [[ "${DEPLOY_PULL:-0}" == "1" ]]; then
+  compose build --pull
+else
+  compose build
+fi
 
 echo "==> Инфраструктура: PostgreSQL (все БД) + Redpanda..."
 compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db redpanda

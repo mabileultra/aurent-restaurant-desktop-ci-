@@ -13,6 +13,7 @@ import com.pos.catalog.service.ProductAttributeService;
 import com.pos.catalog.service.UnitCatalogService;
 import com.pos.catalog.service.product.ProductExtensionService;
 import com.pos.catalog.service.product.ProductResponseAssembler;
+import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductInitialStockSupport;
 import com.pos.catalog.service.product.support.ProductPluValidator;
@@ -52,6 +53,7 @@ class ProductCreateHandlerTest {
     @Mock private CategoryRepository categoryRepository;
     @Mock private TenantAccessSupport tenantAccess;
     @Mock private ProductBarcodeValidator barcodeValidator;
+    @Mock private InactiveBarcodeReleaser barcodeReleaser;
     @Mock private ProductPluValidator pluValidator;
     @Mock private ProductStorePriceApplier storePriceApplier;
     @Mock private ProductInitialStockSupport initialStockSupport;

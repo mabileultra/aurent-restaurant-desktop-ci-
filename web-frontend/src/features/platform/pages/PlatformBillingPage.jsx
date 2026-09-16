@@ -1,8 +1,10 @@
 import '../../../styles/billing.css';
-import { PageLayout, PageSearchField } from '../../../components/ui';
+import { PageLayout } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import BillingPeriodCalendar from '../components/BillingPeriodCalendar';
 import BillingPaymentsList from '../../billing/components/BillingPaymentsList';
+import PlatformBillingStatusTabs from '../components/billing/PlatformBillingStatusTabs';
+import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 export default function PlatformBillingPage() {
@@ -22,25 +24,19 @@ export default function PlatformBillingPage() {
       title={p.t('platform.billing.title')}
       subtitle={p.t('platform.billing.subtitle')}
       filters={(
-        <div className="space-y-3">
-          <PageSearchField
-            value={p.search}
-            onChange={(e) => p.setSearch(e.target.value)}
-            placeholder={p.t('platform.billing.search')}
-          />
-          <div className="billing-tabs">
-            {p.statusFilters.map((value) => (
-              <button
-                key={value || 'all'}
-                type="button"
-                className={`billing-tab ${p.status === value ? 'billing-tab--active' : ''}`}
-                onClick={() => p.setStatus(value)}
-              >
-                {value ? p.t(`platform.billing.statuses.${value}`) : p.t('platform.billing.filterAll')}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PlatformCompactFilterBar
+          search={p.search}
+          onSearchChange={p.setSearch}
+          searchPlaceholder={p.t('platform.billing.search')}
+          filters={(
+            <PlatformBillingStatusTabs
+              t={p.t}
+              statusFilters={p.statusFilters}
+              status={p.status}
+              onStatusChange={p.setStatus}
+            />
+          )}
+        />
       )}
     >
       <div className="billing-page space-y-4">

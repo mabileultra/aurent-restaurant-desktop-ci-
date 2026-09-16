@@ -37,13 +37,17 @@ public class CatalogIsolationSupport {
 
     public void rejectPharmacyCodeOnGroceryWrite(String businessTypeCode) {
         if (isPharmacyCode(businessTypeCode)) {
-            throw PosExceptions.badRequest("Pharmacy products must be managed via pharmacy-service (/api/v1/pharmacy/**)");
+            throw PosExceptions.badRequest(
+                "Аптечные товары добавляйте в «Склад → Аптечные товары» (/pharm/stock/products), не в общий каталог"
+            );
         }
     }
 
     public void rejectPharmacyStoreOnGrocery(Store store) {
         if (isPharmacyStore(store)) {
-            throw PosExceptions.badRequest("Pharmacy store requires pharmacy-service (/api/v1/pharmacy/**)");
+            throw PosExceptions.badRequest(
+                "Аптечный магазин обслуживается через /pharm/stock (pharmacy-service), не через grocery-каталог"
+            );
         }
     }
 
@@ -62,7 +66,9 @@ public class CatalogIsolationSupport {
 
     public void rejectPharmacyFromGroceryWrite(Product product) {
         if (isPharmacyProduct(product)) {
-            throw PosExceptions.badRequest("Pharmacy products must be managed via pharmacy-service (/api/v1/pharmacy/**)");
+            throw PosExceptions.badRequest(
+                "Аптечные товары добавляйте в «Склад → Аптечные товары» (/pharm/stock/products), не в общий каталог"
+            );
         }
     }
 

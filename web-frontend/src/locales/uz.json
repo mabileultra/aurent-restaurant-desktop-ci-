@@ -256,6 +256,9 @@
       "payCash": "Naqd",
       "payCard": "Karta",
       "paid": "To‘landi",
+      "refund": "Chekni qaytarish",
+      "refunded": "To‘lov qaytarildi, tushum kamaydi",
+      "refundFailed": "To‘langan buyurtmani qaytarib bo‘lmadi",
       "payFailed": "To‘lov qabul qilinmadi",
       "confirmPay": "{{amount}} to‘lovni qabul qilasizmi?",
       "billingHint": "Hisob qo‘yildi. Pozitsiyalar o‘zgarmaydi.",
@@ -1466,7 +1469,8 @@
       "done": "products_export.xlsx fayli saqlandi",
       "failed": "Eksport xatosi",
       "notImplemented": "Eksport hali ishlab chiqilmoqda (API 501)"
-    }
+    },
+    "pharmacyUsePharmStock": "Dorixona mahsulotlarini «Ombor → Dorixona mahsulotlari» bo‘limida qo‘shing"
   },
   "sales": {
     "searchPh": "Qidiruv yoki shtrix kod (BC:123456)…",
@@ -4826,6 +4830,9 @@
     "filterPosted": "O‘tkazilganlar",
     "empty": "Hali hujjatlar yo‘q",
     "catalogEmpty": "Katalogda mahsulot yo‘q",
+    "deleteProduct": "O‘chirish",
+    "deleteConfirm": "«{{name}}» o‘chirilsinmi? Shtrixkod bo‘shaydi, mahsulot kassada ko‘rinmaydi.",
+    "deleted": "Mahsulot o‘chirildi. Bu shtrixkodni qayta ishlatish mumkin.",
     "notFound": "Hujjat topilmadi",
     "noLines": "Hujjatda hali qatorlar yo‘q",
     "colName": "Nomi",

@@ -28,8 +28,9 @@ public class PharmacyRevenuePublicationService {
             return;
         }
         SaleCompletedEvent event = PharmacySaleCompletedFactory.from(sale, attributesByProductId, storeName);
-        String idempotencyKey = "pharmacy-sale:" + sale.getId() + ":"
-            + (sale.getStatus() != null ? sale.getStatus().name() : "COMPLETED");
+        String status = sale.getStatus() != null ? sale.getStatus().name() : "COMPLETED";
+        String net = event.totalAmount() != null ? event.totalAmount().toPlainString() : "0";
+        String idempotencyKey = "pharmacy-sale:" + sale.getId() + ":" + status + ":" + net;
         RevenueOutbox row = outboxService.enqueue(
             RevenueOutboxChannel.SALE_COMPLETED,
             KafkaTopics.SALES_COMPLETED,

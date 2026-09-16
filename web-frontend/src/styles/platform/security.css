@@ -1,35 +1,228 @@
+.platform-security {
+  display: block;
+}
+
 .platform-security__card {
-  border-radius: 1rem;
-  border: 1px solid rgb(226 232 240);
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
   background: #fff;
-  padding: 1.25rem;
+  padding: 0.9rem 1rem 1rem;
   box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
 }
 
 .dark .platform-security__card {
-  border-color: rgb(30 41 59);
-  background: rgb(15 23 42);
+  border-color: #1e293b;
+  background: #0f172a;
 }
 
 .platform-security__card-head {
   display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 0.85rem;
+}
+
+.platform-security__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  background: var(--color-brand-soft, #e6f2ec);
+  color: var(--color-brand, #006847);
+}
+
+.platform-security__titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.platform-security__title {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.dark .platform-security__title {
+  color: #f8fafc;
+}
+
+.platform-security__hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #64748b;
 }
 
 .platform-security__note {
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
-  border: 1px solid rgb(191 219 254);
-  background: rgb(239 246 255);
-  padding: 0.75rem 1rem;
-  font-size: 0.8rem;
-  color: rgb(30 64 175);
+  margin: 0 0 0.85rem;
+  border-radius: 0.6rem;
+  border: 1px solid #dbeafe;
+  background: #f8fafc;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  line-height: 1.45;
+  color: #1e3a8a;
 }
 
 .dark .platform-security__note {
   border-color: rgb(30 58 138 / 0.5);
-  background: rgb(23 37 84 / 0.35);
-  color: rgb(147 197 253);
+  background: rgb(15 23 42);
+  color: #93c5fd;
+}
+
+.platform-security__form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.7rem;
+}
+
+@media (min-width: 768px) {
+  .platform-security__form {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.platform-security__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.platform-security__field label {
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: #64748b;
+}
+
+.platform-security__field input {
+  height: 2.15rem;
+  width: 100%;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0 0.7rem;
+  font-size: 0.8125rem;
+  background: #fff;
+  color: #0f172a;
+}
+
+.platform-security__field input:focus {
+  outline: none;
+  border-color: var(--color-brand, #006847);
+  box-shadow: 0 0 0 3px var(--color-focus-ring, rgb(0 104 71 / 0.16));
+}
+
+.dark .platform-security__field input {
+  border-color: #334155;
+  background: #111827;
+  color: #f8fafc;
+}
+
+.platform-security__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  grid-column: 1 / -1;
+}
+
+.platform-security__updated {
+  min-height: 1rem;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+
+.platform-security__table {
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.7rem;
+}
+
+.dark .platform-security__table {
+  border-color: #1e293b;
+}
+
+.platform-security__table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+}
+
+.platform-security__head {
+  background: #f8fafc;
+  text-align: left;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+}
+
+.dark .platform-security__head {
+  background: #111827;
+}
+
+.platform-security__table td,
+.platform-security__head th {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid #eef2f6;
+}
+
+.platform-security__table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.platform-security__table tbody tr:hover td {
+  background: #f8fafc;
+}
+
+.dark .platform-security__table td,
+.dark .platform-security__head th {
+  border-bottom-color: #1e293b;
+}
+
+.platform-security__name {
+  font-weight: 650;
+  color: #0f172a;
+}
+
+.dark .platform-security__name {
+  color: #f8fafc;
+}
+
+.platform-security__muted,
+.platform-security__empty {
+  color: #64748b;
+}
+
+.platform-security__empty {
+  padding: 1.5rem 0.9rem;
+  text-align: center;
+}
+
+.platform-security__actions-cell {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.platform-security__edit {
+  border: 0;
+  background: transparent;
+  color: var(--color-brand, #006847);
+  font-size: 0.8rem;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.platform-security__edit:hover {
+  color: var(--color-brand-deep, #043d2c);
+}
+
+@media (max-width: 720px) {
+  .platform-security__card-head {
+    flex-wrap: wrap;
+  }
 }

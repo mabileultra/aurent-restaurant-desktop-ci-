@@ -28,5 +28,7 @@ public interface PharmacyProductService {
 
     ProductResponse update(UUID id, UpdateProductRequest req);
 
+    void deactivate(UUID id);
+
     int bulkUpdateTaxRate(BulkTaxRateRequest req);
 }

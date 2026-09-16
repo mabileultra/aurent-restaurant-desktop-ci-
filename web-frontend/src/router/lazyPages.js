@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazyPage as lazy } from './lazyWithRetry';
 
 export const LoginPage = lazy(() => import('../features/auth/pages/LoginPage'));
 export const CashierPinLoginPage = lazy(() => import('../features/cashier/pages/CashierPinLoginPage'));

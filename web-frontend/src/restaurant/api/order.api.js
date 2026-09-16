@@ -17,4 +17,5 @@ export const rstOrderApi = {
   sendToKitchen: (orderId) => api.post(rst(`/orders/${orderId}/send-to-kitchen`)),
   requestBill: (orderId) => api.post(rst(`/orders/${orderId}/bill`)),
   pay: (orderId, data) => api.post(rst(`/orders/${orderId}/pay`), data),
+  refund: (orderId) => api.post(rst(`/orders/${orderId}/refund`)),
 };

@@ -12,6 +12,7 @@ import com.pos.finance.service.ReturnIntegrationService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.AccountResolverSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.SaleIncomeRefundAdjuster;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class ReturnIntegrationServiceImpl implements ReturnIntegrationService {
     private final CompanyBootstrapSupport bootstrapSupport;
     private final AccountBalanceSupport balanceSupport;
     private final AccountResolverSupport accountResolver;
+    private final SaleIncomeRefundAdjuster saleIncomeRefundAdjuster;
 
     @Override
     public void recordRefundExpense(RefundExpenseRequest request) {
@@ -39,6 +41,21 @@ public class ReturnIntegrationServiceImpl implements ReturnIntegrationService {
             request.companyId(), ExpenseSourceType.REFUND, request.returnEventId().toString()
         )) {
             LogUtil.info(ReturnIntegrationServiceImpl.class, "Refund expense already recorded: event={}", request.returnEventId());
+            return;
+        }
+        boolean incomeReduced = saleIncomeRefundAdjuster.reduce(
+            request.companyId(),
+            request.saleId(),
+            request.cashAmount(),
+            request.cardAmount()
+        );
+        if (incomeReduced) {
+            saveMarker(request);
+            LogUtil.info(
+                ReturnIntegrationServiceImpl.class,
+                "Sale revenue reduced instead of a second cash debit: sale={}",
+                request.saleId()
+            );
             return;
         }
         bootstrapSupport.ensureBootstrapped(request.companyId());
@@ -56,6 +73,30 @@ public class ReturnIntegrationServiceImpl implements ReturnIntegrationService {
             AccountType accountType = method == PaymentMethod.CARD ? AccountType.CARD : AccountType.CASH;
             recordPart(request, category, txDate, request.refundAmount(), method, accountType);
         }
+    }
+
+    private void saveMarker(RefundExpenseRequest request) {
+        bootstrapSupport.ensureBootstrapped(request.companyId());
+        ExpenseCategory category = bootstrapSupport.requireRefundCategory(request.companyId());
+        FinancialAccount account = accountResolver.resolveOrCreate(
+            request.companyId(), request.storeId(), AccountType.CASH
+        );
+        Expense marker = Expense.builder()
+            .companyId(request.companyId())
+            .storeId(request.storeId())
+            .account(account)
+            .amount(BigDecimal.ZERO)
+            .currency("UZS")
+            .paymentMethod(mapPaymentMethod(request.paymentMethod()))
+            .expenseCategory(category)
+            .sourceType(ExpenseSourceType.REFUND)
+            .sourceId(request.returnEventId().toString())
+            .comment("Возврат " + request.receiptNumber() + " учтён в выручке")
+            .transactionDate(request.transactionDate() != null ? request.transactionDate() : LocalDate.now())
+            .deleted(false)
+            .createdBy(request.createdBy())
+            .build();
+        expenseRepository.save(marker);
     }
 
     private void recordPart(

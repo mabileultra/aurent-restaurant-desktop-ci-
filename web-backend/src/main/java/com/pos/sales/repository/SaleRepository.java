@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -105,4 +106,12 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         @Param("saleReceiptType") Sale.ReceiptType saleReceiptType,
         Pageable pageable
     );
+
+    @EntityGraph(attributePaths = {"cashier", "store", "store.company", "company", "items", "items.product", "items.product.category"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.status IN :statuses
+        ORDER BY s.createdAt ASC
+        """)
+    Page<Sale> findByStatusIn(@Param("statuses") Collection<Sale.SaleStatus> statuses, Pageable pageable);
 }

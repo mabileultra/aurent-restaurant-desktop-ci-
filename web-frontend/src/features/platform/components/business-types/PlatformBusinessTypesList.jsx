@@ -2,36 +2,39 @@ import { Layers } from 'lucide-react';
 
 export default function PlatformBusinessTypesList({ t, types, isLoading, activeTypeId, onSelect }) {
   return (
-    <div className="admin-card">
-      <div className="border-b border-slate-200 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:border-slate-800">
+    <aside className="business-constructor__card">
+      <div className="business-constructor__head">
+        <Layers size={14} aria-hidden />
         {t('platform.businessTypes.typesList')}
       </div>
-      <div className="max-h-[520px] overflow-y-auto p-2">
+      <div className="business-constructor__list">
         {isLoading ? (
-          <p className="px-2 py-4 text-sm text-slate-500">{t('common.loading')}</p>
+          <p className="business-constructor__empty">{t('common.loading')}</p>
+        ) : types.length === 0 ? (
+          <p className="business-constructor__empty">{t('platform.businessTypes.selectType')}</p>
         ) : (
           types.map((type) => (
             <button
               key={type.id}
               type="button"
               onClick={() => onSelect(type.id)}
-              className={`mb-1 flex w-full items-start gap-2 rounded-lg px-3 py-2 text-left text-sm transition ${
-                activeTypeId === type.id
-                  ? 'admin-nav-link--active'
-                  : 'text-slate-700 hover:bg-[color:var(--color-brand-soft)] dark:text-slate-200 dark:hover:bg-slate-800'
-              }`}
+              className={`business-constructor__item${activeTypeId === type.id ? ' is-active' : ''}`}
             >
-              <Layers size={16} className="mt-0.5 shrink-0" />
+              <span className="business-constructor__item-icon" aria-hidden>
+                <Layers size={14} />
+              </span>
               <span>
-                <span className="block font-medium">{type.name}</span>
-                <span className={`text-xs ${activeTypeId === type.id ? 'opacity-80' : 'text-slate-500'}`}>
-                  {type.code} · {type.fieldsCount}
+                <span className="business-constructor__item-name">{type.name}</span>
+                <span className="business-constructor__item-meta">
+                  {type.code}
+                  {' · '}
+                  {type.fieldsCount}
                 </span>
               </span>
             </button>
           ))
         )}
       </div>
-    </div>
+    </aside>
   );
 }

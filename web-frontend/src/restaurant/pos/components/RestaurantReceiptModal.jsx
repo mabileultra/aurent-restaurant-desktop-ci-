@@ -12,7 +12,14 @@ import { FiscalReceiptBody, ThermalPrintSettingsPanel } from '../../../component
 import { RECEIPT_PRINT_DOM } from '../../../config/receiptPrintConfig';
 import '../styles/receipt-modal.css';
 
-export default function RestaurantReceiptModal({ sale, autoPrint = false, onClose, t }) {
+export default function RestaurantReceiptModal({
+  sale,
+  autoPrint = false,
+  onClose,
+  onRefund,
+  refunding = false,
+  t,
+}) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
   const autoPrintedRef = useRef(false);
@@ -104,6 +111,14 @@ export default function RestaurantReceiptModal({ sale, autoPrint = false, onClos
             >
               <Settings2 size={15} />
               {t('printSettings.toggleShort')}
+            </button>
+            <button
+              type="button"
+              className="rst-receipt-modal__btn"
+              onClick={() => onRefund?.(sale?.id)}
+              disabled={refunding || !onRefund || !sale?.id}
+            >
+              {refunding ? t('common.loading') : t('rst.order.refund')}
             </button>
             <button
               type="button"

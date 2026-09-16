@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Loader, RotateCcw, X } from 'lucide-react';
@@ -28,6 +28,7 @@ export default function SalePartialReturnModal({
   catalogKind,
 }) {
   const { t } = useTranslation();
+  const qc = useQueryClient();
 
   const { data: fetchedSale, isPending: saleLoading } = useQuery({
     queryKey: ['sale-for-return', saleId, catalogKind],
@@ -60,6 +61,10 @@ export default function SalePartialReturnModal({
     onSuccess: async (_data, vars) => {
       const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');
       toast.success(t('pos.returnSuccess'));
+      qc.invalidateQueries({ queryKey: ['cashier-shift'] });
+      qc.invalidateQueries({ queryKey: ['pos-products'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
+      qc.invalidateQueries({ queryKey: ['sales-ledger'] });
 
       if (vars?.sale) {
         await printReturnReceiptWithToast({

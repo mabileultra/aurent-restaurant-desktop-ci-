@@ -22,4 +22,6 @@ public interface ProductBarcodeRepository extends JpaRepository<ProductBarcode, 
         @Param("barcode") String barcode,
         @Param("companyId") Integer companyId
     );
+
+    void deleteByProduct_Id(java.util.UUID productId);
 }

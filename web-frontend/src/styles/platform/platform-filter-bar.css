@@ -1,0 +1,47 @@
+.platform-filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+}
+
+.platform-filter-bar > .page-search-field.platform-filter-bar__search {
+  flex: 0 0 13.5rem;
+  width: 13.5rem;
+  max-width: 100%;
+  min-height: 2.15rem;
+  min-width: 0;
+  box-shadow: none;
+}
+
+.platform-filter-bar__filters {
+  display: flex;
+  flex: 1 1 16rem;
+  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.platform-filter-bar__extra {
+  flex: 0 1 14rem;
+  width: 14rem;
+  min-width: 10rem;
+  max-width: 100%;
+}
+
+.platform-filter-bar .billing-tabs,
+.platform-filter-bar .platform-status-chips {
+  margin-bottom: 0;
+}
+
+.platform-filter-bar--spaced {
+  margin-bottom: 0.75rem;
+}
+
+@media (max-width: 640px) {
+  .platform-filter-bar > .page-search-field.platform-filter-bar__search,
+  .platform-filter-bar__extra {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+}

@@ -17,6 +17,7 @@ import {
 } from '../components/PharmacyTableSelect';
 import { productAtc } from '../hooks/usePharmacyCatalogOptions';
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
+import { usePharmacyProductDelete } from '../hooks/usePharmacyProductDelete';
 import {
   PHARM_DEFAULT_PAGE_SIZE,
   PHARM_PAGE_SIZES,
@@ -62,6 +63,7 @@ export default function PharmacyProductsPage() {
   const total = listQuery.data?.totalElements ?? rows.length;
   const totalPages = listQuery.data?.totalPages ?? 1;
   const selection = usePharmacyRowSelection(rows, `${search}:${scope}:${pageSize}`);
+  const productDelete = usePharmacyProductDelete(t);
 
   const bulkVatMutation = useMutation({
     mutationFn: (taxRate) => pharmacyWarehouseApi.bulkTaxRate({
@@ -132,13 +134,13 @@ export default function PharmacyProductsPage() {
             <tbody>
               {listQuery.isLoading ? (
                 <tr>
-                  <td colSpan={11}>
+                  <td colSpan={12}>
                     <div className="pharmacy-stock__empty">{t('common.loading')}</div>
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={11}>
+                  <td colSpan={12}>
                     <div className="pharmacy-stock__empty">{t('pharmacyStock.catalogEmpty')}</div>
                   </td>
                 </tr>
@@ -159,6 +161,21 @@ export default function PharmacyProductsPage() {
                   <td>{productUnitsInPack(p) || 1}</td>
                   <td>{productCountry(p) || '—'}</td>
                   <PharmacyEditCell t={t} onEdit={() => setEditing(p)} />
+                  <td>
+                    {p.active !== false && (
+                      <button
+                        type="button"
+                        className="pharmacy-stock__row-btn"
+                        disabled={productDelete.deleting}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          productDelete.remove(p);
+                        }}
+                      >
+                        {t('pharmacyStock.deleteProduct')}
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

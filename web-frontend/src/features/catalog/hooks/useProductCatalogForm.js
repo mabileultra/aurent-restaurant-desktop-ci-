@@ -224,6 +224,14 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
 
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ payload, stockQty, isEditMode }) => {
+      if (normalizeBusinessTypeCode(payload?.businessTypeCode || effectiveBusinessType) === 'PHARMACY') {
+        throw new Error(
+          t('products.pharmacyUsePharmStock', {
+            defaultValue:
+              'Аптечные товары добавляйте в «Склад → Аптечные товары» (/pharm/stock/products)',
+          }),
+        );
+      }
       const res = isEditMode
         ? await productApi.update(product.id, payload)
         : await productApi.create(payload);

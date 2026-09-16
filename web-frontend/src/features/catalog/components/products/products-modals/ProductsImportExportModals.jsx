@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazyPage as lazy } from '../../../../../router/lazyWithRetry';
 import ProductFiltersDrawer from '../ProductFiltersDrawer';
 import LazyModalSuspense from './LazyModalSuspense';
 

@@ -2,6 +2,7 @@ package com.pos.pharmacy.sales.service;
 
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.revenue.service.PharmacyRefundPublicationService;
 import com.pos.pharmacy.revenue.service.PharmacyRevenuePublicationService;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.sales.domain.SaleEnums;
@@ -12,6 +13,7 @@ import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.sales.repository.SaleRepository;
 import com.pos.pharmacy.sales.support.SaleMapper;
+import com.pos.pharmacy.shift.support.PharmacyShiftRefundApplier;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.util.QuantityValidator;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
@@ -19,6 +21,9 @@ import com.pos.pharmacy.warehouse.support.PharmacyLotFefoSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.pos.shared.money.TenderNet;
+import com.pos.shared.money.TenderNetCalculator;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -37,6 +42,8 @@ public class PharmacySalePartialReturnService {
     private final PharmacyLotFefoSupport pharmacyLotFefoSupport;
     private final SaleMapper saleMapper;
     private final PharmacyRevenuePublicationService revenuePublicationService;
+    private final PharmacyRefundPublicationService refundPublicationService;
+    private final PharmacyShiftRefundApplier shiftRefundApplier;
 
     public SaleResponse returnItems(UUID saleId, PartialReturnRequest request) {
         Sale sale = requireSale(saleId);
@@ -46,6 +53,7 @@ public class PharmacySalePartialReturnService {
         sale.getItems().forEach(item -> itemsById.put(item.getId(), item));
 
         String reason = request.reason() != null ? request.reason().trim() : "";
+        BigDecimal returnedBefore = shiftRefundApplier.returnedNow(sale);
         boolean anyReturned = false;
 
         for (PartialReturnLineRequest line : request.lines()) {
@@ -82,8 +90,26 @@ public class PharmacySalePartialReturnService {
         sale.setStatus(allItemsFullyReturned(sale) ? SaleEnums.SaleStatus.VOIDED : SaleEnums.SaleStatus.REFUNDED);
 
         Sale saved = saleRepository.save(sale);
+        shiftRefundApplier.applySince(saved, returnedBefore);
         revenuePublicationService.onSaleCompleted(saved, Map.of(), null);
+        publishRefund(saved, returnedBefore);
         return saleMapper.toResponse(saved);
+    }
+
+    private void publishRefund(Sale sale, BigDecimal returnedBefore) {
+        TenderNet beforeNet = TenderNetCalculator.remaining(
+            sale.getTotalAmount(), sale.getCashAmount(), sale.getCardAmount(), returnedBefore
+        );
+        TenderNet afterNet = TenderNetCalculator.remaining(
+            sale.getTotalAmount(), sale.getCashAmount(), sale.getCardAmount(), shiftRefundApplier.returnedNow(sale)
+        );
+        refundPublicationService.onRefund(
+            sale,
+            UUID.randomUUID(),
+            beforeNet.total().subtract(afterNet.total()),
+            beforeNet.cash().subtract(afterNet.cash()),
+            beforeNet.card().subtract(afterNet.card())
+        );
     }
 
     public static boolean allItemsFullyReturned(Sale sale) {

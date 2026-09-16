@@ -31,6 +31,33 @@ public class PharmacyShiftSaleAccumulator {
         }
     }
 
+    public void applyRefund(
+        PharmacyCashierShift shift,
+        BigDecimal refundTotal,
+        BigDecimal refundCash,
+        BigDecimal refundCard,
+        BigDecimal refundVat,
+        SaleEnums.PaymentMethod method
+    ) {
+        if (shift == null || refundTotal == null || refundTotal.signum() <= 0) {
+            return;
+        }
+        shift.setTotalAmount(floor(nz(shift.getTotalAmount()).subtract(refundTotal)));
+        shift.setVatAmount(floor(nz(shift.getVatAmount()).subtract(nz(refundVat))));
+        if (method == SaleEnums.PaymentMethod.CASH) {
+            shift.setCashAmount(floor(nz(shift.getCashAmount()).subtract(refundTotal)));
+        } else if (method == SaleEnums.PaymentMethod.CARD || method == SaleEnums.PaymentMethod.CASHLESS) {
+            shift.setCardAmount(floor(nz(shift.getCardAmount()).subtract(refundTotal)));
+        } else {
+            shift.setCashAmount(floor(nz(shift.getCashAmount()).subtract(nz(refundCash))));
+            shift.setCardAmount(floor(nz(shift.getCardAmount()).subtract(nz(refundCard))));
+        }
+    }
+
+    private static BigDecimal floor(BigDecimal value) {
+        return value.signum() < 0 ? BigDecimal.ZERO : value;
+    }
+
     private static BigDecimal nz(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;
     }

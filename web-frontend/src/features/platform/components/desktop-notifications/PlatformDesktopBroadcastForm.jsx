@@ -1,10 +1,5 @@
 import { Bell, Send } from 'lucide-react';
-
-const KIND_OPTIONS = [
-  { value: 'MESSAGE', labelKey: 'platform.desktopNotifications.kindMessage' },
-  { value: 'UPDATE', labelKey: 'platform.desktopNotifications.kindUpdate' },
-  { value: 'ALERT', labelKey: 'platform.desktopNotifications.kindAlert' },
-];
+import PlatformDesktopKindChips from './PlatformDesktopKindChips';
 
 export default function PlatformDesktopBroadcastForm({
   t,
@@ -22,10 +17,12 @@ export default function PlatformDesktopBroadcastForm({
   return (
     <section className="platform-desktop-notifications-card">
       <div className="platform-desktop-notifications-card__head">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <span className="platform-desktop-notifications-card__icon" aria-hidden>
           <Send size={16} />
+        </span>
+        <h2 className="platform-desktop-notifications-card__title">
           {t('platform.desktopNotifications.broadcastTitle')}
-        </div>
+        </h2>
       </div>
       <div className="platform-desktop-notifications-card__body">
         <div className="platform-desktop-notifications-field">
@@ -46,36 +43,31 @@ export default function PlatformDesktopBroadcastForm({
             placeholder={t('platform.desktopNotifications.messagePlaceholder')}
           />
         </div>
-        <div className="platform-desktop-notifications-field">
-          <label htmlFor="desktop-notif-kind">{t('platform.desktopNotifications.kind')}</label>
-          <select id="desktop-notif-kind" value={kind} onChange={(e) => onKindChange(e.target.value)}>
-            {KIND_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {t(option.labelKey)}
-              </option>
-            ))}
-          </select>
+        <div className="platform-desktop-notifications-meta">
+          <PlatformDesktopKindChips t={t} kind={kind} onKindChange={onKindChange} />
+          <div className="platform-desktop-notifications-field platform-desktop-notifications-field--hours">
+            <label htmlFor="desktop-notif-expires">{t('platform.desktopNotifications.expires')}</label>
+            <input
+              id="desktop-notif-expires"
+              type="number"
+              min="1"
+              max="720"
+              value={expiresInHours}
+              onChange={(e) => onExpiresInHoursChange(e.target.value)}
+            />
+          </div>
         </div>
-        <div className="platform-desktop-notifications-field">
-          <label htmlFor="desktop-notif-expires">{t('platform.desktopNotifications.expires')}</label>
-          <input
-            id="desktop-notif-expires"
-            type="number"
-            min="1"
-            max="720"
-            value={expiresInHours}
-            onChange={(e) => onExpiresInHoursChange(e.target.value)}
-          />
+        <div className="platform-desktop-notifications-actions">
+          <button
+            type="button"
+            className="admin-btn-primary platform-desktop-notifications-btn"
+            onClick={onSend}
+            disabled={sendPending}
+          >
+            <Bell size={15} />
+            {t('platform.desktopNotifications.send')}
+          </button>
         </div>
-        <button
-          type="button"
-          className="platform-desktop-notifications-btn"
-          onClick={onSend}
-          disabled={sendPending}
-        >
-          <Bell size={15} />
-          {t('platform.desktopNotifications.send')}
-        </button>
       </div>
     </section>
   );

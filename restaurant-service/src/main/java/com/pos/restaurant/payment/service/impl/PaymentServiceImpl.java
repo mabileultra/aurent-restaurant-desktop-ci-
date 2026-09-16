@@ -14,6 +14,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final RequestBillHandler requestBillHandler;
     private final PayOrderHandler payOrderHandler;
+    private final PaidOrderRefundHandler paidOrderRefundHandler;
 
     @Override
     public OrderResponse requestBill(UUID orderId) {
@@ -23,5 +24,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public OrderResponse pay(UUID orderId, PayOrderRequest request) {
         return payOrderHandler.handle(orderId, request);
+    }
+
+    @Override
+    public OrderResponse refund(UUID orderId) {
+        return paidOrderRefundHandler.handle(orderId);
     }
 }

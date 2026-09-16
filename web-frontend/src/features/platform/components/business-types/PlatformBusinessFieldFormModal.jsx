@@ -1,4 +1,3 @@
-import { ToggleLeft, ToggleRight } from 'lucide-react';
 import { BaseButton, BaseInput, BaseModal, BaseSelect, inputCls } from '../../../../components/ui';
 import { BUSINESS_TYPE_FIELD_TYPES } from '../../utils/businessTypeUtils';
 
@@ -20,20 +19,23 @@ export default function PlatformBusinessFieldFormModal({
 
   return (
     <BaseModal onClose={onClose} title={title} size="lg">
-      <div className="space-y-3">
+      <div className="business-constructor__modal">
         {modal.mode === 'create' ? (
           <BaseInput
+            label={t('platform.businessTypes.fieldKeyPh')}
             placeholder={t('platform.businessTypes.fieldKeyPh')}
             value={form.fieldKey}
             onChange={(e) => onFieldChange({ fieldKey: e.target.value })}
           />
         ) : null}
         <BaseInput
+          label={t('platform.businessTypes.fieldLabelPh')}
           placeholder={t('platform.businessTypes.fieldLabelPh')}
           value={form.label}
           onChange={(e) => onFieldChange({ label: e.target.value })}
         />
         <BaseSelect
+          label={t('platform.businessTypes.colType')}
           value={form.fieldType}
           onChange={(e) => onFieldChange({ fieldType: e.target.value })}
           options={BUSINESS_TYPE_FIELD_TYPES.map((type) => ({
@@ -41,8 +43,8 @@ export default function PlatformBusinessFieldFormModal({
             label: type,
           }))}
         />
-        <div className="flex flex-wrap gap-4 text-sm">
-          <label className="flex items-center gap-2">
+        <div className="business-constructor__flags">
+          <label className="business-constructor__check">
             <input
               type="checkbox"
               checked={form.required}
@@ -50,17 +52,16 @@ export default function PlatformBusinessFieldFormModal({
             />
             {t('platform.businessTypes.required')}
           </label>
-          <label className="flex items-center gap-2">
+          <label className="business-constructor__check">
             <input
               type="checkbox"
               checked={form.enabled}
               onChange={(e) => onFieldChange({ enabled: e.target.checked })}
             />
-            {form.enabled ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
             {t('platform.businessTypes.enabled')}
           </label>
           {form.fieldType === 'LIST' ? (
-            <label className="flex items-center gap-2">
+            <label className="business-constructor__check">
               <input
                 type="checkbox"
                 checked={form.filterable}
@@ -72,11 +73,13 @@ export default function PlatformBusinessFieldFormModal({
         </div>
         <BaseInput
           type="number"
+          label={t('platform.businessTypes.sortPh')}
           placeholder={t('platform.businessTypes.sortPh')}
           value={form.sortOrder}
           onChange={(e) => onFieldChange({ sortOrder: e.target.value })}
         />
         <BaseInput
+          label={t('platform.businessTypes.placeholderPh')}
           placeholder={t('platform.businessTypes.placeholderPh')}
           value={form.placeholder}
           onChange={(e) => onFieldChange({ placeholder: e.target.value })}
@@ -110,7 +113,7 @@ export default function PlatformBusinessFieldFormModal({
           </>
         ) : null}
       </div>
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="business-constructor__modal-actions">
         <BaseButton variant="secondary" onClick={onClose}>
           {t('common.cancel')}
         </BaseButton>

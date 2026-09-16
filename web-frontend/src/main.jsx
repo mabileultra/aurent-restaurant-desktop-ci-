@@ -13,7 +13,9 @@ import { useTenantDisplayStore } from './store/tenantDisplayStore';
 import { syncPrintCssVars } from './utils/syncPrintCssVars';
 import { syncReceiptDisplayCssVars } from './utils/syncReceiptDisplayCssVars';
 import { resetCashierDocumentUiState } from './utils/resetCashierDocumentUiState';
+import { clearChunkReloadFlag } from './router/chunkLoadError';
 resetCashierDocumentUiState();
+window.setTimeout(clearChunkReloadFlag, 4000);
 initSentry();
 
 const isCashierRoute =

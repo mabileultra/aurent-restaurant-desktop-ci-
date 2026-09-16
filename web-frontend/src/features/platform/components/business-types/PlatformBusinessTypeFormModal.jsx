@@ -15,15 +15,17 @@ export default function PlatformBusinessTypeFormModal({
 
   return (
     <BaseModal onClose={onClose} title={title} size="md">
-      <div className="space-y-3">
+      <div className="business-constructor__modal">
         {modal.mode === 'create' ? (
           <BaseInput
+            label={t('platform.businessTypes.codePh')}
             placeholder={t('platform.businessTypes.codePh')}
             value={modal.form.code}
             onChange={(e) => onFieldChange({ code: e.target.value.toUpperCase() })}
           />
         ) : null}
         <BaseInput
+          label={t('platform.businessTypes.namePh')}
           placeholder={t('platform.businessTypes.namePh')}
           value={modal.form.name}
           onChange={(e) => onFieldChange({ name: e.target.value })}
@@ -31,11 +33,12 @@ export default function PlatformBusinessTypeFormModal({
         <textarea
           className={inputCls}
           rows={3}
+          aria-label={t('platform.businessTypes.descriptionPh')}
           placeholder={t('platform.businessTypes.descriptionPh')}
           value={modal.form.description}
           onChange={(e) => onFieldChange({ description: e.target.value })}
         />
-        <label className="flex items-center gap-2 text-sm">
+        <label className="business-constructor__check">
           <input
             type="checkbox"
             checked={modal.form.active}
@@ -44,7 +47,7 @@ export default function PlatformBusinessTypeFormModal({
           {t('platform.businessTypes.active')}
         </label>
       </div>
-      <div className="mt-4 flex justify-end gap-2">
+      <div className="business-constructor__modal-actions">
         <BaseButton variant="secondary" onClick={onClose}>
           {t('common.cancel')}
         </BaseButton>

@@ -40,4 +40,11 @@ public class PaymentController {
     ) {
         return paymentService.pay(orderId, request);
     }
+
+    @PostMapping("/orders/{orderId}/refund")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
+    @Operation(summary = "Вернуть оплаченный заказ")
+    public OrderResponse refund(@PathVariable UUID orderId) {
+        return paymentService.refund(orderId);
+    }
 }

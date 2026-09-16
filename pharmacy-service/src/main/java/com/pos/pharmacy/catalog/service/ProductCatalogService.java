@@ -11,6 +11,7 @@ import com.pos.pharmacy.domain.ProductType;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ public class ProductCatalogService {
     private final ProductBarcodeRepository productBarcodeRepository;
     private final ProductAttributeService productAttributeService;
     private final StoreStockService storeStockService;
+    private final PharmacyBarcodeClaim barcodeClaim;
     private final TenantSupport tenant;
 
     @Transactional(readOnly = true)
@@ -70,6 +72,12 @@ public class ProductCatalogService {
         if (productRepository.findByCompanyIdAndSku(companyId, req.sku()).filter(Product::isActive).isPresent()) {
             throw PharmacyErrors.conflict("SKU already exists", "sku", req.sku());
         }
+        barcodeClaim.claim(companyId, req.barcode());
+        productRepository.findByCompanyIdAndSku(companyId, req.sku()).filter(existing -> !existing.isActive())
+            .ifPresent(inactive -> {
+                barcodeClaim.release(inactive);
+                productRepository.saveAndFlush(inactive);
+            });
         Product product = Product.builder()
             .companyId(companyId)
             .sku(req.sku().trim())
@@ -185,6 +193,15 @@ public class ProductCatalogService {
         products.forEach(p -> p.setTaxRate(tax));
         productRepository.saveAll(products);
         return products.size();
+    }
+
+    public void deactivate(UUID id) {
+        Product product = requireOwned(id);
+        if (!product.isActive()) {
+            return;
+        }
+        barcodeClaim.release(product);
+        productRepository.save(product);
     }
 
     @Transactional(readOnly = true)

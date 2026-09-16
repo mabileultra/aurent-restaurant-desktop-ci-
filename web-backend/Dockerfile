@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # ============================================================
 #  Multi-stage Dockerfile — Spring Boot Backend
 #  (deb-based images: работает на Apple Silicon без alpine manifest)
@@ -8,7 +9,7 @@ FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 COPY pom.xml .
-COPY shared-kernel shared-kernel
+COPY shared-kernel/pom.xml shared-kernel/pom.xml
 COPY api-gateway/pom.xml api-gateway/pom.xml
 COPY web-backend/pom.xml web-backend/pom.xml
 COPY finance-service/pom.xml finance-service/pom.xml
@@ -19,10 +20,11 @@ COPY ai-service/pom.xml ai-service/pom.xml
 COPY crm-service/pom.xml crm-service/pom.xml
 COPY restaurant-service/pom.xml restaurant-service/pom.xml
 COPY pharmacy-service/pom.xml pharmacy-service/pom.xml
-RUN mvn -pl shared-kernel,web-backend -am dependency:go-offline -q
+RUN --mount=type=cache,target=/root/.m2 mvn -pl shared-kernel,web-backend -am dependency:go-offline -q
 
+COPY shared-kernel/src shared-kernel/src
 COPY web-backend/src web-backend/src
-RUN mvn -pl web-backend -am package -DskipTests -q
+RUN --mount=type=cache,target=/root/.m2 mvn -pl web-backend -am package -DskipTests -q
 
 # Stage 2: Runtime
 FROM eclipse-temurin:17-jre-jammy

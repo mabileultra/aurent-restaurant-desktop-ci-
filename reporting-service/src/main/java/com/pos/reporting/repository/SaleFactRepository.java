@@ -17,7 +17,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     BigDecimal sumTotalByCompanyAndDateRange(
         @Param("companyId") Integer companyId,
@@ -30,7 +30,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     long sumItemsSoldByCompanyAndDateRange(
         @Param("companyId") Integer companyId,
@@ -43,7 +43,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     long countCompletedByCompanyAndTransactionDateBetween(
         @Param("companyId") Integer companyId,
@@ -60,7 +60,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         GROUP BY s.transactionDate
         ORDER BY s.transactionDate
         """)
@@ -76,7 +76,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
           AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     BigDecimal sumTotalByCompanyDateRangeAndStore(
         @Param("companyId") Integer companyId,
@@ -91,7 +91,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
           AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     long sumItemsSoldByCompanyDateRangeAndStore(
         @Param("companyId") Integer companyId,
@@ -106,7 +106,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
           AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         """)
     long countByCompanyDateRangeAndStore(
         @Param("companyId") Integer companyId,
@@ -124,7 +124,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM sale_facts s
         WHERE s.company_id = :companyId
           AND s.transaction_date BETWEEN :from AND :to
-          AND s.sale_status = 'COMPLETED'
+          AND s.sale_status IN ('COMPLETED', 'REFUNDED')
         GROUP BY s.store_id
         ORDER BY SUM(s.total_amount) DESC
         """,
@@ -133,7 +133,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         FROM sale_facts s
         WHERE s.company_id = :companyId
           AND s.transaction_date BETWEEN :from AND :to
-          AND s.sale_status = 'COMPLETED'
+          AND s.sale_status IN ('COMPLETED', 'REFUNDED')
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Object[]> storeSalesAggregate(
@@ -149,7 +149,7 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
           AND s.createdBy IS NOT NULL
-          AND s.saleStatus = 'COMPLETED'
+          AND s.saleStatus IN ('COMPLETED', 'REFUNDED')
         GROUP BY s.createdBy
         ORDER BY SUM(s.totalAmount) DESC
         """)

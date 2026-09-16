@@ -120,6 +120,39 @@ public enum AdminModule {
         return module != null && ("restaurant".equals(module.group()) || "restaurantPos".equals(module.key()));
     }
 
+    public static boolean isGroceryOnlyModule(AdminModule module) {
+        if (module == null) {
+            return false;
+        }
+        return switch (module.key()) {
+            case "products", "scalesStation", "scalesPlu" -> true;
+            default -> false;
+        };
+    }
+
+    public static boolean visibleForBusinessType(AdminModule module, String businessType) {
+        if (module == null) {
+            return false;
+        }
+        if (businessType == null || businessType.isBlank()) {
+            return true;
+        }
+        String code = businessType.trim().toUpperCase();
+        if ("RETAIL".equals(code)) {
+            code = "UNIVERSAL";
+        }
+        if ("UNIVERSAL".equals(code) || "OTHER".equals(code)) {
+            return true;
+        }
+        if ("PHARMACY".equals(code)) {
+            return !isRestaurantModule(module) && !isGroceryOnlyModule(module);
+        }
+        if ("RESTAURANT".equals(code) || "CANTEEN".equals(code)) {
+            return !isGroceryOnlyModule(module) && !"cashierPos".equals(module.key());
+        }
+        return !isRestaurantModule(module);
+    }
+
     public static boolean businessTypeAllowsRestaurant(String businessType) {
         if (businessType == null || businessType.isBlank()) {
             return true;

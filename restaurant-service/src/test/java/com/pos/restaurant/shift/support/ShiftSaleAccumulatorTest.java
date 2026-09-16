@@ -32,4 +32,20 @@ class ShiftSaleAccumulatorTest {
         assertEquals(new BigDecimal("10.00"), shift.getCashAmount());
         assertEquals(new BigDecimal("25.50"), shift.getCardAmount());
     }
+
+    @Test
+    void refundSubtractsRevenue() {
+        RestaurantShift shift = RestaurantShift.builder()
+            .id(UUID.randomUUID())
+            .companyId(1)
+            .storeId(1)
+            .openedByUserId(UUID.randomUUID())
+            .status(RestaurantShiftStatus.OPEN)
+            .build();
+        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("40.00"));
+        accumulator.applyRefund(shift, PaymentMethod.CASH, new BigDecimal("15.00"));
+
+        assertEquals(new BigDecimal("25.00"), shift.getTotalAmount());
+        assertEquals(new BigDecimal("25.00"), shift.getCashAmount());
+    }
 }

@@ -86,8 +86,7 @@ html.app-viewport--canonical .platform-desktop-notifications-page__grid {
 }
 
 html.app-viewport--canonical .platform-desktop-notifications-field input,
-html.app-viewport--canonical .platform-desktop-notifications-field textarea,
-html.app-viewport--canonical .platform-desktop-notifications-field select {
+html.app-viewport--canonical .platform-desktop-notifications-field textarea {
   padding: 8px 10px;
   font-size: 0.8125rem;
 }

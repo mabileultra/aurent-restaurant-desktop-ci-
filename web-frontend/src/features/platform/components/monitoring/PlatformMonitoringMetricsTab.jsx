@@ -1,5 +1,5 @@
 import { cardCls } from '../../../../utils/platformMonitoringFormat';
-import PageSearchField from '../../../../components/ui/PageSearchField';
+import PlatformCompactFilterBar from '../PlatformCompactFilterBar';
 
 export default function PlatformMonitoringMetricsTab({
   t,
@@ -15,11 +15,11 @@ export default function PlatformMonitoringMetricsTab({
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_2fr]">
       <div className={cardCls}>
-        <PageSearchField
-          className="mb-3"
-          value={search}
-          onChange={setSearch}
-          placeholder={t('platform.monitoring.searchMetrics')}
+        <PlatformCompactFilterBar
+          className="platform-filter-bar--spaced"
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={t('platform.monitoring.searchMetrics')}
         />
         <div className="max-h-[480px] overflow-auto divide-y dark:divide-slate-800">
           {metricsQuery.isPending ? (

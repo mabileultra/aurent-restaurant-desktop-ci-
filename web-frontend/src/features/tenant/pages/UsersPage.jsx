@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
 import { BaseButton, PageLayout, PageSearchField } from '../../../components/ui';
 import BusinessTypeFilterChips from '../../platform/components/BusinessTypeFilterChips';
+import PlatformCompactFilterBar from '../../platform/components/PlatformCompactFilterBar';
 import UserFormModal from '../components/users/UserFormModal';
 import UserDeleteConfirmModal from '../components/users/UserDeleteConfirmModal';
 import UsersTable from '../components/users/UsersTable';
@@ -21,22 +22,26 @@ export default function UsersPage({ mode = 'tenant' }) {
           {p.t('users.add')}
         </BaseButton>
       )}
-      filters={(
-        <div className="space-y-3">
-          <PageSearchField
-            className="max-w-md"
-            value={p.search}
-            onChange={p.handleSearchChange}
-            placeholder={p.t('platform.userSearch')}
-          />
-          {p.isPlatform && (
+      filters={p.isPlatform ? (
+        <PlatformCompactFilterBar
+          search={p.search}
+          onSearchChange={p.handleSearchChange}
+          searchPlaceholder={p.t('platform.userSearch')}
+          filters={(
             <BusinessTypeFilterChips
               types={p.businessTypes}
               value={p.businessType}
               onChange={p.handleBusinessTypeChange}
             />
           )}
-        </div>
+        />
+      ) : (
+        <PageSearchField
+          className="max-w-md"
+          value={p.search}
+          onChange={p.handleSearchChange}
+          placeholder={p.t('platform.userSearch')}
+        />
       )}
     >
       <UsersTable

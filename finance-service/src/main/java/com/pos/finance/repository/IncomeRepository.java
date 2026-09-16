@@ -24,6 +24,10 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         Integer companyId, IncomeSourceType sourceType, String sourceId
     );
 
+    List<Income> findAllByCompanyIdAndSourceTypeAndSourceIdAndDeletedFalse(
+        Integer companyId, IncomeSourceType sourceType, String sourceId
+    );
+
     @Query("""
         SELECT COUNT(i) > 0 FROM Income i
         WHERE i.companyId = :companyId AND i.deleted = false

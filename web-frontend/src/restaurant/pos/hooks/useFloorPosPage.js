@@ -441,6 +441,16 @@ export function useFloorPosPage() {
     },
   });
 
+  const refundMutation = useMutation({
+    mutationFn: (orderId) => rstOrderApi.refund(orderId),
+    onSuccess: () => {
+      setPaidReceipt(null);
+      invalidateShift();
+      toast.success(t('rst.order.refunded'));
+    },
+    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.order.refundFailed')),
+  });
+
   const closePaidReceipt = () => setPaidReceipt(null);
 
   const handleTableClick = (table) => {
@@ -562,6 +572,7 @@ export function useFloorPosPage() {
     setPrintReceiptEnabled,
     paidReceipt,
     closePaidReceipt,
+    refundMutation,
     pendingMenuItem,
     modifierGroups: modifierQuery.data ?? [],
     selectedModifierIds,

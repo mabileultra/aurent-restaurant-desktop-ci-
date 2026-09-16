@@ -1,4 +1,5 @@
-import { lazy, Suspense, useState } from 'react';
+import { Suspense, useState } from 'react';
+import { lazyPage as lazy } from '../../../../router/lazyWithRetry';
 import { QrCode, Settings2 } from 'lucide-react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';

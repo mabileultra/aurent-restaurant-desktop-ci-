@@ -314,6 +314,9 @@ export function usePharmacyPosPage() {
     qc.invalidateQueries({ queryKey: ['sales-ledger'] });
     qc.invalidateQueries({ queryKey: ['my-sales'] });
     qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['pos-products'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
+    qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
   };
 
   const handleDiscount = () => {

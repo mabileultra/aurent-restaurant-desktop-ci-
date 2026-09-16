@@ -1,6 +1,6 @@
 /**
- * Какие модули доступа показывать для типа бизнеса компании.
- * Ресторанные модули — только для RESTAURANT / CANTEEN (и UNIVERSAL/OTHER).
+ * Какие модули суперадмин видит при выборе типа бизнеса.
+ * UNIVERSAL / OTHER — полный список. Остальные типы не смешивают чужие миры.
  */
 const RESTAURANT_MODULE_IDS = new Set([
   'restaurantFloor',
@@ -9,6 +9,15 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantKitchen',
   'restaurantPos',
 ]);
+
+const GROCERY_CATALOG_MODULE_IDS = new Set([
+  'products',
+  'categories',
+  'scalesStation',
+  'scalesPlu',
+]);
+
+const GROCERY_POS_MODULE_IDS = new Set(['cashierPos']);
 
 const RESTAURANT_BUSINESS_TYPES = new Set(['RESTAURANT', 'CANTEEN']);
 
@@ -36,11 +45,17 @@ export function companyHasBusinessType(company, typeCode) {
 
 export function isModuleVisibleForBusinessType(moduleId, businessTypeCode) {
   const type = normalizeBusinessTypeCode(businessTypeCode);
-  if (type === 'UNIVERSAL' || type === 'OTHER') return true;
-  if (RESTAURANT_MODULE_IDS.has(moduleId)) {
-    return RESTAURANT_BUSINESS_TYPES.has(type);
+  const id = String(moduleId || '');
+  if (!type || type === 'UNIVERSAL' || type === 'OTHER') return true;
+
+  if (type === 'PHARMACY') {
+    return !RESTAURANT_MODULE_IDS.has(id) && !GROCERY_CATALOG_MODULE_IDS.has(id);
   }
-  return true;
+  if (RESTAURANT_BUSINESS_TYPES.has(type)) {
+    if (id === 'categories') return true;
+    return !GROCERY_CATALOG_MODULE_IDS.has(id) && !GROCERY_POS_MODULE_IDS.has(id);
+  }
+  return !RESTAURANT_MODULE_IDS.has(id);
 }
 
 export function filterModulesForBusinessType(modules, businessTypeCode) {

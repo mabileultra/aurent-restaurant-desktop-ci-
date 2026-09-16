@@ -5,12 +5,14 @@ import PlatformBusinessTypeDetail from '../components/business-types/PlatformBus
 import PlatformBusinessTypeFormModal from '../components/business-types/PlatformBusinessTypeFormModal';
 import PlatformBusinessTypesList from '../components/business-types/PlatformBusinessTypesList';
 import { usePlatformBusinessTypesPage } from '../hooks/usePlatformBusinessTypesPage';
+import '../../../styles/platform/business-constructor.css';
 
 export default function PlatformBusinessTypesPage() {
   const p = usePlatformBusinessTypesPage();
 
   return (
     <PageLayout
+      spacing="space-y-4"
       title={p.t('platform.businessTypes.title')}
       subtitle={p.t('platform.businessTypes.subtitle')}
       actions={(
@@ -20,7 +22,7 @@ export default function PlatformBusinessTypesPage() {
         </BaseButton>
       )}
     >
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[280px,1fr]">
+      <div className="business-constructor">
         <PlatformBusinessTypesList
           t={p.t}
           types={p.types}

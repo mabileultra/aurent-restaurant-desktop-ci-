@@ -1,4 +1,4 @@
-import { lazy } from 'react';
+import { lazyPage as lazy } from '../../../../router/lazyWithRetry';
 import { useTranslation } from 'react-i18next';
 import { useProductInfoModal } from '../../hooks/useProductInfoModal';
 import ProductInfoModalHeader from './product-info/ProductInfoModalHeader';

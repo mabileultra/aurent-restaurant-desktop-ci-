@@ -276,6 +276,8 @@ export default function RestaurantFloorPosPage() {
           sale={p.paidReceipt.sale}
           autoPrint={Boolean(p.paidReceipt.autoPrint)}
           onClose={p.closePaidReceipt}
+          onRefund={(orderId) => p.refundMutation.mutate(orderId)}
+          refunding={p.refundMutation.isPending}
           t={p.t}
         />
       ) : null}

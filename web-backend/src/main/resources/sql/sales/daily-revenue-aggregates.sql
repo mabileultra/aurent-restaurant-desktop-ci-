@@ -1,9 +1,31 @@
 SELECT CAST(s.created_at AS date) AS day,
-       COALESCE(SUM(s.total_amount), 0) AS revenue,
+       COALESCE(SUM(
+           CASE s.status
+               WHEN 'COMPLETED' THEN s.total_amount
+               WHEN 'REFUNDED' THEN GREATEST(
+                   0,
+                   s.total_amount - COALESCE((
+                       SELECT SUM(
+                           CASE
+                               WHEN si.quantity <= 0 THEN 0
+                               WHEN si.returned_quantity >= si.quantity THEN si.line_total
+                               ELSE ROUND(
+                                   si.line_total * CAST(si.returned_quantity AS DECIMAL) / si.quantity,
+                                   2
+                               )
+                           END
+                       )
+                       FROM sale_items si
+                       WHERE si.sale_id = s.id
+                   ), 0)
+               )
+               ELSE 0
+           END
+       ), 0) AS revenue,
        COUNT(*) AS tx_count
 FROM sales s
 WHERE s.created_at >= :start AND s.created_at < :end
-  AND s.status = 'COMPLETED'
+  AND s.status IN ('COMPLETED', 'REFUNDED')
   AND (
     s.company_id = :companyId
     OR (

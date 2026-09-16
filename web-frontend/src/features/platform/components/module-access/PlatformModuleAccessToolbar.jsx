@@ -1,7 +1,6 @@
-import { PageSearchField } from '../../../../components/ui';
 import BusinessTypeFilterChips from '../BusinessTypeFilterChips';
+import PlatformCompactFilterBar from '../PlatformCompactFilterBar';
 import PlatformModuleAccessCompanySelect from './PlatformModuleAccessCompanySelect';
-import '../../../../styles/platform/module-access-toolbar.css';
 
 export default function PlatformModuleAccessToolbar({
   t,
@@ -15,26 +14,25 @@ export default function PlatformModuleAccessToolbar({
   onBusinessTypeChange,
 }) {
   return (
-    <div className="module-access-toolbar module-access-toolbar--stacked">
-      <div className="module-access-toolbar__row">
-        <PageSearchField
-          className="module-access-toolbar__search"
-          value={userSearch}
-          onChange={onUserSearchChange}
-          placeholder={t('platform.moduleAccess.userSearch')}
+    <PlatformCompactFilterBar
+      search={userSearch}
+      onSearchChange={onUserSearchChange}
+      searchPlaceholder={t('platform.moduleAccess.userSearch')}
+      filters={(
+        <BusinessTypeFilterChips
+          types={businessTypes}
+          value={businessType}
+          onChange={onBusinessTypeChange}
         />
+      )}
+      extra={(
         <PlatformModuleAccessCompanySelect
           t={t}
           companies={companies}
           companyId={companyId}
           onChange={onCompanyChange}
         />
-      </div>
-      <BusinessTypeFilterChips
-        types={businessTypes}
-        value={businessType}
-        onChange={onBusinessTypeChange}
-      />
-    </div>
+      )}
+    />
   );
 }

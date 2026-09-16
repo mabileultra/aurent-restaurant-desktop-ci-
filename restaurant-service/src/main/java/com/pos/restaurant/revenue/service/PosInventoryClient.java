@@ -5,4 +5,6 @@ import com.pos.restaurant.recipe.dto.IngredientConsumeRequest;
 public interface PosInventoryClient {
 
     boolean consumeIngredients(IngredientConsumeRequest request);
+
+    boolean restoreIngredients(IngredientConsumeRequest request);
 }

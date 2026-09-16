@@ -14,6 +14,7 @@ import com.pos.catalog.service.product.ProductExtensionService;
 import com.pos.catalog.service.product.ProductQuantityRulesResolver;
 import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.SaleTypeSupport;
+import com.pos.catalog.service.product.support.InactiveBarcodeReleaser;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductInitialStockSupport;
 import com.pos.catalog.service.product.support.ProductPluValidator;
@@ -53,6 +54,7 @@ public class ProductCreateHandler {
     private final CatalogIsolationSupport catalogIsolation;
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final InactiveBarcodeReleaser barcodeReleaser;
 
     @Transactional
     public ProductResponse create(CreateProductRequest req) {
@@ -80,8 +82,10 @@ public class ProductCreateHandler {
         }
 
         Category category = resolveCategory(req.categoryId(), companyId);
+        barcodeReleaser.releaseAll(req.additionalBarcodes(), companyId, req.barcode());
         barcodeValidator.validateForCreate(companyId, req.barcode(), req.additionalBarcodes());
         String plu = pluValidator.normalizeOrNull(req.plu());
+        barcodeReleaser.releaseHeldPlu(companyId, plu);
         if (plu != null) {
             productRepository.findByCompany_IdAndPlu(companyId, plu).ifPresent(existing -> {
                 throw PosExceptions.conflict("PLU already in use", "plu", plu);

@@ -64,4 +64,10 @@ public class PharmacyProductServiceImpl implements PharmacyProductService {
     public int bulkUpdateTaxRate(BulkTaxRateRequest req) {
         return catalogService.bulkUpdateTaxRate(req);
     }
+
+    @Override
+    @Transactional
+    public void deactivate(UUID id) {
+        catalogService.deactivate(id);
+    }
 }

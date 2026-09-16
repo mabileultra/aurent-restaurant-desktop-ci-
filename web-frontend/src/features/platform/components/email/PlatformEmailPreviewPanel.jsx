@@ -16,18 +16,18 @@ export default function PlatformEmailPreviewPanel({
   return (
     <section className="platform-email-card">
       <div className="platform-email-card__head">
-        <div className="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <span className="platform-email-card__icon" aria-hidden>
           <Eye size={16} />
-          {t('platform.email.previewTitle')}
-        </div>
+        </span>
+        <h2 className="platform-email-card__title">{t('platform.email.previewTitle')}</h2>
         {previewSubject ? (
-          <span className="truncate text-xs text-slate-500">{previewSubject}</span>
+          <span className="platform-email-card__meta">{previewSubject}</span>
         ) : null}
       </div>
       <div className="platform-email-card__body">
         <div className="platform-email-field">
           {templatesError ? (
-            <p className="platform-email-hint text-red-500">{t('platform.email.templatesLoadFailed')}</p>
+            <p className="platform-email-error">{t('platform.email.templatesLoadFailed')}</p>
           ) : null}
           <BaseSelect
             id="email-template-type"
@@ -63,9 +63,9 @@ export default function PlatformEmailPreviewPanel({
           {previewHtml ? (
             <iframe title={t('platform.email.previewTitle')} srcDoc={previewHtml} />
           ) : (
-            <div className="flex min-h-[24rem] items-center justify-center p-6 text-sm text-slate-500">
+            <p className="platform-email-preview__empty">
               {previewPending ? t('common.loading') : t('platform.email.previewEmpty')}
-            </div>
+            </p>
           )}
         </div>
       </div>

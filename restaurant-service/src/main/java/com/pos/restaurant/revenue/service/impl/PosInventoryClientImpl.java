@@ -41,4 +41,24 @@ public class PosInventoryClientImpl implements PosInventoryClient {
             return false;
         }
     }
+
+    @Override
+    public boolean restoreIngredients(IngredientConsumeRequest request) {
+        if (!properties.isEnabled() || request == null || request.lines() == null || request.lines().isEmpty()) {
+            return true;
+        }
+        try {
+            restClient.post()
+                .uri("/internal/restaurant/stock-restore")
+                .header(InternalApiHeaders.API_KEY, properties.getInternalApiKey())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .toBodilessEntity();
+            return true;
+        } catch (Exception ex) {
+            LogUtil.warn(PosInventoryClientImpl.class, "POS stock restore failed: {}", ex.getMessage());
+            return false;
+        }
+    }
 }

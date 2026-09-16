@@ -12,6 +12,7 @@ export default function PlatformDesktopNotificationsPage() {
   return (
     <PageLayout
       className="platform-desktop-notifications-page"
+      spacing="space-y-4"
       title={p.t('platform.desktopNotifications.title')}
       subtitle={p.t('platform.desktopNotifications.subtitle')}
     >

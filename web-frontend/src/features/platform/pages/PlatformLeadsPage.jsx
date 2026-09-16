@@ -1,5 +1,7 @@
-import { PageLayout, PageSearchField } from '../../../components/ui';
+import { PageLayout } from '../../../components/ui';
+import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import PlatformLeadDetailModal from '../components/leads/PlatformLeadDetailModal';
+import PlatformLeadStatusChips from '../components/leads/PlatformLeadStatusChips';
 import PlatformLeadsTable from '../components/leads/PlatformLeadsTable';
 import { usePlatformLeadsPage } from '../hooks/usePlatformLeadsPage';
 
@@ -12,29 +14,19 @@ export default function PlatformLeadsPage() {
       title={p.t('platform.leads.title')}
       subtitle={p.t('platform.leads.subtitle')}
       filters={(
-        <div className="space-y-3">
-          <PageSearchField
-            value={p.search}
-            onChange={p.handleSearchChange}
-            placeholder={p.t('platform.leads.search')}
-          />
-          <div className="inline-flex flex-wrap gap-1 rounded-lg border border-slate-200 p-0.5 text-xs dark:border-slate-700">
-            {p.statusOptions.map((value) => (
-              <button
-                key={value || 'all'}
-                type="button"
-                onClick={() => p.handleStatusFilter(value)}
-                className={`rounded px-3 py-1 font-medium transition-colors ${
-                  p.status === value
-                    ? 'admin-chip admin-chip--active'
-                    : 'admin-chip'
-                }`}
-              >
-                {value ? p.t(`platform.leads.statuses.${value}`) : p.t('platform.leads.filterAll')}
-              </button>
-            ))}
-          </div>
-        </div>
+        <PlatformCompactFilterBar
+          search={p.search}
+          onSearchChange={p.handleSearchChange}
+          searchPlaceholder={p.t('platform.leads.search')}
+          filters={(
+            <PlatformLeadStatusChips
+              t={p.t}
+              statusOptions={p.statusOptions}
+              status={p.status}
+              onStatusChange={p.handleStatusFilter}
+            />
+          )}
+        />
       )}
     >
       <PlatformLeadsTable

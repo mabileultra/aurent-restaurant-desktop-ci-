@@ -11,6 +11,7 @@ export default function PlatformSecurityPage() {
   return (
     <PageLayout
       className="platform-security"
+      spacing="space-y-4"
       title={p.t('platform.security.title')}
       subtitle={p.t('platform.security.subtitle')}
     >

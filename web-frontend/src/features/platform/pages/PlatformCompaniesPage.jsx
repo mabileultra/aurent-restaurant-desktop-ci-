@@ -1,6 +1,7 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, PageLayout, PageSearchField } from '../../../components/ui';
+import { BaseButton, PageLayout } from '../../../components/ui';
 import BusinessTypeFilterChips from '../components/BusinessTypeFilterChips';
+import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
 import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
 import { usePlatformCompaniesPage } from '../hooks/usePlatformCompaniesPage';
@@ -19,18 +20,18 @@ export default function PlatformCompaniesPage() {
         </BaseButton>
       )}
       filters={(
-        <div className="space-y-3">
-          <PageSearchField
-            value={p.search}
-            onChange={p.handleSearchChange}
-            placeholder={p.t('platform.companySearch')}
-          />
-          <BusinessTypeFilterChips
-            types={p.businessTypes}
-            value={p.businessType}
-            onChange={p.handleBusinessTypeChange}
-          />
-        </div>
+        <PlatformCompactFilterBar
+          search={p.search}
+          onSearchChange={p.handleSearchChange}
+          searchPlaceholder={p.t('platform.companySearch')}
+          filters={(
+            <BusinessTypeFilterChips
+              types={p.businessTypes}
+              value={p.businessType}
+              onChange={p.handleBusinessTypeChange}
+            />
+          )}
+        />
       )}
     >
       <PlatformCompaniesTable

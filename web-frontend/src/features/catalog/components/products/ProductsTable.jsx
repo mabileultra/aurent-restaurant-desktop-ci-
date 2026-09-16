@@ -71,14 +71,14 @@ export default function ProductsTable({
                   {t('common.loading')}
                 </td>
               </tr>
-            ) : data?.content?.length === 0 ? (
+            ) : !data?.content?.length ? (
               <tr>
                 <td colSpan={colSpan} className="px-4 py-8 text-center text-slate-500">
                   {isIngredient ? t('products.noneIngredients') : t('products.none')}
                 </td>
               </tr>
             ) : (
-              data.content.map((p, index) => (
+              (data?.content ?? []).map((p, index) => (
                 <tr key={p.id} className="transition hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="px-3 py-3">
                     <input

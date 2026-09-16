@@ -53,8 +53,48 @@ public class RestaurantSaleCompletedFactory {
         );
     }
 
+    public SaleCompletedEvent fromRefundedOrder(FloorOrder order, List<FloorOrderItem> items, FloorOrderPayment payment) {
+        List<SaleLineSnapshot> lines = items.stream()
+            .filter(item -> item.getItemStatus() != OrderItemStatus.CANCELLED)
+            .map(this::toReturnedLine)
+            .toList();
+        return new SaleCompletedEvent(
+            order.getCompanyId(),
+            order.getStoreId(),
+            order.getId(),
+            receiptNumber(order),
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+            payment.getMethod().name(),
+            LocalDate.ofInstant(order.getClosedAt() != null ? order.getClosedAt() : payment.getPaidAt(), ZONE),
+            payment.getPaidByUserId(),
+            0L,
+            null,
+            null,
+            "REFUNDED",
+            lines
+        );
+    }
+
     public static String receiptNumber(FloorOrder order) {
         return "RST-" + order.getStoreId() + "-" + order.getOrderNo();
+    }
+
+    private SaleLineSnapshot toReturnedLine(FloorOrderItem item) {
+        SaleLineSnapshot sold = toLine(item);
+        return new SaleLineSnapshot(
+            sold.productId(),
+            sold.productName(),
+            sold.sku(),
+            sold.barcode(),
+            sold.categoryId(),
+            sold.categoryName(),
+            sold.quantity(),
+            sold.quantity(),
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
+            BigDecimal.ZERO
+        );
     }
 
     private SaleLineSnapshot toLine(FloorOrderItem item) {

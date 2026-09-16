@@ -184,10 +184,9 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             return scope;
         }
         String businessType = resolveCompanyBusinessType(companyId);
-        if (AdminModule.businessTypeAllowsRestaurant(businessType)) {
-            return scope;
-        }
-        return scope.stream().filter(m -> !AdminModule.isRestaurantModule(m)).toList();
+        return scope.stream()
+            .filter(m -> AdminModule.visibleForBusinessType(m, businessType))
+            .toList();
     }
 
     private String resolveCompanyBusinessType(Integer companyId) {

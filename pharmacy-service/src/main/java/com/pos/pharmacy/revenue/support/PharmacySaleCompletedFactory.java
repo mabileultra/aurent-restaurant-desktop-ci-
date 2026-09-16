@@ -4,8 +4,10 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.support.PharmacyPackSupport;
 import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.entity.SaleItem;
+import com.pos.pharmacy.sales.support.PharmacySaleNetAmounts;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.shared.event.SaleCompletedEvent;
+import com.pos.shared.money.TenderNet;
 import com.pos.shared.event.SaleLineSnapshot;
 
 import java.math.BigDecimal;
@@ -32,14 +34,15 @@ public final class PharmacySaleCompletedFactory {
         LocalDate transactionDate = sale.getCreatedAt() != null
             ? sale.getCreatedAt().atZone(DEFAULT_ZONE).toLocalDate()
             : LocalDate.now(DEFAULT_ZONE);
+        TenderNet net = PharmacySaleNetAmounts.remaining(sale);
         return new SaleCompletedEvent(
             sale.getCompanyId(),
             sale.getStoreId(),
             sale.getId(),
             sale.getReceiptNumber(),
-            sale.getTotalAmount(),
-            sale.getCashAmount(),
-            sale.getCardAmount(),
+            net.total(),
+            net.cash(),
+            net.card(),
             sale.getPaymentMethod() != null ? sale.getPaymentMethod().name() : null,
             transactionDate,
             sale.getCashierId(),

@@ -1,3 +1,4 @@
+import { Bell } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { ru, uz } from 'date-fns/locale';
 
@@ -10,9 +11,12 @@ export default function PlatformDesktopNotificationsHistory({ t, items, loading,
   return (
     <section className="platform-desktop-notifications-card">
       <div className="platform-desktop-notifications-card__head">
-        <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
+        <span className="platform-desktop-notifications-card__icon" aria-hidden>
+          <Bell size={16} />
+        </span>
+        <h2 className="platform-desktop-notifications-card__title">
           {t('platform.desktopNotifications.historyTitle')}
-        </p>
+        </h2>
       </div>
       <div className="platform-desktop-notifications-card__body platform-desktop-notifications-history">
         {loading ? <p className="platform-desktop-notifications-empty">{t('common.loading')}</p> : null}
