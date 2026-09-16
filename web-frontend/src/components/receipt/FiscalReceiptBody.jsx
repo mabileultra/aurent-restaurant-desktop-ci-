@@ -3,7 +3,7 @@ import { APP_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import ReceiptQrCode from './ReceiptQrCode';
 import {
-  fmtMoney,
+  fmtMoneyCompact,
   fmtQty,
   resolveFiscalReceiptTypeLabel,
   splitDateTime,
@@ -27,6 +27,14 @@ function lineVatAmount(item) {
   const rate = lineVatRatePercent(item);
   const lineTotal = Number(item?.lineTotal) || 0;
   return extractVatFromInclusive(lineTotal, rate);
+}
+
+function itemUnitPrice(item) {
+  const direct = Number(item?.unitPrice ?? item?.price ?? item?.sellingPrice);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const qty = Number(item?.quantity) || 0;
+  const total = Number(item?.lineTotal) || 0;
+  return qty > 0 ? total / qty : total;
 }
 
 const PAYMENT_I18N = {
@@ -144,50 +152,31 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
 
       {showMeta ? (
         <section className="receipt-section mt-2 space-y-0.5">
-          <div className="receipt-meta-grid grid grid-cols-2 gap-x-2 gap-y-1">
-            {isOn('dateTime') ? (
-              <>
-                <div className="min-w-0">
-                  <span className="receipt-meta-label">{t('fiscalReceipt.date')}: </span>
-                  <span>{date}</span>
-                </div>
-                <div className="min-w-0 text-right">
-                  <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
-                  <span>{time}</span>
-                </div>
-              </>
-            ) : null}
-            {isOn('receiptNo') ? (
-              <div className="min-w-0 col-span-2">
-                <span className="receipt-meta-label">{t('fiscalReceipt.receiptNoShort')}: </span>
-                <span className="break-all">№{sale.receiptNumber}</span>
-              </div>
-            ) : null}
-            {sale.originalReceiptNumber ? (
-              <div className="min-w-0 col-span-2">
-                <span className="receipt-meta-label">{t('fiscalReceipt.originalReceiptNo')}: </span>
-                <span className="break-all">№{sale.originalReceiptNumber}</span>
-              </div>
-            ) : null}
-            {isOn('employee') ? (
-              <div className="min-w-0 col-span-2">
-                <span className="receipt-meta-label">{t('fiscalReceipt.employee')}: </span>
-                <span className="break-words">{sale.cashierName}</span>
-              </div>
-            ) : null}
-            {isOn('shift') ? (
-              <div className="min-w-0 col-span-2">
-                <span className="receipt-meta-label">{t('fiscalReceipt.shift')}: </span>
-                <span>{shiftNo}</span>
-              </div>
-            ) : null}
-          </div>
-        </section>
-      ) : null}
-
-      {isOn('receiptType') ? (
-        <section className="receipt-section mt-1">
-          <Row label={t('fiscalReceipt.receiptType')} value={receiptTypeLabel} bold />
+          {isOn('dateTime') ? (
+            <div className="receipt-row">
+              <span>
+                <span className="receipt-meta-label">{t('fiscalReceipt.time')}: </span>
+                {time}
+              </span>
+              <span className="receipt-row__value">
+                <span className="receipt-meta-label">{t('fiscalReceipt.date')}: </span>
+                {date}
+              </span>
+            </div>
+          ) : null}
+          {isOn('receiptNo') ? (
+            <Row label={t('fiscalReceipt.receiptNoShort')} value={`№${sale.receiptNumber}`} />
+          ) : null}
+          {sale.originalReceiptNumber ? (
+            <Row
+              label={t('fiscalReceipt.originalReceiptNo')}
+              value={`№${sale.originalReceiptNumber}`}
+            />
+          ) : null}
+          {isOn('employee') && sale.cashierName ? (
+            <Row label={t('fiscalReceipt.employee')} value={sale.cashierName} />
+          ) : null}
+          {isOn('shift') ? <Row label={t('fiscalReceipt.shift')} value={shiftNo} /> : null}
         </section>
       ) : null}
 
@@ -195,34 +184,30 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         <>
           <ReceiptDivider />
           <section className="receipt-section min-w-0">
-            <div className="receipt-items-table__head receipt-meta-label">
-              <span>{t('receipt.item')}</span>
-              <span>{t('receipt.qtyShort')}</span>
-              <span>{t('receipt.lineTotalShort')}</span>
-            </div>
-
             <div className="receipt-items-table space-y-2.5">
               {(sale.items ?? []).map((item, idx) => (
                   <div key={idx} className="receipt-items-table__item border-b border-dotted border-black pb-2 last:border-0">
-                    <div className="receipt-items-table__row">
-                      <span className="receipt-items-table__name">{item.productName}</span>
-                      <span className="receipt-items-table__qty">
-                        {fmtQty(item.quantity, item.saleType, unitCodeFromLabel(item.unitOfMeasure))}
-                        {item.saleType !== 'WEIGHT' && item.unitOfMeasure ? ` ${item.unitOfMeasure}` : ''}
-                      </span>
-                      <span className="receipt-items-table__sum">{fmtMoney(item.lineTotal)}</span>
-                    </div>
+                    <p className="receipt-items-table__name">{item.productName}</p>
+                    <p className="receipt-items-table__qtyline">
+                      {fmtQty(item.quantity, item.saleType, unitCodeFromLabel(item.unitOfMeasure))}
+                      {' * '}
+                      {fmtMoneyCompact(itemUnitPrice(item))}
+                      {' = '}
+                      {fmtMoneyCompact(item.lineTotal)}
+                    </p>
+                    {isOn('itemVatLine') ? (
+                      <div className="receipt-items-table__vat">
+                        <Row
+                          label={t('fiscalReceipt.vatLineShort', {
+                            rate: lineVatRatePercent(item).toFixed(0),
+                          })}
+                          value={fmtMoneyCompact(lineVatAmount(item))}
+                        />
+                      </div>
+                    ) : null}
                     {isOn('itemIkpu') && item.ikpu ? (
                       <p className="break-all receipt-secondary">
                         {t('receipt.ikpuLine')}: {item.ikpu}
-                      </p>
-                    ) : null}
-                    {isOn('itemVatLine') ? (
-                      <p className="receipt-secondary receipt-items-table__vat">
-                        {t('fiscalReceipt.vatLineShort', {
-                          rate: lineVatRatePercent(item).toFixed(0),
-                        })}
-                        : {fmtMoney(lineVatAmount(item))} {t('fiscalReceipt.currency')}
                       </p>
                     ) : null}
                   </div>
@@ -239,7 +224,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
             {isOn('discounts') && Number(sale.lineDiscountTotal ?? 0) > 0 ? (
               <Row
                 label={t('fiscalReceipt.lineDiscountsSum')}
-                value={`${fmtMoney(sale.lineDiscountTotal)} ${t('fiscalReceipt.currency')}`}
+                value={fmtMoneyCompact(sale.lineDiscountTotal)}
               />
             ) : null}
             {isOn('discounts') && Number(sale.orderDiscountAmount ?? 0) > 0 ? (
@@ -249,27 +234,27 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
                     ? t('fiscalReceipt.orderDiscountPercent', { percent: sale.orderDiscountPercent })
                     : t('fiscalReceipt.orderDiscountSum')
                 }
-                value={`${fmtMoney(sale.orderDiscountAmount)} ${t('fiscalReceipt.currency')}`}
+                value={fmtMoneyCompact(sale.orderDiscountAmount)}
               />
             ) : null}
             {isOn('discounts') && Number(sale.discountTotal) > 0 ? (
               <Row
                 label={t('fiscalReceipt.discountsSum')}
-                value={`${fmtMoney(sale.discountTotal)} ${t('fiscalReceipt.currency')}`}
+                value={fmtMoneyCompact(sale.discountTotal)}
                 bold
               />
             ) : null}
             {isOn('grandTotal') ? (
               <Row
                 label={t('fiscalReceipt.grandTotal')}
-                value={`${fmtMoney(sale.totalAmount)} ${t('fiscalReceipt.currency')}`}
+                value={fmtMoneyCompact(sale.totalAmount)}
                 bold
               />
             ) : null}
             {isOn('vatTotal') ? (
               <Row
                 label={t('fiscalReceipt.vatTotalLine', { rate: vatRateLabel })}
-                value={`${fmtMoney(sale.taxTotal)} ${t('fiscalReceipt.currency')}`}
+                value={fmtMoneyCompact(sale.taxTotal)}
                 bold
               />
             ) : null}
@@ -281,27 +266,26 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         <>
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section className="receipt-section space-y-0.5">
+            <Row label={t('fiscalReceipt.paymentForm')} value={fmtMoneyCompact(paidTotal || total)} />
+            <Row label={t('fiscalReceipt.cash')} value={fmtMoneyCompact(cashAmt)} />
             <Row
-              label={t('fiscalReceipt.paymentForm')}
-              value={`${fmtMoney(paidTotal)} ${t('fiscalReceipt.currency')}`}
+              label={cardTypeText ? `${t('fiscalReceipt.plastic')} · ${cardTypeText}` : t('fiscalReceipt.plastic')}
+              value={fmtMoneyCompact(cardAmt)}
             />
-            {cashAmt > 0 ? (
-              <Row label={t('fiscalReceipt.cash')} value={`${fmtMoney(cashAmt)} ${t('fiscalReceipt.currency')}`} />
-            ) : null}
-            {cardAmt > 0 ? (
-              <Row
-                label={cardTypeText ? `${t('fiscalReceipt.plastic')} · ${cardTypeText}` : t('fiscalReceipt.plastic')}
-                value={`${fmtMoney(cardAmt)} ${t('fiscalReceipt.currency')}`}
-              />
-            ) : null}
-            {method !== 'CASH' && method !== 'MIXED' && cardAmt === 0 && cashAmt === 0 ? (
-              <Row label={payLabel(method)} value={`${fmtMoney(total)} ${t('fiscalReceipt.currency')}`} />
+            {method !== 'CASH' && method !== 'MIXED' && method !== 'CARD' && method !== 'CASHLESS' && method !== 'MPESA' ? (
+              <Row label={payLabel(method)} value={fmtMoneyCompact(total)} />
             ) : null}
             {change > 0 ? (
-              <Row label={t('receipt.change')} value={`${fmtMoney(change)} ${t('fiscalReceipt.currency')}`} bold />
+              <Row label={t('receipt.change')} value={fmtMoneyCompact(change)} bold />
             ) : null}
           </section>
         </>
+      ) : null}
+
+      {isOn('receiptType') ? (
+        <section className="receipt-section mt-1">
+          <Row label={t('fiscalReceipt.receiptType')} value={receiptTypeLabel} bold />
+        </section>
       ) : null}
 
       {isOn('fiscalBlock') ? (
@@ -309,12 +293,12 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section className="receipt-section space-y-1">
             <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
-            {virtualRegister ? (
-              <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
+            {fiscalReceiptNo ? (
+              <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={fiscalReceiptNo} />
             ) : null}
             {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
-            {fiscalReceiptNo ? (
-              <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={`№${fiscalReceiptNo}`} />
+            {virtualRegister ? (
+              <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
             ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
@@ -326,22 +310,11 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         </>
       ) : null}
 
-      {(showQrBlock || isOn('footer')) && (
-        <footer className="receipt-section mt-4 border-t border-dashed border-black pt-3 text-center">
-          {showQrBlock && qrValue ? <ReceiptQrCode value={qrValue} sizePx={112} /> : null}
-          {isOn('footer') ? (
-            <>
-              <p className="receipt-footer mt-2">{t('fiscalReceipt.footer')}</p>
-              {showQrBlock && qrValue ? (
-                <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrHint')}</p>
-              ) : null}
-              {showQrBlock && !qrValue ? (
-                <p className="receipt-footer receipt-secondary mt-1">{t('fiscalReceipt.qrMissing')}</p>
-              ) : null}
-            </>
-          ) : null}
+      {showQrBlock ? (
+        <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
+          {qrValue ? <ReceiptQrCode value={qrValue} sizePx={140} /> : null}
         </footer>
-      )}
+      ) : null}
     </div>
   );
 }

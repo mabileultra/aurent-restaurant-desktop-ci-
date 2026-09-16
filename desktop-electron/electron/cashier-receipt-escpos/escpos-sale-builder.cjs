@@ -7,7 +7,6 @@ const os = require('os');
 const path = require('path');
 const {
   fmtMoney,
-  fmtMoneyTable,
   fmtQty,
   splitDateTime,
   buildFiscalSign,
@@ -110,10 +109,12 @@ async function appendHeader(printer, payload, jobId) {
     }
   }
 
-  const companyName = branding?.companyName || sale?.storeName || 'AURENT';
-  if (isOn(fields, 'companyName')) {
+  const companyName = branding?.companyName || sale?.storeName || '';
+  if (isOn(fields, 'companyName') && companyName) {
     printer.bold(true);
+    if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
     printer.println(String(companyName).toUpperCase());
+    if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
     printer.bold(false);
   }
   if (isOn(fields, 'companyAddress') && branding?.companyAddress) {
@@ -166,8 +167,7 @@ function appendMeta(printer, payload) {
 
   const { date, time } = splitDateTime(sale.createdAt);
   if (isOn(fields, 'dateTime')) {
-    appendRow(printer, L.date || 'Date', date);
-    appendRow(printer, L.time || 'Time', time);
+    printer.leftRight(`${L.time || 'Time'}: ${time}`, `${L.date || 'Date'}: ${date}`);
   }
   if (hasReceiptNo) {
     appendRow(printer, L.receiptNoShort || 'Receipt', String(sale.receiptNumber));
@@ -195,7 +195,7 @@ function appendMeta(printer, payload) {
 }
 
 /**
- * Тип чека — после смены, перед списком товаров.
+ * Тип чека — после оплаты, как на бланке ГНК.
  * @param {import('node-thermal-printer').printer} printer
  * @param {object} payload
  */
@@ -218,8 +218,16 @@ function brandingShift(payload) {
   return payload.branding?.shiftNo || payload.labels?.shiftNo || '';
 }
 
+function itemUnitPrice(item) {
+  const direct = Number(item?.unitPrice ?? item?.price ?? item?.sellingPrice);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  const qty = Number(item?.quantity) || 0;
+  const total = Number(item?.lineTotal) || 0;
+  return qty > 0 ? total / qty : total;
+}
+
 /**
- * Таблица товаров.
+ * Позиции как на чеке ГНК: название, qty * цена = сумма.
  * @param {import('node-thermal-printer').printer} printer
  * @param {object} payload
  */
@@ -230,29 +238,19 @@ function appendItems(printer, payload) {
 
   if (!isOn(fields, 'items')) return;
 
-  printer.bold(true);
-  printer.tableCustom([
-    { text: L.item || 'Item', align: 'LEFT', width: 0.55 },
-    { text: L.qtyShort || 'Qty', align: 'CENTER', width: 0.15 },
-    { text: L.lineTotalShort || 'Sum', align: 'RIGHT', width: 0.3 },
-  ]);
-  printer.bold(false);
-
   for (const item of sale.items || []) {
-    printer.tableCustom([
-      { text: String(item.productName || ''), align: 'LEFT', width: 0.55 },
-      { text: fmtQty(item.quantity, item.saleType), align: 'CENTER', width: 0.15 },
-      { text: fmtMoneyTable(item.lineTotal), align: 'RIGHT', width: 0.3 },
-    ]);
-    if (isOn(fields, 'itemIkpu') && item.ikpu) {
-      printer.println(`${L.ikpuLine || 'IKPU'}: ${item.ikpu}`);
-    }
+    printer.println(String(item.productName || ''));
+    const qty = fmtQty(item.quantity, item.saleType);
+    printer.println(`${qty} * ${fmtMoney(itemUnitPrice(item))} = ${fmtMoney(item.lineTotal)}`);
     if (isOn(fields, 'itemVatLine')) {
       const rate = item.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
       const rateStr = Number.isFinite(rate) ? String(Math.round(rate)) : '12';
       const vat = lineVatAmount(item);
       const vatLabel = interpolateLabel(L.vatLineShort || 'VAT {{rate}}%', { rate: rateStr });
-      printer.println(`${vatLabel}: ${fmtMoney(vat)} ${L.currency || 'sum'}`);
+      appendRow(printer, vatLabel, fmtMoney(vat));
+    }
+    if (isOn(fields, 'itemIkpu') && item.ikpu) {
+      printer.println(`${L.ikpuLine || 'MXIK'}: ${item.ikpu}`);
     }
   }
   appendDivider(printer);
@@ -267,37 +265,28 @@ function appendTotals(printer, payload) {
   const { sale, receiptFields, labels } = payload;
   const fields = receiptFields || {};
   const L = labels || {};
-  const cur = L.currency || 'sum';
 
   const show =
     isOn(fields, 'discounts') || isOn(fields, 'grandTotal') || isOn(fields, 'vatTotal');
   if (!show) return;
 
   if (isOn(fields, 'discounts') && Number(sale.lineDiscountTotal) > 0) {
-    appendRow(
-      printer,
-      L.lineDiscountsSum || 'Line disc.',
-      `${fmtMoney(sale.lineDiscountTotal)} ${cur}`,
-    );
+    appendRow(printer, L.lineDiscountsSum || 'Line disc.', fmtMoney(sale.lineDiscountTotal));
   }
   if (isOn(fields, 'discounts') && Number(sale.orderDiscountAmount) > 0) {
-    appendRow(
-      printer,
-      L.orderDiscountSum || 'Order disc.',
-      `${fmtMoney(sale.orderDiscountAmount)} ${cur}`,
-    );
+    appendRow(printer, L.orderDiscountSum || 'Order disc.', fmtMoney(sale.orderDiscountAmount));
   }
   if (isOn(fields, 'discounts') && Number(sale.discountTotal) > 0) {
-    appendRow(printer, L.discountsSum || 'Discount', `${fmtMoney(sale.discountTotal)} ${cur}`, true);
+    appendRow(printer, L.discountsSum || 'Discount', fmtMoney(sale.discountTotal), true);
   }
   if (isOn(fields, 'grandTotal')) {
-    appendRow(printer, L.grandTotal || 'TOTAL', `${fmtMoney(sale.totalAmount)} ${cur}`, true);
+    appendRow(printer, L.grandTotal || 'TOTAL', fmtMoney(sale.totalAmount), true);
   }
   if (isOn(fields, 'vatTotal')) {
     const vatLabel = interpolateLabel(L.vatTotalLine || 'VAT {{rate}}%', {
       rate: saleVatRateLabel(sale),
     });
-    appendRow(printer, vatLabel, `${fmtMoney(sale.taxTotal)} ${cur}`, true);
+    appendRow(printer, vatLabel, fmtMoney(sale.taxTotal));
   }
   appendDivider(printer);
 }
@@ -311,7 +300,6 @@ function appendPayment(printer, payload) {
   const { sale, receiptFields, labels } = payload;
   const fields = receiptFields || {};
   const L = labels || {};
-  const cur = L.currency || 'sum';
 
   if (!isOn(fields, 'payment')) return;
 
@@ -325,9 +313,7 @@ function appendPayment(printer, payload) {
     ? cashExplicit
     : method === 'CASH'
       ? Number(sale.amountTendered) || total
-      : method === 'MIXED'
-        ? 0
-        : 0;
+      : 0;
   const cardAmt = hasCard
     ? cardExplicit
     : method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
@@ -335,15 +321,11 @@ function appendPayment(printer, payload) {
       : 0;
   const change = Number(sale.changeGiven) || 0;
 
-  appendRow(printer, L.paymentForm || 'Payment', `${fmtMoney(total)} ${cur}`);
-  if (cashAmt > 0) {
-    appendRow(printer, L.cash || 'Cash', `${fmtMoney(cashAmt)} ${cur}`);
-  }
-  if (cardAmt > 0) {
-    appendRow(printer, L.plastic || 'Card', `${fmtMoney(cardAmt)} ${cur}`);
-  }
+  appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));
+  appendRow(printer, L.cash || 'Cash', fmtMoney(cashAmt));
+  appendRow(printer, L.plastic || 'Card', fmtMoney(cardAmt));
   if (change > 0) {
-    appendRow(printer, L.change || 'Change', `${fmtMoney(change)} ${cur}`, true);
+    appendRow(printer, L.change || 'Change', fmtMoney(change), true);
   }
   appendDivider(printer);
 }
@@ -372,14 +354,14 @@ function appendFiscalBlock(printer, payload) {
   const fiscalReceiptNo = String(sale.fiscalReceiptSeq || seqFromQr || '').trim();
   const fiscalSign = buildFiscalSign(sale);
 
-  if (virtualRegister && virtualRegister !== '1') {
-    appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
+  if (fiscalReceiptNo) {
+    appendRow(printer, L.fiscalReceiptNo || 'Fiscal #', fiscalReceiptNo);
   }
   if (fmNumber) {
     appendRow(printer, L.fmNumber || 'FM', fmNumber);
   }
-  if (fiscalReceiptNo) {
-    appendRow(printer, L.fiscalReceiptNo || 'Fiscal #', fiscalReceiptNo);
+  if (virtualRegister && virtualRegister !== '1') {
+    appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
   }
   if (fiscalSign) {
     appendRow(printer, L.fiscalSign || 'Sign', fiscalSign);
@@ -388,38 +370,52 @@ function appendFiscalBlock(printer, payload) {
 }
 
 /**
- * QR и подвал.
+ * Крупный налоговый QR. Подвал «спасибо / призовые игры ГНК» не печатаем.
  * @param {import('node-thermal-printer').printer} printer
  * @param {object} payload
+ * @param {string} jobId
  */
-function appendQrAndFooter(printer, payload) {
-  const { sale, receiptFields, labels, branding, qrValue: payloadQr } = payload;
+async function appendQrAndFooter(printer, payload, jobId) {
+  const { sale, receiptFields, qrValue: payloadQr } = payload;
   const fields = receiptFields || {};
-  const L = labels || {};
 
-  if (!isOn(fields, 'qrCode') && !isOn(fields, 'footer')) return;
+  if (!isOn(fields, 'qrCode') || sale?.printFiscalQr === false) return;
+
+  const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
+  const isTaxQr =
+    /ofd\.soliq\.uz\/(check|epi)\?/i.test(qrValue) && /[?&]t=/i.test(qrValue) && /[?&]s=/i.test(qrValue);
+  if (!isTaxQr) return;
 
   printer.alignCenter();
-  if (isOn(fields, 'qrCode') && sale?.printFiscalQr !== false) {
-    const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
-    const isTaxQr =
-      /ofd\.soliq\.uz\/(check|epi)\?/i.test(qrValue) && /[?&]t=/i.test(qrValue) && /[?&]s=/i.test(qrValue);
-    if (isTaxQr) {
-      try {
-        const cellSize = qrValue.length > 100 ? 2 : 3;
-        printer.printQR(qrValue, { cellSize, correction: 'M', model: 2 });
-        printer.newLine();
-      } catch (err) {
-        logWarn('qr', 'QR_SKIP', { message: err?.message, len: qrValue.length });
+  printer.newLine();
+
+  let printedImage = false;
+  const dataUrl = String(payload.qrImageDataUrl || '').trim();
+  if (dataUrl) {
+    try {
+      const imgPath = await writeLogoTempFile(dataUrl, `${jobId}-qr`);
+      if (imgPath) {
+        await printer.printImage(imgPath);
+        printedImage = true;
+        try {
+          fs.unlinkSync(imgPath);
+        } catch {
+          /* ignore */
+        }
       }
+    } catch (err) {
+      logWarn(jobId, 'QR_IMAGE_SKIP', { message: err?.message });
     }
   }
-  if (isOn(fields, 'footer')) {
-    printer.println(L.footer || 'Thank you');
-    if (L.qrHint) {
-      printer.println(L.qrHint);
+  if (!printedImage) {
+    try {
+      const mm = Number(payload.paperWmm) || 80;
+      printer.printQR(qrValue, { cellSize: mm <= 58 ? 3 : 4, correction: 'M', model: 2 });
+    } catch (err) {
+      logWarn(jobId, 'QR_SKIP', { message: err?.message, len: qrValue.length });
     }
   }
+  printer.newLine();
   printer.alignLeft();
 }
 
@@ -435,15 +431,15 @@ async function buildReceiptOnPrinter(printer, payload, jobId) {
   preparePrinterEncoding(printer, safePayload.locale);
   await appendHeader(printer, safePayload, jobId);
   appendMeta(printer, safePayload);
-  appendReceiptType(printer, safePayload);
   if (isOn(safePayload.receiptFields, 'items')) {
     appendDivider(printer);
   }
   appendItems(printer, safePayload);
   appendTotals(printer, safePayload);
   appendPayment(printer, safePayload);
+  appendReceiptType(printer, safePayload);
   appendFiscalBlock(printer, safePayload);
-  appendQrAndFooter(printer, safePayload);
+  await appendQrAndFooter(printer, safePayload, jobId);
   printer.newLine();
   printer.newLine();
   printer.cut();

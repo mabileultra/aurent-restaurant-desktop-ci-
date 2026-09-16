@@ -3,6 +3,7 @@
  */
 import { CASHIER_ESCPOS_IPC } from '../../config/cashierEscposConfig';
 import { buildCashierEscposPayload } from './buildCashierEscposPayload';
+import { buildReceiptQrImageDataUrl } from './buildReceiptQrImage';
 
 /**
  * Доступна ли тихая ESC/POS печать в этом окружении.
@@ -71,6 +72,13 @@ export async function printSaleReceiptEscpos(sale, t) {
   const payload = buildCashierEscposPayload(sale, t);
   if (!payload) {
     throw new Error('No sale data for ESC/POS print');
+  }
+  if (payload.qrValue) {
+    try {
+      payload.qrImageDataUrl = await buildReceiptQrImageDataUrl(payload.qrValue, payload.paperWmm);
+    } catch {
+      payload.qrImageDataUrl = '';
+    }
   }
 
   try {

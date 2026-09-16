@@ -62,6 +62,9 @@ html.dark .receipt-page__card {
 .receipt-print-root .receipt-qr {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+  width: 28mm;
+  height: 28mm;
+  max-width: 100%;
 }
 .receipt-print-root .receipt-row--bold {
   font-weight: 700;
@@ -138,6 +141,10 @@ html.dark .receipt-page__card {
   overflow-wrap: anywhere;
   word-break: break-word;
   hyphens: auto;
+}
+.receipt-print-root .receipt-items-table__qtyline {
+  margin: 0.1rem 0 0;
+  font-variant-numeric: tabular-nums;
 }
 .receipt-print-root .receipt-items-table__vat {
   margin: 0.15rem 0 0;

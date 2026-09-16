@@ -1,14 +1,18 @@
 /** Форматирование сумм/дат/QR для ESC/POS (без Vite env — branding в payload). */
 
 /**
- * Деньги: 2 знака, пробелы тысяч.
+ * Деньги как на чеке ГНК: 25 000 без копеек, 2 678.57 если есть дробь.
  * @param {number|string} value
  * @returns {string}
  */
 function fmtMoney(value) {
   const n = Number(value);
-  if (!Number.isFinite(n)) return '0.00';
-  return n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  if (!Number.isFinite(n)) return '0';
+  const rounded = Math.round(n * 100) / 100;
+  if (Math.abs(rounded - Math.round(rounded)) < 0.001) {
+    return String(Math.round(rounded)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+  return rounded.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 /**
@@ -52,7 +56,7 @@ function splitDateTime(iso) {
     const pad = (n) => String(n).padStart(2, '0');
     return {
       date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
-      time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
     };
   } catch {
     return { date: '—', time: '—' };

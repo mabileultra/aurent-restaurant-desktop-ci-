@@ -1,7 +1,7 @@
 import { buildOfdCheckUrl, isOfdCheckUrl, isSyntheticFiscalSign, parseOfdCheckParams } from './ofdQrUrl';
 
 /** Данные для QR / фискального признака на чеке. */
-export { fmtMoney, fmtQty } from './formatMoney';
+export { fmtMoney, fmtMoneyCompact, fmtQty } from './formatMoney';
 
 /** Настоящий фискальный признак Multikassa/ГНК — без локальных MK-/hash fallback. */
 export function buildFiscalSign(sale) {
@@ -61,6 +61,9 @@ export function resolveFiscalReceiptTypeLabel(sale, t) {
     return t('fiscalReceipt.receiptTypeReturn');
   }
   const rt = String(sale?.receiptType || 'SALE').toUpperCase();
+  if (rt === 'SALE') {
+    return t('fiscalReceipt.receiptTypeSale');
+  }
   const key = `pos.receiptType.${rt}`;
   const translated = t(key);
   if (translated !== key) return translated;
@@ -73,7 +76,7 @@ export function splitDateTime(iso) {
     const pad = (n) => String(n).padStart(2, '0');
     return {
       date: `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`,
-      time: `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`,
+      time: `${pad(d.getHours())}:${pad(d.getMinutes())}`,
     };
   } catch {
     return { date: '—', time: '—' };
