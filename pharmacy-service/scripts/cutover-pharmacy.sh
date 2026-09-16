@@ -54,14 +54,6 @@ cmd_verify_compose() {
   echo "PHARM: $pharm_user@$pharm_db"
   echo
 
-  POS_DSN="postgresql://${pos_user}@postgres:5432/${pos_db}" \
-  PHARM_DSN="postgresql://${pharm_user}@pharmacy-db:5432/${pharm_db}" \
-  compose run --rm --no-deps \
-    -e POS_DSN \
-    -e PHARM_DSN \
-    pharmacy-service \
-    bash -lc 'echo "Use host verify if image has no psql client"; exit 0' >/dev/null 2>&1 || true
-
   # Prefer host-side counts through compose exec (no psql in app image required).
   FAIL=0
   check() {
