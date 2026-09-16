@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 import { usePosShell } from '../../../../contexts/PosShellContext';
 import { bottomNavLinkClass } from './bottomNavClass';
+import { isPharmPosPath } from '../../../../pharmacy/app/pharmacyPaths';
 
 export default function CashierBottomNavRegister({ t }) {
   const location = useLocation();
@@ -11,7 +12,7 @@ export default function CashierBottomNavRegister({ t }) {
   const { shell } = usePosShell() ?? {};
   const onRegisterPage =
     location.pathname.startsWith('/cashier/pos')
-    || location.pathname.startsWith('/cashier/pharmacy');
+    || isPharmPosPath(location.pathname);
   const isRegisterActive = onRegisterPage && shell?.posPane === 'register' && !shell?.payOpen;
 
   const openRegister = () => {

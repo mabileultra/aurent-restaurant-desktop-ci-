@@ -19,8 +19,8 @@ import {
   REPORT_ROUTES,
   REPORT_SALES_ROUTES,
   REPORT_STOCK_ROUTES,
-  GOODS_CHILDREN,
-  STOCK_CHILDREN,
+  goodsChildrenForBusinessType,
+  stockChildrenForBusinessType,
   ORDER_CHILDREN,
   REGISTER_CHILDREN,
   USER_CHILDREN,
@@ -78,8 +78,8 @@ export default function AppShellLayout() {
   const [ordersOpen, setOrdersOpen] = useState(false);
 
   const filterByModule = (items) => items.filter((item) => !item.moduleId || hasModule(item.moduleId));
-  const goodsNav = filterByModule(GOODS_CHILDREN);
-  const stockNav = filterByModule(STOCK_CHILDREN);
+  const goodsNav = filterByModule(goodsChildrenForBusinessType(businessType));
+  const stockNav = filterByModule(stockChildrenForBusinessType(businessType));
   const ordersNav = filterByModule(ORDER_CHILDREN);
   const financeNav = filterByModule(FINANCE_CHILDREN);
   const registersNav = filterByModule(REGISTER_CHILDREN);
@@ -120,7 +120,9 @@ export default function AppShellLayout() {
   useEffect(() => setMobileNavOpen(false), [location.pathname]);
   useEffect(() => {
     if (GOODS_ROUTES.includes(location.pathname)) setGoodsOpen(true);
-    if (STOCK_ROUTES.includes(location.pathname)) setStockOpen(true);
+    if (STOCK_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pharm/stock/')) {
+      setStockOpen(true);
+    }
     if (REPORT_ROUTES.includes(location.pathname)) setReportsOpen(true);
     if (REPORT_SALES_ROUTES.includes(location.pathname)) setReportsSalesOpen(true);
     if (REPORT_STOCK_ROUTES.includes(location.pathname)) setReportsStockOpen(true);
@@ -187,7 +189,7 @@ export default function AppShellLayout() {
         showReports={reportsSalesNav.length > 0 || reportsStockNav.length > 0}
         showUsers={usersNav.length > 0}
         inGoodsSection={GOODS_ROUTES.includes(location.pathname)}
-        inStockSection={STOCK_ROUTES.includes(location.pathname)}
+        inStockSection={STOCK_ROUTES.includes(location.pathname) || location.pathname.startsWith('/pharm/stock/')}
         inOrdersSection={ORDER_ROUTES.includes(location.pathname)}
         inFinanceSection={FINANCE_ROUTES.includes(location.pathname)}
         inRegistersSection={REGISTER_ROUTES.includes(location.pathname)}

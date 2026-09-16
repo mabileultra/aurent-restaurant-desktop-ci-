@@ -49,4 +49,14 @@ public class SaleItem {
 
     @Column(name = "line_total", nullable = false, precision = 18, scale = 2)
     private BigDecimal lineTotal;
+
+    @Column(name = "batch_number", length = 80)
+    private String batchNumber;
+
+    @Column(name = "expiry_date")
+    private java.time.LocalDate expiryDate;
+
+    @OneToMany(mappedBy = "saleItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<SaleItemLot> lotAllocations = new java.util.ArrayList<>();
 }

@@ -13,8 +13,14 @@ import {
 } from '../../../utils/quantityFormat';
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
-import { addPharmacyPieceItem, usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
+import { addPharmacyPieceItem } from '../utils/pharmacyCartActions';
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
+import { toCartQuantity } from '../utils/pharmacyPackQty';
+import {
+  productPieceStep,
+  productSellByPiece,
+  productUnitsInPack,
+} from '../utils/pharmacyProductMeta';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -41,33 +47,39 @@ export function usePharmacyCartHandlers({
   const [qtyModalProduct, setQtyModalProduct] = useState(null);
 
   const cartProductPayload = useCallback(
-    (product) =>
-      applyPharmacyPackSaleToCartProduct({
-        id: product.id,
-        name: product.name,
-        sku: product.sku,
-        ikpu: product.ikpu ?? null,
-        barcode: product.barcode ?? null,
-        packageCode: product.packageCode ?? null,
-        commissionTin: product.commissionTin ?? null,
-        markedProduct: product.markedProduct === true || Boolean(product.productMark || product.markCode),
-        productMark: product.productMark ?? product.markCode ?? null,
-        markCode: product.markCode ?? product.productMark ?? null,
-        attributes: product.attributes ?? null,
-        saleType: product.saleType || 'PIECE',
-        unitCode: product.unitCode,
-        unitOfMeasure: product.unitOfMeasure ?? null,
-        storageLocation: product.storageLocation ?? null,
-        quantityScale: product.quantityScale,
-        allowFraction: product.allowFraction,
-        soldIndividually: product.soldIndividually === true,
-        costPrice: Number(product.costPrice ?? 0),
-        sellingPrice: resolveProductUnitPrice(product, storeId),
-        defaultDiscountPercent: Number(product.defaultDiscountPercent ?? 0),
-        taxRate: Number(product.taxRate ?? 12),
-        stockQuantity: Number(product.stockQuantity ?? 0),
-        active: product.active !== false,
-      }),
+    (product) => ({
+      id: product.id,
+      name: product.name,
+      sku: product.sku,
+      ikpu: product.ikpu ?? null,
+      barcode: product.barcode ?? null,
+      barcodes: product.barcodes ?? product.additionalBarcodes ?? null,
+      additionalBarcodes: product.additionalBarcodes ?? null,
+      packageCode: product.packageCode ?? null,
+      commissionTin: product.commissionTin ?? null,
+      markedProduct: product.markedProduct === true || Boolean(product.productMark || product.markCode),
+      productMark: product.productMark ?? product.markCode ?? null,
+      markCode: product.markCode ?? product.productMark ?? null,
+      attributes: product.attributes ?? null,
+      saleType: product.saleType || 'PIECE',
+      unitCode: product.unitCode,
+      unitOfMeasure: product.unitOfMeasure ?? null,
+      storageLocation: product.storageLocation ?? null,
+      quantityScale: product.quantityScale,
+      allowFraction: product.allowFraction,
+      soldIndividually: product.soldIndividually === true,
+      costPrice: Number(product.costPrice ?? 0),
+      sellingPrice: resolveProductUnitPrice(product, storeId),
+      defaultDiscountPercent: Number(product.defaultDiscountPercent ?? 0),
+      taxRate: Number(product.taxRate ?? 12),
+      stockQuantity: Number(product.stockQuantity ?? 0),
+      active: product.active !== false,
+      manufacturer: product.manufacturer ?? null,
+      unitsInPack: productUnitsInPack(product),
+      pieceStep: productPieceStep(product),
+      lotBatch: product.lotBatch ?? null,
+      lotExpiry: product.lotExpiry ?? null,
+    }),
     [storeId],
   );
 
@@ -130,14 +142,30 @@ export function usePharmacyCartHandlers({
   );
 
   const handleQtyConfirm = useCallback(
-    (quantity) => {
-      const payload = qtyModalProduct;
-      if (!payload) return;
-      const qty = roundQty(quantity);
+    ({ packs = 0, pieces = 0, lot } = {}) => {
+      const product = qtyModalProduct;
+      if (!product) return;
+      const unitsInPack = productUnitsInPack(product) || Number(product.unitsInPack) || 1;
+      const sellByPiece = productSellByPiece(product);
+      const qty = toCartQuantity({ packs, pieces, unitsInPack, sellByPiece });
       if (qty <= 0) return;
+      let payload = {
+        ...product,
+        pieceStep: productPieceStep(product),
+        attributes: {
+          ...(product.attributes || {}),
+          ...(lot?.batchNumber ? { batch: lot.batchNumber, lotBatch: lot.batchNumber } : {}),
+          ...(lot?.expiryDate ? { expiry_date: lot.expiryDate, lotExpiry: lot.expiryDate } : {}),
+        },
+      };
+      if (sellByPiece && unitsInPack > 1) {
+        payload = applyPharmacyPackSaleToCartProduct(payload);
+      } else {
+        payload = { ...payload, pharmacySellByPiece: false };
+      }
       const lineId = addPharmacyPieceItem(payload, qty);
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
-      if (line) showLineAddedToast(line, payload.name);
+      if (line) showLineAddedToast(line, product.name);
       setQtyModalProduct(null);
       setSelectedLineId(lineId);
       setSearch('');
@@ -211,7 +239,7 @@ export function usePharmacyCartHandlers({
           }
         }
 
-        const product = await posFetchProductByBarcode(storeId, trimmed);
+        const product = await posFetchProductByBarcode(storeId, trimmed, { catalogKind: 'pharmacy' });
         if (product) {
           addProductToCart(product);
           setSearch('');
@@ -290,8 +318,11 @@ export function usePharmacyCartHandlers({
         updateQuantity(lineId, next);
         return;
       }
-      const next = item.quantity + delta;
-      if (item.pharmacySellByPiece && item.maxStock > 0 && next > item.maxStock) {
+      const step = item.pharmacySellByPiece
+        ? Math.max(1, Number(item.pieceStep) || 1)
+        : 1;
+      const next = item.quantity + delta * step;
+      if (item.maxStock > 0 && next > item.maxStock) {
         toast.error(t('pharmacyCashier.qtyExceedsStock'));
         return;
       }

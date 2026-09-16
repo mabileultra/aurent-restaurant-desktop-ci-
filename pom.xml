@@ -20,6 +20,7 @@
         <module>reporting-service</module>
         <module>crm-service</module>
         <module>restaurant-service</module>
+        <module>pharmacy-service</module>
         <module>ai-service</module>
     </modules>
 

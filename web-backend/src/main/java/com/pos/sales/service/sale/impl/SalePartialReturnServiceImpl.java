@@ -19,6 +19,7 @@ import com.pos.sales.service.sale.SaleAccessPolicy;
 import com.pos.sales.service.sale.SalePartialReturnService;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +44,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
     private final SalesLedgerCacheService salesLedgerCacheService;
     private final SaleAccessPolicy accessPolicy;
     private final StoreStockService storeStockService;
+    private final CatalogIsolationSupport catalogIsolation;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
     private final PosDomainEventService posDomainEventService;
 
@@ -52,6 +54,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
             .orElseThrow(() -> PosExceptions.notFound("Sale not found"));
 
         accessPolicy.assertCanVoid(sale);
+        catalogIsolation.rejectPharmacySaleMutationInMonolith(sale.getStore());
 
         if (sale.getStatus() == Sale.SaleStatus.VOIDED) {
             throw PosExceptions.badRequest("Чек уже полностью возвращён");

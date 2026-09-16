@@ -76,6 +76,7 @@ const buildLine = (product, quantity) => {
     pharmacySellByPiece: product.pharmacySellByPiece === true,
     unitsInPack: product.unitsInPack ?? null,
     packUnitPrice: product.packUnitPrice ?? null,
+    pieceStep: product.pieceStep ?? null,
   };
 };
 

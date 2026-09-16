@@ -10,6 +10,7 @@ public final class BusinessTypeCodes {
 
     public static final String UNIVERSAL = "UNIVERSAL";
     public static final String RESTAURANT = "RESTAURANT";
+    public static final String PHARMACY = "PHARMACY";
 
     private BusinessTypeCodes() {}
 

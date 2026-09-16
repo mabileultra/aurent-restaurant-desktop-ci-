@@ -13,6 +13,7 @@ on:
       - 'platform-service/**'
       - 'reporting-service/**'
       - 'restaurant-service/**'
+      - 'pharmacy-service/**'
       - 'api-gateway/**'
       - 'shared-kernel/**'
       - 'deploy/**'

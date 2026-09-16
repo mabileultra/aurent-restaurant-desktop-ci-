@@ -3,6 +3,7 @@ package com.pos.inventory.service.stock.support;
 import com.pos.catalog.entity.Product;
 import com.pos.exception.PosExceptions;
 import com.pos.catalog.repository.ProductRepository;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,6 +20,7 @@ import java.util.UUID;
 public class StockDocumentSupport {
 
     private final ProductRepository productRepository;
+    private final CatalogIsolationSupport catalogIsolation;
 
     public void requireLines(List<?> lines) {
         if (lines == null || lines.isEmpty()) {
@@ -38,6 +40,12 @@ public class StockDocumentSupport {
         if (!product.isActive()) {
             throw PosExceptions.badRequest("Product is not active: " + product.getName());
         }
+        return product;
+    }
+
+    public Product requireActiveGroceryProduct(UUID productId) {
+        Product product = requireActiveProduct(productId);
+        catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         return product;
     }
 

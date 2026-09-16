@@ -59,6 +59,7 @@ export default function PharmacyPosPage() {
 
       <PosReturnModal
         terminal
+        catalogKind="pharmacy"
         open={p.returnOpen}
         onClose={() => p.setReturnOpen(false)}
         onSuccess={p.handleReturnSuccess}
@@ -78,6 +79,7 @@ export default function PharmacyPosPage() {
       <PharmacyQtyModal
         open={!!p.cartHandlers.qtyModalProduct}
         product={p.cartHandlers.qtyModalProduct}
+        storeId={p.storeId}
         onConfirm={p.cartHandlers.handleQtyConfirm}
         onClose={p.cartHandlers.closeQtyModal}
       />

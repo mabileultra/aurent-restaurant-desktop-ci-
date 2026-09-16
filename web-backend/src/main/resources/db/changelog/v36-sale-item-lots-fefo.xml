@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v36-sale-items-lot-fields" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="sale_items" columnName="batch_number"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="sale_items">
+            <column name="batch_number" type="VARCHAR(80)"/>
+            <column name="expiry_date" type="DATE"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v36-sale-item-lots" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="sale_item_lots"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE TABLE sale_item_lots (
+                id UUID PRIMARY KEY,
+                sale_item_id UUID NOT NULL REFERENCES sale_items (id) ON DELETE CASCADE,
+                lot_id UUID REFERENCES stock_lots (id),
+                quantity NUMERIC(18, 3) NOT NULL,
+                batch_number VARCHAR(80),
+                expiry_date DATE
+            );
+            CREATE INDEX idx_sale_item_lots_sale_item ON sale_item_lots (sale_item_id);
+            CREATE INDEX idx_sale_item_lots_lot ON sale_item_lots (lot_id);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

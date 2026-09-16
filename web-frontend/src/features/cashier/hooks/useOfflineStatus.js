@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import toast from 'react-hot-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCashierStore } from '../../../hooks/useCashierStore';
+import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
 import { useAuthStore } from '../../../store/authStore';
 import { userHasCashierOfflineAccess } from '../../../utils/cashierOfflineAccess';
 import { isDesktopCashier } from '../../../utils/authLogin';
@@ -40,6 +41,8 @@ export function useOfflineStatus() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { storeId } = useCashierStore();
+  const { isPharmacy } = useCashierStoreProfile();
+  const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const offlineMode = useConnectivityStore((s) => s.offlineMode);
   const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const canSellOffline = useConnectivityStore((s) => s.canSellOffline);
@@ -108,7 +111,7 @@ export function useOfflineStatus() {
       useConnectivityStore.getState().setSyncingCatalog(true);
       toast.loading(t('offline.preparingCatalogForOffline'), { id: toastId });
       try {
-        const result = await refreshCatalogBootstrap(storeId, { force: true });
+        const result = await refreshCatalogBootstrap(storeId, { force: true, catalogKind });
         if (result?.skipped && result?.reason === 'error') {
           throw new Error(t('offline.updateCatalogFailed'));
         }
@@ -144,12 +147,12 @@ export function useOfflineStatus() {
     useConnectivityStore.getState().setForceOfflineMode(true);
     invalidatePosData(qc, storeId);
     toast.success(t('offline.forceOfflineOn'), { id: toastId });
-  }, [canSellOffline, posRoute.hasCatalog, qc, storeId, t]);
+  }, [canSellOffline, catalogKind, posRoute.hasCatalog, qc, storeId, t]);
 
   const handleSyncSales = useCallback(async () => {
     useConnectivityStore.getState().setSyncing(true);
     try {
-      await pushPendingSales();
+      await pushPendingSales({ catalogKind });
       useConnectivityStore.getState().setSyncResult({ ok: true });
       await refreshConnectivityStatus();
     } catch (err) {
@@ -158,7 +161,7 @@ export function useOfflineStatus() {
         error: err?.message || String(err),
       });
     }
-  }, []);
+  }, [catalogKind]);
 
   const handleRefreshCatalog = useCallback(async () => {
     if (!storeId) return;
@@ -168,7 +171,7 @@ export function useOfflineStatus() {
     }
     useConnectivityStore.getState().setSyncingCatalog(true);
     try {
-      const result = await refreshCatalogBootstrap(storeId, { force: true });
+      const result = await refreshCatalogBootstrap(storeId, { force: true, catalogKind });
       if (result?.skipped && result?.reason === 'error') {
         throw new Error(t('offline.updateCatalogFailed'));
       }
@@ -188,7 +191,7 @@ export function useOfflineStatus() {
     } finally {
       useConnectivityStore.getState().setSyncingCatalog(false);
     }
-  }, [forceOfflineMode, networkOffline, qc, storeId, t]);
+  }, [catalogKind, forceOfflineMode, networkOffline, qc, storeId, t]);
 
   let message = t('offline.onlineOk');
   let shortLabel = t('offline.topbarOnline');

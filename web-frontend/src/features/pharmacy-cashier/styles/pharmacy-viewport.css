@@ -2,7 +2,7 @@
 
 html.app-viewport--canonical .pharmacy-cashier__main,
 .cashier-app.cashier-app--pos-desktop .pharmacy-cashier__main {
-  grid-template-rows: minmax(100px, 0.9fr) minmax(136px, 1.1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--cashier-gap, 6px);
 }
 

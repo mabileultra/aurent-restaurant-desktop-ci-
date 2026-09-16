@@ -4,6 +4,8 @@ import com.pos.catalog.entity.Product;
 import com.pos.catalog.entity.ProductAttribute;
 import com.pos.catalog.entity.ProductBarcode;
 import com.pos.catalog.entity.ProductStorePrice;
+import com.pos.domain.businessconfig.BusinessTypeCodes;
+import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
@@ -32,6 +34,25 @@ public final class ProductSpecifications {
         Boolean soldIndividually,
         String barcodeExact,
         Map<String, String> attributeFilters
+    ) {
+        return catalogFilter(
+            companyId, search, categoryId, deletedScope, storeId, ikpuStatus,
+            markedProduct, soldIndividually, barcodeExact, attributeFilters, null
+        );
+    }
+
+    public static Specification<Product> catalogFilter(
+        Integer companyId,
+        String search,
+        Integer categoryId,
+        String deletedScope,
+        Integer storeId,
+        String ikpuStatus,
+        Boolean markedProduct,
+        Boolean soldIndividually,
+        String barcodeExact,
+        Map<String, String> attributeFilters,
+        String businessTypeCode
     ) {
         return (root, query, cb) -> {
 
@@ -123,6 +144,8 @@ public final class ProductSpecifications {
                 }
             }
 
+            addBusinessTypeFilter(parts, root, cb, businessTypeCode);
+
             if (storeId != null) {
                 Subquery<Long> sq = query.subquery(Long.class);
                 Root<ProductStorePrice> spRoot = sq.from(ProductStorePrice.class);
@@ -151,6 +174,16 @@ public final class ProductSpecifications {
         String search,
         String barcodeContains,
         Boolean markedProduct
+    ) {
+        return warehouseFilter(companyId, search, barcodeContains, markedProduct, null);
+    }
+
+    public static Specification<Product> warehouseFilter(
+        Integer companyId,
+        String search,
+        String barcodeContains,
+        Boolean markedProduct,
+        String businessTypeCode
     ) {
         return (root, query, cb) -> {
             List<Predicate> parts = new ArrayList<>();
@@ -185,8 +218,30 @@ public final class ProductSpecifications {
                 parts.add(cb.or(primaryLike, extraLike));
             }
 
+            addBusinessTypeFilter(parts, root, cb, businessTypeCode);
+
             return cb.and(parts.toArray(new Predicate[0]));
         };
+    }
+
+    private static void addBusinessTypeFilter(
+        List<Predicate> parts,
+        Root<Product> root,
+        CriteriaBuilder cb,
+        String businessTypeCode
+    ) {
+        Join<?, ?> typeJoin = root.join("businessType", JoinType.LEFT);
+        if (StringUtils.hasText(businessTypeCode)) {
+            parts.add(cb.equal(
+                cb.upper(typeJoin.get("code")),
+                businessTypeCode.trim().toUpperCase()
+            ));
+            return;
+        }
+        parts.add(cb.or(
+            cb.isNull(typeJoin.get("id")),
+            cb.notEqual(cb.upper(typeJoin.get("code")), BusinessTypeCodes.PHARMACY)
+        ));
     }
 
     /** Точный поиск одного товара: SKU, штрихкод, ИКПУ e-фактуры и т.д. */

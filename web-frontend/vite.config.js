@@ -6,9 +6,42 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
+    // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
     proxy: {
+      '/api/v1/auth': {
+        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/api/v1/users': {
+        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/api/v1/platform/module-access': {
+        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/api/v1/platform/security': {
+        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
+      '/api/v1/companies': {
+        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
+        changeOrigin: true,
+      },
+      '/api/v1/platform': {
+        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
+        changeOrigin: true,
+      },
+      '/api/v1/billing': {
+        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
+        changeOrigin: true,
+      },
+      '/api/v1/public': {
+        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
+        changeOrigin: true,
+      },
       '/api': {
-        target: 'http://localhost:8080',
+        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088',
         changeOrigin: true,
       },
     },

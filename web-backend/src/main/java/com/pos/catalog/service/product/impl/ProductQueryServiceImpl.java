@@ -15,6 +15,7 @@ import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductLowStockQuerySupport;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.scales.codec.WeightBarcodeCodec;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     private final ProductLowStockQuerySupport productLowStockQuerySupport;
     private final TenantAccessSupport tenantAccess;
     private final WeightBarcodeCodec weightBarcodeCodec;
+    private final CatalogIsolationSupport catalogIsolation;
 
     @Override
     public PageResponse<ProductResponse> getProducts(
@@ -58,13 +60,14 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Boolean soldIndividually,
         String barcodeExact,
         java.util.Map<String, String> attributeFilters,
+        String businessTypeCode,
         Pageable pageable
     ) {
         String scope = deletedScope != null ? deletedScope : (activeOnly ? "ACTIVE" : "ALL");
         Specification<Product> spec = ProductSpecifications.catalogFilter(
             tenantAccess.effectiveCompanyIdOrNull(),
             search, categoryId, scope, storeId, ikpuStatus, markedProduct, soldIndividually, barcodeExact,
-            attributeFilters
+            attributeFilters, businessTypeCode
         );
         return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
@@ -74,11 +77,12 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String search,
         String barcodeContains,
         Boolean markedProduct,
+        String businessTypeCode,
         Pageable pageable
     ) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         Specification<Product> spec = ProductSpecifications.warehouseFilter(
-            companyId, search, barcodeContains, markedProduct
+            companyId, search, barcodeContains, markedProduct, businessTypeCode
         );
         return mapPage(productRepository.findAll(spec, pageable), null);
     }
@@ -87,17 +91,21 @@ public class ProductQueryServiceImpl implements ProductQueryService {
     public ProductResponse getProduct(UUID id, Integer storeId) {
         Product product = catalogLoader.requireDetailed(id);
         tenantAccess.assertProductBelongsToTenant(product);
+        catalogIsolation.hidePharmacyFromGrocery(product);
         return forStore(assembler.toResponse(product), product, storeId);
     }
 
     @Override
     public ProductResponse getByBarcode(String barcode) {
-        return assembler.toResponse(validateBarcodeProduct(resolveByBarcode(barcode), null));
+        Product product = validateBarcodeProduct(resolveByBarcode(barcode), null);
+        catalogIsolation.hidePharmacyFromGrocery(product);
+        return assembler.toResponse(product);
     }
 
     @Override
     public ProductResponse getByBarcode(String barcode, Integer storeId) {
         Product product = validateBarcodeProduct(resolveByBarcode(barcode), storeId);
+        catalogIsolation.hidePharmacyFromGrocery(product);
         return forStore(assembler.toResponse(product), product, storeId);
     }
 

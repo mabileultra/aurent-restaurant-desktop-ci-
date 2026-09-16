@@ -14,6 +14,7 @@ import com.pos.catalog.service.product.ProductStockService;
 import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.inventory.service.stock.StoreStockService;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
@@ -36,10 +37,12 @@ public class ProductStockServiceImpl implements ProductStockService {
     private final ProductResponseAssembler assembler;
     private final ProductExtensionService extensionService;
     private final ProductSnapshotNotifier productSnapshotNotifier;
+    private final CatalogIsolationSupport catalogIsolation;
 
     @Override
     public ProductResponse adjustStock(UUID id, BigDecimal quantity, String movementType, String notes, Integer storeId) {
         Product product = catalogLoader.requireById(id);
+        catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         Store store = storeStockService.resolveStoreForProduct(product, storeId);
         BigDecimal delta = QuantityUtil.normalize(quantity);
         applyStockDelta(product, delta, store);
@@ -52,6 +55,7 @@ public class ProductStockServiceImpl implements ProductStockService {
     @Override
     public ProductResponse receiveWarehouseStock(WarehouseReceiveRequest req) {
         Product product = catalogLoader.requireDetailed(req.productId());
+        catalogIsolation.rejectPharmacyFromGroceryWrite(product);
         BigDecimal quantity = QuantityUtil.normalize(req.quantity());
         if (quantity.signum() <= 0) {
             throw PosExceptions.badRequest("Quantity must be greater than zero");

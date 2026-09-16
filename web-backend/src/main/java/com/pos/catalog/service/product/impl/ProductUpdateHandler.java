@@ -18,6 +18,7 @@ import com.pos.catalog.service.product.support.ProductCatalogLoader;
 import com.pos.catalog.service.product.support.ProductPluValidator;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
+import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class ProductUpdateHandler {
     private final ProductExtensionService extensionService;
     private final UnitCatalogService unitCatalogService;
     private final ProductAttributeService productAttributeService;
+    private final StoreBusinessTypeResolver storeBusinessTypeResolver;
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
 
@@ -161,6 +163,13 @@ public class ProductUpdateHandler {
             storePriceApplier.applyStorePrices(product, req.storePrices());
         } else if (req.sellingPrice() != null) {
             storePriceApplier.syncWithSellingPrice(product, previousSelling, req.sellingPrice());
+        }
+        if (StringUtils.hasText(req.businessTypeCode())) {
+            product.setBusinessType(
+                storeBusinessTypeResolver.resolveForUpdate(
+                    product.getCompany().getId(), null, req.businessTypeCode()
+                )
+            );
         }
         extensionService.applyOnUpdate(product, req);
     }

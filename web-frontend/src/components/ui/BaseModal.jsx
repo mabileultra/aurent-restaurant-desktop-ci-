@@ -18,12 +18,19 @@ export default function BaseModal({
   size = 'md',
   className,
   bodyClassName,
+  overlayClassName,
+  footerClassName,
   hideHeader = false,
 }) {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div
+      className={clsx(
+        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4',
+        overlayClassName,
+      )}
+    >
       <div
         className={clsx(
           'w-full rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900',
@@ -59,7 +66,7 @@ export default function BaseModal({
         )}
         <div className={clsx('p-5', bodyClassName)}>{children}</div>
         {footer && (
-          <div className="flex justify-end gap-2 border-t border-slate-200 px-4 py-3 dark:border-slate-800">
+          <div className={clsx('flex justify-end gap-2 border-t border-slate-200 px-4 py-3 dark:border-slate-800', footerClassName)}>
             {footer}
           </div>
         )}

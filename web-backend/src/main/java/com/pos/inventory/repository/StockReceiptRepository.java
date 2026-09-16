@@ -27,6 +27,7 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
         WHERE r.createdAt >= :start AND r.createdAt < :end
           AND (:storeId IS NULL OR r.store.id = :storeId)
           AND st.company.id = :companyId
+          AND (st.businessType IS NULL OR UPPER(st.businessType) <> 'PHARMACY')
         ORDER BY r.createdAt DESC
         """)
     Page<StockReceipt> findReceiptsBetween(
@@ -44,6 +45,7 @@ public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID
         LEFT JOIN FETCH r.supplier
         LEFT JOIN FETCH r.store
         LEFT JOIN FETCH r.createdBy
+        LEFT JOIN FETCH r.activatedBy
         WHERE r.id = :id
         """)
     Optional<StockReceipt> findDetailedById(@Param("id") UUID id);

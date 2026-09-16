@@ -1,4 +1,4 @@
-import { syncApi } from '../api';
+import { resolveSyncApi } from '../api';
 import { isCatalogStoreMismatch } from './connectivityRules';
 import {
   offlineGetStatus,
@@ -30,8 +30,12 @@ export function isCatalogStale(lastCatalogSyncAt) {
 
 export { isCatalogStoreMismatch } from './connectivityRules';
 
-export async function pullCatalogBootstrap(storeId) {
-  const res = await syncApi.bootstrap(storeId);
+function syncClient(catalogKind) {
+  return resolveSyncApi(catalogKind);
+}
+
+export async function pullCatalogBootstrap(storeId, { catalogKind } = {}) {
+  const res = await syncClient(catalogKind).bootstrap(storeId);
   const data = res.data;
   markApiReachable();
   if (isDesktopOfflineBridge()) {
@@ -43,7 +47,7 @@ export async function pullCatalogBootstrap(storeId) {
   return data;
 }
 
-export async function refreshCatalogBootstrap(storeId, { force = false } = {}) {
+export async function refreshCatalogBootstrap(storeId, { force = false, catalogKind } = {}) {
   if (!isDesktopOfflineBridge()) return { skipped: true, reason: 'not-desktop' };
 
   const status = await offlineGetStatus();
@@ -59,7 +63,7 @@ export async function refreshCatalogBootstrap(storeId, { force = false } = {}) {
     }
   }
 
-  const data = await pullCatalogBootstrap(storeId);
+  const data = await pullCatalogBootstrap(storeId, { catalogKind });
   return {
     skipped: false,
     productCount: data?.products?.length ?? 0,
@@ -67,7 +71,7 @@ export async function refreshCatalogBootstrap(storeId, { force = false } = {}) {
   };
 }
 
-export async function pushPendingSales() {
+export async function pushPendingSales({ catalogKind } = {}) {
   if (!isDesktopOfflineBridge()) return { pushed: 0, failed: 0, results: [] };
 
   const pending = await offlineListPendingSales();
@@ -114,7 +118,7 @@ export async function pushPendingSales() {
     });
   }
 
-  const res = await syncApi.pushSalesBatch({ sales });
+  const res = await syncClient(catalogKind).pushSalesBatch({ sales });
   markApiReachable();
   const results = res.data?.results || [];
   await offlineMarkSalesSynced(results);
@@ -123,9 +127,9 @@ export async function pushPendingSales() {
 }
 
 /** Только продажи — для частого фонового цикла. */
-export async function runSalesSyncOnly() {
+export async function runSalesSyncOnly({ catalogKind } = {}) {
   try {
-    return await pushPendingSales();
+    return await pushPendingSales({ catalogKind });
   } catch (err) {
     useConnectivityStore.getState().setSyncResult({ ok: false, error: err?.message || String(err) });
     return { pushed: 0, failed: 0, results: [], error: err?.message || String(err) };
@@ -133,9 +137,9 @@ export async function runSalesSyncOnly() {
 }
 
 /** Каталог — только если устарел или force (ручное обновление). */
-export async function runCatalogSyncIfNeeded(storeId, { force = false } = {}) {
+export async function runCatalogSyncIfNeeded(storeId, { force = false, catalogKind } = {}) {
   try {
-    return await refreshCatalogBootstrap(storeId, { force });
+    return await refreshCatalogBootstrap(storeId, { force, catalogKind });
   } catch (err) {
     const error = err?.response?.data?.message || err?.message || String(err);
     return { skipped: true, reason: 'error', error };

@@ -124,3 +124,196 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.pharmacy-qty-modal__panel--sale {
+  width: min(520px, 100%);
+  padding: 0 0 1rem;
+  border-radius: var(--pharm-radius, 12px);
+  overflow: hidden;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, #1a2e28);
+  border-color: var(--pharm-border, #d5ddd8);
+  box-shadow: 0 24px 48px rgb(0 104 71 / 0.16);
+}
+
+.pharmacy-qty-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.9rem;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+}
+
+.pharmacy-qty-modal__head .pharmacy-qty-modal__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pharmacy-qty-modal__x {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pharmacy-qty-modal__product {
+  margin: 0;
+  padding: 0.55rem 0.9rem;
+  background: var(--pharm-ok, #d8f5e3);
+  color: var(--pharm-ok-text, #0b5c3a);
+  font-size: 1.02rem;
+  font-weight: 800;
+}
+
+.pharmacy-qty-modal__grid {
+  display: grid;
+  gap: 0.28rem 0;
+  margin: 0.65rem 0.9rem 0.4rem;
+}
+
+.pharmacy-qty-modal__grid-row {
+  display: grid;
+  grid-template-columns: 8.2rem 1fr;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.pharmacy-qty-modal__grid dt {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--pharm-muted, #5b6f68);
+}
+
+.pharmacy-qty-modal__grid dd {
+  margin: 0;
+  font-size: 0.84rem;
+  font-weight: 650;
+  color: var(--pharm-ink, #1a2e28);
+}
+
+.pharmacy-qty-modal__select {
+  width: 100%;
+  height: 30px;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: var(--pharm-radius-sm, 6px);
+  padding: 0 0.35rem;
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, #1a2e28);
+}
+
+.pharmacy-qty-modal__select:focus {
+  outline: none;
+  border-color: var(--pharm-accent, #006847);
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+}
+
+.pharmacy-qty-modal__price-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.pharmacy-qty-modal__muted {
+  font-weight: 500;
+  color: var(--pharm-muted, #5b6f68);
+}
+
+.pharmacy-qty-modal__qty {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+  margin: 0.7rem 0.9rem 0.35rem;
+}
+
+.pharmacy-qty-modal__qty--single {
+  grid-template-columns: 1fr;
+}
+
+.pharmacy-qty-modal__qty-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr;
+  gap: 0.15rem 0.4rem;
+  padding: 0.35rem 0.45rem 0.4rem;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: var(--pharm-radius-sm, 6px);
+  background: var(--pharm-surface, #f3f6f4);
+}
+
+.pharmacy-qty-modal__qty-box span {
+  grid-column: 1 / -1;
+  font-size: 0.72rem;
+  color: var(--pharm-muted, #5b6f68);
+}
+
+.pharmacy-qty-modal__qty-input {
+  width: 100%;
+  min-width: 0;
+  height: 48px;
+  border: 0;
+  background: transparent;
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--pharm-brand, #006847);
+  text-align: center;
+  outline: none;
+}
+
+.pharmacy-qty-modal__qty-box em {
+  align-self: end;
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #1a2e28);
+  padding-bottom: 0.55rem;
+}
+
+.pharmacy-qty-modal__qty-box.is-disabled {
+  opacity: 0.45;
+}
+
+.pharmacy-qty-modal__hint {
+  margin: 0.15rem 0.9rem 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--pharm-brand, #006847);
+}
+
+.pharmacy-qty-modal__total {
+  margin: 0.55rem 0.9rem 0;
+  padding: 0.45rem 0.5rem;
+  background: var(--pharm-ok, #d8f5e3);
+  border-radius: var(--pharm-radius-sm, 6px);
+  text-align: center;
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: var(--pharm-ok-text, #0b5c3a);
+}
+
+.pharmacy-qty-modal__mark {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.55rem 0.9rem 0;
+  font-size: 0.84rem;
+  color: var(--pharm-ink, #1a2e28);
+}
+
+.pharmacy-qty-modal__mark input {
+  accent-color: var(--pharm-brand, #006847);
+}
+
+.pharmacy-qty-modal__panel--sale .pharmacy-qty-modal__actions {
+  margin: 0.7rem 0.9rem 0;
+}
+
+.pharmacy-qty-modal__panel--sale .pharmacy-qty-modal__error {
+  margin-left: 0.9rem;
+  margin-right: 0.9rem;
+  color: var(--pharm-danger-text, #8a1f1a);
+}

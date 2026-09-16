@@ -15,7 +15,11 @@ import com.pos.catalog.service.product.ProductExtensionService;
 import com.pos.catalog.service.product.ProductResponseAssembler;
 import com.pos.catalog.service.product.support.ProductBarcodeValidator;
 import com.pos.catalog.service.product.support.ProductInitialStockSupport;
+import com.pos.catalog.service.product.support.ProductPluValidator;
+import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
+import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.Test;
@@ -48,12 +52,16 @@ class ProductCreateHandlerTest {
     @Mock private CategoryRepository categoryRepository;
     @Mock private TenantAccessSupport tenantAccess;
     @Mock private ProductBarcodeValidator barcodeValidator;
+    @Mock private ProductPluValidator pluValidator;
     @Mock private ProductStorePriceApplier storePriceApplier;
     @Mock private ProductInitialStockSupport initialStockSupport;
     @Mock private ProductExtensionService extensionService;
     @Mock private UnitCatalogService unitCatalogService;
     @Mock private ProductAttributeService productAttributeService;
+    @Mock private StoreBusinessTypeResolver storeBusinessTypeResolver;
+    @Mock private CatalogIsolationSupport catalogIsolation;
     @Mock private ProductResponseAssembler assembler;
+    @Mock private ProductSnapshotNotifier productSnapshotNotifier;
 
     @InjectMocks
     private ProductCreateHandler handler;

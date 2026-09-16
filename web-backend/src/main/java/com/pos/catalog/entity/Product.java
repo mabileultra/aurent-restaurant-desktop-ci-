@@ -1,6 +1,7 @@
 package com.pos.catalog.entity;
 
 import jakarta.persistence.*;
+import com.pos.entity.BusinessTypeDefinition;
 import com.pos.entity.Company;
 import lombok.*;
 import org.hibernate.annotations.BatchSize;
@@ -45,6 +46,10 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "business_type_id")
+    private BusinessTypeDefinition businessType;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "product_type", nullable = false, length = 30)

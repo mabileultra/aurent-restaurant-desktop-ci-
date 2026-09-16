@@ -16,7 +16,7 @@ function invalidatePosCatalogQueries(qc) {
   qc.invalidateQueries({ queryKey: ['pos-products'] });
 }
 
-export function usePosProductsCatalog({ storeId }) {
+export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState(ALL_CATEGORY_ID);
@@ -95,6 +95,7 @@ export function usePosProductsCatalog({ storeId }) {
       categoryFilterId,
       search.trim(),
       catalogMode,
+      catalogKind || 'grocery',
       bootstrapReady,
       productCount,
     ],
@@ -105,6 +106,7 @@ export function usePosProductsCatalog({ storeId }) {
         search,
         pageParam,
         signal,
+        catalogKind,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, lastPageParam) =>

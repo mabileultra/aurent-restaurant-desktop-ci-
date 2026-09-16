@@ -1,0 +1,54 @@
+package com.pos.pharmacy.catalog.dto;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
+import com.pos.pharmacy.domain.ProductType;
+import com.pos.pharmacy.domain.SaleType;
+import com.pos.pharmacy.domain.UnitCode;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+
+public record CreateProductRequest(
+    @NotBlank String sku,
+    @NotBlank String name,
+    String description,
+    Integer categoryId,
+    @NotNull @DecimalMin("0") BigDecimal costPrice,
+    @NotNull @DecimalMin("0.01") BigDecimal sellingPrice,
+    @DecimalMin("0") BigDecimal defaultDiscountPercent,
+    @NotNull BigDecimal taxRate,
+    ProductType productType,
+    SaleType saleType,
+    UnitCode unitCode,
+    Integer quantityScale,
+    Boolean allowFraction,
+    BigDecimal initialStock,
+    Integer lowStockAlert,
+    String barcode,
+    String plu,
+    String imageUrl,
+    String externalProductId,
+    String ikpu,
+    String ikpuStatus,
+    String unitOfMeasure,
+    String unitMeasureCode,
+    String packageCode,
+    Boolean soldIndividually,
+    Boolean markedProduct,
+    String storageLocation,
+    String ownerType,
+    String commissionTin,
+    String commissionPinfl,
+    String uzInvoiceDocumentId,
+    @Valid List<ProductStorePriceRequest> storePrices,
+    List<String> additionalBarcodes,
+    ServiceProductDetailsRequest serviceDetails,
+    RetailExtrasRequest retailExtras,
+    String businessTypeCode,
+    Map<String, String> attributes
+) {}

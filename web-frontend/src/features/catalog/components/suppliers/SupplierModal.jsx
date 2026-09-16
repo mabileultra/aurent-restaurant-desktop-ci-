@@ -13,7 +13,7 @@ const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 t
 
 const labelCls = 'mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400';
 
-export default function SupplierModal({ open, onClose }) {
+export default function SupplierModal({ open, onClose, onCreated }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [name, setName] = useState('');
@@ -33,9 +33,11 @@ export default function SupplierModal({ open, onClose }) {
 
   const mutation = useMutation({
     mutationFn: (body) => supplierApi.create(body),
-    onSuccess: () => {
+    onSuccess: (res) => {
       toast.success(t('suppliersModule.createdOk'));
       qc.invalidateQueries({ queryKey: ['suppliers'] });
+      qc.invalidateQueries({ queryKey: ['suppliers-all'] });
+      onCreated?.(res?.data ?? res);
       onClose();
     },
     onError: (err) => {

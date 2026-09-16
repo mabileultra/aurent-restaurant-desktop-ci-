@@ -12,19 +12,18 @@
   }
 
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
-    grid-template-rows: minmax(84px, 0.88fr) minmax(112px, 1.12fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
     gap: 4px;
   }
 
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__table,
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table {
     font-size: 0.75rem;
-    line-height: 1.2;
-    min-width: 880px;
+    line-height: 1.15;
   }
 
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-search__table {
-    min-width: 920px;
+    min-width: 100%;
   }
 
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cart-table__table thead th,

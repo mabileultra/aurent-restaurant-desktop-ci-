@@ -4,6 +4,7 @@ import { storeApi } from '../services/api';
 import { useCashierStore } from './useCashierStore';
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
 import { resolveCashierRegisterPath } from '../utils/cashierRegisterRoute';
+import { isPharmPosPath } from '../pharmacy/app/pharmacyPaths';
 
 export function useCashierStoreProfile() {
   const location = useLocation();
@@ -18,7 +19,7 @@ export function useCashierStoreProfile() {
 
   const businessType = normalizeBusinessTypeCode(query.data?.businessType);
   const isRestaurant = businessType === 'RESTAURANT' || businessType === 'CANTEEN' || onRestaurantRoute;
-  const isPharmacy = businessType === 'PHARMACY' || location.pathname.startsWith('/cashier/pharmacy');
+  const isPharmacy = businessType === 'PHARMACY' || isPharmPosPath(location.pathname);
   const registerPath = resolveCashierRegisterPath(query.data?.businessType);
 
   return {

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { lineDiscountAmount, lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
+import { formatCartPackPieceQty } from '../utils/pharmacyPackQty';
 import {
   formatExpiryDisplay,
   productBatch,
@@ -102,10 +103,12 @@ export default function PharmacyCartTable({
                     <span className="pharmacy-cart-table__cell-text">{form}</span>
                   </td>
                   <td className="pharmacy-cart-table__num">
-                    <span className="pharmacy-cart-table__money">{fmt(item.unitPrice)}</span>
-                    {item.pharmacySellByPiece ? (
+                    <span className="pharmacy-cart-table__money">
+                      {fmt(item.packUnitPrice || item.unitPrice)}
+                    </span>
+                    {item.pharmacySellByPiece && Number(item.unitsInPack) > 1 ? (
                       <span className="pharmacy-cart-table__piece-price-hint">
-                        {t('pharmacyCashier.perPieceShort')}
+                        {t('pharmacyCashier.perPackShort')}
                       </span>
                     ) : null}
                   </td>
@@ -120,8 +123,13 @@ export default function PharmacyCartTable({
                         <Minus size={12} strokeWidth={2.5} aria-hidden />
                       </button>
                       <span className="pharmacy-cart-table__qty-val">
-                        {item.pharmacySellByPiece
-                          ? Math.round(item.quantity)
+                        {item.pharmacySellByPiece && Number(item.unitsInPack) > 1
+                          ? formatCartPackPieceQty(
+                            item.quantity,
+                            item.unitsInPack,
+                            true,
+                            { pack: t('pharmacyCashier.packUnit'), piece: t('pharmacyCashier.pieceUnit') },
+                          )
                           : formatQty(item.quantity, item.saleType, item.unitCode)}
                       </span>
                       <button

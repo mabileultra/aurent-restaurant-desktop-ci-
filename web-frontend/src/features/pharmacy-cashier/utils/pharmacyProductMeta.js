@@ -27,6 +27,7 @@ export function productAttr(productOrLine, ...keys) {
 export function productExpiry(productOrLine) {
   return productAttr(
     productOrLine,
+    'lotExpiry',
     'expiry_date',
     'expiryDate',
     'expiration_date',
@@ -39,6 +40,7 @@ export function productExpiry(productOrLine) {
 export function productBatch(productOrLine) {
   return productAttr(
     productOrLine,
+    'lotBatch',
     'batch',
     'series',
     'batch_number',
@@ -133,12 +135,36 @@ export function productRequiresPrescription(productOrLine) {
     || normalized === 'рецепт';
 }
 
+/** Можно продавать поштучно из упаковки. Явный запрет в карточке важнее. */
+export function productSellByPiece(productOrLine) {
+  const pack = productUnitsInPack(productOrLine);
+  if (pack == null || pack <= 1) return false;
+  const raw = productAttr(productOrLine, 'sell_by_piece', 'sellByPiece');
+  if (raw) {
+    const normalized = String(raw).trim().toLowerCase();
+    if (['0', 'false', 'no', 'нет', 'off'].includes(normalized)) return false;
+    return true;
+  }
+  if (productOrLine?.sellByPiece === false) return false;
+  if (productOrLine?.soldIndividually === false) return false;
+  return true;
+}
+
+/** Шаг штучной продажи (10 → 10, 20, 30…). 1 = любая целая штука. */
+export function productPieceStep(productOrLine) {
+  const pack = productUnitsInPack(productOrLine) || 0;
+  const raw = productAttr(productOrLine, 'piece_step', 'pieceStep')
+    || productOrLine?.pieceStep;
+  const n = Number(String(raw ?? '').replace(',', '.'));
+  if (!Number.isFinite(n) || n <= 1) return 1;
+  const step = Math.round(n);
+  if (pack > 1 && step >= pack) return 1;
+  return step;
+}
+
 /** Можно продавать дробно / по 1 из пачки (лента). */
 export function productSellByUnitHint(productOrLine) {
-  if (productOrLine?.allowFraction) return true;
-  if (productOrLine?.soldIndividually) return true;
-  const pack = productUnitsInPack(productOrLine);
-  return pack != null && pack > 1;
+  return productSellByPiece(productOrLine);
 }
 
 /**

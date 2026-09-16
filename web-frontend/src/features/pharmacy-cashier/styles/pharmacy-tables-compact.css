@@ -15,7 +15,7 @@ html.app-viewport--canonical .pharmacy-cashier,
 
 html.app-viewport--canonical .pharmacy-cashier__main,
 .cashier-app.cashier-app--pos-desktop .pharmacy-cashier__main {
-  grid-template-rows: minmax(96px, 0.9fr) minmax(132px, 1.1fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: var(--cashier-gap, 5px);
 }
 
@@ -36,13 +36,12 @@ html.app-viewport--canonical .pharmacy-cart-table__table,
 html.app-viewport--canonical .pharmacy-search__table,
 .cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
   font-size: 0.75rem;
-  line-height: 1.2;
-  min-width: 1040px;
+  line-height: 1.15;
 }
 
 html.app-viewport--canonical .pharmacy-search__table,
 .cashier-app.cashier-app--pos-desktop .pharmacy-search__table {
-  min-width: 1080px;
+  min-width: 100%;
 }
 
 html.app-viewport--canonical .pharmacy-cart-table__table thead th,

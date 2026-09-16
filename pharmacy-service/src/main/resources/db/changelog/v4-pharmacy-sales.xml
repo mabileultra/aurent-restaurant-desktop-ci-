@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-020-sales" author="pos">
+        <createTable tableName="sales">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_number" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="cashier_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cashier_name" type="VARCHAR(200)"/>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cashier_shift_id" type="UUID"/>
+            <column name="subtotal" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_total" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount_total" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_discount_total" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_discount_amount" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_discount_percent" type="NUMERIC(5,2)"/>
+            <column name="total_amount" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payment_method" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_type" type="VARCHAR(20)" defaultValue="SALE"/>
+            <column name="card_type" type="VARCHAR(20)"/>
+            <column name="cash_amount" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="card_amount" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount_tendered" type="NUMERIC(18,2)"/>
+            <column name="change_given" type="NUMERIC(18,2)" defaultValueNumeric="0"/>
+            <column name="status" type="VARCHAR(20)" defaultValue="COMPLETED"/>
+            <column name="notes" type="TEXT"/>
+            <column name="patient_pinfl" type="VARCHAR(14)"/>
+            <column name="loyalty_phone" type="VARCHAR(32)"/>
+            <column name="pharmacy_dmed" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fiscal_status" type="VARCHAR(32)" defaultValue="NOT_REQUIRED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fiscal_sign" type="VARCHAR(128)"/>
+            <column name="fiscal_receipt_seq" type="VARCHAR(64)"/>
+            <column name="multikassa_sale_id" type="VARCHAR(128)"/>
+            <column name="fiscal_qr_url" type="VARCHAR(1024)"/>
+            <column name="fiscal_terminal_id" type="VARCHAR(128)"/>
+            <column name="fiscalized_at" type="TIMESTAMPTZ"/>
+            <column name="fiscal_error" type="VARCHAR(1000)"/>
+            <column name="print_fiscal_qr" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_sales_company_store" tableName="sales">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_sales_created" tableName="sales">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-021-sale-items" author="pos">
+        <createTable tableName="sale_items">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sale_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="returned_quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="discount" type="NUMERIC(18,2)" defaultValueNumeric="0"/>
+            <column name="tax_amount" type="NUMERIC(18,2)" defaultValueNumeric="0"/>
+            <column name="line_total" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batch_number" type="VARCHAR(80)"/>
+            <column name="expiry_date" type="DATE"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="sale_items" baseColumnNames="sale_id"
+            referencedTableName="sales" referencedColumnNames="id"
+            constraintName="fk_pharm_sale_items_sale" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="sale_items" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_pharm_sale_items_product"/>
+    </changeSet>
+
+    <changeSet id="pharm-022-sale-item-lots" author="pos">
+        <createTable tableName="sale_item_lots">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="sale_item_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lot_id" type="UUID"/>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batch_number" type="VARCHAR(80)"/>
+            <column name="expiry_date" type="DATE"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="sale_item_lots" baseColumnNames="sale_item_id"
+            referencedTableName="sale_items" referencedColumnNames="id"
+            constraintName="fk_pharm_sale_item_lots_item" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="sale_item_lots" baseColumnNames="lot_id"
+            referencedTableName="stock_lots" referencedColumnNames="id"
+            constraintName="fk_pharm_sale_item_lots_lot"/>
+    </changeSet>
+
+    <changeSet id="pharm-023-revenue-outbox" author="pos">
+        <createTable tableName="revenue_outbox">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="channel" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="topic" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="message_key" type="VARCHAR(120)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="idempotency_key" type="VARCHAR(120)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="payload" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+            <column name="attempts" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_error" type="VARCHAR(2000)"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

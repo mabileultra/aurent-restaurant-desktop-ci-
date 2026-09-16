@@ -1,10 +1,7 @@
-package com.pos.sales.service.sale.support;
+package com.pos.pharmacy.sales.support;
 
 import org.springframework.stereotype.Component;
 
-/**
- * Нормализация аптечных полей пациента на чеке (PINFL / лояльность).
- */
 @Component
 public class PharmacySalePatientSupport {
 

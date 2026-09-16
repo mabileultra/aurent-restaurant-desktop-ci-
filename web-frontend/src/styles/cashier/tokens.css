@@ -5,6 +5,11 @@
   line-height: 1.45;
   --pos-ui-scale: 1;
   zoom: var(--pos-ui-scale);
+  width: calc(100% / var(--pos-ui-scale));
+  height: calc(var(--cashier-vh, 100dvh) / var(--pos-ui-scale));
+  min-height: calc(var(--cashier-vh, 100dvh) / var(--pos-ui-scale));
+  max-width: none;
+  transform-origin: 0 0;
   --pos-keypad-key-h: 56px;
   --pos-keypad-gap: 8px;
   --pos-keypad-radius: 14px;
@@ -17,6 +22,12 @@
   --pos-keypad-bg-hover: #f3f4f6;
   --pos-keypad-text: #0f172a;
   --pos-keypad-muted: #475569;
+}
+
+@supports not (zoom: 1) {
+  .cashier-app {
+    transform: scale(var(--pos-ui-scale));
+  }
 }
 
 /*

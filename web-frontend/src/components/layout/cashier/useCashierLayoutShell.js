@@ -25,6 +25,7 @@ import { useCashierPosDesktopLayout } from '../../../hooks/useCashierPosDesktopL
 import { resetCashierDocumentUiState } from '../../../utils/resetCashierDocumentUiState';
 import { syncAuthSession } from '../../../utils/syncAuthSession';
 import { isCashierRegisterScreen } from '../../../utils/cashierRegisterRoute';
+import { isPharmPosPath } from '../../../pharmacy/app/pharmacyPaths';
 import { displayCashierName, formatShiftOpenedAt } from './cashierLayoutUtils';
 import { useCashierUiScale } from '../../../features/cashier/hooks/useCashierUiScale';
 
@@ -78,8 +79,9 @@ export function useCashierLayoutShell() {
   const location = useLocation();
   const isPosRoute = isCashierRegisterScreen(location.pathname);
 
-  const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
-  const { data: shift } = useCashierShift(storeId);
+  const isPharmacyRoute = isPharmPosPath(location.pathname);
+  const catalogKind = isPharmacyRoute ? 'pharmacy' : 'grocery';
+  const { data: shift } = useCashierShift(storeId, { catalogKind });
 
   const shiftOpenBadge = useMemo(() => {
     if (shift?.status !== 'OPEN') return null;
@@ -114,8 +116,6 @@ export function useCashierLayoutShell() {
   const touchLayout = useCashierPosTouchLayout();
   const posDesktop = useCashierPosDesktopLayout();
 
-  const isPharmacyRoute = location.pathname.startsWith('/cashier/pharmacy');
-
   const shellClassName = `cashier-app ${themeClass} d-flex cashier-app--bottom-nav${
     isPosRoute ? ' cashier-app--pos-screen' : ''
   }${posDesktop && isPosRoute ? ' cashier-app--pos-desktop' : ''}${
@@ -137,6 +137,7 @@ export function useCashierLayoutShell() {
     lock,
     isPosRoute,
     displayAppName,
+    catalogKind,
     shift,
     cashierTheme,
     toggleCashierTheme,

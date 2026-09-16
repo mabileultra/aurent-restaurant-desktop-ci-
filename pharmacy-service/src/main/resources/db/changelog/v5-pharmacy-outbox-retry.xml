@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-024-outbox-retry" author="pos">
+        <addColumn tableName="revenue_outbox">
+            <column name="next_retry_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"/>
+        </addColumn>
+        <createIndex indexName="idx_pharm_revenue_outbox_retry" tableName="revenue_outbox">
+            <column name="status"/>
+            <column name="next_retry_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

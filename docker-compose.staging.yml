@@ -92,6 +92,18 @@ services:
     ports:
       - '127.0.0.1:18087:8087'
 
+  pharmacy-db:
+    container_name: aurent-staging-pharmacy-db
+    ports:
+      - '127.0.0.1:15441:5432'
+    volumes:
+      - staging_pharmacy_pg_data:/var/lib/postgresql/data
+
+  pharmacy-service:
+    container_name: aurent-staging-pharmacy-service
+    ports:
+      - '127.0.0.1:18089:8089'
+
   ai-service:
     container_name: aurent-staging-ai-service
     ports:
@@ -131,5 +143,6 @@ volumes:
   staging_reporting_pg_data:
   staging_crm_pg_data:
   staging_restaurant_pg_data:
+  staging_pharmacy_pg_data:
   staging_backend_uploads:
   staging_backend_logs:

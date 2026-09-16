@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v35-pharmacy-prescription-field" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM business_type_fields f
+                JOIN business_types bt ON bt.id = f.business_type_id
+                WHERE bt.code = 'PHARMACY' AND f.field_key = 'prescription_required'
+            </sqlCheck>
+        </preConditions>
+        <sql>
+            INSERT INTO business_type_fields (business_type_id, field_key, label, field_type, required, sort_order)
+            SELECT bt.id, 'prescription_required', 'Рецептурный', 'BOOLEAN', FALSE, 70
+            FROM business_types bt
+            WHERE bt.code = 'PHARMACY'
+            ON CONFLICT (business_type_id, field_key) DO NOTHING;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

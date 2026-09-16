@@ -113,12 +113,22 @@ spring:
           filters:
             - PreserveHostHeader
 
+        # Аптека — pharmacy-service (не web-backend /warehouse/pharmacy).
+        # Legacy /api/v1/warehouse/pharmacy/** → 410 Gone (LegacyPharmacyGoneConfig).
+        - id: pharmacy-service
+          uri: ${PHARMACY_SERVICE_URL:http://127.0.0.1:8089}
+          predicates:
+            - Path=/api/v1/pharmacy/**
+          order: 2
+          filters:
+            - PreserveHostHeader
+
         # Всё остальное — web-backend (касса, склад).
         - id: pos-backend
           uri: ${POS_BACKEND_URL:http://127.0.0.1:8080}
           predicates:
             - Path=/api/v1/**
-          order: 3
+          order: 10
           filters:
             - PreserveHostHeader
 

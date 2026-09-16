@@ -82,7 +82,7 @@ public class StockInventoryServiceImpl implements StockInventoryService {
         List<StockInventoryLine> lines = new ArrayList<>();
 
         for (StockInventoryLineRequest lineReq : request.lines()) {
-            Product product = stockDocument.requireActiveProduct(lineReq.productId());
+            Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal systemQty = storeStockService.getQuantity(product.getId(), store.getId());
             BigDecimal counted = QuantityUtil.normalize(lineReq.countedQuantity());
             BigDecimal diff = QuantityUtil.subtract(counted, systemQty);

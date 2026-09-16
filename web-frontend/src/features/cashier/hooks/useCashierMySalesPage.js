@@ -13,11 +13,14 @@ import {
 import { useCashierShift } from '../../../hooks/useCashierShift';
 import { posFetchMySales } from '../../../services/pos/posDataRouter';
 import { useCashierStore } from '../../../hooks/useCashierStore';
+import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 
 export function useCashierMySalesPage() {
   const qc = useQueryClient();
   const { storeId } = useCashierStore();
+  const { isPharmacy } = useCashierStoreProfile();
+  const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const [page, setPage] = useState(0);
   const [filters, setFilters] = useState(CASHIER_SALES_EMPTY_FILTERS);
   const [returnSaleId, setReturnSaleId] = useState(null);
@@ -53,8 +56,8 @@ export function useCashierMySalesPage() {
     isPending: salesLoading,
     isError: salesError,
   } = useQuery({
-    queryKey: ['my-sales', salesQueryParams],
-    queryFn: () => posFetchMySales(storeId, salesQueryParams),
+    queryKey: ['my-sales', catalogKind, salesQueryParams],
+    queryFn: () => posFetchMySales(storeId, salesQueryParams, { catalogKind }),
     enabled: !!shiftId && !!storeId,
   });
 
@@ -114,6 +117,7 @@ export function useCashierMySalesPage() {
 
   return {
     storeId,
+    catalogKind,
     page,
     setPage,
     filters,

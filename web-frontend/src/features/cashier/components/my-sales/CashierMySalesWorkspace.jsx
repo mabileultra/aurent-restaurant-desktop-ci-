@@ -3,6 +3,7 @@ import CashierSalesReceiptPane from './CashierSalesReceiptPane';
 
 export default function CashierMySalesWorkspace({
   t,
+  catalogKind,
   shiftLoading,
   shiftId,
   rows,
@@ -47,6 +48,7 @@ export default function CashierMySalesWorkspace({
       </div>
       {selectedId ? (
         <CashierSalesReceiptPane
+          catalogKind={catalogKind}
           receiptNumber={selectedRow?.receiptNumber}
           selectedRow={selectedRow}
           returnDisabled={!!returnSaleId}

@@ -55,6 +55,10 @@ public class UzInvoicePdfParser {
         }
     }
 
+    public List<List<String>> readGrid(byte[] bytes) throws IOException {
+        return extractGrid(bytes);
+    }
+
     List<List<String>> extractGrid(byte[] bytes) throws IOException {
         try (PDDocument document = Loader.loadPDF(bytes)) {
             if (document.getNumberOfPages() == 0) {

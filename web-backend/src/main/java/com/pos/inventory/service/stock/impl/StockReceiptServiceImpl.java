@@ -7,6 +7,7 @@ import com.pos.inventory.dto.warehouse.StockReceiptLineRequest;
 import com.pos.inventory.dto.warehouse.StockReceiptLineResponse;
 import com.pos.inventory.dto.warehouse.StockReceiptResponse;
 import com.pos.catalog.entity.Product;
+import com.pos.inventory.domain.StockReceiptStatus;
 import com.pos.inventory.entity.StockMovement;
 import com.pos.inventory.entity.StockReceipt;
 import com.pos.inventory.entity.StockReceiptLine;
@@ -25,6 +26,7 @@ import com.pos.inventory.service.stock.StockReceiptService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.inventory.service.stock.support.StockDocumentSupport;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.util.QuantityUtil;
@@ -61,6 +63,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
     private final TenantAccessSupport tenantAccess;
     private final CurrentUserProvider currentUserProvider;
     private final StockDocumentSupport stockDocument;
+    private final CatalogIsolationSupport catalogIsolation;
     private final FinancePurchaseIntegrationService financePurchaseIntegrationService;
     private final PosDomainEventService posDomainEventService;
 
@@ -71,17 +74,22 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         Integer companyId = tenantAccess.effectiveCompanyIdOrNull();
         stockDocument.requireCompanyContext(companyId);
         Store store = storeStockService.requireStoreForCompany(companyId, request.storeId());
+        catalogIsolation.rejectPharmacyStoreOnGrocery(store);
         Supplier supplier = resolveSupplier(request.supplierId());
 
         String receiptNumber = nextReceiptNumber();
         StockReceipt receipt = stockReceiptRepository.save(StockReceipt.builder()
             .receiptNumber(receiptNumber)
+            .status(StockReceiptStatus.POSTED)
+            .documentDate(LocalDate.now(ZONE))
+            .paymentType(request.paymentType())
             .supplier(supplier)
             .store(store)
             .notes(trimToNull(request.notes()))
             .createdBy(user)
             .totalQuantity(BigDecimal.ZERO)
             .totalCost(BigDecimal.ZERO)
+            .totalRetail(BigDecimal.ZERO)
             .build());
         UUID receiptId = receipt.getId();
 
@@ -90,7 +98,7 @@ public class StockReceiptServiceImpl implements StockReceiptService {
         List<StockReceiptLine> lines = new ArrayList<>();
 
         for (StockReceiptLineRequest lineReq : request.lines()) {
-            Product product = stockDocument.requireActiveProduct(lineReq.productId());
+            Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
             com.pos.util.QuantityValidator.validate(product, q);

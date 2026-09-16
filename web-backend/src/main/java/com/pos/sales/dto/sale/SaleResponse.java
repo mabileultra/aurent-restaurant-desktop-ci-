@@ -64,6 +64,8 @@ public record SaleResponse(
         BigDecimal lineDiscount,
         BigDecimal taxRatePercent,
         String ikpu,
-        String productSku
+        String productSku,
+        String batchNumber,
+        java.time.LocalDate expiryDate
     ) {}
 }

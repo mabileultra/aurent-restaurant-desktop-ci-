@@ -21,11 +21,13 @@ export default function CashierShiftModal({
   cashierName,
   shift,
   onShiftUpdated,
+  catalogKind,
 }) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id);
   const shiftId = shift?.id;
+  const isPharmacy = catalogKind === 'pharmacy';
   const [printReport, setPrintReport] = useState(null);
   const [printToken, setPrintToken] = useState(0);
   const printAfterLoadRef = useRef(null);
@@ -35,10 +37,10 @@ export default function CashierShiftModal({
     setPrintReport(data);
   };
 
-  const xMutation = useXReportCashierShift(storeId);
+  const xMutation = useXReportCashierShift(storeId, { catalogKind });
 
   const applyNewShift = (newShift) => {
-    qc.setQueryData(shiftQueryKey(storeId, userId), newShift);
+    qc.setQueryData(shiftQueryKey(storeId, userId, catalogKind), newShift);
     qc.invalidateQueries({ queryKey: ['my-sales'] });
     onShiftUpdated?.(newShift);
   };
@@ -60,9 +62,9 @@ export default function CashierShiftModal({
     },
   });
 
-  const openMutation = useOpenCashierShift(storeId);
+  const openMutation = useOpenCashierShift(storeId, { catalogKind });
 
-  const closeMutation = useCloseCashierShift(storeId);
+  const closeMutation = useCloseCashierShift(storeId, { catalogKind });
   const handleCloseShift = () => {
     closeMutation.mutate(
       { shiftId, shift },
@@ -165,15 +167,17 @@ export default function CashierShiftModal({
                   {xMutation.isPending ? <Loader size={16} className="animate-spin" /> : <FileText size={16} />}
                   {t('pos.printXReport')}
                 </button>
-                <button
-                  type="button"
-                  className="pos-shift-action"
-                  disabled={busy}
-                  onClick={handleZReport}
-                >
-                  {zMutation.isPending ? <Loader size={16} className="animate-spin" /> : <Printer size={16} />}
-                  {t('pos.printZReport')}
-                </button>
+                {!isPharmacy ? (
+                  <button
+                    type="button"
+                    className="pos-shift-action"
+                    disabled={busy}
+                    onClick={handleZReport}
+                  >
+                    {zMutation.isPending ? <Loader size={16} className="animate-spin" /> : <Printer size={16} />}
+                    {t('pos.printZReport')}
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   className="pos-shift-action pos-shift-action--danger"

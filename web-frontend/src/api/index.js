@@ -1,7 +1,7 @@
 export { api } from './client';
 
 export { authApi } from './auth.api';
-export { syncApi } from './sync.api';
+export { syncApi, pharmacySyncApi, resolveSyncApi } from './sync.api';
 export { productApi } from './product.api';
 export { categoryApi } from './category.api';
 export { supplierApi } from './supplier.api';
@@ -24,6 +24,9 @@ export { aiAssistantApi } from './aiAssistant.api';
 export { stockReportApi } from './stockReport.api';
 export { stockWriteOffApi } from './stockWriteOff.api';
 export { warehouseApi } from './warehouse.api';
+export { pharmacyWarehouseApi } from './pharmacyWarehouse.api';
+export { pharmacySalesApi } from './pharmacySales.api';
+export { pharmacyShiftApi } from './pharmacyShift.api';
 export { tenantDisplayApi } from './tenantDisplay.api';
 export { companyBusinessTypeApi } from './companyBusinessType.api';
 export { unitsApi } from './units.api';

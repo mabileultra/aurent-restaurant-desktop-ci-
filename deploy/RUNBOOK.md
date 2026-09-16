@@ -118,3 +118,42 @@ VITE_SENTRY_DSN=https://...@sentry.io/...
 
 Клиент **не может** подменить `X-Company-Id` или `X-User-Roles` — gateway и сервисы берут данные из JWT.
 Заголовок `X-Company-Id` принимается только у **SUPER_ADMIN** без company в токене (супер-админ панель).
+
+## 12. Cutover pharmacy-service (pos_db → pharmacy_db)
+
+Одноразовая миграция аптечных данных. После успеха убрать `POS_CORE_DATASOURCE_*`.
+
+```bash
+cd /opt/aurent-pos
+# 1) В .env (или .env.staging) добавить POS_CORE_DATASOURCE_URL/USERNAME/PASSWORD
+# 2) Миграция
+COMPOSE_FILE=docker-compose.prod.yml ENV_FILE=.env \
+  bash pharmacy-service/scripts/cutover-pharmacy.sh migrate-compose
+# 3) Проверка counts
+bash pharmacy-service/scripts/cutover-pharmacy.sh verify-compose
+# 4) Убрать migrator env и пересоздать сервис
+bash pharmacy-service/scripts/cutover-pharmacy.sh clear-migrate-env
+```
+
+Staging: `COMPOSE_FILE="docker-compose.prod.yml -f docker-compose.staging.yml" ENV_FILE=.env.staging`.
+
+Локально: `MIGRATE=1 bash .local-run/start-pharmacy.sh`, затем
+`bash pharmacy-service/scripts/verify-pharmacy-migration.sh`.
+
+После verify — purge legacy из pos_db:
+
+```bash
+COMPOSE=1 bash pharmacy-service/scripts/purge-pharmacy-from-pos-db.sh --execute
+```
+
+Или одним флагом при деплое: `PHARMACY_CUTOVER=1 bash deploy/deploy.sh`.
+
+## 13. HA (backend replicas + Kafka)
+
+```bash
+# 2× web-backend, один api-gateway (DNS round-robin на backend)
+BACKEND_REPLICAS=2 bash deploy/ha-up.sh
+```
+
+Redpanda в prod больше не `dev-container`: persistent volume `redpanda_data`, `REDPANDA_SMP` / `REDPANDA_MEMORY`.
+Внешний Kafka: задайте `KAFKA_BOOTSTRAP_SERVERS` в `.env`.

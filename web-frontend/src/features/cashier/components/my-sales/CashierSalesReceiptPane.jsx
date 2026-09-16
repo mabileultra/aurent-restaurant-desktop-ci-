@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Printer, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { saleApi } from '../../../../services/api';
+import { saleApi, pharmacySalesApi } from '../../../../services/api';
 import { FiscalReceiptBody } from '../../../../components/receipt';
 import ThermalReportPrintPortal from '../../../../components/shared/ThermalReportPrintPortal';
 import {
@@ -12,6 +12,7 @@ import {
 } from '../../../../services/cashierEscpos';
 
 export default function CashierSalesReceiptPane({
+  catalogKind,
   receiptNumber,
   selectedRow,
   returnDisabled,
@@ -27,8 +28,11 @@ export default function CashierSalesReceiptPane({
     isPending,
     isError,
   } = useQuery({
-    queryKey: ['receipt', receiptNumber],
-    queryFn: () => saleApi.getReceipt(receiptNumber).then((r) => r.data),
+    queryKey: ['receipt', catalogKind, receiptNumber],
+    queryFn: () => {
+      const client = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
+      return client.getReceipt(receiptNumber).then((r) => r.data);
+    },
     enabled: !!receiptNumber,
   });
 

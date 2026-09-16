@@ -33,6 +33,10 @@ export const ProductsPage = lazy(() => import('../features/catalog/pages/Product
 export const CategoriesPage = lazy(() => import('../features/catalog/pages/CategoriesPage'));
 export const StockProductsPage = lazy(() => import('../features/stock/pages/StockProductsPage'));
 export const StockReceiptCreatePage = lazy(() => import('../features/stock/pages/StockReceiptCreatePage'));
+export const PharmacyReceiptsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptsPage'));
+export const PharmacyReceiptDocumentPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptDocumentPage'));
+export const PharmacyReceiptPickPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptPickPage'));
+export const PharmacyProductsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyProductsPage'));
 export const StockInventoryCreatePage = lazy(() => import('../features/stock/pages/StockInventoryCreatePage'));
 export const StockTransferCreatePage = lazy(() => import('../features/stock/pages/StockTransferCreatePage'));
 export const SuppliersPage = lazy(() => import('../features/catalog/pages/SuppliersPage'));

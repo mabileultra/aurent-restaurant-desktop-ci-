@@ -1,7 +1,7 @@
 /**
  * Единый роутер POS: все операции кассы идут через этот модуль (API или SQLite).
  */
-import { categoryApi, productApi, saleApi, cashierShiftApi } from '../api';
+import { categoryApi, productApi, saleApi, cashierShiftApi, pharmacyWarehouseApi, pharmacySalesApi, pharmacyShiftApi } from '../api';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../utils/cashierTerminalIdentity';
 import { POS_PRODUCT_PAGE_SIZE } from '../../features/cashier/components/pos/posCatalogConstants';
 import { POS_CATALOG_ONLINE_TIMEOUT_MS } from '../offline/posCatalogConstants';
@@ -94,24 +94,37 @@ export async function posFetchProductsPage({
   search,
   pageParam,
   signal,
+  catalogKind,
 }) {
   const trimmedSearch = search?.trim() || '';
+  const pharmacy = catalogKind === 'pharmacy';
   return withRemoteFallback(
     storeId,
     () =>
-      productApi
-        .getAll(
-          {
-            storeId,
-            categoryId,
-            search: trimmedSearch || undefined,
-            page: pageParam,
-            size: POS_PRODUCT_PAGE_SIZE,
-            activeOnly: true,
-          },
-          onlineCatalogConfig(signal),
-        )
-        .then((r) => r.data),
+      (pharmacy
+        ? pharmacyWarehouseApi.listProducts(
+            {
+              storeId,
+              search: trimmedSearch || undefined,
+              page: pageParam,
+              size: POS_PRODUCT_PAGE_SIZE,
+              activeOnly: true,
+              scope: 'ACTIVE',
+            },
+            onlineCatalogConfig(signal),
+          )
+        : productApi.getAll(
+            {
+              storeId,
+              categoryId,
+              search: trimmedSearch || undefined,
+              page: pageParam,
+              size: POS_PRODUCT_PAGE_SIZE,
+              activeOnly: true,
+            },
+            onlineCatalogConfig(signal),
+          )
+      ).then((r) => r.data),
     async () => {
       const content = await offlineSearchProducts({
         search: trimmedSearch,
@@ -131,23 +144,33 @@ export function posProductsNextPageParam(lastPage, lastPageParam, storeId = null
   return next < total ? (useLocal ? lastPageParam + POS_PRODUCT_PAGE_SIZE : next) : undefined;
 }
 
-export async function posFetchProductByBarcode(storeId, barcode) {
+export async function posFetchProductByBarcode(storeId, barcode, { catalogKind } = {}) {
   const trimmed = String(barcode || '').trim();
   if (!trimmed) return null;
+  const pharmacy = catalogKind === 'pharmacy';
   return withRemoteFallback(
     storeId,
-    () => productApi.getByBarcode(trimmed, storeId).then((r) => r.data),
+    () =>
+      (pharmacy
+        ? pharmacyWarehouseApi.getByBarcode(trimmed, storeId)
+        : productApi.getByBarcode(trimmed, storeId)
+      ).then((r) => r.data),
     () => offlineGetProductByBarcode(trimmed),
   );
 }
 
-export async function posFetchCurrentShift(storeId, user, storeName = '') {
+function shiftApi(catalogKind) {
+  return catalogKind === 'pharmacy' ? pharmacyShiftApi : cashierShiftApi;
+}
+
+export async function posFetchCurrentShift(storeId, user, storeName = '', { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local' && user?.id) {
     return offlineGetCurrentShift({ storeId, cashierId: user.id });
   }
+  const apiClient = shiftApi(catalogKind);
   try {
-    const res = await cashierShiftApi.current(storeId);
+    const res = await apiClient.current(storeId);
     const shift = res.data;
     if (shift?.status === 'OPEN' && user?.id && isDesktopOfflineBridge()) {
       try {
@@ -181,7 +204,7 @@ export async function posFetchCurrentShift(storeId, user, storeName = '') {
   }
 }
 
-export async function posOpenShift(storeId, user, storeName = '') {
+export async function posOpenShift(storeId, user, storeName = '', { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local') {
     const shift = await offlineOpenShift({
@@ -193,11 +216,21 @@ export async function posOpenShift(storeId, user, storeName = '') {
     if (!shift) throw new Error('OFFLINE_SHIFT_OPEN_FAILED');
     return shift;
   }
+  const apiClient = shiftApi(catalogKind);
   try {
     const identity = await resolveCashierTerminalIdentity();
     const terminal = buildTerminalRequest(identity);
-    const body = terminal ? { terminal } : null;
-    const res = await cashierShiftApi.open(storeId, body);
+    const body =
+      catalogKind === 'pharmacy'
+        ? {
+            storeName: storeName || undefined,
+            cashierName: user?.fullName || user?.username || undefined,
+            ...(terminal ? { terminal } : {}),
+          }
+        : terminal
+          ? { terminal }
+          : null;
+    const res = await apiClient.open(storeId, body);
     const shift = res.data;
     if (isDesktopOfflineBridge() && user?.id) {
       try {
@@ -224,7 +257,7 @@ export async function posOpenShift(storeId, user, storeName = '') {
       });
     } catch (fiscalErr) {
       try {
-        await cashierShiftApi.close(shift.id);
+        await apiClient.close(shift.id);
       } catch {
         /* best-effort rollback */
       }
@@ -245,7 +278,7 @@ export async function posOpenShift(storeId, user, storeName = '') {
     }
     const msg = String(e.response?.data?.message ?? '');
     if (e.response?.status === 400 && /открыта/i.test(msg)) {
-      const res = await cashierShiftApi.current(storeId);
+      const res = await apiClient.current(storeId);
       return res.data;
     }
     if (isApiUnreachableError(e) && routeFor(storeId).canFallback && user?.id) {
@@ -262,13 +295,14 @@ export async function posOpenShift(storeId, user, storeName = '') {
   }
 }
 
-export async function posCloseShift(shiftId, storeId, user, shiftHint = null) {
+export async function posCloseShift(shiftId, storeId, user, shiftHint = null, { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local' && user?.id) {
     await offlineCloseShift({ storeId, cashierId: user.id });
     return { id: shiftId, status: 'CLOSED' };
   }
 
+  const apiClient = shiftApi(catalogKind);
   try {
     const capabilities = await loadMultikassaCapabilities(
       storeId,
@@ -285,7 +319,7 @@ export async function posCloseShift(shiftId, storeId, user, shiftHint = null) {
     throw wrapMultikassaFiscalError(fiscalErr);
   }
 
-  const closed = await cashierShiftApi.close(shiftId).then((r) => r.data);
+  const closed = await apiClient.close(shiftId).then((r) => r.data);
   if (isDesktopOfflineBridge() && user?.id) {
     try {
       await offlineCloseShift({ storeId, cashierId: user.id });
@@ -296,7 +330,7 @@ export async function posCloseShift(shiftId, storeId, user, shiftHint = null) {
   return closed;
 }
 
-export async function posXReport(shiftId, storeId, user, shiftHint = null) {
+export async function posXReport(shiftId, storeId, user, shiftHint = null, { catalogKind } = {}) {
   try {
     const capabilities = await loadMultikassaCapabilities(
       storeId,
@@ -311,6 +345,22 @@ export async function posXReport(shiftId, storeId, user, shiftHint = null) {
   } catch (fiscalErr) {
     throw wrapMultikassaFiscalError(fiscalErr);
   }
+  if (catalogKind === 'pharmacy') {
+    // Pharmacy owns shifts; X print uses Multikassa fiscal + shift aggregates (no PosCore x-report).
+    return {
+      shiftId,
+      storeId,
+      storeName: shiftHint?.storeName || '',
+      cashierName: user?.fullName || user?.username || shiftHint?.cashierName || '',
+      saleCount: shiftHint?.saleCount ?? 0,
+      totalAmount: shiftHint?.totalAmount ?? 0,
+      cashAmount: shiftHint?.cashAmount ?? 0,
+      cardAmount: shiftHint?.cardAmount ?? 0,
+      vatAmount: shiftHint?.vatAmount ?? 0,
+      openedAt: shiftHint?.openedAt || null,
+      kind: 'X',
+    };
+  }
   return cashierShiftApi.xReport(shiftId).then((r) => r.data);
 }
 
@@ -324,6 +374,7 @@ export async function posCreateSale({
   getCheckoutOrderDiscountAmount,
   getCheckoutOrderDiscountPercent,
   items,
+  catalogKind,
 }) {
   const { route } = routeFor(storeId);
   const offline = route === 'local';
@@ -393,27 +444,29 @@ export async function posCreateSale({
 
   try {
     const pharmacyExtras = buildPharmacySaleExtras(payment);
-    return await saleApi.create(
-      {
-        storeId: Number(storeId),
-        paymentMethod: payment.paymentMethod,
-        receiptType: payment.receiptType,
-        cardType: payment.cardType,
-        cashAmount: payment.cashAmount,
-        cardAmount: payment.cardAmount,
-        amountTendered: payment.amountTendered,
-        customerId: payment.customerId || undefined,
-        advanceAmount: payment.advanceAmount || undefined,
-        items: getCheckoutLineItems(),
-        orderDiscountAmount: getCheckoutOrderDiscountAmount(),
-        orderDiscountPercent: getCheckoutOrderDiscountPercent(),
-        ...(pharmacyExtras?.notes ? { notes: pharmacyExtras.notes } : {}),
-        ...(pharmacyExtras?.patientPinfl ? { patientPinfl: pharmacyExtras.patientPinfl } : {}),
-        ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
-        ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
-        ...(fiscalForApi ? { fiscal: fiscalForApi } : {}),
-        printFiscalQr: capabilities?.printFiscalQr !== false,
-      },
+    const salePayload = {
+      storeId: Number(storeId),
+      paymentMethod: payment.paymentMethod,
+      receiptType: payment.receiptType,
+      cardType: payment.cardType,
+      cashAmount: payment.cashAmount,
+      cardAmount: payment.cardAmount,
+      amountTendered: payment.amountTendered,
+      customerId: payment.customerId || undefined,
+      advanceAmount: payment.advanceAmount || undefined,
+      items: getCheckoutLineItems(),
+      orderDiscountAmount: getCheckoutOrderDiscountAmount(),
+      orderDiscountPercent: getCheckoutOrderDiscountPercent(),
+      ...(pharmacyExtras?.notes ? { notes: pharmacyExtras.notes } : {}),
+      ...(pharmacyExtras?.patientPinfl ? { patientPinfl: pharmacyExtras.patientPinfl } : {}),
+      ...(pharmacyExtras?.loyaltyPhone ? { loyaltyPhone: pharmacyExtras.loyaltyPhone } : {}),
+      ...(pharmacyExtras?.pharmacyDmed ? { pharmacyDmed: true } : {}),
+      ...(fiscalForApi ? { fiscal: fiscalForApi } : {}),
+      printFiscalQr: capabilities?.printFiscalQr !== false,
+    };
+    const saleClient = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
+    return await saleClient.create(
+      salePayload,
       onlineTimeout ? { timeout: onlineTimeout } : undefined,
     );
   } catch (err) {
@@ -435,7 +488,7 @@ export async function posCreateSale({
   }
 }
 
-export async function posFetchMySales(storeId, params = {}) {
+export async function posFetchMySales(storeId, params = {}, { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local') {
     const rows = await offlineListMySales({ shiftId: params.shiftId, limit: params.size || 50 });
@@ -447,7 +500,8 @@ export async function posFetchMySales(storeId, params = {}) {
     };
   }
   try {
-    return await saleApi.mySales(params).then((r) => r.data);
+    const client = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
+    return await client.mySales(params).then((r) => r.data);
   } catch (err) {
     if (isApiUnreachableError(err) && routeFor(storeId).canFallback) {
       const rows = await offlineListMySales({ shiftId: params.shiftId, limit: params.size || 50 });

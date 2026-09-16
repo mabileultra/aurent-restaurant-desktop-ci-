@@ -90,7 +90,7 @@ public class StockTransferServiceImpl implements StockTransferService {
         List<StockTransferLine> lines = new ArrayList<>();
 
         for (StockTransferLineRequest lineReq : request.lines()) {
-            Product product = stockDocument.requireActiveProduct(lineReq.productId());
+            Product product = stockDocument.requireActiveGroceryProduct(lineReq.productId());
             BigDecimal q = QuantityUtil.normalize(lineReq.quantity());
             stockDocument.requirePositiveQuantity(q);
             com.pos.util.QuantityValidator.validate(product, q);

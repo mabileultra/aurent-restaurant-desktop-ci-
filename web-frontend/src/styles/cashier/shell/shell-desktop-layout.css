@@ -9,8 +9,10 @@ html.cashier-shell--desktop #root {
 }
 
 .cashier-app.cashier-app--desktop {
-  width: 100%;
-  max-width: 100%;
+  width: calc(100% / var(--pos-ui-scale, 1));
+  max-width: none;
+  height: calc(100% / var(--pos-ui-scale, 1));
+  min-height: calc(100% / var(--pos-ui-scale, 1));
 }
 
 .cashier-app.cashier-app--desktop .cashier-app__body {

@@ -67,9 +67,12 @@ services:
       - start
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       - --advertise-kafka-addr internal://redpanda:9092,external://127.0.0.1:19092
-      - --mode dev-container
-      - --smp 1
+      - --smp ${REDPANDA_SMP:-2}
+      - --memory ${REDPANDA_MEMORY:-1G}
+      - --overprovisioned
       - --default-log-level=warn
+    volumes:
+      - redpanda_data:/var/lib/redpanda/data
     ports:
       - '127.0.0.1:19092:19092'
     healthcheck:
@@ -419,6 +422,62 @@ services:
     networks:
       - pos-net
 
+  pharmacy-db:
+    image: postgres:15-alpine
+    container_name: aurent-pharmacy-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${PHARMACY_DB_NAME:-pharmacy_db}
+      POSTGRES_USER: ${PHARMACY_DB_USER:-pharmacy_user}
+      POSTGRES_PASSWORD: ${PHARMACY_DB_PASSWORD:?Set PHARMACY_DB_PASSWORD in .env}
+      TZ: ${TZ:-Asia/Tashkent}
+    volumes:
+      - pharmacy_pg_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5441:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${PHARMACY_DB_USER:-pharmacy_user} -d ${PHARMACY_DB_NAME:-pharmacy_db}']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - pos-net
+
+  pharmacy-service:
+    build:
+      context: .
+      dockerfile: pharmacy-service/Dockerfile
+    container_name: aurent-pharmacy-service
+    restart: unless-stopped
+    depends_on:
+      pharmacy-db:
+        condition: service_healthy
+      redpanda:
+        condition: service_healthy
+    environment:
+      PHARMACY_DB_URL: jdbc:postgresql://pharmacy-db:5432/${PHARMACY_DB_NAME:-pharmacy_db}
+      PHARMACY_DB_USERNAME: ${PHARMACY_DB_USER:-pharmacy_user}
+      PHARMACY_DB_PASSWORD: ${PHARMACY_DB_PASSWORD:?Set PHARMACY_DB_PASSWORD in .env}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (min 32 chars)}
+      PHARMACY_SERVER_PORT: "8089"
+      POS_CORE_URL: http://backend:8080/api/v1
+      KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-redpanda:9092}
+      DOMAIN_KAFKA_ENABLED: ${DOMAIN_KAFKA_ENABLED:-true}
+      POS_CORE_DATASOURCE_URL: ${POS_CORE_DATASOURCE_URL:-}
+      POS_CORE_DATASOURCE_USERNAME: ${POS_CORE_DATASOURCE_USERNAME:-pos_user}
+      POS_CORE_DATASOURCE_PASSWORD: ${POS_CORE_DATASOURCE_PASSWORD:-}
+      TZ: ${TZ:-Asia/Tashkent}
+    ports:
+      - '127.0.0.1:8089:8089'
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -fsS http://127.0.0.1:8089/api/v1/actuator/health | grep -q UP || exit 1']
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 45s
+    networks:
+      - pos-net
+
   ai-service:
     build:
       context: .
@@ -562,6 +621,8 @@ services:
         condition: service_healthy
       restaurant-service:
         condition: service_healthy
+      pharmacy-service:
+        condition: service_healthy
       ai-service:
         condition: service_healthy
     environment:
@@ -574,6 +635,7 @@ services:
       REPORTING_SERVICE_URL: http://reporting-service:8085
       CRM_SERVICE_URL: http://crm-service:8083
       RESTAURANT_SERVICE_URL: http://restaurant-service:8087
+      PHARMACY_SERVICE_URL: http://pharmacy-service:8089
       AI_SERVICE_URL: http://ai-service:8086
       TZ: ${TZ:-Asia/Tashkent}
     ports:
@@ -670,6 +732,8 @@ volumes:
   reporting_pg_data:
   crm_pg_data:
   restaurant_pg_data:
+  pharmacy_pg_data:
+  redpanda_data:
   backend_uploads:
   backend_logs:
   telegram_bot_data:

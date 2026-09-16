@@ -71,6 +71,7 @@ function CashierLayoutShell() {
         storeName={p.storeName}
         cashierName={p.displayCashierName()}
         shift={p.shift}
+        catalogKind={p.catalogKind}
       />
       <CashierLockOverlay />
     </div>

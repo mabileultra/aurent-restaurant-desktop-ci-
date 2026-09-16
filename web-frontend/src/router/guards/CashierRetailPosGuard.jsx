@@ -28,7 +28,7 @@ export default function CashierRetailPosGuard({ children }) {
     return <Navigate to="/rst/pos" replace />;
   }
   if (type === 'PHARMACY') {
-    return <Navigate to="/cashier/pharmacy" replace />;
+    return <Navigate to="/pharm/pos" replace />;
   }
 
   return children;

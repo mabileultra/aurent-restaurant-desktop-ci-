@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <include file="db/changelog/v1-pharmacy-bootstrap.xml"/>
+    <include file="db/changelog/v2-pharmacy-catalog.xml"/>
+    <include file="db/changelog/v3-pharmacy-warehouse.xml"/>
+    <include file="db/changelog/v4-pharmacy-sales.xml"/>
+    <include file="db/changelog/v5-pharmacy-outbox-retry.xml"/>
+    <include file="db/changelog/v6-pharmacy-offline-sync.xml"/>
+    <include file="db/changelog/v7-pharmacy-cashier-shifts.xml"/>
+
+</databaseChangeLog>

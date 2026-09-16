@@ -1,17 +1,18 @@
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
+import { isPharmPosPath, PHARM_POS_PATH } from '../pharmacy/app/pharmacyPaths';
 
 /** Полноэкранный режим кассы (как /cashier/pos): без вторичной шапки и внешнего bottom-nav. */
 export function isCashierRegisterScreen(pathname) {
   return (
     pathname.startsWith('/cashier/pos')
     || pathname.startsWith('/cashier/restaurant')
-    || pathname.startsWith('/cashier/pharmacy')
+    || isPharmPosPath(pathname)
   );
 }
 
 export function resolveCashierRegisterPath(businessType) {
   const type = normalizeBusinessTypeCode(businessType);
   if (type === 'RESTAURANT' || type === 'CANTEEN') return '/rst/pos';
-  if (type === 'PHARMACY') return '/cashier/pharmacy';
+  if (type === 'PHARMACY') return PHARM_POS_PATH;
   return '/cashier/pos';
 }

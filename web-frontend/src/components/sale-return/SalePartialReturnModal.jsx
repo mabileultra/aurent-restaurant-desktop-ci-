@@ -3,7 +3,6 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Loader, RotateCcw, X } from 'lucide-react';
-import { saleApi } from '../../api';
 import { printReturnReceiptWithToast } from '../../utils/printReturnReceipt';
 import PosModalPortal from '../shared/PosModalPortal';
 import { fmtMoney as fmt } from '../../utils/formatMoney';
@@ -12,7 +11,10 @@ import SaleReturnLinesEditor, {
   getReturnableLines,
   useReturnQtyState,
 } from './SaleReturnLinesEditor';
-import { posReturnSaleItems } from '../../services/pos/posReturnWithFiscal';
+import {
+  posFetchSaleById,
+  posReturnSaleItems,
+} from '../../services/pos/posReturnWithFiscal';
 import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
 
 export default function SalePartialReturnModal({
@@ -23,12 +25,17 @@ export default function SalePartialReturnModal({
   onSuccess,
   portal = true,
   terminal = false,
+  catalogKind,
 }) {
   const { t } = useTranslation();
 
   const { data: fetchedSale, isPending: saleLoading } = useQuery({
-    queryKey: ['sale-for-return', saleId],
-    queryFn: () => saleApi.getById(saleId).then((r) => r.data),
+    queryKey: ['sale-for-return', saleId, catalogKind],
+    queryFn: () =>
+      posFetchSaleById(saleId, {
+        catalogKind,
+        receiptNumber: saleProp?.receiptNumber,
+      }),
     enabled: open && !!saleId && !saleProp,
   });
 
@@ -43,7 +50,12 @@ export default function SalePartialReturnModal({
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return posReturnSaleItems({ sale: s, payload, storeId: s.storeId });
+      return posReturnSaleItems({
+        sale: s,
+        payload,
+        storeId: s.storeId,
+        catalogKind,
+      });
     },
     onSuccess: async (_data, vars) => {
       const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');

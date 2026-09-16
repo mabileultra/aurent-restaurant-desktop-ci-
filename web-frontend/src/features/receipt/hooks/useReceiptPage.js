@@ -2,7 +2,7 @@ import { useParams, useNavigate, useLocation, useSearchParams } from 'react-rout
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { saleApi } from '../../../services/api';
+import { saleApi, pharmacySalesApi } from '../../../services/api';
 import { POS_RECEIPT_PRINT_EVENT } from '../../../utils/printWithHtmlClass';
 import { printReceiptDialog } from '../../../utils/printReceipt';
 import {
@@ -32,7 +32,20 @@ export function useReceiptPage() {
 
   const { data: sale, isLoading } = useQuery({
     queryKey: ['receipt', receiptNumber],
-    queryFn: () => saleApi.getReceipt(receiptNumber).then((r) => r.data),
+    queryFn: async () => {
+      const num = String(receiptNumber || '').trim();
+      if (/^PHR-/i.test(num)) {
+        return pharmacySalesApi.getReceipt(num).then((r) => r.data);
+      }
+      try {
+        return await saleApi.getReceipt(num).then((r) => r.data);
+      } catch (err) {
+        if (err.response?.status === 404) {
+          return pharmacySalesApi.getReceipt(num).then((r) => r.data);
+        }
+        throw err;
+      }
+    },
   });
 
   const runPrint = useCallback(async () => {

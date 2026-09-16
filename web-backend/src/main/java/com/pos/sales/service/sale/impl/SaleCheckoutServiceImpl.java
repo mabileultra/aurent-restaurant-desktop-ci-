@@ -26,7 +26,6 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
-import com.pos.sales.service.sale.support.PharmacySalePatientSupport;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceAdvancePaymentIntegrationService;
 import com.pos.integrations.finance.service.FinanceAdvanceSaleIntegrationService;
@@ -35,6 +34,7 @@ import com.pos.integrations.finance.service.FinanceSaleIntegrationService;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
@@ -69,6 +69,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final SaleReceiptNumberGenerator receiptNumberGenerator;
     private final StoreStockService storeStockService;
     private final TenantAccessSupport tenantAccess;
+    private final CatalogIsolationSupport catalogIsolation;
     private final CheckoutProductLoader checkoutProductLoader;
     private final FinanceCreditSaleIntegrationService financeCreditSaleIntegrationService;
     private final FinanceAdvanceSaleIntegrationService financeAdvanceSaleIntegrationService;
@@ -77,7 +78,6 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
-    private final PharmacySalePatientSupport pharmacySalePatientSupport;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -85,6 +85,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .orElseThrow(() -> PosExceptions.notFound("Cashier"));
 
         Store store = cashierSaleSupport.requireStoreForSale(cashier, req.storeId());
+        catalogIsolation.rejectPharmacySalesInMonolith(store);
 
         CashierShift shift = cashierShiftRepository
             .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
@@ -94,6 +95,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         Customer customer = creditSaleCustomerSupport.resolveForCheckout(req.customerId(), receiptType);
 
         Map<UUID, Product> productsById = checkoutProductLoader.loadIndexed(req.items());
+        productsById.values().forEach(product -> catalogIsolation.assertSaleCatalogMatchesStore(store, product));
         Set<UUID> productIds = new HashSet<>(productsById.keySet());
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(productIds);
 
@@ -195,9 +197,6 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
             .changeGiven(amounts.change())
             .status(Sale.SaleStatus.COMPLETED)
             .notes(req.notes())
-            .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
-            .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
-            .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
             .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()))
             .build();
 

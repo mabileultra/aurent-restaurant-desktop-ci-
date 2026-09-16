@@ -1,13 +1,13 @@
 import { round2 } from '../../../utils/taxAmounts';
 import { roundQty } from '../../../utils/quantityFormat';
 import {
-  productSellByUnitHint,
+  productSellByPiece,
   productUnitsInPack,
 } from './pharmacyProductMeta';
 
 /** Продажа поштучно из упаковки: остаток на складе в упаковках, в чеке — штуки. */
 export function resolvePharmacyPackSale(product) {
-  if (!productSellByUnitHint(product)) return null;
+  if (!productSellByPiece(product)) return null;
   const unitsInPack = productUnitsInPack(product);
   if (!unitsInPack || unitsInPack <= 1) return null;
 

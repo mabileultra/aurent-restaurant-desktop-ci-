@@ -34,7 +34,7 @@ export default function CashierHomeRedirect() {
     return <Navigate to="/rst/pos" replace />;
   }
   if (type === 'PHARMACY') {
-    return <Navigate to="/cashier/pharmacy" replace />;
+    return <Navigate to="/pharm/pos" replace />;
   }
   return <Navigate to="/cashier/pos" replace />;
 }

@@ -6,6 +6,7 @@ import com.pos.dto.report.stock.LowStockRowResponse;
 import com.pos.catalog.entity.Product;
 import com.pos.catalog.repository.ProductRepository;
 import com.pos.catalog.service.product.ProductResponseAssembler;
+import com.pos.service.support.CatalogIsolationSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +27,7 @@ public class ProductLowStockQuerySupport {
     private final ReportingStockReportClient reportingStockReportClient;
     private final ProductRepository productRepository;
     private final ProductResponseAssembler assembler;
+    private final CatalogIsolationSupport catalogIsolation;
 
     public List<ProductResponse> list(int limit) {
         int safeLimit = Math.max(1, Math.min(limit, DEFAULT_LIMIT));
@@ -49,7 +51,7 @@ public class ProductLowStockQuerySupport {
         List<ProductResponse> result = new ArrayList<>();
         for (LowStockRowResponse row : rows) {
             Product product = productsById.get(row.productId());
-            if (product == null) {
+            if (product == null || catalogIsolation.isPharmacyProduct(product)) {
                 continue;
             }
             ProductResponse base = assembler.toResponse(product);

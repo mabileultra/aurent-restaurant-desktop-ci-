@@ -18,6 +18,7 @@ import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
 import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
 import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 import { usePharmacyHotkeys } from './usePharmacyHotkeys';
+import { usePharmacyFefoEnrichment } from './usePharmacyFefoEnrichment';
 
 export function usePharmacyPosPage() {
   const { t } = useTranslation();
@@ -57,7 +58,8 @@ export function usePharmacyPosPage() {
   const checkNo = useCartStore((s) => s.checkNo);
   const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
 
-  const catalog = usePosProductsCatalog({ storeId });
+  const catalog = usePosProductsCatalog({ storeId, catalogKind: 'pharmacy' });
+  const { products: fefoProducts } = usePharmacyFefoEnrichment(storeId, catalog.products);
   const integration = usePharmacyIntegrationConfig(storeId);
   const { markingModal, openMarkingModal, closeMarkingModal } = usePharmacyMarkingModalState();
   const onMarkingScanRef = useRef(async () => false);
@@ -201,7 +203,9 @@ export function usePharmacyPosPage() {
     catalog.searchActive,
   ]);
 
-  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId);
+  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId, {
+    catalogKind: 'pharmacy',
+  });
   const shiftIsOpen = shift?.status === 'OPEN';
 
   const total = getTotal();
@@ -217,6 +221,7 @@ export function usePharmacyPosPage() {
     setSelectedLineId,
     shift,
     getCheckoutLineItems: getPharmacyCheckoutLineItems,
+    catalogKind: 'pharmacy',
   });
 
   const cartHandlers = usePharmacyCartHandlers({
@@ -226,7 +231,7 @@ export function usePharmacyPosPage() {
     returnOpen,
     shiftModalOpen,
     searchInputRef,
-    products: catalog.products,
+    products: fefoProducts,
     search: catalog.search,
     setSearch: catalog.setSearch,
     addWeightLine,
@@ -241,7 +246,7 @@ export function usePharmacyPosPage() {
   const markingScan = usePharmacyMarkingScan({
     storeId,
     aslMarkingEnabled: integration.capabilities.aslMarkingEnabled,
-    products: catalog.products,
+    products: fefoProducts,
     onProductFound: cartHandlers.addProductToCart,
     onOpenMarkingModal: openMarkingModal,
   });
@@ -364,7 +369,7 @@ export function usePharmacyPosPage() {
       storeId,
       search: catalog.search,
       setSearch: catalog.setSearch,
-      products: catalog.products,
+      products: fefoProducts,
       productsLoading: catalog.productsLoading,
       productsError: catalog.productsError,
       productsLoadingMore: catalog.productsLoadingMore,

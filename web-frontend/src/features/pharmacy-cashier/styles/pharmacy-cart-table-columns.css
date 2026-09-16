@@ -82,12 +82,13 @@
 }
 
 .pharmacy-cart-table__qty-val {
-  min-width: 1.5rem;
+  min-width: 3.2rem;
   text-align: center;
   font-weight: 800;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-variant-numeric: tabular-nums;
-  line-height: 1;
+  line-height: 1.15;
+  white-space: normal;
 }
 
 .pharmacy-cart-table__num .pharmacy-cart-table__piece-price-hint {

@@ -77,7 +77,15 @@ export const ICONS = {
 };
 
 export const GOODS_ROUTES = ['/products', '/categories', '/scales/station', '/scales/plu'];
-export const STOCK_ROUTES = ['/stock/products', '/stock/receipts/new', '/stock/inventories/new', '/stock/transfers/new', '/stock/suppliers'];
+export const STOCK_ROUTES = [
+  '/stock/products',
+  '/stock/receipts/new',
+  '/pharm/stock/receipts',
+  '/pharm/stock/products',
+  '/stock/inventories/new',
+  '/stock/transfers/new',
+  '/stock/suppliers',
+];
 export const ORDER_ROUTES = ['/orders/list'];
 export const FINANCE_ROUTES = ['/finance/dashboard', '/finance/incomes', '/finance/expenses', '/finance/accounts', '/finance/reports', '/finance/categories'];
 export const REGISTER_ROUTES = ['/cash-registers/list', '/cash-registers/z-reports', '/cash-registers/transfer', '/cash-registers/config'];
@@ -90,6 +98,12 @@ export const GOODS_CHILDREN = [
   { to: '/scales/plu', key: 'scalesPlu', icon: ICONS.Barcode, moduleId: 'scalesPlu' },
 ];
 
+/** Grocery «Товары» (каталог, весы, PLU) аптеке не нужен — справочник в Складе. */
+export function goodsChildrenForBusinessType(businessType) {
+  const isPharmacy = String(businessType || '').toUpperCase() === 'PHARMACY';
+  return isPharmacy ? [] : GOODS_CHILDREN;
+}
+
 export const STOCK_CHILDREN = [
   { to: '/stock/products', key: 'stockProducts', icon: ICONS.Package, moduleId: 'stockProducts' },
   { to: '/stock/receipts/new', key: 'stockReceipts', icon: ICONS.Plus, moduleId: 'stockReceipts' },
@@ -97,6 +111,23 @@ export const STOCK_CHILDREN = [
   { to: '/stock/transfers/new', key: 'stockTransfers', icon: ICONS.ArrowRightLeft, moduleId: 'stockTransfers' },
   { to: '/stock/suppliers', key: 'stockSuppliers', icon: ICONS.Building2, moduleId: 'stockSuppliers' },
 ];
+
+/** Аптечный nav: товары и приход → /pharm/stock; инвентаризация/перемещение/поставщики — общие. */
+export function stockChildrenForBusinessType(businessType) {
+  const isPharmacy = String(businessType || '').toUpperCase() === 'PHARMACY';
+  return STOCK_CHILDREN.map((item) => {
+    if (item.moduleId === 'stockProducts' && isPharmacy) {
+      return { ...item, to: '/pharm/stock/products', key: 'stockPharmacyProducts' };
+    }
+    if (item.moduleId !== 'stockReceipts') return item;
+    if (!isPharmacy) return item;
+    return {
+      ...item,
+      to: '/pharm/stock/receipts',
+      key: 'stockPharmacyReceipts',
+    };
+  });
+}
 
 export const ORDER_CHILDREN = [{ to: '/orders/list', key: 'ordersList', icon: ICONS.ClipboardList, moduleId: 'ordersList' }];
 

@@ -40,7 +40,7 @@ public class StockWriteOffServiceImpl implements StockWriteOffService {
     public WriteOffRowResponse create(CreateWriteOffRequest request) {
         BigDecimal qty = QuantityUtil.normalize(request.quantity());
         stockDocument.requirePositiveQuantity(qty);
-        Product product = stockDocument.requireActiveProduct(request.productId());
+        Product product = stockDocument.requireActiveGroceryProduct(request.productId());
         tenantAccess.assertProductBelongsToTenant(product);
         WriteOffReason reason;
         try {

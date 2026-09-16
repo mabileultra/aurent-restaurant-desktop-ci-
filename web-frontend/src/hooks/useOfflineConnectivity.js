@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { useCashierStore } from './useCashierStore';
+import { useCashierStoreProfile } from './useCashierStoreProfile';
 import {
   refreshConnectivityStatus,
   startConnectivityWatcher,
@@ -20,6 +21,8 @@ import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge
 export function useOfflineConnectivity() {
   const token = useAuthStore((s) => s.token);
   const { storeId } = useCashierStore();
+  const { isPharmacy } = useCashierStoreProfile();
+  const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const prevStoreIdRef = useRef(storeId);
   const apiOnline = useConnectivityStore((s) => s.apiOnline);
   const offlineMode = useConnectivityStore((s) => s.offlineMode);
@@ -58,8 +61,8 @@ export function useOfflineConnectivity() {
             forceCatalog = true;
           }
         }
-        const catalogResult = await runCatalogSyncIfNeeded(storeId, { force: forceCatalog });
-        await runSalesSyncOnly();
+        const catalogResult = await runCatalogSyncIfNeeded(storeId, { force: forceCatalog, catalogKind });
+        await runSalesSyncOnly({ catalogKind });
         if (!cancelled) {
           if (catalogResult?.skipped && catalogResult?.reason === 'error') {
             useConnectivityStore.getState().setSyncResult({
@@ -88,7 +91,7 @@ export function useOfflineConnectivity() {
     const salesTimer = setInterval(async () => {
       if (cancelled) return;
       try {
-        await runSalesSyncOnly();
+        await runSalesSyncOnly({ catalogKind });
         await refreshConnectivityStatus();
       } catch {
         /* retry next tick */
@@ -98,7 +101,7 @@ export function useOfflineConnectivity() {
     const catalogTimer = setInterval(async () => {
       if (cancelled) return;
       try {
-        const result = await runCatalogSyncIfNeeded(storeId, { force: false });
+        const result = await runCatalogSyncIfNeeded(storeId, { force: false, catalogKind });
         if (result?.skipped && result?.reason === 'error') {
           useConnectivityStore.getState().setSyncResult({
             ok: false,
@@ -120,7 +123,7 @@ export function useOfflineConnectivity() {
       clearInterval(salesTimer);
       clearInterval(catalogTimer);
     };
-  }, [token, storeId, apiOnline]);
+  }, [token, storeId, apiOnline, catalogKind]);
 
   return {
     apiOnline,

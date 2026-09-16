@@ -87,12 +87,16 @@ declare -A CONTAINER_NAMES=(
   [platform-db]=aurent-platform-db
   [reporting-db]=aurent-reporting-db
   [crm-db]=aurent-crm-db
+  [restaurant-db]=aurent-restaurant-db
+  [pharmacy-db]=aurent-pharmacy-db
   [redpanda]=aurent-redpanda
   [finance-service]=aurent-finance-service
   [identity-service]=aurent-identity-service
   [platform-service]=aurent-platform-service
   [reporting-service]=aurent-reporting-service
   [crm-service]=aurent-crm-service
+  [restaurant-service]=aurent-restaurant-service
+  [pharmacy-service]=aurent-pharmacy-service
   [ai-service]=aurent-ai-service
   [backend]=aurent-pos-backend
   [api-gateway]=aurent-api-gateway
@@ -302,6 +306,7 @@ ensure_secret() {
 ensure_secret CRM_DB_PASSWORD
 ensure_secret CRM_INTERNAL_API_KEY
 ensure_secret RESTAURANT_DB_PASSWORD
+ensure_secret PHARMACY_DB_PASSWORD
 ensure_secret POS_INTERNAL_API_KEY
 if ! grep -q '^CRM_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
   printf '\nCRM_DB_NAME=crm_db\nCRM_DB_USER=crm_user\n' >> "$ENV_FILE"
@@ -310,6 +315,10 @@ fi
 if ! grep -q '^RESTAURANT_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
   printf '\nRESTAURANT_DB_NAME=restaurant_db\nRESTAURANT_DB_USER=restaurant_user\n' >> "$ENV_FILE"
   echo "==> Добавлены RESTAURANT_DB_NAME / RESTAURANT_DB_USER в ${ENV_FILE}"
+fi
+if ! grep -q '^PHARMACY_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
+  printf '\nPHARMACY_DB_NAME=pharmacy_db\nPHARMACY_DB_USER=pharmacy_user\n' >> "$ENV_FILE"
+  echo "==> Добавлены PHARMACY_DB_NAME / PHARMACY_DB_USER в ${ENV_FILE}"
 fi
 load_dotenv "$ENV_FILE"
 
@@ -328,6 +337,7 @@ require_env REPORTING_INTERNAL_API_KEY
 require_env CRM_DB_PASSWORD
 require_env CRM_INTERNAL_API_KEY
 require_env RESTAURANT_DB_PASSWORD
+require_env PHARMACY_DB_PASSWORD
 require_env POS_INTERNAL_API_KEY
 
 if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
@@ -339,7 +349,7 @@ echo "==> Сборка образов ($COMPOSE_FILE)..."
 compose build --pull
 
 echo "==> Инфраструктура: PostgreSQL (все БД) + Redpanda..."
-compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db redpanda
+compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db redpanda
 
 wait_container_healthy aurent-pos-db postgres
 wait_container_healthy aurent-identity-db identity-db
@@ -347,6 +357,7 @@ wait_container_healthy aurent-platform-db platform-db
 wait_container_healthy aurent-reporting-db reporting-db
 wait_container_healthy aurent-crm-db crm-db
 wait_container_healthy aurent-restaurant-db restaurant-db
+wait_container_healthy aurent-pharmacy-db pharmacy-db
 wait_container_healthy aurent-redpanda redpanda
 
 if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
@@ -382,8 +393,8 @@ wait_container_healthy aurent-pos-backend backend || {
   exit 1
 }
 
-echo "==> identity-service, platform-service, reporting-service, crm-service, restaurant-service, ai-service..."
-for svc in identity-service platform-service reporting-service crm-service restaurant-service ai-service; do
+echo "==> identity-service, platform-service, reporting-service, crm-service, restaurant-service, pharmacy-service, ai-service..."
+for svc in identity-service platform-service reporting-service crm-service restaurant-service pharmacy-service ai-service; do
   if ! recreate_service "$svc"; then
     compose_logs_tail "$svc" 150
     exit 1
@@ -408,6 +419,10 @@ wait_container_healthy aurent-crm-service crm-service || {
 }
 wait_container_healthy aurent-restaurant-service restaurant-service || {
   compose_logs_tail restaurant-service 150
+  exit 1
+}
+wait_container_healthy aurent-pharmacy-service pharmacy-service || {
+  compose_logs_tail pharmacy-service 150
   exit 1
 }
 wait_container_healthy aurent-ai-service ai-service || {
@@ -461,7 +476,17 @@ echo "  Platform:  http://127.0.0.1:8084/api/v1/actuator/health (localhost)"
 echo "  Reporting: http://127.0.0.1:8085/api/v1/actuator/health (localhost)"
 echo "  AI:        http://127.0.0.1:8086/api/v1/actuator/health (localhost)"
 echo "  Restaurant:http://127.0.0.1:8087/api/v1/actuator/health (localhost)"
-echo "  Логи:      docker compose -f $COMPOSE_FILE logs -f api-gateway backend crm-service restaurant-service ai-service"
+echo "  Pharmacy:  http://127.0.0.1:8089/api/v1/actuator/health (localhost)"
+echo "  Логи:      docker compose -f $COMPOSE_FILE logs -f api-gateway backend pharmacy-service restaurant-service ai-service"
+
+if [[ "${PHARMACY_CUTOVER:-}" == "1" ]]; then
+  echo "==> PHARMACY_CUTOVER=1 — migrate → verify → clear migrator env → purge pos_db pharmacy rows"
+  bash pharmacy-service/scripts/ensure-pharmacy-cutover-env.sh
+  bash pharmacy-service/scripts/cutover-pharmacy.sh migrate-compose
+  bash pharmacy-service/scripts/cutover-pharmacy.sh verify-compose
+  bash pharmacy-service/scripts/cutover-pharmacy.sh clear-migrate-env
+  COMPOSE=1 bash pharmacy-service/scripts/purge-pharmacy-from-pos-db.sh --execute
+fi
 
 echo ""
 echo "==> Smoke check..."

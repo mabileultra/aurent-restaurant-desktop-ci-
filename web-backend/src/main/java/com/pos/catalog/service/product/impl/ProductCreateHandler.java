@@ -19,6 +19,8 @@ import com.pos.catalog.service.product.support.ProductInitialStockSupport;
 import com.pos.catalog.service.product.support.ProductPluValidator;
 import com.pos.catalog.service.product.support.ProductSnapshotNotifier;
 import com.pos.catalog.service.product.support.ProductStorePriceApplier;
+import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.service.support.ProductLookupSupport;
 import com.pos.service.support.ProductValueNormalizer;
 import com.pos.service.support.TenantAccessSupport;
@@ -47,15 +49,28 @@ public class ProductCreateHandler {
     private final ProductExtensionService extensionService;
     private final UnitCatalogService unitCatalogService;
     private final ProductAttributeService productAttributeService;
+    private final StoreBusinessTypeResolver storeBusinessTypeResolver;
+    private final CatalogIsolationSupport catalogIsolation;
     private final ProductResponseAssembler assembler;
     private final ProductSnapshotNotifier productSnapshotNotifier;
 
     @Transactional
     public ProductResponse create(CreateProductRequest req) {
+        return createInternal(req);
+    }
+
+    private ProductResponse createInternal(CreateProductRequest req) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
         Optional<Product> inactiveBySku = productLookup.findOne(
             ProductSpecifications.lookup(companyId).sku(req.sku()).anyActiveState()
         );
+
+        if (inactiveBySku.isPresent()) {
+            Product existing = inactiveBySku.get();
+            if (catalogIsolation.isPharmacyProduct(existing)) {
+                throw PosExceptions.conflict("SKU already exists in another catalog", "sku", req.sku());
+            }
+        }
 
         if (inactiveBySku.isPresent() && !inactiveBySku.get().isActive()) {
             return reactivate(req, inactiveBySku.get());
@@ -74,6 +89,7 @@ public class ProductCreateHandler {
         }
 
         Product product = buildNewProduct(req, companyId, category);
+        applyBusinessType(product, req.businessTypeCode(), category);
         Product saved = productRepository.save(product);
         storePriceApplier.applyStorePrices(saved, req.storePrices());
         storePriceApplier.applyExtraBarcodes(saved, req.additionalBarcodes(), saved.getBarcode());
@@ -119,6 +135,7 @@ public class ProductCreateHandler {
         product.setUzInvoiceDocumentId(
             StringUtils.hasText(req.uzInvoiceDocumentId()) ? req.uzInvoiceDocumentId().trim().toUpperCase() : null
         );
+        applyBusinessType(product, req.businessTypeCode(), category);
 
         BigDecimal initialStock = req.initialStock() != null ? QuantityUtil.normalize(req.initialStock()) : BigDecimal.ZERO;
         ProductQuantityRulesResolver.applyTo(
@@ -187,6 +204,18 @@ public class ProductCreateHandler {
         }
         extensionService.applyOnCreate(product, req);
         return product;
+    }
+
+    private void applyBusinessType(Product product, String businessTypeCode, Category category) {
+        if (StringUtils.hasText(businessTypeCode)) {
+            product.setBusinessType(
+                storeBusinessTypeResolver.resolveForCreate(product.getCompany(), null, businessTypeCode)
+            );
+            return;
+        }
+        if (product.getBusinessType() == null && category != null && category.getBusinessType() != null) {
+            product.setBusinessType(category.getBusinessType());
+        }
     }
 
     private Category resolveCategory(Integer categoryId, Integer companyId) {

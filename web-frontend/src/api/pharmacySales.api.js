@@ -1,0 +1,12 @@
+import { api } from './client';
+
+export const pharmacySalesApi = {
+  create: (data, config) => api.post('/pharmacy/sales', data, config),
+  getById: (id) => api.get(`/pharmacy/sales/${id}`),
+  getReceipt: (receiptNumber) =>
+    api.get(`/pharmacy/sales/receipt/${encodeURIComponent(String(receiptNumber).trim())}`),
+  mySales: (params) => api.get('/pharmacy/sales/my-sales', { params }),
+  void: (id, reason) =>
+    api.post(`/pharmacy/sales/${id}/void`, null, { params: reason ? { reason } : undefined }),
+  returnItems: (id, body) => api.post(`/pharmacy/sales/${id}/return-items`, body),
+};

@@ -29,6 +29,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -57,12 +58,14 @@ public class ProductServiceImpl implements ProductService {
         Boolean markedProduct,
         Boolean soldIndividually,
         String barcodeExact,
-        java.util.Map<String, String> attributeFilters,
+        Map<String, String> attributeFilters,
+        String businessTypeCode,
         Pageable pageable
     ) {
         return queryService.getProducts(
             search, categoryId, activeOnly, deletedScope, storeId,
-            ikpuStatus, markedProduct, soldIndividually, barcodeExact, attributeFilters, pageable
+            ikpuStatus, markedProduct, soldIndividually, barcodeExact, attributeFilters,
+            businessTypeCode, pageable
         );
     }
 
@@ -71,9 +74,10 @@ public class ProductServiceImpl implements ProductService {
         String search,
         String barcodeContains,
         Boolean markedProduct,
+        String businessTypeCode,
         Pageable pageable
     ) {
-        return queryService.getWarehouseProducts(search, barcodeContains, markedProduct, pageable);
+        return queryService.getWarehouseProducts(search, barcodeContains, markedProduct, businessTypeCode, pageable);
     }
 
     @Override

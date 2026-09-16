@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-002-categories" author="pos">
+        <createTable tableName="categories">
+            <column name="id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(200)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_categories_company" tableName="categories">
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-003-suppliers" author="pos">
+        <createTable tableName="suppliers">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_id" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR(500)"/>
+            <column name="email" type="VARCHAR(255)"/>
+            <column name="phone" type="VARCHAR(40)"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_pharm_suppliers_company" tableName="suppliers">
+            <column name="company_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-004-products" author="pos">
+        <createTable tableName="products">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sku" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="TEXT"/>
+            <column name="category_id" type="INT"/>
+            <column name="cost_price" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="selling_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="default_discount_percent" type="NUMERIC(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_rate" type="NUMERIC(5,2)" defaultValueNumeric="12"/>
+            <column name="product_type" type="VARCHAR(30)" defaultValue="RETAIL">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sale_type" type="VARCHAR(20)" defaultValue="PIECE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_code" type="VARCHAR(16)" defaultValue="PCS">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity_scale" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="allow_fraction" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stock_quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="low_stock_alert" type="INT" defaultValueNumeric="10"/>
+            <column name="barcode" type="VARCHAR(100)"/>
+            <column name="plu" type="VARCHAR(5)"/>
+            <column name="image_url" type="VARCHAR(500)"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="external_product_id" type="VARCHAR(100)"/>
+            <column name="ikpu" type="VARCHAR(32)"/>
+            <column name="ikpu_status" type="VARCHAR(30)" defaultValue="UNKNOWN"/>
+            <column name="unit_of_measure" type="VARCHAR(50)"/>
+            <column name="unit_measure_code" type="VARCHAR(20)"/>
+            <column name="package_code" type="VARCHAR(20)"/>
+            <column name="sold_individually" type="BOOLEAN" defaultValueBoolean="true"/>
+            <column name="marked_product" type="BOOLEAN" defaultValueBoolean="false"/>
+            <column name="storage_location" type="VARCHAR(255)"/>
+            <column name="owner_type" type="VARCHAR(50)"/>
+            <column name="commission_tin" type="VARCHAR(9)"/>
+            <column name="commission_pinfl" type="VARCHAR(14)"/>
+            <column name="uz_invoice_document_id" type="VARCHAR(64)"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()"/>
+        </createTable>
+        <addUniqueConstraint tableName="products" columnNames="company_id, sku" constraintName="uq_pharm_products_company_sku"/>
+        <createIndex indexName="idx_pharm_products_company" tableName="products">
+            <column name="company_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_products_barcode" tableName="products">
+            <column name="company_id"/>
+            <column name="barcode"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_products_name" tableName="products">
+            <column name="company_id"/>
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-005-product-attributes" author="pos">
+        <createTable tableName="product_attributes">
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="field_key" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="value_text" type="TEXT"/>
+        </createTable>
+        <addPrimaryKey tableName="product_attributes" columnNames="product_id, field_key" constraintName="pk_product_attributes"/>
+        <addForeignKeyConstraint baseTableName="product_attributes" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_product_attributes_product" onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="pharm-006-product-barcodes" author="pos">
+        <createTable tableName="product_barcodes">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="barcode" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="product_barcodes" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_product_barcodes_product" onDelete="CASCADE"/>
+        <createIndex indexName="idx_pharm_product_barcodes" tableName="product_barcodes">
+            <column name="barcode"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-007-store-stock" author="pos">
+        <createTable tableName="store_stock">
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey tableName="store_stock" columnNames="product_id, store_id" constraintName="pk_store_stock"/>
+        <addForeignKeyConstraint baseTableName="store_stock" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_store_stock_product" onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

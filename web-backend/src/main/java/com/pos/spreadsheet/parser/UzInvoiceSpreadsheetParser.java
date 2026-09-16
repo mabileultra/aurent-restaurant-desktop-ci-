@@ -46,6 +46,10 @@ public class UzInvoiceSpreadsheetParser {
         }
     }
 
+    public List<List<String>> readGrid(byte[] bytes) throws IOException {
+        return readPoiGrid(bytes);
+    }
+
     /** Общий разбор сетки (Excel / HTML / PDF) в строки номенклатуры. */
     public List<Map<String, String>> parseFromGrid(List<List<String>> grid) {
         return parseProductGrid(grid);

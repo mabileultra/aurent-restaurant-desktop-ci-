@@ -4,6 +4,7 @@ import com.pos.catalog.entity.Product;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.catalog.repository.ProductRepository;
+import com.pos.service.support.CatalogIsolationSupport;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,6 +25,9 @@ class StockDocumentSupportTest {
 
     @Mock
     private ProductRepository productRepository;
+
+    @Mock
+    private CatalogIsolationSupport catalogIsolation;
 
     @InjectMocks
     private StockDocumentSupport stockDocument;

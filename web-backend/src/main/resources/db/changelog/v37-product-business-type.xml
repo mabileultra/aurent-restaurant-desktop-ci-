@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v37-products-business-type" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="products" columnName="business_type_id"/>
+            </not>
+        </preConditions>
+        <sql>
+            ALTER TABLE products
+                ADD COLUMN business_type_id INTEGER REFERENCES business_types (id);
+
+            CREATE INDEX idx_products_business_type ON products (business_type_id);
+
+            UPDATE products p
+            SET business_type_id = bt.id
+            FROM companies c
+            JOIN business_types bt ON UPPER(bt.code) = 'PHARMACY'
+            WHERE p.company_id = c.id
+              AND p.business_type_id IS NULL
+              AND UPPER(c.business_type) = 'PHARMACY';
+
+            UPDATE products p
+            SET business_type_id = bt.id
+            FROM business_types bt
+            WHERE UPPER(bt.code) = 'PHARMACY'
+              AND p.business_type_id IS NULL
+              AND (
+                  p.sku LIKE 'PHARM-%'
+                  OR EXISTS (
+                      SELECT 1
+                      FROM product_attributes pa
+                      WHERE pa.product_id = p.id
+                        AND pa.field_key IN ('dosage_form', 'units_in_pack', 'atc_code', 'prescription_required')
+                  )
+              );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

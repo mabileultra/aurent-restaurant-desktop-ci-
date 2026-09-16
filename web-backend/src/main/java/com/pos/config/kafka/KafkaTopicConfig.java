@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
+@ConditionalOnProperty(prefix = "app.kafka.domain", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class KafkaTopicConfig {
 
     @Bean

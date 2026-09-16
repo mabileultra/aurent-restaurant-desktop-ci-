@@ -1,7 +1,7 @@
 /* Компактная аптечная касса: меньше отступов, поиск в одну строку с заголовком */
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
-  grid-template-rows: minmax(88px, 0.88fr) minmax(120px, 1.12fr);
+  grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   gap: 4px;
 }
 
@@ -23,7 +23,7 @@
 
 .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__pane-head--search {
   display: grid;
-  grid-template-columns: auto minmax(160px, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
 }
@@ -163,7 +163,7 @@
 
 @media (min-width: 1024px) and (max-height: 820px) {
   .pharmacy-cashier.pharmacy-cashier--compact .pharmacy-cashier__main {
-    grid-template-rows: minmax(84px, 0.86fr) minmax(116px, 1.14fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
   }
 
   .cashier-app--pharmacy-pos .cashier-bottom-nav-shell:not(.is-collapsed) {

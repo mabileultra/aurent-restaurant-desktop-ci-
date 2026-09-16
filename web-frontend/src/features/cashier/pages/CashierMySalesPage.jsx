@@ -29,6 +29,7 @@ export default function CashierMySalesPage() {
       <div className="cashier-page__scroll">
         <CashierMySalesWorkspace
           t={t}
+          catalogKind={p.catalogKind}
           shiftLoading={p.shiftLoading}
           shiftId={p.shiftId}
           rows={p.rows}
@@ -52,6 +53,7 @@ export default function CashierMySalesPage() {
       </div>
 
       <CashierMySalesReturnModal
+        catalogKind={p.catalogKind}
         returnSaleId={p.returnSaleId}
         onClose={() => p.setReturnSaleId(null)}
         onSuccess={p.handleReturnSuccess}

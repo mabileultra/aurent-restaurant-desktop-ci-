@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-010-stock-receipts" author="pos">
+        <createTable tableName="stock_receipts">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_number" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="POSTED">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_date" type="DATE"/>
+            <column name="receipt_type" type="VARCHAR(40)"/>
+            <column name="default_markup_percent" type="NUMERIC(8,2)"/>
+            <column name="invoice_number" type="VARCHAR(80)"/>
+            <column name="invoice_date" type="DATE"/>
+            <column name="contract_number" type="VARCHAR(80)"/>
+            <column name="financial_discount" type="NUMERIC(18,2)"/>
+            <column name="payment_type" type="VARCHAR(20)"/>
+            <column name="supplier_id" type="UUID"/>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="TEXT"/>
+            <column name="total_quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_cost" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_retail" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activated_at" type="TIMESTAMPTZ"/>
+            <column name="activated_by" type="UUID"/>
+        </createTable>
+        <createIndex indexName="idx_pharm_receipts_company_store" tableName="stock_receipts">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_receipts_status" tableName="stock_receipts">
+            <column name="status"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="pharm-011-stock-receipt-lines" author="pos">
+        <createTable tableName="stock_receipt_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="receipt_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="purchase_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_selling_price" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_cost" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="batch_number" type="VARCHAR(80)"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="vat_percent" type="NUMERIC(5,2)"/>
+            <column name="markup_percent" type="NUMERIC(8,2)"/>
+            <column name="units_in_pack" type="NUMERIC(18,3)"/>
+            <column name="purchase_price_with_vat" type="NUMERIC(18,2)"/>
+            <column name="retail_price" type="NUMERIC(18,2)"/>
+            <column name="unit_retail_price" type="NUMERIC(18,2)"/>
+            <column name="line_retail" type="NUMERIC(18,2)"/>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="stock_receipt_lines" baseColumnNames="receipt_id"
+            referencedTableName="stock_receipts" referencedColumnNames="id"
+            constraintName="fk_receipt_lines_receipt" onDelete="CASCADE"/>
+        <addForeignKeyConstraint baseTableName="stock_receipt_lines" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_receipt_lines_product"/>
+    </changeSet>
+
+    <changeSet id="pharm-012-stock-lots" author="pos">
+        <createTable tableName="stock_lots">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="receipt_line_id" type="UUID"/>
+            <column name="batch_number" type="VARCHAR(80)"/>
+            <column name="expiry_date" type="DATE"/>
+            <column name="quantity" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="purchase_price" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_selling_price" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="stock_lots" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_stock_lots_product"/>
+        <addForeignKeyConstraint baseTableName="stock_lots" baseColumnNames="receipt_line_id"
+            referencedTableName="stock_receipt_lines" referencedColumnNames="id"
+            constraintName="fk_stock_lots_receipt_line"/>
+        <createIndex indexName="idx_pharm_lots_product_store" tableName="stock_lots">
+            <column name="product_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex indexName="idx_pharm_lots_expiry" tableName="stock_lots">
+            <column name="expiry_date"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -28,59 +28,7 @@
 .pharmacy-search__table {
   table-layout: fixed;
   width: 100%;
-  min-width: 1080px;
-}
-
-.pharmacy-search__table {
-  min-width: 1180px;
-}
-
-/* Чек: колонки задаются через colgroup в pharmacy-cart-table-columns.css */
-
-/* Поиск: 12 колонок */
-.pharmacy-search__table th:nth-child(1),
-.pharmacy-search__table td:nth-child(1) {
-  width: 16%;
-}
-
-.pharmacy-search__table th:nth-child(2),
-.pharmacy-search__table td:nth-child(2),
-.pharmacy-search__table th:nth-child(3),
-.pharmacy-search__table td:nth-child(3),
-.pharmacy-search__table th:nth-child(4),
-.pharmacy-search__table td:nth-child(4) {
-  width: 6%;
-}
-
-.pharmacy-search__table th:nth-child(5),
-.pharmacy-search__table td:nth-child(5) {
-  width: 5%;
-}
-
-.pharmacy-search__table th:nth-child(6),
-.pharmacy-search__table td:nth-child(6),
-.pharmacy-search__table th:nth-child(7),
-.pharmacy-search__table td:nth-child(7),
-.pharmacy-search__table th:nth-child(8),
-.pharmacy-search__table td:nth-child(8) {
-  width: 6%;
-}
-
-.pharmacy-search__table th:nth-child(9),
-.pharmacy-search__table td:nth-child(9) {
-  width: 10%;
-}
-
-.pharmacy-search__table th:nth-child(10),
-.pharmacy-search__table td:nth-child(10),
-.pharmacy-search__table th:nth-child(11),
-.pharmacy-search__table td:nth-child(11) {
-  width: 6.5%;
-}
-
-.pharmacy-search__table th:nth-child(12),
-.pharmacy-search__table td:nth-child(12) {
-  width: 8%;
+  min-width: 100%;
 }
 
 .pharmacy-cart-table__table tbody td,

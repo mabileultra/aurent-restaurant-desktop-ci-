@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { X, Loader, RotateCcw, Receipt, CheckCircle2, Hash } from 'lucide-react';
-import { saleApi } from '../../api/sale.api';
 import { printReturnReceiptWithToast } from '../../utils/printReturnReceipt';
 import { isReadyReceiptLookup, parseReceiptLookupInput } from '../../utils/receiptLookup';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -15,7 +14,10 @@ import SaleReturnLinesEditor, {
   getReturnableLines,
   useReturnQtyState,
 } from '../sale-return/SaleReturnLinesEditor';
-import { posReturnSaleItems } from '../../services/pos/posReturnWithFiscal';
+import {
+  posLookupSaleReceipt,
+  posReturnSaleItems,
+} from '../../services/pos/posReturnWithFiscal';
 import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
 
 const RECEIPT_LOOKUP_DEBOUNCE_MS = 450;
@@ -49,7 +51,13 @@ function paymentLabel(method, t) {
   }
 }
 
-export default function PosReturnModal({ open, onClose, onSuccess, terminal = false }) {
+export default function PosReturnModal({
+  open,
+  onClose,
+  onSuccess,
+  terminal = false,
+  catalogKind,
+}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [receiptQuery, setReceiptQuery] = useState('');
@@ -95,17 +103,17 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
       lastLookupRef.current = code;
 
       try {
-        const res = await saleApi.getReceipt(code);
-        if (res.data.status === 'VOIDED') {
+        const data = await posLookupSaleReceipt(code, { catalogKind });
+        if (data.status === 'VOIDED') {
           toast.error(t('pos.returnAlreadyVoided'));
           return;
         }
-        if (getReturnableLines(res.data).length === 0) {
+        if (getReturnableLines(data).length === 0) {
           toast.error(t('pos.returnNoItems'));
           return;
         }
-        setSale(res.data);
-        toast.success(t('pos.returnFound', { receipt: res.data.receiptNumber }));
+        setSale(data);
+        toast.success(t('pos.returnFound', { receipt: data.receiptNumber }));
       } catch (e) {
         if (lastLookupRef.current === code) {
           setSale(null);
@@ -115,7 +123,7 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
         setLookupPending(false);
       }
     },
-    [t]
+    [t, catalogKind]
   );
 
   useEffect(() => {
@@ -140,7 +148,12 @@ export default function PosReturnModal({ open, onClose, onSuccess, terminal = fa
       if (!payload.lines.length) {
         return Promise.reject(new Error(t('pos.returnSelectQty')));
       }
-      return posReturnSaleItems({ sale: s, payload, storeId: s.storeId });
+      return posReturnSaleItems({
+        sale: s,
+        payload,
+        storeId: s.storeId,
+        catalogKind,
+      });
     },
     onSuccess: async (_data, vars) => {
       const returnReason = (vars?.reasonText || '').trim() || t('pos.returnDefaultReason');

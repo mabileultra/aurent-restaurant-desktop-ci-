@@ -38,10 +38,10 @@ import com.pos.sales.service.sale.support.SaleEnumParser;
 import com.pos.sales.service.sale.support.SaleFiscalApplier;
 import com.pos.sales.service.sale.support.SalePaymentResolver;
 import com.pos.sales.service.sale.support.SaleReceiptNumberGenerator;
-import com.pos.sales.service.sale.support.PharmacySalePatientSupport;
 import com.pos.sales.service.salesledger.SalesLedgerCacheService;
 import com.pos.inventory.service.stock.StoreStockService;
 import com.pos.service.support.CashierSaleSupport;
+import com.pos.service.support.CatalogIsolationSupport;
 import com.pos.sales.service.sync.CashierSyncService;
 import com.pos.shared.log.LogUtil;
 import com.pos.util.MoneyCalculator;
@@ -71,6 +71,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final ProductQueryService productQueryService;
     private final UserRepository userRepository;
     private final CashierSaleSupport cashierSaleSupport;
+    private final CatalogIsolationSupport catalogIsolation;
     private final SaleRepository saleRepository;
     private final CashierShiftRepository cashierShiftRepository;
     private final ProductRepository productRepository;
@@ -86,7 +87,6 @@ public class CashierSyncServiceImpl implements CashierSyncService {
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
-    private final PharmacySalePatientSupport pharmacySalePatientSupport;
 
     @Override
     @Transactional(readOnly = true)
@@ -95,6 +95,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
         assertStoreMatchesCashierCompany(cashier, store);
+        catalogIsolation.rejectPharmacySalesInMonolith(store);
 
         List<CategoryResponse> categories = categoryService.findAll(null);
         List<ProductResponse> products = new ArrayList<>();
@@ -106,6 +107,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
                 true,
                 "ACTIVE",
                 store.getId(),
+                null,
                 null,
                 null,
                 null,
@@ -182,6 +184,7 @@ public class CashierSyncServiceImpl implements CashierSyncService {
         User cashier = userRepository.findByIdWithDetails(cashierId)
             .orElseThrow(() -> new ResourceNotFoundException("Cashier not found"));
         Store store = cashierSaleSupport.requireStoreForSale(cashier, req.storeId());
+        catalogIsolation.rejectPharmacySalesInMonolith(store);
         CashierShift shift = resolveShiftForOfflineSync(cashier, store, item.shiftOpenedAt());
 
         Sale.ReceiptType receiptType = SaleEnumParser.receiptType(req.receiptType());
@@ -296,9 +299,6 @@ public class CashierSyncServiceImpl implements CashierSyncService {
             .changeGiven(amounts.change())
             .status(Sale.SaleStatus.COMPLETED)
             .notes(notes)
-            .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
-            .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
-            .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
             .clientSaleId(item.clientSaleId())
             .offlineDeviceId(item.offlineDeviceId())
             .saleSource(Sale.SaleSource.OFFLINE_SYNC)

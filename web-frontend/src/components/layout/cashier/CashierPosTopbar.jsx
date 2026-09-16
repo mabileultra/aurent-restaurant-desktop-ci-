@@ -5,6 +5,7 @@ import { useLocation } from 'react-router-dom';
 import CashierTopbarTerminalMeta from './CashierTopbarTerminalMeta';
 import CashierPosTopbarCashier from './CashierPosTopbarCashier';
 import PharmacyTopbarShortcuts from '../../../features/pharmacy-cashier/components/PharmacyTopbarShortcuts';
+import { isPharmPosPath } from '../../../pharmacy/app/pharmacyPaths';
 
 export default function CashierPosTopbar({
   t,
@@ -23,7 +24,7 @@ export default function CashierPosTopbar({
 }) {
   const location = useLocation();
   const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
-  const isPharmacyRegister = location.pathname.startsWith('/cashier/pharmacy');
+  const isPharmacyRegister = isPharmPosPath(location.pathname);
   const shiftOpen = shift?.status === 'OPEN';
 
   return (

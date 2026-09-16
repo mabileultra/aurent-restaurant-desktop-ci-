@@ -38,5 +38,9 @@
     <include file="v31-ensure-print-fiscal-qr.xml" relativeToChangelogFile="true"/>
     <include file="v32-ensure-tenant-display-settings.xml" relativeToChangelogFile="true"/>
     <include file="v33-construction-show-initial-stock.xml" relativeToChangelogFile="true"/>
+    <include file="v34-pharmacy-stock-receipts.xml" relativeToChangelogFile="true"/>
+    <include file="v35-pharmacy-prescription-field.xml" relativeToChangelogFile="true"/>
+    <include file="v36-sale-item-lots-fefo.xml" relativeToChangelogFile="true"/>
+    <include file="v37-product-business-type.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

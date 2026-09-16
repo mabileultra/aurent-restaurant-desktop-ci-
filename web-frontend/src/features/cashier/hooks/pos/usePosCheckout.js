@@ -28,6 +28,7 @@ export function usePosCheckout({
   setSelectedLineId,
   shift = null,
   getCheckoutLineItems: getCheckoutLineItemsOverride,
+  catalogKind,
 }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -54,6 +55,7 @@ export function usePosCheckout({
         getCheckoutOrderDiscountAmount,
         getCheckoutOrderDiscountPercent,
         items,
+        catalogKind,
       });
     },
     onSuccess: async (res, payment) => {
@@ -61,6 +63,7 @@ export function usePosCheckout({
       setPayOpen(false);
       setSelectedLineId(null);
       qc.invalidateQueries({ queryKey: ['pos-products'] });
+      qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
       qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
       qc.invalidateQueries({ queryKey: ['my-sales'] });
       qc.invalidateQueries({ queryKey: ['sales-ledger'] });

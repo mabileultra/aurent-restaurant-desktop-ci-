@@ -106,3 +106,8 @@ aurent-cashier-desktop/
 # Electron desktop (desktop-electron/)
 desktop-electron/node_modules/
 desktop-electron/dist/
+
+# Local-only Postgres data / run artifacts
+.local-pgdata/
+.local-logs/
+.local-run/
