@@ -78,8 +78,8 @@ export function buildEscposLabels(t) {
     fmNumber: t('fiscalReceipt.fmNumber'),
     fiscalReceiptNo: t('fiscalReceipt.fiscalReceiptNo'),
     fiscalSign: t('fiscalReceipt.fiscalSign'),
-    footer: t('fiscalReceipt.footer'),
-    qrHint: t('fiscalReceipt.qrHint'),
+    footer: '',
+    qrHint: '',
     receiptType: t('fiscalReceipt.receiptType'),
     receiptTypeSale: t('fiscalReceipt.receiptTypeSale'),
     receiptTypeReturn: t('fiscalReceipt.receiptTypeReturn'),
@@ -127,6 +127,7 @@ export function buildCashierEscposPayload(sale, t) {
   const printFiscalQr = sale.printFiscalQr !== false;
   const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
+  receiptFields.footer = false;
   if (!printFiscalQr || !qrValue) {
     receiptFields.qrCode = false;
   }

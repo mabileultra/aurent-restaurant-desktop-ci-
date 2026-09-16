@@ -56,6 +56,8 @@ describe('buildCashierEscposPayload QR', () => {
     expect(payload.qrValue).toBe(FISCAL_SALE.fiscalQrUrl);
     expect(isOfdCheckUrl(payload.qrValue)).toBe(true);
     expect(payload.receiptFields.qrCode).toBe(true);
+    expect(payload.receiptFields.footer).toBe(false);
+    expect(payload.labels.footer).toBe('');
     expect(payload.sale.printFiscalQr).toBe(true);
     expect(payload.branding.fmNumber).toBe('TERM1');
     expect(payload.paperWmm).toBe(80);
