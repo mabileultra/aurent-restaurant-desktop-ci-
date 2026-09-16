@@ -77,6 +77,10 @@ DELETE FROM store_stock ss
  USING products p
  WHERE ss.product_id = p.id AND $PRODUCT_FILTER;
 
+DELETE FROM stock_movements sm
+ USING products p
+ WHERE sm.product_id = p.id AND $PRODUCT_FILTER;
+
 DELETE FROM product_barcodes pb
  USING products p
  WHERE pb.product_id = p.id AND $PRODUCT_FILTER;
