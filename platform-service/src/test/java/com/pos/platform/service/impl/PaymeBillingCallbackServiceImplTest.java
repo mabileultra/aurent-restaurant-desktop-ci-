@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -358,6 +359,84 @@ class PaymeBillingCallbackServiceImplTest {
         Map<String, Object> result = (Map<String, Object>) response.get("result");
         assertThat(result.get("state")).isEqualTo(-2);
         assertThat(result.get("reason")).isEqualTo(5);
+    }
+
+    @Test
+    void getStatement_returnsAllCreatedTransactionsInPeriodByPaymeCreateTime() {
+        long t1 = 1_757_862_028_000L;
+        long t2 = 1_757_862_100_000L;
+        BillingPaymentIntent olderOrder = preparedIntent(PAYME_ID_FIRST);
+        olderOrder.setProviderPrepareId(String.valueOf(t1));
+        olderOrder.setCreatedAt(Instant.parse("2026-09-01T00:00:00Z")); // order much older
+        olderOrder.setStatus(BillingPaymentStatus.PAID);
+        olderOrder.setPaidAt(Instant.parse("2026-09-14T12:30:00Z"));
+
+        BillingPaymentIntent cancelled = BillingPaymentIntent.builder()
+            .id(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+            .companyId(1)
+            .provider(BillingPaymentProvider.PAYME)
+            .amount(new BigDecimal("5000.00"))
+            .status(BillingPaymentStatus.CANCELLED)
+            .providerTransId(PAYME_ID_SECOND)
+            .providerPrepareId(String.valueOf(t2))
+            .paidAt(null)
+            .paymeCancelReason(3)
+            .paymeCancelledAt(Instant.parse("2026-09-14T12:40:00Z"))
+            .createdAt(Instant.parse("2026-09-14T12:00:00Z"))
+            .updatedAt(Instant.parse("2026-09-14T12:40:00Z"))
+            .build();
+
+        long from = t1;
+        long to = t2;
+        when(intentRepository.findPaymeStatement("PAYME", from, to))
+            .thenReturn(java.util.List.of(olderOrder, cancelled));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            Map.of(
+                "jsonrpc", "2.0",
+                "id", 50,
+                "method", "GetStatement",
+                "params", Map.of("from", from, "to", to)
+            ),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        @SuppressWarnings("unchecked")
+        java.util.List<Map<String, Object>> txs = (java.util.List<Map<String, Object>>) result.get("transactions");
+        assertThat(txs).hasSize(2);
+        assertThat(txs.get(0).get("id")).isEqualTo(PAYME_ID_FIRST);
+        assertThat(txs.get(0).get("time")).isEqualTo(t1);
+        assertThat(txs.get(0).get("state")).isEqualTo(2);
+        assertThat(txs.get(0).get("reason")).isNull();
+        assertThat(txs.get(1).get("id")).isEqualTo(PAYME_ID_SECOND);
+        assertThat(txs.get(1).get("time")).isEqualTo(t2);
+        assertThat(txs.get(1).get("state")).isEqualTo(-1);
+        assertThat(txs.get(1).get("reason")).isEqualTo(3);
+    }
+
+    @Test
+    void getStatement_emptyPeriod_returnsEmptyList() {
+        when(intentRepository.findPaymeStatement(eq("PAYME"), anyLong(), anyLong()))
+            .thenReturn(java.util.List.of());
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            Map.of(
+                "jsonrpc", "2.0",
+                "id", 51,
+                "method", "GetStatement",
+                "params", Map.of("from", 1L, "to", 2L)
+            ),
+            authHeader()
+        );
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("transactions")).isEqualTo(java.util.List.of());
     }
 
     private static Map<String, Object> cancelBody(String paymeId, int reason) {

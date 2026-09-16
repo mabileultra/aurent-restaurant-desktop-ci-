@@ -17,6 +17,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -247,23 +248,28 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (from == null || to == null) {
             return error(id, -31050, "Invalid period");
         }
+        // Docs: from <= create_time <= to, where create_time is Payme CreateTransaction time.
         List<BillingPaymentIntent> rows = intentRepository.findPaymeStatement(
-            BillingPaymentProvider.PAYME,
-            from,
-            to
+            BillingPaymentProvider.PAYME.name(),
+            from.toEpochMilli(),
+            to.toEpochMilli()
         );
         List<Map<String, Object>> transactions = new ArrayList<>();
         for (BillingPaymentIntent intent : rows) {
-            if (intent.getProviderTransId() == null || intent.getProviderTransId().isBlank()) {
+            if (!StringUtils.hasText(intent.getProviderTransId())) {
                 continue;
             }
             PaymeSnapshot snap = snapshot(intent);
+            long createTimeMs = snap.createTimeMs();
+            if (createTimeMs < from.toEpochMilli() || createTimeMs > to.toEpochMilli()) {
+                continue;
+            }
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("id", intent.getProviderTransId());
-            row.put("time", snap.createTimeMs());
+            row.put("time", createTimeMs);
             row.put("amount", BillingPaymentUrlBuilder.toTiyin(intent.getAmount()));
             row.put("account", Map.of("order_id", intent.getId().toString()));
-            row.put("create_time", snap.createTimeMs());
+            row.put("create_time", createTimeMs);
             row.put("perform_time", snap.performTimeMs());
             row.put("cancel_time", snap.cancelTimeMs());
             row.put("transaction", intent.getId().toString());
@@ -271,7 +277,10 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             row.put("reason", snap.reason());
             transactions.add(row);
         }
-        return ok(id, Map.of("transactions", transactions));
+        transactions.sort(Comparator.comparingLong(r -> ((Number) r.get("time")).longValue()));
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("transactions", transactions);
+        return ok(id, result);
     }
 
     private Map<String, Object> createdResult(Object id, BillingPaymentIntent intent) {
