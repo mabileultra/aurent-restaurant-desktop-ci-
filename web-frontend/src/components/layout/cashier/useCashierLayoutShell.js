@@ -79,6 +79,7 @@ export function useCashierLayoutShell() {
   const location = useLocation();
   const isPosRoute = isCashierRegisterScreen(location.pathname);
 
+  const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const { isPharmacy } = useCashierStoreProfile();
   const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const { data: shift } = useCashierShift(storeId, { catalogKind });
@@ -121,7 +122,7 @@ export function useCashierLayoutShell() {
   }${posDesktop && isPosRoute ? ' cashier-app--pos-desktop' : ''}${
     touchLayout ? ' cashier-app--touch' : ''
   }${isDesktopApp ? ' cashier-app--desktop' : ''}${
-    isPharmacyRoute ? ' cashier-app--pharmacy-pos' : ''
+    isPharmacy ? ' cashier-app--pharmacy-pos' : ''
   }`;
 
   return {
