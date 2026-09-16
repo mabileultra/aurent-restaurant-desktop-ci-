@@ -30,6 +30,8 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
     private static final int STATE_DONE = 2;
     private static final int STATE_CANCELLED = -1;
     private static final int STATE_CANCELLED_AFTER = -2;
+    private static final int REASON_CANCEL_BEFORE = 3;
+    private static final int REASON_CANCEL_AFTER = 5;
 
     private final BillingPaymentIntentRepository intentRepository;
     private final BillingPaymentCreditService creditService;
@@ -138,6 +140,8 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         intent.setStatus(BillingPaymentStatus.PREPARED);
         intent.setPaidAt(null);
         intent.setErrorNote(null);
+        intent.setPaymeCancelReason(null);
+        intent.setPaymeCancelledAt(null);
         intent.setProviderPrepareId(String.valueOf(createTimeMs));
         intentRepository.save(intent);
         return createdResult(id, intent);
@@ -153,13 +157,7 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             return error(id, -31003, "Transaction not found");
         }
         if (intent.getStatus() == BillingPaymentStatus.PAID) {
-            return ok(id, Map.of(
-                "transaction", intent.getId().toString(),
-                "perform_time", intent.getPaidAt() != null
-                    ? intent.getPaidAt().toEpochMilli()
-                    : Instant.now().toEpochMilli(),
-                "state", STATE_DONE
-            ));
+            return performResult(id, intent);
         }
         if (intent.getStatus() == BillingPaymentStatus.CANCELLED
             || intent.getStatus() == BillingPaymentStatus.FAILED) {
@@ -167,13 +165,18 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         }
         creditService.markPaid(intent, paymeId, "Пополнение через Payme");
         BillingPaymentIntent paid = intentRepository.findById(intent.getId()).orElse(intent);
-        return ok(id, Map.of(
-            "transaction", paid.getId().toString(),
-            "perform_time", paid.getPaidAt() != null
-                ? paid.getPaidAt().toEpochMilli()
-                : Instant.now().toEpochMilli(),
-            "state", STATE_DONE
-        ));
+        return performResult(id, paid);
+    }
+
+    private Map<String, Object> performResult(Object id, BillingPaymentIntent intent) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("transaction", intent.getId().toString());
+        result.put(
+            "perform_time",
+            intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : Instant.now().toEpochMilli()
+        );
+        result.put("state", STATE_DONE);
+        return ok(id, result);
     }
 
     private Map<String, Object> cancel(Object id, Map<String, Object> params) {
@@ -185,19 +188,37 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (intent == null) {
             return error(id, -31003, "Transaction not found");
         }
-        boolean afterPay = intent.getStatus() == BillingPaymentStatus.PAID;
-        if (afterPay) {
-            creditService.reversePaid(intent, "Payme CancelTransaction after Perform");
-        } else {
-            intent.setStatus(BillingPaymentStatus.CANCELLED);
-            intentRepository.save(intent);
+        if (intent.getStatus() == BillingPaymentStatus.CANCELLED
+            || intent.getStatus() == BillingPaymentStatus.FAILED) {
+            return cancelResult(id, intent);
         }
+
+        boolean afterPerform = intent.getStatus() == BillingPaymentStatus.PAID;
+        int reason = resolveCancelReason(params, afterPerform);
         Instant cancelAt = Instant.now();
-        return ok(id, Map.of(
-            "transaction", intent.getId().toString(),
-            "cancel_time", cancelAt.toEpochMilli(),
-            "state", afterPay ? STATE_CANCELLED_AFTER : STATE_CANCELLED
-        ));
+
+        if (afterPerform) {
+            creditService.reversePaid(intent, "Payme CancelTransaction after Perform");
+            intent = intentRepository.findById(intent.getId()).orElse(intent);
+        } else if (intent.getStatus() == BillingPaymentStatus.PREPARED) {
+            intent.setStatus(BillingPaymentStatus.CANCELLED);
+        } else {
+            return error(id, -31008, "Transaction cancelled");
+        }
+
+        intent.setPaymeCancelReason(reason);
+        intent.setPaymeCancelledAt(cancelAt);
+        intentRepository.save(intent);
+        return cancelResult(id, intent);
+    }
+
+    private Map<String, Object> cancelResult(Object id, BillingPaymentIntent intent) {
+        PaymeSnapshot snap = snapshot(intent);
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("transaction", intent.getId().toString());
+        result.put("cancel_time", snap.cancelTimeMs());
+        result.put("state", snap.state());
+        return ok(id, result);
     }
 
     private Map<String, Object> check(Object id, Map<String, Object> params) {
@@ -209,22 +230,14 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
         if (intent == null) {
             return error(id, -31003, "Transaction not found");
         }
-        int state = switch (intent.getStatus()) {
-            case PAID -> STATE_DONE;
-            case CANCELLED -> intent.getPaidAt() != null ? STATE_CANCELLED_AFTER : STATE_CANCELLED;
-            case FAILED -> STATE_CANCELLED;
-            default -> STATE_CREATED;
-        };
+        PaymeSnapshot snap = snapshot(intent);
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("create_time", resolveStoredCreateTime(intent));
-        result.put("perform_time", intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : 0L);
-        result.put(
-            "cancel_time",
-            intent.getStatus() == BillingPaymentStatus.CANCELLED ? intent.getUpdatedAt().toEpochMilli() : 0L
-        );
+        result.put("create_time", snap.createTimeMs());
+        result.put("perform_time", snap.performTimeMs());
+        result.put("cancel_time", snap.cancelTimeMs());
         result.put("transaction", intent.getId().toString());
-        result.put("state", state);
-        result.put("reason", null);
+        result.put("state", snap.state());
+        result.put("reason", snap.reason());
         return ok(id, result);
     }
 
@@ -244,49 +257,80 @@ public class PaymeBillingCallbackServiceImpl implements PaymeBillingCallbackServ
             if (intent.getProviderTransId() == null || intent.getProviderTransId().isBlank()) {
                 continue;
             }
-            int state = switch (intent.getStatus()) {
-                case PAID -> STATE_DONE;
-                case CANCELLED -> intent.getPaidAt() != null ? STATE_CANCELLED_AFTER : STATE_CANCELLED;
-                case FAILED -> STATE_CANCELLED;
-                default -> STATE_CREATED;
-            };
+            PaymeSnapshot snap = snapshot(intent);
             Map<String, Object> row = new LinkedHashMap<>();
             row.put("id", intent.getProviderTransId());
-            long createTimeMs = resolveStoredCreateTime(intent);
-            row.put("time", createTimeMs);
+            row.put("time", snap.createTimeMs());
             row.put("amount", BillingPaymentUrlBuilder.toTiyin(intent.getAmount()));
             row.put("account", Map.of("order_id", intent.getId().toString()));
-            row.put("create_time", createTimeMs);
-            row.put("perform_time", intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : 0L);
-            row.put(
-                "cancel_time",
-                intent.getStatus() == BillingPaymentStatus.CANCELLED
-                    ? intent.getUpdatedAt().toEpochMilli()
-                    : 0L
-            );
+            row.put("create_time", snap.createTimeMs());
+            row.put("perform_time", snap.performTimeMs());
+            row.put("cancel_time", snap.cancelTimeMs());
             row.put("transaction", intent.getId().toString());
-            row.put("state", state);
-            row.put("reason", null);
+            row.put("state", snap.state());
+            row.put("reason", snap.reason());
             transactions.add(row);
         }
         return ok(id, Map.of("transactions", transactions));
     }
 
     private Map<String, Object> createdResult(Object id, BillingPaymentIntent intent) {
-        int state = switch (intent.getStatus()) {
-            case PAID -> STATE_DONE;
-            case CANCELLED -> intent.getPaidAt() != null ? STATE_CANCELLED_AFTER : STATE_CANCELLED;
-            case FAILED -> STATE_CANCELLED;
-            default -> STATE_CREATED;
-        };
+        PaymeSnapshot snap = snapshot(intent);
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("create_time", resolveStoredCreateTime(intent));
+        result.put("create_time", snap.createTimeMs());
         result.put("transaction", intent.getId().toString());
-        result.put("state", state);
-        if (state == STATE_DONE && intent.getPaidAt() != null) {
-            result.put("perform_time", intent.getPaidAt().toEpochMilli());
+        result.put("state", snap.state());
+        if (snap.state() == STATE_DONE && snap.performTimeMs() > 0) {
+            result.put("perform_time", snap.performTimeMs());
         }
         return ok(id, result);
+    }
+
+    private record PaymeSnapshot(int state, Integer reason, long createTimeMs, long performTimeMs, long cancelTimeMs) {}
+
+    private PaymeSnapshot snapshot(BillingPaymentIntent intent) {
+        long createTimeMs = resolveStoredCreateTime(intent);
+        long performTimeMs = intent.getPaidAt() != null ? intent.getPaidAt().toEpochMilli() : 0L;
+        return switch (intent.getStatus()) {
+            case PAID -> new PaymeSnapshot(STATE_DONE, null, createTimeMs, performTimeMs, 0L);
+            case CANCELLED, FAILED -> cancelledSnapshot(intent, createTimeMs, performTimeMs);
+            default -> new PaymeSnapshot(STATE_CREATED, null, createTimeMs, 0L, 0L);
+        };
+    }
+
+    private PaymeSnapshot cancelledSnapshot(
+        BillingPaymentIntent intent,
+        long createTimeMs,
+        long performTimeMs
+    ) {
+        boolean afterPerform = intent.getPaidAt() != null;
+        int state = afterPerform ? STATE_CANCELLED_AFTER : STATE_CANCELLED;
+        Integer reason = intent.getPaymeCancelReason() != null
+            ? intent.getPaymeCancelReason()
+            : (afterPerform ? REASON_CANCEL_AFTER : REASON_CANCEL_BEFORE);
+        long cancelTimeMs = intent.getPaymeCancelledAt() != null
+            ? intent.getPaymeCancelledAt().toEpochMilli()
+            : intent.getUpdatedAt().toEpochMilli();
+        return new PaymeSnapshot(state, reason, createTimeMs, performTimeMs, cancelTimeMs);
+    }
+
+    private static int resolveCancelReason(Map<String, Object> params, boolean afterPerform) {
+        Integer reason = parseReason(params.get("reason"));
+        if (reason != null) {
+            return reason;
+        }
+        return afterPerform ? REASON_CANCEL_AFTER : REASON_CANCEL_BEFORE;
+    }
+
+    private static Integer parseReason(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(String.valueOf(raw).trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     /**

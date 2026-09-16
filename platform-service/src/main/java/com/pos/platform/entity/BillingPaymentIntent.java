@@ -69,6 +69,13 @@ public class BillingPaymentIntent {
     @Column(name = "paid_at")
     private Instant paidAt;
 
+    /** Payme CancelTransaction reason (3 before perform, 5 after perform). */
+    @Column(name = "payme_cancel_reason")
+    private Integer paymeCancelReason;
+
+    @Column(name = "payme_cancelled_at")
+    private Instant paymeCancelledAt;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 

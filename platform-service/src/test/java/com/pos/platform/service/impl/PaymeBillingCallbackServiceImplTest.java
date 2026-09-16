@@ -226,6 +226,8 @@ class PaymeBillingCallbackServiceImplTest {
         BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
         intent.setStatus(BillingPaymentStatus.PAID);
         intent.setPaidAt(Instant.parse("2026-09-14T12:30:00Z"));
+        intent.setPaymeCancelReason(5);
+        intent.setPaymeCancelledAt(Instant.parse("2026-09-14T12:31:00Z"));
         when(intentRepository.findById(ORDER_ID)).thenReturn(Optional.of(intent));
         when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_SECOND))
             .thenReturn(Optional.empty());
@@ -248,6 +250,123 @@ class PaymeBillingCallbackServiceImplTest {
         assertThat(intent.getStatus()).isEqualTo(BillingPaymentStatus.PREPARED);
         assertThat(intent.getAmount()).isEqualByComparingTo("2500.00");
         assertThat(intent.getPaidAt()).isNull();
+        assertThat(intent.getPaymeCancelReason()).isNull();
+        assertThat(intent.getPaymeCancelledAt()).isNull();
+    }
+
+    @Test
+    void cancelTransaction_beforePerform_returnsStateMinus1AndReason3() {
+        BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_FIRST))
+            .thenReturn(Optional.of(intent));
+        when(intentRepository.save(intent)).thenAnswer(inv -> inv.getArgument(0));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            cancelBody(PAYME_ID_FIRST, 3),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("state")).isEqualTo(-1);
+        assertThat(intent.getStatus()).isEqualTo(BillingPaymentStatus.CANCELLED);
+        assertThat(intent.getPaymeCancelReason()).isEqualTo(3);
+        assertThat(intent.getPaymeCancelledAt()).isNotNull();
+        verify(creditService, never()).reversePaid(any(), any());
+    }
+
+    @Test
+    void cancelTransaction_afterPerform_returnsStateMinus2() {
+        BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
+        Instant paidAt = Instant.parse("2026-09-14T12:30:00Z");
+        intent.setStatus(BillingPaymentStatus.PAID);
+        intent.setPaidAt(paidAt);
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_FIRST))
+            .thenReturn(Optional.of(intent));
+        when(intentRepository.findById(ORDER_ID)).thenAnswer(inv -> {
+            intent.setStatus(BillingPaymentStatus.CANCELLED);
+            return Optional.of(intent);
+        });
+        when(intentRepository.save(intent)).thenAnswer(inv -> inv.getArgument(0));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            cancelBody(PAYME_ID_FIRST, 5),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("state")).isEqualTo(-2);
+        assertThat(intent.getPaymeCancelReason()).isEqualTo(5);
+        assertThat(intent.getPaidAt()).isEqualTo(paidAt);
+        verify(creditService).reversePaid(intent, "Payme CancelTransaction after Perform");
+    }
+
+    @Test
+    void cancelTransaction_repeatAfterPerform_isIdempotent() {
+        BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
+        Instant paidAt = Instant.parse("2026-09-14T12:30:00Z");
+        Instant cancelAt = Instant.parse("2026-09-14T12:31:00Z");
+        intent.setStatus(BillingPaymentStatus.CANCELLED);
+        intent.setPaidAt(paidAt);
+        intent.setPaymeCancelReason(5);
+        intent.setPaymeCancelledAt(cancelAt);
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_FIRST))
+            .thenReturn(Optional.of(intent));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            cancelBody(PAYME_ID_FIRST, 5),
+            authHeader()
+        );
+
+        assertThat(response).doesNotContainKey("error");
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("state")).isEqualTo(-2);
+        assertThat(result.get("cancel_time")).isEqualTo(cancelAt.toEpochMilli());
+        verify(creditService, never()).reversePaid(any(), any());
+        verify(intentRepository, never()).save(any());
+    }
+
+    @Test
+    void checkTransaction_cancelledAfterPerform_returnsStateMinus2AndReason5() {
+        BillingPaymentIntent intent = preparedIntent(PAYME_ID_FIRST);
+        intent.setStatus(BillingPaymentStatus.CANCELLED);
+        intent.setPaidAt(Instant.parse("2026-09-14T12:30:00Z"));
+        intent.setPaymeCancelReason(5);
+        intent.setPaymeCancelledAt(Instant.parse("2026-09-14T12:31:00Z"));
+        when(intentRepository.findByProviderAndProviderTransId(BillingPaymentProvider.PAYME, PAYME_ID_FIRST))
+            .thenReturn(Optional.of(intent));
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> response = (Map<String, Object>) service.handle(
+            Map.of(
+                "jsonrpc", "2.0",
+                "id", 99,
+                "method", "CheckTransaction",
+                "params", Map.of("id", PAYME_ID_FIRST)
+            ),
+            authHeader()
+        );
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> result = (Map<String, Object>) response.get("result");
+        assertThat(result.get("state")).isEqualTo(-2);
+        assertThat(result.get("reason")).isEqualTo(5);
+    }
+
+    private static Map<String, Object> cancelBody(String paymeId, int reason) {
+        return Map.of(
+            "jsonrpc", "2.0",
+            "id", 3,
+            "method", "CancelTransaction",
+            "params", Map.of("id", paymeId, "reason", reason)
+        );
     }
 
     private static BillingPaymentIntent pendingIntent() {

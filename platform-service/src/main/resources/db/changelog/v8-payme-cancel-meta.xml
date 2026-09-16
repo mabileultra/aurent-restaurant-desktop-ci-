@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v8-001-payme-cancel-meta" author="platform">
+        <addColumn tableName="billing_payment_intents">
+            <column name="payme_cancel_reason" type="INT"/>
+            <column name="payme_cancelled_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+</databaseChangeLog>
