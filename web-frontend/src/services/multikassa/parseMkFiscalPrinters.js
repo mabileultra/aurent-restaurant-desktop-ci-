@@ -77,16 +77,32 @@ export function parseMkFiscalPrinters(raw) {
   const selected = pickStringField(raw, ['selectedPrinter', 'SelectedPrinter', 'selected']);
   const paperWidthRaw = pickStringField(raw, ['selectedPaperWidth', 'SelectedPaperWidth', 'paperWidth']);
   const paperWidth = Number(paperWidthRaw);
+  const silentOption = labels.find((name) => isDummyMkPrinterName(name)) || '';
+  const silentSelected = Boolean(selected) && isDummyMkPrinterName(selected);
   return {
     printers,
     labels,
     selected,
+    silentOption,
+    silentSelected,
     selectedValid: Boolean(selected) && !isDummyMkPrinterName(selected),
     paperWidth: Number.isFinite(paperWidth) && paperWidth > 0 ? paperWidth : 80,
   };
 }
 
+/** Бумага MK Fiscal не нужна: чек печатает Aurent. Предпочитаем «(не печатать)». */
+export function pickMkFiscalSilentPrinter(parsed) {
+  const labels = parsed?.labels || [];
+  const silent = labels.find((name) => isDummyMkPrinterName(name));
+  if (silent) return silent;
+  if (parsed?.selected && isDummyMkPrinterName(parsed.selected)) return parsed.selected;
+  return '';
+}
+
 export function pickMkFiscalPrinterToSelect(parsed) {
+  const silent = pickMkFiscalSilentPrinter(parsed);
+  if (silent) return silent;
+
   const labels = parsed?.labels || [];
   const selected = parsed?.selected || '';
   if (selected && !isDummyMkPrinterName(selected)) return selected;

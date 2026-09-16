@@ -4,7 +4,9 @@
 import { APP_NAME } from '../../config/brand';
 import i18n from '../../i18n/config';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import { resolveFiscalReceiptTypeLabel, resolveReceiptQrValue } from '../../utils/fiscalReceiptFormat';
+import { usePrintSettingsStore } from '../../store/printSettingsStore';
+import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
+import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -33,7 +35,7 @@ function readBranding() {
     logoDataUrl: d.receiptLogoDataUrl || null,
     qrBase: import.meta.env.VITE_FISCAL_QR_BASE?.trim() || '',
     virtualRegister:
-      import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '1',
+      import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
     fmNumber:
       import.meta.env.VITE_FISCAL_MODULE_NUMBER ||
       import.meta.env.VITE_FISCAL_CARD_ID ||
@@ -98,26 +100,17 @@ export function buildCashierEscposPayload(sale, t) {
   const branding = readBranding();
   if (!branding.companyName) {
     branding.companyName =
-      import.meta.env.VITE_COMPANY_NAME ||
-      import.meta.env.VITE_STORE_BRAND ||
-      APP_NAME;
+      String(import.meta.env.VITE_COMPANY_NAME || '').trim() || String(sale.storeName || '').trim() || APP_NAME;
   }
   if (!branding.companyAddress) {
-    branding.companyAddress =
-      import.meta.env.VITE_COMPANY_ADDRESS?.trim() ||
-      t('fiscalReceipt.defaultAddress');
+    branding.companyAddress = String(import.meta.env.VITE_COMPANY_ADDRESS || '').trim();
   }
   if (!String(branding.companyPhone || '').trim()) {
-    branding.companyPhone =
-      import.meta.env.VITE_COMPANY_PHONE?.trim() ||
-      t('fiscalReceipt.defaultPhone') ||
-      '';
+    branding.companyPhone = String(import.meta.env.VITE_COMPANY_PHONE || '').trim();
   }
   if (!String(branding.stir || '').trim()) {
     branding.stir =
-      import.meta.env.VITE_COMPANY_STIR?.trim() ||
-      import.meta.env.VITE_STIR?.trim() ||
-      '';
+      String(import.meta.env.VITE_COMPANY_STIR || '').trim() || String(import.meta.env.VITE_STIR || '').trim();
   }
 
   const shiftFromReceipt = String(sale.receiptNumber || '')
@@ -127,23 +120,33 @@ export function buildCashierEscposPayload(sale, t) {
   branding.shiftNo =
     import.meta.env.VITE_SHIFT_NO || shiftFromReceipt || branding.shiftNo || '001';
 
+  const fiscalMeta = resolveFiscalReceiptMeta(sale, branding);
+  branding.fmNumber = fiscalMeta.fmNumber;
+  branding.virtualRegister = fiscalMeta.virtualRegister;
+
   const printFiscalQr = sale.printFiscalQr !== false;
-  const qrValue = resolveReceiptQrValue(sale);
+  const qrValue = printFiscalQr ? fiscalMeta.qrValue : '';
   const receiptFields = readReceiptFields();
-  if (!printFiscalQr) {
+  if (!printFiscalQr || !qrValue) {
     receiptFields.qrCode = false;
   }
+
+  const printSettings = usePrintSettingsStore.getState();
 
   return {
     sale: {
       ...sale,
       printFiscalQr,
-      fiscalQrUrl: sale.fiscalQrUrl || qrValue || null,
+      fiscalQrUrl: qrValue || null,
+      fiscalReceiptSeq: sale.fiscalReceiptSeq || fiscalMeta.fiscalReceiptNo || null,
+      fiscalTerminalId: sale.fiscalTerminalId || fiscalMeta.fmNumber || null,
+      fiscalSign: sale.fiscalSign || fiscalMeta.fiscalSign || null,
       receiptTypeDisplay: resolveFiscalReceiptTypeLabel(sale, t),
     },
     branding,
     receiptFields,
     qrValue,
+    paperWmm: Number(printSettings.paperWidthMm) || 80,
     labels: buildEscposLabels(t),
     locale: String(i18n.language || 'ru').split('-')[0],
   };

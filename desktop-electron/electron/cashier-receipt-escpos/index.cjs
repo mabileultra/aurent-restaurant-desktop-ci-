@@ -29,7 +29,8 @@ async function printSaleReceiptEscpos(payload, deps) {
       payload,
       resolvePrinterName: deps.resolveReceiptPrinterName,
       validatePayload,
-      createPrinter: (deviceName, p) => createReceiptPrinter(deviceName, { locale: p.locale }),
+      createPrinter: (deviceName, p) =>
+        createReceiptPrinter(deviceName, { locale: p.locale, paperWmm: p.paperWmm }),
       buildOnPrinter: (printer, p, jobId) => buildReceiptOnPrinter(printer, p, jobId),
       noPrinterHint: 'Принтер чека не настроен. Aurent → «Принтер чека».',
     });

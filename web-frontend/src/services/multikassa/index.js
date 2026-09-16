@@ -42,5 +42,9 @@ export {
   wrapMultikassaFiscalError,
 } from './loadMultikassaCapabilities';
 export { resolveMultikassaFiscalErrorMessage } from './resolveMultikassaFiscalErrorMessage';
-export { parseMkFiscalPrinters, pickMkFiscalPrinterToSelect } from './parseMkFiscalPrinters';
+export {
+  parseMkFiscalPrinters,
+  pickMkFiscalPrinterToSelect,
+  pickMkFiscalSilentPrinter,
+} from './parseMkFiscalPrinters';
 export { ensureMkFiscalPrinter } from './ensureMkFiscalPrinter';

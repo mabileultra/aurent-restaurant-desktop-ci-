@@ -17,7 +17,7 @@ export function buildFiscalSign(sale) {
  */
 export function buildQrPayload(sale) {
   const fromModule = String(sale?.fiscalQrUrl || '').trim();
-  if (fromModule && (isOfdCheckUrl(fromModule) || /^https?:\/\//i.test(fromModule))) {
+  if (isOfdCheckUrl(fromModule)) {
     return fromModule;
   }
   const fromUrl = parseOfdCheckParams(fromModule);

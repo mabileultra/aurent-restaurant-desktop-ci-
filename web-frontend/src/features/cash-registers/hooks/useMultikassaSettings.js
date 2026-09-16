@@ -211,15 +211,20 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
         const { data: raw } = await getPrintersWithFallback(form.baseUrl.trim());
         if (cancelled) return;
         const parsed = parseMkFiscalPrinters(raw);
-        setMkPrinterReady(parsed.selectedValid);
+        setMkPrinterReady(parsed.silentSelected);
         if (!parsed.labels.length) {
           setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));
         } else {
           setPrintersNote(
-            t('cashRegisters.multikassa.printersFound', {
-              name: parsed.selectedValid ? parsed.selected : '—',
-              list: parsed.labels.join(', '),
-            }),
+            t(
+              parsed.silentSelected
+                ? 'cashRegisters.multikassa.printersSilent'
+                : 'cashRegisters.multikassa.printersFound',
+              {
+                name: parsed.selected || '—',
+                list: parsed.labels.join(', '),
+              },
+            ),
           );
         }
       } catch {
@@ -318,17 +323,21 @@ export function useMultikassaSettings({ cashRegisterId, open, onSaved }) {
     setPrintersNote('');
     try {
       const result = await ensureMkFiscalPrinter(url);
-      setMkPrinterReady(result.selectedValid);
+      setMkPrinterReady(Boolean(result.silent));
       if (!result.labels.length) {
         setPrintersNote(t('cashRegisters.multikassa.printersEmpty'));
         toast.error(t('cashRegisters.multikassa.printersEmpty'));
       } else {
         const note = t(
-          result.changed
-            ? 'cashRegisters.multikassa.printersAutoSelected'
-            : 'cashRegisters.multikassa.printersFound',
+          result.silent
+            ? result.changed
+              ? 'cashRegisters.multikassa.printersSilentAuto'
+              : 'cashRegisters.multikassa.printersSilent'
+            : result.changed
+              ? 'cashRegisters.multikassa.printersAutoSelected'
+              : 'cashRegisters.multikassa.printersFound',
           {
-            name: result.selectedValid ? result.selected : '—',
+            name: result.selected || '—',
             list: result.labels.join(', '),
           },
         );

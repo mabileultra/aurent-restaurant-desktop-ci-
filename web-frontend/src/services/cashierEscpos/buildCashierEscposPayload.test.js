@@ -17,8 +17,10 @@ vi.mock('../../store/tenantDisplayStore', () => ({
   },
 }));
 
-vi.mock('../../i18n/config', () => ({
-  default: { language: 'ru' },
+vi.mock('../../store/printSettingsStore', () => ({
+  usePrintSettingsStore: {
+    getState: () => ({ paperWidthMm: 80 }),
+  },
 }));
 
 import { buildCashierEscposPayload } from './buildCashierEscposPayload';
@@ -55,6 +57,8 @@ describe('buildCashierEscposPayload QR', () => {
     expect(isOfdCheckUrl(payload.qrValue)).toBe(true);
     expect(payload.receiptFields.qrCode).toBe(true);
     expect(payload.sale.printFiscalQr).toBe(true);
+    expect(payload.branding.fmNumber).toBe('TERM1');
+    expect(payload.paperWmm).toBe(80);
   });
 
   it('rebuilds QR from sign+seq+terminal when fiscalQrUrl missing', () => {

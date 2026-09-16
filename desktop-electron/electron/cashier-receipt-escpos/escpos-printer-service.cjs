@@ -6,8 +6,6 @@ const { ThermalPrinter, PrinterTypes } = require('node-thermal-printer');
 const { ESCPOS_ERROR_CODES, EscposPrintError } = require('./escpos-errors.cjs');
 const { normalizeLocale, resolveCharacterSet } = require('./escpos-encoding.cjs');
 
-const RECEIPT_WIDTH_CHARS = 48;
-
 /** @type {object|null|undefined} */
 let cachedPrinterDriver = undefined;
 
@@ -41,7 +39,10 @@ function resolvePrintWidth(options = {}) {
     if (mm <= 45) return 28;
     return 32;
   }
-  return RECEIPT_WIDTH_CHARS;
+  const mm = Number(options.paperWmm) || 80;
+  if (mm <= 58) return 32;
+  if (mm <= 70) return 40;
+  return 42;
 }
 
 /**

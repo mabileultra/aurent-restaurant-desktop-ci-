@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { parseMkFiscalPrinters, pickMkFiscalPrinterToSelect } from './parseMkFiscalPrinters';
+import {
+  parseMkFiscalPrinters,
+  pickMkFiscalPrinterToSelect,
+  pickMkFiscalSilentPrinter,
+} from './parseMkFiscalPrinters';
 
 const MK_FISCAL_1_2 = {
   success: true,
@@ -25,23 +29,25 @@ describe('parseMkFiscalPrinters', () => {
     expect(parsed.labels).toContain('Microsoft Print to PDF');
     expect(parsed.selected).toBe('XP-80C');
     expect(parsed.selectedValid).toBe(true);
+    expect(parsed.silentSelected).toBe(false);
     expect(parsed.paperWidth).toBe(80);
   });
 
-  it('treats empty and «не печатать» as missing selection', () => {
-    const empty = parseMkFiscalPrinters({
-      data: { result: { printers: MK_FISCAL_1_2.data.result.printers, selectedPrinter: '' } },
-    });
-    expect(empty.selectedValid).toBe(false);
-    expect(pickMkFiscalPrinterToSelect(empty)).toBe('XP-80C');
+  it('prefers silent «не печатать» so MK Fiscal does not print paper', () => {
+    const parsed = parseMkFiscalPrinters(MK_FISCAL_1_2);
+    expect(pickMkFiscalSilentPrinter(parsed)).toBe('(не печатать)');
+    expect(pickMkFiscalPrinterToSelect(parsed)).toBe('(не печатать)');
+  });
 
+  it('keeps silent selection when already chosen', () => {
     const dummy = parseMkFiscalPrinters({
       data: {
         result: { printers: MK_FISCAL_1_2.data.result.printers, selectedPrinter: '(не печатать)' },
       },
     });
+    expect(dummy.silentSelected).toBe(true);
     expect(dummy.selectedValid).toBe(false);
-    expect(pickMkFiscalPrinterToSelect(dummy)).toBe('XP-80C');
+    expect(pickMkFiscalPrinterToSelect(dummy)).toBe('(не печатать)');
   });
 
   it('does not treat paperWidths as printers', () => {

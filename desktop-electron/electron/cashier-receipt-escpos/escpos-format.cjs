@@ -84,21 +84,29 @@ function buildFiscalSign(sale) {
  * @param {string} [qrBase] — опционально из payload.branding.qrBase
  * @returns {string}
  */
-function buildQrPayload(sale, qrBase) {
+function buildQrPayload(sale, _qrBase) {
   const fromModule = String(sale?.fiscalQrUrl || '').trim();
-  if (fromModule && /^https?:\/\//i.test(fromModule)) {
+  if (/ofd\.soliq\.uz\/(check|epi)\?/i.test(fromModule) && /[?&]t=/i.test(fromModule) && /[?&]s=/i.test(fromModule)) {
     return fromModule;
   }
-  const sign = buildFiscalSign(sale);
-  const total = Number(sale?.totalAmount) || 0;
-  const r = encodeURIComponent(sale?.receiptNumber || '');
-  const base = String(qrBase || '').trim();
-  if (base) {
-    const sep = base.includes('?') ? '&' : '?';
-    return `${base}${sep}r=${r}&s=${total}&f=${sign}`;
+  const t = String(sale?.fiscalTerminalId || '').trim();
+  const r = String(sale?.fiscalReceiptSeq || '').trim();
+  const s = String(sale?.fiscalSign || '').trim();
+  if (!t || !r || !s || /^(MK-\d+|LOCAL-)/i.test(s)) return '';
+  const rawTime = sale?.fiscalizedAt || sale?.createdAt || '';
+  const digits = String(rawTime).replace(/\D/g, '');
+  let c = digits.length >= 14 ? digits.slice(0, 14) : '';
+  if (!c && rawTime) {
+    const parsed = new Date(String(rawTime).includes('T') ? rawTime : String(rawTime).replace(' ', 'T'));
+    if (!Number.isNaN(parsed.getTime())) {
+      const pad = (n) => String(n).padStart(2, '0');
+      c =
+        `${parsed.getFullYear()}${pad(parsed.getMonth() + 1)}${pad(parsed.getDate())}` +
+        `${pad(parsed.getHours())}${pad(parsed.getMinutes())}${pad(parsed.getSeconds())}`;
+    }
   }
-  const t = sale?.createdAt ? new Date(sale.createdAt).getTime() : Date.now();
-  return `https://ofd.soliq.uz/check?r=${r}&s=${total}&t=${t}&f=${sign}`;
+  if (!c) return '';
+  return `https://ofd.soliq.uz/check?t=${encodeURIComponent(t)}&r=${encodeURIComponent(r)}&c=${encodeURIComponent(c)}&s=${encodeURIComponent(s)}`;
 }
 
 /**

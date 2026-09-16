@@ -3,17 +3,18 @@ import { APP_NAME } from '../../config/brand';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import ReceiptQrCode from './ReceiptQrCode';
 import {
-  buildFiscalSign,
   fmtMoney,
   fmtQty,
   resolveFiscalReceiptTypeLabel,
-  resolveReceiptQrValue,
   splitDateTime,
 } from '../../utils/fiscalReceiptFormat';
 import { extractVatFromInclusive } from '../../utils/taxAmounts';
 import { cardTypeLabel } from '../../utils/salePaymentLabel';
 import { unitCodeFromLabel } from '../../utils/unitConfig';
-import { parseOfdCheckParams } from '../../utils/ofdQrUrl';
+import {
+  resolveFiscalReceiptMeta,
+  resolveReceiptPaymentAmounts,
+} from '../../utils/resolveFiscalReceiptMeta';
 
 function lineVatRatePercent(item) {
   const rate = item?.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
@@ -63,62 +64,37 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const companyName =
     customCompanyName ||
     import.meta.env.VITE_COMPANY_NAME ||
-    import.meta.env.VITE_STORE_BRAND ||
+    sale.storeName ||
     APP_NAME;
-  const companyAddress =
-    customCompanyAddress ||
-    import.meta.env.VITE_COMPANY_ADDRESS ||
-    t('fiscalReceipt.defaultAddress');
-  const companyPhone =
-    customCompanyPhone ||
-    import.meta.env.VITE_COMPANY_PHONE ||
-    t('fiscalReceipt.defaultPhone');
-  const stir =
-    customStir || import.meta.env.VITE_COMPANY_STIR || import.meta.env.VITE_STIR || '';
-  const fiscalCardId =
-    import.meta.env.VITE_FISCAL_CARD_ID || t('fiscalReceipt.fiscalCardPlaceholder');
-  const virtualRegister =
-    import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '1';
-  const qrParts = parseOfdCheckParams(sale.fiscalQrUrl);
-  const fmNumber =
-    sale.fiscalTerminalId ||
-    qrParts?.terminalId ||
-    import.meta.env.VITE_FISCAL_MODULE_NUMBER ||
-    fiscalCardId;
+  const companyAddress = customCompanyAddress || import.meta.env.VITE_COMPANY_ADDRESS || '';
+  const companyPhone = customCompanyPhone || import.meta.env.VITE_COMPANY_PHONE || '';
+  const stir = customStir || import.meta.env.VITE_COMPANY_STIR || import.meta.env.VITE_STIR || '';
+  const { date, time } = splitDateTime(sale.createdAt);
+  const fiscalMeta = resolveFiscalReceiptMeta(sale, {
+    fmNumber: import.meta.env.VITE_FISCAL_MODULE_NUMBER || import.meta.env.VITE_FISCAL_CARD_ID || '',
+    virtualRegister: import.meta.env.VITE_VIRTUAL_REGISTER_ID || import.meta.env.VITE_REGISTER_NO || '',
+  });
+  const printFiscalQr = sale.printFiscalQr !== false;
+  const qrValue = fiscalMeta.qrValue;
+  const showQrBlock = printFiscalQr && isOn('qrCode') && Boolean(qrValue);
+
+  const pay = resolveReceiptPaymentAmounts(sale);
+  const cashAmt = pay.cashAmt;
+  const cardAmt = pay.cardAmt;
+  const paidTotal = pay.paidTotal;
+  const change = pay.change;
+  const method = pay.method;
+  const total = Number(sale.totalAmount) || 0;
+  const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
+  const cardTypeText = cardTypeLabel(sale.cardType, t);
   const shiftNo =
     import.meta.env.VITE_SHIFT_NO ||
     String(sale.receiptNumber || '').replace(/\D/g, '').slice(-3).padStart(3, '0') ||
     '001';
-
-  const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
-  const { date, time } = splitDateTime(sale.createdAt);
-  const fiscalSign = buildFiscalSign(sale);
-  const printFiscalQr = sale.printFiscalQr !== false;
-  const qrValue = resolveReceiptQrValue(sale);
-  const showQrBlock = printFiscalQr && isOn('qrCode');
-
-  const method = sale.paymentMethod;
-  const total = Number(sale.totalAmount) || 0;
-  const cashAmt =
-    method === 'CASH'
-      ? Number(sale.amountTendered) || total
-      : method === 'MIXED'
-        ? Number(sale.cashAmount) || 0
-        : 0;
-  const cardAmt =
-    method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
-      ? Number(sale.amountTendered) || total
-      : method === 'MIXED'
-        ? Number(sale.cardAmount) || 0
-        : 0;
-  const cardTypeText = cardTypeLabel(sale.cardType, t);
-  const paidTotal =
-    method === 'MIXED'
-      ? cashAmt + cardAmt
-      : method === 'CASH'
-        ? Number(sale.amountTendered) || total
-        : total;
-  const change = Number(sale.changeGiven) || 0;
+  const fmNumber = fiscalMeta.fmNumber;
+  const virtualRegister = fiscalMeta.virtualRegister;
+  const fiscalSign = fiscalMeta.fiscalSign;
+  const fiscalReceiptNo = fiscalMeta.fiscalReceiptNo;
 
   const vatRates = new Set(
     (sale.items ?? [])
@@ -333,9 +309,13 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
           <div className="receipt-divider my-2 border-t border-dotted border-black" />
           <section className="receipt-section space-y-1">
             <p className="receipt-section-title">{t('fiscalReceipt.fiscalSection')}</p>
-            <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
-            <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} />
-            <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={`№${sale.receiptNumber}`} />
+            {virtualRegister ? (
+              <Row label={t('fiscalReceipt.virtualRegister')} value={virtualRegister} />
+            ) : null}
+            {fmNumber ? <Row label={t('fiscalReceipt.fmNumber')} value={fmNumber} /> : null}
+            {fiscalReceiptNo ? (
+              <Row label={t('fiscalReceipt.fiscalReceiptNo')} value={`№${fiscalReceiptNo}`} />
+            ) : null}
             <div className="receipt-row">
               <span className="receipt-meta-label">{t('fiscalReceipt.fiscalSign')}</span>
               <span className="receipt-fiscal-sign receipt-row__value">

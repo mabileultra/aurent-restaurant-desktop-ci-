@@ -11,7 +11,6 @@ const {
   fmtQty,
   splitDateTime,
   buildFiscalSign,
-  buildQrPayload,
   lineVatAmount,
   interpolateLabel,
   saleVatRateLabel,
@@ -318,18 +317,22 @@ function appendPayment(printer, payload) {
 
   const method = sale.paymentMethod;
   const total = Number(sale.totalAmount) || 0;
-  const cashAmt =
-    method === 'CASH'
+  const cashExplicit = Number(sale.cashAmount);
+  const cardExplicit = Number(sale.cardAmount);
+  const hasCash = Number.isFinite(cashExplicit) && cashExplicit > 0;
+  const hasCard = Number.isFinite(cardExplicit) && cardExplicit > 0;
+  const cashAmt = hasCash
+    ? cashExplicit
+    : method === 'CASH'
       ? Number(sale.amountTendered) || total
       : method === 'MIXED'
-        ? Number(sale.cashAmount) || 0
+        ? 0
         : 0;
-  const cardAmt =
-    method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
+  const cardAmt = hasCard
+    ? cardExplicit
+    : method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
       ? Number(sale.amountTendered) || total
-      : method === 'MIXED'
-        ? Number(sale.cardAmount) || 0
-        : 0;
+      : 0;
   const change = Number(sale.changeGiven) || 0;
 
   appendRow(printer, L.paymentForm || 'Payment', `${fmtMoney(total)} ${cur}`);
@@ -361,14 +364,26 @@ function appendFiscalBlock(printer, payload) {
   printer.println(L.fiscalSection || 'Fiscal');
   printer.bold(false);
 
-  const virtualRegister = branding?.virtualRegister || '1';
-  const fmNumber = branding?.fmNumber || sale.receiptNumber;
+  const qrParts = String(sale?.fiscalQrUrl || payload?.qrValue || '');
+  const fmFromQr = (qrParts.match(/[?&]t=([^&]+)/i) || [])[1];
+  const seqFromQr = (qrParts.match(/[?&]r=([^&]+)/i) || [])[1];
+  const virtualRegister = String(branding?.virtualRegister || '').trim();
+  const fmNumber = String(sale.fiscalTerminalId || branding?.fmNumber || fmFromQr || '').trim();
+  const fiscalReceiptNo = String(sale.fiscalReceiptSeq || seqFromQr || '').trim();
   const fiscalSign = buildFiscalSign(sale);
 
-  appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
-  appendRow(printer, L.fmNumber || 'FM', String(fmNumber));
-  appendRow(printer, L.fiscalReceiptNo || 'Fiscal #', String(sale.receiptNumber));
-  appendRow(printer, L.fiscalSign || 'Sign', fiscalSign);
+  if (virtualRegister && virtualRegister !== '1') {
+    appendRow(printer, L.virtualRegister || 'Reg.', virtualRegister);
+  }
+  if (fmNumber) {
+    appendRow(printer, L.fmNumber || 'FM', fmNumber);
+  }
+  if (fiscalReceiptNo) {
+    appendRow(printer, L.fiscalReceiptNo || 'Fiscal #', fiscalReceiptNo);
+  }
+  if (fiscalSign) {
+    appendRow(printer, L.fiscalSign || 'Sign', fiscalSign);
+  }
   appendDivider(printer);
 }
 
@@ -386,11 +401,10 @@ function appendQrAndFooter(printer, payload) {
 
   printer.alignCenter();
   if (isOn(fields, 'qrCode') && sale?.printFiscalQr !== false) {
-    const qrValue =
-      String(payloadQr || '').trim() ||
-      String(sale?.fiscalQrUrl || '').trim() ||
-      buildQrPayload(sale, branding?.qrBase);
-    if (qrValue) {
+    const qrValue = String(payloadQr || sale?.fiscalQrUrl || '').trim();
+    const isTaxQr =
+      /ofd\.soliq\.uz\/(check|epi)\?/i.test(qrValue) && /[?&]t=/i.test(qrValue) && /[?&]s=/i.test(qrValue);
+    if (isTaxQr) {
       try {
         const cellSize = qrValue.length > 100 ? 2 : 3;
         printer.printQR(qrValue, { cellSize, correction: 'M', model: 2 });
