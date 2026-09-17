@@ -13,28 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /** Параллельно создаёт карточки из строк фактуры, не теряя компанию запроса. */
 @Component
 public class PharmacyImportProductWriter {
 
-    private static final int THREADS = 4;
-
     private final PharmacyProductService pharmacyProductService;
     private final ProductRepository productRepository;
     private final PharmacyImportProductFactory productFactory;
-    private final ExecutorService executor = Executors.newFixedThreadPool(THREADS);
+    private final PharmacyMassExecutor massExecutor;
 
     public PharmacyImportProductWriter(
         PharmacyProductService pharmacyProductService,
         ProductRepository productRepository,
-        PharmacyImportProductFactory productFactory
+        PharmacyImportProductFactory productFactory,
+        PharmacyMassExecutor massExecutor
     ) {
         this.pharmacyProductService = pharmacyProductService;
         this.productRepository = productRepository;
         this.productFactory = productFactory;
+        this.massExecutor = massExecutor;
     }
 
     public List<UUID> write(
@@ -49,7 +47,7 @@ public class PharmacyImportProductWriter {
         for (PharmacyImportConfirmItem item : items) {
             futures.add(CompletableFuture.supplyAsync(
                 () -> writeOne(item, storeId, invoiceId, companyId, userId, role),
-                executor
+                massExecutor.executor()
             ));
         }
         List<UUID> ids = new ArrayList<>(futures.size());

@@ -114,7 +114,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     setBusy(true);
     try {
       const body = withQty.map(toConfirmItem);
-      const chunkSize = 40;
+      const chunkSize = 80;
       for (let i = 0; i < body.length; i += chunkSize) {
         const chunk = body.slice(i, i + chunkSize);
         await pharmacyWarehouseApi.importConfirm(receiptId, {

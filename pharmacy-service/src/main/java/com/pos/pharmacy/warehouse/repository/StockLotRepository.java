@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
@@ -40,4 +41,7 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
         WHERE l.receiptLine.id IN :lineIds
         """)
     List<StockLot> findByReceiptLineIds(@Param("lineIds") Collection<UUID> lineIds);
+
+    @Query("SELECT l.receiptLine.id FROM StockLot l WHERE l.receiptLine.id IN :lineIds")
+    Set<UUID> findReceiptLineIdsWithLots(@Param("lineIds") Collection<UUID> lineIds);
 }

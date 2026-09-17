@@ -19,6 +19,7 @@ import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import { formatMoney } from '../utils/pharmacyReceiptPricing';
 import { PHARM_DEFAULT_PAGE_SIZE, PHARM_PAGE_SIZES } from '../utils/pharmacyTablePage';
+import { runLimited } from '../utils/runLimited';
 
 export default function PharmacyReceiptsPage() {
   const { t } = useTranslation();
@@ -48,9 +49,7 @@ export default function PharmacyReceiptsPage() {
 
   const deleteSelectedMutation = useMutation({
     mutationFn: async (rowsToDelete) => {
-      for (const row of rowsToDelete) {
-        await pharmacyWarehouseApi.deleteDraft(row.id);
-      }
+      await runLimited(rowsToDelete, 4, (row) => pharmacyWarehouseApi.deleteDraft(row.id));
     },
     onSuccess: () => {
       toast.success(t('pharmacyStock.deleteDraftDone'));

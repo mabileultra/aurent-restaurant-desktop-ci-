@@ -7,20 +7,17 @@ import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.*;
-import com.pos.pharmacy.warehouse.entity.StockLot;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
 import com.pos.pharmacy.warehouse.entity.Supplier;
-import com.pos.pharmacy.warehouse.repository.StockLotRepository;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
-import com.pos.pharmacy.warehouse.service.StoreStockService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptActivation;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
-import com.pos.pharmacy.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,12 +44,11 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private static final ZoneId ZONE = ZoneId.of("Asia/Tashkent");
 
     private final StockReceiptRepository stockReceiptRepository;
-    private final StockLotRepository stockLotRepository;
     private final SupplierRepository supplierRepository;
     private final ProductCatalogService productCatalogService;
-    private final StoreStockService storeStockService;
     private final PharmacyReceiptSupport pharmacyReceipt;
     private final PharmacyReceiptDeletion pharmacyReceiptDeletion;
+    private final PharmacyReceiptActivation pharmacyReceiptActivation;
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
 
@@ -275,27 +271,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (receipt.getLines().isEmpty()) {
             throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
         }
-        for (StockReceiptLine line : receipt.getLines()) {
-            Product product = line.getProduct();
-            BigDecimal q = QuantityUtil.normalize(line.getQuantity());
-            product.setCostPrice(line.getPurchasePrice());
-            product.setSellingPrice(line.getUnitSellingPrice());
-            if (line.getVatPercent() != null) {
-                product.setTaxRate(line.getVatPercent());
-            }
-            storeStockService.increase(product, receipt.getStoreId(), q);
-            stockLotRepository.save(StockLot.builder()
-                .product(product)
-                .storeId(receipt.getStoreId())
-                .receiptLine(line)
-                .batchNumber(line.getBatchNumber())
-                .expiryDate(line.getExpiryDate())
-                .quantity(q)
-                .purchasePrice(line.getPurchasePrice())
-                .unitSellingPrice(line.getUnitSellingPrice())
-                .build());
-        }
-
+        pharmacyReceiptActivation.post(receipt);
         receipt.setStatus(StockReceiptStatus.POSTED);
         receipt.setActivatedAt(Instant.now());
         receipt.setActivatedBy(tenant.currentUserId());
