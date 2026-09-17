@@ -41,7 +41,7 @@ public class TasnifMxikController {
     }
 
     @GetMapping("/detail")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
     @Operation(summary = "Детали MXIK", description = "Получение карточки товара по коду MXIK")
     @ApiResponse(responseCode = "200", description = "Данные MXIK")
     public ResponseEntity<MxikCatalogItemDto> detail(
@@ -52,7 +52,7 @@ public class TasnifMxikController {
     }
 
     @GetMapping("/lookup")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
     @Operation(summary = "Поиск по ИКПУ/штрихкоду", description = "Получение данных MXIK по ИКПУ или штрихкоду")
     @ApiResponse(responseCode = "200", description = "Данные MXIK")
     public ResponseEntity<MxikLookupDto> lookup(

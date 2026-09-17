@@ -69,6 +69,24 @@ export default function PharmacyReceiptDocumentPage() {
     onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
   });
 
+  const deleteDraftMutation = useMutation({
+    mutationFn: () => {
+      if (!window.confirm(t('pharmacyStock.deleteDraftConfirm', { no: receiptQuery.data?.receiptNumber || '' }))) {
+        return Promise.reject(new Error('cancel'));
+      }
+      return pharmacyWarehouseApi.deleteDraft(id);
+    },
+    onSuccess: () => {
+      toast.success(t('pharmacyStock.deleteDraftDone'));
+      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
+      navigate(PHARMACY_STOCK_PATHS.receipts);
+    },
+    onError: (e) => {
+      if (e?.message === 'cancel') return;
+      toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed'));
+    },
+  });
+
   const removeLineMutation = useMutation({
     mutationFn: (lineId) => pharmacyWarehouseApi.removeLine(id, lineId),
     onSuccess: (res) => {
@@ -160,6 +178,13 @@ export default function PharmacyReceiptDocumentPage() {
             <>
               <BaseButton variant="secondary" onClick={() => setEditOpen(true)}>
                 {t('pharmacyStock.edit')}
+              </BaseButton>
+              <BaseButton
+                variant="secondary"
+                onClick={() => deleteDraftMutation.mutate()}
+                disabled={deleteDraftMutation.isPending}
+              >
+                {t('pharmacyStock.deleteDraft')}
               </BaseButton>
               <BaseButton onClick={openActivate} disabled={!receipt.lines?.length}>
                 {t('pharmacyStock.activate')}
@@ -289,7 +314,10 @@ export default function PharmacyReceiptDocumentPage() {
                         <PharmacyEditCell
                           t={t}
                           onEdit={() => setEditingLine(line)}
-                          onDelete={() => removeLineMutation.mutate(line.id)}
+                          onDelete={() => {
+                            if (!window.confirm(t('pharmacyStock.deleteLineConfirm', { name: line.productName }))) return;
+                            removeLineMutation.mutate(line.id);
+                          }}
                         />
                       ) : null}
                     </tr>

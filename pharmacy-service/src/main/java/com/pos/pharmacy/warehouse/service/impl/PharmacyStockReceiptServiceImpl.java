@@ -229,6 +229,14 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     }
 
     @Override
+    public void deleteDraft(UUID id) {
+        StockReceipt receipt = requireAccessibleDetailed(id);
+        pharmacyReceipt.requireDraft(receipt);
+        receipt.getLines().clear();
+        stockReceiptRepository.delete(receipt);
+    }
+
+    @Override
     public PharmacyStockReceiptResponse activate(UUID id) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         pharmacyReceipt.requireDraft(receipt);

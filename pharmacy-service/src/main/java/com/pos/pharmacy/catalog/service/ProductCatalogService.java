@@ -38,6 +38,7 @@ public class ProductCatalogService {
     private final StoreStockService storeStockService;
     private final PharmacyBarcodeClaim barcodeClaim;
     private final TenantSupport tenant;
+    private final ProductFiscalFieldsApplier fiscalFields;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, boolean activeOnly, Integer storeId, Pageable pageable) {
@@ -178,6 +179,7 @@ public class ProductCatalogService {
         if (req.attributes() != null) {
             productAttributeService.saveAttributes(product.getId(), req.attributes());
         }
+        fiscalFields.apply(product, req);
         return toResponse(productRepository.save(product), null);
     }
 

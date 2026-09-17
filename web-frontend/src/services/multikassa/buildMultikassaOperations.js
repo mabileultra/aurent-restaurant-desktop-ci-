@@ -111,8 +111,8 @@ function buildItem(line) {
     count: Number(line.quantity) || 0,
     commitent_tin: line.commissionTin || line.commitentTin || '',
     product_vat_percent: Number(line.taxRate ?? 12),
-    // Multikassa: код упаковки Tasnif (не unitMeasureCode «1»)
-    product_package: packageCode || '1',
+    // «1» фискальный модуль не принимает: это не код упаковки Tasnif.
+    product_package: packageCode || (ikpu ? '' : '1'),
     product_package_name: transliterateCyrillicToLatin(
       line.packageName || line.unitOfMeasure || line.unitLabel || 'sht',
     ),

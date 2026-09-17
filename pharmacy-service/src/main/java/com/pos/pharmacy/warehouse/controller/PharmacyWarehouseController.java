@@ -95,6 +95,14 @@ public class PharmacyWarehouseController {
         return ResponseEntity.ok(pharmacyStockReceiptService.revalueLines(id, request));
     }
 
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Удалить черновик прихода")
+    public ResponseEntity<Void> deleteDraft(@PathVariable UUID id) {
+        pharmacyStockReceiptService.deleteDraft(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @DeleteMapping("/{id}/lines/{lineId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<PharmacyStockReceiptResponse> removeLine(

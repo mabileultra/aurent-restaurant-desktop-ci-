@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tasnifApi } from '../../../api';
+import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
 import { resolveCatalogBarcodeFromTasnif } from '../../../utils/labelBarcode';
 import {
   buildTasnifExternalId,
@@ -79,10 +80,10 @@ export function useTasnifSearchPanel({ setValue, getValues, isEdit }) {
         /* use search row as-is */
       }
     }
-    const packages = full.packages ?? [];
+    const packages = (full.packages ?? []).filter((pkg) => isRealFiscalPackageCode(pkg?.code));
     if (packages.length > 1) {
       setPendingSearchQuery(searchQuery);
-      setPackageItem(full);
+      setPackageItem({ ...full, packages });
       return;
     }
     applyToForm(full, packages[0] ?? null, searchQuery);

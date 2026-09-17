@@ -6,6 +6,14 @@ vi.mock('./runMultikassaOperation', () => ({
   runMultikassaOperation: (...args) => runMultikassaOperation(...args),
 }));
 
+vi.mock('./resolveFiscalPackageCodes', () => ({
+  enrichFiscalPackageCodes: async (items) => items,
+  isRealFiscalPackageCode: (value) => {
+    const code = String(value || '').trim();
+    return /^\d{3,}$/.test(code) && code !== '1';
+  },
+}));
+
 vi.mock('./buildMultikassaOperations', () => ({
   buildSaleOperationBody: () => ({
     receipt_gnk_terminalid: 'TERM1',
@@ -33,6 +41,7 @@ const CART = [
     unitPrice: 1000,
     lineTotal: 1000,
     ikpu: '12345678901234567',
+    packageCode: '1546940',
     taxRatePercent: 12,
   },
 ];

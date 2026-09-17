@@ -33,5 +33,7 @@ public interface PharmacyStockReceiptService {
 
     PharmacyStockReceiptResponse removeLine(UUID id, UUID lineId);
 
+    void deleteDraft(UUID id);
+
     PharmacyStockReceiptResponse activate(UUID id);
 }

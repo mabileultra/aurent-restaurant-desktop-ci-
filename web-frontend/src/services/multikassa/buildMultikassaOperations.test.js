@@ -132,7 +132,7 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
       shiftId: 's1',
       cashierName: 'CASHIER',
     });
-    expect(body.items[0].product_package).toBe('1');
+    expect(body.items[0].product_package).toBe('');
   });
 
   it('splits mixed cash/card into received fields', () => {

@@ -121,7 +121,7 @@ describe('fiscal packageCode flow: catalog → POS cart → Multikassa', () => {
     expect(body.items[0].product_package).toBe('1546940');
   });
 
-  it('reproduces the old bug when both packageCode and sku package are missing', () => {
+  it('does not send unit code 1 when package code is missing', () => {
     const payload = brokenCashierCartPayload({ ...KLEY, sku: 'KLEY-1' });
     useCartStore.getState().addPieceItem(payload, 1);
     const body = buildSaleOperationBody({
@@ -132,6 +132,6 @@ describe('fiscal packageCode flow: catalog → POS cart → Multikassa', () => {
       shiftId: 'shift-1',
       cashierName: 'Javlon',
     });
-    expect(body.items[0].product_package).toBe('1');
+    expect(body.items[0].product_package).toBe('');
   });
 });

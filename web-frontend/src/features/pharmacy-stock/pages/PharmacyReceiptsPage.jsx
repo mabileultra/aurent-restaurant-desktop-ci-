@@ -44,6 +44,31 @@ export default function PharmacyReceiptsPage() {
     queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
   });
 
+  const deleteSelectedMutation = useMutation({
+    mutationFn: async (rowsToDelete) => {
+      const drafts = rowsToDelete.filter((row) => row.status === 'DRAFT');
+      if (!drafts.length) {
+        throw new Error(t('pharmacyStock.deleteDraftPosted'));
+      }
+      if (!window.confirm(t('pharmacyStock.deleteDraftConfirm', {
+        no: drafts.map((row) => row.receiptNumber).join(', '),
+      }))) {
+        return false;
+      }
+      for (const row of drafts) {
+        await pharmacyWarehouseApi.deleteDraft(row.id);
+      }
+      return true;
+    },
+    onSuccess: (deleted) => {
+      if (!deleted) return;
+      toast.success(t('pharmacyStock.deleteDraftDone'));
+      selection.clearSelection();
+      qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('pharmacyStock.saveFailed')),
+  });
+
   const createMutation = useMutation({
     mutationFn: (body) => pharmacyWarehouseApi.createDraft(body),
     onSuccess: (res) => {
@@ -90,7 +115,16 @@ export default function PharmacyReceiptsPage() {
           setPage(0);
         }}
       />
-      <PharmacySelectionBar t={t} selection={selection} />
+      <PharmacySelectionBar t={t} selection={selection}>
+        <button
+          type="button"
+          className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
+          onClick={() => deleteSelectedMutation.mutate(selection.selectedRows)}
+          disabled={deleteSelectedMutation.isPending}
+        >
+          {t('pharmacyStock.deleteDraft')}
+        </button>
+      </PharmacySelectionBar>
 
       <div className="pharmacy-stock__panel flex min-h-0 flex-1 flex-col">
         <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
@@ -147,7 +181,11 @@ export default function PharmacyReceiptsPage() {
                   <td>{formatMoney(row.totalCost)}</td>
                   <td>{formatMoney(row.totalRetail)}</td>
                   <td>{row.totalQuantity ?? 0}</td>
-                  <PharmacyEditCell t={t} onEdit={() => navigate(PHARMACY_STOCK_PATHS.receipt(row.id))} />
+                  <PharmacyEditCell
+                    t={t}
+                    onEdit={() => navigate(PHARMACY_STOCK_PATHS.receipt(row.id))}
+                    onDelete={row.status === 'DRAFT' ? () => deleteSelectedMutation.mutate([row]) : undefined}
+                  />
                 </tr>
               ))}
             </tbody>

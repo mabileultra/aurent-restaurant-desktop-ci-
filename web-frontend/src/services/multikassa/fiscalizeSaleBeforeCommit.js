@@ -1,4 +1,5 @@
 import { buildSaleOperationBody, normalizeGnkTerminalId } from './buildMultikassaOperations';
+import { enrichFiscalPackageCodes, isRealFiscalPackageCode } from './resolveFiscalPackageCodes';
 import { runMultikassaOperation } from './runMultikassaOperation';
 import {
   ensureFiscalQrUrl,
@@ -88,8 +89,24 @@ export async function fiscalizeSaleBeforeCommit({
     throw err;
   }
 
+  const fiscalItems = await enrichFiscalPackageCodes(cartItems);
+  const missingPackage = fiscalItems.find((line) => {
+    const ikpu = String(line?.ikpu || '').trim();
+    return ikpu && !isRealFiscalPackageCode(line?.packageCode);
+  });
+  if (missingPackage) {
+    const err = new Error(
+      `${missingPackage.name || 'Товар'}: нет кода упаковки Tasnif для ИКПУ ${missingPackage.ikpu}. Код «1» фискальный модуль не принимает — укажите упаковку в карточке товара.`
+    );
+    err.code = 'MULTIKASSA_FISCAL_FAILED';
+    if (offline || !requireBeforeSale) {
+      return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
+    }
+    throw err;
+  }
+
   const body = buildSaleOperationBody({
-    cartItems,
+    cartItems: fiscalItems,
     payment,
     total,
     capabilities,

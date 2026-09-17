@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, tasnifApi } from '../../../api';
 import { BaseButton, BaseModal } from '../../../components/ui';
+import TasnifPackagePickerModal from '../../../components/tasnif/TasnifPackagePickerModal';
 import {
   buildPharmacyProductCreatePayload,
   buildPharmacyProductUpdatePayload,
@@ -13,7 +14,9 @@ import {
 } from '../utils/buildPharmacyProductPayload';
 import { generatePharmacyBarcode } from '../utils/generatePharmacyBarcode';
 import { applyMxikFlags } from '../utils/inferPharmacyMxikFlags';
+import { usePharmacyMxikPick } from '../hooks/usePharmacyMxikPick';
 import { usePharmacyReceiptLineForm } from '../hooks/usePharmacyReceiptLineForm';
+import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
 import PharmacyReceiptLineFields from './PharmacyReceiptLineFields';
 import PharmacyProductAboutFields from './PharmacyProductAboutFields';
 import '../styles/pharmacy-stock.css';
@@ -31,11 +34,9 @@ export default function PharmacyProductModal({
 }) {
   const { t } = useTranslation();
   const [form, setForm] = useState(emptyPharmacyProductForm);
-  const [mxikQuery, setMxikQuery] = useState('');
-  const [mxikResults, setMxikResults] = useState([]);
-  const [mxikLoading, setMxikLoading] = useState(false);
   const [loadedProduct, setLoadedProduct] = useState(null);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const mxik = usePharmacyMxikPick(setForm);
 
   const isEdit = Boolean(product?.id);
   const includeLine = withReceiptLine && !isEdit;
@@ -47,23 +48,22 @@ export default function PharmacyProductModal({
 
   useEffect(() => {
     if (!open) return;
-    setMxikResults([]);
     setAboutOpen(false);
     if (!product?.id) {
       setForm(emptyPharmacyProductForm());
-      setMxikQuery('');
+      mxik.resetMxik('');
       setLoadedProduct(null);
       return;
     }
     setForm(formFromPharmacyProduct(product));
-    setMxikQuery(product.ikpu || '');
+    mxik.resetMxik(product.ikpu || '');
     setLoadedProduct(product);
     pharmacyWarehouseApi.getProduct(product.id)
       .then((res) => {
         const full = res.data;
         setLoadedProduct(full);
         setForm(formFromPharmacyProduct(full));
-        setMxikQuery(full?.ikpu || '');
+        mxik.resetMxik(full?.ikpu || '');
       })
       .catch(() => {});
   }, [open, product]);
@@ -74,8 +74,11 @@ export default function PharmacyProductModal({
   }, [open, includeLine, form.unitsInPack]);
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      const productErr = validatePharmacyProductForm(form, t);
+    mutationFn: async (packageOverride) => {
+      const current = packageOverride
+        ? { ...form, packageCode: packageOverride.code, packageName: packageOverride.name }
+        : form;
+      const productErr = validatePharmacyProductForm(current, t);
       if (productErr) throw new Error(productErr);
       let linePayload = null;
       if (includeLine) {
@@ -88,7 +91,7 @@ export default function PharmacyProductModal({
         sellingPrice: linePayload.retailPrice,
         taxRate: linePayload.vatPercent,
       } : undefined;
-      const flaggedForm = isEdit ? form : await resolveMxikFlagsOnSave(form);
+      const flaggedForm = isEdit ? current : await resolveMxikFlagsOnSave(current);
       const body = isEdit
         ? buildPharmacyProductUpdatePayload(flaggedForm, loadedProduct || product)
         : buildPharmacyProductCreatePayload(flaggedForm, { storeId, prices });
@@ -126,65 +129,7 @@ export default function PharmacyProductModal({
     toast.success(t('pharmacyStock.barcodeGenerated'));
   };
 
-  const searchMxik = async () => {
-    const q = (mxikQuery || form.ikpu || '').trim();
-    if (q.length < 2) {
-      toast.error(t('pharmacyStock.mxikQueryShort'));
-      return;
-    }
-    setMxikLoading(true);
-    try {
-      const res = await tasnifApi.search({ q, lang: 'ru', page: 0, size: 15 });
-      const list = res.data?.items ?? res.data?.content ?? [];
-      setMxikResults(Array.isArray(list) ? list : []);
-      if (!list?.length) {
-        toast.error(t('pharmacyStock.mxikSearchFailed'));
-        return;
-      }
-      const qNorm = q.replace(/\s/g, '');
-      const exact = list.find((item) => {
-        const code = String(item?.mxik || item?.code || item?.ikpu || '').replace(/\s/g, '');
-        return code && code === qNorm;
-      });
-      if (exact || list.length === 1) {
-        pickMxik(exact || list[0]);
-      }
-    } catch {
-      setMxikResults([]);
-      toast.error(t('pharmacyStock.mxikSearchFailed'));
-    } finally {
-      setMxikLoading(false);
-    }
-  };
-
-  const pickMxik = (item) => {
-    const mxik = item?.mxik || item?.code || item?.ikpu || '';
-    const name = item?.name || item?.title || '';
-    const barcode = item?.barcode || item?.internalCode || '';
-    setForm((prev) => {
-      const next = {
-        ...prev,
-        ikpu: mxik,
-        ikpuStatus: 'FOUND',
-        name: prev.name.trim() ? prev.name : (name || prev.name),
-        barcode: prev.barcode.trim()
-          ? prev.barcode
-          : (barcode && String(barcode).length >= 8 ? String(barcode) : prev.barcode),
-        manufacturer: prev.manufacturer.trim()
-          ? prev.manufacturer
-          : (item?.manufacturer || item?.brand || prev.manufacturer),
-        dosageForm: prev.dosageForm.trim()
-          ? prev.dosageForm
-          : (item?.packageName || item?.unitName || item?.packages?.[0]?.nameRu || prev.dosageForm),
-      };
-      return applyMxikFlags(next, item);
-    });
-    setMxikResults([]);
-    setMxikQuery(mxik);
-    toast.success(t('pharmacyStock.mxikApplied'));
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (includeLine) {
       const productErr = validatePharmacyProductForm(form, t);
       if (productErr) {
@@ -193,7 +138,16 @@ export default function PharmacyProductModal({
         return;
       }
     }
-    saveMutation.mutate();
+    let packageOverride = null;
+    if (String(form.ikpu || '').trim() && !isRealFiscalPackageCode(form.packageCode)) {
+      packageOverride = await mxik.choosePackage(form.ikpu);
+      if (!packageOverride?.code) {
+        toast.error(t('pharmacyStock.packageRequired'));
+        setAboutOpen(true);
+        return;
+      }
+    }
+    saveMutation.mutate(packageOverride);
   };
 
   const aboutFields = (
@@ -201,12 +155,13 @@ export default function PharmacyProductModal({
       t={t}
       form={form}
       patch={patch}
-      mxikQuery={mxikQuery}
-      setMxikQuery={setMxikQuery}
-      mxikResults={mxikResults}
-      mxikLoading={mxikLoading}
-      onSearchMxik={searchMxik}
-      onPickMxik={pickMxik}
+      mxikQuery={mxik.mxikQuery}
+      setMxikQuery={mxik.setMxikQuery}
+      mxikResults={mxik.mxikResults}
+      mxikLoading={mxik.mxikLoading}
+      onSearchMxik={() => mxik.searchMxik(form.ikpu)}
+      onPickMxik={mxik.pickMxik}
+      onChoosePackage={mxik.choosePackage}
       onCreateBarcode={createBarcode}
       showActive={isEdit}
     />
@@ -315,6 +270,13 @@ export default function PharmacyProductModal({
           {aboutFields}
         </BaseModal>
       ) : null}
+      <TasnifPackagePickerModal
+        open={Boolean(mxik.packageItem)}
+        item={mxik.packageItem}
+        lang={mxik.lang}
+        onSelect={mxik.handlePackageSelect}
+        onClose={mxik.closePackagePicker}
+      />
     </>
   );
 }

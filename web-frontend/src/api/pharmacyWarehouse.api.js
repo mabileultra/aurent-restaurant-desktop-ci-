@@ -5,6 +5,7 @@ export const pharmacyWarehouseApi = {
   getReceipt: (id) => api.get(`/pharmacy/receipts/${id}`),
   createDraft: (data) => api.post('/pharmacy/receipts', data),
   updateDraft: (id, data) => api.put(`/pharmacy/receipts/${id}`, data),
+  deleteDraft: (id) => api.delete(`/pharmacy/receipts/${id}`),
   replaceLines: (id, lines) => api.put(`/pharmacy/receipts/${id}/lines`, lines),
   addLine: (id, line) => api.post(`/pharmacy/receipts/${id}/lines`, line),
   updateLine: (id, lineId, line) => api.put(`/pharmacy/receipts/${id}/lines/${lineId}`, line),
