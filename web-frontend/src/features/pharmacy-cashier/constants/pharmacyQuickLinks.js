@@ -3,7 +3,6 @@
 export const PHARMACY_QUICK_LINK_IDS = {
   ADMIN: 'admin',
   DMED: 'dmed',
-  MARKING: 'marking',
   IKPU: 'ikpu',
   ANALOGS: 'analogs',
   ASL_PORTAL: 'asl_portal',
@@ -17,11 +16,10 @@ export const PHARMACY_EXTERNAL_URLS = {
   mygov: 'https://my.gov.uz/',
 };
 
-/** Основные кнопки в строке поиска */
+/** Основные кнопки рядом с поиском */
 export const PHARMACY_TOOLBAR_LINKS = [
   { id: PHARMACY_QUICK_LINK_IDS.ADMIN, kind: 'admin' },
   { id: PHARMACY_QUICK_LINK_IDS.DMED, kind: 'dmed', requiresDmed: true },
-  { id: PHARMACY_QUICK_LINK_IDS.MARKING, kind: 'marking' },
   { id: PHARMACY_QUICK_LINK_IDS.IKPU, kind: 'external', urlKey: 'ikpu' },
 ];
 

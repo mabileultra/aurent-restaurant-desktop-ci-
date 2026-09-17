@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   extractGtinFromMarkingCode,
+  isCompletePharmacyMarkingScan,
   isPharmacyMarkingCode,
   markingBarcodeCandidates,
   normalizePharmacyMarkingCode,
@@ -14,6 +15,12 @@ describe('pharmacyMarkingCode', () => {
     expect(extractGtinFromMarkingCode(`]d2${MARK}`)).toBe('04780012345678');
   });
 
+  it('strips euro / GS scanner separators', () => {
+    expect(normalizePharmacyMarkingCode('010478001234567821SERIAL€91CRYPT')).toBe('010478001234567821SERIAL91CRYPT');
+    expect(isPharmacyMarkingCode('010478001234567821SERIAL€91CRYPT')).toBe(true);
+    expect(isCompletePharmacyMarkingScan('010478001234567821SERIAL€91CRYPT')).toBe(true);
+  });
+
   it('builds EAN-13 and GTIN-14 candidates from a DataMatrix', () => {
     expect(markingBarcodeCandidates(MARK)).toEqual(['04780012345678', '4780012345678']);
     expect(isPharmacyMarkingCode(MARK)).toBe(true);
@@ -21,6 +28,7 @@ describe('pharmacyMarkingCode', () => {
 
   it('does not treat a plain EAN-13 as a marking code', () => {
     expect(isPharmacyMarkingCode('4780012345678')).toBe(false);
+    expect(isCompletePharmacyMarkingScan('4780012345678')).toBe(false);
   });
 
   it('reads GTIN from parenthesis AI and digit-only payloads', () => {
@@ -31,5 +39,10 @@ describe('pharmacyMarkingCode', () => {
 
   it('reads GTIN after scanner junk before AI 01', () => {
     expect(extractGtinFromMarkingCode('XX010478001234567821SERIAL')).toBe('04780012345678');
+  });
+
+  it('detects complete marking scan for auto-submit', () => {
+    expect(isCompletePharmacyMarkingScan(MARK)).toBe(true);
+    expect(isCompletePharmacyMarkingScan('01')).toBe(false);
   });
 });

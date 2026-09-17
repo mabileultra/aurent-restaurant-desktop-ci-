@@ -92,15 +92,9 @@ export default function PharmacyRegisterWorkspace({
               onSearchEnter={catalog.handleSearchEnter}
               onMarkingScan={catalog.onMarkingScan}
               scanDisabled={!catalog.storeId}
-              storeId={catalog.storeId}
               capabilities={integration.capabilities}
               externalUrls={integration.externalUrls}
               onFocusSearch={focusSearch}
-              markingModal={integration.markingModal}
-              onOpenMarking={(code) => integration.openMarkingModal(code || '')}
-              onCloseMarking={integration.closeMarkingModal}
-              products={catalog.products}
-              onProductFound={catalog.addMarkedScan}
             />
           </div>
           <PharmacyProductSearchTable

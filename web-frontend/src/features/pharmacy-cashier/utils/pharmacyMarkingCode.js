@@ -4,9 +4,16 @@ export function normalizePharmacyMarkingCode(raw) {
   return String(raw)
     .replace(/^\uFEFF/, '')
     .trim()
+    // AIM prefix ]d2 / ]C1 …
     .replace(/^\][A-Za-z0-9]{2}/, '')
+    // GS / FNC1: сканеры часто отдают как \u001d, либо как € / ¦ на раскладке
     .replace(/\u001d/g, '')
-    .replace(/\u0000/g, '');
+    .replace(/\u001e/g, '')
+    .replace(/\u0000/g, '')
+    .replace(/€/g, '')
+    .replace(/¦/g, '')
+    .replace(/\u00a4/g, '') // ¤
+    .trim();
 }
 
 /**
@@ -16,8 +23,9 @@ export function isPharmacyMarkingCode(raw) {
   const code = normalizePharmacyMarkingCode(raw);
   if (!code) return false;
 
-  // GS1 separator в сыром скане
-  if (String(raw).includes('\u001d')) return true;
+  const source = String(raw);
+  // GS1 separator в сыром скане (или € вместо GS)
+  if (source.includes('\u001d') || source.includes('€')) return true;
 
   // Типичный EAN-8/13/14 — не маркировка
   if (/^\d{8}$/.test(code) || /^\d{12,14}$/.test(code)) return false;
@@ -29,6 +37,17 @@ export function isPharmacyMarkingCode(raw) {
   if (code.length >= 20 && /[A-Za-z]/.test(code) && /\d/.test(code)) return true;
   if (code.length >= 24 && /[A-Za-z0-9]/.test(code)) return true;
 
+  return false;
+}
+
+/** Код достаточно полный, чтобы автоматом отправить в чек (без Enter). */
+export function isCompletePharmacyMarkingScan(raw) {
+  if (!isPharmacyMarkingCode(raw)) return false;
+  const code = normalizePharmacyMarkingCode(raw);
+  if (code.length >= 25) return true;
+  // 01 + GTIN14 + 21 + serial (≥4)
+  if (/01\d{14}21[0-9A-Za-z]{4,}/.test(code)) return true;
+  if (/\(01\)\d{14}\(21\)[^()]{4,}/.test(code)) return true;
   return false;
 }
 

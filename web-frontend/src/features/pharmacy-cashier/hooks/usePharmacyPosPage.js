@@ -15,7 +15,6 @@ import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCas
 import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
 import { usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
 import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
-import { usePharmacyMarkingModalState } from './usePharmacyIntegrationToolbar';
 import { usePharmacyMarkingScan } from './usePharmacyMarkingScan';
 import { usePharmacyHotkeys } from './usePharmacyHotkeys';
 import { usePharmacyFefoEnrichment } from './usePharmacyFefoEnrichment';
@@ -61,7 +60,6 @@ export function usePharmacyPosPage() {
   const catalog = usePosProductsCatalog({ storeId, catalogKind: 'pharmacy' });
   const { products: fefoProducts } = usePharmacyFefoEnrichment(storeId, catalog.products);
   const integration = usePharmacyIntegrationConfig(storeId);
-  const { markingModal, openMarkingModal, closeMarkingModal } = usePharmacyMarkingModalState();
   const onMarkingScanRef = useRef(async () => false);
 
   useEffect(() => {
@@ -303,7 +301,6 @@ export function usePharmacyPosPage() {
     discountOpen,
     qtyModalOpen: Boolean(cartHandlers.qtyModalProduct),
     weightModalOpen: Boolean(cartHandlers.weightModalProduct),
-    markingOpen: Boolean(markingModal?.open),
     onClosePayment: handleClosePayment,
     onClearCart: handleClearCart,
     clearSearch: () => catalog.setSearch(''),
@@ -385,9 +382,6 @@ export function usePharmacyPosPage() {
     integration: {
       capabilities: integration.capabilities,
       externalUrls: integration.externalUrls,
-      markingModal,
-      openMarkingModal,
-      closeMarkingModal,
       markingVerifying: markingScan.verifying,
     },
   };

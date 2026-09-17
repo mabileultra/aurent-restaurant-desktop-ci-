@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { openPharmacyAdminLogin, openPharmacyExternalUrl } from '../utils/pharmacyIntegrationLinks';
@@ -6,7 +6,6 @@ import { openPharmacyAdminLogin, openPharmacyExternalUrl } from '../utils/pharma
 export function usePharmacyIntegrationToolbar({
   capabilities,
   externalUrls,
-  onOpenMarking,
   onFocusSearch,
   setMoreOpen,
 }) {
@@ -25,10 +24,6 @@ export function usePharmacyIntegrationToolbar({
       openPharmacyExternalUrl(externalUrls.dmed);
       return;
     }
-    if (link.kind === 'marking') {
-      onOpenMarking?.();
-      return;
-    }
     if (link.kind === 'analogs') {
       onFocusSearch?.();
       toast(t('pharmacyCashier.integrations.analogsHint'), { icon: '🔍' });
@@ -39,7 +34,7 @@ export function usePharmacyIntegrationToolbar({
       openPharmacyExternalUrl(externalUrls[link.urlKey]);
       setMoreOpen?.(false);
     }
-  }, [capabilities.dmedEnabled, externalUrls, onFocusSearch, onOpenMarking, setMoreOpen, t]);
+  }, [capabilities.dmedEnabled, externalUrls, onFocusSearch, setMoreOpen, t]);
 
   const isLinkVisible = useCallback((link) => {
     if (link.requiresDmed && !capabilities.dmedEnabled) {
@@ -52,22 +47,4 @@ export function usePharmacyIntegrationToolbar({
     handleLink,
     isLinkVisible,
   };
-}
-
-export function usePharmacyMarkingModalState() {
-  const [markingModal, setMarkingModal] = useState({
-    open: false,
-    code: '',
-    result: null,
-  });
-
-  const openMarkingModal = useCallback((code = '', result = null) => {
-    setMarkingModal({ open: true, code: code || '', result: result ?? null });
-  }, []);
-
-  const closeMarkingModal = useCallback(() => {
-    setMarkingModal({ open: false, code: '', result: null });
-  }, []);
-
-  return { markingModal, openMarkingModal, closeMarkingModal };
 }

@@ -18,7 +18,6 @@ export function usePharmacyHotkeys({
   discountOpen,
   qtyModalOpen,
   weightModalOpen,
-  markingOpen,
   onClosePayment,
   onClearCart,
   clearSearch,
@@ -33,7 +32,7 @@ export function usePharmacyHotkeys({
           onClosePayment?.();
           return;
         }
-        if (returnOpen || discountOpen || qtyModalOpen || weightModalOpen || markingOpen) {
+        if (returnOpen || discountOpen || qtyModalOpen || weightModalOpen) {
           return;
         }
         e.preventDefault();
@@ -78,7 +77,6 @@ export function usePharmacyHotkeys({
     discountOpen,
     qtyModalOpen,
     weightModalOpen,
-    markingOpen,
     onClosePayment,
     onClearCart,
     clearSearch,
