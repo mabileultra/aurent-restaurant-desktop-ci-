@@ -148,7 +148,6 @@ async function executePrint(printer) {
 }
 
 module.exports = {
-  RECEIPT_WIDTH_CHARS,
   loadPrinterDriver,
   createEscposPrinter,
   createReceiptPrinter,
