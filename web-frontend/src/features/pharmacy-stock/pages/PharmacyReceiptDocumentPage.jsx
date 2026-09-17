@@ -102,11 +102,15 @@ export default function PharmacyReceiptDocumentPage() {
   });
 
   const activateMutation = useMutation({
-    mutationFn: () => pharmacyWarehouseApi.activate(id),
-    onSuccess: (res) => {
-      toast.success(t('pharmacyStock.activated', { no: res.data.receiptNumber }));
+    mutationFn: async () => {
+      const posted = await pharmacyWarehouseApi.activate(id);
+      const fresh = await pharmacyWarehouseApi.getReceipt(id, { timeout: 180000 });
+      return { posted: posted.data, receipt: fresh.data };
+    },
+    onSuccess: ({ posted, receipt: data }) => {
+      toast.success(t('pharmacyStock.activated', { no: posted.receiptNumber || data.receiptNumber }));
       invalidateProductCaches(qc);
-      qc.setQueryData(['pharmacy-receipt', id], res.data);
+      qc.setQueryData(['pharmacy-receipt', id], data);
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
       setActivateOpen(false);
     },

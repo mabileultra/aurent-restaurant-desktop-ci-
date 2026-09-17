@@ -267,8 +267,11 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     }
 
     @Override
-    public PharmacyStockReceiptResponse activate(UUID id) {
+    public PharmacyReceiptActivateResult activate(UUID id) {
         StockReceipt receipt = requireAccessibleDetailed(id);
+        if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
+            return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
+        }
         pharmacyReceipt.requireDraft(receipt);
         if (receipt.getLines().isEmpty()) {
             throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
@@ -298,7 +301,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         receipt.setActivatedAt(Instant.now());
         receipt.setActivatedBy(tenant.currentUserId());
         stockReceiptRepository.save(receipt);
-        return pharmacyReceipt.toResponse(stockReceiptRepository.findDetailedById(id).orElseThrow());
+        return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
     }
 
     private StockReceiptLine buildValidatedLine(StockReceipt receipt, PharmacyStockReceiptLineRequest lineReq) {

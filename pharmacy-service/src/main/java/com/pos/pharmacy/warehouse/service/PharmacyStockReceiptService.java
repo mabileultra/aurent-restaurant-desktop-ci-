@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.service;
 
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.warehouse.dto.CreatePharmacyStockReceiptRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptActivateResult;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptMassUpdateRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueResult;
@@ -39,5 +40,5 @@ public interface PharmacyStockReceiptService {
 
     void deleteDraft(UUID id);
 
-    PharmacyStockReceiptResponse activate(UUID id);
+    PharmacyReceiptActivateResult activate(UUID id);
 }

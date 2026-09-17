@@ -125,7 +125,7 @@ public class PharmacyWarehouseController {
 
     @PostMapping("/{id}/activate")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<PharmacyStockReceiptResponse> activate(@PathVariable UUID id) {
+    public ResponseEntity<PharmacyReceiptActivateResult> activate(@PathVariable UUID id) {
         return ResponseEntity.ok(pharmacyStockReceiptService.activate(id));
     }
 }
