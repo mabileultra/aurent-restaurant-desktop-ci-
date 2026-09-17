@@ -1800,8 +1800,19 @@ select.pharm-line-modal__input {
   color: #ef4444;
 }
 
-.pharmacy-stock__import-excel {
-  color: #64748b;
+.pharmacy-stock__import-table tbody td.pharmacy-stock__import-name {
+  font-weight: 600;
+  white-space: normal;
+}
+
+.pharmacy-stock__import-table tbody td.pharmacy-stock__import-edit {
+  overflow: visible;
+  min-width: 6.5rem;
+}
+
+.pharmacy-stock__import-input {
+  min-width: 6.2rem;
+  font-weight: 500;
 }
 
 .pharmacy-stock__import-miss td {

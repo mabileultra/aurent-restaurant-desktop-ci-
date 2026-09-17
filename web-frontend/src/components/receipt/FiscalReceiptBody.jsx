@@ -312,7 +312,7 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
 
       {showQrBlock ? (
         <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
-          {qrValue ? <ReceiptQrCode value={qrValue} sizePx={140} /> : null}
+          {qrValue ? <ReceiptQrCode value={qrValue} sizePx={200} /> : null}
         </footer>
       ) : null}
     </div>

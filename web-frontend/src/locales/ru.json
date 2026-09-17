@@ -5188,6 +5188,8 @@
     "colDocNo": "№ документа",
     "colDate": "Дата",
     "colQty": "Кол-во",
+    "colBarcode": "Штрихкод",
+    "colIkpu": "ИКПУ",
     "colLines": "Строки",
     "colPurchaseSum": "Сумма закупки",
     "colRetailSum": "Сумма розницы",

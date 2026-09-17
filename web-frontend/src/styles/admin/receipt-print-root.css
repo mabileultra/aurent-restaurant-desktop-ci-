@@ -62,8 +62,8 @@ html.dark .receipt-page__card {
 .receipt-print-root .receipt-qr {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
-  width: 28mm;
-  height: 28mm;
+  width: 40mm;
+  height: 40mm;
   max-width: 100%;
 }
 .receipt-print-root .receipt-row--bold {

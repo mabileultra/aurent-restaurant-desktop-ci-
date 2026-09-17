@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { buildReceiptQrImageDataUrl, receiptQrPixelSize } from './buildReceiptQrImage';
 
 describe('buildReceiptQrImage', () => {
-  it('is a bit smaller than a typical OFD QR on 80mm paper', () => {
-    expect(receiptQrPixelSize(80)).toBe(224);
-    expect(receiptQrPixelSize(58)).toBe(176);
+  it('prints a large OFD QR that still fits the tape', () => {
+    expect(receiptQrPixelSize(80)).toBe(336);
+    expect(receiptQrPixelSize(58)).toBe(256);
   });
 
   it('renders ofd URL as a PNG data URL', async () => {

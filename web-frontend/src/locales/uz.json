@@ -4878,6 +4878,8 @@
     "colDocNo": "Hujjat №",
     "colDate": "Sana",
     "colQty": "Miqdor",
+    "colBarcode": "Shtrixkod",
+    "colIkpu": "IKPU",
     "colLines": "Qatorlar",
     "colPurchaseSum": "Xarid summasi",
     "colRetailSum": "Chakana summa",

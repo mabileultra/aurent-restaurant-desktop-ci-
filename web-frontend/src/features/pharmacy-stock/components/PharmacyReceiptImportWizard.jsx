@@ -1,4 +1,5 @@
-import { Check, Search, X } from 'lucide-react';
+import { Search } from 'lucide-react';
+import PharmacyReceiptImportMatchTable from './PharmacyReceiptImportMatchTable';
 
 export default function PharmacyReceiptImportWizard({ t, imp }) {
   if (!imp.step) return null;
@@ -87,7 +88,7 @@ export default function PharmacyReceiptImportWizard({ t, imp }) {
       ) : null}
 
       <div className="pharmacy-stock__import-body">
-        {matchStep ? <MatchStep t={t} imp={imp} /> : <ColumnsStep t={t} imp={imp} />}
+        {matchStep ? <PharmacyReceiptImportMatchTable t={t} imp={imp} /> : <ColumnsStep t={t} imp={imp} />}
         {imp.busy ? <div className="pharmacy-stock__import-busy">{t('pharmacyStock.importBusy')}</div> : null}
       </div>
     </div>
@@ -136,63 +137,3 @@ function ColumnsStep({ t, imp }) {
   );
 }
 
-function MatchStep({ t, imp }) {
-  return (
-    <div className="pharmacy-stock__import-table-wrap">
-      <table className="pharmacy-stock__import-table pharmacy-stock__import-table--match">
-        <thead>
-          <tr>
-            <th className="pharmacy-stock__import-num">№</th>
-            <th>{t('pharmacyStock.colName')}</th>
-            <th>{t('pharmacyStock.colQty')}</th>
-            <th>{t('pharmacyStock.purchasePrice')}</th>
-            <th>{t('pharmacyStock.importSellingPrice')}</th>
-            <th>{t('pharmacyStock.importExcelName')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {imp.items.length === 0 ? (
-            <tr>
-              <td colSpan={6}>
-                <div className="pharmacy-stock__empty">{t('pharmacyStock.importNoRows')}</div>
-              </td>
-            </tr>
-          ) : imp.items.map((item) => {
-            const ok = item.status !== 'DUPLICATE';
-            return (
-              <tr key={item.rowIndex} className={ok ? undefined : 'pharmacy-stock__import-miss'}>
-                <td className="pharmacy-stock__import-num">{item.rowIndex + 1}</td>
-                <td>
-                  <span className={`pharmacy-stock__import-flag${ok ? ' is-ok' : ' is-bad'}`}>
-                    {ok ? <Check size={15} strokeWidth={2.6} /> : <X size={15} strokeWidth={2.6} />}
-                  </span>
-                  {item.excelName}
-                </td>
-                <td>{item.quantity ?? '—'}</td>
-                <td>{item.purchasePrice ?? '—'}</td>
-                <td>
-                  <input
-                    className="pharmacy-stock__import-role"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    value={item.retailPrice ?? ''}
-                    onChange={(e) => imp.patchItem(item.rowIndex, {
-                      retailPrice: e.target.value === '' ? null : Number(e.target.value),
-                    })}
-                  />
-                </td>
-                <td className="pharmacy-stock__import-excel">{excelLabel(item)}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function excelLabel(item) {
-  const extra = [item.manufacturer, item.country].filter(Boolean).join(', ');
-  return extra ? `${item.excelName} (${extra})` : item.excelName;
-}

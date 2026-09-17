@@ -410,7 +410,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   if (!printedImage) {
     try {
       const mm = Number(payload.paperWmm) || 80;
-      printer.printQR(qrValue, { cellSize: mm <= 58 ? 3 : 4, correction: 'M', model: 2 });
+      printer.printQR(qrValue, { cellSize: mm <= 58 ? 5 : 7, correction: 'M', model: 2 });
     } catch (err) {
       logWarn(jobId, 'QR_SKIP', { message: err?.message, len: qrValue.length });
     }
