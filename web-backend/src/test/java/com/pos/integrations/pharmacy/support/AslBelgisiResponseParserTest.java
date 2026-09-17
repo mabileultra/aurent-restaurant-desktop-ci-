@@ -64,4 +64,89 @@ class AslBelgisiResponseParserTest {
 
         assertEquals("Error in authorization", parser.errorMessage(body));
     }
+
+    @Test
+    void readsOpenApiPublicCodesArray() {
+        String body = """
+            [{
+              "code":"0103077972920015217hzSaZihzGFVy",
+              "packageType":"UNIT",
+              "status":"INTRODUCED",
+              "gtin":"03077972920015",
+              "productSeries":"123",
+              "issuerShortInfo":{"issuerTin":"307797292","issuerName":{"ru":"OOO ROMASHKA"}}
+            }]
+            """;
+
+        var parsed = parser.parse("0103077972920015217hzSaZihzGFVy", body);
+
+        assertTrue(parsed.found());
+        assertEquals("03077972920015", parsed.gtin());
+        assertEquals("INTRODUCED", parsed.status());
+        assertEquals("123", parsed.batch());
+        assertEquals("307797292", parsed.ownerInn());
+        assertFalse(parsed.alreadySold());
+    }
+
+    @Test
+    void readsOpenApiPrivateCodesNested() {
+        String body = """
+            {
+              "results":[{
+                "codeData":{"code":"0103077972920015217hzSaZihzGFVy","status":"WITHDRAWN"},
+                "productData":{"gtin":"03077972920015","productSeries":"A1","expirationDate":"2026-12-01T00:00:00Z"},
+                "turnoverData":{"ownerInfo":{"ownerTin":"307797292"}},
+                "markingData":{"issuerInfo":{"issuerTin":"307797292"}}
+              }]
+            }
+            """;
+
+        var parsed = parser.parse("0103077972920015217hzSaZihzGFVy", body);
+
+        assertTrue(parsed.found());
+        assertEquals("03077972920015", parsed.gtin());
+        assertEquals("WITHDRAWN", parsed.status());
+        assertEquals("A1", parsed.batch());
+        assertEquals("307797292", parsed.ownerInn());
+        assertTrue(parsed.alreadySold());
+    }
+
+    @Test
+    void firstWithdrawFlagMarksAsSold() {
+        String body = """
+            [{
+              "code":"KM1",
+              "status":"INTRODUCED",
+              "gtin":"03077972920015",
+              "firstWithdrawCodeStateUnchanged":true
+            }]
+            """;
+
+        var parsed = parser.parse("KM1", body);
+        assertTrue(parsed.found());
+        assertTrue(parsed.alreadySold());
+    }
+
+    @Test
+    void parsesDocPrivateUnitExample() {
+        String body = """
+            {
+              "results":[{
+                "codeData":{"code":"010307797292003921U=HqEW=YAVhNqy/Uasgl","status":"INTRODUCED","template":"GS1_AISTR_ASYM_SHORT"},
+                "packageData":{"packageType":"UNIT","actuallyPacked":0},
+                "markingData":{"issuerInfo":{"issuerTin":"307797292"}},
+                "productData":{"productId":"132332a2-e5c9-4f11-897b-d4ad94bc5240","gtin":"03077972920039","productGroupId":18},
+                "turnoverData":{"originalReleaseMethod":"IMPORT","ownerInfo":{"ownerTin":"307966715"}}
+              }],
+              "forbiddenCodes":["00189011350000000028"]
+            }
+            """;
+
+        var parsed = parser.parse("010307797292003921U=HqEW=YAVhNqy/Uasgl", body);
+        assertTrue(parsed.found());
+        assertEquals("03077972920039", parsed.gtin());
+        assertEquals("INTRODUCED", parsed.status());
+        assertEquals("307966715", parsed.ownerInn());
+        assertFalse(parsed.alreadySold());
+    }
 }
