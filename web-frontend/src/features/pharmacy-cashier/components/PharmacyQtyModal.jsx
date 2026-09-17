@@ -22,6 +22,7 @@ import {
   productSellByPiece,
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
+import { pharmacyProductUsesMarking } from '../utils/pharmacyProductUsesMarking';
 import '../styles/pharmacy-qty-modal.css';
 import '../styles/pharmacy-qty-modal-compact.css';
 
@@ -63,7 +64,7 @@ export default function PharmacyQtyModal({
     .map((b) => String(b || '').trim())
     .filter(Boolean);
   const uniqueBarcodes = [...new Set(barcodes)];
-  const marked = product?.markedProduct === true;
+  const requiresMark = pharmacyProductUsesMarking(product);
   const marking = usePharmacyQtyMarkingScan({
     open,
     product,
@@ -71,6 +72,8 @@ export default function PharmacyQtyModal({
     aslMarkingEnabled,
     stockPacks,
   });
+  // Режим КМ: флаг в карточке ИЛИ уже есть сканы (даже если флаг в каталоге выключен).
+  const markingMode = requiresMark || marking.scans.length > 0;
 
   const lotsQuery = useQuery({
     queryKey: ['pharmacy-lots', storeId, product?.id],
@@ -84,22 +87,23 @@ export default function PharmacyQtyModal({
 
   useEffect(() => {
     if (!open || !product) return;
-    setPacksText(marked ? '0' : (unitsInPack > 1 ? '0' : '1'));
+    setPacksText(requiresMark ? '0' : (unitsInPack > 1 ? '0' : '1'));
     setPiecesText('0');
     setError('');
     const hintExpiry = productExpiry(product);
     const hintBatch = productBatch(product);
     setLotKey(hintExpiry || hintBatch ? `${hintBatch || ''}|${hintExpiry || ''}` : '');
-    if (marked) return undefined;
-    const timer = setTimeout(() => packRef.current?.focus(), 30);
+    const timer = setTimeout(() => {
+      marking.inputRef.current?.focus();
+    }, 30);
     return () => clearTimeout(timer);
-  }, [open, product, unitsInPack, marked]);
+  }, [open, product, unitsInPack, requiresMark, marking.inputRef]);
 
   useEffect(() => {
-    if (!open || !marked) return;
+    if (!open || !markingMode) return;
     setPacksText(String(marking.scans.length));
     setPiecesText('0');
-  }, [open, marked, marking.scans.length]);
+  }, [open, markingMode, marking.scans.length]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -113,15 +117,15 @@ export default function PharmacyQtyModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const packs = marked ? marking.scans.length : (Number(packsText) || 0);
-  const pieces = marked || !sellByPiece ? 0 : (Number(piecesText) || 0);
+  const packs = markingMode ? marking.scans.length : (Number(packsText) || 0);
+  const pieces = markingMode || !sellByPiece ? 0 : (Number(piecesText) || 0);
   const normalized = useMemo(
     () => normalizePackPieces(packs, pieces, unitsInPack),
     [packs, pieces, unitsInPack],
   );
   const preview = packPieceLineTotal({
     packs: normalized.packs,
-    pieces: sellByPiece ? normalized.pieces : 0,
+    pieces: markingMode ? 0 : (sellByPiece ? normalized.pieces : 0),
     packPrice,
     piecePrice,
   });
@@ -133,17 +137,18 @@ export default function PharmacyQtyModal({
   if (!open || !product) return null;
 
   const submit = () => {
-    if (marked && marking.scans.length === 0) {
+    if (requiresMark && marking.scans.length === 0) {
       setError(t('pharmacyCashier.markingScan.needScan'));
       return;
     }
-    const submitPacks = marked ? marking.scans.length : packs;
-    const submitPieces = marked ? 0 : pieces;
+    const byMarks = marking.scans.length > 0;
+    const submitPacks = byMarks ? marking.scans.length : packs;
+    const submitPieces = byMarks ? 0 : pieces;
     const err = validatePackPieceQty({
       packs: submitPacks,
       pieces: submitPieces,
       unitsInPack,
-      sellByPiece: marked ? false : sellByPiece,
+      sellByPiece: byMarks ? false : sellByPiece,
       pieceStep,
       stockPacks,
     }, t);
@@ -152,14 +157,15 @@ export default function PharmacyQtyModal({
       return;
     }
     onConfirm?.({
-      packs: marked ? marking.scans.length : normalized.packs,
-      pieces: marked || !sellByPiece ? 0 : normalized.pieces,
+      packs: byMarks ? marking.scans.length : normalized.packs,
+      pieces: byMarks || !sellByPiece ? 0 : normalized.pieces,
       lot: selectedLot,
-      productMarks: marked ? marking.scans.map((scan) => scan.mark) : [],
+      productMarks: byMarks ? marking.scans.map((scan) => scan.mark) : [],
     });
   };
 
   const showPackUi = unitsInPack > 1;
+  const showManualQty = !markingMode;
 
   return (
     <div className="pharmacy-qty-modal" role="dialog" aria-modal="true">
@@ -228,18 +234,18 @@ export default function PharmacyQtyModal({
           </div>
         </dl>
 
-        {marked ? (
-          <PharmacyQtyMarkingPanel
-            scans={marking.scans}
-            verifying={marking.verifying}
-            error={marking.error}
-            qty={marking.scans.length}
-            sumLabel={fmt(preview)}
-            inputRef={marking.inputRef}
-            onScan={marking.enqueue}
-            onRemove={marking.removeScan}
-          />
-        ) : (
+        <PharmacyQtyMarkingPanel
+          scans={marking.scans}
+          verifying={marking.verifying}
+          error={marking.error}
+          qty={markingMode ? marking.scans.length : (Number(packsText) || 0)}
+          sumLabel={fmt(preview)}
+          inputRef={marking.inputRef}
+          onScan={marking.enqueue}
+          onRemove={marking.removeScan}
+        />
+
+        {showManualQty ? (
           <div className={`pharmacy-qty-modal__qty${showPackUi ? '' : ' pharmacy-qty-modal__qty--single'}`}>
             <label className="pharmacy-qty-modal__qty-box">
               <span>{t('pharmacyCashier.qtyPacks')}</span>
@@ -284,18 +290,17 @@ export default function PharmacyQtyModal({
               </label>
             ) : null}
           </div>
-        )}
+        ) : null}
 
-        {!marked && !sellByPiece && showPackUi ? (
+        {showManualQty && !sellByPiece && showPackUi ? (
           <p className="pharmacy-qty-modal__hint">{t('pharmacyCashier.noPieceSaleHint')}</p>
         ) : null}
-        {!marked && sellByPiece && stepValues.length > 0 ? (
+        {showManualQty && sellByPiece && stepValues.length > 0 ? (
           <p className="pharmacy-qty-modal__hint">
             {t('pharmacyCashier.pieceStepHint', { steps: stepValues.slice(0, 4).join(', ') })}
           </p>
         ) : null}
 
-        {!marked ? <p className="pharmacy-qty-modal__total">{fmt(preview)}</p> : null}
         {error ? <p className="pharmacy-qty-modal__error">{error}</p> : null}
 
         <div className="pharmacy-qty-modal__actions">
@@ -306,7 +311,7 @@ export default function PharmacyQtyModal({
             type="button"
             className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--ok"
             onClick={submit}
-            disabled={marked && marking.verifying}
+            disabled={marking.verifying}
           >
             {t('pharmacyCashier.addLine')}
           </button>

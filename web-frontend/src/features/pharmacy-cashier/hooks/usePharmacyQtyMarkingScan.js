@@ -23,7 +23,9 @@ export function usePharmacyQtyMarkingScan({
   const [scans, setScans] = useState([]);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
-  const enabled = Boolean(open && product?.markedProduct);
+  // Скан КМ всегда активен в модалке «Добавить в чек» —
+  // иначе при markedProduct=false в каталоге панель не появляется.
+  const enabled = Boolean(open && product);
 
   const reset = useCallback(() => {
     scansRef.current = [];

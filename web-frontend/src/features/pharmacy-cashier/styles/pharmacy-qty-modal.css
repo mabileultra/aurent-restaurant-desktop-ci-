@@ -115,8 +115,8 @@
 }
 
 .pharmacy-qty-modal__btn--ok {
-  background: var(--pharm-brand, #006847);
-  border-color: var(--pharm-brand, #006847);
+  background: var(--pharm-ink, #1a2e28);
+  border-color: var(--pharm-ink, #1a2e28);
   color: #fff;
 }
 
@@ -133,7 +133,7 @@
   background: var(--pharm-elevated, #fff);
   color: var(--pharm-ink, #1a2e28);
   border-color: var(--pharm-border, #d5ddd8);
-  box-shadow: 0 24px 48px rgb(0 104 71 / 0.16);
+  box-shadow: 0 24px 48px rgb(15 23 42 / 0.35);
 }
 
 .pharmacy-qty-modal__head {

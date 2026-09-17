@@ -15,10 +15,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 3px 7px;
-  border-radius: 999px;
-  background: var(--pharm-ok, #d8f5e3);
-  color: var(--pharm-ok-text, #0b5c3a);
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--pharm-border);
+  background: var(--pharm-elevated, #1c2433);
+  color: var(--pharm-muted, #94a3b8);
   font-size: 0.5rem;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -31,6 +32,7 @@
   width: 13px;
   height: 13px;
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .pharmacy-search-strip__field {
@@ -52,8 +54,8 @@
 }
 
 .pharmacy-search-strip__field:focus {
-  border-color: var(--pharm-accent);
-  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+  border-color: color-mix(in srgb, var(--pharm-ink) 28%, var(--pharm-border));
+  box-shadow: 0 0 0 2px rgb(148 163 184 / 0.16);
 }
 
 .pharmacy-search-strip__toggles {
@@ -84,23 +86,19 @@
 }
 
 .pharmacy-search-strip__toggle.is-on {
-  background: var(--pharm-brand-soft, var(--pos-green-soft));
-  border-color: color-mix(in srgb, var(--pharm-brand, var(--pos-green)) 40%, var(--pharm-border));
-  color: var(--pharm-brand, var(--pos-green));
+  background: var(--pharm-hover, #243044);
+  border-color: color-mix(in srgb, var(--pharm-ink) 22%, var(--pharm-border));
+  color: var(--pharm-ink);
 }
 
 .pharmacy-search-strip .pharmacy-integration-icon {
-  display: block;
   width: 14px;
   height: 14px;
-  flex-shrink: 0;
-  object-fit: contain;
-  object-position: center;
 }
 
 .pharmacy-search-strip__toggle .pharmacy-integration-icon--dmed {
   width: 22px;
-  height: 10px;
+  height: 11px;
 }
 
 .pharmacy-search-strip__toggle .pharmacy-integration-icon--asl_portal,
@@ -138,8 +136,8 @@
 }
 
 .pharmacy-search-strip__icon-btn.is-on {
-  border-color: color-mix(in srgb, var(--pharm-brand, var(--pos-green)) 40%, var(--pharm-border));
-  background: var(--pharm-brand-soft);
+  border-color: color-mix(in srgb, var(--pharm-ink) 22%, var(--pharm-border));
+  background: var(--pharm-hover, #243044);
 }
 
 .pharmacy-search-strip__more-wrap {

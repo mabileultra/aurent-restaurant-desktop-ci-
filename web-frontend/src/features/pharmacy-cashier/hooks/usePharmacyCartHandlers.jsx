@@ -22,6 +22,7 @@ import {
   productSellByPiece,
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
+import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -326,6 +327,11 @@ export function usePharmacyCartHandlers({
   const handleSearchEnter = useCallback(async () => {
     const q = search.trim();
     if (!q) return;
+    // КМ — всегда с тостом (silent глотал «не найден» при Enter).
+    if (isPharmacyMarkingCode(q)) {
+      await tryAddByBarcode(q, { silent: false });
+      return;
+    }
     if (await tryAddByBarcode(q, { silent: true })) return;
     if (products.length === 0) {
       toast.error(t('pos.barcodeNotFound'));
@@ -335,8 +341,13 @@ export function usePharmacyCartHandlers({
     const exact =
       products.find((p) => p.barcode?.toLowerCase() === lower)
       || products.find((p) => p.sku?.toLowerCase() === lower)
-      || products.find((p) => p.name?.toLowerCase() === lower);
-    addProductToCart(exact ?? products[0]);
+      || products.find((p) => p.name?.toLowerCase() === lower)
+      || products.find((p) => String(p.name || '').toLowerCase().includes(lower));
+    if (!exact) {
+      toast.error(t('pos.barcodeNotFound'));
+      return;
+    }
+    addProductToCart(exact);
   }, [search, products, tryAddByBarcode, addProductToCart, t]);
 
   const handleQtyDelta = useCallback(
