@@ -5010,6 +5010,7 @@
     "importBusy": "Qayta ishlanmoqda…",
     "importFailed": "Faylni import qilib bo‘lmadi",
     "importNeedName": "«Nomi» ustunini belgilang",
+    "importNeedQty": "Miqdor yo‘q. «Miqdor» ustunini belgilang, aks holda qatorlar yozilmaydi.",
     "importNoRows": "Import uchun qatorlar yo‘q",
     "importNothing": "Saqlash uchun moslashtirilgan qatorlar yo‘q",
     "importSaved": "Import qilingan qatorlar: {{count}}",

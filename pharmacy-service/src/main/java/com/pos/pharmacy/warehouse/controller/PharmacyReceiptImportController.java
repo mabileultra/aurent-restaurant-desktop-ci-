@@ -1,6 +1,6 @@
 package com.pos.pharmacy.warehouse.controller;
 
-import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmResult;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmRequest;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchRequest;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchResponse;
@@ -49,7 +49,7 @@ public class PharmacyReceiptImportController {
     @PostMapping("/confirm")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Записать импортированные строки в черновик")
-    public ResponseEntity<PharmacyStockReceiptResponse> confirm(
+    public ResponseEntity<PharmacyImportConfirmResult> confirm(
         @PathVariable UUID id,
         @Valid @RequestBody PharmacyImportConfirmRequest request
     ) {

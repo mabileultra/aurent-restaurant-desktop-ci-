@@ -1,7 +1,7 @@
 package com.pos.pharmacy.warehouse.service;
 
-import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmRequest;
+import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmResult;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchRequest;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportMatchResponse;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportParseResponse;
@@ -15,5 +15,8 @@ public interface PharmacyReceiptImportService {
 
     PharmacyImportMatchResponse match(UUID receiptId, PharmacyImportMatchRequest request);
 
-    PharmacyStockReceiptResponse confirm(UUID receiptId, PharmacyImportConfirmRequest request);
+    PharmacyImportConfirmResult confirm(
+        UUID receiptId,
+        PharmacyImportConfirmRequest request
+    );
 }

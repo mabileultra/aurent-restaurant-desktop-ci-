@@ -84,7 +84,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     }
 
     @Override
-    public PharmacyStockReceiptResponse confirm(UUID receiptId, PharmacyImportConfirmRequest request) {
+    public PharmacyImportConfirmResult confirm(UUID receiptId, PharmacyImportConfirmRequest request) {
         StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
@@ -116,7 +116,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         for (int i = 0; i < accepted.size(); i++) {
             lines.add(toLine(accepted.get(i), productIds.get(i), defaultMarkup));
         }
-        return pharmacyStockReceiptService.addLines(receiptId, lines);
+        pharmacyStockReceiptService.addLines(receiptId, lines);
+        return new PharmacyImportConfirmResult(lines.size());
     }
 
     private PharmacyImportMatchItem mapRow(

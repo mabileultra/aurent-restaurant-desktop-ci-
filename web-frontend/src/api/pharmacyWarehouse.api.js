@@ -29,8 +29,9 @@ export const pharmacyWarehouseApi = {
     fd.append('file', file);
     return api.post(`/pharmacy/receipts/${id}/import/parse`, fd, {
       headers: { 'Content-Type': undefined },
+      timeout: 180000,
     });
   },
-  importMatch: (id, body) => api.post(`/pharmacy/receipts/${id}/import/match`, body),
-  importConfirm: (id, body) => api.post(`/pharmacy/receipts/${id}/import/confirm`, body),
+  importMatch: (id, body) => api.post(`/pharmacy/receipts/${id}/import/match`, body, { timeout: 180000 }),
+  importConfirm: (id, body) => api.post(`/pharmacy/receipts/${id}/import/confirm`, body, { timeout: 180000 }),
 };

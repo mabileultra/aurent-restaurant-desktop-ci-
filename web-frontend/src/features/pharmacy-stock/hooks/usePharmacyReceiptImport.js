@@ -103,28 +103,30 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       toast.error(t('pharmacyStock.importNothing'));
       return;
     }
+    const withQty = payload.filter((item) => Number(item.quantity) > 0);
+    if (!withQty.length) {
+      toast.error(t('pharmacyStock.importNeedQty'));
+      return;
+    }
     setBusy(true);
     try {
-      const body = payload.map(toConfirmItem);
+      const body = withQty.map(toConfirmItem);
       const chunkSize = 40;
-      let last = null;
       for (let i = 0; i < body.length; i += chunkSize) {
         const chunk = body.slice(i, i + chunkSize);
-        const { data } = await pharmacyWarehouseApi.importConfirm(receiptId, {
+        await pharmacyWarehouseApi.importConfirm(receiptId, {
           uzInvoiceDocumentId: invoiceId || undefined,
           items: chunk,
         });
-        last = data;
         const savedIds = chunk.map((item) => item.rowIndex);
-        saved.push(...savedIds);
         setItems((prev) => prev.filter((item) => !savedIds.includes(item.rowIndex)));
       }
-      const data = last;
-      toast.success(t('pharmacyStock.importSaved', { count: payload.length }));
+      toast.success(t('pharmacyStock.importSaved', { count: withQty.length }));
       close();
-      onImported?.(data);
+      const fresh = await pharmacyWarehouseApi.getReceipt(receiptId);
+      onImported?.(fresh.data);
     } catch (err) {
-      toast.error(err.response?.data?.message ?? t('pharmacyStock.importFailed'));
+      toast.error(err.response?.data?.message || err.message || t('pharmacyStock.importFailed'));
     } finally {
       setBusy(false);
     }
