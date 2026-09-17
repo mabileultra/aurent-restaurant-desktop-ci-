@@ -65,15 +65,21 @@ public class PharmacyReceiptSupport {
         BigDecimal purchase = scaleMoney(line.getPurchasePrice());
         BigDecimal vat = vatPercent != null ? vatPercent : nullToZero(line.getVatPercent());
         BigDecimal purchaseWithVat = withVat(purchase, vat);
-        BigDecimal markup = markupPercent != null ? markupPercent : nullToZero(line.getMarkupPercent());
-        BigDecimal retail = retailFromMarkup(purchaseWithVat, markup);
+        line.setVatPercent(vat);
+        line.setPurchasePriceWithVat(purchaseWithVat);
+        if (markupPercent == null) {
+            BigDecimal retail = line.getRetailPrice() != null
+                ? scaleMoney(line.getRetailPrice())
+                : scaleMoney(line.getUnitSellingPrice());
+            line.setMarkupPercent(markupFrom(purchaseWithVat, retail));
+            return;
+        }
+        BigDecimal retail = retailFromMarkup(purchaseWithVat, markupPercent);
         BigDecimal unitsInPack = line.getUnitsInPack() != null && line.getUnitsInPack().compareTo(BigDecimal.ZERO) > 0
             ? line.getUnitsInPack()
             : BigDecimal.ONE;
         BigDecimal quantity = line.getQuantity() != null ? line.getQuantity() : BigDecimal.ZERO;
-        line.setVatPercent(vat);
-        line.setPurchasePriceWithVat(purchaseWithVat);
-        line.setMarkupPercent(markup);
+        line.setMarkupPercent(markupPercent);
         line.setRetailPrice(retail);
         line.setUnitRetailPrice(unitPrice(retail, unitsInPack));
         line.setUnitSellingPrice(retail);

@@ -30,9 +30,51 @@ public final class PharmacyImportValueParser {
             return null;
         }
         String text = raw.replace('\u00a0', ' ')
-            .replaceAll("(?i)(so['’`]?m|сум|sum|uzs)", "")
+            .replace('\u202f', ' ')
+            .replaceAll("(?i)(so['’`]?m|сўм|сум|sum|uzs)", "")
+            .replace("%", " ")
             .trim();
-        return ProductImportParseUtil.parseDecimalOpt(text).orElse(null);
+        String cleaned = text.replaceAll("[^0-9,.-]", "");
+        if (cleaned.isEmpty() || cleaned.equals("-") || cleaned.equals(".") || cleaned.equals(",")) {
+            return null;
+        }
+        try {
+            return new BigDecimal(normalizeGrouped(cleaned));
+        } catch (NumberFormatException ex) {
+            return ProductImportParseUtil.parseDecimalOpt(text).orElse(null);
+        }
+    }
+
+    /** 12,500.50 и 12.500,50 не должны обнуляться из-за разделителя тысяч. */
+    static String normalizeGrouped(String cleaned) {
+        int lastComma = cleaned.lastIndexOf(',');
+        int lastDot = cleaned.lastIndexOf('.');
+        if (lastComma >= 0 && lastDot >= 0) {
+            if (lastComma > lastDot) {
+                return cleaned.replace(".", "").replace(',', '.');
+            }
+            return cleaned.replace(",", "");
+        }
+        if (count(cleaned, ',') > 1) {
+            return cleaned.replace(",", "");
+        }
+        if (count(cleaned, '.') > 1) {
+            return cleaned.replace(".", "");
+        }
+        if (lastComma >= 0) {
+            return cleaned.replace(',', '.');
+        }
+        return cleaned;
+    }
+
+    private static int count(String value, char ch) {
+        int n = 0;
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) == ch) {
+                n++;
+            }
+        }
+        return n;
     }
 
     public static LocalDate date(String raw) {

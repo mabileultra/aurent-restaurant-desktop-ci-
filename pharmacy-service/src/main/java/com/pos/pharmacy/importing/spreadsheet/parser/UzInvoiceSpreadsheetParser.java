@@ -3,7 +3,9 @@ package com.pos.pharmacy.importing.spreadsheet.parser;
 import com.pos.pharmacy.exception.BusinessException;
 import com.pos.pharmacy.util.ProductImportParseUtil;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -14,6 +16,7 @@ import org.springframework.util.StringUtils;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -72,7 +75,7 @@ public class UzInvoiceSpreadsheetParser {
                 int last = Math.max(row.getLastCellNum(), 0);
                 for (int c = 0; c < last; c++) {
                     Cell cell = row.getCell(c);
-                    cells.add(cell == null ? "" : formatter.formatCellValue(cell).trim());
+                    cells.add(plainCell(cell, formatter));
                 }
                 if (cells.stream().anyMatch(StringUtils::hasText)) {
                     grid.add(cells);
@@ -84,6 +87,25 @@ public class UzInvoiceSpreadsheetParser {
                 "Файл не является корректным Excel. Если это счёт-фактура с портала, загрузите исходный .xls или сохраните таблицу как .xlsx."
             );
         }
+    }
+
+    private static String plainCell(Cell cell, DataFormatter formatter) {
+        if (cell == null) {
+            return "";
+        }
+        try {
+            if (cell.getCellType() == CellType.NUMERIC && !DateUtil.isCellDateFormatted(cell)) {
+                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
+            }
+            if (cell.getCellType() == CellType.FORMULA
+                && cell.getCachedFormulaResultType() == CellType.NUMERIC
+                && !DateUtil.isCellDateFormatted(cell)) {
+                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
+            }
+        } catch (RuntimeException ignored) {
+            // текстовая ячейка
+        }
+        return formatter.formatCellValue(cell).trim();
     }
 
     private List<Map<String, String>> parseProductGrid(List<List<String>> grid) {

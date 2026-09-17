@@ -55,7 +55,7 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "в упаков", "units in pack", "кол-во в упак", "упаковк")) {
             return UNITS_IN_PACK;
         }
-        if (containsAny(h, "рознич", "розн", "retail", "chakana", "чакана")
+        if (containsAny(h, "рознич", "розн", "retail", "chakana", "чакана", "продаж", "сотиш", "sotish", "реализац")
             && !containsAny(h, "сумма", "итого", "summa")) {
             return RETAIL;
         }
@@ -65,8 +65,8 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "без ндс", "without vat", "qqssiz", "ққссиз")) {
             return PURCHASE;
         }
-        if (containsAny(h, "покупн", "закуп", "себестоим", "purchase")
-            || h.equals("цена") || h.equals("нарх")) {
+        if (containsAny(h, "покупн", "закуп", "себестоим", "purchase", "нарх", "нарҳ")
+            || h.equals("цена")) {
             return PURCHASE;
         }
         if ((containsAny(h, "ндс", "ққс", "qqs", "vat")) && containsAny(h, "ставк", "rate", "%")) {

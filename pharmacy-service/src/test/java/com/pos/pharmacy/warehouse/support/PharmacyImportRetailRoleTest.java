@@ -13,8 +13,16 @@ class PharmacyImportRetailRoleTest {
     void guessRetailOnlyForRoznica() {
         assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Розничная цена"));
         assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Chakana narx"));
-        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Цена продажи"));
+        assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Цена продажи"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Сумма розницы"));
+    }
+
+    @Test
+    void decimalKeepsGroupedPrices() {
+        assertEquals(new BigDecimal("12500.50"), PharmacyImportValueParser.decimal("12,500.50"));
+        assertEquals(new BigDecimal("12500.50"), PharmacyImportValueParser.decimal("12.500,50"));
+        assertEquals(new BigDecimal("12"), PharmacyImportValueParser.decimal("12%"));
+        assertEquals(new BigDecimal("10"), PharmacyImportValueParser.decimal("10 шт"));
     }
 
     @Test
