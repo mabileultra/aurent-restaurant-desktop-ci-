@@ -1,5 +1,6 @@
 package com.pos.pharmacy.warehouse.support;
 
+import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.exception.PharmacyException;
@@ -7,6 +8,7 @@ import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -82,12 +84,25 @@ public class PharmacyImportProductWriter {
         try {
             String sku = productFactory.sku(invoiceId, item);
             return productRepository.findByCompanyIdAndSku(companyId, sku)
-                .map(product -> product.getId())
+                .map(product -> applyRetail(product, item))
                 .orElseGet(() -> pharmacyProductService.create(
                     productFactory.request(item, storeId, invoiceId, companyId)
                 ).id());
         } finally {
             PharmacyTenantContext.clear();
         }
+    }
+
+    private UUID applyRetail(Product product, PharmacyImportConfirmItem item) {
+        if (item.purchasePrice() != null) {
+            product.setCostPrice(item.purchasePrice());
+        }
+        if (item.retailPrice() != null && item.retailPrice().compareTo(new BigDecimal("0.01")) >= 0) {
+            product.setSellingPrice(item.retailPrice());
+        }
+        if (item.vatPercent() != null) {
+            product.setTaxRate(item.vatPercent());
+        }
+        return productRepository.save(product).getId();
     }
 }

@@ -55,7 +55,8 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "в упаков", "units in pack", "кол-во в упак", "упаковк")) {
             return UNITS_IN_PACK;
         }
-        if (containsAny(h, "рознич", "retail", "продаж", "сотиш", "реализац", "sotish")) {
+        if (containsAny(h, "рознич", "розн", "retail", "chakana", "чакана")
+            && !containsAny(h, "сумма", "итого", "summa")) {
             return RETAIL;
         }
         if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {

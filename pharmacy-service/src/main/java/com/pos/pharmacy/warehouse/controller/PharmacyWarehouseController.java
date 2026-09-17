@@ -108,7 +108,7 @@ public class PharmacyWarehouseController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Удалить черновик прихода")
+    @Operation(summary = "Удалить приход. Проведённый документ списывает остаток обратно")
     public ResponseEntity<Void> deleteDraft(@PathVariable UUID id) {
         pharmacyStockReceiptService.deleteDraft(id);
         return ResponseEntity.noContent().build();

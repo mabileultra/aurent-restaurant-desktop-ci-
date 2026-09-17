@@ -17,6 +17,7 @@ import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
 import com.pos.pharmacy.util.QuantityUtil;
@@ -51,6 +52,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final ProductCatalogService productCatalogService;
     private final StoreStockService storeStockService;
     private final PharmacyReceiptSupport pharmacyReceipt;
+    private final PharmacyReceiptDeletion pharmacyReceiptDeletion;
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
 
@@ -260,10 +262,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
 
     @Override
     public void deleteDraft(UUID id) {
-        StockReceipt receipt = requireAccessibleDetailed(id);
-        pharmacyReceipt.requireDraft(receipt);
-        receipt.getLines().clear();
-        stockReceiptRepository.delete(receipt);
+        pharmacyReceiptDeletion.delete(requireAccessibleDetailed(id));
     }
 
     @Override

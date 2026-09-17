@@ -32,4 +32,12 @@ public interface StockLotRepository extends JpaRepository<StockLot, UUID> {
     );
 
     boolean existsByProduct_IdAndStoreIdAndQuantityGreaterThan(UUID productId, Integer storeId, BigDecimal quantity);
+
+    @Query("""
+        SELECT l FROM StockLot l
+        JOIN FETCH l.product
+        JOIN FETCH l.receiptLine
+        WHERE l.receiptLine.id IN :lineIds
+        """)
+    List<StockLot> findByReceiptLineIds(@Param("lineIds") Collection<UUID> lineIds);
 }

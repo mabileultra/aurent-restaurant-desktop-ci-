@@ -26,7 +26,13 @@ public final class PharmacyImportValueParser {
     }
 
     public static BigDecimal decimal(String raw) {
-        return ProductImportParseUtil.parseDecimalOpt(raw).orElse(null);
+        if (raw == null || raw.isBlank()) {
+            return null;
+        }
+        String text = raw.replace('\u00a0', ' ')
+            .replaceAll("(?i)(so['’`]?m|сум|sum|uzs)", "")
+            .trim();
+        return ProductImportParseUtil.parseDecimalOpt(text).orElse(null);
     }
 
     public static LocalDate date(String raw) {

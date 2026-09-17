@@ -29,9 +29,12 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     try {
       const { data } = await pharmacyWarehouseApi.importParse(receiptId, file);
       const nextRoles = {};
+      const used = new Set();
       (data.columns ?? []).forEach((col) => {
-        if (col.suggestedRole && col.suggestedRole !== 'SKIP') {
-          nextRoles[col.index] = col.suggestedRole;
+        const suggested = col.suggestedRole;
+        if (suggested && suggested !== 'SKIP' && !used.has(suggested)) {
+          nextRoles[col.index] = suggested;
+          used.add(suggested);
         } else {
           nextRoles[col.index] = 'SKIP';
         }
@@ -168,7 +171,16 @@ function toConfirmItem(item) {
     busy,
     parse,
     roles,
-    setRole: (index, role) => setRoles((prev) => ({ ...prev, [index]: role })),
+    setRole: (index, role) => setRoles((prev) => {
+      const next = { ...prev };
+      if (role && role !== 'SKIP') {
+        Object.keys(next).forEach((key) => {
+          if (String(key) !== String(index) && next[key] === role) next[key] = 'SKIP';
+        });
+      }
+      next[index] = role;
+      return next;
+    }),
     useFinalSums,
     setUseFinalSums,
     continueMatch,

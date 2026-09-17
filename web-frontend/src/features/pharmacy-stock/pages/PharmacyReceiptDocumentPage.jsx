@@ -10,6 +10,7 @@ import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyProductModal from '../components/PharmacyProductModal';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyReceiptActivateModal from '../components/PharmacyReceiptActivateModal';
+import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal';
 import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal';
 import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
 import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar';
@@ -37,6 +38,7 @@ export default function PharmacyReceiptDocumentPage() {
   const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
   const [aboutProduct, setAboutProduct] = useState(null);
 
@@ -76,21 +78,14 @@ export default function PharmacyReceiptDocumentPage() {
   });
 
   const deleteDraftMutation = useMutation({
-    mutationFn: () => {
-      if (!window.confirm(t('pharmacyStock.deleteDraftConfirm', { no: receiptQuery.data?.receiptNumber || '' }))) {
-        return Promise.reject(new Error('cancel'));
-      }
-      return pharmacyWarehouseApi.deleteDraft(id);
-    },
+    mutationFn: () => pharmacyWarehouseApi.deleteDraft(id),
     onSuccess: () => {
       toast.success(t('pharmacyStock.deleteDraftDone'));
+      setDeleteOpen(false);
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
       navigate(PHARMACY_STOCK_PATHS.receipts);
     },
-    onError: (e) => {
-      if (e?.message === 'cancel') return;
-      toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed'));
-    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
   });
 
   const removeLineMutation = useMutation({
@@ -196,18 +191,18 @@ export default function PharmacyReceiptDocumentPage() {
               <BaseButton variant="secondary" onClick={() => setEditOpen(true)}>
                 {t('pharmacyStock.edit')}
               </BaseButton>
-              <BaseButton
-                variant="secondary"
-                onClick={() => deleteDraftMutation.mutate()}
-                disabled={deleteDraftMutation.isPending}
-              >
-                {t('pharmacyStock.deleteDraft')}
-              </BaseButton>
               <BaseButton onClick={openActivate} disabled={!receipt.lines?.length}>
                 {t('pharmacyStock.activate')}
               </BaseButton>
             </>
           ) : null}
+          <BaseButton
+            variant="danger"
+            onClick={() => setDeleteOpen(true)}
+            disabled={deleteDraftMutation.isPending}
+          >
+            {t('pharmacyStock.deleteReceipt')}
+          </BaseButton>
           <BaseButton variant="secondary" onClick={() => navigate(PHARMACY_STOCK_PATHS.receipts)}>
             {t('common.close')}
           </BaseButton>
@@ -411,6 +406,15 @@ export default function PharmacyReceiptDocumentPage() {
         t={t}
         saving={activateMutation.isPending}
         onConfirm={() => activateMutation.mutate()}
+      />
+      <PharmacyReceiptDeleteModal
+        open={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+        t={t}
+        saving={deleteDraftMutation.isPending}
+        numbers={[receipt.receiptNumber]}
+        posted={receipt.status === 'POSTED'}
+        onConfirm={() => deleteDraftMutation.mutate()}
       />
       {isDraft ? (
         <>

@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, supplierApi } from '../../../api';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
+import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal';
 import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal';
 import PharmacyStockLayout, { PharmacyStatusBadge } from '../components/PharmacyStockLayout';
 import {
@@ -26,6 +27,7 @@ export default function PharmacyReceiptsPage() {
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [createOpen, setCreateOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState([]);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PHARM_DEFAULT_PAGE_SIZE);
 
@@ -46,23 +48,13 @@ export default function PharmacyReceiptsPage() {
 
   const deleteSelectedMutation = useMutation({
     mutationFn: async (rowsToDelete) => {
-      const drafts = rowsToDelete.filter((row) => row.status === 'DRAFT');
-      if (!drafts.length) {
-        throw new Error(t('pharmacyStock.deleteDraftPosted'));
-      }
-      if (!window.confirm(t('pharmacyStock.deleteDraftConfirm', {
-        no: drafts.map((row) => row.receiptNumber).join(', '),
-      }))) {
-        return false;
-      }
-      for (const row of drafts) {
+      for (const row of rowsToDelete) {
         await pharmacyWarehouseApi.deleteDraft(row.id);
       }
-      return true;
     },
-    onSuccess: (deleted) => {
-      if (!deleted) return;
+    onSuccess: () => {
       toast.success(t('pharmacyStock.deleteDraftDone'));
+      setPendingDelete([]);
       selection.clearSelection();
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
     },
@@ -119,10 +111,10 @@ export default function PharmacyReceiptsPage() {
         <button
           type="button"
           className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
-          onClick={() => deleteSelectedMutation.mutate(selection.selectedRows)}
+          onClick={() => setPendingDelete(selection.selectedRows)}
           disabled={deleteSelectedMutation.isPending}
         >
-          {t('pharmacyStock.deleteDraft')}
+          {t('pharmacyStock.deleteReceipt')}
         </button>
       </PharmacySelectionBar>
 
@@ -184,7 +176,7 @@ export default function PharmacyReceiptsPage() {
                   <PharmacyEditCell
                     t={t}
                     onEdit={() => navigate(PHARMACY_STOCK_PATHS.receipt(row.id))}
-                    onDelete={row.status === 'DRAFT' ? () => deleteSelectedMutation.mutate([row]) : undefined}
+                    onDelete={() => setPendingDelete([row])}
                   />
                 </tr>
               ))}
@@ -202,6 +194,15 @@ export default function PharmacyReceiptsPage() {
         />
       </div>
 
+      <PharmacyReceiptDeleteModal
+        open={pendingDelete.length > 0}
+        onClose={() => setPendingDelete([])}
+        t={t}
+        saving={deleteSelectedMutation.isPending}
+        numbers={pendingDelete.map((row) => row.receiptNumber)}
+        posted={pendingDelete.some((row) => row.status === 'POSTED')}
+        onConfirm={() => deleteSelectedMutation.mutate(pendingDelete)}
+      />
       <PharmacyReceiptHeaderModal
         open={createOpen}
         onClose={() => setCreateOpen(false)}

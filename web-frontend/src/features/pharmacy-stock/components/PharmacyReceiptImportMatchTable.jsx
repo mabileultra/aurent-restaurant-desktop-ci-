@@ -79,7 +79,7 @@ const COLUMNS = [
   { key: 'quantity', label: 'pharmacyStock.colQty', kind: 'number', step: '0.001' },
   { key: 'purchasePrice', label: 'pharmacyStock.purchasePrice', kind: 'number', step: '0.01' },
   { key: 'vatPercent', label: 'pharmacyStock.vatRate', kind: 'number', step: '0.01' },
-  { key: 'retailPrice', label: 'pharmacyStock.importSellingPrice', kind: 'number', step: '0.01' },
+  { key: 'retailPrice', label: 'pharmacyStock.retailPrice', kind: 'number', step: '0.01' },
   { key: 'barcode', label: 'pharmacyStock.colBarcode', kind: 'text' },
   { key: 'ikpu', label: 'pharmacyStock.colIkpu', kind: 'text' },
   { key: 'unitsInPack', label: 'pharmacyStock.unitsInPack', kind: 'number', step: '1' },
