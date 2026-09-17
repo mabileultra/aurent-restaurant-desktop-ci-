@@ -2,7 +2,7 @@
 
 .pharmacy-search-strip {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
   gap: 6px;
   width: 100%;
@@ -11,12 +11,39 @@
   container-name: pharm-search-strip;
 }
 
+/* Поле + КМ как один блок */
 .pharmacy-search-strip__field-wrap {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: stretch;
-  gap: 4px;
   min-width: 0;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-elevated, #fff);
+  overflow: hidden;
+}
+
+.pharmacy-search-strip__field-wrap:focus-within {
+  border-color: color-mix(in srgb, var(--pharm-ink) 28%, var(--pharm-border));
+  box-shadow: 0 0 0 2px rgb(148 163 184 / 0.16);
+}
+
+.pharmacy-search-strip__field {
+  width: 100%;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: var(--pharm-ink);
+  font-size: 0.75rem;
+  font-weight: 600;
+  outline: none;
+}
+
+.pharmacy-search-strip__field::placeholder {
+  color: var(--pharm-muted);
 }
 
 .pharmacy-search-strip__km {
@@ -25,10 +52,11 @@
   justify-content: center;
   gap: 4px;
   height: 28px;
-  padding: 0 8px;
-  border: 1px solid var(--pharm-border);
-  border-radius: 8px;
-  background: var(--pharm-elevated, #1c2433);
+  padding: 0 10px;
+  border: none;
+  border-left: 1px solid var(--pharm-border);
+  border-radius: 0;
+  background: var(--pharm-surface, #f1f5f9);
   color: var(--pharm-ink);
   font-size: 0.625rem;
   font-weight: 800;
@@ -40,8 +68,7 @@
 }
 
 .pharmacy-search-strip__km:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--pharm-ink) 24%, var(--pharm-border));
-  background: var(--pharm-hover, #243044);
+  background: var(--pharm-hover, #e2e8f0);
 }
 
 .pharmacy-search-strip__km:disabled {
@@ -49,56 +76,9 @@
   cursor: not-allowed;
 }
 
-.pharmacy-search-strip__km .pharmacy-integration-icon {
-  width: 16px;
-  height: 16px;
-}
-
-.pharmacy-search-strip__scan {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: 8px;
-  border: 1px solid var(--pharm-border);
-  background: var(--pharm-elevated, #1c2433);
-  color: var(--pharm-muted, #94a3b8);
-  font-size: 0.5rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
+.pharmacy-search-strip__km svg {
   flex-shrink: 0;
-}
-
-.pharmacy-search-strip__scan svg {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-  opacity: 0.85;
-}
-
-.pharmacy-search-strip__field {
-  width: 100%;
-  min-width: 0;
-  height: 28px;
-  padding: 0 10px;
-  border: 1px solid var(--pharm-border);
-  border-radius: 8px;
-  background: var(--pharm-elevated, #fff);
-  color: var(--pharm-ink);
-  font-size: 0.75rem;
-  font-weight: 600;
-  outline: none;
-}
-
-.pharmacy-search-strip__field::placeholder {
-  color: var(--pharm-muted);
-}
-
-.pharmacy-search-strip__field:focus {
-  border-color: color-mix(in srgb, var(--pharm-ink) 28%, var(--pharm-border));
-  box-shadow: 0 0 0 2px rgb(148 163 184 / 0.16);
+  opacity: 0.9;
 }
 
 .pharmacy-search-strip__toggles {
@@ -205,22 +185,12 @@
   }
 }
 
-@container pharm-search-strip (max-width: 520px) {
-  .pharmacy-search-strip__scan span {
+@container pharm-search-strip (max-width: 420px) {
+  .pharmacy-search-strip__km span {
     display: none;
   }
 
-  .pharmacy-search-strip__scan {
-    padding: 3px 6px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .pharmacy-search-strip {
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .pharmacy-search-strip__scan {
-    display: none;
+  .pharmacy-search-strip__km {
+    padding: 0 8px;
   }
 }

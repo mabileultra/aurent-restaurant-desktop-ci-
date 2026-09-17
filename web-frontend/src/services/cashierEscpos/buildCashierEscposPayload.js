@@ -113,12 +113,18 @@ export function buildCashierEscposPayload(sale, t) {
       String(import.meta.env.VITE_COMPANY_STIR || '').trim() || String(import.meta.env.VITE_STIR || '').trim();
   }
 
-  const shiftFromReceipt = String(sale.receiptNumber || '')
-    .replace(/\D/g, '')
-    .slice(-3)
-    .padStart(3, '0');
   branding.shiftNo =
-    import.meta.env.VITE_SHIFT_NO || shiftFromReceipt || branding.shiftNo || '001';
+    import.meta.env.VITE_SHIFT_NO
+    || (sale.shiftOpenedAt
+      ? (() => {
+          const d = new Date(sale.shiftOpenedAt);
+          if (Number.isNaN(d.getTime())) return '';
+          const pad = (n) => String(n).padStart(2, '0');
+          return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        })()
+      : '')
+    || '';
+  // Не вырезать «001» из номера чека — это не смена.
 
   const fiscalMeta = resolveFiscalReceiptMeta(sale, branding);
   branding.fmNumber = fiscalMeta.fmNumber;

@@ -183,14 +183,20 @@ function appendMeta(printer, payload) {
     appendRow(printer, L.employee || 'Cashier', sale.cashierName);
   }
   if (isOn(fields, 'shift')) {
-    const shiftNo =
-      brandingShift(payload) ||
-      String(sale.receiptNumber || '')
-        .replace(/\D/g, '')
-        .slice(-3)
-        .padStart(3, '0') ||
-      '001';
-    appendRow(printer, L.shift || 'Shift', shiftNo);
+    const shiftNo = brandingShift(payload) || '—';
+    // Не подставлять хвост номера чека (…-0001) — это не номер смены.
+    if (shiftNo && shiftNo !== '—' && shiftNo !== '001') {
+      appendRow(printer, L.shift || 'Shift', shiftNo);
+    } else if (sale.shiftOpenedAt) {
+      const d = new Date(sale.shiftOpenedAt);
+      if (!Number.isNaN(d.getTime())) {
+        const pad = (n) => String(n).padStart(2, '0');
+        const label = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        appendRow(printer, L.shift || 'Shift', label);
+      }
+    } else {
+      appendRow(printer, L.shift || 'Shift', '—');
+    }
   }
 }
 

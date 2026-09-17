@@ -189,7 +189,14 @@ public class PharmacySaleCheckoutService {
             paymentMethod
         );
         revenuePublicationService.onSaleCompleted(saved, attributesByProductId, shift.storeName());
-        return saleMapper.toResponse(saved, shift.storeName(), shift.status());
+        return saleMapper.toResponse(
+            saved,
+            shift.storeName(),
+            shift.status(),
+            openShift.getOpenedAt(),
+            openShift.getClosedAt(),
+            null
+        );
     }
 
     private Map<UUID, Product> loadProducts(Integer companyId, List<SaleItemRequest> items) {

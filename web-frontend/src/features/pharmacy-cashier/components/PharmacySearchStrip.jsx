@@ -20,8 +20,7 @@ const STRIP_TOGGLES = [
 ];
 
 /**
- * Полоса поиска: поле + кнопка КМ рядом + тогглы.
- * Вставка / скан DataMatrix → onMarkingScan; обычный штрихкод → Enter / сканер.
+ * Полоса поиска: поле + кнопка КМ внутри поля справа + тогглы интеграций.
  */
 export default function PharmacySearchStrip({
   searchInputRef,
@@ -89,11 +88,6 @@ export default function PharmacySearchStrip({
   return (
     <>
       <div className="pharmacy-search-strip" role="search">
-        <div className="pharmacy-search-strip__scan" aria-hidden>
-          <ScanLine size={16} strokeWidth={2.25} />
-          <span>{t('pharmacyCashier.searchStrip.scanActive')}</span>
-        </div>
-
         <div className="pharmacy-search-strip__field-wrap">
           <input
             ref={searchInputRef}
@@ -120,7 +114,7 @@ export default function PharmacySearchStrip({
             disabled={scanDisabled}
             onClick={openKmCheck}
           >
-            <PharmacyIntegrationIcon linkId={PHARMACY_QUICK_LINK_IDS.MARKING} />
+            <ScanLine size={14} strokeWidth={2.25} aria-hidden />
             <span>{t('pharmacyCashier.searchStrip.km')}</span>
           </button>
         </div>

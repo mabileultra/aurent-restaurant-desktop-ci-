@@ -15,6 +15,7 @@ import {
   resolveFiscalReceiptMeta,
   resolveReceiptPaymentAmounts,
 } from '../../utils/resolveFiscalReceiptMeta';
+import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
 
 function lineVatRatePercent(item) {
   const rate = item?.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
@@ -95,10 +96,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const total = Number(sale.totalAmount) || 0;
   const payLabel = (m) => t(PAYMENT_I18N[m] ?? 'sales.paymentCash');
   const cardTypeText = cardTypeLabel(sale.cardType, t);
-  const shiftNo =
-    import.meta.env.VITE_SHIFT_NO ||
-    String(sale.receiptNumber || '').replace(/\D/g, '').slice(-3).padStart(3, '0') ||
-    '001';
+  const shiftNo = resolveReceiptShiftLabel(sale, {
+    envShiftNo: import.meta.env.VITE_SHIFT_NO,
+  });
   const fmNumber = fiscalMeta.fmNumber;
   const virtualRegister = fiscalMeta.virtualRegister;
   const fiscalSign = fiscalMeta.fiscalSign;

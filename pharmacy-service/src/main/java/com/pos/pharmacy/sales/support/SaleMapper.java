@@ -10,16 +10,28 @@ import com.pos.pharmacy.util.QuantityUtil;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
 
 @Component
 public class SaleMapper {
 
     public SaleResponse toResponse(Sale sale) {
-        return toResponse(sale, null, null);
+        return toResponse(sale, null, null, null, null, null);
     }
 
     public SaleResponse toResponse(Sale sale, String storeName, String shiftStatus) {
+        return toResponse(sale, storeName, shiftStatus, null, null, null);
+    }
+
+    public SaleResponse toResponse(
+        Sale sale,
+        String storeName,
+        String shiftStatus,
+        Instant shiftOpenedAt,
+        Instant shiftClosedAt,
+        Long shiftZReportId
+    ) {
         if (sale == null) {
             return null;
         }
@@ -53,10 +65,10 @@ public class SaleMapper {
             sale.getLoyaltyPhone(),
             sale.isPharmacyDmed(),
             sale.getCashierShiftId(),
-            null,
-            null,
+            shiftOpenedAt,
+            shiftClosedAt,
             shiftStatus,
-            null,
+            shiftZReportId,
             sale.getFiscalStatus(),
             sale.getFiscalSign(),
             sale.getFiscalReceiptSeq(),
