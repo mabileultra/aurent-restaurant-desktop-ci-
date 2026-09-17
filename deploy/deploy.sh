@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Сборка и запуск production-стека + проверки/утилиты БД.
 # Использование:
-#   bash deploy/deploy.sh                     — полный деплой
+#   bash deploy/deploy.sh                     — деплой изменившихся сервисов (полная сборка, если нет .deploy-sha)
+#   DEPLOY_FULL=1 bash deploy/deploy.sh       — всегда собрать и пересоздать весь стек
+#   DEPLOY_SERVICES=frontend bash deploy/deploy.sh
 #   bash deploy/deploy.sh check               — проверка готовности (.env, compose, секреты)
 #   bash deploy/deploy.sh verify-db           — пароль .env совпадает с Postgres
 #   bash deploy/deploy.sh sync-db-password    — починить пароль БД из .env
@@ -25,6 +27,7 @@ compose() {
 }
 
 # --- .env: безопасная загрузка (только строки KEY=VALUE, без выполнения мусора) ---
+# CLI/окружение вызывающего побеждает .env (иначе DEPLOY_SERVICES=frontend затирается).
 load_dotenv() {
   local file="${1:-.env}"
   local line key val
@@ -45,6 +48,13 @@ load_dotenv() {
       elif [[ "$val" =~ ^\'(.*)\'$ ]]; then
         val="${BASH_REMATCH[1]}"
       fi
+      case "$key" in
+        DEPLOY_SERVICES|DEPLOY_FULL|DEPLOY_FROM_SHA|DEPLOY_PULL|COMPOSE_FILE|STAGING)
+          if [[ -n "${!key+x}" ]]; then
+            continue
+          fi
+          ;;
+      esac
       printf -v "$key" '%s' "$val"
       export "$key"
     else
@@ -308,6 +318,7 @@ ensure_secret CRM_INTERNAL_API_KEY
 ensure_secret RESTAURANT_DB_PASSWORD
 ensure_secret PHARMACY_DB_PASSWORD
 ensure_secret POS_INTERNAL_API_KEY
+ensure_secret GATEWAY_CONTEXT_SECRET
 if ! grep -q '^CRM_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
   printf '\nCRM_DB_NAME=crm_db\nCRM_DB_USER=crm_user\n' >> "$ENV_FILE"
   echo "==> Добавлены CRM_DB_NAME / CRM_DB_USER в ${ENV_FILE}"
@@ -343,6 +354,83 @@ require_env POS_INTERNAL_API_KEY
 if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
   require_env FINANCE_DB_PASSWORD
   require_env FINANCE_INTERNAL_API_KEY
+fi
+
+record_deploy_sha() {
+  if git rev-parse --verify HEAD >/dev/null 2>&1; then
+    git rev-parse HEAD > "$ROOT/.deploy-sha"
+  fi
+}
+
+# DEPLOY_SERVICES=platform-service или "frontend,backend" — только эти сервисы.
+deploy_selected_services() {
+  local raw="${DEPLOY_SERVICES//,/ }"
+  local -a targets=()
+  local svc=""
+  local cname=""
+  local health=""
+
+  # shellcheck disable=SC2086
+  targets=($raw)
+  if [[ ${#targets[@]} -eq 0 ]]; then
+    echo "DEPLOY_SERVICES пустой" >&2
+    return 1
+  fi
+
+  echo "==> Только выбранные сервисы: ${targets[*]}"
+  export DOCKER_BUILDKIT=1
+  export COMPOSE_DOCKER_CLI_BUILD=1
+  export COMPOSE_BAKE=0
+  export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-2}"
+
+  if [[ "${DEPLOY_PULL:-0}" == "1" ]]; then
+    compose build --pull "${targets[@]}"
+  else
+    compose build "${targets[@]}"
+  fi
+
+  for svc in "${targets[@]}"; do
+    if ! recreate_service "$svc"; then
+      compose_logs_tail "$svc" 150
+      return 1
+    fi
+    cname="${CONTAINER_NAMES[$svc]:-}"
+    [[ -z "$cname" ]] && continue
+    health="$(docker inspect --format='{{if .State.Health}}yes{{else}}no{{end}}' "$cname" 2>/dev/null || echo no)"
+    if [[ "$health" == "yes" ]]; then
+      wait_container_healthy "$cname" "$svc" || {
+        compose_logs_tail "$svc" 150
+        return 1
+      }
+    fi
+  done
+  return 0
+}
+
+# 0 = выкладка по diff уже сделана, 2 = нужна полная сборка.
+deploy_changed() {
+  # shellcheck source=deploy-changed.sh
+  source "$ROOT/deploy/deploy-changed.sh"
+  deploy_changed_stack
+}
+
+if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
+  deploy_selected_services
+  record_deploy_sha
+  exit 0
+fi
+
+if [[ "${DEPLOY_FULL:-0}" != "1" ]]; then
+  changed_rc=0
+  deploy_changed || changed_rc=$?
+  if [[ "$changed_rc" -eq 0 ]]; then
+    record_deploy_sha
+    exit 0
+  fi
+  if [[ "$changed_rc" -ne 2 ]]; then
+    exit "$changed_rc"
+  fi
+  echo "==> Нужна полная сборка стека"
 fi
 
 echo "==> Сборка образов ($COMPOSE_FILE)..."
@@ -523,3 +611,5 @@ elif [[ -n "${SENTRY_DSN:-}" ]]; then
 else
   echo "==> Sentry: не настроен (опционально: SENTRY_DSN + VITE_SENTRY_DSN в .env)"
 fi
+
+record_deploy_sha

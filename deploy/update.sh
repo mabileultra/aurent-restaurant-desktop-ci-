@@ -38,7 +38,7 @@ cmd_update() {
   if ! git pull --ff-only "$remote" "$branch"; then
     echo "==> Локальные правки мешают pull — сброс до $remote/$branch (.env не в git, сохранится)"
     git reset --hard "$remote/$branch"
-    git clean -fd
+    git clean -fd -e .deploy-sha
   fi
 
   commit="$(git rev-parse --short HEAD)"
@@ -46,6 +46,16 @@ cmd_update() {
 
   chmod +x deploy/*.sh 2>/dev/null || true
 
+  if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
+    echo "==> Деплой только: ${DEPLOY_SERVICES}"
+  else
+    echo "==> Деплой по изменённым файлам (.deploy-sha). Полный стек: DEPLOY_FULL=1"
+  fi
+  # Явно прокидываем флаги — load_dotenv в deploy.sh не должен их затирать.
+  DEPLOY_SERVICES="${DEPLOY_SERVICES:-}" \
+  DEPLOY_FULL="${DEPLOY_FULL:-0}" \
+  DEPLOY_FROM_SHA="${DEPLOY_FROM_SHA:-}" \
+  DEPLOY_PULL="${DEPLOY_PULL:-0}" \
   bash deploy/deploy.sh
 }
 
