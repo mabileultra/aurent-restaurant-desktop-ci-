@@ -47,6 +47,7 @@ public class PharmacySaleCheckoutService {
     private final PharmacySalePatientSupport pharmacySalePatientSupport;
     private final SaleMapper saleMapper;
     private final PharmacyRevenuePublicationService revenuePublicationService;
+    private final PharmacySoldMarkService soldMarkService;
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
         return processSale(req, cashierId, null);
@@ -66,6 +67,16 @@ public class PharmacySaleCheckoutService {
         if (receiptType != SaleEnums.ReceiptType.SALE) {
             throw PharmacyErrors.badRequest("Аптека поддерживает только обычную продажу");
         }
+
+        List<String> allMarks = new ArrayList<>();
+        List<List<String>> marksPerItem = new ArrayList<>();
+        for (SaleItemRequest itemReq : req.items()) {
+            List<String> marks = normalizeMarks(itemReq.productMarks());
+            marksPerItem.add(marks);
+            allMarks.addAll(marks);
+        }
+        soldMarkService.assertNotSold(companyId, allMarks);
+        assertNoDuplicateMarksInRequest(allMarks);
 
         Map<UUID, Product> productsById = loadProducts(companyId, req.items());
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(req.items());
@@ -180,6 +191,7 @@ public class PharmacySaleCheckoutService {
         saleFiscalApplier.apply(sale, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
+        soldMarkService.registerSaleMarks(saved, saved.getItems(), marksPerItem);
         shiftSaleAccumulator.applySale(
             openShift,
             saved.getTotalAmount(),
@@ -222,6 +234,34 @@ public class PharmacySaleCheckoutService {
             return itemReq.unitPrice().setScale(2, RoundingMode.HALF_UP);
         }
         return product.getSellingPrice().setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static List<String> normalizeMarks(List<String> raw) {
+        if (raw == null || raw.isEmpty()) {
+            return List.of();
+        }
+        LinkedHashSet<String> unique = new LinkedHashSet<>();
+        for (String mark : raw) {
+            if (mark == null) {
+                continue;
+            }
+            String trimmed = mark.trim();
+            if (!trimmed.isEmpty()) {
+                unique.add(trimmed);
+            }
+        }
+        return List.copyOf(unique);
+    }
+
+    private static void assertNoDuplicateMarksInRequest(List<String> markCodes) {
+        Set<String> seen = new HashSet<>();
+        for (String code : markCodes) {
+            for (String key : PharmacyMarkIdentityKeys.keysOf(code)) {
+                if (!seen.add(key)) {
+                    throw PharmacyErrors.badRequest("В чеке повторён один и тот же код маркировки");
+                }
+            }
+        }
     }
 
     private static BigDecimal normalizeOrderDiscount(BigDecimal amount, BigDecimal grossTotal) {

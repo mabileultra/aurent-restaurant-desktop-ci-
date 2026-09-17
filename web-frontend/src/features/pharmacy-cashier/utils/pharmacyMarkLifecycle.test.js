@@ -71,4 +71,12 @@ describe('pharmacy mark lifecycle', () => {
       aslResult: { found: true, alreadySold: true, status: 'WITHDRAWN' },
     }).status).toBe('sold');
   });
+
+  it('rejects locally sold marks even without ASL', () => {
+    expect(assessPharmacyMarkLifecycle({
+      rawCode: mark('LOCAL1'),
+      cartItems: [],
+      locallySold: true,
+    }).status).toBe('sold');
+  });
 });

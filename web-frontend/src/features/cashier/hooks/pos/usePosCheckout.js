@@ -20,6 +20,10 @@ import { isApiUnreachableError } from '../../../../utils/apiNetworkError';
 import { useAuthStore } from '../../../../store/authStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
+import {
+  collectMarksFromCartItems,
+  rememberPharmacySoldMarks,
+} from '../../../pharmacy-cashier/utils/pharmacySoldMarksStore';
 
 export function usePosCheckout({
   storeId,
@@ -59,6 +63,10 @@ export function usePosCheckout({
       });
     },
     onSuccess: async (res, payment) => {
+      if (catalogKind === 'pharmacy' && storeId) {
+        const marks = collectMarksFromCartItems(useCartStore.getState().items);
+        rememberPharmacySoldMarks(storeId, marks);
+      }
       clearCart();
       setPayOpen(false);
       setSelectedLineId(null);

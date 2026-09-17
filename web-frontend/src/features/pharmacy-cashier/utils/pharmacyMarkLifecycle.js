@@ -5,6 +5,7 @@ import {
   markingIdentityKey,
   markingIdentityKeys,
 } from './pharmacyMarkIdentity';
+import { isPharmacyMarkSoldLocally } from './pharmacySoldMarksStore';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 function pendingHasMark(pendingKeys, rawMark) {
@@ -16,16 +17,18 @@ function pendingHasMark(pendingKeys, rawMark) {
  * Жизненный цикл одного КМ до попадания в чек.
  *
  * duplicate  — уже в чеке / в pending
- * sold       — ASL: уже выведен из оборота
+ * sold       — уже продана (ASL / локально после чека)
  * empty      — пустой код
  * not-marking— не DataMatrix
- * ok         — можно добавлять (новая пачка того же товара тоже ok)
+ * ok         — можно добавлять
  */
 export function assessPharmacyMarkLifecycle({
   rawCode,
   cartItems = [],
   pendingKeys = [],
   aslResult = null,
+  storeId = null,
+  locallySold = null,
 }) {
   if (!String(rawCode || '').trim()) return { status: 'empty' };
   if (!isPharmacyMarkingCode(rawCode)) return { status: 'not-marking' };
@@ -36,6 +39,13 @@ export function assessPharmacyMarkLifecycle({
 
   if (pendingHasMark(pendingKeys, mark) || cartHasMark(cartItems, mark)) {
     return { status: 'duplicate', key, mark };
+  }
+
+  const soldLocal =
+    locallySold === true
+    || (locallySold !== false && storeId != null && isPharmacyMarkSoldLocally(storeId, mark));
+  if (soldLocal) {
+    return { status: 'sold', key, mark };
   }
 
   if (aslResult && isAslMarkAlreadySold(aslResult)) {

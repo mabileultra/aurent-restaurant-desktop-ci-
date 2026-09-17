@@ -23,6 +23,7 @@ describe('resolveCheckoutLineItems', () => {
         quantity: 2,
         discount: 0,
         unitPrice: 50000,
+        productMarks: ['mark-a', 'mark-b'],
       },
     ]);
   });

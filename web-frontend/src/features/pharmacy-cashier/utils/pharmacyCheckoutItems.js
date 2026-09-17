@@ -4,15 +4,25 @@ import { roundQty } from '../../../utils/quantityFormat';
 import { isMarkCountedLine } from './pharmacyMarkedScanCart';
 import { pharmacyCheckoutLineFromCartItem } from './pharmacyPackSale';
 
+function lineMarks(item) {
+  if (Array.isArray(item?.productMarks) && item.productMarks.length > 0) {
+    return item.productMarks.filter(Boolean);
+  }
+  const single = item?.productMark || item?.markCode;
+  return single ? [single] : [];
+}
+
 export function buildPharmacyCheckoutLineItems(items) {
   return items.map((item) => {
+    const marks = lineMarks(item);
     // Маркировка: qty = число КМ (упаковок), без пересчёта в штуки.
-    if (isMarkCountedLine(item) || item?.markedProduct === true) {
+    if (isMarkCountedLine(item) || item?.markedProduct === true || marks.length > 0) {
       return {
         productId: item.productId,
-        quantity: roundQty(item.quantity),
+        quantity: roundQty(marks.length > 0 ? marks.length : item.quantity),
         discount: lineDiscountAmount(item),
         unitPrice: round2(item.unitPrice),
+        productMarks: marks,
       };
     }
 
@@ -37,7 +47,11 @@ export function buildPharmacyCheckoutLineItems(items) {
 
 function needsPharmacyPackCheckout(items) {
   return items.some(
-    (line) => line.pharmacySellByPiece === true || line.packUnitPrice != null,
+    (line) => line.pharmacySellByPiece === true
+      || line.packUnitPrice != null
+      || isMarkCountedLine(line)
+      || line?.markedProduct === true
+      || lineMarks(line).length > 0,
   );
 }
 

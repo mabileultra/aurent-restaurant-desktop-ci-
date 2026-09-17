@@ -10,4 +10,11 @@ describe('isAslMarkAlreadySold', () => {
   it('lets an introduced code through', () => {
     expect(isAslMarkAlreadySold({ status: 'INTRODUCED' })).toBe(false);
   });
+
+  it('treats firstWithdrawCodeStateUnchanged as sold', () => {
+    expect(isAslMarkAlreadySold({
+      status: 'INTRODUCED',
+      details: { firstWithdrawCodeStateUnchanged: true },
+    })).toBe(true);
+  });
 });

@@ -36,10 +36,15 @@ export function usePharmacyMarkingScan({
       rawCode: mark,
       cartItems,
       pendingKeys: [...pendingRef.current],
+      storeId,
     });
 
     if (before.status === 'duplicate') {
       if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
+      return;
+    }
+    if (before.status === 'sold') {
+      if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
       return;
     }
 
@@ -59,6 +64,7 @@ export function usePharmacyMarkingScan({
         cartItems: useCartStore.getState().items,
         pendingKeys: [...pendingRef.current].filter((k) => !keys.includes(k)),
         aslResult: resolved.aslResult,
+        storeId,
       });
 
       if (afterDup.status === 'duplicate') {
