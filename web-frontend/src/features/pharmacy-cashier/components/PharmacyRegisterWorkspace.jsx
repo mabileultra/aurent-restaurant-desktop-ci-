@@ -10,6 +10,7 @@ import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyRegisterWorkspace({
   searchInputRef,
+  kmInputRef,
   catalog,
   integration,
   payOpen,
@@ -28,6 +29,10 @@ export default function PharmacyRegisterWorkspace({
   const { checkoutMutation, handleConfirmPayment } = checkout;
 
   const focusSearch = () => {
+    if (kmInputRef?.current && document.activeElement === kmInputRef.current) {
+      kmInputRef.current.focus();
+      return;
+    }
     searchInputRef.current?.focus();
   };
 
@@ -87,6 +92,7 @@ export default function PharmacyRegisterWorkspace({
             <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
             <PharmacySearchStrip
               searchInputRef={searchInputRef}
+              kmInputRef={kmInputRef}
               search={catalog.search}
               onSearchChange={catalog.setSearch}
               onSearchEnter={catalog.handleSearchEnter}

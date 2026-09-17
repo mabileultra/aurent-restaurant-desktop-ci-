@@ -24,20 +24,42 @@ function clearInputElement(el) {
   el.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
+function isRefTarget(target, refs = []) {
+  return refs.some((ref) => ref?.current && target === ref.current);
+}
+
 /**
  * @param {Object} opts
  * @param {boolean} opts.enabled
  * @param {(code: string) => void} opts.onScan
  * @param {React.RefObject<HTMLInputElement>} [opts.barcodeInputRef] — dedicated field; still receives focus on enable
  * @param {boolean} [opts.alwaysCapture] — capture scans even when focus is not on barcode field (POS mode)
+ * @param {boolean} [opts.autoFocus=true] — focus barcode field when hook enables
+ * @param {React.RefObject<HTMLInputElement>[]} [opts.passthroughInputRefs] — own fields (e.g. КМ): do not steal keys/focus
  */
-export function useBarcodeScanner({ enabled, onScan, barcodeInputRef, alwaysCapture = false }) {
+export function useBarcodeScanner({
+  enabled,
+  onScan,
+  barcodeInputRef,
+  alwaysCapture = false,
+  autoFocus = true,
+  passthroughInputRefs = [],
+}) {
   const onScanRef = useRef(onScan);
   onScanRef.current = onScan;
+  const passthroughRefsRef = useRef(passthroughInputRefs);
+  passthroughRefsRef.current = passthroughInputRefs;
 
   useEffect(() => {
     if (!enabled) return undefined;
-    barcodeInputRef?.current?.focus();
+
+    if (autoFocus) {
+      const active = document.activeElement;
+      const onPassthrough = isRefTarget(active, passthroughRefsRef.current);
+      if (!onPassthrough) {
+        barcodeInputRef?.current?.focus();
+      }
+    }
 
     let buffer = '';
     let lastCharAt = 0;
@@ -64,6 +86,11 @@ export function useBarcodeScanner({ enabled, onScan, barcodeInputRef, alwaysCapt
       if (e.ctrlKey || e.metaKey || e.altKey) return;
 
       const target = e.target;
+      // Поле КМ (и др.) само принимает скан — глобальный wedge не трогаем.
+      if (isRefTarget(target, passthroughRefsRef.current)) {
+        return;
+      }
+
       const onDedicatedBarcode =
         barcodeInputRef?.current && target === barcodeInputRef.current;
       const onOtherTypingField =
@@ -127,5 +154,5 @@ export function useBarcodeScanner({ enabled, onScan, barcodeInputRef, alwaysCapt
       document.removeEventListener('keydown', onKeyDown, true);
       clearBuffer();
     };
-  }, [enabled, barcodeInputRef, alwaysCapture]);
+  }, [enabled, barcodeInputRef, alwaysCapture, autoFocus]);
 }

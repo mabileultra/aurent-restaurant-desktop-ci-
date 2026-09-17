@@ -25,6 +25,7 @@ export default function PharmacyPosPage() {
     <div className="cashier-register pharmacy-cashier pharmacy-cashier--compact d-flex flex-column flex-grow-1 min-h-0">
       <PharmacyRegisterWorkspace
         searchInputRef={p.searchInputRef}
+        kmInputRef={p.kmInputRef}
         catalog={p.catalog}
         integration={p.integration}
         payOpen={p.payOpen}

@@ -23,6 +23,7 @@ const STRIP_TOGGLES = [
  */
 export default function PharmacySearchStrip({
   searchInputRef,
+  kmInputRef,
   search,
   onSearchChange,
   onSearchEnter,
@@ -44,11 +45,14 @@ export default function PharmacySearchStrip({
     setMoreOpen,
   });
 
-  // КМ из отдельного поля — сразу в чек
+  // После добавления по КМ — остаёмся в поле КМ для следующего скана
   usePharmacySearchMarkAutoSubmit({
     search: kmCode,
     onSearchChange: setKmCode,
-    onMarkingScan,
+    onMarkingScan: (code) => {
+      onMarkingScan?.(code);
+      requestAnimationFrame(() => kmInputRef?.current?.focus());
+    },
     enabled: !scanDisabled,
   });
 
@@ -81,6 +85,7 @@ export default function PharmacySearchStrip({
     if (!value) return;
     setKmCode('');
     onMarkingScan?.(value);
+    requestAnimationFrame(() => kmInputRef?.current?.focus());
   };
 
   const handleProductPaste = (e) => {
@@ -125,6 +130,7 @@ export default function PharmacySearchStrip({
             {t('pharmacyCashier.searchStrip.km')}
           </span>
           <input
+            ref={kmInputRef}
             type="search"
             className="pharmacy-search-strip__field pharmacy-search-strip__field--km"
             value={kmCode}

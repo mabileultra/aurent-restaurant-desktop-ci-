@@ -86,12 +86,15 @@
 
 .pharmacy-search-strip__field--km {
   padding-left: 40px;
-  border-color: color-mix(in srgb, var(--pharm-brand, #006847) 28%, var(--pharm-border));
 }
 
-.pharmacy-search-strip__field--km:focus {
+.pharmacy-search-strip__km-wrap:focus-within .pharmacy-search-strip__field--km {
   border-color: var(--pharm-brand, #006847);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--pharm-brand, #006847) 22%, transparent);
+}
+
+.pharmacy-search-strip__km-wrap:focus-within .pharmacy-search-strip__km-badge {
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 22%, transparent);
 }
 
 .pharmacy-search-strip__toggles {

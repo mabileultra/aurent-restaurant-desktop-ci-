@@ -23,6 +23,7 @@ export function usePharmacyPosPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const searchInputRef = useRef(null);
+  const kmInputRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { storeId, noAssignment, multipleAssignment } = useCashierStore();
@@ -81,6 +82,10 @@ export function usePharmacyPosPage() {
   }, []);
 
   const focusSearch = useCallback(() => {
+    if (kmInputRef.current && document.activeElement === kmInputRef.current) {
+      kmInputRef.current.focus();
+      return;
+    }
     searchInputRef.current?.focus();
   }, []);
 
@@ -229,6 +234,7 @@ export function usePharmacyPosPage() {
     returnOpen,
     shiftModalOpen,
     searchInputRef,
+    kmInputRef,
     products: fefoProducts,
     search: catalog.search,
     setSearch: catalog.setSearch,
@@ -277,7 +283,11 @@ export function usePharmacyPosPage() {
       && !cartHandlers.weightModalProduct
       && storeId
     ) {
-      const timer = setTimeout(() => focusSearch(), 50);
+      const timer = setTimeout(() => {
+        // Не уводим курсор с поля КМ после закрытия модалок.
+        if (kmInputRef.current && document.activeElement === kmInputRef.current) return;
+        focusSearch();
+      }, 50);
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -331,6 +341,7 @@ export function usePharmacyPosPage() {
     storeBlocked,
     noAssignment,
     searchInputRef,
+    kmInputRef,
     payOpen,
     returnOpen,
     setReturnOpen,

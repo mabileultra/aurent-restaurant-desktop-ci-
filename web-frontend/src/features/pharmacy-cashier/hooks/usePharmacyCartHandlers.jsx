@@ -24,6 +24,7 @@ import {
 } from '../utils/pharmacyProductMeta';
 import { classifyPharmacySearchScan } from '../utils/classifyPharmacySearchScan';
 import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
+import { focusPharmacyScanField, isPharmacyKmFieldFocused } from '../utils/focusPharmacyScanField';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -32,6 +33,7 @@ export function usePharmacyCartHandlers({
   returnOpen,
   shiftModalOpen,
   searchInputRef,
+  kmInputRef,
   products,
   search,
   setSearch,
@@ -153,10 +155,10 @@ export function usePharmacyCartHandlers({
       if (line) showLineAddedToast(line, product.name, Number(line.unitPrice) || 0);
       setSelectedLineId(result.lineId);
       setSearch('');
-      searchInputRef.current?.focus();
+      focusPharmacyScanField({ kmInputRef, searchInputRef, preferKm: true });
       return result;
     },
-    [cartProductPayload, guardProduct, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast, t],
+    [cartProductPayload, guardProduct, kmInputRef, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast, t],
   );
 
   const addProductToCart = useCallback(
@@ -217,15 +219,15 @@ export function usePharmacyCartHandlers({
       setQtyModalProduct(null);
       setSelectedLineId(lineId);
       setSearch('');
-      searchInputRef.current?.focus();
+      focusPharmacyScanField({ kmInputRef, searchInputRef });
     },
-    [qtyModalProduct, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast],
+    [qtyModalProduct, kmInputRef, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast],
   );
 
   const closeQtyModal = useCallback(() => {
     setQtyModalProduct(null);
-    searchInputRef.current?.focus();
-  }, [searchInputRef]);
+    focusPharmacyScanField({ kmInputRef, searchInputRef });
+  }, [kmInputRef, searchInputRef]);
 
   const handleWeightConfirm = useCallback(
     (kg, options = {}) => {
@@ -250,10 +252,11 @@ export function usePharmacyCartHandlers({
       setWeightEditLineId(null);
       if (lineId) setSelectedLineId(lineId);
       setSearch('');
-      searchInputRef.current?.focus();
+      focusPharmacyScanField({ kmInputRef, searchInputRef });
     },
     [
       addWeightLine,
+      kmInputRef,
       searchInputRef,
       setSearch,
       setSelectedLineId,
@@ -268,8 +271,8 @@ export function usePharmacyCartHandlers({
   const closeWeightModal = useCallback(() => {
     setWeightModalProduct(null);
     setWeightEditLineId(null);
-    searchInputRef.current?.focus();
-  }, [searchInputRef]);
+    focusPharmacyScanField({ kmInputRef, searchInputRef });
+  }, [kmInputRef, searchInputRef]);
 
   const tryAddByBarcode = useCallback(
     async (code, { silent = false } = {}) => {
@@ -281,10 +284,15 @@ export function usePharmacyCartHandlers({
       // КМ — в очередь, даже если открыта модалка количества (её закрываем).
       if (onMarkingScan && isPharmacyMarkingCode(trimmed)) {
         if (qtyModalProduct) setQtyModalProduct(null);
+        const keepKm = isPharmacyKmFieldFocused(kmInputRef);
         const markingHandled = onMarkingScan(trimmed, { silent });
         if (markingHandled) {
           setSearch('');
-          searchInputRef.current?.focus();
+          focusPharmacyScanField({
+            kmInputRef,
+            searchInputRef,
+            preferKm: keepKm,
+          });
           return true;
         }
       }
@@ -307,7 +315,7 @@ export function usePharmacyCartHandlers({
         return false;
       } finally {
         scanningRef.current = false;
-        searchInputRef.current?.focus();
+        focusPharmacyScanField({ kmInputRef, searchInputRef });
       }
     },
     [
@@ -320,6 +328,7 @@ export function usePharmacyCartHandlers({
       t,
       setSearch,
       searchInputRef,
+      kmInputRef,
     ],
   );
 
@@ -332,6 +341,7 @@ export function usePharmacyCartHandlers({
       && !qtyModalProduct
       && !weightModalProduct,
     barcodeInputRef: searchInputRef,
+    passthroughInputRefs: kmInputRef ? [kmInputRef] : [],
     onScan: (code) => tryAddByBarcode(code),
     alwaysCapture: true,
   });
