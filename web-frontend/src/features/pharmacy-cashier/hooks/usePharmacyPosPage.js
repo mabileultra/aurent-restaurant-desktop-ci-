@@ -247,8 +247,7 @@ export function usePharmacyPosPage() {
     storeId,
     aslMarkingEnabled: integration.capabilities.aslMarkingEnabled,
     products: fefoProducts,
-    onProductFound: cartHandlers.addProductToCart,
-    onOpenMarkingModal: openMarkingModal,
+    onProductFound: cartHandlers.addMarkedScan,
   });
 
   onMarkingScanRef.current = markingScan.tryHandleMarkingScan;
@@ -379,6 +378,7 @@ export function usePharmacyPosPage() {
       productsHasMore: catalog.productsHasMore,
       fetchMoreProducts: catalog.fetchMoreProducts,
       addProductToCart: cartHandlers.addProductToCart,
+      addMarkedScan: cartHandlers.addMarkedScan,
       handleSearchEnter: cartHandlers.handleSearchEnter,
     },
     integration: {

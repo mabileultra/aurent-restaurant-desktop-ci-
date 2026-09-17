@@ -4,6 +4,7 @@ import { lineDiscountAmount, lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import { formatCartPackPieceQty } from '../utils/pharmacyPackQty';
+import { isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
 import {
   formatExpiryDisplay,
   productBatch,
@@ -66,6 +67,7 @@ export default function PharmacyCartTable({
               const batch = productBatch(item);
               const expiry = formatExpiryDisplay(productExpiry(item));
               const needsRx = productRequiresPrescription(item);
+              const marksCounted = isMarkCountedLine(item);
               const discount = lineDiscountAmount(item);
               const meta = [batch ? `${t('pharmacyCashier.colBatch')}: ${batch}` : '', expiry ? `${t('pharmacyCashier.colExpiryShort')}: ${expiry}` : '']
                 .filter(Boolean)
@@ -118,6 +120,7 @@ export default function PharmacyCartTable({
                         type="button"
                         className="pharmacy-cart-table__qty-btn"
                         aria-label="−"
+                        disabled={marksCounted}
                         onClick={() => onQtyDelta(item.lineId, -1)}
                       >
                         <Minus size={12} strokeWidth={2.5} aria-hidden />
@@ -136,6 +139,7 @@ export default function PharmacyCartTable({
                         type="button"
                         className="pharmacy-cart-table__qty-btn"
                         aria-label="+"
+                        disabled={marksCounted}
                         onClick={() => onQtyDelta(item.lineId, 1)}
                       >
                         <Plus size={12} strokeWidth={2.5} aria-hidden />

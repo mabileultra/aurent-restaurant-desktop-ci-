@@ -192,6 +192,12 @@
   background: var(--pharm-hover);
 }
 
+.pharmacy-cart-table__qty-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+  pointer-events: none;
+}
+
 .pharmacy-cart-table__remove {
   color: #ff8a80;
 }

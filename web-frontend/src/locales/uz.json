@@ -2293,6 +2293,7 @@
       "markingCatalogMiss": "ASL da «{{name}}» topildi, lekin katalogda bunday shtrixkodli mahsulot yo‘q",
       "markingVerified": "Markirovka: {{name}}",
       "markingProductFound": "Mahsulot topildi: {{name}}",
+      "markingAlreadyCounted": "Bu markirovka chekda allaqachon bor",
       "markingScanHint": "Markirovka kodi — ASL API ni sozlang yoki portalni oching",
       "links": {
         "admin": "Admin",

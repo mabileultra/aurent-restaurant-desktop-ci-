@@ -60,6 +60,7 @@ const buildLine = (product, quantity) => {
     commissionTin: product.commissionTin ?? null,
     markedProduct: product.markedProduct === true,
     productMark: product.productMark ?? product.markCode ?? null,
+    productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,
     attributes: product.attributes ?? null,
     saleType,
     unitCode: product.unitCode || (saleType === 'WEIGHT' ? 'KG' : 'PCS'),
@@ -137,6 +138,7 @@ export const useCartStore = create((set, get) => ({
         i.productId === product.id
         && isPieceLikeProduct(i)
         && Boolean(i.pharmacySellByPiece) === Boolean(product.pharmacySellByPiece)
+        && !(Array.isArray(i.productMarks) && i.productMarks.length > 0)
     );
     if (existing) {
       const next = syncDiscountFromPercent({
@@ -157,6 +159,29 @@ export const useCartStore = create((set, get) => ({
       orderDiscountAmount: capOrderDiscount(nextItems, get().orderDiscountAmount),
     });
     return line.lineId;
+  },
+
+  /** Строка не сливается с уже лежащим товаром (отдельный учёт маркировок). */
+  insertSeparatePieceItem: (product, quantity = 1) => {
+    get().ensureCheckNo();
+    const line = syncDiscountFromPercent(buildLine(product, quantity));
+    const nextItems = [...get().items, line];
+    set({
+      items: nextItems,
+      orderDiscountAmount: capOrderDiscount(nextItems, get().orderDiscountAmount),
+    });
+    return line.lineId;
+  },
+
+  patchCartLine: (lineId, patch) => {
+    const nextItems = get().items.map((item) => {
+      if (item.lineId !== lineId) return item;
+      return syncDiscountFromPercent({ ...item, ...patch });
+    });
+    set({
+      items: nextItems,
+      orderDiscountAmount: capOrderDiscount(nextItems, get().orderDiscountAmount),
+    });
   },
 
   /** Весовой: всегда отдельная строка. */

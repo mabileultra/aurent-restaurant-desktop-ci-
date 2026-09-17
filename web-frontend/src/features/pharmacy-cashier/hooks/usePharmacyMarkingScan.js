@@ -22,7 +22,6 @@ export function usePharmacyMarkingScan({
   aslMarkingEnabled,
   products,
   onProductFound,
-  onOpenMarkingModal,
 }) {
   const { t } = useTranslation();
   const [lastScan, setLastScan] = useState(null);
@@ -38,6 +37,10 @@ export function usePharmacyMarkingScan({
     let verifyError = null;
     try {
       product = await resolvePharmacyProductByMarking({ products, rawCode, storeId });
+      if (product) {
+        onProductFound?.(withFiscalMark(product, rawCode));
+        return true;
+      }
 
       if (aslMarkingEnabled && storeId) {
         try {
@@ -47,7 +50,7 @@ export function usePharmacyMarkingScan({
         } catch (error) {
           verifyError = error.response?.data?.message ?? error.message;
         }
-        if (!product && verifyResult?.gtin) {
+        if (verifyResult?.gtin) {
           product = await resolvePharmacyProductByMarking({
             products,
             rawCode,
@@ -70,9 +73,6 @@ export function usePharmacyMarkingScan({
 
     if (product) {
       onProductFound?.(withFiscalMark(product, rawCode));
-      if (!silent) {
-        toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: product.name }));
-      }
       return true;
     }
 
@@ -87,12 +87,8 @@ export function usePharmacyMarkingScan({
         toast.error(t('pharmacyCashier.integrations.markingNotFound'));
       }
     }
-    onOpenMarkingModal?.(
-      preserveMarkingCodeForFiscal(rawCode),
-      verifyResult ?? (verifyError ? { found: false, error: verifyError } : null),
-    );
     return true;
-  }, [aslMarkingEnabled, onOpenMarkingModal, onProductFound, products, storeId, t]);
+  }, [aslMarkingEnabled, onProductFound, products, storeId, t]);
 
   const clearLastScan = useCallback(() => setLastScan(null), []);
 

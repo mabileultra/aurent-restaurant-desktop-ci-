@@ -2423,6 +2423,7 @@
       "markingCatalogMiss": "В ASL найден «{{name}}», но в каталоге нет товара с этим штрихкодом",
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
+      "markingAlreadyCounted": "Эта маркировка уже в чеке",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
       "links": {
         "admin": "Админ",

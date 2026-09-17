@@ -1,4 +1,5 @@
 import { buildSaleOperationBody, normalizeGnkTerminalId } from './buildMultikassaOperations';
+import { expandMarkedFiscalItems } from './expandMarkedFiscalItems';
 import { enrichFiscalPackageCodes, isRealFiscalPackageCode } from './resolveFiscalPackageCodes';
 import { runMultikassaOperation } from './runMultikassaOperation';
 import {
@@ -89,7 +90,7 @@ export async function fiscalizeSaleBeforeCommit({
     throw err;
   }
 
-  const fiscalItems = await enrichFiscalPackageCodes(cartItems);
+  const fiscalItems = expandMarkedFiscalItems(await enrichFiscalPackageCodes(cartItems));
   const missingPackage = fiscalItems.find((line) => {
     const ikpu = String(line?.ikpu || '').trim();
     return ikpu && !isRealFiscalPackageCode(line?.packageCode);

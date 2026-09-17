@@ -14,6 +14,7 @@ import {
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
 import { addPharmacyPieceItem } from '../utils/pharmacyCartActions';
+import { applyPharmacyMarkingScan, isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 import { toCartQuantity } from '../utils/pharmacyPackQty';
 import {
@@ -125,6 +126,33 @@ export function usePharmacyCartHandlers({
       return true;
     },
     [cartProductPayload, shiftIsOpen, t],
+  );
+
+  const addMarkedScan = useCallback(
+    (product) => {
+      if (!guardProduct(product)) return null;
+      const payload = {
+        ...cartProductPayload(product),
+        pharmacySellByPiece: false,
+      };
+      const result = applyPharmacyMarkingScan(payload, product.productMark || product.markCode);
+      if (result.status === 'duplicate') {
+        toast(t('pharmacyCashier.integrations.markingAlreadyCounted'), { icon: 'ℹ️' });
+        return result;
+      }
+      if (result.status === 'stock') {
+        toast.error(t('pos.outOfStock'));
+        return result;
+      }
+      if (result.status !== 'added') return result;
+      const line = useCartStore.getState().items.find((item) => item.lineId === result.lineId);
+      if (line) showLineAddedToast(line, product.name);
+      setSelectedLineId(result.lineId);
+      setSearch('');
+      searchInputRef.current?.focus();
+      return result;
+    },
+    [cartProductPayload, guardProduct, searchInputRef, setSearch, setSelectedLineId, showLineAddedToast, t],
   );
 
   const addProductToCart = useCallback(
@@ -302,6 +330,7 @@ export function usePharmacyCartHandlers({
       const items = useCartStore.getState().items;
       const item = items.find((i) => i.lineId === lineId);
       if (!item) return;
+      if (isMarkCountedLine(item)) return;
       if (item.saleType === 'WEIGHT') {
         const unitCode = item.unitCode || 'KG';
         const step = qtyStepForUnit(unitCode);
@@ -344,6 +373,7 @@ export function usePharmacyCartHandlers({
     handleQtyConfirm,
     closeQtyModal,
     addProductToCart,
+    addMarkedScan,
     handleSearchEnter,
     handleQtyDelta,
   };

@@ -99,7 +99,7 @@ export default function PharmacyRegisterWorkspace({
               onOpenMarking={() => integration.openMarkingModal()}
               onCloseMarking={integration.closeMarkingModal}
               products={catalog.products}
-              onProductFound={catalog.addProductToCart}
+              onProductFound={catalog.addMarkedScan}
             />
           </div>
           <PharmacyProductSearchTable
