@@ -42,6 +42,7 @@ public final class AslBelgisiResponseParser {
       if (!found) {
         return empty(requestedCode);
       }
+      Map<String, Object> details = toFlatMap(entry);
       return new MarkingVerifyResponse(
         true,
         firstText(entry, "code", "cis", "km", "markingCode"),
@@ -51,7 +52,8 @@ public final class AslBelgisiResponseParser {
         firstText(entry, "expirationDate", "expiration_date", "expDate"),
         firstText(entry, "batch", "batchNumber", "series"),
         firstText(entry, "ownerInn", "ownerTin", "owner_inn", "issuerInn", "issuerTin"),
-        toFlatMap(entry)
+        details,
+        AslMarkingCirculation.alreadySold(status, details)
       );
     } catch (Exception ex) {
       return empty(requestedCode);
@@ -203,6 +205,6 @@ public final class AslBelgisiResponseParser {
   }
 
   private MarkingVerifyResponse empty(String code) {
-    return new MarkingVerifyResponse(false, code, null, null, null, null, null, null, Map.of());
+    return new MarkingVerifyResponse(false, code, null, null, null, null, null, null, Map.of(), false);
   }
 }

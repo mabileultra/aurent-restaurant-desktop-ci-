@@ -2424,6 +2424,7 @@
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
       "markingAlreadyCounted": "Эта маркировка уже в чеке",
+      "markingAlreadySold": "Эта маркировка уже продана",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
       "links": {
         "admin": "Админ",

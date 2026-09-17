@@ -23,6 +23,7 @@ class AslBelgisiResponseParserTest {
         assertEquals("04780012345678", parsed.gtin());
         assertEquals("Nurofen", parsed.productName());
         assertEquals("INTRODUCED", parsed.status());
+        assertFalse(parsed.alreadySold());
     }
 
     @Test
@@ -36,6 +37,17 @@ class AslBelgisiResponseParserTest {
         assertTrue(parsed.found());
         assertEquals("04780012345678", parsed.gtin());
         assertEquals("Aspirin", parsed.productName());
+    }
+
+    @Test
+    void withdrawnCodeIsAlreadySold() {
+        String body = """
+            {"results":[{"code":"KM","status":"WITHDRAWN","gtin":"04780012345678","productName":"Nurofen"}]}
+            """;
+
+        var parsed = parser.parse("KM", body);
+
+        assertTrue(parsed.alreadySold());
     }
 
     @Test

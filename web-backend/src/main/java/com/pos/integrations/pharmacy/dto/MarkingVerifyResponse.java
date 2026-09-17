@@ -11,6 +11,7 @@ public record MarkingVerifyResponse(
   String expirationDate,
   String batch,
   String ownerInn,
-  Map<String, Object> details
+  Map<String, Object> details,
+  boolean alreadySold
 ) {
 }

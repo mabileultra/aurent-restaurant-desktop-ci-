@@ -33,7 +33,7 @@ export function useCashierMySalesPage() {
     [filters.paymentMethod, filters.status, filters.from, filters.to, debouncedReceipt]
   );
   const filtering = filters.receiptNumber !== debouncedReceipt;
-  const { data: shift, isPending: shiftLoading } = useCashierShift(storeId);
+  const { data: shift, isPending: shiftLoading } = useCashierShift(storeId, { catalogKind });
   const shiftId = shift?.id;
 
   useEffect(() => {

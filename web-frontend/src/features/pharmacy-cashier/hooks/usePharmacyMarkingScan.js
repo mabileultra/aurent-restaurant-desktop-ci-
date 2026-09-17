@@ -5,6 +5,7 @@ import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { resolvePharmacyProductByMarking } from '../utils/resolvePharmacyProductByMarking';
 import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
+import { isAslMarkAlreadySold } from '../utils/aslMarkingAlreadySold';
 
 function withFiscalMark(product, rawCode) {
   if (!product) return product;
@@ -37,10 +38,6 @@ export function usePharmacyMarkingScan({
     let verifyError = null;
     try {
       product = await resolvePharmacyProductByMarking({ products, rawCode, storeId });
-      if (product) {
-        onProductFound?.(withFiscalMark(product, rawCode));
-        return true;
-      }
 
       if (aslMarkingEnabled && storeId) {
         try {
@@ -50,7 +47,11 @@ export function usePharmacyMarkingScan({
         } catch (error) {
           verifyError = error.response?.data?.message ?? error.message;
         }
-        if (verifyResult?.gtin) {
+        if (isAslMarkAlreadySold(verifyResult)) {
+          if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
+          return true;
+        }
+        if (!product && verifyResult?.gtin) {
           product = await resolvePharmacyProductByMarking({
             products,
             rawCode,
