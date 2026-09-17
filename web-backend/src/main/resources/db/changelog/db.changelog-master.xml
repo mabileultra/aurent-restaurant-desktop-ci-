@@ -42,5 +42,6 @@
     <include file="v35-pharmacy-prescription-field.xml" relativeToChangelogFile="true"/>
     <include file="v36-sale-item-lots-fefo.xml" relativeToChangelogFile="true"/>
     <include file="v37-product-business-type.xml" relativeToChangelogFile="true"/>
+    <include file="v38-asl-api-key-text.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

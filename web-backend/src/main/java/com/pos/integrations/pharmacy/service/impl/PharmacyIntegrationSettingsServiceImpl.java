@@ -49,10 +49,7 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
     assertPharmacyStore(store);
 
     StorePharmacyIntegration entity = integrationRepository.findById(storeId)
-      .orElseGet(() -> StorePharmacyIntegration.builder()
-        .store(store)
-        .storeId(storeId)
-        .build());
+      .orElseGet(() -> newIntegration(store));
 
     entity.setAslEnabled(request.aslEnabled());
     entity.setAslApiBaseUrl(normalizeBaseUrl(request.aslApiBaseUrl()));
@@ -108,6 +105,12 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   private Store requireStore(Integer storeId) {
     return storeRepository.findById(storeId)
       .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+  }
+
+  private StorePharmacyIntegration newIntegration(Store store) {
+    StorePharmacyIntegration created = new StorePharmacyIntegration();
+    created.setStore(store);
+    return created;
   }
 
   private StorePharmacyIntegration findOrDefault(Store store) {

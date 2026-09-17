@@ -41,7 +41,7 @@ public class StorePharmacyIntegration {
     @Column(name = "asl_api_base_url", length = 512)
     private String aslApiBaseUrl;
 
-    @Column(name = "asl_api_key", length = 512)
+    @Column(name = "asl_api_key", columnDefinition = "TEXT")
     private String aslApiKey;
 
     @Column(name = "dmed_enabled", nullable = false)
