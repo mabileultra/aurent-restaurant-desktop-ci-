@@ -19,7 +19,7 @@ const STRIP_TOGGLES = [
 ];
 
 /**
- * Одно поле поиска: товар / штрихкод / DataMatrix КМ — без модалки и без кнопки КМ.
+ * Два поля рядом: товар/штрихкод + КМ DataMatrix. Скан сам выбирает нужный путь.
  */
 export default function PharmacySearchStrip({
   searchInputRef,
@@ -35,6 +35,7 @@ export default function PharmacySearchStrip({
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [activeIds, setActiveIds] = useState(() => new Set());
+  const [kmCode, setKmCode] = useState('');
 
   const toolbar = usePharmacyIntegrationToolbar({
     capabilities,
@@ -43,6 +44,15 @@ export default function PharmacySearchStrip({
     setMoreOpen,
   });
 
+  // КМ из отдельного поля — сразу в чек
+  usePharmacySearchMarkAutoSubmit({
+    search: kmCode,
+    onSearchChange: setKmCode,
+    onMarkingScan,
+    enabled: !scanDisabled,
+  });
+
+  // Если DataMatrix попал в товарный поиск — тоже автоматом в чек
   usePharmacySearchMarkAutoSubmit({
     search,
     onSearchChange,
@@ -66,7 +76,14 @@ export default function PharmacySearchStrip({
     toolbar.handleLink(link);
   };
 
-  const handlePaste = (e) => {
+  const submitKm = (raw) => {
+    const value = String(raw || '').trim();
+    if (!value) return;
+    setKmCode('');
+    onMarkingScan?.(value);
+  };
+
+  const handleProductPaste = (e) => {
     const text = e.clipboardData?.getData('text') ?? '';
     if (!isPharmacyMarkingCode(text)) return;
     e.preventDefault();
@@ -74,26 +91,59 @@ export default function PharmacySearchStrip({
     onMarkingScan?.(text);
   };
 
+  const handleKmPaste = (e) => {
+    const text = e.clipboardData?.getData('text') ?? '';
+    if (!text.trim()) return;
+    e.preventDefault();
+    submitKm(text);
+  };
+
   return (
     <div className="pharmacy-search-strip" role="search">
-      <input
-        ref={searchInputRef}
-        type="search"
-        className="pharmacy-search-strip__field pharmacy-search-strip__field--solo"
-        value={search}
-        disabled={scanDisabled}
-        placeholder={t('pharmacyCashier.searchPhMarking')}
-        aria-label={t('pos.searchProducts')}
-        autoComplete="off"
-        onChange={(e) => onSearchChange(e.target.value)}
-        onPaste={handlePaste}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            onSearchEnter?.();
-          }
-        }}
-      />
+      <div className="pharmacy-search-strip__fields">
+        <input
+          ref={searchInputRef}
+          type="search"
+          className="pharmacy-search-strip__field pharmacy-search-strip__field--product"
+          value={search}
+          disabled={scanDisabled}
+          placeholder={t('pharmacyCashier.searchPh')}
+          aria-label={t('pos.searchProducts')}
+          autoComplete="off"
+          onChange={(e) => onSearchChange(e.target.value)}
+          onPaste={handleProductPaste}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              onSearchEnter?.();
+            }
+          }}
+        />
+
+        <label className="pharmacy-search-strip__km-wrap">
+          <span className="pharmacy-search-strip__km-badge" aria-hidden>
+            {t('pharmacyCashier.searchStrip.km')}
+          </span>
+          <input
+            type="search"
+            className="pharmacy-search-strip__field pharmacy-search-strip__field--km"
+            value={kmCode}
+            disabled={scanDisabled}
+            placeholder={t('pharmacyCashier.searchStrip.kmPh')}
+            aria-label={t('pharmacyCashier.searchStrip.kmTitle')}
+            title={t('pharmacyCashier.searchStrip.kmTitle')}
+            autoComplete="off"
+            onChange={(e) => setKmCode(e.target.value)}
+            onPaste={handleKmPaste}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                submitKm(kmCode);
+              }
+            }}
+          />
+        </label>
+      </div>
 
       <div className="pharmacy-search-strip__toggles" role="group" aria-label={t('pharmacyCashier.integrations.toolbar')}>
         {STRIP_TOGGLES.map((item) => {

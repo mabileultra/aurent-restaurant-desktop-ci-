@@ -2358,7 +2358,8 @@
     "searchStrip": {
       "scanActive": "Скан КМ",
       "km": "КМ",
-      "kmTitle": "Проверка маркировки ASL — вставить или отсканировать DataMatrix",
+      "kmPh": "Скан DataMatrix / код маркировки…",
+      "kmTitle": "Поиск по маркировке ASL — сканируйте DataMatrix сюда",
       "asl": "ASL",
       "dmed": "DMED",
       "ikpu": "ИКПУ"

@@ -2228,7 +2228,8 @@
     "searchStrip": {
       "scanActive": "Skan",
       "km": "KM",
-      "kmTitle": "Markirovka tekshiruvi — DataMatrix joylash yoki skan",
+      "kmPh": "DataMatrix / markirovka kodi skan…",
+      "kmTitle": "ASL markirovka qidiruvi — DataMatrix shu yerga skan qiling",
       "asl": "ASL",
       "dmed": "DMED",
       "ikpu": "IKPU"
