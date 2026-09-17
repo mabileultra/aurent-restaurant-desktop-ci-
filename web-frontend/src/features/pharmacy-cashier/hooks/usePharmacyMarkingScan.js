@@ -46,9 +46,15 @@ export function usePharmacyMarkingScan({
             .then((r) => r.data);
         } catch (error) {
           verifyError = error.response?.data?.message ?? error.message;
+          if (!silent) toast.error(verifyError || t('pharmacyCashier.integrations.markingNotFound'));
+          return true;
         }
         if (isAslMarkAlreadySold(verifyResult)) {
           if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
+          return true;
+        }
+        if (!verifyResult?.found) {
+          if (!silent) toast.error(t('pharmacyCashier.integrations.markingNotFound'));
           return true;
         }
         if (!product && verifyResult?.gtin) {

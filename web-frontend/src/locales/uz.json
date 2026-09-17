@@ -2294,7 +2294,7 @@
       "markingVerified": "Markirovka: {{name}}",
       "markingProductFound": "Mahsulot topildi: {{name}}",
       "markingAlreadyCounted": "Bu markirovka chekda allaqachon bor",
-      "markingAlreadySold": "Bu markirovka allaqachon sotilgan",
+      "markingAlreadySold": "ASL Belgisi: bu markirovka allaqachon sotilgan",
       "markingScanHint": "Markirovka kodi — ASL API ni sozlang yoki portalni oching",
       "links": {
         "admin": "Admin",
