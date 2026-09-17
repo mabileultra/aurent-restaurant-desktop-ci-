@@ -380,6 +380,7 @@ export function usePharmacyPosPage() {
       addProductToCart: cartHandlers.addProductToCart,
       addMarkedScan: cartHandlers.addMarkedScan,
       handleSearchEnter: cartHandlers.handleSearchEnter,
+      onMarkingScan: markingScan.tryHandleMarkingScan,
     },
     integration: {
       capabilities: integration.capabilities,

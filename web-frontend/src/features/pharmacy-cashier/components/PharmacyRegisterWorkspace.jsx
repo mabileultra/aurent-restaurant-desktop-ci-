@@ -90,13 +90,14 @@ export default function PharmacyRegisterWorkspace({
               search={catalog.search}
               onSearchChange={catalog.setSearch}
               onSearchEnter={catalog.handleSearchEnter}
+              onMarkingScan={catalog.onMarkingScan}
               scanDisabled={!catalog.storeId}
               storeId={catalog.storeId}
               capabilities={integration.capabilities}
               externalUrls={integration.externalUrls}
               onFocusSearch={focusSearch}
               markingModal={integration.markingModal}
-              onOpenMarking={() => integration.openMarkingModal()}
+              onOpenMarking={(code) => integration.openMarkingModal(code || '')}
               onCloseMarking={integration.closeMarkingModal}
               products={catalog.products}
               onProductFound={catalog.addMarkedScan}

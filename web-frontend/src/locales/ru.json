@@ -2357,6 +2357,8 @@
     },
     "searchStrip": {
       "scanActive": "Скан КМ",
+      "km": "КМ",
+      "kmTitle": "Проверка маркировки ASL — вставить или отсканировать DataMatrix",
       "asl": "ASL",
       "dmed": "DMED",
       "ikpu": "ИКПУ"
@@ -2421,11 +2423,13 @@
       "markingFound": "Код найден в системе маркировки",
       "markingNotFound": "Код не найден",
       "markingCatalogMiss": "В ASL найден «{{name}}», но в каталоге нет товара с этим штрихкодом",
+      "markingCatalogNeed": "Товар с этим GTIN не найден в каталоге аптеки. Добавьте штрихкод товара или проверьте КМ в модалке.",
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
       "markingAlreadyCounted": "Эта маркировка уже отсканирована и есть в чеке",
       "markingAlreadySold": "ASL Belgisi: эта маркировка уже продана / выведена из оборота",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
+      "markingCatalogNeed": "Товар по этому КМ не найден в каталоге. Проверьте штрихкод (GTIN) в карточке товара",
       "links": {
         "admin": "Админ",
         "dmed": "DMED",

@@ -6,6 +6,7 @@ import {
   PHARMACY_TOOLBAR_LINKS,
 } from '../constants/pharmacyQuickLinks';
 import { usePharmacyIntegrationToolbar } from '../hooks/usePharmacyIntegrationToolbar';
+import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import PharmacyIntegrationMoreMenu from './PharmacyIntegrationMoreMenu';
 import PharmacyMarkingModal from './PharmacyMarkingModal';
@@ -19,14 +20,15 @@ const STRIP_TOGGLES = [
 ];
 
 /**
- * Полоса поиска аптеки: поле + «скан» + тогглы DMED / Asl / ИКПУ.
- * Только pharmacy-cashier — retail не использует.
+ * Полоса поиска: поле + кнопка КМ рядом + тогглы.
+ * Вставка / скан DataMatrix → onMarkingScan; обычный штрихкод → Enter / сканер.
  */
 export default function PharmacySearchStrip({
   searchInputRef,
   search,
   onSearchChange,
   onSearchEnter,
+  onMarkingScan,
   scanDisabled,
   storeId,
   capabilities,
@@ -45,13 +47,12 @@ export default function PharmacySearchStrip({
   const toolbar = usePharmacyIntegrationToolbar({
     capabilities,
     externalUrls,
-    onOpenMarking,
+    onOpenMarking: () => onOpenMarking?.(search.trim()),
     onFocusSearch,
     setMoreOpen,
   });
 
   const adminLink = PHARMACY_TOOLBAR_LINKS.find((l) => l.id === PHARMACY_QUICK_LINK_IDS.ADMIN);
-  const markingLink = PHARMACY_TOOLBAR_LINKS.find((l) => l.id === PHARMACY_QUICK_LINK_IDS.MARKING);
 
   const runToggle = (linkId) => {
     const fromToolbar = PHARMACY_TOOLBAR_LINKS.find((l) => l.id === linkId);
@@ -67,6 +68,24 @@ export default function PharmacySearchStrip({
     toolbar.handleLink(link);
   };
 
+  const handlePaste = (e) => {
+    const text = e.clipboardData?.getData('text') ?? '';
+    if (!isPharmacyMarkingCode(text)) return;
+    e.preventDefault();
+    onSearchChange?.('');
+    if (onMarkingScan?.(text)) return;
+    onOpenMarking?.(text.trim());
+  };
+
+  const openKmCheck = () => {
+    const q = String(search || '').trim();
+    if (q && isPharmacyMarkingCode(q) && onMarkingScan?.(q)) {
+      onSearchChange?.('');
+      return;
+    }
+    onOpenMarking?.(q);
+  };
+
   return (
     <>
       <div className="pharmacy-search-strip" role="search">
@@ -75,22 +94,36 @@ export default function PharmacySearchStrip({
           <span>{t('pharmacyCashier.searchStrip.scanActive')}</span>
         </div>
 
-        <input
-          ref={searchInputRef}
-          type="search"
-          className="pharmacy-search-strip__field"
-          value={search}
-          disabled={scanDisabled}
-          placeholder={t('pharmacyCashier.searchPhMarking')}
-          aria-label={t('pos.searchProducts')}
-          onChange={(e) => onSearchChange(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onSearchEnter?.();
-            }
-          }}
-        />
+        <div className="pharmacy-search-strip__field-wrap">
+          <input
+            ref={searchInputRef}
+            type="search"
+            className="pharmacy-search-strip__field"
+            value={search}
+            disabled={scanDisabled}
+            placeholder={t('pharmacyCashier.searchPhMarking')}
+            aria-label={t('pos.searchProducts')}
+            onChange={(e) => onSearchChange(e.target.value)}
+            onPaste={handlePaste}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                onSearchEnter?.();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="pharmacy-search-strip__km"
+            title={t('pharmacyCashier.searchStrip.kmTitle')}
+            aria-label={t('pharmacyCashier.searchStrip.kmTitle')}
+            disabled={scanDisabled}
+            onClick={openKmCheck}
+          >
+            <PharmacyIntegrationIcon linkId={PHARMACY_QUICK_LINK_IDS.MARKING} />
+            <span>{t('pharmacyCashier.searchStrip.km')}</span>
+          </button>
+        </div>
 
         <div className="pharmacy-search-strip__toggles" role="group" aria-label={t('pharmacyCashier.integrations.toolbar')}>
           {STRIP_TOGGLES.map((item) => {
@@ -113,18 +146,6 @@ export default function PharmacySearchStrip({
               </button>
             );
           })}
-
-          {markingLink && toolbar.isLinkVisible(markingLink) ? (
-            <button
-              type="button"
-              className="pharmacy-search-strip__icon-btn"
-              title={t('pharmacyCashier.integrations.linkTitles.marking')}
-              aria-label={t('pharmacyCashier.integrations.linkTitles.marking')}
-              onClick={() => toolbar.handleLink(markingLink)}
-            >
-              <PharmacyIntegrationIcon linkId={PHARMACY_QUICK_LINK_IDS.MARKING} />
-            </button>
-          ) : null}
 
           {adminLink && toolbar.isLinkVisible(adminLink) ? (
             <button

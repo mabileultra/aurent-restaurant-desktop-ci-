@@ -2226,7 +2226,9 @@
       "pay": "To‘lov"
     },
     "searchStrip": {
-      "scanActive": "KM skan",
+      "scanActive": "Skan",
+      "km": "KM",
+      "kmTitle": "Markirovka tekshiruvi — DataMatrix joylash yoki skan",
       "asl": "ASL",
       "dmed": "DMED",
       "ikpu": "IKPU"
@@ -2296,6 +2298,7 @@
       "markingAlreadyCounted": "Bu markirovka allaqachon skan qilingan va chekda bor",
       "markingAlreadySold": "ASL Belgisi: bu markirovka allaqachon sotilgan / aylanmadan chiqarilgan",
       "markingScanHint": "Markirovka kodi — ASL API ni sozlang yoki portalni oching",
+      "markingCatalogNeed": "Bu KM bo‘yicha katalogda mahsulot topilmadi. Mahsulot kartasida shtrixkod (GTIN) ni tekshiring",
       "links": {
         "admin": "Admin",
         "dmed": "DMED",

@@ -1,9 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useMutation } from '@tanstack/react-query';
-import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
-import { resolvePharmacyProductByMarking } from '../utils/resolvePharmacyProductByMarking';
-import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
+import { resolveCashierMarkedProduct } from '../utils/resolveCashierMarkedProduct';
 import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import { PHARMACY_QUICK_LINK_IDS } from '../constants/pharmacyQuickLinks';
 import '../styles/pharmacy-marking-modal.css';
@@ -21,24 +18,14 @@ export default function PharmacyMarkingModal({
 }) {
   const { t } = useTranslation();
   const inputRef = useRef(null);
-  const autoVerifiedRef = useRef('');
+  const autoRunRef = useRef('');
   const [code, setCode] = useState('');
   const [result, setResult] = useState(null);
-
-  const { mutate: verifyMarking, isPending: verifying } = useMutation({
-    mutationFn: (payload) => pharmacyIntegrationApi.verifyMarking(payload).then((r) => r.data),
-    onSuccess: (data) => setResult(data),
-    onError: (error) => {
-      setResult({
-        found: false,
-        error: error.response?.data?.message ?? error.message,
-      });
-    },
-  });
+  const [verifying, setVerifying] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      autoVerifiedRef.current = '';
+      autoRunRef.current = '';
       return undefined;
     }
     setCode(initialCode || '');
@@ -51,13 +38,14 @@ export default function PharmacyMarkingModal({
   }, [open, initialCode, initialResult]);
 
   useEffect(() => {
-    if (!open || !aslApiEnabled || !storeId) return undefined;
+    if (!open || !storeId) return undefined;
     const trimmed = (initialCode || '').trim();
-    if (!trimmed || initialResult || autoVerifiedRef.current === trimmed) return undefined;
-    autoVerifiedRef.current = trimmed;
-    verifyMarking({ storeId, code: trimmed });
+    if (!trimmed || initialResult || autoRunRef.current === trimmed) return undefined;
+    autoRunRef.current = trimmed;
+    void runVerify(trimmed);
     return undefined;
-  }, [open, initialCode, initialResult, aslApiEnabled, storeId, verifyMarking]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- one-shot on open with code
+  }, [open, initialCode, initialResult, storeId]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -73,32 +61,53 @@ export default function PharmacyMarkingModal({
 
   if (!open) return null;
 
-  const submit = async (e) => {
-    e?.preventDefault();
-    const trimmed = code.trim();
+  async function runVerify(raw) {
+    const trimmed = String(raw || '').trim();
     if (!trimmed) return;
+    setVerifying(true);
+    setResult(null);
     try {
-      const product = await resolvePharmacyProductByMarking({ products, rawCode: trimmed, storeId });
-      if (product && onProductFound) {
-        const mark = preserveMarkingCodeForFiscal(trimmed);
-        onProductFound({
-          ...product,
-          productMark: mark,
-          markCode: mark,
-          markedProduct: true,
-        });
+      const resolved = await resolveCashierMarkedProduct({
+        products,
+        rawCode: trimmed,
+        storeId,
+        aslEnabled: Boolean(aslApiEnabled),
+      });
+      if (resolved.status === 'ok' && resolved.product && onProductFound) {
+        onProductFound(resolved.product);
         onClose?.();
         return;
       }
+      if (resolved.status === 'sold') {
+        setResult({
+          found: true,
+          alreadySold: true,
+          ...(resolved.aslResult || {}),
+          error: t('pharmacyCashier.integrations.markingAlreadySold'),
+        });
+        return;
+      }
+      if (resolved.aslResult) {
+        setResult(resolved.aslResult);
+        return;
+      }
+      setResult({
+        found: false,
+        error: resolved.aslError
+          || (aslApiEnabled
+            ? t('pharmacyCashier.integrations.markingNotFound')
+            : t('pharmacyCashier.integrations.markingCatalogNeed')),
+      });
     } catch (error) {
       setResult({ found: false, error: error.response?.data?.message ?? error.message });
-      return;
+    } finally {
+      setVerifying(false);
     }
-    if (!aslApiEnabled) {
-      setResult({ found: false, error: t('pharmacyCashier.integrations.markingApiDisabled') });
-      return;
-    }
-    verifyMarking({ storeId, code: trimmed });
+  }
+
+  const submit = (e) => {
+    e?.preventDefault();
+    void runVerify(code);
   };
 
   return (
@@ -163,11 +172,13 @@ export default function PharmacyMarkingModal({
           {result && (
             <div
               className={`pharmacy-marking-modal__result ${
-                result.found ? 'pharmacy-marking-modal__result--ok' : 'pharmacy-marking-modal__result--err'
+                result.found && !result.alreadySold
+                  ? 'pharmacy-marking-modal__result--ok'
+                  : 'pharmacy-marking-modal__result--err'
               }`}
             >
               {result.error && <p>{result.error}</p>}
-              {result.found && (
+              {result.found && !result.error && (
                 <dl className="pharmacy-marking-modal__facts">
                   {result.status && (
                     <>

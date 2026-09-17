@@ -20,12 +20,12 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * ASL Belgisi Open API v1.45 — проверка КМ на кассе аптеки.
- * 1) code-verification/verify — подлинность полного КМ (мягко)
- * 2) public/private codes — статус / GTIN (КИ без криптохвоста)
- * 3) product-registry search-by-gtin?productGroup=pharma — название
+ * ASL Belgisi Open API v1.45 — проверка КМ на кассе.
+ * Сначала public/private codes (быстро), crypto-verify и registry — мягко, без блокировки кассы.
  */
 @Component
 @RequiredArgsConstructor
@@ -33,6 +33,7 @@ public class AslBelgisiMarkingClient {
 
   private static final String PUBLIC_CODES_PATH = "/public/api/cod/public/codes";
   private static final String PRIVATE_CODES_PATH = "/public/api/cod/private/codes";
+  private static final Pattern GTIN_AI = Pattern.compile("(?:^|[^0-9])01(\\d{14})");
 
   private final RestTemplate pharmacyIntegrationRestTemplate;
   private final ObjectMapper objectMapper;
@@ -50,8 +51,7 @@ public class AslBelgisiMarkingClient {
     }
 
     String root = normalizeBaseUrl(baseUrl);
-    Boolean cryptoVerified = codeVerificationClient.verifyFullCode(root, token, rawCode);
-
+    String localGtin = extractGtin(rawCode);
     HttpHeaders headers = bearerHeaders(token);
     Map<String, Object> body = Map.of(
       "codes", codes,
@@ -60,26 +60,30 @@ public class AslBelgisiMarkingClient {
     );
 
     try {
-      MarkingVerifyResponse publicResult = exchangeParse(root + PUBLIC_CODES_PATH, headers, body, codes.get(0));
-      MarkingVerifyResponse info = publicResult;
+      MarkingVerifyResponse info = exchangeParse(root + PUBLIC_CODES_PATH, headers, body, codes.get(0));
       if (!info.found()) {
         try {
           MarkingVerifyResponse privateResult = exchangeParse(root + PRIVATE_CODES_PATH, headers, body, codes.get(0));
           if (privateResult.found()) {
             info = privateResult;
           }
-        } catch (BadRequestException privateEx) {
-          if (!publicResult.found()) {
-            throw privateEx;
-          }
+        } catch (BadRequestException ignored) {
+          // public пустой / нет прав на private — не валим кассу
         }
       }
 
       if (!info.found()) {
-        return withCryptoFlag(info, cryptoVerified);
+        Boolean crypto = codeVerificationClient.verifyFullCode(root, token, rawCode);
+        return softMiss(codes.get(0), localGtin, crypto);
       }
 
-      info = withCryptoFlag(info, cryptoVerified);
+      if (!StringUtils.hasText(info.gtin()) && StringUtils.hasText(localGtin)) {
+        info = copyWithGtin(info, localGtin);
+      }
+
+      Boolean crypto = codeVerificationClient.verifyFullCode(root, token, rawCode);
+      info = withCryptoFlag(info, crypto);
+
       if (!StringUtils.hasText(info.productName()) && StringUtils.hasText(info.gtin())) {
         String name = productNameClient.findProductName(root, token, info.gtin());
         if (StringUtils.hasText(name)) {
@@ -101,8 +105,60 @@ public class AslBelgisiMarkingClient {
     } catch (BadRequestException ex) {
       throw ex;
     } catch (Exception ex) {
+      if (StringUtils.hasText(localGtin)) {
+        return softMiss(codes.get(0), localGtin, null);
+      }
       throw new BadRequestException("Не удалось связаться с ASL Belgisi");
     }
+  }
+
+  private MarkingVerifyResponse softMiss(String code, String gtin, Boolean cryptoVerified) {
+    Map<String, Object> details = new HashMap<>();
+    if (cryptoVerified != null) {
+      details.put("cryptoVerified", cryptoVerified);
+    }
+    return new MarkingVerifyResponse(
+      false,
+      code,
+      null,
+      gtin,
+      null,
+      null,
+      null,
+      null,
+      details,
+      false
+    );
+  }
+
+  private MarkingVerifyResponse copyWithGtin(MarkingVerifyResponse info, String gtin) {
+    return new MarkingVerifyResponse(
+      info.found(),
+      info.code(),
+      info.status(),
+      gtin,
+      info.productName(),
+      info.expirationDate(),
+      info.batch(),
+      info.ownerInn(),
+      info.details(),
+      info.alreadySold()
+    );
+  }
+
+  static String extractGtin(String raw) {
+    if (!StringUtils.hasText(raw)) {
+      return null;
+    }
+    String value = raw.replace("\uFEFF", "").replace("\u0000", "").trim();
+    Matcher matcher = GTIN_AI.matcher(value);
+    if (matcher.find()) {
+      return matcher.group(1);
+    }
+    if (value.length() >= 16 && value.startsWith("01") && value.substring(2, 16).chars().allMatch(Character::isDigit)) {
+      return value.substring(2, 16);
+    }
+    return null;
   }
 
   private MarkingVerifyResponse withCryptoFlag(MarkingVerifyResponse info, Boolean cryptoVerified) {

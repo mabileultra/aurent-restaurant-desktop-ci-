@@ -11,6 +11,49 @@
   container-name: pharm-search-strip;
 }
 
+.pharmacy-search-strip__field-wrap {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pharmacy-search-strip__km {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid var(--pharm-border);
+  border-radius: 8px;
+  background: var(--pharm-elevated, #1c2433);
+  color: var(--pharm-ink);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.pharmacy-search-strip__km:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--pharm-ink) 24%, var(--pharm-border));
+  background: var(--pharm-hover, #243044);
+}
+
+.pharmacy-search-strip__km:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pharmacy-search-strip__km .pharmacy-integration-icon {
+  width: 16px;
+  height: 16px;
+}
+
 .pharmacy-search-strip__scan {
   display: inline-flex;
   align-items: center;
