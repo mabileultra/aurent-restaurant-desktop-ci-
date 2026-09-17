@@ -2332,9 +2332,10 @@
     "pieceStepInvalid": "Dona miqdori {{step}} ga karrali bo‘lishi kerak",
     "marking": "Markirovka",
     "markingScan": {
-      "hint": "ASL Belgisi DataMatrix ni skanerlang — har bir qadoq +1, kod miqdorga yozilmaydi",
-      "waiting": "Markirovka hali yo‘q",
-      "scanned": "Skanerlandi",
+      "hint": "Har bir qadoq — o‘z DataMatrix. Bir xil kod qayta qabul qilinmaydi",
+      "scanTitle": "Markirovka kodini skanerlang",
+      "waiting": "Hali skanerlangan qadoq yo‘q",
+      "scanned": "Chekda",
       "verifying": "ASL Belgisi tekshirilmoqda…",
       "needScan": "Chekka qo‘shish uchun markirovkani skanerlang",
       "mismatch": "Bu boshqa mahsulot markirovkasi",

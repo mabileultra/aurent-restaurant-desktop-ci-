@@ -7,8 +7,6 @@ import { useCartStore } from '../../../store/cartStore';
 import { assessQtyMarkingScan } from '../utils/pharmacyQtyMarkingScan';
 import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
 
-const REPEAT_SILENCE_MS = 400;
-
 export function usePharmacyQtyMarkingScan({
   open,
   product,
@@ -20,8 +18,8 @@ export function usePharmacyQtyMarkingScan({
   const inputRef = useRef(null);
   const scansRef = useRef([]);
   const queueRef = useRef([]);
+  const pendingRef = useRef(new Set());
   const runningRef = useRef(false);
-  const seenAtRef = useRef(new Map());
   const [scans, setScans] = useState([]);
   const [verifying, setVerifying] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +28,7 @@ export function usePharmacyQtyMarkingScan({
   const reset = useCallback(() => {
     scansRef.current = [];
     queueRef.current = [];
-    seenAtRef.current = new Map();
+    pendingRef.current = new Set();
     setScans([]);
     setError('');
     setVerifying(false);
@@ -60,27 +58,27 @@ export function usePharmacyQtyMarkingScan({
   }, [t]);
 
   const handleOne = useCallback(async (rawCode) => {
-    const now = Date.now();
+    const pendingKeys = [...pendingRef.current];
     const preview = assessQtyMarkingScan({
       product,
       rawCode,
       scans: scansRef.current,
       cartItems: useCartStore.getState().items,
       stockPacks,
+      pendingKeys,
     });
-    if (preview.key) {
-      const prev = seenAtRef.current.get(preview.key) || 0;
-      seenAtRef.current.set(preview.key, now);
-      if (now - prev < REPEAT_SILENCE_MS) return;
-    }
+
     if (preview.status === 'duplicate' || preview.status === 'stock' || preview.status === 'not-marking') {
       reject(preview.status);
       return;
     }
 
+    if (preview.key) pendingRef.current.add(preview.key);
+
     let aslResult = null;
     if (aslMarkingEnabled) {
       if (!storeId) {
+        pendingRef.current.delete(preview.key);
         reject('not-found', t('pharmacyCashier.integrations.markingApiDisabled'));
         return;
       }
@@ -91,7 +89,6 @@ export function usePharmacyQtyMarkingScan({
         });
         aslResult = data;
       } catch {
-        // ASL недоступен — принимаем по GTIN выбранного товара
         aslResult = null;
       }
     }
@@ -103,13 +100,18 @@ export function usePharmacyQtyMarkingScan({
       cartItems: useCartStore.getState().items,
       stockPacks,
       aslResult,
+      pendingKeys: [...pendingRef.current].filter((k) => k !== preview.key),
     });
+
     if (decision.status !== 'accepted') {
+      pendingRef.current.delete(preview.key);
       reject(decision.status);
       return;
     }
+
     const next = [...scansRef.current, decision];
     scansRef.current = next;
+    pendingRef.current.delete(decision.key);
     setScans(next);
     setError('');
   }, [aslMarkingEnabled, product, reject, stockPacks, storeId, t]);
@@ -148,6 +150,7 @@ export function usePharmacyQtyMarkingScan({
   const removeScan = useCallback((key) => {
     const next = scansRef.current.filter((scan) => scan.key !== key);
     scansRef.current = next;
+    pendingRef.current.delete(key);
     setScans(next);
     setError('');
     inputRef.current?.focus();

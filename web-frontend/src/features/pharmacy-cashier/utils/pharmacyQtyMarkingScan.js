@@ -1,6 +1,10 @@
 import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
 import { markingMatchesProduct } from './pharmacyMarkingProductMatch';
-import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from './pharmacyMarkingCode';
+import {
+  isPharmacyMarkingCode,
+  markingScanKey,
+  normalizePharmacyMarkingCode,
+} from './pharmacyMarkingCode';
 import { lineMarkKeys } from './pharmacyMarkedScanCart';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
@@ -13,8 +17,7 @@ export function shortMarkLabel(mark) {
 
 /**
  * Решение по одному скану в модалке количества.
- * Количество растёт только на status === 'accepted'.
- * Товар уже выбран — GTIN из КМ важнее, чем «не найден» от ASL.
+ * Один и тот же КМ — duplicate; разные пачки одного товара — accepted (+1).
  */
 export function assessQtyMarkingScan({
   product,
@@ -24,20 +27,21 @@ export function assessQtyMarkingScan({
   stockPacks = 0,
   extraGtins = [],
   aslResult = null,
+  pendingKeys = [],
 }) {
   if (!isPharmacyMarkingCode(rawCode)) return { status: 'not-marking' };
 
   const mark = preserveMarkingCodeForFiscal(rawCode);
-  const key = normalizePharmacyMarkingCode(mark);
+  const key = markingScanKey(mark);
   if (!key) return { status: 'not-marking' };
 
   const known = scans.some((scan) => scan.key === key)
+    || pendingKeys.includes(key)
     || cartItems.some((line) => lineMarkKeys(line).includes(key));
   if (known) return { status: 'duplicate', key };
 
   if (aslResult && isAslMarkAlreadySold(aslResult)) return { status: 'sold', key };
 
-  // ASL явно сказал, что GTIN другой — не подменяем товар
   if (aslResult?.found && aslResult.gtin && !markingMatchesProduct(product, '', [aslResult.gtin])) {
     return { status: 'mismatch', key };
   }
@@ -62,6 +66,6 @@ export function assessQtyMarkingScan({
     key,
     mark,
     label: shortMarkLabel(mark),
-    aslStatus: aslResult?.status || (aslResult?.found === false ? 'LOCAL' : ''),
+    aslStatus: aslResult?.status || (aslResult?.found === false ? '' : ''),
   };
 }

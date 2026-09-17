@@ -233,49 +233,23 @@ export default function PharmacyQtyModal({
             scans={marking.scans}
             verifying={marking.verifying}
             error={marking.error}
+            qty={marking.scans.length}
+            sumLabel={fmt(preview)}
             inputRef={marking.inputRef}
             onScan={marking.enqueue}
             onRemove={marking.removeScan}
           />
-        ) : null}
-
-        <div className={`pharmacy-qty-modal__qty${showPackUi ? '' : ' pharmacy-qty-modal__qty--single'}`}>
-          <label className="pharmacy-qty-modal__qty-box">
-            <span>{t('pharmacyCashier.qtyPacks')}</span>
-            <input
-              ref={packRef}
-              inputMode="numeric"
-              readOnly={marked}
-              tabIndex={marked ? -1 : 0}
-              className="pharmacy-qty-modal__qty-input"
-              value={marked ? String(marking.scans.length) : packsText}
-              onFocus={() => {
-                if (marked) marking.inputRef.current?.focus();
-              }}
-              onChange={(e) => {
-                if (marked) return;
-                setPacksText(digits(e.target.value));
-                setError('');
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault();
-                  submit();
-                }
-              }}
-            />
-            <em>{t('pharmacyCashier.packUnit')}</em>
-          </label>
-          {showPackUi ? (
-            <label className={`pharmacy-qty-modal__qty-box${sellByPiece ? '' : ' is-disabled'}`}>
-              <span>{t('pharmacyCashier.qtyPieces')}</span>
+        ) : (
+          <div className={`pharmacy-qty-modal__qty${showPackUi ? '' : ' pharmacy-qty-modal__qty--single'}`}>
+            <label className="pharmacy-qty-modal__qty-box">
+              <span>{t('pharmacyCashier.qtyPacks')}</span>
               <input
+                ref={packRef}
                 inputMode="numeric"
                 className="pharmacy-qty-modal__qty-input"
-                value={sellByPiece && !marked ? piecesText : '0'}
-                disabled={!sellByPiece || marked}
+                value={packsText}
                 onChange={(e) => {
-                  setPiecesText(digits(e.target.value));
+                  setPacksText(digits(e.target.value));
                   setError('');
                 }}
                 onKeyDown={(e) => {
@@ -285,21 +259,43 @@ export default function PharmacyQtyModal({
                   }
                 }}
               />
-              <em>{t('pharmacyCashier.pieceUnit')}</em>
+              <em>{t('pharmacyCashier.packUnit')}</em>
             </label>
-          ) : null}
-        </div>
+            {showPackUi ? (
+              <label className={`pharmacy-qty-modal__qty-box${sellByPiece ? '' : ' is-disabled'}`}>
+                <span>{t('pharmacyCashier.qtyPieces')}</span>
+                <input
+                  inputMode="numeric"
+                  className="pharmacy-qty-modal__qty-input"
+                  value={sellByPiece ? piecesText : '0'}
+                  disabled={!sellByPiece}
+                  onChange={(e) => {
+                    setPiecesText(digits(e.target.value));
+                    setError('');
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      submit();
+                    }
+                  }}
+                />
+                <em>{t('pharmacyCashier.pieceUnit')}</em>
+              </label>
+            ) : null}
+          </div>
+        )}
 
-        {!sellByPiece && showPackUi ? (
+        {!marked && !sellByPiece && showPackUi ? (
           <p className="pharmacy-qty-modal__hint">{t('pharmacyCashier.noPieceSaleHint')}</p>
         ) : null}
-        {sellByPiece && stepValues.length > 0 ? (
+        {!marked && sellByPiece && stepValues.length > 0 ? (
           <p className="pharmacy-qty-modal__hint">
             {t('pharmacyCashier.pieceStepHint', { steps: stepValues.slice(0, 4).join(', ') })}
           </p>
         ) : null}
 
-        <p className="pharmacy-qty-modal__total">{fmt(preview)}</p>
+        {!marked ? <p className="pharmacy-qty-modal__total">{fmt(preview)}</p> : null}
         {error ? <p className="pharmacy-qty-modal__error">{error}</p> : null}
 
         <div className="pharmacy-qty-modal__actions">

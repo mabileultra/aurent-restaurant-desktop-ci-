@@ -32,6 +32,13 @@ export function isPharmacyMarkingCode(raw) {
   return false;
 }
 
+/** Ключ для сравнения сканов (один КМ = один ключ). */
+export function markingScanKey(raw) {
+  return normalizePharmacyMarkingCode(raw)
+    .replace(/\s+/g, '')
+    .toLowerCase();
+}
+
 /** Извлечь GTIN из GS1-строки маркировки. */
 export function extractGtinFromMarkingCode(raw) {
   const code = normalizePharmacyMarkingCode(raw);

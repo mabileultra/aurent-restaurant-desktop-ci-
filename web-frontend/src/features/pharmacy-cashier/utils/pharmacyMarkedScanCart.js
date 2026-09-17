@@ -1,10 +1,10 @@
 import { useCartStore } from '../../../store/cartStore';
-import { normalizePharmacyMarkingCode } from './pharmacyMarkingCode';
+import { markingScanKey } from './pharmacyMarkingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 export function lineMarkKeys(line) {
   const marks = Array.isArray(line?.productMarks) ? line.productMarks : [];
-  return marks.map((mark) => normalizePharmacyMarkingCode(mark)).filter(Boolean);
+  return marks.map((mark) => markingScanKey(mark)).filter(Boolean);
 }
 
 export function isMarkCountedLine(line) {
@@ -20,7 +20,7 @@ function productQty(items, productId) {
 /** Следующий чек после скана: новая маркировка +1, без маркировки количество не трогаем. */
 export function planMarkedScan(items, product, rawMark) {
   const mark = preserveMarkingCodeForFiscal(rawMark);
-  const key = normalizePharmacyMarkingCode(mark);
+  const key = markingScanKey(mark);
   if (!key) return { status: 'empty' };
 
   const duplicate = items.some((line) => lineMarkKeys(line).includes(key));
@@ -50,13 +50,13 @@ export function planMarkedScan(items, product, rawMark) {
 
 /** Снять одну маркировку с чека. Строки без этого кода не трогаем. */
 export function removePharmacyMarking(rawMark) {
-  const key = normalizePharmacyMarkingCode(preserveMarkingCodeForFiscal(rawMark));
+  const key = markingScanKey(preserveMarkingCodeForFiscal(rawMark));
   if (!key) return false;
   const items = useCartStore.getState().items;
   const line = items.find((item) => lineMarkKeys(item).includes(key));
   if (!line) return false;
   const productMarks = (line.productMarks || []).filter(
-    (mark) => normalizePharmacyMarkingCode(mark) !== key,
+    (mark) => markingScanKey(mark) !== key,
   );
   if (productMarks.length === 0) {
     useCartStore.getState().removeItem(line.lineId);
