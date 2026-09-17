@@ -31,7 +31,7 @@ public class SaleItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "product_name", nullable = false)
+    @Column(name = "product_name", nullable = false, columnDefinition = "TEXT")
     private String productName;
 
     @Column(name = "unit_price", nullable = false, precision = 18, scale = 2)

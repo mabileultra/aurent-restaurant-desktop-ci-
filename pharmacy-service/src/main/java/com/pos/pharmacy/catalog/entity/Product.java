@@ -32,7 +32,7 @@ public class Product {
     @Column(nullable = false, length = 100)
     private String sku;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String name;
 
     private String description;

@@ -12,5 +12,6 @@
     <include file="db/changelog/v5-pharmacy-outbox-retry.xml"/>
     <include file="db/changelog/v6-pharmacy-offline-sync.xml"/>
     <include file="db/changelog/v7-pharmacy-cashier-shifts.xml"/>
+    <include file="db/changelog/v8-pharmacy-product-name.xml"/>
 
 </databaseChangeLog>
