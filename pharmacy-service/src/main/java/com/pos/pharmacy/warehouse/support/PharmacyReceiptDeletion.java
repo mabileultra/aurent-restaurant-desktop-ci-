@@ -1,17 +1,21 @@
 package com.pos.pharmacy.warehouse.support;
 
+import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.sales.repository.SaleItemLotRepository;
+import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.entity.StockLot;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
 import com.pos.pharmacy.warehouse.repository.StockLotRepository;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
-import com.pos.pharmacy.warehouse.service.StoreStockService;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -21,19 +25,19 @@ public class PharmacyReceiptDeletion {
 
     private final StockLotRepository stockLotRepository;
     private final SaleItemLotRepository saleItemLotRepository;
-    private final StoreStockService storeStockService;
     private final StockReceiptRepository stockReceiptRepository;
+    private final PharmacyReceiptStockReversal stockReversal;
 
     public PharmacyReceiptDeletion(
         StockLotRepository stockLotRepository,
         SaleItemLotRepository saleItemLotRepository,
-        StoreStockService storeStockService,
-        StockReceiptRepository stockReceiptRepository
+        StockReceiptRepository stockReceiptRepository,
+        PharmacyReceiptStockReversal stockReversal
     ) {
         this.stockLotRepository = stockLotRepository;
         this.saleItemLotRepository = saleItemLotRepository;
-        this.storeStockService = storeStockService;
         this.stockReceiptRepository = stockReceiptRepository;
+        this.stockReversal = stockReversal;
     }
 
     public void delete(StockReceipt receipt) {
@@ -54,17 +58,20 @@ public class PharmacyReceiptDeletion {
         }
         List<StockLot> lots = stockLotRepository.findByReceiptLineIds(lineIds);
         Set<UUID> covered = new HashSet<>();
+        Map<UUID, Product> products = new HashMap<>();
+        Map<UUID, BigDecimal> quantities = new HashMap<>();
         for (StockLot lot : lots) {
-            storeStockService.decrease(lot.getProduct(), lot.getStoreId(), lot.getQuantity());
+            addQuantity(products, quantities, lot.getProduct(), lot.getQuantity());
             if (lot.getReceiptLine() != null) {
                 covered.add(lot.getReceiptLine().getId());
             }
         }
         for (StockReceiptLine line : receipt.getLines()) {
             if (line.getId() != null && !covered.contains(line.getId())) {
-                storeStockService.decrease(line.getProduct(), receipt.getStoreId(), line.getQuantity());
+                addQuantity(products, quantities, line.getProduct(), line.getQuantity());
             }
         }
+        stockReversal.reverse(receipt.getStoreId(), products, quantities);
         List<UUID> lotIds = lots.stream().map(StockLot::getId).toList();
         if (lotIds.isEmpty()) {
             return;
@@ -72,5 +79,18 @@ public class PharmacyReceiptDeletion {
         saleItemLotRepository.detachLots(lotIds);
         stockLotRepository.deleteAll(lots);
         stockLotRepository.flush();
+    }
+
+    private static void addQuantity(
+        Map<UUID, Product> products,
+        Map<UUID, BigDecimal> quantities,
+        Product product,
+        BigDecimal quantity
+    ) {
+        if (product == null || product.getId() == null) {
+            return;
+        }
+        products.putIfAbsent(product.getId(), product);
+        quantities.merge(product.getId(), QuantityUtil.normalize(quantity), QuantityUtil::add);
     }
 }
