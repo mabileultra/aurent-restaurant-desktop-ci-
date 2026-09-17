@@ -105,25 +105,21 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     }
     setBusy(true);
     try {
-      const { data } = await pharmacyWarehouseApi.importConfirm(receiptId, {
-        uzInvoiceDocumentId: invoiceId || undefined,
-        items: payload.map((item) => ({
-          rowIndex: item.rowIndex,
-          createIfMissing: true,
-          excelName: item.excelName,
-          manufacturer: item.manufacturer,
-          country: item.country,
-          quantity: item.quantity,
-          purchasePrice: item.purchasePrice,
-          vatPercent: item.vatPercent,
-          retailPrice: item.retailPrice,
-          batchNumber: item.batchNumber,
-          expiryDate: item.expiryDate,
-          barcode: item.barcode,
-          ikpu: item.ikpu,
-          unitsInPack: item.unitsInPack,
-        })),
-      });
+      const body = payload.map(toConfirmItem);
+      const chunkSize = 40;
+      let last = null;
+      for (let i = 0; i < body.length; i += chunkSize) {
+        const chunk = body.slice(i, i + chunkSize);
+        const { data } = await pharmacyWarehouseApi.importConfirm(receiptId, {
+          uzInvoiceDocumentId: invoiceId || undefined,
+          items: chunk,
+        });
+        last = data;
+        const savedIds = chunk.map((item) => item.rowIndex);
+        saved.push(...savedIds);
+        setItems((prev) => prev.filter((item) => !savedIds.includes(item.rowIndex)));
+      }
+      const data = last;
       toast.success(t('pharmacyStock.importSaved', { count: payload.length }));
       close();
       onImported?.(data);
@@ -142,6 +138,26 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     setInvoiceAlreadyImported(false);
   };
 
+function toConfirmItem(item) {
+  const expiry = item.expiryDate && String(item.expiryDate).length >= 8 ? item.expiryDate : undefined;
+  return {
+    rowIndex: item.rowIndex,
+    createIfMissing: true,
+    excelName: item.excelName,
+    manufacturer: item.manufacturer,
+    country: item.country,
+    quantity: item.quantity,
+    purchasePrice: item.purchasePrice,
+    vatPercent: item.vatPercent,
+    retailPrice: item.retailPrice,
+    batchNumber: item.batchNumber,
+    expiryDate: expiry,
+    barcode: item.barcode,
+    ikpu: item.ikpu,
+    unitsInPack: item.unitsInPack,
+  };
+}
+
   return {
     fileRef,
     openFile,
@@ -157,6 +173,9 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     items: filteredItems,
     query,
     setQuery,
+    patchItem: (rowIndex, patch) => setItems((prev) => prev.map((item) => (
+      item.rowIndex === rowIndex ? { ...item, ...patch } : item
+    ))),
     confirm,
     close,
     roleKeys: ROLE_KEYS,

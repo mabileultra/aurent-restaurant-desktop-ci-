@@ -815,6 +815,14 @@
   color: #e2e8f0;
 }
 
+.pharm-line-modal__hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #64748b;
+}
+
 .pharm-line-modal__row {
   display: grid;
   align-items: end;

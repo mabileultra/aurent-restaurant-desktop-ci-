@@ -16,6 +16,7 @@ import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
+import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
 import com.pos.pharmacy.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
@@ -67,7 +68,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             .invoiceDate(request.invoiceDate())
             .contractNumber(PharmacyReceiptSupport.trimToNull(request.contractNumber()))
             .financialDiscount(request.financialDiscount())
-            .paymentType(normalizePayment(request.paymentType()))
+            .paymentType(PharmacyPaymentType.normalize(request.paymentType()))
             .supplierId(request.supplierId())
             .storeId(request.storeId())
             .notes(PharmacyReceiptSupport.trimToNull(request.notes()))
@@ -111,7 +112,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             receipt.setFinancialDiscount(request.financialDiscount());
         }
         if (request.paymentType() != null) {
-            receipt.setPaymentType(normalizePayment(request.paymentType()));
+            receipt.setPaymentType(PharmacyPaymentType.normalize(request.paymentType()));
         }
         if (request.notes() != null) {
             receipt.setNotes(PharmacyReceiptSupport.trimToNull(request.notes()));
@@ -309,14 +310,4 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         }
     }
 
-    private static String normalizePayment(String paymentType) {
-        if (!StringUtils.hasText(paymentType)) {
-            return "CASH";
-        }
-        String normalized = paymentType.trim().toUpperCase();
-        if (!"CASH".equals(normalized) && !"CREDIT".equals(normalized)) {
-            throw PharmacyErrors.badRequest("paymentType must be CASH or CREDIT");
-        }
-        return normalized;
-    }
 }

@@ -137,7 +137,11 @@ export default function PharmacyReceiptHeaderModal({
                 onChange={(e) => patch('receiptType', e.target.value)}
               >
                 <option value="RECEIPT">{t('pharmacyStock.receiptTypeReceipt')}</option>
+                <option value="OPENING">{t('pharmacyStock.receiptTypeOpening')}</option>
               </select>
+              {form.receiptType === 'OPENING' ? (
+                <span className="pharm-line-modal__hint">{t('pharmacyStock.openingStockHint')}</span>
+              ) : null}
             </label>
             <label className="pharm-line-modal__field">
               <span className="pharm-line-modal__label">{t('pharmacyStock.documentDate')}</span>
@@ -183,7 +187,8 @@ export default function PharmacyReceiptHeaderModal({
                 onChange={(e) => patch('paymentType', e.target.value)}
               >
                 <option value="CASH">{t('pharmacyStock.paymentCash')}</option>
-                <option value="CREDIT">{t('pharmacyStock.paymentCredit')}</option>
+                <option value="DEBT">{t('pharmacyStock.paymentDebt')}</option>
+                <option value="TRANSFER">{t('pharmacyStock.paymentTransfer')}</option>
               </select>
             </label>
             <span />
@@ -307,7 +312,7 @@ function normalizeInitial(initial) {
     invoiceDate: initial.invoiceDate || '',
     contractNumber: initial.contractNumber || '',
     financialDiscount: initial.financialDiscount != null ? String(initial.financialDiscount) : '',
-    paymentType: initial.paymentType || 'CASH',
+    paymentType: initial.paymentType === 'CREDIT' ? 'DEBT' : (initial.paymentType || 'CASH'),
     notes: initial.notes || '',
   };
 }

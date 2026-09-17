@@ -1,16 +1,7 @@
 package com.pos.pharmacy.warehouse.service.impl;
 
-import com.pos.pharmacy.catalog.dto.CreateProductRequest;
-import com.pos.pharmacy.catalog.dto.ProductResponse;
-import com.pos.pharmacy.catalog.dto.ProductStorePriceRequest;
-import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.common.TenantSupport;
-import com.pos.pharmacy.domain.ProductType;
-import com.pos.pharmacy.domain.SaleType;
-import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
-import com.pos.pharmacy.catalog.repository.ProductRepository;
-import com.pos.pharmacy.util.ProductImportParseUtil;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
 import com.pos.pharmacy.warehouse.dto.importing.*;
@@ -29,7 +20,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -44,13 +34,12 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     private static final String STATUS_DUPLICATE = "DUPLICATE";
 
     private final StockReceiptRepository stockReceiptRepository;
-    private final ProductRepository productRepository;
     private final TenantSupport tenant;
     private final PharmacyReceiptSupport pharmacyReceipt;
     private final PharmacyImportGridSupport gridSupport;
     private final PharmacyImportMatchSupport matchSupport;
     private final PharmacyStockReceiptService pharmacyStockReceiptService;
-    private final PharmacyProductService pharmacyProductService;
+    private final PharmacyImportProductWriter productWriter;
 
     @Override
     @Transactional(readOnly = true)
@@ -99,7 +88,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
-        if (matchSupport.isInvoiceImported(companyId, invoiceId)) {
+        String ownInvoice = PharmacyImportMatchSupport.normalizeInvoiceId(receipt.getInvoiceNumber());
+        if (matchSupport.isInvoiceImported(companyId, invoiceId) && !invoiceId.equals(ownInvoice)) {
             throw PharmacyErrors.badRequest(PharmacyImportMatchSupport.duplicateMessage(invoiceId));
         }
         if (!StringUtils.hasText(receipt.getInvoiceNumber()) && StringUtils.hasText(invoiceId)) {
@@ -110,13 +100,21 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal defaultMarkup = receipt.getDefaultMarkupPercent() != null
             ? receipt.getDefaultMarkupPercent()
             : new BigDecimal("20");
-        List<PharmacyStockReceiptLineRequest> lines = new ArrayList<>();
+        List<PharmacyImportConfirmItem> accepted = new ArrayList<>();
         for (PharmacyImportConfirmItem item : request.items()) {
-            if (item.quantity() == null || item.quantity().compareTo(BigDecimal.ZERO) <= 0) {
-                continue;
+            if (item.quantity() != null && item.quantity().compareTo(BigDecimal.ZERO) > 0) {
+                accepted.add(item);
             }
-            UUID productId = createPharmacyProduct(item, storeId, invoiceId, companyId).id();
-            lines.add(toLine(item, productId, defaultMarkup));
+        }
+        if (accepted.isEmpty()) {
+            throw PharmacyErrors.badRequest(
+                "Нет строк с количеством. Назначьте колонку «Количество» и цену продажи, затем повторите импорт."
+            );
+        }
+        List<UUID> productIds = productWriter.write(accepted, storeId, invoiceId, companyId);
+        List<PharmacyStockReceiptLineRequest> lines = new ArrayList<>();
+        for (int i = 0; i < accepted.size(); i++) {
+            lines.add(toLine(accepted.get(i), productIds.get(i), defaultMarkup));
         }
         return pharmacyStockReceiptService.addLines(receiptId, lines);
     }
@@ -229,81 +227,6 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         );
     }
 
-    private ProductResponse createPharmacyProduct(
-        PharmacyImportConfirmItem item,
-        Integer storeId,
-        String invoiceId,
-        Integer companyId
-    ) {
-        String name = StringUtils.hasText(item.excelName()) ? item.excelName().trim() : "Импорт";
-        BigDecimal cost = item.purchasePrice() != null ? item.purchasePrice() : BigDecimal.ZERO;
-        BigDecimal selling = item.retailPrice() != null && item.retailPrice().compareTo(new BigDecimal("0.01")) >= 0
-            ? item.retailPrice()
-            : new BigDecimal("0.01");
-        Map<String, String> attrs = new LinkedHashMap<>();
-        if (StringUtils.hasText(item.manufacturer())) {
-            attrs.put(PharmacyReceiptSupport.ATTR_MANUFACTURER, item.manufacturer().trim());
-        }
-        if (StringUtils.hasText(item.country())) {
-            attrs.put(PharmacyReceiptSupport.ATTR_COUNTRY, item.country().trim());
-        }
-        BigDecimal units = item.unitsInPack() != null && item.unitsInPack().compareTo(BigDecimal.ZERO) > 0
-            ? item.unitsInPack()
-            : BigDecimal.ONE;
-        attrs.put(PharmacyReceiptSupport.ATTR_UNITS_IN_PACK, units.stripTrailingZeros().toPlainString());
-        String sku = StringUtils.hasText(invoiceId)
-            ? ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, item.rowIndex() + 1)
-            : autoSku(name);
-        return pharmacyProductService.create(new CreateProductRequest(
-            sku,
-            name,
-            null,
-            null,
-            cost,
-            selling,
-            BigDecimal.ZERO,
-            item.vatPercent() != null ? item.vatPercent() : BigDecimal.ZERO,
-            ProductType.RETAIL,
-            SaleType.PIECE,
-            UnitCode.PCS,
-            units.compareTo(BigDecimal.ONE) > 0 ? 3 : 0,
-            units.compareTo(BigDecimal.ONE) > 0,
-            BigDecimal.ZERO,
-            null,
-            uniqueBarcodeOrNull(companyId, item.barcode()),
-            null,
-            null,
-            null,
-            blankToNull(item.ikpu()),
-            StringUtils.hasText(item.ikpu()) ? "MANUAL" : null,
-            "pcs",
-            null,
-            null,
-            units.compareTo(BigDecimal.ONE) > 0,
-            false,
-            null,
-            "OWN",
-            null,
-            null,
-            invoiceId,
-            storeId == null ? null : List.of(new ProductStorePriceRequest(storeId, selling)),
-            null,
-            null,
-            null,
-            null,
-            attrs.isEmpty() ? null : attrs
-        ));
-    }
-
-    private String uniqueBarcodeOrNull(Integer companyId, String barcode) {
-        String value = blankToNull(barcode);
-        if (value == null || companyId == null) {
-            return value;
-        }
-        boolean taken = productRepository.findFirstByCompanyIdAndBarcode(companyId, value).isPresent();
-        return taken ? null : value;
-    }
-
     private StockReceipt requireDraft(UUID receiptId) {
         StockReceipt receipt = stockReceiptRepository.findDetailedById(receiptId)
             .orElseThrow(() -> PharmacyErrors.notFound("Receipt"));
@@ -349,17 +272,6 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             return BigDecimal.ZERO;
         }
         return retail.subtract(base).multiply(BigDecimal.valueOf(100)).divide(base, 2, RoundingMode.HALF_UP);
-    }
-
-    private static String autoSku(String name) {
-        String slug = name.toUpperCase(Locale.ROOT).replaceAll("[^A-Z0-9А-ЯЁ]+", "");
-        if (slug.length() > 8) {
-            slug = slug.substring(0, 8);
-        }
-        if (!StringUtils.hasText(slug)) {
-            slug = "ITEM";
-        }
-        return "PH-" + slug + "-" + Long.toString(System.nanoTime(), 36).toUpperCase(Locale.ROOT);
     }
 
     private static String blankToNull(String value) {

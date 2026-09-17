@@ -16,6 +16,10 @@ spring:
   liquibase:
     change-log: classpath:db/changelog/db.changelog-master.xml
     enabled: true
+  servlet:
+    multipart:
+      max-file-size: 80MB
+      max-request-size: 80MB
   jpa:
     hibernate:
       ddl-auto: validate
@@ -28,6 +32,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   migration:
     pos-core-datasource-url: ${POS_CORE_DATASOURCE_URL:}
     pos-core-datasource-username: ${POS_CORE_DATASOURCE_USERNAME:pos_user}

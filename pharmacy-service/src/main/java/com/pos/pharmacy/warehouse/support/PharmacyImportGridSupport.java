@@ -60,7 +60,7 @@ public class PharmacyImportGridSupport {
     }
 
     public int findHeaderRow(List<List<String>> grid) {
-        int limit = Math.min(40, grid.size());
+        int limit = Math.min(120, grid.size());
         for (int r = 0; r < limit; r++) {
             String joined = String.join(" ", grid.get(r)).toLowerCase(Locale.ROOT);
             if (joined.contains("наименован") || joined.contains("маҳсулот") || joined.contains("mahsulot")
