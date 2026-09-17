@@ -78,12 +78,23 @@ public class PharmacyWarehouseController {
 
     @PutMapping("/{id}/lines/{lineId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<PharmacyStockReceiptResponse> updateLine(
+    public ResponseEntity<Void> updateLine(
         @PathVariable UUID id,
         @PathVariable UUID lineId,
         @Valid @RequestBody PharmacyStockReceiptLineRequest line
     ) {
-        return ResponseEntity.ok(pharmacyStockReceiptService.updateLine(id, lineId, line));
+        pharmacyStockReceiptService.updateLine(id, lineId, line);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/lines/mass")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Массово изменить поле строк черновика")
+    public ResponseEntity<PharmacyReceiptRevalueResult> massUpdateLines(
+        @PathVariable UUID id,
+        @Valid @RequestBody PharmacyReceiptMassUpdateRequest request
+    ) {
+        return ResponseEntity.ok(pharmacyStockReceiptService.massUpdateLines(id, request));
     }
 
     @PostMapping("/{id}/lines/revalue")

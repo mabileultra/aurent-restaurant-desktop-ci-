@@ -11,6 +11,7 @@ import PharmacyProductModal from '../components/PharmacyProductModal';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyReceiptImportWizard from '../components/PharmacyReceiptImportWizard';
 import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
+import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar';
 import PharmacyReceiptLineModal from '../components/PharmacyReceiptLineModal';
 import PharmacyStockLayout from '../components/PharmacyStockLayout';
 import {
@@ -23,6 +24,7 @@ import {
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { usePharmacyReceiptImport } from '../hooks/usePharmacyReceiptImport';
 import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
+import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import {
   formatMoney,
@@ -80,10 +82,14 @@ export default function PharmacyReceiptPickPage() {
   });
 
   const updateLineMutation = useMutation({
-    mutationFn: ({ lineId, payload }) => pharmacyWarehouseApi.updateLine(id, lineId, payload),
-    onSuccess: (res) => {
+    mutationFn: async ({ lineId, payload }) => {
+      await pharmacyWarehouseApi.updateLine(id, lineId, payload);
+      const fresh = await pharmacyWarehouseApi.getReceipt(id, { timeout: 180000 });
+      return fresh.data;
+    },
+    onSuccess: (data) => {
       toast.success(t('pharmacyStock.saved'));
-      qc.setQueryData(['pharmacy-receipt', id], res.data);
+      qc.setQueryData(['pharmacy-receipt', id], data);
       setEditingLine(null);
       setSelectedProduct(null);
     },
@@ -106,6 +112,13 @@ export default function PharmacyReceiptPickPage() {
     onImported: (data) => qc.setQueryData(['pharmacy-receipt', id], data),
   });
   const revalue = usePharmacyReceiptRevalue({
+    receiptId: id,
+    lines: docLines,
+    selection: linesSelect,
+    t,
+    onUpdated: (data) => qc.setQueryData(['pharmacy-receipt', id], data),
+  });
+  const mass = usePharmacyReceiptMassEdit({
     receiptId: id,
     lines: docLines,
     selection: linesSelect,
@@ -282,6 +295,7 @@ export default function PharmacyReceiptPickPage() {
             />
             <span>{docLines.length}</span>
           </div>
+          {isDraft ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
           <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
             <table className="pharmacy-stock__table">
               <thead>

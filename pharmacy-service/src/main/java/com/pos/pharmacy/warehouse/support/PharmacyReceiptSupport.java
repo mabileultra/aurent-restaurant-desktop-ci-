@@ -43,29 +43,6 @@ public class PharmacyReceiptSupport {
         }
     }
 
-    public void requireLineLotFields(StockReceiptLine line) {
-        if (!StringUtils.hasText(line.getBatchNumber())) {
-            throw PharmacyErrors.badRequest(
-                "Batch number is required for all lines before activation",
-                "batchNumber",
-                line.getProduct() != null ? line.getProduct().getName() : null
-            );
-        }
-        if (line.getExpiryDate() == null) {
-            throw PharmacyErrors.badRequest(
-                "Expiry date is required for all lines before activation",
-                "expiryDate",
-                line.getProduct() != null ? line.getProduct().getName() : null
-            );
-        }
-    }
-
-    public void requireAllLinesHaveLots(StockReceipt receipt) {
-        for (StockReceiptLine line : receipt.getLines()) {
-            requireLineLotFields(line);
-        }
-    }
-
     public void applyLine(StockReceiptLine target, Product product, PharmacyStockReceiptLineRequest req) {
         StockReceiptLine built = buildLine(target.getReceipt(), product, req);
         target.setProduct(built.getProduct());

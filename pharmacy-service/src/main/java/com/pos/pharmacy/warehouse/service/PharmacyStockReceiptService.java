@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.service;
 
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.warehouse.dto.CreatePharmacyStockReceiptRequest;
+import com.pos.pharmacy.warehouse.dto.PharmacyReceiptMassUpdateRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptRevalueResult;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
@@ -28,9 +29,11 @@ public interface PharmacyStockReceiptService {
 
     PharmacyStockReceiptResponse addLines(UUID id, List<PharmacyStockReceiptLineRequest> lines);
 
-    PharmacyStockReceiptResponse updateLine(UUID id, UUID lineId, PharmacyStockReceiptLineRequest line);
+    void updateLine(UUID id, UUID lineId, PharmacyStockReceiptLineRequest line);
 
     PharmacyReceiptRevalueResult revalueLines(UUID id, PharmacyReceiptRevalueRequest request);
+
+    PharmacyReceiptRevalueResult massUpdateLines(UUID id, PharmacyReceiptMassUpdateRequest request);
 
     PharmacyStockReceiptResponse removeLine(UUID id, UUID lineId);
 

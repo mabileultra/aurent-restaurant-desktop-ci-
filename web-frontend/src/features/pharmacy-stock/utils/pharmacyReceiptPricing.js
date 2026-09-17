@@ -86,16 +86,14 @@ export function toLinePayload(form) {
     purchasePriceWithVat,
     retailPrice,
     unitRetailPrice,
-    batchNumber: form.batchNumber?.trim() || undefined,
-    expiryDate: form.expiryDate || undefined,
+    batchNumber: form.batchNumber?.trim() || null,
+    expiryDate: form.expiryDate || null,
   };
 }
 
 export function validateLineForm(form, t) {
   const qty = packsAndUnitsToQty(form.packs, form.units, form.unitsInPack);
   if (!(qty > 0)) return t('pharmacyStock.errQty');
-  if (!String(form.batchNumber || '').trim()) return t('pharmacyStock.errBatch');
-  if (!form.expiryDate) return t('pharmacyStock.errExpiry');
   if (!(Number(form.purchasePrice) >= 0)) return t('pharmacyStock.errPurchase');
   if (!(Number(form.retailPrice) >= 0) && !(Number(form.markupPercent) >= 0)) {
     return t('pharmacyStock.errRetail');
@@ -151,9 +149,7 @@ export function lineToForm(line, defaultMarkup = 20) {
 }
 
 export function linesReadyForActivate(lines = []) {
-  return lines.length > 0 && lines.every(
-    (l) => String(l.batchNumber || '').trim() && l.expiryDate,
-  );
+  return lines.length > 0;
 }
 
 function round2(n) {

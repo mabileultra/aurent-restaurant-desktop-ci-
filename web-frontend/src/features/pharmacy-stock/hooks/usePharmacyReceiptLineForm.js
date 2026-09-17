@@ -141,12 +141,12 @@ export function usePharmacyReceiptLineForm({
     const err = validateLineForm(form, t);
     if (err) return { error: err };
     let expiryDate = form.expiryDate;
-    if (!expiryDate) {
+    if (!expiryDate && String(form.expiryInput || '').trim()) {
       const parsed = parseSmartExpiryInput(form.expiryInput);
       if (!parsed) return { error: t('pharmacyStock.errExpiry') };
       expiryDate = parsed;
     }
-    return { payload: toLinePayload({ ...form, expiryDate }) };
+    return { payload: toLinePayload({ ...form, expiryDate: expiryDate || null }) };
   };
 
   return {

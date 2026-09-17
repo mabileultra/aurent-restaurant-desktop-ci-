@@ -17,6 +17,7 @@ import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
 import com.pos.pharmacy.util.QuantityUtil;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final ProductCatalogService productCatalogService;
     private final StoreStockService storeStockService;
     private final PharmacyReceiptSupport pharmacyReceipt;
+    private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
 
     @Override
@@ -179,7 +181,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     }
 
     @Override
-    public PharmacyStockReceiptResponse updateLine(UUID id, UUID lineId, PharmacyStockReceiptLineRequest lineReq) {
+    public void updateLine(UUID id, UUID lineId, PharmacyStockReceiptLineRequest lineReq) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         pharmacyReceipt.requireDraft(receipt);
         StockReceiptLine existing = receipt.getLines().stream()
@@ -189,7 +191,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         Product product = productCatalogService.requireActive(lineReq.productId());
         pharmacyReceipt.applyLine(existing, product, lineReq);
         pharmacyReceipt.recalculateTotals(receipt);
-        return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
+        stockReceiptRepository.save(receipt);
     }
 
     @Override
@@ -212,6 +214,32 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         }
         if (updated == 0) {
             throw PharmacyErrors.badRequest("No lines to revalue");
+        }
+        pharmacyReceipt.recalculateTotals(receipt);
+        stockReceiptRepository.save(receipt);
+        return new PharmacyReceiptRevalueResult(updated);
+    }
+
+    @Override
+    public PharmacyReceiptRevalueResult massUpdateLines(UUID id, PharmacyReceiptMassUpdateRequest request) {
+        StockReceipt receipt = requireAccessibleDetailed(id);
+        pharmacyReceipt.requireDraft(receipt);
+        if (request == null || request.field() == null) {
+            throw PharmacyErrors.badRequest("Mass field is required");
+        }
+        Set<UUID> selected = request.lineIds() == null || request.lineIds().isEmpty()
+            ? null
+            : new HashSet<>(request.lineIds());
+        int updated = 0;
+        for (StockReceiptLine line : receipt.getLines()) {
+            if (selected != null && !selected.contains(line.getId())) {
+                continue;
+            }
+            pharmacyReceiptMassApplier.apply(line, request.field(), request.value());
+            updated++;
+        }
+        if (updated == 0) {
+            throw PharmacyErrors.badRequest("No lines to update");
         }
         pharmacyReceipt.recalculateTotals(receipt);
         stockReceiptRepository.save(receipt);
@@ -245,8 +273,6 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (receipt.getLines().isEmpty()) {
             throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
         }
-        pharmacyReceipt.requireAllLinesHaveLots(receipt);
-
         for (StockReceiptLine line : receipt.getLines()) {
             Product product = line.getProduct();
             BigDecimal q = QuantityUtil.normalize(line.getQuantity());
