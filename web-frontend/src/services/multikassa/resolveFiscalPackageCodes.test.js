@@ -10,12 +10,23 @@ describe('pickTasnifPackage', () => {
     expect(isRealFiscalPackageCode('1')).toBe(false);
   });
 
-  it('does not guess when several real packages exist', () => {
-    expect(pickTasnifPackage({
+  it('picks the pack that matches № in the product name', () => {
+    const pkg = pickTasnifPackage({
       packages: [
-        { code: '1546940', nameRu: 'блистер' },
-        { code: '1546941', nameRu: 'коробка' },
+        { code: '1151822', nameRu: 'упаковка=10 шт (пакетик)' },
+        { code: '1146493', nameRu: 'шт (пакетик)' },
       ],
-    })).toBeNull();
+    }, { name: 'ТераФлю. Лимон №10' });
+    expect(pkg.code).toBe('1151822');
+  });
+
+  it('falls back to a piece package instead of blocking the sale', () => {
+    const pkg = pickTasnifPackage({
+      packages: [
+        { code: '1546940', nameRu: 'коробка' },
+        { code: '1546941', nameRu: 'шт' },
+      ],
+    });
+    expect(pkg.code).toBe('1546941');
   });
 });
