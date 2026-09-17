@@ -50,33 +50,24 @@ export function pickTasnifPackage(item, line) {
   return packages.find(isPiecePackage) || packages[0];
 }
 
-export async function enrichFiscalPackageCodes(cartItems) {
-  const next = [];
-  for (const line of cartItems) {
-    if (isRealFiscalPackageCode(line?.packageCode)) {
-      next.push(line);
-      continue;
-    }
-    const ikpu = String(line?.ikpu || line?.classifierClassCode || '').trim();
-    if (!ikpu) {
-      next.push(line);
-      continue;
-    }
-    try {
-      const res = await tasnifApi.detail({ mxik: ikpu });
-      const pkg = pickTasnifPackage(res.data, line);
-      if (!pkg) {
-        next.push(line);
-        continue;
-      }
-      next.push({
-        ...line,
-        packageCode: String(pkg.code).trim(),
-        packageName: pkg.nameUz || pkg.nameRu || pkg.nameLat || line.packageName,
-      });
-    } catch {
-      next.push(line);
-    }
+async function enrichLinePackage(line) {
+  if (isRealFiscalPackageCode(line?.packageCode)) return line;
+  const ikpu = String(line?.ikpu || line?.classifierClassCode || '').trim();
+  if (!ikpu) return line;
+  try {
+    const res = await tasnifApi.detail({ mxik: ikpu });
+    const pkg = pickTasnifPackage(res.data, line);
+    if (!pkg) return line;
+    return {
+      ...line,
+      packageCode: String(pkg.code).trim(),
+      packageName: pkg.nameUz || pkg.nameRu || pkg.nameLat || line.packageName,
+    };
+  } catch {
+    return line;
   }
-  return next;
+}
+
+export async function enrichFiscalPackageCodes(cartItems) {
+  return Promise.all((cartItems || []).map(enrichLinePackage));
 }

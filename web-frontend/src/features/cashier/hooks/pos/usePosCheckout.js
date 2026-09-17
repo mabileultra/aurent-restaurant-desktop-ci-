@@ -95,12 +95,12 @@ export function usePosCheckout({
 
       if (shouldPrint) {
         navigate(`/receipt/${receiptNum}`, {
-          state: { autoPrint: true, fromCashier: true },
+          state: { autoPrint: true, fromCashier: true, sale: res.data },
         });
         return;
       }
       if (!isDesktopCashier()) {
-        navigate(`/receipt/${receiptNum}`, { state: { fromCashier: true } });
+        navigate(`/receipt/${receiptNum}`, { state: { fromCashier: true, sale: res.data } });
       }
     },
     onError: (e) => {

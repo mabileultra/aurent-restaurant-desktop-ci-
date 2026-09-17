@@ -22,13 +22,14 @@ export async function resolvePharmacyProductByMarking({
   if (!storeId) return null;
 
   const candidates = markingBarcodeCandidates(rawCode, extraGtins);
-  for (const barcode of candidates) {
+  const found = await Promise.all(candidates.map(async (barcode) => {
     try {
       const { data } = await pharmacyWarehouseApi.getByBarcode(barcode, storeId);
-      if (data?.id) return data;
+      return data?.id ? data : null;
     } catch (error) {
       if (!isMissingProduct(error)) throw error;
+      return null;
     }
-  }
-  return null;
+  }));
+  return found.find(Boolean) ?? null;
 }

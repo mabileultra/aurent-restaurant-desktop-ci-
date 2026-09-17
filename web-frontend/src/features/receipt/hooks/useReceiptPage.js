@@ -30,8 +30,14 @@ export function useReceiptPage() {
     (location.state?.autoPrint === true || searchParams.get('print') === '1');
   const fromCashier = location.state?.fromCashier === true || user?.role === 'CASHIER';
 
+  const seededSale = location.state?.sale?.receiptNumber
+    && String(location.state.sale.receiptNumber) === String(receiptNumber)
+    ? location.state.sale
+    : undefined;
+
   const { data: sale, isLoading } = useQuery({
     queryKey: ['receipt', receiptNumber],
+    initialData: seededSale,
     queryFn: async () => {
       const num = String(receiptNumber || '').trim();
       if (/^PHR-/i.test(num)) {
@@ -102,7 +108,7 @@ export function useReceiptPage() {
     autoPrintedRef.current = true;
     const timer = window.setTimeout(() => {
       runPrint();
-    }, 500);
+    }, 80);
     return () => window.clearTimeout(timer);
   }, [sale, autoPrint, silentJob, runPrint]);
 

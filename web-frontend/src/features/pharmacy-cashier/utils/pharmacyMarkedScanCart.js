@@ -48,6 +48,29 @@ export function planMarkedScan(items, product, rawMark) {
   };
 }
 
+/** Снять одну маркировку с чека. Строки без этого кода не трогаем. */
+export function removePharmacyMarking(rawMark) {
+  const key = normalizePharmacyMarkingCode(preserveMarkingCodeForFiscal(rawMark));
+  if (!key) return false;
+  const items = useCartStore.getState().items;
+  const line = items.find((item) => lineMarkKeys(item).includes(key));
+  if (!line) return false;
+  const productMarks = (line.productMarks || []).filter(
+    (mark) => normalizePharmacyMarkingCode(mark) !== key,
+  );
+  if (productMarks.length === 0) {
+    useCartStore.getState().removeItem(line.lineId);
+    return true;
+  }
+  useCartStore.getState().patchCartLine(line.lineId, {
+    productMarks,
+    productMark: productMarks[0],
+    quantity: productMarks.length,
+    markedProduct: true,
+  });
+  return true;
+}
+
 export function applyPharmacyMarkingScan(product, rawMark) {
   const items = useCartStore.getState().items;
   const plan = planMarkedScan(items, product, rawMark);

@@ -23,7 +23,7 @@ function sleep(ms) {
 async function enrichFromOperationsList(baseUrl, parsed, hints) {
   let next = parsed;
   // Модуль иногда пишет фискальные поля с задержкой.
-  for (const delayMs of [0, 400, 1000]) {
+  for (const delayMs of [0, 150]) {
     if (delayMs) await sleep(delayMs);
     try {
       const listRaw = await getOperations(baseUrl);

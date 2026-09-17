@@ -12,8 +12,8 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class PharmacyIntegrationHttpConfig {
 
-  private static final int CONNECT_TIMEOUT_MS = 8_000;
-  private static final int READ_TIMEOUT_MS = 20_000;
+  private static final int CONNECT_TIMEOUT_MS = 3_000;
+  private static final int READ_TIMEOUT_MS = 5_000;
 
   @Bean
   public RestTemplate pharmacyIntegrationRestTemplate(RestTemplateBuilder builder) {
