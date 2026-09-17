@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { round2 } from '../../../utils/taxAmounts';
@@ -6,7 +6,7 @@ import {
   isPosReceiptPrintEnabled,
   setPosReceiptPrintEnabled,
 } from '../../../utils/receiptPrintPreference';
-import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
+import { amountStr, parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import { ENABLED_PAYMENT_CARD_PROVIDERS } from '../../cashier/constants/paymentCardProviders';
 import { appendKeypadDigit } from '../../cashier/components/NumericKeypad';
 
@@ -37,6 +37,7 @@ export function usePharmacyPayRail({
   const [pinfl, setPinfl] = useState('');
   const [loyaltyPhone, setLoyaltyPhone] = useState('');
   const [printReceiptEnabled, setPrintReceiptEnabled] = useState(isPosReceiptPrintEnabled);
+  const prevToPayRef = useRef(0);
 
   const toPay = round2(total);
   const defaultCardType = ENABLED_PAYMENT_CARD_PROVIDERS[0]?.cardType ?? null;
@@ -45,7 +46,20 @@ export function usePharmacyPayRail({
     if (toPay <= 0) {
       setCashInput('');
       setSelectedCardType(null);
+      prevToPayRef.current = 0;
+      return;
     }
+    const prev = prevToPayRef.current;
+    prevToPayRef.current = toPay;
+    if (prev <= 0 || Math.abs(prev - toPay) < 0.005) return;
+    // Если стояло «ровно» под старый итог — подтянуть, иначе сдача/остаток залипают.
+    setCashInput((current) => {
+      const cur = parseTenderedInput(current);
+      if (cur > 0 && Math.abs(cur - prev) < 0.005) {
+        return amountStr(toPay);
+      }
+      return current;
+    });
   }, [toPay]);
 
   useEffect(() => {
@@ -94,8 +108,7 @@ export function usePharmacyPayRail({
 
   const setExactAmount = useCallback(() => {
     if (toPay <= 0) return;
-    const n = Math.round(toPay * 100) / 100;
-    setCashInput(Number.isInteger(n) ? String(n) : n.toFixed(2));
+    setCashInput(amountStr(toPay));
   }, [toPay]);
 
   const appendCashDigit = useCallback((digit) => {
@@ -119,7 +132,6 @@ export function usePharmacyPayRail({
 
       setSelectedCardType(resolved);
 
-      // Продуктовая смешанная: частичный нал + карта
       if (hasPartialCash || method === 'mixed') {
         if (!hasPartialCash) {
           toast.error(t('pharmacyCashier.pay.hintMixedProduct'));

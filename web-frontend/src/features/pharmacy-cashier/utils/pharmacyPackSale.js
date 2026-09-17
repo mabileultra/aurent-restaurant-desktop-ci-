@@ -88,6 +88,15 @@ export function applyPharmacyPackSaleToCartProduct(product) {
 
 /** Позиция для API: количество в упаковках, цена за упаковку. */
 export function pharmacyCheckoutLineFromCartItem(item) {
+  // Маркированные пачки уже в «упаковках» — не делить на unitsInPack.
+  if (item?.markedProduct === true) {
+    return null;
+  }
+  const marks = Array.isArray(item?.productMarks) ? item.productMarks : [];
+  if (marks.length > 0 || item?.productMark || item?.markCode) {
+    return null;
+  }
+
   const fromLine = Number(item?.unitsInPack);
   const unitsInPack = fromLine > 1 ? fromLine : productUnitsInPack(item);
   if (!unitsInPack || unitsInPack <= 1) {

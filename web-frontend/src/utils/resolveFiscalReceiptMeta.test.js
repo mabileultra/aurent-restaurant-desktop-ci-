@@ -48,4 +48,19 @@ describe('resolveReceiptPaymentAmounts', () => {
     expect(pay.cardAmt).toBe(25000);
     expect(pay.cashAmt).toBe(0);
   });
+
+  it('for CASH shows tendered as cash so change matches', () => {
+    const pay = resolveReceiptPaymentAmounts({
+      paymentMethod: 'CASH',
+      totalAmount: 85000,
+      cashAmount: 85000,
+      cardAmount: 0,
+      amountTendered: 100000,
+      changeGiven: 15000,
+    });
+    expect(pay.cashAmt).toBe(100000);
+    expect(pay.paidTotal).toBe(85000);
+    expect(pay.change).toBe(15000);
+    expect(pay.cardAmt).toBe(0);
+  });
 });

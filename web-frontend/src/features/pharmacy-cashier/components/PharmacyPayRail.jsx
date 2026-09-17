@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
+import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
 import MultikassaCashierControls from '../../cashier/components/MultikassaCashierControls';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
@@ -68,7 +69,7 @@ export default function PharmacyPayRail({
   const pinflRequired = rail.method === 'insurance';
 
   const receivedDisplay = rail.cashInput
-    ? fmt(Number(String(rail.cashInput).replace(',', '.')) || 0)
+    ? fmt(parseTenderedInput(rail.cashInput))
     : '—';
 
   return (

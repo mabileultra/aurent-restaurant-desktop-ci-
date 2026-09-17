@@ -30,6 +30,14 @@ function markAlreadyInItems(items, rawMark) {
   });
 }
 
+function existingLineMarks(line) {
+  if (Array.isArray(line?.productMarks) && line.productMarks.length > 0) {
+    return [...line.productMarks];
+  }
+  const single = line?.productMark || line?.markCode;
+  return single ? [single] : [];
+}
+
 /** Следующий чек после скана: новая маркировка +1, повтор — duplicate. */
 export function planMarkedScan(items, product, rawMark) {
   const mark = preserveMarkingCodeForFiscal(rawMark);
@@ -52,7 +60,7 @@ export function planMarkedScan(items, product, rawMark) {
     return { status: 'create', key, mark, quantity: 1 };
   }
 
-  const productMarks = [...(markedLine.productMarks || []), mark];
+  const productMarks = [...existingLineMarks(markedLine), mark];
   return {
     status: 'append',
     key,
@@ -70,7 +78,7 @@ export function removePharmacyMarking(rawMark) {
   const items = useCartStore.getState().items;
   const line = items.find((item) => markAlreadyInItems([item], rawMark));
   if (!line) return false;
-  const productMarks = (line.productMarks || []).filter(
+  const productMarks = existingLineMarks(line).filter(
     (mark) => !marksShareIdentity(mark, rawMark),
   );
   if (productMarks.length === 0) {
@@ -83,6 +91,8 @@ export function removePharmacyMarking(rawMark) {
     markCode: productMarks[0],
     quantity: productMarks.length,
     markedProduct: true,
+    pharmacySellByPiece: false,
+    packUnitPrice: null,
   });
   return true;
 }
@@ -99,6 +109,7 @@ export function applyPharmacyMarkingScan(product, rawMark) {
         markCode: plan.mark,
         productMarks: [plan.mark],
         pharmacySellByPiece: false,
+        packUnitPrice: null,
       },
       1,
     );
@@ -111,6 +122,8 @@ export function applyPharmacyMarkingScan(product, rawMark) {
       markCode: plan.productMarks[0],
       quantity: plan.quantity,
       markedProduct: true,
+      pharmacySellByPiece: false,
+      packUnitPrice: null,
     });
     return {
       status: 'added',

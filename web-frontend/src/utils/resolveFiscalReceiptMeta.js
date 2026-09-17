@@ -37,43 +37,4 @@ export function resolveFiscalReceiptMeta(sale, branding = {}) {
   };
 }
 
-/**
- * Наличные / карта: явные суммы важнее paymentMethod (иначе чек врёт «Наличные»).
- */
-export function resolveReceiptPaymentAmounts(sale) {
-  const method = String(sale?.paymentMethod || 'CASH').toUpperCase();
-  const total = Number(sale?.totalAmount) || 0;
-  const cashExplicit = Number(sale?.cashAmount);
-  const cardExplicit = Number(sale?.cardAmount);
-  const hasCash = Number.isFinite(cashExplicit) && cashExplicit > 0;
-  const hasCard = Number.isFinite(cardExplicit) && cardExplicit > 0;
-
-  if (hasCash || hasCard) {
-    return {
-      cashAmt: hasCash ? cashExplicit : 0,
-      cardAmt: hasCard ? cardExplicit : 0,
-      paidTotal: (hasCash ? cashExplicit : 0) + (hasCard ? cardExplicit : 0) || total,
-      change: Number(sale?.changeGiven) || 0,
-      method,
-    };
-  }
-
-  const cashAmt =
-    method === 'CASH'
-      ? Number(sale?.amountTendered) || total
-      : method === 'MIXED'
-        ? 0
-        : 0;
-  const cardAmt =
-    method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
-      ? Number(sale?.amountTendered) || total
-      : 0;
-
-  return {
-    cashAmt,
-    cardAmt,
-    paidTotal: method === 'CASH' ? Number(sale?.amountTendered) || total : total,
-    change: Number(sale?.changeGiven) || 0,
-    method,
-  };
-}
+export { resolveReceiptPaymentAmounts } from './resolveReceiptPaymentAmounts';

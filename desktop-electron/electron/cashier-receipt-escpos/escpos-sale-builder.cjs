@@ -307,18 +307,25 @@ function appendPayment(printer, payload) {
   const total = Number(sale.totalAmount) || 0;
   const cashExplicit = Number(sale.cashAmount);
   const cardExplicit = Number(sale.cardAmount);
+  const tendered = Number(sale.amountTendered);
   const hasCash = Number.isFinite(cashExplicit) && cashExplicit > 0;
   const hasCard = Number.isFinite(cardExplicit) && cardExplicit > 0;
-  const cashAmt = hasCash
-    ? cashExplicit
-    : method === 'CASH'
-      ? Number(sale.amountTendered) || total
-      : 0;
-  const cardAmt = hasCard
-    ? cardExplicit
-    : method === 'CARD' || method === 'CASHLESS' || method === 'MPESA'
-      ? Number(sale.amountTendered) || total
-      : 0;
+  // CASH: cashAmount в API = выручка (total), amountTendered = сколько дали.
+  // На чеке в «Наличные» — полученное, иначе сдача выглядит сломанной.
+  let cashAmt = 0;
+  let cardAmt = 0;
+  if (method === 'CASH' && !hasCard) {
+    cashAmt = Number.isFinite(tendered) && tendered > 0
+      ? tendered
+      : hasCash
+        ? cashExplicit
+        : total;
+  } else if (hasCash || hasCard) {
+    cashAmt = hasCash ? cashExplicit : 0;
+    cardAmt = hasCard ? cardExplicit : 0;
+  } else if (method === 'CARD' || method === 'CASHLESS' || method === 'MPESA') {
+    cardAmt = Number.isFinite(tendered) && tendered > 0 ? tendered : total;
+  }
   const change = Number(sale.changeGiven) || 0;
 
   appendRow(printer, L.paymentForm || 'Payment', fmtMoney(total));

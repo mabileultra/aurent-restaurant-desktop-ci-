@@ -87,18 +87,19 @@ export function usePharmacyCartHandlers({
   );
 
   const showLineAddedToast = useCallback(
-    (line, productName) => {
+    (line, productName, addedSum = null) => {
+      const sum = addedSum != null ? Number(addedSum) : lineSubtotal(line);
       toast.success(
         <div className="pos-item-added-toast">
           <p className="pos-item-added-toast__name">{productName}</p>
-          <p className="pos-item-added-toast__sum">{fmt(lineSubtotal(line))}</p>
+          <p className="pos-item-added-toast__sum">{fmt(sum)}</p>
         </div>,
         {
           duration: 2600,
           className: 'pos-item-added-toast-host',
           ariaLabel: t('pos.itemAdded', {
             name: productName,
-            sum: fmt(lineSubtotal(line)),
+            sum: fmt(sum),
           }),
         },
       );
@@ -148,7 +149,8 @@ export function usePharmacyCartHandlers({
       }
       if (result.status !== 'added') return result;
       const line = useCartStore.getState().items.find((item) => item.lineId === result.lineId);
-      if (line) showLineAddedToast(line, product.name);
+      // Тост = цена одной добавленной пачки, не вся строка (иначе кажется «двойной» счёт).
+      if (line) showLineAddedToast(line, product.name, Number(line.unitPrice) || 0);
       setSelectedLineId(result.lineId);
       setSearch('');
       searchInputRef.current?.focus();
@@ -203,6 +205,8 @@ export function usePharmacyCartHandlers({
           productMark: marks[0],
           markCode: marks[0],
           productMarks: marks,
+          pharmacySellByPiece: false,
+          packUnitPrice: null,
         };
       }
       const lineId = marks.length > 0

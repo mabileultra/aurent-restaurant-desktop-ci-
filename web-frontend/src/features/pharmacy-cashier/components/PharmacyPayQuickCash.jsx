@@ -2,6 +2,8 @@
  * Быстрый ввод купюр аптечной оплаты — без экранного numpad 0–9.
  * Сумма с физклавиатуры ПК (usePharmacyPayKeyboard).
  */
+import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
+
 export default function PharmacyPayQuickCash({
   value,
   onChange,
@@ -16,7 +18,7 @@ export default function PharmacyPayQuickCash({
 }) {
   const applyQuick = (amount, mode = 'add') => {
     if (disabled || amount == null) return;
-    const cur = Number(String(value).replace(',', '.')) || 0;
+    const cur = parseTenderedInput(value);
     const next =
       mode === 'add'
         ? Math.round((cur + Number(amount)) * 100) / 100
