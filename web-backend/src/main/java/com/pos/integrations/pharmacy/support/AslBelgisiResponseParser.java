@@ -111,11 +111,16 @@ public final class AslBelgisiResponseParser {
   private boolean looksLikeCode(JsonNode node) {
     return hasText(node, "gtin")
       || hasText(node, "productGtin")
+      || hasText(node, "gtin14")
       || hasText(node, "status")
       || hasText(node, "codeStatus")
+      || hasText(node, "state")
       || hasText(node, "productName")
+      || hasText(node, "name")
       || hasText(node, "cis")
-      || hasText(node, "km");
+      || hasText(node, "km")
+      || hasText(node, "code")
+      || hasText(node, "markingCode");
   }
 
   private String firstText(JsonNode node, String... fields) {

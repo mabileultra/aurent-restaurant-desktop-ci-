@@ -45,15 +45,30 @@ export function findProductByMarkingCode(products, rawCode) {
     if (byGtin) return byGtin;
   }
 
+  const markDigits = digitsOnly(normalized);
+  if (markDigits.length >= 12) {
+    const byEmbed = products.find((p) => productBarcodeDigits(p).some((barcode) => (
+      barcode.length >= 8 && markDigits.includes(barcode)
+    )));
+    if (byEmbed) return byEmbed;
+  }
+
   return null;
 }
 
 /** GTIN из КМ / ответа ASL совпадает со штрихкодом этой позиции. */
 export function markingMatchesProduct(product, rawCode, extraGtins = []) {
+  const barcodes = productBarcodeDigits(product);
+  if (barcodes.length === 0) return false;
+
   const candidates = new Set(markingBarcodeCandidates(rawCode, extraGtins));
-  if (candidates.size === 0) return false;
-  return productBarcodeDigits(product).some((barcode) => {
+  const markDigits = digitsOnly(normalizePharmacyMarkingCode(rawCode));
+
+  return barcodes.some((barcode) => {
     if (candidates.has(barcode)) return true;
-    return gtinVariants(barcode).some((variant) => candidates.has(variant));
+    if (gtinVariants(barcode).some((variant) => candidates.has(variant))) return true;
+    if (barcode.length >= 8 && markDigits.includes(barcode)) return true;
+    if (barcode.length === 13 && markDigits.includes(`0${barcode}`)) return true;
+    return false;
   });
 }

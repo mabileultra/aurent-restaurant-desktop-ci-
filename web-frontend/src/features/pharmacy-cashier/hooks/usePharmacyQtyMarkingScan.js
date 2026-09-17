@@ -90,9 +90,9 @@ export function usePharmacyQtyMarkingScan({
           code: preserveMarkingCodeForFiscal(rawCode),
         });
         aslResult = data;
-      } catch (err) {
-        reject('not-found', err.response?.data?.message ?? err.message);
-        return;
+      } catch {
+        // ASL недоступен — принимаем по GTIN выбранного товара
+        aslResult = null;
       }
     }
 

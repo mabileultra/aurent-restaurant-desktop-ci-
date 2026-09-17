@@ -22,4 +22,10 @@ describe('pharmacyMarkingCode', () => {
   it('does not treat a plain EAN-13 as a marking code', () => {
     expect(isPharmacyMarkingCode('4780012345678')).toBe(false);
   });
+
+  it('reads GTIN from parenthesis AI and digit-only payloads', () => {
+    expect(extractGtinFromMarkingCode('(01)03838989563233(21)ABC')).toBe('03838989563233');
+    expect(extractGtinFromMarkingCode('010383898956323321999888777')).toBe('03838989563233');
+    expect(markingBarcodeCandidates('010383898956323321SERIAL')).toContain('3838989563233');
+  });
 });

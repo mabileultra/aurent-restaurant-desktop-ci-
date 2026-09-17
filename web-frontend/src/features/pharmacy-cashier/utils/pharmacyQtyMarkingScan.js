@@ -14,6 +14,7 @@ export function shortMarkLabel(mark) {
 /**
  * Решение по одному скану в модалке количества.
  * Количество растёт только на status === 'accepted'.
+ * Товар уже выбран — GTIN из КМ важнее, чем «не найден» от ASL.
  */
 export function assessQtyMarkingScan({
   product,
@@ -35,14 +36,20 @@ export function assessQtyMarkingScan({
   if (known) return { status: 'duplicate', key };
 
   if (aslResult && isAslMarkAlreadySold(aslResult)) return { status: 'sold', key };
-  if (aslResult && aslResult.found === false) return { status: 'not-found', key };
 
-  if (aslResult?.gtin && !markingMatchesProduct(product, '', [aslResult.gtin])) {
+  // ASL явно сказал, что GTIN другой — не подменяем товар
+  if (aslResult?.found && aslResult.gtin && !markingMatchesProduct(product, '', [aslResult.gtin])) {
     return { status: 'mismatch', key };
   }
+
   const gtins = [...extraGtins];
   if (aslResult?.gtin) gtins.push(aslResult.gtin);
-  if (!markingMatchesProduct(product, rawCode, gtins)) return { status: 'mismatch', key };
+  const matches = markingMatchesProduct(product, rawCode, gtins);
+
+  if (!matches) {
+    if (aslResult && aslResult.found === false) return { status: 'not-found', key };
+    return { status: 'mismatch', key };
+  }
 
   const stock = Number(stockPacks) || 0;
   const alreadyInCart = cartItems
@@ -55,6 +62,6 @@ export function assessQtyMarkingScan({
     key,
     mark,
     label: shortMarkLabel(mark),
-    aslStatus: aslResult?.status || '',
+    aslStatus: aslResult?.status || (aslResult?.found === false ? 'LOCAL' : ''),
   };
 }

@@ -22,10 +22,11 @@ export function isPharmacyMarkingCode(raw) {
   // Типичный EAN-8/13/14 — не маркировка
   if (/^\d{8}$/.test(code) || /^\d{12,14}$/.test(code)) return false;
 
-  // GS1 AI «01» + GTIN 14 цифр
-  if (/^01\d{14}/.test(code)) return true;
+  // GS1 AI «01» + GTIN 14 цифр (в начале или после скобок)
+  if (/01\d{14}/.test(code) || /\(01\)\d{14}/.test(code)) return true;
 
   // Длинный криптокод КМ
+  if (code.length >= 20 && /[A-Za-z]/.test(code) && /\d/.test(code)) return true;
   if (code.length >= 24 && /[A-Za-z0-9]/.test(code)) return true;
 
   return false;
@@ -34,12 +35,21 @@ export function isPharmacyMarkingCode(raw) {
 /** Извлечь GTIN из GS1-строки маркировки. */
 export function extractGtinFromMarkingCode(raw) {
   const code = normalizePharmacyMarkingCode(raw);
-  const aiMatch = code.match(/^01(\d{14})/);
+  if (!code) return null;
+
+  const paren = code.match(/\(01\)(\d{14})/);
+  if (paren) return paren[1];
+
+  const aiMatch = code.match(/01(\d{14})/);
   if (aiMatch) return aiMatch[1];
 
   const digits = code.replace(/\D/g, '');
   if (digits.length >= 8 && digits.length <= 14) {
     return digits;
+  }
+  // Сканер иногда отдаёт 01+GTIN+хвост только цифрами
+  if (digits.length >= 16 && digits.startsWith('01')) {
+    return digits.slice(2, 16);
   }
   return null;
 }

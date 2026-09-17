@@ -73,21 +73,21 @@ export function usePharmacyMarkingScan({
         if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
         return true;
       }
-      if (verifyResult?.gtin) {
-        try {
-          product = await resolvePharmacyProductByMarking({
-            products,
-            rawCode,
-            extraGtins: [verifyResult.gtin],
-            storeId,
-          });
-        } catch (error) {
-          verifyError = error.response?.data?.message ?? error.message;
-        }
-        if (product) {
-          onProductFound?.(withFiscalMark(product, rawCode));
-          return true;
-        }
+      const extraGtins = [];
+      if (verifyResult?.gtin) extraGtins.push(verifyResult.gtin);
+      try {
+        product = await resolvePharmacyProductByMarking({
+          products,
+          rawCode,
+          extraGtins,
+          storeId,
+        });
+      } catch (error) {
+        verifyError = error.response?.data?.message ?? error.message;
+      }
+      if (product) {
+        onProductFound?.(withFiscalMark(product, rawCode));
+        return true;
       }
     }
 
