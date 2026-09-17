@@ -2330,7 +2330,17 @@
     "noPieceSaleHint": "Bu mahsulot uchun donalab sotish o‘chirilgan — faqat to‘liq qadoq",
     "pieceStepHint": "Dona qadami: {{steps}}…",
     "pieceStepInvalid": "Dona miqdori {{step}} ga karrali bo‘lishi kerak",
-    "marking": "Markirovka"
+    "marking": "Markirovka",
+    "markingScan": {
+      "hint": "ASL Belgisi DataMatrix ni skanerlang — har bir qadoq +1, kod miqdorga yozilmaydi",
+      "waiting": "Markirovka hali yo‘q",
+      "scanned": "Skanerlandi",
+      "verifying": "ASL Belgisi tekshirilmoqda…",
+      "needScan": "Chekka qo‘shish uchun markirovkani skanerlang",
+      "mismatch": "Bu boshqa mahsulot markirovkasi",
+      "notACode": "Bu shtrixkod, markirovka kodi emas. DataMatrix ni skanerlang",
+      "remove": "Olib tashlash"
+    }
   },
   "platform": {
     "title": "Super-admin",

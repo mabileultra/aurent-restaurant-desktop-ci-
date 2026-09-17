@@ -1,4 +1,8 @@
-import { extractGtinFromMarkingCode, normalizePharmacyMarkingCode } from './pharmacyMarkingCode';
+import {
+  extractGtinFromMarkingCode,
+  markingBarcodeCandidates,
+  normalizePharmacyMarkingCode,
+} from './pharmacyMarkingCode';
 
 function digitsOnly(value) {
   return String(value ?? '').replace(/\D/g, '');
@@ -42,4 +46,14 @@ export function findProductByMarkingCode(products, rawCode) {
   }
 
   return null;
+}
+
+/** GTIN из КМ / ответа ASL совпадает со штрихкодом этой позиции. */
+export function markingMatchesProduct(product, rawCode, extraGtins = []) {
+  const candidates = new Set(markingBarcodeCandidates(rawCode, extraGtins));
+  if (candidates.size === 0) return false;
+  return productBarcodeDigits(product).some((barcode) => {
+    if (candidates.has(barcode)) return true;
+    return gtinVariants(barcode).some((variant) => candidates.has(variant));
+  });
 }

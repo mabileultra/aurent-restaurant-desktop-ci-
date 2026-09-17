@@ -23,18 +23,23 @@ export default function CashierSalesReceiptPane({
   const [printToken, setPrintToken] = useState(null);
   const [printing, setPrinting] = useState(false);
 
+  const listedSale = selectedRow?.id ? selectedRow : null;
   const {
-    data: sale,
+    data: fetchedSale,
     isPending,
-    isError,
   } = useQuery({
-    queryKey: ['receipt', catalogKind, receiptNumber],
-    queryFn: () => {
+    queryKey: ['receipt', catalogKind, selectedRow?.id, receiptNumber],
+    queryFn: async () => {
       const client = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
+      if (selectedRow?.id) {
+        const byId = await client.getById(selectedRow.id);
+        return byId.data;
+      }
       return client.getReceipt(receiptNumber).then((r) => r.data);
     },
-    enabled: !!receiptNumber,
+    enabled: Boolean(selectedRow?.id || receiptNumber),
   });
+  const sale = fetchedSale || listedSale;
 
   const canReturn = selectedRow && selectedRow.status !== 'VOIDED';
   const canPrint = Boolean(sale && receiptNumber);
@@ -82,9 +87,9 @@ export default function CashierSalesReceiptPane({
       <div className="cashier-sales-receipt-pane__body">
         {!receiptNumber ? (
           <p className="cashier-sales-receipt-pane__placeholder">{t('pos.salesSelectHint')}</p>
-        ) : isPending ? (
+        ) : !sale && isPending ? (
           <p className="cashier-sales-receipt-pane__placeholder">{t('receipt.loading')}</p>
-        ) : isError || !sale ? (
+        ) : !sale ? (
           <p className="cashier-sales-receipt-pane__placeholder">{t('receipt.notFound')}</p>
         ) : (
           <div className="cashier-sales-receipt-pane__paper">

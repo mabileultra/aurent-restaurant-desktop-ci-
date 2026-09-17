@@ -10,6 +10,8 @@ import {
   pieceStepHintValues,
   validatePackPieceQty,
 } from '../utils/pharmacyPackQty';
+import { usePharmacyQtyMarkingScan } from '../hooks/usePharmacyQtyMarkingScan';
+import PharmacyQtyMarkingPanel from './PharmacyQtyMarkingPanel';
 import { pharmacyPieceUnitPrice } from '../utils/pharmacyPackSale';
 import {
   formatExpiryDisplay,
@@ -31,6 +33,7 @@ export default function PharmacyQtyModal({
   open,
   product,
   storeId,
+  aslMarkingEnabled = false,
   onConfirm,
   onClose,
 }) {
@@ -60,6 +63,14 @@ export default function PharmacyQtyModal({
     .map((b) => String(b || '').trim())
     .filter(Boolean);
   const uniqueBarcodes = [...new Set(barcodes)];
+  const marked = product?.markedProduct === true;
+  const marking = usePharmacyQtyMarkingScan({
+    open,
+    product,
+    storeId,
+    aslMarkingEnabled,
+    stockPacks,
+  });
 
   const lotsQuery = useQuery({
     queryKey: ['pharmacy-lots', storeId, product?.id],
@@ -73,15 +84,22 @@ export default function PharmacyQtyModal({
 
   useEffect(() => {
     if (!open || !product) return;
-    setPacksText(unitsInPack > 1 ? '0' : '1');
+    setPacksText(marked ? '0' : (unitsInPack > 1 ? '0' : '1'));
     setPiecesText('0');
     setError('');
     const hintExpiry = productExpiry(product);
     const hintBatch = productBatch(product);
     setLotKey(hintExpiry || hintBatch ? `${hintBatch || ''}|${hintExpiry || ''}` : '');
+    if (marked) return undefined;
     const timer = setTimeout(() => packRef.current?.focus(), 30);
     return () => clearTimeout(timer);
-  }, [open, product, unitsInPack]);
+  }, [open, product, unitsInPack, marked]);
+
+  useEffect(() => {
+    if (!open || !marked) return;
+    setPacksText(String(marking.scans.length));
+    setPiecesText('0');
+  }, [open, marked, marking.scans.length]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -95,8 +113,8 @@ export default function PharmacyQtyModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [open, onClose]);
 
-  const packs = Number(packsText) || 0;
-  const pieces = sellByPiece ? (Number(piecesText) || 0) : 0;
+  const packs = marked ? marking.scans.length : (Number(packsText) || 0);
+  const pieces = marked || !sellByPiece ? 0 : (Number(piecesText) || 0);
   const normalized = useMemo(
     () => normalizePackPieces(packs, pieces, unitsInPack),
     [packs, pieces, unitsInPack],
@@ -115,11 +133,17 @@ export default function PharmacyQtyModal({
   if (!open || !product) return null;
 
   const submit = () => {
+    if (marked && marking.scans.length === 0) {
+      setError(t('pharmacyCashier.markingScan.needScan'));
+      return;
+    }
+    const submitPacks = marked ? marking.scans.length : packs;
+    const submitPieces = marked ? 0 : pieces;
     const err = validatePackPieceQty({
-      packs,
-      pieces,
+      packs: submitPacks,
+      pieces: submitPieces,
       unitsInPack,
-      sellByPiece,
+      sellByPiece: marked ? false : sellByPiece,
       pieceStep,
       stockPacks,
     }, t);
@@ -128,9 +152,10 @@ export default function PharmacyQtyModal({
       return;
     }
     onConfirm?.({
-      packs: normalized.packs,
-      pieces: sellByPiece ? normalized.pieces : 0,
+      packs: marked ? marking.scans.length : normalized.packs,
+      pieces: marked || !sellByPiece ? 0 : normalized.pieces,
       lot: selectedLot,
+      productMarks: marked ? marking.scans.map((scan) => scan.mark) : [],
     });
   };
 
@@ -203,15 +228,32 @@ export default function PharmacyQtyModal({
           </div>
         </dl>
 
+        {marked ? (
+          <PharmacyQtyMarkingPanel
+            scans={marking.scans}
+            verifying={marking.verifying}
+            error={marking.error}
+            inputRef={marking.inputRef}
+            onScan={marking.enqueue}
+            onRemove={marking.removeScan}
+          />
+        ) : null}
+
         <div className={`pharmacy-qty-modal__qty${showPackUi ? '' : ' pharmacy-qty-modal__qty--single'}`}>
           <label className="pharmacy-qty-modal__qty-box">
             <span>{t('pharmacyCashier.qtyPacks')}</span>
             <input
               ref={packRef}
               inputMode="numeric"
+              readOnly={marked}
+              tabIndex={marked ? -1 : 0}
               className="pharmacy-qty-modal__qty-input"
-              value={packsText}
+              value={marked ? String(marking.scans.length) : packsText}
+              onFocus={() => {
+                if (marked) marking.inputRef.current?.focus();
+              }}
               onChange={(e) => {
+                if (marked) return;
                 setPacksText(digits(e.target.value));
                 setError('');
               }}
@@ -230,8 +272,8 @@ export default function PharmacyQtyModal({
               <input
                 inputMode="numeric"
                 className="pharmacy-qty-modal__qty-input"
-                value={sellByPiece ? piecesText : '0'}
-                disabled={!sellByPiece}
+                value={sellByPiece && !marked ? piecesText : '0'}
+                disabled={!sellByPiece || marked}
                 onChange={(e) => {
                   setPiecesText(digits(e.target.value));
                   setError('');
@@ -260,13 +302,6 @@ export default function PharmacyQtyModal({
         <p className="pharmacy-qty-modal__total">{fmt(preview)}</p>
         {error ? <p className="pharmacy-qty-modal__error">{error}</p> : null}
 
-        {product.markedProduct ? (
-          <label className="pharmacy-qty-modal__mark">
-            <input type="checkbox" checked readOnly />
-            <span>{t('pharmacyCashier.marking')}</span>
-          </label>
-        ) : null}
-
         <div className="pharmacy-qty-modal__actions">
           <button type="button" className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--cancel" onClick={onClose}>
             {t('common.cancel')}
@@ -275,6 +310,7 @@ export default function PharmacyQtyModal({
             type="button"
             className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--ok"
             onClick={submit}
+            disabled={marked && marking.verifying}
           >
             {t('pharmacyCashier.addLine')}
           </button>

@@ -1,0 +1,108 @@
+.pharmacy-qty-marking {
+  margin: 0.7rem 0.9rem 0;
+  padding: 0.55rem 0.6rem 0.45rem;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: var(--pharm-radius-sm, 6px);
+  background: var(--pharm-surface, #f3f6f4);
+}
+
+.pharmacy-qty-marking__hint,
+.pharmacy-qty-marking__status,
+.pharmacy-qty-marking__empty,
+.pharmacy-qty-marking__error {
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.pharmacy-qty-marking__hint,
+.pharmacy-qty-marking__status {
+  color: var(--pharm-brand, #006847);
+  font-weight: 700;
+}
+
+.pharmacy-qty-marking__empty {
+  margin-top: 0.4rem;
+  color: var(--pharm-muted, #5b6f68);
+}
+
+.pharmacy-qty-marking__error {
+  margin-top: 0.35rem;
+  color: var(--pharm-danger-text, #8a1f1a);
+  font-weight: 700;
+}
+
+.pharmacy-qty-marking__input {
+  width: 100%;
+  height: 34px;
+  margin-top: 0.4rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--pharm-border, #d5ddd8);
+  border-radius: var(--pharm-radius-sm, 6px);
+  background: var(--pharm-elevated, #fff);
+  color: var(--pharm-ink, #1a2e28);
+  font-size: 0.8125rem;
+  outline: none;
+}
+
+.pharmacy-qty-marking__input:focus {
+  border-color: var(--pharm-accent, #006847);
+  box-shadow: 0 0 0 2px var(--pharm-focus-ring, rgb(0 104 71 / 0.2));
+}
+
+.pharmacy-qty-marking__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-height: 7.5rem;
+  margin: 0.45rem 0 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+}
+
+.pharmacy-qty-marking__item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 28px;
+  padding: 0.15rem 0.35rem;
+  border-radius: 6px;
+  background: var(--pharm-ok, #d8f5e3);
+}
+
+.pharmacy-qty-marking__badge,
+.pharmacy-qty-marking__asl {
+  flex: none;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--pharm-ok-text, #0b5c3a);
+}
+
+.pharmacy-qty-marking__code {
+  min-width: 0;
+  overflow: hidden;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #1a2e28);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pharmacy-qty-marking__remove {
+  flex: none;
+  margin-left: auto;
+  border: 0;
+  background: transparent;
+  color: var(--pharm-muted, #5b6f68);
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-qty-marking__remove:hover {
+  color: var(--pharm-danger-text, #8a1f1a);
+}

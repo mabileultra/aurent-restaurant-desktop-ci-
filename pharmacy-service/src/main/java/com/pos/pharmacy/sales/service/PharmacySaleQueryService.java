@@ -25,8 +25,7 @@ public class PharmacySaleQueryService {
 
     public SaleResponse getByReceiptNumber(String receiptNumber) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
-        Sale sale = saleRepository.findByReceiptNumber(receiptNumber)
-            .filter(s -> companyId.equals(s.getCompanyId()))
+        Sale sale = saleRepository.findByReceiptNumberAndCompanyId(receiptNumber, companyId)
             .orElseThrow(() -> PharmacyErrors.notFound("Sale receipt", receiptNumber));
         return saleMapper.toResponse(sale);
     }

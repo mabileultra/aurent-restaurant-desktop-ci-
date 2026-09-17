@@ -170,12 +170,15 @@ export function usePharmacyCartHandlers({
   );
 
   const handleQtyConfirm = useCallback(
-    ({ packs = 0, pieces = 0, lot } = {}) => {
+    ({ packs = 0, pieces = 0, lot, productMarks } = {}) => {
       const product = qtyModalProduct;
       if (!product) return;
       const unitsInPack = productUnitsInPack(product) || Number(product.unitsInPack) || 1;
-      const sellByPiece = productSellByPiece(product);
-      const qty = toCartQuantity({ packs, pieces, unitsInPack, sellByPiece });
+      const marks = Array.isArray(productMarks) ? productMarks.filter(Boolean) : [];
+      const sellByPiece = marks.length > 0 ? false : productSellByPiece(product);
+      const qty = marks.length > 0
+        ? marks.length
+        : toCartQuantity({ packs, pieces, unitsInPack, sellByPiece });
       if (qty <= 0) return;
       let payload = {
         ...product,
@@ -191,7 +194,18 @@ export function usePharmacyCartHandlers({
       } else {
         payload = { ...payload, pharmacySellByPiece: false };
       }
-      const lineId = addPharmacyPieceItem(payload, qty);
+      if (marks.length > 0) {
+        payload = {
+          ...payload,
+          markedProduct: true,
+          productMark: marks[0],
+          markCode: marks[0],
+          productMarks: marks,
+        };
+      }
+      const lineId = marks.length > 0
+        ? useCartStore.getState().insertSeparatePieceItem(payload, qty)
+        : addPharmacyPieceItem(payload, qty);
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
       if (line) showLineAddedToast(line, product.name);
       setQtyModalProduct(null);

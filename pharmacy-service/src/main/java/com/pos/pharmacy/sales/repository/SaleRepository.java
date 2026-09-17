@@ -16,10 +16,11 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
 
     long countByReceiptNumberStartingWith(String prefix);
 
-    @EntityGraph(attributePaths = {"items", "items.product", "items.lotAllocations", "items.lotAllocations.lot"})
-    Optional<Sale> findByReceiptNumber(String receiptNumber);
+    /** Не тянуть lotAllocations здесь: второй bag вместе с items роняет открытие чека. */
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    Optional<Sale> findByReceiptNumberAndCompanyId(String receiptNumber, Integer companyId);
 
-    @EntityGraph(attributePaths = {"items", "items.product", "items.lotAllocations", "items.lotAllocations.lot"})
+    @EntityGraph(attributePaths = {"items", "items.product"})
     Optional<Sale> findByIdAndCompanyId(UUID id, Integer companyId);
 
     @EntityGraph(attributePaths = {"items", "items.product"})
