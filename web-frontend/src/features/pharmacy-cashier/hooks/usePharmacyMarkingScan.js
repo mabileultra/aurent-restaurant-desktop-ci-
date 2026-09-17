@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
-import { findProductByMarkingCode } from '../utils/pharmacyMarkingProductMatch';
+import { resolvePharmacyProductByMarking } from '../utils/resolvePharmacyProductByMarking';
 import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
 
@@ -32,55 +32,66 @@ export function usePharmacyMarkingScan({
     const code = normalizePharmacyMarkingCode(rawCode);
     if (!code || !isPharmacyMarkingCode(rawCode)) return false;
 
-    const localProduct = findProductByMarkingCode(products, rawCode);
-    if (localProduct) {
-      onProductFound?.(withFiscalMark(localProduct, rawCode));
-      if (!silent) {
-        toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: localProduct.name }));
-      }
-    }
-
-    if (!aslMarkingEnabled || !storeId) {
-      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode));
-      if (!silent && !localProduct) {
-        toast(t('pharmacyCashier.integrations.markingScanHint'), { icon: 'ℹ️' });
-      }
-      return true;
-    }
-
     setVerifying(true);
+    let product = null;
+    let verifyResult = null;
+    let verifyError = null;
     try {
-      const data = await pharmacyIntegrationApi
-        .verifyMarking({ storeId, code })
-        .then((r) => r.data);
+      product = await resolvePharmacyProductByMarking({ products, rawCode, storeId });
 
-      setLastScan({ code: preserveMarkingCodeForFiscal(rawCode), result: data, product: localProduct });
-
-      if (data.found) {
-        const label = data.productName || data.gtin || code.slice(0, 18);
-        toast.success(t('pharmacyCashier.integrations.markingVerified', { name: label }));
-      } else if (!silent) {
-        toast.error(t('pharmacyCashier.integrations.markingNotFound'));
-      }
-
-      if (!localProduct && data.gtin) {
-        const byGtin = findProductByMarkingCode(products, `01${data.gtin}`);
-        if (byGtin) {
-          onProductFound?.(withFiscalMark(byGtin, rawCode));
-          toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: byGtin.name }));
+      if (aslMarkingEnabled && storeId) {
+        try {
+          verifyResult = await pharmacyIntegrationApi
+            .verifyMarking({ storeId, code: preserveMarkingCodeForFiscal(rawCode) })
+            .then((r) => r.data);
+        } catch (error) {
+          verifyError = error.response?.data?.message ?? error.message;
+        }
+        if (!product && verifyResult?.gtin) {
+          product = await resolvePharmacyProductByMarking({
+            products,
+            rawCode,
+            extraGtins: [verifyResult.gtin],
+            storeId,
+          });
         }
       }
-
-      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode), data);
-      return true;
     } catch (error) {
-      const message = error.response?.data?.message ?? error.message;
-      if (!silent) toast.error(message);
-      onOpenMarkingModal?.(preserveMarkingCodeForFiscal(rawCode), { found: false, error: message });
-      return true;
+      verifyError = error.response?.data?.message ?? error.message;
     } finally {
       setVerifying(false);
     }
+
+    setLastScan({
+      code: preserveMarkingCodeForFiscal(rawCode),
+      result: verifyResult,
+      product,
+    });
+
+    if (product) {
+      onProductFound?.(withFiscalMark(product, rawCode));
+      if (!silent) {
+        toast.success(t('pharmacyCashier.integrations.markingProductFound', { name: product.name }));
+      }
+      return true;
+    }
+
+    if (!silent) {
+      if (verifyResult?.found && verifyResult.productName) {
+        toast.error(t('pharmacyCashier.integrations.markingCatalogMiss', { name: verifyResult.productName }));
+      } else if (verifyError) {
+        toast.error(verifyError);
+      } else if (!aslMarkingEnabled) {
+        toast(t('pharmacyCashier.integrations.markingScanHint'), { icon: 'ℹ️' });
+      } else {
+        toast.error(t('pharmacyCashier.integrations.markingNotFound'));
+      }
+    }
+    onOpenMarkingModal?.(
+      preserveMarkingCodeForFiscal(rawCode),
+      verifyResult ?? (verifyError ? { found: false, error: verifyError } : null),
+    );
+    return true;
   }, [aslMarkingEnabled, onOpenMarkingModal, onProductFound, products, storeId, t]);
 
   const clearLastScan = useCallback(() => setLastScan(null), []);

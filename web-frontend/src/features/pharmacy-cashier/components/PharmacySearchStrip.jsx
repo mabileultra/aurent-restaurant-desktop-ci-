@@ -35,6 +35,8 @@ export default function PharmacySearchStrip({
   markingModal,
   onOpenMarking,
   onCloseMarking,
+  products,
+  onProductFound,
 }) {
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
@@ -164,6 +166,8 @@ export default function PharmacySearchStrip({
         initialResult={markingModal?.result}
         aslApiEnabled={capabilities.aslMarkingEnabled}
         aslPortalUrl={externalUrls.aslPortal}
+        products={products}
+        onProductFound={onProductFound}
         onClose={onCloseMarking}
       />
     </>

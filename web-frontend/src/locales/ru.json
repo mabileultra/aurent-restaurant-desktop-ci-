@@ -2420,6 +2420,7 @@
       "markingBatch": "Серия",
       "markingFound": "Код найден в системе маркировки",
       "markingNotFound": "Код не найден",
+      "markingCatalogMiss": "В ASL найден «{{name}}», но в каталоге нет товара с этим штрихкодом",
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",

@@ -2290,6 +2290,7 @@
       "markingBatch": "Seriya",
       "markingFound": "Kod markirovka tizimida topildi",
       "markingNotFound": "Kod topilmadi",
+      "markingCatalogMiss": "ASL da «{{name}}» topildi, lekin katalogda bunday shtrixkodli mahsulot yo‘q",
       "markingVerified": "Markirovka: {{name}}",
       "markingProductFound": "Mahsulot topildi: {{name}}",
       "markingScanHint": "Markirovka kodi — ASL API ni sozlang yoki portalni oching",

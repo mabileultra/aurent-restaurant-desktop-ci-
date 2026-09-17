@@ -12,6 +12,7 @@ import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
+import com.pos.pharmacy.catalog.support.PharmacyBarcodeVariants;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -56,16 +57,30 @@ public class ProductCatalogService {
     @Transactional(readOnly = true)
     public ProductResponse getByBarcode(String barcode, Integer storeId) {
         Integer companyId = tenant.requireCompanyId();
-        Product product = productRepository.findByCompanyIdAndBarcode(companyId, barcode.trim())
-            .or(() -> productBarcodeRepository.findByBarcode(barcode.trim()).flatMap(
-                pb -> productRepository.findById(pb.getProductId())
-                    .filter(p -> p.getCompanyId().equals(companyId))
-            ))
-            .orElseThrow(() -> PharmacyErrors.notFound("Product for barcode", barcode));
+        Product product = findByScan(companyId, barcode);
         if (!product.isActive()) {
             throw PharmacyErrors.badRequest("Product is not active");
         }
         return toResponse(product, storeId);
+    }
+
+    private Product findByScan(Integer companyId, String raw) {
+        List<String> candidates = new ArrayList<>(PharmacyBarcodeVariants.of(raw));
+        if (candidates.isEmpty() && StringUtils.hasText(raw)) {
+            candidates.add(raw.trim());
+        }
+        for (String candidate : candidates) {
+            Product found = productRepository.findByCompanyIdAndBarcode(companyId, candidate)
+                .or(() -> productBarcodeRepository.findByBarcode(candidate).flatMap(
+                    pb -> productRepository.findById(pb.getProductId())
+                        .filter(p -> p.getCompanyId().equals(companyId))
+                ))
+                .orElse(null);
+            if (found != null) {
+                return found;
+            }
+        }
+        throw PharmacyErrors.notFound("Product for barcode", raw);
     }
 
     public ProductResponse create(CreateProductRequest req) {

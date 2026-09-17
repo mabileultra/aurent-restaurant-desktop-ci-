@@ -4,7 +4,7 @@ export const pharmacyIntegrationApi = {
   getCashierCapabilities: (storeId) =>
     api.get('/cashier/pharmacy-integration', { params: { storeId } }),
   verifyMarking: (payload) =>
-    api.post('/cashier/pharmacy-integration/marking/verify', payload),
+    api.post('/cashier/pharmacy-integration/marking/verify', payload, { timeout: 30000 }),
   getAdminSettings: (storeId) =>
     api.get(`/admin/stores/${storeId}/pharmacy-integration`),
   saveAdminSettings: (storeId, payload) =>

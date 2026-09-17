@@ -1,13 +1,13 @@
 package com.pos.integrations.pharmacy.support;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.exception.BadRequestException;
 import com.pos.integrations.pharmacy.dto.MarkingVerifyResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -15,8 +15,8 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -25,182 +25,73 @@ import java.util.Map;
 public class AslBelgisiMarkingClient {
 
   private static final String PRIVATE_CODES_PATH = "/public/api/cod/private/codes";
-  private static final String PUBLIC_CODES_PATH = "/public/api/cod/public/codes";
 
   private final RestTemplate pharmacyIntegrationRestTemplate;
   private final ObjectMapper objectMapper;
 
   public MarkingVerifyResponse verify(String baseUrl, String apiKey, String rawCode) {
-    String code = normalizeCode(rawCode);
-    if (!StringUtils.hasText(code)) {
+    List<String> codes = requestCodes(rawCode);
+    if (codes.isEmpty()) {
       throw new BadRequestException("Marking code is required");
     }
-
-    String resolvedBase = normalizeBaseUrl(baseUrl);
-    boolean hasKey = StringUtils.hasText(apiKey);
-    String path = hasKey ? PRIVATE_CODES_PATH : PUBLIC_CODES_PATH;
+    String token = AslApiKeySupport.bearerToken(apiKey);
+    if (!StringUtils.hasText(token)) {
+      throw new BadRequestException("Укажите API-ключ ASL Belgisi в настройках магазина");
+    }
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
-    if (hasKey) {
-      headers.setBearerAuth(apiKey.trim());
-    }
-
-    Map<String, Object> body = Map.of("codes", List.of(code));
+    headers.setBearerAuth(token);
 
     try {
       ResponseEntity<String> response = pharmacyIntegrationRestTemplate.exchange(
-        resolvedBase + path,
+        normalizeBaseUrl(baseUrl) + PRIVATE_CODES_PATH,
         HttpMethod.POST,
-        new HttpEntity<>(body, headers),
+        new HttpEntity<>(Map.of("codes", codes), headers),
         String.class
       );
-      return parseResponse(code, response.getBody());
+      return parser().parse(codes.get(0), response.getBody());
     } catch (HttpStatusCodeException ex) {
-      String message = extractErrorMessage(ex.getResponseBodyAsString());
-      throw new BadRequestException(
-        StringUtils.hasText(message) ? message : "ASL Belgisi API error: " + ex.getStatusCode().value()
-      );
+      throw new BadRequestException(errorMessage(ex.getStatusCode(), ex.getResponseBodyAsString()));
     } catch (BadRequestException ex) {
       throw ex;
     } catch (Exception ex) {
-      throw new BadRequestException("Failed to reach ASL Belgisi API: " + ex.getMessage());
+      throw new BadRequestException("Не удалось связаться с ASL Belgisi");
     }
   }
 
-  private MarkingVerifyResponse parseResponse(String code, String body) {
-    if (!StringUtils.hasText(body)) {
-      return new MarkingVerifyResponse(false, code, null, null, null, null, null, null, Map.of());
-    }
-
-    try {
-      JsonNode root = objectMapper.readTree(body);
-      JsonNode entry = findCodeEntry(root, code);
-      if (entry == null || entry.isMissingNode() || entry.isNull()) {
-        return new MarkingVerifyResponse(false, code, null, null, null, null, null, null, Map.of());
-      }
-
-      Map<String, Object> details = toFlatMap(entry);
-      return new MarkingVerifyResponse(
-        true,
-        text(entry, "code", "cis", "km"),
-        firstText(entry, "status", "codeStatus", "state"),
-        firstText(entry, "gtin", "productGtin"),
-        firstText(entry, "productName", "product_name", "name"),
-        firstText(entry, "expirationDate", "expiration_date", "expDate"),
-        firstText(entry, "batch", "batchNumber", "series"),
-        firstText(entry, "ownerInn", "owner_inn", "issuerInn"),
-        details
-      );
-    } catch (BadRequestException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      throw new BadRequestException("Unexpected ASL Belgisi response format");
-    }
+  private AslBelgisiResponseParser parser() {
+    return new AslBelgisiResponseParser(objectMapper);
   }
 
-  private JsonNode findCodeEntry(JsonNode root, String code) {
-    if (root == null || root.isNull()) {
-      return null;
+  private String errorMessage(HttpStatusCode status, String body) {
+    if (status.value() == 401 || status.value() == 403) {
+      return "ASL Belgisi не принял API-ключ. Проверьте ключ типа bearerToken в настройках магазина.";
     }
-    if (root.isArray()) {
-      for (JsonNode item : root) {
-        if (matchesCode(item, code)) {
-          return item;
-        }
-      }
-      return root.isEmpty() ? null : root.get(0);
+    String parsed = parser().errorMessage(body);
+    if (StringUtils.hasText(parsed)) {
+      return parsed;
     }
-    JsonNode codes = root.get("codes");
-    if (codes != null && codes.isArray()) {
-      for (JsonNode item : codes) {
-        if (matchesCode(item, code)) {
-          return item;
-        }
-      }
-      return codes.isEmpty() ? null : codes.get(0);
-    }
-    JsonNode result = root.get("result");
-    if (result != null) {
-      return findCodeEntry(result, code);
-    }
-    if (matchesCode(root, code) || root.has("status") || root.has("gtin")) {
-      return root;
-    }
-    return null;
+    return "ASL Belgisi вернул ошибку " + status.value();
   }
 
-  private boolean matchesCode(JsonNode node, String code) {
-    if (node == null) {
-      return false;
+  static List<String> requestCodes(String raw) {
+    if (!StringUtils.hasText(raw)) {
+      return List.of();
     }
-    String normalized = normalizeCode(code);
-    for (String field : List.of("code", "cis", "km", "markingCode")) {
-      JsonNode value = node.get(field);
-      if (value != null && normalized.equals(normalizeCode(value.asText()))) {
-        return true;
-      }
+    String trimmed = raw.replace("\uFEFF", "").replace("\u0000", "").trim();
+    if (trimmed.startsWith("]") && trimmed.length() > 3) {
+      trimmed = trimmed.substring(3).trim();
     }
-    return false;
-  }
-
-  private String firstText(JsonNode node, String... fields) {
-    for (String field : fields) {
-      String value = text(node, field);
-      if (StringUtils.hasText(value)) {
-        return value;
-      }
+    LinkedHashSet<String> codes = new LinkedHashSet<>();
+    if (StringUtils.hasText(trimmed)) {
+      codes.add(trimmed);
     }
-    return null;
-  }
-
-  private String text(JsonNode node, String... fields) {
-    for (String field : fields) {
-      JsonNode value = node.get(field);
-      if (value != null && !value.isNull()) {
-        String asText = value.asText();
-        if (StringUtils.hasText(asText)) {
-          return asText;
-        }
-      }
+    String withoutGs = trimmed.replace("\u001d", "");
+    if (StringUtils.hasText(withoutGs)) {
+      codes.add(withoutGs);
     }
-    return null;
-  }
-
-  private Map<String, Object> toFlatMap(JsonNode node) {
-    Map<String, Object> map = new HashMap<>();
-    Iterator<Map.Entry<String, JsonNode>> fields = node.fields();
-    while (fields.hasNext()) {
-      Map.Entry<String, JsonNode> field = fields.next();
-      JsonNode value = field.getValue();
-      if (value == null || value.isNull()) {
-        continue;
-      }
-      if (value.isValueNode()) {
-        map.put(field.getKey(), value.asText());
-      } else if (value.isObject() || value.isArray()) {
-        map.put(field.getKey(), value.toString());
-      }
-    }
-    return map;
-  }
-
-  private String extractErrorMessage(String body) {
-    if (!StringUtils.hasText(body)) {
-      return null;
-    }
-    try {
-      JsonNode root = objectMapper.readTree(body);
-      for (String field : List.of("message", "error", "errorMessage", "detail")) {
-        JsonNode value = root.get(field);
-        if (value != null && StringUtils.hasText(value.asText())) {
-          return value.asText();
-        }
-      }
-    } catch (Exception ignored) {
-      return body.length() > 200 ? body.substring(0, 200) : body;
-    }
-    return null;
+    return new ArrayList<>(codes);
   }
 
   private String normalizeBaseUrl(String baseUrl) {
@@ -209,15 +100,5 @@ public class AslBelgisiMarkingClient {
       resolved = resolved.substring(0, resolved.length() - 1);
     }
     return resolved;
-  }
-
-  public static String normalizeCode(String raw) {
-    if (!StringUtils.hasText(raw)) {
-      return "";
-    }
-    return raw
-      .trim()
-      .replace("\u001d", "")
-      .replace("\u0000", "");
   }
 }

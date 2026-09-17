@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation } from '@tanstack/react-query';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
+import { resolvePharmacyProductByMarking } from '../utils/resolvePharmacyProductByMarking';
+import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
 import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import { PHARMACY_QUICK_LINK_IDS } from '../constants/pharmacyQuickLinks';
 import '../styles/pharmacy-marking-modal.css';
@@ -13,6 +15,8 @@ export default function PharmacyMarkingModal({
   initialResult = null,
   aslApiEnabled,
   aslPortalUrl,
+  products,
+  onProductFound,
   onClose,
 }) {
   const { t } = useTranslation();
@@ -69,10 +73,27 @@ export default function PharmacyMarkingModal({
 
   if (!open) return null;
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e?.preventDefault();
     const trimmed = code.trim();
     if (!trimmed) return;
+    try {
+      const product = await resolvePharmacyProductByMarking({ products, rawCode: trimmed, storeId });
+      if (product && onProductFound) {
+        const mark = preserveMarkingCodeForFiscal(trimmed);
+        onProductFound({
+          ...product,
+          productMark: mark,
+          markCode: mark,
+          markedProduct: true,
+        });
+        onClose?.();
+        return;
+      }
+    } catch (error) {
+      setResult({ found: false, error: error.response?.data?.message ?? error.message });
+      return;
+    }
     if (!aslApiEnabled) {
       setResult({ found: false, error: t('pharmacyCashier.integrations.markingApiDisabled') });
       return;

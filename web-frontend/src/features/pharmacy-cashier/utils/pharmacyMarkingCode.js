@@ -2,7 +2,9 @@
 export function normalizePharmacyMarkingCode(raw) {
   if (!raw) return '';
   return String(raw)
+    .replace(/^\uFEFF/, '')
     .trim()
+    .replace(/^\][A-Za-z0-9]{2}/, '')
     .replace(/\u001d/g, '')
     .replace(/\u0000/g, '');
 }
@@ -36,8 +38,28 @@ export function extractGtinFromMarkingCode(raw) {
   if (aiMatch) return aiMatch[1];
 
   const digits = code.replace(/\D/g, '');
-  if (digits.length >= 14) {
-    return digits.slice(0, 14);
+  if (digits.length >= 8 && digits.length <= 14) {
+    return digits;
   }
   return null;
+}
+
+function gtinLookupVariants(gtin) {
+  const digits = String(gtin ?? '').replace(/\D/g, '');
+  if (digits.length < 8 || digits.length > 14) return [];
+  const variants = [digits];
+  if (digits.length === 14 && digits.startsWith('0')) variants.push(digits.slice(1));
+  if (digits.length === 14 && digits.startsWith('00')) variants.push(digits.slice(2));
+  if (digits.length === 13) variants.push(`0${digits}`);
+  if (digits.length === 12) variants.push(`0${digits}`);
+  return variants;
+}
+
+/** Короткие штрихкоды, которыми код маркировки может лежать в каталоге. */
+export function markingBarcodeCandidates(raw, extraGtins = []) {
+  const variants = new Set();
+  for (const gtin of [extractGtinFromMarkingCode(raw), ...extraGtins]) {
+    gtinLookupVariants(gtin).forEach((item) => variants.add(item));
+  }
+  return [...variants];
 }

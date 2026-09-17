@@ -11,6 +11,7 @@ import com.pos.integrations.pharmacy.dto.SavePharmacyIntegrationRequest;
 import com.pos.integrations.pharmacy.entity.StorePharmacyIntegration;
 import com.pos.integrations.pharmacy.repository.StorePharmacyIntegrationRepository;
 import com.pos.integrations.pharmacy.service.PharmacyIntegrationSettingsService;
+import com.pos.integrations.pharmacy.support.AslApiKeySupport;
 import com.pos.integrations.pharmacy.support.AslBelgisiMarkingClient;
 import com.pos.integrations.pharmacy.support.PharmacyIntegrationDefaults;
 import com.pos.repository.StoreRepository;
@@ -54,7 +55,8 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
     entity.setAslEnabled(request.aslEnabled());
     entity.setAslApiBaseUrl(normalizeBaseUrl(request.aslApiBaseUrl()));
     if (StringUtils.hasText(request.aslApiKey())) {
-      entity.setAslApiKey(request.aslApiKey().trim());
+      entity.setAslApiKey(AslApiKeySupport.bearerToken(request.aslApiKey()));
+      entity.setAslEnabled(true);
     }
     entity.setDmedEnabled(request.dmedEnabled());
     entity.setDmedExternalId(trimToNull(request.dmedExternalId()));
@@ -69,7 +71,7 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   public CashierPharmacyIntegrationResponse getCashierCapabilities(User cashier, Integer storeId) {
     Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
     StorePharmacyIntegration settings = findOrDefault(store);
-    boolean aslEnabled = settings.isAslEnabled();
+    boolean aslEnabled = markingLookupReady(settings);
     return new CashierPharmacyIntegrationResponse(
       aslEnabled,
       settings.isDmedEnabled(),
@@ -84,7 +86,7 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   public MarkingVerifyResponse verifyMarking(User cashier, Integer storeId, String code) {
     Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
     StorePharmacyIntegration settings = findOrDefault(store);
-    if (!settings.isAslEnabled()) {
+    if (!markingLookupReady(settings)) {
       throw new BadRequestException("ASL Belgisi marking is disabled for this store");
     }
     String baseUrl = normalizeBaseUrl(settings.getAslApiBaseUrl());
@@ -105,6 +107,10 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   private Store requireStore(Integer storeId) {
     return storeRepository.findById(storeId)
       .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
+  }
+
+  private boolean markingLookupReady(StorePharmacyIntegration settings) {
+    return settings.isAslEnabled() || AslApiKeySupport.hasKey(settings.getAslApiKey());
   }
 
   private StorePharmacyIntegration newIntegration(Store store) {

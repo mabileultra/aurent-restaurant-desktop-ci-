@@ -4,6 +4,15 @@ function digitsOnly(value) {
   return String(value ?? '').replace(/\D/g, '');
 }
 
+function productBarcodeDigits(product) {
+  const values = [
+    product?.barcode,
+    ...(Array.isArray(product?.barcodes) ? product.barcodes : []),
+    ...(Array.isArray(product?.additionalBarcodes) ? product.additionalBarcodes : []),
+  ];
+  return values.map(digitsOnly).filter(Boolean);
+}
+
 function gtinVariants(gtin14) {
   const d = digitsOnly(gtin14);
   if (!d) return [];
@@ -28,11 +37,7 @@ export function findProductByMarkingCode(products, rawCode) {
   if (byExactBarcode) return byExactBarcode;
 
   if (gtinSet.size > 0) {
-    const byGtin = products.find((p) => {
-      const barcodeDigits = digitsOnly(p.barcode);
-      const ikpuDigits = digitsOnly(p.ikpu);
-      return gtinSet.has(barcodeDigits) || gtinSet.has(ikpuDigits);
-    });
+    const byGtin = products.find((p) => productBarcodeDigits(p).some((barcode) => gtinSet.has(barcode)));
     if (byGtin) return byGtin;
   }
 
