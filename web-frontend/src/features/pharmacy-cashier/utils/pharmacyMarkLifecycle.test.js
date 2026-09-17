@@ -3,6 +3,7 @@ import { assessPharmacyMarkLifecycle } from './pharmacyMarkLifecycle';
 import {
   extractSerialFromMarkingCode,
   markingIdentityKey,
+  markingIdentityKeys,
 } from './pharmacyMarkIdentity';
 import { planMarkedScan } from './pharmacyMarkedScanCart';
 
@@ -17,8 +18,26 @@ describe('pharmacy mark lifecycle', () => {
     const a = mark('PACK001', 'AAAA');
     const b = mark('PACK001', 'BBBB');
     expect(extractSerialFromMarkingCode(a)).toBe('PACK001');
-    expect(markingIdentityKey(a)).toBe(markingIdentityKey(b));
+    expect(markingIdentityKeys(a).some((k) => markingIdentityKeys(b).includes(k))).toBe(true);
     expect(markingIdentityKey(a)).not.toBe(markingIdentityKey(mark('PACK002')));
+  });
+
+  it('allows consecutive different packs of the same product', () => {
+    const items = [];
+    const first = planMarkedScan(items, product, mark('PACK001'));
+    expect(first.status).toBe('create');
+    items.push({
+      lineId: 'L1',
+      productId: product.id,
+      quantity: 1,
+      productMarks: [first.mark],
+    });
+    const second = planMarkedScan(items, product, mark('PACK002'));
+    expect(second).toMatchObject({ status: 'append', quantity: 2 });
+    const third = planMarkedScan([
+      { ...items[0], productMarks: [first.mark, second.mark], quantity: 2 },
+    ], product, mark('PACK003'));
+    expect(third).toMatchObject({ status: 'append', quantity: 3 });
   });
 
   it('rejects a repeat scan before it can enter the cart', () => {
@@ -37,11 +56,11 @@ describe('pharmacy mark lifecycle', () => {
 
   it('rejects a pending in-flight scan as duplicate', () => {
     const code = mark('PEND01');
-    const key = markingIdentityKey(code);
+    const keys = markingIdentityKeys(code);
     expect(assessPharmacyMarkLifecycle({
       rawCode: code,
       cartItems: [],
-      pendingKeys: [key],
+      pendingKeys: keys,
     }).status).toBe('duplicate');
   });
 
@@ -51,21 +70,5 @@ describe('pharmacy mark lifecycle', () => {
       cartItems: [],
       aslResult: { found: true, alreadySold: true, status: 'WITHDRAWN' },
     }).status).toBe('sold');
-  });
-
-  it('allows a new pack and appends another pack of the same product', () => {
-    const first = planMarkedScan([], product, mark('NEW001'));
-    expect(first.status).toBe('create');
-    const items = [{
-      lineId: 'L1',
-      productId: product.id,
-      quantity: 1,
-      productMarks: [first.mark],
-    }];
-    expect(planMarkedScan(items, product, mark('NEW002'))).toMatchObject({
-      status: 'append',
-      quantity: 2,
-    });
-    expect(planMarkedScan(items, product, mark('NEW001', 'ZZZ')).status).toBe('duplicate');
   });
 });

@@ -7,7 +7,7 @@ import { resolvePharmacyProductByMarking } from '../utils/resolvePharmacyProduct
 import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
 import { assessPharmacyMarkLifecycle } from '../utils/pharmacyMarkLifecycle';
-import { markingIdentityKey } from '../utils/pharmacyMarkIdentity';
+import { markingIdentityKeys } from '../utils/pharmacyMarkIdentity';
 
 function withFiscalMark(product, rawCode) {
   if (!product) return product;
@@ -22,7 +22,7 @@ function withFiscalMark(product, rawCode) {
 
 /**
  * Скан КМ из единого поля поиска.
- * Порядок: duplicate в чеке → ASL sold → найти товар → в чек.
+ * Очередь: подряд разные пачки одного товара не теряются, пока ASL отвечает.
  */
 export function usePharmacyMarkingScan({
   storeId,
@@ -34,13 +34,15 @@ export function usePharmacyMarkingScan({
   const [lastScan, setLastScan] = useState(null);
   const [verifying, setVerifying] = useState(false);
   const pendingRef = useRef(new Set());
+  const queueRef = useRef([]);
+  const runningRef = useRef(false);
 
-  const tryHandleMarkingScan = useCallback(async (rawCode, { silent = false } = {}) => {
+  const processOne = useCallback(async (rawCode, { silent = false } = {}) => {
     const code = normalizePharmacyMarkingCode(rawCode);
-    if (!code || !isPharmacyMarkingCode(rawCode)) return false;
+    if (!code || !isPharmacyMarkingCode(rawCode)) return;
 
     const mark = preserveMarkingCodeForFiscal(rawCode);
-    const key = markingIdentityKey(mark);
+    const keys = markingIdentityKeys(mark);
     const cartItems = useCartStore.getState().items;
 
     const before = assessPharmacyMarkLifecycle({
@@ -53,10 +55,10 @@ export function usePharmacyMarkingScan({
       if (!silent) {
         toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
       }
-      return true;
+      return;
     }
 
-    if (key) pendingRef.current.add(key);
+    keys.forEach((k) => pendingRef.current.add(k));
     setVerifying(true);
 
     let product = null;
@@ -85,18 +87,18 @@ export function usePharmacyMarkingScan({
       const afterAsl = assessPharmacyMarkLifecycle({
         rawCode: mark,
         cartItems: useCartStore.getState().items,
-        pendingKeys: [...pendingRef.current].filter((k) => k !== key),
+        pendingKeys: [...pendingRef.current].filter((k) => !keys.includes(k)),
         aslResult: verifyResult,
       });
 
       if (afterAsl.status === 'duplicate') {
         if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
-        return true;
+        return;
       }
       if (afterAsl.status === 'sold') {
         if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
         setLastScan({ code: mark, result: verifyResult, product });
-        return true;
+        return;
       }
 
       if (!product && verifyResult?.gtin) {
@@ -118,7 +120,7 @@ export function usePharmacyMarkingScan({
         if (result?.status === 'duplicate' && !silent) {
           toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         }
-        return true;
+        return;
       }
 
       setLastScan({ code: mark, result: verifyResult, product: null });
@@ -135,12 +137,34 @@ export function usePharmacyMarkingScan({
           toast.error(t('pharmacyCashier.integrations.markingNotFound'));
         }
       }
-      return true;
     } finally {
-      if (key) pendingRef.current.delete(key);
+      keys.forEach((k) => pendingRef.current.delete(k));
       setVerifying(false);
     }
   }, [aslMarkingEnabled, onProductFound, products, storeId, t]);
+
+  const drain = useCallback(async () => {
+    if (runningRef.current) return;
+    runningRef.current = true;
+    try {
+      while (queueRef.current.length > 0) {
+        const job = queueRef.current.shift();
+        await processOne(job.rawCode, job.opts);
+      }
+    } finally {
+      runningRef.current = false;
+    }
+  }, [processOne]);
+
+  const tryHandleMarkingScan = useCallback((rawCode, opts = {}) => {
+    const code = normalizePharmacyMarkingCode(rawCode);
+    if (!code || !isPharmacyMarkingCode(rawCode)) return false;
+
+    queueRef.current.push({ rawCode, opts });
+    void drain();
+    // Сразу true — scanningRef в кассе не держит очередь КМ
+    return true;
+  }, [drain]);
 
   const clearLastScan = useCallback(() => setLastScan(null), []);
 

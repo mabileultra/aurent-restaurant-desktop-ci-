@@ -23,6 +23,7 @@ import {
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
 import { classifyPharmacySearchScan } from '../utils/classifyPharmacySearchScan';
+import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -269,19 +270,26 @@ export function usePharmacyCartHandlers({
   const tryAddByBarcode = useCallback(
     async (code, { silent = false } = {}) => {
       const trimmed = code.trim();
-      if (!trimmed || !storeId || scanningRef.current || payOpen || returnOpen || qtyModalProduct) {
+      if (!trimmed || !storeId || payOpen || returnOpen) {
+        return false;
+      }
+
+      // КМ — в очередь, даже если открыта модалка количества (её закрываем).
+      if (onMarkingScan && isPharmacyMarkingCode(trimmed)) {
+        if (qtyModalProduct) setQtyModalProduct(null);
+        const markingHandled = onMarkingScan(trimmed, { silent });
+        if (markingHandled) {
+          setSearch('');
+          searchInputRef.current?.focus();
+          return true;
+        }
+      }
+
+      if (scanningRef.current || qtyModalProduct) {
         return false;
       }
       scanningRef.current = true;
       try {
-        if (onMarkingScan) {
-          const markingHandled = await onMarkingScan(trimmed, { silent });
-          if (markingHandled) {
-            setSearch('');
-            return true;
-          }
-        }
-
         const product = await posFetchProductByBarcode(storeId, trimmed, { catalogKind: 'pharmacy' });
         if (product) {
           addProductToCart(product);

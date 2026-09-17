@@ -3,8 +3,14 @@ import { isPharmacyMarkingCode } from './pharmacyMarkingCode';
 import {
   cartHasMark,
   markingIdentityKey,
+  markingIdentityKeys,
 } from './pharmacyMarkIdentity';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
+
+function pendingHasMark(pendingKeys, rawMark) {
+  const keys = markingIdentityKeys(rawMark);
+  return keys.some((k) => pendingKeys.includes(k));
+}
 
 /**
  * Жизненный цикл одного КМ до попадания в чек.
@@ -13,7 +19,7 @@ import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
  * sold       — ASL: уже выведен из оборота
  * empty      — пустой код
  * not-marking— не DataMatrix
- * ok         — можно добавлять (новый или ещё одна пачка)
+ * ok         — можно добавлять (новая пачка того же товара тоже ok)
  */
 export function assessPharmacyMarkLifecycle({
   rawCode,
@@ -28,7 +34,7 @@ export function assessPharmacyMarkLifecycle({
   const key = markingIdentityKey(mark);
   if (!key) return { status: 'empty' };
 
-  if (pendingKeys.includes(key) || cartHasMark(cartItems, mark)) {
+  if (pendingHasMark(pendingKeys, mark) || cartHasMark(cartItems, mark)) {
     return { status: 'duplicate', key, mark };
   }
 

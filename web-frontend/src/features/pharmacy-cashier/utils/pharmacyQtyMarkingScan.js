@@ -5,7 +5,7 @@ import {
   isPharmacyMarkingCode,
   normalizePharmacyMarkingCode,
 } from './pharmacyMarkingCode';
-import { markingIdentityKey, lineMarkIdentityKeys } from './pharmacyMarkIdentity';
+import { markingIdentityKey, markingIdentityKeys, lineMarkIdentityKeys } from './pharmacyMarkIdentity';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 export function shortMarkLabel(mark) {
@@ -15,10 +15,16 @@ export function shortMarkLabel(mark) {
   return `…${code.slice(-10)}`;
 }
 
-/**
- * Решение по одному скану (тесты / внутренняя логика).
- * На кассе жизненный цикл: assessPharmacyMarkLifecycle + planMarkedScan.
- */
+function scanKnown(scans, pendingKeys, cartItems, rawMark) {
+  const keys = new Set(markingIdentityKeys(rawMark));
+  if (keys.size === 0) return false;
+  if (scans.some((scan) => keys.has(scan.key) || markingIdentityKeys(scan.mark || '').some((k) => keys.has(k)))) {
+    return true;
+  }
+  if (pendingKeys.some((k) => keys.has(k))) return true;
+  return cartItems.some((line) => lineMarkIdentityKeys(line).some((k) => keys.has(k)));
+}
+
 export function assessQtyMarkingScan({
   product,
   rawCode,
@@ -35,10 +41,9 @@ export function assessQtyMarkingScan({
   const key = markingIdentityKey(mark);
   if (!key) return { status: 'not-marking' };
 
-  const known = scans.some((scan) => scan.key === key)
-    || pendingKeys.includes(key)
-    || cartItems.some((line) => lineMarkIdentityKeys(line).includes(key));
-  if (known) return { status: 'duplicate', key };
+  if (scanKnown(scans, pendingKeys, cartItems, mark)) {
+    return { status: 'duplicate', key };
+  }
 
   if (aslResult && isAslMarkAlreadySold(aslResult)) {
     return { status: 'sold', key };

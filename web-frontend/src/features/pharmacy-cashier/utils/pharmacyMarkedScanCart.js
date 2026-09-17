@@ -1,5 +1,10 @@
 import { useCartStore } from '../../../store/cartStore';
-import { markingIdentityKey, lineMarkIdentityKeys } from './pharmacyMarkIdentity';
+import {
+  markingIdentityKey,
+  markingIdentityKeys,
+  lineMarkIdentityKeys,
+  marksShareIdentity,
+} from './pharmacyMarkIdentity';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 export function lineMarkKeys(line) {
@@ -16,14 +21,24 @@ function productQty(items, productId) {
     .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
 }
 
+function markAlreadyInItems(items, rawMark) {
+  const scanKeys = markingIdentityKeys(rawMark);
+  if (scanKeys.length === 0) return false;
+  return items.some((line) => {
+    const lineKeys = lineMarkKeys(line);
+    return scanKeys.some((k) => lineKeys.includes(k));
+  });
+}
+
 /** Следующий чек после скана: новая маркировка +1, повтор — duplicate. */
 export function planMarkedScan(items, product, rawMark) {
   const mark = preserveMarkingCodeForFiscal(rawMark);
   const key = markingIdentityKey(mark);
   if (!key) return { status: 'empty' };
 
-  const duplicate = items.some((line) => lineMarkKeys(line).includes(key));
-  if (duplicate) return { status: 'duplicate', key, mark };
+  if (markAlreadyInItems(items, mark)) {
+    return { status: 'duplicate', key, mark };
+  }
 
   const stock = Number(product?.stockQuantity ?? product?.maxStock ?? 0);
   if (stock > 0 && productQty(items, product.id) + 1 > stock) {
@@ -53,10 +68,10 @@ export function removePharmacyMarking(rawMark) {
   const key = markingIdentityKey(preserveMarkingCodeForFiscal(rawMark));
   if (!key) return false;
   const items = useCartStore.getState().items;
-  const line = items.find((item) => lineMarkKeys(item).includes(key));
+  const line = items.find((item) => markAlreadyInItems([item], rawMark));
   if (!line) return false;
   const productMarks = (line.productMarks || []).filter(
-    (mark) => markingIdentityKey(mark) !== key,
+    (mark) => !marksShareIdentity(mark, rawMark),
   );
   if (productMarks.length === 0) {
     useCartStore.getState().removeItem(line.lineId);
