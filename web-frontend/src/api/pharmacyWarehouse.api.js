@@ -2,14 +2,14 @@ import { api } from './client';
 
 export const pharmacyWarehouseApi = {
   listReceipts: (params) => api.get('/pharmacy/receipts', { params }),
-  getReceipt: (id) => api.get(`/pharmacy/receipts/${id}`),
+  getReceipt: (id, config) => api.get(`/pharmacy/receipts/${id}`, config),
   createDraft: (data) => api.post('/pharmacy/receipts', data),
   updateDraft: (id, data) => api.put(`/pharmacy/receipts/${id}`, data),
   deleteDraft: (id) => api.delete(`/pharmacy/receipts/${id}`),
   replaceLines: (id, lines) => api.put(`/pharmacy/receipts/${id}/lines`, lines),
   addLine: (id, line) => api.post(`/pharmacy/receipts/${id}/lines`, line),
   updateLine: (id, lineId, line) => api.put(`/pharmacy/receipts/${id}/lines/${lineId}`, line),
-  revalueLines: (id, body) => api.post(`/pharmacy/receipts/${id}/lines/revalue`, body),
+  revalueLines: (id, body) => api.post(`/pharmacy/receipts/${id}/lines/revalue`, body, { timeout: 180000 }),
   removeLine: (id, lineId) => api.delete(`/pharmacy/receipts/${id}/lines/${lineId}`),
   listLots: (params) => api.get('/pharmacy/lots', { params }),
   fefoHints: (params) => api.get('/pharmacy/lots/fefo-hints', { params }),

@@ -88,7 +88,7 @@ public class PharmacyWarehouseController {
 
     @PostMapping("/{id}/lines/revalue")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<PharmacyStockReceiptResponse> revalueLines(
+    public ResponseEntity<PharmacyReceiptRevalueResult> revalueLines(
         @PathVariable UUID id,
         @Valid @RequestBody PharmacyReceiptRevalueRequest request
     ) {

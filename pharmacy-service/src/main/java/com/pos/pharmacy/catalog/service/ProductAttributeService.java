@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,19 @@ public class ProductAttributeService {
             map.put(attr.getFieldKey(), attr.getValueText());
         }
         return map;
+    }
+
+    @Transactional(readOnly = true)
+    public Map<UUID, Map<String, String>> getAttributesByProductIds(Collection<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, Map<String, String>> grouped = new HashMap<>();
+        for (ProductAttribute attr : repository.findByProductIdIn(productIds)) {
+            grouped.computeIfAbsent(attr.getProductId(), id -> new LinkedHashMap<>())
+                .put(attr.getFieldKey(), attr.getValueText());
+        }
+        return grouped;
     }
 
     @Transactional

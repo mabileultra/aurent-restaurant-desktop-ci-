@@ -18,8 +18,10 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Component
@@ -175,8 +177,17 @@ public class PharmacyReceiptSupport {
 
     public PharmacyStockReceiptResponse toResponse(StockReceipt receipt) {
         Supplier supplier = resolveSupplier(receipt.getSupplierId());
+        Set<UUID> productIds = new HashSet<>();
+        for (StockReceiptLine line : receipt.getLines()) {
+            if (line.getProduct() != null) {
+                productIds.add(line.getProduct().getId());
+            }
+        }
+        Map<UUID, Map<String, String>> attributes = productAttributeService.getAttributesByProductIds(productIds);
         List<PharmacyStockReceiptLineResponse> lines = receipt.getLines().stream()
-            .map(this::toLineResponse)
+            .map(line -> toLineResponse(line, attributes.getOrDefault(
+                line.getProduct().getId(), Map.of()
+            )))
             .toList();
         return new PharmacyStockReceiptResponse(
             receipt.getId(),
@@ -245,8 +256,7 @@ public class PharmacyReceiptSupport {
         return supplierRepository.findById(supplierId).orElse(null);
     }
 
-    private PharmacyStockReceiptLineResponse toLineResponse(StockReceiptLine line) {
-        Map<String, String> attrs = productAttributeService.getAttributes(line.getProduct().getId());
+    private PharmacyStockReceiptLineResponse toLineResponse(StockReceiptLine line, Map<String, String> attrs) {
         return new PharmacyStockReceiptLineResponse(
             line.getId(),
             line.getProduct().getId(),

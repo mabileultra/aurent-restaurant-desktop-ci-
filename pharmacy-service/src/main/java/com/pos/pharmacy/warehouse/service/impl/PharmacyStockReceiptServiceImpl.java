@@ -193,7 +193,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     }
 
     @Override
-    public PharmacyStockReceiptResponse revalueLines(UUID id, PharmacyReceiptRevalueRequest request) {
+    public PharmacyReceiptRevalueResult revalueLines(UUID id, PharmacyReceiptRevalueRequest request) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         pharmacyReceipt.requireDraft(receipt);
         if (request == null || (request.vatPercent() == null && request.markupPercent() == null)) {
@@ -214,7 +214,8 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             throw PharmacyErrors.badRequest("No lines to revalue");
         }
         pharmacyReceipt.recalculateTotals(receipt);
-        return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
+        stockReceiptRepository.save(receipt);
+        return new PharmacyReceiptRevalueResult(updated);
     }
 
     @Override

@@ -16,18 +16,22 @@ export function usePharmacyReceiptRevalue({
   const targetCount = applyAll ? lines.length : selectedIds.length;
 
   const mutation = useMutation({
-    mutationFn: (body) => pharmacyWarehouseApi.revalueLines(receiptId, body),
-    onSuccess: (res, body) => {
+    mutationFn: async (body) => {
+      await pharmacyWarehouseApi.revalueLines(receiptId, body);
+      const fresh = await pharmacyWarehouseApi.getReceipt(receiptId, { timeout: 180000 });
+      return fresh.data;
+    },
+    onSuccess: (data, body) => {
       toast.success(
         body.vatPercent != null
           ? t('pharmacyStock.bulkVatSuccess', { count: targetCount })
           : t('pharmacyStock.bulkRevalueSuccess', { count: targetCount }),
       );
-      onUpdated?.(res.data);
+      onUpdated?.(data);
       selection.clearSelection();
       setMode(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(e.response?.data?.message || e.message || t('pharmacyStock.saveFailed')),
   });
 
   const submit = (raw) => {
