@@ -47,8 +47,12 @@ export function extractGtinFromMarkingCode(raw) {
   const paren = code.match(/\(01\)(\d{14})/);
   if (paren) return paren[1];
 
-  const aiMatch = code.match(/01(\d{14})/);
+  // AI 01 + 14 цифр — в начале или после мусора сканера
+  const aiMatch = code.match(/(?:^|[^0-9])01(\d{14})/);
   if (aiMatch) return aiMatch[1];
+
+  const leading = code.match(/^01(\d{14})/);
+  if (leading) return leading[1];
 
   const digits = code.replace(/\D/g, '');
   if (digits.length >= 8 && digits.length <= 14) {
@@ -58,6 +62,10 @@ export function extractGtinFromMarkingCode(raw) {
   if (digits.length >= 16 && digits.startsWith('01')) {
     return digits.slice(2, 16);
   }
+  // Хвост после серии всё ещё цифровой — ищем 01+GTIN внутри digit-only строки
+  const embedded = digits.match(/01(\d{14})/);
+  if (embedded) return embedded[1];
+
   return null;
 }
 

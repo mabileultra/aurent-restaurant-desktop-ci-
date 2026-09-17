@@ -52,6 +52,14 @@ describe('pharmacy marking scenarios', () => {
     expect(result.status).toBe('sold');
   });
 
+  it('keeps accepting when ASL found:false if GTIN matches product', () => {
+    expect(assessQtyMarkingScan({
+      product,
+      rawCode: mark('OKPACK1'),
+      aslResult: { found: false },
+    }).status).toBe('accepted');
+  });
+
   it('treats a pending in-flight scan as duplicate (race guard)', () => {
     const code = mark('PENDING1');
     const key = markingScanKey(code);

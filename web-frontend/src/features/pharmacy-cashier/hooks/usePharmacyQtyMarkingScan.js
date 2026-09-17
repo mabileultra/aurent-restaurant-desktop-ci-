@@ -61,6 +61,7 @@ export function usePharmacyQtyMarkingScan({
 
   const handleOne = useCallback(async (rawCode) => {
     const pendingKeys = [...pendingRef.current];
+    // 1) Локальный GTIN без ASL — если совпал, код уже «наш».
     const preview = assessQtyMarkingScan({
       product,
       rawCode,
@@ -75,15 +76,16 @@ export function usePharmacyQtyMarkingScan({
       return;
     }
 
+    // Чужой GTIN уже виден в КМ — ASL не нужен, сразу mismatch.
+    if (preview.status === 'mismatch') {
+      reject(preview.status);
+      return;
+    }
+
     if (preview.key) pendingRef.current.add(preview.key);
 
     let aslResult = null;
-    if (aslMarkingEnabled) {
-      if (!storeId) {
-        pendingRef.current.delete(preview.key);
-        reject('not-found', t('pharmacyCashier.integrations.markingApiDisabled'));
-        return;
-      }
+    if (aslMarkingEnabled && storeId) {
       try {
         const { data } = await pharmacyIntegrationApi.verifyMarking({
           storeId,
@@ -91,6 +93,7 @@ export function usePharmacyQtyMarkingScan({
         });
         aslResult = data;
       } catch {
+        // ASL недоступен: локальный GTIN уже совпал — принимаем.
         aslResult = null;
       }
     }
@@ -116,7 +119,7 @@ export function usePharmacyQtyMarkingScan({
     pendingRef.current.delete(decision.key);
     setScans(next);
     setError('');
-  }, [aslMarkingEnabled, product, reject, stockPacks, storeId, t]);
+  }, [aslMarkingEnabled, product, reject, stockPacks, storeId]);
 
   const drain = useCallback(async () => {
     if (runningRef.current) return;

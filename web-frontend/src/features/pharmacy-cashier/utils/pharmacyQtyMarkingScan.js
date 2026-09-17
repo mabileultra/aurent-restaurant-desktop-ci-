@@ -1,6 +1,7 @@
 import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
 import { markingMatchesProduct } from './pharmacyMarkingProductMatch';
 import {
+  extractGtinFromMarkingCode,
   isPharmacyMarkingCode,
   markingScanKey,
   normalizePharmacyMarkingCode,
@@ -16,8 +17,16 @@ export function shortMarkLabel(mark) {
 }
 
 /**
- * Решение по одному скану в модалке количества.
- * Один и тот же КМ — duplicate; разные пачки одного товара — accepted (+1).
+ * Надёжная проверка КМ в модалке «Добавить в чек».
+ *
+ * Порядок (намеренно жёсткий):
+ * 1) это DataMatrix / КМ, не обычный штрихкод
+ * 2) повтор / уже в чеке
+ * 3) ASL: уже выведен из оборота → sold
+ * 4) ASL нашёл чужой GTIN → mismatch
+ * 5) GTIN из КМ совпал со штрихкодом выбранного товара → accepted
+ *    (даже если ASL сказал found:false / сеть упала / aslResult=null)
+ * 6) иначе mismatch (в модалке товар уже выбран — «не найден» здесь не используем)
  */
 export function assessQtyMarkingScan({
   product,
@@ -40,32 +49,54 @@ export function assessQtyMarkingScan({
     || cartItems.some((line) => lineMarkKeys(line).includes(key));
   if (known) return { status: 'duplicate', key };
 
-  if (aslResult && isAslMarkAlreadySold(aslResult)) return { status: 'sold', key };
+  if (aslResult && isAslMarkAlreadySold(aslResult)) {
+    return { status: 'sold', key };
+  }
 
-  if (aslResult?.found && aslResult.gtin && !markingMatchesProduct(product, '', [aslResult.gtin])) {
+  const aslGtin = aslResult?.found && aslResult.gtin ? String(aslResult.gtin) : null;
+  if (aslGtin && !markingMatchesProduct(product, '', [aslGtin])) {
     return { status: 'mismatch', key };
   }
 
   const gtins = [...extraGtins];
-  if (aslResult?.gtin) gtins.push(aslResult.gtin);
-  const matches = markingMatchesProduct(product, rawCode, gtins);
+  if (aslGtin) gtins.push(aslGtin);
 
-  if (!matches) {
-    if (aslResult && aslResult.found === false) return { status: 'not-found', key };
+  const localMatch = markingMatchesProduct(product, rawCode, gtins);
+  if (localMatch) {
+    const stock = Number(stockPacks) || 0;
+    const alreadyInCart = cartItems
+      .filter((line) => line.productId === product?.id)
+      .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
+    if (stock > 0 && alreadyInCart + scans.length + 1 > stock) {
+      return { status: 'stock', key };
+    }
+    return accept(key, mark, aslResult);
+  }
+
+  // GTIN из КМ есть, но не совпал с выбранным товаром — другой препарат.
+  const codeGtin = extractGtinFromMarkingCode(rawCode);
+  if (codeGtin || aslGtin) {
     return { status: 'mismatch', key };
   }
 
-  const stock = Number(stockPacks) || 0;
-  const alreadyInCart = cartItems
-    .filter((line) => line.productId === product?.id)
-    .reduce((sum, line) => sum + Number(line.quantity || 0), 0);
-  if (stock > 0 && alreadyInCart + scans.length + 1 > stock) return { status: 'stock', key };
+  // КМ без читаемого GTIN и ASL не помог — не «не найден», а «не тот код / другой товар».
+  return { status: 'mismatch', key };
+}
 
+function accept(key, mark, aslResult) {
   return {
     status: 'accepted',
     key,
     mark,
     label: shortMarkLabel(mark),
-    aslStatus: aslResult?.status || (aslResult?.found === false ? '' : ''),
+    aslStatus: aslResult?.status || '',
   };
+}
+
+/**
+ * Локальная проверка до ASL: если GTIN уже совпал с товаром — можно принимать,
+ * ASL потом только на sold / чужой GTIN.
+ */
+export function previewQtyMarkingScan(args) {
+  return assessQtyMarkingScan({ ...args, aslResult: null });
 }

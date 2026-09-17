@@ -28,4 +28,8 @@ describe('pharmacyMarkingCode', () => {
     expect(extractGtinFromMarkingCode('010383898956323321999888777')).toBe('03838989563233');
     expect(markingBarcodeCandidates('010383898956323321SERIAL')).toContain('3838989563233');
   });
+
+  it('reads GTIN after scanner junk before AI 01', () => {
+    expect(extractGtinFromMarkingCode('XX010478001234567821SERIAL')).toBe('04780012345678');
+  });
 });
