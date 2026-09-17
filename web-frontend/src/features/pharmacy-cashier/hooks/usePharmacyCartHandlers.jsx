@@ -22,7 +22,7 @@ import {
   productSellByPiece,
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
-import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
+import { classifyPharmacySearchScan } from '../utils/classifyPharmacySearchScan';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -138,7 +138,7 @@ export function usePharmacyCartHandlers({
       };
       const result = applyPharmacyMarkingScan(payload, product.productMark || product.markCode);
       if (result.status === 'duplicate') {
-        toast(t('pharmacyCashier.integrations.markingAlreadyCounted'), { icon: 'ℹ️' });
+        toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         return result;
       }
       if (result.status === 'stock') {
@@ -327,12 +327,13 @@ export function usePharmacyCartHandlers({
   const handleSearchEnter = useCallback(async () => {
     const q = search.trim();
     if (!q) return;
-    // КМ — всегда с тостом (silent глотал «не найден» при Enter).
-    if (isPharmacyMarkingCode(q)) {
+    const { kind } = classifyPharmacySearchScan(q);
+    // Одно поле: КМ → сразу в чек; штрихкод → товар; текст → поиск по имени.
+    if (kind === 'marking') {
       await tryAddByBarcode(q, { silent: false });
       return;
     }
-    if (await tryAddByBarcode(q, { silent: true })) return;
+    if (await tryAddByBarcode(q, { silent: kind === 'text' })) return;
     if (products.length === 0) {
       toast.error(t('pos.barcodeNotFound'));
       return;

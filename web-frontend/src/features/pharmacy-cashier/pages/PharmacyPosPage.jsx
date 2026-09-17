@@ -80,7 +80,6 @@ export default function PharmacyPosPage() {
         open={!!p.cartHandlers.qtyModalProduct}
         product={p.cartHandlers.qtyModalProduct}
         storeId={p.storeId}
-        aslMarkingEnabled={p.integration.capabilities.aslMarkingEnabled}
         onConfirm={p.cartHandlers.handleQtyConfirm}
         onClose={p.cartHandlers.closeQtyModal}
       />

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { assessQtyMarkingScan } from './pharmacyQtyMarkingScan';
 import { planMarkedScan } from './pharmacyMarkedScanCart';
-import { markingScanKey } from './pharmacyMarkingCode';
+import { markingIdentityKey } from './pharmacyMarkIdentity';
 
 const product = {
   id: 'p-indo',
@@ -62,7 +62,7 @@ describe('pharmacy marking scenarios', () => {
 
   it('treats a pending in-flight scan as duplicate (race guard)', () => {
     const code = mark('PENDING1');
-    const key = markingScanKey(code);
+    const key = markingIdentityKey(code);
     const first = assessQtyMarkingScan({ product, rawCode: code, scans: [], pendingKeys: [] });
     expect(first.status).toBe('accepted');
     expect(assessQtyMarkingScan({

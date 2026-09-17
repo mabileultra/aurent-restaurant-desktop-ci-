@@ -2423,8 +2423,8 @@
       "markingCatalogMiss": "В ASL найден «{{name}}», но в каталоге нет товара с этим штрихкодом",
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
-      "markingAlreadyCounted": "Эта маркировка уже в чеке",
-      "markingAlreadySold": "ASL Belgisi: эта маркировка уже продана",
+      "markingAlreadyCounted": "Эта маркировка уже отсканирована и есть в чеке",
+      "markingAlreadySold": "ASL Belgisi: эта маркировка уже продана / выведена из оборота",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
       "links": {
         "admin": "Админ",
