@@ -28,6 +28,7 @@ public interface BillingPaymentIntentRepository extends JpaRepository<BillingPay
     /**
      * Payme GetStatement: filter by CreateTransaction time (provider_prepare_id ms),
      * not by order created_at. Inclusive from..to, ascending.
+     * Do not use PostgreSQL {@code ::} casts here — Hibernate treats {@code :name} as a parameter.
      */
     @Query(value = """
         SELECT * FROM billing_payment_intents i
@@ -38,14 +39,14 @@ public interface BillingPaymentIntentRepository extends JpaRepository<BillingPay
             CASE
               WHEN i.provider_prepare_id ~ '^[0-9]+$'
                 THEN CAST(i.provider_prepare_id AS BIGINT)
-              ELSE (EXTRACT(EPOCH FROM i.created_at) * 1000)::BIGINT
+              ELSE CAST(EXTRACT(EPOCH FROM i.created_at) * 1000 AS BIGINT)
             END
           ) BETWEEN :fromMs AND :toMs
         ORDER BY (
           CASE
             WHEN i.provider_prepare_id ~ '^[0-9]+$'
               THEN CAST(i.provider_prepare_id AS BIGINT)
-            ELSE (EXTRACT(EPOCH FROM i.created_at) * 1000)::BIGINT
+            ELSE CAST(EXTRACT(EPOCH FROM i.created_at) * 1000 AS BIGINT)
           END
         ) ASC
         """, nativeQuery = true)
