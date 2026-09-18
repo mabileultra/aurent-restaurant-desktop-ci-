@@ -54,6 +54,18 @@ services:
       retries: 12
       start_period: 30s
 
+  redis:
+    image: redis:7-alpine
+    container_name: masterpiece-redis
+    command: ["redis-server", "--appendonly", "no", "--save", ""]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   finance-service:
     build:
       context: .
@@ -313,6 +325,8 @@ services:
     depends_on:
       pharmacy-db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
       PHARMACY_DB_URL: jdbc:postgresql://pharmacy-db:5432/pharmacy_db
       PHARMACY_DB_USERNAME: pharmacy_user
@@ -327,6 +341,9 @@ services:
       POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
       POS_CORE_DATASOURCE_USERNAME: pos_user
       POS_CORE_DATASOURCE_PASSWORD: pos_password
+      PHARMACY_REDIS_ENABLED: "true"
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
       TZ: ${TZ:-Asia/Tashkent}
     ports:
       - "8089:8089"

@@ -27,4 +27,6 @@ public interface RevenueOutboxRepository extends JpaRepository<RevenueOutbox, UU
         @Param("now") Instant now,
         Pageable pageable
     );
+
+    long countByStatus(String status);
 }

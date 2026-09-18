@@ -1,6 +1,6 @@
 package com.pos.reporting.config;
 
-import com.pos.shared.kafka.KafkaTopics;
+import com.pos.shared.kafka.KafkaEventContracts;
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -18,7 +18,10 @@ public class ReportingKafkaErrorHandlerFactory {
     public DefaultErrorHandler create() {
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
             dlqKafkaTemplate,
-            (record, ex) -> new TopicPartition(KafkaTopics.REPORTING_DLQ, record.partition())
+            (record, ex) -> new TopicPartition(
+                KafkaEventContracts.dlqTopicFor(record.topic()),
+                record.partition()
+            )
         );
         return new DefaultErrorHandler(recoverer, new FixedBackOff(1000L, 3L));
     }

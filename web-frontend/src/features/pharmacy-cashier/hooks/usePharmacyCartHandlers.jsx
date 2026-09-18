@@ -101,7 +101,7 @@ export function usePharmacyCartHandlers({
           <p className="pos-item-added-toast__sum">{fmt(sum)}</p>
         </div>,
         {
-          duration: 2600,
+          duration: 1400,
           className: 'pos-item-added-toast-host',
           ariaLabel: t('pos.itemAdded', {
             name: productName,

@@ -1,35 +1,40 @@
-/* POS toast notification */
+/* POS toast: компактный сигнал при скане (не баннер) */
 .pos-item-added-toast-host {
-  max-width: min(92vw, 400px) !important;
-  padding: 14px 16px !important;
-  font-size: 1rem !important;
-  line-height: 1.4 !important;
+  max-width: min(88vw, 260px) !important;
+  padding: 6px 10px !important;
+  font-size: 0.8125rem !important;
+  line-height: 1.25 !important;
+  border-radius: 8px !important;
 }
 
 .pos-item-added-toast {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
   min-width: 0;
 }
 
 .pos-item-added-toast__name {
   margin: 0;
-  font-size: 1.0625rem;
-  font-weight: 700;
-  line-height: 1.35;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25;
   color: #0f172a;
-  white-space: normal;
-  overflow-wrap: anywhere;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pos-item-added-toast__sum {
   margin: 0;
-  align-self: flex-end;
-  font-size: 1.1875rem;
-  font-weight: 800;
-  line-height: 1.2;
+  flex: 0 0 auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  line-height: 1.25;
   color: #006847;
   white-space: nowrap;
 }

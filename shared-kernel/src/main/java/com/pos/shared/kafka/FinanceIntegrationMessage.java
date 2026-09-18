@@ -10,6 +10,22 @@ public record FinanceIntegrationMessage(
     String eventType,
     String targetPath,
     String idempotencyKey,
-    String payload
+    String payload,
+    Integer schemaVersion
 ) {
+    public FinanceIntegrationMessage {
+        if (schemaVersion == null || schemaVersion < 1) {
+            schemaVersion = KafkaEventContracts.CURRENT_SCHEMA_VERSION;
+        }
+    }
+
+    public FinanceIntegrationMessage(
+        UUID outboxId,
+        String eventType,
+        String targetPath,
+        String idempotencyKey,
+        String payload
+    ) {
+        this(outboxId, eventType, targetPath, idempotencyKey, payload, KafkaEventContracts.CURRENT_SCHEMA_VERSION);
+    }
 }

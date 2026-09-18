@@ -82,4 +82,12 @@ public class KafkaTopicConfig {
             .replicas(1)
             .build();
     }
+
+    @Bean
+    public NewTopic financeDlqTopic() {
+        return TopicBuilder.name(KafkaTopics.FINANCE_DLQ)
+            .partitions(3)
+            .replicas(1)
+            .build();
+    }
 }

@@ -1,5 +1,7 @@
 package com.pos.pharmacy.catalog.service;
 
+import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
+import com.pos.pharmacy.cache.PharmacyProductBarcodeCache;
 import com.pos.pharmacy.catalog.dto.*;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.entity.ProductBarcode;
@@ -42,6 +44,8 @@ public class ProductCatalogService {
     private final TenantSupport tenant;
     private final ProductFiscalFieldsApplier fiscalFields;
     private final ProductListResponseAssembler listResponseAssembler;
+    private final PharmacyProductBarcodeCache productBarcodeCache;
+    private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, boolean activeOnly, Integer storeId, Pageable pageable) {
@@ -66,6 +70,15 @@ public class ProductCatalogService {
     @Transactional(readOnly = true)
     public ProductResponse getByBarcode(String barcode, Integer storeId) {
         Integer companyId = tenant.requireCompanyId();
+        return productBarcodeCache.getOrLoad(
+            companyId,
+            storeId,
+            barcode,
+            () -> loadByBarcode(companyId, barcode, storeId)
+        );
+    }
+
+    private ProductResponse loadByBarcode(Integer companyId, String barcode, Integer storeId) {
         Product product = findByScan(companyId, barcode);
         if (!product.isActive()) {
             throw PharmacyErrors.badRequest("Product is not active");
@@ -144,6 +157,7 @@ public class ProductCatalogService {
             storeStockService.increase(saved, req.storePrices().get(0).storeId(), req.initialStock());
             productRepository.save(saved);
         }
+        catalogCacheEvictor.onProductChanged(companyId);
         return toResponse(saved, null);
     }
 
@@ -204,7 +218,9 @@ public class ProductCatalogService {
             productAttributeService.saveAttributes(product.getId(), req.attributes());
         }
         fiscalFields.apply(product, req);
-        return toResponse(productRepository.save(product), null);
+        Product saved = productRepository.save(product);
+        catalogCacheEvictor.onProductChanged(saved.getCompanyId());
+        return toResponse(saved, null);
     }
 
     public int bulkUpdateTaxRate(BulkTaxRateRequest req) {
@@ -218,6 +234,7 @@ public class ProductCatalogService {
         BigDecimal tax = taxRate(req.taxRate());
         products.forEach(p -> p.setTaxRate(tax));
         productRepository.saveAll(products);
+        catalogCacheEvictor.onProductChanged(companyId);
         return products.size();
     }
 
@@ -228,6 +245,7 @@ public class ProductCatalogService {
         }
         barcodeClaim.release(product);
         productRepository.save(product);
+        catalogCacheEvictor.onProductChanged(product.getCompanyId());
     }
 
     @Transactional(readOnly = true)

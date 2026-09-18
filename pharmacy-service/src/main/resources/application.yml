@@ -47,6 +47,15 @@ app:
     base-url: ${POS_CORE_URL:http://localhost:8080/api/v1}
     internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
   pharmacy:
+    redis:
+      enabled: ${PHARMACY_REDIS_ENABLED:false}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${PHARMACY_REDIS_DB:0}
+      connect-timeout-ms: ${PHARMACY_REDIS_CONNECT_TIMEOUT_MS:100}
+      command-timeout-ms: ${PHARMACY_REDIS_COMMAND_TIMEOUT_MS:100}
+      barcode-ttl-seconds: ${PHARMACY_REDIS_BARCODE_TTL_SECONDS:180}
     mark-withdraw:
       retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
     async:
@@ -85,6 +94,9 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    redis:
+      enabled: false
 
 logging:
   level:

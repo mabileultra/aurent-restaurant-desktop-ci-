@@ -1,5 +1,6 @@
 package com.pos.pharmacy.warehouse.service.impl;
 
+import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.service.ProductCatalogService;
 import com.pos.pharmacy.common.PageResponse;
@@ -53,6 +54,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final PharmacyReceiptMarkRegistration pharmacyReceiptMarkRegistration;
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
+    private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
     @Override
     public PharmacyStockReceiptResponse createDraft(CreatePharmacyStockReceiptRequest request) {
@@ -289,6 +291,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         receipt.setActivatedBy(tenant.currentUserId());
         stockReceiptRepository.save(receipt);
         pharmacyReceiptMarkRegistration.registerAfterActivate(receipt, request);
+        catalogCacheEvictor.onStoreStockChanged(receipt.getCompanyId(), receipt.getStoreId());
         return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
     }
 

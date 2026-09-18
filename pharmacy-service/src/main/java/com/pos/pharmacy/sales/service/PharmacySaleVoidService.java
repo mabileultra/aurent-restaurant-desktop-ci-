@@ -1,5 +1,6 @@
 package com.pos.pharmacy.sales.service;
 
+import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.revenue.service.PharmacyRefundPublicationService;
@@ -39,6 +40,7 @@ public class PharmacySaleVoidService {
     private final PharmacyRefundPublicationService refundPublicationService;
     private final PharmacyShiftRefundApplier shiftRefundApplier;
     private final PharmacySaleMarkReturnSupport markReturnSupport;
+    private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
     public SaleResponse voidSale(UUID id, String reason) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
@@ -95,6 +97,7 @@ public class PharmacySaleVoidService {
             beforeNet.cash().subtract(afterNet.cash()),
             beforeNet.card().subtract(afterNet.card())
         );
+        catalogCacheEvictor.onStoreStockChanged(companyId, saved.getStoreId());
         return saleMapper.toResponse(saved);
     }
 }

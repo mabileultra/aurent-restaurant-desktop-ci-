@@ -9,4 +9,5 @@
     <include file="v2-stage2-debts.xml" relativeToChangelogFile="true"/>
     <include file="v2-stage2b-advances.xml" relativeToChangelogFile="true"/>
     <include file="v3-stage3-core.xml" relativeToChangelogFile="true"/>
+    <include file="v4-finance-integration-inbox.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>

@@ -100,6 +100,7 @@ declare -A CONTAINER_NAMES=(
   [restaurant-db]=aurent-restaurant-db
   [pharmacy-db]=aurent-pharmacy-db
   [redpanda]=aurent-redpanda
+  [redis]=aurent-redis
   [finance-service]=aurent-finance-service
   [identity-service]=aurent-identity-service
   [platform-service]=aurent-platform-service
@@ -383,6 +384,15 @@ deploy_selected_services() {
   export COMPOSE_BAKE=0
   export COMPOSE_PARALLEL_LIMIT="${COMPOSE_PARALLEL_LIMIT:-2}"
 
+  for svc in "${targets[@]}"; do
+    if [[ "$svc" == "pharmacy-service" ]]; then
+      echo "==> Redis для pharmacy-service..."
+      compose up -d redis
+      wait_container_healthy aurent-redis redis || return 1
+      break
+    fi
+  done
+
   if [[ "${DEPLOY_PULL:-0}" == "1" ]]; then
     compose build --pull "${targets[@]}"
   else
@@ -444,8 +454,8 @@ else
   compose build
 fi
 
-echo "==> Инфраструктура: PostgreSQL (все БД) + Redpanda..."
-compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db redpanda
+echo "==> Инфраструктура: PostgreSQL (все БД) + Redpanda + Redis..."
+compose up -d postgres finance-db identity-db platform-db reporting-db crm-db restaurant-db pharmacy-db redpanda redis
 
 wait_container_healthy aurent-pos-db postgres
 wait_container_healthy aurent-identity-db identity-db
@@ -455,6 +465,7 @@ wait_container_healthy aurent-crm-db crm-db
 wait_container_healthy aurent-restaurant-db restaurant-db
 wait_container_healthy aurent-pharmacy-db pharmacy-db
 wait_container_healthy aurent-redpanda redpanda
+wait_container_healthy aurent-redis redis
 
 if [[ "${FINANCE_SERVICE_ENABLED:-true}" == "true" ]]; then
   wait_container_healthy aurent-finance-db finance-db

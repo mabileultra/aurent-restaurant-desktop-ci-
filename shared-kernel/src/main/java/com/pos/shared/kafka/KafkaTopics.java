@@ -11,6 +11,7 @@ public final class KafkaTopics {
     public static final String PRODUCT_SNAPSHOT = "pos.catalog.product.snapshot";
     public static final String SHIFT_CLOSED = "pos.shifts.closed";
     public static final String REPORTING_DLQ = "pos.reporting.dlq";
+    public static final String FINANCE_DLQ = "pos.finance.dlq";
 
     private KafkaTopics() {
     }

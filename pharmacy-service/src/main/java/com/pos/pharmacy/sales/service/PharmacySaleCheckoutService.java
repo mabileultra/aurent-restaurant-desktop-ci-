@@ -1,5 +1,6 @@
 package com.pos.pharmacy.sales.service;
 
+import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
@@ -52,6 +53,7 @@ public class PharmacySaleCheckoutService {
     private final PharmacySoldMarkService soldMarkService;
     private final PharmacyStockMarkService stockMarkService;
     private final PharmacyMarkWithdrawService markWithdrawService;
+    private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
         return processSale(req, cashierId, null);
@@ -209,6 +211,7 @@ public class PharmacySaleCheckoutService {
             paymentMethod
         );
         revenuePublicationService.onSaleCompleted(saved, attributesByProductId, shift.storeName());
+        catalogCacheEvictor.onStoreStockChanged(companyId, req.storeId());
         return saleMapper.toResponse(
             saved,
             shift.storeName(),
