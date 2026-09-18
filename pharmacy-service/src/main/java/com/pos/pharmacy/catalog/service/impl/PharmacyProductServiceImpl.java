@@ -1,11 +1,13 @@
 package com.pos.pharmacy.catalog.service.impl;
 
+import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
 import com.pos.pharmacy.catalog.service.ProductCatalogService;
+import com.pos.pharmacy.catalog.support.ProductListScope;
 import com.pos.pharmacy.common.PageResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -29,10 +31,8 @@ public class PharmacyProductServiceImpl implements PharmacyProductService {
         Integer storeId,
         Pageable pageable
     ) {
-        boolean onlyActive = scope != null
-            ? "ACTIVE".equalsIgnoreCase(scope.trim())
-            : activeOnly;
-        return catalogService.list(search, onlyActive, storeId, pageable);
+        Boolean active = ProductListScope.activeFilter(scope, activeOnly);
+        return catalogService.list(search, active, storeId, pageable);
     }
 
     @Override
@@ -69,5 +69,11 @@ public class PharmacyProductServiceImpl implements PharmacyProductService {
     @Transactional
     public void deactivate(UUID id) {
         catalogService.deactivate(id);
+    }
+
+    @Override
+    @Transactional
+    public int bulkDeactivate(BulkProductIdsRequest req) {
+        return catalogService.bulkDeactivate(req);
     }
 }

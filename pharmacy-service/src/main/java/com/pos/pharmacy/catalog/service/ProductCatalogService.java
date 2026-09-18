@@ -1,6 +1,7 @@
 package com.pos.pharmacy.catalog.service;
 
 import com.pos.pharmacy.cache.PharmacyProductBarcodeCache;
+import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
@@ -34,12 +35,13 @@ public class ProductCatalogService {
     private final ProductBarcodeLookupService barcodeLookupService;
     private final ProductResponseFactory responseFactory;
     private final ProductWriteService productWriteService;
+    private final ProductDeactivateService productDeactivateService;
     private final ProductTaxBulkService productTaxBulkService;
 
     @Transactional(readOnly = true)
-    public PageResponse<ProductResponse> list(String search, boolean activeOnly, Integer storeId, Pageable pageable) {
+    public PageResponse<ProductResponse> list(String search, Boolean active, Integer storeId, Pageable pageable) {
         Integer companyId = tenant.requireCompanyId();
-        Page<Product> page = productRepository.search(companyId, trim(search), activeOnly, pageable);
+        Page<Product> page = productRepository.search(companyId, trim(search), active, pageable);
         List<ProductResponse> content = listResponseAssembler.assemble(page.getContent(), storeId);
         return new PageResponse<>(
             content,
@@ -79,7 +81,11 @@ public class ProductCatalogService {
     }
 
     public void deactivate(UUID id) {
-        productWriteService.deactivate(id);
+        productDeactivateService.deactivate(id);
+    }
+
+    public int bulkDeactivate(BulkProductIdsRequest req) {
+        return productDeactivateService.bulkDeactivate(req);
     }
 
     @Transactional(readOnly = true)

@@ -23,7 +23,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     @Query("""
         SELECT p FROM Product p
         WHERE p.companyId = :companyId
-          AND (:activeOnly = false OR p.active = true)
+          AND (:active IS NULL OR p.active = :active)
           AND (
             :search IS NULL OR :search = ''
             OR LOWER(p.name) LIKE LOWER(CONCAT('%', :search, '%'))
@@ -35,7 +35,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     Page<Product> search(
         @Param("companyId") Integer companyId,
         @Param("search") String search,
-        @Param("activeOnly") boolean activeOnly,
+        @Param("active") Boolean active,
         Pageable pageable
     );
 

@@ -5,10 +5,9 @@ import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.catalog.entity.Product;
-import com.pos.pharmacy.catalog.entity.ProductBarcode;
-import com.pos.pharmacy.catalog.repository.ProductBarcodeRepository;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
+import com.pos.pharmacy.catalog.support.ProductExtraBarcodeWriter;
 import com.pos.pharmacy.catalog.support.ProductResponseFactory;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.domain.ProductType;
@@ -23,7 +22,6 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,10 +29,11 @@ import java.util.UUID;
 public class ProductWriteService {
 
     private final ProductRepository productRepository;
-    private final ProductBarcodeRepository productBarcodeRepository;
     private final ProductAttributeService productAttributeService;
     private final StoreStockService storeStockService;
     private final PharmacyBarcodeClaim barcodeClaim;
+    private final ProductExtraBarcodeWriter extraBarcodeWriter;
+    private final ProductDeactivateService productDeactivateService;
     private final TenantSupport tenant;
     private final ProductFiscalFieldsApplier fiscalFields;
     private final ProductResponseFactory responseFactory;
@@ -86,7 +85,7 @@ public class ProductWriteService {
             .uzInvoiceDocumentId(req.uzInvoiceDocumentId())
             .build();
         Product saved = productRepository.save(product);
-        saveExtraBarcodes(saved.getId(), req.additionalBarcodes());
+        extraBarcodeWriter.replace(saved.getId(), companyId, saved.getBarcode(), req.additionalBarcodes());
         productAttributeService.saveAttributes(saved.getId(), req.attributes());
         if (req.initialStock() != null && req.initialStock().compareTo(BigDecimal.ZERO) > 0
             && req.storePrices() != null && !req.storePrices().isEmpty()) {
@@ -140,7 +139,9 @@ public class ProductWriteService {
             product.setLowStockAlert(req.lowStockAlert());
         }
         if (req.barcode() != null) {
-            product.setBarcode(trim(req.barcode()));
+            String barcode = trim(req.barcode());
+            barcodeClaim.claim(product.getCompanyId(), barcode, product.getId());
+            product.setBarcode(barcode);
         }
         if (req.plu() != null) {
             product.setPlu(trim(req.plu()));
@@ -148,27 +149,24 @@ public class ProductWriteService {
         if (req.imageUrl() != null) {
             product.setImageUrl(req.imageUrl());
         }
-        if (req.active() != null) {
-            product.setActive(req.active());
-        }
         if (req.attributes() != null) {
             productAttributeService.saveAttributes(product.getId(), req.attributes());
         }
         fiscalFields.apply(product, req);
+        extraBarcodeWriter.replace(
+            product.getId(),
+            product.getCompanyId(),
+            product.getBarcode(),
+            req.additionalBarcodes()
+        );
+        if (Boolean.FALSE.equals(req.active())) {
+            productDeactivateService.deactivate(product);
+        } else if (Boolean.TRUE.equals(req.active())) {
+            product.setActive(true);
+        }
         Product saved = productRepository.save(product);
         catalogCacheEvictor.onProductChanged(saved.getCompanyId());
         return responseFactory.toResponse(saved, null);
-    }
-
-    @Transactional
-    public void deactivate(UUID id) {
-        Product product = requireOwned(id);
-        if (!product.isActive()) {
-            return;
-        }
-        barcodeClaim.release(product);
-        productRepository.save(product);
-        catalogCacheEvictor.onProductChanged(product.getCompanyId());
     }
 
     @Transactional(readOnly = true)
@@ -186,21 +184,6 @@ public class ProductWriteService {
             throw PharmacyErrors.badRequest("Product is not active");
         }
         return product;
-    }
-
-    private void saveExtraBarcodes(UUID productId, List<String> barcodes) {
-        if (barcodes == null) {
-            return;
-        }
-        for (String barcode : barcodes) {
-            if (!StringUtils.hasText(barcode)) {
-                continue;
-            }
-            productBarcodeRepository.save(ProductBarcode.builder()
-                .productId(productId)
-                .barcode(barcode.trim())
-                .build());
-        }
     }
 
     private static BigDecimal scale(BigDecimal value) {

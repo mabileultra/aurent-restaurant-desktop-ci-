@@ -1,5 +1,6 @@
 package com.pos.pharmacy.catalog.service;
 
+import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
@@ -29,6 +30,8 @@ public interface PharmacyProductService {
     ProductResponse update(UUID id, UpdateProductRequest req);
 
     void deactivate(UUID id);
+
+    int bulkDeactivate(BulkProductIdsRequest req);
 
     int bulkUpdateTaxRate(BulkTaxRateRequest req);
 }

@@ -1,5 +1,6 @@
 package com.pos.pharmacy.catalog.controller;
 
+import com.pos.pharmacy.catalog.dto.BulkProductIdsRequest;
 import com.pos.pharmacy.catalog.dto.BulkTaxRateRequest;
 import com.pos.pharmacy.catalog.dto.CreateProductRequest;
 import com.pos.pharmacy.catalog.dto.ProductResponse;
@@ -81,6 +82,14 @@ public class PharmacyProductController {
     public ResponseEntity<ApiResponse> deactivate(@PathVariable UUID id) {
         pharmacyProductService.deactivate(id);
         return ResponseEntity.ok(ApiResponse.success("Product deactivated"));
+    }
+
+    @PatchMapping("/bulk/deactivate")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Массово деактивировать аптечные товары")
+    public ResponseEntity<ApiResponse> bulkDeactivate(@Valid @RequestBody BulkProductIdsRequest request) {
+        int n = pharmacyProductService.bulkDeactivate(request);
+        return ResponseEntity.ok(ApiResponse.success("Deactivated " + n + " products"));
     }
 
     @PatchMapping("/bulk/tax-rate")

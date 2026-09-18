@@ -8,6 +8,7 @@ import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyProductModal from '../components/PharmacyProductModal';
+import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyReceiptActivateModal from '../components/PharmacyReceiptActivateModal';
 import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal';
@@ -23,6 +24,7 @@ import {
   PharmacySelectCell,
 } from '../components/PharmacyTableSelect';
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
+import { usePharmacyProductDelete } from '../hooks/usePharmacyProductDelete';
 import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
 import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
 import { usePharmacyReceiptMarks } from '../hooks/usePharmacyReceiptMarks';
@@ -38,6 +40,7 @@ import {
   receiptMarksReady,
 } from '../utils/pharmacyReceiptMarks';
 import { PHARM_PAGE_SIZES, useClientTablePage } from '../utils/pharmacyTablePage';
+import { productStubFromReceiptLine } from '../utils/productStubFromReceiptLine';
 import PharmacyReceiptImportMarksVerifyModal from '../components/PharmacyReceiptImportMarksVerifyModal';
 import '../styles/pharmacy-import-marks-ask.css';
 
@@ -157,6 +160,9 @@ export default function PharmacyReceiptDocumentPage() {
   const markedLines = (receipt?.lines ?? []).filter((line) => line.markedProduct);
   const linesPage = useClientTablePage(receipt?.lines ?? [], id);
   const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
+  const productDelete = usePharmacyProductDelete(t, {
+    onDone: () => receiptQuery.refetch(),
+  });
   const revalue = usePharmacyReceiptRevalue({
     receiptId: id,
     lines: receipt?.lines ?? [],
@@ -339,20 +345,21 @@ export default function PharmacyReceiptDocumentPage() {
                     <th>{t('pharmacyStock.retailPrice')}</th>
                     <th>{t('pharmacyStock.batch')}</th>
                     <th>{t('pharmacyStock.expiry')}</th>
-                    {isDraft ? <th /> : null}
+                    <th className="pharmacy-stock__row-actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {(receipt.lines ?? []).length === 0 ? (
                     <tr>
-                      <td colSpan={isDraft ? 13 : 12}>
+                      <td colSpan={13}>
                         <div className="pharmacy-stock__empty">{t('pharmacyStock.noLines')}</div>
                       </td>
                     </tr>
                   ) : linesPage.rows.map((line, idx) => (
                     <tr
                       key={line.id}
-                      className={linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : undefined}
+                      className={`${linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : ''}${!isDraft ? ' pharmacy-stock__row--clickable' : ''}`}
+                      onClick={!isDraft ? () => setAboutProduct(productStubFromReceiptLine(line)) : undefined}
                     >
                       <PharmacySelectCell t={t} row={line} selection={linesSelect} disabled={!isDraft} />
                       <td>{linesPage.startIndex + idx + 1}</td>
@@ -375,7 +382,12 @@ export default function PharmacyReceiptDocumentPage() {
                             removeLineMutation.mutate(line.id);
                           }}
                         />
-                      ) : null}
+                      ) : (
+                        <PharmacyEditCell
+                          t={t}
+                          onEdit={() => setAboutProduct(productStubFromReceiptLine(line))}
+                        />
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -432,23 +444,7 @@ export default function PharmacyReceiptDocumentPage() {
         existingLine={editingLine}
         defaultMarkup={receipt.defaultMarkupPercent ?? 20}
         saving={updateLineMutation.isPending}
-        onAboutProduct={() => {
-          if (!editingLine?.productId) return;
-          setAboutProduct({
-            id: editingLine.productId,
-            name: editingLine.productName,
-            sku: editingLine.sku,
-            barcode: editingLine.barcode,
-            ikpu: editingLine.ikpu,
-            manufacturer: editingLine.manufacturer,
-            country: editingLine.country,
-            attributes: {
-              manufacturer: editingLine.manufacturer,
-              country: editingLine.country,
-              units_in_pack: String(editingLine.unitsInPack || 1),
-            },
-          });
-        }}
+        onAboutProduct={() => setAboutProduct(productStubFromReceiptLine(editingLine))}
         onSave={(payload) => updateLineMutation.mutate({ lineId: editingLine.id, payload })}
       />
 
@@ -458,7 +454,23 @@ export default function PharmacyReceiptDocumentPage() {
         overlayClassName="!z-[60]"
         storeId={receipt.storeId}
         onClose={() => setAboutProduct(null)}
-        onSaved={() => setAboutProduct(null)}
+        onDelete={aboutProduct ? () => {
+          const current = aboutProduct;
+          setAboutProduct(null);
+          productDelete.ask(current);
+        } : undefined}
+        onSaved={() => {
+          setAboutProduct(null);
+          receiptQuery.refetch();
+        }}
+      />
+      <PharmacyProductDeleteModal
+        open={productDelete.pending.length > 0}
+        onClose={productDelete.close}
+        t={t}
+        saving={productDelete.deleting}
+        products={productDelete.pending}
+        onConfirm={productDelete.confirm}
       />
 
       <PharmacyReceiptActivateModal

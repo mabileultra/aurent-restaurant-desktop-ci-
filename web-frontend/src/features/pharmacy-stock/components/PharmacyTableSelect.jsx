@@ -60,11 +60,11 @@ export function PharmacyEditButton({ t, onEdit }) {
   );
 }
 
-export function PharmacyEditCell({ t, onEdit, onDelete }) {
+export function PharmacyEditCell({ t, onEdit, onDelete, children }) {
   return (
     <td className="pharmacy-stock__row-actions" onClick={(e) => e.stopPropagation()}>
       <div className="pharmacy-stock__icon-row">
-        <PharmacyEditButton t={t} onEdit={onEdit} />
+        {onEdit ? <PharmacyEditButton t={t} onEdit={onEdit} /> : null}
         {onDelete ? (
           <button
             type="button"
@@ -76,6 +76,7 @@ export function PharmacyEditCell({ t, onEdit, onDelete }) {
             <Trash2 size={15} strokeWidth={2} />
           </button>
         ) : null}
+        {children}
       </div>
     </td>
   );

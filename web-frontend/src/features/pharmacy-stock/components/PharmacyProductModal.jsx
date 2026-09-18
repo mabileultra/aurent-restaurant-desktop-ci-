@@ -26,6 +26,7 @@ export default function PharmacyProductModal({
   open,
   onClose,
   onSaved,
+  onDelete,
   storeId = null,
   product = null,
   overlayClassName,
@@ -212,7 +213,17 @@ export default function PharmacyProductModal({
             </button>
           </>
         ) : isEdit ? (
-          <div className="flex w-full justify-center">
+          <div className="pharm-product-modal__footer pharm-product-modal__footer--edit">
+            {onDelete ? (
+              <BaseButton
+                variant="danger"
+                className="pharm-product-modal__btn-danger"
+                onClick={onDelete}
+                disabled={saveMutation.isPending}
+              >
+                {t('pharmacyStock.deleteProduct')}
+              </BaseButton>
+            ) : <span />}
             <BaseButton
               className="pharm-product-modal__btn-primary min-w-[180px]"
               onClick={handleSave}

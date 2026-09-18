@@ -8,6 +8,7 @@ import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyProductModal from '../components/PharmacyProductModal';
+import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
 import PharmacyStockLayout from '../components/PharmacyStockLayout';
 import {
   PharmacyEditCell,
@@ -35,7 +36,7 @@ export default function PharmacyProductsPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
-  const [scope, setScope] = useState('ALL');
+  const [scope, setScope] = useState('ACTIVE');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PHARM_DEFAULT_PAGE_SIZE);
   const [createOpen, setCreateOpen] = useState(false);
@@ -63,7 +64,7 @@ export default function PharmacyProductsPage() {
   const total = listQuery.data?.totalElements ?? rows.length;
   const totalPages = listQuery.data?.totalPages ?? 1;
   const selection = usePharmacyRowSelection(rows, `${search}:${scope}:${pageSize}`);
-  const productDelete = usePharmacyProductDelete(t);
+  const productDelete = usePharmacyProductDelete(t, { onDone: () => selection.clearSelection() });
 
   const bulkVatMutation = useMutation({
     mutationFn: (taxRate) => pharmacyWarehouseApi.bulkTaxRate({
@@ -111,6 +112,14 @@ export default function PharmacyProductsPage() {
         >
           {t('pharmacyStock.bulkVat')}
         </button>
+        <button
+          type="button"
+          className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
+          disabled={productDelete.deleting}
+          onClick={() => productDelete.ask(selection.selectedRows)}
+        >
+          {t('pharmacyStock.deleteSelected')}
+        </button>
       </PharmacySelectionBar>
 
       <div className="pharmacy-stock__panel flex min-h-0 flex-1 flex-col">
@@ -128,31 +137,36 @@ export default function PharmacyProductsPage() {
                 <th>{t('pharmacyStock.productMxik')}</th>
                 <th>{t('pharmacyStock.unitsInPack')}</th>
                 <th>{t('pharmacyStock.colCountry')}</th>
-                <th />
+                <th className="pharmacy-stock__row-actions" />
               </tr>
             </thead>
             <tbody>
               {listQuery.isLoading ? (
                 <tr>
-                  <td colSpan={12}>
+                  <td colSpan={11}>
                     <div className="pharmacy-stock__empty">{t('common.loading')}</div>
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={12}>
+                  <td colSpan={11}>
                     <div className="pharmacy-stock__empty">{t('pharmacyStock.catalogEmpty')}</div>
                   </td>
                 </tr>
               ) : rows.map((p, idx) => (
                 <tr
                   key={p.id}
-                  className={`pharmacy-stock__row--clickable${selection.isSelected(p.id) ? ' pharmacy-stock__row--selected' : ''}`}
+                  className={`pharmacy-stock__row--clickable${selection.isSelected(p.id) ? ' pharmacy-stock__row--selected' : ''}${p.active === false ? ' pharmacy-stock__row--inactive' : ''}`}
                   onClick={() => setEditing(p)}
                 >
                   <PharmacySelectCell t={t} row={p} selection={selection} />
                   <td>{page * pageSize + idx + 1}</td>
-                  <td className="font-semibold">{p.name}</td>
+                  <td className="font-semibold">
+                    {p.name}
+                    {p.active === false ? (
+                      <span className="pharmacy-stock__inline-badge">{t('pharmacyStock.productInactive')}</span>
+                    ) : null}
+                  </td>
                   <td>{productManufacturer(p) || '—'}</td>
                   <td>{productDosageForm(p) || '—'}</td>
                   <td>{productAtc(p) || '—'}</td>
@@ -160,22 +174,11 @@ export default function PharmacyProductsPage() {
                   <td>{p.ikpu || '—'}</td>
                   <td>{productUnitsInPack(p) || 1}</td>
                   <td>{productCountry(p) || '—'}</td>
-                  <PharmacyEditCell t={t} onEdit={() => setEditing(p)} />
-                  <td>
-                    {p.active !== false && (
-                      <button
-                        type="button"
-                        className="pharmacy-stock__row-btn"
-                        disabled={productDelete.deleting}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          productDelete.remove(p);
-                        }}
-                      >
-                        {t('pharmacyStock.deleteProduct')}
-                      </button>
-                    )}
-                  </td>
+                  <PharmacyEditCell
+                    t={t}
+                    onEdit={() => setEditing(p)}
+                    onDelete={p.active !== false ? () => productDelete.ask(p) : undefined}
+                  />
                 </tr>
               ))}
             </tbody>
@@ -205,10 +208,23 @@ export default function PharmacyProductsPage() {
         product={editing}
         overlayClassName="!z-[60]"
         onClose={() => setEditing(null)}
+        onDelete={editing?.active !== false ? () => {
+          const current = editing;
+          setEditing(null);
+          productDelete.ask(current);
+        } : undefined}
         onSaved={() => {
           setEditing(null);
           listQuery.refetch();
         }}
+      />
+      <PharmacyProductDeleteModal
+        open={productDelete.pending.length > 0}
+        onClose={productDelete.close}
+        t={t}
+        saving={productDelete.deleting}
+        products={productDelete.pending}
+        onConfirm={productDelete.confirm}
       />
       <PharmacyBulkNumberModal
         open={bulkVatOpen}

@@ -387,6 +387,32 @@
   width: 1%;
   white-space: nowrap;
   text-align: right !important;
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: #fff;
+  box-shadow: -8px 0 8px -8px rgba(15, 23, 42, 0.18);
+}
+
+.dark .pharmacy-stock__row-actions {
+  background: #0f172a;
+}
+
+.pharmacy-stock__row--inactive {
+  opacity: 0.62;
+}
+
+.pharmacy-stock__inline-badge {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.08rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #92400e;
+  background: #fef3c7;
+  vertical-align: middle;
 }
 
 .pharmacy-stock__icon-row {
@@ -1459,6 +1485,16 @@ select.pharm-line-modal__input {
   gap: 0.5rem;
   justify-content: flex-start;
   width: 100%;
+}
+
+.pharm-product-modal__footer--edit {
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pharm-product-modal__btn-danger {
+  min-width: 7.25rem;
+  border-radius: 0.4rem !important;
 }
 
 .pharm-product-modal__btn-primary {

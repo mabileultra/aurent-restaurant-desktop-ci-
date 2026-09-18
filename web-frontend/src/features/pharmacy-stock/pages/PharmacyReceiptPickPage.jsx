@@ -8,6 +8,7 @@ import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyProductModal from '../components/PharmacyProductModal';
+import PharmacyProductDeleteModal from '../components/PharmacyProductDeleteModal';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
 import PharmacyReceiptImportWizard from '../components/PharmacyReceiptImportWizard';
 import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
@@ -15,13 +16,13 @@ import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar
 import PharmacyReceiptLineModal from '../components/PharmacyReceiptLineModal';
 import PharmacyStockLayout from '../components/PharmacyStockLayout';
 import {
-  PharmacyEditButton,
   PharmacyEditCell,
   PharmacySelectAllTh,
   PharmacySelectCell,
   PharmacySelectionBar,
 } from '../components/PharmacyTableSelect';
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
+import { usePharmacyProductDelete } from '../hooks/usePharmacyProductDelete';
 import { usePharmacyReceiptImport } from '../hooks/usePharmacyReceiptImport';
 import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
 import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
@@ -38,6 +39,7 @@ import {
   PHARM_PAGE_SIZES,
   useClientTablePage,
 } from '../utils/pharmacyTablePage';
+import { productStubFromReceiptLine } from '../utils/productStubFromReceiptLine';
 
 export default function PharmacyReceiptPickPage() {
   const { id } = useParams();
@@ -105,6 +107,7 @@ export default function PharmacyReceiptPickPage() {
   const isDraft = receipt?.status === 'DRAFT';
   const linesPage = useClientTablePage(docLines, id);
   const catalogSelect = usePharmacyRowSelection(catalog, `${id}:${search}`);
+  const productDelete = usePharmacyProductDelete(t, { onDone: () => catalogSelect.clearSelection() });
   const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
   const importer = usePharmacyReceiptImport({
     receiptId: id,
@@ -215,6 +218,14 @@ export default function PharmacyReceiptPickPage() {
               >
                 {t('pharmacyStock.addSelected')}
               </BaseButton>
+              <button
+                type="button"
+                className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
+                disabled={productDelete.deleting}
+                onClick={() => productDelete.ask(catalogSelect.selectedRows)}
+              >
+                {t('pharmacyStock.deleteSelected')}
+              </button>
             </PharmacySelectionBar>
             <span>{catalogTotal}</span>
           </div>
@@ -255,18 +266,19 @@ export default function PharmacyReceiptPickPage() {
                     <td>{productCountry(p) || '—'}</td>
                     <td>{productDosageForm(p) || '—'}</td>
                     <td>{productUnitsInPack(p) || 1}</td>
-                    <td>
-                      <div className="pharmacy-stock__icon-row">
-                        <PharmacyEditButton t={t} onEdit={() => setAboutProduct(p)} />
-                        <button
-                          type="button"
-                          className="pharmacy-stock__row-btn"
-                          onClick={() => setSelectedProduct(p)}
-                        >
-                          {t('pharmacyStock.select')}
-                        </button>
-                      </div>
-                    </td>
+                    <PharmacyEditCell
+                      t={t}
+                      onEdit={() => setAboutProduct(p)}
+                      onDelete={() => productDelete.ask(p)}
+                    >
+                      <button
+                        type="button"
+                        className="pharmacy-stock__row-btn"
+                        onClick={() => setSelectedProduct(p)}
+                      >
+                        {t('pharmacyStock.select')}
+                      </button>
+                    </PharmacyEditCell>
                   </tr>
                 ))}
               </tbody>
@@ -389,22 +401,7 @@ export default function PharmacyReceiptPickPage() {
             setAboutProduct(selectedProduct);
             return;
           }
-          if (editingLine?.productId) {
-            setAboutProduct({
-              id: editingLine.productId,
-              name: editingLine.productName,
-              sku: editingLine.sku,
-              barcode: editingLine.barcode,
-              ikpu: editingLine.ikpu,
-              manufacturer: editingLine.manufacturer,
-              country: editingLine.country,
-              attributes: {
-                manufacturer: editingLine.manufacturer,
-                country: editingLine.country,
-                units_in_pack: String(editingLine.unitsInPack || 1),
-              },
-            });
-          }
+          setAboutProduct(productStubFromReceiptLine(editingLine));
         }}
         onSave={(payload, lineId) => {
           if (lineId) {
@@ -426,6 +423,11 @@ export default function PharmacyReceiptPickPage() {
           setAboutProduct(null);
         }}
         storeId={receipt.storeId}
+        onDelete={aboutProduct?.active !== false ? () => {
+          const current = aboutProduct;
+          setAboutProduct(null);
+          productDelete.ask(current);
+        } : undefined}
         onSaved={(created, linePayload) => {
           productsQuery.refetch();
           setAboutProduct(null);
@@ -436,6 +438,14 @@ export default function PharmacyReceiptPickPage() {
           }
           if (created?.id && !editingLine) setSelectedProduct(created);
         }}
+      />
+      <PharmacyProductDeleteModal
+        open={productDelete.pending.length > 0}
+        onClose={productDelete.close}
+        t={t}
+        saving={productDelete.deleting}
+        products={productDelete.pending}
+        onConfirm={productDelete.confirm}
       />
 
       <PharmacyReceiptImportWizard t={t} imp={importer} />
