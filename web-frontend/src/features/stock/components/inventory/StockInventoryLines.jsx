@@ -1,4 +1,7 @@
 import { useMemo, useState } from 'react';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../../components/shared/TablePagination';
+import { useInventoryLinesPaging } from '../../hooks/useInventoryLinesPaging';
+import { filterInventoryLines } from '../../utils/filterInventoryLines';
 import { summarizeInventory } from '../../utils/inventoryVariance';
 import StockInventoryLineRow from './StockInventoryLineRow';
 
@@ -11,15 +14,14 @@ export default function StockInventoryLines({
   removeLine,
 }) {
   const [filter, setFilter] = useState('');
+  const [addTick, setAddTick] = useState(0);
   const summary = useMemo(() => summarizeInventory(lines), [lines]);
-  const query = filter.trim().toLowerCase();
-  const visible = lines
-    .map((line, index) => ({ line, index }))
-    .filter(({ line }) => {
-      if (!query) return true;
-      const hay = [line.product?.name, line.product?.sku, line.product?.barcode].filter(Boolean).join(' ').toLowerCase();
-      return hay.includes(query) || !line.productId;
-    });
+  const visible = useMemo(() => filterInventoryLines(lines, filter), [lines, filter]);
+  const paging = useInventoryLinesPaging(visible, {
+    resetKey: filter,
+    stickToEndKey: addTick,
+    initialPageSize: 10,
+  });
 
   return (
     <section className="stock-inv-lines">
@@ -35,7 +37,14 @@ export default function StockInventoryLines({
             onChange={(e) => setFilter(e.target.value)}
             placeholder={t('stockReports.inventoryFilter')}
           />
-          <button type="button" className="stock-inv-lines__add" onClick={addLine}>
+          <button
+            type="button"
+            className="stock-inv-lines__add"
+            onClick={() => {
+              addLine();
+              setAddTick((n) => n + 1);
+            }}
+          >
             + {t('stockReports.addLine')}
           </button>
         </div>
@@ -63,7 +72,7 @@ export default function StockInventoryLines({
             </tr>
           </thead>
           <tbody>
-            {visible.map(({ line, index }) => (
+            {paging.rows.map(({ line, index }) => (
               <StockInventoryLineRow
                 key={line.key ?? index}
                 t={t}
@@ -80,6 +89,16 @@ export default function StockInventoryLines({
           </tbody>
         </table>
       </div>
+      <TablePagination
+        className="stock-inv-lines__pager"
+        page={paging.page}
+        pageSize={paging.pageSize}
+        total={paging.total}
+        totalPages={paging.totalPages}
+        onPageChange={paging.setPage}
+        onPageSizeChange={paging.setPageSize}
+        pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
+      />
       <div className="stock-inv-legend">
         <span><i className="stock-inv-legend__dot stock-inv-legend__dot--match" />{t('stockReports.inventoryLegendMatch', { count: summary.match })}</span>
         <span><i className="stock-inv-legend__dot stock-inv-legend__dot--shortage" />{t('stockReports.inventoryLegendShortage', { count: summary.shortage })}</span>

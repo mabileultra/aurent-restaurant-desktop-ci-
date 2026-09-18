@@ -16,5 +16,7 @@
     <include file="db/changelog/v9-pharmacy-sold-marks.xml"/>
     <include file="db/changelog/v10-pharmacy-stock-marks.xml"/>
     <include file="db/changelog/v11-pharmacy-stock-marks-withdraw.xml"/>
+    <include file="db/changelog/v12-pharmacy-checkout-scale-indexes.xml"/>
+    <include file="db/changelog/v13-stock-marks-mark-code-text.xml"/>
 
 </databaseChangeLog>

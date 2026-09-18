@@ -2,6 +2,7 @@ package com.pos.pharmacy.marks.repository;
 
 import com.pos.pharmacy.marks.entity.StockMark;
 import com.pos.pharmacy.marks.entity.StockMarkStatus;
+import com.pos.pharmacy.marks.support.StockMarkMonitorSql;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,38 +33,11 @@ public interface StockMarkRepository extends JpaRepository<StockMark, UUID> {
 
     List<StockMark> findTop100ByStatusOrderByUpdatedAtAsc(StockMarkStatus status);
 
-    @Query("""
-        SELECT m FROM StockMark m
-        WHERE m.companyId = :companyId
-          AND (:storeId IS NULL OR m.storeId = :storeId)
-          AND (:status IS NULL OR m.status = :status)
-          AND (:soldFrom IS NULL OR COALESCE(m.soldAt, m.updatedAt) >= :soldFrom)
-          AND (:soldTo IS NULL OR COALESCE(m.soldAt, m.updatedAt) < :soldTo)
-          AND (
-            :search IS NULL
-            OR LOWER(m.markCode) LIKE LOWER(CONCAT('%', :search, '%'))
-            OR LOWER(m.markKey) LIKE LOWER(CONCAT('%', :search, '%'))
-          )
-          AND (
-            :problemsOnly = false
-            OR m.status = com.pos.pharmacy.marks.entity.StockMarkStatus.PENDING_WITHDRAW
-            OR (m.lastWithdrawError IS NOT NULL AND LENGTH(TRIM(m.lastWithdrawError)) > 0)
-          )
-          AND (
-            :shiftId IS NULL
-            OR EXISTS (
-              SELECT 1 FROM com.pos.pharmacy.sales.entity.Sale s
-              WHERE s.id = m.saleId
-                AND s.companyId = :companyId
-                AND s.cashierShiftId = :shiftId
-            )
-          )
-        ORDER BY COALESCE(m.soldAt, m.updatedAt) DESC
-        """)
+    @Query(value = StockMarkMonitorSql.SELECT, countQuery = StockMarkMonitorSql.COUNT, nativeQuery = true)
     Page<StockMark> searchForMonitor(
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId,
-        @Param("status") StockMarkStatus status,
+        @Param("status") String status,
         @Param("shiftId") UUID shiftId,
         @Param("soldFrom") Instant soldFrom,
         @Param("soldTo") Instant soldTo,

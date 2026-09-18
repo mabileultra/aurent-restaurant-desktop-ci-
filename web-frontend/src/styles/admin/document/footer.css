@@ -1,4 +1,7 @@
 .admin-doc-footer {
+  position: sticky;
+  bottom: 8px;
+  z-index: 8;
   display: flex;
   align-items: center;
   justify-content: space-between;

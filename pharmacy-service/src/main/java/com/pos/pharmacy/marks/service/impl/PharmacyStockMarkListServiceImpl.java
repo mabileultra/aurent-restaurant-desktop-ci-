@@ -61,7 +61,7 @@ public class PharmacyStockMarkListServiceImpl implements PharmacyStockMarkListSe
         Page<StockMark> result = stockMarkRepository.searchForMonitor(
             companyId,
             storeId,
-            status,
+            status == null ? null : status.name(),
             shiftId,
             soldFrom,
             soldTo,

@@ -145,7 +145,7 @@ class PharmacyStockMarkListServiceImplTest {
             .build();
 
         when(stockMarkRepository.searchForMonitor(
-            eq(10), isNull(), eq(StockMarkStatus.SOLD), isNull(), isNull(), isNull(), isNull(), eq(false), any()
+            eq(10), isNull(), eq("SOLD"), isNull(), isNull(), isNull(), isNull(), eq(false), any()
         )).thenReturn(new PageImpl<>(List.of(sold)));
         when(productRepository.findAllById(any())).thenReturn(List.of());
 
