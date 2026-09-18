@@ -21,7 +21,7 @@ class PlatformAdminModuleTest {
         assertEquals(PlatformAdminModule.values().length, keys.size());
         assertFalse(PlatformAdminModule.isKey("dashboard"));
         assertTrue(PlatformAdminModule.isKey("platformCompanies"));
-        assertFalse(PlatformAdminModule.isKey("platformAccess"));
+        assertTrue(PlatformAdminModule.isKey("platformAccess"));
         assertFalse(PlatformAdminModule.isKey("platformSecurity"));
         assertFalse(PlatformAdminModule.isKey("dashboard"));
     }

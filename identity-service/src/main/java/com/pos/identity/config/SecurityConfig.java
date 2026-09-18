@@ -33,7 +33,7 @@ public class SecurityConfig {
                 .requestMatchers("/internal/pos/**").permitAll()
                 .requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/platform/account/**").hasRole("PLATFORM_ADMIN")
-                .requestMatchers("/platform/module-access/**").hasRole("SUPER_ADMIN")
+                .requestMatchers("/platform/module-access/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/platform/security/super-admins/**").hasRole("SUPER_ADMIN")
                 .anyRequest().denyAll()
             )

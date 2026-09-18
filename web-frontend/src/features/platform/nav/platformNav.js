@@ -4,7 +4,7 @@ export const PLATFORM_NAV = [
   { to: '/platform/companies', key: 'platform.companies', module: 'platformCompanies' },
   { to: '/platform/stores', key: 'platform.stores', module: 'platformStores' },
   { to: '/platform/users', key: 'platform.users', module: 'platformUsers' },
-  { to: '/platform/access', key: 'platform.moduleAccess.nav', superAdminOnly: true },
+  { to: '/platform/access', key: 'platform.moduleAccess.nav', module: 'platformAccess' },
   { to: '/platform/business-types', key: 'platform.businessTypes.nav', module: 'platformBusinessTypes' },
   { to: '/platform/reference-books', key: 'platform.referenceBooks.nav', module: 'platformReferenceBooks' },
   { to: '/platform/leads', key: 'platform.leads.nav', module: 'platformLeads' },

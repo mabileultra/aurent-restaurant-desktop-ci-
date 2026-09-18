@@ -27,8 +27,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/platform/module-access")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
-@Tag(name = "Platform Module Access", description = "Управление доступом к модулям (SUPER_ADMIN)")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
+@Tag(name = "Platform Module Access", description = "Управление доступом к модулям (SUPER_ADMIN, PLATFORM_ADMIN)")
 public class PlatformModuleAccessController {
 
     private final ModuleAccessService moduleAccessService;

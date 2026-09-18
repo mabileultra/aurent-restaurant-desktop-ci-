@@ -2,7 +2,7 @@
 /**
  * Ensures grantable PLATFORM_ADMIN modules stay in sync:
  * identity PlatformAdminModule keys ↔ frontend platformNav modules.
- * Access/security must stay SUPER_ADMIN-only.
+ * Security must stay SUPER_ADMIN-only; Access is grantable.
  * Exit 1 on drift — run in CI before deploy.
  */
 import { readFileSync } from 'fs';
@@ -26,7 +26,7 @@ const superAdminOnly = [...nav.matchAll(/to:\s*'([^']+)'[^\n]*superAdminOnly:\s*
 
 const missingInNav = backendKeys.filter((id) => !navGrantable.includes(id));
 const extraInNav = navGrantable.filter((id) => !backendKeys.includes(id));
-const forbidden = navGrantable.filter((id) => id === 'platformAccess' || id === 'platformSecurity');
+const forbidden = navGrantable.filter((id) => id === 'platformSecurity');
 
 let failed = false;
 
@@ -44,15 +44,18 @@ if (extraInNav.length) {
 
 if (forbidden.length) {
   failed = true;
-  console.error('Access/security must not be grantable to PLATFORM_ADMIN:');
+  console.error('Security must not be grantable to PLATFORM_ADMIN:');
   forbidden.forEach((id) => console.error(`  - ${id}`));
 }
 
-if (superAdminOnly.length !== 2
-  || !superAdminOnly.includes('/platform/access')
-  || !superAdminOnly.includes('/platform/security')) {
+if (superAdminOnly.length !== 1 || !superAdminOnly.includes('/platform/security')) {
   failed = true;
-  console.error('Expected SUPER_ADMIN-only nav: /platform/access and /platform/security, got:', superAdminOnly);
+  console.error('Expected SUPER_ADMIN-only nav: /platform/security, got:', superAdminOnly);
+}
+
+if (!navGrantable.includes('platformAccess')) {
+  failed = true;
+  console.error('platformAccess must be grantable in platformNav.js');
 }
 
 if (failed) {

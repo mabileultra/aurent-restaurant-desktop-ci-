@@ -7,12 +7,13 @@ import java.util.stream.Collectors;
 
 /**
  * Разделы супер-админки, которые можно выдать PLATFORM_ADMIN.
- * Доступы и безопасность остаются только у SUPER_ADMIN.
+ * Безопасность (super-admins) остаётся только у SUPER_ADMIN.
  */
 public enum PlatformAdminModule {
     COMPANIES("platformCompanies", "platform"),
     STORES("platformStores", "platform"),
     USERS("platformUsers", "platform"),
+    ACCESS("platformAccess", "platform"),
     BUSINESS_TYPES("platformBusinessTypes", "platform"),
     REFERENCE_BOOKS("platformReferenceBooks", "platform"),
     LEADS("platformLeads", "platform"),

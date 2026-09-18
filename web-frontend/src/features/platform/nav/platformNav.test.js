@@ -10,12 +10,18 @@ describe('platformNav', () => {
     expect(firstPlatformPath('SUPER_ADMIN', () => false)).toBe('/platform/companies');
   });
 
-  it('hides security and access from PLATFORM_ADMIN and keeps granted modules', () => {
-    const hasModule = (id) => id === 'platformCompanies' || id === 'platformUsers';
+  it('hides security from PLATFORM_ADMIN and keeps granted modules including access', () => {
+    const hasModule = (id) => id === 'platformCompanies' || id === 'platformUsers' || id === 'platformAccess';
     const links = visiblePlatformNav('PLATFORM_ADMIN', hasModule);
-    expect(links.map((item) => item.to)).toEqual(['/platform/companies', '/platform/users', '/platform/account']);
+    expect(links.map((item) => item.to)).toEqual([
+      '/platform/companies',
+      '/platform/users',
+      '/platform/access',
+      '/platform/account',
+    ]);
     expect(canOpenPlatformPath('PLATFORM_ADMIN', hasModule, '/platform/billing')).toBe(false);
     expect(canOpenPlatformPath('PLATFORM_ADMIN', hasModule, '/platform/security')).toBe(false);
+    expect(canOpenPlatformPath('PLATFORM_ADMIN', hasModule, '/platform/access')).toBe(true);
     expect(canOpenPlatformPath('PLATFORM_ADMIN', hasModule, '/platform/companies')).toBe(true);
   });
 
@@ -23,15 +29,14 @@ describe('platformNav', () => {
     expect(firstPlatformPath('PLATFORM_ADMIN', () => false)).toBe('/platform/account');
   });
 
-  it('keeps grantable modules unique and never exposes access or security', () => {
+  it('keeps grantable modules unique and never exposes security', () => {
     const grantable = PLATFORM_NAV.filter((item) => !item.superAdminOnly && !item.operatorSelf);
     const modules = grantable.map((item) => item.module);
     expect(new Set(modules).size).toBe(modules.length);
     expect(modules.every(Boolean)).toBe(true);
-    expect(modules).not.toContain('platformAccess');
+    expect(modules).toContain('platformAccess');
     expect(modules).not.toContain('platformSecurity');
     expect(PLATFORM_NAV.filter((item) => item.superAdminOnly).map((item) => item.to)).toEqual([
-      '/platform/access',
       '/platform/security',
     ]);
   });
@@ -47,7 +52,8 @@ describe('platformNav', () => {
     expect(visiblePlatformNav('ADMIN', () => true)).toEqual([]);
     expect(visiblePlatformNav('MANAGER', () => true)).toEqual([]);
     expect(canOpenPlatformPath('SUPER_ADMIN', () => false, '/platform/security')).toBe(true);
-    expect(canOpenPlatformPath('PLATFORM_ADMIN', () => true, '/platform/access')).toBe(false);
+    expect(canOpenPlatformPath('PLATFORM_ADMIN', (id) => id === 'platformAccess', '/platform/access')).toBe(true);
+    expect(canOpenPlatformPath('PLATFORM_ADMIN', () => false, '/platform/access')).toBe(false);
     expect(canOpenPlatformPath('PLATFORM_ADMIN', () => false, '/platform/account')).toBe(true);
     expect(visiblePlatformNav('SUPER_ADMIN', () => false).some((item) => item.to === '/platform/account')).toBe(false);
   });

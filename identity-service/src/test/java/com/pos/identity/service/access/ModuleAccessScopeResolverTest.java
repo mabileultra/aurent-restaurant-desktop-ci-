@@ -34,7 +34,8 @@ class ModuleAccessScopeResolverTest {
             resolver.keysFor(operator)
         );
         assertFalse(resolver.roleDefault(operator, "platformCompanies"));
-        assertFalse(resolver.keysFor(operator).contains("platformAccess"));
+        assertTrue(resolver.keysFor(operator).contains("platformAccess"));
+        assertFalse(resolver.keysFor(operator).contains("platformSecurity"));
         assertFalse(resolver.keysFor(operator).contains("dashboard"));
     }
 

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Locks PLATFORM_ADMIN HTTP access:
- * grantable platform APIs include the role, access/security stay SUPER_ADMIN-only,
+ * grantable platform APIs (incl. module-access) include the role,
+ * security stays SUPER_ADMIN-only,
  * tenant billing/finance-sync stay without PLATFORM_ADMIN.
  */
 import { readFileSync } from 'fs';
@@ -44,8 +45,8 @@ mustContain(
 );
 mustContain(
   identitySecurity,
-  '.requestMatchers("/platform/module-access/**").hasRole("SUPER_ADMIN")',
-  'identity module-access stays SUPER_ADMIN'
+  '.requestMatchers("/platform/module-access/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")',
+  'identity module-access allows PLATFORM_ADMIN'
 );
 mustContain(
   identitySecurity,
@@ -76,7 +77,6 @@ mustNotContain(
 );
 
 const superAdminOnly = [
-  'identity-service/src/main/java/com/pos/identity/controller/PlatformModuleAccessController.java',
   'identity-service/src/main/java/com/pos/identity/controller/PlatformSecurityController.java',
   'platform-service/src/main/java/com/pos/platform/controller/PlatformSecurityController.java',
 ];
@@ -85,6 +85,12 @@ for (const rel of superAdminOnly) {
   mustContain(source, "@PreAuthorize(\"hasRole('SUPER_ADMIN')\")", `${rel} SUPER_ADMIN-only`);
   mustNotContain(source, 'PLATFORM_ADMIN', `${rel} must not mention PLATFORM_ADMIN`);
 }
+
+mustContain(
+  read('identity-service/src/main/java/com/pos/identity/controller/PlatformModuleAccessController.java'),
+  "@PreAuthorize(\"hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')\")",
+  'identity PlatformModuleAccessController grantable to PLATFORM_ADMIN'
+);
 
 const grantable = [
   'platform-service/src/main/java/com/pos/platform/controller/CompanyController.java',
@@ -130,6 +136,11 @@ mustContain(
   'identity liquibase includes PLATFORM_ADMIN user'
 );
 mustContain(
+  read('identity-service/src/main/resources/db/changelog/db.changelog-master.xml'),
+  'v6-identity-platform-admin-access.xml',
+  'identity liquibase grants platformAccess to PLATFORM_ADMIN'
+);
+mustContain(
   read('web-backend/src/main/resources/db/changelog/db.changelog-master.xml'),
   'v39-platform-admin-role.xml',
   'web-backend liquibase includes PLATFORM_ADMIN role'
@@ -138,6 +149,16 @@ mustContain(
   read('web-backend/src/main/resources/db/changelog/db.changelog-master.xml'),
   'v40-platform-admin-user.xml',
   'web-backend liquibase includes PLATFORM_ADMIN user'
+);
+mustContain(
+  read('web-backend/src/main/resources/db/changelog/db.changelog-master.xml'),
+  'v41-platform-admin-access.xml',
+  'web-backend liquibase grants platformAccess to PLATFORM_ADMIN'
+);
+mustContain(
+  read('web-backend/src/main/resources/db/changelog/v40-platform-admin-user.xml'),
+  "'platformAccess'",
+  'web-backend seed includes platformAccess'
 );
 mustContain(
   read('identity-service/src/main/resources/db/changelog/v4-identity-platform-admin-role.xml'),
@@ -153,6 +174,11 @@ mustContain(
   read('identity-service/src/main/resources/db/changelog/v5-identity-platform-admin-user.xml'),
   "'platformadmin'",
   'identity seed login'
+);
+mustContain(
+  read('identity-service/src/main/resources/db/changelog/v5-identity-platform-admin-user.xml'),
+  "'platformAccess'",
+  'identity seed includes platformAccess'
 );
 
 if (failed) {

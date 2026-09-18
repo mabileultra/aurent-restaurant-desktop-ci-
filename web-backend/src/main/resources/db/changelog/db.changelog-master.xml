@@ -45,5 +45,6 @@
     <include file="v38-asl-api-key-text.xml" relativeToChangelogFile="true"/>
     <include file="v39-platform-admin-role.xml" relativeToChangelogFile="true"/>
     <include file="v40-platform-admin-user.xml" relativeToChangelogFile="true"/>
+    <include file="v41-platform-admin-access.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

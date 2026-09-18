@@ -29,9 +29,9 @@ class ModuleAccessCatalogTest {
     }
 
     @Test
-    void doesNotExposeAccessOrSecurityAsGrantable() {
+    void exposesAccessButNotSecurityAsGrantable() {
         Set<String> ids = catalog.allItems().stream().map(AdminModuleCatalogItem::id).collect(Collectors.toSet());
-        assertFalse(ids.contains("platformAccess"));
+        assertTrue(ids.contains("platformAccess"));
         assertFalse(ids.contains("platformSecurity"));
         assertTrue(ids.contains("platformCompanies"));
         assertTrue(ids.contains("dashboard"));

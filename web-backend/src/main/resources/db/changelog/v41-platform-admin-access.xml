@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v41-platform-admin-access-module" author="pos">
+        <sql><![CDATA[
+INSERT INTO user_module_access (user_id, module_key, allowed)
+SELECT u.id, 'platformAccess', TRUE
+FROM users u
+JOIN roles r ON r.id = u.role_id
+WHERE r.name = 'PLATFORM_ADMIN'
+  AND u.company_id IS NULL
+  AND COALESCE(u.module_access_custom, FALSE) = TRUE
+  AND NOT EXISTS (
+      SELECT 1 FROM user_module_access a
+      WHERE a.user_id = u.id AND a.module_key = 'platformAccess'
+  );
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>
