@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { companyApi, platformBusinessTypeApi, platformModuleAccessApi } from '../../../api';
-import { MODULE_ACCESS_GROUP_ORDER, MODULE_ACCESS_USER_FILTER_LABELS, MODULE_ACCESS_USER_FILTERS } from '../constants';
+import { MODULE_ACCESS_GROUP_ORDER, MODULE_ACCESS_PLATFORM_FILTER, MODULE_ACCESS_USER_FILTER_LABELS, MODULE_ACCESS_USER_FILTERS } from '../constants';
 import {
   buildTogglesFromDetail,
   catalogGroupFor,
@@ -18,11 +18,14 @@ import {
   filterModulesForBusinessType,
   normalizeBusinessTypeCode,
 } from '../utils/moduleAccessByBusinessType';
-import { isPlatformAdminRole } from '../../../utils/platformRoles';
+import { isPlatformAdminRole, isSuperAdminRole } from '../../../utils/platformRoles';
+import { useAuthStore } from '../../../store/authStore';
 
 export function usePlatformModuleAccessPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
+  const role = useAuthStore((s) => s.user?.role);
+  const canManagePlatformStaff = isSuperAdminRole(role);
   const [companyId, setCompanyId] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
@@ -76,14 +79,19 @@ export function usePlatformModuleAccessPage() {
 
   const namedUsers = useMemo(() => withCompanyNames(users, companies), [users, companies]);
 
+  const scopedUsers = useMemo(() => {
+    if (canManagePlatformStaff) return namedUsers;
+    return namedUsers.filter((user) => !isPlatformAdminRole(user.role));
+  }, [namedUsers, canManagePlatformStaff]);
+
   const typedUsers = useMemo(() => {
-    if (!businessType) return namedUsers;
-    return namedUsers.filter((user) => {
+    if (!businessType) return scopedUsers;
+    return scopedUsers.filter((user) => {
       if (isPlatformAdminRole(user.role)) return false;
       const company = companyById.get(String(user.companyId ?? ''));
       return companyHasBusinessType(company, businessType);
     });
-  }, [namedUsers, businessType, companyById]);
+  }, [scopedUsers, businessType, companyById]);
 
   const companyUsers = useMemo(
     () => filterModuleAccessUsers(typedUsers, { companyId }),
@@ -121,6 +129,16 @@ export function usePlatformModuleAccessPage() {
     setCustomAccess(detail.moduleAccessCustom);
     setModuleToggles(buildTogglesFromDetail(detail));
   }, [detail]);
+
+  useEffect(() => {
+    if (canManagePlatformStaff) return;
+    if (companyId === MODULE_ACCESS_PLATFORM_FILTER) {
+      setCompanyId('');
+    }
+    if (selectedUser && isPlatformAdminRole(selectedUser.role)) {
+      setSelectedUserId(null);
+    }
+  }, [canManagePlatformStaff, companyId, selectedUser]);
 
   const visibleDetailModules = useMemo(
     () => filterModulesForBusinessType(detail?.modules ?? [], selectedCompanyBusinessType),
@@ -298,6 +316,7 @@ export function usePlatformModuleAccessPage() {
     companies: visibleCompanies,
     companyId,
     handleCompanyChange,
+    includePlatformStaff: canManagePlatformStaff,
     businessType,
     businessTypes,
     handleBusinessTypeChange,

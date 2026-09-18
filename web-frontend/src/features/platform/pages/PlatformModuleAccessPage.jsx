@@ -30,6 +30,7 @@ export default function PlatformModuleAccessPage() {
           businessTypes={p.businessTypes}
           businessType={p.businessType}
           onBusinessTypeChange={p.handleBusinessTypeChange}
+          includePlatformStaff={p.includePlatformStaff}
         />
       )}
     >

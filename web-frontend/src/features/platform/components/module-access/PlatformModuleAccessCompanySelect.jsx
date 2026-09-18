@@ -10,7 +10,13 @@ function companyOptionLabel(t, company) {
   return `${name} · ${typeLabel}`;
 }
 
-export default function PlatformModuleAccessCompanySelect({ t, companies, companyId, onChange }) {
+export default function PlatformModuleAccessCompanySelect({
+  t,
+  companies,
+  companyId,
+  onChange,
+  includePlatformStaff = true,
+}) {
   const companyOptions = buildCompanySelectOptions(companies, {
     emptyLabel: t('platform.moduleAccess.allCompanies'),
     includeLoginCode: false,
@@ -27,11 +33,13 @@ export default function PlatformModuleAccessCompanySelect({ t, companies, compan
     };
   });
 
-  const options = [
-    companyOptions[0],
-    { value: MODULE_ACCESS_PLATFORM_FILTER, label: t('platform.moduleAccess.platformStaff') },
-    ...companyOptions.slice(1),
-  ];
+  const options = includePlatformStaff
+    ? [
+        companyOptions[0],
+        { value: MODULE_ACCESS_PLATFORM_FILTER, label: t('platform.moduleAccess.platformStaff') },
+        ...companyOptions.slice(1),
+      ]
+    : companyOptions;
 
   return (
     <BaseSelect

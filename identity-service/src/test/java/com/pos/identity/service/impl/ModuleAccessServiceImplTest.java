@@ -47,6 +47,8 @@ class ModuleAccessServiceImplTest {
     private PosCoreClient posCoreClient;
     @Mock
     private ModuleAccessUserGate moduleAccessUserGate;
+    @Mock
+    private com.pos.identity.service.support.TenantAccessSupport tenantAccess;
 
     private ModuleAccessServiceImpl service;
 
@@ -60,7 +62,8 @@ class ModuleAccessServiceImplTest {
             posCoreClient,
             catalog,
             moduleAccessUserGate,
-            scopeResolver
+            scopeResolver,
+            tenantAccess
         );
     }
 
@@ -103,16 +106,29 @@ class ModuleAccessServiceImplTest {
     }
 
     @Test
-    void listUsersIncludesOperatorsWhenCompanyIsNotFiltered() {
+    void listUsersIncludesOperatorsOnlyForSuperAdmin() {
         User tenant = IdentityUsers.user("ADMIN", 9);
         tenant.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z"));
         User operator = IdentityUsers.user("PLATFORM_ADMIN", null);
         operator.setCreatedAt(Instant.parse("2026-02-01T00:00:00Z"));
         when(userRepository.findTenantUsersForModuleAccess(null)).thenReturn(List.of(tenant));
+        when(tenantAccess.isSuperAdmin()).thenReturn(true);
         when(userRepository.findPlatformOperatorsForModuleAccess()).thenReturn(List.of(operator));
 
         List<UserModuleAccessSummary> all = service.listUsers(null);
         assertEquals(List.of("PLATFORM_ADMIN", "ADMIN"), all.stream().map(UserModuleAccessSummary::role).toList());
+    }
+
+    @Test
+    void listUsersHidesOperatorsForPlatformAdminActor() {
+        User tenant = IdentityUsers.user("ADMIN", 9);
+        tenant.setCreatedAt(Instant.parse("2026-01-01T00:00:00Z"));
+        when(userRepository.findTenantUsersForModuleAccess(null)).thenReturn(List.of(tenant));
+        when(tenantAccess.isSuperAdmin()).thenReturn(false);
+
+        List<UserModuleAccessSummary> all = service.listUsers(null);
+        assertEquals(List.of("ADMIN"), all.stream().map(UserModuleAccessSummary::role).toList());
+        verify(userRepository, never()).findPlatformOperatorsForModuleAccess();
     }
 
     @Test

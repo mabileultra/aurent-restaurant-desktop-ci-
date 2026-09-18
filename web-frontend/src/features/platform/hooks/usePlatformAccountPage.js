@@ -9,8 +9,6 @@ export function usePlatformAccountPage() {
   const { t } = useTranslation();
   const patchUser = useAuthStore((s) => s.patchUser);
   const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordConfirm, setPasswordConfirm] = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['platform-operator-account'],
@@ -25,8 +23,6 @@ export function usePlatformAccountPage() {
     mutationFn: (payload) => platformAccountApi.update(payload).then((r) => r.data),
     onSuccess: (result) => {
       patchUser({ username: result.username });
-      setPassword('');
-      setPasswordConfirm('');
       toast.success(t('platform.account.saved'));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.account.saveFailed')),
@@ -39,28 +35,13 @@ export function usePlatformAccountPage() {
       toast.error(t('platform.account.loginRequired'));
       return;
     }
-    if (password && password.length < 6) {
-      toast.error(t('platform.account.passwordTooShort'));
-      return;
-    }
-    if (password && password !== passwordConfirm) {
-      toast.error(t('platform.account.passwordMismatch'));
-      return;
-    }
-    saveMutation.mutate({
-      username: nextUsername,
-      password: password || undefined,
-    });
+    saveMutation.mutate({ username: nextUsername });
   };
 
   return {
     t,
     username,
     setUsername,
-    password,
-    setPassword,
-    passwordConfirm,
-    setPasswordConfirm,
     isLoading,
     handleSubmit,
     saving: saveMutation.isPending,

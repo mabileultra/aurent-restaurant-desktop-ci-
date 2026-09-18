@@ -18,6 +18,7 @@ import com.pos.identity.service.ModuleAccessService;
 import com.pos.identity.service.access.ModuleAccessCatalog;
 import com.pos.identity.service.access.ModuleAccessScopeResolver;
 import com.pos.identity.service.access.ModuleAccessUserGate;
+import com.pos.identity.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     private final ModuleAccessCatalog moduleAccessCatalog;
     private final ModuleAccessUserGate moduleAccessUserGate;
     private final ModuleAccessScopeResolver scopeResolver;
+    private final TenantAccessSupport tenantAccess;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
@@ -51,7 +53,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     public List<UserModuleAccessSummary> listUsers(Integer companyId) {
         String companyName = companyId != null ? resolveCompanyName(companyId) : null;
         Stream<User> tenantUsers = userRepository.findTenantUsersForModuleAccess(companyId).stream();
-        Stream<User> platformOperators = companyId == null
+        Stream<User> platformOperators = companyId == null && tenantAccess.isSuperAdmin()
             ? userRepository.findPlatformOperatorsForModuleAccess().stream()
             : Stream.empty();
         return Stream.concat(tenantUsers, platformOperators)

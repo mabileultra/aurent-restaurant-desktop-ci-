@@ -4,6 +4,7 @@ import com.pos.identity.entity.User;
 import com.pos.identity.exception.BadRequestException;
 import com.pos.identity.exception.ResourceNotFoundException;
 import com.pos.identity.repository.UserRepository;
+import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.support.IdentityUsers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,21 +24,39 @@ class ModuleAccessUserGateTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private TenantAccessSupport tenantAccess;
 
     @InjectMocks
     private ModuleAccessUserGate gate;
 
     @Test
-    void allowsTenantUserAndPlatformOperator() {
+    void allowsTenantUserForPlatformOperator() {
         UUID tenantId = UUID.randomUUID();
-        UUID operatorId = UUID.randomUUID();
         User tenant = IdentityUsers.user(tenantId, "ADMIN", 8);
-        User operator = IdentityUsers.user(operatorId, "PLATFORM_ADMIN", null);
         when(userRepository.findById(tenantId)).thenReturn(Optional.of(tenant));
-        when(userRepository.findById(operatorId)).thenReturn(Optional.of(operator));
 
         assertSame(tenant, gate.requireConfigurable(tenantId));
+    }
+
+    @Test
+    void allowsPlatformOperatorOnlyForSuperAdmin() {
+        UUID operatorId = UUID.randomUUID();
+        User operator = IdentityUsers.user(operatorId, "PLATFORM_ADMIN", null);
+        when(userRepository.findById(operatorId)).thenReturn(Optional.of(operator));
+        when(tenantAccess.isSuperAdmin()).thenReturn(true);
+
         assertSame(operator, gate.requireConfigurable(operatorId));
+    }
+
+    @Test
+    void rejectsPlatformOperatorForPlatformAdminActor() {
+        UUID operatorId = UUID.randomUUID();
+        User operator = IdentityUsers.user(operatorId, "PLATFORM_ADMIN", null);
+        when(userRepository.findById(operatorId)).thenReturn(Optional.of(operator));
+        when(tenantAccess.isSuperAdmin()).thenReturn(false);
+
+        assertThrows(BadRequestException.class, () -> gate.requireConfigurable(operatorId));
     }
 
     @Test

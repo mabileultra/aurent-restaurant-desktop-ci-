@@ -12,6 +12,7 @@ export default function PlatformModuleAccessToolbar({
   businessTypes,
   businessType,
   onBusinessTypeChange,
+  includePlatformStaff = true,
 }) {
   return (
     <PlatformCompactFilterBar
@@ -28,6 +29,7 @@ export default function PlatformModuleAccessToolbar({
           companies={companies}
           companyId={companyId}
           onChange={onCompanyChange}
+          includePlatformStaff={includePlatformStaff}
         />
       )}
     />

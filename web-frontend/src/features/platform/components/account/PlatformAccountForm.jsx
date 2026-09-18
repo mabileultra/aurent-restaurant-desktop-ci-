@@ -5,10 +5,6 @@ export default function PlatformAccountForm({
   t,
   username,
   onUsernameChange,
-  password,
-  onPasswordChange,
-  passwordConfirm,
-  onPasswordConfirmChange,
   onSubmit,
   saving,
   loading,
@@ -25,21 +21,6 @@ export default function PlatformAccountForm({
         onChange={(e) => onUsernameChange(e.target.value)}
         autoComplete="username"
         required
-      />
-      <BaseInput
-        label={t('platform.account.newPassword')}
-        type="password"
-        value={password}
-        onChange={(e) => onPasswordChange(e.target.value)}
-        autoComplete="new-password"
-        minLength={6}
-      />
-      <BaseInput
-        label={t('platform.account.confirmPassword')}
-        type="password"
-        value={passwordConfirm}
-        onChange={(e) => onPasswordConfirmChange(e.target.value)}
-        autoComplete="new-password"
       />
       <div className="platform-account__actions">
         <BaseButton type="submit" disabled={saving}>

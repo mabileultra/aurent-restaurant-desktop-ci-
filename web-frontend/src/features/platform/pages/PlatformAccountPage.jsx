@@ -19,10 +19,6 @@ export default function PlatformAccountPage() {
           t={p.t}
           username={p.username}
           onUsernameChange={p.setUsername}
-          password={p.password}
-          onPasswordChange={p.setPassword}
-          passwordConfirm={p.passwordConfirm}
-          onPasswordConfirmChange={p.setPasswordConfirm}
           onSubmit={p.handleSubmit}
           saving={p.saving}
           loading={p.isLoading}

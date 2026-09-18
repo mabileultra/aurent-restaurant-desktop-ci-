@@ -14,7 +14,6 @@ import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.identity.util.UserLoginUtil;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -26,7 +25,6 @@ public class PlatformOperatorAccountServiceImpl implements PlatformOperatorAccou
 
     private final TenantAccessSupport tenantAccess;
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserSyncSupport userSyncSupport;
 
     @Override
@@ -38,13 +36,15 @@ public class PlatformOperatorAccountServiceImpl implements PlatformOperatorAccou
     @Transactional(readOnly = false)
     public PlatformOperatorAccountResponse update(UpdatePlatformOperatorAccountRequest request) {
         User user = requireSelf();
-        boolean changed = applyUsername(user, request) | applyPassword(user, request);
-        if (!changed) {
-            throw new BadRequestException("Укажите новый логин или пароль");
+        if (StringUtils.hasText(request.password())) {
+            throw new BadRequestException("Смену пароля выполняет только SUPER_ADMIN");
+        }
+        if (!applyUsername(user, request)) {
+            throw new BadRequestException("Укажите новый логин");
         }
         User saved = userRepository.save(user);
         userSyncSupport.syncUpdate(saved);
-        LogUtil.info(PlatformOperatorAccountServiceImpl.class, "PLATFORM_ADMIN updated own account: id={}", saved.getId());
+        LogUtil.info(PlatformOperatorAccountServiceImpl.class, "PLATFORM_ADMIN updated own login: id={}", saved.getId());
         return toResponse(saved);
     }
 
@@ -60,14 +60,6 @@ public class PlatformOperatorAccountServiceImpl implements PlatformOperatorAccou
             throw new ConflictException("Username already taken");
         }
         user.setUsername(username);
-        return true;
-    }
-
-    private boolean applyPassword(User user, UpdatePlatformOperatorAccountRequest request) {
-        if (!StringUtils.hasText(request.password())) {
-            return false;
-        }
-        user.setPassword(passwordEncoder.encode(request.password().trim()));
         return true;
     }
 

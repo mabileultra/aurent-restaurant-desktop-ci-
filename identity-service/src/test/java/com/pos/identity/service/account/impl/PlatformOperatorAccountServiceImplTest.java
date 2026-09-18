@@ -14,7 +14,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,8 +30,6 @@ class PlatformOperatorAccountServiceImplTest {
     @Mock
     private UserRepository userRepository;
     @Mock
-    private PasswordEncoder passwordEncoder;
-    @Mock
     private UserSyncSupport userSyncSupport;
 
     @InjectMocks
@@ -44,23 +41,33 @@ class PlatformOperatorAccountServiceImplTest {
         assertThrows(BadRequestException.class, () -> service.current());
         assertThrows(
             BadRequestException.class,
-            () -> service.update(new UpdatePlatformOperatorAccountRequest("x", "secret1"))
+            () -> service.update(new UpdatePlatformOperatorAccountRequest("x", null))
         );
     }
 
     @Test
-    void updatesOwnUsernameAndPassword() {
+    void updatesOwnUsernameOnly() {
         User operator = IdentityUsers.user("PLATFORM_ADMIN", null);
         operator.setUsername("platformadmin");
         when(tenantAccess.currentUser()).thenReturn(operator);
         when(userRepository.count(any(Specification.class))).thenReturn(0L);
-        when(passwordEncoder.encode("secret1")).thenReturn("hash");
         when(userRepository.save(operator)).thenReturn(operator);
 
-        var response = service.update(new UpdatePlatformOperatorAccountRequest("my-login", "secret1"));
+        var response = service.update(new UpdatePlatformOperatorAccountRequest("my-login", null));
         assertEquals("my-login", response.username());
-        assertEquals("hash", operator.getPassword());
         verify(userSyncSupport).syncUpdate(operator);
+    }
+
+    @Test
+    void rejectsSelfPasswordChange() {
+        User operator = IdentityUsers.user("PLATFORM_ADMIN", null);
+        operator.setUsername("platformadmin");
+        when(tenantAccess.currentUser()).thenReturn(operator);
+        assertThrows(
+            BadRequestException.class,
+            () -> service.update(new UpdatePlatformOperatorAccountRequest("platformadmin", "secret1"))
+        );
+        verify(userRepository, never()).save(any());
     }
 
     @Test
