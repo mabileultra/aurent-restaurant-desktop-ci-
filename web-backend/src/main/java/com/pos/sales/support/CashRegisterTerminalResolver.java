@@ -32,12 +32,16 @@ public class CashRegisterTerminalResolver {
         }
 
         CashRegister byDevice = lookup.findByDeviceId(deviceId).orElse(null);
-        if (byDevice != null && CashRegisterTerminalLookup.isActive(byDevice)) {
-            assertSameStore(byDevice, storeId);
+        if (byDevice != null && CashRegisterTerminalLookup.isActive(byDevice) && isSameStore(byDevice, storeId)) {
             return heartbeat(byDevice, storeId, safe, deviceId);
         }
 
-        boolean releasedInactive = releaseInactiveBinding(byDevice, deviceId);
+        boolean releasedSameStoreInactive = false;
+        if (byDevice != null) {
+            releasedSameStoreInactive =
+                !CashRegisterTerminalLookup.isActive(byDevice) && isSameStore(byDevice, storeId);
+            releaseBinding(byDevice, storeId, deviceId);
+        }
 
         CashRegister bySerial = lookup.findActiveBySerial(storeId, serial).orElse(null);
         if (bySerial != null) {
@@ -56,26 +60,25 @@ public class CashRegisterTerminalResolver {
             return heartbeat(unbound, storeId, safe, deviceId);
         }
 
-        if (releasedInactive) {
+        if (releasedSameStoreInactive) {
             throwIfNoAttachTarget(storeId);
         }
 
         return createNew(store, storeId, safe, deviceId, serial);
     }
 
-    private boolean releaseInactiveBinding(CashRegister byDevice, String deviceId) {
-        if (byDevice == null || CashRegisterTerminalLookup.isActive(byDevice)) {
-            return false;
-        }
+    private void releaseBinding(CashRegister byDevice, Integer toStoreId, String deviceId) {
+        Integer fromStoreId = byDevice.getStore() != null ? byDevice.getStore().getId() : null;
         byDevice.setDeviceId(null);
         cashRegisterRepository.saveAndFlush(byDevice);
         LogUtil.info(
             CashRegisterTerminalResolver.class,
-            "Released deviceId from inactive register: registerId={}, deviceId={}",
+            "Released deviceId from register: registerId={}, fromStoreId={}, toStoreId={}, deviceId={}",
             byDevice.getId(),
+            fromStoreId,
+            toStoreId,
             deviceId
         );
-        return true;
     }
 
     private TerminalResolveResult heartbeat(
@@ -138,9 +141,7 @@ public class CashRegisterTerminalResolver {
         );
     }
 
-    private static void assertSameStore(CashRegister register, Integer storeId) {
-        if (register.getStore() == null || !register.getStore().getId().equals(storeId)) {
-            throw new BadRequestException("Эта касса зарегистрирована в другом магазине");
-        }
+    private static boolean isSameStore(CashRegister register, Integer storeId) {
+        return register.getStore() != null && storeId.equals(register.getStore().getId());
     }
 }

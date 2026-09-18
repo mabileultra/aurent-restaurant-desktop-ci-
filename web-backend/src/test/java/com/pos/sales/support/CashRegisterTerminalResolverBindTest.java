@@ -112,6 +112,50 @@ class CashRegisterTerminalResolverBindTest {
     }
 
     @Test
+    void rebindsActiveLaptopFromAnotherStoreToLocalUnbound() {
+        Store pharmacy = store(15);
+        CashRegister foreign = register(pharmacy, 16L, 3, "ACTIVE", "laptop-1");
+        CashRegister local = register(shop, 1L, 1, "ACTIVE", null);
+        when(cashRegisterRepository.findByDeviceId("laptop-1")).thenReturn(Optional.of(foreign));
+        when(cashRegisterRepository.saveAndFlush(foreign)).thenReturn(foreign);
+        when(cashRegisterRepository.findUnboundByStoreAndStatus(10, "ACTIVE")).thenReturn(List.of(local));
+        when(cashRegisterRepository.save(local)).thenReturn(local);
+
+        TerminalResolveResult result = resolver.resolve(shop, device("laptop-1"));
+
+        assertThat(foreign.getDeviceId()).isNull();
+        assertThat(result.created()).isFalse();
+        assertThat(result.register().getId()).isEqualTo(1L);
+        assertThat(local.getDeviceId()).isEqualTo("laptop-1");
+        InOrder order = inOrder(cashRegisterRepository);
+        order.verify(cashRegisterRepository).saveAndFlush(foreign);
+        order.verify(cashRegisterRepository).save(local);
+    }
+
+    @Test
+    void createsAtCurrentStoreWhenLaptopMovesAndNoUnboundRegister() {
+        Store pharmacy = store(15);
+        CashRegister foreign = register(pharmacy, 16L, 3, "ACTIVE", "laptop-1");
+        when(cashRegisterRepository.findByDeviceId("laptop-1")).thenReturn(Optional.of(foreign));
+        when(cashRegisterRepository.saveAndFlush(foreign)).thenReturn(foreign);
+        when(cashRegisterRepository.findUnboundByStoreAndStatus(10, "ACTIVE")).thenReturn(List.of());
+        when(cashRegisterRepository.findMaxRegisterNumberByStoreId(10)).thenReturn(2);
+        when(cashRegisterRepository.save(any(CashRegister.class))).thenAnswer(invocation -> {
+            CashRegister created = invocation.getArgument(0);
+            created.setId(99L);
+            return created;
+        });
+
+        TerminalResolveResult result = resolver.resolve(shop, device("laptop-1"));
+
+        assertThat(foreign.getDeviceId()).isNull();
+        assertThat(result.created()).isTrue();
+        assertThat(result.register().getRegisterNumber()).isEqualTo(3);
+        assertThat(result.register().getDeviceId()).isEqualTo("laptop-1");
+        assertThat(result.register().getStore()).isSameAs(shop);
+    }
+
+    @Test
     void prefersActiveSerialMatchOverUnboundRegister() {
         CashRegister disabled = register(shop, 2L, 2, "INACTIVE", "laptop-1");
         CashRegister bySerial = register(shop, 4L, 4, "ACTIVE", null);

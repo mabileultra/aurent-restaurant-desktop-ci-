@@ -57,35 +57,6 @@ class CashRegisterTerminalResolverRejectTest {
     }
 
     @Test
-    void rejectsActiveRegisterFromAnotherStoreAndKeepsBinding() {
-        Store other = store(99);
-        CashRegister foreign = register(other, 8L, 1, "ACTIVE", "laptop-1");
-        when(cashRegisterRepository.findByDeviceId("laptop-1")).thenReturn(Optional.of(foreign));
-
-        assertThatThrownBy(() -> resolver.resolve(shop, device("laptop-1")))
-            .isInstanceOf(BadRequestException.class)
-            .hasMessage("Эта касса зарегистрирована в другом магазине");
-        verify(cashRegisterRepository, never()).saveAndFlush(any());
-        verify(cashRegisterRepository, never()).save(any());
-        verify(cashRegisterRepository, never()).findUnboundByStoreAndStatus(any(), any());
-    }
-
-    @Test
-    void rejectsActiveRegisterWithMissingStore() {
-        CashRegister orphan = CashRegister.builder()
-            .id(9L)
-            .registerNumber(1)
-            .deviceId("laptop-1")
-            .status("ACTIVE")
-            .build();
-        when(cashRegisterRepository.findByDeviceId("laptop-1")).thenReturn(Optional.of(orphan));
-
-        assertThatThrownBy(() -> resolver.resolve(shop, device("laptop-1")))
-            .isInstanceOf(BadRequestException.class)
-            .hasMessage("Эта касса зарегистрирована в другом магазине");
-    }
-
-    @Test
     void throwsWhenInactiveBindingHasNoActiveRegisterInStore() {
         CashRegister disabled = register(shop, 2L, 2, "INACTIVE", "laptop-1");
         when(cashRegisterRepository.findByDeviceId("laptop-1")).thenReturn(Optional.of(disabled));
