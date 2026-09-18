@@ -156,11 +156,6 @@ mustContain(
   'web-backend liquibase grants platformAccess to PLATFORM_ADMIN'
 );
 mustContain(
-  read('web-backend/src/main/resources/db/changelog/v40-platform-admin-user.xml'),
-  "'platformAccess'",
-  'web-backend seed includes platformAccess'
-);
-mustContain(
   read('identity-service/src/main/resources/db/changelog/v4-identity-platform-admin-role.xml'),
   "value=\"PLATFORM_ADMIN\"",
   'identity role insert'
@@ -176,9 +171,14 @@ mustContain(
   'identity seed login'
 );
 mustContain(
-  read('identity-service/src/main/resources/db/changelog/v5-identity-platform-admin-user.xml'),
+  read('identity-service/src/main/resources/db/changelog/v6-identity-platform-admin-access.xml'),
   "'platformAccess'",
-  'identity seed includes platformAccess'
+  'identity v6 grants platformAccess'
+);
+mustContain(
+  read('web-backend/src/main/resources/db/changelog/v41-platform-admin-access.xml'),
+  "'platformAccess'",
+  'web-backend v41 grants platformAccess'
 );
 
 if (failed) {

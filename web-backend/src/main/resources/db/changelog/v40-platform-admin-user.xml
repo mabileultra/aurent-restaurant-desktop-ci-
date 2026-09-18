@@ -46,7 +46,6 @@ CROSS JOIN (
         ('platformCompanies'),
         ('platformStores'),
         ('platformUsers'),
-        ('platformAccess'),
         ('platformBusinessTypes'),
         ('platformReferenceBooks'),
         ('platformLeads'),
