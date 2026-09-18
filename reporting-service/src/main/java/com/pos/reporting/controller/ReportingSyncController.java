@@ -4,7 +4,6 @@ import com.pos.reporting.dto.ReportingBackfillResponse;
 import com.pos.reporting.service.ReportingBackfillService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -28,13 +27,12 @@ public class ReportingSyncController {
     @PostMapping("/backfill")
     @Operation(summary = "Догрузить reporting read-model за период из pos_db")
     public ResponseEntity<ReportingBackfillResponse> backfill(
-        HttpServletRequest request,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(defaultValue = "sales,stock,movements,shifts,products,inventories,transfers") String types
     ) {
         return ResponseEntity.ok(
-            reportingBackfillService.backfill(from, to, types, request.getHeader("Authorization"))
+            reportingBackfillService.backfill(from, to, types)
         );
     }
 }

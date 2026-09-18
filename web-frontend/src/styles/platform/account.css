@@ -1,0 +1,41 @@
+.platform-account {
+  display: block;
+}
+
+.platform-account__card {
+  max-width: 28rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.85rem;
+  background: #fff;
+  padding: 1rem 1.1rem 1.15rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.dark .platform-account__card {
+  border-color: #1e293b;
+  background: #0f172a;
+}
+
+.platform-account__hint {
+  margin: 0 0 1rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.platform-account__form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.platform-account__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 0.25rem;
+}
+
+.platform-account__empty {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}

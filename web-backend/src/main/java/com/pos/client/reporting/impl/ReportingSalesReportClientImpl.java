@@ -12,7 +12,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -98,8 +97,7 @@ public class ReportingSalesReportClientImpl implements ReportingSalesReportClien
 
     private <T> T fetch(String uri, ParameterizedTypeReference<T> type) {
         RestClient.RequestHeadersSpec<?> spec = reportingRestClient.get().uri(uri);
-        httpRequestAuthSupport.authorizationHeader()
-            .ifPresent(value -> spec.header(HttpHeaders.AUTHORIZATION, value));
+        httpRequestAuthSupport.apply(spec);
         return spec.retrieve().body(type);
     }
 }

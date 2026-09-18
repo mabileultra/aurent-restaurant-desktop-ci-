@@ -28,6 +28,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   internal:
     api-key: ${CRM_INTERNAL_API_KEY:crm-internal-dev-key-change-in-prod}
   pos-core:

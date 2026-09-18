@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/reports/ops/product-snapshots")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+@PreAuthorize("hasRole('INTERNAL')")
 @Hidden
 public class ReportsProductSnapshotsInternalController {
 

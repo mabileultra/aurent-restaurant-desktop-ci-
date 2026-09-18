@@ -22,8 +22,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/companies")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
-@Tag(name = "Companies (SUPER_ADMIN)", description = "Управление компаниями платформы (только SUPER_ADMIN)")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
+@Tag(name = "Companies (SUPER_ADMIN)", description = "Управление компаниями платформы")
 public class CompanyController {
 
     private final CompanyService companyService;

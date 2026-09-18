@@ -1,0 +1,17 @@
+.admin-doc {
+  --doc-space: 16px;
+  --doc-radius: 16px;
+  --doc-radius-control: 12px;
+  --doc-line: #e6ebe8;
+  --doc-line-soft: #f0f3f1;
+  --doc-ink: #10241c;
+  --doc-muted: #8b98a5;
+  --doc-label: 11px;
+  --doc-title: 32px;
+  --doc-kpi-h: 104px;
+  --doc-control-h: 44px;
+  --doc-row-h: 68px;
+  --doc-head-h: 40px;
+  --doc-footer-h: 72px;
+  --doc-shadow: 0 1px 2px rgb(16 36 28 / 0.04);
+}

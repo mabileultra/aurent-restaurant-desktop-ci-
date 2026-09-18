@@ -1,6 +1,7 @@
 package com.pos.integrations.platform.controller;
 
 import com.pos.dto.platform.internal.CompanyStoreCountResponse;
+import com.pos.dto.platform.internal.CompanyStoreCountsResponse;
 import com.pos.dto.platform.internal.CompanySyncRequest;
 import com.pos.service.platform.PlatformInternalService;
 import io.swagger.v3.oas.annotations.Hidden;
@@ -11,7 +12,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/internal/platform")
@@ -24,6 +28,13 @@ public class PlatformInternalController {
     @GetMapping("/companies/{id}/store-count")
     public ResponseEntity<CompanyStoreCountResponse> storeCount(@PathVariable Integer id) {
         return ResponseEntity.ok(platformInternalService.storeCount(id));
+    }
+
+    @GetMapping("/companies/store-counts")
+    public ResponseEntity<CompanyStoreCountsResponse> storeCounts(
+        @RequestParam(name = "ids", required = false) List<Integer> ids
+    ) {
+        return ResponseEntity.ok(platformInternalService.storeCounts(ids));
     }
 
     @PostMapping("/companies/sync")

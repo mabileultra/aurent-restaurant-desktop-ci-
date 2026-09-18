@@ -11,7 +11,8 @@
     "dist": "npm run sync-icons && electron-builder",
     "dist:win": "npm run sync-icons && electron-builder --win",
     "dist:mac": "npm run sync-icons && electron-builder --mac",
-    "manifest": "node scripts/generate-manifest.js"
+    "manifest": "node scripts/generate-manifest.js",
+    "test": "node --test test/*.test.cjs"
   },
   "build": {
     "appId": "com.aurent.cashier",

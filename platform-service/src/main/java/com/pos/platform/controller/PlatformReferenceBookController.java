@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/platform/reference-books")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Reference Books", description = "Справочники для LIST-полей конструктора")
 public class PlatformReferenceBookController {
 

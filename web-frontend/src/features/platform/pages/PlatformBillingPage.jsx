@@ -3,7 +3,6 @@ import { PageLayout } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import BillingPeriodCalendar from '../components/BillingPeriodCalendar';
 import BillingPaymentsList from '../../billing/components/BillingPaymentsList';
-import PlatformBillingStatusTabs from '../components/billing/PlatformBillingStatusTabs';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
@@ -28,14 +27,12 @@ export default function PlatformBillingPage() {
           search={p.search}
           onSearchChange={p.setSearch}
           searchPlaceholder={p.t('platform.billing.search')}
-          filters={(
-            <PlatformBillingStatusTabs
-              t={p.t}
-              statusFilters={p.statusFilters}
-              status={p.status}
-              onStatusChange={p.setStatus}
-            />
-          )}
+          filterOptions={p.statusFilters.map((value) => ({
+            value,
+            label: value ? p.t(`platform.billing.statuses.${value}`) : p.t('platform.billing.filterAll'),
+          }))}
+          filterValue={p.status}
+          onFilterChange={p.setStatus}
         />
       )}
     >

@@ -20,7 +20,7 @@ public class ProductFactsBackfillServiceImpl implements ProductFactsBackfillServ
     private final ReportingIngestService reportingIngestService;
 
     @Override
-    public FactsBackfillResult backfill(String authorization) {
+    public FactsBackfillResult backfill() {
         long ingested = 0L;
         long skipped = 0L;
         int page = 0;
@@ -28,7 +28,7 @@ public class ProductFactsBackfillServiceImpl implements ProductFactsBackfillServ
 
         while (page < totalPages) {
             ProductFactsPageResponse batch = posReportingFactsClient.fetchProductSnapshotPage(
-                page, BATCH_SIZE, authorization
+                page, BATCH_SIZE
             );
             if (batch == null || batch.content() == null || batch.content().isEmpty()) {
                 break;

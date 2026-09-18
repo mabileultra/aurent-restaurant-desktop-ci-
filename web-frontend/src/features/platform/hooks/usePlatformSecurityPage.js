@@ -11,6 +11,7 @@ const emptyAdminForm = () => ({
   username: '',
   email: '',
   password: '',
+  role: 'PLATFORM_ADMIN',
 });
 
 export function usePlatformSecurityPage() {
@@ -43,8 +44,12 @@ export function usePlatformSecurityPage() {
 
   const createAdminMutation = useMutation({
     mutationFn: (payload) => platformSecurityApi.createSuperAdmin(payload).then((r) => r.data),
-    onSuccess: () => {
-      toast.success(t('platform.security.adminCreated'));
+    onSuccess: (_data, payload) => {
+      toast.success(
+        payload?.role === 'SUPER_ADMIN'
+          ? t('platform.security.adminCreated')
+          : t('platform.security.operatorCreated')
+      );
       setAdminForm(null);
       qc.invalidateQueries({ queryKey: ['platform-security-super-admins'] });
     },
@@ -102,6 +107,7 @@ export function usePlatformSecurityPage() {
         username: adminForm.username.trim(),
         email: adminForm.email.trim(),
         password: adminForm.password,
+        role: adminForm.role,
       });
       return;
     }

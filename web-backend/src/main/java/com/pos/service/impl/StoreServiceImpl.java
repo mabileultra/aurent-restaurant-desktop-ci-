@@ -59,7 +59,7 @@ public class StoreServiceImpl implements StoreService {
     @Cacheable(value = "stores", key = "@tenantCacheKeyResolver.stores()")
     public List<StoreResponse> listStores() {
         User actor = tenantAccess.currentUser();
-        if (tenantAccess.isSuperAdmin()) {
+        if (tenantAccess.isPlatformOperator()) {
             return storeRepository.findAll(Sort.by("name").ascending()).stream().map(storeMapper::toResponse).toList();
         }
         if (actor.getCompany() != null) {
@@ -149,7 +149,7 @@ public class StoreServiceImpl implements StoreService {
             store.setBusinessTypeDefinition(businessTypeDefinition);
             store.setBusinessType(storeBusinessTypeResolver.codeFromDefinition(businessTypeDefinition));
         }
-        if (request.companyId() != null && tenantAccess.isSuperAdmin()) {
+        if (request.companyId() != null && tenantAccess.isPlatformOperator()) {
             store.setCompany(tenantAccess.requireCompany(request.companyId()));
         }
 

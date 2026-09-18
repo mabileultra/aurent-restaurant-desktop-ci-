@@ -49,7 +49,7 @@ export default function PharmacyReceiptsPage() {
 
   const deleteSelectedMutation = useMutation({
     mutationFn: async (rowsToDelete) => {
-      await runLimited(rowsToDelete, 4, (row) => pharmacyWarehouseApi.deleteDraft(row.id));
+      await runLimited(rowsToDelete, 8, (row) => pharmacyWarehouseApi.deleteDraft(row.id));
     },
     onSuccess: () => {
       toast.success(t('pharmacyStock.deleteDraftDone'));

@@ -33,9 +33,13 @@ public class TenantAccessSupport {
         return currentUserProvider.isSuperAdmin(currentUser());
     }
 
+    public boolean isPlatformOperator() {
+        return currentUserProvider.isPlatformOperator(currentUser());
+    }
+
     public Integer resolveCompanyIdForCreate(Integer requestedCompanyId) {
         User actor = currentUser();
-        if (currentUserProvider.isSuperAdmin(actor)) {
+        if (currentUserProvider.isPlatformOperator(actor)) {
             if (requestedCompanyId == null) {
                 throw new BadRequestException("Company is required");
             }
@@ -55,7 +59,7 @@ public class TenantAccessSupport {
 
     public void assertCanAccessCompany(Integer companyId) {
         User actor = currentUser();
-        if (currentUserProvider.isSuperAdmin(actor)) {
+        if (currentUserProvider.isPlatformOperator(actor)) {
             return;
         }
         if (actor.getCompany() != null) {
@@ -98,7 +102,7 @@ public class TenantAccessSupport {
     /** companyId для текущего запроса: user.company → JWT → ошибка. */
     public Integer requireEffectiveCompanyId() {
         User actor = currentUser();
-        if (currentUserProvider.isSuperAdmin(actor)) {
+        if (currentUserProvider.isPlatformOperator(actor)) {
             return TenantContext.companyId()
                 .orElseThrow(() -> new BadRequestException("Company context is required"));
         }
@@ -112,7 +116,7 @@ public class TenantAccessSupport {
     /** Для read-only операций: null только у SUPER_ADMIN без company в JWT. */
     public Integer effectiveCompanyIdOrNull() {
         User actor = currentUser();
-        if (currentUserProvider.isSuperAdmin(actor)) {
+        if (currentUserProvider.isPlatformOperator(actor)) {
             return TenantContext.companyId().orElse(null);
         }
         return companyIdFromUserOrJwt(actor);
@@ -131,7 +135,7 @@ public class TenantAccessSupport {
         }
         Integer productCompanyId = product.getCompany().getId();
         User actor = currentUser();
-        if (currentUserProvider.isSuperAdmin(actor)) {
+        if (currentUserProvider.isPlatformOperator(actor)) {
             Integer scopedCompanyId = TenantContext.companyId().orElse(null);
             if (scopedCompanyId != null && !productCompanyId.equals(scopedCompanyId)) {
                 throw new BadRequestException("Access denied to this product");
@@ -148,7 +152,7 @@ public class TenantAccessSupport {
      * Query/path companyId: super-admin may scope freely; others must match their tenant.
      */
     public Integer resolveScopedCompanyId(Integer requestedCompanyId) {
-        if (isSuperAdmin()) {
+        if (isPlatformOperator()) {
             return requestedCompanyId;
         }
         if (requestedCompanyId != null) {

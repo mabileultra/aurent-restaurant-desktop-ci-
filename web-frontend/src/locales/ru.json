@@ -127,7 +127,8 @@
     "expandMenu": "Развернуть меню",
     "closeMenu": "Закрыть меню",
     "stockPharmacyProducts": "Аптечные товары",
-    "stockPharmacyReceipts": "Аптечный приход"
+    "stockPharmacyReceipts": "Аптечный приход",
+    "stockPharmacyAslMarks": "ASL выбытие"
   },
   "theme": {
     "switchToDay": "Переключить на дневную тему",
@@ -2556,6 +2557,10 @@
   "platform": {
     "title": "Супер-админ",
     "subtitle": "Управление платформой",
+    "noAccess": {
+      "title": "Нет назначенных разделов",
+      "subtitle": "Супер-админ ещё не выдал вам доступ. Зайдите позже или попросите открыть нужные разделы в «Доступах»."
+    },
     "companies": "Компании",
     "stores": "Магазины",
     "users": "Пользователи",
@@ -2602,10 +2607,11 @@
     "moduleAccess": {
       "nav": "Доступы",
       "title": "Управление доступами",
-      "subtitle": "Найдите пользователя и сразу выдайте доступ. Новые — сверху",
+      "subtitle": "Найдите пользователя и сразу выдайте доступ. Новые — сверху. Операторам платформы выдаются разделы супер-админки",
       "company": "Компания",
       "selectCompany": "Выберите компанию",
       "allCompanies": "Все компании",
+      "platformStaff": "Операторы платформы",
       "users": "Пользователи",
       "noUsers": "Нет пользователей",
       "pickUser": "Выберите пользователя слева",
@@ -2831,6 +2837,7 @@
       }
     },
     "moduleGroups": {
+      "platform": "Супер-админ",
       "main": "Главное",
       "goods": "Товары",
       "stock": "Склад",
@@ -2894,7 +2901,17 @@
       "restaurantKitchen": "Кухня",
       "restaurantBooking": "Бронирование",
       "restaurantDelivery": "Доставка",
-      "restaurantPos": "Ресторан — касса"
+      "restaurantPos": "Ресторан — касса",
+      "platformCompanies": "Компании",
+      "platformStores": "Магазины",
+      "platformUsers": "Пользователи",
+      "platformBusinessTypes": "Конструктор бизнеса",
+      "platformReferenceBooks": "Справочники",
+      "platformLeads": "Заявки",
+      "platformBilling": "Биллинг",
+      "platformMonitoring": "Мониторинг",
+      "platformEmail": "Почта",
+      "platformDesktopNotifications": "Уведомления desktop"
     },
     "monitoring": {
       "nav": "Мониторинг",
@@ -3009,7 +3026,7 @@
     "security": {
       "nav": "Безопасность",
       "title": "Безопасность платформы",
-      "subtitle": "Пароль настройки сервера кассы и управление супер-администраторами",
+      "subtitle": "Пароль настройки сервера кассы и управление администраторами платформы",
       "cashierPasswordTitle": "Пароль настройки сервера (касса)",
       "cashierPasswordHint": "Запрашивается при входе в «Вид → Настройка сервера…» в desktop-кассе.",
       "cashierPasswordDefault": "Пароль по умолчанию после установки: aurnt. Смените его сразу после первого входа в супер-админку.",
@@ -3021,6 +3038,12 @@
       "passwordTooShort": "Минимум 4 символа",
       "passwordMismatch": "Пароли не совпадают",
       "passwordUpdatedAt": "Обновлён: {{date}}",
+      "staffTitle": "Администраторы платформы",
+      "staffHint": "Супер-админ видит всё. Оператору разделы выдаются в «Доступах».",
+      "addStaff": "Добавить",
+      "editStaff": "Изменить",
+      "colRole": "Роль",
+      "operatorCreated": "Оператор создан. Выдайте разделы в «Доступах».",
       "superAdminsTitle": "Супер-администраторы",
       "superAdminsHint": "Полный доступ к платформе. Можно менять имя и пароль.",
       "addSuperAdmin": "Добавить супер-админа",
@@ -3028,7 +3051,7 @@
       "adminCreated": "Супер-администратор создан",
       "adminUpdated": "Супер-администратор обновлён",
       "adminSaveFailed": "Не удалось сохранить супер-администратора",
-      "emptyAdmins": "Супер-администраторы не найдены",
+      "emptyAdmins": "Администраторы платформы не найдены",
       "colName": "Имя",
       "colLogin": "Логин",
       "colEmail": "Email",
@@ -3037,6 +3060,21 @@
       "colUsername": "Логин",
       "colPassword": "Пароль",
       "newPasswordOptional": "Новый пароль (необязательно)"
+    },
+    "account": {
+      "nav": "Мой доступ",
+      "title": "Логин и пароль",
+      "subtitle": "Смена своего входа в платформу",
+      "hint": "Этот логин и пароль используют операторы PLATFORM_ADMIN. Код компании не нужен.",
+      "login": "Логин",
+      "newPassword": "Новый пароль",
+      "confirmPassword": "Подтверждение пароля",
+      "save": "Сохранить",
+      "saved": "Логин и пароль сохранены",
+      "saveFailed": "Не удалось сохранить доступ",
+      "loginRequired": "Укажите логин",
+      "passwordTooShort": "Пароль не короче 6 символов",
+      "passwordMismatch": "Пароли не совпадают"
     }
   },
   "tenantSettings": {
@@ -4729,7 +4767,8 @@
     "COURIER": "Курьер",
     "COOK": "Повар",
     "ACCOUNTANT": "Бухгалтер",
-    "SUPER_ADMIN": "Супер-админ"
+    "SUPER_ADMIN": "Супер-админ",
+    "PLATFORM_ADMIN": "Оператор платформы"
   },
   "finance": {
     "dashboard": {
@@ -5176,6 +5215,43 @@
     "subtitle": "Приходные документы аптечного склада",
     "productsTitle": "Аптечные товары",
     "productsSubtitle": "Справочник лекарств и БАД для аптечного склада",
+    "aslMonitor": {
+      "title": "ASL Belgisi — выбытие",
+      "subtitle": "Продажа на кассе vs реальный статус КМ в ASL. Сверху — только проблемные.",
+      "searchPh": "Поиск по коду маркировки…",
+      "store": "Магазин",
+      "allStores": "Все магазины",
+      "problemsOnly": "Только проблемы (не списано / ошибка)",
+      "soldToday": "Продано сегодня",
+      "currentShift": "Только текущая смена магазина",
+      "noOpenShift": "Нет открытой смены в выбранном магазине",
+      "attentionBanner": "На странице проблемных КМ: {{count}}",
+      "emptyOkHint": "Проблемных КМ нет — в ASL выбытие подтверждено или ещё нет продаж.",
+      "empty": "Нет записей по фильтру",
+      "loadFailed": "Не удалось загрузить мониторинг ASL",
+      "filterAllStatuses": "Все статусы",
+      "statusPending": "Ждёт ASL",
+      "statusSold": "Списано (локально)",
+      "statusInStock": "На складе",
+      "statusReturned": "Возврат",
+      "colProduct": "Товар",
+      "colMark": "КМ",
+      "colReceipt": "Чек",
+      "colSoldAt": "Продано",
+      "colLocal": "Локально",
+      "colAsl": "ASL статус",
+      "colAttention": "Контроль",
+      "colAttempts": "Попытки",
+      "attentionPending": "Ещё не WITHDRAWN",
+      "attentionError": "Ошибка / warning",
+      "attentionOk": "Ок",
+      "status": {
+        "PENDING_WITHDRAW": "Ждёт ASL",
+        "SOLD": "SOLD",
+        "IN_STOCK": "На складе",
+        "RETURNED": "Возврат"
+      }
+    },
     "documentTitle": "Приход аптеки",
     "pickTitle": "Подбор товаров",
     "toolbarCreate": "Создать",
@@ -5265,7 +5341,27 @@
       "notFound": "ASL: код не найден",
       "verifyFailed": "Не удалось проверить маркировку",
       "added": "КМ добавлен",
-      "importHydrated": "КМ из импорта подставлены — проверьте перед проведением"
+      "importHydrated": "КМ из импорта подставлены без проверки ASL — проверьте перед проведением",
+      "importHydratedVerified": "КМ из импорта проверены в ASL и добавлены",
+      "importAskTitle": "Проверить маркировку?",
+      "importAskBody": "В импорте {{count}} код(ов) маркировки. Проверить их в ASL Belgisi перед добавлением в документ?",
+      "importAskHint": "«Проверить» — каждый КМ проверяется в ASL до конца (без остановки). В документ попадут только валидные; по остальным будет точный список причин. Большой файл может проверяться долго — это нормально.",
+      "importAskEta": "Ориентировочно ~{{seconds}} с.",
+      "importAslDisabled": "Интеграция ASL Belgisi не настроена. Можно только подставить КМ без проверки или настроить ключ в админке.",
+      "importDoVerify": "Проверить в ASL",
+      "importSkipVerify": "Без проверки",
+      "importVerifying": "Проверка…",
+      "importProgress": "Проверено {{done}} из {{total}}",
+      "importProgressHint": "Проверка идёт до конца по всем кодам. Дождитесь итога — отмена недоступна.",
+      "importResultTitle": "Итог проверки ASL",
+      "importResultBody": "Принято: {{accepted}}. Не принято: {{rejected}}.",
+      "importResultAccepted": "Есть в ASL и приняты: {{count}}",
+      "importResultNotFound": "Не найдены в ASL: {{count}}",
+      "importResultSold": "Уже проданы / выведены: {{count}}",
+      "importResultErrors": "Ошибка проверки ASL: {{count}}",
+      "importResultRejectedList": "Коды, которые не приняты:",
+      "importResultHint": "В документ будут добавлены только принятые КМ.",
+      "importResultConfirm": "Добавить принятые в документ"
     },
     "activated": "Документ {{no}} проведён",
     "activateFailed": "Не удалось провести документ",

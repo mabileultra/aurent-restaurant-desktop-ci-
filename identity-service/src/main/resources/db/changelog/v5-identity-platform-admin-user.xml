@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- platformadmin / password  (без кода компании, как superadmin) -->
+    <changeSet id="identity-011-platform-admin-user" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users u
+                JOIN roles r ON r.id = u.role_id
+                WHERE LOWER(u.username) = 'platformadmin' AND u.company_id IS NULL
+            </sqlCheck>
+        </preConditions>
+        <sql><![CDATA[
+INSERT INTO users (
+    id, username, email, password, full_name, first_name, last_name,
+    role_id, company_id, is_active, module_access_custom
+)
+SELECT
+    'a0111111-1111-4111-8111-111111111111',
+    'platformadmin',
+    'platformadmin@platform.local',
+    '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+    'Operator Platform',
+    'Platform',
+    'Operator',
+    r.id,
+    NULL,
+    TRUE,
+    TRUE
+FROM roles r
+WHERE r.name = 'PLATFORM_ADMIN';
+        ]]></sql>
+    </changeSet>
+
+    <changeSet id="identity-012-platform-admin-user-modules" author="pos">
+        <sql><![CDATA[
+INSERT INTO user_module_access (user_id, module_key, allowed)
+SELECT u.id, m.module_key, TRUE
+FROM users u
+CROSS JOIN (
+    VALUES
+        ('platformCompanies'),
+        ('platformStores'),
+        ('platformUsers'),
+        ('platformBusinessTypes'),
+        ('platformReferenceBooks'),
+        ('platformLeads'),
+        ('platformBilling'),
+        ('platformMonitoring'),
+        ('platformEmail'),
+        ('platformDesktopNotifications')
+) AS m(module_key)
+WHERE LOWER(u.username) = 'platformadmin'
+  AND u.company_id IS NULL
+  AND NOT EXISTS (
+      SELECT 1 FROM user_module_access a
+      WHERE a.user_id = u.id AND a.module_key = m.module_key
+  );
+        ]]></sql>
+    </changeSet>
+
+</databaseChangeLog>

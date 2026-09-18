@@ -260,6 +260,14 @@ public class PharmacyStockMarkServiceImpl implements PharmacyStockMarkService {
             return 0;
         }
         stockMarkRepository.saveAll(toSave);
+        LogUtil.info(
+            PharmacyStockMarkServiceImpl.class,
+            "ASL confirm SOLD count={} companyId={} storeId={} aslStatus={}",
+            toSave.size(),
+            companyId,
+            storeId,
+            aslStatus
+        );
         return toSave.size();
     }
 
@@ -290,6 +298,14 @@ public class PharmacyStockMarkServiceImpl implements PharmacyStockMarkService {
         }
         if (!toSave.isEmpty()) {
             stockMarkRepository.saveAll(toSave);
+            LogUtil.warn(
+                PharmacyStockMarkServiceImpl.class,
+                "ASL withdraw still pending/failed count={} companyId={} storeId={} error={}",
+                toSave.size(),
+                companyId,
+                storeId,
+                trimmedError
+            );
         }
     }
 

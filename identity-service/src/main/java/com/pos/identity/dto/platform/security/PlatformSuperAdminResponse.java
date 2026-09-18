@@ -9,5 +9,6 @@ public record PlatformSuperAdminResponse(
     String firstName,
     String lastName,
     String fullName,
+    String role,
     boolean active
 ) {}

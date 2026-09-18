@@ -24,6 +24,10 @@ export default defineConfig({
         target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
         changeOrigin: true,
       },
+      '/api/v1/platform/account': {
+        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
+        changeOrigin: true,
+      },
       '/api/v1/companies': {
         target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
         changeOrigin: true,

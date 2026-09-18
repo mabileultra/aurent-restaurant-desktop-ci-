@@ -29,11 +29,21 @@ const backendFilter = readFileSync(
   join(root, 'web-backend/src/main/java/com/pos/security/JwtAuthenticationFilter.java'),
   'utf8'
 );
-if (!backendFilter.includes('resolveCompanyIdSecure')) {
-  errors.push('web-backend JwtAuthenticationFilter must use JwtClaimsExtractor.resolveCompanyIdSecure');
+const usesSharedResolver = backendFilter.includes('RequestActorResolver.resolve');
+const usesDirectSecure = backendFilter.includes('resolveCompanyIdSecure');
+if (!usesSharedResolver && !usesDirectSecure) {
+  errors.push('web-backend JwtAuthenticationFilter must use RequestActorResolver or JwtClaimsExtractor.resolveCompanyIdSecure');
 }
 if (!backendFilter.includes('TenantHeaders.COMPANY_ID')) {
   errors.push('web-backend JwtAuthenticationFilter must read TenantHeaders.COMPANY_ID');
+}
+
+const requestActorResolver = readFileSync(
+  join(root, 'shared-kernel/src/main/java/com/pos/shared/gateway/RequestActorResolver.java'),
+  'utf8'
+);
+if (!requestActorResolver.includes('JwtClaimsExtractor.resolveCompanyIdSecure')) {
+  errors.push('RequestActorResolver must use JwtClaimsExtractor.resolveCompanyIdSecure');
 }
 
 const javaFiles = walk(root);

@@ -1,4 +1,5 @@
 export const MODULE_ACCESS_GROUP_ORDER = [
+  'platform',
   'main',
   'goods',
   'stock',
@@ -11,6 +12,8 @@ export const MODULE_ACCESS_GROUP_ORDER = [
   'settings',
   'cashier',
 ];
+
+export const MODULE_ACCESS_PLATFORM_FILTER = 'platform';
 
 export const MODULE_ACCESS_USER_FILTERS = ['all', 'new', 'unconfigured', 'custom'];
 

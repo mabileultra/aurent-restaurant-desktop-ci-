@@ -119,7 +119,8 @@
     "expandMenu": "Menyuni ochish",
     "closeMenu": "Menyuni yopish",
     "stockPharmacyProducts": "Dorixona mahsulotlari",
-    "stockPharmacyReceipts": "Dorixona kirimi"
+    "stockPharmacyReceipts": "Dorixona kirimi",
+    "stockPharmacyAslMarks": "ASL chiqarish"
   },
   "rst": {
     "brand": "Aurent Restaurant",
@@ -2350,6 +2351,10 @@
   "platform": {
     "title": "Super-admin",
     "subtitle": "Platforma boshqaruvi",
+    "noAccess": {
+      "title": "Bo‘limlar berilmagan",
+      "subtitle": "Super-admin hali ruxsat bermagan. Keyinroq kiring yoki «Kirish huquqlari»da bo‘limlarni ochishni so‘rang."
+    },
     "companies": "Kompaniyalar",
     "stores": "Do‘konlar",
     "users": "Foydalanuvchilar",
@@ -2395,10 +2400,11 @@
     "moduleAccess": {
       "nav": "Kirish huquqlari",
       "title": "Kirishlarni boshqarish",
-      "subtitle": "Foydalanuvchini toping va darhol ruxsat bering. Yangilari — tepada",
+      "subtitle": "Foydalanuvchini toping va darhol ruxsat bering. Yangilari — tepada. Platforma operatorlariga super-admin bo‘limlari beriladi",
       "company": "Kompaniya",
       "selectCompany": "Kompaniyani tanlang",
       "allCompanies": "Barcha kompaniyalar",
+      "platformStaff": "Platforma operatorlari",
       "users": "Foydalanuvchilar",
       "noUsers": "Foydalanuvchilar yo'q",
       "pickUser": "Chapdan foydalanuvchini tanlang",
@@ -2541,6 +2547,7 @@
       }
     },
     "moduleGroups": {
+      "platform": "Super-admin",
       "main": "Asosiy",
       "goods": "Tovarlar",
       "stock": "Ombor",
@@ -2615,7 +2622,17 @@
       "financeReports": "Moliya — hisobotlar",
       "financeAudit": "Moliya — jurnal",
       "financeCategories": "Moliya — kategoriyalar",
-      "financeSync": "Moliya — sinxronizatsiya"
+      "financeSync": "Moliya — sinxronizatsiya",
+      "platformCompanies": "Kompaniyalar",
+      "platformStores": "Do‘konlar",
+      "platformUsers": "Foydalanuvchilar",
+      "platformBusinessTypes": "Biznes konstruktori",
+      "platformReferenceBooks": "Ma’lumotnomalar",
+      "platformLeads": "Arizalar",
+      "platformBilling": "Billing",
+      "platformMonitoring": "Monitoring",
+      "platformEmail": "Pochta",
+      "platformDesktopNotifications": "Desktop bildirishnomalar"
     },
     "monitoring": {
       "nav": "Monitoring",
@@ -2730,7 +2747,7 @@
     "security": {
       "nav": "Xavfsizlik",
       "title": "Platforma xavfsizligi",
-      "subtitle": "Kassa server sozlamalari paroli va super-administratorlar",
+      "subtitle": "Kassa server sozlamalari paroli va platforma administratorlari",
       "cashierPasswordTitle": "Server sozlamalari paroli (kassa)",
       "cashierPasswordHint": "Desktop-kassada «Ko‘rinish → Server sozlamalari…» ochilganda so‘raladi.",
       "cashierPasswordDefault": "O‘rnatishdan keyin standart parol: aurnt. Super-adminga birinchi kirishda almashtiring.",
@@ -2742,6 +2759,12 @@
       "passwordTooShort": "Kamida 4 belgi",
       "passwordMismatch": "Parollar mos emas",
       "passwordUpdatedAt": "Yangilangan: {{date}}",
+      "staffTitle": "Platforma administratorlari",
+      "staffHint": "Super-admin hammasini ko‘radi. Operatorga bo‘limlar «Kirish huquqlari»da beriladi.",
+      "addStaff": "Qo‘shish",
+      "editStaff": "Tahrirlash",
+      "colRole": "Rol",
+      "operatorCreated": "Operator yaratildi. Bo‘limlarni «Kirish huquqlari»da bering.",
       "superAdminsTitle": "Super-administratorlar",
       "superAdminsHint": "Platformaga to‘liq kirish. Ism va parolni o‘zgartirish mumkin.",
       "addSuperAdmin": "Super-admin qo‘shish",
@@ -2749,7 +2772,7 @@
       "adminCreated": "Super-administrator yaratildi",
       "adminUpdated": "Super-administrator yangilandi",
       "adminSaveFailed": "Super-administratorni saqlab bo‘lmadi",
-      "emptyAdmins": "Super-administratorlar topilmadi",
+      "emptyAdmins": "Platforma administratorlari topilmadi",
       "colName": "Ism",
       "colLogin": "Login",
       "colEmail": "Email",
@@ -2758,6 +2781,21 @@
       "colUsername": "Login",
       "colPassword": "Parol",
       "newPasswordOptional": "Yangi parol (ixtiyoriy)"
+    },
+    "account": {
+      "nav": "Mening kirishim",
+      "title": "Login va parol",
+      "subtitle": "O‘z platforma kirishingizni almashtirish",
+      "hint": "Bu login va parolni PLATFORM_ADMIN operatorlari ishlatadi. Kompaniya kodi shart emas.",
+      "login": "Login",
+      "newPassword": "Yangi parol",
+      "confirmPassword": "Parolni tasdiqlang",
+      "save": "Saqlash",
+      "saved": "Login va parol saqlandi",
+      "saveFailed": "Kirishni saqlab bo‘lmadi",
+      "loginRequired": "Loginni kiriting",
+      "passwordTooShort": "Parol kamida 6 belgi",
+      "passwordMismatch": "Parollar mos emas"
     }
   },
   "tenantSettings": {
@@ -4716,7 +4754,8 @@
     "CASHIER": "Kassir",
     "WAITER": "Ofitsiant",
     "ACCOUNTANT": "Buxgalter",
-    "SUPER_ADMIN": "Super-admin"
+    "SUPER_ADMIN": "Super-admin",
+    "PLATFORM_ADMIN": "Platforma operatori"
   },
   "billing": {
     "title": "To‘lov va obuna",
@@ -4866,6 +4905,43 @@
     "subtitle": "Dorixona ombori kirim hujjatlari",
     "productsTitle": "Dorixona mahsulotlari",
     "productsSubtitle": "Dorixona ombori uchun dori va BAD katalogi",
+    "aslMonitor": {
+      "title": "ASL Belgisi — chiqarish",
+      "subtitle": "Kassadagi sotuv vs ASL dagi KM holati. Yuqorida — faqat muammolar.",
+      "searchPh": "Markirovka kodi bo‘yicha qidiruv…",
+      "store": "Do‘kon",
+      "allStores": "Barcha do‘konlar",
+      "problemsOnly": "Faqat muammolar (chiqarilmagan / xato)",
+      "soldToday": "Bugun sotilgan",
+      "currentShift": "Faqat joriy smena",
+      "noOpenShift": "Tanlangan do‘konda ochiq smena yo‘q",
+      "attentionBanner": "Sahifadagi muammoli KM: {{count}}",
+      "emptyOkHint": "Muammoli KM yo‘q — ASL da chiqarish tasdiqlangan yoki hali sotuv yo‘q.",
+      "empty": "Filtr bo‘yicha yozuv yo‘q",
+      "loadFailed": "ASL monitoring yuklanmadi",
+      "filterAllStatuses": "Barcha statuslar",
+      "statusPending": "ASL kutmoqda",
+      "statusSold": "Chiqarilgan (lokal)",
+      "statusInStock": "Omborda",
+      "statusReturned": "Qaytarish",
+      "colProduct": "Mahsulot",
+      "colMark": "KM",
+      "colReceipt": "Chek",
+      "colSoldAt": "Sotilgan",
+      "colLocal": "Lokal",
+      "colAsl": "ASL status",
+      "colAttention": "Nazorat",
+      "colAttempts": "Urinishlar",
+      "attentionPending": "Hali WITHDRAWN emas",
+      "attentionError": "Xato / warning",
+      "attentionOk": "Ok",
+      "status": {
+        "PENDING_WITHDRAW": "ASL kutmoqda",
+        "SOLD": "SOLD",
+        "IN_STOCK": "Omborda",
+        "RETURNED": "Qaytarish"
+      }
+    },
     "documentTitle": "Dorixona kirimi",
     "pickTitle": "Mahsulot tanlash",
     "toolbarCreate": "Yaratish",
@@ -4955,7 +5031,27 @@
       "notFound": "ASL: kod topilmadi",
       "verifyFailed": "Markirovkani tekshirib bo‘lmadi",
       "added": "KM qo‘shildi",
-      "importHydrated": "Importdan KM qo‘yildi — o‘tkazishdan oldin tekshiring"
+      "importHydrated": "Importdan KM ASL tekshiruvsiz qo‘yildi — o‘tkazishdan oldin tekshiring",
+      "importHydratedVerified": "Importdan KM ASL da tekshirildi va qo‘shildi",
+      "importAskTitle": "Markirovkani tekshirish?",
+      "importAskBody": "Importda {{count}} ta markirovka kodi bor. ASL Belgisi orqali tekshirib, keyin hujjatga qo‘shilsinmi?",
+      "importAskHint": "«Tekshirish» — har bir KM ASL da oxirigacha tekshiriladi (to‘xtatish yo‘q). Hujjatga faqat yaroqlilari qo‘shiladi; qolganlari bo‘yicha aniq sabablar ko‘rsatiladi. Katta fayl uzoq davom etishi mumkin — bu normal.",
+      "importAskEta": "Taxminan ~{{seconds}} s.",
+      "importAslDisabled": "ASL Belgisi sozlanmagan. Faqat tekshiruvsiz qo‘yish mumkin yoki admin panelda kalitni sozlang.",
+      "importDoVerify": "ASL da tekshirish",
+      "importSkipVerify": "Tekshiruvsiz",
+      "importVerifying": "Tekshirilmoqda…",
+      "importProgress": "Tekshirildi {{done}} / {{total}}",
+      "importProgressHint": "Tekshiruv barcha kodlar bo‘yicha oxirigacha davom etadi. Natijani kuting — to‘xtatish mumkin emas.",
+      "importResultTitle": "ASL tekshiruv natijasi",
+      "importResultBody": "Qabul qilindi: {{accepted}}. Qabul qilinmadi: {{rejected}}.",
+      "importResultAccepted": "ASL da bor va qabul qilindi: {{count}}",
+      "importResultNotFound": "ASL da topilmadi: {{count}}",
+      "importResultSold": "Allaqachon sotilgan / chiqarilgan: {{count}}",
+      "importResultErrors": "ASL tekshiruv xatosi: {{count}}",
+      "importResultRejectedList": "Qabul qilinmagan kodlar:",
+      "importResultHint": "Hujjatga faqat qabul qilingan KM lar qo‘shiladi.",
+      "importResultConfirm": "Qabul qilinganlarni hujjatga qo‘shish"
     },
     "activated": "Hujjat {{no}} o‘tkazildi",
     "activateFailed": "Hujjatni o‘tkazib bo‘lmadi",

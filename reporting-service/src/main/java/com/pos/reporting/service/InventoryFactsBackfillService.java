@@ -6,5 +6,5 @@ import java.time.LocalDate;
 
 public interface InventoryFactsBackfillService {
 
-    FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization);
+    FactsBackfillResult backfill(LocalDate from, LocalDate to);
 }

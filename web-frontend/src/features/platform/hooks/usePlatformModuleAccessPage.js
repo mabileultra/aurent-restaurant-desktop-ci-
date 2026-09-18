@@ -18,6 +18,7 @@ import {
   filterModulesForBusinessType,
   normalizeBusinessTypeCode,
 } from '../utils/moduleAccessByBusinessType';
+import { isPlatformAdminRole } from '../../../utils/platformRoles';
 
 export function usePlatformModuleAccessPage() {
   const { t } = useTranslation();
@@ -78,6 +79,7 @@ export function usePlatformModuleAccessPage() {
   const typedUsers = useMemo(() => {
     if (!businessType) return namedUsers;
     return namedUsers.filter((user) => {
+      if (isPlatformAdminRole(user.role)) return false;
       const company = companyById.get(String(user.companyId ?? ''));
       return companyHasBusinessType(company, businessType);
     });
@@ -104,7 +106,9 @@ export function usePlatformModuleAccessPage() {
     companyById.get(String(companyId || ''))
     || companyById.get(String(selectedUser?.companyId ?? ''));
 
-  const selectedCompanyBusinessType = normalizeBusinessTypeCode(selectedCompany?.businessType);
+  const selectedCompanyBusinessType = isPlatformAdminRole(selectedUser?.role)
+    ? ''
+    : normalizeBusinessTypeCode(selectedCompany?.businessType);
 
   const { data: detail, isLoading: detailLoading } = useQuery({
     queryKey: ['platform-module-access-detail', selectedUserId],
@@ -221,9 +225,17 @@ export function usePlatformModuleAccessPage() {
       toast.error(t('platform.moduleAccess.enableCustomFirst'));
       return;
     }
+    const userIds = [...selectedUserIds].filter((userId) => {
+      const row = namedUsers.find((user) => user.userId === userId);
+      return row?.role === selectedUser?.role;
+    });
+    if (userIds.length === 0) {
+      toast.error(t('platform.moduleAccess.pickUsersForBulk'));
+      return;
+    }
     const payload = buildSavePayload();
     if (!payload) return;
-    bulkSaveMutation.mutate({ userIds: [...selectedUserIds], payload });
+    bulkSaveMutation.mutate({ userIds, payload });
   };
 
   const handleToggleModule = (moduleId, checked) => {

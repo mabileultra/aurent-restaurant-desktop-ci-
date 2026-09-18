@@ -1,6 +1,6 @@
-import BusinessTypeFilterChips from '../BusinessTypeFilterChips';
 import PlatformCompactFilterBar from '../PlatformCompactFilterBar';
 import PlatformModuleAccessCompanySelect from './PlatformModuleAccessCompanySelect';
+import { buildBusinessTypeFilterOptions } from '../../utils/businessTypeFilterOptions';
 
 export default function PlatformModuleAccessToolbar({
   t,
@@ -18,13 +18,10 @@ export default function PlatformModuleAccessToolbar({
       search={userSearch}
       onSearchChange={onUserSearchChange}
       searchPlaceholder={t('platform.moduleAccess.userSearch')}
-      filters={(
-        <BusinessTypeFilterChips
-          types={businessTypes}
-          value={businessType}
-          onChange={onBusinessTypeChange}
-        />
-      )}
+      filterLabel={t('platform.filterBusinessType')}
+      filterOptions={buildBusinessTypeFilterOptions(t, businessTypes)}
+      filterValue={businessType}
+      onFilterChange={onBusinessTypeChange}
       extra={(
         <PlatformModuleAccessCompanySelect
           t={t}

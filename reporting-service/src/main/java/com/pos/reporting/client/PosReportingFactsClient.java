@@ -11,15 +11,15 @@ import java.time.LocalDate;
 
 public interface PosReportingFactsClient {
 
-    StockFactsPageResponse fetchStockPage(LocalDate from, LocalDate to, int page, int size, String authorization);
+    StockFactsPageResponse fetchStockPage(LocalDate from, LocalDate to, int page, int size);
 
-    MovementFactsPageResponse fetchMovementPage(LocalDate from, LocalDate to, int page, int size, String authorization);
+    MovementFactsPageResponse fetchMovementPage(LocalDate from, LocalDate to, int page, int size);
 
-    ProductFactsPageResponse fetchProductSnapshotPage(int page, int size, String authorization);
+    ProductFactsPageResponse fetchProductSnapshotPage(int page, int size);
 
-    InventoryFactsPageResponse fetchInventoryPage(LocalDate from, LocalDate to, int page, int size, String authorization);
+    InventoryFactsPageResponse fetchInventoryPage(LocalDate from, LocalDate to, int page, int size);
 
-    TransferFactsPageResponse fetchTransferPage(LocalDate from, LocalDate to, int page, int size, String authorization);
+    TransferFactsPageResponse fetchTransferPage(LocalDate from, LocalDate to, int page, int size);
 
-    ShiftFactsPageResponse fetchShiftPage(LocalDate from, LocalDate to, int page, int size, String authorization);
+    ShiftFactsPageResponse fetchShiftPage(LocalDate from, LocalDate to, int page, int size);
 }

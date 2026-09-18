@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { isPlatformUser } from '../../utils/platformRoles';
 
 export default function RestaurantAuthGuard({ children }) {
   const { isAuthenticated, user } = useAuthStore();
@@ -7,7 +8,7 @@ export default function RestaurantAuthGuard({ children }) {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
-  if (user?.role === 'SUPER_ADMIN') {
+  if (isPlatformUser(user?.role)) {
     return <Navigate to="/platform" replace />;
   }
   return children;

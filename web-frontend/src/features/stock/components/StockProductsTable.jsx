@@ -1,6 +1,7 @@
 import { Info, MoreVertical } from 'lucide-react';
-import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
+import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import { STOCK_PAGE_SIZE_OPTIONS } from '../constants';
 
 const COL_COUNT = 9;
 
@@ -17,7 +18,7 @@ export default function StockProductsTable({
   totalPages,
   onPageChange,
   onPageSizeChange,
-  pageSizeOptions = TABLE_PAGE_SIZE_OPTIONS,
+  pageSizeOptions = STOCK_PAGE_SIZE_OPTIONS,
 }) {
   return (
     <div className="admin-table-shell">

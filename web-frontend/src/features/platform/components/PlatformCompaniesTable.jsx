@@ -5,6 +5,7 @@ import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/
 export default function PlatformCompaniesTable({
   t,
   isPending,
+  isError = false,
   rows,
   page,
   pageSize,
@@ -44,10 +45,10 @@ export default function PlatformCompaniesTable({
                   {t('common.loading')}
                 </td>
               </tr>
-            ) : rows.length === 0 ? (
+            ) : isError || rows.length === 0 ? (
               <tr>
                 <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
-                  {t('common.noData')}
+                  {isError ? t('common.loadError') : t('common.noData')}
                 </td>
               </tr>
             ) : (

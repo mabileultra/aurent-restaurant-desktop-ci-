@@ -5,7 +5,6 @@ import com.pos.reporting.service.StockReportExportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,11 +33,10 @@ public class StockReportExportController {
     public ResponseEntity<byte[]> exportBalances(
         @RequestParam(required = false) Integer categoryId,
         @RequestParam(required = false) String search,
-        @RequestParam(defaultValue = "false") boolean onlyWithStock,
-        HttpServletRequest request
+        @RequestParam(defaultValue = "false") boolean onlyWithStock
     ) {
         return SpreadsheetDownloadSupport.attachment(
-            stockReportExportService.exportBalances(categoryId, search, onlyWithStock, request.getHeader("Authorization")),
+            stockReportExportService.exportBalances(categoryId, search, onlyWithStock),
             "stock_balances_export.xlsx"
         );
     }
@@ -50,11 +48,10 @@ public class StockReportExportController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate asOfDate,
         @RequestParam(defaultValue = "30") int daysNoSale,
         @RequestParam(required = false) Integer categoryId,
-        @RequestParam(required = false) String search,
-        HttpServletRequest request
+        @RequestParam(required = false) String search
     ) {
         return SpreadsheetDownloadSupport.attachment(
-            stockReportExportService.exportDeadStock(asOfDate, daysNoSale, categoryId, search, request.getHeader("Authorization")),
+            stockReportExportService.exportDeadStock(asOfDate, daysNoSale, categoryId, search),
             "dead_stock_export.xlsx"
         );
     }
@@ -66,8 +63,7 @@ public class StockReportExportController {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) Integer storeId,
-        @RequestParam(required = false) String search,
-        HttpServletRequest request
+        @RequestParam(required = false) String search
     ) {
         return SpreadsheetDownloadSupport.attachment(
             stockReportExportService.exportAdjustments(from, to, storeId, search),
@@ -81,8 +77,7 @@ public class StockReportExportController {
     public ResponseEntity<byte[]> exportInventories(
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-        @RequestParam(required = false) Integer storeId,
-        HttpServletRequest request
+        @RequestParam(required = false) Integer storeId
     ) {
         return SpreadsheetDownloadSupport.attachment(
             stockReportExportService.exportInventories(from, to, storeId),
@@ -97,8 +92,7 @@ public class StockReportExportController {
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) Integer fromStoreId,
-        @RequestParam(required = false) Integer toStoreId,
-        HttpServletRequest request
+        @RequestParam(required = false) Integer toStoreId
     ) {
         return SpreadsheetDownloadSupport.attachment(
             stockReportExportService.exportTransfers(from, to, fromStoreId, toStoreId),

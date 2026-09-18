@@ -4,5 +4,5 @@ import com.pos.reporting.dto.FactsBackfillResult;
 
 public interface ProductFactsBackfillService {
 
-    FactsBackfillResult backfill(String authorization);
+    FactsBackfillResult backfill();
 }

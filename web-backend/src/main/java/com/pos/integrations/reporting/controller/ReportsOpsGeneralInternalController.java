@@ -14,14 +14,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/internal/reports/ops")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+@PreAuthorize("hasRole('INTERNAL')")
 @Hidden
 public class ReportsOpsGeneralInternalController {
 
     private final PosCacheRefreshOrchestrator posCacheRefreshOrchestrator;
 
     @PostMapping("/cache/refresh")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('INTERNAL')")
     @Operation(summary = "Обновить кэш", description = "Принудительное обновление кэшей POS-данных")
     @ApiResponse(responseCode = "204", description = "Кэш обновлён")
     public ResponseEntity<Void> refreshCaches() {

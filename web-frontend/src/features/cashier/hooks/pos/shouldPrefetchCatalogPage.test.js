@@ -2,10 +2,16 @@ import { describe, expect, it } from 'vitest';
 import { shouldPrefetchCatalogPage } from './shouldPrefetchCatalogPage';
 
 describe('shouldPrefetchCatalogPage', () => {
-  it('prefetches only the second page after the first loaded', () => {
+  it('prefetches the next pages after the first loaded', () => {
     expect(shouldPrefetchCatalogPage({
       enabled: true,
       pagesLoaded: 1,
+      hasNextPage: true,
+      isFetchingNextPage: false,
+    })).toBe(true);
+    expect(shouldPrefetchCatalogPage({
+      enabled: true,
+      pagesLoaded: 2,
       hasNextPage: true,
       isFetchingNextPage: false,
     })).toBe(true);
@@ -20,10 +26,10 @@ describe('shouldPrefetchCatalogPage', () => {
     })).toBe(false);
   });
 
-  it('does not walk the whole catalog', () => {
+  it('stops after the prefetch budget', () => {
     expect(shouldPrefetchCatalogPage({
       enabled: true,
-      pagesLoaded: 2,
+      pagesLoaded: 3,
       hasNextPage: true,
       isFetchingNextPage: false,
     })).toBe(false);

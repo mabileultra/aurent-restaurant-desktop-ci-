@@ -11,7 +11,12 @@ export function emptyReceiptLine() {
 }
 
 export function emptyInventoryLine() {
-  return { productId: '', countedQuantity: '' };
+  return {
+    key: `inv-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    productId: '',
+    product: null,
+    countedQuantity: '',
+  };
 }
 
 export function emptyTransferLine() {

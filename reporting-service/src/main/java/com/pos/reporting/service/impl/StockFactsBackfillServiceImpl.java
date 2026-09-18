@@ -26,14 +26,14 @@ public class StockFactsBackfillServiceImpl implements StockFactsBackfillService 
     private final ReportingIngestService reportingIngestService;
 
     @Override
-    public FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization) {
+    public FactsBackfillResult backfill(LocalDate from, LocalDate to) {
         long ingested = 0L;
         long skipped = 0L;
         int page = 0;
         int totalPages = 1;
 
         while (page < totalPages) {
-            StockFactsPageResponse batch = posReportingFactsClient.fetchStockPage(from, to, page, BATCH_SIZE, authorization);
+            StockFactsPageResponse batch = posReportingFactsClient.fetchStockPage(from, to, page, BATCH_SIZE);
             if (batch == null || batch.content() == null || batch.content().isEmpty()) {
                 break;
             }

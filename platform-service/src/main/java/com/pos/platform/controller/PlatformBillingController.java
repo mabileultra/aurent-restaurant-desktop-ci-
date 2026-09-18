@@ -41,7 +41,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/platform/billing")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Billing", description = "SaaS биллинг (SUPER_ADMIN)")
 public class PlatformBillingController {
 

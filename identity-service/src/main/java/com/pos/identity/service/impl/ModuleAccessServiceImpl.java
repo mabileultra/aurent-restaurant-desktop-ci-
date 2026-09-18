@@ -11,22 +11,24 @@ import com.pos.identity.entity.User;
 import com.pos.identity.entity.UserModuleAccess;
 import com.pos.identity.entity.UserModuleAccessId;
 import com.pos.identity.exception.BadRequestException;
-import com.pos.identity.exception.ResourceNotFoundException;
 import com.pos.identity.repository.UserModuleAccessRepository;
 import com.pos.identity.repository.UserRepository;
-import com.pos.identity.security.AdminModule;
+import com.pos.identity.security.RoleName;
 import com.pos.identity.service.ModuleAccessService;
+import com.pos.identity.service.access.ModuleAccessCatalog;
+import com.pos.identity.service.access.ModuleAccessScopeResolver;
+import com.pos.identity.service.access.ModuleAccessUserGate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -36,18 +38,23 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     private final UserRepository userRepository;
     private final UserModuleAccessRepository userModuleAccessRepository;
     private final PosCoreClient posCoreClient;
+    private final ModuleAccessCatalog moduleAccessCatalog;
+    private final ModuleAccessUserGate moduleAccessUserGate;
+    private final ModuleAccessScopeResolver scopeResolver;
 
     @Override
     public List<AdminModuleCatalogItem> catalog() {
-        return Arrays.stream(AdminModule.values())
-            .map(m -> new AdminModuleCatalogItem(m.key(), m.group()))
-            .toList();
+        return moduleAccessCatalog.allItems();
     }
 
     @Override
     public List<UserModuleAccessSummary> listUsers(Integer companyId) {
         String companyName = companyId != null ? resolveCompanyName(companyId) : null;
-        return userRepository.findTenantUsersForModuleAccess(companyId).stream()
+        Stream<User> tenantUsers = userRepository.findTenantUsersForModuleAccess(companyId).stream();
+        Stream<User> platformOperators = companyId == null
+            ? userRepository.findPlatformOperatorsForModuleAccess().stream()
+            : Stream.empty();
+        return Stream.concat(tenantUsers, platformOperators)
             .sorted(Comparator.comparing(User::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
             .map(user -> toSummary(user, companyName))
             .toList();
@@ -55,14 +62,13 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
     @Override
     public UserModuleAccessDetailResponse getUserAccess(UUID userId) {
-        User user = requireTenantUser(userId);
-        return buildDetail(user);
+        return buildDetail(moduleAccessUserGate.requireConfigurable(userId));
     }
 
     @Override
     @Transactional(readOnly = false)
     public UserModuleAccessDetailResponse updateUserAccess(UUID userId, UpdateUserModuleAccessRequest request) {
-        User user = requireTenantUser(userId);
+        User user = moduleAccessUserGate.requireConfigurable(userId);
         if (Boolean.FALSE.equals(request.customAccess())) {
             return resetUserAccess(userId);
         }
@@ -72,13 +78,13 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
 
         List<UserModuleAccess> rows = new ArrayList<>();
         boolean anyAllowed = false;
-        for (AdminModule module : modulesForUserRole(user)) {
-            boolean allowed = Boolean.TRUE.equals(modules.get(module.key()));
+        for (String moduleKey : scopeResolver.keysFor(user)) {
+            boolean allowed = Boolean.TRUE.equals(modules.get(moduleKey));
             if (allowed) {
                 anyAllowed = true;
             }
             rows.add(UserModuleAccess.builder()
-                .id(new UserModuleAccessId(userId, module.key()))
+                .id(new UserModuleAccessId(userId, moduleKey))
                 .user(user)
                 .allowed(allowed)
                 .build());
@@ -95,7 +101,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
     @Override
     @Transactional(readOnly = false)
     public UserModuleAccessDetailResponse resetUserAccess(UUID userId) {
-        User user = requireTenantUser(userId);
+        User user = moduleAccessUserGate.requireConfigurable(userId);
         userModuleAccessRepository.deleteByUserId(userId);
         user.setModuleAccessCustom(false);
         userRepository.save(user);
@@ -107,52 +113,60 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         if (user == null || user.getRole() == null) {
             return List.of();
         }
-        String role = user.getRole().getName();
-        if ("SUPER_ADMIN".equals(role)) {
-            return AdminModule.adminScope().stream().map(AdminModule::key).sorted().toList();
+        if (RoleName.SUPER_ADMIN.matches(user)) {
+            return scopeResolver.keysFor(user).stream().sorted().toList();
+        }
+        if (RoleName.PLATFORM_ADMIN.matches(user)) {
+            return resolveStoredOrEmpty(user);
         }
 
-        List<AdminModule> scope = modulesForUserRole(user);
+        List<String> scope = scopeResolver.keysFor(user);
         if (!user.isModuleAccessCustom()) {
             return scope.stream()
-                .filter(m -> m.allowedForRole(role))
-                .map(AdminModule::key)
+                .filter(key -> scopeResolver.roleDefault(user, key))
                 .sorted()
                 .toList();
         }
 
-        Map<String, Boolean> stored = userModuleAccessRepository.findByIdUserId(user.getId()).stream()
-            .collect(Collectors.toMap(UserModuleAccess::getModuleKey, UserModuleAccess::isAllowed, (a, b) -> b));
-
+        Map<String, Boolean> stored = storedAccess(user.getId());
         return scope.stream()
-            .filter(m -> moduleAllowedForCustomAccess(m, role, stored))
-            .map(AdminModule::key)
+            .filter(key -> moduleAllowedForCustomAccess(user, key, stored))
             .sorted()
             .toList();
     }
 
-    private boolean moduleAllowedForCustomAccess(AdminModule module, String role, Map<String, Boolean> stored) {
-        if (!stored.containsKey(module.key())) {
-            return module.allowedForRole(role);
+    private List<String> resolveStoredOrEmpty(User user) {
+        if (!user.isModuleAccessCustom()) {
+            return List.of();
         }
-        return Boolean.TRUE.equals(stored.get(module.key()));
+        Map<String, Boolean> stored = storedAccess(user.getId());
+        return scopeResolver.keysFor(user).stream()
+            .filter(key -> Boolean.TRUE.equals(stored.get(key)))
+            .sorted()
+            .toList();
+    }
+
+    private boolean moduleAllowedForCustomAccess(User user, String moduleKey, Map<String, Boolean> stored) {
+        if (!stored.containsKey(moduleKey)) {
+            return scopeResolver.roleDefault(user, moduleKey);
+        }
+        return Boolean.TRUE.equals(stored.get(moduleKey));
     }
 
     private UserModuleAccessDetailResponse buildDetail(User user) {
         String role = user.getRole().getName();
-        List<AdminModule> scope = modulesForUserRole(user);
+        List<String> scope = scopeResolver.keysFor(user);
         Map<String, Boolean> stored = user.isModuleAccessCustom()
-            ? userModuleAccessRepository.findByIdUserId(user.getId()).stream()
-                .collect(Collectors.toMap(UserModuleAccess::getModuleKey, UserModuleAccess::isAllowed, (a, b) -> b))
+            ? storedAccess(user.getId())
             : Map.of();
 
         List<UserModuleAccessRow> rows = scope.stream()
-            .map(m -> {
-                boolean roleDefault = m.allowedForRole(role);
+            .map(key -> {
+                boolean roleDefault = scopeResolver.roleDefault(user, key);
                 boolean allowed = user.isModuleAccessCustom()
-                    ? moduleAllowedForCustomAccess(m, role, stored)
+                    ? moduleAllowedForCustomAccess(user, key, stored)
                     : roleDefault;
-                return new UserModuleAccessRow(m.key(), allowed, roleDefault);
+                return new UserModuleAccessRow(key, allowed, roleDefault);
             })
             .toList();
 
@@ -166,48 +180,9 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
         );
     }
 
-    private List<AdminModule> modulesForUserRole(User user) {
-        String role = user.getRole().getName();
-        List<AdminModule> scope;
-        if ("CASHIER".equals(role) || "WAITER".equals(role)) {
-            scope = AdminModule.cashierScope();
-        } else if ("ACCOUNTANT".equals(role)) {
-            scope = AdminModule.financeScope();
-        } else {
-            scope = AdminModule.adminScope();
-        }
-        return filterByCompanyBusinessType(scope, user.getCompanyId());
-    }
-
-    private List<AdminModule> filterByCompanyBusinessType(List<AdminModule> scope, Integer companyId) {
-        if (companyId == null || scope.isEmpty()) {
-            return scope;
-        }
-        String businessType = resolveCompanyBusinessType(companyId);
-        return scope.stream()
-            .filter(m -> AdminModule.visibleForBusinessType(m, businessType))
-            .toList();
-    }
-
-    private String resolveCompanyBusinessType(Integer companyId) {
-        try {
-            CompanyDto company = posCoreClient.getCompanyById(companyId);
-            return company != null ? company.businessType() : null;
-        } catch (Exception ex) {
-            return null;
-        }
-    }
-
-    private User requireTenantUser(UUID userId) {
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        if (user.getRole() == null || "SUPER_ADMIN".equals(user.getRole().getName())) {
-            throw new BadRequestException("Module access is not configurable for this user");
-        }
-        if (user.getCompanyId() == null) {
-            throw new BadRequestException("User has no company");
-        }
-        return user;
+    private Map<String, Boolean> storedAccess(UUID userId) {
+        return userModuleAccessRepository.findByIdUserId(userId).stream()
+            .collect(Collectors.toMap(UserModuleAccess::getModuleKey, UserModuleAccess::isAllowed, (a, b) -> b));
     }
 
     private UserModuleAccessSummary toSummary(User user, String companyName) {
@@ -217,7 +192,7 @@ public class ModuleAccessServiceImpl implements ModuleAccessService {
             user.getFullName(),
             user.getRole().getName(),
             user.getCompanyId(),
-            companyName,
+            user.getCompanyId() == null ? null : companyName,
             user.isModuleAccessCustom(),
             user.getCreatedAt()
         );

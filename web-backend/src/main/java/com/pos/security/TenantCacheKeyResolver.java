@@ -30,7 +30,7 @@ public class TenantCacheKeyResolver {
     public String categoriesForCurrentUser() {
         try {
             User user = currentUserProvider.requireCurrentUser();
-            if (currentUserProvider.isSuperAdmin(user)) {
+            if (currentUserProvider.isPlatformOperator(user)) {
                 return TenantContext.companyId()
                     .map(id -> "company:" + id + ":categories")
                     .orElse("platform:categories");
@@ -47,7 +47,7 @@ public class TenantCacheKeyResolver {
     public String storesForCurrentUser() {
         try {
             User user = currentUserProvider.requireCurrentUser();
-            if (currentUserProvider.isSuperAdmin(user)) {
+            if (currentUserProvider.isPlatformOperator(user)) {
                 return TenantContext.companyId()
                     .map(id -> "company:" + id + ":stores")
                     .orElse("platform:stores");

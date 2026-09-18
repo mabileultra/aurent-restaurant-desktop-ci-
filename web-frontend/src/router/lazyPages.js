@@ -19,6 +19,7 @@ export const PlatformMonitoringPage = lazy(() => import('../features/platform/pa
 export const PlatformEmailPage = lazy(() => import('../features/platform/pages/PlatformEmailPage'));
 export const PlatformDesktopNotificationsPage = lazy(() => import('../features/platform/pages/PlatformDesktopNotificationsPage'));
 export const PlatformSecurityPage = lazy(() => import('../features/platform/pages/PlatformSecurityPage'));
+export const PlatformAccountPage = lazy(() => import('../features/platform/pages/PlatformAccountPage'));
 export const PlatformBusinessTypesPage = lazy(() => import('../features/platform/pages/PlatformBusinessTypesPage'));
 export const PlatformReferenceBooksPage = lazy(() => import('../features/platform/pages/PlatformReferenceBooksPage'));
 export const PlatformLeadsPage = lazy(() => import('../features/platform/pages/PlatformLeadsPage'));
@@ -37,6 +38,7 @@ export const PharmacyReceiptsPage = lazy(() => import('../features/pharmacy-stoc
 export const PharmacyReceiptDocumentPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptDocumentPage'));
 export const PharmacyReceiptPickPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptPickPage'));
 export const PharmacyProductsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyProductsPage'));
+export const PharmacyAslWithdrawMonitorPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyAslWithdrawMonitorPage'));
 export const StockInventoryCreatePage = lazy(() => import('../features/stock/pages/StockInventoryCreatePage'));
 export const StockTransferCreatePage = lazy(() => import('../features/stock/pages/StockTransferCreatePage'));
 export const SuppliersPage = lazy(() => import('../features/catalog/pages/SuppliersPage'));

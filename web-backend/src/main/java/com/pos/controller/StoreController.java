@@ -37,7 +37,7 @@ public class StoreController {
     }
 
     @GetMapping("/manage")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Управление магазинами", description = "Постраничный список магазинов для администрирования")
     @ApiResponse(responseCode = "200", description = "Список магазинов")
     public ResponseEntity<PageResponse<StoreResponse>> listManaged(
@@ -50,7 +50,7 @@ public class StoreController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'CASHIER', 'MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'CASHIER', 'MANAGER')")
     @Operation(summary = "Магазин по ID", description = "Получение магазина по идентификатору")
     @ApiResponse(responseCode = "200", description = "Данные магазина")
     public ResponseEntity<StoreResponse> get(@PathVariable Integer id) {
@@ -58,7 +58,7 @@ public class StoreController {
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Создать магазин", description = "Создание новой торговой точки")
     @ApiResponse(responseCode = "201", description = "Магазин создан")
     public ResponseEntity<StoreResponse> create(@Valid @RequestBody CreateStoreRequest request) {
@@ -66,7 +66,7 @@ public class StoreController {
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Обновить магазин", description = "Изменение данных торговой точки")
     @ApiResponse(responseCode = "200", description = "Магазин обновлён")
     public ResponseEntity<StoreResponse> update(
@@ -77,7 +77,7 @@ public class StoreController {
     }
 
     @PatchMapping("/{id}/toggle-active")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Переключить активность", description = "Активация или деактивация магазина")
     @ApiResponse(responseCode = "200", description = "Статус магазина изменён")
     public ResponseEntity<StoreResponse> toggle(@PathVariable Integer id) {
@@ -85,7 +85,7 @@ public class StoreController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Удалить магазин", description = "Удаление торговой точки")
     @ApiResponse(responseCode = "204", description = "Магазин удалён")
     public ResponseEntity<Void> delete(@PathVariable Integer id) {

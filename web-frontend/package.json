@@ -10,7 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "verify:offline": "node scripts/verify-offline-connectivity.mjs && node scripts/check-offline-static.cjs",
-    "check:modules": "node ../scripts/check-module-sync.mjs"
+    "check:modules": "node ../scripts/check-module-sync.mjs && node ../scripts/check-platform-module-sync.mjs && node ../scripts/check-platform-security-sync.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.3",

@@ -7,6 +7,7 @@ import java.util.Arrays;
 
 public enum RoleName {
     SUPER_ADMIN("SUPER_ADMIN"),
+    PLATFORM_ADMIN("PLATFORM_ADMIN"),
     TENANT_ADMIN("ADMIN"),
     MANAGER("MANAGER"),
     CASHIER("CASHIER"),
@@ -42,5 +43,13 @@ public enum RoleName {
             .filter(r -> r.key.equals(key))
             .findFirst()
             .orElse(null);
+    }
+
+    public static boolean isPlatformScope(String roleName) {
+        return SUPER_ADMIN.matches(roleName) || PLATFORM_ADMIN.matches(roleName);
+    }
+
+    public static boolean isPlatformScope(User user) {
+        return user != null && user.getRole() != null && isPlatformScope(user.getRole().getName());
     }
 }

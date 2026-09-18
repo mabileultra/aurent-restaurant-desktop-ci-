@@ -30,8 +30,7 @@ public class StockReportExportServiceImpl implements StockReportExportService {
     public byte[] exportBalances(
         Integer categoryId,
         String search,
-        boolean onlyWithStock,
-        String authorization
+        boolean onlyWithStock
     ) {
         var rows = stockBalanceReportService.listAll(categoryId, search, onlyWithStock);
         return reportExcelWriter.write(
@@ -45,8 +44,7 @@ public class StockReportExportServiceImpl implements StockReportExportService {
         LocalDate asOfDate,
         int daysNoSale,
         Integer categoryId,
-        String search,
-        String authorization
+        String search
     ) {
         var rows = deadStockReportService.listAll(asOfDate, daysNoSale, categoryId, search);
         return reportExcelWriter.write(

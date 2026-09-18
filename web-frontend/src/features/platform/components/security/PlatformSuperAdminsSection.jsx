@@ -10,12 +10,12 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
           <Shield size={16} />
         </span>
         <div className="platform-security__titles">
-          <h2 className="platform-security__title">{t('platform.security.superAdminsTitle')}</h2>
-          <p className="platform-security__hint">{t('platform.security.superAdminsHint')}</p>
+          <h2 className="platform-security__title">{t('platform.security.staffTitle')}</h2>
+          <p className="platform-security__hint">{t('platform.security.staffHint')}</p>
         </div>
         <BaseButton variant="secondary" onClick={onAdd}>
           <UserPlus size={16} />
-          {t('platform.security.addSuperAdmin')}
+          {t('platform.security.addStaff')}
         </BaseButton>
       </div>
 
@@ -25,6 +25,7 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
             <tr className="platform-security__head">
               <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('platform.security.colName')}</th>
+              <th className="px-4 py-3">{t('platform.security.colRole')}</th>
               <th className="px-4 py-3">{t('platform.security.colLogin')}</th>
               <th className="px-4 py-3">{t('platform.security.colEmail')}</th>
               <th className="px-4 py-3 w-28" />
@@ -33,11 +34,11 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
             <tbody>
             {adminsLoading ? (
               <tr>
-                <td colSpan={6} className="platform-security__empty">{t('common.loading')}</td>
+                <td colSpan={7} className="platform-security__empty">{t('common.loading')}</td>
               </tr>
             ) : superAdmins.length === 0 ? (
               <tr>
-                <td colSpan={6} className="platform-security__empty">{t('platform.security.emptyAdmins')}</td>
+                <td colSpan={7} className="platform-security__empty">{t('platform.security.emptyAdmins')}</td>
               </tr>
             ) : (
               superAdmins.map((row, index) => (
@@ -49,6 +50,7 @@ export default function PlatformSuperAdminsSection({ t, adminsLoading, superAdmi
                     id={row.id}
                   />
                   <td className="platform-security__name">{row.fullName}</td>
+                  <td className="platform-security__muted">{t(`roles.${row.role}`, row.role)}</td>
                   <td className="platform-security__muted">{row.username}</td>
                   <td className="platform-security__muted">{row.email}</td>
                   <td className="platform-security__actions-cell">

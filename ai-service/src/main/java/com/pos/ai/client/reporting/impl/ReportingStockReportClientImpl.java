@@ -13,7 +13,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -185,8 +184,7 @@ public class ReportingStockReportClientImpl implements ReportingStockReportClien
             builder.queryParam(param.name(), param.value());
         }
         RestClient.RequestHeadersSpec<?> spec = reportingRestClient.get().uri(builder.build().toUriString());
-        httpRequestAuthSupport.authorizationHeader()
-            .ifPresent(value -> spec.header(HttpHeaders.AUTHORIZATION, value));
+        httpRequestAuthSupport.apply(spec);
         T body = spec.retrieve().body(type);
         return body != null ? body : emptyPage(type);
     }

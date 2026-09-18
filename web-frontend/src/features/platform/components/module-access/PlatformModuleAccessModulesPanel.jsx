@@ -29,8 +29,11 @@ export default function PlatformModuleAccessModulesPanel({
     return <PlatformModuleAccessModulesPlaceholder message={t('common.loading')} />;
   }
 
-  const typeCode = businessTypeCode || 'UNIVERSAL';
-  const businessTypeLabel = t(`productTemplates.businessTypes.${typeCode}`, typeCode);
+  const businessTypeLabel = businessTypeCode
+    ? t(`productTemplates.businessTypes.${businessTypeCode}`, businessTypeCode)
+    : '';
+  const companyName = selectedUser?.companyName
+    || (detail.role === 'PLATFORM_ADMIN' ? t('platform.moduleAccess.platformStaff') : '');
 
   return (
     <div className="module-access-panel admin-card">
@@ -38,7 +41,7 @@ export default function PlatformModuleAccessModulesPanel({
         t={t}
         fullName={selectedUser?.fullName}
         role={detail.role}
-        companyName={selectedUser?.companyName}
+        companyName={companyName}
         businessTypeLabel={businessTypeLabel}
         customAccess={customAccess}
         onCustomAccessChange={onCustomAccessChange}

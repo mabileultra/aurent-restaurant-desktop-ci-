@@ -5,6 +5,6 @@ import java.time.LocalDate;
 
 public interface ShiftFactsBackfillService {
 
-    FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization);
+    FactsBackfillResult backfill(LocalDate from, LocalDate to);
 }
 

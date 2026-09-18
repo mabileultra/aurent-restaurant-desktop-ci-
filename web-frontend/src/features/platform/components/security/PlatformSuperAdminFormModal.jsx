@@ -1,4 +1,4 @@
-import { BaseButton, BaseModal, BaseInput } from '../../../../components/ui';
+import { BaseButton, BaseModal, BaseInput, BaseSelect } from '../../../../components/ui';
 
 export default function PlatformSuperAdminFormModal({
   t,
@@ -12,8 +12,8 @@ export default function PlatformSuperAdminFormModal({
 
   const title =
     form.mode === 'create'
-      ? t('platform.security.addSuperAdmin')
-      : t('platform.security.editSuperAdmin');
+      ? t('platform.security.addStaff')
+      : t('platform.security.editStaff');
 
   return (
     <BaseModal onClose={onClose} title={title} size="md">
@@ -34,6 +34,16 @@ export default function PlatformSuperAdminFormModal({
         </div>
         {form.mode === 'create' ? (
           <>
+            <BaseSelect
+              label={t('platform.security.colRole')}
+              value={form.role}
+              onChange={(e) => onFieldChange('role', e.target.value)}
+              options={[
+                { value: 'PLATFORM_ADMIN', label: t('roles.PLATFORM_ADMIN') },
+                { value: 'SUPER_ADMIN', label: t('roles.SUPER_ADMIN') },
+              ]}
+              required
+            />
             <BaseInput
               label={t('platform.security.colUsername')}
               value={form.username}

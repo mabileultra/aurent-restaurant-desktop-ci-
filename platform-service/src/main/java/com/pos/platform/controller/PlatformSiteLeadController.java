@@ -26,7 +26,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/platform/leads")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Site Leads", description = "Заявки с публичного сайта (SUPER_ADMIN)")
 public class PlatformSiteLeadController {
 

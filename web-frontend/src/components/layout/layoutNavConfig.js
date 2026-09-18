@@ -82,6 +82,7 @@ export const STOCK_ROUTES = [
   '/stock/receipts/new',
   '/pharm/stock/receipts',
   '/pharm/stock/products',
+  '/pharm/stock/asl-marks',
   '/stock/inventories/new',
   '/stock/transfers/new',
   '/stock/suppliers',
@@ -115,7 +116,7 @@ export const STOCK_CHILDREN = [
 /** Аптечный nav: товары и приход → /pharm/stock; инвентаризация/перемещение/поставщики — общие. */
 export function stockChildrenForBusinessType(businessType) {
   const isPharmacy = String(businessType || '').toUpperCase() === 'PHARMACY';
-  return STOCK_CHILDREN.map((item) => {
+  const mapped = STOCK_CHILDREN.map((item) => {
     if (item.moduleId === 'stockProducts' && isPharmacy) {
       return { ...item, to: '/pharm/stock/products', key: 'stockPharmacyProducts' };
     }
@@ -127,6 +128,18 @@ export function stockChildrenForBusinessType(businessType) {
       key: 'stockPharmacyReceipts',
     };
   });
+  if (!isPharmacy) return mapped;
+  const receiptsIdx = mapped.findIndex((item) => item.moduleId === 'stockReceipts');
+  const aslItem = {
+    to: '/pharm/stock/asl-marks',
+    key: 'stockPharmacyAslMarks',
+    icon: ICONS.AlertTriangle,
+    moduleId: 'stockReceipts',
+  };
+  if (receiptsIdx < 0) return [...mapped, aslItem];
+  const next = [...mapped];
+  next.splice(receiptsIdx + 1, 0, aslItem);
+  return next;
 }
 
 export const ORDER_CHILDREN = [{ to: '/orders/list', key: 'ordersList', icon: ICONS.ClipboardList, moduleId: 'ordersList' }];

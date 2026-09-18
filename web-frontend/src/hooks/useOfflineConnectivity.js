@@ -15,8 +15,13 @@ import {
   runCatalogSyncIfNeeded,
   runSalesSyncOnly,
 } from '../services/offline/offlineSyncService';
-import { offlineGetStatus } from '../services/offline/desktopOfflineBridge';
-import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
+import { offlineGetStatus, isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
+
+function canRunOnlineSync() {
+  const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
+  const apiOnline = useConnectivityStore.getState().apiOnline;
+  return Boolean(apiOnline || browserOnline);
+}
 
 export function useOfflineConnectivity() {
   const token = useAuthStore((s) => s.token);
@@ -24,12 +29,6 @@ export function useOfflineConnectivity() {
   const { isPharmacy } = useCashierStoreProfile();
   const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
   const prevStoreIdRef = useRef(storeId);
-  const apiOnline = useConnectivityStore((s) => s.apiOnline);
-  const offlineMode = useConnectivityStore((s) => s.offlineMode);
-  const pendingSales = useConnectivityStore((s) => s.pendingSales);
-  const syncing = useConnectivityStore((s) => s.syncing);
-  const canSellOffline = useConnectivityStore((s) => s.canSellOffline);
-  const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
 
   useEffect(() => {
     if (!isDesktopOfflineBridge()) return undefined;
@@ -38,40 +37,33 @@ export function useOfflineConnectivity() {
   }, []);
 
   useEffect(() => {
-    const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
-    if (!isDesktopOfflineBridge() || !token || !storeId || (!apiOnline && !browserOnline)) return undefined;
+    if (!isDesktopOfflineBridge() || !token || !storeId) return undefined;
 
     let cancelled = false;
-
     const storeChanged = prevStoreIdRef.current !== storeId;
     prevStoreIdRef.current = storeId;
 
-    const runInitialSync = async () => {
-      useConnectivityStore.getState().setSyncing(true);
-      useConnectivityStore.getState().setSyncingCatalog(true);
+    const runCatalogSync = async (forceCatalog) => {
+      if (cancelled || !canRunOnlineSync()) return;
+      if (forceCatalog) {
+        useConnectivityStore.getState().setSyncing(true);
+        useConnectivityStore.getState().setSyncingCatalog(true);
+      }
       try {
-        let forceCatalog = storeChanged;
-        if (!forceCatalog) {
-          try {
-            const status = await offlineGetStatus();
-            forceCatalog =
-              isCatalogStoreMismatch(status.storeId, storeId)
-              || !(status.bootstrapReady || status.canSellOffline || Number(status.productCount) > 0);
-          } catch {
-            forceCatalog = true;
-          }
+        const catalogResult = await runCatalogSyncIfNeeded(storeId, {
+          force: forceCatalog,
+          catalogKind,
+        });
+        if (cancelled) return;
+        if (catalogResult?.skipped && catalogResult?.reason === 'error') {
+          useConnectivityStore.getState().setSyncResult({
+            ok: false,
+            error: catalogResult.error || 'catalog_sync_failed',
+          });
+          return;
         }
-        const catalogResult = await runCatalogSyncIfNeeded(storeId, { force: forceCatalog, catalogKind });
-        await runSalesSyncOnly({ catalogKind });
-        if (!cancelled) {
-          if (catalogResult?.skipped && catalogResult?.reason === 'error') {
-            useConnectivityStore.getState().setSyncResult({
-              ok: false,
-              error: catalogResult.error || 'catalog_sync_failed',
-            });
-          } else {
-            useConnectivityStore.getState().setSyncResult({ ok: true });
-          }
+        if (!catalogResult?.skipped) {
+          useConnectivityStore.getState().setSyncResult({ ok: true });
           await refreshConnectivityStatus();
         }
       } catch (err) {
@@ -82,14 +74,42 @@ export function useOfflineConnectivity() {
           });
         }
       } finally {
-        useConnectivityStore.getState().setSyncingCatalog(false);
+        if (forceCatalog) {
+          useConnectivityStore.getState().setSyncingCatalog(false);
+        }
+      }
+    };
+
+    const runInitialSync = async () => {
+      if (!canRunOnlineSync()) return;
+      let forceCatalog = storeChanged;
+      if (!forceCatalog) {
+        try {
+          const status = await offlineGetStatus();
+          forceCatalog =
+            isCatalogStoreMismatch(status.storeId, storeId)
+            || !(status.bootstrapReady || status.canSellOffline || Number(status.productCount) > 0);
+        } catch {
+          forceCatalog = true;
+        }
+      }
+      await runCatalogSync(forceCatalog);
+      if (!cancelled) {
+        await runSalesSyncOnly({ catalogKind });
       }
     };
 
     runInitialSync();
 
-    const salesTimer = setInterval(async () => {
+    const unsub = useConnectivityStore.subscribe((state, prev) => {
       if (cancelled) return;
+      if (state.apiOnline && !prev?.apiOnline) {
+        runCatalogSync(false);
+      }
+    });
+
+    const salesTimer = setInterval(async () => {
+      if (cancelled || !canRunOnlineSync()) return;
       try {
         await runSalesSyncOnly({ catalogKind });
         await refreshConnectivityStatus();
@@ -98,39 +118,15 @@ export function useOfflineConnectivity() {
       }
     }, SALES_SYNC_INTERVAL_MS);
 
-    const catalogTimer = setInterval(async () => {
-      if (cancelled) return;
-      try {
-        const result = await runCatalogSyncIfNeeded(storeId, { force: false, catalogKind });
-        if (result?.skipped && result?.reason === 'error') {
-          useConnectivityStore.getState().setSyncResult({
-            ok: false,
-            error: result.error || 'catalog_sync_failed',
-          });
-          return;
-        }
-        if (!result?.skipped) {
-          useConnectivityStore.getState().setSyncResult({ ok: true });
-          await refreshConnectivityStatus();
-        }
-      } catch {
-        /* retry on next check */
-      }
+    const catalogTimer = setInterval(() => {
+      runCatalogSync(false);
     }, CATALOG_STALE_CHECK_MS);
 
     return () => {
       cancelled = true;
+      unsub();
       clearInterval(salesTimer);
       clearInterval(catalogTimer);
     };
-  }, [token, storeId, apiOnline, catalogKind]);
-
-  return {
-    apiOnline,
-    offlineMode,
-    pendingSales,
-    syncing,
-    canSellOffline,
-    bootstrapReady,
-  };
+  }, [token, storeId, catalogKind]);
 }

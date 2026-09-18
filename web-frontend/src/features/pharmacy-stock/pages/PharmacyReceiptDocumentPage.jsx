@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -26,6 +26,8 @@ import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
 import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
 import { usePharmacyReceiptMarks } from '../hooks/usePharmacyReceiptMarks';
+import { usePharmacyImportMarksAsk } from '../hooks/usePharmacyImportMarksAsk';
+import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import {
   formatMoney,
@@ -35,11 +37,9 @@ import {
   flattenReceiptMarks,
   receiptMarksReady,
 } from '../utils/pharmacyReceiptMarks';
-import {
-  matchPendingMarksToLines,
-  takePendingImportMarks,
-} from '../utils/pharmacyReceiptPendingMarksStore';
 import { PHARM_PAGE_SIZES, useClientTablePage } from '../utils/pharmacyTablePage';
+import PharmacyReceiptImportMarksVerifyModal from '../components/PharmacyReceiptImportMarksVerifyModal';
+import '../styles/pharmacy-import-marks-ask.css';
 
 export default function PharmacyReceiptDocumentPage() {
   const { id } = useParams();
@@ -52,7 +52,6 @@ export default function PharmacyReceiptDocumentPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
   const [aboutProduct, setAboutProduct] = useState(null);
-  const importHydratedRef = useRef(false);
 
   const receiptQuery = useQuery({
     queryKey: ['pharmacy-receipt', id],
@@ -109,29 +108,24 @@ export default function PharmacyReceiptDocumentPage() {
   });
 
   const receiptPreview = receiptQuery.data;
+  const integration = usePharmacyIntegrationConfig(receiptPreview?.storeId);
+  const aslEnabled = Boolean(integration.capabilities?.aslMarkingEnabled);
   const receiptMarks = usePharmacyReceiptMarks({
     storeId: receiptPreview?.storeId,
     t,
+    aslEnabled,
   });
   const { hydrateMarks } = receiptMarks;
 
-  useEffect(() => {
-    importHydratedRef.current = false;
-  }, [id]);
-
-  useEffect(() => {
-    if (!id || !receiptPreview?.lines?.length || importHydratedRef.current) return;
-    const pending = takePendingImportMarks(id);
-    if (!pending.length) return;
-    const byLine = matchPendingMarksToLines(receiptPreview.lines, pending);
-    if (Object.keys(byLine).length) {
-      hydrateMarks(byLine);
-      importHydratedRef.current = true;
-      if (location.state?.importMarksHint) {
-        toast.success(t('pharmacyStock.marks.importHydrated'));
-      }
-    }
-  }, [id, receiptPreview?.lines, hydrateMarks, location.state?.importMarksHint, t]);
+  const importMarksAsk = usePharmacyImportMarksAsk({
+    receiptId: id,
+    lines: receiptPreview?.lines,
+    storeId: receiptPreview?.storeId,
+    aslEnabled,
+    hydrateMarks,
+    t,
+    showHint: Boolean(location.state?.importMarksHint),
+  });
 
   const activateMutation = useMutation({
     mutationFn: async () => {
@@ -507,6 +501,20 @@ export default function PharmacyReceiptDocumentPage() {
           />
         </>
       ) : null}
+      <PharmacyReceiptImportMarksVerifyModal
+        open={importMarksAsk.askOpen}
+        onClose={importMarksAsk.closeAsk}
+        t={t}
+        markCount={importMarksAsk.markCount}
+        etaSeconds={importMarksAsk.etaSeconds}
+        aslEnabled={aslEnabled}
+        verifying={importMarksAsk.verifying}
+        progress={importMarksAsk.progress}
+        resultSummary={importMarksAsk.resultSummary}
+        onVerify={importMarksAsk.runVerify}
+        onSkip={importMarksAsk.skipVerify}
+        onConfirmResult={importMarksAsk.confirmResult}
+      />
     </PharmacyStockLayout>
   );
 }

@@ -24,14 +24,14 @@ public class ShiftFactsBackfillServiceImpl implements ShiftFactsBackfillService 
     private final ReportingIngestService reportingIngestService;
 
     @Override
-    public FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization) {
+    public FactsBackfillResult backfill(LocalDate from, LocalDate to) {
         long ingested = 0L;
         long skipped = 0L;
         int page = 0;
         int totalPages = 1;
 
         while (page < totalPages) {
-            ShiftFactsPageResponse batch = posReportingFactsClient.fetchShiftPage(from, to, page, BATCH_SIZE, authorization);
+            ShiftFactsPageResponse batch = posReportingFactsClient.fetchShiftPage(from, to, page, BATCH_SIZE);
             if (batch == null || batch.content() == null || batch.content().isEmpty()) {
                 break;
             }

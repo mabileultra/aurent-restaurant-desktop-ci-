@@ -1,6 +1,7 @@
 import { useCallback, useMemo } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { ADMIN_MODULE_IDS, CASHIER_MODULE_IDS } from '../config/moduleHandbook';
+import { resolveHasModule } from '../utils/moduleAccessGate';
 
 /**
  * Доступ к модулю админки.
@@ -16,17 +17,13 @@ export function useModuleAccess() {
   const moduleDefs = useMemo(() => [...ADMIN_MODULE_IDS, ...CASHIER_MODULE_IDS], []);
 
   const hasModule = useCallback(
-    (moduleId) => {
-      if (!moduleId || !role) return false;
-      if (role === 'SUPER_ADMIN') return true;
-
-      if (custom) {
-        return Array.isArray(allowed) && allowed.includes(moduleId);
-      }
-
-      const def = moduleDefs.find((m) => m.id === moduleId);
-      return def ? def.roles.includes(role) : false;
-    },
+    (moduleId) => resolveHasModule({
+      role,
+      allowedModules: allowed,
+      custom,
+      moduleDefs,
+      moduleId,
+    }),
     [role, allowed, custom, moduleDefs]
   );
 

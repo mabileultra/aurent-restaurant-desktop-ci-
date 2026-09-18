@@ -6,7 +6,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -24,13 +23,7 @@ public class PosSaleFactsClientImpl implements PosSaleFactsClient {
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public SaleFactsPageResponse fetchPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
+    public SaleFactsPageResponse fetchPage(LocalDate from, LocalDate to, int page, int size) {
         String uri = UriComponentsBuilder.fromPath("/internal/reports/ops/sale-facts")
             .queryParam("from", from)
             .queryParam("to", to)
@@ -38,11 +31,9 @@ public class PosSaleFactsClientImpl implements PosSaleFactsClient {
             .queryParam("size", size)
             .build()
             .toUriString();
-
-        RestClient.RequestHeadersSpec<?> spec = posCoreRestClient.get().uri(uri);
-        if (authorization != null && !authorization.isBlank()) {
-            spec = spec.header(HttpHeaders.AUTHORIZATION, authorization);
-        }
-        return spec.retrieve().body(new ParameterizedTypeReference<SaleFactsPageResponse>() {});
+        return posCoreRestClient.get()
+            .uri(uri)
+            .retrieve()
+            .body(new ParameterizedTypeReference<SaleFactsPageResponse>() {});
     }
 }

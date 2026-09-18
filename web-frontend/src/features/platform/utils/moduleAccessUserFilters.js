@@ -1,4 +1,5 @@
-import { MODULE_ACCESS_NEW_USER_MAX_AGE_MS } from '../constants';
+import { MODULE_ACCESS_NEW_USER_MAX_AGE_MS, MODULE_ACCESS_PLATFORM_FILTER } from '../constants';
+import { isPlatformAdminRole } from '../../../utils/platformRoles';
 
 function parseCreatedAt(value) {
   if (value == null || value === '') return NaN;
@@ -25,7 +26,9 @@ export function withCompanyNames(users = [], companies = []) {
   const names = companyNameById(companies);
   return users.map((user) => ({
     ...user,
-    companyName: user.companyName || names[String(user.companyId)] || '',
+    companyName: user.companyName
+      || names[String(user.companyId)]
+      || (isPlatformAdminRole(user.role) ? '' : ''),
   }));
 }
 
@@ -56,9 +59,14 @@ function compareNewestFirst(a, b) {
 export function filterModuleAccessUsers(users, { companyId, search, filter } = {}) {
   const query = String(search || '').trim().toLowerCase();
   const companyKey = companyId ? String(companyId) : '';
+  const platformOnly = companyKey === MODULE_ACCESS_PLATFORM_FILTER;
 
   return users
-    .filter((user) => !companyKey || String(user.companyId) === companyKey)
+    .filter((user) => {
+      if (platformOnly) return isPlatformAdminRole(user.role) && user.companyId == null;
+      if (!companyKey) return true;
+      return String(user.companyId) === companyKey;
+    })
     .filter((user) => matchesSearch(user, query))
     .filter((user) => matchesStatusFilter(user, filter))
     .slice()

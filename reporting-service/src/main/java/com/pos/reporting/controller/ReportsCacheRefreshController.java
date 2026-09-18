@@ -4,7 +4,6 @@ import com.pos.reporting.service.PosCacheRefreshService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
@@ -26,8 +25,8 @@ public class ReportsCacheRefreshController {
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Обновить кэш POS-отчётов")
     @ApiResponse(responseCode = "204", description = "Кэш обновлён")
-    public ResponseEntity<Void> refreshCaches(HttpServletRequest request) {
-        posCacheRefreshService.refresh(request.getHeader("Authorization"));
+    public ResponseEntity<Void> refreshCaches() {
+        posCacheRefreshService.refresh();
         return ResponseEntity.noContent().build();
     }
 }

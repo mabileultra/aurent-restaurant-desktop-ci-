@@ -1,8 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { shouldPrefetchCatalogPage } from './shouldPrefetchCatalogPage';
 
 /**
- * Prefetch ровно следующей страницы после первой успешной загрузки
+ * Prefetch нескольких следующих страниц после первой успешной загрузки
  * (не прогоняет весь каталог).
  */
 export function usePosCatalogPrefetch({
@@ -11,10 +11,7 @@ export function usePosCatalogPrefetch({
   isFetchingNextPage,
   fetchNextPage,
   pagesLoaded = 0,
-  queryKey = '',
 }) {
-  const doneForQueryRef = useRef(null);
-
   useEffect(() => {
     if (!shouldPrefetchCatalogPage({
       enabled,
@@ -22,11 +19,9 @@ export function usePosCatalogPrefetch({
       hasNextPage,
       isFetchingNextPage,
     })) return undefined;
-    if (doneForQueryRef.current === queryKey) return undefined;
-    doneForQueryRef.current = queryKey;
     const timer = setTimeout(() => {
       fetchNextPage?.();
-    }, 120);
+    }, 80);
     return () => clearTimeout(timer);
   }, [
     enabled,
@@ -34,6 +29,5 @@ export function usePosCatalogPrefetch({
     isFetchingNextPage,
     fetchNextPage,
     pagesLoaded,
-    queryKey,
   ]);
 }

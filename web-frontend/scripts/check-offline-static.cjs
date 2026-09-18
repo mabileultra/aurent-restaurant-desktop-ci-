@@ -55,13 +55,16 @@ test('toggle: no bridge → desktopBridgeRequired', () => {
 });
 
 test('toggle: always tries refreshCatalogBootstrap when not ready', () => {
-  assert.match(status, /refreshCatalogBootstrap\(storeId,\s*\{\s*force:\s*true\s*\}\)/);
+  assert.match(status, /refreshCatalogBootstrap\(storeId,\s*\{\s*force:\s*true/);
   assert.doesNotMatch(status, /st0\.apiOnline/);
 });
 
-test('UI: bottom/menu use status.canToggle', () => {
-  assert.match(aside, /status\.canToggle/);
+test('UI: dock is status-only; catalog refresh stays in desktop menu', () => {
+  const dock = read('src/features/cashier/components/OfflineStatusDock.jsx');
+  assert.match(aside, /OfflineStatusDock/);
+  assert.doesNotMatch(dock, /showRefreshCatalog|refreshCatalog|RefreshCw/);
   assert.match(menu, /status\.canToggle/);
+  assert.match(menu, /refreshCatalog/);
 });
 
 test('toggle: canToggle allows forceOffline without bridge gate', () => {

@@ -4,6 +4,7 @@ import com.pos.identity.entity.User;
 import com.pos.identity.exception.IdentityExceptions;
 import com.pos.identity.repository.UserRepository;
 import com.pos.identity.repository.spec.UserSpecifications;
+import com.pos.identity.security.RoleName;
 import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserLookupSupport;
 import com.pos.identity.util.UserLoginUtil;
@@ -22,10 +23,13 @@ public class UserAccessPolicy {
     private final TenantAccessSupport tenantAccess;
 
     public boolean canView(User user) {
-        if ("SUPER_ADMIN".equals(user.getRole().getName()) && !tenantAccess.isSuperAdmin()) {
+        if (RoleName.PLATFORM_ADMIN.matches(user)) {
             return false;
         }
-        if (tenantAccess.isSuperAdmin()) {
+        if (RoleName.SUPER_ADMIN.matches(user) && !tenantAccess.isSuperAdmin()) {
+            return false;
+        }
+        if (tenantAccess.isPlatformOperator()) {
             return true;
         }
         User actor = tenantAccess.currentUser();
@@ -49,10 +53,10 @@ public class UserAccessPolicy {
     }
 
     public void assertRoleAllowedForCreate(String roleName) {
-        if ("SUPER_ADMIN".equals(roleName)) {
-            throw IdentityExceptions.badRequest("Cannot assign SUPER_ADMIN role");
+        if (RoleName.isPlatformScope(roleName)) {
+            throw IdentityExceptions.badRequest("Cannot assign platform role");
         }
-        if (tenantAccess.isSuperAdmin()) {
+        if (tenantAccess.isPlatformOperator()) {
             return;
         }
         if (!List.of("ADMIN", "MANAGER", "CASHIER", "WAITER", "COURIER", "COOK", "ACCOUNTANT").contains(roleName)) {
@@ -67,7 +71,7 @@ public class UserAccessPolicy {
         if ("ADMIN".equals(roleName) || "MANAGER".equals(roleName) || "CASHIER".equals(roleName)
             || "WAITER".equals(roleName) || "COURIER".equals(roleName) || "COOK".equals(roleName)
             || "ACCOUNTANT".equals(roleName)) {
-            if (tenantAccess.isSuperAdmin()) {
+            if (tenantAccess.isPlatformOperator()) {
                 if (requestedCompanyId == null) {
                     throw IdentityExceptions.badRequest("Company is required for this role");
                 }
@@ -131,10 +135,10 @@ public class UserAccessPolicy {
             throw IdentityExceptions.badRequest("Cannot delete your own account");
         }
         String targetRole = target.getRole().getName();
-        if ("SUPER_ADMIN".equals(targetRole)) {
-            throw IdentityExceptions.badRequest("Cannot delete super administrator");
+        if (RoleName.isPlatformScope(targetRole)) {
+            throw IdentityExceptions.badRequest("Cannot delete platform administrator");
         }
-        if (tenantAccess.isSuperAdmin()) {
+        if (tenantAccess.isPlatformOperator()) {
             if (List.of("ADMIN", "MANAGER", "CASHIER", "WAITER", "COURIER", "COOK", "ACCOUNTANT").contains(targetRole)) {
                 return;
             }

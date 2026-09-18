@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/platform/email")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Email", description = "Платформенная рассылка email (прокси в POS core)")
 public class PlatformEmailController {
 

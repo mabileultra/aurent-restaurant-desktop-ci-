@@ -1,28 +1,45 @@
 package com.pos.ai.support;
 
+import com.pos.shared.gateway.OutboundCallerHeaders;
+import com.pos.shared.http.TenantHeaders;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import java.util.Optional;
-
 @Component
 public class HttpRequestAuthSupport {
 
-    public Optional<String> authorizationHeader() {
+    private final String contextSecret;
+
+    public HttpRequestAuthSupport(@Value("${app.gateway.context-secret:}") String contextSecret) {
+        this.contextSecret = contextSecret;
+    }
+
+    public void apply(RestClient.RequestHeadersSpec<?> spec) {
+        HttpServletRequest request = currentRequest();
+        if (request == null) {
+            return;
+        }
+        OutboundCallerHeaders.select(
+            request.getHeader(TenantHeaders.USER_ID),
+            request.getHeader(TenantHeaders.COMPANY_ID),
+            request.getHeader(TenantHeaders.USER_ROLES),
+            request.getHeader(TenantHeaders.GATEWAY_STAMP),
+            request.getHeader(HttpHeaders.AUTHORIZATION),
+            contextSecret
+        ).forEach(spec::header);
+    }
+
+    private static HttpServletRequest currentRequest() {
         RequestAttributes attributes = RequestContextHolder.getRequestAttributes();
         if (!(attributes instanceof ServletRequestAttributes servletAttributes)) {
-            return Optional.empty();
+            return null;
         }
-        HttpServletRequest request = servletAttributes.getRequest();
-        String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-        if (!StringUtils.hasText(authorization)) {
-            return Optional.empty();
-        }
-        return Optional.of(authorization);
+        return servletAttributes.getRequest();
     }
 }

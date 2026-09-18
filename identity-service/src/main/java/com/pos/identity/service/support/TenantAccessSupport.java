@@ -31,6 +31,10 @@ public class TenantAccessSupport {
         return currentUserProvider.isSuperAdmin(currentUser());
     }
 
+    public boolean isPlatformOperator() {
+        return currentUserProvider.isPlatformOperator(currentUser());
+    }
+
     public Integer requireCompanyId(Integer companyId) {
         if (companyId == null) {
             throw IdentityExceptions.badRequest("Company not found");

@@ -9,5 +9,6 @@ public record CreatePlatformSuperAdminRequest(
     @NotBlank String lastName,
     @NotBlank String username,
     @NotBlank @Email String email,
-    @NotBlank @Size(min = 6, message = "Password must be at least 6 characters") String password
+    @NotBlank @Size(min = 6, message = "Password must be at least 6 characters") String password,
+    String role
 ) {}

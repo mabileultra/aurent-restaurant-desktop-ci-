@@ -7,7 +7,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -41,8 +40,7 @@ public class ReportingAnalyticsClientImpl implements ReportingAnalyticsClient {
             .build()
             .toUriString();
         RestClient.RequestHeadersSpec<?> spec = reportingRestClient.get().uri(uri);
-        httpRequestAuthSupport.authorizationHeader()
-            .ifPresent(value -> spec.header(HttpHeaders.AUTHORIZATION, value));
+        httpRequestAuthSupport.apply(spec);
         StoreStockInsightResponse body = spec.retrieve().body(new ParameterizedTypeReference<>() {});
         return body != null ? body : new StoreStockInsightResponse(List.of(), List.of(), List.of(), List.of());
     }

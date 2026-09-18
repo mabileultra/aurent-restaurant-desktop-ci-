@@ -1,8 +1,7 @@
 package com.pos.pharmacy.security;
 
-import com.pos.shared.http.TenantHeaders;
-import com.pos.shared.jwt.JwtClaims;
-import com.pos.shared.jwt.JwtClaimsExtractor;
+import com.pos.shared.gateway.GatewayActor;
+import com.pos.shared.gateway.RequestActorResolver;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,11 +17,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+import static com.pos.shared.http.TenantHeaders.COMPANY_ID;
+import static com.pos.shared.http.TenantHeaders.GATEWAY_STAMP;
+import static com.pos.shared.http.TenantHeaders.USER_ID;
+import static com.pos.shared.http.TenantHeaders.USER_ROLES;
+
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    @Value("${app.jwt.secret}")
-    private String secretKey;
+    private final String jwtSecret;
+    private final String contextSecret;
+
+    public JwtAuthenticationFilter(
+        @Value("${app.jwt.secret}") String jwtSecret,
+        @Value("${app.gateway.context-secret:}") String contextSecret
+    ) {
+        this.jwtSecret = jwtSecret;
+        this.contextSecret = contextSecret;
+    }
 
     @Override
     protected void doFilterInternal(
@@ -31,33 +43,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            String authHeader = request.getHeader("Authorization");
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                try {
-                    RequestAuthContext.setBearerToken(token);
-                    JwtClaims claims = JwtClaimsExtractor.extract(token, secretKey);
-                    Integer companyId = JwtClaimsExtractor.resolveCompanyIdSecure(
-                        claims.companyId(), claims.role(), request.getHeader(TenantHeaders.COMPANY_ID)
-                    );
-                    String role = claims.role();
-                    PharmacyTenantContext.set(companyId, claims.userId(), role);
-                    var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
-                    var authentication = new UsernamePasswordAuthenticationToken(
-                        claims.userId().toString(),
-                        null,
-                        authorities
-                    );
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                } catch (Exception ignored) {
-                    // невалидный/просроченный токен — не аутентифицируем
-                }
-            }
+            authenticate(request);
             filterChain.doFilter(request, response);
         } finally {
-            RequestAuthContext.clear();
             PharmacyTenantContext.clear();
             SecurityContextHolder.clearContext();
         }
+    }
+
+    private void authenticate(HttpServletRequest request) {
+        RequestActorResolver.resolve(
+            request.getHeader(USER_ID),
+            request.getHeader(COMPANY_ID),
+            request.getHeader(USER_ROLES),
+            request.getHeader(GATEWAY_STAMP),
+            contextSecret,
+            request.getHeader("Authorization"),
+            jwtSecret
+        ).ifPresent(this::accept);
+    }
+
+    private void accept(GatewayActor actor) {
+        PharmacyTenantContext.set(actor.companyId(), actor.userId(), actor.role());
+        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
+            actor.userId().toString(),
+            null,
+            List.of(new SimpleGrantedAuthority("ROLE_" + actor.role()))
+        ));
     }
 }

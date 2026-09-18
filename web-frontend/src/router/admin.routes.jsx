@@ -22,6 +22,7 @@ import {
   PharmacyReceiptDocumentPage,
   PharmacyReceiptPickPage,
   PharmacyProductsPage,
+  PharmacyAslWithdrawMonitorPage,
   StockInventoryCreatePage,
   StockTransferCreatePage,
   SuppliersPage,
@@ -195,6 +196,16 @@ export const adminRoutes = (
         <ProtectedRoute requiredRole="MANAGER" module="stockProducts">
           <PharmacyTenantGuard>
             <PharmacyProductsPage />
+          </PharmacyTenantGuard>
+        </ProtectedRoute>
+      )}
+    />
+    <Route
+      path="pharm/stock/asl-marks"
+      element={(
+        <ProtectedRoute requiredRole="MANAGER" module="stockReceipts">
+          <PharmacyTenantGuard>
+            <PharmacyAslWithdrawMonitorPage />
           </PharmacyTenantGuard>
         </ProtectedRoute>
       )}

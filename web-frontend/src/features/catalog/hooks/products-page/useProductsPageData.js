@@ -4,7 +4,12 @@ import { productApi, categoryApi, storeApi } from '../../../../api';
 import { useTenantScope } from '../../../../hooks/useTenantScope';
 import { useCompanyBusinessType } from '../../../../hooks/useCompanyBusinessType';
 import useBusinessConfig from '../../../../hooks/useBusinessConfig';
-import { PRODUCT_DEFAULT_FILTERS, buildAttributeFiltersParam } from '../../constants';
+import {
+  PRODUCT_DEFAULT_FILTERS,
+  PRODUCT_TABLE_PAGE_SIZE_DEFAULT,
+  PRODUCT_TABLE_PAGE_SIZE_OPTIONS,
+  buildAttributeFiltersParam,
+} from '../../constants';
 
 export function useProductsPageData() {
   const { tenantKey, tenantReady } = useTenantScope();
@@ -18,7 +23,7 @@ export function useProductsPageData() {
 
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
-  const [pageSize, setPageSize] = useState(14);
+  const [pageSize, setPageSize] = useState(PRODUCT_TABLE_PAGE_SIZE_DEFAULT);
   const [appliedFilters, setAppliedFilters] = useState(PRODUCT_DEFAULT_FILTERS);
 
   const queryParams = useMemo(() => {
@@ -75,6 +80,7 @@ export function useProductsPageData() {
     search,
     page,
     pageSize,
+    pageSizeOptions: PRODUCT_TABLE_PAGE_SIZE_OPTIONS,
     setPage,
     setPageSize,
     appliedFilters,

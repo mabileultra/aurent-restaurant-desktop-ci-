@@ -43,7 +43,7 @@ export function usePlatformCompaniesPage() {
     [page, pageSize, search, businessType]
   );
 
-  const { data, isPending } = useQuery({
+  const { data, isPending, isError, error } = useQuery({
     queryKey: ['companies', params],
     queryFn: () => companyApi.getAll(params).then((r) => r.data),
   });
@@ -252,6 +252,8 @@ export function usePlatformCompaniesPage() {
     setMenuId,
     rows,
     isPending,
+    isError,
+    errorMessage: error?.response?.data?.message ?? t('common.loadError'),
     total,
     totalPages,
     fromN,

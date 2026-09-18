@@ -36,14 +36,14 @@ public class CompanyBusinessTypeController {
     }
 
     @GetMapping("/admin/companies/{companyId}/business-types")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Типы бизнеса компании (platform)")
     public ResponseEntity<CompanyBusinessTypesResponse> getForCompany(@PathVariable Integer companyId) {
         return ResponseEntity.ok(assignmentService.getForCompany(companyId));
     }
 
     @PutMapping("/admin/companies/{companyId}/business-types")
-    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
     @Operation(summary = "Назначить типы бизнеса компании")
     public ResponseEntity<CompanyBusinessTypesResponse> setForCompany(
         @PathVariable Integer companyId,

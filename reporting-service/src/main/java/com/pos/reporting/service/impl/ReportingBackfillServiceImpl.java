@@ -38,28 +38,28 @@ public class ReportingBackfillServiceImpl implements ReportingBackfillService {
     private final TransferFactsBackfillService transferFactsBackfillService;
 
     @Override
-    public ReportingBackfillResponse backfill(LocalDate from, LocalDate to, String types, String authorization) {
+    public ReportingBackfillResponse backfill(LocalDate from, LocalDate to, String types) {
         Set<String> typeSet = parseTypes(types);
         FactsBackfillResult sales = typeSet.contains("sales")
-            ? saleFactsBackfillService.backfill(from, to, authorization)
+            ? saleFactsBackfillService.backfill(from, to)
             : EMPTY;
         FactsBackfillResult stock = typeSet.contains("stock")
-            ? stockFactsBackfillService.backfill(from, to, authorization)
+            ? stockFactsBackfillService.backfill(from, to)
             : EMPTY;
         FactsBackfillResult movements = typeSet.contains("movements")
-            ? movementFactsBackfillService.backfill(from, to, authorization)
+            ? movementFactsBackfillService.backfill(from, to)
             : EMPTY;
         FactsBackfillResult shifts = typeSet.contains("shifts")
-            ? shiftFactsBackfillService.backfill(from, to, authorization)
+            ? shiftFactsBackfillService.backfill(from, to)
             : EMPTY;
         FactsBackfillResult products = typeSet.contains("products")
-            ? productFactsBackfillService.backfill(authorization)
+            ? productFactsBackfillService.backfill()
             : EMPTY;
         FactsBackfillResult inventories = typeSet.contains("inventories")
-            ? inventoryFactsBackfillService.backfill(from, to, authorization)
+            ? inventoryFactsBackfillService.backfill(from, to)
             : EMPTY;
         FactsBackfillResult transfers = typeSet.contains("transfers")
-            ? transferFactsBackfillService.backfill(from, to, authorization)
+            ? transferFactsBackfillService.backfill(from, to)
             : EMPTY;
         return new ReportingBackfillResponse(sales, stock, movements, shifts, products, inventories, transfers);
     }

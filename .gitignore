@@ -111,3 +111,6 @@ desktop-electron/dist/
 .local-pgdata/
 .local-logs/
 .local-run/
+
+# Last successfully deployed commit on the server (not in git)
+.deploy-sha

@@ -49,7 +49,7 @@ spring:
         - id: identity-service
           uri: ${IDENTITY_SERVICE_URL:http://127.0.0.1:8081}
           predicates:
-            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/platform/module-access/**, /api/v1/platform/security/super-admins/**
+            - Path=/api/v1/auth/**, /api/v1/users/**, /api/v1/platform/module-access/**, /api/v1/platform/security/super-admins/**, /api/v1/platform/account/**
           order: 1
           filters:
             - PreserveHostHeader

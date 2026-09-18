@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
+import { isPlatformUser } from '../../utils/platformRoles';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { resolveRoleHomePath } from '../../utils/roleHomePath';
 
@@ -15,7 +16,7 @@ export default function ProtectedRoute({ children, requiredRole, module: moduleI
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />;
   }
-  if (user?.role === 'SUPER_ADMIN') return <Navigate to="/platform" replace />;
+  if (isPlatformUser(user?.role)) return <Navigate to="/platform" replace />;
   if (user?.role === 'CASHIER' || user?.role === 'WAITER') {
     return <Navigate to="/cashier" replace />;
   }

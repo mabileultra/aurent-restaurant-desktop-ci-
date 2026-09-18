@@ -33,6 +33,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   billing:
     grace-days: ${BILLING_GRACE_DAYS:3}
     upload-dir: ${BILLING_UPLOAD_DIR:./data/billing-uploads}

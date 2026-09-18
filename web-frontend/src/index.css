@@ -1,9 +1,11 @@
 /* Global entry — design tokens, admin modules, Tailwind */
 @import './styles/tokens/index.css';
 @import './styles/admin/index.css';
+@import './styles/admin/buttons.css';
 @import './styles/shared/base-select.css';
 @import './styles/shared/product-lookup-select.css';
 @import './styles/stock/document-lines.css';
+@import './styles/stock/inventory-document.css';
 @import './styles/shared/page-search-field.css';
 @import './styles/shared/on-screen-keyboard.css';
 @import './styles/shared/brand-logo.css';

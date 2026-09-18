@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -51,12 +52,19 @@ public class CompanyServiceImpl implements CompanyService {
             CompanySpecifications.filter(search, businessType),
             sorted
         );
-        return PageResponse.from(page.map(this::toResponse));
+        Map<Integer, Integer> storeCounts = posCoreClient.getStoreCountsOrEmpty(
+            page.getContent().stream().map(Company::getId).toList()
+        );
+        return PageResponse.from(page.map(company -> toListResponse(company, storeCounts)));
     }
 
     @Override
     public List<CompanyResponse> listAll() {
-        return companyRepository.findAll(Sort.by("name").ascending()).stream().map(this::toResponse).toList();
+        List<Company> companies = companyRepository.findAll(Sort.by("name").ascending());
+        Map<Integer, Integer> storeCounts = posCoreClient.getStoreCountsOrEmpty(
+            companies.stream().map(Company::getId).toList()
+        );
+        return companies.stream().map(company -> toListResponse(company, storeCounts)).toList();
     }
 
     @Override
@@ -135,9 +143,12 @@ public class CompanyServiceImpl implements CompanyService {
             .orElseThrow(() -> new ResourceNotFoundException("Company not found"));
     }
 
+    private CompanyResponse toListResponse(Company company, Map<Integer, Integer> storeCounts) {
+        return companyMapper.toResponse(company, storeCounts.getOrDefault(company.getId(), 0));
+    }
+
     private CompanyResponse toResponse(Company company) {
-        int storeCount = posCoreClient.getStoreCount(company.getId());
-        return companyMapper.toResponse(company, storeCount);
+        return companyMapper.toResponse(company, posCoreClient.getStoreCountOrZero(company.getId()));
     }
 
     private String allocateNextLoginCode(Integer excludeId) {

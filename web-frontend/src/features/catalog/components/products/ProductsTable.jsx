@@ -10,6 +10,7 @@ export default function ProductsTable({
   data,
   page,
   pageSize,
+  pageSizeOptions,
   total,
   totalPages,
   onPageChange,
@@ -161,6 +162,7 @@ export default function ProductsTable({
         totalPages={totalPages}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        pageSizeOptions={pageSizeOptions}
       />
     </div>
   );

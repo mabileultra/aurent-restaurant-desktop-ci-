@@ -1,5 +1,6 @@
 import { BaseSelect } from '../../../../components/ui';
 import { buildCompanySelectOptions } from '../../../tenant/utils/companySelectOptions';
+import { MODULE_ACCESS_PLATFORM_FILTER } from '../../constants';
 
 function companyOptionLabel(t, company) {
   const code = String(company?.businessType || 'UNIVERSAL').trim().toUpperCase();
@@ -10,7 +11,7 @@ function companyOptionLabel(t, company) {
 }
 
 export default function PlatformModuleAccessCompanySelect({ t, companies, companyId, onChange }) {
-  const options = buildCompanySelectOptions(companies, {
+  const companyOptions = buildCompanySelectOptions(companies, {
     emptyLabel: t('platform.moduleAccess.allCompanies'),
     includeLoginCode: false,
   }).map((option) => {
@@ -25,6 +26,12 @@ export default function PlatformModuleAccessCompanySelect({ t, companies, compan
         .join(' '),
     };
   });
+
+  const options = [
+    companyOptions[0],
+    { value: MODULE_ACCESS_PLATFORM_FILTER, label: t('platform.moduleAccess.platformStaff') },
+    ...companyOptions.slice(1),
+  ];
 
   return (
     <BaseSelect

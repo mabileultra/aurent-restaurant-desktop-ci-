@@ -12,7 +12,7 @@ public class PosCacheRefreshServiceImpl implements PosCacheRefreshService {
     private final PosCacheRefreshClient posCacheRefreshClient;
 
     @Override
-    public void refresh(String authorization) {
-        posCacheRefreshClient.refresh(authorization);
+    public void refresh() {
+        posCacheRefreshClient.refresh();
     }
 }

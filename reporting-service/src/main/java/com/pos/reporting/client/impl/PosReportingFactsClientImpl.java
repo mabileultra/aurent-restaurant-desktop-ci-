@@ -11,7 +11,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -29,88 +28,56 @@ public class PosReportingFactsClientImpl implements PosReportingFactsClient {
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public StockFactsPageResponse fetchStockPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
-        return fetch("/internal/reports/ops/stock-facts", from, to, page, size, authorization,
-            new ParameterizedTypeReference<StockFactsPageResponse>() {});
+    public StockFactsPageResponse fetchStockPage(LocalDate from, LocalDate to, int page, int size) {
+        return fetch("/internal/reports/ops/stock-facts", from, to, page, size,
+            new ParameterizedTypeReference<>() {});
     }
 
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public MovementFactsPageResponse fetchMovementPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
-        return fetch("/internal/reports/ops/movement-facts", from, to, page, size, authorization,
-            new ParameterizedTypeReference<MovementFactsPageResponse>() {});
+    public MovementFactsPageResponse fetchMovementPage(LocalDate from, LocalDate to, int page, int size) {
+        return fetch("/internal/reports/ops/movement-facts", from, to, page, size,
+            new ParameterizedTypeReference<>() {});
     }
 
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public ProductFactsPageResponse fetchProductSnapshotPage(int page, int size, String authorization) {
+    public ProductFactsPageResponse fetchProductSnapshotPage(int page, int size) {
         String uri = UriComponentsBuilder.fromPath("/internal/reports/ops/product-snapshots")
             .queryParam("page", page)
             .queryParam("size", size)
             .build()
             .toUriString();
-
-        RestClient.RequestHeadersSpec<?> spec = posCoreRestClient.get().uri(uri);
-        if (authorization != null && !authorization.isBlank()) {
-            spec = spec.header(HttpHeaders.AUTHORIZATION, authorization);
-        }
-        return spec.retrieve().body(new ParameterizedTypeReference<ProductFactsPageResponse>() {});
+        return posCoreRestClient.get()
+            .uri(uri)
+            .retrieve()
+            .body(new ParameterizedTypeReference<>() {});
     }
 
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public InventoryFactsPageResponse fetchInventoryPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
-        return fetch("/internal/reports/ops/inventory-facts", from, to, page, size, authorization,
-            new ParameterizedTypeReference<InventoryFactsPageResponse>() {});
+    public InventoryFactsPageResponse fetchInventoryPage(LocalDate from, LocalDate to, int page, int size) {
+        return fetch("/internal/reports/ops/inventory-facts", from, to, page, size,
+            new ParameterizedTypeReference<>() {});
     }
 
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public TransferFactsPageResponse fetchTransferPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
-        return fetch("/internal/reports/ops/transfer-facts", from, to, page, size, authorization,
-            new ParameterizedTypeReference<TransferFactsPageResponse>() {});
+    public TransferFactsPageResponse fetchTransferPage(LocalDate from, LocalDate to, int page, int size) {
+        return fetch("/internal/reports/ops/transfer-facts", from, to, page, size,
+            new ParameterizedTypeReference<>() {});
     }
 
     @Override
     @CircuitBreaker(name = POS_CORE)
     @Retry(name = POS_CORE)
-    public ShiftFactsPageResponse fetchShiftPage(
-        LocalDate from,
-        LocalDate to,
-        int page,
-        int size,
-        String authorization
-    ) {
-        return fetch("/internal/reports/ops/shift-facts", from, to, page, size, authorization,
-            new ParameterizedTypeReference<ShiftFactsPageResponse>() {});
+    public ShiftFactsPageResponse fetchShiftPage(LocalDate from, LocalDate to, int page, int size) {
+        return fetch("/internal/reports/ops/shift-facts", from, to, page, size,
+            new ParameterizedTypeReference<>() {});
     }
 
     private <T> T fetch(
@@ -119,7 +86,6 @@ public class PosReportingFactsClientImpl implements PosReportingFactsClient {
         LocalDate to,
         int page,
         int size,
-        String authorization,
         ParameterizedTypeReference<T> type
     ) {
         String uri = UriComponentsBuilder.fromPath(path)
@@ -129,11 +95,6 @@ public class PosReportingFactsClientImpl implements PosReportingFactsClient {
             .queryParam("size", size)
             .build()
             .toUriString();
-
-        RestClient.RequestHeadersSpec<?> spec = posCoreRestClient.get().uri(uri);
-        if (authorization != null && !authorization.isBlank()) {
-            spec = spec.header(HttpHeaders.AUTHORIZATION, authorization);
-        }
-        return spec.retrieve().body(type);
+        return posCoreRestClient.get().uri(uri).retrieve().body(type);
     }
 }

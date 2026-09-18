@@ -55,6 +55,11 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
         if (pending.isEmpty()) {
             return 0;
         }
+        LogUtil.info(
+            PharmacyMarkWithdrawServiceImpl.class,
+            "ASL withdraw retry batch size={}",
+            pending.size()
+        );
         Map<String, List<StockMark>> groups = pending.stream()
             .collect(Collectors.groupingBy(
                 m -> m.getCompanyId() + ":" + m.getStoreId(),
@@ -71,6 +76,13 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
                 .toList();
             confirmed += processGroup(sample.getCompanyId(), sample.getStoreId(), codes, false);
         }
+        if (confirmed > 0) {
+            LogUtil.info(
+                PharmacyMarkWithdrawServiceImpl.class,
+                "ASL withdraw retry confirmed={}",
+                confirmed
+            );
+        }
         return confirmed;
     }
 
@@ -78,19 +90,44 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
         if (codes.isEmpty()) {
             return 0;
         }
+        LogUtil.info(
+            PharmacyMarkWithdrawServiceImpl.class,
+            "ASL withdraw poll start companyId={} storeId={} codes={} fiscalConfirmed={}",
+            companyId,
+            storeId,
+            codes.size(),
+            fiscalConfirmed
+        );
         PosMarkingWithdrawResponse response;
         try {
             response = posCoreMarkingClient.withdraw(new PosMarkingWithdrawRequest(storeId, codes, fiscalConfirmed));
         } catch (Exception ex) {
+            LogUtil.warn(
+                PharmacyMarkWithdrawServiceImpl.class,
+                "ASL withdraw API error companyId={} storeId={} codes={}: {}",
+                companyId,
+                storeId,
+                codes.size(),
+                ex.getMessage()
+            );
             stockMarkService.recordWithdrawAttempt(companyId, storeId, codes, ex.getMessage());
             return 0;
         }
         if (response == null || response.results() == null) {
+            LogUtil.warn(
+                PharmacyMarkWithdrawServiceImpl.class,
+                "ASL withdraw empty response companyId={} storeId={} codes={}",
+                companyId,
+                storeId,
+                codes.size()
+            );
             stockMarkService.recordWithdrawAttempt(companyId, storeId, codes, "empty withdraw response");
             return 0;
         }
 
         int confirmed = 0;
+        int pending = 0;
+        int failed = 0;
         List<String> stillPending = new ArrayList<>();
         for (PosMarkingWithdrawItem item : response.results()) {
             if (item == null || !StringUtils.hasText(item.code())) {
@@ -104,8 +141,10 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
                     item.status()
                 );
             } else if (item.pending()) {
+                pending += 1;
                 stillPending.add(item.code());
             } else {
+                failed += 1;
                 stockMarkService.recordWithdrawAttempt(
                     companyId,
                     storeId,
@@ -117,6 +156,15 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
         if (!stillPending.isEmpty()) {
             stockMarkService.recordWithdrawAttempt(companyId, storeId, stillPending, "awaiting OFD/ASL");
         }
+        LogUtil.info(
+            PharmacyMarkWithdrawServiceImpl.class,
+            "ASL withdraw poll done companyId={} storeId={} confirmed={} pending={} failed={}",
+            companyId,
+            storeId,
+            confirmed,
+            pending,
+            failed
+        );
         return confirmed;
     }
 }

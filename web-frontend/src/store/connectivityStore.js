@@ -20,7 +20,7 @@ import { resolvePosRoute } from '../services/pos/posRouteResolver';
 const ONLINE_RECOVERY_STREAK = 2;
 /** Offline — после двух подряд неудачных probe (меньше мигания полоски). */
 const OFFLINE_FAILURE_STREAK = 2;
-const CONNECTIVITY_POLL_MS = 2_000;
+const CONNECTIVITY_POLL_MS = 5_000;
 /** После 502/таймаута API не переключаться обратно в online сразу (probe может мигать). */
 const API_UNREACHABLE_COOLDOWN_MS = 12_000;
 let stableApiOnline = null;
@@ -171,11 +171,15 @@ export const useConnectivityStore = create((set, get) => ({
   },
 
   setSyncing(syncing) {
-    set({ syncing });
+    const next = Boolean(syncing);
+    if (get().syncing === next) return;
+    set({ syncing: next });
   },
 
   setSyncingCatalog(syncingCatalog) {
-    set({ syncingCatalog });
+    const next = Boolean(syncingCatalog);
+    if (get().syncingCatalog === next) return;
+    set({ syncingCatalog: next });
   },
 
   setSyncResult({ ok, error } = {}) {
@@ -286,22 +290,19 @@ export function useShouldUseOfflinePos() {
   return forceOfflineMode || offlineMode || !apiOnline || browserOffline;
 }
 
-export function usePosRoute(storeId) {
-  const apiOnline = useConnectivityStore((s) => s.apiOnline);
-  const offlineMode = useConnectivityStore((s) => s.offlineMode);
-  const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
-  const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
-  const canSellOffline = useConnectivityStore((s) => s.canSellOffline);
-  const productCount = useConnectivityStore((s) => s.productCount);
-  const catalogStoreId = useConnectivityStore((s) => s.storeId);
+function samePosRoute(a, b) {
+  return (
+    a.route === b.route
+    && a.offlineLike === b.offlineLike
+    && a.hasCatalog === b.hasCatalog
+    && a.canFallback === b.canFallback
+    && a.forceOffline === b.forceOffline
+  );
+}
 
-  return resolvePosRoute(storeId, {
-    apiOnline,
-    offlineMode,
-    forceOfflineMode,
-    bootstrapReady,
-    canSellOffline,
-    productCount,
-    storeId: catalogStoreId,
-  });
+export function usePosRoute(storeId) {
+  return useConnectivityStore(
+    (s) => resolvePosRoute(storeId, s),
+    samePosRoute,
+  );
 }

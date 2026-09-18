@@ -41,6 +41,7 @@ export { platformModuleAccessApi } from './platform/moduleAccess.api';
 export { platformEmailApi } from './platform/email.api';
 export { platformDesktopNotificationsApi } from './platform/desktopNotifications.api';
 export { platformSecurityApi } from './platform/security.api';
+export { platformAccountApi } from './platform/account.api';
 export { platformMonitoringApi } from './platform/monitoring.api';
 export { platformBusinessTypeApi } from './platform/businessType.api';
 export { platformReferenceBookApi } from './platform/referenceBook.api';

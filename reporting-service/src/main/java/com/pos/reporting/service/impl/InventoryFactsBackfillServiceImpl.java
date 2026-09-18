@@ -22,7 +22,7 @@ public class InventoryFactsBackfillServiceImpl implements InventoryFactsBackfill
     private final ReportingIngestService reportingIngestService;
 
     @Override
-    public FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization) {
+    public FactsBackfillResult backfill(LocalDate from, LocalDate to) {
         long ingested = 0L;
         long skipped = 0L;
         int page = 0;
@@ -30,7 +30,7 @@ public class InventoryFactsBackfillServiceImpl implements InventoryFactsBackfill
 
         while (page < totalPages) {
             InventoryFactsPageResponse batch = posReportingFactsClient.fetchInventoryPage(
-                from, to, page, BATCH_SIZE, authorization
+                from, to, page, BATCH_SIZE
             );
             if (batch == null || batch.content() == null || batch.content().isEmpty()) {
                 break;

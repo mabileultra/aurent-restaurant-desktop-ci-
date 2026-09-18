@@ -23,7 +23,7 @@ export default function BillingAccessGuard({ children }) {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
-  const enabled = Boolean(isAuthenticated() && user && user.role !== 'SUPER_ADMIN');
+  const enabled = Boolean(isAuthenticated() && user && user.role !== 'SUPER_ADMIN' && user.role !== 'PLATFORM_ADMIN');
 
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-billing-access', user?.companyId || user?.id],

@@ -7,6 +7,7 @@ import com.pos.identity.entity.User;
 import com.pos.identity.exception.IdentityExceptions;
 import com.pos.identity.mapper.UserMapper;
 import com.pos.identity.repository.UserRepository;
+import com.pos.identity.security.RoleName;
 import com.pos.identity.service.UserService;
 import com.pos.identity.service.support.TenantAccessSupport;
 import com.pos.identity.service.support.UserSyncSupport;
@@ -40,7 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public List<UserResponse> findAll() {
-        if (tenantAccess.isSuperAdmin()) {
+        if (tenantAccess.isPlatformOperator()) {
             return userRepository.findAllWithDetails().stream()
                 .filter(accessPolicy::canView)
                 .map(userMapper::toResponse)
@@ -76,8 +77,8 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     public UserResponse toggleActive(UUID id) {
         User user = accessPolicy.requireAccessible(id);
-        if ("SUPER_ADMIN".equals(user.getRole().getName())) {
-            throw IdentityExceptions.badRequest("Cannot deactivate super administrator");
+        if (RoleName.isPlatformScope(user.getRole().getName())) {
+            throw IdentityExceptions.badRequest("Cannot deactivate platform administrator");
         }
         user.setActive(!user.isActive());
         User saved = DbExceptionTranslator.persist(() -> userRepository.saveAndFlush(user));

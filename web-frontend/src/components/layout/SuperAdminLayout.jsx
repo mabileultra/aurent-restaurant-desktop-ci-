@@ -1,35 +1,42 @@
-// src/components/layout/SuperAdminLayout.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen, Inbox, Wallet } from 'lucide-react';
+import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen, Inbox, Wallet, CircleUser } from 'lucide-react';
 import BrandMark from '../shared/BrandMark';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
 import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
+import { useModuleAccess } from '../../hooks/useModuleAccess';
+import { visiblePlatformNav } from '../../features/platform/nav/platformNav';
 
-const NAV = [
-  { to: '/platform/companies', icon: Building2, key: 'platform.companies' },
-  { to: '/platform/stores', icon: Store, key: 'platform.stores' },
-  { to: '/platform/users', icon: Users, key: 'platform.users' },
-  { to: '/platform/access', icon: KeyRound, key: 'platform.moduleAccess.nav' },
-  { to: '/platform/business-types', icon: Layers, key: 'platform.businessTypes.nav' },
-  { to: '/platform/reference-books', icon: BookOpen, key: 'platform.referenceBooks.nav' },
-  { to: '/platform/leads', icon: Inbox, key: 'platform.leads.nav' },
-  { to: '/platform/billing', icon: Wallet, key: 'platform.billing.nav' },
-  { to: '/platform/monitoring', icon: Activity, key: 'platform.monitoring.nav' },
-  { to: '/platform/email', icon: Mail, key: 'platform.email.nav' },
-  { to: '/platform/desktop-notifications', icon: Bell, key: 'platform.desktopNotifications.nav' },
-  { to: '/platform/security', icon: ShieldCheck, key: 'platform.security.nav' },
-];
+const NAV_ICONS = {
+  '/platform/companies': Building2,
+  '/platform/stores': Store,
+  '/platform/users': Users,
+  '/platform/access': KeyRound,
+  '/platform/business-types': Layers,
+  '/platform/reference-books': BookOpen,
+  '/platform/leads': Inbox,
+  '/platform/billing': Wallet,
+  '/platform/monitoring': Activity,
+  '/platform/email': Mail,
+  '/platform/desktop-notifications': Bell,
+  '/platform/security': ShieldCheck,
+  '/platform/account': CircleUser,
+};
 
 export default function SuperAdminLayout() {
   const { t } = useTranslation();
   const { user } = useAuthStore();
+  const { hasModule } = useModuleAccess();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const links = useMemo(
+    () => visiblePlatformNav(user?.role, hasModule),
+    [user?.role, hasModule]
+  );
 
   useEffect(() => {
     setMobileNavOpen(false);
@@ -67,12 +74,15 @@ export default function SuperAdminLayout() {
           </div>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {NAV.map(({ to, icon: Icon, key }) => (
-            <NavLink key={to} to={to} className={linkClass}>
-              <Icon size={18} className="shrink-0" />
-              {t(key)}
-            </NavLink>
-          ))}
+          {links.map(({ to, key }) => {
+            const Icon = NAV_ICONS[to];
+            return (
+              <NavLink key={to} to={to} className={linkClass}>
+                {Icon ? <Icon size={18} className="shrink-0" /> : null}
+                {t(key)}
+              </NavLink>
+            );
+          })}
         </nav>
         <div className="admin-sidebar__footer p-3">
           <p className="admin-page-subtitle mb-2 truncate px-2 text-xs">{user?.fullName}</p>

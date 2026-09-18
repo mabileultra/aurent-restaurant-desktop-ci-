@@ -36,6 +36,8 @@ app:
       enabled: ${FINANCE_KAFKA_CONSUMER_ENABLED:true}
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   internal:
     api-key: ${FINANCE_INTERNAL_API_KEY:finance-internal-dev-key-change-in-prod}
   cors:

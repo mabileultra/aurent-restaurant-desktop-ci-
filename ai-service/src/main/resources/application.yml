@@ -10,6 +10,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   reporting:
     url: ${REPORTING_SERVICE_URL:http://localhost:8085/api/v1}
   pos-core:

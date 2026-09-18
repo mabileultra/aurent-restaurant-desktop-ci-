@@ -1,6 +1,5 @@
 package com.pos.identity.bootstrap;
 
-import com.pos.identity.repository.UserRepository;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,7 +20,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class IdentityDataMigrator implements ApplicationRunner {
 
-    private final UserRepository userRepository;
     private final DataSource dataSource;
 
     @Value("${app.migration.pos-core-datasource-url:}")
@@ -35,7 +33,11 @@ public class IdentityDataMigrator implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (userRepository.count() > 0) {
+        Long tenantUsers = new JdbcTemplate(dataSource).queryForObject(
+            "SELECT COUNT(*) FROM users WHERE company_id IS NOT NULL",
+            Long.class
+        );
+        if (tenantUsers != null && tenantUsers > 0) {
             return;
         }
         if (!StringUtils.hasText(posCoreDatasourceUrl)) {

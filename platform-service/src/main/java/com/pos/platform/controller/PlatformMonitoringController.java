@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/platform/monitoring")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Monitoring", description = "Мониторинг системы (прокси в POS core)")
 public class PlatformMonitoringController {
 

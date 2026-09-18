@@ -35,4 +35,8 @@ public class CurrentUserProvider {
     public boolean isSuperAdmin(User user) {
         return RoleName.SUPER_ADMIN.matches(user);
     }
+
+    public boolean isPlatformOperator(User user) {
+        return RoleName.isPlatformScope(user);
+    }
 }

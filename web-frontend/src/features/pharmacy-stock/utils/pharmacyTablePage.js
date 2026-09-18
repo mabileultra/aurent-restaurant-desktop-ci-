@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 
-export const PHARM_PAGE_SIZES = TABLE_PAGE_SIZE_OPTIONS;
-export const PHARM_DEFAULT_PAGE_SIZE = TABLE_PAGE_SIZE_OPTIONS[1] || 14;
+/** Только товарные таблицы аптеки — больше строк за запрос. */
+export const PHARM_PAGE_SIZES = [20, 50, 100, 200];
+export const PHARM_DEFAULT_PAGE_SIZE = 50;
 
 export function slicePage(rows, page, pageSize) {
   const list = Array.isArray(rows) ? rows : [];

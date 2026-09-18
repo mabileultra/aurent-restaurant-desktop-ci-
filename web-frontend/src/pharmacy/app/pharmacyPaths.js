@@ -7,6 +7,7 @@ export const PHARM_STOCK_PATHS = {
   receipt: (id) => `/pharm/stock/receipts/${id}`,
   receiptPick: (id) => `/pharm/stock/receipts/${id}/pick`,
   products: '/pharm/stock/products',
+  aslMarks: '/pharm/stock/asl-marks',
 };
 
 export function isPharmacyBusinessType(code) {

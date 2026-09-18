@@ -101,7 +101,8 @@
 
 .cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar {
   min-height: 28px;
-  padding: 0 8px;
+  min-width: 7.25rem;
+  padding: 0 10px;
   border-radius: 999px;
 }
 
@@ -109,8 +110,7 @@
   font-size: 0.6875rem;
 }
 
-.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__icon svg,
-.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__btn svg {
+.cashier-app--pharmacy-pos .cashier-bottom-nav__aside .offline-topbar__icon svg {
   width: 13px;
   height: 13px;
 }

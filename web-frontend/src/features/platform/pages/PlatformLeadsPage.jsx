@@ -1,7 +1,6 @@
 import { PageLayout } from '../../../components/ui';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import PlatformLeadDetailModal from '../components/leads/PlatformLeadDetailModal';
-import PlatformLeadStatusChips from '../components/leads/PlatformLeadStatusChips';
 import PlatformLeadsTable from '../components/leads/PlatformLeadsTable';
 import { usePlatformLeadsPage } from '../hooks/usePlatformLeadsPage';
 
@@ -18,14 +17,12 @@ export default function PlatformLeadsPage() {
           search={p.search}
           onSearchChange={p.handleSearchChange}
           searchPlaceholder={p.t('platform.leads.search')}
-          filters={(
-            <PlatformLeadStatusChips
-              t={p.t}
-              statusOptions={p.statusOptions}
-              status={p.status}
-              onStatusChange={p.handleStatusFilter}
-            />
-          )}
+          filterOptions={p.statusOptions.map((value) => ({
+            value,
+            label: value ? p.t(`platform.leads.statuses.${value}`) : p.t('platform.leads.filterAll'),
+          }))}
+          filterValue={p.status}
+          onFilterChange={p.handleStatusFilter}
         />
       )}
     >

@@ -1,20 +1,18 @@
 import { useCashierUiScale } from '../../../../features/cashier/hooks/useCashierUiScale';
 import CashierZoomControls from '../../../../features/cashier/components/CashierZoomControls';
-import OfflineStatusTopbar from '../../../../features/cashier/components/OfflineStatusTopbar';
-import { useOfflineStatus } from '../../../../features/cashier/hooks/useOfflineStatus';
+import OfflineStatusDock from '../../../../features/cashier/components/OfflineStatusDock';
+import { useOfflineDockBadge } from '../../../../features/cashier/hooks/useOfflineDockBadge';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 
 /**
  * Right side of bottom dock: zoom + compact онлайн/офлайн.
- * Offline toggle lives in Aurent desktop menu — no «Облако Онлайн» here.
- * Pharmacy also shows KKM chip.
+ * Offline toggle and catalog refresh live in Aurent desktop menu.
  */
 export default function CashierBottomNavAside({ t }) {
   const zoom = useCashierUiScale();
-  const status = useOfflineStatus();
+  const status = useOfflineDockBadge();
   const { isPharmacy } = useCashierStoreProfile();
-  const isOffline = status.showOffline || status.tone === 'offline' || status.forceOfflineMode;
-  const kkmOk = !isOffline && !status.networkOffline;
+  const kkmOk = !status.showOffline && !status.networkOffline;
 
   return (
     <div className="cashier-bottom-nav__aside">
@@ -28,7 +26,7 @@ export default function CashierBottomNavAside({ t }) {
           {t('pharmacyCashier.bottom.kkm')}
         </span>
       ) : null}
-      <OfflineStatusTopbar forceVisible />
+      <OfflineStatusDock status={status} />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class JwtClaimsExtractorTest {
 
@@ -54,6 +55,16 @@ class JwtClaimsExtractorTest {
     @Test
     void resolveCompanyIdSecure_prefersJwtOverHeaderForSuperAdmin() {
         assertEquals(7, JwtClaimsExtractor.resolveCompanyIdSecure(7, "SUPER_ADMIN", "999"));
+    }
+
+    @Test
+    void isPlatformScopeRole_matchesBothPlatformRoles() {
+        assertTrue(JwtClaimsExtractor.isPlatformScopeRole("SUPER_ADMIN"));
+        assertTrue(JwtClaimsExtractor.isPlatformScopeRole("PLATFORM_ADMIN"));
+        assertTrue(JwtClaimsExtractor.isPlatformScopeRole(" platform_admin "));
+        assertFalse(JwtClaimsExtractor.isPlatformScopeRole("ADMIN"));
+        assertFalse(JwtClaimsExtractor.isPlatformScopeRole(null));
+        assertFalse(JwtClaimsExtractor.isPlatformScopeRole(""));
     }
 
     private static String tokenWithClaims(Integer companyId, List<String> roles) {

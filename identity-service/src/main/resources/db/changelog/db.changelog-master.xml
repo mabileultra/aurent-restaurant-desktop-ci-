@@ -8,5 +8,7 @@
     <include file="db/changelog/v1-identity-baseline.xml"/>
     <include file="db/changelog/v2-identity-courier-role.xml"/>
     <include file="db/changelog/v3-identity-cook-role.xml"/>
+    <include file="db/changelog/v4-identity-platform-admin-role.xml"/>
+    <include file="db/changelog/v5-identity-platform-admin-user.xml"/>
 
 </databaseChangeLog>

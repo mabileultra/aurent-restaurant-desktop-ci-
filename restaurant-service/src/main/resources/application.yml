@@ -28,6 +28,8 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   pos:
     enabled: ${POS_STOCK_CONSUME_ENABLED:true}
     base-url: ${POS_CORE_URL:http://localhost:8080/api/v1}

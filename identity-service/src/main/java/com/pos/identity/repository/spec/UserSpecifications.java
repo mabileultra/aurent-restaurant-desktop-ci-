@@ -19,10 +19,20 @@ public final class UserSpecifications {
     }
 
     public static Specification<User> listPlatformSuperAdmins() {
-        return (root, query, cb) -> cb.and(
-            cb.isNull(root.get("companyId")),
-            cb.equal(root.get("role").get("name"), "SUPER_ADMIN")
-        );
+        return listPlatformStaff("SUPER_ADMIN");
+    }
+
+    public static Specification<User> listPlatformStaff(String... roleNames) {
+        return (root, query, cb) -> {
+            List<Predicate> rolePredicates = new ArrayList<>();
+            for (String roleName : roleNames) {
+                rolePredicates.add(cb.equal(root.get("role").get("name"), roleName));
+            }
+            return cb.and(
+                cb.isNull(root.get("companyId")),
+                cb.or(rolePredicates.toArray(Predicate[]::new))
+            );
+        };
     }
 
     public static final class LookupBuilder {

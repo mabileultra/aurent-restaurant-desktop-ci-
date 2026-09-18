@@ -46,6 +46,7 @@ export default function ProductsPage({
           data={p.data}
           page={p.page}
           pageSize={p.pageSize}
+          pageSizeOptions={p.pageSizeOptions}
           total={p.total}
           totalPages={p.totalPages}
           onPageChange={p.setPage}

@@ -1,26 +1,34 @@
-import { PageSearchField } from '../../../components/ui';
+import { Search } from 'lucide-react';
+import PlatformFilterMenu from './PlatformFilterMenu';
 import '../../../styles/platform/platform-filter-bar.css';
 
-/**
- * Компактная строка суперадмина: узкий поиск и фильтры в одном ряду, как в аптеке.
- */
 export default function PlatformCompactFilterBar({
   search,
   onSearchChange,
   searchPlaceholder,
-  filters,
+  filterOptions,
+  filterValue = '',
+  onFilterChange,
+  filterLabel,
   extra,
   className,
 }) {
   return (
     <div className={className ? `platform-filter-bar ${className}` : 'platform-filter-bar'}>
-      <PageSearchField
-        className="platform-filter-bar__search"
-        value={search}
-        onChange={onSearchChange}
-        placeholder={searchPlaceholder}
+      <PlatformFilterMenu
+        options={filterOptions}
+        value={filterValue}
+        onChange={onFilterChange}
+        label={filterLabel}
       />
-      {filters ? <div className="platform-filter-bar__filters">{filters}</div> : null}
+      <label className="platform-filter-bar__search">
+        <input
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={searchPlaceholder}
+        />
+        <Search size={16} strokeWidth={2.2} aria-hidden />
+      </label>
       {extra ? <div className="platform-filter-bar__extra">{extra}</div> : null}
     </div>
   );

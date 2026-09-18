@@ -103,7 +103,7 @@ public class UserUpdateHandler {
             userPinService.applyForUpdate(user, accessPolicy.companyId(user), req.pin());
         }
 
-        if (req.companyId() != null && tenantAccess.isSuperAdmin()) {
+        if (req.companyId() != null && tenantAccess.isPlatformOperator()) {
             user.setCompanyId(tenantAccess.requireCompanyId(req.companyId()));
         }
 

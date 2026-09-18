@@ -8,7 +8,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -52,8 +51,7 @@ public class PosCoreClientImpl implements PosCoreClient {
 
         try {
             RestClient.RequestHeadersSpec<?> spec = posCoreRestClient.get().uri(uri);
-            httpRequestAuthSupport.authorizationHeader()
-                .ifPresent(value -> spec.header(HttpHeaders.AUTHORIZATION, value));
+            httpRequestAuthSupport.apply(spec);
 
             JsonNode response = spec.retrieve().body(new ParameterizedTypeReference<JsonNode>() {});
             if (response != null && response.has("content") && response.get("content").isArray()) {
@@ -85,8 +83,7 @@ public class PosCoreClientImpl implements PosCoreClient {
 
         try {
             RestClient.RequestHeadersSpec<?> spec = posCoreRestClient.get().uri(uri);
-            httpRequestAuthSupport.authorizationHeader()
-                .ifPresent(value -> spec.header(HttpHeaders.AUTHORIZATION, value));
+            httpRequestAuthSupport.apply(spec);
 
             Map<String, Object> response = spec.retrieve().body(new ParameterizedTypeReference<>() {});
             if (response == null) {

@@ -4,8 +4,8 @@
  * Админ компании: только кассиры.
  */
 export function canDeleteUser(actorRole, targetRole) {
-  if (!actorRole || !targetRole || targetRole === 'SUPER_ADMIN') return false;
-  if (actorRole === 'SUPER_ADMIN') {
+  if (!actorRole || !targetRole || targetRole === 'SUPER_ADMIN' || targetRole === 'PLATFORM_ADMIN') return false;
+  if (actorRole === 'SUPER_ADMIN' || actorRole === 'PLATFORM_ADMIN') {
     return ['ADMIN', 'MANAGER', 'CASHIER', 'ACCOUNTANT'].includes(targetRole);
   }
   if (actorRole === 'ADMIN') {

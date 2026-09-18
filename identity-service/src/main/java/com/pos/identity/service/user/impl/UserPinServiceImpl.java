@@ -4,10 +4,10 @@ import com.pos.identity.entity.User;
 import com.pos.identity.exception.IdentityExceptions;
 import com.pos.identity.repository.spec.UserSpecifications;
 import com.pos.identity.service.support.UserLookupSupport;
+import com.pos.identity.security.PinSecret;
 import com.pos.identity.service.user.UserPinService;
 import com.pos.identity.util.CashierPinUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -16,9 +16,7 @@ import org.springframework.util.StringUtils;
 public class UserPinServiceImpl implements UserPinService {
 
     private final UserLookupSupport userLookup;
-
-    @Value("${app.jwt.secret}")
-    private String pinSecret;
+    private final PinSecret pinSecret;
 
     @Override
     public void applyForCreate(User user, String roleName, Integer companyId, String pin) {
@@ -61,7 +59,7 @@ public class UserPinServiceImpl implements UserPinService {
         if (normalized.length() < 4 || normalized.length() > 6) {
             throw IdentityExceptions.badRequest("Cashier PIN must be 4-6 digits");
         }
-        String digest = CashierPinUtil.digestHex(normalized, pinSecret);
+        String digest = CashierPinUtil.digestHex(normalized, pinSecret.value());
         if (userLookup.exists(
             UserSpecifications.lookup().companyId(companyId).pinDigest(digest).excludeId(excludeUserId)
         )) {

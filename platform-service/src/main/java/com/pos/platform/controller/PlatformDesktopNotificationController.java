@@ -21,7 +21,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/platform/desktop-notifications")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('SUPER_ADMIN')")
+@PreAuthorize("hasAnyRole('SUPER_ADMIN', 'PLATFORM_ADMIN')")
 @Tag(name = "Platform Desktop Notifications", description = "Рассылка уведомлений на desktop-кассы")
 public class PlatformDesktopNotificationController {
 

@@ -23,4 +23,7 @@ public interface StoreRepository extends JpaRepository<Store, Integer>, JpaSpeci
     long countByCompanyId(Integer companyId);
 
     long countByCompanyIdAndActiveTrue(Integer companyId);
+
+    @Query("select s.company.id, count(s) from Store s where s.company.id in :companyIds group by s.company.id")
+    List<Object[]> countGroupedByCompanyId(@Param("companyIds") List<Integer> companyIds);
 }

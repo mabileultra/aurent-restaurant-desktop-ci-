@@ -5,6 +5,6 @@ import java.time.LocalDate;
 
 public interface ReportingBackfillService {
 
-    ReportingBackfillResponse backfill(LocalDate from, LocalDate to, String types, String authorization);
+    ReportingBackfillResponse backfill(LocalDate from, LocalDate to, String types);
 }
 

@@ -1,5 +1,7 @@
-import { Route, Navigate } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import SuperAdminRoute from './guards/SuperAdminRoute';
+import PlatformPageGuard from './guards/PlatformPageGuard';
+import PlatformHomeRedirect from './guards/PlatformHomeRedirect';
 import SuperAdminLayout from '../components/layout/SuperAdminLayout';
 import {
   PlatformCompaniesPage,
@@ -10,11 +12,16 @@ import {
   PlatformEmailPage,
   PlatformDesktopNotificationsPage,
   PlatformSecurityPage,
+  PlatformAccountPage,
   PlatformBusinessTypesPage,
   PlatformReferenceBooksPage,
   PlatformLeadsPage,
   PlatformBillingPage,
 } from './lazyPages';
+
+function guarded(page) {
+  return <PlatformPageGuard>{page}</PlatformPageGuard>;
+}
 
 export const platformRoutes = (
   <Route
@@ -25,18 +32,19 @@ export const platformRoutes = (
       </SuperAdminRoute>
     )}
   >
-    <Route index element={<Navigate to="/platform/companies" replace />} />
-    <Route path="companies" element={<PlatformCompaniesPage />} />
-    <Route path="stores" element={<PlatformStoresPage />} />
-    <Route path="users" element={<PlatformUsersPage />} />
-    <Route path="access" element={<PlatformModuleAccessPage />} />
-    <Route path="monitoring" element={<PlatformMonitoringPage />} />
-    <Route path="email" element={<PlatformEmailPage />} />
-    <Route path="desktop-notifications" element={<PlatformDesktopNotificationsPage />} />
-    <Route path="security" element={<PlatformSecurityPage />} />
-    <Route path="business-types" element={<PlatformBusinessTypesPage />} />
-    <Route path="reference-books" element={<PlatformReferenceBooksPage />} />
-    <Route path="leads" element={<PlatformLeadsPage />} />
-    <Route path="billing" element={<PlatformBillingPage />} />
+    <Route index element={<PlatformHomeRedirect />} />
+    <Route path="companies" element={guarded(<PlatformCompaniesPage />)} />
+    <Route path="stores" element={guarded(<PlatformStoresPage />)} />
+    <Route path="users" element={guarded(<PlatformUsersPage />)} />
+    <Route path="access" element={guarded(<PlatformModuleAccessPage />)} />
+    <Route path="monitoring" element={guarded(<PlatformMonitoringPage />)} />
+    <Route path="email" element={guarded(<PlatformEmailPage />)} />
+    <Route path="desktop-notifications" element={guarded(<PlatformDesktopNotificationsPage />)} />
+    <Route path="security" element={guarded(<PlatformSecurityPage />)} />
+    <Route path="account" element={guarded(<PlatformAccountPage />)} />
+    <Route path="business-types" element={guarded(<PlatformBusinessTypesPage />)} />
+    <Route path="reference-books" element={guarded(<PlatformReferenceBooksPage />)} />
+    <Route path="leads" element={guarded(<PlatformLeadsPage />)} />
+    <Route path="billing" element={guarded(<PlatformBillingPage />)} />
   </Route>
 );

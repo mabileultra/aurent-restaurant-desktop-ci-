@@ -1,3 +1,4 @@
+import { isPlatformUser } from './platformRoles';
 import { normalizeBusinessTypeCode } from '../features/platform/utils/moduleAccessByBusinessType';
 import { PHARM_POS_PATH, PHARM_STOCK_PATHS } from '../pharmacy/app/pharmacyPaths';
 
@@ -17,7 +18,7 @@ export function isPharmacyWorldBusiness(code) {
  * @param {string|undefined} businessType — defaultTypeCode компании
  */
 export function resolveAppHomePath(role, businessType) {
-  if (role === 'SUPER_ADMIN') return '/platform';
+  if (isPlatformUser(role)) return '/platform';
   if (role === 'CASHIER') {
     // /cashier без хвоста конфликтует с public/cashier/ в nginx (403 на директории).
     return isPharmacyWorldBusiness(businessType) ? PHARM_POS_PATH : '/cashier/pos';

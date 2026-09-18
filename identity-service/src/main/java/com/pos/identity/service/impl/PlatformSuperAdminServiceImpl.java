@@ -11,6 +11,7 @@ import com.pos.identity.exception.ResourceNotFoundException;
 import com.pos.identity.repository.RoleRepository;
 import com.pos.identity.repository.UserRepository;
 import com.pos.identity.repository.spec.UserSpecifications;
+import com.pos.identity.security.PlatformStaffRole;
 import com.pos.identity.security.RoleName;
 import com.pos.identity.service.PlatformSuperAdminService;
 import com.pos.identity.service.support.TenantAccessSupport;
@@ -41,7 +42,9 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
     @Override
     public List<PlatformSuperAdminResponse> listSuperAdmins() {
         assertSuperAdminActor();
-        return userRepository.findAll(UserSpecifications.listPlatformSuperAdmins()).stream()
+        return userRepository.findAll(
+            UserSpecifications.listPlatformStaff(RoleName.SUPER_ADMIN.key(), RoleName.PLATFORM_ADMIN.key())
+        ).stream()
             .map(this::toSuperAdminResponse)
             .toList();
     }
@@ -50,8 +53,9 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
     @Transactional(readOnly = false)
     public PlatformSuperAdminResponse createSuperAdmin(CreatePlatformSuperAdminRequest request) {
         assertSuperAdminActor();
-        Role role = roleRepository.findByName(RoleName.SUPER_ADMIN.key())
-            .orElseThrow(() -> new BadRequestException("SUPER_ADMIN role is not configured"));
+        String roleName = PlatformStaffRole.resolveCreateRole(request.role());
+        Role role = roleRepository.findByName(roleName)
+            .orElseThrow(() -> new BadRequestException(roleName + " role is not configured"));
 
         String username = UserLoginUtil.normalizeUsername(request.username());
         String email = UserLoginUtil.normalizeEmail(request.email());
@@ -68,11 +72,12 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
             .role(role)
             .companyId(null)
             .isActive(true)
+            .moduleAccessCustom(false)
             .build();
         user.syncFullName();
         User saved = userRepository.save(user);
         userSyncSupport.syncCreate(saved);
-        LogUtil.info(PlatformSuperAdminServiceImpl.class, "Platform super-admin created: id={}, username={}", saved.getId(), saved.getUsername());
+        LogUtil.info(PlatformSuperAdminServiceImpl.class, "Platform staff created: id={}, username={}, role={}", saved.getId(), saved.getUsername(), roleName);
         return toSuperAdminResponse(saved);
     }
 
@@ -80,7 +85,7 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
     @Transactional(readOnly = false)
     public PlatformSuperAdminResponse updateSuperAdmin(UUID id, UpdatePlatformSuperAdminRequest request) {
         assertSuperAdminActor();
-        User user = requirePlatformSuperAdmin(id);
+        User user = requirePlatformStaff(id);
 
         if (StringUtils.hasText(request.firstName())) {
             user.setFirstName(request.firstName().trim());
@@ -108,15 +113,16 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
             user.getFirstName(),
             user.getLastName(),
             user.getFullName(),
+            user.getRole().getName(),
             user.isActive()
         );
     }
 
-    private User requirePlatformSuperAdmin(UUID id) {
+    private User requirePlatformStaff(UUID id) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        if (!RoleName.SUPER_ADMIN.matches(user) || user.getCompanyId() != null) {
-            throw new BadRequestException("User is not a platform super-admin");
+        if (!RoleName.isPlatformScope(user) || user.getCompanyId() != null) {
+            throw new BadRequestException("User is not a platform administrator");
         }
         return user;
     }

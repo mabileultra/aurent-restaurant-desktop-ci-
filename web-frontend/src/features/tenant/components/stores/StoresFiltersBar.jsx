@@ -1,5 +1,5 @@
-import BusinessTypeFilterChips from '../../../platform/components/BusinessTypeFilterChips';
 import PlatformCompactFilterBar from '../../../platform/components/PlatformCompactFilterBar';
+import { buildBusinessTypeFilterOptions } from '../../../platform/utils/businessTypeFilterOptions';
 import StoresCompanyFilter from './StoresCompanyFilter';
 
 export default function StoresFiltersBar({
@@ -21,13 +21,10 @@ export default function StoresFiltersBar({
       searchPlaceholder={t(
         showCompanySelect ? 'stores.searchPlaceholderPlatform' : 'stores.searchPlaceholder'
       )}
-      filters={showCompanySelect ? (
-        <BusinessTypeFilterChips
-          types={businessTypes}
-          value={businessType}
-          onChange={onBusinessTypeChange}
-        />
-      ) : null}
+      filterLabel={showCompanySelect ? t('platform.filterBusinessType') : undefined}
+      filterOptions={showCompanySelect ? buildBusinessTypeFilterOptions(t, businessTypes) : undefined}
+      filterValue={businessType}
+      onFilterChange={onBusinessTypeChange}
       extra={showCompanySelect ? (
         <StoresCompanyFilter
           t={t}

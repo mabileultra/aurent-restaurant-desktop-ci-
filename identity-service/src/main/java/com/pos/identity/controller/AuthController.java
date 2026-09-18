@@ -6,7 +6,9 @@ import com.pos.identity.dto.auth.CashierPinAuthRequest;
 import com.pos.identity.dto.auth.RegisterRequest;
 import com.pos.identity.dto.auth.VerifyPasswordRequest;
 import com.pos.identity.dto.auth.VerifyPinRequest;
-import com.pos.identity.service.AuthService;
+import com.pos.identity.service.auth.AuthLoginService;
+import com.pos.identity.service.auth.CashierPinAuthService;
+import com.pos.identity.service.auth.TokenRefreshService;
 import com.pos.identity.security.ratelimit.LoginAttemptRateLimiter;
 import com.pos.identity.util.ClientIpResolver;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,7 +31,9 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Auth", description = "Аутентификация, регистрация и проверка учётных данных")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthLoginService authLoginService;
+    private final CashierPinAuthService cashierPinAuthService;
+    private final TokenRefreshService tokenRefreshService;
     private final LoginAttemptRateLimiter loginRateLimiter;
 
     @PostMapping("/login")
@@ -42,7 +46,7 @@ public class AuthController {
     ) {
         String clientIp = ClientIpResolver.resolve(httpRequest);
         loginRateLimiter.check(clientIp, "login");
-        return ResponseEntity.ok(authService.authenticate(
+        return ResponseEntity.ok(authLoginService.authenticate(
             request,
             clientIp,
             httpRequest.getHeader("User-Agent")
@@ -58,7 +62,7 @@ public class AuthController {
         HttpServletRequest httpRequest
     ) {
         loginRateLimiter.check(ClientIpResolver.resolve(httpRequest), "cashier-pin");
-        return ResponseEntity.ok(authService.authenticateCashierPin(request));
+        return ResponseEntity.ok(cashierPinAuthService.authenticate(request));
     }
 
     @PostMapping("/register")
@@ -66,7 +70,7 @@ public class AuthController {
     @SecurityRequirements()
     @ApiResponse(responseCode = "200", description = "Пользователь зарегистрирован")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        return ResponseEntity.ok(authService.register(request));
+        return ResponseEntity.ok(authLoginService.register(request));
     }
 
     @PostMapping("/refresh")
@@ -74,14 +78,14 @@ public class AuthController {
     @SecurityRequirements()
     @ApiResponse(responseCode = "200", description = "Токены обновлены")
     public ResponseEntity<AuthResponse> refresh(@RequestHeader("Authorization") String bearerToken) {
-        return ResponseEntity.ok(authService.refreshToken(bearerToken.substring(7)));
+        return ResponseEntity.ok(tokenRefreshService.refresh(bearerToken.substring(7)));
     }
 
     @PostMapping("/verify-password")
     @Operation(summary = "Проверка пароля")
     @ApiResponse(responseCode = "204", description = "Пароль подтверждён")
     public ResponseEntity<Void> verifyPassword(@Valid @RequestBody VerifyPasswordRequest request) {
-        authService.verifyPassword(request.password());
+        authLoginService.verifyPassword(request.password());
         return ResponseEntity.noContent().build();
     }
 
@@ -89,7 +93,7 @@ public class AuthController {
     @Operation(summary = "Проверка PIN")
     @ApiResponse(responseCode = "204", description = "PIN подтверждён")
     public ResponseEntity<Void> verifyPin(@Valid @RequestBody VerifyPinRequest request) {
-        authService.verifyPin(request.pin());
+        cashierPinAuthService.verifyPin(request.pin());
         return ResponseEntity.noContent().build();
     }
 }

@@ -4,6 +4,7 @@ export { default as PlatformMonitoringPage } from './pages/PlatformMonitoringPag
 export { default as PlatformEmailPage } from './pages/PlatformEmailPage';
 export { default as PlatformDesktopNotificationsPage } from './pages/PlatformDesktopNotificationsPage';
 export { default as PlatformSecurityPage } from './pages/PlatformSecurityPage';
+export { default as PlatformAccountPage } from './pages/PlatformAccountPage';
 export { default as PlatformBusinessTypesPage } from './pages/PlatformBusinessTypesPage';
 
 export { usePlatformMonitoringPage } from './hooks/usePlatformMonitoringPage';
@@ -12,3 +13,4 @@ export { usePlatformModuleAccessPage } from './hooks/usePlatformModuleAccessPage
 export { usePlatformBusinessTypesPage } from './hooks/usePlatformBusinessTypesPage';
 export { usePlatformEmailPage } from './hooks/usePlatformEmailPage';
 export { usePlatformSecurityPage } from './hooks/usePlatformSecurityPage';
+export { usePlatformAccountPage } from './hooks/usePlatformAccountPage';

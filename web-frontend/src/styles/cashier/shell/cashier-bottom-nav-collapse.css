@@ -58,6 +58,7 @@
 
 .cashier-bottom-nav__aside .offline-topbar {
   min-height: var(--cashier-bottom-nav-h, 52px);
+  min-width: 7.25rem;
   padding: 0 10px;
   border-radius: var(--pos-control-radius, 12px);
   box-sizing: border-box;
@@ -70,7 +71,8 @@
 
 .cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar {
   min-height: 28px;
-  padding: 0 8px;
+  min-width: 7.25rem;
+  padding: 0 10px;
   border-radius: 999px;
 }
 
@@ -78,8 +80,7 @@
   font-size: 0.6875rem;
 }
 
-.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__icon svg,
-.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__btn svg {
+.cashier-app.cashier-app--desktop .cashier-bottom-nav__aside .offline-topbar__icon svg {
   width: 13px;
   height: 13px;
 }

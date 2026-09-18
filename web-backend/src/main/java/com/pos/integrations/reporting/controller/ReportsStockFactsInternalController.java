@@ -18,7 +18,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/internal/reports/ops/stock-facts")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+@PreAuthorize("hasRole('INTERNAL')")
 @Hidden
 public class ReportsStockFactsInternalController {
 

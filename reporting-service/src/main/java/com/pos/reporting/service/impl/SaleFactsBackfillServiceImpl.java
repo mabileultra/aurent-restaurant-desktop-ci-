@@ -24,14 +24,14 @@ public class SaleFactsBackfillServiceImpl implements SaleFactsBackfillService {
     private final ReportingIngestService reportingIngestService;
 
     @Override
-    public FactsBackfillResult backfill(LocalDate from, LocalDate to, String authorization) {
+    public FactsBackfillResult backfill(LocalDate from, LocalDate to) {
         long ingested = 0L;
         long skipped = 0L;
         int page = 0;
         int totalPages = 1;
 
         while (page < totalPages) {
-            SaleFactsPageResponse batch = posSaleFactsClient.fetchPage(from, to, page, BATCH_SIZE, authorization);
+            SaleFactsPageResponse batch = posSaleFactsClient.fetchPage(from, to, page, BATCH_SIZE);
             if (batch == null || batch.content() == null || batch.content().isEmpty()) {
                 break;
             }

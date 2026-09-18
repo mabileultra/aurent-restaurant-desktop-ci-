@@ -41,6 +41,10 @@ public class CurrentUserProvider {
         return RoleName.SUPER_ADMIN.matches(user);
     }
 
+    public boolean isPlatformOperator(User user) {
+        return RoleName.isPlatformScope(user);
+    }
+
     public boolean isTenantAdmin(User user) {
         return RoleName.TENANT_ADMIN.matches(user);
     }

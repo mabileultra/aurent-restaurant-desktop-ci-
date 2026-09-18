@@ -20,6 +20,7 @@ export const useAuthStore = create(
       isAuthenticated: () => !!get().token,
       isAdmin: () => get().user?.role === 'ADMIN',
       isSuperAdmin: () => get().user?.role === 'SUPER_ADMIN',
+      isPlatformUser: () => ['SUPER_ADMIN', 'PLATFORM_ADMIN'].includes(get().user?.role),
       isManager: () => ['ADMIN', 'MANAGER'].includes(get().user?.role),
       isCashier: () => get().user?.role === 'CASHIER',
     }),

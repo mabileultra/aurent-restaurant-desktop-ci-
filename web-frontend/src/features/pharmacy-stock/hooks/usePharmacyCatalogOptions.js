@@ -6,6 +6,7 @@ import {
   productDosageForm,
 } from '../../pharmacy-cashier/utils/pharmacyProductMeta';
 import { productManufacturer } from '../utils/pharmacyReceiptPricing';
+import { fetchAllPharmacyProductPages } from '../utils/fetchAllPharmacyProductPages';
 
 function unique(values) {
   return [...new Set(values.map((v) => String(v || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'ru'));
@@ -19,11 +20,9 @@ export function productAtc(product) {
 export function usePharmacyCatalogOptions(enabled = true) {
   const query = useQuery({
     queryKey: ['pharmacy-catalog-options'],
-    queryFn: () => pharmacyWarehouseApi.listProducts({
-      page: 0,
-      size: 500,
-      activeOnly: false,
-    }).then((r) => r.data),
+    queryFn: () => fetchAllPharmacyProductPages({
+      listProducts: (params) => pharmacyWarehouseApi.listProducts(params).then((r) => r.data),
+    }),
     enabled,
     staleTime: 30_000,
   });

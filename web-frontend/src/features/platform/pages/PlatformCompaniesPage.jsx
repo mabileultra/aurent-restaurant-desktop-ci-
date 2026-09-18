@@ -1,7 +1,7 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, PageLayout } from '../../../components/ui';
-import BusinessTypeFilterChips from '../components/BusinessTypeFilterChips';
+import { BaseButton, ErrorBanner, PageLayout } from '../../../components/ui';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
+import { buildBusinessTypeFilterOptions } from '../utils/businessTypeFilterOptions';
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
 import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
 import { usePlatformCompaniesPage } from '../hooks/usePlatformCompaniesPage';
@@ -24,19 +24,18 @@ export default function PlatformCompaniesPage() {
           search={p.search}
           onSearchChange={p.handleSearchChange}
           searchPlaceholder={p.t('platform.companySearch')}
-          filters={(
-            <BusinessTypeFilterChips
-              types={p.businessTypes}
-              value={p.businessType}
-              onChange={p.handleBusinessTypeChange}
-            />
-          )}
+          filterLabel={p.t('platform.filterBusinessType')}
+          filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
+          filterValue={p.businessType}
+          onFilterChange={p.handleBusinessTypeChange}
         />
       )}
     >
+      {p.isError ? <ErrorBanner message={p.errorMessage} /> : null}
       <PlatformCompaniesTable
         t={p.t}
         isPending={p.isPending}
+        isError={p.isError}
         rows={p.rows}
         page={p.page}
         pageSize={p.pageSize}

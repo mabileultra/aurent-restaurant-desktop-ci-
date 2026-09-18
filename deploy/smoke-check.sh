@@ -61,7 +61,7 @@ else
 fi
 
 if command -v node >/dev/null 2>&1 && [[ -f scripts/check-module-sync.mjs ]]; then
-  if node scripts/check-module-sync.mjs; then
+  if node scripts/check-module-sync.mjs && node scripts/check-platform-module-sync.mjs && node scripts/check-platform-security-sync.mjs; then
     echo "OK  module-sync"
   else
     failures+=("module-sync")
