@@ -41,7 +41,7 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "маркиров", "markirov", "datamatrix", "data matrix", "киз", "км код", "код км", "codes km")) {
             return MARK_CODES;
         }
-        if (containsAny(h, "икпу", "ikpu", "мхик", "mxik", "каталог")) {
+        if (containsAny(h, "икпу", "ikpu", "мхик", "mxik", "каталог", "идентификац", "миллий каталог")) {
             return IKPU;
         }
         if (containsAny(h, "срок", "годност", "expiry", "годен", "yaroqlilik")) {
@@ -63,10 +63,16 @@ public final class PharmacyImportRoles {
             && !containsAny(h, "сумма", "итого", "summa")) {
             return RETAIL;
         }
+        if (containsAny(h, "етказиб", "yetkazib")) {
+            return SKIP;
+        }
         if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {
             return PURCHASE_WITH_VAT;
         }
         if (containsAny(h, "без ндс", "without vat", "qqssiz", "ққссиз")) {
+            return PURCHASE;
+        }
+        if (containsAny(h, "сотиб олиш", "sotib olish", "йиллик нарх")) {
             return PURCHASE;
         }
         if (containsAny(h, "покупн", "закуп", "себестоим", "purchase", "нарх", "нарҳ")
@@ -78,6 +84,9 @@ public final class PharmacyImportRoles {
         }
         if (containsAny(h, "ндс", "ққс", "qqs") && !containsAny(h, "сумма", "сумм")) {
             return VAT_RATE;
+        }
+        if (containsAny(h, "бирлиги", "ўлчов", "olchov", "единица")) {
+            return SKIP;
         }
         if (containsAny(h, "колич", "кол-во", "qty", "миқдор", "миқдори", "miqdor", "количество", "сони", "dona")) {
             return QTY;

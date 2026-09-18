@@ -3,6 +3,7 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.exception.BusinessException;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportColumnHint;
 import com.pos.pharmacy.importing.spreadsheet.parser.HtmlExcelTableParser;
+import com.pos.pharmacy.importing.spreadsheet.parser.InvoiceGridRowKinds;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceSpreadsheetParser;
@@ -60,15 +61,28 @@ public class PharmacyImportGridSupport {
     }
 
     public int findHeaderRow(List<List<String>> grid) {
+        int fallback = 0;
         int limit = Math.min(120, grid.size());
         for (int r = 0; r < limit; r++) {
-            String joined = String.join(" ", grid.get(r)).toLowerCase(Locale.ROOT);
-            if (joined.contains("наименован") || joined.contains("маҳсулот") || joined.contains("mahsulot")
-                || joined.contains("номи")) {
-                return r;
+            List<String> row = grid.get(r);
+            if (InvoiceGridRowKinds.numericIndexRow(row)) {
+                continue;
+            }
+            String joined = String.join(" ", row).toLowerCase(Locale.ROOT);
+            int filled = 0;
+            for (String cell : row) {
+                if (StringUtils.hasText(cell)) {
+                    filled++;
+                }
+            }
+            if (joined.contains("наименован") || joined.contains("маҳсулот") || joined.contains("mahsulot")) {
+                if (filled >= 4) {
+                    return r;
+                }
+                fallback = r;
             }
         }
-        return 0;
+        return fallback;
     }
 
     public List<PharmacyImportColumnHint> columns(List<String> header) {
@@ -84,9 +98,13 @@ public class PharmacyImportGridSupport {
         List<List<String>> rows = new ArrayList<>();
         for (int r = headerRow + 1; r < grid.size(); r++) {
             List<String> row = grid.get(r);
-            if (row.stream().anyMatch(StringUtils::hasText)) {
-                rows.add(row);
+            if (!row.stream().anyMatch(StringUtils::hasText)) {
+                continue;
             }
+            if (InvoiceGridRowKinds.numericIndexRow(row) || InvoiceGridRowKinds.repeatedProductHeader(row)) {
+                continue;
+            }
+            rows.add(row);
         }
         if (rows.isEmpty()) {
             throw new BusinessException("В файле нет строк товаров");
