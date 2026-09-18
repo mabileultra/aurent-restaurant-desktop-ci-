@@ -1,8 +1,18 @@
 import { isAuthHttpError } from './authSessionExpiry';
 
-/** Не показывать «откройте смену», если смена не загрузилась из-за 401/403. */
-export function shouldAutoPromptCashierShift({ shiftFetched, shiftIsOpen, shiftQueryError }) {
-  if (!shiftFetched || shiftIsOpen) return false;
+/**
+ * Показывать «откройте смену» только после settled fetch.
+ * Не смотреть на lagged latch: на reload query уже OPEN, а shiftIsOpen ещё false —
+ * иначе модалка выскакивает поверх уже открытой смены.
+ */
+export function shouldAutoPromptCashierShift({
+  shiftFetched,
+  shiftFetching = false,
+  shiftStatus = null,
+  shiftQueryError,
+} = {}) {
+  if (!shiftFetched || shiftFetching) return false;
+  if (shiftStatus === 'OPEN') return false;
   if (shiftQueryError && isAuthHttpError(shiftQueryError)) return false;
   return true;
 }

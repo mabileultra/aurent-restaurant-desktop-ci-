@@ -209,6 +209,7 @@ export function usePharmacyPosPage() {
     shift,
     shiftIsOpen,
     shiftFetched,
+    shiftFetching,
     shiftQueryError,
   } = useCashierShiftView(storeId, { catalogKind: 'pharmacy' });
 
@@ -260,12 +261,20 @@ export function usePharmacyPosPage() {
 
   useEffect(() => {
     if (shiftAutoPromptedRef.current) return;
-    if (!storeId || !shouldAutoPromptCashierShift({ shiftFetched, shiftIsOpen, shiftQueryError })) {
+    if (
+      !storeId
+      || !shouldAutoPromptCashierShift({
+        shiftFetched,
+        shiftFetching,
+        shiftStatus: shift?.status,
+        shiftQueryError,
+      })
+    ) {
       return;
     }
     shiftAutoPromptedRef.current = true;
     openShiftModal();
-  }, [storeId, shiftFetched, shiftIsOpen, shiftQueryError, openShiftModal]);
+  }, [storeId, shiftFetched, shiftFetching, shift?.status, shiftQueryError, openShiftModal]);
 
   useEffect(() => {
     if (location.state?.pane !== 'catalog' && location.state?.pane !== 'register') return;
