@@ -11,6 +11,7 @@ import com.pos.finance.repository.IncomeRepository;
 import com.pos.finance.service.ZReportIntegrationService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.AccountResolverSupport;
+import com.pos.finance.service.support.CashRegisterIncomePolicy;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,9 +30,19 @@ public class ZReportIntegrationServiceImpl implements ZReportIntegrationService 
     private final CompanyBootstrapSupport bootstrapSupport;
     private final AccountBalanceSupport balanceSupport;
     private final AccountResolverSupport accountResolver;
+    private final CashRegisterIncomePolicy incomePolicy;
 
     @Override
     public void recordZReportIncome(ZReportIncomeRequest request) {
+        if (incomePolicy.prefersSaleLedger(request.companyId())) {
+            LogUtil.info(
+                ZReportIntegrationServiceImpl.class,
+                "Z-report income skipped: sale ledger already exists companyId={}, zReportId={}",
+                request.companyId(),
+                request.zReportId()
+            );
+            return;
+        }
         String groupKey = "z-report:" + request.zReportId();
         if (incomeRepository.existsZReportIncome(request.companyId(), groupKey)) {
             LogUtil.info(

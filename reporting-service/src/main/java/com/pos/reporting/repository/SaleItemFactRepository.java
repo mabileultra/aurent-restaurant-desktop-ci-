@@ -19,12 +19,13 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
     void deleteBySaleId(UUID saleId);
 
     @Query(value = """
-        SELECT i.product_name, COALESCE(SUM(i.quantity), 0)
+        SELECT i.product_name, COALESCE(SUM(i.quantity - i.quantity_returned), 0)
         FROM sale_item_facts i
         WHERE i.company_id = :companyId
           AND i.transaction_date BETWEEN :from AND :to
         GROUP BY i.product_name
-        ORDER BY SUM(i.quantity) DESC
+        HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
+        ORDER BY SUM(i.quantity - i.quantity_returned) DESC
         LIMIT :limit
         """, nativeQuery = true)
     List<Object[]> topProducts(

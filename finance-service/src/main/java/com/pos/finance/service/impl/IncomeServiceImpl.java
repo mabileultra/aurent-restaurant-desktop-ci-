@@ -19,9 +19,12 @@ import com.pos.finance.repository.IncomeRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.IncomeService;
 import com.pos.finance.service.support.AccountBalanceSupport;
+import com.pos.finance.service.support.CashRegisterIncomePolicy;
+import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import com.pos.finance.service.support.CurrencySupport;
 import com.pos.finance.service.support.FinanceAuditSupport;
+import com.pos.finance.service.support.IncomeListScope;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +47,8 @@ public class IncomeServiceImpl implements IncomeService {
     private final CompanyBootstrapSupport bootstrapSupport;
     private final AccountBalanceSupport balanceSupport;
     private final FinanceAuditSupport auditSupport;
+    private final CashRegisterIncomePolicy incomePolicy;
+    private final CashRegisterIncomeReader cashRegisterIncomeReader;
 
     @Override
     @Transactional(readOnly = true)
@@ -58,8 +63,23 @@ public class IncomeServiceImpl implements IncomeService {
     ) {
         Integer companyId = FinanceTenantContext.requireCompanyId();
         bootstrapSupport.ensureBootstrapped(companyId);
+        IncomeListScope scope = IncomeListScope.of(
+            excludeSale,
+            incomePolicy.prefersSaleLedger(companyId),
+            sourceType
+        );
         return PageResponse.from(
-            incomeRepository.search(companyId, storeId, from, to, paymentMethod, excludeSale, sourceType, pageable)
+            incomeRepository.search(
+                companyId,
+                storeId,
+                from,
+                to,
+                paymentMethod,
+                scope.excludeSale(),
+                scope.excludeZReport(),
+                sourceType,
+                pageable
+            )
                 .map(mapper::toDto)
         );
     }
@@ -74,7 +94,7 @@ public class IncomeServiceImpl implements IncomeService {
         if (periodTo.isBefore(periodFrom)) {
             throw FinanceExceptions.badRequest("Дата «по» не может быть раньше «с»");
         }
-        return incomeRepository.sumDailyRevenue(companyId, periodFrom, periodTo, storeId).stream()
+        return cashRegisterIncomeReader.sumDailyRegisterRevenue(companyId, periodFrom, periodTo, storeId).stream()
             .map(row -> new DailyRevenueSummaryDto(
                 (LocalDate) row[0],
                 (Integer) row[1],

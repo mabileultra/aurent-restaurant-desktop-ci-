@@ -14,6 +14,7 @@ import com.pos.sales.repository.ZReportRepository;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.integrations.finance.service.FinanceZReportIntegrationService;
 import com.pos.sales.service.zreport.ZReportFromShiftService;
+import com.pos.sales.service.zreport.support.ZReportCloseDecision;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,6 +44,14 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
     public ZReport createForClosedShift(CashierShift shift, ShiftReportResponse report) {
         if (shift.getZReport() != null) {
             return shift.getZReport();
+        }
+        if (ZReportCloseDecision.skipEmptyCloseAfterPeriodZ(shift, report)) {
+            LogUtil.info(
+                ZReportFromShiftServiceImpl.class,
+                "Skip empty Z-report on close after period reset: shiftId={}",
+                shift.getId()
+            );
+            return null;
         }
 
         Store store = shift.getStore();
@@ -74,7 +83,8 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             : store.getAddress();
         String tin = company != null ? company.getTin() : null;
 
-        ShiftSaleBounds bounds = loadShiftBounds(shift.getId(), shift.getOpenedAt(), report.reportAt());
+        Instant periodFrom = ZReportCloseDecision.periodFrom(shift);
+        ShiftSaleBounds bounds = loadShiftBounds(shift.getId(), periodFrom, report.reportAt());
 
         BigDecimal returnsCash = bounds.returnsCash();
         BigDecimal returnsCard = bounds.returnsCard();
@@ -84,7 +94,7 @@ public class ZReportFromShiftServiceImpl implements ZReportFromShiftService {
             .store(store)
             .fiscalCardId(fiscalCardId)
             .terminalSerial(terminalSerial)
-            .openedAt(shift.getOpenedAt())
+            .openedAt(periodFrom != null ? periodFrom : shift.getOpenedAt())
             .closedAt(report.reportAt())
             .zNumber(nextZ)
             .totalAmount(report.totalAmount())

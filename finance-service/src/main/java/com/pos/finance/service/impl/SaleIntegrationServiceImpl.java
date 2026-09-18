@@ -12,6 +12,7 @@ import com.pos.finance.service.SaleIntegrationService;
 import com.pos.finance.service.support.AccountBalanceSupport;
 import com.pos.finance.service.support.AccountResolverSupport;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.DuplicateZReportIncomeReversal;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
     private final CompanyBootstrapSupport bootstrapSupport;
     private final AccountBalanceSupport balanceSupport;
     private final AccountResolverSupport accountResolver;
+    private final DuplicateZReportIncomeReversal duplicateZReportIncomeReversal;
 
     @Override
     public void recordSaleIncome(SaleIncomeRequest request) {
@@ -37,6 +39,7 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             request.companyId(), IncomeSourceType.SALE, saleSourceId
         )) {
             LogUtil.info(SaleIntegrationServiceImpl.class, "Sale income already recorded: saleId={}", request.saleId());
+            duplicateZReportIncomeReversal.reverseIfSaleLedgerExists(request.companyId());
             return;
         }
         bootstrapSupport.ensureBootstrapped(request.companyId());
@@ -66,6 +69,7 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             AccountType accountType = method == PaymentMethod.CARD ? AccountType.CARD : AccountType.CASH;
             recordPart(request, salesCategory, txDate, totalAmount, method, accountType, saleSourceId);
         }
+        duplicateZReportIncomeReversal.reverseIfSaleLedgerExists(request.companyId());
     }
 
     private static BigDecimal nullSafe(BigDecimal value) {

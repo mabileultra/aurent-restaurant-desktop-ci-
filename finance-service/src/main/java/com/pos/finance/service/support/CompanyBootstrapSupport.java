@@ -44,17 +44,18 @@ public class CompanyBootstrapSupport {
     private final CompanyFinanceBootstrapRepository bootstrapRepository;
     private final IncomeCategoryRepository incomeCategoryRepository;
     private final ExpenseCategoryRepository expenseCategoryRepository;
+    private final DuplicateZReportIncomeReversal duplicateZReportIncomeReversal;
 
     @Transactional
     public void ensureBootstrapped(Integer companyId) {
         seedCategories(companyId);
-        if (bootstrapRepository.existsById(companyId)) {
-            return;
+        if (!bootstrapRepository.existsById(companyId)) {
+            bootstrapRepository.save(CompanyFinanceBootstrap.builder()
+                .companyId(companyId)
+                .bootstrappedAt(Instant.now())
+                .build());
         }
-        bootstrapRepository.save(CompanyFinanceBootstrap.builder()
-            .companyId(companyId)
-            .bootstrappedAt(Instant.now())
-            .build());
+        duplicateZReportIncomeReversal.reverseIsolated(companyId);
     }
 
     private void seedCategories(Integer companyId) {

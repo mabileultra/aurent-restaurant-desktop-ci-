@@ -35,6 +35,9 @@ public class SaleFact {
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal cardAmount;
 
+    @Column(nullable = false, precision = 18, scale = 2)
+    private BigDecimal returnedAmount;
+
     @Column(length = 32)
     private String paymentMethod;
 

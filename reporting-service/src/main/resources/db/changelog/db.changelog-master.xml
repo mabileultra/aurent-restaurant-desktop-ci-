@@ -17,5 +17,6 @@
     <include file="db/changelog/v10-stock-movement-unit-cost.xml"/>
     <include file="db/changelog/v11-shift-closed-details.xml"/>
     <include file="db/changelog/v12-sale-facts-status.xml"/>
+    <include file="db/changelog/v13-sale-facts-returned-amount.xml"/>
 
 </databaseChangeLog>

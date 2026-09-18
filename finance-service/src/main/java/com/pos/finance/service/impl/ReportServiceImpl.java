@@ -6,9 +6,9 @@ import com.pos.finance.dto.report.ProfitLossLineDto;
 import com.pos.finance.dto.report.ProfitLossReportDto;
 import com.pos.finance.repository.AccountTransferRepository;
 import com.pos.finance.repository.ExpenseRepository;
-import com.pos.finance.repository.IncomeRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.ReportService;
+import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -26,7 +26,7 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class ReportServiceImpl implements ReportService {
 
-    private final IncomeRepository incomeRepository;
+    private final CashRegisterIncomeReader cashRegisterIncomeReader;
     private final ExpenseRepository expenseRepository;
     private final AccountTransferRepository transferRepository;
     private final CompanyBootstrapSupport bootstrapSupport;
@@ -38,7 +38,7 @@ public class ReportServiceImpl implements ReportService {
         LocalDate periodFrom = from != null ? from : LocalDate.now().withDayOfMonth(1);
         LocalDate periodTo = to != null ? to : LocalDate.now();
 
-        BigDecimal totalIncome = incomeRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
+        BigDecimal totalIncome = cashRegisterIncomeReader.sumIncome(companyId, periodFrom, periodTo, storeId);
         BigDecimal totalExpense = expenseRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
         BigDecimal netProfit = totalIncome.subtract(totalExpense);
 
@@ -66,12 +66,12 @@ public class ReportServiceImpl implements ReportService {
         LocalDate periodFrom = from != null ? from : LocalDate.now().withDayOfMonth(1);
         LocalDate periodTo = to != null ? to : LocalDate.now();
 
-        BigDecimal totalInflows = incomeRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
+        BigDecimal totalInflows = cashRegisterIncomeReader.sumIncome(companyId, periodFrom, periodTo, storeId);
         BigDecimal totalOutflows = expenseRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
         BigDecimal totalTransfers = transferRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
 
         Map<LocalDate, BigDecimal> inflowByDay = toDailyMap(
-            incomeRepository.sumDailyByPeriod(companyId, periodFrom, periodTo, storeId)
+            cashRegisterIncomeReader.sumDailyIncome(companyId, periodFrom, periodTo, storeId)
         );
         Map<LocalDate, BigDecimal> outflowByDay = toDailyMap(
             expenseRepository.sumDailyByPeriod(companyId, periodFrom, periodTo, storeId)

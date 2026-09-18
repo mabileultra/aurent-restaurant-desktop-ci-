@@ -24,6 +24,21 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         Integer companyId, IncomeSourceType sourceType, String sourceId
     );
 
+    boolean existsByCompanyIdAndSourceTypeAndDeletedFalse(
+        Integer companyId, IncomeSourceType sourceType
+    );
+
+    @Query("""
+        SELECT i FROM Income i
+        JOIN FETCH i.account
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType = :sourceType
+        """)
+    List<Income> findUndeletedWithAccount(
+        @Param("companyId") Integer companyId,
+        @Param("sourceType") IncomeSourceType sourceType
+    );
+
     List<Income> findAllByCompanyIdAndSourceTypeAndSourceIdAndDeletedFalse(
         Integer companyId, IncomeSourceType sourceType, String sourceId
     );
@@ -46,6 +61,7 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
           AND i.transactionDate <= COALESCE(:to, i.transactionDate)
           AND i.paymentMethod = COALESCE(:paymentMethod, i.paymentMethod)
           AND (:excludeSale = false OR i.sourceType <> com.pos.finance.entity.IncomeSourceType.SALE)
+          AND (:excludeZReport = false OR i.sourceType <> com.pos.finance.entity.IncomeSourceType.Z_REPORT)
           AND (:sourceType IS NULL OR i.sourceType = :sourceType)
         ORDER BY i.transactionDate DESC, i.createdAt DESC
         """)
@@ -56,6 +72,7 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         @Param("to") LocalDate to,
         @Param("paymentMethod") com.pos.finance.entity.PaymentMethod paymentMethod,
         @Param("excludeSale") boolean excludeSale,
+        @Param("excludeZReport") boolean excludeZReport,
         @Param("sourceType") IncomeSourceType sourceType,
         Pageable pageable
     );
@@ -76,6 +93,28 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         """)
     List<Object[]> sumDailyRevenue(
         @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT i.transactionDate, i.storeId,
+               COALESCE(SUM(i.amount), 0),
+               COALESCE(SUM(CASE WHEN i.paymentMethod = com.pos.finance.entity.PaymentMethod.CASH THEN i.amount ELSE 0 END), 0),
+               COALESCE(SUM(CASE WHEN i.paymentMethod = com.pos.finance.entity.PaymentMethod.CARD THEN i.amount ELSE 0 END), 0),
+               COUNT(DISTINCT i.sourceId)
+        FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType = :sourceType
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        GROUP BY i.transactionDate, i.storeId
+        ORDER BY i.transactionDate DESC
+        """)
+    List<Object[]> sumDailyRevenueBySource(
+        @Param("companyId") Integer companyId,
+        @Param("sourceType") IncomeSourceType sourceType,
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
         @Param("storeId") Integer storeId
@@ -125,6 +164,52 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
     );
 
     @Query("""
+        SELECT COUNT(DISTINCT i.sourceId) FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType = :sourceType
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+          AND i.sourceId IS NOT NULL
+        """)
+    long countDistinctSourceIdBySourceAndPeriod(
+        @Param("companyId") Integer companyId,
+        @Param("sourceType") IncomeSourceType sourceType,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT COUNT(DISTINCT SUBSTRING(i.sourceId, 1, LOCATE(':', i.sourceId, 10) - 1)) FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType = com.pos.finance.entity.IncomeSourceType.Z_REPORT
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+          AND i.sourceId LIKE 'z-report:%'
+        """)
+    long countDistinctZReportGroups(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT COALESCE(SUM(i.amount), 0) FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType <> :excludedSource
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        """)
+    BigDecimal sumByPeriodExcludingSource(
+        @Param("companyId") Integer companyId,
+        @Param("excludedSource") IncomeSourceType excludedSource,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
         SELECT i FROM Income i
         WHERE i.companyId = :companyId AND i.deleted = false
           AND (:storeId IS NULL OR i.storeId = :storeId)
@@ -162,6 +247,24 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
         """)
     List<Object[]> sumDailyByPeriod(
         @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT i.transactionDate, COALESCE(SUM(i.amount), 0)
+        FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.sourceType <> :excludedSource
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        GROUP BY i.transactionDate
+        ORDER BY i.transactionDate
+        """)
+    List<Object[]> sumDailyByPeriodExcludingSource(
+        @Param("companyId") Integer companyId,
+        @Param("excludedSource") IncomeSourceType excludedSource,
         @Param("from") LocalDate from,
         @Param("to") LocalDate to,
         @Param("storeId") Integer storeId

@@ -58,6 +58,7 @@ class RestaurantSaleCompletedFactoryTest {
         assertEquals(new BigDecimal("50000.00"), event.totalAmount());
         assertEquals(BigDecimal.ZERO, event.cashAmount());
         assertEquals(new BigDecimal("50000.00"), event.cardAmount());
+        assertEquals(new BigDecimal("0.00"), event.returnedAmount());
         assertEquals("CARD", event.paymentMethod());
         assertEquals(2L, event.itemsSold());
         assertEquals(1, event.lines().size());
@@ -93,6 +94,7 @@ class RestaurantSaleCompletedFactoryTest {
 
         assertEquals("REFUNDED", event.saleStatus());
         assertEquals(new BigDecimal("0.00"), event.totalAmount());
+        assertEquals(new BigDecimal("12000.00"), event.returnedAmount());
         assertEquals(0L, event.itemsSold());
         assertEquals(1L, event.lines().get(0).quantityReturned());
         assertEquals(new BigDecimal("0.00"), event.lines().get(0).revenue());

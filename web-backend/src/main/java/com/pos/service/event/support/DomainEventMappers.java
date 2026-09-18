@@ -82,7 +82,8 @@ public final class DomainEventMappers {
             storeName,
             cashierName,
             sale.getStatus() != null ? sale.getStatus().name() : "COMPLETED",
-            mapLines(sale, attrs)
+            mapLines(sale, attrs),
+            SaleHeaderNet.returned(sale)
         );
     }
 

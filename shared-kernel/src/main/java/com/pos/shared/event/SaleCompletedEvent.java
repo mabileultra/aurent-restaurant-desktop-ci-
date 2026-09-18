@@ -23,6 +23,12 @@ public record SaleCompletedEvent(
     String storeName,
     String cashierName,
     String saleStatus,
-    List<SaleLineSnapshot> lines
+    List<SaleLineSnapshot> lines,
+    BigDecimal returnedAmount
 ) {
+    public SaleCompletedEvent {
+        if (returnedAmount == null) {
+            returnedAmount = BigDecimal.ZERO;
+        }
+    }
 }

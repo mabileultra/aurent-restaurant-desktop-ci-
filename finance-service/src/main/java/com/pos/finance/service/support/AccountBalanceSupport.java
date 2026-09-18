@@ -32,4 +32,18 @@ public class AccountBalanceSupport {
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
     }
+
+    /**
+     * Снимает ранее начисленный приход. Не бросает «недостаточно средств»:
+     * дубль Z мог быть частично израсходован, баланс не уходим в минус.
+     */
+    public void reverseCredit(FinancialAccount account, BigDecimal amount) {
+        if (account == null || amount == null || amount.signum() <= 0) {
+            return;
+        }
+        BigDecimal current = account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO;
+        BigDecimal next = current.subtract(amount);
+        account.setBalance(next.signum() < 0 ? BigDecimal.ZERO : next);
+        accountRepository.save(account);
+    }
 }

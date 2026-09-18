@@ -50,7 +50,8 @@ public final class PharmacySaleCompletedFactory {
             storeName,
             sale.getCashierName(),
             sale.getStatus() != null ? sale.getStatus().name() : "COMPLETED",
-            mapLines(sale, attrs)
+            mapLines(sale, attrs),
+            PharmacySaleNetAmounts.returnedAgainstHeader(sale)
         );
     }
 

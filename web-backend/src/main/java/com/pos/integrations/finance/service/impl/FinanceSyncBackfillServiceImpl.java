@@ -42,7 +42,7 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
         int purchasesEnqueued = 0;
         int skipped = 0;
 
-        if (types.contains("z-reports") || types.contains("sales")) {
+        if (types.contains("z-reports")) {
             for (ZReport zReport : zReportRepository.findForFinanceBackfill(companyId, start, end)) {
                 Map<String, Object> payload = FinanceZReportPayloadBuilder.build(zReport, null);
                 if (payload == null) {

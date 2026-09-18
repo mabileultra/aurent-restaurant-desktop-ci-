@@ -160,11 +160,11 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
     );
 
     @Query("""
-        SELECT COUNT(s), COALESCE(SUM(s.totalAmount), 0)
+        SELECT COUNT(s), COALESCE(SUM(s.returnedAmount), 0)
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to
-          AND s.saleStatus IN ('REFUNDED', 'VOIDED')
+          AND s.returnedAmount > 0
         """)
     Object[] aggregateReturns(
         @Param("companyId") Integer companyId,

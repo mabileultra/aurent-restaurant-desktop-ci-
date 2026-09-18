@@ -22,6 +22,15 @@ public class ShiftClosedFactsRepositoryImpl implements ShiftClosedFactsRepositor
             FROM ShiftClosedFact s
             WHERE s.companyId = :companyId
               AND s.businessDate BETWEEN :from AND :to
+              AND NOT (
+                COALESCE(s.salesCount, 0) = 0
+                AND COALESCE(s.totalSales, 0) = 0
+                AND EXISTS (
+                  SELECT 1 FROM ShiftClosedFact other
+                  WHERE other.shiftId = s.shiftId
+                    AND other.zReportId <> s.zReportId
+                )
+              )
             """)
             .setParameter("companyId", companyId)
             .setParameter("from", from)
@@ -35,6 +44,15 @@ public class ShiftClosedFactsRepositoryImpl implements ShiftClosedFactsRepositor
             SELECT COUNT(s)
             FROM ShiftClosedFact s
             WHERE s.companyId = :companyId
+              AND NOT (
+                COALESCE(s.salesCount, 0) = 0
+                AND COALESCE(s.totalSales, 0) = 0
+                AND EXISTS (
+                  SELECT 1 FROM ShiftClosedFact other
+                  WHERE other.shiftId = s.shiftId
+                    AND other.zReportId <> s.zReportId
+                )
+              )
             """, Long.class)
             .setParameter("companyId", companyId)
             .getSingleResult();
@@ -48,6 +66,15 @@ public class ShiftClosedFactsRepositoryImpl implements ShiftClosedFactsRepositor
             SELECT s
             FROM ShiftClosedFact s
             WHERE s.companyId = :companyId
+              AND NOT (
+                COALESCE(s.salesCount, 0) = 0
+                AND COALESCE(s.totalSales, 0) = 0
+                AND EXISTS (
+                  SELECT 1 FROM ShiftClosedFact other
+                  WHERE other.shiftId = s.shiftId
+                    AND other.zReportId <> s.zReportId
+                )
+              )
             ORDER BY COALESCE(s.closedAt, s.ingestedAt) DESC
             """, ShiftClosedFact.class)
             .setParameter("companyId", companyId)

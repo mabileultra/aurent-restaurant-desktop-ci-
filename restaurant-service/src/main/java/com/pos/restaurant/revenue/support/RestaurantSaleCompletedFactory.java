@@ -49,7 +49,8 @@ public class RestaurantSaleCompletedFactory {
             null,
             null,
             "COMPLETED",
-            lines
+            lines,
+            BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
         );
     }
 
@@ -73,7 +74,8 @@ public class RestaurantSaleCompletedFactory {
             null,
             null,
             "REFUNDED",
-            lines
+            lines,
+            orderTotals.billable(items)
         );
     }
 

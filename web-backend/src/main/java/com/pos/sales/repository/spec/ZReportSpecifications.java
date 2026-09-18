@@ -26,7 +26,7 @@ public final class ZReportSpecifications {
         Instant closedFrom,
         Instant closedTo
     ) {
-        return (root, query, cb) -> {
+        Specification<ZReport> scoped = (root, query, cb) -> {
             List<Predicate> parts = new ArrayList<>();
             Join<ZReport, Store> store = root.join("store");
 
@@ -58,10 +58,8 @@ public final class ZReportSpecifications {
                 parts.add(cb.lessThanOrEqualTo(root.get("closedAt"), closedTo));
             }
 
-            if (parts.isEmpty()) {
-                return cb.conjunction();
-            }
             return cb.and(parts.toArray(Predicate[]::new));
         };
+        return scoped.and(ZReportLeftoverSpecifications.notLeftoverEmptyClose());
     }
 }

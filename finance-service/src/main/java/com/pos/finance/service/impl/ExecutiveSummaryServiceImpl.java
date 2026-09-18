@@ -8,14 +8,13 @@ import com.pos.finance.dto.executive.ExecutivePreviousPeriodDto;
 import com.pos.finance.dto.executive.ExecutiveSummaryDto;
 import com.pos.finance.entity.AccountType;
 import com.pos.finance.entity.FinancialAccount;
-import com.pos.finance.entity.IncomeSourceType;
 import com.pos.finance.repository.CustomerReceivableEntryRepository;
 import com.pos.finance.repository.ExpenseRepository;
 import com.pos.finance.repository.FinancialAccountRepository;
-import com.pos.finance.repository.IncomeRepository;
 import com.pos.finance.repository.SupplierPayableEntryRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.ExecutiveSummaryService;
+import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -36,12 +35,12 @@ import java.util.Map;
 @Transactional(readOnly = true)
 public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
 
-    private final IncomeRepository incomeRepository;
     private final ExpenseRepository expenseRepository;
     private final FinancialAccountRepository accountRepository;
     private final CustomerReceivableEntryRepository receivableRepository;
     private final SupplierPayableEntryRepository payableRepository;
     private final CompanyBootstrapSupport bootstrapSupport;
+    private final CashRegisterIncomeReader cashRegisterIncomeReader;
 
     @Override
     public ExecutiveSummaryDto getSummary(ExecutivePeriod period, Integer storeId) {
@@ -52,25 +51,29 @@ public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
         LocalDate yesterday = today.minusDays(1);
         PeriodRange range = resolveRange(period, today);
 
-        BigDecimal salesToday = sumSales(companyId, today, today, storeId);
-        long salesCountToday = countSales(companyId, today, today, storeId);
-        BigDecimal revenueToday = incomeRepository.sumByPeriod(companyId, today, today, storeId);
+        BigDecimal salesToday = cashRegisterIncomeReader.sumRegisterRevenue(companyId, today, today, storeId);
+        long salesCountToday = cashRegisterIncomeReader.countRegisterReceipts(companyId, today, today, storeId);
+        BigDecimal revenueToday = cashRegisterIncomeReader.sumIncome(companyId, today, today, storeId);
         BigDecimal expensesToday = expenseRepository.sumByPeriod(companyId, today, today, storeId);
         BigDecimal netProfitToday = revenueToday.subtract(expensesToday);
 
-        BigDecimal revenuePeriod = incomeRepository.sumByPeriod(companyId, range.from(), range.to(), storeId);
+        BigDecimal revenuePeriod = cashRegisterIncomeReader.sumIncome(companyId, range.from(), range.to(), storeId);
         BigDecimal expensesPeriod = expenseRepository.sumByPeriod(companyId, range.from(), range.to(), storeId);
         BigDecimal netProfitPeriod = revenuePeriod.subtract(expensesPeriod);
 
-        BigDecimal salesYesterday = sumSales(companyId, yesterday, yesterday, storeId);
-        BigDecimal revenueYesterday = incomeRepository.sumByPeriod(companyId, yesterday, yesterday, storeId);
+        BigDecimal salesYesterday = cashRegisterIncomeReader.sumRegisterRevenue(companyId, yesterday, yesterday, storeId);
+        BigDecimal revenueYesterday = cashRegisterIncomeReader.sumIncome(companyId, yesterday, yesterday, storeId);
         BigDecimal expensesYesterday = expenseRepository.sumByPeriod(companyId, yesterday, yesterday, storeId);
         BigDecimal netProfitYesterday = revenueYesterday.subtract(expensesYesterday);
 
         PeriodRange previousRange = previousRange(period, today);
-        BigDecimal salesPrevious = sumSales(companyId, previousRange.from(), previousRange.to(), storeId);
-        long salesCountPrevious = countSales(companyId, previousRange.from(), previousRange.to(), storeId);
-        BigDecimal revenuePrevious = incomeRepository.sumByPeriod(
+        BigDecimal salesPrevious = cashRegisterIncomeReader.sumRegisterRevenue(
+            companyId, previousRange.from(), previousRange.to(), storeId
+        );
+        long salesCountPrevious = cashRegisterIncomeReader.countRegisterReceipts(
+            companyId, previousRange.from(), previousRange.to(), storeId
+        );
+        BigDecimal revenuePrevious = cashRegisterIncomeReader.sumIncome(
             companyId, previousRange.from(), previousRange.to(), storeId
         );
         BigDecimal expensesPrevious = expenseRepository.sumByPeriod(
@@ -78,8 +81,8 @@ public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
         );
         BigDecimal netProfitPrevious = revenuePrevious.subtract(expensesPrevious);
 
-        BigDecimal periodSalesAmount = sumSales(companyId, range.from(), range.to(), storeId);
-        long periodSalesCount = countSales(companyId, range.from(), range.to(), storeId);
+        BigDecimal periodSalesAmount = cashRegisterIncomeReader.sumRegisterRevenue(companyId, range.from(), range.to(), storeId);
+        long periodSalesCount = cashRegisterIncomeReader.countRegisterReceipts(companyId, range.from(), range.to(), storeId);
         BigDecimal averageCheck = averageCheck(periodSalesAmount, periodSalesCount);
         ExecutivePreviousPeriodDto previousPeriod = new ExecutivePreviousPeriodDto(
             revenuePrevious,
@@ -96,7 +99,7 @@ public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
                 percentChange(expensesToday, expensesYesterday)
             )
             : new ExecutiveComparisonDto(
-                percentChange(sumSales(companyId, range.from(), range.to(), storeId), salesPrevious),
+                percentChange(cashRegisterIncomeReader.sumRegisterRevenue(companyId, range.from(), range.to(), storeId), salesPrevious),
                 percentChange(netProfitPeriod, netProfitPrevious),
                 percentChange(expensesPeriod, expensesPrevious)
             );
@@ -159,7 +162,7 @@ public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
         LocalDate to
     ) {
         Map<LocalDate, BigDecimal> incomeByDay = new HashMap<>();
-        for (Object[] row : incomeRepository.sumDailyByPeriod(companyId, from, to, storeId)) {
+        for (Object[] row : cashRegisterIncomeReader.sumDailyIncome(companyId, from, to, storeId)) {
             incomeByDay.put((LocalDate) row[0], (BigDecimal) row[1]);
         }
         Map<LocalDate, BigDecimal> expenseByDay = new HashMap<>();
@@ -174,21 +177,6 @@ public class ExecutiveSummaryServiceImpl implements ExecutiveSummaryService {
             days.add(new ExecutiveChartDayDto(day, income, expense, income.subtract(expense)));
         }
         return days;
-    }
-
-    private BigDecimal sumSales(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
-        BigDecimal zReport = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.Z_REPORT, from, to, storeId
-        );
-        BigDecimal legacySale = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.SALE, from, to, storeId
-        );
-        return zReport.add(legacySale);
-    }
-
-    private long countSales(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
-        return incomeRepository.countBySourceAndPeriod(companyId, IncomeSourceType.Z_REPORT, from, to, storeId)
-            + incomeRepository.countBySourceAndPeriod(companyId, IncomeSourceType.SALE, from, to, storeId);
     }
 
     private BigDecimal percentChange(BigDecimal current, BigDecimal previous) {

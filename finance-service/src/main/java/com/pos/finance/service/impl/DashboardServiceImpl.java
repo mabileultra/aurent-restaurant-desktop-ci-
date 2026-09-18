@@ -16,6 +16,7 @@ import com.pos.finance.repository.FinancialAccountRepository;
 import com.pos.finance.repository.IncomeRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.DashboardService;
+import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -42,6 +43,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final ExpenseRepository expenseRepository;
     private final FinancialAccountRepository accountRepository;
     private final CompanyBootstrapSupport bootstrapSupport;
+    private final CashRegisterIncomeReader cashRegisterIncomeReader;
 
     @Override
     public FinanceDashboardDto getDashboard(Integer storeId, LocalDate from, LocalDate to) {
@@ -66,23 +68,19 @@ public class DashboardServiceImpl implements DashboardService {
         LocalDate chartStart = customPeriod ? from : weekStart;
         LocalDate chartEnd = customPeriod ? to : today;
 
-        BigDecimal revenueToday = incomeRepository.sumByPeriod(companyId, today, today, storeId);
-        BigDecimal revenueWeek = incomeRepository.sumByPeriod(companyId, weekStart, today, storeId);
-        BigDecimal revenueMonth = incomeRepository.sumByPeriod(companyId, periodStart, periodEnd, storeId);
+        BigDecimal revenueToday = cashRegisterIncomeReader.sumIncome(companyId, today, today, storeId);
+        BigDecimal revenueWeek = cashRegisterIncomeReader.sumIncome(companyId, weekStart, today, storeId);
+        BigDecimal revenueMonth = cashRegisterIncomeReader.sumIncome(companyId, periodStart, periodEnd, storeId);
         BigDecimal expensesToday = expenseRepository.sumByPeriod(companyId, today, today, storeId);
         BigDecimal expensesWeek = expenseRepository.sumByPeriod(companyId, weekStart, today, storeId);
         BigDecimal expensesMonth = expenseRepository.sumByPeriod(companyId, periodStart, periodEnd, storeId);
 
-        BigDecimal salesIncomeToday = sumRevenueByPeriod(companyId, today, today, storeId);
-        BigDecimal salesIncomeMonth = sumRevenueByPeriod(companyId, periodStart, periodEnd, storeId);
+        BigDecimal salesIncomeToday = cashRegisterIncomeReader.sumRegisterRevenue(companyId, today, today, storeId);
+        BigDecimal salesIncomeMonth = cashRegisterIncomeReader.sumRegisterRevenue(companyId, periodStart, periodEnd, storeId);
         BigDecimal purchaseExpenseMonth = expenseRepository.sumBySourceAndPeriod(
             companyId, ExpenseSourceType.PURCHASE, periodStart, periodEnd, storeId
         );
-        long salesCountToday = incomeRepository.countBySourceAndPeriod(
-            companyId, IncomeSourceType.Z_REPORT, today, today, storeId
-        ) + incomeRepository.countBySourceAndPeriod(
-            companyId, IncomeSourceType.SALE, today, today, storeId
-        );
+        long salesCountToday = cashRegisterIncomeReader.countRegisterReceipts(companyId, today, today, storeId);
 
         List<FinancialAccount> accounts = accountRepository.findByCompanyIdAndDeletedFalseOrderByNameAsc(companyId);
         BigDecimal cashInRegisters = accounts.stream()
@@ -132,7 +130,11 @@ public class DashboardServiceImpl implements DashboardService {
         List<Income> incomes = from != null
             ? incomeRepository.findRecentInPeriod(companyId, from, to, storeId, page)
             : incomeRepository.findRecent(companyId, storeId, page);
+        boolean hideDuplicateZ = cashRegisterIncomeReader.prefersSaleLedger(companyId);
         for (Income income : incomes) {
+            if (hideDuplicateZ && income.getSourceType() == IncomeSourceType.Z_REPORT) {
+                continue;
+            }
             items.add(new FinanceRecentTransactionDto(
                 "INCOME",
                 income.getComment() != null ? income.getComment() : income.getIncomeCategory().getName(),
@@ -163,7 +165,7 @@ public class DashboardServiceImpl implements DashboardService {
 
     private List<DailyAmountDto> buildDailyChart(Integer companyId, Integer storeId, LocalDate from, LocalDate to) {
         Map<LocalDate, BigDecimal> incomeByDay = new HashMap<>();
-        for (Object[] row : incomeRepository.sumDailyByPeriod(companyId, from, to, storeId)) {
+        for (Object[] row : cashRegisterIncomeReader.sumDailyIncome(companyId, from, to, storeId)) {
             incomeByDay.put((LocalDate) row[0], (BigDecimal) row[1]);
         }
         Map<LocalDate, BigDecimal> expenseByDay = new HashMap<>();
@@ -180,15 +182,5 @@ public class DashboardServiceImpl implements DashboardService {
             ));
         }
         return days;
-    }
-
-    private BigDecimal sumRevenueByPeriod(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
-        BigDecimal zReport = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.Z_REPORT, from, to, storeId
-        );
-        BigDecimal legacySale = incomeRepository.sumBySourceAndPeriod(
-            companyId, IncomeSourceType.SALE, from, to, storeId
-        );
-        return zReport.add(legacySale);
     }
 }

@@ -66,6 +66,7 @@ public class ReportingIngestServiceImpl implements ReportingIngestService {
             .totalAmount(defaultAmount(event.totalAmount()))
             .cashAmount(defaultAmount(event.cashAmount()))
             .cardAmount(defaultAmount(event.cardAmount()))
+            .returnedAmount(defaultAmount(event.returnedAmount()))
             .paymentMethod(event.paymentMethod())
             .transactionDate(event.transactionDate())
             .createdBy(event.createdBy())
