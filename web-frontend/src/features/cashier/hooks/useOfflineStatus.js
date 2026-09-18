@@ -32,7 +32,7 @@ function invalidatePosData(qc, storeId) {
   qc.invalidateQueries({ queryKey: ['pos-categories'] });
   qc.invalidateQueries({ queryKey: ['pos-products'] });
   if (storeId) {
-    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['cashier-shift'] });
     qc.invalidateQueries({ queryKey: ['my-sales'] });
   }
 }

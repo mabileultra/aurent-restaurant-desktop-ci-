@@ -25,5 +25,6 @@ class PharmacyAsyncPropertiesTest {
         assertEquals(6, properties.getImportPool().getCorePoolSize());
         assertEquals(12, properties.getImportPool().getMaxPoolSize());
         assertEquals(50, properties.getMarkVerify().getQueueCapacity());
+        assertEquals(4, properties.getRevenueOutbox().getCorePoolSize());
     }
 }

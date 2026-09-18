@@ -17,7 +17,7 @@ import { useCashierLock } from '../../../contexts/CashierLockContext';
 import { clearCashierScreenLocked } from '../../../utils/cashierLock';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
 import { cashierLoginPath } from '../../../utils/authLogin';
-import { useCashierShift } from '../../../hooks/useCashierShift';
+import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierTerminalRegistration } from '../../../hooks/useCashierTerminalRegistration';
 import { useOfflineConnectivity } from '../../../hooks/useOfflineConnectivity';
 import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
@@ -82,13 +82,13 @@ export function useCashierLayoutShell() {
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const { isPharmacy } = useCashierStoreProfile();
   const catalogKind = isPharmacy ? 'pharmacy' : 'grocery';
-  const { data: shift } = useCashierShift(storeId, { catalogKind });
+  const { shift, shiftIsOpen } = useCashierShiftView(storeId, { catalogKind });
 
   const shiftOpenBadge = useMemo(() => {
-    if (shift?.status !== 'OPEN') return null;
-    const time = formatShiftOpenedAt(shift.openedAt);
+    if (!shiftIsOpen) return null;
+    const time = formatShiftOpenedAt(shift?.openedAt);
     return time ? t('pos.shiftOpenedAt', { time }) : t('pos.shiftOpen');
-  }, [shift, t]);
+  }, [shiftIsOpen, shift?.openedAt, t]);
 
   const cashierRoleLabel = useMemo(() => {
     if (!user?.role) return '';
@@ -140,6 +140,7 @@ export function useCashierLayoutShell() {
     displayAppName,
     catalogKind,
     shift,
+    shiftIsOpen,
     cashierTheme,
     toggleCashierTheme,
     handleLogout,

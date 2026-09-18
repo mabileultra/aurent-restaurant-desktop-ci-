@@ -20,6 +20,15 @@ describe('resolveReceiptShiftLabel', () => {
     ).toMatch(/17\.09\.2026/);
   });
 
+  it('prefers register number over open time', () => {
+    expect(
+      resolveReceiptShiftLabel({
+        shiftRegisterNumber: 2,
+        shiftOpenedAt: '2026-09-17T09:05:00+05:00',
+      }),
+    ).toBe('2');
+  });
+
   it('prefers env only when no shift data', () => {
     expect(
       resolveReceiptShiftLabel(

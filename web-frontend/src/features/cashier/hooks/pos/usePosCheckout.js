@@ -72,7 +72,7 @@ export function usePosCheckout({
       setSelectedLineId(null);
       qc.invalidateQueries({ queryKey: ['pos-products'] });
       qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
-      qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+      qc.invalidateQueries({ queryKey: ['cashier-shift'] });
       qc.invalidateQueries({ queryKey: ['my-sales'] });
       qc.invalidateQueries({ queryKey: ['sales-ledger'] });
       const receiptNum = res.data.receiptNumber;

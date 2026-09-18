@@ -7,6 +7,7 @@ public final class PharmacyExecutorNames {
     public static final String MARK_WITHDRAW = "pharmacyMarkWithdrawExecutor";
     public static final String IMPORT = "pharmacyImportExecutor";
     public static final String CATALOG = "pharmacyCatalogExecutor";
+    public static final String REVENUE_OUTBOX = "pharmacyRevenueOutboxExecutor";
 
     private PharmacyExecutorNames() {
     }

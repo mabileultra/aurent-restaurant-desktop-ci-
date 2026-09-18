@@ -29,6 +29,7 @@ import {
 import { classifyPharmacySearchScan } from '../utils/classifyPharmacySearchScan';
 import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import { focusPharmacyScanField, isPharmacyKmFieldFocused } from '../utils/focusPharmacyScanField';
+import { canAddProductFromSearchList } from '../../cashier/hooks/pos/posProductsSearchStale';
 
 export function usePharmacyCartHandlers({
   storeId,
@@ -39,6 +40,7 @@ export function usePharmacyCartHandlers({
   searchInputRef,
   kmInputRef,
   products,
+  productsStale = false,
   search,
   setSearch,
   addWeightLine,
@@ -367,7 +369,9 @@ export function usePharmacyCartHandlers({
       return;
     }
     if (await tryAddByBarcode(q, { silent: kind === 'text' })) return;
-    if (products.length === 0) {
+    // Не берём товар из прошлого результата поиска (keepPreviousData).
+    if (!canAddProductFromSearchList({ productsStale, products })) {
+      if (productsStale) return;
       toast.error(t('pos.barcodeNotFound'));
       return;
     }
@@ -382,7 +386,7 @@ export function usePharmacyCartHandlers({
       return;
     }
     addProductToCart(exact);
-  }, [search, products, tryAddByBarcode, addProductToCart, t]);
+  }, [search, products, productsStale, tryAddByBarcode, addProductToCart, t]);
 
   const handleQtyDelta = useCallback(
     (lineId, delta) => {

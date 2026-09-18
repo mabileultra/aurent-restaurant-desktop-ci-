@@ -7,6 +7,7 @@ import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
 import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
+import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -113,17 +114,9 @@ export function buildCashierEscposPayload(sale, t) {
       String(import.meta.env.VITE_COMPANY_STIR || '').trim() || String(import.meta.env.VITE_STIR || '').trim();
   }
 
-  branding.shiftNo =
-    import.meta.env.VITE_SHIFT_NO
-    || (sale.shiftOpenedAt
-      ? (() => {
-          const d = new Date(sale.shiftOpenedAt);
-          if (Number.isNaN(d.getTime())) return '';
-          const pad = (n) => String(n).padStart(2, '0');
-          return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
-        })()
-      : '')
-    || '';
+  branding.shiftNo = resolveReceiptShiftLabel(sale, {
+    envShiftNo: import.meta.env.VITE_SHIFT_NO,
+  });
   // Не вырезать «001» из номера чека — это не смена.
 
   const fiscalMeta = resolveFiscalReceiptMeta(sale, branding);

@@ -9,7 +9,8 @@ import {
   useMultikassaCashierStatus,
 } from '../../hooks/useMultikassaCashierStatus';
 import { useCashierStore } from '../../../../hooks/useCashierStore';
-import { useCashierShift } from '../../../../hooks/useCashierShift';
+import { useCashierShiftView } from '../../../../hooks/useCashierShiftView';
+import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 import { getApiErrorMessage } from '../../../../utils/apiError';
 
 const MultikassaSettingsModal = lazy(() =>
@@ -23,7 +24,10 @@ const GENERIC_SERVER_ERROR = 'An unexpected error occurred';
  */
 export default function CashierDesktopMenuMultikassa({ t }) {
   const { storeId } = useCashierStore();
-  const { data: shift } = useCashierShift(storeId);
+  const { isPharmacy } = useCashierStoreProfile();
+  const { shift } = useCashierShiftView(storeId, {
+    catalogKind: isPharmacy ? 'pharmacy' : 'grocery',
+  });
   const cashRegisterId = shift?.cashRegisterId ?? null;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const qc = useQueryClient();

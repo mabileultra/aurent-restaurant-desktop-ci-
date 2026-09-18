@@ -6,6 +6,7 @@ import PharmacyPayColumn from './PharmacyPayColumn';
 import PosParkedCartsBar from '../../cashier/components/pos-order-panel/PosParkedCartsBar';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
+import { focusPharmacyScanField } from '../utils/focusPharmacyScanField';
 import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyRegisterWorkspace({
@@ -29,11 +30,7 @@ export default function PharmacyRegisterWorkspace({
   const { checkoutMutation, handleConfirmPayment } = checkout;
 
   const focusSearch = () => {
-    if (kmInputRef?.current && document.activeElement === kmInputRef.current) {
-      kmInputRef.current.focus();
-      return;
-    }
-    searchInputRef.current?.focus();
+    focusPharmacyScanField({ kmInputRef, searchInputRef });
   };
 
   return (
@@ -111,6 +108,7 @@ export default function PharmacyRegisterWorkspace({
             onSearchEnter={catalog.handleSearchEnter}
             products={catalog.products}
             productsLoading={catalog.productsLoading}
+            productsStale={catalog.productsStale}
             productsError={catalog.productsError}
             productsLoadingMore={catalog.productsLoadingMore}
             productsHasMore={Boolean(catalog.productsHasMore)}

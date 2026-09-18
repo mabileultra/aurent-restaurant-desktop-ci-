@@ -8,9 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class StockMarkMonitorSqlTest {
 
     @Test
-    void searchCastsMarkCodeToText() {
-        assertTrue(StockMarkMonitorSql.SELECT.contains("lower(sm.mark_code::text)"));
-        assertTrue(StockMarkMonitorSql.COUNT.contains("lower(sm.mark_code::text)"));
-        assertFalse(StockMarkMonitorSql.SELECT.contains("LOWER(m.markCode)"));
+    void searchCastsMarkCodeWithoutPostgresColonSyntax() {
+        // Hibernate treats ":text" in "mark_code::text" as a named parameter → SQL syntax error
+        assertFalse(StockMarkMonitorSql.SELECT.contains("::"));
+        assertFalse(StockMarkMonitorSql.COUNT.contains("::"));
+        assertTrue(StockMarkMonitorSql.SELECT.contains("lower(CAST(sm.mark_code AS TEXT))"));
+        assertTrue(StockMarkMonitorSql.COUNT.contains("lower(CAST(sm.mark_code AS TEXT))"));
     }
 }

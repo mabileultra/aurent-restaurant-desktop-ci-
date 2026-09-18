@@ -21,15 +21,18 @@ import {
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
 import '../styles/pharmacy-qty-modal.css';
-import '../styles/pharmacy-qty-modal-compact.css';
 
 function digits(value) {
   return String(value ?? '').replace(/[^\d]/g, '');
 }
 
+function lotKeyOf(lot) {
+  return `${lot?.batchNumber || ''}|${lot?.expiryDate || ''}`;
+}
+
 /**
- * Модалка количества. Маркировку сюда не выносим —
- * КМ и штрихкод читает одно поле поиска на кассе.
+ * Модалка «Добавить товар в чек» — раскладка как в Осон, наш визуал.
+ * КМ по-прежнему со скана в поиске кассы; чекбокс маркировки — статус товара.
  */
 export default function PharmacyQtyModal({
   open,
@@ -43,10 +46,14 @@ export default function PharmacyQtyModal({
   const [packsText, setPacksText] = useState('0');
   const [piecesText, setPiecesText] = useState('0');
   const [lotKey, setLotKey] = useState('');
+  const [batchText, setBatchText] = useState('');
+  const [packOnly, setPackOnly] = useState(false);
+  const [markingOn, setMarkingOn] = useState(false);
   const [error, setError] = useState('');
 
   const unitsInPack = productUnitsInPack(product) || Number(product?.unitsInPack) || 1;
-  const sellByPiece = productSellByPiece(product);
+  const productAllowsPiece = productSellByPiece(product);
+  const sellByPiece = productAllowsPiece && !packOnly;
   const pieceStep = productPieceStep(product);
   const packPrice = Number(product?.packUnitPrice ?? product?.sellingPrice ?? 0);
   const piecePrice = unitsInPack > 1
@@ -64,6 +71,8 @@ export default function PharmacyQtyModal({
     .map((b) => String(b || '').trim())
     .filter(Boolean);
   const uniqueBarcodes = [...new Set(barcodes)];
+  const showPackUi = unitsInPack > 1;
+  const markedProduct = Boolean(product?.markedProduct);
 
   const lotsQuery = useQuery({
     queryKey: ['pharmacy-lots', storeId, product?.id],
@@ -80,12 +89,15 @@ export default function PharmacyQtyModal({
     setPacksText(unitsInPack > 1 ? '0' : '1');
     setPiecesText('0');
     setError('');
+    setPackOnly(!productAllowsPiece);
+    setMarkingOn(markedProduct);
     const hintExpiry = productExpiry(product);
     const hintBatch = productBatch(product);
     setLotKey(hintExpiry || hintBatch ? `${hintBatch || ''}|${hintExpiry || ''}` : '');
+    setBatchText(hintBatch || '');
     const timer = setTimeout(() => packRef.current?.focus(), 30);
     return () => clearTimeout(timer);
-  }, [open, product, unitsInPack]);
+  }, [open, product, unitsInPack, productAllowsPiece, markedProduct]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -114,9 +126,27 @@ export default function PharmacyQtyModal({
   const stepValues = pieceStepHintValues(pieceStep, unitsInPack);
   const selectedLot = lots.find((lot) => lotKeyOf(lot) === lotKey) || null;
   const expiryValue = selectedLot?.expiryDate || productExpiry(product) || '';
-  const batchValue = selectedLot?.batchNumber || productBatch(product) || '';
+
+  useEffect(() => {
+    if (!selectedLot) return;
+    setBatchText(selectedLot.batchNumber || '');
+  }, [selectedLot]);
 
   if (!open || !product) return null;
+
+  const bumpPack = (delta) => {
+    const next = Math.max(0, packs + delta);
+    setPacksText(String(next));
+    setError('');
+  };
+
+  const bumpPiece = (delta) => {
+    if (!sellByPiece) return;
+    const step = pieceStep > 1 ? pieceStep : 1;
+    const next = Math.max(0, pieces + (delta > 0 ? step : -step));
+    setPiecesText(String(next));
+    setError('');
+  };
 
   const submit = () => {
     const err = validatePackPieceQty({
@@ -134,12 +164,13 @@ export default function PharmacyQtyModal({
     onConfirm?.({
       packs: normalized.packs,
       pieces: sellByPiece ? normalized.pieces : 0,
-      lot: selectedLot,
+      lot: selectedLot
+        ? { ...selectedLot, batchNumber: batchText.trim() || selectedLot.batchNumber }
+        : (batchText.trim() ? { batchNumber: batchText.trim(), expiryDate: expiryValue || null } : null),
       productMarks: [],
+      markingOn,
     });
   };
-
-  const showPackUi = unitsInPack > 1;
 
   return (
     <div className="pharmacy-qty-modal" role="dialog" aria-modal="true">
@@ -150,23 +181,35 @@ export default function PharmacyQtyModal({
         onClick={onClose}
       />
       <div className="pharmacy-qty-modal__panel pharmacy-qty-modal__panel--sale">
-        <div className="pharmacy-qty-modal__head">
-          <h2 className="pharmacy-qty-modal__title">{t('pharmacyCashier.addToReceipt')}</h2>
+        <header className="pharmacy-qty-modal__head">
+          <h2 className="pharmacy-qty-modal__title">{t('pharmacyCashier.addToReceiptTitle')}</h2>
           <button type="button" className="pharmacy-qty-modal__x" onClick={onClose} aria-label={t('common.close')}>×</button>
+        </header>
+
+        <div className="pharmacy-qty-modal__name-bar" title={product.name}>
+          {product.name}
         </div>
 
-        <p className="pharmacy-qty-modal__product">{product.name}</p>
+        <div className="pharmacy-qty-modal__body">
+          <FieldRow label={t('pharmacyCashier.colManufacturer')}>
+            <span className="pharmacy-qty-modal__box">{manufacturer || '—'}</span>
+          </FieldRow>
 
-        <dl className="pharmacy-qty-modal__grid">
-          <Row label={t('pharmacyCashier.colManufacturer')} value={manufacturer || '—'} />
-          <Row label={t('pharmacyCashier.colBarcode')} value={uniqueBarcodes.join(', ') || '—'} />
-          <Row label={t('pharmacyCashier.colIkpu')} value={product.ikpu || '—'} />
-          <div className="pharmacy-qty-modal__grid-row">
-            <dt>{t('pharmacyCashier.colExpiry')}</dt>
-            <dd>
+          <FieldRow label={t('pharmacyCashier.colBarcode')}>
+            <span className="pharmacy-qty-modal__box pharmacy-qty-modal__box--wrap">
+              {uniqueBarcodes.join(', ') || '—'}
+            </span>
+          </FieldRow>
+
+          <FieldRow label={t('pharmacyCashier.colIkpuMxik')}>
+            <span className="pharmacy-qty-modal__box">{product.ikpu || '—'}</span>
+          </FieldRow>
+
+          <div className="pharmacy-qty-modal__row pharmacy-qty-modal__row--split">
+            <FieldRow label={t('pharmacyCashier.colExpiryFull')} className="pharmacy-qty-modal__row--grow">
               {lots.length > 0 ? (
                 <select
-                  className="pharmacy-qty-modal__select"
+                  className="pharmacy-qty-modal__box pharmacy-qty-modal__box--input"
                   value={lotKey}
                   onChange={(e) => setLotKey(e.target.value)}
                 >
@@ -180,127 +223,192 @@ export default function PharmacyQtyModal({
                   ))}
                 </select>
               ) : (
-                formatExpiryDisplay(expiryValue) || '—'
+                <span className="pharmacy-qty-modal__box">{formatExpiryDisplay(expiryValue) || '—'}</span>
               )}
-            </dd>
-          </div>
-          <Row label={t('pharmacyCashier.colBatch')} value={batchValue || '—'} />
-          <div className="pharmacy-qty-modal__grid-row">
-            <dt>{t('pharmacyCashier.colPrice')}</dt>
-            <dd className="pharmacy-qty-modal__price-row">
-              <strong>{fmt(packPrice)}</strong>
-              <span>{t('pharmacyCashier.vatShort')} {fmt(Number(product.taxRate ?? 0))}</span>
-            </dd>
-          </div>
-          {showPackUi ? (
-            <Row label={t('pharmacyCashier.pricePerPiece')} value={fmt(piecePrice)} />
-          ) : null}
-          <div className="pharmacy-qty-modal__grid-row">
-            <dt>{t('pharmacyCashier.stockLeft')}</dt>
-            <dd>
-              {roundQty(stockPacks)} {t('pharmacyCashier.packUnit')}
-              {showPackUi ? (
-                <span className="pharmacy-qty-modal__muted">
-                  {' · '}{t('pharmacyCashier.packOf', { count: unitsInPack })}
-                </span>
-              ) : null}
-            </dd>
-          </div>
-        </dl>
-
-        <div className="pharmacy-qty-modal__metrics">
-          <label className="pharmacy-qty-modal__metric">
-            <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.qtyLabel')}</span>
-            <span className="pharmacy-qty-modal__metric-row">
-              <input
-                ref={packRef}
-                inputMode="numeric"
-                className="pharmacy-qty-modal__qty-input"
-                value={packsText}
-                onChange={(e) => {
-                  setPacksText(digits(e.target.value));
-                  setError('');
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    if (showPackUi && sellByPiece) return;
-                    submit();
-                  }
-                }}
-              />
-              <em className="pharmacy-qty-modal__metric-unit">{t('pharmacyCashier.packUnit')}</em>
-            </span>
-          </label>
-
-          {showPackUi ? (
-            <label className={`pharmacy-qty-modal__metric${sellByPiece ? '' : ' is-disabled'}`}>
-              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.qtyPieces')}</span>
-              <span className="pharmacy-qty-modal__metric-row">
+            </FieldRow>
+            {showPackUi ? (
+              <label className="pharmacy-qty-modal__inline-check">
                 <input
-                  inputMode="numeric"
-                  className="pharmacy-qty-modal__qty-input"
-                  value={sellByPiece ? piecesText : '0'}
-                  disabled={!sellByPiece}
+                  type="checkbox"
+                  checked={packOnly}
+                  disabled={!productAllowsPiece}
                   onChange={(e) => {
-                    setPiecesText(digits(e.target.value));
+                    setPackOnly(e.target.checked);
+                    if (e.target.checked) setPiecesText('0');
                     setError('');
                   }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      submit();
-                    }
-                  }}
                 />
-                <em className="pharmacy-qty-modal__metric-unit">{t('pharmacyCashier.pieceUnit')}</em>
-              </span>
-            </label>
-          ) : null}
-
-          <div className="pharmacy-qty-modal__metric" aria-live="polite">
-            <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.colSum')}</span>
-            <p className="pharmacy-qty-modal__metric-value">{fmt(preview)}</p>
+                <span>{t('pharmacyCashier.noSellByPiece')}</span>
+              </label>
+            ) : null}
           </div>
+
+          <FieldRow label={t('pharmacyCashier.colBatch')}>
+            <input
+              className="pharmacy-qty-modal__box pharmacy-qty-modal__box--input"
+              value={batchText}
+              onChange={(e) => setBatchText(e.target.value)}
+              placeholder="—"
+            />
+          </FieldRow>
+
+          <div className="pharmacy-qty-modal__pair">
+            <FieldRow label={t('pharmacyCashier.colPrice')}>
+              <span className="pharmacy-qty-modal__box">{fmt(packPrice)}</span>
+            </FieldRow>
+            <FieldRow label={t('pharmacyCashier.vatShort')}>
+              <span className="pharmacy-qty-modal__box">{fmt(Number(product.taxRate ?? 0))}</span>
+            </FieldRow>
+          </div>
+
+          <div className="pharmacy-qty-modal__pair">
+            <FieldRow label={showPackUi ? t('pharmacyCashier.pricePerPieceShort') : t('pharmacyCashier.pricePerPiece')}>
+              <span className="pharmacy-qty-modal__box">{fmt(piecePrice)}</span>
+            </FieldRow>
+            <FieldRow label={t('pharmacyCashier.soldPacks')}>
+              <span className="pharmacy-qty-modal__box">0 {t('pharmacyCashier.qtyPackShort')}</span>
+            </FieldRow>
+          </div>
+
+          <div className="pharmacy-qty-modal__pair">
+            <FieldRow label={t('pharmacyCashier.remaining')}>
+              <span className="pharmacy-qty-modal__box">
+                {roundQty(stockPacks)} {t('pharmacyCashier.qtyPackShort')}
+              </span>
+            </FieldRow>
+            <FieldRow label={t('pharmacyCashier.inPack')}>
+              <span className="pharmacy-qty-modal__box">{showPackUi ? unitsInPack : 1}</span>
+            </FieldRow>
+          </div>
+
+          <div className="pharmacy-qty-modal__qty-block">
+            <p className="pharmacy-qty-modal__qty-label">{t('pharmacyCashier.qtyLabel')}</p>
+            <div className={`pharmacy-qty-modal__steppers${showPackUi ? '' : ' pharmacy-qty-modal__steppers--single'}`}>
+              <Stepper
+                inputRef={packRef}
+                value={packsText}
+                unit={t('pharmacyCashier.qtyPackShort')}
+                active={packs > 0 || !showPackUi || !sellByPiece}
+                onChange={(v) => {
+                  setPacksText(digits(v));
+                  setError('');
+                }}
+                onBump={bumpPack}
+                onEnter={() => {
+                  if (showPackUi && sellByPiece) return;
+                  submit();
+                }}
+              />
+              {showPackUi ? (
+                <Stepper
+                  value={sellByPiece ? piecesText : '0'}
+                  unit={t('pharmacyCashier.qtyPieceShort')}
+                  disabled={!sellByPiece}
+                  active={sellByPiece && pieces > 0}
+                  onChange={(v) => {
+                    setPiecesText(digits(v));
+                    setError('');
+                  }}
+                  onBump={bumpPiece}
+                  onEnter={submit}
+                />
+              ) : null}
+            </div>
+            {!sellByPiece && showPackUi ? (
+              <p className="pharmacy-qty-modal__hint pharmacy-qty-modal__hint--muted">
+                {t('pharmacyCashier.noPieceSaleHint')}
+              </p>
+            ) : null}
+            {sellByPiece && stepValues.length > 0 ? (
+              <p className="pharmacy-qty-modal__hint">
+                {t('pharmacyCashier.pieceStepHintOson', {
+                  steps: stepValues.slice(0, 4).join(', '),
+                })}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="pharmacy-qty-modal__total-bar" aria-live="polite">
+            {fmt(preview)} {t('pharmacyCashier.sumCurrency')}
+          </div>
+
+          {error ? <p className="pharmacy-qty-modal__error">{error}</p> : null}
         </div>
 
-        {!sellByPiece && showPackUi ? (
-          <p className="pharmacy-qty-modal__hint">{t('pharmacyCashier.noPieceSaleHint')}</p>
-        ) : null}
-        {sellByPiece && stepValues.length > 0 ? (
-          <p className="pharmacy-qty-modal__hint">
-            {t('pharmacyCashier.pieceStepHint', { steps: stepValues.slice(0, 4).join(', ') })}
-          </p>
-        ) : null}
-
-        {error ? <p className="pharmacy-qty-modal__error">{error}</p> : null}
-
-        <div className="pharmacy-qty-modal__actions">
-          <button type="button" className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--cancel" onClick={onClose}>
-            {t('common.cancel')}
-          </button>
-          <button
-            type="button"
-            className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--ok"
-            onClick={submit}
-          >
-            {t('pharmacyCashier.addLine')}
-          </button>
-        </div>
+        <footer className="pharmacy-qty-modal__footer">
+          <label className="pharmacy-qty-modal__marking">
+            <input
+              type="checkbox"
+              checked={markingOn}
+              disabled={!markedProduct}
+              onChange={(e) => setMarkingOn(e.target.checked)}
+            />
+            <span>{t('pharmacyCashier.marking')}</span>
+          </label>
+          <div className="pharmacy-qty-modal__actions">
+            <button type="button" className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--cancel" onClick={onClose}>
+              {t('common.cancel')}
+            </button>
+            <button type="button" className="pharmacy-qty-modal__btn pharmacy-qty-modal__btn--ok" onClick={submit}>
+              {t('pharmacyCashier.addProduct')}
+            </button>
+          </div>
+        </footer>
       </div>
     </div>
   );
 }
 
-function Row({ label, value }) {
+function FieldRow({ label, children, className = '' }) {
   return (
-    <div className="pharmacy-qty-modal__grid-row">
-      <dt>{label}</dt>
-      <dd>{value}</dd>
+    <div className={`pharmacy-qty-modal__row ${className}`.trim()}>
+      <span className="pharmacy-qty-modal__row-label">{label}</span>
+      <div className="pharmacy-qty-modal__row-control">{children}</div>
     </div>
   );
 }
 
-function lotKeyOf(lot) {
-  return `${lot?.batchNumber || ''}|${lot?.expiryDate || ''}`;
+function Stepper({
+  inputRef,
+  value,
+  unit,
+  disabled = false,
+  active = false,
+  onChange,
+  onBump,
+  onEnter,
+}) {
+  return (
+    <div
+      className={`pharmacy-qty-modal__stepper${active ? ' is-active' : ''}${disabled ? ' is-disabled' : ''}`}
+    >
+      <input
+        ref={inputRef}
+        inputMode="numeric"
+        className="pharmacy-qty-modal__stepper-input"
+        value={value}
+        disabled={disabled}
+        onChange={(e) => onChange?.(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onEnter?.();
+          }
+          if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            onBump?.(1);
+          }
+          if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            onBump?.(-1);
+          }
+        }}
+      />
+      <div className="pharmacy-qty-modal__stepper-side">
+        <button type="button" tabIndex={-1} disabled={disabled} onClick={() => onBump?.(1)} aria-label="+">▴</button>
+        <button type="button" tabIndex={-1} disabled={disabled} onClick={() => onBump?.(-1)} aria-label="-">▾</button>
+      </div>
+      <em className="pharmacy-qty-modal__stepper-unit">{unit}</em>
+    </div>
+  );
 }

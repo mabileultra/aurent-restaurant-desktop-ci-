@@ -20,6 +20,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Service
 @RequiredArgsConstructor
@@ -113,9 +117,7 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
         }
         try {
             SaleCompletedEvent event = objectMapper.readValue(row.getPayload(), SaleCompletedEvent.class);
-            template.send(KafkaTopics.SALES_COMPLETED, row.getMessageKey(), event)
-                .get(kafkaProperties.getSendTimeoutMs(), java.util.concurrent.TimeUnit.MILLISECONDS);
-            return true;
+            return awaitSend(template.send(KafkaTopics.SALES_COMPLETED, row.getMessageKey(), event));
         } catch (Exception ex) {
             LogUtil.warn(RevenueOutboxServiceImpl.class, "Sale completed publish failed: {}", ex.getMessage());
             return false;
@@ -135,11 +137,30 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
                 row.getIdempotencyKey(),
                 row.getPayload()
             );
-            template.send(KafkaTopics.FINANCE_INTEGRATION, row.getMessageKey(), message)
-                .get(kafkaProperties.getSendTimeoutMs(), java.util.concurrent.TimeUnit.MILLISECONDS);
-            return true;
+            return awaitSend(template.send(KafkaTopics.FINANCE_INTEGRATION, row.getMessageKey(), message));
         } catch (Exception ex) {
             LogUtil.warn(RevenueOutboxServiceImpl.class, "Refund expense publish failed: {}", ex.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Ждёт результат только на async/retry воркере — поток кассы сюда не попадает.
+     * Без blocking {@code Future.get}: timeout через {@code orTimeout}.
+     */
+    private boolean awaitSend(CompletableFuture<?> sendFuture) {
+        try {
+            sendFuture
+                .orTimeout(kafkaProperties.getSendTimeoutMs(), TimeUnit.MILLISECONDS)
+                .join();
+            return true;
+        } catch (CompletionException ex) {
+            Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
+            if (cause instanceof TimeoutException) {
+                LogUtil.warn(RevenueOutboxServiceImpl.class, "Kafka send timed out after {}ms", kafkaProperties.getSendTimeoutMs());
+            } else {
+                LogUtil.warn(RevenueOutboxServiceImpl.class, "Kafka send failed: {}", cause.getMessage());
+            }
             return false;
         }
     }

@@ -1,7 +1,8 @@
 import { BaseButton, BaseModal } from '../../../components/ui';
+import { resolveImportMarksAskMode } from '../utils/resolveImportMarksAskMode';
 
 /**
- * Спросить → полная ASL-проверка (без отмены) → точный итог принятых / отклонённых.
+ * После импорта: нет ASL → продолжить/отмена; есть ASL → проверить → итог.
  */
 export default function PharmacyReceiptImportMarksVerifyModal({
   open,
@@ -10,17 +11,28 @@ export default function PharmacyReceiptImportMarksVerifyModal({
   markCount,
   etaSeconds = 0,
   aslEnabled,
+  aslReady = true,
   verifying,
   progress = { done: 0, total: 0 },
   resultSummary = null,
   onVerify,
   onSkip,
+  onContinueWithoutVerify,
+  onDiscard,
   onConfirmResult,
 }) {
   const total = progress.total || markCount || 0;
   const done = progress.done || 0;
   const pct = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
-  const locked = verifying || Boolean(resultSummary);
+  const mode = resolveImportMarksAskMode({
+    askOpen: open,
+    aslReady,
+    aslEnabled,
+    verifying,
+    hasResult: Boolean(resultSummary),
+  });
+  const locked = mode === 'verifying' || mode === 'result';
+  const continueWithout = onContinueWithoutVerify || onSkip;
 
   const reasonLabel = (reason) => {
     if (reason === 'alreadySold') return t('pharmacyStock.marks.alreadySold');
@@ -28,35 +40,48 @@ export default function PharmacyReceiptImportMarksVerifyModal({
     return t('pharmacyStock.marks.verifyFailed');
   };
 
+  const title =
+    mode === 'result'
+      ? t('pharmacyStock.marks.importResultTitle')
+      : mode === 'no-asl'
+        ? t('pharmacyStock.marks.importAslMissingTitle')
+        : t('pharmacyStock.marks.importAskTitle');
+
+  const footer =
+    mode === 'result' ? (
+      <BaseButton onClick={onConfirmResult}>
+        {t('pharmacyStock.marks.importResultConfirm')}
+      </BaseButton>
+    ) : mode === 'verifying' ? null : mode === 'no-asl' ? (
+      <>
+        <BaseButton variant="secondary" onClick={onDiscard}>
+          {t('pharmacyStock.marks.importAslDiscard')}
+        </BaseButton>
+        <BaseButton onClick={continueWithout}>
+          {t('pharmacyStock.marks.importAslContinue')}
+        </BaseButton>
+      </>
+    ) : mode === 'ask' ? (
+      <>
+        <BaseButton variant="secondary" onClick={onSkip}>
+          {t('pharmacyStock.marks.importSkipVerify')}
+        </BaseButton>
+        <BaseButton onClick={onVerify}>
+          {t('pharmacyStock.marks.importDoVerify')}
+        </BaseButton>
+      </>
+    ) : null;
+
   return (
     <BaseModal
-      open={open}
+      open={open && mode !== 'idle'}
       onClose={locked ? () => {} : onClose}
-      title={
-        resultSummary
-          ? t('pharmacyStock.marks.importResultTitle')
-          : t('pharmacyStock.marks.importAskTitle')
-      }
+      title={title}
       size="sm"
-      footer={(
-        resultSummary ? (
-          <BaseButton onClick={onConfirmResult}>
-            {t('pharmacyStock.marks.importResultConfirm')}
-          </BaseButton>
-        ) : verifying ? null : (
-          <>
-            <BaseButton variant="secondary" onClick={onSkip}>
-              {t('pharmacyStock.marks.importSkipVerify')}
-            </BaseButton>
-            <BaseButton onClick={onVerify} disabled={!aslEnabled}>
-              {t('pharmacyStock.marks.importDoVerify')}
-            </BaseButton>
-          </>
-        )
-      )}
+      footer={footer}
     >
       <div className="pharmacy-import-marks-ask">
-        {resultSummary ? (
+        {mode === 'result' ? (
           <div className="pharmacy-import-marks-ask__result">
             <p className="pharmacy-import-marks-ask__text">
               {t('pharmacyStock.marks.importResultBody', {
@@ -97,25 +122,31 @@ export default function PharmacyReceiptImportMarksVerifyModal({
               {t('pharmacyStock.marks.importResultHint')}
             </p>
           </div>
+        ) : mode === 'no-asl' ? (
+          <>
+            <p className="pharmacy-import-marks-ask__text">
+              {t('pharmacyStock.marks.importAslMissingBody', { count: markCount })}
+            </p>
+            <p className="pharmacy-import-marks-ask__warn">
+              {t('pharmacyStock.marks.importAslMissingWarn')}
+            </p>
+            <p className="pharmacy-import-marks-ask__hint">
+              {t('pharmacyStock.marks.importAslMissingHint')}
+            </p>
+          </>
         ) : (
           <>
             <p className="pharmacy-import-marks-ask__text">
               {t('pharmacyStock.marks.importAskBody', { count: markCount })}
             </p>
-            {!aslEnabled ? (
-              <p className="pharmacy-import-marks-ask__warn">
-                {t('pharmacyStock.marks.importAslDisabled')}
-              </p>
-            ) : (
-              <p className="pharmacy-import-marks-ask__hint">
-                {t('pharmacyStock.marks.importAskHint')}
-                {markCount > 20 && etaSeconds > 0
-                  ? ` ${t('pharmacyStock.marks.importAskEta', { seconds: etaSeconds })}`
-                  : ''}
-              </p>
-            )}
+            <p className="pharmacy-import-marks-ask__hint">
+              {t('pharmacyStock.marks.importAskHint')}
+              {markCount > 20 && etaSeconds > 0
+                ? ` ${t('pharmacyStock.marks.importAskEta', { seconds: etaSeconds })}`
+                : ''}
+            </p>
 
-            {verifying ? (
+            {mode === 'verifying' ? (
               <div className="pharmacy-import-marks-ask__progress" aria-live="polite">
                 <div className="pharmacy-import-marks-ask__progress-label">
                   {t('pharmacyStock.marks.importProgress', { done, total })}

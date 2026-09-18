@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { stockReportApi } from '../../../api';
 import { BaseSelect } from '../../../components/ui';
+import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import ReportProductNameCell from '../components/ReportProductNameCell';
 import ReportTableCard from '../components/ReportTableCard';
 import { fmtMoney } from '../../../utils/formatMoney';

@@ -10,6 +10,7 @@ import {
 } from '../../../../services/pos/posDataRouter';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
 import { usePosCatalogPrefetch } from './usePosCatalogPrefetch';
+import { isPosProductsSearchStale } from './posProductsSearchStale';
 
 function invalidatePosCatalogQueries(qc) {
   qc.cancelQueries({ queryKey: ['pos-categories'] });
@@ -73,7 +74,9 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     data: productsPages,
     isLoading: productsLoading,
     isError: productsError,
+    isFetching: productsFetching,
     isFetchingNextPage: productsLoadingMore,
+    isPlaceholderData: productsPlaceholder,
     hasNextPage: productsHasMore,
     fetchNextPage: fetchMoreProducts,
   } = useInfiniteQuery({
@@ -106,6 +109,13 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
 
   const products = productsPages?.pages.flatMap((page) => page?.content ?? []) ?? [];
   const pagesLoaded = productsPages?.pages?.length ?? 0;
+  /** keepPreviousData: Enter/клик по списку нельзя, пока идёт новый поиск. */
+  const productsStale = isPosProductsSearchStale({
+    searchActive,
+    productsPlaceholder,
+    productsFetching,
+    productsLoadingMore,
+  });
 
   usePosCatalogPrefetch({
     enabled: productsEnabled && catalogMode === 'online',
@@ -140,6 +150,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     categoriesError,
     products,
     productsLoading,
+    productsStale,
     productsError,
     productsLoadingMore,
     productsHasMore,

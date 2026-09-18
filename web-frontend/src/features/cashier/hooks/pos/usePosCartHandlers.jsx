@@ -10,6 +10,7 @@ import { fmtMoney as fmt } from '../../../../utils/formatMoney';
 import { isMeasuredProduct, minQtyForUnit, qtyStepForUnit, roundQty } from '../../../../utils/quantityFormat';
 import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
+import { canAddProductFromSearchList } from './posProductsSearchStale';
 
 export function usePosCartHandlers({
   storeId,
@@ -19,6 +20,7 @@ export function usePosCartHandlers({
   shiftModalOpen,
   searchInputRef,
   products,
+  productsStale = false,
   search,
   setSearch,
   addPieceItem,
@@ -224,7 +226,9 @@ export function usePosCartHandlers({
     const q = search.trim();
     if (!q) return;
     if (await tryAddByBarcode(q, { silent: true })) return;
-    if (products.length === 0) {
+    // Не берём товар из прошлого результата поиска (keepPreviousData).
+    if (!canAddProductFromSearchList({ productsStale, products })) {
+      if (productsStale) return;
       toast.error(t('pos.barcodeNotFound'));
       return;
     }
@@ -235,7 +239,7 @@ export function usePosCartHandlers({
       products.find((p) => p.name?.toLowerCase() === lower);
     addProductToCart(exact ?? products[0]);
     setSearch('');
-  }, [search, products, tryAddByBarcode, addProductToCart, t, setSearch]);
+  }, [search, products, productsStale, tryAddByBarcode, addProductToCart, t, setSearch]);
 
   const handleQtyDelta = useCallback(
     (lineId, delta) => {

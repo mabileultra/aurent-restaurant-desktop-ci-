@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { useCashierShift } from '../../../hooks/useCashierShift';
+import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../../contexts/CashierShiftModalContext';
 import { usePosShell } from '../../../contexts/PosShellContext';
@@ -12,6 +12,7 @@ import { useCartStore } from '../../../store/cartStore';
 import { usePosProductsCatalog } from '../../cashier/hooks/pos/usePosProductsCatalog';
 import { usePosCheckout } from '../../cashier/hooks/pos/usePosCheckout';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
+import { focusPharmacyScanField } from '../utils/focusPharmacyScanField';
 import { usePharmacyCartHandlers } from './usePharmacyCartHandlers';
 import { usePharmacyCheckoutLineItems } from '../utils/pharmacyCartActions';
 import { usePharmacyIntegrationConfig } from './usePharmacyIntegrationConfig';
@@ -84,11 +85,7 @@ export function usePharmacyPosPage() {
   }, []);
 
   const focusSearch = useCallback(() => {
-    if (kmInputRef.current && document.activeElement === kmInputRef.current) {
-      kmInputRef.current.focus();
-      return;
-    }
-    searchInputRef.current?.focus();
+    focusPharmacyScanField({ kmInputRef, searchInputRef });
   }, []);
 
   const focusCart = useCallback(() => {
@@ -208,10 +205,12 @@ export function usePharmacyPosPage() {
     catalog.searchActive,
   ]);
 
-  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId, {
-    catalogKind: 'pharmacy',
-  });
-  const shiftIsOpen = shift?.status === 'OPEN';
+  const {
+    shift,
+    shiftIsOpen,
+    shiftFetched,
+    shiftQueryError,
+  } = useCashierShiftView(storeId, { catalogKind: 'pharmacy' });
 
   const total = getTotal();
   const linesTotal = getLinesTotal();
@@ -238,6 +237,7 @@ export function usePharmacyPosPage() {
     searchInputRef,
     kmInputRef,
     products: fefoProducts,
+    productsStale: catalog.productsStale,
     search: catalog.search,
     setSearch: catalog.setSearch,
     addWeightLine,
@@ -286,10 +286,8 @@ export function usePharmacyPosPage() {
       && storeId
     ) {
       const timer = setTimeout(() => {
-        // Не уводим курсор с поля КМ после закрытия модалок.
-        if (kmInputRef.current && document.activeElement === kmInputRef.current) return;
-        focusSearch();
-      }, 50);
+        focusPharmacyScanField({ kmInputRef, searchInputRef });
+      }, 80);
       return () => clearTimeout(timer);
     }
     return undefined;
@@ -299,7 +297,6 @@ export function usePharmacyPosPage() {
     cartHandlers.qtyModalProduct,
     cartHandlers.weightModalProduct,
     storeId,
-    focusSearch,
   ]);
 
   usePharmacyHotkeys({
@@ -321,7 +318,7 @@ export function usePharmacyPosPage() {
   const handleReturnSuccess = () => {
     qc.invalidateQueries({ queryKey: ['sales-ledger'] });
     qc.invalidateQueries({ queryKey: ['my-sales'] });
-    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['cashier-shift'] });
     qc.invalidateQueries({ queryKey: ['pos-products'] });
     qc.invalidateQueries({ queryKey: ['pharmacy-fefo-hints'] });
     qc.invalidateQueries({ queryKey: ['pharmacy-lots'] });
@@ -383,11 +380,15 @@ export function usePharmacyPosPage() {
       setSearch: catalog.setSearch,
       products: fefoProducts,
       productsLoading: catalog.productsLoading,
+      productsStale: catalog.productsStale,
       productsError: catalog.productsError,
       productsLoadingMore: catalog.productsLoadingMore,
       productsHasMore: catalog.productsHasMore,
       fetchMoreProducts: catalog.fetchMoreProducts,
-      addProductToCart: cartHandlers.addProductToCart,
+      addProductToCart: (product) => {
+        if (catalog.productsStale) return;
+        cartHandlers.addProductToCart(product);
+      },
       addMarkedScan: cartHandlers.addMarkedScan,
       handleSearchEnter: cartHandlers.handleSearchEnter,
       onMarkingScan: markingScan.tryHandleMarkingScan,

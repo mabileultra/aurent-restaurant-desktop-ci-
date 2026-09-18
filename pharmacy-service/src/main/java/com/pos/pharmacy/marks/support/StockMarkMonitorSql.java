@@ -10,7 +10,7 @@ public final class StockMarkMonitorSql {
           AND (CAST(:soldTo AS TIMESTAMPTZ) IS NULL OR coalesce(sm.sold_at, sm.updated_at) < :soldTo)
           AND (
             CAST(:search AS TEXT) IS NULL
-            OR lower(sm.mark_code::text) LIKE lower('%' || CAST(:search AS TEXT) || '%')
+            OR lower(CAST(sm.mark_code AS TEXT)) LIKE lower('%' || CAST(:search AS TEXT) || '%')
             OR lower(sm.mark_key) LIKE lower('%' || CAST(:search AS TEXT) || '%')
           )
           AND (

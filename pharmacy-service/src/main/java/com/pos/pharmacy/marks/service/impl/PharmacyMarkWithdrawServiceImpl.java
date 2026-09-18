@@ -125,33 +125,36 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
             return 0;
         }
 
-        int confirmed = 0;
+        Map<String, List<String>> successByStatus = new LinkedHashMap<>();
+        Map<String, List<String>> failedByMessage = new LinkedHashMap<>();
+        List<String> stillPending = new ArrayList<>();
         int pending = 0;
         int failed = 0;
-        List<String> stillPending = new ArrayList<>();
+
         for (PosMarkingWithdrawItem item : response.results()) {
             if (item == null || !StringUtils.hasText(item.code())) {
                 continue;
             }
             if (item.success()) {
-                confirmed += stockMarkService.confirmSold(
-                    companyId,
-                    storeId,
-                    List.of(item.code()),
-                    item.status()
-                );
+                String status = StringUtils.hasText(item.status()) ? item.status() : "";
+                successByStatus.computeIfAbsent(status, key -> new ArrayList<>()).add(item.code());
             } else if (item.pending()) {
                 pending += 1;
                 stillPending.add(item.code());
             } else {
                 failed += 1;
-                stockMarkService.recordWithdrawAttempt(
-                    companyId,
-                    storeId,
-                    List.of(item.code()),
-                    item.message()
-                );
+                String message = StringUtils.hasText(item.message()) ? item.message() : "withdraw failed";
+                failedByMessage.computeIfAbsent(message, key -> new ArrayList<>()).add(item.code());
             }
+        }
+
+        int confirmed = 0;
+        for (Map.Entry<String, List<String>> entry : successByStatus.entrySet()) {
+            String aslStatus = entry.getKey().isEmpty() ? null : entry.getKey();
+            confirmed += stockMarkService.confirmSold(companyId, storeId, entry.getValue(), aslStatus);
+        }
+        for (Map.Entry<String, List<String>> entry : failedByMessage.entrySet()) {
+            stockMarkService.recordWithdrawAttempt(companyId, storeId, entry.getValue(), entry.getKey());
         }
         if (!stillPending.isEmpty()) {
             stockMarkService.recordWithdrawAttempt(companyId, storeId, stillPending, "awaiting OFD/ASL");

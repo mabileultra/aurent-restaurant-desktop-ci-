@@ -17,11 +17,11 @@ import java.util.List;
 public class SaleMapper {
 
     public SaleResponse toResponse(Sale sale) {
-        return toResponse(sale, null, null, null, null, null);
+        return toResponse(sale, null, null, null, null, null, null);
     }
 
     public SaleResponse toResponse(Sale sale, String storeName, String shiftStatus) {
-        return toResponse(sale, storeName, shiftStatus, null, null, null);
+        return toResponse(sale, storeName, shiftStatus, null, null, null, null);
     }
 
     public SaleResponse toResponse(
@@ -31,6 +31,18 @@ public class SaleMapper {
         Instant shiftOpenedAt,
         Instant shiftClosedAt,
         Long shiftZReportId
+    ) {
+        return toResponse(sale, storeName, shiftStatus, shiftOpenedAt, shiftClosedAt, shiftZReportId, null);
+    }
+
+    public SaleResponse toResponse(
+        Sale sale,
+        String storeName,
+        String shiftStatus,
+        Instant shiftOpenedAt,
+        Instant shiftClosedAt,
+        Long shiftZReportId,
+        Integer shiftRegisterNumber
     ) {
         if (sale == null) {
             return null;
@@ -69,6 +81,7 @@ public class SaleMapper {
             shiftClosedAt,
             shiftStatus,
             shiftZReportId,
+            shiftRegisterNumber,
             sale.getFiscalStatus(),
             sale.getFiscalSign(),
             sale.getFiscalReceiptSeq(),

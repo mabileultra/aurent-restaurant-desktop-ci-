@@ -28,8 +28,9 @@ public class CheckoutQuantityResolver {
         if (productIds == null || productIds.isEmpty()) {
             return result;
         }
+        Map<UUID, Map<String, String>> loaded = productAttributeService.getAttributesByProductIds(productIds);
         for (UUID productId : productIds) {
-            result.put(productId, productAttributeService.getAttributes(productId));
+            result.put(productId, loaded.getOrDefault(productId, Map.of()));
         }
         return result;
     }

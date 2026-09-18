@@ -178,7 +178,8 @@ public class SaleSearchRepositoryImpl implements SaleSearchRepository {
             pageable,
             graph -> {
                 graph.addAttributeNodes("cashier", "store", "cashierShift");
-                graph.addSubgraph("cashierShift").addAttributeNodes("zReport");
+                var shiftGraph = graph.addSubgraph("cashierShift");
+                shiftGraph.addAttributeNodes("zReport", "cashRegister");
             }
         );
     }

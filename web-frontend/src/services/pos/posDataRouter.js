@@ -166,13 +166,25 @@ function shiftApi(catalogKind) {
 export async function posFetchCurrentShift(storeId, user, storeName = '', { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local' && user?.id) {
-    return offlineGetCurrentShift({ storeId, cashierId: user.id });
+    const local = await offlineGetCurrentShift({ storeId, cashierId: user.id });
+    return local?.status === 'OPEN' ? local : null;
   }
   const apiClient = shiftApi(catalogKind);
   try {
     const res = await apiClient.current(storeId);
     const shift = res.data;
-    if (shift?.status === 'OPEN' && user?.id && isDesktopOfflineBridge()) {
+    // Только реально открытая смена; CLOSED/прочее не держим в кэше — иначе модалка мигает «Закрыть».
+    if (!shift || shift.status !== 'OPEN') {
+      if (isDesktopOfflineBridge() && user?.id) {
+        try {
+          await offlineCloseShift({ storeId, cashierId: user.id });
+        } catch {
+          /* ignore */
+        }
+      }
+      return null;
+    }
+    if (user?.id && isDesktopOfflineBridge()) {
       try {
         await offlineSyncShiftFromServer({
           shift,
@@ -198,7 +210,8 @@ export async function posFetchCurrentShift(storeId, user, storeName = '', { cata
       return null;
     }
     if (isApiUnreachableError(e) && routeFor(storeId).canFallback && user?.id) {
-      return offlineGetCurrentShift({ storeId, cashierId: user.id });
+      const local = await offlineGetCurrentShift({ storeId, cashierId: user.id });
+      return local?.status === 'OPEN' ? local : null;
     }
     throw e;
   }

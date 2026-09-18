@@ -110,6 +110,7 @@ export default function PharmacyReceiptDocumentPage() {
   const receiptPreview = receiptQuery.data;
   const integration = usePharmacyIntegrationConfig(receiptPreview?.storeId);
   const aslEnabled = Boolean(integration.capabilities?.aslMarkingEnabled);
+  const aslReady = Boolean(receiptPreview?.storeId) && !integration.isLoading;
   const receiptMarks = usePharmacyReceiptMarks({
     storeId: receiptPreview?.storeId,
     t,
@@ -122,6 +123,7 @@ export default function PharmacyReceiptDocumentPage() {
     lines: receiptPreview?.lines,
     storeId: receiptPreview?.storeId,
     aslEnabled,
+    aslReady,
     hydrateMarks,
     t,
     showHint: Boolean(location.state?.importMarksHint),
@@ -508,11 +510,14 @@ export default function PharmacyReceiptDocumentPage() {
         markCount={importMarksAsk.markCount}
         etaSeconds={importMarksAsk.etaSeconds}
         aslEnabled={aslEnabled}
+        aslReady={aslReady}
         verifying={importMarksAsk.verifying}
         progress={importMarksAsk.progress}
         resultSummary={importMarksAsk.resultSummary}
         onVerify={importMarksAsk.runVerify}
         onSkip={importMarksAsk.skipVerify}
+        onContinueWithoutVerify={importMarksAsk.continueWithoutVerify}
+        onDiscard={importMarksAsk.discardMarks}
         onConfirmResult={importMarksAsk.confirmResult}
       />
     </PharmacyStockLayout>

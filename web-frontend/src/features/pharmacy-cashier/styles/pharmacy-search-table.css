@@ -5,6 +5,11 @@
   flex-direction: column;
 }
 
+.pharmacy-search.is-stale .pharmacy-search__table {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .pharmacy-search__field-wrap {
   flex-shrink: 0;
   padding: 6px 8px;

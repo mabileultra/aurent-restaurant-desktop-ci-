@@ -10,7 +10,8 @@ import {
   buildCashierSalesQueryParams,
   normalizeCashierSalesFilters,
 } from '../components/my-sales/cashierSalesFilterUtils';
-import { useCashierShift } from '../../../hooks/useCashierShift';
+import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
+import { resolveMySalesShiftId } from '../../../hooks/cashierShiftStability';
 import { posFetchMySales } from '../../../services/pos/posDataRouter';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
@@ -33,12 +34,14 @@ export function useCashierMySalesPage() {
     [filters.paymentMethod, filters.status, filters.from, filters.to, debouncedReceipt]
   );
   const filtering = filters.receiptNumber !== debouncedReceipt;
-  const { data: shift, isPending: shiftLoading } = useCashierShift(storeId, { catalogKind });
-  const shiftId = shift?.id;
+  const { shift, shiftIsOpen, shiftPending: shiftLoading } = useCashierShiftView(storeId, {
+    catalogKind,
+  });
+  const shiftId = resolveMySalesShiftId({ shiftIsOpen, shift });
 
   useEffect(() => {
     if (storeId) {
-      qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+      qc.invalidateQueries({ queryKey: ['cashier-shift'] });
     }
   }, [storeId, qc]);
 
@@ -108,7 +111,7 @@ export function useCashierMySalesPage() {
   const handleReturnSuccess = () => {
     qc.invalidateQueries({ queryKey: ['my-sales'] });
     qc.invalidateQueries({ queryKey: ['sales-ledger'] });
-    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['cashier-shift'] });
     qc.invalidateQueries({ queryKey: ['returns'] });
     if (selectedRow?.receiptNumber) {
       qc.invalidateQueries({ queryKey: ['receipt', selectedRow.receiptNumber] });

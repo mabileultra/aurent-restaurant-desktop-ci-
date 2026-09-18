@@ -12,13 +12,16 @@ import {
 } from '../utils/verifyImportMarksAgainstAsl';
 
 /**
- * После Excel-импорта: спросить, проверять ли КМ в ASL, затем полная проверка и точный итог.
+ * После Excel-импорта:
+ * - ASL off → явный вопрос «продолжить без проверки / не добавлять КМ»
+ * - ASL on → спросить про проверку, затем полный verify
  */
 export function usePharmacyImportMarksAsk({
   receiptId,
   lines,
   storeId,
   aslEnabled,
+  aslReady = true,
   hydrateMarks,
   t,
   showHint,
@@ -41,6 +44,8 @@ export function usePharmacyImportMarksAsk({
 
   useEffect(() => {
     if (!receiptId || !lines?.length || takenRef.current) return;
+    // Ждём статус интеграции, иначе мелькнёт «ASL нет» при дефолте false.
+    if (!aslReady) return;
     const pending = takePendingImportMarks(receiptId);
     takenRef.current = true;
     if (!pending.length) return;
@@ -48,17 +53,21 @@ export function usePharmacyImportMarksAsk({
     if (!Object.keys(byLine).length) return;
     setPendingByLine(byLine);
     setAskOpen(true);
-  }, [receiptId, lines]);
+  }, [receiptId, lines, aslReady]);
 
   const markCount = countImportMarks(pendingByLine);
   const etaSeconds = estimateImportVerifySeconds(markCount);
 
-  const applyAndClose = useCallback((byLine, { verified }) => {
-    hydrateMarks(byLine);
+  const clearAsk = useCallback(() => {
     setAskOpen(false);
     setPendingByLine(null);
     setProgress({ done: 0, total: 0 });
     setResult(null);
+  }, []);
+
+  const applyAndClose = useCallback((byLine, { verified }) => {
+    hydrateMarks(byLine);
+    clearAsk();
     if (showHint || verified) {
       toast.success(
         verified
@@ -66,13 +75,21 @@ export function usePharmacyImportMarksAsk({
           : t('pharmacyStock.marks.importHydrated'),
       );
     }
-  }, [hydrateMarks, showHint, t]);
+  }, [clearAsk, hydrateMarks, showHint, t]);
 
-  const skipVerify = useCallback(() => {
+  /** Продолжить без ASL: КМ в документ без проверки. */
+  const continueWithoutVerify = useCallback(() => {
     if (verifying || result) return;
     if (!pendingByLine) return;
     applyAndClose(pendingByLine, { verified: false });
   }, [applyAndClose, pendingByLine, result, verifying]);
+
+  /** Не добавлять КМ из импорта (отмена при выключенной ASL). */
+  const discardMarks = useCallback(() => {
+    if (verifying || result) return;
+    clearAsk();
+    toast(t('pharmacyStock.marks.importAslDiscarded'), { icon: 'ℹ️' });
+  }, [clearAsk, result, t, verifying]);
 
   const confirmResult = useCallback(() => {
     if (!result) return;
@@ -106,18 +123,25 @@ export function usePharmacyImportMarksAsk({
 
   const closeAsk = useCallback(() => {
     if (verifying || result) return;
-    skipVerify();
-  }, [result, skipVerify, verifying]);
+    if (!aslEnabled) {
+      discardMarks();
+      return;
+    }
+    continueWithoutVerify();
+  }, [aslEnabled, continueWithoutVerify, discardMarks, result, verifying]);
 
   return {
-    askOpen,
+    askOpen: askOpen && aslReady,
     markCount,
     etaSeconds,
     verifying,
     progress,
     resultSummary: result?.summary || null,
     runVerify,
-    skipVerify,
+    /** alias для модалки со ASL */
+    skipVerify: continueWithoutVerify,
+    continueWithoutVerify,
+    discardMarks,
     confirmResult,
     closeAsk,
   };

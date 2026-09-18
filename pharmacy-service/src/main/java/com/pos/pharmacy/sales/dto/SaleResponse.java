@@ -41,6 +41,8 @@ public record SaleResponse(
     Instant shiftClosedAt,
     String shiftStatus,
     Long shiftZReportId,
+    /** Номер кассы, если смена привязана к кассе. */
+    Integer shiftRegisterNumber,
     String fiscalStatus,
     String fiscalSign,
     String fiscalReceiptSeq,

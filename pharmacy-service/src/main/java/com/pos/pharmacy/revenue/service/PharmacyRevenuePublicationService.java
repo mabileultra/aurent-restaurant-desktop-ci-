@@ -10,8 +10,6 @@ import com.pos.shared.event.SaleCompletedEvent;
 import com.pos.shared.kafka.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.Map;
 import java.util.UUID;
@@ -21,6 +19,7 @@ import java.util.UUID;
 public class PharmacyRevenuePublicationService {
 
     private final RevenueOutboxService outboxService;
+    private final RevenueOutboxDispatchService outboxDispatchService;
     private final ObjectMapper objectMapper;
 
     public void onSaleCompleted(Sale sale, Map<UUID, Map<String, String>> attributesByProductId, String storeName) {
@@ -38,20 +37,7 @@ public class PharmacyRevenuePublicationService {
             idempotencyKey,
             writeJson(event)
         );
-        scheduleSend(row.getId());
-    }
-
-    private void scheduleSend(UUID outboxId) {
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            outboxService.trySend(outboxId);
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                outboxService.trySend(outboxId);
-            }
-        });
+        outboxDispatchService.dispatchAfterCommit(row.getId());
     }
 
     private String writeJson(Object value) {

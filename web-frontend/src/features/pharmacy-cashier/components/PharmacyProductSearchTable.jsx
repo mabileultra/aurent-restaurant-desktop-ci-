@@ -39,6 +39,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
     onSearchEnter,
     products,
     productsLoading,
+    productsStale = false,
     productsError,
     productsLoadingMore,
     productsHasMore,
@@ -54,7 +55,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
   const daysLabel = t('pharmacyCashier.daysShort');
 
   useEffect(() => {
-    if (!productsHasMore || productsLoadingMore || !onLoadMore) return undefined;
+    if (!productsHasMore || productsLoadingMore || productsStale || !onLoadMore) return undefined;
     const node = sentinelRef.current;
     if (!node) return undefined;
     const observer = new IntersectionObserver(
@@ -65,10 +66,10 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
     );
     observer.observe(node);
     return () => observer.disconnect();
-  }, [productsHasMore, productsLoadingMore, onLoadMore, products.length]);
+  }, [productsHasMore, productsLoadingMore, productsStale, onLoadMore, products.length]);
 
   return (
-    <div className="pharmacy-search">
+    <div className={`pharmacy-search${productsStale ? ' is-stale' : ''}`}>
       {!hideSearchField ? (
         <div className="pharmacy-search__field-wrap">
           <input
@@ -122,7 +123,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                   (product.saleType || 'PIECE') !== 'SERVICE'
                   && Number(product.stockQuantity) <= 0;
                 const inactive = product.active === false;
-                const disabled = outOfStock || inactive;
+                const disabled = outOfStock || inactive || productsStale;
                 const form = productDosageForm(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
                 const batch = productBatch(product) || '—';

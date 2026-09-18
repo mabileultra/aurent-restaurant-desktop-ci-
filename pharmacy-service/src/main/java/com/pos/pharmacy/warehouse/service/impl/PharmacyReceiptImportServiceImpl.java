@@ -186,7 +186,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PURCHASE_WITH_VAT))
         );
         if (purchase == null && purchaseWithVat != null) {
-            purchase = withoutVat(purchaseWithVat, vat);
+            purchase = PharmacyReceiptPricing.withoutVat(purchaseWithVat, vat);
         }
         if (purchase == null) {
             purchase = BigDecimal.ZERO;
@@ -195,7 +195,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.RETAIL))
         );
         if (retail == null) {
-            BigDecimal base = purchaseWithVat != null ? purchaseWithVat : withVat(purchase, vat);
+            BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
             retail = base.multiply(BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)))
                 .setScale(2, RoundingMode.HALF_UP);
         }
@@ -241,10 +241,10 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal vat = item.vatPercent() != null ? item.vatPercent() : BigDecimal.ZERO;
         BigDecimal retail = item.retailPrice() != null
             ? item.retailPrice()
-            : withVat(purchase, vat).multiply(
+            : PharmacyReceiptPricing.withVat(purchase, vat).multiply(
                 BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP))
             ).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal markup = markupFrom(withVat(purchase, vat), retail);
+        BigDecimal markup = PharmacyReceiptPricing.markupFrom(PharmacyReceiptPricing.withVat(purchase, vat), retail);
         return new PharmacyStockReceiptLineRequest(
             productId,
             qty,
@@ -253,7 +253,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             vat,
             markup,
             item.unitsInPack(),
-            withVat(purchase, vat),
+            PharmacyReceiptPricing.withVat(purchase, vat),
             retail,
             retail,
             item.batchNumber(),
@@ -274,38 +274,6 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     private static boolean looksLikeTotal(String name) {
         String n = name.toLowerCase(Locale.ROOT);
         return n.contains("жами") || n.contains("jami") || n.contains("итого") || n.contains("total");
-    }
-
-    private static BigDecimal withVat(BigDecimal purchase, BigDecimal vat) {
-        if (purchase == null) {
-            return BigDecimal.ZERO;
-        }
-        if (vat == null || vat.compareTo(BigDecimal.ZERO) == 0) {
-            return purchase.setScale(2, RoundingMode.HALF_UP);
-        }
-        return purchase.multiply(BigDecimal.ONE.add(vat.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)))
-            .setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal withoutVat(BigDecimal withVat, BigDecimal vat) {
-        if (withVat == null) {
-            return BigDecimal.ZERO;
-        }
-        if (vat == null || vat.compareTo(BigDecimal.ZERO) == 0) {
-            return withVat.setScale(2, RoundingMode.HALF_UP);
-        }
-        return withVat.divide(
-            BigDecimal.ONE.add(vat.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)),
-            2,
-            RoundingMode.HALF_UP
-        );
-    }
-
-    private static BigDecimal markupFrom(BigDecimal base, BigDecimal retail) {
-        if (base == null || base.compareTo(BigDecimal.ZERO) <= 0 || retail == null) {
-            return BigDecimal.ZERO;
-        }
-        return retail.subtract(base).multiply(BigDecimal.valueOf(100)).divide(base, 2, RoundingMode.HALF_UP);
     }
 
     private static String blankToNull(String value) {

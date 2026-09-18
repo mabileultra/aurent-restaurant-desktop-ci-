@@ -9,8 +9,6 @@ import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.shared.kafka.KafkaTopics;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -21,6 +19,7 @@ import java.util.UUID;
 public class PharmacyRefundPublicationService {
 
     private final RevenueOutboxService outboxService;
+    private final RevenueOutboxDispatchService outboxDispatchService;
     private final ObjectMapper objectMapper;
 
     public void onRefund(
@@ -43,16 +42,7 @@ public class PharmacyRefundPublicationService {
             "pharmacy-refund:" + returnEventId,
             writeJson(payload)
         );
-        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
-            outboxService.trySend(row.getId());
-            return;
-        }
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                outboxService.trySend(row.getId());
-            }
-        });
+        outboxDispatchService.dispatchAfterCommit(row.getId());
     }
 
     private String writeJson(Object value) {

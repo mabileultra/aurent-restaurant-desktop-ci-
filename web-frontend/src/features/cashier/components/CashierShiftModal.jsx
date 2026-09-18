@@ -9,9 +9,20 @@ import PosModalPortal from '../../../components/shared/PosModalPortal';
 import ShiftReportPrintBody from './ShiftReportPrintBody';
 import ThermalReportPrintPortal from '../../../components/shared/ThermalReportPrintPortal';
 import { useAuthStore } from '../../../store/authStore';
-import { useOpenCashierShift, useCloseCashierShift, useXReportCashierShift, shiftQueryKey } from '../../../hooks/useCashierShift';
+import { useConnectivityStore } from '../../../store/connectivityStore';
+import {
+  fetchCurrentCashierShift,
+  useOpenCashierShift,
+  useCloseCashierShift,
+  useXReportCashierShift,
+  shiftQueryKey,
+} from '../../../hooks/useCashierShift';
 import { resolvePosShiftOpenErrorMessage } from '../../../utils/resolvePosShiftOpenError';
 import { resolveMultikassaFiscalErrorMessage } from '../../../services/multikassa';
+import {
+  resolveActiveShiftForModalAction,
+  resolveShiftModalSession,
+} from '../utils/shiftModalSession';
 
 export default function CashierShiftModal({
   open,
@@ -26,11 +37,15 @@ export default function CashierShiftModal({
   const { t } = useTranslation();
   const qc = useQueryClient();
   const userId = useAuthStore((s) => s.user?.id);
-  const shiftId = shift?.id;
   const isPharmacy = catalogKind === 'pharmacy';
   const [printReport, setPrintReport] = useState(null);
   const [printToken, setPrintToken] = useState(0);
+  /** null = сверяем с сервером; не рисуем кнопки по stale-кэшу React Query. */
+  const [sessionOpen, setSessionOpen] = useState(null);
+  /** Свежая смена с fetch при открытии модалки — для Close/X/Z, не prop из кэша. */
+  const [sessionShift, setSessionShift] = useState(null);
   const printAfterLoadRef = useRef(null);
+  const openSeqRef = useRef(0);
 
   const queuePrint = (data) => {
     setPrintToken((n) => n + 1);
@@ -46,9 +61,11 @@ export default function CashierShiftModal({
   };
 
   const zMutation = useMutation({
-    mutationFn: () => cashierShiftApi.finalizeZReport(shiftId).then((r) => r.data),
+    mutationFn: () => cashierShiftApi.finalizeZReport(sessionShift?.id ?? shift?.id).then((r) => r.data),
     onSuccess: (data) => {
       applyNewShift(data.newShift);
+      setSessionShift(data.newShift?.status === 'OPEN' ? data.newShift : null);
+      setSessionOpen(data.newShift?.status === 'OPEN');
       qc.invalidateQueries({ queryKey: ['z-reports'] });
       toast.success(t('pos.zReportFinalized'));
       if (printAfterLoadRef.current === 'Z') {
@@ -63,13 +80,20 @@ export default function CashierShiftModal({
   });
 
   const openMutation = useOpenCashierShift(storeId, { catalogKind });
-
   const closeMutation = useCloseCashierShift(storeId, { catalogKind });
+
   const handleCloseShift = () => {
+    const active = resolveActiveShiftForModalAction(sessionShift);
+    if (!active?.id) {
+      toast.error(t('pos.shiftCloseFailed'));
+      return;
+    }
     closeMutation.mutate(
-      { shiftId, shift },
+      { shiftId: active.id, shift: active },
       {
         onSuccess: (closedShift) => {
+          setSessionOpen(false);
+          setSessionShift(null);
           toast.success(t('pos.shiftClosedWithZReport'));
           onShiftUpdated?.(closedShift);
           onClose();
@@ -86,11 +110,46 @@ export default function CashierShiftModal({
     if (!open) {
       setPrintReport(null);
       printAfterLoadRef.current = null;
+      setSessionOpen(null);
+      setSessionShift(null);
+      return undefined;
     }
-  }, [open]);
+    if (storeId == null || userId == null) {
+      setSessionOpen(false);
+      setSessionShift(null);
+      return undefined;
+    }
 
-  const isOpen = shift?.status === 'OPEN';
+    const seq = ++openSeqRef.current;
+    setSessionOpen(null);
+    setSessionShift(null);
+    const storeNameHint = useConnectivityStore.getState().storeName || storeName || '';
+    const user = useAuthStore.getState().user;
+
+    qc.fetchQuery({
+      queryKey: shiftQueryKey(storeId, userId, catalogKind),
+      queryFn: () => fetchCurrentCashierShift(storeId, user, false, storeNameHint, { catalogKind }),
+      staleTime: 0,
+    })
+      .then((fresh) => {
+        if (openSeqRef.current !== seq) return;
+        const next = resolveShiftModalSession(fresh);
+        setSessionOpen(next.sessionOpen);
+        setSessionShift(next.sessionShift);
+      })
+      .catch(() => {
+        if (openSeqRef.current !== seq) return;
+        setSessionOpen(false);
+        setSessionShift(null);
+      });
+
+    return undefined;
+  }, [open, storeId, userId, catalogKind, qc, storeName]);
+
+  const resolving = open && sessionOpen === null;
+  const isOpen = sessionOpen === true;
   const busy =
+    resolving ||
     xMutation.isPending ||
     zMutation.isPending ||
     closeMutation.isPending ||
@@ -98,9 +157,14 @@ export default function CashierShiftModal({
     Boolean(printReport);
 
   const handleXReport = () => {
+    const active = resolveActiveShiftForModalAction(sessionShift);
+    if (!active?.id) {
+      toast.error(t('pos.reportFailed'));
+      return;
+    }
     printAfterLoadRef.current = 'X';
     xMutation.mutate(
-      { shiftId, shift },
+      { shiftId: active.id, shift: active },
       {
         onSuccess: (data) => {
           if (printAfterLoadRef.current === 'X') {
@@ -117,12 +181,17 @@ export default function CashierShiftModal({
   };
 
   const handleZReport = () => {
+    if (!(sessionShift?.id || shift?.id)) {
+      toast.error(t('pos.reportFailed'));
+      return;
+    }
     printAfterLoadRef.current = 'Z';
     zMutation.mutate();
   };
 
-  const metaStore = shift?.storeName ?? storeName ?? '—';
-  const metaCashier = shift?.cashierName ?? cashierName ?? '—';
+  const metaShift = sessionShift || shift;
+  const metaStore = metaShift?.storeName ?? storeName ?? '—';
+  const metaCashier = metaShift?.cashierName ?? cashierName ?? '—';
 
   return (
     <>
@@ -148,7 +217,11 @@ export default function CashierShiftModal({
           <p className="cashier-shift-modal__status">
             {t('pos.shiftStatus')}:{' '}
             <span className={isOpen ? 'is-open' : ''}>
-              {isOpen ? t('pos.shiftOpen') : t('pos.shiftClosedLabel')}
+              {resolving
+                ? t('pos.shiftChecking')
+                : isOpen
+                  ? t('pos.shiftOpen')
+                  : t('pos.shiftClosedLabel')}
             </span>
           </p>
           {isOpen ? (
@@ -156,7 +229,12 @@ export default function CashierShiftModal({
           ) : null}
 
           <div className="cashier-shift-modal__actions">
-            {isOpen ? (
+            {resolving ? (
+              <button type="button" className="pos-shift-action" disabled>
+                <Loader size={16} className="animate-spin" />
+                {t('pos.shiftChecking')}
+              </button>
+            ) : isOpen ? (
               <>
                 <button
                   type="button"
@@ -181,7 +259,7 @@ export default function CashierShiftModal({
                 <button
                   type="button"
                   className="pos-shift-action pos-shift-action--danger"
-                  disabled={busy}
+                  disabled={busy || !sessionShift?.id}
                   onClick={handleCloseShift}
                 >
                   {closeMutation.isPending ? (
@@ -200,6 +278,8 @@ export default function CashierShiftModal({
                 onClick={() =>
                   openMutation.mutate(undefined, {
                     onSuccess: (openedShift) => {
+                      setSessionOpen(true);
+                      setSessionShift(openedShift?.status === 'OPEN' ? openedShift : null);
                       toast.success(t('pos.shiftOpenedSuccess'));
                       onShiftUpdated?.(openedShift);
                       onClose();

@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +17,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     Optional<Product> findByCompanyIdAndSku(Integer companyId, String sku);
 
     Optional<Product> findByCompanyIdAndBarcode(Integer companyId, String barcode);
+
+    List<Product> findByCompanyIdAndBarcodeIn(Integer companyId, Collection<String> barcodes);
 
     @Query("""
         SELECT p FROM Product p

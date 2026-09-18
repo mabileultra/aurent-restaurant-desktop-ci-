@@ -13,6 +13,7 @@ public class PharmacyAsyncProperties {
     private final PoolProperties markWithdraw = new PoolProperties(4, 8, 500, "pharm-mark-withdraw-");
     private final PoolProperties importPool = new PoolProperties(8, 8, 100, "pharm-import-");
     private final PoolProperties catalog = new PoolProperties(4, 8, 100, "pharm-catalog-");
+    private final PoolProperties revenueOutbox = new PoolProperties(4, 8, 500, "pharm-revenue-outbox-");
 
     public PoolProperties getMarkVerify() {
         return markVerify;
@@ -28,6 +29,10 @@ public class PharmacyAsyncProperties {
 
     public PoolProperties getCatalog() {
         return catalog;
+    }
+
+    public PoolProperties getRevenueOutbox() {
+        return revenueOutbox;
     }
 
     public static class PoolProperties {

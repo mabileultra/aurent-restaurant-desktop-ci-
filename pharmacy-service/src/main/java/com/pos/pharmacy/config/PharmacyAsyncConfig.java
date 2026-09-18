@@ -31,4 +31,9 @@ public class PharmacyAsyncConfig {
     public Executor pharmacyCatalogExecutor(PharmacyAsyncProperties properties) {
         return PharmacyThreadPoolFactory.create(properties.getCatalog(), PharmacyAsyncConfig.class);
     }
+
+    @Bean(name = PharmacyExecutorNames.REVENUE_OUTBOX)
+    public Executor pharmacyRevenueOutboxExecutor(PharmacyAsyncProperties properties) {
+        return PharmacyThreadPoolFactory.create(properties.getRevenueOutbox(), PharmacyAsyncConfig.class);
+    }
 }

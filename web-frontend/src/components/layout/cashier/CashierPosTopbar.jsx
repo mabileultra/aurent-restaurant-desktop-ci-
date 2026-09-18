@@ -14,6 +14,7 @@ export default function CashierPosTopbar({
   storeName,
   shiftOpenBadge,
   shift,
+  shiftIsOpen = false,
   cashierName,
   cashierRoleLabel,
   openShift,
@@ -25,7 +26,6 @@ export default function CashierPosTopbar({
   const location = useLocation();
   const isRestaurantRegister = location.pathname.startsWith('/rst/pos');
   const isPharmacyRegister = isPharmPosPath(location.pathname);
-  const shiftOpen = shift?.status === 'OPEN';
 
   return (
     <header className="cashier-topbar cashier-topbar--pos cashier-topbar--compact">
@@ -58,7 +58,7 @@ export default function CashierPosTopbar({
         </div>
         <div className="cashier-topbar__actions">
           <CashierNotificationsBell />
-          {!shiftOpen && storeId ? (
+          {!shiftIsOpen && storeId ? (
             <button type="button" className="cashier-pos-topbar__open-shift" onClick={openShift}>
               {t('pos.openShift')}
             </button>

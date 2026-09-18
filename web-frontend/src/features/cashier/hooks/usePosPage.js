@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { useCashierShift } from '../../../hooks/useCashierShift';
+import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftModal } from '../../../contexts/CashierShiftModalContext';
 import { useCartStore } from '../../../store/cartStore';
@@ -87,8 +87,12 @@ export function usePosPage() {
     setPayFlowOptions(null);
   }, []);
 
-  const { data: shift, isFetched: shiftFetched, error: shiftQueryError } = useCashierShift(storeId);
-  const shiftIsOpen = shift?.status === 'OPEN';
+  const {
+    shift,
+    shiftIsOpen,
+    shiftFetched,
+    shiftQueryError,
+  } = useCashierShiftView(storeId);
 
   const total = getTotal();
   const linesTotal = getLinesTotal();
@@ -110,6 +114,7 @@ export function usePosPage() {
     shiftModalOpen,
     searchInputRef,
     products: catalog.products,
+    productsStale: catalog.productsStale,
     search: catalog.search,
     setSearch: catalog.setSearch,
     addPieceItem,
@@ -173,18 +178,22 @@ export function usePosPage() {
     setCatalogBrowse: catalog.setCatalogBrowse,
     products: catalog.products,
     productsLoading: catalog.productsLoading,
+    productsStale: catalog.productsStale,
     productsError: catalog.productsError,
     productsLoadingMore: catalog.productsLoadingMore,
     productsHasMore: catalog.productsHasMore,
     fetchMoreProducts: catalog.fetchMoreProducts,
-    addProductToCart: cartHandlers.addProductToCart,
+    addProductToCart: (product) => {
+      if (catalog.productsStale) return;
+      cartHandlers.addProductToCart(product);
+    },
     handleSearchEnter: cartHandlers.handleSearchEnter,
   };
 
   const handleReturnSuccess = () => {
     qc.invalidateQueries({ queryKey: ['sales-ledger'] });
     qc.invalidateQueries({ queryKey: ['my-sales'] });
-    qc.invalidateQueries({ queryKey: ['cashier-shift', storeId] });
+    qc.invalidateQueries({ queryKey: ['cashier-shift'] });
   };
 
   const handleDiscount = () => {

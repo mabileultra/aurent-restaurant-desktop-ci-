@@ -28,6 +28,7 @@ public class SaleExportRepositoryImpl implements SaleExportRepository {
         LEFT JOIN FETCH s.customer
         LEFT JOIN FETCH s.cashierShift sh
         LEFT JOIN FETCH sh.zReport
+        LEFT JOIN FETCH sh.cashRegister
         LEFT JOIN FETCH s.items
         WHERE s.createdAt >= :start AND s.createdAt < :end
         ORDER BY s.createdAt DESC

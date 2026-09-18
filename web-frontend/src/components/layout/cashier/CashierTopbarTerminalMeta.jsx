@@ -1,4 +1,5 @@
 import { CalendarDays } from 'lucide-react';
+import { formatCashierShiftLabel } from '../../../utils/formatCashierShiftLabel';
 
 export default function CashierTopbarTerminalMeta({
   t,
@@ -13,7 +14,10 @@ export default function CashierTopbarTerminalMeta({
     ? t('pharmacyCashier.storeBadge', { name: storeName })
     : storeName;
 
-  const shiftTitle = shift?.id ? `${t('pos.shiftOpen')} · ${shift.id}` : undefined;
+  const shiftLabel = formatCashierShiftLabel(shift);
+  const shiftTitle = shiftOpenBadge
+    ? `${t('pos.shiftOpen')}${shiftLabel !== '—' ? ` · ${shiftLabel}` : ''}`
+    : undefined;
 
   const shiftBlock = shiftOpenBadge ? (
     <span

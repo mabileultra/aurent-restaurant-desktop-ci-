@@ -94,3 +94,29 @@ describe('buildCashierEscposPayload QR', () => {
     expect(payload.qrValue).toBe('');
   });
 });
+
+describe('buildCashierEscposPayload shift label', () => {
+  it('uses shiftOpenedAt / register number, not receipt tail or fixed 001', () => {
+    const withOpened = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        receiptNumber: 'PHR-20260918-0007',
+        shiftOpenedAt: '2026-09-18T09:05:00+05:00',
+      },
+      t,
+    );
+    expect(withOpened.branding.shiftNo).toMatch(/18\.09\.2026/);
+    expect(withOpened.branding.shiftNo).not.toBe('007');
+    expect(withOpened.branding.shiftNo).not.toBe('001');
+
+    const withRegister = buildCashierEscposPayload(
+      {
+        ...FISCAL_SALE,
+        shiftRegisterNumber: 2,
+        shiftOpenedAt: '2026-09-18T09:05:00+05:00',
+      },
+      t,
+    );
+    expect(withRegister.branding.shiftNo).toBe('2');
+  });
+});

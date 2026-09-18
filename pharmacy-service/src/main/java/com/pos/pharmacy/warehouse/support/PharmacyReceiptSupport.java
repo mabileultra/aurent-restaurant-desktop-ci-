@@ -6,23 +6,16 @@ import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
-import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineResponse;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
-import com.pos.pharmacy.warehouse.entity.Supplier;
-import com.pos.pharmacy.warehouse.repository.SupplierRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -35,7 +28,7 @@ public class PharmacyReceiptSupport {
     public static final String DEFAULT_RECEIPT_TYPE = "RECEIPT";
 
     private final ProductAttributeService productAttributeService;
-    private final SupplierRepository supplierRepository;
+    private final PharmacyReceiptResponseMapper responseMapper;
 
     public void requireDraft(StockReceipt receipt) {
         if (!StockReceiptStatus.DRAFT.equals(receipt.getStatus())) {
@@ -62,26 +55,26 @@ public class PharmacyReceiptSupport {
     }
 
     public void revalueLine(StockReceiptLine line, BigDecimal vatPercent, BigDecimal markupPercent) {
-        BigDecimal purchase = scaleMoney(line.getPurchasePrice());
-        BigDecimal vat = vatPercent != null ? vatPercent : nullToZero(line.getVatPercent());
-        BigDecimal purchaseWithVat = withVat(purchase, vat);
+        BigDecimal purchase = PharmacyReceiptPricing.scaleMoney(line.getPurchasePrice());
+        BigDecimal vat = vatPercent != null ? vatPercent : PharmacyReceiptPricing.nullToZero(line.getVatPercent());
+        BigDecimal purchaseWithVat = PharmacyReceiptPricing.withVat(purchase, vat);
         line.setVatPercent(vat);
         line.setPurchasePriceWithVat(purchaseWithVat);
         if (markupPercent == null) {
             BigDecimal retail = line.getRetailPrice() != null
-                ? scaleMoney(line.getRetailPrice())
-                : scaleMoney(line.getUnitSellingPrice());
-            line.setMarkupPercent(markupFrom(purchaseWithVat, retail));
+                ? PharmacyReceiptPricing.scaleMoney(line.getRetailPrice())
+                : PharmacyReceiptPricing.scaleMoney(line.getUnitSellingPrice());
+            line.setMarkupPercent(PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail));
             return;
         }
-        BigDecimal retail = retailFromMarkup(purchaseWithVat, markupPercent);
+        BigDecimal retail = PharmacyReceiptPricing.retailFromMarkup(purchaseWithVat, markupPercent);
         BigDecimal unitsInPack = line.getUnitsInPack() != null && line.getUnitsInPack().compareTo(BigDecimal.ZERO) > 0
             ? line.getUnitsInPack()
             : BigDecimal.ONE;
         BigDecimal quantity = line.getQuantity() != null ? line.getQuantity() : BigDecimal.ZERO;
         line.setMarkupPercent(markupPercent);
         line.setRetailPrice(retail);
-        line.setUnitRetailPrice(unitPrice(retail, unitsInPack));
+        line.setUnitRetailPrice(PharmacyReceiptPricing.unitPrice(retail, unitsInPack));
         line.setUnitSellingPrice(retail);
         line.setLineRetail(retail.multiply(quantity).setScale(2, RoundingMode.HALF_UP));
     }
@@ -107,21 +100,23 @@ public class PharmacyReceiptSupport {
         BigDecimal quantity = QuantityUtil.normalize(req.quantity());
         requirePositive(quantity);
         BigDecimal unitsInPack = resolveUnitsInPack(product, req.unitsInPack());
-        BigDecimal purchase = scaleMoney(req.purchasePrice());
+        BigDecimal purchase = PharmacyReceiptPricing.scaleMoney(req.purchasePrice());
         BigDecimal vat = req.vatPercent() != null ? req.vatPercent() : BigDecimal.ZERO;
         BigDecimal purchaseWithVat = req.purchasePriceWithVat() != null
-            ? scaleMoney(req.purchasePriceWithVat())
-            : withVat(purchase, vat);
+            ? PharmacyReceiptPricing.scaleMoney(req.purchasePriceWithVat())
+            : PharmacyReceiptPricing.withVat(purchase, vat);
         BigDecimal retail = req.retailPrice() != null
-            ? scaleMoney(req.retailPrice())
-            : scaleMoney(req.unitSellingPrice());
+            ? PharmacyReceiptPricing.scaleMoney(req.retailPrice())
+            : PharmacyReceiptPricing.scaleMoney(req.unitSellingPrice());
         BigDecimal markup = req.markupPercent() != null
             ? req.markupPercent()
-            : markupFrom(purchaseWithVat, retail);
+            : PharmacyReceiptPricing.markupFrom(purchaseWithVat, retail);
         BigDecimal unitRetail = req.unitRetailPrice() != null
-            ? scaleMoney(req.unitRetailPrice())
-            : unitPrice(retail, unitsInPack);
-        BigDecimal unitSelling = scaleMoney(req.unitSellingPrice() != null ? req.unitSellingPrice() : retail);
+            ? PharmacyReceiptPricing.scaleMoney(req.unitRetailPrice())
+            : PharmacyReceiptPricing.unitPrice(retail, unitsInPack);
+        BigDecimal unitSelling = PharmacyReceiptPricing.scaleMoney(
+            req.unitSellingPrice() != null ? req.unitSellingPrice() : retail
+        );
         BigDecimal lineCost = purchase.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
         BigDecimal lineRetail = retail.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
 
@@ -150,8 +145,8 @@ public class PharmacyReceiptSupport {
         BigDecimal totalRetail = BigDecimal.ZERO;
         for (StockReceiptLine line : receipt.getLines()) {
             totalQty = QuantityUtil.add(totalQty, line.getQuantity());
-            totalCost = totalCost.add(nullToZero(line.getLineCost()));
-            totalRetail = totalRetail.add(nullToZero(line.getLineRetail()));
+            totalCost = totalCost.add(PharmacyReceiptPricing.nullToZero(line.getLineCost()));
+            totalRetail = totalRetail.add(PharmacyReceiptPricing.nullToZero(line.getLineRetail()));
         }
         receipt.setTotalQuantity(totalQty);
         receipt.setTotalCost(totalCost);
@@ -159,159 +154,17 @@ public class PharmacyReceiptSupport {
     }
 
     public PharmacyStockReceiptResponse toResponse(StockReceipt receipt) {
-        Supplier supplier = resolveSupplier(receipt.getSupplierId());
-        Set<UUID> productIds = new HashSet<>();
-        for (StockReceiptLine line : receipt.getLines()) {
-            if (line.getProduct() != null) {
-                productIds.add(line.getProduct().getId());
-            }
-        }
-        Map<UUID, Map<String, String>> attributes = productAttributeService.getAttributesByProductIds(productIds);
-        List<PharmacyStockReceiptLineResponse> lines = receipt.getLines().stream()
-            .map(line -> toLineResponse(line, attributes.getOrDefault(
-                line.getProduct().getId(), Map.of()
-            )))
-            .toList();
-        return new PharmacyStockReceiptResponse(
-            receipt.getId(),
-            receipt.getReceiptNumber(),
-            receipt.getStatus(),
-            receipt.getDocumentDate(),
-            receipt.getReceiptType(),
-            receipt.getDefaultMarkupPercent(),
-            receipt.getInvoiceNumber(),
-            receipt.getInvoiceDate(),
-            receipt.getContractNumber(),
-            receipt.getFinancialDiscount(),
-            receipt.getPaymentType(),
-            receipt.getSupplierId(),
-            supplier != null ? supplier.getName() : null,
-            receipt.getStoreId(),
-            null,
-            receipt.getNotes(),
-            receipt.getTotalQuantity(),
-            receipt.getTotalCost(),
-            receipt.getTotalRetail() != null ? receipt.getTotalRetail() : BigDecimal.ZERO,
-            lines.size(),
-            null,
-            receipt.getCreatedAt(),
-            receipt.getActivatedAt(),
-            null,
-            lines
-        );
+        return responseMapper.toResponse(receipt);
     }
 
     public PharmacyStockReceiptResponse toSummary(StockReceipt receipt) {
-        Supplier supplier = resolveSupplier(receipt.getSupplierId());
-        return new PharmacyStockReceiptResponse(
-            receipt.getId(),
-            receipt.getReceiptNumber(),
-            receipt.getStatus(),
-            receipt.getDocumentDate(),
-            receipt.getReceiptType(),
-            receipt.getDefaultMarkupPercent(),
-            receipt.getInvoiceNumber(),
-            receipt.getInvoiceDate(),
-            receipt.getContractNumber(),
-            receipt.getFinancialDiscount(),
-            receipt.getPaymentType(),
-            receipt.getSupplierId(),
-            supplier != null ? supplier.getName() : null,
-            receipt.getStoreId(),
-            null,
-            receipt.getNotes(),
-            receipt.getTotalQuantity(),
-            receipt.getTotalCost(),
-            receipt.getTotalRetail() != null ? receipt.getTotalRetail() : BigDecimal.ZERO,
-            0,
-            null,
-            receipt.getCreatedAt(),
-            receipt.getActivatedAt(),
-            null,
-            List.of()
-        );
-    }
-
-    private Supplier resolveSupplier(UUID supplierId) {
-        if (supplierId == null) {
-            return null;
-        }
-        return supplierRepository.findById(supplierId).orElse(null);
-    }
-
-    private PharmacyStockReceiptLineResponse toLineResponse(StockReceiptLine line, Map<String, String> attrs) {
-        return new PharmacyStockReceiptLineResponse(
-            line.getId(),
-            line.getProduct().getId(),
-            line.getProduct().getName(),
-            line.getProduct().getSku(),
-            attrs.get(ATTR_MANUFACTURER),
-            attrs.get(ATTR_COUNTRY),
-            attrs.get(ATTR_DOSAGE_FORM),
-            line.getQuantity(),
-            line.getPurchasePrice(),
-            line.getUnitSellingPrice(),
-            line.getLineCost(),
-            line.getVatPercent(),
-            line.getMarkupPercent(),
-            line.getUnitsInPack(),
-            line.getPurchasePriceWithVat(),
-            line.getRetailPrice(),
-            line.getUnitRetailPrice(),
-            line.getLineRetail(),
-            line.getBatchNumber(),
-            line.getExpiryDate(),
-            line.getProduct().isMarkedProduct()
-        );
+        return responseMapper.toSummary(receipt);
     }
 
     private static void requirePositive(BigDecimal quantity) {
         if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
             throw PharmacyErrors.badRequest("Quantity must be positive");
         }
-    }
-
-    private static BigDecimal withVat(BigDecimal purchase, BigDecimal vatPercent) {
-        if (vatPercent == null || vatPercent.compareTo(BigDecimal.ZERO) == 0) {
-            return purchase;
-        }
-        BigDecimal factor = BigDecimal.ONE.add(vatPercent.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
-        return purchase.multiply(factor).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal retailFromMarkup(BigDecimal purchaseWithVat, BigDecimal markupPercent) {
-        if (purchaseWithVat == null) {
-            return BigDecimal.ZERO;
-        }
-        if (markupPercent == null || markupPercent.compareTo(BigDecimal.ZERO) == 0) {
-            return purchaseWithVat;
-        }
-        BigDecimal factor = BigDecimal.ONE.add(markupPercent.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP));
-        return purchaseWithVat.multiply(factor).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal markupFrom(BigDecimal purchaseWithVat, BigDecimal retail) {
-        if (purchaseWithVat == null || purchaseWithVat.compareTo(BigDecimal.ZERO) <= 0 || retail == null) {
-            return BigDecimal.ZERO;
-        }
-        return retail.subtract(purchaseWithVat)
-            .multiply(BigDecimal.valueOf(100))
-            .divide(purchaseWithVat, 2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal unitPrice(BigDecimal retail, BigDecimal unitsInPack) {
-        if (retail == null || unitsInPack == null || unitsInPack.compareTo(BigDecimal.ZERO) <= 0) {
-            return retail;
-        }
-        return retail.divide(unitsInPack, 2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal scaleMoney(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO : value.setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static BigDecimal nullToZero(BigDecimal value) {
-        return value == null ? BigDecimal.ZERO : value;
     }
 
     public static String trimToNull(String value) {

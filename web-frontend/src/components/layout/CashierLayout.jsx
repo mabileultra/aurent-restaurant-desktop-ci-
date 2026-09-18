@@ -29,6 +29,7 @@ function CashierLayoutShell() {
               storeName={p.storeName}
               shiftOpenBadge={p.shiftOpenBadge}
               shift={p.shift}
+              shiftIsOpen={p.shiftIsOpen}
               cashierName={p.displayCashierName()}
               cashierRoleLabel={p.cashierRoleLabel}
               openShift={p.openShift}

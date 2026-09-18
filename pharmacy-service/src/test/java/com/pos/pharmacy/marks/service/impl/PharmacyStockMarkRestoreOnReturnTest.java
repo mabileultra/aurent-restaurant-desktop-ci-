@@ -36,7 +36,12 @@ class PharmacyStockMarkRestoreOnReturnTest {
 
     @BeforeEach
     void setUp() {
-        service = new PharmacyStockMarkServiceImpl(stockMarkRepository);
+        service = new PharmacyStockMarkServiceImpl(
+            new StockMarkQueryServiceImpl(stockMarkRepository),
+            new StockMarkRegisterServiceImpl(stockMarkRepository),
+            new StockMarkWithdrawStateServiceImpl(stockMarkRepository),
+            new StockMarkReturnServiceImpl(stockMarkRepository)
+        );
         PharmacyTenantContext.set(10, UUID.randomUUID(), "ADMIN");
     }
 

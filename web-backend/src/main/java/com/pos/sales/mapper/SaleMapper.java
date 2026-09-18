@@ -27,6 +27,7 @@ public interface SaleMapper {
     @Mapping(target = "shiftClosedAt", source = "cashierShift.closedAt")
     @Mapping(target = "shiftStatus", source = "cashierShift.status", qualifiedByName = "enumName")
     @Mapping(target = "shiftZReportId", source = ".", qualifiedByName = "shiftZReportId")
+    @Mapping(target = "shiftRegisterNumber", source = ".", qualifiedByName = "shiftRegisterNumber")
     @Mapping(target = "items", source = "items")
     SaleResponse toResponse(Sale sale);
 
@@ -44,6 +45,7 @@ public interface SaleMapper {
     @Mapping(target = "shiftClosedAt", source = "cashierShift.closedAt")
     @Mapping(target = "shiftStatus", source = "cashierShift.status", qualifiedByName = "enumName")
     @Mapping(target = "shiftZReportId", source = ".", qualifiedByName = "shiftZReportId")
+    @Mapping(target = "shiftRegisterNumber", source = ".", qualifiedByName = "shiftRegisterNumber")
     @Mapping(target = "items", expression = "java(java.util.List.of())")
     SaleResponse toSummaryResponse(Sale sale);
 
@@ -58,6 +60,16 @@ public interface SaleMapper {
             return null;
         }
         return sale.getCashierShift().getZReport().getId();
+    }
+
+    @Named("shiftRegisterNumber")
+    default Integer shiftRegisterNumber(Sale sale) {
+        if (sale == null
+            || sale.getCashierShift() == null
+            || sale.getCashierShift().getCashRegister() == null) {
+            return null;
+        }
+        return sale.getCashierShift().getCashRegister().getRegisterNumber();
     }
 
     @Named("returnAmount")

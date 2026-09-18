@@ -16,11 +16,19 @@ import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.sales.repository.SaleRepository;
-import com.pos.pharmacy.sales.support.*;
+import com.pos.pharmacy.sales.support.CheckoutLineAssembler;
+import com.pos.pharmacy.sales.support.CheckoutMarkGuard;
+import com.pos.pharmacy.sales.support.CheckoutOrderPricing;
+import com.pos.pharmacy.sales.support.CheckoutQuantityResolver;
+import com.pos.pharmacy.sales.support.CheckoutSaleFactory;
+import com.pos.pharmacy.sales.support.OfflineSaleContext;
+import com.pos.pharmacy.sales.support.SaleEnumParser;
+import com.pos.pharmacy.sales.support.SaleFiscalApplier;
+import com.pos.pharmacy.sales.support.SaleMapper;
+import com.pos.pharmacy.sales.support.SalePaymentResolver;
 import com.pos.pharmacy.shift.entity.PharmacyCashierShift;
 import com.pos.pharmacy.shift.support.PharmacyShiftLookup;
 import com.pos.pharmacy.shift.support.PharmacyShiftSaleAccumulator;
-import com.pos.pharmacy.util.MoneyCalculator;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import com.pos.pharmacy.warehouse.support.PharmacyLotFefoSupport;
 import lombok.RequiredArgsConstructor;
@@ -29,8 +37,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,12 +54,13 @@ public class PharmacySaleCheckoutService {
     private final PharmacyShiftLookup shiftLookup;
     private final PharmacyShiftSaleAccumulator shiftSaleAccumulator;
     private final SalePaymentResolver paymentResolver;
-    private final SaleReceiptNumberGenerator receiptNumberGenerator;
     private final StoreStockService storeStockService;
     private final PharmacyLotFefoSupport pharmacyLotFefoSupport;
     private final CheckoutQuantityResolver checkoutQuantityResolver;
+    private final CheckoutMarkGuard checkoutMarkGuard;
+    private final CheckoutLineAssembler checkoutLineAssembler;
+    private final CheckoutSaleFactory checkoutSaleFactory;
     private final SaleFiscalApplier saleFiscalApplier;
-    private final PharmacySalePatientSupport pharmacySalePatientSupport;
     private final SaleMapper saleMapper;
     private final PharmacyRevenuePublicationService revenuePublicationService;
     private final PharmacySoldMarkService soldMarkService;
@@ -60,147 +73,62 @@ public class PharmacySaleCheckoutService {
     }
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId, OfflineSaleContext offline) {
-        Integer companyId = PharmacyTenantContext.getCompanyId();
-        if (companyId == null) {
-            throw PharmacyErrors.badRequest("Компания не определена");
-        }
-        if (req.storeId() == null) {
-            throw PharmacyErrors.badRequest("Укажите магазин");
-        }
-        PharmacyCashierShift openShift = shiftLookup.requireOpen(req.storeId());
+        Integer companyId = requireCompanyId();
+        Integer storeId = requireStoreId(req);
+        PharmacyCashierShift openShift = shiftLookup.requireOpen(storeId);
         CashierShiftSnapshot shift = shiftLookup.toSnapshot(openShift);
-        SaleEnums.ReceiptType receiptType = SaleEnumParser.receiptType(req.receiptType());
-        if (receiptType != SaleEnums.ReceiptType.SALE) {
-            throw PharmacyErrors.badRequest("Аптека поддерживает только обычную продажу");
-        }
+        SaleEnums.ReceiptType receiptType = requireSaleReceipt(req.receiptType());
 
-        List<String> allMarks = new ArrayList<>();
-        List<List<String>> marksPerItem = new ArrayList<>();
-        for (SaleItemRequest itemReq : req.items()) {
-            List<String> marks = normalizeMarks(itemReq.productMarks());
-            marksPerItem.add(marks);
-            allMarks.addAll(marks);
-        }
-        soldMarkService.assertNotSold(companyId, allMarks);
-        assertNoDuplicateMarksInRequest(allMarks);
+        CheckoutMarkGuard.MarkPlan markPlan = checkoutMarkGuard.collect(req.items());
+        soldMarkService.assertNotSold(companyId, markPlan.allMarks());
 
         Map<UUID, Product> productsById = loadProducts(companyId, req.items());
         Map<UUID, Map<String, String>> attributesByProductId = checkoutQuantityResolver.loadAttributes(req.items());
+        CheckoutLineAssembler.AssembledLines assembled = checkoutLineAssembler.assemble(
+            req.items(),
+            productsById,
+            attributesByProductId
+        );
 
-        List<SaleItem> items = new ArrayList<>();
-        BigDecimal subtotal = BigDecimal.ZERO;
-        BigDecimal taxTotal = BigDecimal.ZERO;
-        BigDecimal lineDiscountTotal = BigDecimal.ZERO;
+        storeStockService.decreaseAll(storeId, assembled.productsTouched(), assembled.quantityByProductId());
+        pharmacyLotFefoSupport.decreaseForSaleBatch(storeId, CheckoutLineAssembler.toLotNeeds(assembled));
 
-        for (SaleItemRequest itemReq : req.items()) {
-            Product product = productsById.get(itemReq.productId());
-            if (product == null) {
-                throw PharmacyErrors.notFound("Product", itemReq.productId());
-            }
-            BigDecimal lineQty = checkoutQuantityResolver.normalizeQuantity(product, itemReq.quantity(), attributesByProductId);
-            checkoutQuantityResolver.validateQuantity(product, lineQty, attributesByProductId);
-            storeStockService.requireAvailable(product, req.storeId(), lineQty);
-
-            BigDecimal lineDiscount = itemReq.discount() != null ? itemReq.discount() : BigDecimal.ZERO;
-            BigDecimal unitPrice = resolveCheckoutUnitPrice(itemReq, product);
-            BigDecimal lineGross = MoneyCalculator.lineGross(unitPrice, lineQty, lineDiscount);
-            BigDecimal rate = product.getTaxRate() != null ? product.getTaxRate() : new BigDecimal("12");
-            BigDecimal taxAmt = MoneyCalculator.vatFromInclusiveLine(lineGross, rate);
-            BigDecimal netLine = lineGross.subtract(taxAmt);
-
-            SaleItem saleItem = SaleItem.builder()
-                .product(product)
-                .productName(product.getName())
-                .unitPrice(unitPrice)
-                .quantity(lineQty)
-                .discount(lineDiscount)
-                .taxAmount(taxAmt)
-                .lineTotal(lineGross)
-                .build();
-            items.add(saleItem);
-
-            subtotal = subtotal.add(netLine);
-            taxTotal = taxTotal.add(taxAmt);
-            lineDiscountTotal = lineDiscountTotal.add(lineDiscount);
-
-            storeStockService.decrease(product, req.storeId(), lineQty);
-            pharmacyLotFefoSupport.decreaseForSale(product, req.storeId(), lineQty, saleItem);
-        }
-
-        BigDecimal grossTotal = subtotal.add(taxTotal).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal orderDiscount = normalizeOrderDiscount(req.orderDiscountAmount(), grossTotal);
-        BigDecimal orderDiscountPercent = resolveOrderDiscountPercent(req.orderDiscountPercent(), orderDiscount, grossTotal);
-        BigDecimal total = grossTotal.subtract(orderDiscount).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal discountTotal = lineDiscountTotal.add(orderDiscount).setScale(2, RoundingMode.HALF_UP);
-        lineDiscountTotal = lineDiscountTotal.setScale(2, RoundingMode.HALF_UP);
-
+        CheckoutTotals totals = resolveTotals(req, assembled);
         SaleEnums.PaymentMethod paymentMethod = SaleEnumParser.paymentMethod(req.paymentMethod());
-        SaleEnums.CardType cardType = SaleEnumParser.cardType(req.cardType());
-        SalePaymentResolver.PaymentAmounts amounts = paymentResolver.resolve(paymentMethod, total, req);
-        validatePaymentTotals(total, amounts);
-        if (paymentMethod == SaleEnums.PaymentMethod.CASHLESS) {
-            cardType = null;
-        } else if (paymentMethod == SaleEnums.PaymentMethod.CARD && cardType == null) {
-            cardType = SaleEnums.CardType.HUMO;
-        } else if (amounts.card().signum() > 0 && cardType == null) {
-            cardType = SaleEnums.CardType.HUMO;
-        }
+        SaleEnums.CardType cardType = resolveCardType(
+            paymentMethod,
+            SaleEnumParser.cardType(req.cardType()),
+            totals.amounts()
+        );
 
-        String notes = req.notes();
-        if (offline != null) {
-            if (notes == null || notes.isBlank()) {
-                notes = "OFFLINE_SYNC";
-            } else if (!notes.contains("OFFLINE_SYNC")) {
-                notes = notes + " | OFFLINE_SYNC";
-            }
-        }
+        Sale sale = checkoutSaleFactory.create(
+            companyId,
+            cashierId,
+            req,
+            shift,
+            receiptType,
+            paymentMethod,
+            cardType,
+            totals.amounts(),
+            assembled,
+            totals.lineDiscountTotal(),
+            totals.orderDiscount(),
+            totals.orderDiscountPercent(),
+            totals.discountTotal(),
+            totals.total(),
+            offline
+        );
 
-        Sale.SaleBuilder saleBuilder = Sale.builder()
-            .companyId(companyId)
-            .receiptNumber(receiptNumberGenerator.next())
-            .cashierId(cashierId)
-            .cashierName(shift.cashierName())
-            .storeId(req.storeId())
-            .cashierShiftId(shift.id())
-            .subtotal(subtotal.setScale(2, RoundingMode.HALF_UP))
-            .taxTotal(taxTotal.setScale(2, RoundingMode.HALF_UP))
-            .discountTotal(discountTotal)
-            .lineDiscountTotal(lineDiscountTotal)
-            .orderDiscountAmount(orderDiscount)
-            .orderDiscountPercent(orderDiscountPercent)
-            .totalAmount(total)
-            .paymentMethod(paymentMethod)
-            .cashAmount(amounts.cash())
-            .cardAmount(amounts.card())
-            .receiptType(receiptType)
-            .cardType(cardType)
-            .amountTendered(amounts.tendered())
-            .changeGiven(amounts.change())
-            .status(SaleEnums.SaleStatus.COMPLETED)
-            .notes(notes)
-            .patientPinfl(pharmacySalePatientSupport.normalizePinfl(req.patientPinfl()))
-            .loyaltyPhone(pharmacySalePatientSupport.normalizeLoyaltyPhone(req.loyaltyPhone()))
-            .pharmacyDmed(Boolean.TRUE.equals(req.pharmacyDmed()))
-            .printFiscalQr(req.printFiscalQr() == null || Boolean.TRUE.equals(req.printFiscalQr()));
-
-        if (offline != null) {
-            saleBuilder
-                .clientSaleId(offline.clientSaleId())
-                .offlineDeviceId(offline.offlineDeviceId())
-                .createdAt(offline.createdAt() != null ? offline.createdAt() : Instant.now());
-        }
-
-        Sale sale = saleBuilder.build();
-
+        List<SaleItem> items = assembled.items();
         items.forEach(item -> item.setSale(sale));
         sale.setItems(items);
         saleFiscalApplier.apply(sale, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
-        soldMarkService.registerSaleMarks(saved, saved.getItems(), marksPerItem);
-        stockMarkService.markPendingWithdraw(req.storeId(), saved.getId(), allMarks);
-        if (!allMarks.isEmpty()) {
-            markWithdrawService.enqueueAfterSale(companyId, req.storeId(), saved.getId(), allMarks);
+        soldMarkService.registerSaleMarks(saved, saved.getItems(), markPlan.marksPerItem());
+        stockMarkService.markPendingWithdraw(storeId, saved.getId(), markPlan.allMarks());
+        if (!markPlan.allMarks().isEmpty()) {
+            markWithdrawService.enqueueAfterSale(companyId, storeId, saved.getId(), markPlan.allMarks());
         }
         shiftSaleAccumulator.applySale(
             openShift,
@@ -211,7 +139,7 @@ public class PharmacySaleCheckoutService {
             paymentMethod
         );
         revenuePublicationService.onSaleCompleted(saved, attributesByProductId, shift.storeName());
-        catalogCacheEvictor.onStoreStockChanged(companyId, req.storeId());
+        catalogCacheEvictor.onStoreStockChanged(companyId, storeId);
         return saleMapper.toResponse(
             saved,
             shift.storeName(),
@@ -220,6 +148,23 @@ public class PharmacySaleCheckoutService {
             openShift.getClosedAt(),
             null
         );
+    }
+
+    private CheckoutTotals resolveTotals(CreateSaleRequest req, CheckoutLineAssembler.AssembledLines assembled) {
+        BigDecimal grossTotal = assembled.subtotalNet().add(assembled.taxTotal()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal orderDiscount = CheckoutOrderPricing.normalizeOrderDiscount(req.orderDiscountAmount(), grossTotal);
+        BigDecimal orderDiscountPercent = CheckoutOrderPricing.resolveOrderDiscountPercent(
+            req.orderDiscountPercent(),
+            orderDiscount,
+            grossTotal
+        );
+        BigDecimal total = grossTotal.subtract(orderDiscount).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal lineDiscountTotal = assembled.lineDiscountTotal().setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discountTotal = lineDiscountTotal.add(orderDiscount).setScale(2, RoundingMode.HALF_UP);
+        SaleEnums.PaymentMethod paymentMethod = SaleEnumParser.paymentMethod(req.paymentMethod());
+        SalePaymentResolver.PaymentAmounts amounts = paymentResolver.resolve(paymentMethod, total, req);
+        CheckoutOrderPricing.validatePaymentTotals(total, amounts);
+        return new CheckoutTotals(total, lineDiscountTotal, orderDiscount, orderDiscountPercent, discountTotal, amounts);
     }
 
     private Map<UUID, Product> loadProducts(Integer companyId, List<SaleItemRequest> items) {
@@ -240,69 +185,52 @@ public class PharmacySaleCheckoutService {
         return result;
     }
 
-    private BigDecimal resolveCheckoutUnitPrice(SaleItemRequest itemReq, Product product) {
-        if (itemReq.unitPrice() != null && itemReq.unitPrice().signum() > 0) {
-            return itemReq.unitPrice().setScale(2, RoundingMode.HALF_UP);
+    private static Integer requireCompanyId() {
+        Integer companyId = PharmacyTenantContext.getCompanyId();
+        if (companyId == null) {
+            throw PharmacyErrors.badRequest("Компания не определена");
         }
-        return product.getSellingPrice().setScale(2, RoundingMode.HALF_UP);
+        return companyId;
     }
 
-    private static List<String> normalizeMarks(List<String> raw) {
-        if (raw == null || raw.isEmpty()) {
-            return List.of();
+    private static Integer requireStoreId(CreateSaleRequest req) {
+        if (req.storeId() == null) {
+            throw PharmacyErrors.badRequest("Укажите магазин");
         }
-        LinkedHashSet<String> unique = new LinkedHashSet<>();
-        for (String mark : raw) {
-            if (mark == null) {
-                continue;
-            }
-            String trimmed = mark.trim();
-            if (!trimmed.isEmpty()) {
-                unique.add(trimmed);
-            }
-        }
-        return List.copyOf(unique);
+        return req.storeId();
     }
 
-    private static void assertNoDuplicateMarksInRequest(List<String> markCodes) {
-        Set<String> seen = new HashSet<>();
-        for (String code : markCodes) {
-            for (String key : PharmacyMarkIdentityKeys.keysOf(code)) {
-                if (!seen.add(key)) {
-                    throw PharmacyErrors.badRequest("В чеке повторён один и тот же код маркировки");
-                }
-            }
+    private static SaleEnums.ReceiptType requireSaleReceipt(String raw) {
+        SaleEnums.ReceiptType receiptType = SaleEnumParser.receiptType(raw);
+        if (receiptType != SaleEnums.ReceiptType.SALE) {
+            throw PharmacyErrors.badRequest("Аптека поддерживает только обычную продажу");
         }
+        return receiptType;
     }
 
-    private static BigDecimal normalizeOrderDiscount(BigDecimal amount, BigDecimal grossTotal) {
-        if (amount == null || amount.signum() <= 0) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        return amount.min(grossTotal.max(BigDecimal.ZERO)).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-    }
-
-    private static void validatePaymentTotals(BigDecimal total, SalePaymentResolver.PaymentAmounts amounts) {
-        BigDecimal paid = amounts.cash().add(amounts.card()).setScale(2, RoundingMode.HALF_UP);
-        if (paid.compareTo(total) != 0) {
-            throw PharmacyErrors.badRequest("Сумма оплаты не совпадает с итогом чека");
-        }
-    }
-
-    private static BigDecimal resolveOrderDiscountPercent(
-        BigDecimal requestedPercent,
-        BigDecimal orderDiscount,
-        BigDecimal grossTotal
+    private static SaleEnums.CardType resolveCardType(
+        SaleEnums.PaymentMethod paymentMethod,
+        SaleEnums.CardType cardType,
+        SalePaymentResolver.PaymentAmounts amounts
     ) {
-        if (orderDiscount.signum() <= 0) {
+        if (paymentMethod == SaleEnums.PaymentMethod.CASHLESS) {
             return null;
         }
-        if (requestedPercent != null && requestedPercent.signum() > 0) {
-            return requestedPercent.min(new BigDecimal("100")).setScale(2, RoundingMode.HALF_UP);
+        if (paymentMethod == SaleEnums.PaymentMethod.CARD && cardType == null) {
+            return SaleEnums.CardType.HUMO;
         }
-        if (grossTotal.signum() <= 0) {
-            return null;
+        if (amounts.card().signum() > 0 && cardType == null) {
+            return SaleEnums.CardType.HUMO;
         }
-        return orderDiscount.multiply(new BigDecimal("100")).divide(grossTotal, 2, RoundingMode.HALF_UP);
+        return cardType;
     }
+
+    private record CheckoutTotals(
+        BigDecimal total,
+        BigDecimal lineDiscountTotal,
+        BigDecimal orderDiscount,
+        BigDecimal orderDiscountPercent,
+        BigDecimal discountTotal,
+        SalePaymentResolver.PaymentAmounts amounts
+    ) {}
 }

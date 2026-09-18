@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -89,16 +90,63 @@ public class StoreStockService {
         if (product == null || storeId == null || quantity == null) {
             return;
         }
-        BigDecimal q = QuantityUtil.normalize(quantity);
-        if (q.signum() <= 0) {
+        Map<UUID, Product> products = Map.of(product.getId(), product);
+        Map<UUID, BigDecimal> qty = Map.of(product.getId(), quantity);
+        decreaseAll(storeId, products, qty);
+    }
+
+    /**
+     * One stock load + one saveAll for store rows and product denormalized qty.
+     * {@code quantitiesByProductId} must already be aggregated per product.
+     */
+    @Transactional
+    public void decreaseAll(
+        Integer storeId,
+        Map<UUID, Product> productsById,
+        Map<UUID, BigDecimal> quantitiesByProductId
+    ) {
+        if (storeId == null || productsById == null || quantitiesByProductId == null || quantitiesByProductId.isEmpty()) {
             return;
         }
-        requireAvailable(product, storeId, q);
-        StoreStock stock = storeStockRepository.findByProductIdAndStoreId(product.getId(), storeId)
-            .orElseThrow(() -> PharmacyErrors.badRequest("Нет остатка для «" + product.getName() + "»"));
-        stock.setQuantity(QuantityUtil.subtract(stock.getQuantity(), q));
-        storeStockRepository.save(stock);
-        product.setStockQuantity(QuantityUtil.subtract(product.getStockQuantity(), q));
-        productRepository.save(product);
+        List<StoreStock> rows = storeStockRepository.findByStoreIdAndProductIdIn(storeId, quantitiesByProductId.keySet());
+        Map<UUID, StoreStock> stockByProduct = new HashMap<>();
+        for (StoreStock row : rows) {
+            stockByProduct.put(row.getProductId(), row);
+        }
+
+        List<StoreStock> dirtyStock = new ArrayList<>();
+        List<Product> dirtyProducts = new ArrayList<>();
+
+        for (Map.Entry<UUID, BigDecimal> entry : quantitiesByProductId.entrySet()) {
+            UUID productId = entry.getKey();
+            Product product = productsById.get(productId);
+            if (product == null) {
+                continue;
+            }
+            BigDecimal need = QuantityUtil.normalize(entry.getValue());
+            if (need.signum() <= 0) {
+                continue;
+            }
+            StoreStock stock = stockByProduct.get(productId);
+            BigDecimal available = stock != null
+                ? QuantityUtil.normalize(stock.getQuantity())
+                : BigDecimal.ZERO;
+            if (available.compareTo(need) < 0) {
+                throw PharmacyErrors.badRequest(
+                    "Недостаточно остатка для «" + product.getName() + "». Доступно: " + available
+                );
+            }
+            stock.setQuantity(QuantityUtil.subtract(available, need));
+            dirtyStock.add(stock);
+            product.setStockQuantity(QuantityUtil.subtract(product.getStockQuantity(), need));
+            dirtyProducts.add(product);
+        }
+
+        if (!dirtyStock.isEmpty()) {
+            storeStockRepository.saveAll(dirtyStock);
+        }
+        if (!dirtyProducts.isEmpty()) {
+            productRepository.saveAll(dirtyProducts);
+        }
     }
 }
