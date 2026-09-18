@@ -260,7 +260,8 @@ public class PharmacyReceiptSupport {
             line.getUnitRetailPrice(),
             line.getLineRetail(),
             line.getBatchNumber(),
-            line.getExpiryDate()
+            line.getExpiryDate(),
+            line.getProduct().isMarkedProduct()
         );
     }
 

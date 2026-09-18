@@ -4,6 +4,8 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.integration.dto.CashierShiftSnapshot;
+import com.pos.pharmacy.marks.service.PharmacyMarkWithdrawService;
+import com.pos.pharmacy.marks.service.PharmacyStockMarkService;
 import com.pos.pharmacy.revenue.service.PharmacyRevenuePublicationService;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.sales.domain.SaleEnums;
@@ -48,6 +50,8 @@ public class PharmacySaleCheckoutService {
     private final SaleMapper saleMapper;
     private final PharmacyRevenuePublicationService revenuePublicationService;
     private final PharmacySoldMarkService soldMarkService;
+    private final PharmacyStockMarkService stockMarkService;
+    private final PharmacyMarkWithdrawService markWithdrawService;
 
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
         return processSale(req, cashierId, null);
@@ -192,6 +196,10 @@ public class PharmacySaleCheckoutService {
 
         Sale saved = saleRepository.save(sale);
         soldMarkService.registerSaleMarks(saved, saved.getItems(), marksPerItem);
+        stockMarkService.markPendingWithdraw(req.storeId(), saved.getId(), allMarks);
+        if (!allMarks.isEmpty()) {
+            markWithdrawService.enqueueAfterSale(companyId, req.storeId(), saved.getId(), allMarks);
+        }
         shiftSaleAccumulator.applySale(
             openShift,
             saved.getTotalAmount(),

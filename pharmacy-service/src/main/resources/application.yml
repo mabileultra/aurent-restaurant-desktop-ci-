@@ -43,6 +43,33 @@ app:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     send-timeout-ms: ${KAFKA_SEND_TIMEOUT_MS:10000}
     retry-ms: ${KAFKA_OUTBOX_RETRY_MS:30000}
+  pos-core:
+    base-url: ${POS_CORE_URL:http://localhost:8080/api/v1}
+    internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
+  pharmacy:
+    mark-withdraw:
+      retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
+    async:
+      mark-verify:
+        core-pool-size: ${PHARMACY_MARK_VERIFY_CORE:8}
+        max-pool-size: ${PHARMACY_MARK_VERIFY_MAX:8}
+        queue-capacity: ${PHARMACY_MARK_VERIFY_QUEUE:200}
+        thread-name-prefix: pharm-mark-verify-
+      mark-withdraw:
+        core-pool-size: ${PHARMACY_MARK_WITHDRAW_CORE:4}
+        max-pool-size: ${PHARMACY_MARK_WITHDRAW_MAX:8}
+        queue-capacity: ${PHARMACY_MARK_WITHDRAW_QUEUE:500}
+        thread-name-prefix: pharm-mark-withdraw-
+      import-pool:
+        core-pool-size: ${PHARMACY_IMPORT_CORE:8}
+        max-pool-size: ${PHARMACY_IMPORT_MAX:8}
+        queue-capacity: ${PHARMACY_IMPORT_QUEUE:100}
+        thread-name-prefix: pharm-import-
+      catalog:
+        core-pool-size: ${PHARMACY_CATALOG_CORE:4}
+        max-pool-size: ${PHARMACY_CATALOG_MAX:8}
+        queue-capacity: ${PHARMACY_CATALOG_QUEUE:100}
+        thread-name-prefix: pharm-catalog-
 
 springdoc:
   api-docs:

@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.dto.importing;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public record PharmacyImportConfirmItem(
@@ -19,5 +20,12 @@ public record PharmacyImportConfirmItem(
     LocalDate expiryDate,
     String barcode,
     String ikpu,
-    BigDecimal unitsInPack
-) {}
+    BigDecimal unitsInPack,
+    List<String> markCodes
+) {
+    public PharmacyImportConfirmItem {
+        if (markCodes == null) {
+            markCodes = List.of();
+        }
+    }
+}

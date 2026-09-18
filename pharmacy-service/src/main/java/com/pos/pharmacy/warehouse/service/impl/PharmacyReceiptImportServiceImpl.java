@@ -9,8 +9,11 @@ import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import com.pos.pharmacy.warehouse.repository.StockReceiptRepository;
 import com.pos.pharmacy.warehouse.service.PharmacyReceiptImportService;
 import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
+import com.pos.pharmacy.config.PharmacyExecutorNames;
+import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -20,13 +23,15 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 
 @Service
-@RequiredArgsConstructor
 @Transactional
 public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportService {
 
@@ -40,6 +45,27 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     private final PharmacyImportMatchSupport matchSupport;
     private final PharmacyStockReceiptService pharmacyStockReceiptService;
     private final PharmacyImportProductWriter productWriter;
+    private final Executor importExecutor;
+
+    public PharmacyReceiptImportServiceImpl(
+        StockReceiptRepository stockReceiptRepository,
+        TenantSupport tenant,
+        PharmacyReceiptSupport pharmacyReceipt,
+        PharmacyImportGridSupport gridSupport,
+        PharmacyImportMatchSupport matchSupport,
+        PharmacyStockReceiptService pharmacyStockReceiptService,
+        PharmacyImportProductWriter productWriter,
+        @Qualifier(PharmacyExecutorNames.IMPORT) Executor importExecutor
+    ) {
+        this.stockReceiptRepository = stockReceiptRepository;
+        this.tenant = tenant;
+        this.pharmacyReceipt = pharmacyReceipt;
+        this.gridSupport = gridSupport;
+        this.matchSupport = matchSupport;
+        this.pharmacyStockReceiptService = pharmacyStockReceiptService;
+        this.productWriter = productWriter;
+        this.importExecutor = importExecutor;
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -70,16 +96,19 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal defaultMarkup = receipt.getDefaultMarkupPercent() != null
             ? receipt.getDefaultMarkupPercent()
             : new BigDecimal("20");
-        List<PharmacyImportMatchItem> items = new ArrayList<>();
-        int index = 0;
-        for (List<String> row : request.rows()) {
-            PharmacyImportMatchItem item = mapRow(
-                index++, row, roles, defaultMarkup, request.useFinalSums(), invoiceImported, invoiceId
-            );
-            if (item != null) {
-                items.add(item);
-            }
+        List<List<String>> rows = request.rows() != null ? request.rows() : List.of();
+        List<Supplier<PharmacyImportMatchItem>> tasks = new ArrayList<>(rows.size());
+        for (int i = 0; i < rows.size(); i++) {
+            final int rowIndex = i;
+            final List<String> row = rows.get(i);
+            tasks.add(() -> mapRow(
+                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), invoiceImported, invoiceId
+            ));
         }
+        List<PharmacyImportMatchItem> items = PharmacyParallelTasks.supplyAll(tasks, importExecutor).stream()
+            .filter(item -> item != null)
+            .sorted(Comparator.comparingInt(PharmacyImportMatchItem::rowIndex))
+            .toList();
         return new PharmacyImportMatchResponse(invoiceId, invoiceImported, items);
     }
 
@@ -177,6 +206,9 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal units = PharmacyImportValueParser.decimal(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.UNITS_IN_PACK))
         );
+        List<String> markCodes = PharmacyImportMarkCodesParser.parse(
+            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.MARK_CODES))
+        );
         return new PharmacyImportMatchItem(
             rowIndex,
             name,
@@ -194,7 +226,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             expiry,
             blankToNull(barcode),
             blankToNull(ikpu),
-            units
+            units,
+            markCodes
         );
     }
 

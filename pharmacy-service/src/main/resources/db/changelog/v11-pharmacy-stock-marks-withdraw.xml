@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-110-stock-marks-withdraw-retry" author="pos">
+        <addColumn tableName="stock_marks">
+            <column name="withdraw_attempts" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_withdraw_at" type="TIMESTAMPTZ"/>
+            <column name="last_withdraw_error" type="VARCHAR(500)"/>
+        </addColumn>
+        <createIndex tableName="stock_marks" indexName="idx_pharm_stock_marks_pending_withdraw">
+            <column name="status"/>
+            <column name="updated_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -74,8 +74,8 @@ export function collectMarksFromCartItems(items) {
   return out;
 }
 
-/** Только для тестов. */
-export function clearPharmacySoldMarksForTests(storeId) {
+/** Сбросить локальный sold-кэш магазина (после возврата). */
+export function clearPharmacySoldMarks(storeId) {
   const key = storageKey(storeId);
   memoryFallback.delete(key);
   if (canUseLocalStorage()) {
@@ -85,4 +85,9 @@ export function clearPharmacySoldMarksForTests(storeId) {
       // ignore
     }
   }
+}
+
+/** @deprecated use clearPharmacySoldMarks */
+export function clearPharmacySoldMarksForTests(storeId) {
+  clearPharmacySoldMarks(storeId);
 }

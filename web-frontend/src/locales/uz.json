@@ -4940,6 +4940,23 @@
     "activateConfirm": "Hujjatni o‘tkazish",
     "activateHint": "O‘tkazilgandan so‘ng bu hujjatdagi qoldiq va partiyalarni o‘zgartirib bo‘lmaydi.",
     "activateNeedLots": "O‘tkazishdan oldin barcha qatorlar uchun seriya va yaroqlilik muddatini kiriting",
+    "activateNeedMarks": "Markirovkalangan mahsulotlar uchun DataMatrix kodlarini skanerlang",
+    "marks": {
+      "badge": "KM",
+      "count": "{{have}} / {{need}}",
+      "placeholder": "DataMatrix / markirovka kodi skan…",
+      "add": "Qo‘shish",
+      "hint": "O‘tkazishdan oldin har bir qadoq KM sini skanerlang",
+      "sectionTitle": "Markirovka (ASL)",
+      "invalidCode": "Bu markirovka kodiga o‘xshamaydi",
+      "duplicate": "Bu KM hujjatda allaqachon bor",
+      "enough": "Bu qator uchun KM yetarli",
+      "alreadySold": "ASL: kod allaqachon chiqarilgan",
+      "notFound": "ASL: kod topilmadi",
+      "verifyFailed": "Markirovkani tekshirib bo‘lmadi",
+      "added": "KM qo‘shildi",
+      "importHydrated": "Importdan KM qo‘yildi — o‘tkazishdan oldin tekshiring"
+    },
     "activated": "Hujjat {{no}} o‘tkazildi",
     "activateFailed": "Hujjatni o‘tkazib bo‘lmadi",
     "saved": "Saqlandi",
@@ -5058,7 +5075,10 @@
       "RETAIL": "Chakana narx",
       "BARCODE": "Shtrixkod",
       "IKPU": "IKPU / MXIK",
-      "UNITS_IN_PACK": "Qadoqdagi birlik"
-    }
+      "UNITS_IN_PACK": "Qadoqdagi birlik",
+      "MARK_CODES": "Markirovka kodlari (KM)"
+    },
+    "importSavedWithMarks": "Import qilingan qatorlar: {{count}}. Fayldagi KM qo‘yildi — o‘tkazishdan oldin tekshiring"
   }
 }
+

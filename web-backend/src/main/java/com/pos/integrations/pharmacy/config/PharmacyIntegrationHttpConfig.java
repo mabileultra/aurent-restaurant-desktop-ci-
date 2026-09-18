@@ -12,15 +12,18 @@ import org.springframework.web.client.RestTemplate;
 @Configuration
 public class PharmacyIntegrationHttpConfig {
 
-  private static final int CONNECT_TIMEOUT_MS = 3_000;
-  private static final int READ_TIMEOUT_MS = 5_000;
-
   @Bean
-  public RestTemplate pharmacyIntegrationRestTemplate(RestTemplateBuilder builder) {
+  public RestTemplate pharmacyIntegrationRestTemplate(
+      RestTemplateBuilder builder,
+      PharmacyAslAsyncProperties properties
+  ) {
+    int connectMs = Math.max(500, properties.getConnectTimeoutMs());
+    int readMs = Math.max(1_000, properties.getReadTimeoutMs());
+
     RequestConfig requestConfig = RequestConfig.custom()
-      .setConnectTimeout(Timeout.ofMilliseconds(CONNECT_TIMEOUT_MS))
-      .setConnectionRequestTimeout(Timeout.ofMilliseconds(CONNECT_TIMEOUT_MS))
-      .setResponseTimeout(Timeout.ofMilliseconds(READ_TIMEOUT_MS))
+      .setConnectTimeout(Timeout.ofMilliseconds(connectMs))
+      .setConnectionRequestTimeout(Timeout.ofMilliseconds(connectMs))
+      .setResponseTimeout(Timeout.ofMilliseconds(readMs))
       .build();
 
     var httpClient = HttpClients.custom()

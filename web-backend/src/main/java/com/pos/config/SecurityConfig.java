@@ -3,6 +3,7 @@ package com.pos.config;
 import com.pos.security.CrmInternalApiKeyFilter;
 import com.pos.security.IdentityInternalApiKeyFilter;
 import com.pos.security.JwtAuthenticationFilter;
+import com.pos.security.PharmacyInternalApiKeyFilter;
 import com.pos.security.PlatformInternalApiKeyFilter;
 import com.pos.security.ReportingInternalApiKeyFilter;
 import com.pos.security.RestaurantInternalApiKeyFilter;
@@ -38,6 +39,7 @@ public class SecurityConfig {
     private final ReportingInternalApiKeyFilter reportingInternalApiKeyFilter;
     private final CrmInternalApiKeyFilter crmInternalApiKeyFilter;
     private final RestaurantInternalApiKeyFilter restaurantInternalApiKeyFilter;
+    private final PharmacyInternalApiKeyFilter pharmacyInternalApiKeyFilter;
     private final TelegramBotApiKeyFilter telegramBotApiKeyFilter;
     private final AuthenticationProvider authenticationProvider;
 
@@ -64,6 +66,7 @@ public class SecurityConfig {
                 .requestMatchers("/internal/reports/**").permitAll()
                 .requestMatchers("/internal/crm/**").permitAll()
                 .requestMatchers("/internal/restaurant/**").permitAll()
+                .requestMatchers("/internal/pharmacy/**").permitAll()
                 .requestMatchers(PUBLIC_PATHS).permitAll()
                 .requestMatchers("/returns/**").hasAnyRole("ADMIN", "MANAGER")
                 .requestMatchers("/orders/**").hasAnyRole("ADMIN", "MANAGER")
@@ -78,6 +81,7 @@ public class SecurityConfig {
             .addFilterBefore(reportingInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(crmInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(restaurantInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterBefore(pharmacyInternalApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(telegramBotApiKeyFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();

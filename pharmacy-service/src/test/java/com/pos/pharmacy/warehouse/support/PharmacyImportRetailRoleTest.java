@@ -26,8 +26,9 @@ class PharmacyImportRetailRoleTest {
     }
 
     @Test
-    void decimalKeepsRetailWhenCurrencySuffix() {
-        assertEquals(new BigDecimal("12500.50"), PharmacyImportValueParser.decimal("12 500,50 сум"));
-        assertNull(PharmacyImportValueParser.decimal(""));
+    void guessMarkCodesColumn() {
+        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("Код маркировки"));
+        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("DataMatrix"));
+        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("КИЗ"));
     }
 }

@@ -20,10 +20,11 @@ public final class PharmacyImportRoles {
     public static final String BARCODE = "BARCODE";
     public static final String IKPU = "IKPU";
     public static final String UNITS_IN_PACK = "UNITS_IN_PACK";
+    public static final String MARK_CODES = "MARK_CODES";
 
     public static final Set<String> ALL = Set.of(
         SKIP, NAME, MANUFACTURER, COUNTRY, QTY, BATCH, EXPIRY,
-        PURCHASE, PURCHASE_WITH_VAT, VAT_RATE, RETAIL, BARCODE, IKPU, UNITS_IN_PACK
+        PURCHASE, PURCHASE_WITH_VAT, VAT_RATE, RETAIL, BARCODE, IKPU, UNITS_IN_PACK, MARK_CODES
     );
 
     private PharmacyImportRoles() {
@@ -36,6 +37,9 @@ public final class PharmacyImportRoles {
         }
         if (containsAny(h, "штрих", "barcode", "ean", "штрихкод")) {
             return BARCODE;
+        }
+        if (containsAny(h, "маркиров", "markirov", "datamatrix", "data matrix", "киз", "км код", "код км", "codes km")) {
+            return MARK_CODES;
         }
         if (containsAny(h, "икпу", "ikpu", "мхик", "mxik", "каталог")) {
             return IKPU;

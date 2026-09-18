@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, supplierApi } from '../../../api';
@@ -15,6 +15,7 @@ import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal
 import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
 import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar';
 import PharmacyReceiptLineModal from '../components/PharmacyReceiptLineModal';
+import PharmacyReceiptMarksPanel from '../components/PharmacyReceiptMarksPanel';
 import PharmacyStockLayout, { PharmacyStatusBadge } from '../components/PharmacyStockLayout';
 import {
   PharmacyEditCell,
@@ -24,23 +25,34 @@ import {
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { usePharmacyReceiptRevalue } from '../hooks/usePharmacyReceiptRevalue';
 import { usePharmacyReceiptMassEdit } from '../hooks/usePharmacyReceiptMassEdit';
+import { usePharmacyReceiptMarks } from '../hooks/usePharmacyReceiptMarks';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import {
   formatMoney,
   linesReadyForActivate,
 } from '../utils/pharmacyReceiptPricing';
+import {
+  flattenReceiptMarks,
+  receiptMarksReady,
+} from '../utils/pharmacyReceiptMarks';
+import {
+  matchPendingMarksToLines,
+  takePendingImportMarks,
+} from '../utils/pharmacyReceiptPendingMarksStore';
 import { PHARM_PAGE_SIZES, useClientTablePage } from '../utils/pharmacyTablePage';
 
 export default function PharmacyReceiptDocumentPage() {
   const { id } = useParams();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
   const [activateOpen, setActivateOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
   const [aboutProduct, setAboutProduct] = useState(null);
+  const importHydratedRef = useRef(false);
 
   const receiptQuery = useQuery({
     queryKey: ['pharmacy-receipt', id],
@@ -96,9 +108,38 @@ export default function PharmacyReceiptDocumentPage() {
     onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
   });
 
+  const receiptPreview = receiptQuery.data;
+  const receiptMarks = usePharmacyReceiptMarks({
+    storeId: receiptPreview?.storeId,
+    t,
+  });
+  const { hydrateMarks } = receiptMarks;
+
+  useEffect(() => {
+    importHydratedRef.current = false;
+  }, [id]);
+
+  useEffect(() => {
+    if (!id || !receiptPreview?.lines?.length || importHydratedRef.current) return;
+    const pending = takePendingImportMarks(id);
+    if (!pending.length) return;
+    const byLine = matchPendingMarksToLines(receiptPreview.lines, pending);
+    if (Object.keys(byLine).length) {
+      hydrateMarks(byLine);
+      importHydratedRef.current = true;
+      if (location.state?.importMarksHint) {
+        toast.success(t('pharmacyStock.marks.importHydrated'));
+      }
+    }
+  }, [id, receiptPreview?.lines, hydrateMarks, location.state?.importMarksHint, t]);
+
   const activateMutation = useMutation({
     mutationFn: async () => {
-      const posted = await pharmacyWarehouseApi.activate(id);
+      const marks = flattenReceiptMarks(receiptMarks.marksByLineId, receiptQuery.data?.lines ?? []);
+      const posted = await pharmacyWarehouseApi.activate(
+        id,
+        marks.length ? { marks } : {},
+      );
       const fresh = await pharmacyWarehouseApi.getReceipt(id, { timeout: 180000 });
       return { posted: posted.data, receipt: fresh.data };
     },
@@ -116,6 +157,8 @@ export default function PharmacyReceiptDocumentPage() {
   const isDraft = receipt?.status === 'DRAFT';
   const suppliers = suppliersQuery.data?.content ?? [];
   const canActivate = linesReadyForActivate(receipt?.lines);
+  const marksGate = receiptMarksReady(receipt?.lines ?? [], receiptMarks.marksByLineId);
+  const markedLines = (receipt?.lines ?? []).filter((line) => line.markedProduct);
   const linesPage = useClientTablePage(receipt?.lines ?? [], id);
   const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
   const revalue = usePharmacyReceiptRevalue({
@@ -171,6 +214,10 @@ export default function PharmacyReceiptDocumentPage() {
   const openActivate = () => {
     if (!canActivate) {
       toast.error(t('pharmacyStock.activateNeedLots'));
+      return;
+    }
+    if (!marksGate.ok) {
+      toast.error(t('pharmacyStock.activateNeedMarks'));
       return;
     }
     setActivateOpen(true);
@@ -347,6 +394,24 @@ export default function PharmacyReceiptDocumentPage() {
               onPageSizeChange={linesPage.setPageSize}
               pageSizeOptions={PHARM_PAGE_SIZES}
             />
+            {isDraft && markedLines.length > 0 ? (
+              <div className="pharmacy-stock__marks-section">
+                <h3 className="pharmacy-stock__pane-title">{t('pharmacyStock.marks.sectionTitle')}</h3>
+                {markedLines.map((line) => (
+                  <div key={line.id} className="pharmacy-stock__marks-line">
+                    <div className="pharmacy-stock__marks-line-name">{line.productName}</div>
+                    <PharmacyReceiptMarksPanel
+                      line={line}
+                      marksByLineId={receiptMarks.marksByLineId}
+                      busy={receiptMarks.busyLineId === line.id}
+                      disabled={activateMutation.isPending}
+                      onAdd={receiptMarks.addMarkToLine}
+                      onRemove={receiptMarks.removeMark}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : null}
           </div>
         </section>
       </div>

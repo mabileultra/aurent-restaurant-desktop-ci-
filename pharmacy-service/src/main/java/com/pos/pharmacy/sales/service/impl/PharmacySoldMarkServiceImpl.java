@@ -16,9 +16,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -97,6 +100,79 @@ public class PharmacySoldMarkServiceImpl implements PharmacySoldMarkService {
         if (!rows.isEmpty()) {
             soldMarkRepository.saveAll(rows);
         }
+    }
+
+    @Override
+    @Transactional
+    public List<String> unregisterForReturn(UUID saleId, Map<UUID, Integer> limitBySaleItemId) {
+        if (saleId == null || limitBySaleItemId == null || limitBySaleItemId.isEmpty()) {
+            return List.of();
+        }
+        List<SaleSoldMark> rows = soldMarkRepository.findBySaleIdAndSaleItemIdIn(
+            saleId,
+            limitBySaleItemId.keySet()
+        );
+        return unregisterLimited(rows, limitBySaleItemId);
+    }
+
+    @Override
+    @Transactional
+    public List<String> unregisterAllForSale(UUID saleId) {
+        if (saleId == null) {
+            return List.of();
+        }
+        List<SaleSoldMark> rows = soldMarkRepository.findBySaleId(saleId);
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+        List<String> codes = rows.stream()
+            .map(SaleSoldMark::getMarkCode)
+            .filter(StringUtils::hasText)
+            .distinct()
+            .toList();
+        soldMarkRepository.deleteAll(rows);
+        return codes;
+    }
+
+    /**
+     * На позицию несколько строк (identity keys). Берём уникальные markCode до лимита.
+     */
+    private List<String> unregisterLimited(List<SaleSoldMark> rows, Map<UUID, Integer> limitBySaleItemId) {
+        if (rows.isEmpty()) {
+            return List.of();
+        }
+        Map<UUID, LinkedHashSet<String>> codesByItem = new LinkedHashMap<>();
+        Map<String, List<SaleSoldMark>> rowsByCode = new LinkedHashMap<>();
+        for (SaleSoldMark row : rows) {
+            if (row.getSaleItemId() == null || !StringUtils.hasText(row.getMarkCode())) {
+                continue;
+            }
+            codesByItem.computeIfAbsent(row.getSaleItemId(), id -> new LinkedHashSet<>()).add(row.getMarkCode());
+            rowsByCode.computeIfAbsent(row.getMarkCode(), c -> new ArrayList<>()).add(row);
+        }
+
+        List<String> toRemoveCodes = new ArrayList<>();
+        List<SaleSoldMark> toDelete = new ArrayList<>();
+        for (Map.Entry<UUID, Integer> entry : limitBySaleItemId.entrySet()) {
+            int limit = entry.getValue() == null ? 0 : entry.getValue();
+            if (limit <= 0) {
+                continue;
+            }
+            LinkedHashSet<String> codes = codesByItem.getOrDefault(entry.getKey(), new LinkedHashSet<>());
+            int taken = 0;
+            for (String code : codes) {
+                if (taken >= limit) {
+                    break;
+                }
+                toRemoveCodes.add(code);
+                toDelete.addAll(rowsByCode.getOrDefault(code, List.of()));
+                taken++;
+            }
+        }
+        if (!toDelete.isEmpty()) {
+            soldMarkRepository.deleteAll(toDelete);
+        }
+        return toRemoveCodes;
     }
 
     private static Set<String> collectKeys(List<String> markCodes) {

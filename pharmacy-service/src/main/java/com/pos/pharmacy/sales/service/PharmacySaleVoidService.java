@@ -9,6 +9,7 @@ import com.pos.pharmacy.sales.domain.SaleEnums;
 import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.repository.SaleRepository;
+import com.pos.pharmacy.sales.support.PharmacySaleMarkReturnSupport;
 import com.pos.pharmacy.sales.support.SaleMapper;
 import com.pos.pharmacy.shift.support.PharmacyShiftRefundApplier;
 import com.pos.pharmacy.util.QuantityUtil;
@@ -37,6 +38,7 @@ public class PharmacySaleVoidService {
     private final PharmacyRevenuePublicationService revenuePublicationService;
     private final PharmacyRefundPublicationService refundPublicationService;
     private final PharmacyShiftRefundApplier shiftRefundApplier;
+    private final PharmacySaleMarkReturnSupport markReturnSupport;
 
     public SaleResponse voidSale(UUID id, String reason) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
@@ -67,6 +69,8 @@ public class PharmacySaleVoidService {
         if (!anyRemaining && PharmacySalePartialReturnService.allItemsFullyReturned(sale)) {
             throw PharmacyErrors.badRequest("Чек уже полностью возвращён");
         }
+
+        markReturnSupport.restoreAllRemaining(sale);
 
         sale.setStatus(SaleEnums.SaleStatus.VOIDED);
         String prev = sale.getNotes();

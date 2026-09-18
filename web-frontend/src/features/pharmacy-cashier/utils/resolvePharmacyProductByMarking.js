@@ -1,6 +1,10 @@
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
 import { markingBarcodeCandidates } from './pharmacyMarkingCode';
 import { findProductByMarkingCode } from './pharmacyMarkingProductMatch';
+import {
+  getCachedPharmacyProduct,
+  setCachedPharmacyProduct,
+} from './pharmacyBarcodeProductCache';
 
 function isMissingProduct(error) {
   const status = error?.response?.status;
@@ -22,10 +26,19 @@ export async function resolvePharmacyProductByMarking({
   if (!storeId) return null;
 
   const candidates = markingBarcodeCandidates(rawCode, extraGtins);
+  for (const barcode of candidates) {
+    const cached = getCachedPharmacyProduct(storeId, barcode);
+    if (cached) return cached;
+  }
+
   const found = await Promise.all(candidates.map(async (barcode) => {
     try {
       const { data } = await pharmacyWarehouseApi.getByBarcode(barcode, storeId);
-      return data?.id ? data : null;
+      if (data?.id) {
+        setCachedPharmacyProduct(storeId, barcode, data);
+        return data;
+      }
+      return null;
     } catch (error) {
       if (!isMissingProduct(error)) throw error;
       return null;

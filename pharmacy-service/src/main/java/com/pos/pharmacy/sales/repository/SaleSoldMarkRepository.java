@@ -12,4 +12,8 @@ public interface SaleSoldMarkRepository extends JpaRepository<SaleSoldMark, UUID
     boolean existsByCompanyIdAndMarkKeyIn(Integer companyId, Collection<String> markKeys);
 
     List<SaleSoldMark> findByCompanyIdAndMarkKeyIn(Integer companyId, Collection<String> markKeys);
+
+    List<SaleSoldMark> findBySaleId(UUID saleId);
+
+    List<SaleSoldMark> findBySaleIdAndSaleItemIdIn(UUID saleId, Collection<UUID> saleItemIds);
 }

@@ -1,40 +1,37 @@
 package com.pos.pharmacy.warehouse.support;
 
-import jakarta.annotation.PreDestroy;
+import com.pos.pharmacy.config.PharmacyAsyncProperties;
+import com.pos.pharmacy.config.PharmacyExecutorNames;
+import com.pos.shared.log.LogUtil;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Executor;
 
-/** Общий пул для массового импорта, проведения и списания. Не больше пула соединений. */
+/**
+ * Фасад над {@link PharmacyExecutorNames#IMPORT} для массового импорта и проведения.
+ * Размер пула — из {@code app.pharmacy.async.import-pool}.
+ */
 @Component
 public class PharmacyMassExecutor {
 
-    public static final int THREADS = 8;
+    private final Executor executor;
+    private final int threadCount;
 
-    private final ExecutorService executor;
-
-    public PharmacyMassExecutor() {
-        this.executor = Executors.newFixedThreadPool(THREADS, namedThreads());
+    public PharmacyMassExecutor(
+        @Qualifier(PharmacyExecutorNames.IMPORT) Executor executor,
+        PharmacyAsyncProperties properties
+    ) {
+        this.executor = executor;
+        this.threadCount = Math.max(1, properties.getImportPool().getMaxPoolSize());
+        LogUtil.info(PharmacyMassExecutor.class, "Mass import/activate uses import pool threads={}", threadCount);
     }
 
-    public ExecutorService executor() {
+    public Executor executor() {
         return executor;
     }
 
-    @PreDestroy
-    public void shutdown() {
-        executor.shutdown();
-    }
-
-    private static ThreadFactory namedThreads() {
-        AtomicInteger seq = new AtomicInteger();
-        return task -> {
-            Thread thread = new Thread(task, "pharmacy-mass-" + seq.incrementAndGet());
-            thread.setDaemon(true);
-            return thread;
-        };
+    public int threadCount() {
+        return threadCount;
     }
 }

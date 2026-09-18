@@ -6,6 +6,7 @@ export default function PharmacyReceiptImportMatchTable({ t, imp }) {
           <tr>
             <th className="pharmacy-stock__import-num">№</th>
             <th>{t('pharmacyStock.colName')}</th>
+            <th>{t('pharmacyStock.importRole.MARK_CODES')}</th>
             {COLUMNS.map((col) => (
               <th key={col.key}>{t(col.label)}</th>
             ))}
@@ -14,7 +15,7 @@ export default function PharmacyReceiptImportMatchTable({ t, imp }) {
         <tbody>
           {imp.items.length === 0 ? (
             <tr>
-              <td colSpan={COLUMNS.length + 2}>
+              <td colSpan={COLUMNS.length + 3}>
                 <div className="pharmacy-stock__empty">{t('pharmacyStock.importNoRows')}</div>
               </td>
             </tr>
@@ -34,6 +35,11 @@ function MatchRow({ item, patchItem }) {
     <tr className={ok ? undefined : 'pharmacy-stock__import-miss'}>
       <td className="pharmacy-stock__import-num">{item.rowIndex + 1}</td>
       <td className="pharmacy-stock__import-name">{item.excelName}</td>
+      <td className="pharmacy-stock__import-marks">
+        {Array.isArray(item.markCodes) && item.markCodes.length
+          ? item.markCodes.length
+          : '—'}
+      </td>
       {COLUMNS.map((col) => (
         <td key={col.key} className="pharmacy-stock__import-edit">
           <ImportCell item={item} col={col} onPatch={patch} />

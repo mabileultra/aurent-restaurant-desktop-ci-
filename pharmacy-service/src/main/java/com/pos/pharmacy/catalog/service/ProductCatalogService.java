@@ -13,6 +13,7 @@ import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeVariants;
+import com.pos.pharmacy.catalog.support.ProductListResponseAssembler;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -40,12 +41,20 @@ public class ProductCatalogService {
     private final PharmacyBarcodeClaim barcodeClaim;
     private final TenantSupport tenant;
     private final ProductFiscalFieldsApplier fiscalFields;
+    private final ProductListResponseAssembler listResponseAssembler;
 
     @Transactional(readOnly = true)
     public PageResponse<ProductResponse> list(String search, boolean activeOnly, Integer storeId, Pageable pageable) {
         Integer companyId = tenant.requireCompanyId();
         Page<Product> page = productRepository.search(companyId, trim(search), activeOnly, pageable);
-        return PageResponse.from(page.map(p -> toResponse(p, storeId)));
+        List<ProductResponse> content = listResponseAssembler.assemble(page.getContent(), storeId);
+        return new PageResponse<>(
+            content,
+            page.getTotalPages(),
+            page.getTotalElements(),
+            page.getSize(),
+            page.getNumber()
+        );
     }
 
     @Transactional(readOnly = true)

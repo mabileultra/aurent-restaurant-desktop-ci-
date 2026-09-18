@@ -5,6 +5,7 @@ import {
   loadMultikassaCapabilities,
   wrapMultikassaFiscalError,
 } from '../multikassa';
+import { clearPharmacySoldMarks } from '../../features/pharmacy-cashier/utils/pharmacySoldMarksStore';
 import { resolvePosRoute } from './posRouteResolver';
 import { useConnectivityStore } from '../../store/connectivityStore';
 
@@ -73,5 +74,9 @@ export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }
     throw wrapMultikassaFiscalError(err);
   }
 
-  return salesClient(kind).returnItems(sale.id, payload).then((r) => r.data);
+  const data = await salesClient(kind).returnItems(sale.id, payload).then((r) => r.data);
+  if (kind === 'pharmacy' && store) {
+    clearPharmacySoldMarks(store);
+  }
+  return data;
 }

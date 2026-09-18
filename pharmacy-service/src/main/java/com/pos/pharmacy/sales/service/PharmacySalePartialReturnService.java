@@ -12,6 +12,7 @@ import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.sales.repository.SaleRepository;
+import com.pos.pharmacy.sales.support.PharmacySaleMarkReturnSupport;
 import com.pos.pharmacy.sales.support.SaleMapper;
 import com.pos.pharmacy.shift.support.PharmacyShiftRefundApplier;
 import com.pos.pharmacy.util.QuantityUtil;
@@ -44,6 +45,7 @@ public class PharmacySalePartialReturnService {
     private final PharmacyRevenuePublicationService revenuePublicationService;
     private final PharmacyRefundPublicationService refundPublicationService;
     private final PharmacyShiftRefundApplier shiftRefundApplier;
+    private final PharmacySaleMarkReturnSupport markReturnSupport;
 
     public SaleResponse returnItems(UUID saleId, PartialReturnRequest request) {
         Sale sale = requireSale(saleId);
@@ -55,6 +57,7 @@ public class PharmacySalePartialReturnService {
         String reason = request.reason() != null ? request.reason().trim() : "";
         BigDecimal returnedBefore = shiftRefundApplier.returnedNow(sale);
         boolean anyReturned = false;
+        Map<UUID, BigDecimal> markReturnQty = new HashMap<>();
 
         for (PartialReturnLineRequest line : request.lines()) {
             SaleItem item = itemsById.get(line.saleItemId());
@@ -79,12 +82,15 @@ public class PharmacySalePartialReturnService {
 
             item.setReturnedQuantity(QuantityUtil.add(item.getReturnedQuantity(), returnQty));
             restoreStock(sale, item, returnQty);
+            markReturnQty.merge(item.getId(), returnQty, QuantityUtil::add);
             anyReturned = true;
         }
 
         if (!anyReturned) {
             throw PharmacyErrors.badRequest("Укажите количество для возврата");
         }
+
+        markReturnSupport.restoreForPartialReturn(sale, markReturnQty);
 
         appendReturnNote(sale, reason, allItemsFullyReturned(sale));
         sale.setStatus(allItemsFullyReturned(sale) ? SaleEnums.SaleStatus.VOIDED : SaleEnums.SaleStatus.REFUNDED);

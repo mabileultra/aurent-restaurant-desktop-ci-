@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="pharm-100-stock-marks" author="pos">
+        <createTable tableName="stock_marks">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="lot_id" type="UUID"/>
+            <column name="receipt_id" type="UUID"/>
+            <column name="receipt_line_id" type="UUID"/>
+            <column name="mark_code" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="mark_key" type="VARCHAR(190)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asl_status" type="VARCHAR(64)"/>
+            <column name="verified_at" type="TIMESTAMPTZ"/>
+            <column name="sale_id" type="UUID"/>
+            <column name="sold_at" type="TIMESTAMPTZ"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="stock_marks"
+            columnNames="company_id, mark_key"
+            constraintName="uk_pharm_stock_marks_company_key"/>
+        <createIndex tableName="stock_marks" indexName="idx_pharm_stock_marks_store_status">
+            <column name="company_id"/>
+            <column name="store_id"/>
+            <column name="status"/>
+        </createIndex>
+        <createIndex tableName="stock_marks" indexName="idx_pharm_stock_marks_product">
+            <column name="company_id"/>
+            <column name="product_id"/>
+            <column name="status"/>
+        </createIndex>
+        <addForeignKeyConstraint baseTableName="stock_marks" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_pharm_stock_marks_product" onDelete="RESTRICT"/>
+    </changeSet>
+</databaseChangeLog>

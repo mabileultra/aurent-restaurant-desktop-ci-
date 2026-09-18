@@ -37,6 +37,7 @@ public class ReportingInternalApiKeyFilter extends OncePerRequestFilter {
             response.getWriter().write("{\"message\":\"Invalid internal API key\"}");
             return;
         }
+        InternalServiceAuthentication.authenticate();
         filterChain.doFilter(request, response);
     }
 }

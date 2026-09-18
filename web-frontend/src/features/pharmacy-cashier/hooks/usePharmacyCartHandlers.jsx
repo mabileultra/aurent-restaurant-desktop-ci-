@@ -18,6 +18,10 @@ import { applyPharmacyMarkingScan, isMarkCountedLine } from '../utils/pharmacyMa
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 import { toCartQuantity } from '../utils/pharmacyPackQty';
 import {
+  getCachedPharmacyProduct,
+  setCachedPharmacyProduct,
+} from '../utils/pharmacyBarcodeProductCache';
+import {
   productPieceStep,
   productSellByPiece,
   productUnitsInPack,
@@ -302,8 +306,15 @@ export function usePharmacyCartHandlers({
       }
       scanningRef.current = true;
       try {
+        const cached = getCachedPharmacyProduct(storeId, trimmed);
+        if (cached) {
+          addProductToCart(cached);
+          setSearch('');
+          return true;
+        }
         const product = await posFetchProductByBarcode(storeId, trimmed, { catalogKind: 'pharmacy' });
         if (product) {
+          setCachedPharmacyProduct(storeId, trimmed, product);
           addProductToCart(product);
           setSearch('');
           return true;

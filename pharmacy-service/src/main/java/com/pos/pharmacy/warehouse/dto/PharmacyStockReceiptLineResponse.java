@@ -24,5 +24,6 @@ public record PharmacyStockReceiptLineResponse(
     BigDecimal unitRetailPrice,
     BigDecimal lineRetail,
     String batchNumber,
-    LocalDate expiryDate
+    LocalDate expiryDate,
+    boolean markedProduct
 ) {}

@@ -55,7 +55,7 @@ public class PharmacyReceiptActivation {
     }
 
     public void post(StockReceipt receipt) {
-        List<List<PostLine>> buckets = buckets(receipt);
+        List<List<PostLine>> buckets = buckets(receipt, massExecutor.threadCount());
         List<CompletableFuture<Void>> futures = new ArrayList<>();
         for (List<PostLine> bucket : buckets) {
             futures.add(CompletableFuture.runAsync(
@@ -122,7 +122,7 @@ public class PharmacyReceiptActivation {
         stockLotRepository.saveAll(lots);
     }
 
-    private static List<List<PostLine>> buckets(StockReceipt receipt) {
+    private static List<List<PostLine>> buckets(StockReceipt receipt, int threadCount) {
         Map<UUID, List<PostLine>> byProduct = new HashMap<>();
         for (StockReceiptLine line : receipt.getLines()) {
             if (line.getId() == null || line.getProduct() == null) {
@@ -131,13 +131,14 @@ public class PharmacyReceiptActivation {
             byProduct.computeIfAbsent(line.getProduct().getId(), ignored -> new ArrayList<>())
                 .add(PostLine.from(line));
         }
+        int pools = Math.max(1, threadCount);
         List<List<PostLine>> buckets = new ArrayList<>();
-        for (int i = 0; i < PharmacyMassExecutor.THREADS; i++) {
+        for (int i = 0; i < pools; i++) {
             buckets.add(new ArrayList<>());
         }
         int index = 0;
         for (List<PostLine> group : byProduct.values()) {
-            buckets.get(index % PharmacyMassExecutor.THREADS).addAll(group);
+            buckets.get(index % pools).addAll(group);
             index++;
         }
         buckets.removeIf(List::isEmpty);

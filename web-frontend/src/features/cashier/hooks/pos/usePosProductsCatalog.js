@@ -8,6 +8,7 @@ import {
   posProductsNextPageParam,
 } from '../../../../services/pos/posDataRouter';
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
+import { usePosCatalogPrefetch } from './usePosCatalogPrefetch';
 
 function invalidatePosCatalogQueries(qc) {
   qc.cancelQueries({ queryKey: ['pos-categories'] });
@@ -113,10 +114,25 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
       posProductsNextPageParam(lastPage, lastPageParam, storeId),
     enabled: productsEnabled,
     retry: catalogMode === 'offline' ? false : 1,
-    staleTime: catalogMode === 'offline' ? Infinity : 0,
+    staleTime: catalogMode === 'offline' ? Infinity : 30_000,
   });
 
   const products = productsPages?.pages.flatMap((page) => page?.content ?? []) ?? [];
+  const pagesLoaded = productsPages?.pages?.length ?? 0;
+
+  usePosCatalogPrefetch({
+    enabled: productsEnabled && catalogMode === 'online',
+    hasNextPage: productsHasMore,
+    isFetchingNextPage: productsLoadingMore,
+    fetchNextPage: fetchMoreProducts,
+    pagesLoaded,
+    queryKey: [
+      storeId,
+      categoryFilterId,
+      search.trim(),
+      catalogKind || 'grocery',
+    ].join('|'),
+  });
 
   const handleSelectCategory = (categoryId) => {
     setSelectedCategoryId(categoryId);

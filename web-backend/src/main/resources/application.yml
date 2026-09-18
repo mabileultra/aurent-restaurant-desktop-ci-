@@ -101,6 +101,8 @@ app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
     expiration-ms: 86400000
+  gateway:
+    context-secret: ${GATEWAY_CONTEXT_SECRET:}
   tasnif:
     enabled: true
     base-url: https://tasnif.soliq.uz/api/cl-api
@@ -143,6 +145,21 @@ app:
       enabled: ${DOMAIN_KAFKA_ENABLED:true}
       bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
       send-timeout-ms: 10000
+  pharmacy:
+    internal-api-key: ${POS_INTERNAL_API_KEY:pos-internal-dev-key-change-in-prod}
+    asl:
+      connect-timeout-ms: ${ASL_CONNECT_TIMEOUT_MS:3000}
+      read-timeout-ms: ${ASL_READ_TIMEOUT_MS:5000}
+      mark-verify:
+        core-pool-size: ${ASL_MARK_VERIFY_CORE:8}
+        max-pool-size: ${ASL_MARK_VERIFY_MAX:16}
+        queue-capacity: ${ASL_MARK_VERIFY_QUEUE:300}
+        thread-name-prefix: asl-mark-verify-
+      mark-withdraw:
+        core-pool-size: ${ASL_MARK_WITHDRAW_CORE:4}
+        max-pool-size: ${ASL_MARK_WITHDRAW_MAX:8}
+        queue-capacity: ${ASL_MARK_WITHDRAW_QUEUE:500}
+        thread-name-prefix: asl-mark-withdraw-
 
 resilience4j:
   circuitbreaker:

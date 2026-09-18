@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
+import { savePendingImportMarks } from '../utils/pharmacyReceiptPendingMarksStore';
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
-  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK',
+  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK', 'MARK_CODES',
 ];
 
 export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
@@ -124,10 +125,16 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
         const savedIds = chunk.map((item) => item.rowIndex);
         setItems((prev) => prev.filter((item) => !savedIds.includes(item.rowIndex)));
       }
-      toast.success(t('pharmacyStock.importSaved', { count: withQty.length }));
+      savePendingImportMarks(receiptId, withQty);
+      const hasMarks = withQty.some((item) => Array.isArray(item.markCodes) && item.markCodes.length > 0);
+      toast.success(
+        hasMarks
+          ? t('pharmacyStock.importSavedWithMarks', { count: withQty.length })
+          : t('pharmacyStock.importSaved', { count: withQty.length }),
+      );
       close();
       const fresh = await pharmacyWarehouseApi.getReceipt(receiptId);
-      onImported?.(fresh.data);
+      onImported?.(fresh.data, { goToDocument: true, hasImportMarks: hasMarks });
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || t('pharmacyStock.importFailed'));
     } finally {
@@ -160,6 +167,7 @@ function toConfirmItem(item) {
     barcode: item.barcode,
     ikpu: item.ikpu,
     unitsInPack: item.unitsInPack,
+    markCodes: Array.isArray(item.markCodes) ? item.markCodes : [],
   };
 }
 

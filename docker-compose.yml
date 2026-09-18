@@ -69,6 +69,7 @@ services:
       FINANCE_DB_USERNAME: finance_user
       FINANCE_DB_PASSWORD: finance_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       FINANCE_INTERNAL_API_KEY: finance-internal-dev-key-change-in-prod
       FINANCE_SERVER_PORT: "8082"
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
@@ -117,6 +118,7 @@ services:
       IDENTITY_DB_USERNAME: identity_user
       IDENTITY_DB_PASSWORD: identity_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       IDENTITY_INTERNAL_API_KEY: identity-internal-dev-key-change-in-prod
       IDENTITY_SERVER_PORT: "8081"
       POS_CORE_URL: http://backend:8080/api/v1
@@ -167,6 +169,7 @@ services:
       PLATFORM_DB_USERNAME: platform_user
       PLATFORM_DB_PASSWORD: platform_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       PLATFORM_INTERNAL_API_KEY: platform-internal-dev-key-change-in-prod
       PLATFORM_SERVER_PORT: "8084"
       POS_CORE_URL: http://backend:8080/api/v1
@@ -220,6 +223,7 @@ services:
       CRM_DB_USERNAME: crm_user
       CRM_DB_PASSWORD: crm_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       CRM_INTERNAL_API_KEY: crm-internal-dev-key-change-in-prod
       CRM_SERVER_PORT: "8083"
       POS_CORE_URL: http://backend:8080/api/v1
@@ -268,6 +272,7 @@ services:
       RESTAURANT_DB_USERNAME: restaurant_user
       RESTAURANT_DB_PASSWORD: restaurant_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       RESTAURANT_SERVER_PORT: "8087"
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       DOMAIN_KAFKA_ENABLED: "true"
@@ -313,8 +318,10 @@ services:
       PHARMACY_DB_USERNAME: pharmacy_user
       PHARMACY_DB_PASSWORD: pharmacy_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       PHARMACY_SERVER_PORT: "8089"
       POS_CORE_URL: http://backend:8080/api/v1
+      POS_INTERNAL_API_KEY: pos-internal-dev-key-change-in-prod
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       DOMAIN_KAFKA_ENABLED: "true"
       POS_CORE_DATASOURCE_URL: jdbc:postgresql://postgres:5432/pos_db
@@ -367,6 +374,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: redpanda:9092
       REPORTING_KAFKA_CONSUMER_ENABLED: "true"
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       REPORTING_INTERNAL_API_KEY: reporting-internal-dev-key-change-in-prod
       POS_CORE_URL: http://backend:8080/api/v1
       TZ: ${TZ:-Asia/Tashkent}
@@ -392,6 +400,7 @@ services:
     environment:
       AI_SERVER_PORT: "8086"
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       REPORTING_SERVICE_URL: http://reporting-service:8085/api/v1
       POS_CORE_URL: http://backend:8080/api/v1
       AI_ASSISTANT_ENABLED: ${AI_ASSISTANT_ENABLED:-true}
@@ -437,6 +446,7 @@ services:
       DB_USERNAME: pos_user
       DB_PASSWORD: pos_password
       JWT_SECRET: change-me-use-at-least-32-chars-for-hs256!!
+      GATEWAY_CONTEXT_SECRET: gateway-context-dev-secret-not-for-prod!!
       MAIL_ENABLED: "false"
       MANAGEMENT_HEALTH_MAIL_ENABLED: "false"
       FINANCE_SERVICE_URL: http://finance-service:8082/api/v1

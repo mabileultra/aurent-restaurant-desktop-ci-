@@ -109,7 +109,14 @@ export default function PharmacyReceiptPickPage() {
   const importer = usePharmacyReceiptImport({
     receiptId: id,
     t,
-    onImported: (data) => qc.setQueryData(['pharmacy-receipt', id], data),
+    onImported: (data, meta) => {
+      qc.setQueryData(['pharmacy-receipt', id], data);
+      if (meta?.goToDocument) {
+        navigate(PHARMACY_STOCK_PATHS.receipt(id), {
+          state: { importMarksHint: Boolean(meta.hasImportMarks) },
+        });
+      }
+    },
   });
   const revalue = usePharmacyReceiptRevalue({
     receiptId: id,

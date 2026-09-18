@@ -11,6 +11,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -25,6 +29,24 @@ public class StoreStockService {
         return storeStockRepository.findByProductIdAndStoreId(productId, storeId)
             .map(StoreStock::getQuantity)
             .orElse(BigDecimal.ZERO);
+    }
+
+    @Transactional(readOnly = true)
+    public Map<UUID, BigDecimal> getQuantities(Integer storeId, Collection<UUID> productIds) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        if (storeId == null || productIds == null || productIds.isEmpty()) {
+            return result;
+        }
+        for (UUID id : productIds) {
+            if (id != null) {
+                result.put(id, BigDecimal.ZERO);
+            }
+        }
+        List<StoreStock> rows = storeStockRepository.findByStoreIdAndProductIdIn(storeId, productIds);
+        for (StoreStock stock : rows) {
+            result.put(stock.getProductId(), QuantityUtil.normalize(stock.getQuantity()));
+        }
+        return result;
     }
 
     @Transactional

@@ -16,6 +16,7 @@ import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptActivation;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptMarkRegistration;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +50,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final PharmacyReceiptSupport pharmacyReceipt;
     private final PharmacyReceiptDeletion pharmacyReceiptDeletion;
     private final PharmacyReceiptActivation pharmacyReceiptActivation;
+    private final PharmacyReceiptMarkRegistration pharmacyReceiptMarkRegistration;
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
 
@@ -263,6 +265,11 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
 
     @Override
     public PharmacyReceiptActivateResult activate(UUID id) {
+        return activate(id, null);
+    }
+
+    @Override
+    public PharmacyReceiptActivateResult activate(UUID id, PharmacyReceiptActivateRequest request) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
             return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
@@ -271,11 +278,17 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (receipt.getLines().isEmpty()) {
             throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
         }
+        // Проверка КМ до проведения — не оставляем проведённый документ без марок.
+        pharmacyReceiptMarkRegistration.validateMarkedProducts(
+            receipt,
+            request != null && request.marks() != null ? request.marks() : List.of()
+        );
         pharmacyReceiptActivation.post(receipt);
         receipt.setStatus(StockReceiptStatus.POSTED);
         receipt.setActivatedAt(Instant.now());
         receipt.setActivatedBy(tenant.currentUserId());
         stockReceiptRepository.save(receipt);
+        pharmacyReceiptMarkRegistration.registerAfterActivate(receipt, request);
         return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
     }
 
