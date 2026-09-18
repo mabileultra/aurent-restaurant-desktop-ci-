@@ -2415,7 +2415,7 @@
       "markingCodeLabel": "Код маркировки",
       "markingCodePh": "DataMatrix / КМ…",
       "markingVerify": "Проверить",
-      "markingApiDisabled": "Включите ASL Belgisi в настройках магазина (админка → Магазины → Интеграции аптеки).",
+      "markingApiDisabled": "Интеграция ASL Belgisi не настроена: включите её и укажите API-ключ в админке → Магазины → Интеграции аптеки.",
       "openAslPortal": "Портал ASL",
       "markingStatus": "Статус",
       "markingProduct": "Товар",

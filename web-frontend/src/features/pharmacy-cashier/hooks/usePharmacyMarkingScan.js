@@ -96,7 +96,7 @@ export function usePharmacyMarkingScan({
         } else if (resolved.aslError) {
           toast.error(resolved.aslError);
         } else if (!aslMarkingEnabled) {
-          toast.error(t('pharmacyCashier.integrations.markingCatalogNeed'));
+          toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
         } else {
           toast.error(t('pharmacyCashier.integrations.markingNotFound'));
         }

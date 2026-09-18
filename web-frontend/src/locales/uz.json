@@ -2285,7 +2285,7 @@
       "markingCodeLabel": "Markirovka kodi",
       "markingCodePh": "DataMatrix / KM…",
       "markingVerify": "Tekshirish",
-      "markingApiDisabled": "Admin panelda ASL Belgisi ni yoqing (Do‘konlar → Dorixona integratsiyalari).",
+      "markingApiDisabled": "ASL Belgisi integratsiyasi yo‘q: admin panelda yoqing va API-kalitni kiriting (Do‘konlar → Dorixona integratsiyalari).",
       "openAslPortal": "ASL portali",
       "markingStatus": "Holat",
       "markingProduct": "Mahsulot",
