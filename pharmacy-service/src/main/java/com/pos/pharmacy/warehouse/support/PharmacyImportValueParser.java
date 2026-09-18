@@ -39,9 +39,15 @@ public final class PharmacyImportValueParser {
             return null;
         }
         try {
-            return new BigDecimal(normalizeGrouped(cleaned));
+            BigDecimal parsed = new BigDecimal(normalizeGrouped(cleaned));
+            if (!PharmacyMoneyLimit.fitsImportDecimal(parsed)) {
+                return null;
+            }
+            return parsed;
         } catch (NumberFormatException ex) {
-            return ProductImportParseUtil.parseDecimalOpt(text).orElse(null);
+            return ProductImportParseUtil.parseDecimalOpt(text)
+                .filter(PharmacyMoneyLimit::fitsImportDecimal)
+                .orElse(null);
         }
     }
 

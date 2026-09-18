@@ -20,6 +20,7 @@ import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMarkRegistration;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
+import com.pos.pharmacy.warehouse.support.PharmacyMoneyLimit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -297,7 +298,14 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
 
     private StockReceiptLine buildValidatedLine(StockReceipt receipt, PharmacyStockReceiptLineRequest lineReq) {
         Product product = productCatalogService.requireActive(lineReq.productId());
-        return pharmacyReceipt.buildLine(receipt, product, lineReq);
+        StockReceiptLine line = pharmacyReceipt.buildLine(receipt, product, lineReq);
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getPurchasePrice(), "цена закупки");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getPurchasePriceWithVat(), "цена с НДС");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getRetailPrice(), "розничная цена");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getUnitSellingPrice(), "цена продажи");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getLineCost(), "сумма закупки");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(line.getLineRetail(), "сумма розницы");
+        return line;
     }
 
     private StockReceipt requireAccessible(UUID id) {
