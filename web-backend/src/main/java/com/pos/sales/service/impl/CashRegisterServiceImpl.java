@@ -12,6 +12,7 @@ import com.pos.sales.mapper.CashRegisterMapper;
 import com.pos.sales.repository.CashRegisterRepository;
 import com.pos.sales.repository.spec.CashRegisterSpecifications;
 import com.pos.sales.service.CashRegisterService;
+import com.pos.sales.support.CashRegisterStatusToggle;
 import com.pos.repository.StoreRepository;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -31,13 +32,13 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class CashRegisterServiceImpl implements CashRegisterService {
 
-    private static final String STATUS_ACTIVE = "ACTIVE";
-    private static final String STATUS_INACTIVE = "INACTIVE";
+    private static final String STATUS_ACTIVE = CashRegisterStatusToggle.STATUS_ACTIVE;
 
     private final CashRegisterRepository cashRegisterRepository;
     private final StoreRepository storeRepository;
     private final CashRegisterMapper cashRegisterMapper;
     private final TenantAccessSupport tenantAccess;
+    private final CashRegisterStatusToggle cashRegisterStatusToggle;
 
     @Override
     public PageResponse<CashRegisterRowResponse> list(
@@ -86,8 +87,7 @@ public class CashRegisterServiceImpl implements CashRegisterService {
             throw new BadRequestException("Cash register store is not available");
         }
         tenantAccess.assertCanAccessStore(store);
-        String next = STATUS_ACTIVE.equalsIgnoreCase(register.getStatus()) ? STATUS_INACTIVE : STATUS_ACTIVE;
-        register.setStatus(next);
+        cashRegisterStatusToggle.apply(register);
         CashRegister saved = cashRegisterRepository.save(register);
         LogUtil.info(
             CashRegisterServiceImpl.class,

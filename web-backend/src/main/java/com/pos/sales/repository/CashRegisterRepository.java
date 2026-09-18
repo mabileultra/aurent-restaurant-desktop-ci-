@@ -54,9 +54,32 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
 
     Optional<CashRegister> findFirstByStore_IdOrderByRegisterNumberAsc(Integer storeId);
 
+    @EntityGraph(attributePaths = {"store"})
     Optional<CashRegister> findByDeviceId(String deviceId);
 
     Optional<CashRegister> findByStore_IdAndEquipmentSerialIgnoreCase(Integer storeId, String equipmentSerial);
+
+    @EntityGraph(attributePaths = {"store"})
+    Optional<CashRegister> findByStore_IdAndEquipmentSerialIgnoreCaseAndStatusIgnoreCase(
+        Integer storeId,
+        String equipmentSerial,
+        String status
+    );
+
+    @Query("""
+        SELECT c FROM CashRegister c
+        JOIN FETCH c.store
+        WHERE c.store.id = :storeId
+          AND LOWER(c.status) = LOWER(:status)
+          AND (c.deviceId IS NULL OR TRIM(c.deviceId) = '')
+        ORDER BY c.updatedAt DESC NULLS LAST, c.registerNumber ASC
+        """)
+    List<CashRegister> findUnboundByStoreAndStatus(
+        @Param("storeId") Integer storeId,
+        @Param("status") String status
+    );
+
+    long countByStore_IdAndStatusIgnoreCase(Integer storeId, String status);
 
     @Query("""
         SELECT COALESCE(MAX(c.registerNumber), 0) FROM CashRegister c
