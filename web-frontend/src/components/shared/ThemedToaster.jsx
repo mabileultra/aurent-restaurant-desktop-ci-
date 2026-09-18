@@ -1,20 +1,16 @@
-// src/components/shared/ThemedToaster.jsx
 import { Toaster } from 'react-hot-toast';
+import '../../styles/shared/toaster.css';
+import { APP_TOASTER_CONTAINER_STYLE, APP_TOAST_BASE_STYLE } from './toasterLayout';
 
 export default function ThemedToaster() {
   return (
     <Toaster
       position="top-right"
-      containerClassName="print:hidden"
+      containerClassName="app-toaster print:hidden"
+      containerStyle={APP_TOASTER_CONTAINER_STYLE}
       toastOptions={{
         duration: 4000,
-        style: {
-          background: '#ffffff',
-          color: '#0f172a',
-          fontSize: '14px',
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 4px 14px rgba(15, 23, 42, 0.08)',
-        },
+        style: APP_TOAST_BASE_STYLE,
       }}
     />
   );

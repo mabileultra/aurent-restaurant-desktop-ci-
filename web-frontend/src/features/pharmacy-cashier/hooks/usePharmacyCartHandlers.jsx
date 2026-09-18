@@ -99,7 +99,7 @@ export function usePharmacyCartHandlers({
       const sum = addedSum != null ? Number(addedSum) : lineSubtotal(line);
       toast.success(
         <div className="pos-item-added-toast">
-          <p className="pos-item-added-toast__name">{productName}</p>
+          <p className="pos-item-added-toast__name" title={productName}>{productName}</p>
           <p className="pos-item-added-toast__sum">{fmt(sum)}</p>
         </div>,
         {
