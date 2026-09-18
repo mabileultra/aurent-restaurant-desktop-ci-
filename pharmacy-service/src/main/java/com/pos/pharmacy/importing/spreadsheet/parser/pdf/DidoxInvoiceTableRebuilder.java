@@ -16,7 +16,14 @@ public final class DidoxInvoiceTableRebuilder {
         List<PdfVisualLine> lines = PdfVisualLineCluster.cluster(tokens);
         return DidoxInvoiceColumnLayout.find(lines)
             .map(header -> rebuildDidox(lines, header))
-            .orElseGet(() -> PdfGapGridBuilder.toGrid(lines));
+            .orElseGet(() -> fallbackGrid(lines));
+    }
+
+    private static List<List<String>> fallbackGrid(List<PdfVisualLine> lines) {
+        if (DidoxInvoiceDocumentHint.isHisobFaktura(lines)) {
+            return List.of();
+        }
+        return PdfGapGridBuilder.toGrid(lines);
     }
 
     private static List<List<String>> rebuildDidox(List<PdfVisualLine> lines,

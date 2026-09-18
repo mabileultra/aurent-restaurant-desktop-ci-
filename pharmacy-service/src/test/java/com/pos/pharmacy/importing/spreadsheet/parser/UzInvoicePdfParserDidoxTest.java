@@ -58,6 +58,11 @@ class UzInvoicePdfParserDidoxTest {
         assertTrue(product.get(0).toLowerCase().contains("malchikov"), product.get(0));
         assertTrue(product.get(2).contains("08111001"), product.toString());
         assertTrue(product.get(9).replace(" ", "").contains("10.00000"), product.toString());
+        assertFalse(product.get(0).toLowerCase().startsWith("50"), product.get(0));
+        assertTrue(product.get(6).toLowerCase().contains("50sht") || product.get(6).toLowerCase().contains("dona"),
+            product.toString());
+        assertFalse(product.get(0).contains("12%"), product.get(0));
+        assertEquals(header + 2, grid.size(), grid.toString());
     }
 
     private static byte[] buildSimpleInvoicePdf() throws Exception {
@@ -66,21 +71,15 @@ class UzInvoicePdfParserDidoxTest {
             doc.addPage(page);
             PDType1Font font = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
             try (PDPageContentStream cs = new PDPageContentStream(doc, page)) {
-                writeAt(cs, font, 50, 750, "Hisob-faktura IS-00008429");
-                writeAt(cs, font, 40, 700, "No");
-                writeAt(cs, font, 90, 700, "mahsulot nomi");
-                writeAt(cs, font, 250, 700, "IKPU");
-                writeAt(cs, font, 380, 700, "olchov");
-                writeAt(cs, font, 450, 700, "miqdor");
-                writeAt(cs, font, 520, 700, "narx");
-                writeAt(cs, font, 580, 700, "QQS");
-                writeAt(cs, font, 40, 680, "1");
-                writeAt(cs, font, 90, 680, "POS Terminal T2");
-                writeAt(cs, font, 250, 680, "08470001002000000");
-                writeAt(cs, font, 380, 680, "dona");
-                writeAt(cs, font, 450, 680, "2");
-                writeAt(cs, font, 520, 680, "3125000");
-                writeAt(cs, font, 580, 680, "12");
+                writeAt(cs, font, 50, 750, "Invoice IS-00008429");
+                float[] xs = {40, 90, 250, 380, 450, 520, 580, 650};
+                String[] titles = {"No", "mahsulot nomi", "IKPU", "olchov", "miqdor", "narx", "QQS", "summa"};
+                String[] values = {"1", "POS Terminal T2", "08470001002000000", "dona", "2", "3125000", "12", "6250000"};
+                for (int i = 0; i < xs.length; i++) {
+                    writeAt(cs, font, xs[i], 720, titles[i]);
+                    writeAt(cs, font, xs[i], 705, String.valueOf(i + 1));
+                    writeAt(cs, font, xs[i], 680, values[i]);
+                }
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             doc.save(out);
@@ -133,6 +132,10 @@ class UzInvoicePdfParserDidoxTest {
                 writeAt(cs, font, x(13), 470, "10605.00");
                 writeAt(cs, font, x(14), 470, "98980.00");
                 writeAt(cs, font, x(15), 470, "Oldi-sotdi");
+                writeAt(cs, font, x(6), 458, "50sht");
+                writeAt(cs, font, x(11), 446, "259 678.05 12% 31 033.91");
+                writeAt(cs, font, x(0), 420, "Jami:");
+                writeAt(cs, font, x(11), 420, "176355.00");
             }
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             doc.save(out);

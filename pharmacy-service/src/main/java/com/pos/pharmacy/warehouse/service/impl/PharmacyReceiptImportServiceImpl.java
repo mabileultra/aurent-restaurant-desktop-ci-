@@ -273,7 +273,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
 
     private static boolean looksLikeTotal(String name) {
         String n = name.toLowerCase(Locale.ROOT);
-        return n.contains("жами") || n.contains("jami") || n.contains("итого") || n.contains("total");
+        return n.contains("жами") || n.contains("jami") || n.contains("итого") || n.contains("total")
+            || n.contains("бекитиш") || n.contains("bekitish");
     }
 
     private static String blankToNull(String value) {

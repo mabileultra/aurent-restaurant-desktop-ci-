@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 /** Номер товарной строки в первой колонке Didox («1 Трусы…»). */
 public final class DidoxInvoiceRowNumbers {
 
-    private static final Pattern LEADING = Pattern.compile("^(\\d{1,3})(?![0-9.,%])");
+    private static final Pattern LEADING = Pattern.compile("^(\\d{1,3})(?:\\s+|$)");
 
     private DidoxInvoiceRowNumbers() {
     }

@@ -5,14 +5,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 /**
  * Полосы колонок 1…N по ряду номеров Didox («1 2 3 … 16»).
  */
 public final class DidoxInvoiceColumnLayout {
 
-    private static final Pattern COLUMN_INDEX = Pattern.compile("^(?:[1-9]|1[0-9]|20)$");
     private static final int MIN_COLUMNS = 8;
 
     private final List<Band> bands;
@@ -23,6 +21,10 @@ public final class DidoxInvoiceColumnLayout {
 
     public int size() {
         return bands.size();
+    }
+
+    Band band(int index) {
+        return bands.get(index);
     }
 
     public int columnOf(float x) {
@@ -41,16 +43,20 @@ public final class DidoxInvoiceColumnLayout {
     }
 
     public int columnOfRun(PdfTextRun run) {
-        return columnOf(run.x0() + 0.4f);
+        return DidoxInvoiceBandAssigner.column(this, run);
     }
 
     public List<String> cells(PdfVisualLine line) {
         String[] values = new String[size()];
+        int lastMoney = -1;
         for (PdfTextRun run : line.runs()) {
             if (run.text() == null || run.text().isBlank()) {
                 continue;
             }
-            int col = columnOfRun(run);
+            int col = DidoxInvoiceMoneyColumnAdvance.column(this, run, lastMoney);
+            if (PdfNumericAtom.looksComplete(run.text())) {
+                lastMoney = col;
+            }
             values[col] = join(values[col], run.text());
         }
         List<String> cells = new ArrayList<>(size());
@@ -107,12 +113,9 @@ public final class DidoxInvoiceColumnLayout {
     static Map<Integer, Float> readCenters(PdfVisualLine line) {
         Map<Integer, Float> centers = new LinkedHashMap<>();
         for (PdfTextRun run : line.runs()) {
-            String text = run.text() == null ? "" : run.text().trim();
-            if (!COLUMN_INDEX.matcher(text).matches()) {
-                continue;
+            for (DidoxColumnIndexSplitter.IndexMark mark : DidoxColumnIndexSplitter.marks(run)) {
+                centers.putIfAbsent(mark.number(), mark.midX());
             }
-            int number = Integer.parseInt(text);
-            centers.putIfAbsent(number, run.midX());
         }
         return centers;
     }

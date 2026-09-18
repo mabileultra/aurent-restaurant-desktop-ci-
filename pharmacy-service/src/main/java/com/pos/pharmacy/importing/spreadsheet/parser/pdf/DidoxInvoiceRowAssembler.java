@@ -17,26 +17,29 @@ public final class DidoxInvoiceRowAssembler {
                                              DidoxInvoiceColumnLayout layout) {
         List<List<String>> rows = new ArrayList<>();
         List<String> current = null;
+        int lastNumber = 0;
         for (int i = startIndex; i < lines.size(); i++) {
             PdfVisualLine line = lines.get(i);
             if (DidoxInvoiceColumnLayout.isNumberedHeader(line)) {
                 continue;
             }
-            if (isChrome(line.joined())) {
+            if (isChrome(line.joined()) || DidoxInvoiceFooterFilter.isFooterText(line.joined())) {
                 continue;
             }
             List<String> cells = layout.cells(line);
-            if (isEmpty(cells)) {
+            if (isEmpty(cells) || DidoxInvoiceFooterFilter.isFooter(cells)) {
                 continue;
             }
             if (isRepeatedHeader(line, cells)) {
                 continue;
             }
-            if (isNewProduct(cells)) {
+            Integer number = DidoxInvoiceRowNumbers.leading(cells.isEmpty() ? "" : cells.get(0));
+            if (number != null && DidoxInvoiceRowSequence.isNext(lastNumber, number) && isNewProduct(cells)) {
                 if (current != null) {
                     rows.add(current);
                 }
                 current = cells;
+                lastNumber = number;
                 continue;
             }
             if (current != null && !isPageNumberOnly(cells)) {

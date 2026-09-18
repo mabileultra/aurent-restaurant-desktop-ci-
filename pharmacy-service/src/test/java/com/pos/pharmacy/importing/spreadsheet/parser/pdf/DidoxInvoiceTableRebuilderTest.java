@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DidoxInvoiceTableRebuilderTest {
@@ -86,7 +87,7 @@ class DidoxInvoiceTableRebuilderTest {
         assertEquals(16, headerRow.size(), String.join(" || ", headerRow));
         assertEquals("Mahsulot nomi", headerRow.get(0));
         assertTrue(headerRow.get(1).toLowerCase().contains("markirovka"));
-        assertTrue(headerRow.get(2).toLowerCase().contains("identifikatsiya"));
+        assertTrue(headerRow.get(2).toLowerCase().contains("identifikatsiya"), String.join(" || ", headerRow));
         assertTrue(headerRow.get(9).toLowerCase().contains("miqdor"));
 
         List<String> first = grid.get(header + 1);
@@ -104,11 +105,84 @@ class DidoxInvoiceTableRebuilderTest {
         List<String> second = grid.get(header + 2);
         assertTrue(second.get(0).startsWith("2 "));
         assertEquals("8671.16", second.get(7));
+        assertEquals("", second.get(3).trim());
+        assertEquals(16, second.size());
 
         List<String> third = grid.get(header + 3);
         assertTrue(third.get(0).startsWith("3 "));
         assertEquals("2.00000", third.get(9));
         assertEquals(header + 4, grid.size());
+    }
+
+    @Test
+    void doesNotTreatWrappedQtyAsNewProductAndSkipsFooter() {
+        List<PdfTextToken> tokens = numberedDidoxFrame();
+        add(tokens, 1, x(0), 120, "1 Trusi dlya");
+        add(tokens, 1, x(2), 120, "08111001017000000");
+        add(tokens, 1, x(6), 120, "dona");
+        add(tokens, 1, x(9), 120, "10.00000");
+        add(tokens, 1, x(0), 132, "malchikov M (2)");
+        add(tokens, 1, x(6), 132, "50шт");
+        add(tokens, 1, x(0), 160, "Jami:");
+        add(tokens, 1, x(11), 160, "176355.00");
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        assertEquals(1, grid.size() - header - 1, grid.toString());
+        List<String> first = grid.get(header + 1);
+        assertTrue(first.get(0).contains("1 Trusi"));
+        assertTrue(first.get(0).contains("malchikov"));
+        assertTrue(first.get(6).contains("50шт"), first.toString());
+        assertEquals("10.00000", first.get(9));
+    }
+
+    @Test
+    void splitsGluedMoneyIntoSeparateDidoxColumns() {
+        List<PdfTextToken> tokens = numberedDidoxFrame();
+        add(tokens, 1, x(0), 120, "1 Trusi");
+        add(tokens, 1, x(9), 120, "10.00000");
+        add(tokens, 1, x(10), 120, "8837.50");
+        tokens.add(new PdfTextToken(1, x(11), x(14), 120, "259 678.05 12% 31 033.91"));
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        List<String> first = grid.get(header + 1);
+        assertEquals(16, first.size(), first.toString());
+        assertFalse(first.get(0).contains("12%"), first.toString());
+        assertFalse(first.get(0).contains("259 678"), first.toString());
+        String money = String.join(" | ", first.subList(10, 15));
+        assertTrue(money.contains("259 678.05"), money);
+        assertTrue(money.contains("12%"), money);
+        assertTrue(money.contains("31 033.91"), money);
+        assertTrue(ownCell(first, "12%"), first.toString());
+        assertTrue(ownCell(first, "259 678.05"), first.toString());
+        assertTrue(distinctMoneyCells(first) >= 3, first.toString());
+    }
+
+    @Test
+    void readsGluedHeaderIndexesAsSixteenBands() {
+        List<PdfTextToken> tokens = new ArrayList<>();
+        add(tokens, 1, 20, 20, "Hisob-faktura IS-00008429");
+        add(tokens, 1, x(0), 70, "Mahsulot nomi");
+        tokens.add(new PdfTextToken(1, x(0), x(15) + 20f, 95, "12345678910111213141516"));
+        add(tokens, 1, x(0), 120, "1 Trusi");
+        add(tokens, 1, x(9), 120, "10.00000");
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        assertEquals(16, grid.get(header).size());
+        assertEquals(16, grid.get(header + 1).size());
+        assertEquals("10.00000", grid.get(header + 1).get(9));
+    }
+
+    @Test
+    void doesNotUseGapBuilderForHisobFakturaWithoutNumbers() {
+        List<PdfTextToken> tokens = new ArrayList<>();
+        add(tokens, 1, 20, 20, "Hisob-faktura IS-00008429 didox.uz");
+        add(tokens, 1, 40, 60, "POS Terminal");
+        add(tokens, 1, 200, 60, "08470001002000000");
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        assertTrue(grid.isEmpty());
     }
 
     @Test
@@ -124,6 +198,40 @@ class DidoxInvoiceTableRebuilderTest {
         assertEquals("IKPU", grid.get(0).get(1));
         assertEquals("POS Terminal", grid.get(1).get(0));
         assertEquals("08470001002000000", grid.get(1).get(1));
+    }
+
+    private static List<PdfTextToken> numberedDidoxFrame() {
+        List<PdfTextToken> tokens = new ArrayList<>();
+        add(tokens, 1, 20, 20, "Hisob-faktura IS-00008429");
+        add(tokens, 1, x(0), 70, "Mahsulot");
+        add(tokens, 1, x(1), 70, "Markirovka");
+        add(tokens, 1, x(2), 70, "Identifikatsiya");
+        add(tokens, 1, x(6), 70, "Olchov");
+        add(tokens, 1, x(9), 70, "Miqdor");
+        add(tokens, 1, x(10), 70, "Narx");
+        for (int i = 1; i <= 16; i++) {
+            add(tokens, 1, x(i - 1), 95, String.valueOf(i));
+        }
+        return tokens;
+    }
+
+    private static boolean ownCell(List<String> row, String atom) {
+        for (String cell : row) {
+            if (cell != null && cell.contains(atom)) {
+                return cell.trim().equals(atom);
+            }
+        }
+        return false;
+    }
+
+    private static int distinctMoneyCells(List<String> row) {
+        int n = 0;
+        for (int i = 10; i <= 14; i++) {
+            if (row.get(i) != null && !row.get(i).isBlank()) {
+                n++;
+            }
+        }
+        return n;
     }
 
     private static int indexWith(List<List<String>> grid, String needle) {

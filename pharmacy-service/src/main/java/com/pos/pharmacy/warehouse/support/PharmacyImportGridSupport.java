@@ -4,6 +4,7 @@ import com.pos.pharmacy.exception.BusinessException;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportColumnHint;
 import com.pos.pharmacy.importing.spreadsheet.parser.HtmlExcelTableParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.InvoiceGridRowKinds;
+import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceSpreadsheetParser;
@@ -102,6 +103,9 @@ public class PharmacyImportGridSupport {
                 continue;
             }
             if (InvoiceGridRowKinds.numericIndexRow(row) || InvoiceGridRowKinds.repeatedProductHeader(row)) {
+                continue;
+            }
+            if (DidoxInvoiceFooterFilter.isFooter(row)) {
                 continue;
             }
             rows.add(row);

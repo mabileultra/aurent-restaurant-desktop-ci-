@@ -32,7 +32,7 @@ public final class PdfLineRunMerger {
 
         for (PdfTextToken token : ordered) {
             float gap = token.x0() - lastX1;
-            if (text.length() > 0 && gap > cellGap) {
+            if (text.length() > 0 && shouldBreak(text.toString(), token, gap, cellGap, spaceGap)) {
                 runs.add(toRun(runPage, runX0, runX1, runY, text.toString()));
                 text.setLength(0);
                 runX0 = token.x0();
@@ -49,7 +49,26 @@ public final class PdfLineRunMerger {
         if (text.length() > 0) {
             runs.add(toRun(runPage, runX0, runX1, runY, text.toString()));
         }
-        return runs;
+        return PdfMoneyRunSplitter.splitAll(runs);
+    }
+
+    private static boolean shouldBreak(
+        String current,
+        PdfTextToken next,
+        float gap,
+        float cellGap,
+        float spaceGap
+    ) {
+        if (gap > cellGap) {
+            return true;
+        }
+        if (gap <= spaceGap) {
+            return false;
+        }
+        if (PdfNumericAtom.isThousandsContinuation(current, next.text())) {
+            return false;
+        }
+        return PdfNumericAtom.looksComplete(current) && PdfNumericAtom.looksNumericStart(next.text());
     }
 
     private static PdfTextRun toRun(int page, float x0, float x1, float y, String raw) {
