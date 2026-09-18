@@ -1,3 +1,5 @@
+import { barcodeLookupVariants } from './pharmacyMarkingCode';
+
 /** In-memory кэш barcode/GTIN → product для аптечной кассы (TTL). */
 
 const DEFAULT_TTL_MS = 5 * 60 * 1000;
@@ -25,10 +27,15 @@ export function getCachedPharmacyProduct(storeId, barcode) {
 export function setCachedPharmacyProduct(storeId, barcode, product, ttlMs = DEFAULT_TTL_MS) {
   const key = normalizeKey(storeId, barcode);
   if (!key || !product?.id) return;
-  entries.set(key, {
+  const entry = {
     product,
     expiresAt: Date.now() + (ttlMs || DEFAULT_TTL_MS),
-  });
+  };
+  entries.set(key, entry);
+  for (const variant of barcodeLookupVariants(barcode)) {
+    const variantKey = normalizeKey(storeId, variant);
+    if (variantKey) entries.set(variantKey, entry);
+  }
 }
 
 /** Прогреть кэш из уже загруженной страницы каталога. */

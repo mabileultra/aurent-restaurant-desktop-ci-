@@ -88,7 +88,7 @@ export function extractGtinFromMarkingCode(raw) {
   return null;
 }
 
-function gtinLookupVariants(gtin) {
+export function barcodeLookupVariants(gtin) {
   const digits = String(gtin ?? '').replace(/\D/g, '');
   if (digits.length < 8 || digits.length > 14) return [];
   const variants = [digits];
@@ -103,7 +103,7 @@ function gtinLookupVariants(gtin) {
 export function markingBarcodeCandidates(raw, extraGtins = []) {
   const variants = new Set();
   for (const gtin of [extractGtinFromMarkingCode(raw), ...extraGtins]) {
-    gtinLookupVariants(gtin).forEach((item) => variants.add(item));
+    barcodeLookupVariants(gtin).forEach((item) => variants.add(item));
   }
   return [...variants];
 }

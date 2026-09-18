@@ -29,4 +29,11 @@ describe('pharmacyBarcodeProductCache', () => {
     expect(getCachedPharmacyProduct(3, '222')?.id).toBe('p3');
     expect(pharmacyBarcodeCacheSize()).toBeGreaterThanOrEqual(3);
   });
+
+  it('indexes GTIN-13 and GTIN-14 variants', () => {
+    const product = { id: 'nimid', barcode: '8906002059409' };
+    setCachedPharmacyProduct(5, '8906002059409', product);
+    expect(getCachedPharmacyProduct(5, '8906002059409')?.id).toBe('nimid');
+    expect(getCachedPharmacyProduct(5, '08906002059409')?.id).toBe('nimid');
+  });
 });

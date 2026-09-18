@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { shouldPrefetchCatalogPage } from './shouldPrefetchCatalogPage';
 
 /**
  * Prefetch ровно следующей страницы после первой успешной загрузки
@@ -15,8 +16,12 @@ export function usePosCatalogPrefetch({
   const doneForQueryRef = useRef(null);
 
   useEffect(() => {
-    if (!enabled) return undefined;
-    if (pagesLoaded !== 1 || !hasNextPage || isFetchingNextPage) return undefined;
+    if (!shouldPrefetchCatalogPage({
+      enabled,
+      pagesLoaded,
+      hasNextPage,
+      isFetchingNextPage,
+    })) return undefined;
     if (doneForQueryRef.current === queryKey) return undefined;
     doneForQueryRef.current = queryKey;
     const timer = setTimeout(() => {
