@@ -38,14 +38,36 @@ public final class AslMarkingCodeNormalizer {
 
   /**
    * Полный КМ для code-verification/verify (с GS и криптохвостом).
-   * ASCII29 сохраняется как символ \\u001d в JSON через Jackson.
+   * Сканер часто отдаёт 91/92 слитно — ASL принимает только вариант с ASCII 29.
    */
   public static String fullCodeForVerification(String raw) {
     String value = stripScannerPrefix(raw);
     if (!isUsable(value)) {
       return "";
     }
-    return value;
+    if (value.indexOf('\u001d') >= 0) {
+      return value;
+    }
+    String identification = toIdentificationCode(value);
+    if (!isUsable(identification) || identification.length() >= value.length()) {
+      return value;
+    }
+    String tail = value.substring(identification.length());
+    return identification + '\u001d' + splitCryptoApplicationIdentifiers(tail);
+  }
+
+  /** AI 91 (4 символа) и AI 92/93 должны быть разделены GS. */
+  private static String splitCryptoApplicationIdentifiers(String tail) {
+    if (!StringUtils.hasText(tail)) {
+      return "";
+    }
+    if (tail.startsWith("91") && tail.length() >= 8) {
+      int afterAi91 = 6;
+      if (tail.startsWith("92", afterAi91) || tail.startsWith("93", afterAi91)) {
+        return tail.substring(0, afterAi91) + '\u001d' + tail.substring(afterAi91);
+      }
+    }
+    return tail;
   }
 
   /** КИ без криптохвоста (для public/private codes). */

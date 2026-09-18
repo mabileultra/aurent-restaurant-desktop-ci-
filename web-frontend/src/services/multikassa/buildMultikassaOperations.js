@@ -1,6 +1,7 @@
 import { lineDiscountAmount, lineSubtotal } from '../../store/cartStore';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
+import { toOfdMarkingLabel } from './ofdMarkingLabel';
 import { round2 } from '../../utils/taxAmounts';
 import { transliterateCyrillicToLatin } from '../../utils/transliterateCyrillic';
 
@@ -79,7 +80,7 @@ function resolveFiscalPackageCode(line) {
 function buildItem(line) {
   const barcode = line.barcode || line.sku || '';
   const mark = line.productMark || line.markCode || '';
-  const label = line.productLabel || '';
+  const ofdLabel = toOfdMarkingLabel(mark) || toOfdMarkingLabel(line.productLabel) || '';
   const ikpu = line.ikpu != null && String(line.ikpu).trim() !== '' ? String(line.ikpu) : '';
   const classifier =
     (line.classifierClassCode && String(line.classifierClassCode).trim()) || ikpu;
@@ -94,8 +95,8 @@ function buildItem(line) {
   return {
     product_id: numericProductId(line.productId),
     classifier_class_code: classifier,
-    product_mark: mark,
-    product_label: label,
+    product_mark: ofdLabel || mark,
+    product_label: ofdLabel,
     product_name: transliterateCyrillicToLatin(line.name || 'Товар') || 'Tovar',
     product_barcode: barcode ? String(barcode) : '',
     no_check_mark: Boolean(line.noCheckMark),

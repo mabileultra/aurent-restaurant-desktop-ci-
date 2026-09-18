@@ -29,4 +29,25 @@ class AslMarkingCodeNormalizerTest {
     assertTrue(codes.contains("0103077972920015217hzSaZihzGFVy"));
     assertEquals(1, codes.size());
   }
+
+  @Test
+  void stripsConcatenatedAi91And92() {
+    String raw = "0108906002059409218MTGE3S706TDT91UZF092enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=";
+    assertEquals("0108906002059409218MTGE3S706TDT", AslMarkingCodeNormalizer.toIdentificationCode(raw));
+  }
+
+  @Test
+  void insertsGsBeforeCryptoTailForVerify() {
+    String raw = "0108906002059409218MTGE3S706TDT91UZF092enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=";
+    assertEquals(
+      "0108906002059409218MTGE3S706TDT\u001d91UZF0\u001d92enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=",
+      AslMarkingCodeNormalizer.fullCodeForVerification(raw)
+    );
+  }
+
+  @Test
+  void keepsExistingGsInFullCode() {
+    String raw = "0103077972920015217hzSaZihzGFVy\u001d93vuzv";
+    assertEquals(raw, AslMarkingCodeNormalizer.fullCodeForVerification(raw));
+  }
 }

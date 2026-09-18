@@ -113,6 +113,31 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.items[0].product_package).toBe('1546940');
   });
 
+  it('puts identification KM into product_label for ASL OFD', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        {
+          productId: 1,
+          name: 'Nimid',
+          quantity: 1,
+          unitPrice: 10000,
+          ikpu: '03002005001000000',
+          packageCode: '1546940',
+          taxRate: 12,
+          productMark:
+            '0108906002059409218MTGE3S706TDT91UZF092enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=',
+        },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 10000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items[0].product_label).toBe('0108906002059409218MTGE3S706TDT');
+    expect(body.items[0].product_mark).toBe('0108906002059409218MTGE3S706TDT');
+  });
+
   it('does not treat unitMeasureCode 1 as package code', () => {
     const body = buildSaleOperationBody({
       cartItems: [

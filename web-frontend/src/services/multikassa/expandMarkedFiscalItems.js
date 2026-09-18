@@ -18,6 +18,7 @@ export function expandMarkedFiscalItems(items) {
       discountPercent: 0,
       productMark: mark,
       markCode: mark,
+      productLabel: mark,
     }));
   });
 }
