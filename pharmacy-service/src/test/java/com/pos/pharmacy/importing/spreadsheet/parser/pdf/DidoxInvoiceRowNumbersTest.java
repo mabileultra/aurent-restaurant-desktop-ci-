@@ -14,5 +14,8 @@ class DidoxInvoiceRowNumbersTest {
         assertNull(DidoxInvoiceRowNumbers.leading("50шт"));
         assertEquals(50, DidoxInvoiceRowNumbers.leading("50 шт"));
         assertNull(DidoxInvoiceRowNumbers.leading("08111001017000000"));
+        assertEquals("Trusi dlya", DidoxInvoiceRowNumbers.strip("1 Trusi dlya"));
+        assertEquals("", DidoxInvoiceRowNumbers.strip("1"));
+        assertEquals("Кюпен таб", DidoxInvoiceRowNumbers.strip("Кюпен таб"));
     }
 }

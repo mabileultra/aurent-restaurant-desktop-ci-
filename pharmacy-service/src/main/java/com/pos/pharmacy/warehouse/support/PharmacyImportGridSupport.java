@@ -89,12 +89,16 @@ public class PharmacyImportGridSupport {
     }
 
     public List<PharmacyImportColumnHint> columns(List<String> header) {
+        return columns(header, List.of());
+    }
+
+    public List<PharmacyImportColumnHint> columns(List<String> header, List<List<String>> rows) {
         List<PharmacyImportColumnHint> out = new ArrayList<>();
         for (int i = 0; i < header.size(); i++) {
             String title = header.get(i) == null ? "" : header.get(i).trim();
             out.add(new PharmacyImportColumnHint(i, title, PharmacyImportRoles.guess(title)));
         }
-        return out;
+        return PharmacyImportRoleAligner.apply(out, rows);
     }
 
     public List<List<String>> dataRows(List<List<String>> grid, int headerRow) {

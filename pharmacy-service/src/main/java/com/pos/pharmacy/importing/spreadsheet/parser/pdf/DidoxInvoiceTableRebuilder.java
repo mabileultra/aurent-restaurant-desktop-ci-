@@ -40,7 +40,10 @@ public final class DidoxInvoiceTableRebuilder {
         if (header.cells().stream().anyMatch(cell -> cell != null && !cell.isBlank())) {
             grid.add(header.cells());
         }
-        grid.addAll(DidoxInvoiceRowAssembler.assemble(lines, numbered.lineIndex() + 1, layout));
+        List<List<String>> products = DidoxInvoiceRowAssembler.assemble(
+            lines, numbered.lineIndex() + 1, layout
+        );
+        grid.addAll(DidoxInvoiceSeriesUnitSeparator.apply(header.cells(), products));
         return grid;
     }
 }

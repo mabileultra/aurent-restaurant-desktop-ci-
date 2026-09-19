@@ -8,7 +8,7 @@ import {
   productPieceStep,
 } from '../../pharmacy-cashier/utils/pharmacyProductMeta';
 
-/** Сборка CreateProductRequest для аптечной карточки. Цена задаётся сразу, фактура не нужна. */
+/** Сборка CreateProductRequest для аптечной карточки. */
 
 export function productPricesFromForm(form) {
   const sellingRaw = Number(String(form.sellingPrice ?? '').replace(',', '.').replace(/\s/g, ''));
@@ -103,22 +103,9 @@ export function autoPharmacySku(name) {
   return `PHARM-${slug}-${rand}`;
 }
 
-export function validatePharmacyProductForm(form, t, { requirePrice = true } = {}) {
+export function validatePharmacyProductForm(form, t) {
   if (!String(form.name || '').trim() || String(form.name).trim().length < 2) {
     return t('pharmacyStock.productErrName');
-  }
-  if (requirePrice) {
-    const selling = Number(String(form.sellingPrice ?? '').replace(',', '.').replace(/\s/g, ''));
-    if (!Number.isFinite(selling) || selling < 0.01) {
-      return t('pharmacyStock.productErrPrice');
-    }
-    const cost = String(form.costPrice ?? '').trim();
-    if (cost !== '') {
-      const costNumber = Number(cost.replace(',', '.').replace(/\s/g, ''));
-      if (!Number.isFinite(costNumber) || costNumber < 0) {
-        return t('pharmacyStock.productErrCost');
-      }
-    }
   }
   if (form.unitsInPack != null && String(form.unitsInPack).trim() !== '' && !(Number(form.unitsInPack) > 0)) {
     return t('pharmacyStock.productErrPack');

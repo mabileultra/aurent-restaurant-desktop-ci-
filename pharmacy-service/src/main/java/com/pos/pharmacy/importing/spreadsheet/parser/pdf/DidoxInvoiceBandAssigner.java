@@ -17,7 +17,18 @@ public final class DidoxInvoiceBandAssigner {
         if (PdfNumericAtom.looksComplete(run.text())) {
             return overlap;
         }
+        if (DidoxInvoiceMxik.first(run.text()) != null && !isMoneyColumn(layout.size(), fromLeft)) {
+            if (layout.size() >= 12 && fromLeft < 2 && !isMoneyColumn(layout.size(), 2)) {
+                return 2;
+            }
+            return fromLeft;
+        }
         if (!isMoneyColumn(layout.size(), fromLeft)) {
+            if (!isMoneyColumn(layout.size(), overlap)
+                && overlap != fromLeft
+                && overlapScore(layout, run, overlap) > overlapScore(layout, run, fromLeft) + 8f) {
+                return overlap;
+            }
             return fromLeft;
         }
         return overlap;
@@ -38,6 +49,14 @@ public final class DidoxInvoiceBandAssigner {
             return best;
         }
         return layout.columnOf(run.midX());
+    }
+
+    static float overlapScore(DidoxInvoiceColumnLayout layout, PdfTextRun run, int index) {
+        if (layout == null || run == null || index < 0 || index >= layout.size()) {
+            return 0f;
+        }
+        DidoxInvoiceColumnLayout.Band band = layout.band(index);
+        return Math.min(run.x1(), band.right()) - Math.max(run.x0(), band.left());
     }
 
     static boolean isMoneyColumn(int size, int index) {

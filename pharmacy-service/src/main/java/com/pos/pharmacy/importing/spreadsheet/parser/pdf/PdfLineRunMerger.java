@@ -51,7 +51,9 @@ public final class PdfLineRunMerger {
         }
         return PdfBatchUnitRunSplitter.splitAll(
             PdfOriginRunSplitter.splitAll(
-                PdfIkpuRunSplitter.splitAll(PdfMoneyRunSplitter.splitAll(runs))
+                PdfBarcodeRunSplitter.splitAll(
+                    PdfIkpuRunSplitter.splitAll(PdfMoneyRunSplitter.splitAll(runs))
+                )
             )
         );
     }

@@ -29,6 +29,13 @@ class DidoxInvoiceBandAssignerTest {
     }
 
     @Test
+    void movesCatalogMxikOutOfMarkBandByOverlap() {
+        DidoxInvoiceColumnLayout layout = layout16();
+        PdfTextRun mxik = new PdfTextRun(1, 90f, 200f, 10f, "03004409005039001 - Диклофенак в");
+        assertEquals(2, DidoxInvoiceBandAssigner.column(layout, mxik));
+    }
+
+    @Test
     void keepsSpacedMoneyInDeliveryBand() {
         DidoxInvoiceColumnLayout layout = layout16();
         PdfTextRun money = new PdfTextRun(1, x(11), x(11) + 40f, 10f, "259 678.05");

@@ -14,6 +14,11 @@ class PdfBatchUnitRunSplitterTest {
         assertSplit("010726 do", "010726", "do");
         assertSplit("NE 260306 dona", "NE 260306", "dona");
         assertSplit("DH5511 шт", "DH5511", "шт");
+        assertSplit(
+            "UQT24112 dona (tabletka (500 mg + 50 mg)) qadoq=10 blister ( 10",
+            "UQT24112",
+            "dona (tabletka (500 mg + 50 mg)) qadoq=10 blister ( 10"
+        );
     }
 
     @Test

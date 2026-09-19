@@ -73,6 +73,9 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "етказиб", "yetkazib")) {
             return SKIP;
         }
+        if (containsAny(h, "устама", "ustama", "надбав", "қўшимча", "кушимча", "qoshimcha", "markup")) {
+            return SKIP;
+        }
         if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {
             return PURCHASE_WITH_VAT;
         }
@@ -82,14 +85,17 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "сотиб олиш", "sotib olish", "йиллик нарх")) {
             return PURCHASE;
         }
-        if (containsAny(h, "покупн", "закуп", "себестоим", "purchase", "нарх", "нарҳ")
-            || h.equals("цена")) {
+        if (containsAny(h, "нарх", "нарҳ") && !containsAny(h, "сотиб", "закуп", "покупн")) {
+            return RETAIL;
+        }
+        if (containsAny(h, "покупн", "закуп", "себестоим", "purchase") || h.equals("цена")) {
             return PURCHASE;
         }
-        if ((containsAny(h, "ндс", "ққс", "qqs", "vat")) && containsAny(h, "ставк", "rate", "%")) {
-            return VAT_RATE;
+        if (containsAny(h, "ндс", "ққс", "qqs", "vat")
+            && containsAny(h, "сумма", "сумм", "summa")) {
+            return SKIP;
         }
-        if (containsAny(h, "ндс", "ққс", "qqs") && !containsAny(h, "сумма", "сумм")) {
+        if (containsAny(h, "ндс", "ққс", "qqs", "vat") && containsAny(h, "ставк", "rate", "%")) {
             return VAT_RATE;
         }
         if (containsAny(h, "бирлиги", "ўлчов", "olchov", "единица")) {

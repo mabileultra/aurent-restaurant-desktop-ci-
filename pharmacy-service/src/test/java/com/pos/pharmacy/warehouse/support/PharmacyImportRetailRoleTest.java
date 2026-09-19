@@ -14,6 +14,7 @@ class PharmacyImportRetailRoleTest {
         assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Розничная цена"));
         assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Chakana narx"));
         assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Цена продажи"));
+        assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Нарх"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Сумма розницы"));
     }
 

@@ -52,7 +52,7 @@ class PharmacyImportGridSupportDidoxTest {
         assertEquals(PharmacyImportRoles.IKPU, columns.get(2).suggestedRole());
         assertEquals(PharmacyImportRoles.BARCODE, columns.get(3).suggestedRole());
         assertEquals(PharmacyImportRoles.QTY, columns.get(4).suggestedRole());
-        assertEquals(PharmacyImportRoles.PURCHASE, columns.get(5).suggestedRole());
+        assertEquals(PharmacyImportRoles.RETAIL, columns.get(5).suggestedRole());
         assertEquals(PharmacyImportRoles.VAT_RATE, columns.get(6).suggestedRole());
     }
 }

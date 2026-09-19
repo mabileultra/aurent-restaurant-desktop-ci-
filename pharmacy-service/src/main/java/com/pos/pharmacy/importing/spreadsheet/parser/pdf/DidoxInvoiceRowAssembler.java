@@ -17,6 +17,7 @@ public final class DidoxInvoiceRowAssembler {
                                              DidoxInvoiceColumnLayout layout) {
         List<List<String>> rows = new ArrayList<>();
         List<String> current = null;
+        List<String> pending = null;
         int lastNumber = 0;
         for (int i = startIndex; i < lines.size(); i++) {
             PdfVisualLine line = lines.get(i);
@@ -44,18 +45,24 @@ public final class DidoxInvoiceRowAssembler {
                 if (current != null) {
                     rows.add(current);
                 }
-                current = cells;
+                current = DidoxInvoiceLeadMerge.intoProduct(pending, cells);
+                pending = null;
                 lastNumber = number;
                 continue;
             }
-            if (isNextProductByMxik(current, cells) && !isNewProduct(cells)) {
-                rows.add(current);
-                current = cells;
-                lastNumber = lastNumber + 1;
+            if (DidoxInvoiceLeadLook.ofNextProduct(lines, i, lastNumber, layout)) {
+                if (current == null) {
+                    pending = DidoxInvoiceLeadMerge.join(pending, cells);
+                } else {
+                    pending = DidoxInvoiceLeadMerge.join(pending, DidoxInvoiceLeadMerge.withoutOrigin(cells));
+                    DidoxInvoiceHeaderMerger.append(current, DidoxInvoiceLeadMerge.originOnly(cells));
+                }
                 continue;
             }
             if (current != null && !isPageNumberOnly(cells)) {
                 DidoxInvoiceHeaderMerger.append(current, cells);
+            } else if (current == null) {
+                pending = DidoxInvoiceLeadMerge.join(pending, cells);
             }
         }
         if (current != null) {
@@ -101,15 +108,6 @@ public final class DidoxInvoiceRowAssembler {
             }
         }
         return occupied >= 2;
-    }
-
-    private static boolean isNextProductByMxik(List<String> current, List<String> cells) {
-        if (current == null || cells == null) {
-            return false;
-        }
-        String previous = DidoxInvoiceMxik.first(current);
-        String next = DidoxInvoiceMxik.first(cells);
-        return previous != null && next != null && !previous.equals(next);
     }
 
     private static boolean isPageNumberOnly(List<String> cells) {

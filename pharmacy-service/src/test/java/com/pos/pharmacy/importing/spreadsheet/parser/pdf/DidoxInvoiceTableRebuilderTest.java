@@ -142,6 +142,45 @@ class DidoxInvoiceTableRebuilderTest {
     }
 
     @Test
+    void keepsNameWrapAboveNextNumberOnThatProduct() {
+        List<PdfTextToken> tokens = numberedDidoxFrame();
+        add(tokens, 1, x(0), 120, "1 Sistema TB-S");
+        add(tokens, 1, x(9), 120, "10.00000");
+        add(tokens, 1, x(15), 132, "Oldi-");
+        add(tokens, 1, x(0) + 8f, 148, "Teymurova krem-");
+        add(tokens, 1, x(15), 148, "sotdi");
+        add(tokens, 1, x(0), 156, "2 pasta 50g");
+        add(tokens, 1, x(9), 156, "10.00000");
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        assertEquals(2, grid.size() - header - 1, grid.toString());
+        assertTrue(grid.get(header + 1).get(0).contains("1 Sistema"), grid.get(header + 1).toString());
+        assertFalse(grid.get(header + 1).get(0).toLowerCase().contains("teymurova"), grid.get(header + 1).toString());
+        assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("2"), grid.get(header + 2).toString());
+        assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("teymurova"), grid.get(header + 2).toString());
+        assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("pasta"), grid.get(header + 2).toString());
+    }
+
+    @Test
+    void peelsSeriesGluedToDonaAndQadoq() {
+        List<PdfTextToken> tokens = numberedDidoxFrame();
+        add(tokens, 1, x(0), 120, "1 Kupen");
+        add(tokens, 1, x(5), 120, "UQT24112 dona (tabletka) qadoq=10");
+        add(tokens, 1, x(9), 120, "5.000000");
+        add(tokens, 1, x(0), 150, "2 Nika");
+        add(tokens, 1, x(5), 150, "qadoq=10 blister * 10 660425 dona");
+        add(tokens, 1, x(9), 150, "10.00000");
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        assertEquals("UQT24112", grid.get(header + 1).get(5), grid.get(header + 1).toString());
+        assertTrue(grid.get(header + 1).get(6).toLowerCase().contains("dona"), grid.get(header + 1).toString());
+        assertEquals("660425", grid.get(header + 2).get(5), grid.get(header + 2).toString());
+        assertTrue(grid.get(header + 2).get(6).toLowerCase().contains("qadoq"), grid.get(header + 2).toString());
+    }
+
+    @Test
     void doesNotTreatWrappedQtyAsNewProductAndSkipsFooter() {
         List<PdfTextToken> tokens = numberedDidoxFrame();
         add(tokens, 1, x(0), 120, "1 Trusi dlya");
@@ -239,6 +278,7 @@ class DidoxInvoiceTableRebuilderTest {
         add(tokens, 1, x(0), 70, "Mahsulot");
         add(tokens, 1, x(1), 70, "Markirovka");
         add(tokens, 1, x(2), 70, "Identifikatsiya");
+        add(tokens, 1, x(5), 70, "Seriya");
         add(tokens, 1, x(6), 70, "Olchov");
         add(tokens, 1, x(9), 70, "Miqdor");
         add(tokens, 1, x(10), 70, "Narx");

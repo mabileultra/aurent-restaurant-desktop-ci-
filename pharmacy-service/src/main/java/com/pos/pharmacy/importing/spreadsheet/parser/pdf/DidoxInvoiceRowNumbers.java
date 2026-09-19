@@ -25,4 +25,23 @@ public final class DidoxInvoiceRowNumbers {
         }
         return value;
     }
+
+    public static String strip(String col0) {
+        if (col0 == null || col0.isBlank()) {
+            return "";
+        }
+        String text = col0.trim();
+        Integer number = leading(text);
+        if (number == null) {
+            return text;
+        }
+        String prefix = String.valueOf(number);
+        if (text.equals(prefix)) {
+            return "";
+        }
+        if (text.startsWith(prefix) && Character.isWhitespace(text.charAt(prefix.length()))) {
+            return text.substring(prefix.length()).trim();
+        }
+        return text;
+    }
 }

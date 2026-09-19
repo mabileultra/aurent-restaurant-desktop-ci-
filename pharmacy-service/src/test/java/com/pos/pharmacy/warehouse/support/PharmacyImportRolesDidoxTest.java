@@ -22,10 +22,12 @@ class PharmacyImportRolesDidoxTest {
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Улчов бирлиги"));
         assertEquals(PharmacyImportRoles.PURCHASE, PharmacyImportRoles.guess("Сотиб олиш қиймати (йиллик нарх)"));
         assertEquals(PharmacyImportRoles.QTY, PharmacyImportRoles.guess("Миқдор"));
-        assertEquals(PharmacyImportRoles.PURCHASE, PharmacyImportRoles.guess("Нарх"));
+        assertEquals(PharmacyImportRoles.RETAIL, PharmacyImportRoles.guess("Нарх"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Етказиб бериш қиймати"));
         assertEquals(PharmacyImportRoles.VAT_RATE, PharmacyImportRoles.guess("ҚҚС Ставка"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("ҚҚС Сумма"));
+        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("ҚҚС"));
+        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Савдо қўшимчаси (устама), %"));
         assertEquals(
             PharmacyImportRoles.SKIP,
             PharmacyImportRoles.guess("Товарнинг келиб чиқиши")

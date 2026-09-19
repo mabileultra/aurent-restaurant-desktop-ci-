@@ -16,7 +16,6 @@ export default function PharmacyProductAboutFields({
   onChoosePackage,
   onCreateBarcode,
   showActive = false,
-  showPrices = true,
 }) {
   const options = usePharmacyCatalogOptions(true);
   const req = (label) => (
@@ -36,43 +35,6 @@ export default function PharmacyProductAboutFields({
           onChange={(e) => patch('name', e.target.value)}
         />
       </label>
-
-      {showPrices ? (
-        <>
-          <p className="pharm-product-modal__section-hint">{t('pharmacyStock.productPricesHint')}</p>
-          <div className="pharm-about__row">
-            <label className="pharm-product-modal__field">
-              <span className="pharm-product-modal__label">{req(t('pharmacyStock.retailPrice'))}</span>
-              <input
-                inputMode="decimal"
-                className="pharm-product-modal__input pharm-line-modal__input--num"
-                value={form.sellingPrice}
-                onChange={(e) => patch('sellingPrice', e.target.value)}
-                placeholder="0.00"
-              />
-            </label>
-            <label className="pharm-product-modal__field">
-              <span className="pharm-product-modal__label">{t('pharmacyStock.purchasePrice')}</span>
-              <input
-                inputMode="decimal"
-                className="pharm-product-modal__input pharm-line-modal__input--num"
-                value={form.costPrice}
-                onChange={(e) => patch('costPrice', e.target.value)}
-                placeholder="0.00"
-              />
-            </label>
-          </div>
-          <label className="pharm-product-modal__field">
-            <span className="pharm-product-modal__label">{t('pharmacyStock.vatRate')}</span>
-            <input
-              inputMode="decimal"
-              className="pharm-product-modal__input pharm-line-modal__input--num"
-              value={form.taxRate}
-              onChange={(e) => patch('taxRate', e.target.value)}
-            />
-          </label>
-        </>
-      ) : null}
 
       <div className="pharm-product-modal__field pharm-product-modal__field--relative">
         <span className="pharm-product-modal__label">{t('pharmacyStock.productMxik')}</span>

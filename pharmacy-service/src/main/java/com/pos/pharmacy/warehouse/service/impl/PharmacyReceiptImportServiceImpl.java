@@ -75,13 +75,14 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         List<List<String>> grid = gridSupport.readGrid(file);
         int headerRow = gridSupport.findHeaderRow(grid);
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(gridSupport.extractInvoiceId(grid));
+        List<List<String>> rows = gridSupport.dataRows(grid, headerRow);
         return new PharmacyImportParseResponse(
             file.getOriginalFilename(),
             headerRow,
             invoiceId,
             matchSupport.isInvoiceImported(companyId, invoiceId),
-            gridSupport.columns(grid.get(headerRow)),
-            gridSupport.dataRows(grid, headerRow)
+            gridSupport.columns(grid.get(headerRow), rows),
+            rows
         );
     }
 
