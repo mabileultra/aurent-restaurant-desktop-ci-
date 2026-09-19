@@ -1,27 +1,20 @@
 package com.pos.pharmacy.warehouse.support;
 
-import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterItem;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterRequest;
 import com.pos.pharmacy.marks.service.PharmacyStockMarkService;
 import com.pos.pharmacy.warehouse.dto.PharmacyReceiptActivateRequest;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
-import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 /**
  * После проведения прихода регистрирует КМ на складе.
@@ -75,29 +68,15 @@ public class PharmacyReceiptMarkRegistration {
     }
 
     /**
-     * Для маркированных товаров число КМ должно покрывать количество (упаковки).
-     * Если marks пустой и маркированных строк нет — ок.
+     * КМ на приходе необязательны. Проверяем только дубликаты переданных кодов.
      */
     public void validateMarkedProducts(
         StockReceipt receipt,
         List<PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem> marks
     ) {
-        Map<UUID, Integer> requiredByProduct = new HashMap<>();
-        Map<UUID, String> names = new HashMap<>();
-        for (StockReceiptLine line : receipt.getLines()) {
-            Product product = line.getProduct();
-            if (product == null || !product.isMarkedProduct()) {
-                continue;
-            }
-            int packs = packCount(line.getQuantity());
-            requiredByProduct.merge(product.getId(), packs, Integer::sum);
-            names.put(product.getId(), product.getName());
-        }
-        if (requiredByProduct.isEmpty()) {
+        if (receipt == null || marks == null || marks.isEmpty()) {
             return;
         }
-
-        Map<UUID, Integer> given = new HashMap<>();
         Set<String> seenCodes = new HashSet<>();
         for (PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem mark : marks) {
             if (mark == null || mark.productId() == null || !StringUtils.hasText(mark.markCode())) {
@@ -107,28 +86,6 @@ public class PharmacyReceiptMarkRegistration {
             if (!seenCodes.add(code.toLowerCase())) {
                 throw PharmacyErrors.badRequest("В приходе повторён один и тот же код маркировки");
             }
-            given.merge(mark.productId(), 1, Integer::sum);
         }
-
-        for (Map.Entry<UUID, Integer> entry : requiredByProduct.entrySet()) {
-            int have = given.getOrDefault(entry.getKey(), 0);
-            if (have < entry.getValue()) {
-                throw PharmacyErrors.badRequest(
-                    "Для маркированного товара «"
-                        + names.getOrDefault(entry.getKey(), entry.getKey().toString())
-                        + "» нужно КМ: "
-                        + entry.getValue()
-                        + ", передано: "
-                        + have
-                );
-            }
-        }
-    }
-
-    private static int packCount(BigDecimal quantity) {
-        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            return 0;
-        }
-        return quantity.setScale(0, RoundingMode.UP).intValueExact();
     }
 }

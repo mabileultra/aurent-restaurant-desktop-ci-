@@ -39,7 +39,7 @@ import {
 } from '../utils/pharmacyReceiptPricing';
 import {
   flattenReceiptMarks,
-  receiptMarksReady,
+  receiptMarksProgress,
 } from '../utils/pharmacyReceiptMarks';
 import { PHARM_PAGE_SIZES, useClientTablePage } from '../utils/pharmacyTablePage';
 import { productStubFromReceiptLine } from '../utils/productStubFromReceiptLine';
@@ -158,7 +158,7 @@ export default function PharmacyReceiptDocumentPage() {
   const canEditPrices = isDraft || isPosted;
   const suppliers = suppliersQuery.data?.content ?? [];
   const canActivate = linesReadyForActivate(receipt?.lines);
-  const marksGate = receiptMarksReady(receipt?.lines ?? [], receiptMarks.marksByLineId);
+  const marksProgress = receiptMarksProgress(receipt?.lines ?? [], receiptMarks.marksByLineId);
   const linesPage = useClientTablePage(receipt?.lines ?? [], id);
   const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
   const productDelete = usePharmacyProductDelete(t, {
@@ -223,10 +223,6 @@ export default function PharmacyReceiptDocumentPage() {
   const openActivate = () => {
     if (!canActivate) {
       toast.error(t('pharmacyStock.activateNeedLots'));
-      return;
-    }
-    if (!marksGate.ok) {
-      toast.error(t('pharmacyStock.activateNeedMarks'));
       return;
     }
     setActivateOpen(true);
@@ -429,6 +425,7 @@ export default function PharmacyReceiptDocumentPage() {
         onClose={() => setActivateOpen(false)}
         t={t}
         saving={activateMutation.isPending}
+        marksProgress={marksProgress}
         onConfirm={() => activateMutation.mutate()}
       />
       <PharmacyReceiptDeleteModal

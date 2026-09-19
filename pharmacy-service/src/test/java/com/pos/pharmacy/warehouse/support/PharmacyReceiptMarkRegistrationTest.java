@@ -27,26 +27,29 @@ class PharmacyReceiptMarkRegistrationTest {
     }
 
     @Test
-    void markedReceiptRequiresEnoughMarks() {
+    void markedReceiptAllowsEmptyAndPartialMarks() {
         Product product = product(true);
         StockReceipt receipt = receiptWith(product, BigDecimal.valueOf(2));
-        assertThrows(BusinessException.class, () -> registration.validateMarkedProducts(receipt, List.of()));
-        assertThrows(BusinessException.class, () -> registration.validateMarkedProducts(
+        assertDoesNotThrow(() -> registration.validateMarkedProducts(receipt, List.of()));
+        assertDoesNotThrow(() -> registration.validateMarkedProducts(
             receipt,
             List.of(new PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem(
                 product.getId(), null, "010478001234567821AAAA91X", "OK"
             ))
         ));
-        assertDoesNotThrow(() -> registration.validateMarkedProducts(
+    }
+
+    @Test
+    void duplicateMarkCodesAreRejected() {
+        Product product = product(true);
+        StockReceipt receipt = receiptWith(product, BigDecimal.valueOf(2));
+        PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem same =
+            new PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem(
+                product.getId(), null, "010478001234567821AAAA91X", "OK"
+            );
+        assertThrows(BusinessException.class, () -> registration.validateMarkedProducts(
             receipt,
-            List.of(
-                new PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem(
-                    product.getId(), null, "010478001234567821AAAA91X", "OK"
-                ),
-                new PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem(
-                    product.getId(), null, "010478001234567821BBBB91X", "OK"
-                )
-            )
+            List.of(same, same)
         ));
     }
 

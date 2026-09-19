@@ -13,16 +13,15 @@
 }
 
 .pharmacy-receipt-pick {
+  --pick-row-h: 2.55rem;
+  --pick-head-h: 2.2rem;
+  --pick-rows: 10;
   display: grid;
   gap: 0.85rem;
-  flex: 1;
-  min-height: 0;
 }
 
-@media (min-width: 1024px) {
-  .pharmacy-receipt-pick {
-    grid-template-rows: minmax(260px, 1.15fr) minmax(220px, 0.9fr);
-  }
+.pharmacy-receipt-pick .pharmacy-stock__panel {
+  min-height: 0;
 }
 
 .pharmacy-receipt-pick-head {
@@ -94,4 +93,11 @@
 
 .pharmacy-receipt-pick .pharmacy-stock__panel .table-pagination {
   padding: 0.5rem 0.85rem;
+}
+
+.pharmacy-receipt-pick__table {
+  overflow: auto;
+  height: calc(var(--pick-head-h) + (var(--pick-rows) * var(--pick-row-h)));
+  min-height: calc(var(--pick-head-h) + (var(--pick-rows) * var(--pick-row-h)));
+  max-height: calc(var(--pick-head-h) + (var(--pick-rows) * var(--pick-row-h)));
 }

@@ -308,7 +308,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (receipt.getLines().isEmpty()) {
             throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
         }
-        // Проверка КМ до проведения — не оставляем проведённый документ без марок.
+        // КМ необязательны: регистрируем только переданные коды (IN_STOCK, не продажа).
         pharmacyReceiptMarkRegistration.validateMarkedProducts(
             receipt,
             request != null && request.marks() != null ? request.marks() : List.of()

@@ -1,7 +1,39 @@
-.pharmacy-receipt-document-card > .pharmacy-receipt-document-card__head {
+.pharmacy-receipt-document-card {
+  position: relative;
+  padding: 1.05rem 1.2rem 1.15rem;
+  border-radius: 0.9rem;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04),
+    0 12px 28px rgba(15, 23, 42, 0.05);
+}
+
+.pharmacy-stock__aside.pharmacy-receipt-document-card > .pharmacy-receipt-document-card__head {
+  position: absolute;
+  top: 0.7rem;
+  right: 0.7rem;
+  z-index: 4;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: flex-end;
-  margin: -2px 0 2px;
+  width: auto;
+  margin: 0;
+}
+
+.pharmacy-receipt-document-card > .pharmacy-stock__meta:first-of-type {
+  padding-right: 2.6rem;
+}
+
+.pharmacy-receipt-document-card .pharmacy-stock__meta-value {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 1024px) {
+  .pharmacy-stock__meta-grid:has(.pharmacy-receipt-document-card) {
+    grid-template-columns: minmax(23rem, 26rem) minmax(0, 1fr);
+  }
+}
+
+.dark .pharmacy-receipt-document-card {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.22);
 }

@@ -1,0 +1,32 @@
+.pharmacy-receipt-activate__text {
+  margin: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: #475569;
+}
+
+.pharmacy-receipt-activate__ask {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #b45309;
+}
+
+.pharmacy-receipt-activate__note {
+  margin: 0.75rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #64748b;
+}
+
+.dark .pharmacy-receipt-activate__text {
+  color: #cbd5e1;
+}
+
+.dark .pharmacy-receipt-activate__ask {
+  color: #fbbf24;
+}
+
+.dark .pharmacy-receipt-activate__note {
+  color: #94a3b8;
+}

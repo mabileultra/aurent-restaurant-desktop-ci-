@@ -52,7 +52,7 @@ export default function PharmacyReceiptPickCatalogPanel({
           {t('pharmacyStock.deleteSelected')}
         </BaseButton>
       </PharmacySelectionBar>
-      <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
+      <div className="pharmacy-receipt-pick__table">
         <table className="pharmacy-stock__table">
           <thead>
             <tr>
