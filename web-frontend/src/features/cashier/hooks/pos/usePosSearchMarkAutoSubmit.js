@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { isCompletePharmacyMarkingScan } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+import { isCompletePharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkingCode';
 
 /** Полный DataMatrix в поиске — сразу в чек, без Enter (как в аптеке). */
 export function usePosSearchMarkAutoSubmit({
