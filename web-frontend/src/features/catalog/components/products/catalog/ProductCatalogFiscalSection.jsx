@@ -1,4 +1,5 @@
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
+import './product-catalog-form-fields.css';
 
 export default function ProductCatalogFiscalSection({ t, register, errors, showSection }) {
   return (
@@ -7,7 +8,7 @@ export default function ProductCatalogFiscalSection({ t, register, errors, showS
         {t('productCatalog.sectionFiscal')}
       </h3>
       <p className="text-xs text-sky-700/90 dark:text-sky-400/90">{t('productCatalog.sectionFiscalHint')}</p>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="product-catalog-form-grid">
         {showSection('fiscalExternalId') ? (
           <ProductCatalogField
             label={t('productCatalog.externalId')}

@@ -64,6 +64,14 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
               verifyingTasnif={imp.verifyingTasnif}
               verifyProgress={imp.verifyProgress}
               runTasnifVerify={imp.runTasnifVerify}
+              page={imp.page}
+              totalPages={imp.totalPages}
+              pageSize={imp.pageSize}
+              pageFrom={imp.pageFrom}
+              pageTo={imp.pageTo}
+              setPage={imp.setPage}
+              setPageSize={imp.setPageSize}
+              filteredCount={imp.filteredCount}
             />
           )}
 

@@ -1,0 +1,93 @@
+/* Выравнивание полей модалки «Добавить товар» */
+
+.product-catalog-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+@media (min-width: 768px) {
+  .product-catalog-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-catalog-form-grid--3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .product-catalog-form-grid--auto-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .product-catalog-form-grid--auto-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.product-catalog-field {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.product-catalog-field__label {
+  display: block;
+  margin-bottom: 0.35rem;
+  min-height: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1rem;
+  color: rgb(71 85 105);
+}
+
+.dark .product-catalog-field__label {
+  color: rgb(148 163 184);
+}
+
+.product-catalog-field__control-wrap {
+  display: flex;
+  align-items: stretch;
+  min-height: 2.5rem;
+}
+
+.product-catalog-field__control-wrap > .base-select,
+.product-catalog-field__control-wrap > input,
+.product-catalog-field__control-wrap > textarea {
+  width: 100%;
+}
+
+.product-catalog-field__control-wrap .base-select__trigger {
+  min-height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.product-catalog-field__control {
+  min-height: 2.5rem;
+  box-sizing: border-box;
+}
+
+.product-catalog-field__control-wrap > textarea.product-catalog-field__control {
+  min-height: 4rem;
+}
+
+.product-catalog-field__hint {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(100 116 139);
+}
+
+.product-catalog-field__error {
+  display: block;
+  margin-top: 0.25rem;
+  min-height: 1rem;
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: rgb(248 113 113);
+}
+
+.product-catalog-field--span-2 {
+  grid-column: 1 / -1;
+}

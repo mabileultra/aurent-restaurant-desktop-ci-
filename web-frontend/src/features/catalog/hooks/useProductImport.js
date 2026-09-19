@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { productApi } from '../../../api';
@@ -7,6 +7,10 @@ import {
   loadProductImportColumnVisibility,
   saveProductImportColumnVisibility,
 } from '../utils/productImportColumns';
+import {
+  PRODUCT_IMPORT_DEFAULT_PAGE_SIZE,
+  sliceImportPage,
+} from '../utils/productImportPagination';
 import { verifyProductImportRowsTasnif } from '../utils/verifyProductImportTasnif';
 import {
   applyMarkup,
@@ -35,6 +39,8 @@ export function useProductImport(onClose) {
   const [visibleColumns, setVisibleColumns] = useState(() => loadProductImportColumnVisibility());
   const [tasnifByRow, setTasnifByRow] = useState({});
   const [tasnifFilter, setTasnifFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PRODUCT_IMPORT_DEFAULT_PAGE_SIZE);
   const [verifyingTasnif, setVerifyingTasnif] = useState(false);
   const [verifyProgress, setVerifyProgress] = useState({ done: 0, total: 0 });
   const fileRef = useRef(null);
@@ -113,6 +119,7 @@ export function useProductImport(onClose) {
     setEditable(buildEditableRows(data?.rows ?? [], markupPercent));
     setTasnifByRow({});
     setTasnifFilter('all');
+    setPage(1);
     setStep('preview');
     void runTasnifVerify(data?.rows ?? []);
     return data;
@@ -291,6 +298,21 @@ export function useProductImport(onClose) {
       ? rows
       : rows.filter((r) => classifyProductImportTasnif(r, tasnifByRow[r.rowNum]) === tasnifFilter);
 
+  const setTasnifFilterAndResetPage = (next) => {
+    setTasnifFilter(next);
+    setPage(1);
+  };
+
+  const setPageSizeAndReset = (size) => {
+    setPageSize(size);
+    setPage(1);
+  };
+
+  const pageSlice = useMemo(
+    () => sliceImportPage(filteredRows, page, pageSize),
+    [filteredRows, page, pageSize]
+  );
+
   const canImport = rows.some((r) => isRowNew(r));
   const allDuplicates =
     rows.length > 0 && rows.every((r) => isRowDuplicate(r) || isRowInvalid(r)) && !canImport;
@@ -393,15 +415,23 @@ export function useProductImport(onClose) {
     defaultStorageLocation,
     setDefaultStorageLocation,
     editable,
-    rows: filteredRows,
+    rows: pageSlice.pageRows,
     allRows: rows,
+    filteredCount: filteredRows.length,
     canImport,
     allDuplicates,
     visibleColumns,
     toggleColumn,
     tasnifByRow,
     tasnifFilter,
-    setTasnifFilter,
+    setTasnifFilter: setTasnifFilterAndResetPage,
+    page: pageSlice.page,
+    totalPages: pageSlice.totalPages,
+    pageSize,
+    pageFrom: pageSlice.from,
+    pageTo: pageSlice.to,
+    setPage,
+    setPageSize: setPageSizeAndReset,
     verifyingTasnif,
     verifyProgress,
     runTasnifVerify: () => runTasnifVerify(preview?.rows ?? []),

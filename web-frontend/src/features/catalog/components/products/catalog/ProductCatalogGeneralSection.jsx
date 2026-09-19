@@ -7,6 +7,7 @@ import {
   ProductCatalogField,
   VAT_OPTIONS,
 } from './productCatalogFormUi';
+import './product-catalog-form-fields.css';
 
 export default function ProductCatalogGeneralSection({
   t,
@@ -43,7 +44,7 @@ export default function ProductCatalogGeneralSection({
       <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
         {t('productCatalog.sectionGeneral')}
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="product-catalog-form-grid">
         {showSection('skuField') ? (
           <ProductCatalogField label={t('productModal.sku')} required error={errors.sku?.message}>
             <input {...register('sku')} disabled={isEdit} className={inputCls} />
@@ -53,6 +54,13 @@ export default function ProductCatalogGeneralSection({
         )}
         <ProductCatalogField label={t('productModal.name')} required error={errors.name?.message}>
           <input {...register('name')} className={inputCls} />
+        </ProductCatalogField>
+        <ProductCatalogField
+          className="product-catalog-field--span-2"
+          label={t('productModal.description')}
+          error={errors.description?.message}
+        >
+          <textarea {...register('description')} rows={2} className={`${inputCls} resize-none`} />
         </ProductCatalogField>
         {showSection('categoryField') ? (
           <ProductCatalogField label={t('productModal.category')} error={errors.categoryId?.message}>
@@ -70,57 +78,57 @@ export default function ProductCatalogGeneralSection({
         ) : (
           <input type="hidden" {...register('categoryId')} />
         )}
-        {showTypeSelectors ? (
-          <>
-            {isEdit && showSection('productTypeField') ? (
-              <ProductCatalogField label={t('productCatalog.productType')} required error={errors.productType?.message}>
-                <BaseSelect
-                  name="productType"
-                  value={productTypeWatch ?? 'RETAIL'}
-                  onChange={(e) =>
-                    setValue('productType', e.target.value, { shouldDirty: true, shouldValidate: true })
-                  }
-                  options={[
-                    { value: 'RETAIL', label: t('productCatalog.productTypeRetail') },
-                    { value: 'MATERIAL', label: t('productCatalog.productTypeMaterial') },
-                    { value: 'DISH', label: t('productCatalog.productTypeDish') },
-                    { value: 'SERVICE', label: t('productCatalog.productTypeService') },
-                  ]}
-                />
-              </ProductCatalogField>
-            ) : null}
-            <ProductCatalogField label={t('productCatalog.saleType')} required error={errors.saleType?.message}>
-              <BaseSelect
-                name="saleType"
-                value={saleTypeWatch ?? 'PIECE'}
-                onChange={(e) =>
-                  setValue('saleType', e.target.value, { shouldDirty: true, shouldValidate: true })
-                }
-                options={[
-                  { value: 'PIECE', label: t('productCatalog.saleTypePiece') },
-                  { value: 'WEIGHT', label: t('productCatalog.saleTypeWeight') },
-                  ...(showSection('productTypeField')
-                    ? [{ value: 'SERVICE', label: t('productCatalog.saleTypeService') }]
-                    : []),
-                ]}
-              />
-            </ProductCatalogField>
-            <ProductCatalogField label={t('productCatalog.unitCode')} required error={errors.unitCode?.message}>
-              <BaseSelect
-                name="unitCode"
-                value={unitCodeWatch ?? 'PCS'}
-                onChange={(e) =>
-                  setValue('unitCode', e.target.value, { shouldDirty: true, shouldValidate: true })
-                }
-                options={unitOptions.map((u) => ({
-                  value: u.code,
-                  label: u.labelRu ? `${u.label} — ${u.labelRu}` : u.label,
-                }))}
-              />
-            </ProductCatalogField>
-          </>
+        {isEdit && showTypeSelectors && showSection('productTypeField') ? (
+          <ProductCatalogField label={t('productCatalog.productType')} required error={errors.productType?.message}>
+            <BaseSelect
+              name="productType"
+              value={productTypeWatch ?? 'RETAIL'}
+              onChange={(e) =>
+                setValue('productType', e.target.value, { shouldDirty: true, shouldValidate: true })
+              }
+              options={[
+                { value: 'RETAIL', label: t('productCatalog.productTypeRetail') },
+                { value: 'MATERIAL', label: t('productCatalog.productTypeMaterial') },
+                { value: 'DISH', label: t('productCatalog.productTypeDish') },
+                { value: 'SERVICE', label: t('productCatalog.productTypeService') },
+              ]}
+            />
+          </ProductCatalogField>
         ) : null}
       </div>
+      {showTypeSelectors ? (
+        <div className="product-catalog-form-grid">
+          <ProductCatalogField label={t('productCatalog.saleType')} required error={errors.saleType?.message}>
+            <BaseSelect
+              name="saleType"
+              value={saleTypeWatch ?? 'PIECE'}
+              onChange={(e) =>
+                setValue('saleType', e.target.value, { shouldDirty: true, shouldValidate: true })
+              }
+              options={[
+                { value: 'PIECE', label: t('productCatalog.saleTypePiece') },
+                { value: 'WEIGHT', label: t('productCatalog.saleTypeWeight') },
+                ...(showSection('productTypeField')
+                  ? [{ value: 'SERVICE', label: t('productCatalog.saleTypeService') }]
+                  : []),
+              ]}
+            />
+          </ProductCatalogField>
+          <ProductCatalogField label={t('productCatalog.unitCode')} required error={errors.unitCode?.message}>
+            <BaseSelect
+              name="unitCode"
+              value={unitCodeWatch ?? 'PCS'}
+              onChange={(e) =>
+                setValue('unitCode', e.target.value, { shouldDirty: true, shouldValidate: true })
+              }
+              options={unitOptions.map((u) => ({
+                value: u.code,
+                label: u.labelRu ? `${u.label} — ${u.labelRu}` : u.label,
+              }))}
+            />
+          </ProductCatalogField>
+        </div>
+      ) : null}
       {(showRetailFlags || showSection('activeField')) ? (
         <div className="flex flex-wrap gap-6">
           {showRetailFlags ? (
@@ -148,7 +156,7 @@ export default function ProductCatalogGeneralSection({
         <input type="hidden" {...register('active')} />
       )}
       {showOwnerBlock ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="product-catalog-form-grid">
           {showOwnerType ? (
             <ProductCatalogField label={t('productCatalog.ownerType')} required error={errors.ownerType?.message}>
               <BaseSelect

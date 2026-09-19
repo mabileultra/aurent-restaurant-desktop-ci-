@@ -860,6 +860,11 @@
       "statusInvalid": "Ошибка",
       "markingYes": "Да",
       "markingNo": "Нет",
+      "pageSize": "На странице",
+      "pagePrev": "Назад",
+      "pageNext": "Вперёд",
+      "pageOf": "{{page}} / {{totalPages}}",
+      "pageRange": "{{from}}–{{to}} из {{total}}",
       "tasnif": {
         "all": "Все",
         "found": "Найдено",

@@ -1458,6 +1458,11 @@
       "statusInvalid": "Xato",
       "markingYes": "Ha",
       "markingNo": "Yo‘q",
+      "pageSize": "Sahifada",
+      "pagePrev": "Orqaga",
+      "pageNext": "Oldinga",
+      "pageOf": "{{page}} / {{totalPages}}",
+      "pageRange": "{{from}}–{{to}} / {{total}}",
       "tasnif": {
         "all": "Hammasi",
         "found": "Topildi",

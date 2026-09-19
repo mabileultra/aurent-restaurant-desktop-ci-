@@ -1,8 +1,13 @@
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
+import './product-catalog-form-fields.css';
 
 function FieldSlot({ hidden, children }) {
   if (hidden) return null;
   return children;
+}
+
+function visibleCount(...flags) {
+  return flags.filter(Boolean).length;
 }
 
 export default function ProductCatalogAccountingSection({
@@ -22,7 +27,6 @@ export default function ProductCatalogAccountingSection({
   const hideDiscount = !showSection('accountingDiscount');
   const hideLowStock = !showSection('accountingLowStock');
   const hideLocation = !showSection('accountingLocation');
-  const hideDescription = !showSection('descriptionField');
   const maxDiscount = priceRules?.maxDiscountPercent ?? 100;
   const priceLabel = template?.priceLabelKey
     ? t(template.priceLabelKey)
@@ -32,6 +36,16 @@ export default function ProductCatalogAccountingSection({
 
   const showStockRow = !hideLowStock || !hideStock || !hideLocation;
   const showPriceRow = !hideCost || !hideSell || !hideDiscount;
+  const stockCols = visibleCount(!hideLowStock, !hideStock, !hideLocation);
+  const priceCols = visibleCount(!hideCost, !hideSell, !hideDiscount);
+  const stockGridClass =
+    stockCols >= 3
+      ? 'product-catalog-form-grid product-catalog-form-grid--auto-3'
+      : 'product-catalog-form-grid product-catalog-form-grid--auto-2';
+  const priceGridClass =
+    priceCols >= 3
+      ? 'product-catalog-form-grid product-catalog-form-grid--auto-3'
+      : 'product-catalog-form-grid product-catalog-form-grid--auto-2';
 
   return (
     <section className="space-y-3">
@@ -40,7 +54,7 @@ export default function ProductCatalogAccountingSection({
       </h3>
 
       {showStockRow ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className={stockGridClass}>
           <FieldSlot hidden={hideLowStock}>
             <ProductCatalogField label={t('productModal.lowStock')} error={errors.lowStockAlert?.message}>
               <input {...register('lowStockAlert', { valueAsNumber: true })} type="number" className={inputCls} />
@@ -73,7 +87,7 @@ export default function ProductCatalogAccountingSection({
       )}
 
       {showPriceRow ? (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <div className={priceGridClass}>
           <FieldSlot hidden={hideCost}>
             <ProductCatalogField
               label={t('productModal.cost')}
@@ -135,14 +149,6 @@ export default function ProductCatalogAccountingSection({
           {stockHint}
         </p>
       ) : null}
-
-      {!hideDescription ? (
-        <ProductCatalogField label={t('productModal.description')} error={errors.description?.message}>
-          <textarea {...register('description')} rows={2} className={`${inputCls} resize-none`} />
-        </ProductCatalogField>
-      ) : (
-        <input type="hidden" {...register('description')} />
-      )}
     </section>
   );
 }

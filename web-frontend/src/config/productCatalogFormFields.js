@@ -29,6 +29,7 @@ export const CATALOG_FORM_FIELD_DEFS = [
   // Основные
   { ruleKey: 'catalog.form.skuField', section: 'skuField', labelKey: 'platform.businessTypes.formFieldSku', group: 'general' },
   { ruleKey: 'catalog.form.categoryField', section: 'categoryField', labelKey: 'platform.businessTypes.formFieldCategory', group: 'general' },
+  { ruleKey: 'catalog.form.descriptionField', section: 'descriptionField', labelKey: 'platform.businessTypes.formFieldDescription', group: 'general' },
   { ruleKey: 'catalog.form.typeSelectors', section: 'typeSelectors', labelKey: 'platform.businessTypes.formFieldTypeSelectors', group: 'general' },
   { ruleKey: 'catalog.form.productTypeField', section: 'productTypeField', labelKey: 'platform.businessTypes.formFieldProductType', group: 'general' },
   { ruleKey: 'catalog.form.retailFlags', section: 'retailFlags', labelKey: 'platform.businessTypes.formFieldRetailFlags', group: 'general' },
@@ -48,7 +49,6 @@ export const CATALOG_FORM_FIELD_DEFS = [
   { ruleKey: 'catalog.form.accountingStock', section: 'accountingStock', labelKey: 'platform.businessTypes.formFieldAccountingStock', group: 'accounting' },
   { ruleKey: 'catalog.form.accountingLowStock', section: 'accountingLowStock', labelKey: 'platform.businessTypes.formFieldAccountingLowStock', group: 'accounting' },
   { ruleKey: 'catalog.form.accountingLocation', section: 'accountingLocation', labelKey: 'platform.businessTypes.formFieldAccountingLocation', group: 'accounting' },
-  { ruleKey: 'catalog.form.descriptionField', section: 'descriptionField', labelKey: 'platform.businessTypes.formFieldDescription', group: 'accounting' },
 
   // Цены по магазинам
   { ruleKey: 'catalog.form.storePrices', section: 'storePrices', labelKey: 'platform.businessTypes.formFieldStorePrices', group: 'prices' },

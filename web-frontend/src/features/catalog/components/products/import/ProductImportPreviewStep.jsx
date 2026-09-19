@@ -1,5 +1,6 @@
 import { inputCls } from '../../../../../utils/productImportUtils';
 import ProductImportColumnPicker from './preview/ProductImportColumnPicker';
+import ProductImportPagination from './preview/ProductImportPagination';
 import ProductImportPreviewControls from './preview/ProductImportPreviewControls';
 import ProductImportPreviewTable from './preview/ProductImportPreviewTable';
 import ProductImportTasnifBar from './preview/ProductImportTasnifBar';
@@ -44,10 +45,18 @@ export default function ProductImportPreviewStep(props) {
     verifyingTasnif,
     verifyProgress,
     runTasnifVerify,
+    page,
+    totalPages,
+    pageSize,
+    pageFrom,
+    pageTo,
+    setPage,
+    setPageSize,
+    filteredCount,
   } = props;
 
   return (
-    <>
+    <div className="product-import-preview">
       <div className="flex flex-wrap gap-3 text-sm text-slate-600 dark:text-slate-400">
         <span>{t('products.import.previewTotal', { count: preview.totalRows })}</span>
         <span className="text-emerald-600 dark:text-emerald-400">
@@ -141,31 +150,45 @@ export default function ProductImportPreviewStep(props) {
         onVerify={runTasnifVerify}
       />
 
-      <div className="product-import-preview-toolbar">
-        <p className="text-xs text-slate-500">{t('products.import.tasnif.tableHint')}</p>
-        <ProductImportColumnPicker
+      <div className="product-import-preview__table-block">
+        <div className="product-import-preview-toolbar">
+          <p className="text-xs text-slate-500">{t('products.import.tasnif.tableHint')}</p>
+          <ProductImportColumnPicker
+            t={t}
+            visibleColumns={visibleColumns}
+            onToggle={toggleColumn}
+          />
+        </div>
+
+        <ProductImportPreviewTable
           t={t}
+          rows={rows}
+          editable={editable}
+          categories={categories}
+          stores={stores}
           visibleColumns={visibleColumns}
-          onToggle={toggleColumn}
+          tasnifByRow={tasnifByRow}
+          setRowPrice={setRowPrice}
+          setRowCategory={setRowCategory}
+          setRowStore={setRowStore}
+          setRowStorageLocation={setRowStorageLocation}
+          setRowBarcode={setRowBarcode}
+          setRowIkpu={setRowIkpu}
+          setRowMarkedProduct={setRowMarkedProduct}
+        />
+
+        <ProductImportPagination
+          t={t}
+          page={page}
+          totalPages={totalPages}
+          pageSize={pageSize}
+          from={pageFrom}
+          to={pageTo}
+          total={filteredCount}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
         />
       </div>
-
-      <ProductImportPreviewTable
-        t={t}
-        rows={rows}
-        editable={editable}
-        categories={categories}
-        stores={stores}
-        visibleColumns={visibleColumns}
-        tasnifByRow={tasnifByRow}
-        setRowPrice={setRowPrice}
-        setRowCategory={setRowCategory}
-        setRowStore={setRowStore}
-        setRowStorageLocation={setRowStorageLocation}
-        setRowBarcode={setRowBarcode}
-        setRowIkpu={setRowIkpu}
-        setRowMarkedProduct={setRowMarkedProduct}
-      />
-    </>
+    </div>
   );
 }
