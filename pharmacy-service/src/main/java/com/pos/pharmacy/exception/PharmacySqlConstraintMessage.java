@@ -16,6 +16,9 @@ public final class PharmacySqlConstraintMessage {
         if (text.contains("uk_pharm_stock_marks_company_key")) {
             return "Этот код маркировки уже есть на складе.";
         }
+        if (text.contains("stock_receipts_receipt_number_key")) {
+            return "Номер прихода уже занят. Обновите страницу и создайте документ ещё раз.";
+        }
         return "Не удалось сохранить документ. Повторите попытку.";
     }
 

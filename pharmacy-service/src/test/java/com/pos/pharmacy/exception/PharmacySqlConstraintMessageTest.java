@@ -38,4 +38,16 @@ class PharmacySqlConstraintMessageTest {
             PharmacySqlConstraintMessage.of(error)
         );
     }
+
+    @Test
+    void explainsDuplicateReceiptNumber() {
+        RuntimeException error = new RuntimeException(
+            "duplicate key value violates unique constraint \"stock_receipts_receipt_number_key\""
+                + " Detail: Key (receipt_number)=(REC-20260919-0002) already exists."
+        );
+        assertEquals(
+            "Номер прихода уже занят. Обновите страницу и создайте документ ещё раз.",
+            PharmacySqlConstraintMessage.of(error)
+        );
+    }
 }

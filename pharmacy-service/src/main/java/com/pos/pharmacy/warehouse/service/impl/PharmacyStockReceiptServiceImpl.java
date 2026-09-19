@@ -22,6 +22,7 @@ import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptLotDetach;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMarkRegistration;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptNumberAllocator;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptPostedPriceGuard;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptPostedPriceSync;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
@@ -37,7 +38,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -62,6 +62,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final PharmacyReceiptPostedPriceSync postedPriceSync;
     private final PharmacyReceiptPostedPriceGuard postedPriceGuard;
+    private final PharmacyReceiptNumberAllocator receiptNumberAllocator;
     private final TenantSupport tenant;
     private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
 
@@ -70,7 +71,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         Integer companyId = tenant.requireCompanyId();
         StockReceipt receipt = stockReceiptRepository.save(StockReceipt.builder()
             .companyId(companyId)
-            .receiptNumber(nextReceiptNumber())
+            .receiptNumber(receiptNumberAllocator.next())
             .status(StockReceiptStatus.DRAFT)
             .documentDate(request.documentDate() != null ? request.documentDate() : LocalDate.now(ZONE))
             .receiptType(StringUtils.hasText(request.receiptType())
@@ -358,13 +359,6 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             throw PharmacyErrors.badRequest("Access denied");
         }
         return receipt;
-    }
-
-    private String nextReceiptNumber() {
-        LocalDate today = LocalDate.now(ZONE);
-        Instant dayStart = today.atStartOfDay(ZONE).toInstant();
-        long seq = stockReceiptRepository.countByCreatedAtGreaterThanEqual(dayStart) + 1;
-        return "REC-" + today.format(DateTimeFormatter.BASIC_ISO_DATE) + "-" + String.format("%04d", seq);
     }
 
     private static void requireLines(List<PharmacyStockReceiptLineRequest> lines) {

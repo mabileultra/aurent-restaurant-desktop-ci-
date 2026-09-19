@@ -7,13 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface StockReceiptRepository extends JpaRepository<StockReceipt, UUID> {
 
-    long countByCreatedAtGreaterThanEqual(Instant start);
+    @Query("SELECT r.receiptNumber FROM StockReceipt r WHERE r.receiptNumber LIKE CONCAT(:prefix, '%')")
+    List<String> findReceiptNumbersStartingWith(@Param("prefix") String prefix);
 
     @Query("""
         SELECT DISTINCT r FROM StockReceipt r
