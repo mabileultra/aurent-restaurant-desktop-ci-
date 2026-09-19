@@ -56,7 +56,8 @@ public class StockMark {
     @Column(name = "mark_code", nullable = false, columnDefinition = "TEXT")
     private String markCode;
 
-    @Column(name = "mark_key", nullable = false, length = 190)
+    @JdbcTypeCode(SqlTypes.LONG32VARCHAR)
+    @Column(name = "mark_key", nullable = false, columnDefinition = "TEXT")
     private String markKey;
 
     @Enumerated(EnumType.STRING)

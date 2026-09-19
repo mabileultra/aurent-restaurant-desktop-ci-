@@ -6,6 +6,8 @@ import com.pos.pharmacy.catalog.service.ProductCatalogService;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.PharmacySqlConstraintMessage;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.*;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
@@ -17,6 +19,7 @@ import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.warehouse.support.PharmacyPaymentType;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptActivation;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptDeletion;
+import com.pos.pharmacy.warehouse.support.PharmacyReceiptLotDetach;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMarkRegistration;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptMassApplier;
 import com.pos.pharmacy.warehouse.support.PharmacyReceiptSupport;
@@ -52,6 +55,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     private final PharmacyReceiptSupport pharmacyReceipt;
     private final PharmacyReceiptDeletion pharmacyReceiptDeletion;
     private final PharmacyReceiptActivation pharmacyReceiptActivation;
+    private final PharmacyReceiptLotDetach pharmacyReceiptLotDetach;
     private final PharmacyReceiptMarkRegistration pharmacyReceiptMarkRegistration;
     private final PharmacyReceiptMassApplier pharmacyReceiptMassApplier;
     private final TenantSupport tenant;
@@ -253,6 +257,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     public PharmacyStockReceiptResponse removeLine(UUID id, UUID lineId) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         pharmacyReceipt.requireDraft(receipt);
+        pharmacyReceiptLotDetach.detachLotsForLines(receipt.getStoreId(), List.of(lineId));
         boolean removed = receipt.getLines().removeIf(line -> line.getId().equals(lineId));
         if (!removed) {
             throw PharmacyErrors.notFound("Receipt line");
@@ -287,11 +292,19 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             request != null && request.marks() != null ? request.marks() : List.of()
         );
         pharmacyReceiptActivation.post(receipt);
+        try {
+            pharmacyReceiptMarkRegistration.registerAfterActivate(receipt, request);
+        } catch (RuntimeException ex) {
+            pharmacyReceiptLotDetach.detachLotsForLines(receipt.getStoreId(), lineIds(receipt));
+            if (ex instanceof PharmacyException) {
+                throw ex;
+            }
+            throw PharmacyErrors.badRequest(PharmacySqlConstraintMessage.of(ex));
+        }
         receipt.setStatus(StockReceiptStatus.POSTED);
         receipt.setActivatedAt(Instant.now());
         receipt.setActivatedBy(tenant.currentUserId());
         stockReceiptRepository.save(receipt);
-        pharmacyReceiptMarkRegistration.registerAfterActivate(receipt, request);
         catalogCacheEvictor.onStoreStockChanged(receipt.getCompanyId(), receipt.getStoreId());
         return new PharmacyReceiptActivateResult(receipt.getStatus(), receipt.getReceiptNumber());
     }
@@ -337,6 +350,13 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         if (lines == null || lines.isEmpty()) {
             throw PharmacyErrors.badRequest("At least one line is required");
         }
+    }
+
+    private static List<UUID> lineIds(StockReceipt receipt) {
+        return receipt.getLines().stream()
+            .map(StockReceiptLine::getId)
+            .filter(id -> id != null)
+            .toList();
     }
 
 }

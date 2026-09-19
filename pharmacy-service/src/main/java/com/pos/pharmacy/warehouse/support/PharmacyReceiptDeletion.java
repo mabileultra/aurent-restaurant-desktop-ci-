@@ -27,22 +27,31 @@ public class PharmacyReceiptDeletion {
     private final SaleItemLotRepository saleItemLotRepository;
     private final StockReceiptRepository stockReceiptRepository;
     private final PharmacyReceiptStockReversal stockReversal;
+    private final PharmacyReceiptLotDetach lotDetach;
 
     public PharmacyReceiptDeletion(
         StockLotRepository stockLotRepository,
         SaleItemLotRepository saleItemLotRepository,
         StockReceiptRepository stockReceiptRepository,
-        PharmacyReceiptStockReversal stockReversal
+        PharmacyReceiptStockReversal stockReversal,
+        PharmacyReceiptLotDetach lotDetach
     ) {
         this.stockLotRepository = stockLotRepository;
         this.saleItemLotRepository = saleItemLotRepository;
         this.stockReceiptRepository = stockReceiptRepository;
         this.stockReversal = stockReversal;
+        this.lotDetach = lotDetach;
     }
 
     public void delete(StockReceipt receipt) {
         if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
             reversePostedStock(receipt);
+        } else {
+            List<UUID> lineIds = receipt.getLines().stream()
+                .map(StockReceiptLine::getId)
+                .filter(id -> id != null)
+                .toList();
+            lotDetach.detachLotsForLines(receipt.getStoreId(), lineIds);
         }
         receipt.getLines().clear();
         stockReceiptRepository.delete(receipt);

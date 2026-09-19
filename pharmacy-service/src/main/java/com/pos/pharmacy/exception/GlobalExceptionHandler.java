@@ -4,6 +4,7 @@ import com.pos.shared.api.ApiErrorResponse;
 import com.pos.shared.api.ErrorCode;
 import com.pos.shared.log.LogUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -52,6 +53,23 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST.value(),
                 ErrorCode.VALIDATION_FAILED,
                 message,
+                req.getRequestURI(),
+                null
+            )
+        );
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiErrorResponse> handleIntegrity(
+        DataIntegrityViolationException ex,
+        HttpServletRequest req
+    ) {
+        LogUtil.warn(GlobalExceptionHandler.class, "Pharmacy SQL constraint: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+            ApiErrorResponse.of(
+                HttpStatus.BAD_REQUEST.value(),
+                ErrorCode.VALIDATION_FAILED,
+                PharmacySqlConstraintMessage.of(ex),
                 req.getRequestURI(),
                 null
             )
