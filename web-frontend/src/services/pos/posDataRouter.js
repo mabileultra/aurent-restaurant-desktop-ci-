@@ -4,9 +4,9 @@
 import { categoryApi, productApi, saleApi, cashierShiftApi, pharmacyWarehouseApi, pharmacySalesApi, pharmacyShiftApi } from '../api';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../utils/cashierTerminalIdentity';
 import { POS_PRODUCT_PAGE_SIZE } from '../../features/cashier/components/pos/posCatalogConstants';
-import { POS_CATALOG_ONLINE_TIMEOUT_MS } from '../offline/posCatalogConstants';
 import { isApiUnreachableError } from '../../utils/apiNetworkError';
 import { isDesktopOfflineBridge } from '../offline/desktopOfflineBridge';
+import { resolveOnlineCatalogTimeoutMs, resolveOnlineSaleTimeoutMs } from './posCheckoutTimeouts';
 import {
   offlineGetProductByBarcode,
   offlineListCategories,
@@ -40,7 +40,7 @@ function routeFor(storeId) {
 
 function onlineCatalogConfig(signal) {
   return {
-    timeout: POS_CATALOG_ONLINE_TIMEOUT_MS,
+    timeout: resolveOnlineCatalogTimeoutMs(),
     ...(signal ? { signal } : {}),
   };
 }
@@ -451,9 +451,7 @@ export async function posCreateSale({
     });
   }
 
-  const onlineTimeout = isDesktopOfflineBridge()
-    ? POS_CATALOG_ONLINE_TIMEOUT_MS + 2_000
-    : undefined;
+  const onlineTimeout = resolveOnlineSaleTimeoutMs();
 
   try {
     const pharmacyExtras = buildPharmacySaleExtras(payment);

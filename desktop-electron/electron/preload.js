@@ -2,8 +2,17 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 const invoke = (channel, ...args) => ipcRenderer.invoke(channel, ...args);
 
+function readOfflineFirstFlag() {
+  try {
+    return Boolean(ipcRenderer.sendSync('desktop:get-offline-first-sync'));
+  } catch {
+    return false;
+  }
+}
+
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
+  offlineFirst: readOfflineFirstFlag(),
 
   getApiBaseUrl: () => invoke('desktop:getApiBaseUrl'),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),

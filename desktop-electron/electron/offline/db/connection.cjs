@@ -3,40 +3,23 @@ const path = require('path');
 const { app } = require('electron');
 const crypto = require('crypto');
 const { SCHEMA } = require('./schema.cjs');
+const { resolveOfflineEngine, ENGINE_NATIVE } = require('../engine/offlineEngine');
+const {
+  resolveSqlWasmFile,
+  openSqlJsDatabase,
+  persistSqlJsDatabase,
+} = require('../engine/sqlJsDatabase.cjs');
+const {
+  openNativeDatabase,
+  persistNativeDb,
+  closeNativeDb,
+} = require('../engine/nativeDatabase.cjs');
 
-let sqlInitPromise;
 let db;
 let dbPath;
+let engine = 'sqljs';
 
 const DB_INIT_TIMEOUT_MS = 15_000;
-
-function resolveSqlWasmFile(file) {
-  const fileName = path.basename(file || 'sql-wasm.wasm');
-  const candidates = [];
-  const push = (p) => {
-    if (p) candidates.push(p);
-  };
-
-  if (process.resourcesPath) {
-    push(path.join(process.resourcesPath, 'sql.js', fileName));
-    push(path.join(process.resourcesPath, fileName));
-    push(
-      path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'sql.js', 'dist', fileName),
-    );
-  }
-
-  push(path.join(__dirname, '..', '..', '..', 'node_modules', 'sql.js', 'dist', fileName));
-  try {
-    push(path.join(app.getAppPath(), 'node_modules', 'sql.js', 'dist', fileName));
-  } catch {
-    // outside Electron main
-  }
-  push(path.join(process.cwd(), 'node_modules', 'sql.js', 'dist', fileName));
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) return candidate;
-  }
-  throw new Error(`sql.js wasm not found: ${fileName}`);
-}
 
 function dbFilePath() {
   if (!dbPath) {
@@ -45,19 +28,16 @@ function dbFilePath() {
   return dbPath;
 }
 
-function loadSql() {
-  if (!sqlInitPromise) {
-    // eslint-disable-next-line global-require
-    const initSqlJs = require('sql.js');
-    sqlInitPromise = initSqlJs({
-      locateFile: resolveSqlWasmFile,
-    }).catch((err) => {
-      sqlInitPromise = null;
-      console.error('[offline-db] sql.js init failed:', err);
-      throw err;
-    });
+function readUserOfflineConfig() {
+  try {
+    const file = path.join(app.getPath('userData'), 'config.json');
+    if (fs.existsSync(file)) {
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    }
+  } catch {
+    // ignore
   }
-  return sqlInitPromise;
+  return {};
 }
 
 function withDbTimeout(promise, label = 'offline-db') {
@@ -72,12 +52,11 @@ function withDbTimeout(promise, label = 'offline-db') {
 function persistDb() {
   if (!db) return;
   try {
-    const data = db.export();
-    const finalPath = dbFilePath();
-    const tmpPath = `${finalPath}.tmp`;
-    fs.mkdirSync(path.dirname(finalPath), { recursive: true });
-    fs.writeFileSync(tmpPath, Buffer.from(data));
-    fs.renameSync(tmpPath, finalPath);
+    if (engine === ENGINE_NATIVE) {
+      persistNativeDb(db);
+      return;
+    }
+    persistSqlJsDatabase(db, dbFilePath());
   } catch (err) {
     console.error('[offline-db] persist failed:', err?.message || err);
   }
@@ -127,19 +106,64 @@ function ensureDeviceId() {
   return id;
 }
 
+function tryOpenNative(file) {
+  try {
+    return openNativeDatabase(file);
+  } catch (err) {
+    console.warn('[offline-db] native sqlite unavailable, using sql.js:', err?.message || err);
+    return null;
+  }
+}
+
+async function openSqlJs(file) {
+  const locateFile = (wasmFile) =>
+    resolveSqlWasmFile(wasmFile, {
+      resourcesPath: process.resourcesPath,
+      appPath: (() => {
+        try {
+          return app.getAppPath();
+        } catch {
+          return '';
+        }
+      })(),
+    });
+  return withDbTimeout(openSqlJsDatabase(file, locateFile), 'sql.js load');
+}
+
 async function getDb() {
   if (db) return db;
-  const SQL = await withDbTimeout(loadSql(), 'sql.js load');
   const file = dbFilePath();
-  if (fs.existsSync(file)) {
-    db = new SQL.Database(fs.readFileSync(file));
+  const requested = resolveOfflineEngine({ userConfig: readUserOfflineConfig() });
+
+  if (requested === ENGINE_NATIVE) {
+    db = tryOpenNative(file);
+    engine = db ? ENGINE_NATIVE : 'sqljs';
   } else {
-    db = new SQL.Database();
+    engine = 'sqljs';
   }
+
+  if (!db) {
+    db = await openSqlJs(file);
+    engine = 'sqljs';
+  }
+
   db.run(SCHEMA);
   ensureDeviceId();
   persistDb();
   return db;
+}
+
+function getOfflineEngineName() {
+  return engine;
+}
+
+async function resetConnectionForTests({ userDataDir } = {}) {
+  if (engine === ENGINE_NATIVE) {
+    closeNativeDb(db);
+  }
+  db = null;
+  dbPath = userDataDir ? path.join(userDataDir, 'pos-offline.db') : null;
+  engine = 'sqljs';
 }
 
 module.exports = {
@@ -150,4 +174,6 @@ module.exports = {
   getMeta,
   setMeta,
   ensureDeviceId,
+  getOfflineEngineName,
+  resetConnectionForTests,
 };

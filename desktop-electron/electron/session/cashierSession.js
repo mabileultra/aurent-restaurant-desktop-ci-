@@ -1,34 +1,45 @@
 const { app } = require('electron');
 const { hasUserConfig, loadDesktopConfig, buildLoginUrl } = require('../config/desktopConfig');
+const { cashierUrlForUi } = require('../ui/activeUiOrigin');
 const { showSetupWindow } = require('../setup/setupWindow');
 const { showServerSetupPasswordWindow } = require('../setup/passwordWindow');
 
 async function clearCashierWebStorage(mainWindow, cfg) {
   if (!mainWindow || mainWindow.isDestroyed() || !cfg?.cashierUrl) return;
-  try {
-    const origin = new URL(cfg.cashierUrl).origin;
-    await mainWindow.webContents.session.clearStorageData({
-      origin,
-      storages: ['localstorage'],
-    });
-  } catch {
-    // ignore invalid origin
+  const origins = new Set(
+    [cfg.cashierUrl, cashierUrlForUi(cfg)].filter(Boolean).map((value) => {
+      try {
+        return new URL(value).origin;
+      } catch {
+        return '';
+      }
+    }).filter(Boolean),
+  );
+  for (const origin of origins) {
+    try {
+      await mainWindow.webContents.session.clearStorageData({
+        origin,
+        storages: ['localstorage'],
+      });
+    } catch {
+      // ignore invalid origin
+    }
   }
 }
 
-async function reloadCashierLogin(mainWindow, cfg, { clearSession = false } = {}) {
+async function reloadCashierLogin(mainWindow, cfg, { clearSession = false, loginUrl } = {}) {
   if (!mainWindow || mainWindow.isDestroyed()) return;
   if (clearSession) {
     await clearCashierWebStorage(mainWindow, cfg);
   }
-  await mainWindow.loadURL(buildLoginUrl(cfg));
+  await mainWindow.loadURL(loginUrl || buildLoginUrl(cfg));
 }
 
 async function configureServerInteractive(existingConfig) {
   return showSetupWindow(existingConfig);
 }
 
-async function openServerSettings({ mainWindow, onConfigSaved }) {
+async function openServerSettings({ mainWindow, onConfigSaved, resolveLoginUrl }) {
   let config = loadDesktopConfig({ isPackaged: app.isPackaged });
   if (hasUserConfig()) {
     await showServerSetupPasswordWindow(config);
@@ -38,7 +49,11 @@ async function openServerSettings({ mainWindow, onConfigSaved }) {
   if (typeof onConfigSaved === 'function') {
     onConfigSaved(config);
   }
-  await reloadCashierLogin(mainWindow, config, { clearSession: true });
+  const resolved = typeof resolveLoginUrl === 'function' ? await resolveLoginUrl() : null;
+  await reloadCashierLogin(mainWindow, config, {
+    clearSession: true,
+    loginUrl: resolved?.url,
+  });
   return config;
 }
 

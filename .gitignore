@@ -106,6 +106,8 @@ aurent-cashier-desktop/
 # Electron desktop (desktop-electron/)
 desktop-electron/node_modules/
 desktop-electron/dist/
+desktop-electron/ui/*
+!desktop-electron/ui/.gitkeep
 
 # Local-only Postgres data / run artifacts
 .local-pgdata/

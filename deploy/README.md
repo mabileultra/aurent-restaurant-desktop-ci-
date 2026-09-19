@@ -115,11 +115,12 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 - Merge в `main` (пути `web-frontend/**`, backend и т.д.) → workflow **Deploy Web Stack**
 - `index.html` без кэша — после деплоя достаточно **F5** или «Вид → Обновить» в кассе
-- Electron грузит UI с сервера (`AURENT_WEB_URL`) — отдельный релиз оболочки не нужен для UI-правок
+- Electron по умолчанию грузит UI с сервера (`AURENT_WEB_URL`) — отдельный релиз оболочки не нужен для UI-правок
+- Локальный UI в установщике (`uiMode: bundled`) — только тест; клиентам не включать, пока не пройдены фазы 2–3
 
 ### Десктоп (установщик + автообновление)
 
-1. Поднимите версию в `desktop-electron/package.json` (`version`)
+1. Поднимите версию в `desktop-electron/package.json` (`version`) **только когда готовы отдать сборку всем кассам** (автообновление)
 2. Push в `main` с изменениями в `desktop-electron/**` → workflow **Release Desktop**
 3. CI собирает `.exe` (Windows) и `.dmg` + `.zip` (macOS), публикует в `/downloads/desktop/`:
    - `latest.yml` / `latest-mac.yml` — для `electron-updater` (на Mac в фиде должен быть **zip**)

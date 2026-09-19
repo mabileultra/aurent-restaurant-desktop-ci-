@@ -17,9 +17,11 @@ export async function configureDesktopApiBaseUrl() {
     return api.defaults.baseURL;
   }
 
+  const desktopTimeout = window.desktopCashier?.offlineFirst ? 2_500 : 10_000;
+
   if (isLocalEmbeddedUi()) {
     api.defaults.baseURL = '/api/v1';
-    api.defaults.timeout = 10_000;
+    api.defaults.timeout = desktopTimeout;
     configured = true;
     return api.defaults.baseURL;
   }
@@ -29,7 +31,7 @@ export async function configureDesktopApiBaseUrl() {
     if (baseUrl && /^https?:\/\//i.test(baseUrl)) {
       api.defaults.baseURL = String(baseUrl).replace(/\/$/, '');
     }
-    api.defaults.timeout = 10_000;
+    api.defaults.timeout = desktopTimeout;
   } catch {
     // relative /api/v1 — fallback через локальный прокси
   }

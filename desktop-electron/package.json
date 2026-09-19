@@ -6,11 +6,14 @@
   "main": "electron/main.js",
   "scripts": {
     "sync-icons": "node scripts/sync-icons.js",
+    "bundle-ui": "node scripts/bundle-ui.js",
     "start": "electron .",
-    "pack": "npm run sync-icons && electron-builder --dir",
-    "dist": "npm run sync-icons && electron-builder",
-    "dist:win": "npm run sync-icons && electron-builder --win",
-    "dist:mac": "npm run sync-icons && electron-builder --mac",
+    "start:test": "bash scripts/start-cashier-desktop-test.sh",
+    "serve-ui": "AURENT_KEEP_UI_SERVER=1 node scripts/serve-bundled-ui.cjs",
+    "pack": "npm run sync-icons && npm run bundle-ui && electron-builder --dir",
+    "dist": "npm run sync-icons && npm run bundle-ui && electron-builder",
+    "dist:win": "npm run sync-icons && npm run bundle-ui && electron-builder --win",
+    "dist:mac": "npm run sync-icons && npm run bundle-ui && electron-builder --mac",
     "manifest": "node scripts/generate-manifest.js",
     "test": "node --test test/*.test.cjs"
   },
@@ -30,12 +33,17 @@
     ],
     "asarUnpack": [
       "node_modules/sql.js/**/*",
+      "node_modules/better-sqlite3/**/*",
       "electron/printers/win-raw-print.ps1"
     ],
     "extraResources": [
       {
         "from": "node_modules/sql.js/dist/sql-wasm.wasm",
         "to": "sql.js/sql-wasm.wasm"
+      },
+      {
+        "from": "ui",
+        "to": "ui"
       }
     ],
     "mac": {
@@ -76,6 +84,7 @@
     "artifactName": "Aurent-Cashier-${version}-${os}-${arch}.${ext}"
   },
   "dependencies": {
+    "better-sqlite3": "^11.10.0",
     "electron-updater": "^6.3.9",
     "iconv-lite": "^0.6.3",
     "node-thermal-printer": "^4.6.1",

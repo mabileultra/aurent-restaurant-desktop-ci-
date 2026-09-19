@@ -1,6 +1,64 @@
 const { Menu, dialog } = require('electron');
+const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('../config/uiMode');
 
-function buildAppMenu({ openServerSettings, reloadPage, checkForUpdates }) {
+function buildAppMenu({
+  openServerSettings,
+  reloadPage,
+  checkForUpdates,
+  uiMode = UI_MODE_REMOTE,
+  setUiMode,
+  allowBundledUi = false,
+  offlineFirst = false,
+  setOfflineFirst,
+}) {
+  const showUiModeMenu = allowBundledUi || uiMode === UI_MODE_BUNDLED || offlineFirst;
+  const uiModeItems = showUiModeMenu
+    ? [
+        {
+          label: 'Интерфейс с сайта (как сейчас)',
+          type: 'radio',
+          checked: uiMode !== UI_MODE_BUNDLED,
+          click: () => {
+            if (typeof setUiMode === 'function') {
+              Promise.resolve(setUiMode(UI_MODE_REMOTE)).catch(() => {});
+            }
+          },
+        },
+        {
+          label: 'Локальный интерфейс (тест)',
+          type: 'radio',
+          checked: uiMode === UI_MODE_BUNDLED,
+          click: () => {
+            if (typeof setUiMode === 'function') {
+              Promise.resolve(setUiMode(UI_MODE_BUNDLED)).catch(() => {});
+            }
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Ждать сайт (как сейчас)',
+          type: 'radio',
+          checked: !offlineFirst,
+          click: () => {
+            if (typeof setOfflineFirst === 'function') {
+              Promise.resolve(setOfflineFirst(false)).catch(() => {});
+            }
+          },
+        },
+        {
+          label: 'Касса без ожидания сайта (тест)',
+          type: 'radio',
+          checked: Boolean(offlineFirst),
+          click: () => {
+            if (typeof setOfflineFirst === 'function') {
+              Promise.resolve(setOfflineFirst(true)).catch(() => {});
+            }
+          },
+        },
+        { type: 'separator' },
+      ]
+    : [];
+
   const template = [
     {
       label: 'Aurent',
@@ -19,6 +77,7 @@ function buildAppMenu({ openServerSettings, reloadPage, checkForUpdates }) {
           },
         },
         { type: 'separator' },
+        ...uiModeItems,
         {
           label: 'Проверить обновления…',
           click: () => {

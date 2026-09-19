@@ -3,6 +3,7 @@
  */
 const { ipcMain } = require('electron');
 const { loadDesktopConfig } = require('./config/desktopConfig');
+const { cashierUrlForUi } = require('./ui/activeUiOrigin');
 const { readPrinterSettings, writePrinterSettings } = require('./printers/printer-settings.cjs');
 const { showPrinterPickerWindow } = require('./printers/picker-window.cjs');
 const {
@@ -33,7 +34,7 @@ function registerPrinterIpc() {
   ipcMain.handle('desktop:open-barcode-page', () => {
     const mainWindow = getMainWindow();
     const config = loadDesktopConfig({ isPackaged: require('electron').app.isPackaged });
-    const base = String(config?.cashierUrl || '').replace(/\/$/, '');
+    const base = cashierUrlForUi(config);
     if (mainWindow && !mainWindow.isDestroyed() && base) {
       mainWindow.loadURL(`${base}/users/barcode-print`);
     }

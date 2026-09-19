@@ -35,7 +35,7 @@ jobs:
   build-win:
     if: ${{ inputs.manifest_only != true }}
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -89,7 +89,7 @@ jobs:
   build-mac:
     if: ${{ inputs.manifest_only != true }}
     runs-on: macos-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 

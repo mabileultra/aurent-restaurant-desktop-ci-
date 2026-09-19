@@ -1,4 +1,5 @@
-const { buildLoginUrl } = require('../config/desktopConfig');
+const { buildLoginUrl } = require('../config/loginUrl');
+const { cashierUrlForUi } = require('../ui/activeUiOrigin');
 
 const PUBLIC_PATHS = new Set(['/', '/about', '/pricing', '/equipment', '/contacts', '/install']);
 
@@ -18,7 +19,7 @@ function shouldRedirectToCashierLogin(url, cfg) {
 }
 
 function redirectToCashierLogin(webContents, cfg) {
-  const target = buildLoginUrl(cfg);
+  const target = buildLoginUrl({ ...cfg, cashierUrl: cashierUrlForUi(cfg) });
   if (webContents.getURL() === target) return;
   webContents.loadURL(target);
 }

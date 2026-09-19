@@ -1,18 +1,17 @@
 #!/usr/bin/env bash
-# Запуск Electron-кассы: сначала полная aurent-cashier-desktop (офлайн SQLite),
-# иначе desktop-electron в postsystem.
+# Запуск Electron-кассы из desktop-electron в этом репозитории.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-AURENT="${DESKTOP_ROOT:-$(cd "$ROOT/.." && pwd)/aurent-cashier-desktop}"
+DESKTOP="$ROOT/desktop-electron"
 
-for CAND in "$AURENT" "$ROOT/desktop-electron"; do
-  if [[ -f "$CAND/scripts/start-cashier-desktop.sh" ]]; then
-    export POSTSYSTEM_ROOT="$ROOT"
-    exec bash "$CAND/scripts/start-cashier-desktop.sh" "$@"
-  fi
-done
+if [[ ! -f "$DESKTOP/scripts/start-cashier-desktop.sh" ]]; then
+  echo "Не найден desktop-electron: $DESKTOP" >&2
+  exit 1
+fi
 
-echo "Не найден aurent-cashier-desktop: $AURENT" >&2
-echo "Или desktop-electron: $ROOT/desktop-electron" >&2
-exit 1
+export POSTSYSTEM_ROOT="$ROOT"
+if [[ "${1:-}" == "--test" ]]; then
+  exec bash "$DESKTOP/scripts/start-cashier-desktop-test.sh"
+fi
+exec bash "$DESKTOP/scripts/start-cashier-desktop.sh" "$@"

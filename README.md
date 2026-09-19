@@ -8,7 +8,7 @@
 |-------|------------|
 | Backend | Java 17, Spring Boot 3, PostgreSQL |
 | Frontend | Vue 3, Vite, Bootstrap |
-| Касса | Electron ([`aurent-cashier-desktop`](../aurent-cashier-desktop) — отдельный репозиторий) |
+| Касса | Electron (`desktop-electron/`) — оболочка вокруг `web-frontend` |
 | Деплой | Docker Compose |
 
 ## Структура
@@ -69,11 +69,10 @@ bash deploy/deploy.sh
 
 ## Касса
 
-Desktop-приложение вынесено в соседний репозиторий **`../aurent-cashier-desktop`**.
+Desktop-приложение: **`desktop-electron/`** в этом репозитории. По умолчанию окно открывает сайт кассы (как у клиентов). Локальный UI — только тест, см. `desktop-electron/README.md`.
 
 ```bash
-cd ../aurent-cashier-desktop
-bash scripts/start-cashier-desktop.sh   # из postsystem: bash scripts/start-cashier-desktop.sh
+bash scripts/start-cashier-desktop.sh
 ```
 
 Страница загрузки: **`/install`** (публичная, без входа).

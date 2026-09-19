@@ -1,27 +1,29 @@
 import { refreshConnectivityStatus, useConnectivityStore } from '../../store/connectivityStore';
 import { hasLocalPosCatalog } from '../offline/connectivityRules';
 import { isDesktopOfflineBridge, offlineCompleteCheckout } from '../offline/desktopOfflineBridge';
+import { resolveOfflineCheckoutTimeoutMs } from './posCheckoutTimeouts';
 import {
   buildOfflineCheckoutPayload,
   buildOfflineSaleResponse,
 } from '../offline/buildOfflineSaleResponse';
 
-const CHECKOUT_TIMEOUT_MS = 10_000;
+function withCheckoutTimeout(promise) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(
+        () => reject(new Error('offline_checkout_timeout')),
+        resolveOfflineCheckoutTimeoutMs(),
+      );
+    }),
+  ]);
+}
 
 function newClientSaleId() {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
     return crypto.randomUUID();
   }
   return `off-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
-
-function withCheckoutTimeout(promise) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error('offline_checkout_timeout')), CHECKOUT_TIMEOUT_MS);
-    }),
-  ]);
 }
 
 export async function processOfflineCheckout({

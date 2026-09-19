@@ -4,22 +4,25 @@
  */
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
-const { loadDesktopConfig, buildLoginUrl } = require('./config/desktopConfig');
+const { loadDesktopConfig, saveUiMode, saveOfflineFirst } = require('./config/desktopConfig');
+const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./config/uiMode');
 const { buildAppMenu } = require('./menu/appMenu');
 const {
   openServerSettings,
   ensureInitialServerConfig,
   reloadCashierLogin,
 } = require('./session/cashierSession');
-
 const { attachDesktopNavigationGuard } = require('./navigation/desktopNavigationGuard');
+const { createCashierUiSession } = require('./ui/cashierUiSession');
+const { attachLoadFailureFallback } = require('./ui/loadFailureFallback');
 
 let mainWindow = null;
 let desktopConfig = null;
+let uiSession = null;
 
 function resolveIcon() {
   if (fs.existsSync(ICON_PNG)) return ICON_PNG;
@@ -31,11 +34,76 @@ function refreshDesktopConfig() {
   return desktopConfig;
 }
 
-function getStartupLoginUrl() {
-  return buildLoginUrl(refreshDesktopConfig());
+function rebuildAppMenu() {
+  const cfg = refreshDesktopConfig();
+  buildAppMenu({
+    openServerSettings: handleOpenServerSettings,
+    reloadPage: reloadActiveUi,
+    checkForUpdates: checkForUpdatesNow,
+    uiMode: cfg.uiMode,
+    allowBundledUi: cfg.allowBundledUi,
+    setUiMode: handleSetUiMode,
+    offlineFirst: cfg.offlineFirst,
+    setOfflineFirst: handleSetOfflineFirst,
+  });
 }
 
-function createWindow(startUrl) {
+async function reloadActiveUi({ clearSession = false } = {}) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  const start = await uiSession.ensureStartUrl();
+  await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
+    clearSession,
+    loginUrl: start.url,
+  });
+  return start;
+}
+
+async function handleSetUiMode(mode) {
+  saveUiMode(mode);
+  refreshDesktopConfig();
+  rebuildAppMenu();
+  const start = await reloadActiveUi();
+  if (mode === UI_MODE_BUNDLED && start?.source !== 'bundled') {
+    saveUiMode(UI_MODE_REMOTE);
+    refreshDesktopConfig();
+    rebuildAppMenu();
+    dialog.showMessageBox({
+      type: 'warning',
+      title: 'Aurent Cashier',
+      message: 'Локальный интерфейс недоступен',
+      detail: 'Вернулись к интерфейсу с сайта. Соберите UI (npm run bundle-ui) или оставьте режим «с сайта».',
+      buttons: ['OK'],
+    }).catch(() => {});
+  }
+  return start;
+}
+
+async function handleSetOfflineFirst(enabled) {
+  saveOfflineFirst(enabled);
+  refreshDesktopConfig();
+  rebuildAppMenu();
+  return reloadActiveUi();
+}
+
+async function handleBundledLoadFallback() {
+  saveUiMode(UI_MODE_REMOTE);
+  const start = await uiSession.fallbackToRemote();
+  refreshDesktopConfig();
+  rebuildAppMenu();
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    await mainWindow.loadURL(start.url);
+  }
+  dialog.showMessageBox({
+    type: 'warning',
+    title: 'Aurent Cashier',
+    message: 'Локальный интерфейс не открылся',
+    detail: 'Включён интерфейс с сайта — как у клиентов сейчас. Меню: Вид → Интерфейс с сайта.',
+    buttons: ['OK'],
+  }).catch(() => {});
+  return start;
+}
+
+function createWindow(start) {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -75,22 +143,13 @@ function createWindow(startUrl) {
     mainWindow.focus();
   });
 
-  const loginUrl = startUrl || getStartupLoginUrl();
-
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    if (validatedURL !== loginUrl) return;
-    const html = `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Aurent Cashier</title>
-<style>body{margin:0;font-family:system-ui,sans-serif;background:#e9eef4;color:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
-.card{max-width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgb(15 23 42 / 0.12)}
-h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475569}code{font-size:.85rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;word-break:break-all}</style></head>
-<body><div class="card"><h1>Не удалось загрузить интерфейс</h1>
-<p>Проверьте интернет и настройки сервера (Вид → Настройка сервера).</p>
-<p><code>${validatedURL}</code></p>
-<p>Ошибка ${errorCode}: ${errorDescription}</p></div></body></html>`;
-    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+  attachLoadFailureFallback(mainWindow, {
+    getExpectedUrl: () => uiSession.getLastStart()?.url,
+    getStartSource: () => uiSession.getLastStart()?.source,
+    fallbackToRemote: handleBundledLoadFallback,
   });
 
-  mainWindow.loadURL(loginUrl);
+  mainWindow.loadURL(start.url);
 
   attachDesktopNavigationGuard(mainWindow, refreshDesktopConfig);
 
@@ -106,10 +165,18 @@ async function handleOpenServerSettings() {
     onConfigSaved: (next) => {
       desktopConfig = next;
     },
+    resolveLoginUrl: () => uiSession.ensureStartUrl(),
   });
 }
 
 app.whenReady().then(async () => {
+  uiSession = createCashierUiSession({
+    loadConfig: () => refreshDesktopConfig(),
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+    appPath: app.getAppPath(),
+  });
+
   refreshDesktopConfig();
 
   const hasConfig = await ensureInitialServerConfig();
@@ -119,27 +186,19 @@ app.whenReady().then(async () => {
   }
 
   refreshDesktopConfig();
-
-  buildAppMenu({
-    openServerSettings: handleOpenServerSettings,
-    reloadPage: async () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        await reloadCashierLogin(mainWindow, refreshDesktopConfig());
-      }
-    },
-    checkForUpdates: checkForUpdatesNow,
-  });
+  rebuildAppMenu();
 
   const { registerOfflineIpc } = require('./offline/ipc.cjs');
   registerOfflineIpc(
     () => refreshDesktopConfig(),
-    async (cfg, { timeoutMs = 2000 } = {}) => {
+    async (cfg, { timeoutMs } = {}) => {
+      const ms = timeoutMs ?? (cfg?.offlineFirst ? 800 : 2000);
       const url = cfg?.apiHealthUrl
         || (cfg?.backendOrigin ? `${cfg.backendOrigin}/api/v1/actuator/health` : '');
       if (!url) return false;
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const timer = setTimeout(() => controller.abort(), ms);
         const res = await fetch(url, { method: 'GET', signal: controller.signal });
         clearTimeout(timer);
         return Boolean(res?.ok);
@@ -156,16 +215,18 @@ app.whenReady().then(async () => {
     console.error('[offline] db prewarm failed:', err?.message || err);
   }
 
-  createWindow(getStartupLoginUrl());
+  const start = await uiSession.ensureStartUrl();
+  createWindow(start);
   const { setMainWindow } = require('./printers/window-ref.cjs');
   setMainWindow(mainWindow);
   const { registerPrinterIpc } = require('./registerPrinterIpc');
   registerPrinterIpc();
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
 
-  app.on('activate', () => {
+  app.on('activate', async () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow(getStartupLoginUrl());
+      const next = await uiSession.ensureStartUrl();
+      createWindow(next);
       setMainWindow(mainWindow);
     }
   });
@@ -175,12 +236,22 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();
 });
 
-ipcMain.handle('desktop:getApiBaseUrl', () => refreshDesktopConfig().apiUrl);
-ipcMain.handle('desktop:getCompanyLoginCode', () => refreshDesktopConfig().companyLoginCode || '');
-ipcMain.handle('desktop:reload', () => {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
-  return reloadCashierLogin(mainWindow, refreshDesktopConfig());
+app.on('before-quit', () => {
+  if (uiSession) {
+    uiSession.stopLocal().catch(() => {});
+  }
 });
+
+ipcMain.handle('desktop:getApiBaseUrl', () => refreshDesktopConfig().apiUrl);
+ipcMain.on('desktop:get-offline-first-sync', (event) => {
+  try {
+    event.returnValue = Boolean(refreshDesktopConfig().offlineFirst);
+  } catch {
+    event.returnValue = false;
+  }
+});
+ipcMain.handle('desktop:getCompanyLoginCode', () => refreshDesktopConfig().companyLoginCode || '');
+ipcMain.handle('desktop:reload', () => reloadActiveUi());
 ipcMain.handle('desktop:get-terminal-identity', () => {
   const { getTerminalIdentity } = require('./identity/deviceIdentity');
   return getTerminalIdentity();

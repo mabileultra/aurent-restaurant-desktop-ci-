@@ -3,6 +3,9 @@ const path = require('path');
 const { app } = require('electron');
 const { buildOrigin, buildHealthUrl, parseServerUrl } = require('../core/serverUrl');
 const { resolveDesktopUrls } = require('../../config/desktopUrls');
+const { resolveUiMode, UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./uiMode');
+const { resolveOfflineFirst } = require('./offlineFirst');
+const { buildLoginUrl, normalizeCompanyLoginCode } = require('./loginUrl');
 
 function userConfigPath() {
   return path.join(app.getPath('userData'), 'config.json');
@@ -36,14 +39,6 @@ function hasUserConfig() {
   }
 }
 
-function normalizeCompanyLoginCode(raw) {
-  const digits = String(raw || '').trim().replace(/\D/g, '');
-  if (!digits) return '';
-  const n = parseInt(digits, 10);
-  if (!Number.isFinite(n) || n < 10000 || n > 99999) return '';
-  return String(n).padStart(5, '0');
-}
-
 function loadDesktopConfig({ isPackaged }) {
   const envUrls = resolveDesktopUrls({ isPackaged });
   const user = readUserConfig() || {};
@@ -70,6 +65,7 @@ function loadDesktopConfig({ isPackaged }) {
   cashierUrl = String(cashierUrl).replace(/\/$/, '');
 
   const apiUrl = `${backendOrigin}/api/v1`;
+  const uiMode = resolveUiMode({ userConfig: user });
 
   return {
     cashierUrl,
@@ -79,14 +75,24 @@ function loadDesktopConfig({ isPackaged }) {
     webPort: String(user.webPort || parseServerUrl(cashierUrl).port || '443'),
     apiPort: String(user.apiPort || parseServerUrl(backendOrigin).port || '443'),
     companyLoginCode: String(user.companyLoginCode || process.env.AURENT_COMPANY_CODE || '').trim(),
+    uiMode,
+    offlineFirst: resolveOfflineFirst({ userConfig: user }),
+    allowBundledUi: user.allowBundledUi === true || process.env.AURENT_UI_DEV === '1',
   };
 }
 
-function buildLoginUrl(cfg) {
-  const base = `${String(cfg.cashierUrl || '').replace(/\/$/, '')}/cashier/login`;
-  const code = normalizeCompanyLoginCode(cfg.companyLoginCode);
-  if (!code) return base;
-  return `${base}?${new URLSearchParams({ companyLoginCode: code })}`;
+function saveOfflineFirst(enabled) {
+  return writeUserConfig({
+    offlineFirst: Boolean(enabled),
+  });
+}
+
+function saveUiMode(mode) {
+  const uiMode = resolveUiMode({ userConfig: { uiMode: mode }, env: {} }) || UI_MODE_REMOTE;
+  return writeUserConfig({
+    uiMode,
+    useRemoteUi: uiMode !== UI_MODE_BUNDLED,
+  });
 }
 
 function saveServerConfig({ host, webPort, apiPort, companyLoginCode }) {
@@ -105,8 +111,12 @@ function saveServerConfig({ host, webPort, apiPort, companyLoginCode }) {
   const webOrigin = buildOrigin(h, web);
   const apiOrigin = buildOrigin(h, api);
 
+  const current = readUserConfig() || {};
+  const uiMode = resolveUiMode({ userConfig: current });
+
   return writeUserConfig({
-    useRemoteUi: true,
+    useRemoteUi: uiMode !== UI_MODE_BUNDLED,
+    uiMode,
     cashierUrl: webOrigin,
     backendOrigin: apiOrigin,
     webPort: web,
@@ -130,6 +140,8 @@ module.exports = {
   loadDesktopConfig,
   buildLoginUrl,
   saveServerConfig,
+  saveUiMode,
+  saveOfflineFirst,
   normalizeCompanyLoginCode,
   configFromUserFile,
 };

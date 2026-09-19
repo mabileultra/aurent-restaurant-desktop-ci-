@@ -15,6 +15,7 @@ import {
   writeForceOfflineMode,
 } from '../services/pos/posForceOfflineStorage';
 import { resolvePosRoute } from '../services/pos/posRouteResolver';
+import { isOfflineFirstDesktop } from '../services/offline/offlineFirstFlag';
 
 /** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
 const ONLINE_RECOVERY_STREAK = 2;
@@ -109,8 +110,8 @@ export function isConnectivityOfflineLike(state = useConnectivityStore.getState(
 }
 
 export const useConnectivityStore = create((set, get) => ({
-  apiOnline: true,
-  offlineMode: false,
+  apiOnline: !isOfflineFirstDesktop(),
+  offlineMode: isOfflineFirstDesktop(),
   forceOfflineMode: readForceOfflineMode(),
   canSellOffline: false,
   bootstrapReady: false,
