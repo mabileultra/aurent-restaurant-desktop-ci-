@@ -1,0 +1,73 @@
+.pharmacy-import-tasnif {
+  margin: 0 16px 12px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d8dee6);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 8%, #fff);
+}
+
+.pharmacy-import-tasnif__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.pharmacy-import-tasnif__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pharmacy-import-tasnif__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-import-tasnif__lead {
+  margin: 0 0 8px;
+  font-size: 0.8125rem;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-import-tasnif__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-import-tasnif__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.pharmacy-import-tasnif__chips span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, #fff);
+  color: var(--pharm-brand, #006847);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}

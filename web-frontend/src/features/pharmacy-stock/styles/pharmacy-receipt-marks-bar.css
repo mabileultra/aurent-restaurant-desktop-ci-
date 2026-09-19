@@ -1,0 +1,73 @@
+.pharmacy-receipt-marks-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--pharm-brand, #006847) 24%, #d8dee6);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 7%, #fff);
+}
+
+.pharmacy-receipt-marks-bar__copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+}
+
+.pharmacy-receipt-marks-bar__badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex: 0 0 auto;
+}
+
+.pharmacy-receipt-marks-bar__title {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-receipt-marks-bar__meta {
+  margin: 2px 0 0;
+  font-size: 0.75rem;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-receipt-marks-bar__scan {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--pharm-brand, #006847);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-receipt-marks-bar__scan:hover {
+  background: var(--pharm-blue-hover, #005538);
+}
+
+.pharmacy-receipt-marks-bar__count {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 0.75rem;
+}

@@ -1,5 +1,6 @@
 import { Search } from 'lucide-react';
 import PharmacyReceiptImportMatchTable from './PharmacyReceiptImportMatchTable';
+import PharmacyReceiptImportTasnifPanel from './PharmacyReceiptImportTasnifPanel';
 
 export default function PharmacyReceiptImportWizard({ t, imp }) {
   if (!imp.step) return null;
@@ -86,6 +87,8 @@ export default function PharmacyReceiptImportWizard({ t, imp }) {
           {t('pharmacyStock.importInvoiceAlreadyImported', { id: imp.invoiceId })}
         </p>
       ) : null}
+
+      {matchStep ? <PharmacyReceiptImportTasnifPanel t={t} items={imp.matchAllItems || imp.items} /> : null}
 
       <div className="pharmacy-stock__import-body">
         {matchStep ? <PharmacyReceiptImportMatchTable t={t} imp={imp} /> : <ColumnsStep t={t} imp={imp} />}

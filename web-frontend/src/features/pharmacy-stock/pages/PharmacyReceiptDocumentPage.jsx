@@ -16,7 +16,8 @@ import PharmacyReceiptHeaderModal from '../components/PharmacyReceiptHeaderModal
 import PharmacyReceiptLineBulkBar from '../components/PharmacyReceiptLineBulkBar';
 import PharmacyReceiptMassEditBar from '../components/PharmacyReceiptMassEditBar';
 import PharmacyReceiptLineModal from '../components/PharmacyReceiptLineModal';
-import PharmacyReceiptMarksPanel from '../components/PharmacyReceiptMarksPanel';
+import PharmacyReceiptMarksBar from '../components/PharmacyReceiptMarksBar';
+import PharmacyReceiptMarkScanModal from '../components/PharmacyReceiptMarkScanModal';
 import PharmacyStockLayout, { PharmacyStatusBadge } from '../components/PharmacyStockLayout';
 import {
   PharmacyEditCell,
@@ -55,6 +56,7 @@ export default function PharmacyReceiptDocumentPage() {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [editingLine, setEditingLine] = useState(null);
   const [aboutProduct, setAboutProduct] = useState(null);
+  const [markScanOpen, setMarkScanOpen] = useState(false);
 
   const receiptQuery = useQuery({
     queryKey: ['pharmacy-receipt', id],
@@ -115,11 +117,7 @@ export default function PharmacyReceiptDocumentPage() {
   const integration = usePharmacyIntegrationConfig(receiptPreview?.storeId);
   const aslEnabled = Boolean(integration.capabilities?.aslMarkingEnabled);
   const aslReady = Boolean(receiptPreview?.storeId) && !integration.isLoading;
-  const receiptMarks = usePharmacyReceiptMarks({
-    storeId: receiptPreview?.storeId,
-    t,
-    aslEnabled,
-  });
+  const receiptMarks = usePharmacyReceiptMarks({ t });
   const { hydrateMarks } = receiptMarks;
 
   const importMarksAsk = usePharmacyImportMarksAsk({
@@ -160,7 +158,6 @@ export default function PharmacyReceiptDocumentPage() {
   const suppliers = suppliersQuery.data?.content ?? [];
   const canActivate = linesReadyForActivate(receipt?.lines);
   const marksGate = receiptMarksReady(receipt?.lines ?? [], receiptMarks.marksByLineId);
-  const markedLines = (receipt?.lines ?? []).filter((line) => line.markedProduct);
   const linesPage = useClientTablePage(receipt?.lines ?? [], id);
   const linesSelect = usePharmacyRowSelection(linesPage.rows, id);
   const productDelete = usePharmacyProductDelete(t, {
@@ -309,14 +306,22 @@ export default function PharmacyReceiptDocumentPage() {
 
         <section className="pharmacy-stock__doc-main">
           {isDraft ? (
-            <div className="pharmacy-stock__actions">
-              <BaseButton onClick={() => navigate(PHARMACY_STOCK_PATHS.receiptPick(id))}>
-                {t('pharmacyStock.pickProducts')}
-              </BaseButton>
-              <BaseButton variant="secondary" onClick={() => receiptQuery.refetch()}>
-                {t('common.refresh')}
-              </BaseButton>
-            </div>
+            <>
+              <div className="pharmacy-stock__actions">
+                <BaseButton onClick={() => navigate(PHARMACY_STOCK_PATHS.receiptPick(id))}>
+                  {t('pharmacyStock.pickProducts')}
+                </BaseButton>
+                <BaseButton variant="secondary" onClick={() => receiptQuery.refetch()}>
+                  {t('common.refresh')}
+                </BaseButton>
+              </div>
+              <PharmacyReceiptMarksBar
+                t={t}
+                lines={receipt?.lines ?? []}
+                marksByLineId={receiptMarks.marksByLineId}
+                onScan={() => setMarkScanOpen(true)}
+              />
+            </>
           ) : null}
 
           <div className="pharmacy-stock__panel flex min-h-0 flex-col">
@@ -407,24 +412,6 @@ export default function PharmacyReceiptDocumentPage() {
               onPageSizeChange={linesPage.setPageSize}
               pageSizeOptions={PHARM_PAGE_SIZES}
             />
-            {isDraft && markedLines.length > 0 ? (
-              <div className="pharmacy-stock__marks-section">
-                <h3 className="pharmacy-stock__pane-title">{t('pharmacyStock.marks.sectionTitle')}</h3>
-                {markedLines.map((line) => (
-                  <div key={line.id} className="pharmacy-stock__marks-line">
-                    <div className="pharmacy-stock__marks-line-name">{line.productName}</div>
-                    <PharmacyReceiptMarksPanel
-                      line={line}
-                      marksByLineId={receiptMarks.marksByLineId}
-                      busy={receiptMarks.busyLineId === line.id}
-                      disabled={activateMutation.isPending}
-                      onAdd={receiptMarks.addMarkToLine}
-                      onRemove={receiptMarks.removeMark}
-                    />
-                  </div>
-                ))}
-              </div>
-            ) : null}
           </div>
         </section>
       </div>
@@ -521,6 +508,18 @@ export default function PharmacyReceiptDocumentPage() {
           />
         </>
       ) : null}
+      <PharmacyReceiptMarkScanModal
+        open={isDraft && markScanOpen}
+        onClose={() => setMarkScanOpen(false)}
+        t={t}
+        lines={receipt?.lines ?? []}
+        marksByLineId={receiptMarks.marksByLineId}
+        storeId={receipt?.storeId}
+        aslEnabled={aslEnabled}
+        acceptVerifiedMark={receiptMarks.acceptVerifiedMark}
+        onRemove={receiptMarks.removeMark}
+        disabled={activateMutation.isPending}
+      />
       <PharmacyReceiptImportMarksVerifyModal
         open={importMarksAsk.askOpen}
         onClose={importMarksAsk.closeAsk}

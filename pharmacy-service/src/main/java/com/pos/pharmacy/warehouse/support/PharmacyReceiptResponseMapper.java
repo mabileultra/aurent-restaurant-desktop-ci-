@@ -110,7 +110,10 @@ public class PharmacyReceiptResponseMapper {
             line.getLineRetail(),
             line.getBatchNumber(),
             line.getExpiryDate(),
-            line.getProduct().isMarkedProduct()
+            line.getProduct().isMarkedProduct(),
+            line.getProduct().getBarcode(),
+            line.getProduct().getPackageCode(),
+            line.getProduct().getIkpuStatus()
         );
     }
 }

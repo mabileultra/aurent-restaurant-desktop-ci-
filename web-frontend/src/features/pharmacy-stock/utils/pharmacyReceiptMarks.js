@@ -29,6 +29,18 @@ export function flattenReceiptMarks(marksByLineId, lines = []) {
   return out;
 }
 
+export function receiptMarksProgress(lines = [], marksByLineId = {}) {
+  const marked = lines.filter((line) => line?.markedProduct);
+  let need = 0;
+  let have = 0;
+  for (const line of marked) {
+    const required = requiredMarkCountForLine(line);
+    need += required;
+    have += Math.min(marksForLine(marksByLineId, line.id).length, required);
+  }
+  return { marked: marked.length, have, need };
+}
+
 export function receiptMarksReady(lines = [], marksByLineId = {}) {
   const marked = lines.filter((line) => line?.markedProduct);
   if (marked.length === 0) {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   flattenReceiptMarks,
+  receiptMarksProgress,
   receiptMarksReady,
   requiredMarkCountForLine,
 } from './pharmacyReceiptMarks';
@@ -27,5 +28,17 @@ describe('pharmacyReceiptMarks', () => {
     expect(flattenReceiptMarks({ a: [{ code: 'KM1', aslStatus: 'OK' }] }, lines)).toEqual([
       { productId: 'p1', receiptLineId: 'a', markCode: 'KM1', aslStatus: 'OK' },
     ]);
+  });
+
+  it('sums remaining KM across marked lines', () => {
+    const lines = [
+      { id: 'a', markedProduct: true, quantity: 2 },
+      { id: 'b', markedProduct: true, quantity: 1 },
+    ];
+    expect(receiptMarksProgress(lines, { a: [{ code: 'x' }] })).toEqual({
+      marked: 2,
+      have: 1,
+      need: 3,
+    });
   });
 });

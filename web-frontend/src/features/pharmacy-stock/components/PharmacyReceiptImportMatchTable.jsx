@@ -1,3 +1,5 @@
+import '../styles/pharmacy-import-tasnif.css';
+
 export default function PharmacyReceiptImportMatchTable({ t, imp }) {
   return (
     <div className="pharmacy-stock__import-table-wrap">
@@ -28,13 +30,23 @@ export default function PharmacyReceiptImportMatchTable({ t, imp }) {
   );
 }
 
-function MatchRow({ item, patchItem }) {
+function MatchRow({ t, item, patchItem }) {
   const ok = item.status !== 'DUPLICATE';
   const patch = (key, value) => patchItem(item.rowIndex, { [key]: value });
   return (
     <tr className={ok ? undefined : 'pharmacy-stock__import-miss'}>
       <td className="pharmacy-stock__import-num">{item.rowIndex + 1}</td>
-      <td className="pharmacy-stock__import-name">{item.excelName}</td>
+      <td className="pharmacy-stock__import-name">
+        <div>{item.excelName}</div>
+        <div className="pharmacy-import-tasnif__chips">
+          {item.ikpuStatus === 'FOUND' ? <span>{t('pharmacyStock.importTasnif.flagFound')}</span> : null}
+          {item.ikpuStatus === 'MANUAL' ? <span>{t('pharmacyStock.importTasnif.flagManual')}</span> : null}
+          {item.markedProduct ? <span>{t('pharmacyStock.importTasnif.flagMarked')}</span> : null}
+          {item.packageCode ? <span>{t('pharmacyStock.importTasnif.flagPack')}</span> : null}
+          {item.prescriptionRequired === true ? <span>{t('pharmacyStock.importTasnif.flagRx')}</span> : null}
+          {item.prescriptionRequired === false ? <span>{t('pharmacyStock.importTasnif.flagOtc')}</span> : null}
+        </div>
+      </td>
       <td className="pharmacy-stock__import-marks">
         {Array.isArray(item.markCodes) && item.markCodes.length
           ? item.markCodes.length

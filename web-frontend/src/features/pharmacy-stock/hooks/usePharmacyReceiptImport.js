@@ -200,6 +200,7 @@ function toConfirmItem(item) {
     setUseFinalSums,
     continueMatch,
     items: filteredItems,
+    matchAllItems: items,
     query,
     setQuery,
     patchItem: (rowIndex, patch) => setItems((prev) => prev.map((item) => (
