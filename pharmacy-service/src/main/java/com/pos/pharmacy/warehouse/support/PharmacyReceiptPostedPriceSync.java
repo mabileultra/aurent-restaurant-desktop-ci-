@@ -1,0 +1,102 @@
+package com.pos.pharmacy.warehouse.support;
+
+import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
+import com.pos.pharmacy.catalog.entity.Product;
+import com.pos.pharmacy.catalog.repository.ProductRepository;
+import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
+import com.pos.pharmacy.warehouse.entity.StockLot;
+import com.pos.pharmacy.warehouse.entity.StockReceipt;
+import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
+import com.pos.pharmacy.warehouse.repository.StockLotRepository;
+import org.springframework.stereotype.Component;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+
+/** После проведения цены строки копируются в партию и карточку — касса видит новую розницу. */
+@Component
+public class PharmacyReceiptPostedPriceSync {
+
+    private static final BigDecimal MIN_SELLING = new BigDecimal("0.01");
+
+    private final StockLotRepository stockLotRepository;
+    private final ProductRepository productRepository;
+    private final PharmacyCatalogCacheEvictor catalogCacheEvictor;
+
+    public PharmacyReceiptPostedPriceSync(
+        StockLotRepository stockLotRepository,
+        ProductRepository productRepository,
+        PharmacyCatalogCacheEvictor catalogCacheEvictor
+    ) {
+        this.stockLotRepository = stockLotRepository;
+        this.productRepository = productRepository;
+        this.catalogCacheEvictor = catalogCacheEvictor;
+    }
+
+    public void sync(StockReceipt receipt, Collection<StockReceiptLine> lines) {
+        if (receipt == null
+            || !StockReceiptStatus.POSTED.equals(receipt.getStatus())
+            || lines == null
+            || lines.isEmpty()) {
+            return;
+        }
+        List<UUID> lineIds = lines.stream()
+            .map(StockReceiptLine::getId)
+            .filter(Objects::nonNull)
+            .toList();
+        if (lineIds.isEmpty()) {
+            return;
+        }
+        Map<UUID, StockReceiptLine> byLine = new LinkedHashMap<>();
+        Map<UUID, StockReceiptLine> byProduct = new LinkedHashMap<>();
+        for (StockReceiptLine line : lines) {
+            if (line.getId() != null) {
+                byLine.put(line.getId(), line);
+            }
+            if (line.getProduct() != null) {
+                byProduct.put(line.getProduct().getId(), line);
+            }
+        }
+        List<StockLot> lots = stockLotRepository.findByReceiptLineIds(lineIds);
+        for (StockLot lot : lots) {
+            StockReceiptLine line = lot.getReceiptLine() == null ? null : byLine.get(lot.getReceiptLine().getId());
+            if (line == null) {
+                continue;
+            }
+            lot.setPurchasePrice(PharmacyReceiptPricing.scaleMoney(line.getPurchasePrice()));
+            lot.setUnitSellingPrice(selling(line));
+        }
+        stockLotRepository.saveAll(lots);
+
+        List<Product> products = productRepository.findAllById(byProduct.keySet());
+        for (Product product : products) {
+            StockReceiptLine line = byProduct.get(product.getId());
+            if (line == null) {
+                continue;
+            }
+            product.setCostPrice(PharmacyReceiptPricing.scaleMoney(line.getPurchasePrice()));
+            BigDecimal selling = selling(line);
+            if (selling.compareTo(MIN_SELLING) >= 0) {
+                product.setSellingPrice(selling);
+            }
+            if (line.getVatPercent() != null) {
+                product.setTaxRate(line.getVatPercent());
+            }
+        }
+        productRepository.saveAll(products);
+        catalogCacheEvictor.onStoreStockChanged(receipt.getCompanyId(), receipt.getStoreId());
+        catalogCacheEvictor.onProductChanged(receipt.getCompanyId());
+    }
+
+    private static BigDecimal selling(StockReceiptLine line) {
+        if (line.getUnitSellingPrice() != null) {
+            return PharmacyReceiptPricing.scaleMoney(line.getUnitSellingPrice());
+        }
+        return PharmacyReceiptPricing.scaleMoney(line.getRetailPrice());
+    }
+}

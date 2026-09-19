@@ -43,6 +43,7 @@ public final class DidoxSpreadsheetHeaderJoiner {
             || text.contains("каталог") || text.contains("микдор") || text.contains("miqdor")
             || text.contains("нарх") || text.contains("киймат") || text.contains("ккс")
             || text.contains("qqs") || text.contains("ндс") || text.contains("серия")
+            || text.contains("seriya") || text.contains("seria") || text.contains("series")
             || text.contains("бирлиги") || text.contains("устама") || text.contains("ставка")
             || text.contains("икпу") || text.contains("ikpu") || text.contains("barcode")
             || text.contains("хизматлар") || text.contains("улчов") || text.contains("olchov");

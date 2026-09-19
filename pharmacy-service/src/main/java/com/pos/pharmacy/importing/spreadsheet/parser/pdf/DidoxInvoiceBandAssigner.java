@@ -10,10 +10,13 @@ public final class DidoxInvoiceBandAssigner {
             return 0;
         }
         int overlap = bestOverlap(layout, run);
+        int fromLeft = layout.columnOf(run.x0() + 1f);
+        if (PdfNumericAtom.looksPlainInteger(run.text()) && !isMoneyColumn(layout.size(), fromLeft)) {
+            return fromLeft;
+        }
         if (PdfNumericAtom.looksComplete(run.text())) {
             return overlap;
         }
-        int fromLeft = layout.columnOf(run.x0() + 1f);
         if (!isMoneyColumn(layout.size(), fromLeft)) {
             return fromLeft;
         }

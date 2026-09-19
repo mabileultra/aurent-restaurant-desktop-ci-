@@ -54,7 +54,8 @@ public final class DidoxInvoiceColumnLayout {
                 continue;
             }
             int col = DidoxInvoiceMoneyColumnAdvance.column(this, run, lastMoney);
-            if (PdfNumericAtom.looksComplete(run.text())) {
+            if (PdfNumericAtom.looksComplete(run.text())
+                && DidoxInvoiceBandAssigner.isMoneyColumn(size(), col)) {
                 lastMoney = col;
             }
             values[col] = join(values[col], run.text());

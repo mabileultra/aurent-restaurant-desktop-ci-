@@ -24,6 +24,28 @@ class PdfLineRunMergerTest {
         assertEquals("31 033.91", runs.get(2).text());
     }
 
+    @Test
+    void doesNotGlueSeriesToDona() {
+        List<PdfTextToken> tokens = new ArrayList<>();
+        addWord(tokens, 0f, "ZA4485");
+        addWord(tokens, 18f, "dona");
+        List<PdfTextRun> runs = PdfLineRunMerger.merge(tokens);
+        assertEquals(2, runs.size(), runs.toString());
+        assertEquals("ZA4485", runs.get(0).text());
+        assertEquals("dona", runs.get(1).text());
+    }
+
+    @Test
+    void doesNotGlueNumericSeriesToDona() {
+        List<PdfTextToken> tokens = new ArrayList<>();
+        addWord(tokens, 0f, "010726");
+        addWord(tokens, 20f, "do");
+        List<PdfTextRun> runs = PdfLineRunMerger.merge(tokens);
+        assertEquals(2, runs.size(), runs.toString());
+        assertEquals("010726", runs.get(0).text());
+        assertEquals("do", runs.get(1).text());
+    }
+
     private static void addWord(List<PdfTextToken> tokens, float x, String text) {
         float cursor = x;
         for (int i = 0; i < text.length(); i++) {

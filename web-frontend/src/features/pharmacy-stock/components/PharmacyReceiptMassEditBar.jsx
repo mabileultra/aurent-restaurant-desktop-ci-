@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BaseButton, BaseModal } from '../../../components/ui';
 import '../styles/pharmacy-receipt-mass.css';
 
-const FIELDS = [
+const ALL_FIELDS = [
   { id: 'QUANTITY', label: 'pharmacyStock.colQty', kind: 'number' },
   { id: 'PURCHASE', label: 'pharmacyStock.purchasePrice', kind: 'number' },
   { id: 'VAT', label: 'pharmacyStock.vatRate', kind: 'number' },
@@ -11,11 +11,22 @@ const FIELDS = [
   { id: 'BATCH', label: 'pharmacyStock.batch', kind: 'text' },
   { id: 'EXPIRY', label: 'pharmacyStock.expiry', kind: 'date' },
 ];
+const PRICE_FIELDS = ALL_FIELDS.filter((item) => (
+  item.id === 'PURCHASE' || item.id === 'VAT' || item.id === 'MARKUP' || item.id === 'RETAIL'
+));
 
-export default function PharmacyReceiptMassEditBar({ t, mass }) {
+export default function PharmacyReceiptMassEditBar({ t, mass, priceOnly = false }) {
+  const fields = priceOnly ? PRICE_FIELDS : ALL_FIELDS;
   const [field, setField] = useState('VAT');
   const [value, setValue] = useState('12');
-  const current = FIELDS.find((item) => item.id === field) || FIELDS[0];
+  const current = fields.find((item) => item.id === field) || fields[0];
+
+  useEffect(() => {
+    if (priceOnly && !PRICE_FIELDS.some((item) => item.id === field)) {
+      setField('VAT');
+      setValue('12');
+    }
+  }, [priceOnly, field]);
 
   return (
     <>
@@ -29,7 +40,7 @@ export default function PharmacyReceiptMassEditBar({ t, mass }) {
             setValue(e.target.value === 'VAT' ? '12' : '');
           }}
         >
-          {FIELDS.map((item) => (
+          {fields.map((item) => (
             <option key={item.id} value={item.id}>{t(item.label)}</option>
           ))}
         </select>
@@ -66,7 +77,7 @@ export default function PharmacyReceiptMassEditBar({ t, mass }) {
       >
         <p className="pharm-mass__confirm">
           {t('pharmacyStock.massEditConfirm', {
-            field: t(FIELDS.find((item) => item.id === mass.pending?.field)?.label || current.label),
+            field: t(fields.find((item) => item.id === mass.pending?.field)?.label || current.label),
             value: mass.pending?.value || '—',
             count: mass.pending?.count || 0,
           })}

@@ -1,5 +1,6 @@
 package com.pos.pharmacy.importing.spreadsheet.parser;
 
+import com.pos.pharmacy.warehouse.support.PharmacyImportRoles;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
@@ -59,6 +60,9 @@ class UzInvoicePdfParserDidoxTest {
         assertTrue(product.get(2).contains("08111001"), product.toString());
         assertTrue(product.get(9).replace(" ", "").contains("10.00000"), product.toString());
         assertFalse(product.get(0).toLowerCase().startsWith("50"), product.get(0));
+        assertTrue(headerRow.get(5).toLowerCase().contains("seriya"), headerRow.get(5));
+        assertEquals(PharmacyImportRoles.BATCH, PharmacyImportRoles.guess(headerRow.get(5)));
+        assertEquals("01", product.get(5), product.toString());
         assertTrue(product.get(6).toLowerCase().contains("50sht") || product.get(6).toLowerCase().contains("dona"),
             product.toString());
         assertFalse(product.get(0).contains("12%"), product.get(0));

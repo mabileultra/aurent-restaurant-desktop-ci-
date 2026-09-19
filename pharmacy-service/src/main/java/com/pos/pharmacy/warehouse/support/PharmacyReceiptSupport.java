@@ -36,6 +36,25 @@ public class PharmacyReceiptSupport {
         }
     }
 
+    public void applyPrices(StockReceiptLine target, Product product, PharmacyStockReceiptLineRequest req) {
+        Product current = target.getProduct() != null ? target.getProduct() : product;
+        PharmacyStockReceiptLineRequest locked = new PharmacyStockReceiptLineRequest(
+            current.getId(),
+            target.getQuantity(),
+            req.purchasePrice(),
+            req.unitSellingPrice(),
+            req.vatPercent(),
+            req.markupPercent(),
+            target.getUnitsInPack(),
+            req.purchasePriceWithVat(),
+            req.retailPrice(),
+            req.unitRetailPrice(),
+            target.getBatchNumber(),
+            target.getExpiryDate()
+        );
+        applyLine(target, current, locked);
+    }
+
     public void applyLine(StockReceiptLine target, Product product, PharmacyStockReceiptLineRequest req) {
         StockReceiptLine built = buildLine(target.getReceipt(), product, req);
         target.setProduct(built.getProduct());

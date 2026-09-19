@@ -14,6 +14,10 @@ class PdfNumericAtomTest {
         assertTrue(PdfNumericAtom.looksComplete("10.00000"));
         assertFalse(PdfNumericAtom.looksComplete("50шт"));
         assertFalse(PdfNumericAtom.looksComplete("08111001017000000"));
+        assertTrue(PdfNumericAtom.looksPlainInteger("010726"));
+        assertTrue(PdfNumericAtom.looksPlainInteger("1291025"));
+        assertFalse(PdfNumericAtom.looksPlainInteger("10.00000"));
+        assertFalse(PdfNumericAtom.looksPlainInteger("ZA4485"));
     }
 
     @Test

@@ -8,7 +8,18 @@ import {
   productPieceStep,
 } from '../../pharmacy-cashier/utils/pharmacyProductMeta';
 
-/** Сборка CreateProductRequest для аптечной карточки (цены — заглушки до прихода). */
+/** Сборка CreateProductRequest для аптечной карточки. Цена задаётся сразу, фактура не нужна. */
+
+export function productPricesFromForm(form) {
+  const sellingRaw = Number(String(form.sellingPrice ?? '').replace(',', '.').replace(/\s/g, ''));
+  const costRaw = Number(String(form.costPrice ?? '').replace(',', '.').replace(/\s/g, ''));
+  const taxRaw = Number(String(form.taxRate ?? '').replace(',', '.').replace(/\s/g, ''));
+  return {
+    costPrice: Number.isFinite(costRaw) && costRaw >= 0 ? costRaw : 0,
+    sellingPrice: Number.isFinite(sellingRaw) ? sellingRaw : 0,
+    taxRate: Number.isFinite(taxRaw) && taxRaw >= 0 ? taxRaw : 0,
+  };
+}
 
 export function buildPharmacyProductCreatePayload(form, { storeId, prices } = {}) {
   const name = String(form.name || '').trim();
@@ -38,11 +49,12 @@ export function buildPharmacyProductCreatePayload(form, { storeId, prices } = {}
     if (attributes[k] == null || attributes[k] === '') delete attributes[k];
   });
 
-  const costPrice = prices?.costPrice != null ? Number(prices.costPrice) : 0;
-  const sellingRaw = prices?.sellingPrice != null ? Number(prices.sellingPrice) : 0.01;
+  const resolvedPrices = prices || productPricesFromForm(form);
+  const costPrice = resolvedPrices?.costPrice != null ? Number(resolvedPrices.costPrice) : 0;
+  const sellingRaw = resolvedPrices?.sellingPrice != null ? Number(resolvedPrices.sellingPrice) : 0.01;
   const sellingPrice = sellingRaw >= 0.01 ? sellingRaw : 0.01;
-  const taxRate = prices?.taxRate != null
-    ? Number(prices.taxRate)
+  const taxRate = resolvedPrices?.taxRate != null
+    ? Number(resolvedPrices.taxRate)
     : (form.taxRate != null && form.taxRate !== '' ? Number(form.taxRate) : 0);
 
   const payload = {
@@ -91,17 +103,24 @@ export function autoPharmacySku(name) {
   return `PHARM-${slug}-${rand}`;
 }
 
-export function validatePharmacyProductForm(form, t) {
+export function validatePharmacyProductForm(form, t, { requirePrice = true } = {}) {
   if (!String(form.name || '').trim() || String(form.name).trim().length < 2) {
     return t('pharmacyStock.productErrName');
   }
-  if (!String(form.manufacturer || '').trim()) {
-    return t('pharmacyStock.productErrManufacturer');
+  if (requirePrice) {
+    const selling = Number(String(form.sellingPrice ?? '').replace(',', '.').replace(/\s/g, ''));
+    if (!Number.isFinite(selling) || selling < 0.01) {
+      return t('pharmacyStock.productErrPrice');
+    }
+    const cost = String(form.costPrice ?? '').trim();
+    if (cost !== '') {
+      const costNumber = Number(cost.replace(',', '.').replace(/\s/g, ''));
+      if (!Number.isFinite(costNumber) || costNumber < 0) {
+        return t('pharmacyStock.productErrCost');
+      }
+    }
   }
-  if (!String(form.dosageForm || '').trim()) {
-    return t('pharmacyStock.productErrForm');
-  }
-  if (!(Number(form.unitsInPack) > 0)) {
+  if (form.unitsInPack != null && String(form.unitsInPack).trim() !== '' && !(Number(form.unitsInPack) > 0)) {
     return t('pharmacyStock.productErrPack');
   }
   const pack = Number(form.unitsInPack);
@@ -135,6 +154,8 @@ export function emptyPharmacyProductForm() {
     prescriptionRequired: false,
     markedProduct: false,
     taxRate: '0',
+    sellingPrice: '',
+    costPrice: '',
     atcCode: '',
     active: true,
   };
@@ -164,6 +185,8 @@ export function formFromPharmacyProduct(product) {
     prescriptionRequired: productRequiresPrescription(product),
     markedProduct: Boolean(product.markedProduct),
     taxRate: product.taxRate != null ? String(product.taxRate) : '0',
+    sellingPrice: product.sellingPrice != null ? String(product.sellingPrice) : '',
+    costPrice: product.costPrice != null ? String(product.costPrice) : '',
     atcCode: productAttr(product, 'atc_code', 'atc', 'атх', 'atcCode'),
     active: product.active !== false,
   };
@@ -175,7 +198,9 @@ function productManufacturerLike(product) {
 }
 
 export function buildPharmacyProductUpdatePayload(form, existing) {
-  const created = buildPharmacyProductCreatePayload(form, {});
+  const created = buildPharmacyProductCreatePayload(form, {
+    prices: productPricesFromForm(form),
+  });
   delete created.sku;
   delete created.initialStock;
   delete created.storePrices;
@@ -189,8 +214,9 @@ export function buildPharmacyProductUpdatePayload(form, existing) {
   else attributes.piece_step = created.attributes.piece_step;
   return {
     ...created,
-    costPrice: existing?.costPrice ?? created.costPrice,
-    sellingPrice: existing?.sellingPrice ?? created.sellingPrice,
+    costPrice: created.costPrice,
+    sellingPrice: created.sellingPrice,
+    taxRate: created.taxRate,
     active: form.active !== false,
     attributes,
   };

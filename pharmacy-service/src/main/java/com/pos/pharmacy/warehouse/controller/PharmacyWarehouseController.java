@@ -89,7 +89,7 @@ public class PharmacyWarehouseController {
 
     @PostMapping("/{id}/lines/mass")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Массово изменить поле строк черновика")
+    @Operation(summary = "Массово изменить поле строк. После проведения — только цены")
     public ResponseEntity<PharmacyReceiptRevalueResult> massUpdateLines(
         @PathVariable UUID id,
         @Valid @RequestBody PharmacyReceiptMassUpdateRequest request
@@ -99,6 +99,7 @@ public class PharmacyWarehouseController {
 
     @PostMapping("/{id}/lines/revalue")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "НДС и наценка по строкам. Работает и после проведения")
     public ResponseEntity<PharmacyReceiptRevalueResult> revalueLines(
         @PathVariable UUID id,
         @Valid @RequestBody PharmacyReceiptRevalueRequest request

@@ -79,7 +79,7 @@ export default function PharmacyProductModal({
       const current = packageOverride
         ? { ...form, packageCode: packageOverride.code, packageName: packageOverride.name }
         : form;
-      const productErr = validatePharmacyProductForm(current, t);
+      const productErr = validatePharmacyProductForm(current, t, { requirePrice: !includeLine });
       if (productErr) throw new Error(productErr);
       let linePayload = null;
       if (includeLine) {
@@ -132,7 +132,7 @@ export default function PharmacyProductModal({
 
   const handleSave = async () => {
     if (includeLine) {
-      const productErr = validatePharmacyProductForm(form, t);
+      const productErr = validatePharmacyProductForm(form, t, { requirePrice: !includeLine });
       if (productErr) {
         toast.error(productErr);
         setAboutOpen(true);
@@ -165,6 +165,7 @@ export default function PharmacyProductModal({
       onChoosePackage={mxik.choosePackage}
       onCreateBarcode={createBarcode}
       showActive={isEdit}
+      showPrices={!includeLine}
     />
   );
 

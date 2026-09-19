@@ -20,6 +20,15 @@ class DidoxInvoiceBandAssignerTest {
     }
 
     @Test
+    void keepsNumericSeriesInSeriesBandWhenRunOverlapsUnit() {
+        DidoxInvoiceColumnLayout layout = layout16();
+        PdfTextRun series = new PdfTextRun(1, x(5), x(5) + 80f, 10f, "010726");
+        assertEquals(5, DidoxInvoiceBandAssigner.column(layout, series));
+        PdfTextRun code = new PdfTextRun(1, x(5), x(5) + 24f, 10f, "ZA4485");
+        assertEquals(5, DidoxInvoiceBandAssigner.column(layout, code));
+    }
+
+    @Test
     void keepsSpacedMoneyInDeliveryBand() {
         DidoxInvoiceColumnLayout layout = layout16();
         PdfTextRun money = new PdfTextRun(1, x(11), x(11) + 40f, 10f, "259 678.05");

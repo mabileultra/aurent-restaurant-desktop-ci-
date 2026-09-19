@@ -62,6 +62,7 @@ public final class DidoxInvoiceHeaderMerger {
             || text.contains("каталог") || text.contains("миқдор") || text.contains("miqdor")
             || text.contains("нарх") || text.contains("қиймат") || text.contains("ққс")
             || text.contains("qqs") || text.contains("ндс") || text.contains("серия")
+            || text.contains("seriya") || text.contains("seria") || text.contains("series")
             || text.contains("бирлиги") || text.contains("устама") || text.contains("ставка")
             || text.contains("икпу") || text.contains("ikpu") || text.contains("barcode")
             || text.contains("хизматлар") || text.contains("ўлчов") || text.contains("olchov")

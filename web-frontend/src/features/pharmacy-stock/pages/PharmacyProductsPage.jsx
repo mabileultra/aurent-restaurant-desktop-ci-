@@ -25,6 +25,7 @@ import {
   PHARM_PAGE_SIZES,
 } from '../utils/pharmacyTablePage';
 import {
+  formatMoney,
   productCountry,
   productDosageForm,
   productManufacturer,
@@ -127,6 +128,7 @@ export default function PharmacyProductsPage() {
                 <PharmacySelectAllTh t={t} selection={selection} disabled={rows.length === 0} />
                 <th>№</th>
                 <th>{t('pharmacyStock.colName')}</th>
+                <th>{t('pharmacyStock.retailPrice')}</th>
                 <th>{t('pharmacyStock.colManufacturer')}</th>
                 <th>{t('pharmacyStock.colForm')}</th>
                 <th>{t('pharmacyStock.productAtc')}</th>
@@ -140,13 +142,13 @@ export default function PharmacyProductsPage() {
             <tbody>
               {listQuery.isLoading ? (
                 <tr>
-                  <td colSpan={11}>
+                  <td colSpan={12}>
                     <div className="pharmacy-stock__empty">{t('common.loading')}</div>
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={11}>
+                  <td colSpan={12}>
                     <div className="pharmacy-stock__empty">{t('pharmacyStock.catalogEmpty')}</div>
                   </td>
                 </tr>
@@ -164,6 +166,7 @@ export default function PharmacyProductsPage() {
                       <span className="pharmacy-stock__inline-badge">{t('pharmacyStock.productInactive')}</span>
                     ) : null}
                   </td>
+                  <td>{formatMoney(p.sellingPrice)}</td>
                   <td>{productManufacturer(p) || '—'}</td>
                   <td>{productDosageForm(p) || '—'}</td>
                   <td>{productAtc(p) || '—'}</td>

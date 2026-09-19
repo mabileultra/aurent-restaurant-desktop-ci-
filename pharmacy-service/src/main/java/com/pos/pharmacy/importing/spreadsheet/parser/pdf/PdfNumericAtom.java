@@ -21,7 +21,13 @@ public final class PdfNumericAtom {
         return PERCENT.matcher(value).matches()
             || SPACED_MONEY.matcher(value).matches()
             || DECIMAL.matcher(value).matches()
-            || (PLAIN_INT.matcher(value).matches() && value.length() >= 4);
+            || (looksPlainInteger(value) && value.length() >= 4);
+    }
+
+    /** Целое без разрядов и точки: серия 010726, не сумма и не 10.00000. */
+    public static boolean looksPlainInteger(String text) {
+        String value = norm(text);
+        return PLAIN_INT.matcher(value).matches();
     }
 
     public static boolean looksNumericStart(String text) {

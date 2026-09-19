@@ -86,6 +86,7 @@ export default function PharmacyReceiptDocumentPage() {
     onSuccess: (data) => {
       toast.success(t('pharmacyStock.saved'));
       qc.setQueryData(['pharmacy-receipt', id], data);
+      invalidateProductCaches(qc);
       setEditingLine(null);
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
@@ -154,6 +155,8 @@ export default function PharmacyReceiptDocumentPage() {
 
   const receipt = receiptQuery.data;
   const isDraft = receipt?.status === 'DRAFT';
+  const isPosted = receipt?.status === 'POSTED';
+  const canEditPrices = isDraft || isPosted;
   const suppliers = suppliersQuery.data?.content ?? [];
   const canActivate = linesReadyForActivate(receipt?.lines);
   const marksGate = receiptMarksReady(receipt?.lines ?? [], receiptMarks.marksByLineId);
@@ -168,14 +171,20 @@ export default function PharmacyReceiptDocumentPage() {
     lines: receipt?.lines ?? [],
     selection: linesSelect,
     t,
-    onUpdated: (data) => qc.setQueryData(['pharmacy-receipt', id], data),
+    onUpdated: (data) => {
+      qc.setQueryData(['pharmacy-receipt', id], data);
+      invalidateProductCaches(qc);
+    },
   });
   const mass = usePharmacyReceiptMassEdit({
     receiptId: id,
     lines: receipt?.lines ?? [],
     selection: linesSelect,
     t,
-    onUpdated: (data) => qc.setQueryData(['pharmacy-receipt', id], data),
+    onUpdated: (data) => {
+      qc.setQueryData(['pharmacy-receipt', id], data);
+      invalidateProductCaches(qc);
+    },
   });
 
   const removeSelectedLines = useMutation({
@@ -261,6 +270,9 @@ export default function PharmacyReceiptDocumentPage() {
       {!canActivate && isDraft && receipt.lines?.length ? (
         <p className="pharmacy-stock__alert">{t('pharmacyStock.activateNeedLots')}</p>
       ) : null}
+      {isPosted ? (
+        <p className="pharmacy-stock__alert">{t('pharmacyStock.postedPricesHint')}</p>
+      ) : null}
 
       <div className="pharmacy-stock__meta-grid">
         <aside className="pharmacy-stock__aside">
@@ -312,7 +324,7 @@ export default function PharmacyReceiptDocumentPage() {
               <span>{t('pharmacyStock.inDocument')}</span>
               <span>{receipt.lines?.length ?? 0}</span>
             </div>
-            {isDraft ? (
+            {canEditPrices ? (
               <PharmacyReceiptLineBulkBar
                 t={t}
                 selection={linesSelect}
@@ -320,20 +332,20 @@ export default function PharmacyReceiptDocumentPage() {
                 onVat={revalue.openVat}
                 onMarkup={revalue.openMarkup}
                 deleting={removeSelectedLines.isPending}
-                onDelete={() => {
+                onDelete={isDraft ? () => {
                   const ids = linesSelect.selectedRows.map((row) => row.id);
                   if (!ids.length) return;
                   if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
                   removeSelectedLines.mutate(ids);
-                }}
+                } : undefined}
               />
             ) : null}
-            {isDraft ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
+            {canEditPrices ? <PharmacyReceiptMassEditBar t={t} mass={mass} priceOnly={isPosted} /> : null}
             <div className="pharmacy-stock__table-wrap">
               <table className="pharmacy-stock__table">
                 <thead>
                   <tr>
-                    <PharmacySelectAllTh t={t} selection={linesSelect} disabled={!isDraft || !(receipt.lines ?? []).length} />
+                    <PharmacySelectAllTh t={t} selection={linesSelect} disabled={!canEditPrices || !(receipt.lines ?? []).length} />
                     <th>№</th>
                     <th>{t('pharmacyStock.colName')}</th>
                     <th>{t('pharmacyStock.colManufacturer')}</th>
@@ -358,10 +370,10 @@ export default function PharmacyReceiptDocumentPage() {
                   ) : linesPage.rows.map((line, idx) => (
                     <tr
                       key={line.id}
-                      className={`${linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : ''}${!isDraft ? ' pharmacy-stock__row--clickable' : ''}`}
-                      onClick={!isDraft ? () => setAboutProduct(productStubFromReceiptLine(line)) : undefined}
+                      className={`${linesSelect.isSelected(line.id) ? 'pharmacy-stock__row--selected' : ''} pharmacy-stock__row--clickable`}
+                      onClick={() => setEditingLine(line)}
                     >
-                      <PharmacySelectCell t={t} row={line} selection={linesSelect} disabled={!isDraft} />
+                      <PharmacySelectCell t={t} row={line} selection={linesSelect} disabled={!canEditPrices} />
                       <td>{linesPage.startIndex + idx + 1}</td>
                       <td className="font-semibold">{line.productName}</td>
                       <td>{line.manufacturer || '—'}</td>
@@ -373,21 +385,14 @@ export default function PharmacyReceiptDocumentPage() {
                       <td>{formatMoney(line.retailPrice ?? line.unitSellingPrice)}</td>
                       <td>{line.batchNumber || '—'}</td>
                       <td>{line.expiryDate || '—'}</td>
-                      {isDraft ? (
-                        <PharmacyEditCell
-                          t={t}
-                          onEdit={() => setEditingLine(line)}
-                          onDelete={() => {
-                            if (!window.confirm(t('pharmacyStock.deleteLineConfirm', { name: line.productName }))) return;
-                            removeLineMutation.mutate(line.id);
-                          }}
-                        />
-                      ) : (
-                        <PharmacyEditCell
-                          t={t}
-                          onEdit={() => setAboutProduct(productStubFromReceiptLine(line))}
-                        />
-                      )}
+                      <PharmacyEditCell
+                        t={t}
+                        onEdit={() => setEditingLine(line)}
+                        onDelete={isDraft ? () => {
+                          if (!window.confirm(t('pharmacyStock.deleteLineConfirm', { name: line.productName }))) return;
+                          removeLineMutation.mutate(line.id);
+                        } : undefined}
+                      />
                     </tr>
                   ))}
                 </tbody>
@@ -444,6 +449,7 @@ export default function PharmacyReceiptDocumentPage() {
         existingLine={editingLine}
         defaultMarkup={receipt.defaultMarkupPercent ?? 20}
         saving={updateLineMutation.isPending}
+        stockLocked={isPosted}
         onAboutProduct={() => setAboutProduct(productStubFromReceiptLine(editingLine))}
         onSave={(payload) => updateLineMutation.mutate({ lineId: editingLine.id, payload })}
       />
@@ -489,7 +495,7 @@ export default function PharmacyReceiptDocumentPage() {
         posted={receipt.status === 'POSTED'}
         onConfirm={() => deleteDraftMutation.mutate()}
       />
-      {isDraft ? (
+      {canEditPrices ? (
         <>
           <PharmacyBulkNumberModal
             open={revalue.mode === 'vat'}

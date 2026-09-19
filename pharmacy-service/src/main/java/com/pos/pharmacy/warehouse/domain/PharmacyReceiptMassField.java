@@ -7,5 +7,10 @@ public enum PharmacyReceiptMassField {
     MARKUP,
     RETAIL,
     BATCH,
-    EXPIRY
+    EXPIRY;
+
+    /** Количество, серия и срок после проведения трогать нельзя. */
+    public boolean locksStock() {
+        return this == QUANTITY || this == BATCH || this == EXPIRY;
+    }
 }

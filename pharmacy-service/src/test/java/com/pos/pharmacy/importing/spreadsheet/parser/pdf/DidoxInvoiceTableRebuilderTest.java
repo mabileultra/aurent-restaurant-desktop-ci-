@@ -98,12 +98,14 @@ class DidoxInvoiceTableRebuilderTest {
         assertTrue(first.get(2).contains("Trusi dlya detey"));
         assertEquals("4602884018285", first.get(3));
         assertEquals("01", first.get(5));
+        assertEquals("dona", first.get(6));
         assertEquals("8034.71", first.get(7));
         assertEquals("10.00000", first.get(9));
         assertEquals("8837.50", first.get(10));
 
         List<String> second = grid.get(header + 2);
         assertTrue(second.get(0).startsWith("2 "));
+        assertEquals("50226", second.get(5));
         assertEquals("8671.16", second.get(7));
         assertEquals("", second.get(3).trim());
         assertEquals(16, second.size());
@@ -112,6 +114,31 @@ class DidoxInvoiceTableRebuilderTest {
         assertTrue(third.get(0).startsWith("3 "));
         assertEquals("2.00000", third.get(9));
         assertEquals(header + 4, grid.size());
+    }
+
+    @Test
+    void keepsAlphanumericAndNumericSeriesOutOfDonaColumn() {
+        List<PdfTextToken> tokens = numberedDidoxFrame();
+        add(tokens, 1, x(0), 120, "1 Trusi");
+        add(tokens, 1, x(5), 120, "ZA4485");
+        add(tokens, 1, x(6), 120, "do");
+        add(tokens, 1, x(9), 120, "10.00000");
+        add(tokens, 1, x(0), 150, "2 Sirop");
+        add(tokens, 1, x(5), 150, "010726");
+        add(tokens, 1, x(6), 150, "dona");
+        add(tokens, 1, x(9), 150, "2.00000");
+        add(tokens, 1, x(0), 180, "3 Vigas");
+        add(tokens, 1, x(5), 180, "NE 260306");
+        add(tokens, 1, x(6), 180, "dona");
+        add(tokens, 1, x(9), 180, "1.00000");
+
+        List<List<String>> grid = rebuilder.rebuild(tokens);
+        int header = indexWith(grid, "Mahsulot");
+        assertEquals("ZA4485", grid.get(header + 1).get(5));
+        assertTrue(grid.get(header + 1).get(6).toLowerCase().contains("do"), grid.get(header + 1).toString());
+        assertEquals("010726", grid.get(header + 2).get(5));
+        assertTrue(grid.get(header + 2).get(6).toLowerCase().contains("dona"), grid.get(header + 2).toString());
+        assertEquals("NE 260306", grid.get(header + 3).get(5));
     }
 
     @Test

@@ -14,6 +14,7 @@ export default function PharmacyReceiptLineModal({
   saving,
   onSave,
   onAboutProduct,
+  stockLocked = false,
 }) {
   const line = usePharmacyReceiptLineForm({
     open,
@@ -73,7 +74,7 @@ export default function PharmacyReceiptLineModal({
         </>
       )}
     >
-      <PharmacyReceiptLineFields t={t} line={line} productName={titleProduct} />
+      <PharmacyReceiptLineFields t={t} line={line} productName={titleProduct} stockLocked={stockLocked} />
     </BaseModal>
   );
 }

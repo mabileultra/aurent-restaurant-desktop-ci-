@@ -27,6 +27,8 @@ class PharmacyImportGridSupportDidoxTest {
         List<List<String>> rows = support.dataRows(grid, header);
         assertEquals(1, rows.size());
         assertEquals("1 Трусы", rows.get(0).get(0));
+        var columns = support.columns(grid.get(header));
+        assertEquals(PharmacyImportRoles.BATCH, columns.get(4).suggestedRole());
     }
 
     @Test

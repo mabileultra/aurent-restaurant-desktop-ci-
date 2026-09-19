@@ -16,6 +16,9 @@ class PharmacyImportRolesDidoxTest {
         );
         assertEquals(PharmacyImportRoles.BARCODE, PharmacyImportRoles.guess("Товар/хизмат штрих коди"));
         assertEquals(PharmacyImportRoles.BATCH, PharmacyImportRoles.guess("Серия"));
+        assertEquals(PharmacyImportRoles.BATCH, PharmacyImportRoles.guess("Seriya"));
+        assertEquals(PharmacyImportRoles.BATCH, PharmacyImportRoles.guess("SERIYA"));
+        assertEquals(PharmacyImportRoles.BATCH, PharmacyImportRoles.guess("Series"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Улчов бирлиги"));
         assertEquals(PharmacyImportRoles.PURCHASE, PharmacyImportRoles.guess("Сотиб олиш қиймати (йиллик нарх)"));
         assertEquals(PharmacyImportRoles.QTY, PharmacyImportRoles.guess("Миқдор"));

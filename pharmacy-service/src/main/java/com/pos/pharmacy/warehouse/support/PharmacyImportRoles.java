@@ -53,7 +53,8 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "срок", "годност", "expiry", "годен", "yaroqlilik")) {
             return EXPIRY;
         }
-        if (containsAny(h, "серия", "сери", "batch", "партия", "partiya")) {
+        if (containsAny(h, "серия", "сери", "seriya", "seria", "series", "serial",
+            "batch", "партия", "partiya")) {
             return BATCH;
         }
         if (containsAny(h, "производител", "manufacturer", "ishlab chiqaruvchi")) {
