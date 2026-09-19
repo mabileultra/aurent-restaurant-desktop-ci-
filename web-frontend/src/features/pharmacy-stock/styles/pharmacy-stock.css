@@ -315,35 +315,6 @@
   background: rgba(0, 104, 71, 0.18) !important;
 }
 
-.pharmacy-stock__selection {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.65rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--pharm-blue-deep);
-}
-
-.pharmacy-stock__line-bulk {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.45rem 0.75rem;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--pharm-blue-deep);
-}
-
-.pharmacy-stock__line-bulk-hint {
-  font-weight: 500;
-  color: #64748b;
-}
-
-.dark .pharmacy-stock__line-bulk-hint {
-  color: #94a3b8;
-}
-
 .pharmacy-stock__row--clickable:hover td {
   background: #eaf2ee !important;
 }

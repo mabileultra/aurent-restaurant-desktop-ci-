@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
 import { invalidateProductCaches } from '../../../utils/productCache';
+import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyBulkNumberModal from '../components/PharmacyBulkNumberModal';
@@ -105,21 +106,17 @@ export default function PharmacyProductsPage() {
         }}
       />
       <PharmacySelectionBar t={t} selection={selection}>
-        <button
-          type="button"
-          className="pharmacy-stock__row-btn"
-          onClick={() => setBulkVatOpen(true)}
-        >
+        <BaseButton size="sm" variant="secondary" onClick={() => setBulkVatOpen(true)}>
           {t('pharmacyStock.bulkVat')}
-        </button>
-        <button
-          type="button"
-          className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
+        </BaseButton>
+        <BaseButton
+          size="sm"
+          variant="danger"
           disabled={productDelete.deleting}
           onClick={() => productDelete.ask(selection.selectedRows)}
         >
           {t('pharmacyStock.deleteSelected')}
-        </button>
+        </BaseButton>
       </PharmacySelectionBar>
 
       <div className="pharmacy-stock__panel flex min-h-0 flex-1 flex-col">

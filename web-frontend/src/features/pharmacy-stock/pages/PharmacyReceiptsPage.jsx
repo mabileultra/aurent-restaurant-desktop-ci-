@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyReceiptDeleteModal from '../components/PharmacyReceiptDeleteModal';
@@ -107,14 +108,14 @@ export default function PharmacyReceiptsPage() {
         }}
       />
       <PharmacySelectionBar t={t} selection={selection}>
-        <button
-          type="button"
-          className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
+        <BaseButton
+          size="sm"
+          variant="danger"
           onClick={() => setPendingDelete(selection.selectedRows)}
           disabled={deleteSelectedMutation.isPending}
         >
           {t('pharmacyStock.deleteReceipt')}
-        </button>
+        </BaseButton>
       </PharmacySelectionBar>
 
       <div className="pharmacy-stock__panel flex min-h-0 flex-1 flex-col">

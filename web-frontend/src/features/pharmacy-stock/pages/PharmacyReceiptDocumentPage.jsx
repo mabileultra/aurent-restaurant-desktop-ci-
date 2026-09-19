@@ -310,24 +310,24 @@ export default function PharmacyReceiptDocumentPage() {
           <div className="pharmacy-stock__panel flex min-h-0 flex-col">
             <div className="pharmacy-stock__panel-head">
               <span>{t('pharmacyStock.inDocument')}</span>
-              {isDraft ? (
-                <PharmacyReceiptLineBulkBar
-                  t={t}
-                  selection={linesSelect}
-                  canRevalue={revalue.canOpen}
-                  onVat={revalue.openVat}
-                  onMarkup={revalue.openMarkup}
-                  deleting={removeSelectedLines.isPending}
-                  onDelete={() => {
-                    const ids = linesSelect.selectedRows.map((row) => row.id);
-                    if (!ids.length) return;
-                    if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
-                    removeSelectedLines.mutate(ids);
-                  }}
-                />
-              ) : null}
               <span>{receipt.lines?.length ?? 0}</span>
             </div>
+            {isDraft ? (
+              <PharmacyReceiptLineBulkBar
+                t={t}
+                selection={linesSelect}
+                canRevalue={revalue.canOpen}
+                onVat={revalue.openVat}
+                onMarkup={revalue.openMarkup}
+                deleting={removeSelectedLines.isPending}
+                onDelete={() => {
+                  const ids = linesSelect.selectedRows.map((row) => row.id);
+                  if (!ids.length) return;
+                  if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
+                  removeSelectedLines.mutate(ids);
+                }}
+              />
+            ) : null}
             {isDraft ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
             <div className="pharmacy-stock__table-wrap">
               <table className="pharmacy-stock__table">

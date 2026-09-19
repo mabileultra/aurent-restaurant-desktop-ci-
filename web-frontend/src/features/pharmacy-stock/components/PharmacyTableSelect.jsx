@@ -1,4 +1,6 @@
 import { Pencil, Trash2 } from 'lucide-react';
+import { BaseButton } from '../../../components/ui';
+import '../styles/pharmacy-selection-bar.css';
 
 export function PharmacySelectAllTh({ t, selection, disabled = false }) {
   return (
@@ -33,15 +35,19 @@ export function PharmacySelectCell({ t, row, selection, disabled = false }) {
   );
 }
 
-export function PharmacySelectionBar({ t, selection, children }) {
+export function PharmacySelectionBar({ t, selection, children, flush = false }) {
   if (!selection.selectedCount) return null;
   return (
-    <div className="pharmacy-stock__selection">
-      <span>{t('pharmacyStock.selectedCount', { count: selection.selectedCount })}</span>
-      {children}
-      <button type="button" className="pharmacy-stock__row-btn" onClick={selection.clearSelection}>
-        {t('pharmacyStock.clearSelection')}
-      </button>
+    <div className={flush ? 'pharm-select-bar pharm-select-bar--flush' : 'pharm-select-bar'}>
+      <span className="pharm-select-bar__count">
+        {t('pharmacyStock.selectedCount', { count: selection.selectedCount })}
+      </span>
+      <div className="pharm-select-bar__actions">
+        {children}
+        <BaseButton size="sm" variant="secondary" onClick={selection.clearSelection}>
+          {t('pharmacyStock.clearSelection')}
+        </BaseButton>
+      </div>
     </div>
   );
 }

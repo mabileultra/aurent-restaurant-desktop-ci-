@@ -204,31 +204,31 @@ export default function PharmacyReceiptPickPage() {
         <div className="pharmacy-stock__panel flex min-h-0 flex-col">
           <div className="pharmacy-stock__panel-head">
             <span>{t('pharmacyStock.colName')}</span>
-            <PharmacySelectionBar t={t} selection={catalogSelect}>
-              <BaseButton
-                size="sm"
-                disabled={!catalogSelect.selectedCount}
-                onClick={() => {
-                  const products = catalogSelect.selectedRows;
-                  if (!products.length) return;
-                  addQueueRef.current = products.slice(1);
-                  catalogSelect.clearSelection();
-                  setSelectedProduct(products[0]);
-                }}
-              >
-                {t('pharmacyStock.addSelected')}
-              </BaseButton>
-              <button
-                type="button"
-                className="pharmacy-stock__row-btn pharmacy-stock__row-btn--danger"
-                disabled={productDelete.deleting}
-                onClick={() => productDelete.ask(catalogSelect.selectedRows)}
-              >
-                {t('pharmacyStock.deleteSelected')}
-              </button>
-            </PharmacySelectionBar>
             <span>{catalogTotal}</span>
           </div>
+          <PharmacySelectionBar t={t} selection={catalogSelect} flush>
+            <BaseButton
+              size="sm"
+              disabled={!catalogSelect.selectedCount}
+              onClick={() => {
+                const products = catalogSelect.selectedRows;
+                if (!products.length) return;
+                addQueueRef.current = products.slice(1);
+                catalogSelect.clearSelection();
+                setSelectedProduct(products[0]);
+              }}
+            >
+              {t('pharmacyStock.addSelected')}
+            </BaseButton>
+            <BaseButton
+              size="sm"
+              variant="danger"
+              disabled={productDelete.deleting}
+              onClick={() => productDelete.ask(catalogSelect.selectedRows)}
+            >
+              {t('pharmacyStock.deleteSelected')}
+            </BaseButton>
+          </PharmacySelectionBar>
           <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
             <table className="pharmacy-stock__table">
               <thead>
@@ -298,22 +298,22 @@ export default function PharmacyReceiptPickPage() {
         <div className="pharmacy-stock__panel flex min-h-0 flex-col">
           <div className="pharmacy-stock__panel-head">
             <span>{t('pharmacyStock.inDocument')}</span>
-            <PharmacyReceiptLineBulkBar
-              t={t}
-              selection={linesSelect}
-              canRevalue={revalue.canOpen}
-              onVat={revalue.openVat}
-              onMarkup={revalue.openMarkup}
-              deleting={removeSelectedLines.isPending}
-              onDelete={() => {
-                const ids = linesSelect.selectedRows.map((row) => row.id);
-                if (!ids.length) return;
-                if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
-                removeSelectedLines.mutate(ids);
-              }}
-            />
             <span>{docLines.length}</span>
           </div>
+          <PharmacyReceiptLineBulkBar
+            t={t}
+            selection={linesSelect}
+            canRevalue={revalue.canOpen}
+            onVat={revalue.openVat}
+            onMarkup={revalue.openMarkup}
+            deleting={removeSelectedLines.isPending}
+            onDelete={() => {
+              const ids = linesSelect.selectedRows.map((row) => row.id);
+              if (!ids.length) return;
+              if (!window.confirm(t('pharmacyStock.deleteSelectedConfirm', { count: ids.length }))) return;
+              removeSelectedLines.mutate(ids);
+            }}
+          />
           {isDraft ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
           <div className="pharmacy-stock__table-wrap min-h-0 flex-1">
             <table className="pharmacy-stock__table">
