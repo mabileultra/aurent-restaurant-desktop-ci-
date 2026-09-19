@@ -54,7 +54,7 @@ class UzInvoicePdfParserDidoxTest {
         assertTrue(headerRow.size() >= 12, headerRow.toString());
         assertTrue(headerRow.get(0).toLowerCase().contains("mahsulot"), headerRow.get(0));
         List<String> product = grid.get(header + 1);
-        assertTrue(product.get(0).contains("1"), product.toString());
+        assertFalse(product.get(0).matches("(?s)^\\d+\\s.*"), product.get(0));
         assertTrue(product.get(0).toLowerCase().contains("trusi"), product.get(0));
         assertTrue(product.get(0).toLowerCase().contains("malchikov"), product.get(0));
         assertTrue(product.get(2).contains("08111001"), product.toString());

@@ -3,7 +3,7 @@ package com.pos.pharmacy.importing.spreadsheet.parser.pdf;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Склеивает перенос над № с товарной строкой: «Кюпен таб» + «1» → «1 Кюпен таб». */
+/** Склеивает перенос над № с товарной строкой: «Кюпен таб» + «1» → «Кюпен таб». */
 public final class DidoxInvoiceLeadMerge {
 
     private DidoxInvoiceLeadMerge() {
@@ -60,12 +60,8 @@ public final class DidoxInvoiceLeadMerge {
         String lead = pending == null ? "" : pending.trim();
         String main = numbered == null ? "" : numbered.trim();
         Integer number = DidoxInvoiceRowNumbers.leading(main);
-        if (number == null) {
-            return DidoxInvoiceColumnLayout.join(lead, main);
-        }
-        String rest = DidoxInvoiceRowNumbers.strip(main);
-        String afterNumber = DidoxInvoiceColumnLayout.join(lead, rest);
-        return afterNumber.isBlank() ? String.valueOf(number) : number + " " + afterNumber;
+        String rest = number == null ? main : DidoxInvoiceRowNumbers.strip(main);
+        return DidoxInvoiceColumnLayout.join(lead, rest);
     }
 
     private static List<String> copy(List<String> cells) {

@@ -91,7 +91,8 @@ class DidoxInvoiceTableRebuilderTest {
         assertTrue(headerRow.get(9).toLowerCase().contains("miqdor"));
 
         List<String> first = grid.get(header + 1);
-        assertTrue(first.get(0).contains("1 Trusi dlya"));
+        assertTrue(first.get(0).contains("Trusi dlya"));
+        assertFalse(first.get(0).matches("(?s)^\\d+\\s.*"), first.get(0));
         assertTrue(first.get(0).contains("malchikov M (2)"));
         assertEquals("Markirovkalangan", first.get(1));
         assertTrue(first.get(2).contains("08111001017000000"));
@@ -104,14 +105,16 @@ class DidoxInvoiceTableRebuilderTest {
         assertEquals("8837.50", first.get(10));
 
         List<String> second = grid.get(header + 2);
-        assertTrue(second.get(0).startsWith("2 "));
+        assertTrue(second.get(0).toLowerCase().contains("sirop"), second.get(0));
+        assertFalse(second.get(0).matches("(?s)^\\d+\\s.*"), second.get(0));
         assertEquals("50226", second.get(5));
         assertEquals("8671.16", second.get(7));
         assertEquals("", second.get(3).trim());
         assertEquals(16, second.size());
 
         List<String> third = grid.get(header + 3);
-        assertTrue(third.get(0).startsWith("3 "));
+        assertTrue(third.get(0).toLowerCase().contains("vigas"), third.get(0));
+        assertFalse(third.get(0).matches("(?s)^\\d+\\s.*"), third.get(0));
         assertEquals("2.00000", third.get(9));
         assertEquals(header + 4, grid.size());
     }
@@ -155,9 +158,10 @@ class DidoxInvoiceTableRebuilderTest {
         List<List<String>> grid = rebuilder.rebuild(tokens);
         int header = indexWith(grid, "Mahsulot");
         assertEquals(2, grid.size() - header - 1, grid.toString());
-        assertTrue(grid.get(header + 1).get(0).contains("1 Sistema"), grid.get(header + 1).toString());
+        assertTrue(grid.get(header + 1).get(0).contains("Sistema"), grid.get(header + 1).toString());
+        assertFalse(grid.get(header + 1).get(0).matches("(?s)^\\d+\\s.*"), grid.get(header + 1).get(0));
         assertFalse(grid.get(header + 1).get(0).toLowerCase().contains("teymurova"), grid.get(header + 1).toString());
-        assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("2"), grid.get(header + 2).toString());
+        assertFalse(grid.get(header + 2).get(0).matches("(?s)^\\d+\\s.*"), grid.get(header + 2).get(0));
         assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("teymurova"), grid.get(header + 2).toString());
         assertTrue(grid.get(header + 2).get(0).toLowerCase().contains("pasta"), grid.get(header + 2).toString());
     }
@@ -200,7 +204,8 @@ class DidoxInvoiceTableRebuilderTest {
         int header = indexWith(grid, "Mahsulot");
         assertEquals(1, grid.size() - header - 1, grid.toString());
         List<String> first = grid.get(header + 1);
-        assertTrue(first.get(0).contains("1 Trusi"));
+        assertTrue(first.get(0).contains("Trusi"));
+        assertFalse(first.get(0).matches("(?s)^\\d+\\s.*"), first.get(0));
         assertTrue(first.get(0).contains("malchikov"));
         assertFalse(first.get(0).toLowerCase().contains("rahbar"), first.get(0));
         assertFalse(first.get(0).contains("2029467763"), first.get(0));

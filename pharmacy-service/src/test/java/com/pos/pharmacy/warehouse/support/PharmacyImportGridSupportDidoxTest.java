@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetHeaderJoiner;
+import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceNameNumberStrip;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -27,6 +28,8 @@ class PharmacyImportGridSupportDidoxTest {
         List<List<String>> rows = support.dataRows(grid, header);
         assertEquals(1, rows.size());
         assertEquals("1 Трусы", rows.get(0).get(0));
+        List<List<String>> peeled = DidoxInvoiceNameNumberStrip.apply(rows);
+        assertEquals("Трусы", peeled.get(0).get(0));
         var columns = support.columns(grid.get(header));
         assertEquals(PharmacyImportRoles.BATCH, columns.get(4).suggestedRole());
     }

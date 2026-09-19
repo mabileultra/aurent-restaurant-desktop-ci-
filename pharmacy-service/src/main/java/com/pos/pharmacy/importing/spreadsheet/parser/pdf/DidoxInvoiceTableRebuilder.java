@@ -43,7 +43,9 @@ public final class DidoxInvoiceTableRebuilder {
         List<List<String>> products = DidoxInvoiceRowAssembler.assemble(
             lines, numbered.lineIndex() + 1, layout
         );
-        grid.addAll(DidoxInvoiceSeriesUnitSeparator.apply(header.cells(), products));
+        grid.addAll(DidoxInvoiceNameNumberStrip.apply(
+            DidoxInvoiceSeriesUnitSeparator.apply(header.cells(), products)
+        ));
         return grid;
     }
 }

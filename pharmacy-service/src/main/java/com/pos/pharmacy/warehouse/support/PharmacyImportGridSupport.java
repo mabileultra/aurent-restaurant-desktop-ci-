@@ -7,6 +7,7 @@ import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetHeaderJoine
 import com.pos.pharmacy.importing.spreadsheet.parser.HtmlExcelTableParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.InvoiceGridRowKinds;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
+import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceNameNumberStrip;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceDocumentIdExtractor;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoicePdfParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.UzInvoiceSpreadsheetParser;
@@ -140,6 +141,6 @@ public class PharmacyImportGridSupport {
             }
             out.add(padded);
         }
-        return out;
+        return DidoxInvoiceNameNumberStrip.apply(out);
     }
 }
