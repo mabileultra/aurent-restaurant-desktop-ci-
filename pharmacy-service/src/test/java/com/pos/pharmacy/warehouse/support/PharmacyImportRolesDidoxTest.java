@@ -9,7 +9,7 @@ class PharmacyImportRolesDidoxTest {
     @Test
     void guessesDidoxHisobFakturaHeaders() {
         assertEquals(PharmacyImportRoles.NAME, PharmacyImportRoles.guess("№ Маҳсулот номи (хизматлар)"));
-        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("Маркировка коди"));
+        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Маркировка коди"));
         assertEquals(
             PharmacyImportRoles.IKPU,
             PharmacyImportRoles.guess("Товар (хизмат) лар Ягона электрон миллий каталоги бўйича идентификация коди")
@@ -25,7 +25,8 @@ class PharmacyImportRolesDidoxTest {
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("ҚҚС Сумма"));
         assertEquals(
             PharmacyImportRoles.SKIP,
-            PharmacyImportRoles.guess("Етказиб беришнинг ҚҚС-ни ҳисобга олган ҳолда қиймати")
+            PharmacyImportRoles.guess("Товарнинг келиб чиқиши")
         );
+        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("Коды маркировки КМ DataMatrix"));
     }
 }

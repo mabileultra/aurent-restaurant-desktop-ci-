@@ -49,7 +49,9 @@ public final class PdfLineRunMerger {
         if (text.length() > 0) {
             runs.add(toRun(runPage, runX0, runX1, runY, text.toString()));
         }
-        return PdfMoneyRunSplitter.splitAll(runs);
+        return PdfOriginRunSplitter.splitAll(
+            PdfIkpuRunSplitter.splitAll(PdfMoneyRunSplitter.splitAll(runs))
+        );
     }
 
     private static boolean shouldBreak(

@@ -1,22 +1,11 @@
 package com.pos.pharmacy.importing.spreadsheet.parser;
 
 import com.pos.pharmacy.exception.BusinessException;
-import com.pos.pharmacy.util.ProductImportParseUtil;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.DataFormatter;
-import org.apache.poi.ss.usermodel.DateUtil;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +30,7 @@ public class UzInvoiceSpreadsheetParser {
             } else {
                 grid = readPoiGrid(bytes);
             }
-            return parseFromGrid(grid);
+            return parseFromGrid(DidoxSpreadsheetCellCleaner.apply(DidoxSpreadsheetHeaderJoiner.apply(grid)));
         } catch (BusinessException e) {
             throw e;
         } catch (IOException e) {
@@ -62,50 +51,15 @@ public class UzInvoiceSpreadsheetParser {
         if (HtmlExcelTableParser.isHtmlSpreadsheet(bytes)) {
             return HtmlExcelTableParser.parse(bytes);
         }
-        DataFormatter formatter = new DataFormatter();
-        List<List<String>> grid = new ArrayList<>();
-        try (Workbook wb = WorkbookFactory.create(new ByteArrayInputStream(bytes))) {
-            Sheet sheet = wb.getSheetAt(0);
-            for (int r = 0; r <= sheet.getLastRowNum(); r++) {
-                Row row = sheet.getRow(r);
-                if (row == null) {
-                    continue;
-                }
-                List<String> cells = new ArrayList<>();
-                int last = Math.max(row.getLastCellNum(), 0);
-                for (int c = 0; c < last; c++) {
-                    Cell cell = row.getCell(c);
-                    cells.add(plainCell(cell, formatter));
-                }
-                if (cells.stream().anyMatch(StringUtils::hasText)) {
-                    grid.add(cells);
-                }
-            }
-            return grid;
-        } catch (Exception e) {
+        try {
+            return PoiSheetGridReader.read(bytes);
+        } catch (IOException e) {
+            throw e;
+        } catch (RuntimeException e) {
             throw new BusinessException(
                 "Файл не является корректным Excel. Если это счёт-фактура с портала, загрузите исходный .xls или сохраните таблицу как .xlsx."
             );
         }
-    }
-
-    private static String plainCell(Cell cell, DataFormatter formatter) {
-        if (cell == null) {
-            return "";
-        }
-        try {
-            if (cell.getCellType() == CellType.NUMERIC && !DateUtil.isCellDateFormatted(cell)) {
-                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
-            }
-            if (cell.getCellType() == CellType.FORMULA
-                && cell.getCachedFormulaResultType() == CellType.NUMERIC
-                && !DateUtil.isCellDateFormatted(cell)) {
-                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
-            }
-        } catch (RuntimeException ignored) {
-            // текстовая ячейка
-        }
-        return formatter.formatCellValue(cell).trim();
     }
 
     private List<Map<String, String>> parseProductGrid(List<List<String>> grid) {

@@ -38,11 +38,17 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "штрих", "barcode", "ean", "штрихкод")) {
             return BARCODE;
         }
-        if (containsAny(h, "маркиров", "markirov", "datamatrix", "data matrix", "киз", "км код", "код км", "codes km")) {
+        if (containsAny(h, "datamatrix", "data matrix", "киз", "км код", "код км", "codes km")) {
             return MARK_CODES;
         }
         if (containsAny(h, "икпу", "ikpu", "мхик", "mxik", "каталог", "идентификац", "миллий каталог")) {
             return IKPU;
+        }
+        if (containsAny(h, "маркиров", "markirov")) {
+            return SKIP;
+        }
+        if (containsAny(h, "олди", "oldi-sotdi", "келиб чик", "келиб чиқ")) {
+            return SKIP;
         }
         if (containsAny(h, "срок", "годност", "expiry", "годен", "yaroqlilik")) {
             return EXPIRY;

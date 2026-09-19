@@ -1,7 +1,5 @@
 package com.pos.pharmacy.importing.spreadsheet.parser;
 
-import org.springframework.util.StringUtils;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -15,7 +13,10 @@ import java.util.regex.Pattern;
 public final class HtmlExcelTableParser {
 
     private static final Pattern TR = Pattern.compile("<tr[^>]*>(.*?)</tr>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
-    private static final Pattern TD = Pattern.compile("<t[dh][^>]*>(.*?)</t[dh]>", Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+    private static final Pattern TD = Pattern.compile(
+        "<t[dh]([^>]*)>(.*?)</t[dh]>",
+        Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+    );
     private static final Pattern TAGS = Pattern.compile("<[^>]+>");
 
     private HtmlExcelTableParser() {
@@ -33,24 +34,21 @@ public final class HtmlExcelTableParser {
     public static List<List<String>> parse(byte[] bytes) {
         Charset charset = detectCharset(bytes);
         String html = new String(bytes, charset);
-        List<List<String>> rows = new ArrayList<>();
+        List<List<HtmlExcelCell>> rows = new ArrayList<>();
         Matcher trMatcher = TR.matcher(html);
         while (trMatcher.find()) {
-            List<String> cells = new ArrayList<>();
+            List<HtmlExcelCell> cells = new ArrayList<>();
             Matcher tdMatcher = TD.matcher(trMatcher.group(1));
             while (tdMatcher.find()) {
-                String text = cleanCell(tdMatcher.group(1));
-                if (StringUtils.hasText(text)) {
-                    cells.add(text);
-                } else {
-                    cells.add("");
-                }
+                cells.add(new HtmlExcelCell(
+                    cleanCell(tdMatcher.group(2)),
+                    HtmlExcelSpan.colspan(tdMatcher.group(1)),
+                    HtmlExcelSpan.rowspan(tdMatcher.group(1))
+                ));
             }
-            if (!cells.isEmpty() && cells.stream().anyMatch(StringUtils::hasText)) {
-                rows.add(cells);
-            }
+            rows.add(cells);
         }
-        return rows;
+        return HtmlExcelRowspanExpander.expand(rows);
     }
 
     private static Charset detectCharset(byte[] bytes) {

@@ -2,6 +2,8 @@ package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.exception.BusinessException;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportColumnHint;
+import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetCellCleaner;
+import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetHeaderJoiner;
 import com.pos.pharmacy.importing.spreadsheet.parser.HtmlExcelTableParser;
 import com.pos.pharmacy.importing.spreadsheet.parser.InvoiceGridRowKinds;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
@@ -47,9 +49,9 @@ public class PharmacyImportGridSupport {
                 return normalize(grid);
             }
             if (HtmlExcelTableParser.isHtmlSpreadsheet(bytes)) {
-                return normalize(HtmlExcelTableParser.parse(bytes));
+                return normalize(prepareSpreadsheet(HtmlExcelTableParser.parse(bytes)));
             }
-            return normalize(spreadsheetParser.readGrid(bytes));
+            return normalize(prepareSpreadsheet(spreadsheetParser.readGrid(bytes)));
         } catch (BusinessException e) {
             throw e;
         } catch (IOException e) {
@@ -114,6 +116,10 @@ public class PharmacyImportGridSupport {
             throw new BusinessException("В файле нет строк товаров");
         }
         return rows;
+    }
+
+    private static List<List<String>> prepareSpreadsheet(List<List<String>> grid) {
+        return DidoxSpreadsheetCellCleaner.apply(DidoxSpreadsheetHeaderJoiner.apply(grid));
     }
 
     private static List<List<String>> normalize(List<List<String>> grid) {

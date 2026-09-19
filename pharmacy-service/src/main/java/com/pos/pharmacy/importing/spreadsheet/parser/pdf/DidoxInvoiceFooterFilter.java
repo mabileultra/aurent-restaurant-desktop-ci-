@@ -1,7 +1,6 @@
 package com.pos.pharmacy.importing.spreadsheet.parser.pdf;
 
 import java.util.List;
-import java.util.Locale;
 
 /** Подвал Didox hisob-faktura: жами, подписи, «имконияти» — не товар. */
 public final class DidoxInvoiceFooterFilter {
@@ -12,17 +11,40 @@ public final class DidoxInvoiceFooterFilter {
         return isFooterText(join(cells));
     }
 
+    public static boolean isSignature(List<String> cells) {
+        return isSignature(join(cells));
+    }
+
     public static boolean isFooterText(String raw) {
-        String text = raw == null ? "" : raw.toLowerCase(Locale.ROOT).trim();
+        String text = DidoxInvoiceTextFold.fold(raw).trim();
         if (text.isEmpty()) {
             return false;
         }
-        return text.contains("жами") || text.contains("jami") || text.contains("итого")
+        return isTotal(text) || isSignature(text)
             || text.contains("имконият") || text.contains("imkoniyat")
-            || text.contains("бекитиш") || text.contains("bekitish")
             || ((text.contains("мфо") || text.contains("mfo")) && text.length() > 12)
             || text.contains("qr-kod") || text.contains("qr код")
-            || (text.contains("банк") && text.length() > 24 && !text.contains("маҳсулот") && !text.contains("mahsulot"));
+            || (text.contains("банк") && text.length() > 24 && !text.contains("махсулот") && !text.contains("mahsulot"));
+    }
+
+    /** Итог «жами» — не товар, но после него на следующей странице ещё могут быть позиции. */
+    public static boolean isTotal(String raw) {
+        String text = DidoxInvoiceTextFold.fold(raw);
+        return text.contains("жами") || text.contains("jami") || text.contains("итого")
+            || text.contains("total");
+    }
+
+    /** Подписи в конце фактуры: дальше товаров нет. */
+    public static boolean isSignature(String raw) {
+        String text = DidoxInvoiceTextFold.fold(raw);
+        return text.contains("рахбар") || text.contains("rahbar")
+            || text.contains("хисобчи") || text.contains("hisobchi")
+            || text.contains("бухгалтер")
+            || text.contains("товар берди") || text.contains("tovar berdi")
+            || text.contains("юборилган") || text.contains("yuborilgan")
+            || text.contains("тасдикланган") || text.contains("tasdiqlangan")
+            || text.contains("бекитиш") || text.contains("bekitish")
+            || text.contains("имзо") || text.contains("imzo");
     }
 
     private static String join(List<String> cells) {

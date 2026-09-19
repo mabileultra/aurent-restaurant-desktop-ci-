@@ -12,6 +12,7 @@ import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
+import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -25,7 +26,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -165,7 +165,9 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         String manufacturer = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.MANUFACTURER));
         String country = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.COUNTRY));
         String barcode = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.BARCODE));
-        String ikpu = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.IKPU));
+        String ikpu = PharmacyImportIkpu.code(
+            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.IKPU))
+        );
         String batch = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.BATCH));
         LocalDate expiry = PharmacyImportValueParser.date(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.EXPIRY))
@@ -173,12 +175,9 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         BigDecimal qty = PharmacyImportValueParser.decimal(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.QTY))
         );
-        BigDecimal vat = PharmacyImportValueParser.decimal(
+        BigDecimal vat = PharmacyImportPercent.vatRate(PharmacyImportValueParser.decimal(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.VAT_RATE))
-        );
-        if (vat == null) {
-            vat = BigDecimal.ZERO;
-        }
+        ));
         BigDecimal purchase = PharmacyImportValueParser.decimal(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PURCHASE))
         );
@@ -238,7 +237,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     ) {
         BigDecimal qty = item.quantity() != null ? item.quantity() : BigDecimal.ONE;
         BigDecimal purchase = item.purchasePrice() != null ? item.purchasePrice() : BigDecimal.ZERO;
-        BigDecimal vat = item.vatPercent() != null ? item.vatPercent() : BigDecimal.ZERO;
+        BigDecimal vat = PharmacyImportPercent.vatRate(item.vatPercent());
         BigDecimal retail = item.retailPrice() != null
             ? item.retailPrice()
             : PharmacyReceiptPricing.withVat(purchase, vat).multiply(
@@ -272,9 +271,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     }
 
     private static boolean looksLikeTotal(String name) {
-        String n = name.toLowerCase(Locale.ROOT);
-        return n.contains("жами") || n.contains("jami") || n.contains("итого") || n.contains("total")
-            || n.contains("бекитиш") || n.contains("bekitish");
+        return DidoxInvoiceFooterFilter.isFooterText(name);
     }
 
     private static String blankToNull(String value) {

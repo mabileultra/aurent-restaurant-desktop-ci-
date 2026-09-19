@@ -34,6 +34,7 @@ public final class PharmacyImportValueParser {
             .replaceAll("(?i)(so['’`]?m|сўм|сум|sum|uzs)", "")
             .replace("%", " ")
             .trim();
+        text = firstAmount(text);
         String cleaned = text.replaceAll("[^0-9,.-]", "");
         if (cleaned.isEmpty() || cleaned.equals("-") || cleaned.equals(".") || cleaned.equals(",")) {
             return null;
@@ -71,6 +72,34 @@ public final class PharmacyImportValueParser {
             return cleaned.replace(',', '.');
         }
         return cleaned;
+    }
+
+    /** «8 034.71» — тысячи; «87.192 224.100» — две суммы, берём первую. */
+    static String firstAmount(String text) {
+        if (text == null || text.isBlank()) {
+            return "";
+        }
+        String[] parts = text.trim().split("\\s+");
+        if (parts.length <= 1) {
+            return text.trim();
+        }
+        StringBuilder head = new StringBuilder(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            String next = parts[i].replaceAll("[^0-9,.-]", "");
+            if (next.isEmpty() || !isThousandsGroup(head.toString(), next)) {
+                break;
+            }
+            head.append(next);
+        }
+        return head.toString();
+    }
+
+    private static boolean isThousandsGroup(String head, String tail) {
+        String digits = head.replaceAll("[^0-9,.-]", "");
+        if (digits.contains(".") || digits.contains(",")) {
+            return false;
+        }
+        return tail.matches("\\d{3}(?:[.,]\\d+)?");
     }
 
     private static int count(String value, char ch) {

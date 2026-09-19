@@ -27,7 +27,7 @@ class PharmacyImportRetailRoleTest {
 
     @Test
     void guessMarkCodesColumn() {
-        assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("Код маркировки"));
+        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Код маркировки"));
         assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("DataMatrix"));
         assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("КИЗ"));
     }

@@ -125,6 +125,10 @@ class DidoxInvoiceTableRebuilderTest {
         add(tokens, 1, x(6), 132, "50шт");
         add(tokens, 1, x(0), 160, "Jami:");
         add(tokens, 1, x(11), 160, "176355.00");
+        add(tokens, 1, x(0), 180, "Rahbar: KARIMOV");
+        add(tokens, 1, x(0), 192, "Tovar berdi: 2029467763");
+        add(tokens, 1, x(9), 192, "87.192");
+        add(tokens, 1, x(10), 192, "224.100");
 
         List<List<String>> grid = rebuilder.rebuild(tokens);
         int header = indexWith(grid, "Mahsulot");
@@ -132,6 +136,8 @@ class DidoxInvoiceTableRebuilderTest {
         List<String> first = grid.get(header + 1);
         assertTrue(first.get(0).contains("1 Trusi"));
         assertTrue(first.get(0).contains("malchikov"));
+        assertFalse(first.get(0).toLowerCase().contains("rahbar"), first.get(0));
+        assertFalse(first.get(0).contains("2029467763"), first.get(0));
         assertTrue(first.get(6).contains("50шт"), first.toString());
         assertEquals("10.00000", first.get(9));
     }

@@ -23,12 +23,18 @@ public final class DidoxInvoiceRowAssembler {
             if (DidoxInvoiceColumnLayout.isNumberedHeader(line)) {
                 continue;
             }
+            if (DidoxInvoiceFooterFilter.isSignature(line.joined())) {
+                break;
+            }
             if (isChrome(line.joined()) || DidoxInvoiceFooterFilter.isFooterText(line.joined())) {
                 continue;
             }
             List<String> cells = layout.cells(line);
             if (isEmpty(cells) || DidoxInvoiceFooterFilter.isFooter(cells)) {
                 continue;
+            }
+            if (DidoxInvoiceFooterFilter.isSignature(cells)) {
+                break;
             }
             if (isRepeatedHeader(line, cells)) {
                 continue;
@@ -40,6 +46,12 @@ public final class DidoxInvoiceRowAssembler {
                 }
                 current = cells;
                 lastNumber = number;
+                continue;
+            }
+            if (isNextProductByMxik(current, cells) && !isNewProduct(cells)) {
+                rows.add(current);
+                current = cells;
+                lastNumber = lastNumber + 1;
                 continue;
             }
             if (current != null && !isPageNumberOnly(cells)) {
@@ -89,6 +101,15 @@ public final class DidoxInvoiceRowAssembler {
             }
         }
         return occupied >= 2;
+    }
+
+    private static boolean isNextProductByMxik(List<String> current, List<String> cells) {
+        if (current == null || cells == null) {
+            return false;
+        }
+        String previous = DidoxInvoiceMxik.first(current);
+        String next = DidoxInvoiceMxik.first(cells);
+        return previous != null && next != null && !previous.equals(next);
     }
 
     private static boolean isPageNumberOnly(List<String> cells) {

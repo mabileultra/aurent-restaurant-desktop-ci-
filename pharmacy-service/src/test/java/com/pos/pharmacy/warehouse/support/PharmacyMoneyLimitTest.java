@@ -26,6 +26,7 @@ class PharmacyMoneyLimitTest {
         assertEquals(new BigDecimal("10.00000"), PharmacyImportValueParser.decimal("10.00000"));
         assertEquals(new BigDecimal("88375.00"), PharmacyImportValueParser.decimal("88 375.00"));
         assertEquals(new BigDecimal("12500.50"), PharmacyImportValueParser.decimal("12,500.50"));
+        assertEquals(new BigDecimal("87.192"), PharmacyImportValueParser.decimal("87.192 224.100"));
     }
 
     @Test

@@ -66,7 +66,7 @@ public class PharmacyImportProductFactory {
             cost,
             selling,
             BigDecimal.ZERO,
-            item.vatPercent() != null ? item.vatPercent() : BigDecimal.ZERO,
+            item.vatPercent() != null ? PharmacyImportPercent.vatRate(item.vatPercent()) : BigDecimal.ZERO,
             ProductType.RETAIL,
             SaleType.PIECE,
             UnitCode.PCS,
