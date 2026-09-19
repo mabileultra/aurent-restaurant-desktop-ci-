@@ -21,7 +21,11 @@ public record PharmacyImportConfirmItem(
     String barcode,
     String ikpu,
     BigDecimal unitsInPack,
-    List<String> markCodes
+    List<String> markCodes,
+    boolean markedProduct,
+    Boolean prescriptionRequired,
+    String packageCode,
+    String ikpuStatus
 ) {
     public PharmacyImportConfirmItem {
         if (markCodes == null) {

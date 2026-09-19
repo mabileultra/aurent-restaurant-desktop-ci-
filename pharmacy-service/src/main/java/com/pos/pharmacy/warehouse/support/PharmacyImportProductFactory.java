@@ -58,6 +58,9 @@ public class PharmacyImportProductFactory {
             ? item.unitsInPack()
             : BigDecimal.ONE;
         attrs.put(PharmacyReceiptSupport.ATTR_UNITS_IN_PACK, units.stripTrailingZeros().toPlainString());
+        if (Boolean.TRUE.equals(item.prescriptionRequired())) {
+            attrs.put(PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED, "true");
+        }
         return new CreateProductRequest(
             sku(invoiceId, item),
             name,
@@ -79,12 +82,14 @@ public class PharmacyImportProductFactory {
             null,
             null,
             blank(item.ikpu()),
-            StringUtils.hasText(item.ikpu()) ? "MANUAL" : null,
+            StringUtils.hasText(item.ikpuStatus())
+                ? item.ikpuStatus()
+                : (StringUtils.hasText(item.ikpu()) ? "MANUAL" : null),
             "pcs",
             null,
-            null,
+            blank(item.packageCode()),
             units.compareTo(BigDecimal.ONE) > 0,
-            false,
+            item.markedProduct(),
             null,
             "OWN",
             null,

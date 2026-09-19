@@ -3,14 +3,18 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.PharmacyProductService;
+import com.pos.pharmacy.catalog.service.ProductAttributeService;
 import com.pos.pharmacy.exception.PharmacyException;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportConfirmItem;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -20,17 +24,20 @@ public class PharmacyImportProductWriter {
 
     private final PharmacyProductService pharmacyProductService;
     private final ProductRepository productRepository;
+    private final ProductAttributeService productAttributeService;
     private final PharmacyImportProductFactory productFactory;
     private final PharmacyMassExecutor massExecutor;
 
     public PharmacyImportProductWriter(
         PharmacyProductService pharmacyProductService,
         ProductRepository productRepository,
+        ProductAttributeService productAttributeService,
         PharmacyImportProductFactory productFactory,
         PharmacyMassExecutor massExecutor
     ) {
         this.pharmacyProductService = pharmacyProductService;
         this.productRepository = productRepository;
+        this.productAttributeService = productAttributeService;
         this.productFactory = productFactory;
         this.massExecutor = massExecutor;
     }
@@ -100,6 +107,26 @@ public class PharmacyImportProductWriter {
         }
         if (item.vatPercent() != null) {
             product.setTaxRate(item.vatPercent());
+        }
+        if (item.markedProduct()) {
+            product.setMarkedProduct(true);
+        }
+        if (StringUtils.hasText(item.packageCode())) {
+            product.setPackageCode(item.packageCode().trim());
+        }
+        if (StringUtils.hasText(item.ikpuStatus())) {
+            product.setIkpuStatus(item.ikpuStatus().trim());
+        }
+        if (item.prescriptionRequired() != null) {
+            Map<String, String> attrs = new LinkedHashMap<>(
+                productAttributeService.getAttributes(product.getId())
+            );
+            if (Boolean.TRUE.equals(item.prescriptionRequired())) {
+                attrs.put(PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED, "true");
+            } else {
+                attrs.remove(PharmacyReceiptSupport.ATTR_PRESCRIPTION_REQUIRED);
+            }
+            productAttributeService.saveAttributes(product.getId(), attrs);
         }
         return productRepository.save(product).getId();
     }

@@ -23,7 +23,11 @@ public record PharmacyImportMatchItem(
     String barcode,
     String ikpu,
     BigDecimal unitsInPack,
-    List<String> markCodes
+    List<String> markCodes,
+    boolean markedProduct,
+    Boolean prescriptionRequired,
+    String packageCode,
+    String ikpuStatus
 ) {
     public PharmacyImportMatchItem {
         if (markCodes == null) {

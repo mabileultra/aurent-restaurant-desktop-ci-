@@ -13,7 +13,6 @@ import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +44,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     private final PharmacyImportMatchSupport matchSupport;
     private final PharmacyStockReceiptService pharmacyStockReceiptService;
     private final PharmacyImportProductWriter productWriter;
+    private final PharmacyImportTasnifEnricher tasnifEnricher;
     private final Executor importExecutor;
 
     public PharmacyReceiptImportServiceImpl(
@@ -55,6 +55,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         PharmacyImportMatchSupport matchSupport,
         PharmacyStockReceiptService pharmacyStockReceiptService,
         PharmacyImportProductWriter productWriter,
+        PharmacyImportTasnifEnricher tasnifEnricher,
         @Qualifier(PharmacyExecutorNames.IMPORT) Executor importExecutor
     ) {
         this.stockReceiptRepository = stockReceiptRepository;
@@ -64,6 +65,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         this.matchSupport = matchSupport;
         this.pharmacyStockReceiptService = pharmacyStockReceiptService;
         this.productWriter = productWriter;
+        this.tasnifEnricher = tasnifEnricher;
         this.importExecutor = importExecutor;
     }
 
@@ -209,6 +211,11 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         List<String> markCodes = PharmacyImportMarkCodesParser.parse(
             PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.MARK_CODES))
         );
+        Boolean prescription = PharmacyImportInvoiceRxLook.of(
+            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PRESCRIPTION))
+        );
+        boolean invoiceMarked = PharmacyImportInvoiceMarkLook.of(row);
+        PharmacyImportCatalogHints hints = tasnifEnricher.apply(ikpu, invoiceMarked, prescription);
         return new PharmacyImportMatchItem(
             rowIndex,
             name,
@@ -227,7 +234,11 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             blankToNull(barcode),
             blankToNull(ikpu),
             units,
-            markCodes
+            markCodes,
+            hints.markedProduct(),
+            hints.prescriptionRequired(),
+            hints.packageCode(),
+            hints.ikpuStatus()
         );
     }
 

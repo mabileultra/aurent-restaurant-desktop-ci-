@@ -5198,7 +5198,8 @@
       "BARCODE": "Shtrixkod",
       "IKPU": "IKPU / MXIK",
       "UNITS_IN_PACK": "Qadoqdagi birlik",
-      "MARK_CODES": "Markirovka kodlari (KM)"
+      "MARK_CODES": "Markirovka kodlari (KM)",
+      "PRESCRIPTION": "Retsept"
     },
     "importSavedWithMarks": "Import qilingan qatorlar: {{count}}. Fayldagi KM qo‘yildi — o‘tkazishdan oldin tekshiring"
   }

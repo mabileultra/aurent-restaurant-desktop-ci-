@@ -58,6 +58,13 @@ app:
       barcode-ttl-seconds: ${PHARMACY_REDIS_BARCODE_TTL_SECONDS:180}
     mark-withdraw:
       retry-ms: ${PHARMACY_MARK_WITHDRAW_RETRY_MS:30000}
+    tasnif:
+      enabled: ${PHARMACY_TASNIF_ENABLED:true}
+      base-url: ${PHARMACY_TASNIF_BASE_URL:https://tasnif.soliq.uz/api/cl-api}
+      connect-timeout-ms: ${PHARMACY_TASNIF_CONNECT_TIMEOUT_MS:8000}
+      read-timeout-ms: ${PHARMACY_TASNIF_READ_TIMEOUT_MS:15000}
+      search-type: 1
+      default-lang: uz
     async:
       mark-verify:
         core-pool-size: ${PHARMACY_MARK_VERIFY_CORE:8}

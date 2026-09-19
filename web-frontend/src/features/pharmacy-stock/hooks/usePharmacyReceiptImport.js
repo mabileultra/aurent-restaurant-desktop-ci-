@@ -5,7 +5,8 @@ import { savePendingImportMarks } from '../utils/pharmacyReceiptPendingMarksStor
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
-  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK', 'MARK_CODES',
+  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK',
+  'MARK_CODES', 'PRESCRIPTION',
 ];
 
 export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
@@ -168,6 +169,12 @@ function toConfirmItem(item) {
     ikpu: item.ikpu,
     unitsInPack: item.unitsInPack,
     markCodes: Array.isArray(item.markCodes) ? item.markCodes : [],
+    markedProduct: Boolean(item.markedProduct),
+    prescriptionRequired: item.prescriptionRequired === true
+      ? true
+      : item.prescriptionRequired === false ? false : undefined,
+    packageCode: item.packageCode || undefined,
+    ikpuStatus: item.ikpuStatus || undefined,
   };
 }
 

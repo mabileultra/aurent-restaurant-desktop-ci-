@@ -11,6 +11,11 @@ class PharmacyImportRolesDidoxTest {
         assertEquals(PharmacyImportRoles.NAME, PharmacyImportRoles.guess("№ Маҳсулот номи (хизматлар)"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Маркировка коди"));
         assertEquals(
+            PharmacyImportRoles.PRESCRIPTION,
+            PharmacyImportRoles.guess("Дори воситаларини бериш усули")
+        );
+        assertEquals(PharmacyImportRoles.PRESCRIPTION, PharmacyImportRoles.guess("Рецептли / Рецептсиз"));
+        assertEquals(
             PharmacyImportRoles.IKPU,
             PharmacyImportRoles.guess("Товар (хизмат) лар Ягона электрон миллий каталоги бўйича идентификация коди")
         );

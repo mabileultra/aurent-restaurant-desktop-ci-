@@ -25,6 +25,7 @@ public class PharmacyReceiptSupport {
     public static final String ATTR_MANUFACTURER = "manufacturer";
     public static final String ATTR_COUNTRY = "country";
     public static final String ATTR_DOSAGE_FORM = "dosage_form";
+    public static final String ATTR_PRESCRIPTION_REQUIRED = "prescription_required";
     public static final String DEFAULT_RECEIPT_TYPE = "RECEIPT";
 
     private final ProductAttributeService productAttributeService;
