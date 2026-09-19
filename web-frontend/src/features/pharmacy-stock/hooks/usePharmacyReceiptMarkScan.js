@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { isAslMarkAlreadySold } from '../../pharmacy-cashier/utils/aslMarkingAlreadySold';
 import {
   isCompletePharmacyMarkingScan,
@@ -77,7 +78,7 @@ export function usePharmacyReceiptMarkScan({
       }
       return ok;
     } catch (error) {
-      toast.error(error.response?.data?.message ?? t('pharmacyStock.marks.verifyFailed'));
+      toast.error(resolvePharmacyApiError(error, t, 'pharmacyStock.marks.verifyFailed'));
       setLastHit({ status: 'error', code });
       return false;
     } finally {

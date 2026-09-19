@@ -3,6 +3,7 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
@@ -33,7 +34,7 @@ public class PharmacyReceiptSupport {
 
     public void requireDraft(StockReceipt receipt) {
         if (!StockReceiptStatus.DRAFT.equals(receipt.getStatus())) {
-            throw PharmacyErrors.badRequest("Only draft pharmacy receipts can be edited");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_DRAFT_ONLY);
         }
     }
 
@@ -183,7 +184,7 @@ public class PharmacyReceiptSupport {
 
     private static void requirePositive(BigDecimal quantity) {
         if (quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw PharmacyErrors.badRequest("Quantity must be positive");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_QTY_POSITIVE);
         }
     }
 

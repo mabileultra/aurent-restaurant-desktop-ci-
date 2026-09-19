@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { savePendingImportMarks } from '../utils/pharmacyReceiptPendingMarksStore';
 import {
   classifyPharmacyImportMatch,
@@ -57,7 +58,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       setInvoiceAlreadyImported(Boolean(data.invoiceAlreadyImported));
       setStep('columns');
     } catch (err) {
-      toast.error(err.response?.data?.message ?? t('pharmacyStock.importFailed'));
+      toast.error(resolvePharmacyApiError(err, t, 'pharmacyStock.importFailed'));
     } finally {
       setBusy(false);
     }
@@ -94,7 +95,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       setMatchFilter('all');
       setStep('match');
     } catch (err) {
-      toast.error(err.response?.data?.message ?? t('pharmacyStock.importFailed'));
+      toast.error(resolvePharmacyApiError(err, t, 'pharmacyStock.importFailed'));
     } finally {
       setBusy(false);
     }
@@ -161,7 +162,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       const fresh = await pharmacyWarehouseApi.getReceipt(receiptId);
       onImported?.(fresh.data, { goToDocument: true, hasImportMarks: hasMarks });
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || t('pharmacyStock.importFailed'));
+      toast.error(resolvePharmacyApiError(err, t, 'pharmacyStock.importFailed'));
     } finally {
       setBusy(false);
     }

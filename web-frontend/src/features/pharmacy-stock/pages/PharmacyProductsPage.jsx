@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
@@ -80,7 +81,7 @@ export default function PharmacyProductsPage() {
       selection.clearSelection();
       setBulkVatOpen(false);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   return (

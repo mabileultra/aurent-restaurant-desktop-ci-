@@ -4,14 +4,16 @@ import LanguageDetector from 'i18next-browser-languagedetector';
 
 import ru from '../locales/ru.json';
 import uz from '../locales/uz.json';
+import pharmacyErrorsRu from '../locales/pharmacyErrors.ru.json';
+import pharmacyErrorsUz from '../locales/pharmacyErrors.uz.json';
 
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
-      ru: { translation: ru },
-      uz: { translation: uz },
+      ru: { translation: { ...ru, pharmacyErrors: pharmacyErrorsRu } },
+      uz: { translation: { ...uz, pharmacyErrors: pharmacyErrorsUz } },
     },
     fallbackLng: 'ru',
     supportedLngs: ['ru', 'uz'],

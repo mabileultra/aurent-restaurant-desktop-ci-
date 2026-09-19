@@ -1,6 +1,7 @@
 package com.pos.pharmacy.importing.spreadsheet;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
@@ -45,7 +46,10 @@ public class ExcelSpreadsheetWriter {
             wb.write(out);
             return out.toByteArray();
         } catch (IOException e) {
-            throw new BusinessException("Не удалось сформировать Excel: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_EXCEL_WRITE_FAILED,
+                "Не удалось сформировать Excel: " + e.getMessage()
+            );
         }
     }
 

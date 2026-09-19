@@ -1,6 +1,8 @@
 package com.pos.pharmacy.importing.spreadsheet.parser;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -31,10 +33,13 @@ public class UzInvoiceSpreadsheetParser {
                 grid = readPoiGrid(bytes);
             }
             return parseFromGrid(DidoxSpreadsheetCellCleaner.apply(DidoxSpreadsheetHeaderJoiner.apply(grid)));
-        } catch (BusinessException e) {
+        } catch (PharmacyException e) {
             throw e;
         } catch (IOException e) {
-            throw new BusinessException("Не удалось прочитать Excel: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_EXCEL_READ_FAILED,
+                "Не удалось прочитать Excel: " + e.getMessage()
+            );
         }
     }
 
@@ -56,7 +61,8 @@ public class UzInvoiceSpreadsheetParser {
         } catch (IOException e) {
             throw e;
         } catch (RuntimeException e) {
-            throw new BusinessException(
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_EXCEL_INVALID,
                 "Файл не является корректным Excel. Если это счёт-фактура с портала, загрузите исходный .xls или сохраните таблицу как .xlsx."
             );
         }
@@ -65,7 +71,8 @@ public class UzInvoiceSpreadsheetParser {
     private List<Map<String, String>> parseProductGrid(List<List<String>> grid) {
         int headerRow = findHeaderRow(grid);
         if (headerRow < 0) {
-            throw new BusinessException(
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_TABLE_NOT_FOUND,
                 "Не найдена таблица товаров в счёт-фактуре. Ожидаются колонки «Маҳсулот номи», «Нарх» и т.д."
             );
         }
@@ -79,7 +86,7 @@ public class UzInvoiceSpreadsheetParser {
             }
         }
         if (rows.isEmpty()) {
-            throw new BusinessException("В файле не найдено строк товаров для импорта");
+            throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_NO_ROWS);
         }
         return rows;
     }

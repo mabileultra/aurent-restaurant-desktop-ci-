@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { BaseButton } from '../../../components/ui';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
 import PharmacyProductModal from '../components/PharmacyProductModal';
@@ -66,7 +67,7 @@ export default function PharmacyReceiptPickPage() {
       const next = addQueueRef.current.shift();
       setSelectedProduct(next || null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const updateLineMutation = useMutation({
@@ -81,7 +82,7 @@ export default function PharmacyReceiptPickPage() {
       setEditingLine(null);
       setSelectedProduct(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const receipt = receiptQuery.data;
@@ -135,7 +136,7 @@ export default function PharmacyReceiptPickPage() {
       qc.setQueryData(['pharmacy-receipt', id], data);
       linesSelect.clearSelection();
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   useEffect(() => {

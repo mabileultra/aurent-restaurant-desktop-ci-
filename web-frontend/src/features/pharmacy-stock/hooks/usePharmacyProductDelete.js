@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
 import { invalidateProductCaches } from '../../../utils/productCache';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 
 export function usePharmacyProductDelete(t, { onDone } = {}) {
   const qc = useQueryClient();
@@ -30,7 +31,7 @@ export function usePharmacyProductDelete(t, { onDone } = {}) {
       setPending([]);
       onDone?.();
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const ask = (products) => {

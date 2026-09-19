@@ -1,6 +1,8 @@
 package com.pos.pharmacy.marks.service.impl;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyMarkErrors;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterItem;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterRequest;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterResponse;
@@ -36,10 +38,10 @@ public class StockMarkRegisterServiceImpl implements StockMarkRegisterService {
     public StockMarkRegisterResponse registerInStock(StockMarkRegisterRequest request) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         if (companyId == null) {
-            throw PharmacyErrors.badRequest("Не определена компания");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
         if (request == null || request.storeId() == null || request.items() == null || request.items().isEmpty()) {
-            throw PharmacyErrors.badRequest("Нет кодов маркировки для регистрации");
+            throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_EMPTY);
         }
 
         List<StockMark> toSave = new ArrayList<>();
@@ -48,23 +50,23 @@ public class StockMarkRegisterServiceImpl implements StockMarkRegisterService {
 
         for (StockMarkRegisterItem item : request.items()) {
             if (item == null || item.productId() == null || !StringUtils.hasText(item.markCode())) {
-                throw PharmacyErrors.badRequest("Строка КМ без productId или кода");
+                throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_ROW_INCOMPLETE);
             }
             Set<String> keys = StockMarkKeys.allKeys(item.markCode());
             if (keys.isEmpty()) {
-                throw PharmacyErrors.badRequest("Некорректный код маркировки");
+                throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_INVALID);
             }
             for (String key : keys) {
                 if (!batchKeys.add(key)) {
-                    throw PharmacyErrors.badRequest("В запросе повторён один и тот же код маркировки");
+                    throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_DUPLICATE);
                 }
             }
 
             List<StockMark> existing = stockMarkRepository.findByCompanyIdAndMarkKeyIn(companyId, keys);
             for (StockMark hit : existing) {
                 if (hit.getStatus() != StockMarkStatus.RETURNED) {
-                    throw PharmacyErrors.badRequest(
-                        "Код маркировки уже на складе или продан",
+                    throw PharmacyErrors.of(
+                        PharmacyMarkErrors.PHARM_MARK_ALREADY_ON_STOCK,
                         "markKey",
                         hit.getMarkKey()
                     );

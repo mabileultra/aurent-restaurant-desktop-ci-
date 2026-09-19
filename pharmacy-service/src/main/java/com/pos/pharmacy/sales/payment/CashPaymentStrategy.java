@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.payment;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.sales.domain.SaleEnums;
 import com.pos.pharmacy.sales.dto.CreateSaleRequest;
 import com.pos.pharmacy.sales.support.SalePaymentResolver.PaymentAmounts;
@@ -25,7 +26,7 @@ class CashPaymentStrategy implements SalePaymentStrategy {
         BigDecimal cash = scale(total);
         BigDecimal tendered = scale(request.amountTendered() != null ? request.amountTendered() : total);
         if (tendered.compareTo(cash) < 0) {
-            throw PharmacyErrors.badRequest("Получено наличными меньше суммы оплаты");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_CASH_SHORT);
         }
         return new PaymentAmounts(
             cash,

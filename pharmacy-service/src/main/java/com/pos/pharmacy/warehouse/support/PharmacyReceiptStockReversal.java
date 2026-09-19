@@ -3,6 +3,7 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.entity.StoreStock;
 import com.pos.pharmacy.warehouse.repository.StoreStockRepository;
@@ -50,7 +51,8 @@ public class PharmacyReceiptStockReversal {
             BigDecimal available = stock == null ? BigDecimal.ZERO : QuantityUtil.normalize(stock.getQuantity());
             if (available.compareTo(need) < 0) {
                 String name = product != null && product.getName() != null ? product.getName() : String.valueOf(entry.getKey());
-                throw PharmacyErrors.badRequest(
+                throw PharmacyErrors.of(
+                    PharmacySaleErrors.PHARM_STOCK_INSUFFICIENT,
                     "Недостаточно остатка для «" + name + "». Доступно: " + available
                 );
             }

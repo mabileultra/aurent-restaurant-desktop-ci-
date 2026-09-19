@@ -4,6 +4,7 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.marks.dto.StockMarkListItemResponse;
 import com.pos.pharmacy.marks.entity.StockMark;
 import com.pos.pharmacy.marks.entity.StockMarkStatus;
@@ -53,7 +54,7 @@ public class PharmacyStockMarkListServiceImpl implements PharmacyStockMarkListSe
     ) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         if (companyId == null) {
-            throw PharmacyErrors.badRequest("Компания не определена");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
 
         String q = StringUtils.hasText(search) ? search.trim() : null;

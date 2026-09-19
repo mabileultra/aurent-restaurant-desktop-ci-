@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyMarkErrors;
 import com.pos.pharmacy.sales.dto.SaleItemRequest;
 import org.springframework.stereotype.Component;
 
@@ -49,7 +50,7 @@ public class CheckoutMarkGuard {
         for (String code : markCodes) {
             for (String key : PharmacyMarkIdentityKeys.keysOf(code)) {
                 if (!seen.add(key)) {
-                    throw PharmacyErrors.badRequest("В чеке повторён один и тот же код маркировки");
+                    throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_DUPLICATE_IN_SALE);
                 }
             }
         }

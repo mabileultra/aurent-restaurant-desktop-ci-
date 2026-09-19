@@ -7,6 +7,7 @@ import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeClaim;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,7 +48,7 @@ public class ProductDeactivateService {
             .filter(p -> companyId.equals(p.getCompanyId()))
             .toList();
         if (products.isEmpty()) {
-            throw PharmacyErrors.badRequest("No products found for provided ids");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCTS_NOT_FOUND);
         }
         int updated = 0;
         for (Product product : products) {
@@ -68,6 +69,6 @@ public class ProductDeactivateService {
         Integer companyId = tenant.requireCompanyId();
         return productRepository.findById(id)
             .filter(p -> p.getCompanyId().equals(companyId))
-            .orElseThrow(() -> PharmacyErrors.notFound("Product", id));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_FOUND, id));
     }
 }

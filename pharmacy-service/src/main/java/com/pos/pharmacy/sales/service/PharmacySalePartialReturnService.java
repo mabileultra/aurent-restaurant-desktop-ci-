@@ -3,6 +3,7 @@ package com.pos.pharmacy.sales.service;
 import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.revenue.service.PharmacyRefundPublicationService;
 import com.pos.pharmacy.revenue.service.PharmacyRevenuePublicationService;
 import com.pos.pharmacy.security.PharmacyTenantContext;
@@ -64,7 +65,10 @@ public class PharmacySalePartialReturnService {
         for (PartialReturnLineRequest line : request.lines()) {
             SaleItem item = itemsById.get(line.saleItemId());
             if (item == null) {
-                throw PharmacyErrors.badRequest("Позиция чека не найдена: " + line.saleItemId());
+                throw PharmacyErrors.of(
+                    PharmacySaleErrors.PHARM_SALE_ITEM_NOT_FOUND,
+                    "Позиция чека не найдена: " + line.saleItemId()
+                );
             }
             BigDecimal returnQty = item.getProduct() != null
                 ? QuantityValidator.normalizeForProduct(item.getProduct(), line.quantity())
@@ -77,7 +81,8 @@ public class PharmacySalePartialReturnService {
             }
             BigDecimal remaining = QuantityUtil.subtract(item.getQuantity(), item.getReturnedQuantity());
             if (returnQty.compareTo(remaining) > 0) {
-                throw PharmacyErrors.badRequest(
+                throw PharmacyErrors.of(
+                    PharmacySaleErrors.PHARM_SALE_RETURN_QTY_EXCEEDED,
                     "Нельзя вернуть больше, чем осталось по позиции: " + item.getProductName()
                 );
             }
@@ -89,7 +94,7 @@ public class PharmacySalePartialReturnService {
         }
 
         if (!anyReturned) {
-            throw PharmacyErrors.badRequest("Укажите количество для возврата");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_RETURN_QTY_REQUIRED);
         }
 
         markReturnSupport.restoreForPartialReturn(sale, markReturnQty);
@@ -157,12 +162,12 @@ public class PharmacySalePartialReturnService {
     private Sale requireSale(UUID saleId) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         return saleRepository.findByIdAndCompanyId(saleId, companyId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Sale", saleId));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacySaleErrors.PHARM_SALE_NOT_FOUND, saleId));
     }
 
     private static void assertCanMutate(Sale sale) {
         if (sale.getStatus() == SaleEnums.SaleStatus.VOIDED) {
-            throw PharmacyErrors.badRequest("Чек уже полностью возвращён");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_ALREADY_RETURNED);
         }
     }
 

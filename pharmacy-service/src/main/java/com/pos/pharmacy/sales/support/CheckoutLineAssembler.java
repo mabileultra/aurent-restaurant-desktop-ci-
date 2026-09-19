@@ -2,6 +2,7 @@ package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.sales.dto.SaleItemRequest;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.util.MoneyCalculator;
@@ -48,7 +49,7 @@ public class CheckoutLineAssembler {
         for (SaleItemRequest itemReq : itemRequests) {
             Product product = productsById.get(itemReq.productId());
             if (product == null) {
-                throw PharmacyErrors.notFound("Product", itemReq.productId());
+                throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_FOUND, itemReq.productId());
             }
             BigDecimal lineQty = checkoutQuantityResolver.normalizeQuantity(product, itemReq.quantity(), attributesByProductId);
             checkoutQuantityResolver.validateQuantity(product, lineQty, attributesByProductId);

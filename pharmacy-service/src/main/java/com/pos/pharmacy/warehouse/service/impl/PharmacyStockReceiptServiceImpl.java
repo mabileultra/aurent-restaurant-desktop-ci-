@@ -7,7 +7,9 @@ import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.PharmacyException;
-import com.pos.pharmacy.exception.PharmacySqlConstraintMessage;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySqlConstraintError;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.*;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
@@ -183,7 +185,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         StockReceipt receipt = requireAccessibleDetailed(id);
         pharmacyReceipt.requireDraft(receipt);
         if (lines == null || lines.isEmpty()) {
-            throw PharmacyErrors.badRequest("Import has no lines to save");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_NO_LINES_TO_SAVE);
         }
         for (PharmacyStockReceiptLineRequest lineReq : lines) {
             receipt.getLines().add(buildValidatedLine(receipt, lineReq));
@@ -198,7 +200,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         StockReceiptLine existing = receipt.getLines().stream()
             .filter(line -> line.getId().equals(lineId))
             .findFirst()
-            .orElseThrow(() -> PharmacyErrors.notFound("Receipt line"));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_LINE_NOT_FOUND));
         Product product;
         if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
             product = existing.getProduct();
@@ -226,7 +228,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             pharmacyReceipt.requireDraft(receipt);
         }
         if (request == null || (request.vatPercent() == null && request.markupPercent() == null)) {
-            throw PharmacyErrors.badRequest("Specify vatPercent and/or markupPercent");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_REVALUE_PARAMS);
         }
         Set<UUID> selected = request.lineIds() == null || request.lineIds().isEmpty()
             ? null
@@ -240,7 +242,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             changed.add(line);
         }
         if (changed.isEmpty()) {
-            throw PharmacyErrors.badRequest("No lines to revalue");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_NO_LINES_TO_REVALUE);
         }
         pharmacyReceipt.recalculateTotals(receipt);
         stockReceiptRepository.save(receipt);
@@ -252,7 +254,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
     public PharmacyReceiptRevalueResult massUpdateLines(UUID id, PharmacyReceiptMassUpdateRequest request) {
         StockReceipt receipt = requireAccessibleDetailed(id);
         if (request == null || request.field() == null) {
-            throw PharmacyErrors.badRequest("Mass field is required");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_MASS_FIELD_REQUIRED);
         }
         postedPriceGuard.requireMassField(receipt, request.field());
         Set<UUID> selected = request.lineIds() == null || request.lineIds().isEmpty()
@@ -267,7 +269,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             changed.add(line);
         }
         if (changed.isEmpty()) {
-            throw PharmacyErrors.badRequest("No lines to update");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_NO_LINES_TO_UPDATE);
         }
         pharmacyReceipt.recalculateTotals(receipt);
         stockReceiptRepository.save(receipt);
@@ -282,7 +284,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         pharmacyReceiptLotDetach.detachLotsForLines(receipt.getStoreId(), List.of(lineId));
         boolean removed = receipt.getLines().removeIf(line -> line.getId().equals(lineId));
         if (!removed) {
-            throw PharmacyErrors.notFound("Receipt line");
+            throw PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_LINE_NOT_FOUND);
         }
         pharmacyReceipt.recalculateTotals(receipt);
         return pharmacyReceipt.toResponse(stockReceiptRepository.save(receipt));
@@ -306,7 +308,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         }
         pharmacyReceipt.requireDraft(receipt);
         if (receipt.getLines().isEmpty()) {
-            throw PharmacyErrors.badRequest("Cannot activate receipt without lines");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_ACTIVATE_EMPTY);
         }
         // КМ необязательны: регистрируем только переданные коды (IN_STOCK, не продажа).
         pharmacyReceiptMarkRegistration.validateMarkedProducts(
@@ -321,7 +323,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             if (ex instanceof PharmacyException) {
                 throw ex;
             }
-            throw PharmacyErrors.badRequest(PharmacySqlConstraintMessage.of(ex));
+            throw PharmacyErrors.of(PharmacySqlConstraintError.of(ex));
         }
         receipt.setStatus(StockReceiptStatus.POSTED);
         receipt.setActivatedAt(Instant.now());
@@ -345,25 +347,25 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
 
     private StockReceipt requireAccessible(UUID id) {
         StockReceipt receipt = stockReceiptRepository.findById(id)
-            .orElseThrow(() -> PharmacyErrors.notFound("Receipt"));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_NOT_FOUND));
         if (!receipt.getCompanyId().equals(tenant.requireCompanyId())) {
-            throw PharmacyErrors.badRequest("Access denied");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_ACCESS_DENIED);
         }
         return receipt;
     }
 
     private StockReceipt requireAccessibleDetailed(UUID id) {
         StockReceipt receipt = stockReceiptRepository.findDetailedById(id)
-            .orElseThrow(() -> PharmacyErrors.notFound("Receipt"));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_NOT_FOUND));
         if (!receipt.getCompanyId().equals(tenant.requireCompanyId())) {
-            throw PharmacyErrors.badRequest("Access denied");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_ACCESS_DENIED);
         }
         return receipt;
     }
 
     private static void requireLines(List<PharmacyStockReceiptLineRequest> lines) {
         if (lines == null || lines.isEmpty()) {
-            throw PharmacyErrors.badRequest("At least one line is required");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_EMPTY);
         }
     }
 

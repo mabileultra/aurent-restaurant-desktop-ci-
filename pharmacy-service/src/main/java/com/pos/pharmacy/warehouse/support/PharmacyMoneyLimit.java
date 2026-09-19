@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 
 import java.math.BigDecimal;
 
@@ -36,9 +37,12 @@ public final class PharmacyMoneyLimit {
 
     public static void requireFitsNumeric18_2(BigDecimal value, String field) {
         if (!fitsNumeric18_2(value)) {
-            throw PharmacyErrors.badRequest(
+            throw PharmacyErrors.of(
+                PharmacyReceiptErrors.PHARM_RECEIPT_AMOUNT_TOO_LARGE,
                 "Сумма «" + field + "» слишком большая. В цену или количество попал ИКПУ или штрихкод. "
-                    + "Проверьте сопоставление колонок и повторите импорт."
+                    + "Проверьте сопоставление колонок и повторите импорт.",
+                "field",
+                field
             );
         }
     }

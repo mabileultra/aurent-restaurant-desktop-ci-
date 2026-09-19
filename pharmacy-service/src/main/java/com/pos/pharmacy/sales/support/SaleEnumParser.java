@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.sales.domain.SaleEnums;
 
 public final class SaleEnumParser {
@@ -9,12 +10,12 @@ public final class SaleEnumParser {
 
     public static SaleEnums.PaymentMethod paymentMethod(String raw) {
         if (raw == null || raw.isBlank()) {
-            throw PharmacyErrors.badRequest("Укажите способ оплаты");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_PAYMENT_REQUIRED);
         }
         try {
             return SaleEnums.PaymentMethod.valueOf(raw.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw PharmacyErrors.badRequest("Неизвестный способ оплаты: " + raw);
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_PAYMENT_UNKNOWN, "Неизвестный способ оплаты: " + raw);
         }
     }
 
@@ -25,7 +26,7 @@ public final class SaleEnumParser {
         try {
             return SaleEnums.ReceiptType.valueOf(raw.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw PharmacyErrors.badRequest("Неизвестный тип чека: " + raw);
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_RECEIPT_TYPE_UNKNOWN, "Неизвестный тип чека: " + raw);
         }
     }
 
@@ -36,7 +37,7 @@ public final class SaleEnumParser {
         try {
             return SaleEnums.CardType.valueOf(raw.trim().toUpperCase());
         } catch (IllegalArgumentException ex) {
-            throw PharmacyErrors.badRequest("Неизвестный тип карты: " + raw);
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_CARD_TYPE_UNKNOWN, "Неизвестный тип карты: " + raw);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.pos.pharmacy.sales.service;
 import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.revenue.service.PharmacyRefundPublicationService;
 import com.pos.pharmacy.revenue.service.PharmacyRevenuePublicationService;
 import com.pos.pharmacy.security.PharmacyTenantContext;
@@ -45,10 +46,10 @@ public class PharmacySaleVoidService {
     public SaleResponse voidSale(UUID id, String reason) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         Sale sale = saleRepository.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Sale", id));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacySaleErrors.PHARM_SALE_NOT_FOUND, id));
 
         if (sale.getStatus() == SaleEnums.SaleStatus.VOIDED) {
-            throw PharmacyErrors.badRequest("Sale already voided");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_ALREADY_VOIDED);
         }
 
         String r = reason != null ? reason : "";
@@ -69,7 +70,7 @@ public class PharmacySaleVoidService {
         }
 
         if (!anyRemaining && PharmacySalePartialReturnService.allItemsFullyReturned(sale)) {
-            throw PharmacyErrors.badRequest("Чек уже полностью возвращён");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_ALREADY_RETURNED);
         }
 
         markReturnSupport.restoreAllRemaining(sale);

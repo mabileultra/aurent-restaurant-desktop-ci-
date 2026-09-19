@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, tasnifApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { BaseButton, BaseModal } from '../../../components/ui';
 import TasnifPackagePickerModal from '../../../components/tasnif/TasnifPackagePickerModal';
 import {
@@ -106,9 +107,7 @@ export default function PharmacyProductModal({
       onSaved?.(saved, linePayload);
       onClose?.();
     },
-    onError: (e) => toast.error(
-      e.response?.data?.message ?? e.message ?? t('pharmacyStock.saveFailed'),
-    ),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   if (!open) return null;

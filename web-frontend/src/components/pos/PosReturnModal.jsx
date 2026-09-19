@@ -19,10 +19,17 @@ import {
   posReturnSaleItems,
 } from '../../services/pos/posReturnWithFiscal';
 import { resolveMultikassaFiscalErrorMessage } from '../../services/multikassa';
+import { resolvePharmacyApiError } from '../../pharmacy/errors/resolvePharmacyApiError';
+import { isPharmacyErrorCode } from '../../pharmacy/errors/isPharmacyErrorCode';
+import { getApiErrorCode } from '../../utils/apiError';
 
 const RECEIPT_LOOKUP_DEBOUNCE_MS = 450;
 
 function parseLookupError(err, t) {
+  if (isPharmacyErrorCode(getApiErrorCode(err))) {
+    const pharmacyMsg = resolvePharmacyApiError(err, t, '');
+    if (pharmacyMsg) return pharmacyMsg;
+  }
   const status = err?.response?.status;
   const msg = err?.response?.data?.message ?? '';
   if (status === 403 || /access denied|доступ/i.test(msg)) {
@@ -179,7 +186,13 @@ export default function PosReturnModal({
       onClose();
       onSuccess?.();
     },
-    onError: (e) => toast.error(resolveMultikassaFiscalErrorMessage(e, t, 'pos.returnFailed')),
+    onError: (e) => toast.error(
+      e?.code === 'MULTIKASSA_FISCAL_FAILED'
+        || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED'
+        || e?.message === 'MULTIKASSA_OFFLINE_BLOCKED'
+        ? resolveMultikassaFiscalErrorMessage(e, t, 'pos.returnFailed')
+        : resolvePharmacyApiError(e, t, 'pos.returnFailed'),
+    ),
   });
 
   const handleReceiptChange = (e) => {

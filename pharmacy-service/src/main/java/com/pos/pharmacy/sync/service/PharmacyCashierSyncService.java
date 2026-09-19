@@ -4,6 +4,7 @@ import com.pos.pharmacy.catalog.dto.ProductResponse;
 import com.pos.pharmacy.catalog.service.ProductCatalogService;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.repository.SaleRepository;
 import com.pos.pharmacy.sales.service.PharmacySaleCheckoutService;
@@ -38,10 +39,10 @@ public class PharmacyCashierSyncService {
     @Transactional(readOnly = true)
     public PharmacySyncBootstrapResponse bootstrap(Integer storeId) {
         if (storeId == null) {
-            throw PharmacyErrors.badRequest("Укажите магазин");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_STORE_REQUIRED);
         }
         if (PharmacyTenantContext.getCompanyId() == null) {
-            throw PharmacyErrors.badRequest("Компания не определена");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
 
         String storeName = shiftLookup.findOpen(storeId)
@@ -98,7 +99,7 @@ public class PharmacyCashierSyncService {
     @Transactional
     public OfflineSalesBatchResponse syncSalesBatch(OfflineSalesBatchRequest request, UUID cashierId) {
         if (cashierId == null) {
-            throw PharmacyErrors.badRequest("Кассир не определён");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_CASHIER_REQUIRED);
         }
         List<OfflineSaleSyncResult> results = new ArrayList<>();
         for (OfflineSaleSyncItem item : request.sales()) {

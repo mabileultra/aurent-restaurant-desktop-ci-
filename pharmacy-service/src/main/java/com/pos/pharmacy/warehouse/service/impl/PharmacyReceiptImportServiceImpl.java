@@ -2,6 +2,8 @@ package com.pos.pharmacy.warehouse.service.impl;
 
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptLineRequest;
 import com.pos.pharmacy.warehouse.dto.PharmacyStockReceiptResponse;
 import com.pos.pharmacy.warehouse.dto.importing.*;
@@ -122,7 +124,10 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
         String ownInvoice = PharmacyImportMatchSupport.normalizeInvoiceId(receipt.getInvoiceNumber());
         if (matchSupport.isInvoiceImported(companyId, invoiceId) && !invoiceId.equals(ownInvoice)) {
-            throw PharmacyErrors.badRequest(PharmacyImportMatchSupport.duplicateMessage(invoiceId));
+            throw PharmacyErrors.of(
+                PharmacyReceiptErrors.PHARM_IMPORT_INVOICE_DUPLICATE,
+                PharmacyImportMatchSupport.duplicateMessage(invoiceId)
+            );
         }
         if (!StringUtils.hasText(receipt.getInvoiceNumber()) && StringUtils.hasText(invoiceId)) {
             receipt.setInvoiceNumber(invoiceId);
@@ -139,9 +144,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             }
         }
         if (accepted.isEmpty()) {
-            throw PharmacyErrors.badRequest(
-                "Нет строк с количеством. Назначьте колонку «Количество» и цену продажи, затем повторите импорт."
-            );
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_IMPORT_NO_QTY_LINES);
         }
         List<UUID> productIds = productWriter.write(accepted, storeId, invoiceId, companyId);
         List<PharmacyStockReceiptLineRequest> lines = new ArrayList<>();
@@ -274,9 +277,9 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
 
     private StockReceipt requireDraft(UUID receiptId) {
         StockReceipt receipt = stockReceiptRepository.findDetailedById(receiptId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Receipt"));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_NOT_FOUND));
         if (!receipt.getCompanyId().equals(tenant.requireCompanyId())) {
-            throw PharmacyErrors.badRequest("Access denied");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_ACCESS_DENIED);
         }
         pharmacyReceipt.requireDraft(receipt);
         return receipt;

@@ -1,6 +1,8 @@
 package com.pos.pharmacy.shift.service.impl;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyShiftErrors;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.shift.domain.PharmacyShiftStatus;
 import com.pos.pharmacy.shift.dto.ClosePharmacyShiftRequest;
@@ -41,22 +43,22 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
         Integer companyId = PharmacyTenantContext.getCompanyId();
         UUID cashierId = PharmacyTenantContext.getUserId();
         if (companyId == null) {
-            throw PharmacyErrors.badRequest("Компания не определена");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
         if (cashierId == null) {
-            throw PharmacyErrors.badRequest("Кассир не определён");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_CASHIER_REQUIRED);
         }
         if (storeId == null) {
-            throw PharmacyErrors.badRequest("Укажите магазин");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_STORE_REQUIRED);
         }
         if (shiftRepository.existsByCashierIdAndStoreIdAndStatus(cashierId, storeId, PharmacyShiftStatus.OPEN)) {
-            throw PharmacyErrors.badRequest("Смена уже открыта");
+            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_ALREADY_OPEN);
         }
 
         OpenPharmacyShiftRequest body = request != null ? request : new OpenPharmacyShiftRequest(null, null, null, null);
         BigDecimal openingCash = body.openingCash() != null ? body.openingCash() : BigDecimal.ZERO;
         if (openingCash.signum() < 0) {
-            throw PharmacyErrors.badRequest("openingCash не может быть отрицательным");
+            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_OPENING_CASH_NEGATIVE);
         }
 
         PharmacyCashierShift saved = shiftRepository.save(PharmacyCashierShift.builder()
@@ -85,11 +87,11 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
     public PharmacyShiftResponse close(UUID shiftId, ClosePharmacyShiftRequest request) {
         PharmacyCashierShift shift = shiftLookup.require(shiftId);
         if (shift.getStatus() != PharmacyShiftStatus.OPEN) {
-            throw PharmacyErrors.badRequest("Смена уже закрыта");
+            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_ALREADY_CLOSED);
         }
         UUID cashierId = PharmacyTenantContext.getUserId();
         if (cashierId != null && !cashierId.equals(shift.getCashierId())) {
-            throw PharmacyErrors.badRequest("Закрыть может только кассир, открывший смену");
+            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_CLOSE_FORBIDDEN);
         }
 
         ClosePharmacyShiftRequest body = request != null ? request : new ClosePharmacyShiftRequest(null, null);
@@ -97,7 +99,7 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
         shift.setClosedAt(Instant.now());
         if (body.closingCash() != null) {
             if (body.closingCash().signum() < 0) {
-                throw PharmacyErrors.badRequest("closingCash не может быть отрицательным");
+                throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_CLOSING_CASH_NEGATIVE);
             }
             shift.setClosingCash(body.closingCash());
         }

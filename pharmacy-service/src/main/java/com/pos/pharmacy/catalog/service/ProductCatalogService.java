@@ -13,6 +13,7 @@ import com.pos.pharmacy.catalog.support.ProductResponseFactory;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.common.TenantSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -96,7 +97,7 @@ public class ProductCatalogService {
     private ProductResponse loadByBarcode(Integer companyId, String barcode, Integer storeId) {
         Product product = barcodeLookupService.findByScan(companyId, barcode);
         if (!product.isActive()) {
-            throw PharmacyErrors.badRequest("Product is not active");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_ACTIVE);
         }
         return responseFactory.toResponse(product, storeId);
     }

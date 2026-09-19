@@ -1,5 +1,6 @@
 package com.pos.pharmacy.exception;
 
+import com.pos.pharmacy.exception.errorcode.PharmacySqlConstraintError;
 import com.pos.shared.api.ApiErrorResponse;
 import com.pos.shared.api.ErrorCode;
 import com.pos.shared.log.LogUtil;
@@ -21,7 +22,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(
             ApiErrorResponse.of(
                 status,
-                ErrorCode.fromHttpStatusCode(status),
+                ex.getCode(),
                 ex.getMessage(),
                 req.getRequestURI(),
                 ex.getContext()
@@ -65,11 +66,12 @@ public class GlobalExceptionHandler {
         HttpServletRequest req
     ) {
         LogUtil.warn(GlobalExceptionHandler.class, "Pharmacy SQL constraint: {}", ex.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
+        var mapped = PharmacySqlConstraintError.of(ex);
+        return ResponseEntity.status(mapped.status()).body(
             ApiErrorResponse.of(
-                HttpStatus.BAD_REQUEST.value(),
-                ErrorCode.VALIDATION_FAILED,
-                PharmacySqlConstraintMessage.of(ex),
+                mapped.status().value(),
+                mapped.name(),
+                mapped.message(),
                 req.getRequestURI(),
                 null
             )

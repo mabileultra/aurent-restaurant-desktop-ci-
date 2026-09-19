@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyMarkErrors;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterItem;
 import com.pos.pharmacy.marks.dto.StockMarkRegisterRequest;
 import com.pos.pharmacy.marks.service.PharmacyStockMarkService;
@@ -43,7 +44,7 @@ public class PharmacyReceiptMarkRegistration {
         List<StockMarkRegisterItem> items = new ArrayList<>();
         for (PharmacyReceiptActivateRequest.PharmacyReceiptMarkItem mark : marks) {
             if (mark == null || mark.productId() == null || !StringUtils.hasText(mark.markCode())) {
-                throw PharmacyErrors.badRequest("Строка КМ без productId или кода");
+                throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_ROW_INCOMPLETE);
             }
             items.add(new StockMarkRegisterItem(
                 mark.productId(),
@@ -84,7 +85,7 @@ public class PharmacyReceiptMarkRegistration {
             }
             String code = mark.markCode().trim();
             if (!seenCodes.add(code.toLowerCase())) {
-                throw PharmacyErrors.badRequest("В приходе повторён один и тот же код маркировки");
+                throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_DUPLICATE_IN_RECEIPT);
             }
         }
     }

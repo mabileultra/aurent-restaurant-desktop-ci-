@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { pharmacyShiftApi, pharmacyStockMarksApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { useCompanyStores } from '../../../hooks/useCompanyStores';
 import {
   PHARM_DEFAULT_PAGE_SIZE,
@@ -112,9 +113,11 @@ export function usePharmacyAslWithdrawMonitorPage() {
     attentionCount,
     loading: listQuery.isFetching,
     isError: listQuery.isError,
-    errorMessage: listQuery.error?.response?.data?.message
-      ?? listQuery.error?.message
-      ?? t('pharmacyStock.aslMonitor.loadFailed'),
+    errorMessage: resolvePharmacyApiError(
+      listQuery.error,
+      t,
+      'pharmacyStock.aslMonitor.loadFailed',
+    ),
     refresh: () => listQuery.refetch(),
     shiftMissing: currentShiftOnly && resolvedStoreId && !shiftQuery.isFetching && !shiftId,
   };

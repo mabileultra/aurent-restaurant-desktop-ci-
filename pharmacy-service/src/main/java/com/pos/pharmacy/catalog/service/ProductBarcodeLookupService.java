@@ -6,6 +6,7 @@ import com.pos.pharmacy.catalog.repository.ProductBarcodeRepository;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.support.PharmacyBarcodeVariants;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +34,7 @@ public class ProductBarcodeLookupService {
             candidates.add(raw.trim());
         }
         if (candidates.isEmpty()) {
-            throw PharmacyErrors.notFound("Product for barcode", raw);
+            throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_BARCODE_NOT_FOUND, raw);
         }
 
         Product primary = matchPrimaryBarcode(companyId, candidates);
@@ -44,7 +45,7 @@ public class ProductBarcodeLookupService {
         if (extra != null) {
             return extra;
         }
-        throw PharmacyErrors.notFound("Product for barcode", raw);
+        throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_BARCODE_NOT_FOUND, raw);
     }
 
     private Product matchPrimaryBarcode(Integer companyId, List<String> candidates) {

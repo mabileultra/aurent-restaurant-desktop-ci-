@@ -17,6 +17,7 @@ import { clampPayAmount, round2 } from '../../../../utils/taxAmounts';
 import { useCartStore } from '../../../../store/cartStore';
 import { useConnectivityStore } from '../../../../store/connectivityStore';
 import { isApiUnreachableError } from '../../../../utils/apiNetworkError';
+import { resolvePharmacyApiError } from '../../../../pharmacy/errors/resolvePharmacyApiError';
 import { useAuthStore } from '../../../../store/authStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
@@ -142,7 +143,7 @@ export function usePosCheckout({
         toast.error(t('offline.openShiftNeedsCatalog'));
         return;
       }
-      const msg = e.response?.data?.message ?? e.message ?? t('pos.saleFailed');
+      const msg = resolvePharmacyApiError(e, t, 'pos.saleFailed');
       if (msg === 'An unexpected error occurred' || e?.response?.data?.code === 'INTERNAL_ERROR') {
         toast.error(t('pos.saleFailed'), { id: 'pos-checkout-error' });
         return;

@@ -4,6 +4,9 @@ import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.integration.dto.CashierShiftSnapshot;
 import com.pos.pharmacy.marks.service.PharmacyMarkWithdrawService;
 import com.pos.pharmacy.marks.service.PharmacyStockMarkService;
@@ -175,12 +178,12 @@ public class PharmacySaleCheckoutService {
         Map<UUID, Product> result = new HashMap<>();
         for (Product product : productRepository.findAllById(ids)) {
             if (!companyId.equals(product.getCompanyId())) {
-                throw PharmacyErrors.badRequest("Товар не принадлежит компании");
+                throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCT_WRONG_COMPANY);
             }
             result.put(product.getId(), product);
         }
         if (result.size() != ids.size()) {
-            throw PharmacyErrors.badRequest("Один или несколько товаров не найдены");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCTS_NOT_FOUND);
         }
         return result;
     }
@@ -188,14 +191,14 @@ public class PharmacySaleCheckoutService {
     private static Integer requireCompanyId() {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         if (companyId == null) {
-            throw PharmacyErrors.badRequest("Компания не определена");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
         return companyId;
     }
 
     private static Integer requireStoreId(CreateSaleRequest req) {
         if (req.storeId() == null) {
-            throw PharmacyErrors.badRequest("Укажите магазин");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_STORE_REQUIRED);
         }
         return req.storeId();
     }
@@ -203,7 +206,7 @@ public class PharmacySaleCheckoutService {
     private static SaleEnums.ReceiptType requireSaleReceipt(String raw) {
         SaleEnums.ReceiptType receiptType = SaleEnumParser.receiptType(raw);
         if (receiptType != SaleEnums.ReceiptType.SALE) {
-            throw PharmacyErrors.badRequest("Аптека поддерживает только обычную продажу");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_TYPE_UNSUPPORTED);
         }
         return receiptType;
     }

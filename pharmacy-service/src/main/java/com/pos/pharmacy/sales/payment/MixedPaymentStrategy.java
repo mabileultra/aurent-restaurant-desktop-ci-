@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.payment;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.sales.domain.SaleEnums;
 import com.pos.pharmacy.sales.dto.CreateSaleRequest;
 import com.pos.pharmacy.sales.support.SalePaymentResolver.PaymentAmounts;
@@ -23,24 +24,24 @@ class MixedPaymentStrategy implements SalePaymentStrategy {
     @Override
     public PaymentAmounts resolve(BigDecimal total, CreateSaleRequest request) {
         if (request.cashAmount() == null) {
-            throw PharmacyErrors.badRequest("Укажите сумму наличными для смешанной оплаты");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_MIXED_CASH_REQUIRED);
         }
         BigDecimal cash = scale(request.cashAmount());
         if (cash.signum() < 0) {
-            throw PharmacyErrors.badRequest("Суммы оплаты не могут быть отрицательными");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_AMOUNT_NEGATIVE);
         }
         if (cash.compareTo(total) > 0) {
             cash = total;
         }
         BigDecimal card = scale(total.subtract(cash));
         if (cash.signum() == 0 && card.signum() == 0) {
-            throw PharmacyErrors.badRequest("Укажите хотя бы одну сумму оплаты");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_AMOUNT_REQUIRED);
         }
         BigDecimal tendered = cash.signum() > 0
             ? scale(request.amountTendered() != null ? request.amountTendered() : cash)
             : BigDecimal.ZERO;
         if (cash.signum() > 0 && tendered.compareTo(cash) < 0) {
-            throw PharmacyErrors.badRequest("Получено наличными меньше наличной части");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_MIXED_CASH_SHORT);
         }
         BigDecimal change = cash.signum() > 0
             ? tendered.subtract(cash).max(BigDecimal.ZERO)

@@ -4,6 +4,7 @@ import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductBarcodeRepository;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -31,7 +32,12 @@ public class PharmacyBarcodeClaim {
                 return;
             }
             if (existing.isActive()) {
-                throw PharmacyErrors.conflict("Штрихкод уже используется: " + normalized, "barcode", normalized);
+                throw PharmacyErrors.of(
+                    PharmacyCatalogErrors.PHARM_BARCODE_EXISTS,
+                    "Штрихкод уже используется: " + normalized,
+                    "barcode",
+                    normalized
+                );
             }
             release(existing);
             productRepository.saveAndFlush(existing);
@@ -44,8 +50,11 @@ public class PharmacyBarcodeClaim {
                 .filter(owner -> companyId.equals(owner.getCompanyId()))
                 .ifPresent(owner -> {
                     if (owner.isActive()) {
-                        throw PharmacyErrors.conflict(
-                            "Штрихкод уже используется: " + normalized, "barcode", normalized
+                        throw PharmacyErrors.of(
+                            PharmacyCatalogErrors.PHARM_BARCODE_EXISTS,
+                            "Штрихкод уже используется: " + normalized,
+                            "barcode",
+                            normalized
                         );
                     }
                     productBarcodeRepository.delete(line);

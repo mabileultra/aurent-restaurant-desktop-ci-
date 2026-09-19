@@ -34,7 +34,7 @@ class PharmacySqlConstraintMessageTest {
             "duplicate key value violates unique constraint \"uk_pharm_stock_marks_company_key\""
         );
         assertEquals(
-            "Этот код маркировки уже есть на складе.",
+            "Код маркировки уже на складе или продан",
             PharmacySqlConstraintMessage.of(error)
         );
     }

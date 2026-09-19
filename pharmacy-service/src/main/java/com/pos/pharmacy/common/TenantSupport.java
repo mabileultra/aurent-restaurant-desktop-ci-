@@ -1,6 +1,7 @@
 package com.pos.pharmacy.common;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import org.springframework.stereotype.Component;
 
@@ -12,7 +13,7 @@ public class TenantSupport {
     public Integer requireCompanyId() {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         if (companyId == null) {
-            throw new BusinessException("Company context is required");
+            throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_COMPANY_REQUIRED);
         }
         return companyId;
     }

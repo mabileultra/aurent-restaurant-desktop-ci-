@@ -2,6 +2,7 @@ package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.sales.entity.SaleItem;
 import com.pos.pharmacy.sales.entity.SaleItemLot;
 import com.pos.pharmacy.util.QuantityUtil;
@@ -96,7 +97,8 @@ public class PharmacyLotFefoSupport {
             }
 
             if (remaining.signum() > 0) {
-                throw PharmacyErrors.badRequest(
+                throw PharmacyErrors.of(
+                    PharmacySaleErrors.PHARM_STOCK_LOT_INSUFFICIENT,
                     "Недостаточно партий (серия/срок) для «" + need.product().getName() + "». Нужно ещё " + remaining
                 );
             }

@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -36,7 +37,7 @@ public final class CheckoutOrderPricing {
     public static void validatePaymentTotals(BigDecimal total, SalePaymentResolver.PaymentAmounts amounts) {
         BigDecimal paid = amounts.cash().add(amounts.card()).setScale(2, RoundingMode.HALF_UP);
         if (paid.compareTo(total) != 0) {
-            throw PharmacyErrors.badRequest("Сумма оплаты не совпадает с итогом чека");
+            throw PharmacyErrors.of(PharmacySaleErrors.PHARM_SALE_PAYMENT_MISMATCH);
         }
     }
 }

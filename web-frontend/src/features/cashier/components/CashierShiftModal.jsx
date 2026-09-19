@@ -18,6 +18,7 @@ import {
   shiftQueryKey,
 } from '../../../hooks/useCashierShift';
 import { resolvePosShiftOpenErrorMessage } from '../../../utils/resolvePosShiftOpenError';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { resolveMultikassaFiscalErrorMessage } from '../../../services/multikassa';
 import {
   resolveActiveShiftForModalAction,
@@ -75,7 +76,7 @@ export default function CashierShiftModal({
     },
     onError: (e) => {
       printAfterLoadRef.current = null;
-      toast.error(e.response?.data?.message ?? t('pos.reportFailed'));
+      toast.error(resolvePharmacyApiError(e, t, 'pos.reportFailed'));
     },
   });
 
@@ -100,7 +101,11 @@ export default function CashierShiftModal({
         },
         onError: (e) =>
           toast.error(
-            resolveMultikassaFiscalErrorMessage(e, t, 'pos.shiftCloseFailed'),
+            e?.code === 'MULTIKASSA_FISCAL_FAILED'
+              || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED'
+              || e?.message === 'MULTIKASSA_OFFLINE_BLOCKED'
+              ? resolveMultikassaFiscalErrorMessage(e, t, 'pos.shiftCloseFailed')
+              : resolvePharmacyApiError(e, t, 'pos.shiftCloseFailed'),
           ),
       },
     );
@@ -174,7 +179,13 @@ export default function CashierShiftModal({
         },
         onError: (e) => {
           printAfterLoadRef.current = null;
-          toast.error(resolveMultikassaFiscalErrorMessage(e, t, 'pos.reportFailed'));
+          toast.error(
+            e?.code === 'MULTIKASSA_FISCAL_FAILED'
+              || e?.code === 'MULTIKASSA_OFFLINE_BLOCKED'
+              || e?.message === 'MULTIKASSA_OFFLINE_BLOCKED'
+              ? resolveMultikassaFiscalErrorMessage(e, t, 'pos.reportFailed')
+              : resolvePharmacyApiError(e, t, 'pos.reportFailed'),
+          );
         },
       },
     );

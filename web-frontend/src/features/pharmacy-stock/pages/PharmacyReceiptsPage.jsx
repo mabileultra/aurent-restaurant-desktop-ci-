@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import PharmacyListToolbar from '../components/PharmacyListToolbar';
@@ -58,7 +59,7 @@ export default function PharmacyReceiptsPage() {
       selection.clearSelection();
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const createMutation = useMutation({
@@ -69,7 +70,7 @@ export default function PharmacyReceiptsPage() {
       setCreateOpen(false);
       navigate(PHARMACY_STOCK_PATHS.receipt(res.data.id));
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const rows = listQuery.data?.content ?? [];

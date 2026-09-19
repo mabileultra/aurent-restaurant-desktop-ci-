@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.sales.domain.SaleEnums;
 import com.pos.pharmacy.sales.dto.CreateSaleRequest;
 import com.pos.pharmacy.sales.payment.SalePaymentStrategy;
@@ -32,7 +33,10 @@ public class SalePaymentResolver {
     public PaymentAmounts resolve(SaleEnums.PaymentMethod paymentMethod, BigDecimal total, CreateSaleRequest req) {
         SalePaymentStrategy strategy = strategies.get(paymentMethod);
         if (strategy == null) {
-            throw PharmacyErrors.badRequest("Способ оплаты не поддерживается: " + paymentMethod);
+            throw PharmacyErrors.of(
+                PharmacySaleErrors.PHARM_SALE_PAYMENT_UNSUPPORTED,
+                "Способ оплаты не поддерживается: " + paymentMethod
+            );
         }
         return strategy.resolve(total, req);
     }

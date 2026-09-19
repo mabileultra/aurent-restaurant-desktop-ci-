@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import {
   matchPendingMarksToLines,
   takePendingImportMarks,
@@ -115,7 +116,7 @@ export function usePharmacyImportMarksAsk({
         summary: summarizeImportAslVerify(accepted, rejected),
       });
     } catch (error) {
-      toast.error(error?.response?.data?.message ?? t('pharmacyStock.marks.verifyFailed'));
+      toast.error(resolvePharmacyApiError(error, t, 'pharmacyStock.marks.verifyFailed'));
     } finally {
       setVerifying(false);
     }

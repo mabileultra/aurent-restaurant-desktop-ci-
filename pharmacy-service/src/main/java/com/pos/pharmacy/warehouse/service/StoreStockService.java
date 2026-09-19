@@ -3,6 +3,7 @@ package com.pos.pharmacy.warehouse.service;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.entity.StoreStock;
 import com.pos.pharmacy.warehouse.repository.StoreStockRepository;
@@ -79,7 +80,8 @@ public class StoreStockService {
         }
         BigDecimal available = getQuantity(product.getId(), storeId);
         if (available.compareTo(need) < 0) {
-            throw PharmacyErrors.badRequest(
+            throw PharmacyErrors.of(
+                PharmacySaleErrors.PHARM_STOCK_INSUFFICIENT,
                 "Недостаточно остатка для «" + product.getName() + "». Доступно: " + available
             );
         }
@@ -132,7 +134,8 @@ public class StoreStockService {
                 ? QuantityUtil.normalize(stock.getQuantity())
                 : BigDecimal.ZERO;
             if (available.compareTo(need) < 0) {
-                throw PharmacyErrors.badRequest(
+                throw PharmacyErrors.of(
+                    PharmacySaleErrors.PHARM_STOCK_INSUFFICIENT,
                     "Недостаточно остатка для «" + product.getName() + "». Доступно: " + available
                 );
             }

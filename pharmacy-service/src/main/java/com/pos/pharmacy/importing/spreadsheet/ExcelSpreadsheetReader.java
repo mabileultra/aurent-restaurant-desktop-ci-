@@ -1,6 +1,8 @@
 package com.pos.pharmacy.importing.spreadsheet;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -26,7 +28,7 @@ public class ExcelSpreadsheetReader {
             Sheet sheet = wb.getSheetAt(0);
             Row headerRow = sheet.getRow(0);
             if (headerRow == null) {
-                throw new BusinessException("Файл пуст: отсутствует строка заголовков");
+                throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_EMPTY_HEADERS);
             }
 
             List<ExcelColumn> expected = template.columns();
@@ -36,7 +38,8 @@ public class ExcelSpreadsheetReader {
                 String normalized = normHeader(header);
                 String expectedKey = expected.get(c).key();
                 if (!expectedKey.equals(normalized) && !normHeader(expected.get(c).header()).equals(normalized)) {
-                    throw new BusinessException(
+                    throw PharmacyErrors.of(
+                        PharmacyImportErrors.PHARM_IMPORT_TEMPLATE_MISMATCH,
                         "Неверный шаблон. Колонка " + (c + 1) + ": ожидается «"
                             + expected.get(c).header() + "», получено «" + header + "»"
                     );
@@ -61,10 +64,13 @@ public class ExcelSpreadsheetReader {
                 }
             }
             return rows;
-        } catch (BusinessException e) {
+        } catch (PharmacyException e) {
             throw e;
         } catch (IOException e) {
-            throw new BusinessException("Не удалось прочитать Excel: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_EXCEL_READ_FAILED,
+                "Не удалось прочитать Excel: " + e.getMessage()
+            );
         }
     }
 

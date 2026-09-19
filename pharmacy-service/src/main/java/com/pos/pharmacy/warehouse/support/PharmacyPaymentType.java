@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import org.springframework.util.StringUtils;
 
 /** Оплата поступления: наличные, долг поставщику, перечисление. Старый CREDIT читается как долг. */
@@ -22,7 +23,7 @@ public final class PharmacyPaymentType {
             return DEBT;
         }
         if (!CASH.equals(normalized) && !DEBT.equals(normalized) && !TRANSFER.equals(normalized)) {
-            throw PharmacyErrors.badRequest("paymentType must be CASH, DEBT or TRANSFER");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_PAYMENT_TYPE);
         }
         return normalized;
     }

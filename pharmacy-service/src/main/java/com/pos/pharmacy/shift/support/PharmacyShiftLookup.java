@@ -1,6 +1,7 @@
 package com.pos.pharmacy.shift.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyShiftErrors;
 import com.pos.pharmacy.integration.dto.CashierShiftSnapshot;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.shift.domain.PharmacyShiftStatus;
@@ -30,12 +31,12 @@ public class PharmacyShiftLookup {
 
     public PharmacyCashierShift requireOpen(Integer storeId) {
         return findOpen(storeId)
-            .orElseThrow(() -> PharmacyErrors.badRequest("Смена не открыта. Откройте смену перед продажей."));
+            .orElseThrow(() -> PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_NOT_OPEN));
     }
 
     public PharmacyCashierShift require(UUID shiftId) {
         PharmacyCashierShift shift = shiftRepository.findById(shiftId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Shift", shiftId));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyShiftErrors.PHARM_SHIFT_NOT_FOUND, shiftId));
         return assertCompany(shift);
     }
 
@@ -55,7 +56,7 @@ public class PharmacyShiftLookup {
     private PharmacyCashierShift assertCompany(PharmacyCashierShift shift) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         if (companyId != null && !companyId.equals(shift.getCompanyId())) {
-            throw PharmacyErrors.badRequest("Смена принадлежит другой компании");
+            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_WRONG_COMPANY);
         }
         return shift;
     }

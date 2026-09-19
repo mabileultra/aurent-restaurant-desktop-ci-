@@ -2,6 +2,7 @@ package com.pos.pharmacy.sales.service;
 
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.entity.Sale;
@@ -34,14 +35,14 @@ public class PharmacySaleQueryService {
     public SaleResponse getByReceiptNumber(String receiptNumber) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         Sale sale = saleRepository.findByReceiptNumberAndCompanyId(receiptNumber, companyId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Sale receipt", receiptNumber));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacySaleErrors.PHARM_SALE_RECEIPT_NOT_FOUND, receiptNumber));
         return mapWithShift(sale);
     }
 
     public SaleResponse getById(UUID id) {
         Integer companyId = PharmacyTenantContext.getCompanyId();
         Sale sale = saleRepository.findByIdAndCompanyId(id, companyId)
-            .orElseThrow(() -> PharmacyErrors.notFound("Sale", id));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacySaleErrors.PHARM_SALE_NOT_FOUND, id));
         return mapWithShift(sale);
     }
 

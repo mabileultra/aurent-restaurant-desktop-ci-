@@ -1,6 +1,8 @@
 package com.pos.pharmacy.warehouse.support;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import com.pos.pharmacy.warehouse.dto.importing.PharmacyImportColumnHint;
 import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetCellCleaner;
 import com.pos.pharmacy.importing.spreadsheet.parser.DidoxSpreadsheetHeaderJoiner;
@@ -30,22 +32,20 @@ public class PharmacyImportGridSupport {
 
     public List<List<String>> readGrid(MultipartFile file) {
         if (file == null || file.isEmpty()) {
-            throw new BusinessException("Выберите файл Excel или PDF");
+            throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_FILE_REQUIRED);
         }
         byte[] bytes;
         try {
             bytes = file.getBytes();
         } catch (IOException e) {
-            throw new BusinessException("Не удалось прочитать файл");
+            throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_FILE_UNREADABLE);
         }
         String name = file.getOriginalFilename() != null ? file.getOriginalFilename().toLowerCase(Locale.ROOT) : "";
         try {
             if (UzInvoicePdfParser.looksLikePdf(bytes) || name.endsWith(".pdf")) {
                 List<List<String>> grid = pdfParser.readGrid(bytes);
                 if (grid.isEmpty()) {
-                    throw new BusinessException(
-                        "В PDF не найден текст. Загрузите текстовый PDF или Excel."
-                    );
+                    throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_PDF_NO_TEXT);
                 }
                 return normalize(grid);
             }
@@ -53,10 +53,13 @@ public class PharmacyImportGridSupport {
                 return normalize(prepareSpreadsheet(HtmlExcelTableParser.parse(bytes)));
             }
             return normalize(prepareSpreadsheet(spreadsheetParser.readGrid(bytes)));
-        } catch (BusinessException e) {
+        } catch (PharmacyException e) {
             throw e;
         } catch (IOException e) {
-            throw new BusinessException("Не удалось разобрать файл: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_FILE_PARSE_FAILED,
+                "Не удалось разобрать файл: " + e.getMessage()
+            );
         }
     }
 
@@ -118,7 +121,7 @@ public class PharmacyImportGridSupport {
             rows.add(row);
         }
         if (rows.isEmpty()) {
-            throw new BusinessException("В файле нет строк товаров");
+            throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_NO_ROWS);
         }
         return rows;
     }

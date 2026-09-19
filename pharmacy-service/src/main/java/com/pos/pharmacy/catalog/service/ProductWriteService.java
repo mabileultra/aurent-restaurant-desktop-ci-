@@ -14,6 +14,7 @@ import com.pos.pharmacy.domain.ProductType;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.warehouse.service.StoreStockService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -43,7 +44,7 @@ public class ProductWriteService {
     public ProductResponse create(CreateProductRequest req) {
         Integer companyId = tenant.requireCompanyId();
         if (productRepository.findByCompanyIdAndSku(companyId, req.sku()).filter(Product::isActive).isPresent()) {
-            throw PharmacyErrors.conflict("SKU already exists", "sku", req.sku());
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_SKU_EXISTS, "sku", req.sku());
         }
         barcodeClaim.claim(companyId, req.barcode());
         productRepository.findByCompanyIdAndSku(companyId, req.sku()).filter(existing -> !existing.isActive())
@@ -174,14 +175,14 @@ public class ProductWriteService {
         Integer companyId = tenant.requireCompanyId();
         return productRepository.findById(id)
             .filter(p -> p.getCompanyId().equals(companyId))
-            .orElseThrow(() -> PharmacyErrors.notFound("Product", id));
+            .orElseThrow(() -> PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_FOUND, id));
     }
 
     @Transactional(readOnly = true)
     public Product requireActive(UUID id) {
         Product product = requireOwned(id);
         if (!product.isActive()) {
-            throw PharmacyErrors.badRequest("Product is not active");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_ACTIVE);
         }
         return product;
     }

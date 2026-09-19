@@ -17,6 +17,7 @@ import { addPharmacyPieceItem } from '../utils/pharmacyCartActions';
 import { applyPharmacyMarkingScan, isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 import { toCartQuantity } from '../utils/pharmacyPackQty';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import {
   getCachedPharmacyProduct,
   setCachedPharmacyProduct,
@@ -324,7 +325,7 @@ export function usePharmacyCartHandlers({
         if (!silent) toast.error(t('pos.barcodeNotFound'));
         return false;
       } catch (e) {
-        if (!silent) toast.error(e.response?.data?.message ?? t('pos.barcodeNotFound'));
+        if (!silent) toast.error(resolvePharmacyApiError(e, t, 'pos.barcodeNotFound'));
         return false;
       } finally {
         scanningRef.current = false;

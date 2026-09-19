@@ -2,7 +2,9 @@ package com.pos.pharmacy.importing.spreadsheet.parser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -42,15 +44,19 @@ public class CatalogJsonParser {
                 }
             }
             if (rows.isEmpty()) {
-                throw new BusinessException(
+                throw PharmacyErrors.of(
+                    PharmacyImportErrors.PHARM_IMPORT_JSON_NO_ITEMS,
                     "В JSON не найдено товаров. Ожидается массив с полями sku и name."
                 );
             }
             return rows;
-        } catch (BusinessException e) {
+        } catch (PharmacyException e) {
             throw e;
         } catch (IOException e) {
-            throw new BusinessException("Не удалось разобрать JSON: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_JSON_PARSE_FAILED,
+                "Не удалось разобрать JSON: " + e.getMessage()
+            );
         }
     }
 

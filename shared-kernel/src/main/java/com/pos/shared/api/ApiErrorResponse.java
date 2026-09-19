@@ -21,10 +21,20 @@ public record ApiErrorResponse(
         String path,
         Map<String, Object> context
     ) {
+        return of(status, code.name(), message, path, context);
+    }
+
+    public static ApiErrorResponse of(
+        int status,
+        String code,
+        String message,
+        String path,
+        Map<String, Object> context
+    ) {
         Map<String, Object> ctx = context == null || context.isEmpty() ? null : Map.copyOf(context);
         return new ApiErrorResponse(
             status,
-            code.name(),
+            code,
             message,
             path,
             Instant.now(),

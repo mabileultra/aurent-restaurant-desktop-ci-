@@ -1,6 +1,7 @@
 package com.pos.pharmacy.sales.service.impl;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyMarkErrors;
 import com.pos.pharmacy.sales.dto.MarkSoldCheckResponse;
 import com.pos.pharmacy.sales.entity.Sale;
 import com.pos.pharmacy.sales.entity.SaleItem;
@@ -60,7 +61,7 @@ public class PharmacySoldMarkServiceImpl implements PharmacySoldMarkService {
             return;
         }
         if (soldMarkRepository.existsByCompanyIdAndMarkKeyIn(companyId, keys)) {
-            throw PharmacyErrors.badRequest("Этот код маркировки уже был продан");
+            throw PharmacyErrors.of(PharmacyMarkErrors.PHARM_MARK_ALREADY_SOLD);
         }
     }
 

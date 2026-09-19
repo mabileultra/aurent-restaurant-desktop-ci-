@@ -5,6 +5,7 @@ import com.pos.pharmacy.domain.ProductQuantityRules;
 import com.pos.pharmacy.domain.SaleType;
 import com.pos.pharmacy.domain.UnitCode;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -21,23 +22,24 @@ public final class QuantityValidator {
         SaleType saleType = rules.saleType() != null ? rules.saleType() : SaleType.PIECE;
         BigDecimal q = normalizeForProduct(rules, rawQuantity);
         if (q.signum() <= 0) {
-            throw PharmacyErrors.badRequest("Количество должно быть больше нуля");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_QTY_MUST_BE_POSITIVE);
         }
         if (!rules.allowFraction() && !matchesScale(q, 0)) {
-            throw PharmacyErrors.badRequest("Для этого товара количество указывается целым числом");
+            throw PharmacyErrors.of(PharmacyCatalogErrors.PHARM_QTY_MUST_BE_INTEGER);
         }
         if (!matchesScale(q, rules.quantityScale())) {
-            throw PharmacyErrors.badRequest(
+            throw PharmacyErrors.of(
+                PharmacyCatalogErrors.PHARM_QTY_SCALE,
                 "Количество допускает не более " + rules.quantityScale() + " знаков после запятой"
             );
         }
         if (saleType == SaleType.WEIGHT) {
             validateWeightMinimum(rules.unitCode(), q);
         } else if (!rules.allowFraction() && !matchesScale(q, 0)) {
-            throw PharmacyErrors.badRequest(
+            throw PharmacyErrors.of(
                 saleType == SaleType.SERVICE
-                    ? "Для услуги количество указывается целым числом"
-                    : "Для штучного товара количество должно быть целым (1, 2, 3…)"
+                    ? PharmacyCatalogErrors.PHARM_QTY_SERVICE_INTEGER
+                    : PharmacyCatalogErrors.PHARM_QTY_PIECE_INTEGER
             );
         }
     }
@@ -54,7 +56,10 @@ public final class QuantityValidator {
         UnitCode unit = unitCode != null ? unitCode : UnitCode.KG;
         BigDecimal min = UnitCode.fallbackMinQuantity(unit);
         if (q.compareTo(min) < 0) {
-            throw PharmacyErrors.badRequest("Минимальное количество: " + min + " " + unit.displayLabel());
+            throw PharmacyErrors.of(
+                PharmacyCatalogErrors.PHARM_QTY_MIN,
+                "Минимальное количество: " + min + " " + unit.displayLabel()
+            );
         }
     }
 

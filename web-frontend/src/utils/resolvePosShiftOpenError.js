@@ -1,4 +1,6 @@
 import { getApiErrorMessage } from './apiError';
+import { isPharmacyErrorCode } from '../pharmacy/errors/isPharmacyErrorCode';
+import { resolvePharmacyApiError } from '../pharmacy/errors/resolvePharmacyApiError';
 import { isApiNetworkError, isApiUnreachableError } from './apiNetworkError';
 import { isDesktopCashier } from './authLogin';
 import {
@@ -56,6 +58,11 @@ export function resolvePosShiftOpenErrorMessage(error, t, storeId = null) {
 
   if (status === 502 || status === 503 || status === 504) {
     return t('login.serviceUnavailable');
+  }
+
+  if (isPharmacyErrorCode(error?.response?.data?.code)) {
+    const pharmacyMsg = resolvePharmacyApiError(error, t, '');
+    if (pharmacyMsg) return pharmacyMsg;
   }
 
   if (status === 403 || apiMsg === 'Access denied') {

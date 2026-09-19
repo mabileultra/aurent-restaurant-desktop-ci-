@@ -4,6 +4,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
@@ -77,7 +78,7 @@ export default function PharmacyReceiptDocumentPage() {
       qc.setQueryData(['pharmacy-receipt', id], res.data);
       setEditOpen(false);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const updateLineMutation = useMutation({
@@ -92,7 +93,7 @@ export default function PharmacyReceiptDocumentPage() {
       invalidateProductCaches(qc);
       setEditingLine(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const deleteDraftMutation = useMutation({
@@ -103,7 +104,7 @@ export default function PharmacyReceiptDocumentPage() {
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
       navigate(PHARMACY_STOCK_PATHS.receipts);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const removeLineMutation = useMutation({
@@ -111,7 +112,7 @@ export default function PharmacyReceiptDocumentPage() {
     onSuccess: (res) => {
       qc.setQueryData(['pharmacy-receipt', id], res.data);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const receiptPreview = receiptQuery.data;
@@ -149,7 +150,7 @@ export default function PharmacyReceiptDocumentPage() {
       qc.invalidateQueries({ queryKey: ['pharmacy-receipts'] });
       setActivateOpen(false);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.activateFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t, 'pharmacyStock.activateFailed')),
   });
 
   const receipt = receiptQuery.data;
@@ -198,7 +199,7 @@ export default function PharmacyReceiptDocumentPage() {
       qc.setQueryData(['pharmacy-receipt', id], data);
       linesSelect.clearSelection();
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   if (receiptQuery.isLoading) {

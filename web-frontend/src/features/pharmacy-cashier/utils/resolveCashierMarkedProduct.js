@@ -69,7 +69,7 @@ export async function resolveCashierMarkedProduct({
   try {
     product = await resolvePharmacyProductByMarking({ products, rawCode: mark, storeId });
   } catch (error) {
-    aslError = error.response?.data?.message ?? error.message;
+    aslError = error;
   }
 
   if (storeId) {
@@ -107,7 +107,7 @@ export async function resolveCashierMarkedProduct({
         });
       }
     } catch (error) {
-      aslError = aslError || (error.response?.data?.message ?? error.message);
+      aslError = aslError || error;
     }
   }
 

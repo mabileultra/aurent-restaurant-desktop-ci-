@@ -3,6 +3,7 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.exception.PharmacyException;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.entity.StockLot;
@@ -96,7 +97,7 @@ public class PharmacyReceiptActivation {
         for (PostLine line : pending) {
             Product product = products.get(line.productId());
             if (product == null) {
-                throw PharmacyErrors.notFound("Product", line.productId());
+                throw PharmacyErrors.notFound(PharmacyCatalogErrors.PHARM_PRODUCT_NOT_FOUND, line.productId());
             }
             product.setCostPrice(line.purchasePrice());
             product.setSellingPrice(line.sellingPrice());

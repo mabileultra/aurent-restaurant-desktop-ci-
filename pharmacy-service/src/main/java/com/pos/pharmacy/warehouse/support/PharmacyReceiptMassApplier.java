@@ -1,6 +1,7 @@
 package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import com.pos.pharmacy.util.QuantityUtil;
 import com.pos.pharmacy.warehouse.domain.PharmacyReceiptMassField;
 import com.pos.pharmacy.warehouse.entity.StockReceiptLine;
@@ -35,13 +36,13 @@ public class PharmacyReceiptMassApplier {
             case RETAIL -> applyRetail(line, money(value, "retailPrice"));
             case BATCH -> line.setBatchNumber(StringUtils.hasText(value) ? value : null);
             case EXPIRY -> line.setExpiryDate(parseExpiry(value));
-            default -> throw PharmacyErrors.badRequest("Unknown mass field");
+            default -> throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_MASS_FIELD_UNKNOWN);
         }
     }
 
     private void applyQuantity(StockReceiptLine line, BigDecimal quantity) {
         if (quantity.compareTo(BigDecimal.ZERO) <= 0) {
-            throw PharmacyErrors.badRequest("Quantity must be positive");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_QTY_POSITIVE);
         }
         BigDecimal qty = QuantityUtil.normalize(quantity);
         BigDecimal purchase = nullToZero(line.getPurchasePrice());
@@ -79,14 +80,14 @@ public class PharmacyReceiptMassApplier {
         try {
             return LocalDate.parse(value);
         } catch (DateTimeParseException ex) {
-            throw PharmacyErrors.badRequest("Expiry date must be yyyy-MM-dd");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_EXPIRY_FORMAT);
         }
     }
 
     private static BigDecimal money(String value, String field) {
         BigDecimal number = decimal(value, field);
         if (number.compareTo(BigDecimal.ZERO) < 0) {
-            throw PharmacyErrors.badRequest(field + " must be >= 0");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_AMOUNT_NEGATIVE, field, field);
         }
         return number.setScale(2, RoundingMode.HALF_UP);
     }
@@ -94,19 +95,19 @@ public class PharmacyReceiptMassApplier {
     private static BigDecimal percent(String value, int max) {
         BigDecimal number = decimal(value, "percent");
         if (number.compareTo(BigDecimal.ZERO) < 0 || number.compareTo(BigDecimal.valueOf(max)) > 0) {
-            throw PharmacyErrors.badRequest("Percent is out of range");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_PERCENT_RANGE);
         }
         return number;
     }
 
     private static BigDecimal decimal(String value, String field) {
         if (!StringUtils.hasText(value)) {
-            throw PharmacyErrors.badRequest(field + " is required");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_FIELD_REQUIRED, "field", field);
         }
         try {
             return new BigDecimal(value.replace(',', '.').replace(" ", ""));
         } catch (NumberFormatException ex) {
-            throw PharmacyErrors.badRequest(field + " is not a number");
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_FIELD_NOT_NUMBER, "field", field);
         }
     }
 

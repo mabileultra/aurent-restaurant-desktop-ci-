@@ -1,6 +1,8 @@
 package com.pos.pharmacy.importing.spreadsheet.parser;
 
-import com.pos.pharmacy.exception.BusinessException;
+import com.pos.pharmacy.exception.PharmacyErrors;
+import com.pos.pharmacy.exception.PharmacyException;
+import com.pos.pharmacy.exception.errorcode.PharmacyImportErrors;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceTableRebuilder;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.PdfPageTextExtractor;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.PdfTextToken;
@@ -33,20 +35,24 @@ public class UzInvoicePdfParser {
 
     public List<Map<String, String>> parse(byte[] bytes) {
         if (!looksLikePdf(bytes)) {
-            throw new BusinessException("Файл не является PDF");
+            throw PharmacyErrors.of(PharmacyImportErrors.PHARM_IMPORT_NOT_PDF);
         }
         try {
             List<List<String>> grid = extractGrid(bytes);
             if (grid.isEmpty()) {
-                throw new BusinessException(
+                throw PharmacyErrors.of(
+                    PharmacyImportErrors.PHARM_IMPORT_PDF_NO_TEXT,
                     "В PDF не найден текст. Загрузите текстовый PDF счёт-фактуры или Excel/JSON с портала."
                 );
             }
             return spreadsheetParser.parseFromGrid(grid);
-        } catch (BusinessException e) {
+        } catch (PharmacyException e) {
             throw e;
         } catch (IOException e) {
-            throw new BusinessException("Не удалось прочитать PDF: " + e.getMessage());
+            throw PharmacyErrors.of(
+                PharmacyImportErrors.PHARM_IMPORT_PDF_READ_FAILED,
+                "Не удалось прочитать PDF: " + e.getMessage()
+            );
         }
     }
 

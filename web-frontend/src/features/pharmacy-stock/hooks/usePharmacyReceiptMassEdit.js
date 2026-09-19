@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
+import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 
 const NUMERIC = new Set(['QUANTITY', 'PURCHASE', 'VAT', 'MARKUP', 'RETAIL']);
 
@@ -29,7 +30,7 @@ export function usePharmacyReceiptMassEdit({
       selection.clearSelection();
       setPending(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message || e.message || t('pharmacyStock.saveFailed')),
+    onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
   const ask = (field, raw) => {
