@@ -34,6 +34,7 @@ export default function PlatformBusinessTypeDetail({
   onSetDefaultUnit,
   onToggleRule,
   onToggleFormField,
+  onSetFormFieldGroup,
   onPriceRuleChange,
   onAddDisplayRule,
   onDisplayRuleChange,
@@ -160,6 +161,7 @@ export default function PlatformBusinessTypeDetail({
           detail={detail}
           formFields={formFields}
           onToggle={onToggleFormField}
+          onSetGroup={onSetFormFieldGroup}
           onSave={onSaveFormFields}
           saving={savingFormFields}
         />

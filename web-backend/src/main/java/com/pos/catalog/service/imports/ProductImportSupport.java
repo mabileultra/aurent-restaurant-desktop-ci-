@@ -37,7 +37,7 @@ public final class ProductImportSupport {
 
     public static ProductImportPreviewRow invalidRow(int rowNum, String message) {
         return new ProductImportPreviewRow(
-            rowNum, "", "", null, null, null, "", null, null, BigDecimal.ZERO,
+            rowNum, "", "", null, null, null, null, "", null, null, BigDecimal.ZERO,
             BigDecimal.ZERO, null, BigDecimal.ZERO,
             ProductImportPreviewRow.STATUS_INVALID,
             null, null, message
@@ -69,6 +69,7 @@ public final class ProductImportSupport {
                 sku,
                 name,
                 fields.ikpu(),
+                fields.barcode(),
                 fields.storageLocation(),
                 fields.uzInvoiceDocumentId(),
                 unit,
@@ -89,6 +90,7 @@ public final class ProductImportSupport {
             sku,
             name,
             fields.ikpu(),
+            fields.barcode(),
             fields.storageLocation(),
             fields.uzInvoiceDocumentId(),
             unit,

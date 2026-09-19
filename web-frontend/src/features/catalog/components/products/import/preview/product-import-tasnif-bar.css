@@ -1,0 +1,98 @@
+.product-import-tasnif-bar {
+  display: grid;
+  gap: 0.55rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(248 250 252);
+  padding: 0.75rem 0.9rem;
+}
+
+.dark .product-import-tasnif-bar {
+  border-color: rgb(51 65 85);
+  background: rgb(15 23 42 / 0.65);
+}
+
+.product-import-tasnif-bar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.product-import-tasnif-bar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(71 85 105);
+  background: white;
+}
+
+.dark .product-import-tasnif-bar__chip {
+  background: rgb(30 41 59);
+  color: rgb(203 213 225);
+}
+
+.product-import-tasnif-bar__chip strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.product-import-tasnif-bar__chip.is-found {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.product-import-tasnif-bar__chip.is-partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.product-import-tasnif-bar__chip.is-missing {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.product-import-tasnif-bar__chip.is-duplicate {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.product-import-tasnif-bar__chip.is-marked {
+  background: #ffedd5;
+  color: #9a3412;
+  cursor: default;
+}
+
+.product-import-tasnif-bar__chip.is-active {
+  outline: 2px solid rgb(16 185 129);
+  outline-offset: 1px;
+}
+
+.product-import-tasnif-bar__hint {
+  margin: 0;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.product-import-tasnif-bar__actions button {
+  border-radius: 0.5rem;
+  border: 1px solid rgb(16 185 129);
+  background: rgb(236 253 245);
+  padding: 0.4rem 0.8rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: rgb(4 120 87);
+}
+
+.product-import-tasnif-bar__actions button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.dark .product-import-tasnif-bar__actions button {
+  background: rgb(6 78 59 / 0.35);
+  color: rgb(110 231 183);
+}

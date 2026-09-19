@@ -7,6 +7,13 @@ import ProductCatalogDynamicFieldsSection from './ProductCatalogDynamicFieldsSec
 import ProductCatalogFiscalSection from './ProductCatalogFiscalSection';
 import ProductCatalogStoreContextSection from './ProductCatalogStoreContextSection';
 
+const FISCAL_SECTIONS = [
+  'fiscalExternalId',
+  'fiscalIkpu',
+  'fiscalUnitMeasure',
+  'fiscalPackageCode',
+];
+
 export default function ProductCatalogModalFormBody({
   form,
   categories,
@@ -14,6 +21,12 @@ export default function ProductCatalogModalFormBody({
   selectedStore,
   onCreateStoreChange,
 }) {
+  const showTasnifSearch = form.showSection('tasnifSearch');
+  const showAnyFiscal = FISCAL_SECTIONS.some((key) => form.showSection(key));
+  const showBarcodeBlock = form.showSection('barcodes')
+    || form.showSection('pluField')
+    || form.showSection('extraBarcodes');
+
   return (
     <>
       {!form.isEdit && selectedStore && onCreateStoreChange ? (
@@ -25,14 +38,19 @@ export default function ProductCatalogModalFormBody({
         />
       ) : null}
 
-      {form.showSection('tasnif') ? (
+      {showTasnifSearch || showAnyFiscal ? (
         <div className="space-y-4">
-          <TasnifSearchPanel setValue={form.setValue} getValues={form.getValues} isEdit={form.isEdit} />
-          <ProductCatalogFiscalSection
-            t={form.t}
-            register={form.register}
-            errors={form.errors}
-          />
+          {showTasnifSearch ? (
+            <TasnifSearchPanel setValue={form.setValue} getValues={form.getValues} isEdit={form.isEdit} />
+          ) : null}
+          {showAnyFiscal ? (
+            <ProductCatalogFiscalSection
+              t={form.t}
+              register={form.register}
+              errors={form.errors}
+              showSection={form.showSection}
+            />
+          ) : null}
         </div>
       ) : null}
 
@@ -59,6 +77,7 @@ export default function ProductCatalogModalFormBody({
         errors={form.errors}
         showSection={form.showSection}
         priceRules={form.priceRulesConfig}
+        storePricesEnabled={form.showSection('storePrices')}
       />
 
       {form.showSection('storePrices') ? (
@@ -84,7 +103,7 @@ export default function ProductCatalogModalFormBody({
         />
       ) : null}
 
-      {form.showSection('barcodes') ? (
+      {showBarcodeBlock ? (
         <ProductCatalogBarcodesSection
           t={form.t}
           register={form.register}
@@ -92,6 +111,7 @@ export default function ProductCatalogModalFormBody({
           extraBarcodes={form.extraBarcodes}
           setExtraBarcodes={form.setExtraBarcodes}
           saleTypeWatch={form.saleTypeWatch}
+          showSection={form.showSection}
         />
       ) : null}
     </>

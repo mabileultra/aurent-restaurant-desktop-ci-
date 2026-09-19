@@ -21,7 +21,12 @@ public record ProductImportConfirmRequest(
         @DecimalMin("0.01") BigDecimal sellingPrice,
         Integer categoryId,
         Integer storeId,
-        String storageLocation
+        String storageLocation,
+        String ikpu,
+        String barcode,
+        String packageCode,
+        Boolean markedProduct,
+        String ikpuStatus
     ) {
     }
 }

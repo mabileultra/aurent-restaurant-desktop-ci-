@@ -11,6 +11,9 @@ import { isMeasuredProduct, minQtyForUnit, qtyStepForUnit, roundQty } from '../.
 import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
+import { applyPharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkedScanCart';
+import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
+import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
 export function usePosCartHandlers({
   storeId,
@@ -30,6 +33,7 @@ export function usePosCartHandlers({
   removeItem,
   selectedLineId,
   setSelectedLineId,
+  aslMarkingEnabled = false,
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
@@ -57,6 +61,10 @@ export function usePosCartHandlers({
       defaultDiscountPercent: Number(product.defaultDiscountPercent ?? 0),
       taxRate: Number(product.taxRate ?? 12),
       stockQuantity: Number(product.stockQuantity ?? 0),
+      markedProduct: product.markedProduct === true,
+      productMark: product.productMark ?? product.markCode ?? null,
+      markCode: product.markCode ?? product.productMark ?? null,
+      productMarks: Array.isArray(product.productMarks) ? [...product.productMarks] : null,
     }),
     [storeId]
   );
@@ -93,6 +101,96 @@ export function usePosCartHandlers({
       stockQuantity: item.maxStock,
     });
   }, []);
+
+  const addMarkedScanToCart = useCallback(
+    (product) => {
+      if (!shiftIsOpen) {
+        toast.error(t('pos.shiftRequired'));
+        return null;
+      }
+      if (product.active === false) {
+        toast.error(t('pos.productInactive'));
+        return null;
+      }
+      const payload = cartProductPayload(product);
+      if (Number(payload.stockQuantity) <= 0 && (product.saleType || 'PIECE') !== 'SERVICE') {
+        toast.error(t('pos.outOfStock'));
+        return null;
+      }
+      const result = applyPharmacyMarkingScan(payload, product.productMark || product.markCode);
+      if (result.status === 'duplicate') {
+        toast.error(t('pos.markingAlreadyCounted'));
+        return result;
+      }
+      if (result.status === 'stock') {
+        toast.error(t('pos.outOfStock'));
+        return result;
+      }
+      if (result.status !== 'added') return result;
+      const line = useCartStore.getState().items.find((i) => i.lineId === result.lineId);
+      if (line) showLineAddedToast(line, product.name);
+      setSelectedLineId(result.lineId);
+      setSearch('');
+      return result;
+    },
+    [cartProductPayload, shiftIsOpen, showLineAddedToast, t, setSearch, setSelectedLineId]
+  );
+
+  /**
+   * Только DataMatrix (КМ). Не смешивается со штрихкодом.
+   * Не найден / уже продан → сообщение и стоп. ASL только здесь.
+   */
+  const tryAddByMarking = useCallback(
+    async (rawCode) => {
+      if (!rawCode || !storeId || scanningRef.current || payOpen || returnOpen) return false;
+      if (classifyPosScanInput(rawCode) !== 'marking') return false;
+      scanningRef.current = true;
+      try {
+        if (!shiftIsOpen) {
+          toast.error(t('pos.shiftRequired'));
+          return true;
+        }
+        const resolved = await resolvePosMarkedProduct({
+          products,
+          rawCode,
+          storeId,
+          aslEnabled: Boolean(aslMarkingEnabled),
+        });
+        if (resolved.status === 'sold') {
+          toast.error(t('pos.markingAlreadySold'));
+          setSearch('');
+          return true;
+        }
+        if (resolved.status === 'ok' && resolved.product) {
+          addMarkedScanToCart(resolved.product);
+          setSearch('');
+          return true;
+        }
+        toast.error(t('pos.barcodeNotFound'));
+        setSearch('');
+        return true;
+      } catch (e) {
+        toast.error(e.response?.data?.message ?? t('pos.barcodeNotFound'));
+        setSearch('');
+        return true;
+      } finally {
+        scanningRef.current = false;
+        searchInputRef.current?.focus();
+      }
+    },
+    [
+      addMarkedScanToCart,
+      aslMarkingEnabled,
+      payOpen,
+      products,
+      returnOpen,
+      searchInputRef,
+      setSearch,
+      shiftIsOpen,
+      storeId,
+      t,
+    ]
+  );
 
   const addProductToCart = useCallback(
     (product) => {
@@ -157,10 +255,20 @@ export function usePosCartHandlers({
     ]
   );
 
+  /**
+   * Только обычный штрихкод / весовой PLU. ASL не вызывается.
+   * Продажа в налог — как раньше.
+   */
   const tryAddByBarcode = useCallback(
     async (code, { silent = false } = {}) => {
       const trimmed = code.trim();
       if (!trimmed || !storeId || scanningRef.current || payOpen || returnOpen) return false;
+
+      // Жёсткое разделение: КМ → только маркировка; штрихкод → налог без ASL
+      if (classifyPosScanInput(trimmed) === 'marking') {
+        return tryAddByMarking(trimmed);
+      }
+
       scanningRef.current = true;
       try {
         const decoded = decodeWeightBarcode(trimmed);
@@ -212,6 +320,7 @@ export function usePosCartHandlers({
       setSearch,
       searchInputRef,
       setSelectedLineId,
+      tryAddByMarking,
     ]
   );
 
@@ -226,7 +335,6 @@ export function usePosCartHandlers({
     const q = search.trim();
     if (!q) return;
     if (await tryAddByBarcode(q, { silent: true })) return;
-    // Не берём товар из прошлого результата поиска (keepPreviousData).
     if (!canAddProductFromSearchList({ productsStale, products })) {
       if (productsStale) return;
       toast.error(t('pos.barcodeNotFound'));
@@ -246,6 +354,12 @@ export function usePosCartHandlers({
       const items = useCartStore.getState().items;
       const item = items.find((i) => i.lineId === lineId);
       if (!item) return;
+      if (Array.isArray(item.productMarks) && item.productMarks.length > 0) {
+        if (delta > 0) {
+          toast.error(t('pos.markingQtyViaScan'));
+          return;
+        }
+      }
       if (item.saleType === 'WEIGHT') {
         const unitCode = item.unitCode || 'KG';
         const step = qtyStepForUnit(unitCode);
@@ -264,7 +378,7 @@ export function usePosCartHandlers({
       }
       updateQuantity(lineId, item.quantity + delta);
     },
-    [removeItem, selectedLineId, setSelectedLineId, updateQuantity]
+    [removeItem, selectedLineId, setSelectedLineId, updateQuantity, t]
   );
 
   const closeWeightModal = useCallback(() => {
@@ -281,5 +395,6 @@ export function usePosCartHandlers({
     handleSearchEnter,
     handleQtyDelta,
     openWeightModalForLine,
+    tryAddByMarking,
   };
 }

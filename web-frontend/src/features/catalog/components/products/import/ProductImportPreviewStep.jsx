@@ -1,12 +1,15 @@
 import { inputCls } from '../../../../../utils/productImportUtils';
+import ProductImportColumnPicker from './preview/ProductImportColumnPicker';
 import ProductImportPreviewControls from './preview/ProductImportPreviewControls';
 import ProductImportPreviewTable from './preview/ProductImportPreviewTable';
+import ProductImportTasnifBar from './preview/ProductImportTasnifBar';
 
 export default function ProductImportPreviewStep(props) {
   const {
     t,
     preview,
     rows,
+    allRows,
     allDuplicates,
     markupInput,
     onMarkupInputChange,
@@ -30,6 +33,17 @@ export default function ProductImportPreviewStep(props) {
     setRowCategory,
     setRowStore,
     setRowStorageLocation,
+    setRowBarcode,
+    setRowIkpu,
+    setRowMarkedProduct,
+    visibleColumns,
+    toggleColumn,
+    tasnifByRow,
+    tasnifFilter,
+    setTasnifFilter,
+    verifyingTasnif,
+    verifyProgress,
+    runTasnifVerify,
   } = props;
 
   return (
@@ -115,16 +129,42 @@ export default function ProductImportPreviewStep(props) {
         stores={stores}
       />
 
+      <ProductImportTasnifBar
+        t={t}
+        rows={allRows ?? rows}
+        editable={editable}
+        tasnifByRow={tasnifByRow}
+        filter={tasnifFilter}
+        onFilter={setTasnifFilter}
+        verifying={verifyingTasnif}
+        verifyProgress={verifyProgress}
+        onVerify={runTasnifVerify}
+      />
+
+      <div className="product-import-preview-toolbar">
+        <p className="text-xs text-slate-500">{t('products.import.tasnif.tableHint')}</p>
+        <ProductImportColumnPicker
+          t={t}
+          visibleColumns={visibleColumns}
+          onToggle={toggleColumn}
+        />
+      </div>
+
       <ProductImportPreviewTable
         t={t}
         rows={rows}
         editable={editable}
         categories={categories}
         stores={stores}
+        visibleColumns={visibleColumns}
+        tasnifByRow={tasnifByRow}
         setRowPrice={setRowPrice}
         setRowCategory={setRowCategory}
         setRowStore={setRowStore}
         setRowStorageLocation={setRowStorageLocation}
+        setRowBarcode={setRowBarcode}
+        setRowIkpu={setRowIkpu}
+        setRowMarkedProduct={setRowMarkedProduct}
       />
     </>
   );

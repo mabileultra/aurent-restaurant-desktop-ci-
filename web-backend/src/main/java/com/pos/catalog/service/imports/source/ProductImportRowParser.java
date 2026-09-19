@@ -28,6 +28,8 @@ public final class ProductImportRowParser {
 
         String ikpuRaw = ProductImportParseUtil.cell(row, "ikpu");
         String ikpu = StringUtils.hasText(ikpuRaw) ? ikpuRaw.trim() : null;
+        String barcodeRaw = ProductImportParseUtil.cell(row, "barcode");
+        String barcode = StringUtils.hasText(barcodeRaw) ? barcodeRaw.trim() : null;
         String storageLocation = ProductImportSupport.resolveStorageLocation(row, opts.defaultStorageLocation());
 
         String uzDocRaw = ProductImportParseUtil.cell(row, UzInvoiceDocumentIdExtractor.ROW_KEY_UZ_INVOICE_DOCUMENT_ID);
@@ -54,6 +56,7 @@ public final class ProductImportRowParser {
 
         return Result.ok(new ProductImportRowFields(
             ikpu,
+            barcode,
             storageLocation,
             uzInvoiceDocumentId,
             sellingOpt.get(),

@@ -12,7 +12,9 @@ import { usePosProductsCatalog } from './pos/usePosProductsCatalog';
 import { usePosNavigation } from './pos/usePosNavigation';
 import { usePosCartHandlers } from './pos/usePosCartHandlers';
 import { usePosCheckout } from './pos/usePosCheckout';
+import { usePosSearchMarkAutoSubmit } from './pos/usePosSearchMarkAutoSubmit';
 import { shouldAutoPromptCashierShift } from '../../../utils/shouldAutoPromptCashierShift';
+import { usePharmacyIntegrationConfig } from '../../pharmacy-cashier/hooks/usePharmacyIntegrationConfig';
 
 export function usePosPage() {
   const { t } = useTranslation();
@@ -21,6 +23,7 @@ export function usePosPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { storeId, noAssignment, multipleAssignment } = useCashierStore();
+  const integration = usePharmacyIntegrationConfig(storeId);
   const [posPane, setPosPane] = useState('register');
   const [payOpen, setPayOpen] = useState(false);
   const [payFlowOptions, setPayFlowOptions] = useState(null);
@@ -125,6 +128,14 @@ export function usePosPage() {
     removeItem,
     selectedLineId,
     setSelectedLineId,
+    aslMarkingEnabled: Boolean(integration.capabilities?.aslMarkingEnabled),
+  });
+
+  usePosSearchMarkAutoSubmit({
+    search: catalog.search,
+    onSearchChange: catalog.setSearch,
+    onMarkingScan: (code) => cartHandlers.tryAddByMarking(code),
+    enabled: Boolean(storeId) && shiftIsOpen && !payOpen && !returnOpen && !shiftModalOpen,
   });
 
   useEffect(() => {

@@ -1,5 +1,10 @@
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
 
+function FieldSlot({ hidden, children }) {
+  if (hidden) return null;
+  return children;
+}
+
 export default function ProductCatalogAccountingSection({
   t,
   register,
@@ -7,6 +12,7 @@ export default function ProductCatalogAccountingSection({
   template,
   showSection,
   priceRules = null,
+  storePricesEnabled = false,
 }) {
   if (!showSection('accounting')) return null;
 
@@ -14,69 +20,111 @@ export default function ProductCatalogAccountingSection({
   const hideStock = !showSection('accountingStock') || priceRules?.hideInitialStock || template?.hideStock;
   const hideSell = !showSection('accountingSell');
   const hideDiscount = !showSection('accountingDiscount');
+  const hideLowStock = !showSection('accountingLowStock');
+  const hideLocation = !showSection('accountingLocation');
+  const hideDescription = !showSection('descriptionField');
   const maxDiscount = priceRules?.maxDiscountPercent ?? 100;
-  const priceLabel = template?.priceLabelKey ? t(template.priceLabelKey) : t('productModal.price');
+  const priceLabel = template?.priceLabelKey
+    ? t(template.priceLabelKey)
+    : t('productCatalog.retailPrice');
   const stockLabel = template?.stockLabelKey ? t(template.stockLabelKey) : t('productModal.initialStock');
   const stockHint = template?.stockHintKey ? t(template.stockHintKey) : null;
+
+  const showStockRow = !hideLowStock || !hideStock || !hideLocation;
+  const showPriceRow = !hideCost || !hideSell || !hideDiscount;
 
   return (
     <section className="space-y-3">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:text-emerald-400">
         {t('productCatalog.sectionAccounting')}
       </h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        {!hideCost ? (
-          <ProductCatalogField
-            label={t('productModal.cost')}
-            required={priceRules?.requireCost}
-            error={errors.costPrice?.message}
-          >
-            <input
-              {...register('costPrice', {
-                valueAsNumber: true,
-                required: priceRules?.requireCost ? t('validation.costPrice') : false,
-              })}
-              type="number"
-              step="0.01"
-              className={inputCls}
-            />
-          </ProductCatalogField>
-        ) : null}
-        {!hideSell ? (
-          <ProductCatalogField label={priceLabel} error={errors.sellingPrice?.message}>
-            <input {...register('sellingPrice', { valueAsNumber: true })} type="number" step="0.01" className={inputCls} />
-          </ProductCatalogField>
-        ) : (
-          <input type="hidden" {...register('sellingPrice', { valueAsNumber: true })} />
-        )}
-        {!hideDiscount ? (
-          <ProductCatalogField label={t('productCatalog.defaultDiscount')} error={errors.defaultDiscountPercent?.message}>
-            <input
-              {...register('defaultDiscountPercent', { valueAsNumber: true })}
-              type="number"
-              min="0"
-              max={maxDiscount}
-              step="0.1"
-              className={inputCls}
-            />
-          </ProductCatalogField>
-        ) : null}
-        <ProductCatalogField label={t('productModal.lowStock')} error={errors.lowStockAlert?.message}>
-          <input {...register('lowStockAlert', { valueAsNumber: true })} type="number" className={inputCls} />
-        </ProductCatalogField>
-        {!hideStock ? (
-          <ProductCatalogField label={stockLabel} error={errors.initialStock?.message}>
-            <input {...register('initialStock', { valueAsNumber: true })} type="number" min="0" step="any" className={inputCls} />
-          </ProductCatalogField>
-        ) : null}
-        <ProductCatalogField label={t('stockModule.modal.location')} error={errors.storageLocation?.message}>
-          <input
-            {...register('storageLocation')}
-            className={inputCls}
-            placeholder={t('stockModule.modal.locationPh')}
-          />
-        </ProductCatalogField>
-      </div>
+
+      {showStockRow ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <FieldSlot hidden={hideLowStock}>
+            <ProductCatalogField label={t('productModal.lowStock')} error={errors.lowStockAlert?.message}>
+              <input {...register('lowStockAlert', { valueAsNumber: true })} type="number" className={inputCls} />
+            </ProductCatalogField>
+          </FieldSlot>
+          {hideLowStock ? <input type="hidden" {...register('lowStockAlert', { valueAsNumber: true })} /> : null}
+
+          <FieldSlot hidden={hideStock}>
+            <ProductCatalogField label={stockLabel} error={errors.initialStock?.message}>
+              <input {...register('initialStock', { valueAsNumber: true })} type="number" min="0" step="any" className={inputCls} />
+            </ProductCatalogField>
+          </FieldSlot>
+
+          <FieldSlot hidden={hideLocation}>
+            <ProductCatalogField label={t('stockModule.modal.location')} error={errors.storageLocation?.message}>
+              <input
+                {...register('storageLocation')}
+                className={inputCls}
+                placeholder={t('stockModule.modal.locationPh')}
+              />
+            </ProductCatalogField>
+          </FieldSlot>
+          {hideLocation ? <input type="hidden" {...register('storageLocation')} /> : null}
+        </div>
+      ) : (
+        <>
+          <input type="hidden" {...register('lowStockAlert', { valueAsNumber: true })} />
+          <input type="hidden" {...register('storageLocation')} />
+        </>
+      )}
+
+      {showPriceRow ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+          <FieldSlot hidden={hideCost}>
+            <ProductCatalogField
+              label={t('productModal.cost')}
+              required={priceRules?.requireCost}
+              error={errors.costPrice?.message}
+            >
+              <input
+                {...register('costPrice', {
+                  valueAsNumber: true,
+                  required: priceRules?.requireCost ? t('validation.costPrice') : false,
+                })}
+                type="number"
+                step="0.01"
+                className={inputCls}
+              />
+            </ProductCatalogField>
+          </FieldSlot>
+
+          <FieldSlot hidden={hideSell}>
+            <ProductCatalogField
+              label={priceLabel}
+              required
+              error={errors.sellingPrice?.message}
+              hint={
+                storePricesEnabled
+                  ? t('productCatalog.retailPriceWithStoresHint')
+                  : t('productCatalog.retailPriceDefaultHint')
+              }
+            >
+              <input {...register('sellingPrice', { valueAsNumber: true })} type="number" step="0.01" className={inputCls} />
+            </ProductCatalogField>
+          </FieldSlot>
+          {hideSell ? <input type="hidden" {...register('sellingPrice', { valueAsNumber: true })} /> : null}
+
+          <FieldSlot hidden={hideDiscount}>
+            <ProductCatalogField label={t('productCatalog.defaultDiscount')} error={errors.defaultDiscountPercent?.message}>
+              <input
+                {...register('defaultDiscountPercent', { valueAsNumber: true })}
+                type="number"
+                min="0"
+                max={maxDiscount}
+                step="0.1"
+                className={inputCls}
+              />
+            </ProductCatalogField>
+          </FieldSlot>
+        </div>
+      ) : (
+        <input type="hidden" {...register('sellingPrice', { valueAsNumber: true })} />
+      )}
+
       {priceRules?.minMarginPercent > 0 ? (
         <p className="text-xs text-slate-500">
           {t('productCatalog.minMarginHint', { percent: priceRules.minMarginPercent })}
@@ -87,9 +135,14 @@ export default function ProductCatalogAccountingSection({
           {stockHint}
         </p>
       ) : null}
-      <ProductCatalogField label={t('productModal.description')} error={errors.description?.message}>
-        <textarea {...register('description')} rows={2} className={`${inputCls} resize-none`} />
-      </ProductCatalogField>
+
+      {!hideDescription ? (
+        <ProductCatalogField label={t('productModal.description')} error={errors.description?.message}>
+          <textarea {...register('description')} rows={2} className={`${inputCls} resize-none`} />
+        </ProductCatalogField>
+      ) : (
+        <input type="hidden" {...register('description')} />
+      )}
     </section>
   );
 }

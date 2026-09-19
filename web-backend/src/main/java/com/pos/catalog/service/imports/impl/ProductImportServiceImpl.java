@@ -281,6 +281,29 @@ public class ProductImportServiceImpl implements ProductImportService {
             storageLocation = defaultStorageLocation.trim();
         }
 
+        String ikpu = row.ikpu();
+        String barcode = row.barcode();
+        String packageCode = null;
+        Boolean markedProduct = null;
+        String ikpuStatus = null;
+        if (rowOpts != null) {
+            if (StringUtils.hasText(rowOpts.ikpu())) {
+                ikpu = rowOpts.ikpu().trim();
+            }
+            if (rowOpts.barcode() != null) {
+                barcode = StringUtils.hasText(rowOpts.barcode()) ? rowOpts.barcode().trim() : null;
+            }
+            if (StringUtils.hasText(rowOpts.packageCode())) {
+                packageCode = rowOpts.packageCode().trim();
+            }
+            if (rowOpts.markedProduct() != null) {
+                markedProduct = rowOpts.markedProduct();
+            }
+            if (StringUtils.hasText(rowOpts.ikpuStatus())) {
+                ikpuStatus = rowOpts.ikpuStatus().trim();
+            }
+        }
+
         CreateProductRequest req = new CreateProductRequest(
             row.sku(),
             row.name(),
@@ -297,17 +320,17 @@ public class ProductImportServiceImpl implements ProductImportService {
             quantityRules.allowFraction(),
             initialStock,
             10,
+            barcode,
             null,
             null,
             null,
-            null,
-            row.ikpu(),
-            null,
+            ikpu,
+            ikpuStatus,
             unit,
             null,
+            packageCode,
             null,
-            null,
-            null,
+            markedProduct,
             storageLocation,
             null,
             null,

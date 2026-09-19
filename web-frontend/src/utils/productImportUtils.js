@@ -55,6 +55,11 @@ export function buildEditableRows(rows, markupPercent) {
       categoryId: '',
       storeId: '',
       storageLocation: r.storageLocation ?? '',
+      barcode: r.barcode ?? '',
+      ikpu: r.ikpu ?? '',
+      packageCode: '',
+      markedProduct: false,
+      ikpuStatus: null,
     };
   });
   return map;

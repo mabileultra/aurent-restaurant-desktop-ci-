@@ -10,6 +10,7 @@ import java.math.BigDecimal;
  */
 public record ProductImportRowFields(
     String ikpu,
+    String barcode,
     String storageLocation,
     String uzInvoiceDocumentId,
     BigDecimal sellingPrice,

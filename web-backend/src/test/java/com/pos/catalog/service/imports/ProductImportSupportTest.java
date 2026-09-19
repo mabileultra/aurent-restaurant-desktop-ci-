@@ -145,7 +145,7 @@ class ProductImportSupportTest {
     @Test
     void rowDedupeKey_usesRowNumberOnly() {
         ProductImportPreviewRow row = new ProductImportPreviewRow(
-            7, "IS-001-L-7", "Name", "123", "A-1", "IS-001", "dona", null, "PIECE",
+            7, "IS-001-L-7", "Name", "123", null, "A-1", "IS-001", "dona", null, "PIECE",
             java.math.BigDecimal.ZERO,
             null, null, null,
             ProductImportPreviewRow.STATUS_NEW,

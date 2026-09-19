@@ -7,6 +7,7 @@ public record ProductImportPreviewRow(
     String sku,
     String name,
     String ikpu,
+    String barcode,
     /** Расположение на складе (из файла или значение по умолчанию при предпросмотре). */
     String storageLocation,
     /** Номер e-счёт-фактуры (напр. IS-00008429), только для источника UZ_INVOICE. */

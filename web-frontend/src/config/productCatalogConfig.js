@@ -53,34 +53,48 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
       case 'accounting':
       case 'accountingCost':
       case 'accountingStock':
+      case 'activeField':
         return true;
-      case 'skuField':
-      case 'categoryField':
-      case 'productTypeField':
-      case 'tasnif':
-      case 'retailFlags':
-      case 'ownerVat':
-      case 'accountingSell':
-      case 'accountingDiscount':
-      case 'storePrices':
-      case 'barcodes':
-      case 'dynamicFields':
-        return false;
       default:
         return false;
     }
   }
 
+  const fiscalOrTasnif = productType === 'RETAIL' || productType === 'MATERIAL';
+
   let base;
   switch (section) {
     case 'tasnif':
-      // Стройматериалы → productType MATERIAL; без Tasnif нет ИКПУ для Multikassa/ОФД
-      base = productType === 'RETAIL' || productType === 'MATERIAL';
+    case 'tasnifSearch':
+    case 'fiscalExternalId':
+    case 'fiscalIkpu':
+    case 'fiscalUnitMeasure':
+    case 'fiscalPackageCode':
+      base = fiscalOrTasnif;
       break;
     case 'typeSelectors':
     case 'productTypeField':
     case 'skuField':
     case 'categoryField':
+    case 'activeField':
+    case 'ownerType':
+    case 'vatField':
+    case 'commissionTin':
+    case 'commissionPinfl':
+    case 'ownerVat':
+    case 'accounting':
+    case 'accountingCost':
+    case 'accountingSell':
+    case 'accountingDiscount':
+    case 'accountingStock':
+    case 'accountingLowStock':
+    case 'accountingLocation':
+    case 'descriptionField':
+    case 'storePrices':
+    case 'barcodes':
+    case 'pluField':
+    case 'extraBarcodes':
+    case 'dynamicFields':
       base = true;
       break;
     case 'construction':
@@ -91,17 +105,6 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
       break;
     case 'retailFlags':
       base = productType === 'RETAIL';
-      break;
-    case 'ownerVat':
-    case 'accounting':
-    case 'accountingCost':
-    case 'accountingSell':
-    case 'accountingDiscount':
-    case 'accountingStock':
-    case 'storePrices':
-    case 'barcodes':
-    case 'dynamicFields':
-      base = true;
       break;
     default:
       base = false;

@@ -1,6 +1,6 @@
 import { inputCls, ProductCatalogField } from './productCatalogFormUi';
 
-export default function ProductCatalogFiscalSection({ t, register, errors }) {
+export default function ProductCatalogFiscalSection({ t, register, errors, showSection }) {
   return (
     <section className="space-y-3 rounded-xl border border-sky-200 bg-sky-50/40 p-4 dark:border-sky-900/40 dark:bg-sky-950/20">
       <h3 className="text-xs font-semibold uppercase tracking-wide text-sky-800 dark:text-sky-300">
@@ -8,22 +8,38 @@ export default function ProductCatalogFiscalSection({ t, register, errors }) {
       </h3>
       <p className="text-xs text-sky-700/90 dark:text-sky-400/90">{t('productCatalog.sectionFiscalHint')}</p>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <ProductCatalogField
-          label={t('productCatalog.externalId')}
-          error={errors.externalProductId?.message}
-          hint={t('productCatalog.externalIdAutoHint')}
-        >
-          <input {...register('externalProductId')} className={inputCls} />
-        </ProductCatalogField>
-        <ProductCatalogField label={t('productCatalog.ikpu')} error={errors.ikpu?.message}>
-          <input {...register('ikpu')} className={inputCls} />
-        </ProductCatalogField>
-        <ProductCatalogField label={t('productCatalog.unitCode')} error={errors.unitMeasureCode?.message}>
-          <input {...register('unitMeasureCode')} placeholder="1–999" className={inputCls} />
-        </ProductCatalogField>
-        <ProductCatalogField label={t('productCatalog.packageCode')} error={errors.packageCode?.message}>
-          <input {...register('packageCode')} placeholder="1–9999999" className={inputCls} />
-        </ProductCatalogField>
+        {showSection('fiscalExternalId') ? (
+          <ProductCatalogField
+            label={t('productCatalog.externalId')}
+            error={errors.externalProductId?.message}
+            hint={t('productCatalog.externalIdAutoHint')}
+          >
+            <input {...register('externalProductId')} className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('externalProductId')} />
+        )}
+        {showSection('fiscalIkpu') ? (
+          <ProductCatalogField label={t('productCatalog.ikpu')} error={errors.ikpu?.message}>
+            <input {...register('ikpu')} className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('ikpu')} />
+        )}
+        {showSection('fiscalUnitMeasure') ? (
+          <ProductCatalogField label={t('productCatalog.unitCode')} error={errors.unitMeasureCode?.message}>
+            <input {...register('unitMeasureCode')} placeholder="1–999" className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('unitMeasureCode')} />
+        )}
+        {showSection('fiscalPackageCode') ? (
+          <ProductCatalogField label={t('productCatalog.packageCode')} error={errors.packageCode?.message}>
+            <input {...register('packageCode')} placeholder="1–9999999" className={inputCls} />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('packageCode')} />
+        )}
       </div>
     </section>
   );

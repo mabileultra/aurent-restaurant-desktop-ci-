@@ -26,7 +26,11 @@ export default function ProductCatalogGeneralSection({
 }) {
   const showTypeSelectors = showSection('typeSelectors');
   const showRetailFlags = showSection('retailFlags');
-  const showOwnerVat = showSection('ownerVat');
+  const showOwnerType = showSection('ownerType');
+  const showVat = showSection('vatField');
+  const showCommissionTin = showSection('commissionTin');
+  const showCommissionPinfl = showSection('commissionPinfl');
+  const showOwnerBlock = showOwnerType || showVat || showCommissionTin || showCommissionPinfl;
   const unitOptions = useMemo(() => {
     const base = stockUnitsForSaleType(saleTypeWatch);
     if (!configUnits?.length) return base;
@@ -117,58 +121,82 @@ export default function ProductCatalogGeneralSection({
           </>
         ) : null}
       </div>
-      <div className="flex flex-wrap gap-6">
-        {showRetailFlags ? (
-          <>
+      {(showRetailFlags || showSection('activeField')) ? (
+        <div className="flex flex-wrap gap-6">
+          {showRetailFlags ? (
+            <>
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input type="checkbox" {...register('soldIndividually')} className="rounded border-slate-400 dark:border-slate-600" />
+                {t('productCatalog.soldByPiece')}
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
+                <input type="checkbox" {...register('markedProduct')} className="rounded border-slate-400 dark:border-slate-600" />
+                {t('productCatalog.marked')}
+              </label>
+            </>
+          ) : null}
+          {showSection('activeField') ? (
             <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-              <input type="checkbox" {...register('soldIndividually')} className="rounded border-slate-400 dark:border-slate-600" />
-              {t('productCatalog.soldByPiece')}
+              <input type="checkbox" {...register('active')} className="rounded border-slate-400 dark:border-slate-600" />
+              {t('productCatalog.active')}
             </label>
-            <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-              <input type="checkbox" {...register('markedProduct')} className="rounded border-slate-400 dark:border-slate-600" />
-              {t('productCatalog.marked')}
-            </label>
-          </>
-        ) : null}
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
-          <input type="checkbox" {...register('active')} className="rounded border-slate-400 dark:border-slate-600" />
-          {t('productCatalog.active')}
-        </label>
-      </div>
-      {showOwnerVat ? (
+          ) : (
+            <input type="hidden" {...register('active')} />
+          )}
+        </div>
+      ) : (
+        <input type="hidden" {...register('active')} />
+      )}
+      {showOwnerBlock ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <ProductCatalogField label={t('productCatalog.ownerType')} required error={errors.ownerType?.message}>
-            <BaseSelect
-              name="ownerType"
-              value={ownerTypeWatch ?? 'OWN'}
-              onChange={(e) =>
-                setValue('ownerType', e.target.value, { shouldDirty: true, shouldValidate: true })
-              }
-              options={OWNER_TYPES.map((o) => ({
-                value: o,
-                label: t(`productCatalog.owner.${o}`, o),
-              }))}
-            />
-          </ProductCatalogField>
-          <ProductCatalogField label={t('productCatalog.vat')} error={errors.taxRate?.message}>
-            <BaseSelect
-              name="taxRate"
-              value={String(taxRateWatch ?? 0)}
-              onChange={(e) =>
-                setValue('taxRate', Number(e.target.value), { shouldDirty: true, shouldValidate: true })
-              }
-              options={VAT_OPTIONS.map((v) => ({
-                value: String(v),
-                label: `${v}%`,
-              }))}
-            />
-          </ProductCatalogField>
-          <ProductCatalogField label={t('productCatalog.commissionTin')} error={errors.commissionTin?.message}>
-            <input {...register('commissionTin')} maxLength={9} className={inputCls} />
-          </ProductCatalogField>
-          <ProductCatalogField label={t('productCatalog.commissionPinfl')} error={errors.commissionPinfl?.message}>
-            <input {...register('commissionPinfl')} maxLength={14} className={inputCls} />
-          </ProductCatalogField>
+          {showOwnerType ? (
+            <ProductCatalogField label={t('productCatalog.ownerType')} required error={errors.ownerType?.message}>
+              <BaseSelect
+                name="ownerType"
+                value={ownerTypeWatch ?? 'OWN'}
+                onChange={(e) =>
+                  setValue('ownerType', e.target.value, { shouldDirty: true, shouldValidate: true })
+                }
+                options={OWNER_TYPES.map((o) => ({
+                  value: o,
+                  label: t(`productCatalog.owner.${o}`, o),
+                }))}
+              />
+            </ProductCatalogField>
+          ) : (
+            <input type="hidden" {...register('ownerType')} />
+          )}
+          {showVat ? (
+            <ProductCatalogField label={t('productCatalog.vat')} error={errors.taxRate?.message}>
+              <BaseSelect
+                name="taxRate"
+                value={String(taxRateWatch ?? 0)}
+                onChange={(e) =>
+                  setValue('taxRate', Number(e.target.value), { shouldDirty: true, shouldValidate: true })
+                }
+                options={VAT_OPTIONS.map((v) => ({
+                  value: String(v),
+                  label: `${v}%`,
+                }))}
+              />
+            </ProductCatalogField>
+          ) : (
+            <input type="hidden" {...register('taxRate', { valueAsNumber: true })} />
+          )}
+          {showCommissionTin ? (
+            <ProductCatalogField label={t('productCatalog.commissionTin')} error={errors.commissionTin?.message}>
+              <input {...register('commissionTin')} maxLength={9} className={inputCls} />
+            </ProductCatalogField>
+          ) : (
+            <input type="hidden" {...register('commissionTin')} />
+          )}
+          {showCommissionPinfl ? (
+            <ProductCatalogField label={t('productCatalog.commissionPinfl')} error={errors.commissionPinfl?.message}>
+              <input {...register('commissionPinfl')} maxLength={14} className={inputCls} />
+            </ProductCatalogField>
+          ) : (
+            <input type="hidden" {...register('commissionPinfl')} />
+          )}
         </div>
       ) : null}
     </section>

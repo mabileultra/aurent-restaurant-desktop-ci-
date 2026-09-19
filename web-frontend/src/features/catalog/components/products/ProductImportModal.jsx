@@ -9,11 +9,11 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
   const imp = useProductImport(onClose);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="product-import-modal flex max-h-[92vh] w-full max-w-5xl flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-3">
+      <div className="product-import-modal flex flex-col rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900">
         <ProductImportModalHeader title={imp.t('products.import.title')} onClose={onClose} />
 
-        <div className="product-import-modal__body min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
+        <div className="product-import-modal__body min-h-0 flex-1 overflow-y-auto p-4">
           {imp.step === 'setup' && (
             <ProductImportSetupStep
               t={imp.t}
@@ -29,6 +29,7 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
               t={imp.t}
               preview={imp.preview}
               rows={imp.rows}
+              allRows={imp.allRows}
               allDuplicates={imp.allDuplicates}
               markupInput={imp.markupInput}
               onMarkupInputChange={imp.onMarkupInputChange}
@@ -52,6 +53,17 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
               setRowCategory={imp.setRowCategory}
               setRowStore={imp.setRowStore}
               setRowStorageLocation={imp.setRowStorageLocation}
+              setRowBarcode={imp.setRowBarcode}
+              setRowIkpu={imp.setRowIkpu}
+              setRowMarkedProduct={imp.setRowMarkedProduct}
+              visibleColumns={imp.visibleColumns}
+              toggleColumn={imp.toggleColumn}
+              tasnifByRow={imp.tasnifByRow}
+              tasnifFilter={imp.tasnifFilter}
+              setTasnifFilter={imp.setTasnifFilter}
+              verifyingTasnif={imp.verifyingTasnif}
+              verifyProgress={imp.verifyProgress}
+              runTasnifVerify={imp.runTasnifVerify}
             />
           )}
 

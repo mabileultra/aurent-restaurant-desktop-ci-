@@ -53,11 +53,19 @@ describe('resolveCatalogSectionVisible formSectionMap', () => {
 
   it('keeps product-type gate even if form field enabled', () => {
     const formSectionMap = formFieldsToSectionMap([
-      { ruleKey: 'catalog.form.tasnif', enabled: true },
+      { ruleKey: 'catalog.form.tasnifSearch', enabled: true },
     ]);
     expect(
-      resolveCatalogSectionVisible('tasnif', { productType: 'DISH', formSectionMap })
+      resolveCatalogSectionVisible('tasnifSearch', { productType: 'DISH', formSectionMap })
     ).toBe(false);
+  });
+
+  it('expands legacy tasnif key to fiscal children', () => {
+    const formSectionMap = formFieldsToSectionMap([
+      { ruleKey: 'catalog.form.tasnif', enabled: false },
+    ]);
+    expect(formSectionMap.tasnifSearch).toBe(false);
+    expect(formSectionMap.fiscalIkpu).toBe(false);
   });
 });
 
@@ -65,6 +73,7 @@ describe('formFieldsToSectionMap', () => {
   it('defaults all sections to enabled', () => {
     const map = formFieldsToSectionMap([]);
     expect(isCatalogFormSectionEnabled(map, 'skuField')).toBe(true);
-    expect(isCatalogFormSectionEnabled(map, 'tasnif')).toBe(true);
+    expect(isCatalogFormSectionEnabled(map, 'tasnifSearch')).toBe(true);
+    expect(isCatalogFormSectionEnabled(map, 'descriptionField')).toBe(true);
   });
 });

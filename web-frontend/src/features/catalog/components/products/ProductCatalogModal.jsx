@@ -29,7 +29,7 @@ export default function ProductCatalogModal({
           catalogProfile={catalogProfile}
         />
 
-        <form onSubmit={form.handleSubmit(form.onSubmit)} className="p-5 space-y-8">
+        <form onSubmit={form.handleSubmit(form.onSubmit)} className="p-5 space-y-5">
           <ProductCatalogModalFormBody
             form={form}
             categories={categories}

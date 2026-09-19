@@ -51,6 +51,7 @@ export default function PlatformBusinessTypesPage() {
           onSetDefaultUnit={p.setDefaultUnit}
           onToggleRule={p.toggleRule}
           onToggleFormField={p.toggleFormField}
+          onSetFormFieldGroup={p.setFormFieldGroup}
           onPriceRuleChange={p.changePriceRule}
           onAddDisplayRule={p.addDisplayRule}
           onDisplayRuleChange={p.changeDisplayRule}

@@ -45,6 +45,13 @@ export default function PosOrderPanelLine({
             {item.sku}
           </span>
         ) : null}
+        {item.markedProduct && (item.productMark || item.markCode || (Array.isArray(item.productMarks) && item.productMarks.length > 0)) ? (
+          <span className="pos-cart-table__mark" title={t('pos.markingBadgeHint')}>
+            {Array.isArray(item.productMarks) && item.productMarks.length > 0
+              ? t('pos.markingBadgeCount', { count: item.productMarks.length })
+              : t('pos.markingBadgeOk')}
+          </span>
+        ) : null}
       </div>
 
       <div className="pos-cart-table__col pos-cart-table__col--price">

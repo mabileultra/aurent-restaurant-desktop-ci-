@@ -11,12 +11,17 @@ import {
 } from '../utils/businessTypeUtils';
 import { CATALOG_FORM_FIELD_DEFS } from '../../../config/productCatalogFormFields';
 
-function defaultFormFieldsState() {
-  return CATALOG_FORM_FIELD_DEFS.map((def) => ({
-    ruleKey: def.ruleKey,
-    ruleValue: 'true',
-    enabled: true,
-  }));
+function mergeFormFieldsState(rows) {
+  const byKey = Object.fromEntries((rows ?? []).map((row) => [row.ruleKey, row]));
+  return CATALOG_FORM_FIELD_DEFS.map((def) => {
+    const row = byKey[def.ruleKey];
+    const enabled = row ? row.enabled !== false : true;
+    return {
+      ruleKey: def.ruleKey,
+      ruleValue: enabled ? 'true' : 'false',
+      enabled,
+    };
+  });
 }
 
 export function usePlatformBusinessTypesPage() {
@@ -64,7 +69,7 @@ export function usePlatformBusinessTypesPage() {
     setUnitCodes(codes);
     setDefaultUnitCode(detail.units?.find((u) => u.defaultUnit)?.unitCode ?? codes[0] ?? 'PCS');
     setRules(detail.rules ?? []);
-    setFormFields(detail.formFields?.length ? detail.formFields : defaultFormFieldsState());
+    setFormFields(mergeFormFieldsState(detail.formFields));
     setPriceRules(detail.priceRules ?? []);
     setDisplayRules(detail.displayRules ?? []);
   }, [detail]);
@@ -317,6 +322,20 @@ export function usePlatformBusinessTypesPage() {
     });
   };
 
+  const setFormFieldGroup = (ruleKeys, enabled) => {
+    setFormFields((prev) => {
+      const byKey = new Map(prev.map((rule) => [rule.ruleKey, rule]));
+      for (const ruleKey of ruleKeys) {
+        byKey.set(ruleKey, {
+          ruleKey,
+          ruleValue: enabled ? 'true' : 'false',
+          enabled,
+        });
+      }
+      return mergeFormFieldsState(Array.from(byKey.values()));
+    });
+  };
+
   const changePriceRule = (ruleKey, value) => {
     setPriceRules((prev) => prev.map((rule) => {
       if (rule.ruleKey !== ruleKey) return rule;
@@ -387,6 +406,7 @@ export function usePlatformBusinessTypesPage() {
     setDefaultUnit,
     toggleRule,
     toggleFormField,
+    setFormFieldGroup,
     changePriceRule,
     addDisplayRule,
     changeDisplayRule,
