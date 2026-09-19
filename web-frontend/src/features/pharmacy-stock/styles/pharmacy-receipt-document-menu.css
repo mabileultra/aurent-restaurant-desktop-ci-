@@ -1,0 +1,97 @@
+.pharmacy-receipt-document-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.pharmacy-receipt-document-menu__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--pharm-ink, #0f172a);
+  cursor: pointer;
+}
+
+.pharmacy-receipt-document-menu__trigger:hover,
+.pharmacy-receipt-document-menu__trigger[aria-expanded='true'] {
+  border-color: var(--pharm-brand, #006847);
+  color: var(--pharm-brand, #006847);
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 6%, #fff);
+}
+
+.pharmacy-receipt-document-menu__list {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  min-width: 11.5rem;
+  padding: 6px;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.12);
+}
+
+.pharmacy-receipt-document-menu__list button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--pharm-ink, #0f172a);
+  font-size: 0.8125rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pharmacy-receipt-document-menu__list button:hover {
+  background: #f8fafc;
+}
+
+.pharmacy-receipt-document-menu__list button.is-danger {
+  color: #b91c1c;
+}
+
+.pharmacy-receipt-document-menu__list button.is-danger:hover {
+  background: #fef2f2;
+}
+
+.pharmacy-receipt-document-menu__list button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dark .pharmacy-receipt-document-menu__trigger,
+.dark .pharmacy-receipt-document-menu__list {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #e2e8f0;
+}
+
+.dark .pharmacy-receipt-document-menu__list button {
+  color: #e2e8f0;
+}
+
+.dark .pharmacy-receipt-document-menu__list button:hover {
+  background: rgba(148, 163, 184, 0.12);
+}
+
+.dark .pharmacy-receipt-document-menu__list button.is-danger {
+  color: #fca5a5;
+}
+
+.dark .pharmacy-receipt-document-menu__list button.is-danger:hover {
+  background: rgba(185, 28, 28, 0.18);
+}

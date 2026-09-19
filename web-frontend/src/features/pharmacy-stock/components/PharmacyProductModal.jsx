@@ -180,7 +180,7 @@ export default function PharmacyProductModal({
               ? t('pharmacyStock.lineModalTitle')
               : t('pharmacyStock.productModalTitle')
         }
-        size={includeLine ? 'sm' : 'md'}
+        size="md"
         className={`pharmacy-stock ${includeLine ? 'pharm-line-modal' : 'pharm-product-modal'}`}
         bodyClassName={includeLine ? 'pharm-line-modal__body' : 'pharm-product-modal__body'}
         overlayClassName={overlayClassName}

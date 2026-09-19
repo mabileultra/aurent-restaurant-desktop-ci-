@@ -113,8 +113,11 @@ public class TenantAccessSupport {
         return companyId;
     }
 
-    /** Для read-only операций: null только у SUPER_ADMIN без company в JWT. */
+    /** Для read-only операций: null у SUPER_ADMIN / внутреннего сервиса без company в контексте. */
     public Integer effectiveCompanyIdOrNull() {
+        if (currentUserProvider.isInternalService()) {
+            return TenantContext.companyId().orElse(null);
+        }
         User actor = currentUser();
         if (currentUserProvider.isPlatformOperator(actor)) {
             return TenantContext.companyId().orElse(null);

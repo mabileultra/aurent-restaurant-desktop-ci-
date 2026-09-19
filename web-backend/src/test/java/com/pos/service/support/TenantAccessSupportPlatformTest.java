@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +47,12 @@ class TenantAccessSupportPlatformTest {
         when(currentUserProvider.isPlatformOperator(operator)).thenReturn(true);
         assertThrows(BadRequestException.class, () -> support.resolveCompanyIdForCreate(null));
         assertEquals(8, support.resolveCompanyIdForCreate(8));
+    }
+
+    @Test
+    void internalServiceBackfillDoesNotNeedAUser() {
+        when(currentUserProvider.isInternalService()).thenReturn(true);
+        assertNull(support.effectiveCompanyIdOrNull());
     }
 
     @Test

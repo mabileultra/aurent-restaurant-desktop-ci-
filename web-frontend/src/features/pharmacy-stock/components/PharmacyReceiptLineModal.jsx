@@ -41,7 +41,7 @@ export default function PharmacyReceiptLineModal({
       open={open}
       onClose={onClose}
       title={existingLine ? t('pharmacyStock.lineModalEditTitle') : t('pharmacyStock.lineModalTitle')}
-      size="sm"
+      size="md"
       className="pharmacy-stock pharm-line-modal"
       bodyClassName="pharm-line-modal__body"
       footerClassName="pharm-line-modal__footer-bar"

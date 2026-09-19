@@ -1,0 +1,74 @@
+.pharmacy-import-match-table {
+  font-size: 0.875rem;
+}
+
+.pharmacy-import-match-table .pharmacy-stock__import-check {
+  width: 2.4rem;
+  text-align: center;
+}
+
+.pharmacy-import-match-table .pharmacy-stock__checkbox {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--pharm-brand, #006847);
+}
+
+.pharmacy-import-match__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.7rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pharmacy-import-match__status.is-found {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pharmacy-import-match__status.is-partial {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pharmacy-import-match__status.is-missing {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.pharmacy-import-match__status.is-duplicate {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.pharmacy-import-match__note {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.pharmacy-stock__import-table tbody tr.is-found td {
+  background: #f0fdf4;
+}
+
+.pharmacy-stock__import-table tbody tr.is-partial td {
+  background: #fffbeb;
+}
+
+.pharmacy-stock__import-table tbody tr.is-missing td {
+  background: #fef2f2;
+}
+
+.pharmacy-stock__import-table tbody tr.is-duplicate td {
+  background: #f8fafc;
+  color: #94a3b8;
+}
+
+.pharmacy-stock__import-table tbody td.pharmacy-stock__import-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+}

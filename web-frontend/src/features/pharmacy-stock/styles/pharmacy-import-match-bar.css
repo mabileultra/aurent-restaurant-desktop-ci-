@@ -1,0 +1,100 @@
+.pharmacy-import-match-bar {
+  flex: 0 0 auto;
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--pharm-line, #e2e8f0);
+  border-radius: 12px;
+  background: #fff;
+}
+
+.dark .pharmacy-import-match-bar {
+  background: rgba(15, 23, 42, 0.92);
+  border-color: rgba(148, 163, 184, 0.25);
+}
+
+.pharmacy-import-match-bar__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pharmacy-import-match-bar__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-import-match-bar__chip strong {
+  min-width: 1.4rem;
+  text-align: right;
+  font-size: 1rem;
+}
+
+.pharmacy-import-match-bar__chip.is-found {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.pharmacy-import-match-bar__chip.is-partial {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.pharmacy-import-match-bar__chip.is-missing {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.pharmacy-import-match-bar__chip.is-active {
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 28%, transparent);
+}
+
+.pharmacy-import-match-bar__hint {
+  margin: 10px 0 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-import-match-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pharmacy-import-match-bar__actions button {
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid #dbe3ee;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-import-match-bar__actions button:hover {
+  background: #f8fafc;
+}
+
+.pharmacy-import-match-bar__picked {
+  margin-left: auto;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #0f172a);
+}

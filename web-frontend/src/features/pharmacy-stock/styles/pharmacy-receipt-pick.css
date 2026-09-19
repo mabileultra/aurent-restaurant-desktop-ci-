@@ -1,0 +1,97 @@
+.pharmacy-receipt-pick-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.pharmacy-receipt-pick-page .pharmacy-stock__tb-btn {
+  height: 2.35rem;
+  padding: 0 1rem;
+  font-size: 0.84rem;
+}
+
+.pharmacy-receipt-pick {
+  display: grid;
+  gap: 0.85rem;
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .pharmacy-receipt-pick {
+    grid-template-rows: minmax(260px, 1.15fr) minmax(220px, 0.9fr);
+  }
+}
+
+.pharmacy-receipt-pick-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.65rem 1rem;
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--pharm-line, #e2e8f0);
+  background: #f8fafc;
+}
+
+.dark .pharmacy-receipt-pick-head {
+  background: rgba(30, 41, 59, 0.85);
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+.pharmacy-receipt-pick-head__copy {
+  min-width: 0;
+}
+
+.pharmacy-receipt-pick-head__title {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--pharm-ink, #0f172a);
+}
+
+.pharmacy-receipt-pick-head__hint {
+  margin: 3px 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--pharm-muted, #64748b);
+}
+
+.pharmacy-receipt-pick-head__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.85rem;
+  min-height: 1.55rem;
+  padding: 0 0.45rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, #fff);
+  color: var(--pharm-brand, #006847);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.pharmacy-receipt-pick__select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.85rem;
+  padding: 0 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--pharm-brand, #006847) 28%, #d8dee6);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 8%, #fff);
+  color: var(--pharm-brand, #006847);
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pharmacy-receipt-pick__select:hover {
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 14%, #fff);
+}
+
+.pharmacy-receipt-pick .pharmacy-stock__panel .table-pagination {
+  padding: 0.5rem 0.85rem;
+}

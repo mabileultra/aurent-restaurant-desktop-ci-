@@ -2,6 +2,11 @@ import { useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
 import { savePendingImportMarks } from '../utils/pharmacyReceiptPendingMarksStore';
+import {
+  classifyPharmacyImportMatch,
+  defaultImportMatchSelected,
+} from '../utils/classifyPharmacyImportMatch';
+import { toPharmacyImportConfirmItem } from '../utils/toPharmacyImportConfirmItem';
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
@@ -18,6 +23,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
   const [useFinalSums, setUseFinalSums] = useState(false);
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState('');
+  const [matchFilter, setMatchFilter] = useState('all');
   const [invoiceId, setInvoiceId] = useState(null);
   const [invoiceAlreadyImported, setInvoiceAlreadyImported] = useState(false);
 
@@ -46,6 +52,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       setUseFinalSums(false);
       setItems([]);
       setQuery('');
+      setMatchFilter('all');
       setInvoiceId(data.uzInvoiceDocumentId || null);
       setInvoiceAlreadyImported(Boolean(data.invoiceAlreadyImported));
       setStep('columns');
@@ -80,7 +87,11 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       });
       setInvoiceId(data.uzInvoiceDocumentId || invoiceId);
       setInvoiceAlreadyImported(Boolean(data.invoiceAlreadyImported));
-      setItems(data.items ?? []);
+      setItems((data.items ?? []).map((item) => ({
+        ...item,
+        selected: defaultImportMatchSelected(item),
+      })));
+      setMatchFilter('all');
       setStep('match');
     } catch (err) {
       toast.error(err.response?.data?.message ?? t('pharmacyStock.importFailed'));
@@ -91,21 +102,34 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
 
   const filteredItems = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return items;
-    return items.filter((item) => (
-      String(item.excelName || '').toLowerCase().includes(q)
-      || String(item.message || '').toLowerCase().includes(q)
-    ));
-  }, [items, query]);
+    return items.filter((item) => {
+      const tone = classifyPharmacyImportMatch(item);
+      if (matchFilter !== 'all' && tone !== matchFilter) return false;
+      if (!q) return true;
+      return String(item.excelName || '').toLowerCase().includes(q)
+        || String(item.message || '').toLowerCase().includes(q);
+    });
+  }, [items, query, matchFilter]);
+
+  const setRowsSelected = (rowIndexes, selected) => {
+    const ids = new Set(rowIndexes);
+    setItems((prev) => prev.map((item) => (
+      ids.has(item.rowIndex) && classifyPharmacyImportMatch(item) !== 'duplicate'
+        ? { ...item, selected }
+        : item
+    )));
+  };
 
   const confirm = async () => {
     if (invoiceAlreadyImported) {
       toast.error(t('pharmacyStock.importInvoiceAlreadyImported', { id: invoiceId }));
       return;
     }
-    const payload = items.filter((item) => item.status !== 'DUPLICATE');
+    const payload = items.filter((item) => (
+      item.selected && item.status !== 'DUPLICATE'
+    ));
     if (!payload.length) {
-      toast.error(t('pharmacyStock.importNothing'));
+      toast.error(t('pharmacyStock.importMatch.needSelected'));
       return;
     }
     const withQty = payload.filter((item) => Number(item.quantity) > 0);
@@ -115,7 +139,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     }
     setBusy(true);
     try {
-      const body = withQty.map(toConfirmItem);
+      const body = withQty.map(toPharmacyImportConfirmItem);
       const chunkSize = 80;
       for (let i = 0; i < body.length; i += chunkSize) {
         const chunk = body.slice(i, i + chunkSize);
@@ -147,36 +171,11 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     setStep(null);
     setParse(null);
     setItems([]);
+    setQuery('');
+    setMatchFilter('all');
     setInvoiceId(null);
     setInvoiceAlreadyImported(false);
   };
-
-function toConfirmItem(item) {
-  const expiry = item.expiryDate && String(item.expiryDate).length >= 8 ? item.expiryDate : undefined;
-  return {
-    rowIndex: item.rowIndex,
-    createIfMissing: true,
-    excelName: item.excelName,
-    manufacturer: item.manufacturer,
-    country: item.country,
-    quantity: item.quantity,
-    purchasePrice: item.purchasePrice,
-    vatPercent: item.vatPercent,
-    retailPrice: item.retailPrice,
-    batchNumber: item.batchNumber,
-    expiryDate: expiry,
-    barcode: item.barcode,
-    ikpu: item.ikpu,
-    unitsInPack: item.unitsInPack,
-    markCodes: Array.isArray(item.markCodes) ? item.markCodes : [],
-    markedProduct: Boolean(item.markedProduct),
-    prescriptionRequired: item.prescriptionRequired === true
-      ? true
-      : item.prescriptionRequired === false ? false : undefined,
-    packageCode: item.packageCode || undefined,
-    ikpuStatus: item.ikpuStatus || undefined,
-  };
-}
 
   return {
     fileRef,
@@ -206,6 +205,24 @@ function toConfirmItem(item) {
     patchItem: (rowIndex, patch) => setItems((prev) => prev.map((item) => (
       item.rowIndex === rowIndex ? { ...item, ...patch } : item
     ))),
+    toggleSelected: (rowIndex) => setItems((prev) => prev.map((item) => (
+      item.rowIndex === rowIndex && classifyPharmacyImportMatch(item) !== 'duplicate'
+        ? { ...item, selected: !item.selected }
+        : item
+    ))),
+    setVisibleSelected: (selected) => setRowsSelected(
+      filteredItems.map((item) => item.rowIndex),
+      selected,
+    ),
+    selectFound: () => setItems((prev) => prev.map((item) => {
+      const tone = classifyPharmacyImportMatch(item);
+      if (tone === 'duplicate') return item;
+      return { ...item, selected: tone === 'found' || tone === 'partial' };
+    })),
+    selectAll: () => setRowsSelected(items.map((item) => item.rowIndex), true),
+    clearSelected: () => setRowsSelected(items.map((item) => item.rowIndex), false),
+    matchFilter,
+    setMatchFilter,
     confirm,
     close,
     roleKeys: ROLE_KEYS,

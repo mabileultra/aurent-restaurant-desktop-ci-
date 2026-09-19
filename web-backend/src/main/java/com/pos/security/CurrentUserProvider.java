@@ -37,6 +37,15 @@ public class CurrentUserProvider {
         throw new ResourceNotFoundException("Current user not found");
     }
 
+    public boolean isInternalService() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || auth.getAuthorities() == null) {
+            return false;
+        }
+        return auth.getAuthorities().stream()
+            .anyMatch(authority -> "ROLE_INTERNAL".equals(authority.getAuthority()));
+    }
+
     public boolean isSuperAdmin(User user) {
         return RoleName.SUPER_ADMIN.matches(user);
     }

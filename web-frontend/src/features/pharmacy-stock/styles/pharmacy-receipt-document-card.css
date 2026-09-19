@@ -1,0 +1,7 @@
+.pharmacy-receipt-document-card > .pharmacy-receipt-document-card__head {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin: -2px 0 2px;
+}

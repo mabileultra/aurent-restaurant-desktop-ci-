@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 
-/** Только товарные таблицы аптеки — больше строк за запрос. */
-export const PHARM_PAGE_SIZES = [20, 50, 100, 200];
-export const PHARM_DEFAULT_PAGE_SIZE = 50;
+/** Товарные таблицы аптеки: сначала 10, дальше 20 / 50 / 100. */
+export const PHARM_PAGE_SIZES = [10, 20, 50, 100];
+export const PHARM_DEFAULT_PAGE_SIZE = 10;
 
 export function slicePage(rows, page, pageSize) {
   const list = Array.isArray(rows) ? rows : [];

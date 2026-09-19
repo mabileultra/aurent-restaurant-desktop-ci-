@@ -1,6 +1,6 @@
 import { Search } from 'lucide-react';
+import PharmacyReceiptImportMatchBar from './PharmacyReceiptImportMatchBar';
 import PharmacyReceiptImportMatchTable from './PharmacyReceiptImportMatchTable';
-import PharmacyReceiptImportTasnifPanel from './PharmacyReceiptImportTasnifPanel';
 
 export default function PharmacyReceiptImportWizard({ t, imp }) {
   if (!imp.step) return null;
@@ -48,7 +48,9 @@ export default function PharmacyReceiptImportWizard({ t, imp }) {
                 onClick={imp.confirm}
                 disabled={imp.busy || imp.invoiceAlreadyImported}
               >
-                {t('common.save')}
+                {t('pharmacyStock.importMatch.addSelected', {
+                  count: (imp.matchAllItems || []).filter((item) => item.selected).length,
+                })}
               </button>
             </>
           ) : (
@@ -88,7 +90,17 @@ export default function PharmacyReceiptImportWizard({ t, imp }) {
         </p>
       ) : null}
 
-      {matchStep ? <PharmacyReceiptImportTasnifPanel t={t} items={imp.matchAllItems || imp.items} /> : null}
+      {matchStep ? (
+        <PharmacyReceiptImportMatchBar
+          t={t}
+          items={imp.matchAllItems || imp.items}
+          filter={imp.matchFilter}
+          onFilter={imp.setMatchFilter}
+          onSelectFound={imp.selectFound}
+          onSelectAll={imp.selectAll}
+          onClear={imp.clearSelected}
+        />
+      ) : null}
 
       <div className="pharmacy-stock__import-body">
         {matchStep ? <PharmacyReceiptImportMatchTable t={t} imp={imp} /> : <ColumnsStep t={t} imp={imp} />}

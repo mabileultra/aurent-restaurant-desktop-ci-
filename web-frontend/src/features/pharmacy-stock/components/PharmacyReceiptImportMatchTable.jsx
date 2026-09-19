@@ -1,12 +1,29 @@
-import '../styles/pharmacy-import-tasnif.css';
+import { classifyPharmacyImportMatch } from '../utils/classifyPharmacyImportMatch';
+import '../styles/pharmacy-import-match-table.css';
 
 export default function PharmacyReceiptImportMatchTable({ t, imp }) {
+  const visible = imp.items;
+  const selectable = visible.filter((item) => classifyPharmacyImportMatch(item) !== 'duplicate');
+  const allChecked = selectable.length > 0 && selectable.every((item) => item.selected);
+  const colspan = COLUMNS.length + 5;
+
   return (
     <div className="pharmacy-stock__import-table-wrap">
-      <table className="pharmacy-stock__import-table pharmacy-stock__import-table--match">
+      <table className="pharmacy-stock__import-table pharmacy-stock__import-table--match pharmacy-import-match-table">
         <thead>
           <tr>
+            <th className="pharmacy-stock__import-check">
+              <input
+                type="checkbox"
+                className="pharmacy-stock__checkbox"
+                checked={allChecked}
+                disabled={!selectable.length}
+                onChange={() => imp.setVisibleSelected(!allChecked)}
+                aria-label={t('pharmacyStock.selectAll')}
+              />
+            </th>
             <th className="pharmacy-stock__import-num">№</th>
+            <th>{t('pharmacyStock.importMatch.status')}</th>
             <th>{t('pharmacyStock.colName')}</th>
             <th>{t('pharmacyStock.importRole.MARK_CODES')}</th>
             {COLUMNS.map((col) => (
@@ -15,14 +32,14 @@ export default function PharmacyReceiptImportMatchTable({ t, imp }) {
           </tr>
         </thead>
         <tbody>
-          {imp.items.length === 0 ? (
+          {visible.length === 0 ? (
             <tr>
-              <td colSpan={COLUMNS.length + 3}>
+              <td colSpan={colspan}>
                 <div className="pharmacy-stock__empty">{t('pharmacyStock.importNoRows')}</div>
               </td>
             </tr>
-          ) : imp.items.map((item) => (
-            <MatchRow key={item.rowIndex} t={t} item={item} patchItem={imp.patchItem} />
+          ) : visible.map((item) => (
+            <MatchRow key={item.rowIndex} t={t} item={item} imp={imp} />
           ))}
         </tbody>
       </table>
@@ -30,23 +47,30 @@ export default function PharmacyReceiptImportMatchTable({ t, imp }) {
   );
 }
 
-function MatchRow({ t, item, patchItem }) {
-  const ok = item.status !== 'DUPLICATE';
-  const patch = (key, value) => patchItem(item.rowIndex, { [key]: value });
+function MatchRow({ t, item, imp }) {
+  const tone = classifyPharmacyImportMatch(item);
+  const locked = tone === 'duplicate';
+  const patch = (key, value) => imp.patchItem(item.rowIndex, { [key]: value });
   return (
-    <tr className={ok ? undefined : 'pharmacy-stock__import-miss'}>
-      <td className="pharmacy-stock__import-num">{item.rowIndex + 1}</td>
-      <td className="pharmacy-stock__import-name">
-        <div>{item.excelName}</div>
-        <div className="pharmacy-import-tasnif__chips">
-          {item.ikpuStatus === 'FOUND' ? <span>{t('pharmacyStock.importTasnif.flagFound')}</span> : null}
-          {item.ikpuStatus === 'MANUAL' ? <span>{t('pharmacyStock.importTasnif.flagManual')}</span> : null}
-          {item.markedProduct ? <span>{t('pharmacyStock.importTasnif.flagMarked')}</span> : null}
-          {item.packageCode ? <span>{t('pharmacyStock.importTasnif.flagPack')}</span> : null}
-          {item.prescriptionRequired === true ? <span>{t('pharmacyStock.importTasnif.flagRx')}</span> : null}
-          {item.prescriptionRequired === false ? <span>{t('pharmacyStock.importTasnif.flagOtc')}</span> : null}
-        </div>
+    <tr className={`is-${tone}`}>
+      <td className="pharmacy-stock__import-check">
+        <input
+          type="checkbox"
+          className="pharmacy-stock__checkbox"
+          checked={Boolean(item.selected) && !locked}
+          disabled={locked}
+          onChange={() => imp.toggleSelected(item.rowIndex)}
+          aria-label={t('pharmacyStock.selectRow')}
+        />
       </td>
+      <td className="pharmacy-stock__import-num">{item.rowIndex + 1}</td>
+      <td>
+        <span className={`pharmacy-import-match__status is-${tone}`}>
+          {t(`pharmacyStock.importMatch.${tone}`)}
+        </span>
+        <p className="pharmacy-import-match__note">{t(`pharmacyStock.importMatch.${tone}Hint`)}</p>
+      </td>
+      <td className="pharmacy-stock__import-name">{item.excelName}</td>
       <td className="pharmacy-stock__import-marks">
         {Array.isArray(item.markCodes) && item.markCodes.length
           ? item.markCodes.length
