@@ -57,7 +57,8 @@ public class BusinessTypeDefinitionServiceImpl implements BusinessTypeDefinition
             businessTypeConfigService.getUnits(id),
             businessTypeConfigService.getRules(id),
             businessTypeConfigService.getPriceRules(id),
-            businessTypeConfigService.getDisplayRules(id)
+            businessTypeConfigService.getDisplayRules(id),
+            businessTypeConfigService.getFormFields(id)
         );
     }
 

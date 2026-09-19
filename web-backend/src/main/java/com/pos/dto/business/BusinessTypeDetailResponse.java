@@ -13,5 +13,6 @@ public record BusinessTypeDetailResponse(
     List<BusinessTypeUnitAssignmentResponse> units,
     List<BusinessTypeRuleResponse> rules,
     List<BusinessTypePriceRuleResponse> priceRules,
-    List<FieldDisplayRuleResponse> displayRules
+    List<FieldDisplayRuleResponse> displayRules,
+    List<BusinessTypeRuleResponse> formFields
 ) {}

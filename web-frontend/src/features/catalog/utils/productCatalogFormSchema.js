@@ -1,9 +1,10 @@
 import { z } from 'zod';
 
-export function createProductCatalogFormSchema(t, { catalogProfile } = {}) {
+export function createProductCatalogFormSchema(t, { catalogProfile, skuOptional = false } = {}) {
   const isRestaurantIngredient = catalogProfile === 'restaurantIngredient';
+  const skuFieldOptional = isRestaurantIngredient || skuOptional;
   return z.object({
-    sku: isRestaurantIngredient
+    sku: skuFieldOptional
       ? z.string().optional().transform((v) => (v == null ? '' : v))
       : z.string().min(1, t('validation.skuRequired')),
     name: z.string().min(2, t('validation.nameMin')),

@@ -9,6 +9,15 @@ import {
   fieldToForm,
   parseOptionsText,
 } from '../utils/businessTypeUtils';
+import { CATALOG_FORM_FIELD_DEFS } from '../../../config/productCatalogFormFields';
+
+function defaultFormFieldsState() {
+  return CATALOG_FORM_FIELD_DEFS.map((def) => ({
+    ruleKey: def.ruleKey,
+    ruleValue: 'true',
+    enabled: true,
+  }));
+}
 
 export function usePlatformBusinessTypesPage() {
   const { t } = useTranslation();
@@ -20,6 +29,7 @@ export function usePlatformBusinessTypesPage() {
   const [unitCodes, setUnitCodes] = useState([]);
   const [defaultUnitCode, setDefaultUnitCode] = useState('PCS');
   const [rules, setRules] = useState([]);
+  const [formFields, setFormFields] = useState([]);
   const [priceRules, setPriceRules] = useState([]);
   const [displayRules, setDisplayRules] = useState([]);
 
@@ -54,6 +64,7 @@ export function usePlatformBusinessTypesPage() {
     setUnitCodes(codes);
     setDefaultUnitCode(detail.units?.find((u) => u.defaultUnit)?.unitCode ?? codes[0] ?? 'PCS');
     setRules(detail.rules ?? []);
+    setFormFields(detail.formFields?.length ? detail.formFields : defaultFormFieldsState());
     setPriceRules(detail.priceRules ?? []);
     setDisplayRules(detail.displayRules ?? []);
   }, [detail]);
@@ -132,6 +143,20 @@ export function usePlatformBusinessTypesPage() {
     onSuccess: () => {
       invalidate();
       toast.success(t('platform.businessTypes.rulesSaved'));
+    },
+    onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
+  });
+
+  const saveFormFieldsMutation = useMutation({
+    mutationFn: () => platformBusinessTypeApi.setFormFields(activeTypeId, {
+      rules: formFields.map((rule) => ({
+        ruleKey: rule.ruleKey,
+        ruleValue: rule.enabled ? 'true' : 'false',
+      })),
+    }),
+    onSuccess: () => {
+      invalidate();
+      toast.success(t('platform.businessTypes.formFieldsSaved'));
     },
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
@@ -280,6 +305,18 @@ export function usePlatformBusinessTypesPage() {
     )));
   };
 
+  const toggleFormField = (ruleKey) => {
+    setFormFields((prev) => {
+      const exists = prev.some((rule) => rule.ruleKey === ruleKey);
+      if (!exists) {
+        return [...prev, { ruleKey, ruleValue: 'false', enabled: false }];
+      }
+      return prev.map((rule) => (
+        rule.ruleKey === ruleKey ? { ...rule, enabled: !rule.enabled } : rule
+      ));
+    });
+  };
+
   const changePriceRule = (ruleKey, value) => {
     setPriceRules((prev) => prev.map((rule) => {
       if (rule.ruleKey !== ruleKey) return rule;
@@ -326,6 +363,7 @@ export function usePlatformBusinessTypesPage() {
     unitCodes,
     defaultUnitCode,
     rules,
+    formFields,
     priceRules,
     displayRules,
     typeModal,
@@ -348,12 +386,14 @@ export function usePlatformBusinessTypesPage() {
     toggleUnit,
     setDefaultUnit,
     toggleRule,
+    toggleFormField,
     changePriceRule,
     addDisplayRule,
     changeDisplayRule,
     removeDisplayRule,
     saveUnitsMutation,
     saveRulesMutation,
+    saveFormFieldsMutation,
     savePriceRulesMutation,
     saveDisplayRulesMutation,
   };

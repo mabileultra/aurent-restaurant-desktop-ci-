@@ -33,7 +33,8 @@ public class BusinessTypeMapper {
         List<BusinessTypeUnitAssignmentResponse> units,
         List<BusinessTypeRuleResponse> rules,
         List<BusinessTypePriceRuleResponse> priceRules,
-        List<FieldDisplayRuleResponse> displayRules
+        List<FieldDisplayRuleResponse> displayRules,
+        List<BusinessTypeRuleResponse> formFields
     ) {
         return new BusinessTypeDetailResponse(
             entity.getId(),
@@ -46,7 +47,8 @@ public class BusinessTypeMapper {
             units,
             rules,
             priceRules,
-            displayRules
+            displayRules,
+            formFields
         );
     }
 
@@ -58,7 +60,17 @@ public class BusinessTypeMapper {
                 .sorted(java.util.Comparator.comparingInt(BusinessTypeField::getSortOrder).thenComparingInt(BusinessTypeField::getId))
                 .map(this::toFieldResponse)
                 .toList();
-        return new BusinessConfigResponse(entity.getCode(), entity.getName(), fields, List.of(), List.of(), List.of(), List.of(), List.of());
+        return new BusinessConfigResponse(
+            entity.getCode(),
+            entity.getName(),
+            fields,
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of(),
+            List.of()
+        );
     }
 
     public BusinessTypeFieldResponse toFieldResponse(BusinessTypeField field) {

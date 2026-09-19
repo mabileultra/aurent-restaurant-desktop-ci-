@@ -3,6 +3,7 @@ import { BaseButton } from '../../../../components/ui';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import PlatformBusinessTypeUnitsRules from './PlatformBusinessTypeUnitsRules';
 import PlatformBusinessTypePriceDisplayRules from './PlatformBusinessTypePriceDisplayRules';
+import PlatformBusinessTypeFormFields from './PlatformBusinessTypeFormFields';
 
 function FlagBadge({ on, yes, no }) {
   return (
@@ -23,6 +24,7 @@ export default function PlatformBusinessTypeDetail({
   rules = [],
   priceRules = [],
   displayRules = [],
+  formFields = [],
   onEditType,
   onDeleteType,
   onAddField,
@@ -31,16 +33,19 @@ export default function PlatformBusinessTypeDetail({
   onToggleUnit,
   onSetDefaultUnit,
   onToggleRule,
+  onToggleFormField,
   onPriceRuleChange,
   onAddDisplayRule,
   onDisplayRuleChange,
   onRemoveDisplayRule,
   onSaveUnits,
   onSaveRules,
+  onSaveFormFields,
   onSavePriceRules,
   onSaveDisplayRules,
   savingUnits,
   savingRules,
+  savingFormFields,
   savingPriceRules,
   savingDisplayRules,
 }) {
@@ -148,6 +153,17 @@ export default function PlatformBusinessTypeDetail({
           </tbody>
         </table>
       </div>
+
+      {onToggleFormField ? (
+        <PlatformBusinessTypeFormFields
+          t={t}
+          detail={detail}
+          formFields={formFields}
+          onToggle={onToggleFormField}
+          onSave={onSaveFormFields}
+          saving={savingFormFields}
+        />
+      ) : null}
 
       {onToggleUnit ? (
         <PlatformBusinessTypeUnitsRules

@@ -12,6 +12,7 @@ import {
   normalizeBusinessTypeCode,
   resolveCatalogSectionVisible,
 } from '../../../config/productCatalogConfig';
+import { formFieldsToSectionMap } from '../../../config/productCatalogFormFields';
 import { syncStoreRowPrices } from '../../../utils/productCatalogPrices';
 import useBusinessConfig from '../../../hooks/useBusinessConfig';
 import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
@@ -23,6 +24,8 @@ import {
 } from '../utils/productCatalogFormDefaults';
 import { createProductCatalogFormSchema } from '../utils/productCatalogFormSchema';
 import { extractAttributeValues, parsePriceRules } from '../../../utils/businessConfigUtils';
+import { useProductCatalogAutoIds } from './useProductCatalogAutoIds';
+import { buildFallbackProductSku } from '../utils/buildFallbackProductSku';
 
 export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const { t } = useTranslation();
@@ -61,9 +64,17 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     });
   }, [selectedStoreId, isEdit]);
 
+  const formSectionMap = useMemo(
+    () => formFieldsToSectionMap(businessConfig?.formFields),
+    [businessConfig?.formFields]
+  );
+
   const schema = useMemo(
-    () => createProductCatalogFormSchema(t, { catalogProfile }),
-    [t, catalogProfile],
+    () => createProductCatalogFormSchema(t, {
+      catalogProfile,
+      skuOptional: formSectionMap.skuField === false,
+    }),
+    [t, catalogProfile, formSectionMap.skuField],
   );
 
   const form = useForm({
@@ -160,6 +171,16 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const ownerTypeWatch = watch('ownerType');
   const taxRateWatch = watch('taxRate');
   const categoryId = watch('categoryId');
+  const ikpuWatch = watch('ikpu');
+  const packageCodeWatch = watch('packageCode');
+
+  useProductCatalogAutoIds({
+    isEdit,
+    ikpuWatch,
+    packageCodeWatch,
+    getValues,
+    setValue,
+  });
 
   useEffect(() => {
     if (saleTypeWatch === 'SERVICE') {
@@ -267,6 +288,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     resolveCatalogSectionVisible(section, {
       productType: productTypeWatch,
       catalogProfile,
+      formSectionMap,
     });
 
   useEffect(() => {
@@ -286,18 +308,14 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       submitValues.soldIndividually = true;
       submitValues.markedProduct = false;
       if (!String(submitValues.sku || '').trim()) {
-        const slug = String(submitValues.name || 'ing')
-          .trim()
-          .toUpperCase()
-          .replace(/[^A-Z0-9А-ЯЁ]+/gi, '-')
-          .replace(/^-+|-+$/g, '')
-          .slice(0, 16);
-        submitValues.sku = `ING-${slug || 'ITEM'}-${Date.now().toString(36).slice(-4).toUpperCase()}`;
+        submitValues.sku = buildFallbackProductSku(submitValues.name).replace(/^AUTO-/, 'ING-');
       }
       const cost = Number(submitValues.costPrice) || 0;
       submitValues.sellingPrice = submitValues.sellingPrice > 0
         ? submitValues.sellingPrice
         : (cost > 0 ? cost : 0.01);
+    } else if (!showSection('skuField') && !String(submitValues.sku || '').trim()) {
+      submitValues.sku = buildFallbackProductSku(submitValues.name);
     }
 
     if (

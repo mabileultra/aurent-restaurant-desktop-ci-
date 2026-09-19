@@ -95,6 +95,12 @@ public class PlatformBusinessTypeController {
         return posCoreProxyService.forward(request, PUBLIC_PREFIX, OPS_BASE);
     }
 
+    @PutMapping("/{id}/form-fields")
+    @Operation(summary = "Включить/отключить поля формы товара")
+    public ResponseEntity<byte[]> setFormFields(HttpServletRequest request, @PathVariable Integer id) {
+        return posCoreProxyService.forward(request, PUBLIC_PREFIX, OPS_BASE);
+    }
+
     @PutMapping("/{id}/price-rules")
     @Operation(summary = "Назначить правила ценообразования")
     public ResponseEntity<byte[]> setPriceRules(HttpServletRequest request, @PathVariable Integer id) {

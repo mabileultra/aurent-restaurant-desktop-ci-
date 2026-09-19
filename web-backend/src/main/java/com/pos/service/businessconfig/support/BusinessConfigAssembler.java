@@ -53,6 +53,7 @@ public class BusinessConfigAssembler {
             .map(c -> new UnitConversionResponse(c.getFromCode(), c.getToCode(), c.getFactor()))
             .toList();
         List<BusinessTypeRuleResponse> rules = BusinessTypeConfigServiceImpl.mergeRules(ruleRows);
+        List<BusinessTypeRuleResponse> formFields = BusinessTypeConfigServiceImpl.mergeFormFields(ruleRows);
         List<BusinessTypePriceRuleResponse> priceRules =
             BusinessTypeConfigServiceImpl.mergePriceRules(priceRuleRows);
         var displayRules = BusinessTypeConfigServiceImpl.toDisplayRuleResponses(displayRuleRows);
@@ -64,7 +65,8 @@ public class BusinessConfigAssembler {
             rules,
             conversions,
             priceRules,
-            displayRules
+            displayRules,
+            formFields
         );
     }
 }

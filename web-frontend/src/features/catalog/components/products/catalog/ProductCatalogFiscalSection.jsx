@@ -8,7 +8,11 @@ export default function ProductCatalogFiscalSection({ t, register, errors }) {
       </h3>
       <p className="text-xs text-sky-700/90 dark:text-sky-400/90">{t('productCatalog.sectionFiscalHint')}</p>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-        <ProductCatalogField label={t('productCatalog.externalId')} error={errors.externalProductId?.message}>
+        <ProductCatalogField
+          label={t('productCatalog.externalId')}
+          error={errors.externalProductId?.message}
+          hint={t('productCatalog.externalIdAutoHint')}
+        >
           <input {...register('externalProductId')} className={inputCls} />
         </ProductCatalogField>
         <ProductCatalogField label={t('productCatalog.ikpu')} error={errors.ikpu?.message}>

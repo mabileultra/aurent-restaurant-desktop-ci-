@@ -15,5 +15,6 @@ export const platformBusinessTypeApi = {
   setRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/rules`, body),
   setPriceRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/price-rules`, body),
   setDisplayRules: (typeId, body) => api.put(`/platform/business-types/${typeId}/display-rules`, body),
+  setFormFields: (typeId, body) => api.put(`/platform/business-types/${typeId}/form-fields`, body),
   listCatalogUnits: () => unitsApi.list({ stockOnly: true }),
 };

@@ -3,6 +3,10 @@ import {
   CATALOG_PROFILE_RESTAURANT_INGREDIENT,
   resolveCatalogSectionVisible,
 } from '../../../config/productCatalogConfig';
+import {
+  formFieldsToSectionMap,
+  isCatalogFormSectionEnabled,
+} from '../../../config/productCatalogFormFields';
 
 describe('resolveCatalogSectionVisible restaurantIngredient', () => {
   const opts = { productType: 'DISH', catalogProfile: CATALOG_PROFILE_RESTAURANT_INGREDIENT };
@@ -34,5 +38,33 @@ describe('resolveCatalogSectionVisible tasnif', () => {
 
   it('hides for dish by default', () => {
     expect(resolveCatalogSectionVisible('tasnif', { productType: 'DISH' })).toBe(false);
+  });
+});
+
+describe('resolveCatalogSectionVisible formSectionMap', () => {
+  it('hides section when constructor disables it', () => {
+    const formSectionMap = formFieldsToSectionMap([
+      { ruleKey: 'catalog.form.barcodes', enabled: false },
+    ]);
+    expect(
+      resolveCatalogSectionVisible('barcodes', { productType: 'RETAIL', formSectionMap })
+    ).toBe(false);
+  });
+
+  it('keeps product-type gate even if form field enabled', () => {
+    const formSectionMap = formFieldsToSectionMap([
+      { ruleKey: 'catalog.form.tasnif', enabled: true },
+    ]);
+    expect(
+      resolveCatalogSectionVisible('tasnif', { productType: 'DISH', formSectionMap })
+    ).toBe(false);
+  });
+});
+
+describe('formFieldsToSectionMap', () => {
+  it('defaults all sections to enabled', () => {
+    const map = formFieldsToSectionMap([]);
+    expect(isCatalogFormSectionEnabled(map, 'skuField')).toBe(true);
+    expect(isCatalogFormSectionEnabled(map, 'tasnif')).toBe(true);
   });
 });

@@ -206,6 +206,14 @@ public class PlatformOpsInternalController {
         return ResponseEntity.ok(businessTypeConfigService.setRules(id, request));
     }
 
+    @PutMapping("/business-types/{id}/form-fields")
+    public ResponseEntity<List<BusinessTypeRuleResponse>> setBusinessTypeFormFields(
+        @PathVariable Integer id,
+        @Valid @RequestBody SetBusinessTypeRulesRequest request
+    ) {
+        return ResponseEntity.ok(businessTypeConfigService.setFormFields(id, request));
+    }
+
     @PutMapping("/business-types/{id}/price-rules")
     public ResponseEntity<List<BusinessTypePriceRuleResponse>> setBusinessTypePriceRules(
         @PathVariable Integer id,

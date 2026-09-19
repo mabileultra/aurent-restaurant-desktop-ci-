@@ -2,6 +2,8 @@
  * Конфигурация формы каталога на основе business-config (без legacy-шаблонов).
  */
 
+import { isCatalogFormSectionEnabled } from './productCatalogFormFields';
+
 export const UNIVERSAL_BUSINESS_TYPE = 'UNIVERSAL';
 
 export function normalizeBusinessTypeCode(code) {
@@ -44,7 +46,7 @@ export function applyBusinessConfigDefaults(businessConfig) {
 /** Короткая форма ингредиента в ресторанном складе (техкарты). */
 export const CATALOG_PROFILE_RESTAURANT_INGREDIENT = 'restaurantIngredient';
 
-export function resolveCatalogSectionVisible(section, { productType, catalogProfile }) {
+export function resolveCatalogSectionVisible(section, { productType, catalogProfile, formSectionMap } = {}) {
   if (catalogProfile === CATALOG_PROFILE_RESTAURANT_INGREDIENT) {
     switch (section) {
       case 'typeSelectors':
@@ -53,6 +55,7 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
       case 'accountingStock':
         return true;
       case 'skuField':
+      case 'categoryField':
       case 'productTypeField':
       case 'tasnif':
       case 'retailFlags':
@@ -68,21 +71,27 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
     }
   }
 
+  let base;
   switch (section) {
     case 'tasnif':
       // Стройматериалы → productType MATERIAL; без Tasnif нет ИКПУ для Multikassa/ОФД
-      return productType === 'RETAIL' || productType === 'MATERIAL';
+      base = productType === 'RETAIL' || productType === 'MATERIAL';
+      break;
     case 'typeSelectors':
     case 'productTypeField':
     case 'skuField':
-      return true;
+    case 'categoryField':
+      base = true;
+      break;
     case 'construction':
     case 'clothing':
     case 'pharmacy':
     case 'advancedUnits':
-      return false;
+      base = false;
+      break;
     case 'retailFlags':
-      return productType === 'RETAIL';
+      base = productType === 'RETAIL';
+      break;
     case 'ownerVat':
     case 'accounting':
     case 'accountingCost':
@@ -92,10 +101,14 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
     case 'storePrices':
     case 'barcodes':
     case 'dynamicFields':
-      return true;
+      base = true;
+      break;
     default:
-      return false;
+      base = false;
   }
+
+  if (!base) return false;
+  return isCatalogFormSectionEnabled(formSectionMap, section);
 }
 
 export function businessTypeLabelKey(code) {

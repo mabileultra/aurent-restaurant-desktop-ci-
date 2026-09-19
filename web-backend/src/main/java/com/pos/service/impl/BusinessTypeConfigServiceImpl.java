@@ -1,5 +1,6 @@
 package com.pos.service.impl;
 
+import com.pos.domain.businessconfig.BusinessFormFieldCatalog;
 import com.pos.domain.businessconfig.BusinessPriceRuleCatalog;
 import com.pos.domain.businessconfig.BusinessRuleCatalog;
 import com.pos.domain.businessconfig.FieldDisplayEffect;
@@ -69,6 +70,13 @@ public class BusinessTypeConfigServiceImpl implements BusinessTypeConfigService 
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<BusinessTypeRuleResponse> getFormFields(Integer businessTypeId) {
+        requireType(businessTypeId);
+        return mergeFormFields(ruleRepository.findByBusinessTypeIdOrderByRuleKeyAsc(businessTypeId));
+    }
+
+    @Override
     @CacheEvict(value = "businessConfig", allEntries = true)
     public List<BusinessTypeUnitAssignmentResponse> setUnits(Integer businessTypeId, SetBusinessTypeUnitsRequest request) {
         requireType(businessTypeId);
@@ -129,8 +137,30 @@ public class BusinessTypeConfigServiceImpl implements BusinessTypeConfigService 
         Set<String> allowedKeys = BusinessRuleCatalog.ALL.stream()
             .map(BusinessRuleCatalog.RuleDefinition::key)
             .collect(Collectors.toSet());
+        replaceRulesForKeys(businessTypeId, allowedKeys, request);
+        LogUtil.info(BusinessTypeConfigServiceImpl.class, "Business type rules updated: typeId={}", businessTypeId);
+        return getRules(businessTypeId);
+    }
 
-        ruleRepository.deleteByBusinessTypeId(businessTypeId);
+    @Override
+    @CacheEvict(value = "businessConfig", allEntries = true)
+    public List<BusinessTypeRuleResponse> setFormFields(Integer businessTypeId, SetBusinessTypeRulesRequest request) {
+        requireType(businessTypeId);
+        Set<String> allowedKeys = BusinessFormFieldCatalog.ALL.stream()
+            .map(BusinessFormFieldCatalog.FieldDefinition::key)
+            .collect(Collectors.toSet());
+        replaceRulesForKeys(businessTypeId, allowedKeys, request);
+        LogUtil.info(BusinessTypeConfigServiceImpl.class, "Business type form fields updated: typeId={}",
+            businessTypeId);
+        return getFormFields(businessTypeId);
+    }
+
+    private void replaceRulesForKeys(
+        Integer businessTypeId,
+        Set<String> allowedKeys,
+        SetBusinessTypeRulesRequest request
+    ) {
+        ruleRepository.deleteByBusinessTypeIdAndRuleKeyIn(businessTypeId, allowedKeys);
         List<BusinessTypeRule> rows = request.rules().stream()
             .filter(item -> allowedKeys.contains(item.ruleKey()))
             .map(item -> BusinessTypeRule.builder()
@@ -140,9 +170,6 @@ public class BusinessTypeConfigServiceImpl implements BusinessTypeConfigService 
                 .build())
             .toList();
         ruleRepository.saveAll(rows);
-        LogUtil.info(BusinessTypeConfigServiceImpl.class, "Business type rules updated: typeId={}, count={}",
-            businessTypeId, rows.size());
-        return getRules(businessTypeId);
     }
 
     @Override
@@ -245,6 +272,17 @@ public class BusinessTypeConfigServiceImpl implements BusinessTypeConfigService 
         return BusinessRuleCatalog.ALL.stream()
             .map(def -> {
                 String value = values.getOrDefault(def.key(), String.valueOf(def.defaultValue()));
+                return new BusinessTypeRuleResponse(def.key(), value, BusinessRuleCatalog.parseBoolean(value));
+            })
+            .toList();
+    }
+
+    public static List<BusinessTypeRuleResponse> mergeFormFields(List<BusinessTypeRule> stored) {
+        Map<String, String> values = stored.stream()
+            .collect(Collectors.toMap(BusinessTypeRule::getRuleKey, BusinessTypeRule::getRuleValue, (a, b) -> b));
+        return BusinessFormFieldCatalog.ALL.stream()
+            .map(def -> {
+                String value = values.getOrDefault(def.key(), String.valueOf(def.defaultEnabled()));
                 return new BusinessTypeRuleResponse(def.key(), value, BusinessRuleCatalog.parseBoolean(value));
             })
             .toList();

@@ -316,6 +316,35 @@
   gap: 0.5rem;
 }
 
+.business-constructor__panel--wide {
+  margin: 0.85rem 1rem 0;
+}
+
+.business-constructor__panel-hint {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.dark .business-constructor__panel-hint {
+  color: #94a3b8;
+}
+
+.business-constructor__form-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem;
+  max-height: 22rem;
+  overflow: auto;
+}
+
+@media (min-width: 900px) {
+  .business-constructor__form-fields {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .business-constructor__panel-actions {
   display: flex;
   flex-wrap: wrap;

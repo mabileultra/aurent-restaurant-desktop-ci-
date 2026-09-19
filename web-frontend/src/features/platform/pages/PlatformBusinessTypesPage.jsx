@@ -41,6 +41,7 @@ export default function PlatformBusinessTypesPage() {
           rules={p.rules}
           priceRules={p.priceRules}
           displayRules={p.displayRules}
+          formFields={p.formFields}
           onEditType={p.openEditType}
           onDeleteType={p.tryDeleteType}
           onAddField={p.openCreateField}
@@ -49,16 +50,19 @@ export default function PlatformBusinessTypesPage() {
           onToggleUnit={p.toggleUnit}
           onSetDefaultUnit={p.setDefaultUnit}
           onToggleRule={p.toggleRule}
+          onToggleFormField={p.toggleFormField}
           onPriceRuleChange={p.changePriceRule}
           onAddDisplayRule={p.addDisplayRule}
           onDisplayRuleChange={p.changeDisplayRule}
           onRemoveDisplayRule={p.removeDisplayRule}
           onSaveUnits={() => p.saveUnitsMutation.mutate()}
           onSaveRules={() => p.saveRulesMutation.mutate()}
+          onSaveFormFields={() => p.saveFormFieldsMutation.mutate()}
           onSavePriceRules={() => p.savePriceRulesMutation.mutate()}
           onSaveDisplayRules={() => p.saveDisplayRulesMutation.mutate()}
           savingUnits={p.saveUnitsMutation.isPending}
           savingRules={p.saveRulesMutation.isPending}
+          savingFormFields={p.saveFormFieldsMutation.isPending}
           savingPriceRules={p.savePriceRulesMutation.isPending}
           savingDisplayRules={p.saveDisplayRulesMutation.isPending}
         />

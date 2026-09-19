@@ -50,18 +50,22 @@ export default function ProductCatalogGeneralSection({
         <ProductCatalogField label={t('productModal.name')} required error={errors.name?.message}>
           <input {...register('name')} className={inputCls} />
         </ProductCatalogField>
-        <ProductCatalogField label={t('productModal.category')} error={errors.categoryId?.message}>
-          <BaseSelect
-            name="categoryId"
-            value={categoryId ?? ''}
-            onChange={(e) => setValue('categoryId', e.target.value, { shouldDirty: true, shouldValidate: true })}
-            placeholder={t('productModal.noneCategory')}
-            options={[
-              { value: '', label: t('productModal.noneCategory') },
-              ...categories.map((c) => ({ value: String(c.id), label: c.name })),
-            ]}
-          />
-        </ProductCatalogField>
+        {showSection('categoryField') ? (
+          <ProductCatalogField label={t('productModal.category')} error={errors.categoryId?.message}>
+            <BaseSelect
+              name="categoryId"
+              value={categoryId ?? ''}
+              onChange={(e) => setValue('categoryId', e.target.value, { shouldDirty: true, shouldValidate: true })}
+              placeholder={t('productModal.noneCategory')}
+              options={[
+                { value: '', label: t('productModal.noneCategory') },
+                ...categories.map((c) => ({ value: String(c.id), label: c.name })),
+              ]}
+            />
+          </ProductCatalogField>
+        ) : (
+          <input type="hidden" {...register('categoryId')} />
+        )}
         {showTypeSelectors ? (
           <>
             {isEdit && showSection('productTypeField') ? (

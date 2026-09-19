@@ -13,5 +13,6 @@ public record BusinessConfigResponse(
     List<BusinessTypeRuleResponse> rules,
     List<UnitConversionResponse> conversions,
     List<BusinessTypePriceRuleResponse> priceRules,
-    List<FieldDisplayRuleResponse> displayRules
+    List<FieldDisplayRuleResponse> displayRules,
+    List<BusinessTypeRuleResponse> formFields
 ) {}
