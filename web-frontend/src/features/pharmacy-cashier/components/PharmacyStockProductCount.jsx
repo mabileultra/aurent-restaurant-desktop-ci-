@@ -1,4 +1,4 @@
-import './pharmacy-stock-count.css';
+import '../styles/pharmacy-stock-count.css';
 
 /** Счётчик товаров в шапке остатков кассы. */
 export default function PharmacyStockProductCount({ t, count }) {
