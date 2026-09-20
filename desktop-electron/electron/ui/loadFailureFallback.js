@@ -1,3 +1,5 @@
+const { isNetworkLoadError } = require('./networkLoadErrors');
+
 function buildLoadErrorHtml({ url, errorCode, errorDescription }) {
   return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Aurent Cashier</title>
 <style>body{margin:0;font-family:system-ui,sans-serif;background:#e9eef4;color:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
@@ -10,6 +12,17 @@ h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475
 <p>Ошибка ${errorCode}: ${errorDescription}</p></div></body></html>`;
 }
 
+function buildOfflineReloadHtml() {
+  return `<!DOCTYPE html><html lang="ru"><head><meta charset="utf-8"><title>Aurent Cashier</title>
+<style>body{margin:0;font-family:system-ui,sans-serif;background:#e9eef4;color:#1e293b;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px;box-sizing:border-box}
+.card{max-width:480px;background:#fff;border-radius:12px;padding:24px;box-shadow:0 8px 32px rgb(15 23 42 / 0.12)}
+h1{margin:0 0 12px;font-size:1.25rem}p{margin:0 0 8px;line-height:1.5;color:#475569}</style></head>
+<body><div class="card"><h1>Нет интернета</h1>
+<p>Пока нет сети, не нажимайте «Обновить» — интерфейс кассы загружается с сайта.</p>
+<p>Подключите интернет и откройте кассу снова (или Вид → Обновить).</p>
+</div></body></html>`;
+}
+
 function attachLoadFailureFallback(mainWindow, {
   getExpectedUrl,
   getStartSource,
@@ -17,27 +30,47 @@ function attachLoadFailureFallback(mainWindow, {
 }) {
   let fallingBack = false;
 
-  mainWindow.webContents.on('did-fail-load', (_event, errorCode, errorDescription, validatedURL) => {
-    if (!mainWindow || mainWindow.isDestroyed()) return;
-    if (validatedURL !== getExpectedUrl()) return;
+  mainWindow.webContents.on(
+    'did-fail-load',
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      if (!mainWindow || mainWindow.isDestroyed()) return;
+      if (isMainFrame === false) return;
 
-    if (getStartSource() === 'bundled' && !fallingBack && typeof fallbackToRemote === 'function') {
-      fallingBack = true;
-      Promise.resolve(fallbackToRemote())
-        .catch(() => {})
-        .finally(() => {
-          fallingBack = false;
-        });
-      return;
-    }
+      // Soft-reload без сети: вернуть предыдущую страницу из истории, не показывать «login»-ошибку.
+      if (isNetworkLoadError(errorCode)) {
+        if (mainWindow.webContents.canGoBack()) {
+          mainWindow.webContents.goBack();
+          return;
+        }
+        const html = buildOfflineReloadHtml();
+        mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+        return;
+      }
 
-    const html = buildLoadErrorHtml({
-      url: validatedURL,
-      errorCode,
-      errorDescription,
-    });
-    mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
-  });
+      if (validatedURL !== getExpectedUrl()) return;
+
+      if (getStartSource() === 'bundled' && !fallingBack && typeof fallbackToRemote === 'function') {
+        fallingBack = true;
+        Promise.resolve(fallbackToRemote())
+          .catch(() => {})
+          .finally(() => {
+            fallingBack = false;
+          });
+        return;
+      }
+
+      const html = buildLoadErrorHtml({
+        url: validatedURL,
+        errorCode,
+        errorDescription,
+      });
+      mainWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+    },
+  );
 }
 
-module.exports = { buildLoadErrorHtml, attachLoadFailureFallback };
+module.exports = {
+  buildLoadErrorHtml,
+  buildOfflineReloadHtml,
+  attachLoadFailureFallback,
+};

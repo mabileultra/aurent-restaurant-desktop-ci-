@@ -1123,6 +1123,7 @@
     "displaySection": "Ekran",
     "connectionSection": "Aloqa",
     "reload": "Yangilash",
+    "reloadNeedsInternet": "Internet yo‘q — «Yangilash» kassani tashlab yuboradi. Avval tarmoqni ulang.",
     "fullscreen": "To‘liq ekran",
     "quit": "Chiqish",
     "receiptPrinter": "Chek printeri",

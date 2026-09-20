@@ -4,7 +4,7 @@
  */
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, net } = require('electron');
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
@@ -67,10 +67,32 @@ async function reloadActiveUi({ clearSession = false, navigateToStart = false } 
     return { ok: false, reason: 'no_window' };
   }
   const start = await uiSession.ensureStartUrl();
-  // «Обновить» = перезагрузка текущей страницы. Не кидать на PIN-логин.
+  const online = typeof net.isOnline === 'function' ? net.isOnline() : true;
+  const currentUrl = mainWindow.webContents.getURL() || '';
+
+  // «Обновить» без сети убивает remote UI (ERR_INTERNET_DISCONNECTED) — не трогаем страницу.
+  if (!clearSession && !navigateToStart && !online) {
+    return {
+      ok: false,
+      reason: 'offline',
+      url: currentUrl || start.url,
+      source: start.source,
+    };
+  }
+
+  // «Обновить» = soft reload текущей страницы. Не кидать на PIN-логин.
   if (clearSession || navigateToStart) {
+    if (!online) {
+      return { ok: false, reason: 'offline', url: start.url, source: start.source };
+    }
     await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
       clearSession,
+      loginUrl: start.url,
+    });
+  } else if (currentUrl.startsWith('data:')) {
+    // Уже на error/offline card — при наличии сети вернуться на start URL.
+    await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
+      clearSession: false,
       loginUrl: start.url,
     });
   } else {

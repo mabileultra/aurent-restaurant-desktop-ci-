@@ -37,6 +37,7 @@ export default function CashierDesktopMenuPanel({
     openBarcodePage,
     checkAppUpdates,
     openServerSetup,
+    reloadUi,
   } = menu;
 
   const label = appName || 'Aurent';
@@ -161,7 +162,7 @@ export default function CashierDesktopMenuPanel({
           type="button"
           className="cashier-desktop-menu__item"
           role="menuitem"
-          onClick={() => run(() => window.desktopCashier.reload())}
+          onClick={() => reloadUi()}
         >
           <RefreshCw size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.reload')}</span>

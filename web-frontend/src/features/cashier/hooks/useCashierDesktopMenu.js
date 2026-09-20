@@ -69,6 +69,23 @@ export function useCashierDesktopMenu() {
     }
   };
 
+  const reloadUi = async () => {
+    close();
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      toast.error(t('desktop.reloadNeedsInternet'));
+      return;
+    }
+    if (typeof window.desktopCashier?.reload !== 'function') return;
+    try {
+      const result = await window.desktopCashier.reload();
+      if (result?.ok === false && result?.reason === 'offline') {
+        toast.error(t('desktop.reloadNeedsInternet'));
+      }
+    } catch {
+      toast.error(t('desktop.reloadNeedsInternet'));
+    }
+  };
+
   const openPrinterPicker = async () => {
     close();
     try {
@@ -203,6 +220,7 @@ export function useCashierDesktopMenu() {
     openBarcodePage,
     checkAppUpdates,
     openServerSetup,
+    reloadUi,
     printerLabel: printerName || t('desktop.receiptPrinterNotSet'),
     labelPrinterLabel: labelPrinterName || t('desktop.receiptPrinterNotSet'),
     scaleLabel: scalePort || t('desktop.scaleNotSet'),

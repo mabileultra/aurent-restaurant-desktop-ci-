@@ -524,6 +524,7 @@
     "displaySection": "Экран",
     "connectionSection": "Связь",
     "reload": "Обновить",
+    "reloadNeedsInternet": "Нет интернета — «Обновить» сейчас сбросит кассу. Сначала подключите сеть.",
     "fullscreen": "На весь экран",
     "quit": "Выход",
     "receiptPrinter": "Принтер чека",

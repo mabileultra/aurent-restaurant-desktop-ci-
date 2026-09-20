@@ -147,7 +147,20 @@ function buildAppMenu({
           label: 'Обновить',
           accelerator: 'CmdOrCtrl+R',
           click: () => {
-            reloadPage().catch(() => {});
+            Promise.resolve(reloadPage())
+              .then((result) => {
+                if (result?.reason === 'offline') {
+                  dialog.showMessageBox({
+                    type: 'warning',
+                    title: 'Aurent Cashier',
+                    message: 'Нет интернета',
+                    detail:
+                      'Пока нет сети, «Обновить» нельзя — интерфейс загружается с сайта и сбросится. Сначала подключите интернет.',
+                    buttons: ['OK'],
+                  }).catch(() => {});
+                }
+              })
+              .catch(() => {});
           },
         },
         { role: 'togglefullscreen', label: 'На весь экран' },
