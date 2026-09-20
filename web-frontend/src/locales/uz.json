@@ -4556,6 +4556,7 @@
     "saleSaveFailed": "Savdoni mahalliy saqlab bo‘lmadi. Ilovani qayta ishga tushiring va qayta urinib ko‘ring.",
     "switchToOffline": "Oflayn ishlash",
     "switchToOnline": "Onlaynga qaytish",
+    "networkDownHint": "Internet yo‘q — savdolar mahalliy katalogdan",
     "forceOfflineActive": "Qo‘lda oflayn — savdolar faqat mahalliy bazaga",
     "forceOfflineNoCatalog": "Oflayn yoqilgan, lekin katalog yuklanmagan. Internetni ulang va «Katalogni yangilash»ni bosing.",
     "forceOfflineOn": "Oflayn rejim yoqildi",

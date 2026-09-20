@@ -16,18 +16,28 @@ export default function CashierDesktopMenuConnectivity({ t }) {
 
   const canToggle = Boolean(status.canToggle);
   const bridgeReady = Boolean(status.hasOfflineBridge);
+  const networkDown = Boolean(status.networkOffline);
   const isOffline = status.showOffline || status.tone === 'offline' || status.forceOfflineMode;
   const modeLabel = isOffline
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
   const needsCatalog = !status.canSellOffline && !status.forceOfflineMode;
-  const statusMeta = status.syncingCatalog || status.syncPhaseActive
-    ? (status.syncPhaseLabel || t('offline.preparingCatalogForOffline'))
-    : (status.tone === 'pending' || status.tone === 'warn')
-      ? status.message
-      : canToggle && bridgeReady
-        ? (status.forceOfflineMode ? t('offline.switchToOnline') : t('offline.switchToOffline'))
-        : (status.message || t('offline.onlineOk'));
+  let statusMeta;
+  if (status.syncingCatalog || status.syncPhaseActive) {
+    statusMeta = status.syncPhaseLabel || t('offline.preparingCatalogForOffline');
+  } else if (status.tone === 'pending' || status.tone === 'warn') {
+    statusMeta = status.message;
+  } else if (networkDown && !status.forceOfflineMode) {
+    statusMeta = t('offline.networkDownHint', {
+      defaultValue: 'Нет интернета — продажи из локального каталога',
+    });
+  } else if (canToggle && bridgeReady) {
+    statusMeta = status.forceOfflineMode
+      ? t('offline.switchToOnline')
+      : t('offline.switchToOffline');
+  } else {
+    statusMeta = status.message || t('offline.onlineOk');
+  }
 
   return (
     <div className="cashier-desktop-menu__connectivity">

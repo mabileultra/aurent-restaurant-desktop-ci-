@@ -18,28 +18,48 @@ import { resolvePosRoute } from '../services/pos/posRouteResolver';
 import { isOfflineFirstDesktop } from '../services/offline/offlineFirstFlag';
 import { logConnectivity, logError } from '../services/desktop/activityLog';
 
-/** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
-const ONLINE_RECOVERY_STREAK = 2;
+/** Сразу offline при сбое probe; online — после трёх подряд успешных probe. */
+const ONLINE_RECOVERY_STREAK = 3;
 /** Offline — после двух подряд неудачных probe (меньше мигания полоски). */
 const OFFLINE_FAILURE_STREAK = 2;
 const CONNECTIVITY_POLL_MS = 5_000;
 /** После 502/таймаута API не переключаться обратно в online сразу (probe может мигать). */
-const API_UNREACHABLE_COOLDOWN_MS = 12_000;
+const API_UNREACHABLE_COOLDOWN_MS = 20_000;
+/** После ухода в offline не принимать «online» от browser event без серии probe. */
+const OFFLINE_HOLD_MS = 8_000;
 let stableApiOnline = null;
 let onlineRecoveryStreak = 0;
 let offlineFailureStreak = 0;
 let apiUnreachableUntil = 0;
+let offlineSinceMs = 0;
 
 export function resetConnectivityStabilizer() {
   stableApiOnline = null;
   onlineRecoveryStreak = 0;
   offlineFailureStreak = 0;
   apiUnreachableUntil = 0;
+  offlineSinceMs = 0;
 }
 
 function stabilizeApiOnline(rawOnline) {
-  // Successful main-process probe clears cooldown so reconnect is not stuck 12s.
+  const browserOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
+  if (browserOffline) {
+    apiUnreachableUntil = Date.now() + API_UNREACHABLE_COOLDOWN_MS;
+    stableApiOnline = false;
+    onlineRecoveryStreak = 0;
+    offlineFailureStreak = OFFLINE_FAILURE_STREAK;
+    if (!offlineSinceMs) offlineSinceMs = Date.now();
+    return false;
+  }
+
+  // Successful main-process probe clears cooldown so reconnect is not stuck.
   if (rawOnline) {
+    if (offlineSinceMs && Date.now() - offlineSinceMs < OFFLINE_HOLD_MS) {
+      // Короткий «online» сразу после обрыва — часто ложный (Wi‑Fi без интернета).
+      onlineRecoveryStreak = 0;
+      stableApiOnline = false;
+      return false;
+    }
     apiUnreachableUntil = 0;
   } else if (Date.now() < apiUnreachableUntil) {
     stableApiOnline = false;
@@ -53,11 +73,13 @@ function stabilizeApiOnline(rawOnline) {
     if (stableApiOnline === null || stableApiOnline === false) {
       stableApiOnline = false;
       onlineRecoveryStreak = 0;
+      if (!offlineSinceMs) offlineSinceMs = Date.now();
       return false;
     }
     if (offlineFailureStreak >= OFFLINE_FAILURE_STREAK) {
       stableApiOnline = false;
       onlineRecoveryStreak = 0;
+      if (!offlineSinceMs) offlineSinceMs = Date.now();
       return false;
     }
     return true;
@@ -67,15 +89,18 @@ function stabilizeApiOnline(rawOnline) {
   if (stableApiOnline === null) {
     stableApiOnline = rawOnline;
     onlineRecoveryStreak = rawOnline ? 1 : 0;
+    if (stableApiOnline) offlineSinceMs = 0;
     return stableApiOnline;
   }
   if (!stableApiOnline) {
     onlineRecoveryStreak += 1;
     if (onlineRecoveryStreak >= ONLINE_RECOVERY_STREAK) {
       stableApiOnline = true;
+      offlineSinceMs = 0;
     }
     return stableApiOnline;
   }
+  offlineSinceMs = 0;
   return true;
 }
 
@@ -244,16 +269,21 @@ export function markApiUnreachable() {
   stableApiOnline = false;
   onlineRecoveryStreak = 0;
   offlineFailureStreak = OFFLINE_FAILURE_STREAK;
+  if (!offlineSinceMs) offlineSinceMs = Date.now();
   if (!state.apiOnline && state.offlineMode) return;
   useConnectivityStore.getState().applyStatus({ apiOnline: false, offlineMode: true });
 }
 
 /** Использовать после успешного запроса к API (bootstrap/sync), если probe ещё не обновился. */
 export function markApiReachable() {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return;
+  }
   apiUnreachableUntil = 0;
   stableApiOnline = true;
   onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
   offlineFailureStreak = 0;
+  offlineSinceMs = 0;
   useConnectivityStore.getState().applyStatus({ apiOnline: true, offlineMode: false });
 }
 
@@ -267,7 +297,7 @@ export async function refreshConnectivityStatus() {
   try {
     const status = await offlineGetStatus();
     if (status?.apiOnline) {
-      apiUnreachableUntil = 0;
+      // Не сбрасываем cooldown здесь — stabilizeApiOnline сам решает после hold.
     }
     useConnectivityStore.getState().applyStatus(status);
     return status;
@@ -280,8 +310,7 @@ export async function refreshConnectivityStatus() {
 }
 
 function onBrowserOnline() {
-  apiUnreachableUntil = 0;
-  onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
+  // macOS часто шлёт «online» при Wi‑Fi без интернета — только перепроверяем probe.
   offlineFailureStreak = 0;
   refreshConnectivityStatus();
 }
@@ -297,9 +326,6 @@ export function startConnectivityWatcher() {
   refreshConnectivityStatus();
   refreshTimer = setInterval(refreshConnectivityStatus, CONNECTIVITY_POLL_MS);
   unsubscribeConnectivity = subscribeOfflineConnectivity((payload) => {
-    if (payload?.apiOnline) {
-      apiUnreachableUntil = 0;
-    }
     useConnectivityStore.getState().applyStatus(payload);
   });
   if (!browserConnectivityBound && typeof window !== 'undefined') {

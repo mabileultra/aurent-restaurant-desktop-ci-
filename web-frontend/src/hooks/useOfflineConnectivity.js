@@ -124,10 +124,22 @@ export function useOfflineConnectivity() {
 
     runInitialSync();
 
+    let reconnectTimer = null;
     const unsub = useConnectivityStore.subscribe((state, prev) => {
       if (cancelled) return;
       if (state.apiOnline && !prev?.apiOnline) {
-        void onReconnect();
+        // Не стартовать sync на каждый короткий «online» — ждём стабильности.
+        if (reconnectTimer) window.clearTimeout(reconnectTimer);
+        reconnectTimer = window.setTimeout(() => {
+          reconnectTimer = null;
+          if (cancelled || !canRunOnlineSync()) return;
+          void onReconnect();
+        }, 2_500);
+      }
+      if (!state.apiOnline && prev?.apiOnline && reconnectTimer) {
+        window.clearTimeout(reconnectTimer);
+        reconnectTimer = null;
+        toast.dismiss('pos-reconnect-sync');
       }
     });
 
@@ -147,6 +159,7 @@ export function useOfflineConnectivity() {
 
     return () => {
       cancelled = true;
+      if (reconnectTimer) window.clearTimeout(reconnectTimer);
       unsub();
       clearInterval(salesTimer);
       clearInterval(catalogTimer);

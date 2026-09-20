@@ -62,15 +62,24 @@ function rebuildAppMenu() {
   });
 }
 
-async function reloadActiveUi({ clearSession = false } = {}) {
+async function reloadActiveUi({ clearSession = false, navigateToStart = false } = {}) {
   if (!mainWindow || mainWindow.isDestroyed()) {
     return { ok: false, reason: 'no_window' };
   }
   const start = await uiSession.ensureStartUrl();
-  await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
-    clearSession,
-    loginUrl: start.url,
-  });
+  // «Обновить» = перезагрузка текущей страницы. Не кидать на PIN-логин.
+  if (clearSession || navigateToStart) {
+    await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
+      clearSession,
+      loginUrl: start.url,
+    });
+  } else {
+    try {
+      mainWindow.webContents.reloadIgnoringCache();
+    } catch {
+      mainWindow.reload();
+    }
+  }
   // IPC cannot clone localServer / functions — return a plain snapshot only.
   return {
     ok: true,
@@ -84,7 +93,7 @@ async function handleSetUiMode(mode) {
   saveUiMode(mode);
   refreshDesktopConfig();
   rebuildAppMenu();
-  const start = await reloadActiveUi();
+  const start = await reloadActiveUi({ navigateToStart: true });
   if (mode === UI_MODE_BUNDLED && start?.source !== 'bundled') {
     saveUiMode(UI_MODE_REMOTE);
     refreshDesktopConfig();
@@ -104,7 +113,7 @@ async function handleSetOfflineFirst(enabled) {
   saveOfflineFirst(enabled);
   refreshDesktopConfig();
   rebuildAppMenu();
-  return reloadActiveUi();
+  return reloadActiveUi({ navigateToStart: true });
 }
 
 async function handleBundledLoadFallback() {
@@ -157,13 +166,20 @@ function createWindow(start) {
     }
   });
 
-  mainWindow.once('ready-to-show', () => {
+  const revealWindow = () => {
+    if (!mainWindow || mainWindow.isDestroyed() || mainWindow.isVisible()) return;
     if (process.platform === 'win32') {
       mainWindow.setMenuBarVisibility(true);
     }
     mainWindow.show();
     mainWindow.focus();
-  });
+  };
+
+  // Не ждать вечно ready-to-show — на Mac окно иначе «прыгает» в Dock без UI.
+  mainWindow.once('ready-to-show', revealWindow);
+  mainWindow.webContents.once('did-finish-load', revealWindow);
+  mainWindow.webContents.once('did-fail-load', () => revealWindow());
+  setTimeout(revealWindow, 1500);
 
   attachLoadFailureFallback(mainWindow, {
     getExpectedUrl: () => uiSession.getLastStart()?.url,
@@ -256,12 +272,15 @@ app.whenReady().then(async () => {
     },
   );
 
-  try {
-    const localDb = require('./offline/index.cjs');
-    await localDb.getDb();
-  } catch (err) {
-    console.error('[offline] db prewarm failed:', err?.message || err);
-  }
+  // Не блокируем показ окна на прогреве offline DB.
+  void (async () => {
+    try {
+      const localDb = require('./offline/index.cjs');
+      await localDb.getDb();
+    } catch (err) {
+      console.error('[offline] db prewarm failed:', err?.message || err);
+    }
+  })();
 
   const start = await uiSession.ensureStartUrl();
   createWindow(start);
