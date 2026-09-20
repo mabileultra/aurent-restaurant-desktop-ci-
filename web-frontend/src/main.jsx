@@ -8,6 +8,8 @@ import './index.css';
 import { syncRootTheme, syncPublicTheme, syncRestaurantTheme } from './store/themeStore';
 import { isPublicAppPath } from './utils/publicAppPaths';
 import { readCashierTheme, syncCashierThemeDocument } from './utils/cashierTheme';
+import { syncCashierDocumentPaint } from './utils/cashierDocumentPaint';
+import { isCashierPinLoginPath } from './utils/isCashierPinLoginPath';
 import { usePrintSettingsStore } from './store/printSettingsStore';
 import { useTenantDisplayStore } from './store/tenantDisplayStore';
 import { syncPrintCssVars } from './utils/syncPrintCssVars';
@@ -22,7 +24,10 @@ const isCashierRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier');
 const isRstRoute =
   typeof window !== 'undefined' && window.location.pathname.startsWith('/rst');
-if (isCashierRoute) {
+if (isCashierPinLoginPath()) {
+  syncCashierThemeDocument('light');
+  syncCashierDocumentPaint('pinLogin');
+} else if (isCashierRoute) {
   syncCashierThemeDocument(readCashierTheme());
 } else if (isRstRoute) {
   syncRestaurantTheme();

@@ -45,17 +45,39 @@ function rebuildAppMenu() {
     setUiMode: handleSetUiMode,
     offlineFirst: cfg.offlineFirst,
     setOfflineFirst: handleSetOfflineFirst,
+    openActivityLogs: () => {
+      const { openActivityLogViewer, appendActivityLog } = require('./activity-log/activityLogIpc.cjs');
+      appendActivityLog({
+        category: 'system',
+        level: 'info',
+        message: 'Открыт журнал операций',
+      });
+      openActivityLogViewer(mainWindow);
+    },
+    openActivityLogFolder: async () => {
+      const { ensureLogsDir, logsRootDir } = require('./activity-log/activityLogStore.cjs');
+      ensureLogsDir();
+      await shell.openPath(logsRootDir());
+    },
   });
 }
 
 async function reloadActiveUi({ clearSession = false } = {}) {
-  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (!mainWindow || mainWindow.isDestroyed()) {
+    return { ok: false, reason: 'no_window' };
+  }
   const start = await uiSession.ensureStartUrl();
   await reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
     clearSession,
     loginUrl: start.url,
   });
-  return start;
+  // IPC cannot clone localServer / functions — return a plain snapshot only.
+  return {
+    ok: true,
+    url: start.url,
+    source: start.source,
+    reason: start.reason,
+  };
 }
 
 async function handleSetUiMode(mode) {
@@ -149,7 +171,18 @@ function createWindow(start) {
     fallbackToRemote: handleBundledLoadFallback,
   });
 
+  console.log('[ui]', start.source, start.url);
   mainWindow.loadURL(start.url);
+
+  if (process.env.AURENT_UI_DEV === '1') {
+    mainWindow.webContents.openDevTools({ mode: 'detach' });
+  }
+
+  mainWindow.webContents.on('console-message', (_e, level, message, line, sourceId) => {
+    if (level >= 2) {
+      console.error('[renderer]', message, sourceId ? `(${sourceId}:${line})` : '');
+    }
+  });
 
   attachDesktopNavigationGuard(mainWindow, refreshDesktopConfig);
 
@@ -189,6 +222,18 @@ app.whenReady().then(async () => {
   rebuildAppMenu();
 
   const { registerOfflineIpc } = require('./offline/ipc.cjs');
+  const { registerActivityLogIpc, appendActivityLog } = require('./activity-log/activityLogIpc.cjs');
+  registerActivityLogIpc();
+  appendActivityLog({
+    category: 'system',
+    level: 'info',
+    message: 'Касса запущена',
+    meta: {
+      offlineFirst: Boolean(refreshDesktopConfig().offlineFirst),
+      uiMode: refreshDesktopConfig().uiMode,
+    },
+  });
+  const { noteUpstreamSuccess, noteUpstreamFailure } = require('./ui/apiProxyCircuit');
   registerOfflineIpc(
     () => refreshDesktopConfig(),
     async (cfg, { timeoutMs } = {}) => {
@@ -201,8 +246,11 @@ app.whenReady().then(async () => {
         const timer = setTimeout(() => controller.abort(), ms);
         const res = await fetch(url, { method: 'GET', signal: controller.signal });
         clearTimeout(timer);
-        return Boolean(res?.ok);
-      } catch {
+        const ok = Boolean(res?.ok);
+        if (ok) noteUpstreamSuccess();
+        return ok;
+      } catch (err) {
+        noteUpstreamFailure(err);
         return false;
       }
     },

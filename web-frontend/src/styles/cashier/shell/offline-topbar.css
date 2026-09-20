@@ -41,6 +41,30 @@
   text-overflow: ellipsis;
 }
 
+.offline-topbar__spin {
+  animation: offline-topbar-spin 0.85s linear infinite;
+}
+
+@keyframes offline-topbar-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.offline-topbar--pending,
+.offline-topbar.is-syncing {
+  color: #1d4ed8;
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.cashier-app.cashier-app--terminal .offline-topbar--pending,
+.cashier-app.cashier-app--terminal .offline-topbar.is-syncing {
+  color: #93c5fd;
+  background: rgb(59 130 246 / 0.14);
+  border-color: rgb(59 130 246 / 0.4);
+}
+
 .offline-topbar--ok {
   color: #047857;
   background: #ecfdf5;

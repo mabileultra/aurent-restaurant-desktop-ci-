@@ -6,6 +6,7 @@ import {
   buildOfflineCheckoutPayload,
   buildOfflineSaleResponse,
 } from '../offline/buildOfflineSaleResponse';
+import { logSale } from '../desktop/activityLog';
 
 function withCheckoutTimeout(promise) {
   return Promise.race([
@@ -95,6 +96,14 @@ export async function processOfflineCheckout({
   if (!saved?.clientSaleId) {
     throw new Error('OFFLINE_SALE_SAVE_FAILED');
   }
+
+  logSale('Офлайн-продажа сохранена локально', {
+    clientSaleId: saved.clientSaleId,
+    receiptNumber: saved.receiptNumber || response.receiptNumber,
+    storeId,
+    items: items?.length || 0,
+    fiscalStatus: fiscal?.fiscalStatus || null,
+  });
 
   void refreshConnectivityStatus();
   return { data: { ...response, receiptNumber: saved.receiptNumber || response.receiptNumber } };

@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
+import { useShouldUseOfflinePos } from '../../store/connectivityStore';
 
 const RETAIL_BILLING = '/billing';
 const RESTAURANT_BILLING = '/rst/admin/billing';
@@ -22,15 +23,22 @@ export default function BillingAccessGuard({ children }) {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
+  const skipOnline = useShouldUseOfflinePos();
 
-  const enabled = Boolean(isAuthenticated() && user && user.role !== 'SUPER_ADMIN' && user.role !== 'PLATFORM_ADMIN');
+  const enabled = Boolean(
+    isAuthenticated()
+    && user
+    && user.role !== 'SUPER_ADMIN'
+    && user.role !== 'PLATFORM_ADMIN'
+    && !skipOnline,
+  );
 
   const { data, isLoading } = useQuery({
     queryKey: ['tenant-billing-access', user?.companyId || user?.id],
     queryFn: () => tenantBillingApi.access().then((r) => r.data),
     enabled,
     staleTime: 60_000,
-    retry: 1,
+    retry: skipOnline ? false : 1,
   });
 
   if (!enabled) return children;

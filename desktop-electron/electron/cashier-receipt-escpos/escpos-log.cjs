@@ -1,50 +1,47 @@
-/** Логи автопечати чека ESC/POS — префикс [Aurent-ESCPOS] для поиска в консоли Electron. */
+/** Логи автопечати чека ESC/POS — консоль + локальный журнал activity-logs. */
 
 const PREFIX = '[Aurent-ESCPOS]';
 
-/**
- * Пишет шаг пайплайна печати (jobId + step + опциональные данные).
- * @param {string} jobId
- * @param {string} step
- * @param {Record<string, unknown>} [detail]
- */
+function appendPersistent(level, step, detail) {
+  try {
+    const { appendActivityLog } = require('../activity-log/activityLogStore.cjs');
+    appendActivityLog({
+      category: 'print',
+      level,
+      message: `ESC/POS ${step}`,
+      meta: detail && typeof detail === 'object' ? detail : detail ? { detail: String(detail) } : undefined,
+    });
+  } catch {
+    /* ignore if app path not ready */
+  }
+}
+
 function logStep(jobId, step, detail) {
   if (detail && Object.keys(detail).length > 0) {
     console.info(PREFIX, jobId, step, detail);
+    appendPersistent('info', step, { jobId, ...detail });
     return;
   }
   console.info(PREFIX, jobId, step);
+  appendPersistent('info', step, { jobId });
 }
 
-/**
- * Предупреждение (не фатальное, напр. пропуск логотипа).
- * @param {string} jobId
- * @param {string} step
- * @param {Record<string, unknown>} [detail]
- */
 function logWarn(jobId, step, detail) {
   if (detail && Object.keys(detail).length > 0) {
     console.warn(PREFIX, jobId, step, detail);
+    appendPersistent('warn', step, { jobId, ...detail });
     return;
   }
   console.warn(PREFIX, jobId, step);
+  appendPersistent('warn', step, { jobId });
 }
 
-/**
- * Ошибка пайплайна.
- * @param {string} jobId
- * @param {string} step
- * @param {unknown} err
- */
 function logError(jobId, step, err) {
   const msg = err instanceof Error ? err.message : String(err);
   console.error(PREFIX, jobId, step, msg);
+  appendPersistent('error', step, { jobId, message: msg });
 }
 
-/**
- * Уникальный id задания печати.
- * @returns {string}
- */
 function createJobId() {
   return `escpos-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }

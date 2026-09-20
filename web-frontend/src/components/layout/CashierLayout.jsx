@@ -11,6 +11,7 @@ import CashierBottomNav from './cashier/bottom-nav/CashierBottomNav';
 import CashierPosTopbar from './cashier/CashierPosTopbar';
 import CashierSecondaryTopbar from './cashier/CashierSecondaryTopbar';
 import { useCashierLayoutShell } from './cashier/useCashierLayoutShell';
+import OfflineSyncProgressBanner from '../../features/cashier/components/OfflineSyncProgressBanner';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '../../styles/cashier/index.css';
 
@@ -64,6 +65,8 @@ function CashierLayoutShell() {
           </>
         )}
       </div>
+
+      <OfflineSyncProgressBanner />
 
       <CashierShiftModal
         open={p.open}

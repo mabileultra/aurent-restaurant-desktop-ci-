@@ -1,7 +1,6 @@
 import { Navigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { storeApi } from '../../services/api';
 import { useCashierStore } from '../../hooks/useCashierStore';
+import { useCashierStoreTypeQuery } from '../../hooks/useCashierStoreTypeQuery';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
 import { resolveCashierRegisterPath } from '../../utils/cashierRegisterRoute';
 import CashierRouteLoading from '../../components/layout/cashier/CashierRouteLoading';
@@ -9,15 +8,13 @@ import CashierRouteLoading from '../../components/layout/cashier/CashierRouteLoa
 /** Аптечная касса — только для магазинов PHARMACY. */
 export default function PharmacyPosGuard({ children }) {
   const { storeId } = useCashierStore();
-
-  const { data: store, isPending } = useQuery({
-    queryKey: ['cashier-store', storeId],
-    queryFn: () => storeApi.getById(storeId).then((r) => r.data),
-    enabled: storeId != null,
-    staleTime: 60_000,
-  });
+  const { store, isPending, skipOnline } = useCashierStoreTypeQuery(storeId);
 
   if (storeId == null) {
+    return children;
+  }
+
+  if (skipOnline) {
     return children;
   }
 

@@ -6,6 +6,7 @@ import {
   mapDesktopUpdateEvent,
   mergeDesktopUpdateItem,
 } from '../utils/desktopUpdateNotifications';
+import { useShouldUseOfflinePos } from '../../../store/connectivityStore';
 
 const LOCAL_READ_KEY = 'cashier-desktop-local-notifications-read';
 
@@ -42,6 +43,7 @@ function mapServerItem(item) {
 export function useCashierNotifications() {
   const { t } = useTranslation();
   const rootRef = useRef(null);
+  const skipOnline = useShouldUseOfflinePos();
   const [open, setOpen] = useState(false);
   const [serverItems, setServerItems] = useState([]);
   const [updateItems, setUpdateItems] = useState([]);
@@ -49,6 +51,7 @@ export function useCashierNotifications() {
   const [loading, setLoading] = useState(false);
 
   const fetchServer = useCallback(async () => {
+    if (skipOnline) return;
     try {
       setLoading(true);
       const { data } = await cashierDesktopNotificationsApi.unread();
@@ -59,13 +62,14 @@ export function useCashierNotifications() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [skipOnline]);
 
   useEffect(() => {
+    if (skipOnline) return undefined;
     fetchServer();
     const timer = window.setInterval(fetchServer, 60_000);
     return () => window.clearInterval(timer);
-  }, [fetchServer]);
+  }, [fetchServer, skipOnline]);
 
   useEffect(() => {
     if (!isDesktopCashier() || typeof window.desktopCashier?.onDesktopUpdate !== 'function') {

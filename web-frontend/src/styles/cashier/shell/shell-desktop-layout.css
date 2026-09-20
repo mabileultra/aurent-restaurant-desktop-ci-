@@ -9,10 +9,7 @@ html.cashier-shell--desktop #root {
 }
 
 .cashier-app.cashier-app--desktop {
-  width: calc(100% / var(--pos-ui-scale, 1));
   max-width: none;
-  height: calc(100% / var(--pos-ui-scale, 1));
-  min-height: calc(100% / var(--pos-ui-scale, 1));
 }
 
 .cashier-app.cashier-app--desktop .cashier-app__body {
@@ -98,7 +95,7 @@ html.cashier-shell--desktop #root {
 
 @media (min-width: 1600px) and (min-height: 900px) {
   .cashier-app.cashier-app--desktop.cashier-app--pos-screen {
-    --cashier-pay-w: clamp(300px, 22vw, 400px);
+    --cashier-pay-w: clamp(300px, 22%, 400px);
     --cashier-gap: 5px;
     --cashier-bottom-nav-h: 48px;
   }

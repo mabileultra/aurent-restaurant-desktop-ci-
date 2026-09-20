@@ -9,6 +9,7 @@ import {
 } from './parseMultikassaResult';
 import { FISCAL_STATUS } from './multikassaConstants';
 import { isOfdCheckUrl } from '../../utils/ofdQrUrl';
+import { logFiscal } from '../desktop/activityLog';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
   if (clientSaleId) return `sale:${clientSaleId}`;
@@ -85,6 +86,7 @@ export async function fiscalizeSaleBeforeCommit({
     assertCapabilitiesReady(capabilities);
   } catch (err) {
     if (offline || !requireBeforeSale) {
+      logFiscal('Фискализация отложена (нет настроек Multikassa)', { offline, message: err.message }, 'warn');
       return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
     }
     throw err;
@@ -137,6 +139,7 @@ export async function fiscalizeSaleBeforeCommit({
 
     if (!hasProof) {
       if (offline || !requireBeforeSale) {
+        logFiscal('Фискализация PENDING', { offline, error: parsed.fiscalError }, 'warn');
         return pendingPayload(body, idempotencyKey, parsed.fiscalError);
       }
       rejectIncompleteFiscal(parsed);
@@ -144,27 +147,41 @@ export async function fiscalizeSaleBeforeCommit({
 
     if (!hasQr && requireBeforeSale && !offline) {
       // Признак есть, QR URL не собрался — продажу не рвём (иначе чек не печатается).
-      return {
+      const payload = {
         ...toSaleFiscalPayload(parsed),
         multikassaRetryBody: body,
         clientOperationId: idempotencyKey,
       };
+      logFiscal('Фискализировано без QR URL', {
+        fiscalSign: payload.fiscalSign,
+        receiptSeq: payload.fiscalReceiptSeq,
+      }, 'warn');
+      return payload;
     }
 
-    return {
+    const payload = {
       ...toSaleFiscalPayload(parsed),
       multikassaRetryBody: body,
       clientOperationId: idempotencyKey,
     };
+    logFiscal('Фискализация успешна', {
+      fiscalSign: payload.fiscalSign,
+      receiptSeq: payload.fiscalReceiptSeq,
+      offline,
+    });
+    return payload;
   } catch (err) {
     if (err?.code === 'MULTIKASSA_FISCAL_FAILED' && requireBeforeSale && !offline) {
+      logFiscal(`Фискализация отклонена: ${err.message}`, null, 'error');
       throw err;
     }
     if (offline || !requireBeforeSale) {
+      logFiscal(`Фискализация PENDING после ошибки: ${err?.message || err}`, { offline }, 'warn');
       return pendingPayload(body, idempotencyKey, err?.message);
     }
     const wrapped = err;
     if (!wrapped.code) wrapped.code = 'MULTIKASSA_FISCAL_FAILED';
+    logFiscal(`Фискализация ошибка: ${wrapped.message}`, null, 'error');
     throw wrapped;
   }
 }

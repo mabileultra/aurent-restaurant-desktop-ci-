@@ -12,9 +12,6 @@
   --cashier-cart-cols-register: minmax(4rem, 1fr) minmax(5.75rem, 9rem) minmax(7.25rem, 8.75rem) minmax(5.75rem, 9.5rem) minmax(2.75rem, 3.5rem);
 
   font-size: var(--cashier-font);
-  width: calc(100% / var(--pos-ui-scale, 1));
-  min-height: calc(var(--cashier-vh) / var(--pos-ui-scale, 1));
-  height: calc(var(--cashier-vh) / var(--pos-ui-scale, 1));
   overflow: hidden;
 }
 

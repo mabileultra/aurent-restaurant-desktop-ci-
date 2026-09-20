@@ -18,6 +18,7 @@ import {
   refreshCatalogBootstrap,
 } from '../../../services/offline/offlineSyncService';
 import { isDesktopOfflineBridge } from '../../../services/offline/desktopOfflineBridge';
+import { SYNC_PHASE_I18N, isActiveSyncPhase } from '../../../services/offline/syncPhase';
 
 function formatCatalogSyncAt(iso) {
   if (!iso) return null;
@@ -49,6 +50,7 @@ export function useOfflineStatus() {
   const pendingSales = useConnectivityStore((s) => s.pendingSales);
   const syncing = useConnectivityStore((s) => s.syncing);
   const syncingCatalog = useConnectivityStore((s) => s.syncingCatalog);
+  const syncPhase = useConnectivityStore((s) => s.syncPhase);
   const apiOnline = useConnectivityStore((s) => s.apiOnline);
   const bootstrapReady = useConnectivityStore((s) => s.bootstrapReady);
   const lastCatalogSyncAt = useConnectivityStore((s) => s.lastCatalogSyncAt);
@@ -66,7 +68,13 @@ export function useOfflineStatus() {
   const showPending = apiOnline && pendingSales > 0;
   const catalogLabel = formatCatalogSyncAt(lastCatalogSyncAt);
   const showCatalogStrip = !showOffline && apiOnline && bootstrapReady;
-  const catalogBusy = Boolean(syncingCatalog || (syncing && !bootstrapReady && visible));
+  const syncPhaseActive = isActiveSyncPhase(syncPhase);
+  const syncPhaseLabel = syncPhaseActive || syncPhase === 'done' || syncPhase === 'error'
+    ? t(SYNC_PHASE_I18N[syncPhase] || 'offline.syncing')
+    : null;
+  const catalogBusy = Boolean(
+    syncPhaseActive || syncingCatalog || (syncing && !bootstrapReady && visible),
+  );
   // Клик всегда: выключить офлайн можно без bridge; включить — handler проверит bridge.
   const canToggle = Boolean(forceOfflineMode || offlineAllowed);
 
@@ -150,18 +158,23 @@ export function useOfflineStatus() {
   }, [canSellOffline, catalogKind, posRoute.hasCatalog, qc, storeId, t]);
 
   const handleSyncSales = useCallback(async () => {
-    useConnectivityStore.getState().setSyncing(true);
+    const store = useConnectivityStore.getState();
+    store.setSyncing(true);
+    store.setSyncPhase('sales');
+    toast.loading(t('offline.phaseSales'), { id: 'pos-sync-sales' });
     try {
       await pushPendingSales({ catalogKind });
-      useConnectivityStore.getState().setSyncResult({ ok: true });
+      store.setSyncResult({ ok: true });
       await refreshConnectivityStatus();
+      toast.success(t('offline.phaseDone'), { id: 'pos-sync-sales' });
     } catch (err) {
       useConnectivityStore.getState().setSyncResult({
         ok: false,
         error: err?.message || String(err),
       });
+      toast.error(t('offline.phaseError'), { id: 'pos-sync-sales' });
     }
-  }, [catalogKind]);
+  }, [catalogKind, t]);
 
   const handleRefreshCatalog = useCallback(async () => {
     if (!storeId) return;
@@ -169,17 +182,24 @@ export function useOfflineStatus() {
       toast.error(t('offline.updateCatalogNeedsInternet'));
       return;
     }
-    useConnectivityStore.getState().setSyncingCatalog(true);
+    const store = useConnectivityStore.getState();
+    store.setSyncingCatalog(true);
+    store.setSyncPhase('catalog');
+    toast.loading(t('offline.phaseCatalog'), { id: 'pos-sync-catalog' });
     try {
       const result = await refreshCatalogBootstrap(storeId, { force: true, catalogKind });
       if (result?.skipped && result?.reason === 'error') {
         throw new Error(t('offline.updateCatalogFailed'));
       }
-      useConnectivityStore.getState().setSyncResult({ ok: true });
+      store.setSyncResult({ ok: true });
       await refreshConnectivityStatus();
       invalidatePosData(qc, storeId);
       if (!result?.skipped) {
-        toast.success(t('offline.catalogUpdated', { count: result?.productCount ?? 0 }));
+        toast.success(t('offline.catalogUpdated', { count: result?.productCount ?? 0 }), {
+          id: 'pos-sync-catalog',
+        });
+      } else {
+        toast.success(t('offline.phaseDone'), { id: 'pos-sync-catalog' });
       }
     } catch (err) {
       const message = err?.response?.data?.message || err?.message || t('offline.updateCatalogFailed');
@@ -187,7 +207,7 @@ export function useOfflineStatus() {
         ok: false,
         error: message,
       });
-      toast.error(message);
+      toast.error(message, { id: 'pos-sync-catalog' });
     } finally {
       useConnectivityStore.getState().setSyncingCatalog(false);
     }
@@ -226,8 +246,8 @@ export function useOfflineStatus() {
     shortLabel = t('offline.topbarPending', { count: pendingSales });
     tone = 'pending';
   } else if (catalogBusy) {
-    message = t('offline.preparingCatalog');
-    shortLabel = t('offline.topbarSyncing');
+    message = syncPhaseLabel || t('offline.preparingCatalog');
+    shortLabel = syncPhaseLabel || t('offline.topbarSyncing');
     tone = 'pending';
   } else if (visible && !bootstrapReady && apiOnline && lastSyncError) {
     message = t('offline.updateCatalogFailed');
@@ -261,6 +281,9 @@ export function useOfflineStatus() {
     networkOffline,
     syncing,
     syncingCatalog,
+    syncPhase,
+    syncPhaseActive,
+    syncPhaseLabel,
     canToggle,
     hasOfflineBridge: visible,
     actions: {

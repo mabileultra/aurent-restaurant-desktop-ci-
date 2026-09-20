@@ -70,5 +70,13 @@ contextBridge.exposeInMainWorld('desktopCashier', {
     return () => ipcRenderer.removeListener('offline:connectivity', handler);
   },
 
+  appendActivityLog: (payload) => invoke('activity-log:append', payload || {}),
+  listActivityLogs: () => invoke('activity-log:list'),
+  readActivityLog: (filePath) => invoke('activity-log:read', filePath),
+  openActivityLogFolder: () => invoke('activity-log:open-folder'),
+  openActivityLogFile: (filePath) => invoke('activity-log:open-file', filePath),
+  openActivityLogViewer: () => invoke('activity-log:open-viewer'),
+  getActivityLogTodayPath: () => invoke('activity-log:today-path'),
+
   multikassaRequest: (payload) => invoke('desktop:multikassaRequest', payload),
 });

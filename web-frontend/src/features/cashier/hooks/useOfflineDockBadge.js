@@ -7,6 +7,7 @@ import { userHasCashierOfflineAccess } from '../../../utils/cashierOfflineAccess
 import { isDesktopCashier } from '../../../utils/authLogin';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { resolveOfflineDockBadge } from './resolveOfflineDockBadge';
+import { SYNC_PHASE_I18N, isActiveSyncPhase } from '../../../services/offline/syncPhase';
 
 function sameDockBadge(a, b) {
   return (
@@ -14,6 +15,7 @@ function sameDockBadge(a, b) {
     && a.labelKey === b.labelKey
     && a.showOffline === b.showOffline
     && a.networkOffline === b.networkOffline
+    && a.syncing === b.syncing
   );
 }
 
@@ -30,6 +32,7 @@ export function useOfflineDockBadge() {
       const route = resolvePosRoute(storeId, s);
       const networkOffline = Boolean(s.offlineMode || !s.apiOnline);
       const forceOfflineMode = Boolean(s.forceOfflineMode);
+      const syncing = isActiveSyncPhase(s.syncPhase) || Boolean(s.syncing || s.syncingCatalog);
       const resolved = resolveOfflineDockBadge({
         hasBridge,
         isDesktopShell,
@@ -38,12 +41,27 @@ export function useOfflineDockBadge() {
         networkOffline,
         hasCatalog: route.hasCatalog,
       });
+
+      if (syncing) {
+        const phaseKey = SYNC_PHASE_I18N[s.syncPhase] || 'offline.topbarSyncing';
+        return {
+          tone: 'pending',
+          labelKey: phaseKey,
+          networkOffline,
+          showOffline: Boolean(
+            forceOfflineMode || networkOffline || route.route === 'local',
+          ),
+          syncing: true,
+        };
+      }
+
       return {
         ...resolved,
         networkOffline,
         showOffline: Boolean(
           forceOfflineMode || networkOffline || route.route === 'local',
         ),
+        syncing: false,
       };
     },
     sameDockBadge,
@@ -53,6 +71,7 @@ export function useOfflineDockBadge() {
     tone: badge.tone,
     showOffline: badge.showOffline,
     networkOffline: badge.networkOffline,
+    syncing: badge.syncing,
     shortLabel: t(badge.labelKey),
     message: t(badge.labelKey),
   };

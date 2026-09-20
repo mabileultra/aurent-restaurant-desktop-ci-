@@ -14,7 +14,7 @@ describe('shouldRetryQuery', () => {
     expect(shouldRetryQuery(0, { response: { status: 404 } })).toBe(false);
   });
 
-  it('retries gateway errors', () => {
+  it('retries gateway errors in browser', () => {
     expect(shouldRetryQuery(0, { response: { status: 502 } })).toBe(true);
   });
 });

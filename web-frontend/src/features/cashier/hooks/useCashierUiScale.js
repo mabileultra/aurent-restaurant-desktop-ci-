@@ -1,24 +1,23 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useSyncExternalStore } from 'react';
+import {
+  CASHIER_UI_SCALE_DEFAULT,
+  CASHIER_UI_SCALE_MAX,
+  CASHIER_UI_SCALE_MIN,
+  CASHIER_UI_SCALE_STEP,
+  clampCashierUiScale,
+} from '../utils/cashierUiScale';
+import { resolveCashierZoomBox } from '../utils/resolveCashierZoomBox';
+import { useViewportInnerSize } from './useViewportInnerSize';
 
 const STORAGE_KEY = 'cashier-pos-ui-scale';
-const MIN = 0.8;
-const MAX = 1.4;
-const STEP = 0.1;
-const DEFAULT = 1;
-
-function clampScale(value) {
-  const n = Math.round(Number(value) * 10) / 10;
-  if (!Number.isFinite(n)) return DEFAULT;
-  return Math.min(MAX, Math.max(MIN, n));
-}
 
 function readStoredScale() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw == null) return DEFAULT;
-    return clampScale(raw);
+    if (raw == null) return CASHIER_UI_SCALE_DEFAULT;
+    return clampCashierUiScale(raw);
   } catch {
-    return DEFAULT;
+    return CASHIER_UI_SCALE_DEFAULT;
   }
 }
 
@@ -43,7 +42,7 @@ function getSnapshot() {
 }
 
 function setScale(next) {
-  const value = clampScale(typeof next === 'function' ? next(currentScale) : next);
+  const value = clampCashierUiScale(typeof next === 'function' ? next(currentScale) : next);
   if (value === currentScale) return;
   currentScale = value;
   persistScale(value);
@@ -56,19 +55,24 @@ function setScale(next) {
  */
 export function useCashierUiScale() {
   const scale = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const viewport = useViewportInnerSize();
+  const zoomBox = useMemo(
+    () => resolveCashierZoomBox(scale, viewport.width, viewport.height),
+    [scale, viewport.height, viewport.width]
+  );
 
-  const zoomIn = useCallback(() => setScale((s) => s + STEP), []);
-  const zoomOut = useCallback(() => setScale((s) => s - STEP), []);
-  const reset = useCallback(() => setScale(DEFAULT), []);
+  const zoomIn = useCallback(() => setScale((s) => s + CASHIER_UI_SCALE_STEP), []);
+  const zoomOut = useCallback(() => setScale((s) => s - CASHIER_UI_SCALE_STEP), []);
+  const reset = useCallback(() => setScale(CASHIER_UI_SCALE_DEFAULT), []);
 
   return {
     scale,
     percent: Math.round(scale * 100),
-    canZoomIn: scale < MAX - 1e-9,
-    canZoomOut: scale > MIN + 1e-9,
+    canZoomIn: scale < CASHIER_UI_SCALE_MAX - 1e-9,
+    canZoomOut: scale > CASHIER_UI_SCALE_MIN + 1e-9,
     zoomIn,
     zoomOut,
     reset,
-    rootStyle: { '--pos-ui-scale': String(scale) },
+    rootStyle: zoomBox.style,
   };
 }

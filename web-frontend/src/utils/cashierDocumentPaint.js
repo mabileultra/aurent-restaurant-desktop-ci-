@@ -9,9 +9,14 @@ export const CASHIER_PAINT = {
     bg: '#e9eef4',
     themeColor: '#e9eef4',
   },
+  /** Фон PIN-логина — совпадает с .cashier-pin-login */
+  pinLogin: {
+    bg: '#f8fafc',
+    themeColor: '#f8fafc',
+  },
 };
 
-/** @param {'dark' | 'light'} theme */
+/** @param {'dark' | 'light' | 'pinLogin'} theme */
 export function syncCashierDocumentPaint(theme) {
   if (typeof document === 'undefined') return;
   const paint = CASHIER_PAINT[theme] || CASHIER_PAINT.dark;

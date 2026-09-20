@@ -22,10 +22,13 @@
         try {
           document.documentElement.classList.remove('dark');
           var isCashier = location.pathname.indexOf('/cashier') === 0;
+          var isCashierLogin = location.pathname.indexOf('/cashier/login') === 0;
           var cashierTheme = 'dark';
           if (isCashier) {
             cashierTheme = localStorage.getItem('pos-cashier-theme');
             if (cashierTheme !== 'light' && cashierTheme !== 'dark') cashierTheme = 'dark';
+            /* PIN-логин всегда светлый — иначе чёрный экран до монтирования React */
+            if (isCashierLogin) cashierTheme = 'light';
             document.documentElement.classList.remove('cashier-theme--light', 'cashier-theme--dark');
             document.documentElement.classList.add(
               cashierTheme === 'light' ? 'cashier-theme--light' : 'cashier-theme--dark',
@@ -34,7 +37,7 @@
             document.documentElement.classList.remove('app-theme--admin');
           }
           if (isCashier) {
-            var bg = cashierTheme === 'light' ? '#e9eef4' : '#0c1018';
+            var bg = isCashierLogin ? '#f8fafc' : cashierTheme === 'light' ? '#e9eef4' : '#0c1018';
             document.documentElement.style.backgroundColor = bg;
             document.addEventListener('DOMContentLoaded', function () {
               document.body.style.backgroundColor = bg;

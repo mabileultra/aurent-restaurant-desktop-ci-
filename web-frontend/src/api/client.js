@@ -10,8 +10,10 @@ import {
   useConnectivityStore,
 } from '../store/connectivityStore';
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
+import { logApi } from '../services/desktop/activityLog';
 
 let connectivityRefreshTimer;
+let lastApiFailLogAt = 0;
 
 function scheduleConnectivityRefreshFromApi() {
   if (!isDesktopOfflineBridge()) return;
@@ -62,6 +64,16 @@ api.interceptors.response.use(
     ) {
       markApiUnreachable();
       scheduleConnectivityRefreshFromApi();
+      const now = Date.now();
+      if (now - lastApiFailLogAt > 4_000) {
+        lastApiFailLogAt = now;
+        const url = String(original?.url || original?.baseURL || '');
+        logApi(
+          `API недоступен: ${status || error?.code || 'network'}`,
+          { url: url.slice(0, 160), method: original?.method },
+          'warn',
+        );
+      }
     }
     const hasStoredToken = Boolean(useAuthStore.getState().token);
     const shouldAttemptRefresh =

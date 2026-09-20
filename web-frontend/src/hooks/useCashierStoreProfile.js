@@ -5,16 +5,19 @@ import { useCashierStore } from './useCashierStore';
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
 import { resolveCashierRegisterPath } from '../utils/cashierRegisterRoute';
 import { isPharmPosPath } from '../pharmacy/app/pharmacyPaths';
+import { useShouldUseOfflinePos } from '../store/connectivityStore';
 
 export function useCashierStoreProfile() {
   const location = useLocation();
   const { storeId } = useCashierStore();
+  const skipOnline = useShouldUseOfflinePos();
   const onRestaurantRoute = location.pathname.startsWith('/rst/pos');
   const query = useQuery({
     queryKey: ['cashier-store', storeId],
     queryFn: () => storeApi.getById(storeId).then((r) => r.data),
-    enabled: storeId != null,
+    enabled: storeId != null && !skipOnline,
     staleTime: 60_000,
+    retry: skipOnline ? false : 1,
   });
 
   const businessType = normalizeBusinessTypeCode(query.data?.businessType);
@@ -29,7 +32,7 @@ export function useCashierStoreProfile() {
     isRestaurant,
     isPharmacy,
     registerPath,
-    isLoading: query.isLoading,
-    isFetched: query.isFetched,
+    isLoading: !skipOnline && query.isLoading,
+    isFetched: skipOnline || query.isFetched,
   };
 }

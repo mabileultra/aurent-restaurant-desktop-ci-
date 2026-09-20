@@ -4,7 +4,9 @@ function isDesktopElectron() {
 
 function hasCashierPosAccess(user) {
   const role = user?.role;
-  if (role === 'CASHIER' || role === 'ADMIN' || role === 'MANAGER') return true;
+  if (role === 'CASHIER' || role === 'WAITER' || role === 'ADMIN' || role === 'MANAGER') {
+    return true;
+  }
   return Array.isArray(user?.allowedModules) && user.allowedModules.includes('cashierPos');
 }
 

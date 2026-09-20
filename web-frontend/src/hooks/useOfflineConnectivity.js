@@ -16,12 +16,11 @@ import {
   runSalesSyncOnly,
 } from '../services/offline/offlineSyncService';
 import { offlineGetStatus, isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
-
-function canRunOnlineSync() {
-  const browserOnline = typeof navigator === 'undefined' ? true : navigator.onLine !== false;
-  const apiOnline = useConnectivityStore.getState().apiOnline;
-  return Boolean(apiOnline || browserOnline);
-}
+import { canRunOnlineSync } from '../services/offline/canRunOnlineSync';
+import { runDesktopReconnectSync } from '../services/offline/runDesktopReconnectSync';
+import { syncAuthSession } from '../utils/syncAuthSession';
+import toast from 'react-hot-toast';
+import i18n from '../i18n/config';
 
 export function useOfflineConnectivity() {
   const token = useAuthStore((s) => s.token);
@@ -99,12 +98,36 @@ export function useOfflineConnectivity() {
       }
     };
 
+    const onReconnect = async () => {
+      if (cancelled || !canRunOnlineSync()) return;
+      const toastId = 'pos-reconnect-sync';
+      toast.loading(i18n.t('offline.reconnectStarted'), { id: toastId });
+      const result = await runDesktopReconnectSync(storeId, { catalogKind });
+      if (cancelled) return;
+      if (result?.skipped) {
+        toast.dismiss(toastId);
+        return;
+      }
+      if (result?.error || result?.catalog?.reason === 'error' || result?.sales?.error) {
+        toast.error(i18n.t('offline.phaseError'), { id: toastId });
+      } else {
+        const pushed = Number(result?.sales?.pushed || 0);
+        toast.success(
+          pushed > 0
+            ? i18n.t('offline.pendingSales', { count: pushed })
+            : i18n.t('offline.phaseDone'),
+          { id: toastId },
+        );
+      }
+      await syncAuthSession();
+    };
+
     runInitialSync();
 
     const unsub = useConnectivityStore.subscribe((state, prev) => {
       if (cancelled) return;
       if (state.apiOnline && !prev?.apiOnline) {
-        runCatalogSync(false);
+        void onReconnect();
       }
     });
 

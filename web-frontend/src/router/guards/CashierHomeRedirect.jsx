@@ -1,32 +1,20 @@
 import { Navigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { storeApi } from '../../services/api';
 import { useCashierStore } from '../../hooks/useCashierStore';
+import { useCashierStoreTypeQuery } from '../../hooks/useCashierStoreTypeQuery';
 import { useAuthStore } from '../../store/authStore';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
-import CashierRouteLoading from '../../components/layout/cashier/CashierRouteLoading';
 
 export default function CashierHomeRedirect() {
   const user = useAuthStore((s) => s.user);
   const { storeId } = useCashierStore();
-
-  const { data: store, isPending } = useQuery({
-    queryKey: ['cashier-store', storeId],
-    queryFn: () => storeApi.getById(storeId).then((r) => r.data),
-    enabled: storeId != null,
-    staleTime: 60_000,
-  });
+  const { store, isPending, skipOnline, isError } = useCashierStoreTypeQuery(storeId);
 
   if (user?.role === 'WAITER') {
     return <Navigate to="/rst/pos" replace />;
   }
 
-  if (storeId == null) {
+  if (storeId == null || skipOnline || isError || isPending) {
     return <Navigate to="/cashier/pos" replace />;
-  }
-
-  if (isPending) {
-    return <CashierRouteLoading />;
   }
 
   const type = normalizeBusinessTypeCode(store?.businessType);

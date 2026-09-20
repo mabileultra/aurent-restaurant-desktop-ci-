@@ -16,6 +16,7 @@ import {
 } from '../services/pos/posForceOfflineStorage';
 import { resolvePosRoute } from '../services/pos/posRouteResolver';
 import { isOfflineFirstDesktop } from '../services/offline/offlineFirstFlag';
+import { logConnectivity, logError } from '../services/desktop/activityLog';
 
 /** Сразу offline при сбое probe; online — после двух подряд успешных probe. */
 const ONLINE_RECOVERY_STREAK = 2;
@@ -37,7 +38,10 @@ export function resetConnectivityStabilizer() {
 }
 
 function stabilizeApiOnline(rawOnline) {
-  if (Date.now() < apiUnreachableUntil) {
+  // Successful main-process probe clears cooldown so reconnect is not stuck 12s.
+  if (rawOnline) {
+    apiUnreachableUntil = 0;
+  } else if (Date.now() < apiUnreachableUntil) {
     stableApiOnline = false;
     onlineRecoveryStreak = 0;
     offlineFailureStreak = 0;
@@ -118,6 +122,8 @@ export const useConnectivityStore = create((set, get) => ({
   pendingSales: 0,
   syncing: false,
   syncingCatalog: false,
+  syncPhase: 'idle',
+  syncPhaseDetail: null,
   lastSyncAt: null,
   lastCatalogSyncAt: null,
   productCount: 0,
@@ -168,6 +174,18 @@ export const useConnectivityStore = create((set, get) => ({
       deviceId: status.deviceId !== undefined ? status.deviceId || null : prev.deviceId,
     };
     if (connectivityFieldsEqual(connectivityFields(prev), next)) return;
+    if (prev.apiOnline !== next.apiOnline || prev.offlineMode !== next.offlineMode) {
+      logConnectivity(
+        next.apiOnline ? 'Связь с сервером восстановлена' : 'Нет связи с сервером — офлайн',
+        {
+          apiOnline: next.apiOnline,
+          offlineMode: next.offlineMode,
+          pendingSales: next.pendingSales,
+          productCount: next.productCount,
+        },
+        next.apiOnline ? 'info' : 'warn',
+      );
+    }
     set(next);
   },
 
@@ -183,12 +201,26 @@ export const useConnectivityStore = create((set, get) => ({
     set({ syncingCatalog: next });
   },
 
+  setSyncPhase(phase, detail = null) {
+    const nextPhase = phase || 'idle';
+    const nextDetail = detail == null ? null : String(detail);
+    const prev = get();
+    if (prev.syncPhase === nextPhase && prev.syncPhaseDetail === nextDetail) return;
+    set({ syncPhase: nextPhase, syncPhaseDetail: nextDetail });
+  },
+
   setSyncResult({ ok, error } = {}) {
     set({
       syncing: false,
+      syncingCatalog: false,
+      syncPhase: ok ? 'done' : 'error',
+      syncPhaseDetail: error || null,
       lastSyncAt: ok ? new Date().toISOString() : get().lastSyncAt,
       lastSyncError: error || null,
     });
+    if (!ok && error) {
+      logError(`Синхронизация: ${error}`);
+    }
   },
 
   setForceOfflineMode(enabled) {
@@ -234,6 +266,9 @@ export async function refreshConnectivityStatus() {
   applyBrowserOfflineHint();
   try {
     const status = await offlineGetStatus();
+    if (status?.apiOnline) {
+      apiUnreachableUntil = 0;
+    }
     useConnectivityStore.getState().applyStatus(status);
     return status;
   } catch {
@@ -242,6 +277,13 @@ export async function refreshConnectivityStatus() {
     }
     return null;
   }
+}
+
+function onBrowserOnline() {
+  apiUnreachableUntil = 0;
+  onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
+  offlineFailureStreak = 0;
+  refreshConnectivityStatus();
 }
 
 function onWindowFocusRefreshConnectivity() {
@@ -255,11 +297,14 @@ export function startConnectivityWatcher() {
   refreshConnectivityStatus();
   refreshTimer = setInterval(refreshConnectivityStatus, CONNECTIVITY_POLL_MS);
   unsubscribeConnectivity = subscribeOfflineConnectivity((payload) => {
+    if (payload?.apiOnline) {
+      apiUnreachableUntil = 0;
+    }
     useConnectivityStore.getState().applyStatus(payload);
   });
   if (!browserConnectivityBound && typeof window !== 'undefined') {
     browserConnectivityBound = true;
-    window.addEventListener('online', () => refreshConnectivityStatus());
+    window.addEventListener('online', onBrowserOnline);
     window.addEventListener('offline', () => {
       applyBrowserOfflineHint();
       refreshConnectivityStatus();
@@ -286,9 +331,12 @@ export function useShouldUseOfflinePos() {
   const forceOfflineMode = useConnectivityStore((s) => s.forceOfflineMode);
   const user = useAuthStore((s) => s.user);
   if (!isDesktopOfflineBridge()) return false;
-  if (!userHasCashierOfflineAccess(user)) return false;
   const browserOffline = typeof navigator !== 'undefined' && !navigator.onLine;
-  return forceOfflineMode || offlineMode || !apiOnline || browserOffline;
+  const offlineLike = forceOfflineMode || offlineMode || !apiOnline || browserOffline;
+  if (!offlineLike) return false;
+  // Until auth hydrates, still skip online POS fetches (avoids aurent.uz spam / black screen).
+  if (!user) return true;
+  return userHasCashierOfflineAccess(user);
 }
 
 function samePosRoute(a, b) {

@@ -14,6 +14,7 @@ import {
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
+import { logAuth } from '../../../services/desktop/activityLog';
 
 export function useCashierPinLoginPage() {
   const { t } = useTranslation();
@@ -107,6 +108,11 @@ export function useCashierPinLoginPage() {
         ...profile,
         companyLoginCode: loginCode || loginCodeFromProfile || profile.companyLoginCode,
       });
+      logAuth('Вход по PIN', {
+        role: profile.role,
+        companyLoginCode: loginCode,
+        userId: profile.id,
+      });
       if (loginCode) persistCompanyLoginCode(loginCode);
       setCompanyPopoverOpen(false);
       freshLoginRef.current = true;
@@ -115,6 +121,11 @@ export function useCashierPinLoginPage() {
         freshLoginRef.current = false;
       }, 4000);
     } catch (err) {
+      logAuth(
+        `Ошибка входа PIN: ${err?.response?.status || err?.message || 'fail'}`,
+        { companyLoginCode: loginCode },
+        'error',
+      );
       toast.error(resolveAuthErrorMessage(err, t), {
         id: err.response ? 'cashier-login-api' : 'cashier-login-network',
       });

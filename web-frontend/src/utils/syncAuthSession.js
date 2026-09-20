@@ -5,6 +5,8 @@ import { normalizeCompanyLoginCode } from './authLogin';
 import { isJwtExpired } from './jwtToken';
 import { forceAuthReLogin } from './authSessionExpiry';
 import { isPublicAppPath } from './publicAppPaths';
+import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
+import { canRunOnlineSync } from '../services/offline/canRunOnlineSync';
 
 /** Подтянуть с сервера актуальные allowedModules и обновить JWT. */
 export async function syncAuthSession() {
@@ -17,6 +19,10 @@ export async function syncAuthSession() {
       return null;
     }
     forceAuthReLogin();
+    return null;
+  }
+
+  if (isDesktopOfflineBridge() && !canRunOnlineSync()) {
     return null;
   }
 

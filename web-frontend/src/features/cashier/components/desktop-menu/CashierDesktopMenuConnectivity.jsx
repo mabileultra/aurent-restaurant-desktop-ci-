@@ -21,8 +21,8 @@ export default function CashierDesktopMenuConnectivity({ t }) {
     ? t('offline.bottomCloudOffline')
     : t('offline.bottomCloudOnline');
   const needsCatalog = !status.canSellOffline && !status.forceOfflineMode;
-  const statusMeta = status.syncingCatalog
-    ? t('offline.preparingCatalogForOffline')
+  const statusMeta = status.syncingCatalog || status.syncPhaseActive
+    ? (status.syncPhaseLabel || t('offline.preparingCatalogForOffline'))
     : (status.tone === 'pending' || status.tone === 'warn')
       ? status.message
       : canToggle && bridgeReady

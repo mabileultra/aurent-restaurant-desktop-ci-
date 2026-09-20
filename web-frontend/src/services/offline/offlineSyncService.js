@@ -11,6 +11,7 @@ import { markApiReachable, useConnectivityStore } from '../../store/connectivity
 import { retryPendingFiscalOnPayload } from '../multikassa/retryPendingFiscalOnPayload';
 import { toSaleFiscalPayload } from '../multikassa/parseMultikassaResult';
 import { FISCAL_STATUS } from '../multikassa/multikassaConstants';
+import { logCatalog, logSale } from '../desktop/activityLog';
 
 /** Отправка очереди продаж — часто (лёгкий запрос). */
 export const SALES_SYNC_INTERVAL_MS = 60_000;
@@ -44,6 +45,11 @@ export async function pullCatalogBootstrap(storeId, { catalogKind } = {}) {
       throw new Error(imported.error || 'offline_db_unavailable');
     }
   }
+  logCatalog('Каталог загружен с сервера', {
+    storeId,
+    catalogKind,
+    products: data?.products?.length ?? 0,
+  });
   return data;
 }
 
@@ -123,6 +129,12 @@ export async function pushPendingSales({ catalogKind } = {}) {
   const results = res.data?.results || [];
   await offlineMarkSalesSynced(results);
   const ok = results.filter((r) => r.status === 'CREATED' || r.status === 'ALREADY_EXISTS').length;
+  logSale('Офлайн-продажи отправлены на сервер', {
+    catalogKind,
+    pushed: ok,
+    failed: results.length - ok,
+    batch: sales.length,
+  });
   return { pushed: ok, failed: results.length - ok, results };
 }
 

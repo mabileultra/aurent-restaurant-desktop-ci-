@@ -10,6 +10,8 @@ function buildAppMenu({
   allowBundledUi = false,
   offlineFirst = false,
   setOfflineFirst,
+  openActivityLogs,
+  openActivityLogFolder,
 }) {
   const showUiModeMenu = allowBundledUi || uiMode === UI_MODE_BUNDLED || offlineFirst;
   const uiModeItems = showUiModeMenu
@@ -120,6 +122,24 @@ function buildAppMenu({
                   buttons: ['OK'],
                 }).catch(() => {});
               });
+          },
+        },
+        { type: 'separator' },
+        {
+          label: 'Журнал операций…',
+          accelerator: 'CmdOrCtrl+L',
+          click: () => {
+            if (typeof openActivityLogs === 'function') {
+              openActivityLogs();
+            }
+          },
+        },
+        {
+          label: 'Папка с логами…',
+          click: () => {
+            if (typeof openActivityLogFolder === 'function') {
+              Promise.resolve(openActivityLogFolder()).catch(() => {});
+            }
           },
         },
         { type: 'separator' },

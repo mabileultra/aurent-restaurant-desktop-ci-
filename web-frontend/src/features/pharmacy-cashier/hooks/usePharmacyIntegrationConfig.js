@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { PHARMACY_EXTERNAL_URLS } from '../constants/pharmacyQuickLinks';
+import { useShouldUseOfflinePos } from '../../../store/connectivityStore';
 
 const DEFAULT_CAPABILITIES = {
   aslMarkingEnabled: false,
@@ -11,12 +12,13 @@ const DEFAULT_CAPABILITIES = {
 };
 
 export function usePharmacyIntegrationConfig(storeId) {
+  const skipOnline = useShouldUseOfflinePos();
   const query = useQuery({
     queryKey: ['pharmacy-integration', storeId],
     queryFn: () => pharmacyIntegrationApi.getCashierCapabilities(storeId).then((r) => r.data),
-    enabled: Boolean(storeId),
+    enabled: Boolean(storeId) && !skipOnline,
     staleTime: 60_000,
-    retry: 1,
+    retry: skipOnline ? false : 1,
   });
 
   const capabilities = query.data ?? DEFAULT_CAPABILITIES;
@@ -31,7 +33,7 @@ export function usePharmacyIntegrationConfig(storeId) {
   return {
     capabilities,
     externalUrls,
-    isLoading: query.isLoading,
+    isLoading: !skipOnline && query.isLoading,
     isError: query.isError,
     refetch: query.refetch,
   };

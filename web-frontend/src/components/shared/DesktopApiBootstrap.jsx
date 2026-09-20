@@ -3,6 +3,7 @@ import { configureDesktopApiBaseUrl } from '../../services/desktopApiInit';
 import { isDesktopCashier } from '../../utils/authLogin';
 import { isDesktopOfflineBridge } from '../../services/offline/desktopOfflineBridge';
 import { startConnectivityWatcher } from '../../store/connectivityStore';
+import AppBootPlaceholder from './AppBootPlaceholder';
 
 export default function DesktopApiBootstrap({ children }) {
   const [ready, setReady] = useState(!isDesktopCashier());
@@ -24,7 +25,7 @@ export default function DesktopApiBootstrap({ children }) {
   }, []);
 
   if (!ready) {
-    return null;
+    return <AppBootPlaceholder />;
   }
 
   return children;

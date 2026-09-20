@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aurent — журнал</title>
+    <link rel="stylesheet" href="./viewer.css" />
+  </head>
+  <body>
+    <header class="bar">
+      <div class="bar__title">
+        <strong>Журнал кассы</strong>
+        <span id="dirHint" class="bar__hint"></span>
+      </div>
+      <div class="bar__actions">
+        <button type="button" id="btnRefresh">Обновить</button>
+        <button type="button" id="btnFolder">Папка логов</button>
+        <button type="button" id="btnOpenTxt">Открыть TXT</button>
+      </div>
+    </header>
+    <div class="layout">
+      <aside class="files">
+        <div class="files__head">Файлы</div>
+        <ul id="fileList" class="files__list"></ul>
+      </aside>
+      <main class="viewer">
+        <div class="viewer__meta" id="fileMeta">Выберите файл слева</div>
+        <pre id="content" class="viewer__content"></pre>
+      </main>
+    </div>
+    <script src="./viewer.js"></script>
+  </body>
+</html>
