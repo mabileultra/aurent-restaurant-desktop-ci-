@@ -89,16 +89,33 @@ public final class PoiSheetGridReader {
         }
         try {
             if (cell.getCellType() == CellType.NUMERIC && !DateUtil.isCellDateFormatted(cell)) {
-                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
+                return numericPlain(cell.getNumericCellValue());
             }
             if (cell.getCellType() == CellType.FORMULA
                 && cell.getCachedFormulaResultType() == CellType.NUMERIC
                 && !DateUtil.isCellDateFormatted(cell)) {
-                return BigDecimal.valueOf(cell.getNumericCellValue()).stripTrailingZeros().toPlainString();
+                return numericPlain(cell.getNumericCellValue());
             }
         } catch (RuntimeException ignored) {
             // текст
         }
-        return formatter.formatCellValue(cell).trim();
+        String formatted = formatter.formatCellValue(cell).trim();
+        if (ExcelBarcodeText.looksScientific(formatted)) {
+            String expanded = ExcelBarcodeText.normalize(formatted);
+            if (!expanded.isEmpty() && expanded.chars().allMatch(Character::isDigit)) {
+                return expanded;
+            }
+        }
+        return formatted;
+    }
+
+    /** Крупные целые (штрихкод) без 4.78E+12. */
+    static String numericPlain(double value) {
+        BigDecimal number = BigDecimal.valueOf(value);
+        if (number.stripTrailingZeros().scale() <= 0
+            && number.abs().compareTo(new BigDecimal("100000000")) >= 0) {
+            return number.toBigInteger().toString();
+        }
+        return number.stripTrailingZeros().toPlainString();
     }
 }

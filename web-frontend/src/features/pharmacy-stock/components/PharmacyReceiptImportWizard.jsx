@@ -1,6 +1,7 @@
 import { Search } from 'lucide-react';
 import PharmacyReceiptImportMatchBar from './PharmacyReceiptImportMatchBar';
 import PharmacyReceiptImportMatchTable from './PharmacyReceiptImportMatchTable';
+import PharmacyReceiptImportRolePreview from './PharmacyReceiptImportRolePreview';
 
 export default function PharmacyReceiptImportWizard({ t, imp }) {
   if (!imp.step) return null;
@@ -100,7 +101,13 @@ export default function PharmacyReceiptImportWizard({ t, imp }) {
           onSelectAll={imp.selectAll}
           onClear={imp.clearSelected}
         />
-      ) : null}
+      ) : (
+        <PharmacyReceiptImportRolePreview
+          t={t}
+          roles={imp.roles}
+          rows={imp.parse?.rows}
+        />
+      )}
 
       <div className="pharmacy-stock__import-body">
         {matchStep ? <PharmacyReceiptImportMatchTable t={t} imp={imp} /> : <ColumnsStep t={t} imp={imp} />}
@@ -118,32 +125,57 @@ function ColumnsStep({ t, imp }) {
       <table className="pharmacy-stock__import-table">
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={`map-${col.index}`}>
-                <select
-                  className="pharmacy-stock__import-role"
-                  value={imp.roles[col.index] || 'SKIP'}
-                  onChange={(e) => imp.setRole(col.index, e.target.value)}
+            {columns.map((col) => {
+              const role = imp.roles[col.index] || 'SKIP';
+              const mapped = role !== 'SKIP';
+              return (
+                <th
+                  key={`map-${col.index}`}
+                  className={mapped ? 'pharmacy-stock__import-col is-mapped' : 'pharmacy-stock__import-col'}
                 >
-                  {imp.roleKeys.map((role) => (
-                    <option key={role} value={role}>{t(`pharmacyStock.importRole.${role}`)}</option>
-                  ))}
-                </select>
-              </th>
-            ))}
+                  <select
+                    className="pharmacy-stock__import-role"
+                    value={role}
+                    onChange={(e) => imp.setRole(col.index, e.target.value)}
+                  >
+                    {imp.roleKeys.map((key) => (
+                      <option key={key} value={key}>{t(`pharmacyStock.importRole.${key}`)}</option>
+                    ))}
+                  </select>
+                </th>
+              );
+            })}
           </tr>
           <tr className="pharmacy-stock__import-src">
-            {columns.map((col) => (
-              <th key={`src-${col.index}`}>{col.title || '—'}</th>
-            ))}
+            {columns.map((col) => {
+              const role = imp.roles[col.index] || 'SKIP';
+              return (
+                <th
+                  key={`src-${col.index}`}
+                  className={role !== 'SKIP' ? 'is-mapped' : undefined}
+                >
+                  <span className="pharmacy-stock__import-src-idx">#{col.index + 1}</span>
+                  {' '}
+                  {col.header || col.title || '—'}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody>
           {rows.map((row, idx) => (
             <tr key={idx}>
-              {columns.map((col) => (
-                <td key={col.index}>{row[col.index] || ''}</td>
-              ))}
+              {columns.map((col) => {
+                const role = imp.roles[col.index] || 'SKIP';
+                return (
+                  <td
+                    key={col.index}
+                    className={role !== 'SKIP' ? 'is-mapped' : undefined}
+                  >
+                    {row[col.index] || ''}
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
@@ -151,4 +183,3 @@ function ColumnsStep({ t, imp }) {
     </div>
   );
 }
-

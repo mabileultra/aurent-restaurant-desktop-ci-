@@ -14,6 +14,7 @@ import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
+import com.pos.pharmacy.importing.spreadsheet.parser.ExcelBarcodeText;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -97,11 +98,14 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
         boolean invoiceImported = matchSupport.isInvoiceImported(companyId, invoiceId);
-        Map<String, Integer> roles = request.roles();
+        List<List<String>> rows = request.rows() != null ? request.rows() : List.of();
+        Map<String, Integer> roles = PharmacyImportRoleMap.normalize(
+            request.roles(),
+            PharmacyImportRoleMap.rowWidth(rows)
+        );
         BigDecimal defaultMarkup = receipt.getDefaultMarkupPercent() != null
             ? receipt.getDefaultMarkupPercent()
             : new BigDecimal("20");
-        List<List<String>> rows = request.rows() != null ? request.rows() : List.of();
         List<Supplier<PharmacyImportMatchItem>> tasks = new ArrayList<>(rows.size());
         for (int i = 0; i < rows.size(); i++) {
             final int rowIndex = i;
@@ -164,31 +168,36 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         boolean invoiceImported,
         String invoiceId
     ) {
-        String name = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.NAME));
+        String name = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.NAME);
         if (!StringUtils.hasText(name) || looksLikeTotal(name)) {
             return null;
         }
-        String manufacturer = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.MANUFACTURER));
-        String country = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.COUNTRY));
-        String barcode = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.BARCODE));
+        String manufacturer = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MANUFACTURER);
+        String country = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.COUNTRY);
+        String barcode = ExcelBarcodeText.normalize(
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.BARCODE)
+        );
         String ikpu = PharmacyImportIkpu.code(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.IKPU))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.IKPU)
         );
-        String batch = PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.BATCH));
+        String batch = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.BATCH);
         LocalDate expiry = PharmacyImportValueParser.date(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.EXPIRY))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.EXPIRY)
         );
+        if (expiry == null) {
+            expiry = PharmacyImportBatchExpiry.fromBatch(batch).orElse(null);
+        }
         BigDecimal qty = PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.QTY))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.QTY)
         );
         BigDecimal vat = PharmacyImportPercent.vatRate(PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.VAT_RATE))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.VAT_RATE)
         ));
         BigDecimal purchase = PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PURCHASE))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE)
         );
         BigDecimal purchaseWithVat = PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PURCHASE_WITH_VAT))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PURCHASE_WITH_VAT)
         );
         if (purchase == null && purchaseWithVat != null) {
             purchase = PharmacyReceiptPricing.withoutVat(purchaseWithVat, vat);
@@ -196,9 +205,15 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         if (purchase == null) {
             purchase = BigDecimal.ZERO;
         }
-        BigDecimal retail = PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.RETAIL))
+        BigDecimal markupPercent = roles.get(PharmacyImportRoles.MARKUP) == null
+            ? null
+            : PharmacyImportValueParser.decimal(
+                PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MARKUP)
+            );
+        BigDecimal retailRaw = PharmacyImportValueParser.decimal(
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.RETAIL)
         );
+        BigDecimal retail = PharmacyImportRetailResolve.resolve(purchase, vat, markupPercent, retailRaw, qty);
         if (retail == null) {
             BigDecimal base = purchaseWithVat != null ? purchaseWithVat : PharmacyReceiptPricing.withVat(purchase, vat);
             retail = base.multiply(BigDecimal.ONE.add(defaultMarkup.divide(BigDecimal.valueOf(100), 6, RoundingMode.HALF_UP)))
@@ -206,16 +221,18 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         }
         if (useFinalSums && qty != null && qty.compareTo(BigDecimal.ZERO) > 0) {
             purchase = purchase.divide(qty, 2, RoundingMode.HALF_UP);
-            retail = retail.divide(qty, 2, RoundingMode.HALF_UP);
+            if (markupPercent == null) {
+                retail = retail.divide(qty, 2, RoundingMode.HALF_UP);
+            }
         }
         BigDecimal units = PharmacyImportValueParser.decimal(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.UNITS_IN_PACK))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.UNITS_IN_PACK)
         );
         List<String> markCodes = PharmacyImportMarkCodesParser.parse(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.MARK_CODES))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.MARK_CODES)
         );
         Boolean prescription = PharmacyImportInvoiceRxLook.of(
-            PharmacyImportValueParser.cell(row, roles.get(PharmacyImportRoles.PRESCRIPTION))
+            PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.PRESCRIPTION)
         );
         boolean invoiceMarked = PharmacyImportInvoiceMarkLook.of(row);
         PharmacyImportCatalogHints hints = tasnifEnricher.apply(ikpu, invoiceMarked, prescription);

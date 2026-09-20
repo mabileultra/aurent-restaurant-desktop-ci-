@@ -1,0 +1,79 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office">
+<head><meta charset="utf-8"></head>
+<body>
+<table border="1">
+  <tr><td colspan="16">Ҳисобварақ-фактура (Didox Excel screenshot layout)</td></tr>
+  <tr>
+    <td rowspan="2">№ Маҳсулот номи (хизматлар)</td>
+    <td rowspan="2">Маркировка коди</td>
+    <td rowspan="2">Товар (хизмат) лар Ягона электрон миллий каталоги бўйича идентификация коди ва номи</td>
+    <td rowspan="2">Товар/хизмат штрих коди</td>
+    <td rowspan="2">Дори воситаларини бериш усули</td>
+    <td rowspan="2">Серия</td>
+    <td rowspan="2">Ўлчов бирлиги</td>
+    <td rowspan="2">Сотиб олиш қиймати (базавий нарх)</td>
+    <td rowspan="2">Савдо қўшимчаси (устама), %</td>
+    <td rowspan="2">Миқдор</td>
+    <td rowspan="2">Нарх</td>
+    <td rowspan="2">Етказиб бериш қиймати</td>
+    <td colspan="2">ҚҚС</td>
+    <td rowspan="2">Етказиб беришнинг ҚҚСни ҳисобга олган ҳолда қиймати</td>
+    <td rowspan="2">Товар келиб чиқиши</td>
+  </tr>
+  <tr>
+    <td>Ставка</td>
+    <td>Сумма</td>
+  </tr>
+  <tr>
+    <td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td>
+    <td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td><td>15</td><td>16</td>
+  </tr>
+  <tr>
+    <td>Трусы для мальчиков М (2)</td>
+    <td>Маркировкаланган</td>
+    <td>06111001017000000 - Трусы</td>
+    <td>4,78002E+12</td>
+    <td>Рецептсиз</td>
+    <td>01</td>
+    <td>dona</td>
+    <td>8 034,71</td>
+    <td>9,99</td>
+    <td>10</td>
+    <td>8 837,50</td>
+    <td>88 375,00</td>
+    <td>12%</td>
+    <td>10 605,00</td>
+    <td>98 980,00</td>
+    <td>Ўзбекистон</td>
+  </tr>
+  <tr>
+    <td>Кап Линкас Лор n20 Апельсин</td>
+    <td></td>
+    <td>03004553004007002 - Линкас</td>
+    <td>4,50288E+12</td>
+    <td>Рецептсиз</td>
+    <td>A2508</td>
+    <td>qadoq=1 blister * 10 dona</td>
+    <td>8 571,18</td>
+    <td>13,22</td>
+    <td>10</td>
+    <td>9 704,29</td>
+    <td>97 042,90</td>
+    <td>12%</td>
+    <td>11 645,15</td>
+    <td>108 688,05</td>
+    <td>Ўзбекистон</td>
+  </tr>
+  <tr>
+    <td>Жами</td>
+    <td></td><td></td><td></td><td></td><td></td><td></td>
+    <td></td><td></td><td></td><td></td>
+    <td>186 589,30</td>
+    <td></td>
+    <td>22 390,72</td>
+    <td>208 980,02</td>
+    <td></td>
+  </tr>
+</table>
+</body>
+</html>

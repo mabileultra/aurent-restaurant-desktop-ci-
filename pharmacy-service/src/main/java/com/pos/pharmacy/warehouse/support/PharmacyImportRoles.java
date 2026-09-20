@@ -16,6 +16,7 @@ public final class PharmacyImportRoles {
     public static final String PURCHASE = "PURCHASE";
     public static final String PURCHASE_WITH_VAT = "PURCHASE_WITH_VAT";
     public static final String VAT_RATE = "VAT_RATE";
+    public static final String MARKUP = "MARKUP";
     public static final String RETAIL = "RETAIL";
     public static final String BARCODE = "BARCODE";
     public static final String IKPU = "IKPU";
@@ -25,7 +26,7 @@ public final class PharmacyImportRoles {
 
     public static final Set<String> ALL = Set.of(
         SKIP, NAME, MANUFACTURER, COUNTRY, QTY, BATCH, EXPIRY,
-        PURCHASE, PURCHASE_WITH_VAT, VAT_RATE, RETAIL, BARCODE, IKPU, UNITS_IN_PACK, MARK_CODES,
+        PURCHASE, PURCHASE_WITH_VAT, VAT_RATE, MARKUP, RETAIL, BARCODE, IKPU, UNITS_IN_PACK, MARK_CODES,
         PRESCRIPTION
     );
 
@@ -49,8 +50,11 @@ public final class PharmacyImportRoles {
         if (containsAny(h, "маркиров", "markirov")) {
             return SKIP;
         }
-        if (containsAny(h, "олди", "oldi-sotdi", "келиб чик", "келиб чиқ")) {
+        if (containsAny(h, "олди", "oldi-sotdi", "oldi sotdi")) {
             return SKIP;
+        }
+        if (containsAny(h, "келиб чик", "келиб чиқ", "kelib chiq", "происхожд", "origin", "келиб чиқиш")) {
+            return COUNTRY;
         }
         if (containsAny(h, "срок", "годност", "expiry", "годен", "yaroqlilik")) {
             return EXPIRY;
@@ -80,7 +84,7 @@ public final class PharmacyImportRoles {
             return PRESCRIPTION;
         }
         if (containsAny(h, "устама", "ustama", "надбав", "қўшимча", "кушимча", "qoshimcha", "markup")) {
-            return SKIP;
+            return MARKUP;
         }
         if (containsAny(h, "покупн", "закуп") && containsAny(h, "с ндс", "with vat")) {
             return PURCHASE_WITH_VAT;
@@ -103,6 +107,13 @@ public final class PharmacyImportRoles {
         }
         if (containsAny(h, "ндс", "ққс", "qqs", "vat") && containsAny(h, "ставк", "rate", "%")) {
             return VAT_RATE;
+        }
+        // Didox Excel: после join «ҚҚС» на колонке ставки, «Сумма» отдельно
+        if (h.equals("ққс") || h.equals("qqs") || h.equals("ндс") || h.equals("ставка")) {
+            return VAT_RATE;
+        }
+        if (h.equals("сумма") || h.equals("summa")) {
+            return SKIP;
         }
         if (containsAny(h, "бирлиги", "ўлчов", "olchov", "единица")) {
             return SKIP;

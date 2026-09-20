@@ -8,10 +8,14 @@ import {
   defaultImportMatchSelected,
 } from '../utils/classifyPharmacyImportMatch';
 import { toPharmacyImportConfirmItem } from '../utils/toPharmacyImportConfirmItem';
+import {
+  applyPharmacyImportRoleChange,
+  buildPharmacyImportRoleMap,
+} from '../utils/pharmacyImportRoleMap';
 
 const ROLE_KEYS = [
   'SKIP', 'NAME', 'MANUFACTURER', 'COUNTRY', 'QTY', 'BATCH', 'EXPIRY',
-  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK',
+  'PURCHASE', 'PURCHASE_WITH_VAT', 'VAT_RATE', 'MARKUP', 'RETAIL', 'BARCODE', 'IKPU', 'UNITS_IN_PACK',
   'MARK_CODES', 'PRESCRIPTION',
 ];
 
@@ -64,13 +68,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     }
   };
 
-  const roleMap = () => {
-    const map = {};
-    Object.entries(roles).forEach(([index, role]) => {
-      if (role && role !== 'SKIP') map[role] = Number(index);
-    });
-    return map;
-  };
+  const roleMap = () => buildPharmacyImportRoleMap(roles);
 
   const continueMatch = async () => {
     const mapped = roleMap();
@@ -186,16 +184,7 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     busy,
     parse,
     roles,
-    setRole: (index, role) => setRoles((prev) => {
-      const next = { ...prev };
-      if (role && role !== 'SKIP') {
-        Object.keys(next).forEach((key) => {
-          if (String(key) !== String(index) && next[key] === role) next[key] = 'SKIP';
-        });
-      }
-      next[index] = role;
-      return next;
-    }),
+    setRole: (index, role) => setRoles((prev) => applyPharmacyImportRoleChange(prev, index, role)),
     useFinalSums,
     setUseFinalSums,
     continueMatch,

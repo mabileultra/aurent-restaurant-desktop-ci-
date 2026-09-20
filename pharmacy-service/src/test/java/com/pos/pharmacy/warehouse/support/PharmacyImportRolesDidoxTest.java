@@ -31,11 +31,17 @@ class PharmacyImportRolesDidoxTest {
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Етказиб бериш қиймати"));
         assertEquals(PharmacyImportRoles.VAT_RATE, PharmacyImportRoles.guess("ҚҚС Ставка"));
         assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("ҚҚС Сумма"));
-        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("ҚҚС"));
-        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Савдо қўшимчаси (устама), %"));
+        assertEquals(PharmacyImportRoles.VAT_RATE, PharmacyImportRoles.guess("ҚҚС"));
+        assertEquals(PharmacyImportRoles.VAT_RATE, PharmacyImportRoles.guess("Ставка"));
+        assertEquals(PharmacyImportRoles.SKIP, PharmacyImportRoles.guess("Сумма"));
+        assertEquals(PharmacyImportRoles.MARKUP, PharmacyImportRoles.guess("Савдо қўшимчаси (устама), %"));
         assertEquals(
-            PharmacyImportRoles.SKIP,
+            PharmacyImportRoles.COUNTRY,
             PharmacyImportRoles.guess("Товарнинг келиб чиқиши")
+        );
+        assertEquals(
+            PharmacyImportRoles.COUNTRY,
+            PharmacyImportRoles.guess("Товар келиб чиқиши")
         );
         assertEquals(PharmacyImportRoles.MARK_CODES, PharmacyImportRoles.guess("Коды маркировки КМ DataMatrix"));
     }
