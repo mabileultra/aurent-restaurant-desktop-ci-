@@ -8,11 +8,12 @@ export const PHARMACY_LOW_STOCK_THRESHOLD = 5;
 
 export function productAttr(productOrLine, ...keys) {
   const attrs = productOrLine?.attributes;
-  if (!attrs || typeof attrs !== 'object') return '';
-  for (const key of keys) {
-    const value = attrs[key];
-    if (value != null && String(value).trim()) {
-      return String(value).trim();
+  if (attrs && typeof attrs === 'object') {
+    for (const key of keys) {
+      const value = attrs[key];
+      if (value != null && String(value).trim()) {
+        return String(value).trim();
+      }
     }
   }
   for (const key of keys) {
@@ -50,7 +51,14 @@ export function productBatch(productOrLine) {
 }
 
 export function productDosageForm(productOrLine) {
-  const fromAttr = productAttr(productOrLine, 'dosage_form', 'dosageForm', 'form');
+  const fromAttr = productAttr(
+    productOrLine,
+    'dosage_form',
+    'dosageForm',
+    'form',
+    'pharmacyDosageForm',
+    'pharmacy_dosage_form',
+  );
   if (fromAttr) return fromAttr;
   const extras = productOrLine?.retailExtras;
   if (extras?.pharmacyDosageForm) return String(extras.pharmacyDosageForm).trim();
@@ -99,11 +107,15 @@ export function productUnitLabel(productOrLine) {
 
 /** Полка / место хранения (из карточки товара). */
 export function productStorageLocation(productOrLine) {
+  const direct = productOrLine?.storageLocation;
+  if (direct != null && String(direct).trim()) return String(direct).trim();
   return productAttr(
     productOrLine,
     'storageLocation',
     'storage_location',
     'shelf',
+    'полка',
+    'location',
   );
 }
 

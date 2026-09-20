@@ -3,7 +3,7 @@
  */
 import { categoryApi, productApi, saleApi, cashierShiftApi, pharmacyWarehouseApi, pharmacySalesApi, pharmacyShiftApi } from '../api';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../utils/cashierTerminalIdentity';
-import { POS_PRODUCT_PAGE_SIZE } from '../../features/cashier/components/pos/posCatalogConstants';
+import { POS_PRODUCT_PAGE_SIZE, posCatalogPageSize } from '../../features/cashier/components/pos/posCatalogConstants';
 import { isApiUnreachableError } from '../../utils/apiNetworkError';
 import { isDesktopOfflineBridge } from '../offline/desktopOfflineBridge';
 import { resolveOnlineCatalogTimeoutMs, resolveOnlineSaleTimeoutMs } from './posCheckoutTimeouts';
@@ -60,18 +60,18 @@ async function withRemoteFallback(storeId, remoteFn, localFn) {
   }
 }
 
-function buildOfflineProductsPage(content, pageParam) {
+function buildOfflineProductsPage(content, pageParam, pageSize = POS_PRODUCT_PAGE_SIZE) {
   const total =
-    content.length < POS_PRODUCT_PAGE_SIZE
+    content.length < pageSize
       ? pageParam + content.length
       : pageParam + content.length + 1;
   return {
     content,
-    number: pageParam / POS_PRODUCT_PAGE_SIZE,
+    number: pageParam / pageSize,
     totalPages:
-      content.length < POS_PRODUCT_PAGE_SIZE
-        ? pageParam / POS_PRODUCT_PAGE_SIZE + 1
-        : pageParam / POS_PRODUCT_PAGE_SIZE + 2,
+      content.length < pageSize
+        ? pageParam / pageSize + 1
+        : pageParam / pageSize + 2,
     totalElements: total,
   };
 }
@@ -98,6 +98,7 @@ export async function posFetchProductsPage({
 }) {
   const trimmedSearch = search?.trim() || '';
   const pharmacy = catalogKind === 'pharmacy';
+  const pageSize = posCatalogPageSize(catalogKind);
   return withRemoteFallback(
     storeId,
     () =>
@@ -107,7 +108,7 @@ export async function posFetchProductsPage({
               storeId,
               search: trimmedSearch || undefined,
               page: pageParam,
-              size: POS_PRODUCT_PAGE_SIZE,
+              size: pageSize,
               activeOnly: true,
               scope: 'ACTIVE',
             },
@@ -119,7 +120,7 @@ export async function posFetchProductsPage({
               categoryId,
               search: trimmedSearch || undefined,
               page: pageParam,
-              size: POS_PRODUCT_PAGE_SIZE,
+              size: pageSize,
               activeOnly: true,
             },
             onlineCatalogConfig(signal),
@@ -129,19 +130,20 @@ export async function posFetchProductsPage({
       const content = await offlineSearchProducts({
         search: trimmedSearch,
         categoryId,
-        limit: POS_PRODUCT_PAGE_SIZE,
+        limit: pageSize,
         offset: pageParam,
       });
-      return buildOfflineProductsPage(content, pageParam);
+      return buildOfflineProductsPage(content, pageParam, pageSize);
     },
   );
 }
 
-export function posProductsNextPageParam(lastPage, lastPageParam, storeId = null) {
+export function posProductsNextPageParam(lastPage, lastPageParam, storeId = null, catalogKind = null) {
   const useLocal = routeFor(storeId).route === 'local';
+  const pageSize = posCatalogPageSize(catalogKind);
   const next = (lastPage?.number ?? 0) + 1;
   const total = lastPage?.totalPages ?? 0;
-  return next < total ? (useLocal ? lastPageParam + POS_PRODUCT_PAGE_SIZE : next) : undefined;
+  return next < total ? (useLocal ? lastPageParam + pageSize : next) : undefined;
 }
 
 export async function posFetchProductByBarcode(storeId, barcode, { catalogKind } = {}) {

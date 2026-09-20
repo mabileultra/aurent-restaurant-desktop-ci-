@@ -5106,6 +5106,8 @@
     "colManufacturer": "Ishlab chiqaruvchi",
     "colForm": "Shakl",
     "colCountry": "Mamlakat",
+    "colShelf": "Joylashuv",
+    "colShelfPh": "Masalan A-12",
     "colStatus": "Holat",
     "colType": "Tur",
     "colDocNo": "Hujjat №",

@@ -11,6 +11,7 @@ import {
 import { isDesktopOfflineBridge } from '../../../../services/offline/desktopOfflineBridge';
 import { usePosCatalogPrefetch } from './usePosCatalogPrefetch';
 import { isPosProductsSearchStale } from './posProductsSearchStale';
+import { posCatalogPrefetchPages } from '../../components/pos/posCatalogConstants';
 
 function invalidatePosCatalogQueries(qc) {
   qc.cancelQueries({ queryKey: ['pos-categories'] });
@@ -99,7 +100,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, _pages, lastPageParam) =>
-      posProductsNextPageParam(lastPage, lastPageParam, storeId),
+      posProductsNextPageParam(lastPage, lastPageParam, storeId, catalogKind),
     enabled: productsEnabled,
     retry: catalogMode === 'offline' ? false : 1,
     staleTime: catalogMode === 'offline' ? Infinity : 30_000,
@@ -124,6 +125,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     isFetchingNextPage: productsLoadingMore,
     fetchNextPage: fetchMoreProducts,
     pagesLoaded,
+    maxPrefetchPages: posCatalogPrefetchPages(catalogKind),
     queryKey: [
       storeId,
       categoryFilterId,

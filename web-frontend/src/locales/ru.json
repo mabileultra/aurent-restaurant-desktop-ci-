@@ -5414,6 +5414,8 @@
     "colManufacturer": "Производитель",
     "colForm": "Форма",
     "colCountry": "Страна",
+    "colShelf": "Полка",
+    "colShelfPh": "Например A-12",
     "colStatus": "Статус",
     "colType": "Тип",
     "colDocNo": "№ документа",

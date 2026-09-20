@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { shouldPrefetchCatalogPage } from './shouldPrefetchCatalogPage';
+import { POS_CATALOG_PREFETCH_PAGES } from '../../components/pos/posCatalogConstants';
 
 /**
  * Prefetch нескольких следующих страниц после первой успешной загрузки
@@ -11,6 +12,7 @@ export function usePosCatalogPrefetch({
   isFetchingNextPage,
   fetchNextPage,
   pagesLoaded = 0,
+  maxPrefetchPages = POS_CATALOG_PREFETCH_PAGES,
 }) {
   useEffect(() => {
     if (!shouldPrefetchCatalogPage({
@@ -18,6 +20,7 @@ export function usePosCatalogPrefetch({
       pagesLoaded,
       hasNextPage,
       isFetchingNextPage,
+      maxPrefetchPages,
     })) return undefined;
     const timer = setTimeout(() => {
       fetchNextPage?.();
@@ -29,5 +32,6 @@ export function usePosCatalogPrefetch({
     isFetchingNextPage,
     fetchNextPage,
     pagesLoaded,
+    maxPrefetchPages,
   ]);
 }

@@ -170,6 +170,18 @@ export default function PharmacyProductAboutFields({
           />
         </label>
         <label className="pharm-product-modal__field">
+          <span className="pharm-product-modal__label">{t('pharmacyStock.colShelf')}</span>
+          <input
+            className="pharm-product-modal__input"
+            value={form.storageLocation}
+            onChange={(e) => patch('storageLocation', e.target.value)}
+            placeholder={t('pharmacyStock.colShelfPh')}
+          />
+        </label>
+      </div>
+
+      <div className="pharm-about__row">
+        <label className="pharm-product-modal__field">
           <span className="pharm-product-modal__label">{req(t('pharmacyStock.unitsInPack'))}</span>
           <input
             inputMode="numeric"
