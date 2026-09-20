@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
+import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspaceEmpty';
 import FloorTableGrid from '../components/FloorTableGrid';
 import OpenTableModal from '../components/OpenTableModal';
 import OpenCounterOrderModal from '../components/OpenCounterOrderModal';
@@ -26,19 +27,22 @@ export default function RestaurantFloorPosPage() {
   const p = useFloorPosPage();
   const zoom = usePosUiScale();
 
-  if (p.workspace.noAssignment) {
+  if (p.workspace.isLoading) {
     return (
       <div className="rst-app rst-pos" style={zoom.rootStyle}>
-        <div className="rst-notice">{p.t('rst.floor.noStore')}</div>
+        <div className="rst-notice">{p.t('common.loading')}</div>
       </div>
     );
   }
 
-  if (p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
     return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
-        <div className="rst-notice">{p.t('rst.floor.pickStoreHint')}</div>
-      </div>
+      <RestaurantWorkspaceEmpty
+        t={p.t}
+        workspace={p.workspace}
+        zoomStyle={zoom.rootStyle}
+        onLogout={() => logoutAndResetSession()}
+      />
     );
   }
 

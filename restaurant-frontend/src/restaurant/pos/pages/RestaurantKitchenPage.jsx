@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
+import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspaceEmpty';
 import PosZoomControls from '../components/PosZoomControls';
 import KitchenTicketCard from '../components/KitchenTicketCard';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
@@ -56,19 +57,22 @@ export default function RestaurantKitchenPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [p]);
 
-  if (p.workspace.noAssignment) {
+  if (p.workspace.isLoading) {
     return (
       <div className="rst-app rst-pos" style={zoom.rootStyle}>
-        <div className="rst-notice">{p.t('rst.floor.noStore')}</div>
+        <div className="rst-notice">{p.t('common.loading')}</div>
       </div>
     );
   }
 
-  if (p.workspace.multipleAssignment) {
+  if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
     return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
-        <div className="rst-notice">{p.t('rst.floor.pickStoreHint')}</div>
-      </div>
+      <RestaurantWorkspaceEmpty
+        t={p.t}
+        workspace={p.workspace}
+        zoomStyle={zoom.rootStyle}
+        onLogout={() => logoutAndResetSession()}
+      />
     );
   }
 
