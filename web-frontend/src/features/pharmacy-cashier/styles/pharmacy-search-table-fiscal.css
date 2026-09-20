@@ -1,0 +1,30 @@
+/* Узкие фискальные колонки в таблице остатков */
+
+.pharmacy-search__table--stock .pharmacy-search__fiscal {
+  max-width: 7.5rem;
+}
+
+.pharmacy-search__mark-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 5px;
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.pharmacy-search__mark-badge.is-yes {
+  background: color-mix(in srgb, #0b5c3a 14%, transparent);
+  color: #0b5c3a;
+}
+
+.pharmacy-search__mark-badge.is-no {
+  background: var(--pharm-surface);
+  color: var(--pharm-muted);
+  border: 1px solid var(--pharm-border);
+}

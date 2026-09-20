@@ -27,6 +27,7 @@ public class PharmacyReceiptMassApplier {
         String value = raw == null ? "" : raw.trim();
         switch (field) {
             case QUANTITY -> applyQuantity(line, money(value, "quantity"));
+            case UNITS_IN_PACK -> applyUnitsInPack(line, money(value, "unitsInPack"));
             case PURCHASE -> {
                 line.setPurchasePrice(money(value, "purchasePrice"));
                 pharmacyReceipt.revalueLine(line, line.getVatPercent(), line.getMarkupPercent());
@@ -50,6 +51,18 @@ public class PharmacyReceiptMassApplier {
         line.setQuantity(qty);
         line.setLineCost(purchase.multiply(qty).setScale(2, RoundingMode.HALF_UP));
         line.setLineRetail(retail.multiply(qty).setScale(2, RoundingMode.HALF_UP));
+    }
+
+    private void applyUnitsInPack(StockReceiptLine line, BigDecimal unitsInPack) {
+        if (unitsInPack.compareTo(BigDecimal.ZERO) <= 0) {
+            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_QTY_POSITIVE);
+        }
+        BigDecimal units = QuantityUtil.normalize(unitsInPack);
+        BigDecimal retail = line.getRetailPrice() != null
+            ? line.getRetailPrice()
+            : nullToZero(line.getUnitSellingPrice());
+        line.setUnitsInPack(units);
+        line.setUnitRetailPrice(PharmacyReceiptPricing.unitPrice(retail, units));
     }
 
     private void applyRetail(StockReceiptLine line, BigDecimal retail) {

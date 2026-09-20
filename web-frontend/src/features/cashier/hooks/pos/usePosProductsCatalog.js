@@ -108,6 +108,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
   });
 
   const products = productsPages?.pages.flatMap((page) => page?.content ?? []) ?? [];
+  const productsTotal = Number(productsPages?.pages?.[0]?.totalElements) || products.length;
   const pagesLoaded = productsPages?.pages?.length ?? 0;
   /** keepPreviousData: Enter/клик по списку нельзя, пока идёт новый поиск. */
   const productsStale = isPosProductsSearchStale({
@@ -149,6 +150,7 @@ export function usePosProductsCatalog({ storeId, catalogKind } = {}) {
     categoriesLoading,
     categoriesError,
     products,
+    productsTotal,
     productsLoading,
     productsStale,
     productsError,

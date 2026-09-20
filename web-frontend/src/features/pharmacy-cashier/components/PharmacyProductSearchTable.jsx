@@ -15,12 +15,21 @@ import {
   productStorageLocation,
 } from '../utils/pharmacyProductMeta';
 import {
+  formatMarkedLabel,
+  formatUnitsInPackCell,
+  productIkpu,
+  productIsMarked,
+  productPackageCode,
+} from '../utils/pharmacyProductFiscalMeta';
+import {
   pharmacyCellToneClass,
   pharmacyExpiryTone,
   pharmacyShelfTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
 import '../styles/pharmacy-search-table.css';
+import '../styles/pharmacy-search-table-fiscal.css';
+import '../styles/pharmacy-search-table-stock.css';
 
 function formatStockExpiryDays(daysLeft, shelfLife, daysLabel) {
   if (daysLeft == null) return '—';
@@ -113,8 +122,12 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 <th>{t('pharmacyCashier.colShelf')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
+                <th className="pharmacy-search__num">{t('pharmacyCashier.colPack')}</th>
                 <th>{t('pharmacyCashier.colExpiryDays')}</th>
                 <th>{t('pharmacyCashier.colBatch')}</th>
+                <th>{t('pharmacyCashier.colMxik')}</th>
+                <th>{t('pharmacyCashier.colIkpu')}</th>
+                <th>{t('pharmacyCashier.colMarking')}</th>
               </tr>
             </thead>
             <tbody>
@@ -136,6 +149,16 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const daysLeft = daysUntilExpiry(productExpiry(product));
                 const shelfLife = productShelfLifeDays(product);
                 const daysLabelText = formatStockExpiryDays(daysLeft, shelfLife, daysLabel);
+                const mxik = productIkpu(product) || '—';
+                const ikpu = productPackageCode(product) || productIkpu(product) || '—';
+                const packCode = productPackageCode(product);
+                const pack = formatUnitsInPackCell(product) || '—';
+                const marked = productIsMarked(product);
+                const marking = formatMarkedLabel(
+                  product,
+                  t('pharmacyCashier.markingYes'),
+                  t('pharmacyCashier.markingNo'),
+                );
                 const meta = [
                   expiryDate ? `${t('pharmacyCashier.colExpiryShort')}: ${expiryDate}` : '',
                   sellByUnit ? t('pharmacyCashier.sellByUnitHintShort') : '',
@@ -192,6 +215,9 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                       </span>
                     </td>
+                    <td className="pharmacy-search__num pharmacy-search__mono" title={pack}>
+                      <span className="pharmacy-search__cell-text">{pack}</span>
+                    </td>
                     <td
                       className={[
                         'pharmacy-search__mono',
@@ -203,6 +229,25 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={batch}>
                       <span className="pharmacy-search__cell-text">{batch}</span>
+                    </td>
+                    <td
+                      className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal"
+                      title={packCode ? `${mxik} · ${t('pharmacyCashier.colPackageCode')}: ${packCode}` : mxik}
+                    >
+                      <span className="pharmacy-search__cell-text">{mxik}</span>
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip pharmacy-search__fiscal" title={ikpu}>
+                      <span className="pharmacy-search__cell-text">{ikpu}</span>
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__marking">
+                      <span
+                        className={[
+                          'pharmacy-search__mark-badge',
+                          marked ? 'is-yes' : 'is-no',
+                        ].join(' ')}
+                      >
+                        {marking}
+                      </span>
                     </td>
                   </tr>
                 );

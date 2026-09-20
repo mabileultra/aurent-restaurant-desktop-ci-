@@ -311,6 +311,7 @@ export default function PharmacyReceiptDocumentPage() {
                     <th>{t('pharmacyStock.colManufacturer')}</th>
                     <th>{t('pharmacyStock.colCountry')}</th>
                     <th>{t('pharmacyStock.colQty')}</th>
+                    <th>{t('pharmacyStock.unitsInPack')}</th>
                     <th>{t('pharmacyStock.purchasePrice')}</th>
                     <th>{t('pharmacyStock.vatRate')}</th>
                     <th>{t('pharmacyStock.markupPercent')}</th>
@@ -323,7 +324,7 @@ export default function PharmacyReceiptDocumentPage() {
                 <tbody>
                   {(receipt.lines ?? []).length === 0 ? (
                     <tr>
-                      <td colSpan={13}>
+                      <td colSpan={14}>
                         <div className="pharmacy-stock__empty">{t('pharmacyStock.noLines')}</div>
                       </td>
                     </tr>
@@ -339,6 +340,7 @@ export default function PharmacyReceiptDocumentPage() {
                       <td>{line.manufacturer || '—'}</td>
                       <td>{line.country || '—'}</td>
                       <td>{line.quantity}</td>
+                      <td>{line.unitsInPack ?? '—'}</td>
                       <td>{formatMoney(line.purchasePrice)}</td>
                       <td>{line.vatPercent ?? '—'}</td>
                       <td>{line.markupPercent ?? '—'}</td>

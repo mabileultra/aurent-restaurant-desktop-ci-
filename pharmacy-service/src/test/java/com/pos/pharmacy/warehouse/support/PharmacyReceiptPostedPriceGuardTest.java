@@ -33,12 +33,14 @@ class PharmacyReceiptPostedPriceGuardTest {
         assertTrue(error.getMessage().contains("цены"));
         assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.BATCH));
         assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.EXPIRY));
+        assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.UNITS_IN_PACK));
     }
 
     @Test
     void allowsAnyFieldOnDraft() {
         StockReceipt draft = StockReceipt.builder().status(StockReceiptStatus.DRAFT).build();
         assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.QUANTITY));
+        assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.UNITS_IN_PACK));
         assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.BATCH));
     }
 }

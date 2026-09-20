@@ -3,8 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { pharmacyWarehouseApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
-
-const NUMERIC = new Set(['QUANTITY', 'PURCHASE', 'VAT', 'MARKUP', 'RETAIL']);
+import { PHARM_RECEIPT_MASS_NUMERIC } from '../utils/pharmacyReceiptMassFields';
 
 export function usePharmacyReceiptMassEdit({
   receiptId,
@@ -36,9 +35,9 @@ export function usePharmacyReceiptMassEdit({
   const ask = (field, raw) => {
     const value = String(raw ?? '').trim();
     if (!lines.length) return;
-    if (NUMERIC.has(field)) {
+    if (PHARM_RECEIPT_MASS_NUMERIC.has(field)) {
       const n = Number(value.replace(',', '.'));
-      if (!Number.isFinite(n) || n < 0 || (field === 'QUANTITY' && n <= 0)) {
+      if (!Number.isFinite(n) || n < 0 || ((field === 'QUANTITY' || field === 'UNITS_IN_PACK') && n <= 0)) {
         toast.error(t('pharmacyStock.bulkValueInvalid'));
         return;
       }

@@ -2,6 +2,7 @@ import PharmacyCartTable from './PharmacyCartTable';
 import PharmacyCartPaneHead from './PharmacyCartPaneHead';
 import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacySearchStrip from './PharmacySearchStrip';
+import PharmacyStockProductCount from './PharmacyStockProductCount';
 import PharmacyPayColumn from './PharmacyPayColumn';
 import PosParkedCartsBar from '../../cashier/components/pos-order-panel/PosParkedCartsBar';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
@@ -86,7 +87,10 @@ export default function PharmacyRegisterWorkspace({
 
         <section className="pharmacy-cashier__search-pane" aria-label={t('pharmacyCashier.searchTitle')}>
           <div className="pharmacy-cashier__pane-head pharmacy-cashier__pane-head--search">
-            <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
+            <div className="pharmacy-cashier__pane-title-wrap">
+              <h2 className="pharmacy-cashier__pane-title">{t('pharmacyCashier.searchTitle')}</h2>
+              <PharmacyStockProductCount t={t} count={catalog.productsTotal} />
+            </div>
             <PharmacySearchStrip
               searchInputRef={searchInputRef}
               kmInputRef={kmInputRef}

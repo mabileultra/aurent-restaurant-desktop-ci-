@@ -388,6 +388,7 @@ export function usePharmacyPosPage() {
       search: catalog.search,
       setSearch: catalog.setSearch,
       products: fefoProducts,
+      productsTotal: catalog.productsTotal,
       productsLoading: catalog.productsLoading,
       productsStale: catalog.productsStale,
       productsError: catalog.productsError,

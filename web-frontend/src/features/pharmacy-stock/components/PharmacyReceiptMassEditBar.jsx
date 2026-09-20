@@ -1,28 +1,19 @@
 import { useEffect, useState } from 'react';
 import { BaseButton, BaseModal } from '../../../components/ui';
+import {
+  PHARM_RECEIPT_MASS_FIELDS,
+  PHARM_RECEIPT_MASS_PRICE_FIELDS,
+} from '../utils/pharmacyReceiptMassFields';
 import '../styles/pharmacy-receipt-mass.css';
 
-const ALL_FIELDS = [
-  { id: 'QUANTITY', label: 'pharmacyStock.colQty', kind: 'number' },
-  { id: 'PURCHASE', label: 'pharmacyStock.purchasePrice', kind: 'number' },
-  { id: 'VAT', label: 'pharmacyStock.vatRate', kind: 'number' },
-  { id: 'MARKUP', label: 'pharmacyStock.markupPercent', kind: 'number' },
-  { id: 'RETAIL', label: 'pharmacyStock.retailPrice', kind: 'number' },
-  { id: 'BATCH', label: 'pharmacyStock.batch', kind: 'text' },
-  { id: 'EXPIRY', label: 'pharmacyStock.expiry', kind: 'date' },
-];
-const PRICE_FIELDS = ALL_FIELDS.filter((item) => (
-  item.id === 'PURCHASE' || item.id === 'VAT' || item.id === 'MARKUP' || item.id === 'RETAIL'
-));
-
 export default function PharmacyReceiptMassEditBar({ t, mass, priceOnly = false }) {
-  const fields = priceOnly ? PRICE_FIELDS : ALL_FIELDS;
+  const fields = priceOnly ? PHARM_RECEIPT_MASS_PRICE_FIELDS : PHARM_RECEIPT_MASS_FIELDS;
   const [field, setField] = useState('VAT');
   const [value, setValue] = useState('12');
   const current = fields.find((item) => item.id === field) || fields[0];
 
   useEffect(() => {
-    if (priceOnly && !PRICE_FIELDS.some((item) => item.id === field)) {
+    if (priceOnly && !PHARM_RECEIPT_MASS_PRICE_FIELDS.some((item) => item.id === field)) {
       setField('VAT');
       setValue('12');
     }

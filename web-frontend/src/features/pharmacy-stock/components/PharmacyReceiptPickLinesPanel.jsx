@@ -50,6 +50,7 @@ export default function PharmacyReceiptPickLinesPanel({
               <th>{t('pharmacyStock.colManufacturer')}</th>
               <th>{t('pharmacyStock.colCountry')}</th>
               <th>{t('pharmacyStock.colQty')}</th>
+              <th>{t('pharmacyStock.unitsInPack')}</th>
               <th>{t('pharmacyStock.purchasePrice')}</th>
               <th>{t('pharmacyStock.vatRate')}</th>
               <th>{t('pharmacyStock.markupPercent')}</th>
@@ -63,7 +64,7 @@ export default function PharmacyReceiptPickLinesPanel({
           <tbody>
             {docLines.length === 0 ? (
               <tr>
-                <td colSpan={14}>
+                <td colSpan={15}>
                   <div className="pharmacy-stock__empty">{t('pharmacyStock.pickAddedEmpty')}</div>
                 </td>
               </tr>
@@ -82,6 +83,7 @@ export default function PharmacyReceiptPickLinesPanel({
                   <td>{line.manufacturer || '—'}</td>
                   <td>{line.country || '—'}</td>
                   <td>{line.quantity}</td>
+                  <td>{line.unitsInPack ?? '—'}</td>
                   <td>{formatMoney(line.purchasePrice)}</td>
                   <td>{line.vatPercent ?? '—'}</td>
                   <td>{line.markupPercent ?? '—'}</td>

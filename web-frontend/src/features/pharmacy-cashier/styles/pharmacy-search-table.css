@@ -198,27 +198,6 @@
   cursor: wait;
 }
 
-.pharmacy-search__table--stock {
-  width: 100%;
-  min-width: 100%;
-  table-layout: fixed;
-}
-
-.pharmacy-search__table--stock th:nth-child(1),
-.pharmacy-search__table--stock td:nth-child(1) { width: 32%; }
-.pharmacy-search__table--stock th:nth-child(2),
-.pharmacy-search__table--stock td:nth-child(2) { width: 9%; }
-.pharmacy-search__table--stock th:nth-child(3),
-.pharmacy-search__table--stock td:nth-child(3) { width: 10%; }
-.pharmacy-search__table--stock th:nth-child(4),
-.pharmacy-search__table--stock td:nth-child(4) { width: 13%; }
-.pharmacy-search__table--stock th:nth-child(5),
-.pharmacy-search__table--stock td:nth-child(5) { width: 12%; }
-.pharmacy-search__table--stock th:nth-child(6),
-.pharmacy-search__table--stock td:nth-child(6) { width: 14%; }
-.pharmacy-search__table--stock th:nth-child(7),
-.pharmacy-search__table--stock td:nth-child(7) { width: 10%; }
-
 .pharmacy-search__table--stock tbody td {
   padding-top: 1px;
   padding-bottom: 1px;

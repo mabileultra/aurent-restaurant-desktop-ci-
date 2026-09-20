@@ -11,6 +11,7 @@
 @import './pharmacy-pay-rail.css';
 @import './pharmacy-topbar-shortcuts.css';
 @import './pharmacy-cart-pane-head.css';
+@import './pharmacy-stock-count.css';
 @import '../../../styles/cashier/cart/parked-bar.css';
 
 .pharmacy-cashier__split {
@@ -64,13 +65,13 @@
   background: var(--pharm-surface);
 }
 
-.pharmacy-cashier__pane-title {
-  margin: 0;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--pharm-muted);
+.pharmacy-cashier__pane-head--search {
+  gap: 8px;
+}
+
+.pharmacy-cashier__pane-head--search .pharmacy-search-strip {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .cashier-app.cashier-app--light .pharmacy-cashier__split.cashier-register__split--register .pharmacy-cashier__main {

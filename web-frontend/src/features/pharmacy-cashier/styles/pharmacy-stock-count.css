@@ -1,0 +1,36 @@
+/* Счётчик товаров — угол шапки остатков */
+
+.pharmacy-stock-count {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--pharm-brand, #006847) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--pharm-brand, #006847) 22%, var(--pharm-border));
+  white-space: nowrap;
+}
+
+.pharmacy-stock-count__label {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pharm-muted);
+}
+
+.pharmacy-stock-count__value {
+  font-size: 0.75rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--pharm-brand, #006847);
+}
+
+.pharmacy-cashier__pane-head--search .pharmacy-cashier__pane-title-wrap {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  flex-shrink: 0;
+}
