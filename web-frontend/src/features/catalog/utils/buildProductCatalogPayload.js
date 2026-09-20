@@ -1,5 +1,9 @@
-import { buildStorePrices } from '../../../utils/productCatalogPrices';
+import { resolveStorePricesForPayload } from '../../../utils/productCatalogPrices';
 import { buildAttributesPayload } from './productCatalogFormDefaults';
+import {
+  isCatalogSectionOn,
+  pickVisibleCatalogFormValues,
+} from './pickVisibleCatalogFormValues';
 
 export function buildProductCatalogPayload({
   values,
@@ -8,39 +12,57 @@ export function buildProductCatalogPayload({
   effectiveBusinessType,
   businessConfigFields,
   showSection,
+  selectedStoreId = null,
 }) {
-  const storePrices = buildStorePrices(storeRows, values.sellingPrice);
-  const additionalBarcodes = extraBarcodes.map((b) => b.trim()).filter(Boolean);
+  const visible = pickVisibleCatalogFormValues(values, showSection);
+
+  const storePricesEnabled = isCatalogSectionOn(showSection, 'storePrices');
+  const storePrices = resolveStorePricesForPayload({
+    storeRows,
+    sellingPrice: visible.sellingPrice,
+    storePricesEnabled,
+    fallbackStoreId: selectedStoreId,
+  });
+
+  const barcodesOn = isCatalogSectionOn(showSection, 'extraBarcodes');
+  const additionalBarcodes = barcodesOn
+    ? (extraBarcodes || []).map((b) => b.trim()).filter(Boolean)
+    : [];
+
+  const dynamicOn = isCatalogSectionOn(showSection, 'dynamicFields');
+  const attributes = dynamicOn
+    ? buildAttributesPayload(values, businessConfigFields)
+    : undefined;
 
   return {
-    name: values.name,
-    description: values.description || undefined,
-    categoryId: values.categoryId ? Number(values.categoryId) : null,
-    costPrice: values.costPrice,
-    sellingPrice: values.sellingPrice,
-    defaultDiscountPercent: values.defaultDiscountPercent ?? 0,
-    taxRate: values.taxRate,
-    lowStockAlert: values.lowStockAlert,
-    storageLocation: values.storageLocation?.trim() || null,
-    barcode: values.barcode || undefined,
-    plu: values.plu?.trim() || undefined,
-    externalProductId: values.externalProductId || undefined,
-    ikpu: values.ikpu || undefined,
-    productType: values.productType,
-    saleType: values.saleType,
-    unitCode: values.unitCode,
-    quantityScale: values.quantityScale,
-    allowFraction: values.allowFraction,
-    unitOfMeasure: values.unitOfMeasure,
-    unitMeasureCode: values.unitMeasureCode || undefined,
-    packageCode: values.packageCode || undefined,
-    soldIndividually: values.productType === 'RETAIL' ? values.soldIndividually : undefined,
-    markedProduct: values.productType === 'RETAIL' ? values.markedProduct : undefined,
-    ownerType: values.ownerType,
-    commissionTin: values.commissionTin || undefined,
-    commissionPinfl: values.commissionPinfl || undefined,
+    name: visible.name,
+    description: visible.description,
+    categoryId: visible.categoryId,
+    costPrice: visible.costPrice,
+    sellingPrice: visible.sellingPrice,
+    defaultDiscountPercent: visible.defaultDiscountPercent,
+    taxRate: visible.taxRate,
+    lowStockAlert: visible.lowStockAlert,
+    storageLocation: visible.storageLocation,
+    barcode: visible.barcode,
+    plu: visible.plu,
+    externalProductId: visible.externalProductId,
+    ikpu: visible.ikpu,
+    productType: visible.productType,
+    saleType: visible.saleType,
+    unitCode: visible.unitCode,
+    quantityScale: visible.quantityScale,
+    allowFraction: visible.allowFraction,
+    unitOfMeasure: visible.unitOfMeasure,
+    unitMeasureCode: visible.unitMeasureCode,
+    packageCode: visible.packageCode,
+    soldIndividually: visible.soldIndividually,
+    markedProduct: visible.markedProduct,
+    ownerType: visible.ownerType,
+    commissionTin: visible.commissionTin,
+    commissionPinfl: visible.commissionPinfl,
     businessTypeCode: effectiveBusinessType,
-    attributes: buildAttributesPayload(values, businessConfigFields),
+    attributes,
     storePrices,
     additionalBarcodes,
   };

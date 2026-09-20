@@ -19,6 +19,37 @@ export function buildStorePrices(rows, sellingPrice) {
 }
 
 /**
+ * Если блок «цены по магазинам» скрыт — не берём цену из storeRows
+ * (там может остаться устаревшее значение вроде 1), только розничную.
+ */
+export function resolveStorePricesForPayload({
+  storeRows,
+  sellingPrice,
+  storePricesEnabled = true,
+  fallbackStoreId = null,
+}) {
+  const base = toPositivePrice(sellingPrice);
+  if (base == null) return [];
+
+  if (storePricesEnabled) {
+    return buildStorePrices(storeRows, sellingPrice);
+  }
+
+  const ids = [];
+  for (const row of storeRows || []) {
+    if (row?.storeId === '' || row?.storeId == null) continue;
+    const id = Number(row.storeId);
+    if (!Number.isFinite(id) || ids.includes(id)) continue;
+    ids.push(id);
+  }
+  if (ids.length === 0 && fallbackStoreId != null && fallbackStoreId !== '') {
+    const id = Number(fallbackStoreId);
+    if (Number.isFinite(id)) ids.push(id);
+  }
+  return ids.map((storeId) => ({ storeId, price: base }));
+}
+
+/**
  * Подставляет цену продажи в строки магазинов, если цена не задана,
  * совпадает с прежней ценой продажи или ошибочно равна себестоимости.
  */

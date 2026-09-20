@@ -52,8 +52,14 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const prevSellingRef = useRef(null);
   const defaultsAppliedRef = useRef(false);
 
+  const formSectionMap = useMemo(
+    () => formFieldsToSectionMap(businessConfig?.formFields),
+    [businessConfig?.formFields]
+  );
+
   useEffect(() => {
     if (isEdit || !selectedStoreId) return;
+    if (formSectionMap.storePrices === false) return;
     setStoreRows((rows) => {
       if (rows.length === 1 && !rows[0].storeId) {
         return [{ storeId: String(selectedStoreId), price: rows[0].price ?? '' }];
@@ -62,12 +68,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
         idx === 0 ? { ...row, storeId: String(selectedStoreId) } : row
       ));
     });
-  }, [selectedStoreId, isEdit]);
-
-  const formSectionMap = useMemo(
-    () => formFieldsToSectionMap(businessConfig?.formFields),
-    [businessConfig?.formFields]
-  );
+  }, [selectedStoreId, isEdit, formSectionMap.storePrices]);
 
   const schema = useMemo(
     () => createProductCatalogFormSchema(t, {
@@ -228,13 +229,14 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   }, [unitCodeWatch, saleTypeWatch, setValue]);
 
   useEffect(() => {
+    if (formSectionMap.storePrices === false) return;
     const next = Number(sellingPriceWatch);
     if (!Number.isFinite(next) || next <= 0) return;
     setStoreRows((rows) =>
       syncStoreRowPrices(rows, next, prevSellingRef.current, costPriceWatch)
     );
     prevSellingRef.current = next;
-  }, [sellingPriceWatch, costPriceWatch]);
+  }, [sellingPriceWatch, costPriceWatch, formSectionMap.storePrices]);
 
   const resolveStockStoreId = () => {
     const fromRows = storeRows.map((r) => r.storeId).filter(Boolean);
@@ -320,6 +322,9 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
 
     if (
       !isRestaurantIngredient
+      && showSection('accounting')
+      && showSection('accountingCost')
+      && showSection('accountingSell')
       && priceRulesConfig.minMarginPercent > 0
       && submitValues.costPrice > 0
       && submitValues.sellingPrice > 0
@@ -334,6 +339,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     }
     if (
       !isRestaurantIngredient
+      && showSection('accountingDiscount')
       && submitValues.defaultDiscountPercent > priceRulesConfig.maxDiscountPercent
     ) {
       toast.error(
@@ -351,12 +357,18 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       effectiveBusinessType,
       businessConfigFields: isRestaurantIngredient ? [] : businessConfig?.fields,
       showSection,
+      selectedStoreId,
     });
-    const stockQty = submitValues.initialStock ?? 0;
+    const stockQty = showSection('accounting') && showSection('accountingStock')
+      ? (submitValues.initialStock ?? 0)
+      : 0;
 
     if (isEdit) {
       mutate({
-        payload: { ...base, active: submitValues.active },
+        payload: {
+          ...base,
+          active: showSection('activeField') ? submitValues.active : true,
+        },
         stockQty,
         isEditMode: true,
       });
