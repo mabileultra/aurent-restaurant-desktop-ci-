@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +39,30 @@ public class PharmacyReceiptResponseMapper {
                 line.getProduct().getId(), Map.of()
             )))
             .toList();
-        return baseResponse(receipt, supplier, lines.size(), lines);
+        Totals totals = sumLineTotals(receipt.getLines());
+        return baseResponse(receipt, supplier, lines.size(), lines, totals);
     }
 
     public PharmacyStockReceiptResponse toSummary(StockReceipt receipt) {
         Supplier supplier = resolveSupplier(receipt.getSupplierId());
-        return baseResponse(receipt, supplier, 0, List.of());
+        return baseResponse(receipt, supplier, 0, List.of(), null);
     }
 
     private PharmacyStockReceiptResponse baseResponse(
         StockReceipt receipt,
         Supplier supplier,
         int lineCount,
-        List<PharmacyStockReceiptLineResponse> lines
+        List<PharmacyStockReceiptLineResponse> lines,
+        Totals liveTotals
     ) {
+        BigDecimal totalCost = liveTotals != null
+            ? liveTotals.purchase()
+            : PharmacyReceiptPricing.scaleMoney(receipt.getTotalCost());
+        BigDecimal totalRetail = liveTotals != null
+            ? liveTotals.retail()
+            : (receipt.getTotalRetail() != null
+                ? PharmacyReceiptPricing.scaleMoney(receipt.getTotalRetail())
+                : BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
         return new PharmacyStockReceiptResponse(
             receipt.getId(),
             receipt.getReceiptNumber(),
@@ -70,8 +81,8 @@ public class PharmacyReceiptResponseMapper {
             null,
             receipt.getNotes(),
             receipt.getTotalQuantity(),
-            receipt.getTotalCost(),
-            receipt.getTotalRetail() != null ? receipt.getTotalRetail() : BigDecimal.ZERO,
+            totalCost,
+            totalRetail,
             lineCount,
             null,
             receipt.getCreatedAt(),
@@ -80,6 +91,25 @@ public class PharmacyReceiptResponseMapper {
             lines
         );
     }
+
+    private static Totals sumLineTotals(List<StockReceiptLine> lines) {
+        BigDecimal purchase = BigDecimal.ZERO;
+        BigDecimal retail = BigDecimal.ZERO;
+        for (StockReceiptLine line : lines) {
+            purchase = purchase.add(PharmacyReceiptPricing.linePurchaseSum(
+                line.getPurchasePriceWithVat(),
+                line.getPurchasePrice(),
+                line.getQuantity()
+            ));
+            BigDecimal retailUnit = line.getRetailPrice() != null
+                ? line.getRetailPrice()
+                : line.getUnitSellingPrice();
+            retail = retail.add(PharmacyReceiptPricing.lineRetailSum(retailUnit, line.getQuantity()));
+        }
+        return new Totals(purchase, retail);
+    }
+
+    private record Totals(BigDecimal purchase, BigDecimal retail) {}
 
     private Supplier resolveSupplier(UUID supplierId) {
         if (supplierId == null) {
@@ -100,14 +130,21 @@ public class PharmacyReceiptResponseMapper {
             line.getQuantity(),
             line.getPurchasePrice(),
             line.getUnitSellingPrice(),
-            line.getLineCost(),
+            PharmacyReceiptPricing.linePurchaseSum(
+                line.getPurchasePriceWithVat(),
+                line.getPurchasePrice(),
+                line.getQuantity()
+            ),
             line.getVatPercent(),
             line.getMarkupPercent(),
             line.getUnitsInPack(),
             line.getPurchasePriceWithVat(),
             line.getRetailPrice(),
             line.getUnitRetailPrice(),
-            line.getLineRetail(),
+            PharmacyReceiptPricing.lineRetailSum(
+                line.getRetailPrice() != null ? line.getRetailPrice() : line.getUnitSellingPrice(),
+                line.getQuantity()
+            ),
             line.getBatchNumber(),
             line.getExpiryDate(),
             line.getProduct().isMarkedProduct(),

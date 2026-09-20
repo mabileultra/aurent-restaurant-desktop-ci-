@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { pharmacyWarehouseApi, storeApi, supplierApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
 import { BaseButton } from '../../../components/ui';
@@ -39,6 +39,10 @@ import {
   linesReadyForActivate,
 } from '../utils/pharmacyReceiptPricing';
 import {
+  resolveStoreName,
+  resolveSupplierName,
+} from '../utils/pharmacyReceiptDisplayMeta';
+import {
   flattenReceiptMarks,
   receiptMarksProgress,
 } from '../utils/pharmacyReceiptMarks';
@@ -69,6 +73,11 @@ export default function PharmacyReceiptDocumentPage() {
   const suppliersQuery = useQuery({
     queryKey: ['suppliers-all'],
     queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
+  });
+
+  const storesQuery = useQuery({
+    queryKey: ['stores-all'],
+    queryFn: () => storeApi.getAll().then((r) => r.data),
   });
 
   const updateMutation = useMutation({
@@ -153,11 +162,19 @@ export default function PharmacyReceiptDocumentPage() {
     onError: (e) => toast.error(resolvePharmacyApiError(e, t, 'pharmacyStock.activateFailed')),
   });
 
-  const receipt = receiptQuery.data;
+  const receiptRaw = receiptQuery.data;
+  const suppliers = suppliersQuery.data?.content ?? [];
+  const stores = Array.isArray(storesQuery.data) ? storesQuery.data : (storesQuery.data?.content ?? []);
+  const receipt = receiptRaw
+    ? {
+        ...receiptRaw,
+        storeName: resolveStoreName(receiptRaw, stores),
+        supplierName: resolveSupplierName(receiptRaw, suppliers),
+      }
+    : null;
   const isDraft = receipt?.status === 'DRAFT';
   const isPosted = receipt?.status === 'POSTED';
   const canEditPrices = isDraft || isPosted;
-  const suppliers = suppliersQuery.data?.content ?? [];
   const canActivate = linesReadyForActivate(receipt?.lines);
   const marksProgress = receiptMarksProgress(receipt?.lines ?? [], receiptMarks.marksByLineId);
   const linesPage = useClientTablePage(receipt?.lines ?? [], id);

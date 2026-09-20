@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Map;
 
 @Component
@@ -97,7 +96,8 @@ public class PharmacyReceiptSupport {
         line.setRetailPrice(retail);
         line.setUnitRetailPrice(PharmacyReceiptPricing.unitPrice(retail, unitsInPack));
         line.setUnitSellingPrice(retail);
-        line.setLineRetail(retail.multiply(quantity).setScale(2, RoundingMode.HALF_UP));
+        line.setLineCost(PharmacyReceiptPricing.linePurchaseSum(purchaseWithVat, purchase, quantity));
+        line.setLineRetail(PharmacyReceiptPricing.lineRetailSum(retail, quantity));
     }
 
     public BigDecimal resolveUnitsInPack(Product product, BigDecimal requested) {
@@ -138,8 +138,8 @@ public class PharmacyReceiptSupport {
         BigDecimal unitSelling = PharmacyReceiptPricing.scaleMoney(
             req.unitSellingPrice() != null ? req.unitSellingPrice() : retail
         );
-        BigDecimal lineCost = purchase.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal lineRetail = retail.multiply(quantity).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal lineCost = PharmacyReceiptPricing.linePurchaseSum(purchaseWithVat, purchase, quantity);
+        BigDecimal lineRetail = PharmacyReceiptPricing.lineRetailSum(retail, quantity);
 
         return StockReceiptLine.builder()
             .receipt(receipt)
@@ -166,8 +166,19 @@ public class PharmacyReceiptSupport {
         BigDecimal totalRetail = BigDecimal.ZERO;
         for (StockReceiptLine line : receipt.getLines()) {
             totalQty = QuantityUtil.add(totalQty, line.getQuantity());
-            totalCost = totalCost.add(PharmacyReceiptPricing.nullToZero(line.getLineCost()));
-            totalRetail = totalRetail.add(PharmacyReceiptPricing.nullToZero(line.getLineRetail()));
+            BigDecimal purchaseLine = PharmacyReceiptPricing.linePurchaseSum(
+                line.getPurchasePriceWithVat(),
+                line.getPurchasePrice(),
+                line.getQuantity()
+            );
+            BigDecimal retailUnit = line.getRetailPrice() != null
+                ? line.getRetailPrice()
+                : line.getUnitSellingPrice();
+            BigDecimal retailLine = PharmacyReceiptPricing.lineRetailSum(retailUnit, line.getQuantity());
+            line.setLineCost(purchaseLine);
+            line.setLineRetail(retailLine);
+            totalCost = totalCost.add(purchaseLine);
+            totalRetail = totalRetail.add(retailLine);
         }
         receipt.setTotalQuantity(totalQty);
         receipt.setTotalCost(totalCost);

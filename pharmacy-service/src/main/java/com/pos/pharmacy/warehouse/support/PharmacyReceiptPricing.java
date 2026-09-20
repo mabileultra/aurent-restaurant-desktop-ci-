@@ -67,4 +67,14 @@ public final class PharmacyReceiptPricing {
     public static BigDecimal nullToZero(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
     }
+
+    /** Сумма закупки строки: приоритет цена с НДС × кол-во. */
+    public static BigDecimal linePurchaseSum(BigDecimal purchaseWithVat, BigDecimal purchaseExVat, BigDecimal quantity) {
+        BigDecimal unit = purchaseWithVat != null ? purchaseWithVat : purchaseExVat;
+        return scaleMoney(nullToZero(unit).multiply(nullToZero(quantity)));
+    }
+
+    public static BigDecimal lineRetailSum(BigDecimal retail, BigDecimal quantity) {
+        return scaleMoney(nullToZero(retail).multiply(nullToZero(quantity)));
+    }
 }

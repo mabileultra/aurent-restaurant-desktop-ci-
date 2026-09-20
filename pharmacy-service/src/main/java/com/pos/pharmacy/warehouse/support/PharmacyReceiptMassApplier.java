@@ -46,11 +46,14 @@ public class PharmacyReceiptMassApplier {
             throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_QTY_POSITIVE);
         }
         BigDecimal qty = QuantityUtil.normalize(quantity);
-        BigDecimal purchase = nullToZero(line.getPurchasePrice());
         BigDecimal retail = line.getRetailPrice() != null ? line.getRetailPrice() : nullToZero(line.getUnitSellingPrice());
         line.setQuantity(qty);
-        line.setLineCost(purchase.multiply(qty).setScale(2, RoundingMode.HALF_UP));
-        line.setLineRetail(retail.multiply(qty).setScale(2, RoundingMode.HALF_UP));
+        line.setLineCost(PharmacyReceiptPricing.linePurchaseSum(
+            line.getPurchasePriceWithVat(),
+            line.getPurchasePrice(),
+            qty
+        ));
+        line.setLineRetail(PharmacyReceiptPricing.lineRetailSum(retail, qty));
     }
 
     private void applyUnitsInPack(StockReceiptLine line, BigDecimal unitsInPack) {
@@ -76,7 +79,7 @@ public class PharmacyReceiptMassApplier {
         line.setRetailPrice(retail);
         line.setUnitSellingPrice(retail);
         line.setUnitRetailPrice(retail.divide(units, 2, RoundingMode.HALF_UP));
-        line.setLineRetail(retail.multiply(qty).setScale(2, RoundingMode.HALF_UP));
+        line.setLineRetail(PharmacyReceiptPricing.lineRetailSum(retail, qty));
         if (purchaseWithVat.compareTo(BigDecimal.ZERO) > 0) {
             line.setMarkupPercent(
                 retail.subtract(purchaseWithVat)

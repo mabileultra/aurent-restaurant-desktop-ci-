@@ -55,4 +55,13 @@ class PharmacyReceiptPricingTest {
             BigDecimal.ZERO
         ));
     }
+
+    @Test
+    void linePurchaseSumPrefersWithVat() {
+        assertEquals(new BigDecimal("11200.00"), PharmacyReceiptPricing.linePurchaseSum(
+            new BigDecimal("1120.00"),
+            new BigDecimal("1000.00"),
+            new BigDecimal("10")
+        ));
+    }
 }

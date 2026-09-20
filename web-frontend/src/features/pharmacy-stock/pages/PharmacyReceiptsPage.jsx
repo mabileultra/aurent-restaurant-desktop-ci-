@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { pharmacyWarehouseApi, supplierApi } from '../../../api';
+import { pharmacyWarehouseApi, storeApi, supplierApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
@@ -20,6 +20,7 @@ import {
 import { usePharmacyRowSelection } from '../hooks/usePharmacyRowSelection';
 import { PHARMACY_STOCK_PATHS } from '../pharmacyStockPaths';
 import { formatMoney } from '../utils/pharmacyReceiptPricing';
+import { resolveStoreName, resolveSupplierName } from '../utils/pharmacyReceiptDisplayMeta';
 import { PHARM_DEFAULT_PAGE_SIZE, PHARM_PAGE_SIZES } from '../utils/pharmacyTablePage';
 import { runLimited } from '../utils/runLimited';
 
@@ -49,6 +50,11 @@ export default function PharmacyReceiptsPage() {
     queryFn: () => supplierApi.getAll({ page: 0, size: 200 }).then((r) => r.data),
   });
 
+  const storesQuery = useQuery({
+    queryKey: ['stores-all'],
+    queryFn: () => storeApi.getAll().then((r) => r.data),
+  });
+
   const deleteSelectedMutation = useMutation({
     mutationFn: async (rowsToDelete) => {
       await runLimited(rowsToDelete, 8, (row) => pharmacyWarehouseApi.deleteDraft(row.id));
@@ -73,10 +79,19 @@ export default function PharmacyReceiptsPage() {
     onError: (e) => toast.error(resolvePharmacyApiError(e, t)),
   });
 
-  const rows = listQuery.data?.content ?? [];
-  const total = listQuery.data?.totalElements ?? rows.length;
+  const rowsRaw = listQuery.data?.content ?? [];
+  const total = listQuery.data?.totalElements ?? rowsRaw.length;
   const totalPages = listQuery.data?.totalPages ?? 1;
   const suppliers = suppliersQuery.data?.content ?? [];
+  const stores = Array.isArray(storesQuery.data) ? storesQuery.data : (storesQuery.data?.content ?? []);
+  const rows = useMemo(
+    () => rowsRaw.map((row) => ({
+      ...row,
+      storeName: resolveStoreName(row, stores),
+      supplierName: resolveSupplierName(row, suppliers),
+    })),
+    [rowsRaw, stores, suppliers],
+  );
   const selection = usePharmacyRowSelection(rows, `${statusFilter}:${search}:${pageSize}`);
 
   const filters = useMemo(() => ([

@@ -7,6 +7,7 @@ import {
   daysUntilExpiry,
   formatExpiryDisplay,
   productBatch,
+  productCountry,
   productDosageForm,
   productExpiry,
   productRequiresPrescription,
@@ -119,6 +120,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
               <tr>
                 <th>{t('pharmacyCashier.colName')}</th>
                 <th>{t('pharmacyCashier.colForm')}</th>
+                <th>{t('pharmacyCashier.colCountry')}</th>
                 <th>{t('pharmacyCashier.colShelf')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
@@ -138,6 +140,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const inactive = product.active === false;
                 const disabled = outOfStock || inactive || productsStale;
                 const form = productDosageForm(product) || '—';
+                const country = productCountry(product) || '—';
                 const shelf = productStorageLocation(product) || '—';
                 const batch = productBatch(product) || '—';
                 const expiryDate = formatExpiryDisplay(productExpiry(product));
@@ -193,6 +196,9 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     </td>
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={form}>
                       <span className="pharmacy-search__cell-text">{form}</span>
+                    </td>
+                    <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
+                      <span className="pharmacy-search__cell-text">{country}</span>
                     </td>
                     <td
                       className={[

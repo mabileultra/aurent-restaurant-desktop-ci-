@@ -1,6 +1,11 @@
 import PharmacyReceiptDocumentMenu from './PharmacyReceiptDocumentMenu';
 import { PharmacyStatusBadge } from './PharmacyStockLayout';
 import { formatMoney } from '../utils/pharmacyReceiptPricing';
+import { receiptDisplayTotals } from '../utils/pharmacyReceiptTotals';
+import {
+  paymentTypeLabel,
+  receiptTypeLabel,
+} from '../utils/pharmacyReceiptDisplayMeta';
 import '../styles/pharmacy-receipt-document-card.css';
 
 export default function PharmacyReceiptDocumentCard({
@@ -12,6 +17,9 @@ export default function PharmacyReceiptDocumentCard({
   onClose,
   deleteDisabled,
 }) {
+  const totals = receiptDisplayTotals(receipt);
+  const payment = paymentTypeLabel(receipt.paymentType, t);
+
   return (
     <aside className="pharmacy-stock__aside pharmacy-receipt-document-card">
       <div className="pharmacy-receipt-document-card__head">
@@ -25,12 +33,13 @@ export default function PharmacyReceiptDocumentCard({
         />
       </div>
 
-      <Meta label={t('pharmacyStock.receiptType')} value={t('pharmacyStock.receiptTypeReceipt')} />
+      <Meta label={t('pharmacyStock.receiptType')} value={receiptTypeLabel(receipt.receiptType, t)} />
       <Meta label={t('pharmacyStock.colStatus')} value={<PharmacyStatusBadge status={receipt.status} t={t} />} />
       <Meta label={t('pharmacyStock.colDocNo')} value={receipt.receiptNumber} />
       <Meta label={t('pharmacyStock.colDate')} value={receipt.documentDate || '—'} />
       <Meta label={t('pharmacyStock.markup')} value={receipt.defaultMarkupPercent ?? '—'} />
       <Meta label={t('stockReports.colStore')} value={receipt.storeName || '—'} />
+      {payment ? <Meta label={t('pharmacyStock.paymentType')} value={payment} /> : null}
 
       <div>
         <p className="pharmacy-stock__section-title">{t('pharmacyStock.invoiceSection')}</p>
@@ -38,14 +47,19 @@ export default function PharmacyReceiptDocumentCard({
         <Meta label={t('pharmacyStock.invoiceNumber')} value={receipt.invoiceNumber || '—'} />
         <Meta label={t('pharmacyStock.invoiceDate')} value={receipt.invoiceDate || '—'} />
         <Meta label={t('pharmacyStock.contractNumber')} value={receipt.contractNumber || '—'} />
-        <Meta label={t('pharmacyStock.financialDiscount')} value={receipt.financialDiscount ?? '—'} />
+        <Meta
+          label={t('pharmacyStock.financialDiscount')}
+          value={receipt.financialDiscount != null && receipt.financialDiscount !== ''
+            ? formatMoney(receipt.financialDiscount)
+            : '—'}
+        />
       </div>
 
       <div>
         <p className="pharmacy-stock__section-title">{t('pharmacyStock.colLines')}</p>
-        <Meta label={t('pharmacyStock.colLines')} value={receipt.lineCount ?? receipt.lines?.length ?? 0} />
-        <Meta label={t('pharmacyStock.colPurchaseSum')} value={formatMoney(receipt.totalCost)} />
-        <Meta label={t('pharmacyStock.colRetailSum')} value={formatMoney(receipt.totalRetail)} />
+        <Meta label={t('pharmacyStock.colLines')} value={totals.lineCount} />
+        <Meta label={t('pharmacyStock.colPurchaseSum')} value={formatMoney(totals.purchase)} />
+        <Meta label={t('pharmacyStock.colRetailSum')} value={formatMoney(totals.retail)} />
       </div>
 
       {receipt.createdByName ? (
