@@ -1,0 +1,42 @@
+.rst-dl-corner {
+  position: absolute;
+  top: 0.85rem;
+  right: 1rem;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.rst-dl-corner__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #d7e0ee;
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.rst-dl-corner__btn:hover {
+  background: rgba(91, 140, 255, 0.22);
+  border-color: rgba(126, 182, 255, 0.45);
+  color: #fff;
+}
+
+.rst-dl-corner__btn--disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
+@media (max-width: 480px) {
+  .rst-dl-corner {
+    top: 0.65rem;
+    right: 0.65rem;
+  }
+}

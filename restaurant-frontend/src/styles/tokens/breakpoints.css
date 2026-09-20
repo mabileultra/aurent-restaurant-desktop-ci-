@@ -1,0 +1,32 @@
+/* Breakpoints — sync with src/utils/viewportBreakpoints.js */
+
+:root {
+  --bp-compact-max: 799px;
+  --bp-compact: 800px;
+  --bp-desktop: 1024px;
+  --bp-lg: 1280px;
+  --bp-xl: 1600px;
+  --bp-xxl: 1920px;
+  --bp-canonical-w-min: 1024px;
+  --bp-canonical-w-max: 1280px;
+  --bp-canonical-h-max: 820px;
+}
+
+/* Utility helpers for layout CSS (не для JS) */
+@media (max-width: 799px) {
+  :root {
+    --rst-layout-cols: 1;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --rst-layout-cols: 2;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --rst-layout-cols: 3;
+  }
+}

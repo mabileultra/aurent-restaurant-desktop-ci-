@@ -1,0 +1,42 @@
+.rst-shift-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.85rem;
+  padding: 0.72rem 1rem;
+  border: 1px solid #2a3140;
+  border-radius: 14px;
+  background: #141820;
+}
+
+.rst-shift-bar.is-closed {
+  background: #1a1416;
+  border-color: #5a3030;
+}
+
+.rst-shift-bar__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  font-size: 0.84rem;
+  color: #93a0b8;
+}
+
+.rst-shift-bar__meta strong {
+  color: #fbbf24;
+  font-weight: 800;
+}
+
+.rst-shift-bar__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.rst-shift-bar__actions .btn,
+.rst-shift-bar__actions button {
+  color: #f4f6fb !important;
+  border-color: #3a4356 !important;
+  background: #1a2030 !important;
+}

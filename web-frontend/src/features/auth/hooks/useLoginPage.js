@@ -13,6 +13,7 @@ import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
 
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { companyBusinessTypeApi } from '../../../api';
+import { maybeRedirectRestaurantLogin } from '../../../utils/restaurantAppRedirect';
 
 async function resolvePostLoginPath(role) {
   try {
@@ -21,6 +22,11 @@ async function resolvePostLoginPath(role) {
   } catch {
     return resolveAppHomePath(role, null);
   }
+}
+
+function redirectedToRestaurantApp(role, path) {
+  const { token, user } = useAuthStore.getState();
+  return maybeRedirectRestaurantLogin(role, path, { token, user });
 }
 
 export function useLoginPage() {
@@ -43,7 +49,9 @@ export function useLoginPage() {
     let cancelled = false;
     (async () => {
       const path = await resolvePostLoginPath(user?.role);
-      if (!cancelled) navigate(path, { replace: true });
+      if (cancelled) return;
+      if (redirectedToRestaurantApp(user?.role, path)) return;
+      navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };
   }, [hasHydrated, token, user, navigate]);
@@ -79,6 +87,7 @@ export function useLoginPage() {
       setAuth(accessToken, profile);
       toast.success(t('login.welcome', { name: profile.fullName }));
       const path = await resolvePostLoginPath(profile.role);
+      if (redirectedToRestaurantApp(profile.role, path)) return;
       navigate(path, { replace: true });
     } catch (err) {
       const apiMsg = err.response?.data?.message;

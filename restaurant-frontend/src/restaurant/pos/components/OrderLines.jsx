@@ -1,0 +1,87 @@
+import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import '../styles/order-workspace.css';
+
+function isKitchenLocked(status) {
+  return status && status !== 'NEW' && status !== 'CANCELLED';
+}
+
+export default function OrderLines({ items, onQty, onRemove, locked = false, t }) {
+  if (!items.length) {
+    return <div className="rst-order-empty">{t('rst.order.emptyLines')}</div>;
+  }
+
+  return (
+    <div className="rst-order-lines">
+      {items.map((line) => {
+        const kitchen = isKitchenLocked(line.itemStatus);
+        const lineLocked = locked || kitchen;
+        const isNew = line.itemStatus === 'NEW';
+        return (
+          <div
+            key={line.id}
+            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}`}
+          >
+            <div className="rst-order-line__main">
+              <div className="rst-order-line__title">
+                <strong>{line.name}</strong>
+                {isNew ? <span className="rst-order-line__pill rst-order-line__pill--new">{t('rst.order.badgeNew')}</span> : null}
+                {kitchen ? <span className="rst-order-line__pill rst-order-line__pill--kitchen">{t('rst.order.onKitchen')}</span> : null}
+              </div>
+              <div className="rst-order-line__meta">
+                {fmtMoneyCompact(line.unitPrice)} × {line.quantity} = {fmtMoneyCompact(line.lineTotal)}
+              </div>
+              {(line.modifiers ?? []).length ? (
+                <div className="rst-order-line__mods">
+                  {(line.modifiers ?? []).map((mod) => (
+                    <span key={mod.id || mod.name}>+ {mod.name}</span>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="rst-order-line__actions">
+              {lineLocked ? (
+                <span className="rst-order-line__lock" title={t('rst.order.onKitchen')} aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="5" y="11" width="14" height="10" rx="2" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                </span>
+              ) : (
+                <>
+                  <div className="rst-qty-stepper">
+                    <button
+                      type="button"
+                      className="rst-qty"
+                      aria-label="-"
+                      onClick={() => onQty(line, Number(line.quantity) - 1)}
+                    >
+                      −
+                    </button>
+                    <span className="rst-qty-stepper__value">{Number(line.quantity)}</span>
+                    <button
+                      type="button"
+                      className="rst-qty"
+                      aria-label="+"
+                      onClick={() => onQty(line, Number(line.quantity) + 1)}
+                    >
+                      +
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    className="rst-order-line__remove"
+                    aria-label={t('common.delete')}
+                    onClick={() => onRemove(line.id)}
+                  >
+                    ✕
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}

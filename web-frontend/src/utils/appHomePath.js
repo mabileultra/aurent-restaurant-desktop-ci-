@@ -21,7 +21,9 @@ export function resolveAppHomePath(role, businessType) {
   if (isPlatformUser(role)) return '/platform';
   if (role === 'CASHIER') {
     // /cashier без хвоста конфликтует с public/cashier/ в nginx (403 на директории).
-    return isPharmacyWorldBusiness(businessType) ? PHARM_POS_PATH : '/cashier/pos';
+    if (isPharmacyWorldBusiness(businessType)) return PHARM_POS_PATH;
+    if (isRestaurantWorldBusiness(businessType)) return '/rst/pos';
+    return '/cashier/pos';
   }
   if (role === 'WAITER') return '/rst/pos';
   if (role === 'COOK') return '/rst/kitchen';

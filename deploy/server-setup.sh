@@ -43,13 +43,24 @@ cmd_ubuntu() {
   ufw default deny incoming
   ufw default allow outgoing
   ufw allow OpenSSH
-  ufw allow 80/tcp comment 'Aurent web'
-  ufw allow 8080/tcp comment 'Aurent API (касса)'
+  ufw allow 80/tcp comment 'HTTP (host nginx → aurent + r-aurent)'
+  ufw allow 443/tcp comment 'HTTPS (host nginx)'
+  ufw allow 8080/tcp comment 'API gateway (касса Electron, если без nginx)'
   ufw --force enable
+
+  echo "==> Nginx + certbot (для aurent.uz / r-aurent.uz)..."
+  apt-get install -y -qq nginx certbot python3-certbot-nginx
 
   echo "==> Каталог приложения..."
   mkdir -p /opt/aurent-pos
   chown -R "${SUDO_USER:-root}:${SUDO_USER:-root}" /opt/aurent-pos 2>/dev/null || true
+
+  if [[ -f /opt/aurent-pos/deploy/nginx-host.conf.example ]] && [[ ! -f /etc/nginx/sites-available/aurent-pos ]]; then
+    cp /opt/aurent-pos/deploy/nginx-host.conf.example /etc/nginx/sites-available/aurent-pos
+    ln -sf /etc/nginx/sites-available/aurent-pos /etc/nginx/sites-enabled/aurent-pos
+    rm -f /etc/nginx/sites-enabled/default
+    nginx -t && systemctl reload nginx || true
+  fi
 
   echo ""
   echo "Готово."
@@ -59,7 +70,9 @@ cmd_ubuntu() {
   echo "Дальше:"
   echo "  1) Скопируйте проект в /opt/aurent-pos (git clone или scp)"
   echo "  2) cd /opt/aurent-pos && bash deploy/server-setup.sh env && nano .env"
+  echo "     (HTTP_PORT=127.0.0.1:8088, RESTAURANT_HTTP_PORT=127.0.0.1:5174, VITE_* домены)"
   echo "  3) bash deploy/deploy.sh"
+  echo "  4) certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz"
 }
 
 cmd_env() {

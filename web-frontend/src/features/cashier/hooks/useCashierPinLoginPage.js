@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
+import { companyBusinessTypeApi } from '../../../api';
 import { useAuthStore } from '../../../store/authStore';
 import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
 import {
@@ -13,8 +14,22 @@ import {
   shouldShowCashierCompanyCodeField,
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
+import { resolveCashierPostLoginPath } from '../../../utils/cashierPostLoginPath';
+import { maybeRedirectRestaurantLogin } from '../../../utils/restaurantAppRedirect';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
 import { logAuth } from '../../../services/desktop/activityLog';
+
+async function resolvePinHomePath(role) {
+  if (role === 'WAITER' || role === 'COOK') {
+    return resolveCashierPostLoginPath(role);
+  }
+  try {
+    const res = await companyBusinessTypeApi.get();
+    return resolveCashierPostLoginPath(role, res.data?.defaultTypeCode);
+  } catch {
+    return resolveCashierPostLoginPath(role, null);
+  }
+}
 
 export function useCashierPinLoginPage() {
   const { t } = useTranslation();
@@ -49,9 +64,15 @@ export function useCashierPinLoginPage() {
         }));
         return;
       }
-      if (window.location.pathname.startsWith('/cashier/login')) {
-        navigate('/cashier', { replace: true });
+      if (!window.location.pathname.startsWith('/cashier/login')) return;
+
+      const path = await resolvePinHomePath(user.role);
+      if (cancelled || freshLoginRef.current) return;
+      const { token: currentToken, user: currentUser } = useAuthStore.getState();
+      if (maybeRedirectRestaurantLogin(user.role, path, { token: currentToken, user: currentUser })) {
+        return;
       }
+      navigate(path.startsWith('/rst') || path.startsWith('/pharm') ? path : '/cashier', { replace: true });
     })();
 
     return () => {
@@ -104,10 +125,11 @@ export function useCashierPinLoginPage() {
         return;
       }
       const loginCodeFromProfile = normalizeCompanyLoginCode(profile.companyLoginCode);
-      setAuth(accessToken, {
+      const sessionUser = {
         ...profile,
         companyLoginCode: loginCode || loginCodeFromProfile || profile.companyLoginCode,
-      });
+      };
+      setAuth(accessToken, sessionUser);
       logAuth('Вход по PIN', {
         role: profile.role,
         companyLoginCode: loginCode,
@@ -116,7 +138,12 @@ export function useCashierPinLoginPage() {
       if (loginCode) persistCompanyLoginCode(loginCode);
       setCompanyPopoverOpen(false);
       freshLoginRef.current = true;
-      navigate('/cashier', { replace: true });
+
+      const path = await resolvePinHomePath(profile.role);
+      if (maybeRedirectRestaurantLogin(profile.role, path, { token: accessToken, user: sessionUser })) {
+        return;
+      }
+      navigate(path, { replace: true });
       window.setTimeout(() => {
         freshLoginRef.current = false;
       }, 4000);

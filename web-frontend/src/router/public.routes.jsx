@@ -1,6 +1,7 @@
 import { Route, Navigate } from 'react-router-dom';
 import AuthRoute from './guards/AuthRoute';
 import DesktopPublicGuard from './guards/DesktopPublicGuard';
+import AuthAcceptPage from '../features/auth/pages/AuthAcceptPage';
 import {
   LoginPage,
   CashierPinLoginPage,
@@ -24,6 +25,7 @@ export const publicRoutes = (
     <Route path="/equipment" element={<Navigate to={{ pathname: '/', hash: '#equipment' }} replace />} />
     <Route path="/contacts" element={<Navigate to={{ pathname: '/', hash: '#contacts' }} replace />} />
     <Route path="/login" element={<LoginPage />} />
+    <Route path="/auth/accept" element={<AuthAcceptPage />} />
     <Route path="/cashier/login" element={<CashierPinLoginPage />} />
     <Route path="/install" element={<DesktopInstallerPage />} />
     <Route

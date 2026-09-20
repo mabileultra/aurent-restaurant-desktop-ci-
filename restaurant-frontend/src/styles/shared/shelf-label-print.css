@@ -1,0 +1,281 @@
+/* Предпросмотр в модалке — ширина как у реальной этикетки */
+.shelflabel-preview-wrap {
+  width: min(100%, calc(var(--label-paper-w-mm, 58) * 1mm + 24px));
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Предпросмотр этикетки */
+.shelflabel-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.5rem;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.shelflabel-card--pricetag {
+  justify-content: center;
+  gap: calc(0.2rem * var(--label-font-scale, 1));
+  min-height: 100%;
+}
+
+.shelflabel-card--pricetag .shelflabel-name {
+  font-size: calc(0.62rem * var(--label-font-scale, 1));
+  line-height: 1.12;
+  max-height: calc(2.4em * var(--label-font-scale, 1));
+  overflow: hidden;
+}
+
+.shelflabel-card--pricetag .shelflabel-price--large {
+  font-size: calc(1.05rem * var(--label-font-scale, 1));
+  letter-spacing: -0.02em;
+}
+
+.shelflabel-card--pricetag .shelflabel-barcode-svg {
+  max-height: calc(52px * var(--label-font-scale, 1));
+}
+
+.shelflabel-name {
+  /* Чуть меньше, но читабельнее на маленьких этикетках. */
+  font-size: calc(0.72rem * var(--label-font-scale, 1));
+  font-weight: 750;
+  line-height: 1.18;
+  text-align: center;
+  color: #0f172a;
+}
+
+.dark .shelflabel-card--tone .shelflabel-name {
+  color: #f8fafc;
+}
+
+.shelflabel-price {
+  text-align: center;
+  font-weight: 700;
+}
+
+.shelflabel-price--footer {
+  text-align: right;
+  font-size: calc(0.92rem * var(--label-font-scale, 1));
+  margin-top: auto;
+}
+
+.shelflabel-price--large {
+  font-size: calc(1.35rem * var(--label-font-scale, 1));
+  line-height: 1.08;
+}
+
+.shelflabel-barcode-svg {
+  display: block;
+  margin: 0 auto;
+  max-height: calc(72px * var(--label-font-scale, 1));
+}
+
+/* Временно для замера макета перед печатью (иначе off-screen → высота 0) */
+html.shelflabel-layout-measure #pos-label-print-mount,
+html.shelflabel-layout-measure #shelf-label-print-layer {
+  position: fixed !important;
+  left: 0 !important;
+  top: 0 !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  z-index: -1 !important;
+}
+
+/* Слой только для диалога печати: на экране прячем содержимое */
+@media screen {
+  .shelflabel-print-layer {
+    position: fixed;
+    inset: auto auto auto -10000px;
+    width: calc(var(--label-paper-w-mm, 58) * 1mm);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  html.shelflabel-layout-measure .shelflabel-print-layer {
+    left: 0 !important;
+    opacity: 0 !important;
+  }
+}
+
+.shelflabel-print-page {
+  box-sizing: border-box;
+  width: calc(var(--label-paper-w-mm, 58) * 1mm);
+  height: calc(var(--label-paper-h-mm, 40) * 1mm);
+  min-height: calc(var(--label-paper-h-mm, 40) * 1mm);
+  max-height: calc(var(--label-paper-h-mm, 40) * 1mm);
+  /* Safety: не даём отступам “съесть” всю этикетку на маленьких размерах (например 30×20). */
+  --label-safe-pad-x: min(
+    var(--label-pad-x, 6mm),
+    calc((var(--label-paper-w-mm, 58) * 1mm - 8mm) / 2)
+  );
+  --label-safe-pad-y: min(
+    var(--label-pad-y, 10mm),
+    calc((var(--label-paper-h-mm, 40) * 1mm - 8mm) / 2)
+  );
+  --label-offset-x: calc(var(--label-offset-x-mm, 0) * 1mm);
+  --label-offset-y: calc(var(--label-offset-y-mm, 0) * 1mm);
+  padding:
+    calc(var(--label-safe-pad-y) - var(--label-offset-y))
+    calc(var(--label-safe-pad-x) - var(--label-offset-x))
+    calc(var(--label-safe-pad-y) + var(--label-offset-y))
+    calc(var(--label-safe-pad-x) + var(--label-offset-x));
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Поворот делаем на самой карточке, иначе некоторые драйверы “режут” макет на 2 этикетки. */
+.shelflabel-card {
+  width: 100%;
+  transform: rotate(var(--label-rotate, 0deg));
+  transform-origin: center center;
+}
+
+/* Electron: тихая печать этикетки (как автопечать чека) */
+html.electron-silent-label {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active #root,
+html.electron-silent-label.shelflabel-printing-active .shelflabel-no-print-wrap,
+html.electron-silent-label.shelflabel-printing-active [data-sonner-toaster],
+html.electron-silent-label.shelflabel-printing-active
+  body > *:not(#pos-label-print-mount) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active #pos-label-print-mount,
+html.electron-silent-label.shelflabel-printing-active #shelf-label-print-layer {
+  display: block !important;
+  visibility: visible !important;
+  position: fixed !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
+  max-width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
+  height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+  max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+  overflow: hidden !important;
+  z-index: 0 !important;
+  background: #fff !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #pos-label-print-mount {
+  left: 0 !important;
+  top: 0 !important;
+  z-index: 2147483640 !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active #shelf-label-print-layer,
+html.electron-silent-label.shelflabel-printing-active #shelf-label-print-layer * {
+  visibility: visible !important;
+  color: #000 !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active .shelflabel-barcode-svg,
+html.electron-silent-label.shelflabel-printing-active .shelflabel-barcode-svg * {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  fill: #000 !important;
+  stroke: #000 !important;
+}
+
+html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #pos-label-print-mount,
+html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #shelf-label-print-layer {
+  left: 0 !important;
+  top: 0 !important;
+  width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
+  height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+  max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+  overflow: hidden !important;
+  opacity: 1 !important;
+}
+
+@media print {
+  body.shelflabel-printing-active * {
+    visibility: hidden !important;
+  }
+
+  body.shelflabel-printing-active #shelf-label-print-layer,
+  body.shelflabel-printing-active #shelf-label-print-layer * {
+    visibility: visible !important;
+  }
+
+  html,
+  body {
+    width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
+    height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+    max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body.shelflabel-printing-active #shelf-label-print-layer {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
+    height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+    max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
+    overflow: hidden !important;
+    opacity: 1 !important;
+  }
+
+  .shelflabel-no-print-wrap,
+  .shelflabel-no-print-wrap * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  .shelflabel-print-page {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  .shelflabel-print-page + .shelflabel-print-page {
+    display: none !important;
+  }
+
+  .shelflabel-name {
+    color: #000 !important;
+  }
+
+  .shelflabel-price {
+    color: #000 !important;
+  }
+
+  /* Печать в мм — стабильнее на XP-365B, чем rem/px */
+  .shelflabel-card--pricetag {
+    gap: calc(0.8mm * var(--label-font-scale, 1)) !important;
+  }
+
+  .shelflabel-card--pricetag .shelflabel-price--large {
+    font-size: calc(3.2mm * var(--label-font-scale, 1)) !important;
+    line-height: 1.1 !important;
+  }
+
+  .shelflabel-card--pricetag .shelflabel-name {
+    font-size: calc(2mm * var(--label-font-scale, 1)) !important;
+    line-height: 1.15 !important;
+    max-height: calc(5mm * var(--label-font-scale, 1)) !important;
+  }
+
+  .shelflabel-card--pricetag .shelflabel-barcode-svg {
+    max-height: calc(12mm * var(--label-font-scale, 1)) !important;
+  }
+}

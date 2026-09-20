@@ -2,6 +2,7 @@ import { Navigate } from 'react-router-dom';
 import { useCashierStore } from '../../hooks/useCashierStore';
 import { useCashierStoreTypeQuery } from '../../hooks/useCashierStoreTypeQuery';
 import { normalizeBusinessTypeCode } from '../../config/productCatalogConfig';
+import CashierSpaNavigate from './CashierSpaNavigate';
 
 /** Розничная касса — только для магазинов не-RESTAURANT. */
 export default function CashierRetailPosGuard({ children }) {
@@ -12,7 +13,6 @@ export default function CashierRetailPosGuard({ children }) {
     return children;
   }
 
-  // Offline / сеть упала: не держим пустой (чёрный) экран на GET /stores/:id
   if (skipOnline || isError) {
     return children;
   }
@@ -23,7 +23,7 @@ export default function CashierRetailPosGuard({ children }) {
 
   const type = normalizeBusinessTypeCode(store?.businessType);
   if (type === 'RESTAURANT' || type === 'CANTEEN') {
-    return <Navigate to="/rst/pos" replace />;
+    return <CashierSpaNavigate to="/rst/pos" />;
   }
   if (type === 'PHARMACY') {
     return <Navigate to="/pharm/pos" replace />;

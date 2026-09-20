@@ -1,0 +1,52 @@
+.rst-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--shell-gap);
+  min-width: 0;
+}
+
+.rst-page--loose {
+  gap: calc(var(--shell-gap) * 1.5);
+}
+
+.rst-page__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--shell-gap);
+  flex-wrap: wrap;
+}
+
+.rst-page__title-block {
+  min-width: 0;
+  flex: 1 1 12rem;
+}
+
+.rst-page__title {
+  margin: 0;
+  font-size: var(--text-2xl);
+  font-weight: 750;
+  color: var(--color-text);
+  line-height: 1.25;
+}
+
+.rst-page__subtitle {
+  margin: 0.35rem 0 0;
+  color: var(--color-muted);
+  font-size: var(--text-sm);
+}
+
+.rst-page__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.rst-page__filters {
+  min-width: 0;
+}
+
+.rst-page__body {
+  min-width: 0;
+}

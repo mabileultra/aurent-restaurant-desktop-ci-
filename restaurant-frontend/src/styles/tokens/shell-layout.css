@@ -1,0 +1,38 @@
+/* Restaurant shell layout only (no platform/finance leftovers) */
+
+html,
+body,
+#root {
+  max-width: 100%;
+  min-height: 100%;
+}
+
+html.app-viewport--desktop body,
+html.app-viewport--canonical body {
+  overflow-x: hidden;
+}
+
+.rst-shell {
+  min-height: 100dvh;
+  height: 100dvh;
+  font-size: var(--shell-font-size);
+}
+
+.rst-shell__main {
+  min-width: 0;
+  padding: var(--shell-pad);
+  -webkit-overflow-scrolling: touch;
+}
+
+.rst-shell__main > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+html.app-viewport--compact .rst-shell__main {
+  padding: var(--shell-pad);
+}
+
+html.app-viewport--canonical .rst-shell__main {
+  padding: var(--shell-pad);
+}

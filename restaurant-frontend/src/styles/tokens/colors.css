@@ -1,0 +1,28 @@
+/* Semantic colors — restaurant SPA (accent = orange floor brand) */
+
+:root {
+  --color-brand: #ff7a1a;
+  --color-brand-hover: #ff8d38;
+  --color-brand-deep: #c45a0e;
+  --color-brand-mid: #ff9a45;
+  --color-brand-soft: rgb(255 122 26 / 0.16);
+  --color-brand-soft-2: rgb(255 122 26 / 0.28);
+  --color-brand-on: #1b1208;
+
+  --color-ink: #f4f6fb;
+  --color-text: #e8edf5;
+  --color-muted: #8b93a7;
+  --color-border: #2a3344;
+  --color-surface: #151922;
+  --color-surface-muted: #1c2230;
+  --color-danger: #ff453a;
+  --color-ok: #30d158;
+  --color-money: #f4f6fb;
+
+  --color-focus-ring: rgb(255 122 26 / 0.28);
+  --color-overlay: rgb(0 0 0 / 0.6);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}

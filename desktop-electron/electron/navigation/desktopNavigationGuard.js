@@ -8,11 +8,28 @@ function isPublicLandingPath(pathname) {
   return PUBLIC_PATHS.has(p === '' ? '/' : p.startsWith('/') ? p : `/${p}`);
 }
 
+function originOf(urlLike) {
+  try {
+    return new URL(urlLike).origin;
+  } catch {
+    return '';
+  }
+}
+
+/** Only bounce marketing pages on the main (aurent) origin — not restaurant SPA. */
 function shouldRedirectToCashierLogin(url, cfg) {
   try {
     const u = new URL(url);
     if (u.protocol === 'data:' || u.protocol === 'file:') return false;
-    return isPublicLandingPath(u.pathname);
+    if (!isPublicLandingPath(u.pathname)) return false;
+
+    const mainOrigin = originOf(cashierUrlForUi(cfg) || cfg?.cashierUrl);
+    if (mainOrigin && u.origin !== mainOrigin) return false;
+
+    const restaurantOrigin = originOf(cfg?.restaurantUrl);
+    if (restaurantOrigin && u.origin === restaurantOrigin) return false;
+
+    return true;
   } catch {
     return false;
   }

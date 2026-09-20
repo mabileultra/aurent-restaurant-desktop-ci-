@@ -6,6 +6,7 @@ on:
     paths:
       - 'web-backend/**'
       - 'web-frontend/**'
+      - 'restaurant-frontend/**'
       - 'finance-service/**'
       - 'crm-service/**'
       - 'ai-service/**'

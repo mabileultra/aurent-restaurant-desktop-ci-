@@ -7,7 +7,7 @@ const { showServerSetupPasswordWindow } = require('../setup/passwordWindow');
 async function clearCashierWebStorage(mainWindow, cfg) {
   if (!mainWindow || mainWindow.isDestroyed() || !cfg?.cashierUrl) return;
   const origins = new Set(
-    [cfg.cashierUrl, cashierUrlForUi(cfg)].filter(Boolean).map((value) => {
+    [cfg.cashierUrl, cashierUrlForUi(cfg), cfg.restaurantUrl].filter(Boolean).map((value) => {
       try {
         return new URL(value).origin;
       } catch {

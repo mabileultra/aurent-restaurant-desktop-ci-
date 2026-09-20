@@ -1,0 +1,28 @@
+@import './styles/tokens/index.css';
+@import './styles/ui/index.css';
+@import './styles/shared/base-select.css';
+@import './styles/shared/table-pagination.css';
+@import './styles/shared/brand-logo.css';
+@import './styles/shared/toaster.css';
+@import './styles/shared/receipt-printing-overlay.css';
+@import './styles/admin/receipt-print-root.css';
+@import './styles/admin/print-media.css';
+@import './styles/admin/electron-silent-print.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: #0b0e14;
+  color: var(--color-text);
+}

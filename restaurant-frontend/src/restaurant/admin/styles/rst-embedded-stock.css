@@ -1,0 +1,400 @@
+/* Restaurant OS theme for shared stock/report pages under .rst-embedded-stock */
+
+.rst-embedded-stock {
+  min-height: 60vh;
+  color: var(--rst-ink);
+}
+
+.rst-embedded-stock .admin-page,
+.rst-embedded-stock .space-y-6,
+.rst-embedded-stock .space-y-4,
+.rst-embedded-stock .page-layout,
+.rst-embedded-stock [class*="PageLayout"] {
+  color: var(--rst-ink);
+}
+
+/* Surfaces — no white cards/rows */
+.rst-embedded-stock .bg-white,
+.rst-embedded-stock .bg-slate-50,
+.rst-embedded-stock .bg-slate-100,
+.rst-embedded-stock .bg-white\/95,
+.rst-embedded-stock [class*="bg-white"] {
+  background-color: var(--rst-surface) !important;
+}
+
+.rst-embedded-stock .dark\:bg-slate-950,
+.rst-embedded-stock .dark\:bg-slate-900,
+.rst-embedded-stock .dark\:bg-slate-800,
+.rst-embedded-stock .dark\:bg-slate-800\/80,
+.rst-embedded-stock .dark\:bg-slate-800\/50 {
+  background-color: var(--rst-surface) !important;
+}
+
+.rst-embedded-stock .shadow,
+.rst-embedded-stock .shadow-sm {
+  box-shadow: var(--rst-shadow) !important;
+}
+
+.rst-embedded-stock .border-slate-100,
+.rst-embedded-stock .border-slate-200,
+.rst-embedded-stock .border-slate-300,
+.rst-embedded-stock .dark\:border-slate-600,
+.rst-embedded-stock .dark\:border-slate-700,
+.rst-embedded-stock .dark\:border-slate-800 {
+  border-color: var(--rst-line) !important;
+}
+
+/* Search */
+.rst-embedded-stock .page-search-field {
+  width: 100%;
+  background: var(--rst-surface-2) !important;
+  border: 1px solid var(--rst-line) !important;
+  box-shadow: none !important;
+}
+
+.rst-embedded-stock .page-search-field:focus-within {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+}
+
+.rst-embedded-stock .page-search-field__icon {
+  color: var(--rst-muted) !important;
+}
+
+.rst-embedded-stock .page-search-field__input,
+.rst-embedded-stock .page-search-field input {
+  background: transparent !important;
+  color: var(--rst-ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.rst-embedded-stock .page-search-field__input::placeholder,
+.rst-embedded-stock .page-search-field input::placeholder {
+  color: var(--rst-muted) !important;
+}
+
+/* Inputs / selects */
+.rst-embedded-stock input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+.rst-embedded-stock select,
+.rst-embedded-stock textarea,
+.rst-embedded-stock .form-select,
+.rst-embedded-stock .base-select__trigger {
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 8px;
+  box-shadow: none !important;
+}
+
+.rst-embedded-stock input:focus,
+.rst-embedded-stock select:focus,
+.rst-embedded-stock textarea:focus,
+.rst-embedded-stock .base-select--open .base-select__trigger,
+.rst-embedded-stock .base-select__trigger:focus {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+  outline: none !important;
+}
+
+.rst-embedded-stock input[type="checkbox"] {
+  accent-color: var(--rst-accent);
+}
+
+.rst-embedded-stock .base-select__label,
+.rst-embedded-stock .base-select__value--placeholder,
+.rst-embedded-stock .base-select__chevron {
+  color: var(--rst-muted) !important;
+}
+
+.rst-embedded-stock .base-select__value {
+  color: var(--rst-ink) !important;
+}
+
+/* Primary / emerald → orange accent */
+.rst-embedded-stock button.bg-emerald-500,
+.rst-embedded-stock a.bg-emerald-500,
+.rst-embedded-stock .bg-emerald-500,
+.rst-embedded-stock button.bg-emerald-600,
+.rst-embedded-stock a.bg-emerald-600,
+.rst-embedded-stock .bg-emerald-600,
+.rst-embedded-stock .bg-emerald-700,
+.rst-embedded-stock .dark\:bg-emerald-600 {
+  background: var(--rst-accent) !important;
+  border-color: var(--rst-accent) !important;
+  color: #1b1208 !important;
+}
+
+.rst-embedded-stock .hover\:bg-emerald-600:hover,
+.rst-embedded-stock .hover\:bg-emerald-700:hover,
+.rst-embedded-stock a.hover\:bg-emerald-700:hover,
+.rst-embedded-stock .hover\:bg-emerald-800:hover {
+  background: var(--rst-accent-hover) !important;
+  color: #1b1208 !important;
+}
+
+.rst-embedded-stock a.text-emerald-700,
+.rst-embedded-stock .text-emerald-700,
+.rst-embedded-stock .dark\:text-emerald-400,
+.rst-embedded-stock .text-emerald-600 {
+  color: var(--rst-accent) !important;
+}
+
+.rst-embedded-stock .border-emerald-500,
+.rst-embedded-stock .border-emerald-600 {
+  border-color: var(--rst-accent) !important;
+}
+
+/* Selected radio cards in import modal — dark tint, readable text */
+.rst-embedded-stock .bg-emerald-50,
+.rst-embedded-stock .dark\:bg-emerald-500\/10,
+.rst-embedded-stock [class*="bg-emerald-50"],
+.rst-embedded-stock [class*="bg-emerald-500/10"] {
+  background: var(--rst-accent-soft) !important;
+}
+
+.rst-embedded-stock .bg-sky-50,
+.rst-embedded-stock .bg-sky-50\/40,
+.rst-embedded-stock .dark\:bg-sky-950\/40,
+.rst-embedded-stock .dark\:bg-sky-950\/30,
+.rst-embedded-stock .dark\:bg-sky-950\/20 {
+  background: var(--rst-surface-2) !important;
+}
+
+.rst-embedded-stock .ring-emerald-500,
+.rst-embedded-stock .focus\:ring-emerald-500:focus,
+.rst-embedded-stock [class*="ring-emerald"] {
+  --tw-ring-color: var(--rst-accent-soft) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+}
+
+/* Tables */
+.rst-embedded-stock .rst-products-table-shell,
+.rst-embedded-stock .rst-products-table-shell > div,
+.rst-embedded-stock table,
+.rst-embedded-stock .rounded-lg,
+.rst-embedded-stock .rounded-xl {
+  border-color: var(--rst-line) !important;
+  background-color: var(--rst-surface) !important;
+}
+
+.rst-embedded-stock thead,
+.rst-embedded-stock thead tr {
+  background: var(--rst-surface-2) !important;
+}
+
+.rst-embedded-stock th {
+  color: var(--rst-muted) !important;
+  border-color: var(--rst-line) !important;
+  background: transparent !important;
+}
+
+.rst-embedded-stock tbody,
+.rst-embedded-stock tbody tr,
+.rst-embedded-stock tbody td {
+  background-color: var(--rst-surface) !important;
+  color: var(--rst-ink) !important;
+  border-color: var(--rst-line) !important;
+}
+
+.rst-embedded-stock tbody tr:hover,
+.rst-embedded-stock tbody tr:hover td {
+  background-color: var(--rst-surface-2) !important;
+}
+
+.rst-embedded-stock .text-amber-700,
+.rst-embedded-stock .dark\:text-amber-400 {
+  color: var(--rst-accent) !important;
+}
+
+.rst-embedded-stock .text-red-600,
+.rst-embedded-stock .text-red-500,
+.rst-embedded-stock .dark\:text-red-300 {
+  color: #fca5a5 !important;
+}
+
+.rst-embedded-stock .font-mono {
+  color: var(--rst-ink) !important;
+}
+
+/* Pagination */
+.rst-embedded-stock .table-pagination {
+  border-color: var(--rst-line) !important;
+  background: var(--rst-surface-2) !important;
+}
+
+.rst-embedded-stock .table-pagination__range,
+.rst-embedded-stock .table-pagination__page-size-label,
+.rst-embedded-stock .table-pagination__ellipsis,
+.rst-embedded-stock .table-pagination__nav-btn {
+  color: var(--rst-muted) !important;
+}
+
+.rst-embedded-stock .table-pagination__nav-btn:hover:not(:disabled) {
+  color: var(--rst-ink) !important;
+  background: var(--rst-surface) !important;
+}
+
+.rst-embedded-stock .table-pagination__page-btn {
+  background: var(--rst-surface) !important;
+  border: 1px solid var(--rst-line) !important;
+  color: var(--rst-ink) !important;
+}
+
+.rst-embedded-stock .table-pagination__page-btn:hover:not(:disabled) {
+  border-color: var(--rst-accent) !important;
+  background: var(--rst-accent-soft) !important;
+  color: var(--rst-ink) !important;
+}
+
+.rst-embedded-stock .table-pagination__page-btn--active {
+  border-color: var(--rst-accent) !important;
+  background: var(--rst-accent) !important;
+  color: #1b1208 !important;
+  font-weight: 700;
+}
+
+.rst-embedded-stock .table-pagination__page-size {
+  width: auto;
+}
+
+.rst-embedded-stock .table-pagination__page-size .base-select {
+  width: 5.5rem !important;
+  min-width: 5.5rem;
+}
+
+.rst-embedded-stock .table-pagination__page-size .base-select__trigger {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.55rem;
+}
+
+/* Links / secondary actions */
+.rst-embedded-stock a.inline-flex,
+.rst-embedded-stock a.rounded-lg.border {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 8px;
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.rst-embedded-stock a.inline-flex:hover,
+.rst-embedded-stock a.rounded-lg.border:hover {
+  border-color: var(--rst-accent) !important;
+  color: var(--rst-ink) !important;
+}
+
+.rst-embedded-stock .empty-hint,
+.rst-embedded-stock .border-t.border-sky-100 {
+  background: var(--rst-surface-2) !important;
+  border-color: var(--rst-line) !important;
+  color: var(--rst-ink) !important;
+}
+
+/* Stock document create */
+.rst-embedded-stock .stock-doc-lines {
+  border-color: var(--rst-line) !important;
+  background: var(--rst-surface) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__head {
+  border-bottom-color: var(--rst-line) !important;
+  background: var(--rst-surface-2) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__title,
+.rst-embedded-stock .stock-doc-lines__table tbody td,
+.rst-embedded-stock .stock-doc-lines__sys {
+  color: var(--rst-ink) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__count,
+.rst-embedded-stock .stock-doc-lines__no,
+.rst-embedded-stock .stock-doc-lines__table thead th {
+  color: var(--rst-muted) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__table thead th {
+  background: var(--rst-surface-2) !important;
+  border-bottom-color: var(--rst-line) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__table tbody td {
+  border-bottom-color: var(--rst-line) !important;
+}
+
+.rst-embedded-stock .stock-doc-lines__input,
+.rst-embedded-stock .product-lookup__control {
+  background: var(--rst-surface-2) !important;
+  border: 1px solid var(--rst-line) !important;
+  color: var(--rst-ink) !important;
+  box-shadow: none !important;
+}
+
+.rst-embedded-stock .product-lookup__control:focus-within,
+.rst-embedded-stock .stock-doc-lines__input:focus {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+}
+
+.rst-embedded-stock .product-lookup__control input {
+  background: transparent !important;
+  color: var(--rst-ink) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.rst-embedded-stock .product-lookup__chip-name {
+  color: var(--rst-ink) !important;
+}
+
+.rst-embedded-stock .product-lookup__chip-meta {
+  color: var(--rst-muted) !important;
+}
+
+.rst-embedded-stock .rst-stock-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.rst-embedded-stock .rst-stock-action-btn:hover {
+  border-color: var(--rst-accent);
+  color: var(--rst-accent);
+}
+
+.rst-embedded-stock .rst-products-table-shell {
+  border-color: var(--rst-line) !important;
+  background: var(--rst-surface);
+  box-shadow: var(--rst-shadow);
+}
+
+.rst-embedded-stock .rst-products-table-shell table {
+  margin: 0;
+}
+
+/* Import / export / filter modals inside stock */
+.rst-embedded-stock .product-import-modal,
+.rst-embedded-stock .fixed.inset-0 > div {
+  border-color: var(--rst-line);
+}
+
+.rst-embedded-stock .product-import-modal {
+  background: var(--rst-surface) !important;
+  color: var(--rst-ink) !important;
+}

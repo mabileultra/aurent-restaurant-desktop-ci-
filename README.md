@@ -17,6 +17,7 @@
 postsystem/
 ├── web-backend/                 # REST API
 ├── web-frontend/                # Веб-интерфейс (менеджер/админ + UI кассы)
+├── restaurant-frontend/         # Отдельный SPA ресторана (Phase 1, порт 5174)
 ├── telegram-web-support-bot/    # Бот поддержки CRM/POS (страница «Поддержка»)
 ├── telegram-support-bot/        # Аптечный бот (поиск лекарств)
 ├── deploy/                      # Скрипты деплоя на Ubuntu
@@ -36,7 +37,8 @@ cd web-frontend && npm install && npm run dev
 ```
 
 API: `http://localhost:8080/api/v1`  
-Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)
+Веб: `http://localhost:5173` (Docker: порт 5173 → nginx 80)  
+Ресторан (отдельный фронт): `cd restaurant-frontend && npm run dev` → `http://localhost:5174`
 
 Демо-логин после init БД: `admin` / `password`
 

@@ -1,0 +1,17 @@
+.rst-section-placeholder {
+  padding: 2rem;
+  max-width: 32rem;
+}
+
+.rst-section-placeholder__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.25rem;
+  color: #e8edf5;
+}
+
+.rst-section-placeholder__hint {
+  margin: 0;
+  opacity: 0.85;
+  line-height: 1.45;
+  color: #c5d0e0;
+}

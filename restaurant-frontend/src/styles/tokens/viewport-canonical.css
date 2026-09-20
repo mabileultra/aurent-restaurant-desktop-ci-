@@ -1,0 +1,19 @@
+/*
+ * Канон 1024×768 — restaurant SPA.
+ * Класс html.app-viewport--canonical ставит AppViewportSync.
+ */
+
+html.app-viewport--canonical .rst-shell__main h1,
+html.app-viewport--canonical .rst-page__title {
+  font-size: var(--text-xl);
+}
+
+html.app-viewport--compact .rst-page__actions {
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+html.app-viewport--compact .rst-page__actions .base-btn {
+  flex: 1 1 auto;
+  min-height: var(--touch-min);
+}

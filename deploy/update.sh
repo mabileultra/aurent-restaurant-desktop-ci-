@@ -38,13 +38,39 @@ cmd_update() {
   if ! git pull --ff-only "$remote" "$branch"; then
     echo "==> Локальные правки мешают pull — сброс до $remote/$branch (.env не в git, сохранится)"
     git reset --hard "$remote/$branch"
-    git clean -fd -e .deploy-sha
+    git clean -fd -e .deploy-sha -e .restaurant-domain-configured -e .env
   fi
 
   commit="$(git rev-parse --short HEAD)"
   echo "==> Код обновлён до $commit"
 
   chmod +x deploy/*.sh 2>/dev/null || true
+
+  # Dual-domain: .env + host nginx + certbot (идемпотентно). Отключить: CONFIGURE_RESTAURANT_DOMAIN=0
+  domain_build=0
+  if [[ "${CONFIGURE_RESTAURANT_DOMAIN:-1}" != "0" ]]; then
+    if [[ ! -f .restaurant-domain-configured ]]; then
+      domain_build=1
+    fi
+    if [[ "${EUID}" -eq 0 ]]; then
+      bash deploy/configure-restaurant-domain.sh
+    elif command -v sudo >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+      sudo bash deploy/configure-restaurant-domain.sh
+    else
+      bash deploy/configure-restaurant-domain.sh || true
+    fi
+    if [[ "$domain_build" -eq 1 ]]; then
+      touch .restaurant-domain-configured
+      # Bake VITE_* + CORS + new publish ports
+      extra="frontend,restaurant-frontend,backend,finance-service"
+      if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
+        DEPLOY_SERVICES="${DEPLOY_SERVICES},${extra}"
+      else
+        DEPLOY_SERVICES="$extra"
+      fi
+      echo "==> Первый dual-domain deploy → ${DEPLOY_SERVICES}"
+    fi
+  fi
 
   if [[ -n "${DEPLOY_SERVICES:-}" ]]; then
     echo "==> Деплой только: ${DEPLOY_SERVICES}"

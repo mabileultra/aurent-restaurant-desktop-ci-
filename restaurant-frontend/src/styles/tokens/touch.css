@@ -1,0 +1,20 @@
+/* Touch targets — floor POS / kitchen / admin на сенсоре */
+
+:root {
+  --touch-min: 44px;
+  --touch-min-pos: 48px;
+}
+
+html.app-viewport--desktop {
+  --touch-min: 44px;
+}
+
+html.app-viewport--canonical {
+  --touch-min: 48px;
+  --touch-min-pos: 48px;
+}
+
+html.app-viewport--compact {
+  --touch-min: 48px;
+  --touch-min-pos: 52px;
+}

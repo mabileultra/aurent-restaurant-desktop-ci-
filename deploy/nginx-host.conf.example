@@ -1,15 +1,40 @@
-# Опционально: nginx на хосте Ubuntu (SSL + прокси на Docker frontend :80).
-# Установка: apt install nginx certbot python3-certbot-nginx
+# Host nginx: aurent.uz + r-aurent.uz → Docker (только localhost).
 # Файл: /etc/nginx/sites-available/aurent-pos
-# Ссылка: ln -s .../aurent-pos /etc/nginx/sites-enabled/
+# Ссылка: ln -sf /etc/nginx/sites-available/aurent-pos /etc/nginx/sites-enabled/
+#
+# DNS (A/AAAA) на этот сервер:
+#   aurent.uz, www.aurent.uz
+#   r-aurent.uz, www.r-aurent.uz
+#
+# В .env Docker (обязательно при host nginx — иначе конфликт с :80):
+#   HTTP_PORT=8088
+#   RESTAURANT_HTTP_PORT=5174
+#   API_PORT=8080
+#   VITE_RESTAURANT_APP_URL=https://r-aurent.uz
+#   VITE_MAIN_APP_URL=https://aurent.uz
+#   APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*
+#
+# После смены VITE_* — rebuild frontend + restaurant-frontend.
 
+upstream aurent_main_frontend {
+    server 127.0.0.1:8088;
+    keepalive 16;
+}
+
+upstream aurent_restaurant_frontend {
+    server 127.0.0.1:5174;
+    keepalive 16;
+}
+
+# --- Основной SPA (платформа / розница / аптека) ---
 server {
     listen 80;
-    server_name pos.example.uz;
+    listen [::]:80;
+    server_name aurent.uz www.aurent.uz;
 
     client_max_body_size 80m;
 
-    # Редирект на HTTPS (раскомментировать после certbot)
+    # После certbot раскомментируйте:
     # return 301 https://$host$request_uri;
 
     add_header X-Content-Type-Options "nosniff" always;
@@ -17,20 +42,48 @@ server {
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 
     location / {
-        proxy_pass http://127.0.0.1:80;
+        proxy_pass http://aurent_main_frontend;
         proxy_http_version 1.1;
+        proxy_set_header Connection "";
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_set_header X-Request-Id $request_id;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
     }
 }
 
-# HTTPS: certbot сам добавит server { listen 443 ... } — не копируйте блок вручную до выдачи сертификата.
-#   apt install nginx certbot python3-certbot-nginx
-#   cp deploy/nginx-host.conf.example /etc/nginx/sites-available/aurent-pos
-#   ln -sf /etc/nginx/sites-available/aurent-pos /etc/nginx/sites-enabled/
+# --- Ресторанный SPA (зал / кухня / админка заведения) ---
+server {
+    listen 80;
+    listen [::]:80;
+    server_name r-aurent.uz www.r-aurent.uz;
+
+    client_max_body_size 80m;
+
+    # return 301 https://$host$request_uri;
+
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location / {
+        proxy_pass http://aurent_restaurant_frontend;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Request-Id $request_id;
+        proxy_read_timeout 180s;
+        proxy_send_timeout 180s;
+    }
+}
+
+# HTTPS:
+#   apt install -y nginx certbot python3-certbot-nginx
 #   nginx -t && systemctl reload nginx
-#   certbot --nginx -d your-domain.uz
-# После certbot: раскомментируйте return 301 в блоке :80 выше.
+#   certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz

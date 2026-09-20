@@ -59,6 +59,9 @@ classify() {
     web-frontend|web-frontend/*)
       mark frontend
       ;;
+    restaurant-frontend|restaurant-frontend/*)
+      mark restaurant-frontend
+      ;;
     web-backend|web-backend/*)
       mark backend
       ;;

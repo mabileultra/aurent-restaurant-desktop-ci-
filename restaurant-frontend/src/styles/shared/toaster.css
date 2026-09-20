@@ -1,0 +1,18 @@
+/* Keep toasts inside the app window (desktop cashier clips otherwise). */
+.app-toaster {
+  inset: 12px !important;
+  overflow: hidden !important;
+  pointer-events: none !important;
+}
+
+.app-toaster [role='status'] {
+  max-width: min(420px, 100%) !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+.app-toaster [role='status'] > div {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}

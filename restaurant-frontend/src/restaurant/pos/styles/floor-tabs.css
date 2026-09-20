@@ -1,0 +1,44 @@
+.rst-floor-tabs {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+  overflow-x: auto;
+}
+
+.rst-floor-tabs__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rst-floor-tabs__name {
+  min-width: 0;
+}
+
+.rst-floor-tabs__count {
+  min-width: 1.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.08);
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.rst-floor-tabs__btn.is-active {
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-floor-tabs__btn.is-active .rst-floor-tabs__count {
+  background: rgb(27 18 8 / 0.18);
+  color: #1b1208;
+}

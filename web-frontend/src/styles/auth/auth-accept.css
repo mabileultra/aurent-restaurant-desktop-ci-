@@ -1,0 +1,9 @@
+.auth-accept {
+  min-height: 40vh;
+  padding: 2rem;
+  color: var(--text-primary, #e8edf5);
+}
+
+.auth-accept__error a {
+  color: var(--link, #7eb6ff);
+}

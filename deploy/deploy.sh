@@ -112,6 +112,7 @@ declare -A CONTAINER_NAMES=(
   [backend]=aurent-pos-backend
   [api-gateway]=aurent-api-gateway
   [frontend]=aurent-pos-frontend
+  [restaurant-frontend]=aurent-restaurant-frontend
 )
 
 recreate_service() {
@@ -320,6 +321,28 @@ ensure_secret RESTAURANT_DB_PASSWORD
 ensure_secret PHARMACY_DB_PASSWORD
 ensure_secret POS_INTERNAL_API_KEY
 ensure_secret GATEWAY_CONTEXT_SECRET
+
+# Domain split (aurent.uz ↔ r-aurent.uz): defaults if missing — never overwrite existing.
+ensure_env_default() {
+  local key="$1"
+  local value="$2"
+  if grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
+    return 0
+  fi
+  printf '\n%s=%s\n' "$key" "$value" >> "$ENV_FILE"
+  echo "==> Добавлен ${key} в ${ENV_FILE}"
+}
+
+ensure_env_default VITE_RESTAURANT_APP_URL 'https://r-aurent.uz'
+ensure_env_default VITE_MAIN_APP_URL 'https://aurent.uz'
+ensure_env_default RESTAURANT_HTTP_PORT '5174'
+ensure_env_default APP_CORS_ALLOWED_ORIGIN_PATTERNS 'https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*'
+
+# If HTTP_PORT still binds bare :80 while host nginx is expected for dual-domain, hint only.
+if grep -qE '^HTTP_PORT=80$' "$ENV_FILE" 2>/dev/null; then
+  echo "==> HINT: HTTP_PORT=80 — для r-aurent.uz + host nginx поставьте HTTP_PORT=127.0.0.1:8088 (см. deploy/nginx-host.conf.example)"
+fi
+
 if ! grep -q '^CRM_DB_NAME=' "$ENV_FILE" 2>/dev/null; then
   printf '\nCRM_DB_NAME=crm_db\nCRM_DB_USER=crm_user\n' >> "$ENV_FILE"
   echo "==> Добавлены CRM_DB_NAME / CRM_DB_USER в ${ENV_FILE}"
@@ -553,6 +576,12 @@ if ! recreate_service frontend; then
   exit 1
 fi
 
+echo "==> restaurant-frontend..."
+if ! recreate_service restaurant-frontend; then
+  compose_logs_tail restaurant-frontend 80
+  exit 1
+fi
+
 if [[ -n "${TELEGRAM_WEB_SUPPORT_BOT_TOKEN:-}" ]]; then
   echo "==> Telegram-бот поддержки веба (CRM/POS)..."
   compose up -d --build telegram-web-support-bot
@@ -575,6 +604,7 @@ SERVER_IP="$(hostname -I 2>/dev/null | awk '{print $1}')"
 echo ""
 echo "Проверка:"
 echo "  Web:       http://${SERVER_IP:-localhost}:${HTTP_PORT:-80}/"
+echo "  Restaurant:http://${SERVER_IP:-localhost}:${RESTAURANT_HTTP_PORT:-5174}/"
 echo "  API (gw):  http://${SERVER_IP:-localhost}:${API_PORT:-8080}/api/v1/actuator/health"
 echo "  Identity:  http://127.0.0.1:8081/api/v1/actuator/health (localhost)"
 echo "  Finance:   http://127.0.0.1:8082/api/v1/swagger-ui.html (localhost)"

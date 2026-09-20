@@ -130,31 +130,48 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 
 Локально: `cd desktop-electron && npm run dist && bash ../deploy/publish-desktop.sh`
 
-## SSL (HTTPS на хосте)
+## SSL + dual domain (aurent.uz + r-aurent.uz)
 
-Docker отдаёт HTTP на `:80`. Для **https://ваш-домен** — nginx на Ubuntu + Let's Encrypt:
+DNS A/AAAA на сервер: `aurent.uz`, `www.aurent.uz`, `r-aurent.uz`, `www.r-aurent.uz`.
+
+Docker слушает **только localhost**, host nginx — публичные 80/443:
+
+```env
+HTTP_PORT=127.0.0.1:8088
+RESTAURANT_HTTP_PORT=127.0.0.1:5174
+API_PORT=127.0.0.1:8080
+VITE_RESTAURANT_APP_URL=https://r-aurent.uz
+VITE_MAIN_APP_URL=https://aurent.uz
+APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*,http://*:*,https://*:*
+```
+
+После смены `VITE_*` нужен rebuild `frontend` + `restaurant-frontend`.
 
 ```bash
 apt install -y nginx certbot python3-certbot-nginx
 cp deploy/nginx-host.conf.example /etc/nginx/sites-available/aurent-pos
-# замените pos.example.uz на ваш домен
-nano /etc/nginx/sites-available/aurent-pos
 ln -sf /etc/nginx/sites-available/aurent-pos /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
 nginx -t && systemctl reload nginx
-certbot --nginx -d your-domain.uz
+certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz
 ```
 
-После certbot раскомментируйте `return 301 https://...` в блоке `:80` (см. шаблон).
+После certbot раскомментируйте `return 301 https://...` в блоках `:80` (см. шаблон).
 
-В `.env` обновите при необходимости:
+Проверка без полного деплоя:
+
+```bash
+curl -sI -H 'Host: r-aurent.uz' http://127.0.0.1:5174/ | head -5
+curl -sI -H 'Host: aurent.uz' http://127.0.0.1:8088/ | head -5
+```
+
+`MAIL_LOGIN_URL` при необходимости:
 
 ```env
-MAIL_LOGIN_URL=https://your-domain.uz/login?admin=1
-APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://your-domain.uz,http://localhost:*,http://127.0.0.1:*
+MAIL_LOGIN_URL=https://aurent.uz/login?admin=1
 ```
 
-Пересборка не обязательна для SSL — только nginx на хосте. Frontend внутри Docker подхватит `X-Forwarded-Proto: https` и отдаст HSTS.
+HSTS отдаёт контейнерный nginx фронтов по `X-Forwarded-Proto: https`.
 
 ---
 
@@ -189,6 +206,8 @@ bash deploy/update.sh
 
 | Порт | Назначение |
 |------|------------|
-| 80 | Веб + nginx `/api` |
-| 8080 | API напрямую (касса, health) |
+| 80 / 443 | Host nginx → aurent.uz + r-aurent.uz |
+| 127.0.0.1:8088 | Docker `frontend` (основной SPA) |
+| 127.0.0.1:5174 | Docker `restaurant-frontend` |
+| 127.0.0.1:8080 | API gateway (Electron / health) |
 | 5432 | Postgres (только внутри Docker) |

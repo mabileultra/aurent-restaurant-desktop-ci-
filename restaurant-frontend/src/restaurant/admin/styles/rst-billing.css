@@ -1,0 +1,528 @@
+/* Restaurant OS billing — dark shell, orange accent, compact layout */
+
+.rst-app .billing-page--rst {
+  --billing-ink: var(--rst-accent);
+  --billing-ink-soft: var(--rst-accent-hover);
+  --billing-mint: var(--rst-accent-soft);
+  --billing-line: var(--rst-line);
+  --billing-blue: var(--rst-reserved);
+  --billing-blue-soft: var(--rst-reserved-bg);
+  --billing-violet: var(--rst-accent);
+  --billing-violet-soft: var(--rst-accent-soft);
+  --billing-amber: var(--rst-occupied);
+  --billing-amber-soft: var(--rst-occupied-bg);
+  --billing-rose: var(--rst-blocked);
+  --billing-rose-soft: var(--rst-blocked-bg);
+  --billing-sky: var(--rst-reserved);
+  --billing-sky-soft: var(--rst-reserved-bg);
+  color: var(--rst-ink);
+}
+
+.rst-app .billing-page--rst .admin-page-title {
+  color: var(--rst-ink);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.rst-app .billing-page--rst .admin-page-subtitle {
+  color: var(--rst-muted);
+  margin-top: 0.15rem;
+}
+
+.rst-app .billing-page--rst .text-slate-500,
+.rst-app .billing-page--rst .text-slate-600,
+.rst-app .billing-page--rst .text-slate-700 {
+  color: var(--rst-muted) !important;
+}
+
+.rst-app .billing-page--rst .billing-alert--blocked {
+  border-color: transparent;
+  background: var(--rst-blocked-bg);
+  color: var(--rst-blocked);
+}
+
+/* Hero */
+.rst-app .billing-page--rst .billing-hero {
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: var(--rst-radius-lg);
+  border: 1px solid var(--rst-line);
+  background:
+    radial-gradient(ellipse at 92% 8%, rgb(255 122 26 / 0.18), transparent 46%),
+    linear-gradient(180deg, #1a2230, var(--rst-surface));
+  color: var(--rst-ink);
+  box-shadow: none;
+}
+
+.rst-app .billing-page--rst .billing-hero__meta {
+  margin-bottom: 0.85rem;
+}
+
+.rst-app .billing-page--rst .billing-chip {
+  background: var(--rst-surface-2);
+  border: 1px solid var(--rst-line);
+  color: var(--rst-muted);
+  border-radius: 999px;
+}
+
+.rst-app .billing-page--rst .billing-chip--ok {
+  background: var(--rst-ok-soft);
+  border-color: transparent;
+  color: var(--rst-ok);
+}
+
+.rst-app .billing-page--rst .billing-chip--accent {
+  background: var(--rst-accent-soft);
+  border-color: transparent;
+  color: var(--rst-accent);
+}
+
+.rst-app .billing-page--rst .billing-hero__label {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-hero__balance {
+  color: var(--rst-ink);
+  font-size: clamp(1.85rem, 3.2vw, 2.55rem);
+}
+
+.rst-app .billing-page--rst .billing-hero__hint,
+.rst-app .billing-page--rst .billing-hero__period {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-hero__period-value {
+  color: var(--rst-ink);
+  font-size: 1.25rem;
+}
+
+.rst-app .billing-page--rst .billing-hero__side {
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: rgb(0 0 0 / 0.22);
+  border: 1px solid var(--rst-line);
+}
+
+.rst-app .billing-page--rst .billing-progress {
+  background: rgb(255 255 255 / 0.08);
+}
+
+.rst-app .billing-page--rst .billing-progress > span {
+  background: linear-gradient(90deg, var(--rst-accent), #ffb070);
+}
+
+/* Buttons — no lift, solid accent */
+.rst-app .billing-page--rst .billing-btn {
+  transform: none;
+  border: 0;
+}
+
+.rst-app .billing-page--rst .billing-btn:hover:not(:disabled) {
+  transform: none;
+}
+
+.rst-app .billing-page--rst .billing-btn--primary,
+.rst-app .billing-page--rst .billing-btn--accent {
+  background: var(--rst-accent);
+  color: #1b1208;
+  font-weight: 700;
+}
+
+.rst-app .billing-page--rst .billing-btn--primary:hover:not(:disabled),
+.rst-app .billing-page--rst .billing-btn--accent:hover:not(:disabled) {
+  background: var(--rst-accent-hover);
+}
+
+.rst-app .billing-page--rst .billing-btn--accent {
+  margin-top: 0.15rem;
+}
+
+.rst-app .billing-page--rst .billing-btn--danger {
+  background: var(--rst-blocked-bg);
+  color: var(--rst-blocked);
+}
+
+.rst-app .billing-page--rst .billing-btn--danger:hover:not(:disabled) {
+  background: rgb(255 69 58 / 0.24);
+}
+
+/* Compact metrics strip */
+.rst-app .billing-page--rst .billing-metrics--compact {
+  gap: 0.65rem;
+}
+
+.rst-app .billing-page--rst .billing-metric {
+  background: var(--rst-surface);
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  box-shadow: none;
+  color: var(--rst-ink);
+  padding: 0.8rem 0.95rem;
+}
+
+.rst-app .billing-page--rst .billing-metric__label,
+.rst-app .billing-page--rst .billing-metric__sub {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-metric__value {
+  color: var(--rst-ink);
+  font-size: 1.05rem;
+}
+
+/* Panels */
+.rst-app .billing-page--rst .billing-panel,
+.rst-app .billing-page--rst .billing-topup {
+  background: var(--rst-surface);
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  box-shadow: none;
+  color: var(--rst-ink);
+}
+
+.rst-app .billing-page--rst .billing-panel__title,
+.rst-app .billing-page--rst .billing-topup__title {
+  color: var(--rst-ink);
+}
+
+.rst-app .billing-page--rst .billing-panel__sub,
+.rst-app .billing-page--rst .billing-field-label,
+.rst-app .billing-page--rst .billing-note {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-note--warn {
+  color: var(--rst-occupied);
+}
+
+.rst-app .billing-page--rst .billing-link {
+  color: var(--rst-accent);
+  text-decoration: none;
+}
+
+.rst-app .billing-page--rst .billing-link:hover {
+  text-decoration: underline;
+  color: var(--rst-accent-hover);
+}
+
+.rst-app .billing-page--rst .billing-tab {
+  background: transparent;
+  border: 1px solid var(--rst-line);
+  color: var(--rst-muted);
+  border-radius: 10px;
+}
+
+.rst-app .billing-page--rst .billing-tab:hover {
+  color: var(--rst-ink);
+  background: var(--rst-surface-2);
+}
+
+.rst-app .billing-page--rst .billing-tab--active,
+.rst-app .billing-page--rst .billing-tab--active.billing-tab--blue,
+.rst-app .billing-page--rst .billing-tab--active.billing-tab--violet,
+.rst-app .billing-page--rst .billing-tab--active.billing-tab--amber {
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-app .billing-page--rst .billing-table th {
+  color: var(--rst-muted);
+  border-bottom-color: var(--rst-line);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rst-app .billing-page--rst .billing-table td {
+  color: var(--rst-ink);
+  border-bottom-color: var(--rst-line);
+}
+
+.rst-app .billing-page--rst .billing-table tbody tr:hover {
+  background: var(--rst-surface-2);
+}
+
+.rst-app .billing-page--rst .billing-table tbody tr.billing-row--selected {
+  background: var(--rst-accent-soft);
+}
+
+.rst-app .billing-page--rst .billing-check input {
+  accent-color: var(--rst-accent);
+}
+
+.rst-app .billing-page--rst .billing-icon-btn {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-icon-btn:hover:not(:disabled) {
+  color: var(--rst-blocked);
+  background: var(--rst-blocked-bg);
+}
+
+.rst-app .billing-page--rst .billing-amount--plus {
+  color: var(--rst-ok);
+}
+
+.rst-app .billing-page--rst .billing-amount--minus {
+  color: var(--rst-ink);
+}
+
+.rst-app .billing-page--rst .billing-badge--TOP_UP,
+.rst-app .billing-page--rst .billing-badge--BONUS,
+.rst-app .billing-page--rst .billing-badge--ACTIVE,
+.rst-app .billing-page--rst .billing-badge--TRIAL {
+  background: var(--rst-ok-soft);
+  color: var(--rst-ok);
+}
+
+.rst-app .billing-page--rst .billing-badge--CHARGE {
+  background: var(--rst-surface-2);
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-badge--MODULE {
+  background: var(--rst-accent-soft);
+  color: var(--rst-accent);
+}
+
+.rst-app .billing-page--rst .billing-badge--ADJUST,
+.rst-app .billing-page--rst .billing-badge--GRACE {
+  background: var(--rst-occupied-bg);
+  color: var(--rst-occupied);
+}
+
+.rst-app .billing-page--rst .billing-badge--BLOCKED {
+  background: var(--rst-blocked-bg);
+  color: var(--rst-blocked);
+}
+
+.rst-app .billing-page--rst .billing-preset {
+  background: var(--rst-surface-2);
+  border: 1px solid var(--rst-line);
+  color: var(--rst-ink);
+  border-radius: 10px;
+}
+
+.rst-app .billing-page--rst .billing-preset:hover {
+  border-color: rgb(255 122 26 / 0.45);
+}
+
+.rst-app .billing-page--rst .billing-preset--active {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.25);
+}
+
+.rst-app .billing-page--rst .billing-input,
+.rst-app .billing-page--rst .billing-select,
+.rst-app .billing-page--rst .billing-textarea {
+  background: var(--rst-surface-2);
+  border: 1px solid var(--rst-line);
+  color: var(--rst-ink);
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.rst-app .billing-page--rst .billing-input:focus,
+.rst-app .billing-page--rst .billing-select:focus,
+.rst-app .billing-page--rst .billing-textarea:focus {
+  outline: none;
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft);
+}
+
+.rst-app .billing-page--rst .billing-drop {
+  background: var(--rst-surface-2);
+  border-color: var(--rst-line);
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-manual {
+  border-top-color: var(--rst-line);
+}
+
+/* Slim footer */
+.rst-app .billing-page--rst .billing-footer--slim {
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--rst-line);
+  border-radius: 0;
+  padding: 0.75rem 0.15rem 0;
+  gap: 0.85rem 1.75rem;
+}
+
+.rst-app .billing-page--rst .billing-footer__slim-text {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-footer__slim-text svg {
+  color: var(--rst-accent);
+}
+
+.rst-app .billing-page--rst .billing-detail__amount,
+.rst-app .billing-page--rst .billing-detail__grid dd {
+  color: var(--rst-ink);
+}
+
+.rst-app .billing-page--rst .billing-detail__date,
+.rst-app .billing-page--rst .billing-detail__grid dt,
+.rst-app .billing-page--rst .billing-detail__label {
+  color: var(--rst-muted);
+}
+
+.rst-app .billing-page--rst .billing-detail__desc {
+  border-top-color: var(--rst-line);
+}
+
+/* Modals under RST theme (dark class on <html>) */
+html.rst-theme .billing-pay-modal,
+html.rst-theme .billing-confirm-modal,
+html.rst-theme .billing-detail-modal {
+  background: var(--rst-surface, #151922) !important;
+  border-color: var(--rst-line, #2a3344) !important;
+  color: var(--rst-ink, #f4f6fb);
+}
+
+html.rst-theme .billing-pay-modal__body {
+  background: transparent !important;
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-pay-modal__kicker,
+html.rst-theme .billing-field-label,
+html.rst-theme .billing-pay-qr__hint,
+html.rst-theme .billing-pay-modal__note {
+  color: #8b93a7;
+}
+
+html.rst-theme .billing-pay-modal__title,
+html.rst-theme .billing-pay-qr__title,
+html.rst-theme .billing-detail__amount,
+html.rst-theme .billing-detail__grid dd,
+html.rst-theme .billing-amount--minus {
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-amount--plus {
+  color: #30d158;
+}
+
+html.rst-theme .billing-detail__date,
+html.rst-theme .billing-detail__grid dt,
+html.rst-theme .billing-detail__label {
+  color: #8b93a7;
+}
+
+html.rst-theme .billing-detail__desc {
+  border-top-color: #2a3344;
+}
+
+html.rst-theme .billing-pay-method {
+  background: #1c2230;
+  border-color: #2a3344;
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-pay-method--active {
+  border-color: #ff7a1a;
+  box-shadow: 0 0 0 3px rgb(255 122 26 / 0.18);
+  background: rgb(255 122 26 / 0.12);
+}
+
+html.rst-theme .billing-pay-app--soon,
+html.rst-theme .billing-pay-app--payme {
+  background: #1c2230;
+  color: #f4f6fb;
+  border-color: #2a3344;
+}
+
+html.rst-theme .billing-pay-qr {
+  background: #1c2230;
+  border-color: #2a3344;
+}
+
+html.rst-theme .billing-input,
+html.rst-theme .billing-select,
+html.rst-theme .billing-textarea {
+  background: #1c2230;
+  border-color: #2a3344;
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-input:focus,
+html.rst-theme .billing-select:focus,
+html.rst-theme .billing-textarea:focus {
+  outline: none;
+  border-color: #ff7a1a;
+  box-shadow: 0 0 0 3px rgb(255 122 26 / 0.18);
+}
+
+html.rst-theme .billing-preset {
+  background: #1c2230;
+  border-color: #2a3344;
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-preset--active {
+  border-color: #ff7a1a;
+  background: rgb(255 122 26 / 0.18);
+  color: #f4f6fb;
+}
+
+html.rst-theme .billing-btn--accent {
+  background: #ff7a1a;
+  color: #1b1208;
+  font-weight: 700;
+}
+
+html.rst-theme .billing-btn--accent:hover:not(:disabled) {
+  background: #ff8d38;
+}
+
+html.rst-theme .billing-badge--TOP_UP,
+html.rst-theme .billing-badge--BONUS,
+html.rst-theme .billing-badge--ACTIVE,
+html.rst-theme .billing-badge--TRIAL {
+  background: rgb(48 209 88 / 0.16);
+  color: #30d158;
+}
+
+html.rst-theme .billing-badge--CHARGE {
+  background: #1c2230;
+  color: #8b93a7;
+}
+
+html.rst-theme .billing-badge--MODULE {
+  background: rgb(255 122 26 / 0.18);
+  color: #ff7a1a;
+}
+
+html.rst-theme .billing-badge--ADJUST,
+html.rst-theme .billing-badge--GRACE {
+  background: rgb(255 159 10 / 0.12);
+  color: #ff9f0a;
+}
+
+html.rst-theme .billing-badge--BLOCKED {
+  background: rgb(255 69 58 / 0.14);
+  color: #ff453a;
+}
+
+html.rst-theme .billing-confirm-modal .text-slate-700,
+html.rst-theme .billing-confirm-modal .dark\:text-slate-200 {
+  color: #f4f6fb !important;
+}
+
+html.rst-theme .billing-confirm-modal .text-slate-500,
+html.rst-theme .billing-confirm-modal .dark\:text-slate-400 {
+  color: #8b93a7 !important;
+}
+
+@media (max-width: 1100px) {
+  .rst-app .billing-page--rst .billing-hero {
+    grid-template-columns: 1fr;
+  }
+}

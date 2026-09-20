@@ -22,7 +22,11 @@ export function shouldShowCashierCompanyCodeField() {
 
 export function isAuthPage(pathname = '') {
   const p = pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
-  return p.startsWith(CASHIER_LOGIN_PATH) || p.startsWith('/login');
+  return (
+    p.startsWith(CASHIER_LOGIN_PATH)
+    || p.startsWith('/login')
+    || p.startsWith('/auth/accept')
+  );
 }
 
 export function adminLoginPath() {

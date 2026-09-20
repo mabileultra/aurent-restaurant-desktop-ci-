@@ -67,8 +67,12 @@ function loadDesktopConfig({ isPackaged }) {
   const apiUrl = `${backendOrigin}/api/v1`;
   const uiMode = resolveUiMode({ userConfig: user });
 
+  let restaurantUrl = String(user.restaurantUrl || envUrls.restaurantUrl || '').trim();
+  restaurantUrl = restaurantUrl.replace(/\/$/, '');
+
   return {
     cashierUrl,
+    restaurantUrl,
     backendOrigin,
     apiUrl,
     apiHealthUrl: user.apiHealthUrl || buildHealthUrl(backendOrigin),

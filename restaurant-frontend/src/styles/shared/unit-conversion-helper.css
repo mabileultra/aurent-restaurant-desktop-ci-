@@ -1,0 +1,103 @@
+/* Подсказка конвертации единиц (модал веса) */
+.unit-conversion-helper {
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: 10px;
+  background: var(--pos-surface-hover, #eef2f8);
+  font-size: 0.75rem;
+  color: var(--pos-text, #1e3a5f);
+}
+
+.unit-conversion-helper__title {
+  margin: 0 0 0.5rem;
+  font-weight: 700;
+  color: var(--pos-text, #1e3a5f);
+}
+
+.unit-conversion-helper__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.unit-conversion-helper__row + .unit-conversion-helper__row {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--pos-border, #d1d9e6);
+}
+
+.unit-conversion-helper__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 7rem;
+  flex: 1;
+}
+
+.unit-conversion-helper__field--qty {
+  width: 6rem;
+  flex: 0 0 auto;
+}
+
+.unit-conversion-helper__label {
+  color: var(--pos-muted, #5a6f8c);
+}
+
+.unit-conversion-helper__input {
+  width: 100%;
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--pos-border, #d1d9e6);
+  border-radius: 8px;
+  background: var(--pos-surface-elevated, #fbfcfe);
+  color: var(--pos-text, #1e3a5f);
+}
+
+.unit-conversion-helper__input:focus {
+  outline: none;
+  border-color: var(--pos-green, #006847);
+  box-shadow: 0 0 0 3px var(--pos-green-soft, rgb(0 104 71 / 0.12));
+}
+
+.unit-conversion-helper__apply {
+  min-height: 34px;
+  padding: 0.375rem 0.75rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--pos-green, #006847);
+  color: var(--pos-on-green, #fff);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.unit-conversion-helper__apply:hover:not(:disabled) {
+  background: var(--pos-green-hover, #005538);
+}
+
+.unit-conversion-helper__apply:disabled {
+  background: var(--pos-surface-active, #e4eaf3);
+  color: var(--pos-muted, #5a6f8c);
+  cursor: not-allowed;
+}
+
+.unit-conversion-helper__coil-hint {
+  margin: 0;
+  padding-bottom: 0.375rem;
+  color: var(--pos-muted, #5a6f8c);
+}
+
+/* BaseSelect labels inside helper */
+.unit-conversion-helper .base-select__label,
+.unit-conversion-helper label {
+  color: var(--pos-muted, #5a6f8c);
+}
+
+html.cashier-theme--dark .unit-conversion-helper .base-select__trigger,
+.cashier-app.cashier-app--terminal .unit-conversion-helper .base-select__trigger {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: var(--pos-border, #2a3548);
+  color: var(--pos-text, #f1f5f9);
+}
