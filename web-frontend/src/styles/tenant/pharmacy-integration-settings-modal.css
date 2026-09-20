@@ -1,3 +1,14 @@
+.pharm-int-settings__lead {
+  margin: 0 0 4px;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgb(71 85 105);
+}
+
+.dark .pharm-int-settings__lead {
+  color: rgb(148 163 184);
+}
+
 .pharm-int-settings__section + .pharm-int-settings__section {
   margin-top: 8px;
   padding-top: 12px;

@@ -18,4 +18,6 @@ public interface PharmacyIntegrationSettingsService {
   MarkingVerifyResponse verifyMarking(User cashier, Integer storeId, String code);
 
   void assertPharmacyStore(Store store);
+
+  void assertAslMarkingStore(Store store);
 }

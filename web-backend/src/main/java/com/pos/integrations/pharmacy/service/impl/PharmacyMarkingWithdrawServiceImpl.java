@@ -40,7 +40,7 @@ public class PharmacyMarkingWithdrawServiceImpl implements PharmacyMarkingWithdr
     }
     Store store = storeRepository.findById(request.storeId())
       .orElseThrow(() -> new ResourceNotFoundException("Store not found"));
-    settingsService.assertPharmacyStore(store);
+    settingsService.assertAslMarkingStore(store);
 
     StorePharmacyIntegration settings = integrationRepository.findById(store.getId())
       .orElseGet(() -> StorePharmacyIntegration.builder()

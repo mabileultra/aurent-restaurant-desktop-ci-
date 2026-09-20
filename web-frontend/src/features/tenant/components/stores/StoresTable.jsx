@@ -2,6 +2,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { storeSupportsAslMarking } from '../../utils/storeAslMarkingSupport';
 
 export default function StoresTable({
   t,
@@ -81,7 +82,7 @@ export default function StoresTable({
                     onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
                     actions={[
                       { label: t('common.edit'), onClick: () => onEdit(row) },
-                      ...(row.businessType === 'PHARMACY' && onPharmacyIntegration
+                      ...(storeSupportsAslMarking(row.businessType) && onPharmacyIntegration
                         ? [{
                           label: t('stores.pharmacyIntegration.menu'),
                           onClick: () => onPharmacyIntegration(row),

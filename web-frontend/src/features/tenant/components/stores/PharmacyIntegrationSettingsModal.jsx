@@ -1,9 +1,11 @@
 import { X } from 'lucide-react';
 import { usePharmacyIntegrationSettings } from '../../hooks/usePharmacyIntegrationSettings';
+import { storeIsPharmacy } from '../../utils/storeAslMarkingSupport';
 import '../../../../styles/tenant/pharmacy-integration-settings-modal.css';
 
 export default function PharmacyIntegrationSettingsModal({ open, store, onClose }) {
   const p = usePharmacyIntegrationSettings({ store, open, onSaved: onClose });
+  const pharmacyStore = storeIsPharmacy(store?.businessType);
 
   if (!open || !store) return null;
 
@@ -22,7 +24,9 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
           <div>
             <h2 id="pharm-int-settings-title" className="text-lg font-semibold text-slate-900 dark:text-white">
-              {p.t('stores.pharmacyIntegration.title')}
+              {pharmacyStore
+                ? p.t('stores.pharmacyIntegration.title')
+                : p.t('stores.pharmacyIntegration.titleRetail')}
             </h2>
             <p className="text-sm text-slate-500">{store.name}</p>
           </div>
@@ -37,6 +41,12 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
               <p className="text-sm text-slate-500">{p.t('common.loading')}</p>
             ) : (
               <>
+                <p className="pharm-int-settings__lead">
+                  {pharmacyStore
+                    ? p.t('stores.pharmacyIntegration.leadPharmacy')
+                    : p.t('stores.pharmacyIntegration.leadRetail')}
+                </p>
+
                 <section className="pharm-int-settings__section">
                   <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.aslTitle')}</h3>
                   <label className="pharm-int-settings__check">
@@ -68,25 +78,27 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
                   )}
                 </section>
 
-                <section className="pharm-int-settings__section">
-                  <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.dmedTitle')}</h3>
-                  <label className="pharm-int-settings__check">
+                {pharmacyStore ? (
+                  <section className="pharm-int-settings__section">
+                    <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.dmedTitle')}</h3>
+                    <label className="pharm-int-settings__check">
+                      <input
+                        type="checkbox"
+                        checked={p.form.dmedEnabled}
+                        onChange={(e) => p.updateField('dmedEnabled', e.target.checked)}
+                      />
+                      <span>{p.t('stores.pharmacyIntegration.dmedEnabled')}</span>
+                    </label>
+                    <label className="pharm-int-settings__label">{p.t('stores.pharmacyIntegration.dmedExternalId')}</label>
                     <input
-                      type="checkbox"
-                      checked={p.form.dmedEnabled}
-                      onChange={(e) => p.updateField('dmedEnabled', e.target.checked)}
+                      className="pharm-int-settings__input"
+                      value={p.form.dmedExternalId}
+                      onChange={(e) => p.updateField('dmedExternalId', e.target.value)}
+                      placeholder={p.t('stores.pharmacyIntegration.dmedExternalIdPh')}
                     />
-                    <span>{p.t('stores.pharmacyIntegration.dmedEnabled')}</span>
-                  </label>
-                  <label className="pharm-int-settings__label">{p.t('stores.pharmacyIntegration.dmedExternalId')}</label>
-                  <input
-                    className="pharm-int-settings__input"
-                    value={p.form.dmedExternalId}
-                    onChange={(e) => p.updateField('dmedExternalId', e.target.value)}
-                    placeholder={p.t('stores.pharmacyIntegration.dmedExternalIdPh')}
-                  />
-                  <p className="pharm-int-settings__hint">{p.t('stores.pharmacyIntegration.dmedHint')}</p>
-                </section>
+                    <p className="pharm-int-settings__hint">{p.t('stores.pharmacyIntegration.dmedHint')}</p>
+                  </section>
+                ) : null}
               </>
             )}
           </div>

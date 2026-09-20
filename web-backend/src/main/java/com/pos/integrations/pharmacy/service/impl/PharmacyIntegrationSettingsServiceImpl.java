@@ -13,6 +13,7 @@ import com.pos.integrations.pharmacy.repository.StorePharmacyIntegrationReposito
 import com.pos.integrations.pharmacy.service.PharmacyIntegrationSettingsService;
 import com.pos.integrations.pharmacy.support.AslApiKeySupport;
 import com.pos.integrations.pharmacy.support.AslBelgisiMarkingClient;
+import com.pos.integrations.pharmacy.support.AslMarkingStoreSupport;
 import com.pos.integrations.pharmacy.support.PharmacyIntegrationDefaults;
 import com.pos.repository.StoreRepository;
 import com.pos.service.support.CashierSaleSupport;
@@ -47,7 +48,7 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   public AdminPharmacyIntegrationResponse saveAdminSettings(Integer storeId, SavePharmacyIntegrationRequest request) {
     Store store = requireStore(storeId);
     tenantAccess.assertCanAccessStore(store);
-    assertPharmacyStore(store);
+    assertAslMarkingStore(store);
 
     StorePharmacyIntegration entity = integrationRepository.findById(storeId)
       .orElseGet(() -> newIntegration(store));
@@ -58,8 +59,14 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
       entity.setAslApiKey(AslApiKeySupport.bearerToken(request.aslApiKey()));
       entity.setAslEnabled(true);
     }
-    entity.setDmedEnabled(request.dmedEnabled());
-    entity.setDmedExternalId(trimToNull(request.dmedExternalId()));
+    if (AslMarkingStoreSupport.isPharmacy(store.getBusinessType())) {
+      entity.setDmedEnabled(request.dmedEnabled());
+      entity.setDmedExternalId(trimToNull(request.dmedExternalId()));
+    } else {
+      // DMED только для аптек — у продуктовых/универсал/строй не включаем.
+      entity.setDmedEnabled(false);
+      entity.setDmedExternalId(null);
+    }
     entity.setUpdatedAt(Instant.now());
 
     integrationRepository.save(entity);
@@ -98,9 +105,20 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
     if (store == null) {
       throw new BadRequestException("Store is required");
     }
-    String type = store.getBusinessType();
-    if (!StringUtils.hasText(type) || !"PHARMACY".equalsIgnoreCase(type.trim())) {
+    if (!AslMarkingStoreSupport.isPharmacy(store.getBusinessType())) {
       throw new BadRequestException("Pharmacy integrations are available only for PHARMACY stores");
+    }
+  }
+
+  @Override
+  public void assertAslMarkingStore(Store store) {
+    if (store == null) {
+      throw new BadRequestException("Store is required");
+    }
+    if (!AslMarkingStoreSupport.supportsAslMarking(store.getBusinessType())) {
+      throw new BadRequestException(
+        "ASL Belgisi marking is available for pharmacy, grocery, universal and construction stores"
+      );
     }
   }
 
