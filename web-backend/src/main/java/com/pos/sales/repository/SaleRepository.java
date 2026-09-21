@@ -54,9 +54,10 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         @Param("end") Instant end
     );
 
+    // Only one bag (items) — fetching items.lotAllocations in the same graph
+    // triggers Hibernate "cannot simultaneously fetch multiple bags".
     @EntityGraph(attributePaths = {
-        "cashier", "store", "store.company", "items", "items.product",
-        "items.lotAllocations", "items.lotAllocations.lot"
+        "cashier", "store", "store.company", "items", "items.product"
     })
     @Query("""
         SELECT s FROM Sale s
