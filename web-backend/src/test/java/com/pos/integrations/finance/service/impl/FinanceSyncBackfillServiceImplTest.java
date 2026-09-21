@@ -2,6 +2,7 @@ package com.pos.integrations.finance.service.impl;
 
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
 import com.pos.inventory.repository.StockReceiptRepository;
+import com.pos.sales.repository.SaleRepository;
 import com.pos.sales.repository.ZReportRepository;
 import com.pos.service.support.TenantAccessSupport;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,6 +31,9 @@ class FinanceSyncBackfillServiceImplTest {
     private StockReceiptRepository stockReceiptRepository;
 
     @Mock
+    private SaleRepository saleRepository;
+
+    @Mock
     private FinanceIntegrationPublisher integrationPublisher;
 
     @Mock
@@ -41,6 +46,7 @@ class FinanceSyncBackfillServiceImplTest {
         service = new FinanceSyncBackfillServiceImpl(
             zReportRepository,
             stockReceiptRepository,
+            saleRepository,
             integrationPublisher,
             tenantAccess
         );
@@ -49,10 +55,15 @@ class FinanceSyncBackfillServiceImplTest {
 
     @Test
     void doesNotEnqueueZReportsWhenBackfillTypeIsSales() {
+        when(saleRepository.findCompletedSalesForFinanceBackfill(any(), any(), any(), any(), any()))
+            .thenReturn(List.of());
+
         var response = service.backfill(LocalDate.of(2026, 9, 1), LocalDate.of(2026, 9, 19), Set.of("sales"));
 
         assertEquals(0, response.zReportsEnqueued());
+        assertEquals(0, response.salesEnqueued());
         verify(zReportRepository, never()).findForFinanceBackfill(any(), any(), any());
         verify(integrationPublisher, never()).publishZReportIncomeAfterCommit(any());
+        verify(saleRepository).findCompletedSalesForFinanceBackfill(any(), any(), any(), any(), any());
     }
 }
