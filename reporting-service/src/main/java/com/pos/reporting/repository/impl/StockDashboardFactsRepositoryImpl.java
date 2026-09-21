@@ -37,6 +37,15 @@ public class StockDashboardFactsRepositoryImpl implements StockDashboardFactsRep
     }
 
     @Override
+    public Object[] restockTotals(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
+        Query query = entityManager.createNativeQuery(
+            sqlResourceLoader.load("sql/stock/dashboard-restock-totals.sql")
+        );
+        bindPeriod(query, companyId, from, to, storeId);
+        return (Object[]) query.getSingleResult();
+    }
+
+    @Override
     public long countLowStockSkus(Integer companyId) {
         Query query = entityManager.createNativeQuery(
             sqlResourceLoader.load("sql/stock/low-stock-count.sql")
@@ -51,6 +60,16 @@ public class StockDashboardFactsRepositoryImpl implements StockDashboardFactsRep
     public List<Object[]> dailyWriteOffUnits(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
         Query query = entityManager.createNativeQuery(
             sqlResourceLoader.load("sql/stock/dashboard-daily-write-off.sql")
+        );
+        bindPeriod(query, companyId, from, to, storeId);
+        return query.getResultList();
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object[]> dailyRestockUnits(Integer companyId, LocalDate from, LocalDate to, Integer storeId) {
+        Query query = entityManager.createNativeQuery(
+            sqlResourceLoader.load("sql/stock/dashboard-daily-restock.sql")
         );
         bindPeriod(query, companyId, from, to, storeId);
         return query.getResultList();

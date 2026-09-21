@@ -38,6 +38,17 @@ public class StockDashboardServiceImpl implements StockDashboardService {
         );
         long receivedUnits = NativeAggregateRowSupport.toLong(receivedTotals, 0);
         BigDecimal receivedCost = NativeAggregateRowSupport.toBigDecimal(receivedTotals, 1);
+        List<Object[]> dailyReceived = stockReceiptFactRepository.dailyReceivedUnits(companyId, start, end, storeId);
+
+        // Если фактур за период нет — берём RESTOCK из движений (как в оборотной ведомости).
+        if (receivedUnits == 0 && receivedCost.compareTo(BigDecimal.ZERO) == 0) {
+            Object[] restockTotals = NativeAggregateRowSupport.normalize(
+                stockDashboardFactsRepository.restockTotals(companyId, start, end, storeId)
+            );
+            receivedUnits = NativeAggregateRowSupport.toLong(restockTotals, 0);
+            receivedCost = NativeAggregateRowSupport.toBigDecimal(restockTotals, 1);
+            dailyReceived = stockDashboardFactsRepository.dailyRestockUnits(companyId, start, end, storeId);
+        }
 
         long soldUnits = saleItemFactRepository.sumSoldUnits(companyId, start, end, storeId);
 
@@ -71,7 +82,7 @@ public class StockDashboardServiceImpl implements StockDashboardService {
             StockDashboardDailyMerger.merge(
                 start,
                 end,
-                stockReceiptFactRepository.dailyReceivedUnits(companyId, start, end, storeId),
+                dailyReceived,
                 saleItemFactRepository.dailySoldUnits(companyId, start, end, storeId),
                 dailyWriteOff
             )

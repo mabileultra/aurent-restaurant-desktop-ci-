@@ -4,12 +4,17 @@ import com.pos.finance.dto.report.CashFlowDailyDto;
 import com.pos.finance.dto.report.CashFlowReportDto;
 import com.pos.finance.dto.report.ProfitLossLineDto;
 import com.pos.finance.dto.report.ProfitLossReportDto;
+import com.pos.finance.entity.ExpenseSourceType;
+import com.pos.finance.entity.LedgerEntryType;
 import com.pos.finance.repository.AccountTransferRepository;
 import com.pos.finance.repository.ExpenseRepository;
+import com.pos.finance.repository.IncomeRepository;
+import com.pos.finance.repository.SupplierPayableEntryRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.ReportService;
 import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.NetProfitCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +33,8 @@ public class ReportServiceImpl implements ReportService {
 
     private final CashRegisterIncomeReader cashRegisterIncomeReader;
     private final ExpenseRepository expenseRepository;
+    private final IncomeRepository incomeRepository;
+    private final SupplierPayableEntryRepository payableRepository;
     private final AccountTransferRepository transferRepository;
     private final CompanyBootstrapSupport bootstrapSupport;
 
@@ -40,7 +47,22 @@ public class ReportServiceImpl implements ReportService {
 
         BigDecimal totalIncome = cashRegisterIncomeReader.sumIncome(companyId, periodFrom, periodTo, storeId);
         BigDecimal totalExpense = expenseRepository.sumByPeriod(companyId, periodFrom, periodTo, storeId);
-        BigDecimal netProfit = totalIncome.subtract(totalExpense);
+        BigDecimal purchaseCash = expenseRepository.sumBySourceAndPeriod(
+            companyId, ExpenseSourceType.PURCHASE, periodFrom, periodTo, storeId
+        );
+        BigDecimal creditPurchase = payableRepository.sumChargesByPeriod(
+            companyId, LedgerEntryType.CHARGE, periodFrom, periodTo, storeId
+        );
+        BigDecimal cogs = incomeRepository.sumCostByPeriod(companyId, periodFrom, periodTo, storeId);
+        BigDecimal supplierPayments = expenseRepository.sumBySourceAndPeriod(
+            companyId, ExpenseSourceType.SUPPLIER_PAYMENT, periodFrom, periodTo, storeId
+        );
+        BigDecimal grossProfit = cogs.signum() > 0
+            ? totalIncome.subtract(cogs)
+            : totalIncome.subtract(NetProfitCalculator.purchaseTotal(purchaseCash, creditPurchase));
+        BigDecimal netProfit = NetProfitCalculator.calculate(
+            totalIncome, totalExpense, purchaseCash, creditPurchase, cogs, supplierPayments
+        );
 
         List<ProfitLossLineDto> expenseByCategory = expenseRepository
             .sumByCategory(companyId, periodFrom, periodTo, storeId).stream()
@@ -52,7 +74,7 @@ public class ReportServiceImpl implements ReportService {
             periodTo,
             totalIncome,
             totalExpense,
-            totalIncome,
+            grossProfit,
             netProfit,
             List.of(new ProfitLossLineDto("Все доходы", totalIncome)),
             expenseByCategory

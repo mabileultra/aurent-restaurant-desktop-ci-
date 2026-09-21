@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -39,6 +40,7 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             request.companyId(), IncomeSourceType.SALE, saleSourceId
         )) {
             LogUtil.info(SaleIntegrationServiceImpl.class, "Sale income already recorded: saleId={}", request.saleId());
+            applyCostIfMissing(request, saleSourceId);
             duplicateZReportIncomeReversal.reverseIfSaleLedgerExists(request.companyId());
             return;
         }
@@ -49,9 +51,15 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
         BigDecimal cashAmount = nullSafe(request.cashAmount());
         BigDecimal cardAmount = nullSafe(request.cardAmount());
         BigDecimal totalAmount = nullSafe(request.totalAmount());
+        BigDecimal costAmount = nullSafe(request.costAmount());
+        boolean costAttached = false;
 
         if (cashAmount.signum() > 0) {
-            recordPart(request, salesCategory, txDate, cashAmount, PaymentMethod.CASH, AccountType.CASH, saleSourceId);
+            recordPart(
+                request, salesCategory, txDate, cashAmount, PaymentMethod.CASH, AccountType.CASH,
+                saleSourceId, costAttached ? BigDecimal.ZERO : costAmount
+            );
+            costAttached = true;
         }
         if (cardAmount.signum() > 0) {
             recordPart(
@@ -61,19 +69,49 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
                 cardAmount,
                 PaymentMethod.CARD,
                 resolveCardAccountType(request.cardType()),
-                saleSourceId
+                saleSourceId,
+                costAttached ? BigDecimal.ZERO : costAmount
             );
+            costAttached = true;
         }
         if (cashAmount.signum() == 0 && cardAmount.signum() == 0 && totalAmount.signum() > 0) {
             PaymentMethod method = mapPaymentMethod(request.paymentMethod());
             AccountType accountType = method == PaymentMethod.CARD ? AccountType.CARD : AccountType.CASH;
-            recordPart(request, salesCategory, txDate, totalAmount, method, accountType, saleSourceId);
+            recordPart(
+                request, salesCategory, txDate, totalAmount, method, accountType,
+                saleSourceId, costAttached ? BigDecimal.ZERO : costAmount
+            );
         }
         duplicateZReportIncomeReversal.reverseIfSaleLedgerExists(request.companyId());
     }
 
     private static BigDecimal nullSafe(BigDecimal value) {
         return value != null ? value : BigDecimal.ZERO;
+    }
+
+    private void applyCostIfMissing(SaleIncomeRequest request, String saleSourceId) {
+        BigDecimal costAmount = nullSafe(request.costAmount());
+        if (costAmount.signum() <= 0) {
+            return;
+        }
+        List<Income> parts = incomeRepository.findAllByCompanyIdAndSourceTypeAndSourceIdAndDeletedFalse(
+            request.companyId(), IncomeSourceType.SALE, saleSourceId
+        );
+        if (parts.isEmpty()) {
+            return;
+        }
+        BigDecimal existing = parts.stream()
+            .map(Income::getCostAmount)
+            .filter(c -> c != null)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (existing.signum() > 0) {
+            return;
+        }
+        Income primary = parts.get(0);
+        primary.setCostAmount(costAmount);
+        incomeRepository.save(primary);
+        LogUtil.info(SaleIntegrationServiceImpl.class, "Sale cost backfilled: sale={}, cost={}",
+            request.saleId(), costAmount);
     }
 
     private void recordPart(
@@ -83,7 +121,8 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
         BigDecimal amount,
         PaymentMethod paymentMethod,
         AccountType accountType,
-        String saleSourceId
+        String saleSourceId,
+        BigDecimal costAmount
     ) {
         FinancialAccount account = accountResolver.resolveOrCreate(request.companyId(), request.storeId(), accountType);
         Income income = Income.builder()
@@ -96,6 +135,7 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             .incomeCategory(category)
             .sourceType(IncomeSourceType.SALE)
             .sourceId(saleSourceId)
+            .costAmount(costAmount != null ? costAmount : BigDecimal.ZERO)
             .comment("Продажа " + request.receiptNumber())
             .transactionDate(txDate)
             .deleted(false)
@@ -103,8 +143,8 @@ public class SaleIntegrationServiceImpl implements SaleIntegrationService {
             .build();
         incomeRepository.save(income);
         balanceSupport.credit(account, amount);
-        LogUtil.info(SaleIntegrationServiceImpl.class, "Sale income recorded: sale={}, amount={}, account={}",
-            request.saleId(), amount, account.getName());
+        LogUtil.info(SaleIntegrationServiceImpl.class, "Sale income recorded: sale={}, amount={}, cost={}, account={}",
+            request.saleId(), amount, costAmount, account.getName());
     }
 
     private static PaymentMethod mapPaymentMethod(String method) {

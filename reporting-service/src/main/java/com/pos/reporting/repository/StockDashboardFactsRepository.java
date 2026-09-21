@@ -9,7 +9,11 @@ public interface StockDashboardFactsRepository {
 
     Object[] currentStockTotals(Integer companyId);
 
+    Object[] restockTotals(Integer companyId, LocalDate from, LocalDate to, Integer storeId);
+
     long countLowStockSkus(Integer companyId);
 
     List<Object[]> dailyWriteOffUnits(Integer companyId, LocalDate from, LocalDate to, Integer storeId);
+
+    List<Object[]> dailyRestockUnits(Integer companyId, LocalDate from, LocalDate to, Integer storeId);
 }

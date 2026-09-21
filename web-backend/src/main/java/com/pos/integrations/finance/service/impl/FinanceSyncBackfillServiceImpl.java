@@ -2,12 +2,15 @@ package com.pos.integrations.finance.service.impl;
 
 import com.pos.integrations.finance.dto.FinanceSyncBackfillResponse;
 import com.pos.inventory.entity.StockReceipt;
+import com.pos.sales.entity.Sale;
 import com.pos.sales.entity.ZReport;
 import com.pos.inventory.repository.StockReceiptRepository;
+import com.pos.sales.repository.SaleRepository;
 import com.pos.sales.repository.ZReportRepository;
 import com.pos.integrations.finance.service.FinanceSyncBackfillService;
 import com.pos.integrations.finance.service.support.FinanceIntegrationPublisher;
 import com.pos.integrations.finance.service.support.FinancePurchasePayloadBuilder;
+import com.pos.integrations.finance.service.support.FinanceSalePayloadBuilder;
 import com.pos.integrations.finance.service.support.FinanceZReportPayloadBuilder;
 import com.pos.service.support.TenantAccessSupport;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,6 +33,7 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
 
     private final ZReportRepository zReportRepository;
     private final StockReceiptRepository stockReceiptRepository;
+    private final SaleRepository saleRepository;
     private final FinanceIntegrationPublisher integrationPublisher;
     private final TenantAccessSupport tenantAccess;
 
@@ -40,6 +45,7 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
 
         int zReportsEnqueued = 0;
         int purchasesEnqueued = 0;
+        int salesEnqueued = 0;
         int skipped = 0;
 
         if (types.contains("z-reports")) {
@@ -66,6 +72,21 @@ public class FinanceSyncBackfillServiceImpl implements FinanceSyncBackfillServic
             }
         }
 
-        return new FinanceSyncBackfillResponse(zReportsEnqueued, purchasesEnqueued, skipped);
+        if (types.contains("sales")) {
+            List<Sale> sales = saleRepository.findCompletedSalesForFinanceBackfill(
+                start, end, companyId, Sale.SaleStatus.COMPLETED, Sale.ReceiptType.SALE
+            );
+            for (Sale sale : sales) {
+                Map<String, Object> payload = FinanceSalePayloadBuilder.build(sale);
+                if (payload == null) {
+                    skipped++;
+                    continue;
+                }
+                integrationPublisher.publishSaleIncomeAfterCommit(payload);
+                salesEnqueued++;
+            }
+        }
+
+        return new FinanceSyncBackfillResponse(zReportsEnqueued, purchasesEnqueued, salesEnqueued, skipped);
     }
 }

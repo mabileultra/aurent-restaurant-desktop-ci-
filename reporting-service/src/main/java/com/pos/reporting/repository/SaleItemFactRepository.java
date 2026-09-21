@@ -19,7 +19,9 @@ public interface SaleItemFactRepository extends JpaRepository<SaleItemFact, UUID
     void deleteBySaleId(UUID saleId);
 
     @Query(value = """
-        SELECT i.product_name, COALESCE(SUM(i.quantity - i.quantity_returned), 0)
+        SELECT i.product_name,
+               COALESCE(SUM(i.quantity - i.quantity_returned), 0),
+               COALESCE(SUM(i.revenue), 0)
         FROM sale_item_facts i
         WHERE i.company_id = :companyId
           AND i.transaction_date BETWEEN :from AND :to

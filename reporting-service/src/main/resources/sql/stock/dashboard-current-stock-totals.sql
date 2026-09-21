@@ -9,7 +9,20 @@ WITH stock_balance AS (
 )
 SELECT
     COALESCE(SUM(GREATEST(COALESCE(sb.stock_qty, 0), 0)), 0) AS stock_units,
-    COALESCE(SUM(GREATEST(COALESCE(sb.stock_qty, 0), 0) * p.cost_price), 0) AS stock_cost
+    COALESCE(SUM(
+        GREATEST(COALESCE(sb.stock_qty, 0), 0) * COALESCE(
+            NULLIF(p.cost_price, 0),
+            (
+                SELECT AVG(ABS(m.unit_cost_estimate))
+                FROM stock_movement_facts m
+                WHERE m.company_id = p.company_id
+                  AND m.product_id = p.product_id
+                  AND m.unit_cost_estimate IS NOT NULL
+                  AND m.unit_cost_estimate > 0
+            ),
+            0
+        )
+    ), 0) AS stock_cost
 FROM product_snapshot_facts p
 LEFT JOIN stock_balance sb ON sb.product_id = p.product_id
 WHERE p.company_id = :companyId

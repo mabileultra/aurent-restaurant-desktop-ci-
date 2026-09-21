@@ -78,6 +78,7 @@ public enum SalesExportTemplate implements ExcelSheetTemplate {
         "Кассиры",
         List.of(
             col("cashier", "Кассир"),
+            col("transactions", "Чеков"),
             col("revenue", "Выручка")
         )
     );

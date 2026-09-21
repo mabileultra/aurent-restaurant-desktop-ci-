@@ -30,12 +30,13 @@ export default function CashierPerformanceReportPage() {
             <tr>
               <AdminTableNoIdHeaders />
               <th className="px-4 py-3">{t('stockReports.colCashier')}</th>
+              <th className="px-4 py-3 text-right">{t('stockReports.colReceipts')}</th>
               <th className="px-4 py-3 text-right">{t('stockReports.colRevenue')}</th>
             </tr>
           </thead>
           <tbody>
-            {r.isPending && <tr><td colSpan={4} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
-            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={4} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
+            {r.isPending && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.loading')}</td></tr>}
+            {!r.isPending && r.rows.length === 0 && <tr><td colSpan={5} className="px-4 py-8 text-center">{t('common.noData')}</td></tr>}
             {r.rows.map((row, index) => (
               <tr key={row.cashierId ?? row.id ?? index} className="border-b border-slate-100 dark:border-slate-800">
                 <AdminTableNoIdCells
@@ -45,6 +46,7 @@ export default function CashierPerformanceReportPage() {
                   id={row.cashierId ?? row.id}
                 />
                 <td className="px-4 py-3 font-medium">{row.cashierName ?? row.name}</td>
+                <td className="px-4 py-3 text-right">{row.transactionCount ?? '—'}</td>
                 <td className="px-4 py-3 text-right">{fmtMoney(row.revenue)}</td>
               </tr>
             ))}

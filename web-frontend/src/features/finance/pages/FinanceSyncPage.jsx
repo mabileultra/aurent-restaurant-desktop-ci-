@@ -58,9 +58,13 @@ export default function FinanceSyncPage() {
               <input type="checkbox" checked={p.backfillPurchases} onChange={(e) => p.setBackfillPurchases(e.target.checked)} />
               {p.t('finance.sync.backfillPurchases')}
             </label>
+            <label className="finance-form__label finance-form__label--checkbox">
+              <input type="checkbox" checked={p.backfillSales} onChange={(e) => p.setBackfillSales(e.target.checked)} />
+              {p.t('finance.sync.backfillSales')}
+            </label>
             <BaseButton
               onClick={() => p.backfillMutation.mutate()}
-              disabled={!p.backfillFrom || !p.backfillTo || p.backfillMutation.isPending || (!p.backfillZReports && !p.backfillPurchases)}
+              disabled={!p.backfillFrom || !p.backfillTo || p.backfillMutation.isPending || (!p.backfillZReports && !p.backfillPurchases && !p.backfillSales)}
             >
               {p.t('finance.sync.runBackfill')}
             </BaseButton>

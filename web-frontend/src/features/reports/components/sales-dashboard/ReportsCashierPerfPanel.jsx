@@ -23,7 +23,9 @@ export default function ReportsCashierPerfPanel({ t, cashierPerf, formatCurrency
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
-                label={false}
+                label={({ percent, value }) =>
+                  percent > 0.04 ? formatCurrency(value) : ''
+                }
               >
                 {cashierPerf.map((_, i) => (
                   <Cell key={i} fill={SALES_DASHBOARD_COLORS[i % SALES_DASHBOARD_COLORS.length]} />

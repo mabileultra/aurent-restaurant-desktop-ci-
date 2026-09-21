@@ -16,6 +16,7 @@ public record FinanceDashboardDto(
     BigDecimal salesIncomeToday,
     BigDecimal salesIncomeMonth,
     BigDecimal purchaseExpenseMonth,
+    BigDecimal cogsMonth,
     long salesCountToday,
     List<ExpenseCategorySummaryDto> topExpenseCategories,
     List<FinanceRecentTransactionDto> recentTransactions,

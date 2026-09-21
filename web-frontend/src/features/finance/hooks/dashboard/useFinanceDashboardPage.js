@@ -47,6 +47,11 @@ export function useFinanceDashboardPage() {
       value: formatMoney(d.purchaseExpenseMonth),
       hint: t('finance.dashboard.fromStockReceipts'),
     },
+    {
+      label: t('finance.dashboard.cogsPeriod'),
+      value: formatMoney(d.cogsMonth),
+      hint: t('finance.dashboard.fromSaleCost'),
+    },
   ] : [
     {
       label: t('finance.dashboard.salesIncomeToday'),
@@ -62,6 +67,11 @@ export function useFinanceDashboardPage() {
       label: t('finance.dashboard.purchaseExpenseMonth'),
       value: formatMoney(d.purchaseExpenseMonth),
       hint: t('finance.dashboard.fromStockReceipts'),
+    },
+    {
+      label: t('finance.dashboard.cogsMonth'),
+      value: formatMoney(d.cogsMonth),
+      hint: t('finance.dashboard.fromSaleCost'),
     },
   ]) : [];
 

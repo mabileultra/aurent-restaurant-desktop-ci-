@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -28,9 +30,27 @@ public class TopProductsServiceImpl implements TopProductsService {
         int cappedLimit = Math.max(1, Math.min(limit, 100));
         return saleItemFactRepository.topProducts(companyId, start, end, cappedLimit).stream()
             .map(row -> new TopProductRowResponse(
-                row[0].toString(),
-                row[1] instanceof Number n ? n.longValue() : Long.parseLong(row[1].toString())
+                row[0] != null ? row[0].toString() : "",
+                toLong(row[1]),
+                toMoney(row[2])
             ))
             .toList();
+    }
+
+    private static long toLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        return ((Number) value).longValue();
+    }
+
+    private static BigDecimal toMoney(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (value instanceof BigDecimal bd) {
+            return bd.setScale(2, RoundingMode.HALF_UP);
+        }
+        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 }

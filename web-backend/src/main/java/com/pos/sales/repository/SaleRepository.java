@@ -54,15 +54,16 @@ public interface SaleRepository extends JpaRepository<Sale, UUID>, JpaSpecificat
         @Param("end") Instant end
     );
 
+    @EntityGraph(attributePaths = {
+        "cashier", "store", "store.company", "items", "items.product",
+        "items.lotAllocations", "items.lotAllocations.lot"
+    })
     @Query("""
         SELECT s FROM Sale s
-        JOIN FETCH s.store st
-        JOIN FETCH st.company
-        LEFT JOIN FETCH s.cashier
         WHERE s.status = :status
           AND (s.receiptType = :saleReceiptType OR s.receiptType IS NULL)
           AND s.createdAt >= :start AND s.createdAt < :end
-          AND (:companyId IS NULL OR st.company.id = :companyId)
+          AND (:companyId IS NULL OR COALESCE(s.company.id, s.store.company.id) = :companyId)
         ORDER BY s.createdAt ASC
         """)
     List<Sale> findCompletedSalesForFinanceBackfill(

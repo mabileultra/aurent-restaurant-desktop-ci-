@@ -116,24 +116,34 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
     );
 
     @Query(value = """
-        SELECT s.store_id,
-               MAX(s.store_name),
-               COUNT(*),
-               COALESCE(SUM(s.items_sold), 0),
-               COALESCE(SUM(s.total_amount), 0)
-        FROM sale_facts s
-        WHERE s.company_id = :companyId
-          AND s.transaction_date BETWEEN :from AND :to
-          AND s.sale_status IN ('COMPLETED', 'REFUNDED')
-        GROUP BY s.store_id
-        ORDER BY SUM(s.total_amount) DESC
+        SELECT i.store_id,
+               COALESCE(MAX(s.store_name), CONCAT('Store #', i.store_id)),
+               COUNT(DISTINCT i.sale_id),
+               COALESCE(SUM(i.quantity - i.quantity_returned), 0),
+               COALESCE(SUM(i.quantity_returned), 0),
+               COALESCE(SUM(i.revenue), 0),
+               COALESCE(SUM(i.cost_estimate), 0)
+        FROM sale_item_facts i
+        LEFT JOIN sale_facts s ON s.id = i.sale_id
+        WHERE i.company_id = :companyId
+          AND i.transaction_date BETWEEN :from AND :to
+        GROUP BY i.store_id
+        HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
+            OR COALESCE(SUM(i.quantity_returned), 0) > 0
+            OR COALESCE(SUM(i.revenue), 0) > 0
+        ORDER BY SUM(i.revenue) DESC
         """,
         countQuery = """
-        SELECT COUNT(DISTINCT s.store_id)
-        FROM sale_facts s
-        WHERE s.company_id = :companyId
-          AND s.transaction_date BETWEEN :from AND :to
-          AND s.sale_status IN ('COMPLETED', 'REFUNDED')
+        SELECT COUNT(*) FROM (
+          SELECT i.store_id
+          FROM sale_item_facts i
+          WHERE i.company_id = :companyId
+            AND i.transaction_date BETWEEN :from AND :to
+          GROUP BY i.store_id
+          HAVING COALESCE(SUM(i.quantity - i.quantity_returned), 0) > 0
+              OR COALESCE(SUM(i.quantity_returned), 0) > 0
+              OR COALESCE(SUM(i.revenue), 0) > 0
+        ) sub
         """,
         nativeQuery = true)
     org.springframework.data.domain.Page<Object[]> storeSalesAggregate(
@@ -144,7 +154,10 @@ public interface SaleFactRepository extends JpaRepository<SaleFact, UUID> {
     );
 
     @Query("""
-        SELECT COALESCE(MAX(s.cashierName), CAST(s.createdBy AS string)), COALESCE(SUM(s.totalAmount), 0)
+        SELECT s.createdBy,
+               COALESCE(MAX(s.cashierName), CAST(s.createdBy AS string)),
+               COUNT(s),
+               COALESCE(SUM(s.totalAmount), 0)
         FROM SaleFact s
         WHERE s.companyId = :companyId
           AND s.transactionDate BETWEEN :from AND :to

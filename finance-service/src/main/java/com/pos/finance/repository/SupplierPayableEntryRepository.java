@@ -42,4 +42,20 @@ public interface SupplierPayableEntryRepository extends JpaRepository<SupplierPa
         @Param("supplierId") UUID supplierId,
         @Param("charge") LedgerEntryType charge
     );
+
+    @Query("""
+        SELECT COALESCE(SUM(e.amount), 0)
+        FROM SupplierPayableEntry e
+        WHERE e.companyId = :companyId
+          AND e.entryType = :charge
+          AND e.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR e.storeId = :storeId)
+        """)
+    java.math.BigDecimal sumChargesByPeriod(
+        @Param("companyId") Integer companyId,
+        @Param("charge") LedgerEntryType charge,
+        @Param("from") java.time.LocalDate from,
+        @Param("to") java.time.LocalDate to,
+        @Param("storeId") Integer storeId
+    );
 }

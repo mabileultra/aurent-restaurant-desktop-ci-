@@ -10,14 +10,17 @@ import com.pos.finance.entity.ExpenseSourceType;
 import com.pos.finance.entity.FinancialAccount;
 import com.pos.finance.entity.Income;
 import com.pos.finance.entity.IncomeSourceType;
+import com.pos.finance.entity.LedgerEntryType;
 import com.pos.finance.exception.FinanceExceptions;
 import com.pos.finance.repository.ExpenseRepository;
 import com.pos.finance.repository.FinancialAccountRepository;
 import com.pos.finance.repository.IncomeRepository;
+import com.pos.finance.repository.SupplierPayableEntryRepository;
 import com.pos.finance.security.FinanceTenantContext;
 import com.pos.finance.service.DashboardService;
 import com.pos.finance.service.support.CashRegisterIncomeReader;
 import com.pos.finance.service.support.CompanyBootstrapSupport;
+import com.pos.finance.service.support.NetProfitCalculator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -42,6 +45,7 @@ public class DashboardServiceImpl implements DashboardService {
     private final IncomeRepository incomeRepository;
     private final ExpenseRepository expenseRepository;
     private final FinancialAccountRepository accountRepository;
+    private final SupplierPayableEntryRepository payableRepository;
     private final CompanyBootstrapSupport bootstrapSupport;
     private final CashRegisterIncomeReader cashRegisterIncomeReader;
 
@@ -77,8 +81,24 @@ public class DashboardServiceImpl implements DashboardService {
 
         BigDecimal salesIncomeToday = cashRegisterIncomeReader.sumRegisterRevenue(companyId, today, today, storeId);
         BigDecimal salesIncomeMonth = cashRegisterIncomeReader.sumRegisterRevenue(companyId, periodStart, periodEnd, storeId);
-        BigDecimal purchaseExpenseMonth = expenseRepository.sumBySourceAndPeriod(
+        BigDecimal purchaseCashMonth = expenseRepository.sumBySourceAndPeriod(
             companyId, ExpenseSourceType.PURCHASE, periodStart, periodEnd, storeId
+        );
+        BigDecimal creditPurchaseMonth = payableRepository.sumChargesByPeriod(
+            companyId, LedgerEntryType.CHARGE, periodStart, periodEnd, storeId
+        );
+        BigDecimal purchaseExpenseMonth = NetProfitCalculator.purchaseTotal(purchaseCashMonth, creditPurchaseMonth);
+        BigDecimal cogsMonth = incomeRepository.sumCostByPeriod(companyId, periodStart, periodEnd, storeId);
+        BigDecimal supplierPaymentsMonth = expenseRepository.sumBySourceAndPeriod(
+            companyId, ExpenseSourceType.SUPPLIER_PAYMENT, periodStart, periodEnd, storeId
+        );
+        BigDecimal netProfitMonth = NetProfitCalculator.calculate(
+            revenueMonth,
+            expensesMonth,
+            purchaseCashMonth,
+            creditPurchaseMonth,
+            cogsMonth,
+            supplierPaymentsMonth
         );
         long salesCountToday = cashRegisterIncomeReader.countRegisterReceipts(companyId, today, today, storeId);
 
@@ -106,12 +126,13 @@ public class DashboardServiceImpl implements DashboardService {
             expensesToday,
             expensesWeek,
             expensesMonth,
-            revenueMonth.subtract(expensesMonth),
+            netProfitMonth,
             cashInRegisters,
             moneyInBanks,
             salesIncomeToday,
             salesIncomeMonth,
             purchaseExpenseMonth,
+            cogsMonth,
             salesCountToday,
             topExpenses,
             buildRecentTransactions(companyId, storeId, customPeriod ? periodStart : null, customPeriod ? periodEnd : null),

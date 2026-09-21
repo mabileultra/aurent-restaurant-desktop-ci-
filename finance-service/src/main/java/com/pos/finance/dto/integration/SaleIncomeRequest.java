@@ -19,6 +19,7 @@ public record SaleIncomeRequest(
     @NotBlank String paymentMethod,
     String cardType,
     LocalDate transactionDate,
+    @DecimalMin("0") BigDecimal costAmount,
     UUID createdBy
 ) {
 }

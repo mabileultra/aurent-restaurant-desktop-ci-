@@ -24,7 +24,18 @@ SELECT
     COALESCE(p.barcode, '') AS barcode,
     COALESCE(p.category_name, '') AS category_name,
     sb.stock_qty,
-    sb.stock_qty * p.cost_price AS stock_value,
+    sb.stock_qty * COALESCE(
+        NULLIF(p.cost_price, 0),
+        (
+            SELECT AVG(ABS(m.unit_cost_estimate))
+            FROM stock_movement_facts m
+            WHERE m.company_id = p.company_id
+              AND m.product_id = p.product_id
+              AND m.unit_cost_estimate IS NOT NULL
+              AND m.unit_cost_estimate > 0
+        ),
+        0
+    ) AS stock_value,
     ls.last_sale_date,
     CASE
         WHEN ls.last_sale_date IS NULL THEN :daysNoSale

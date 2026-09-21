@@ -42,6 +42,7 @@ public final class FinanceSalePayloadBuilder {
         payload.put("totalAmount", sale.getTotalAmount());
         payload.put("cashAmount", sale.getCashAmount() != null ? sale.getCashAmount() : BigDecimal.ZERO);
         payload.put("cardAmount", sale.getCardAmount() != null ? sale.getCardAmount() : BigDecimal.ZERO);
+        payload.put("costAmount", FinanceSaleCostCalculator.totalCost(sale));
         payload.put("paymentMethod", sale.getPaymentMethod().name());
         if (sale.getCardType() != null) {
             payload.put("cardType", sale.getCardType().name());

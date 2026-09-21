@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -29,4 +30,9 @@ public class Income extends MonetaryMovementEntity {
 
     @Column(name = "customer_id")
     private UUID customerId;
+
+    /** COGS for SALE incomes; stored once per sale (first payment part). */
+    @Column(name = "cost_amount", nullable = false, precision = 19, scale = 2)
+    @Builder.Default
+    private BigDecimal costAmount = BigDecimal.ZERO;
 }

@@ -253,6 +253,19 @@ public interface IncomeRepository extends JpaRepository<Income, UUID> {
     );
 
     @Query("""
+        SELECT COALESCE(SUM(i.costAmount), 0) FROM Income i
+        WHERE i.companyId = :companyId AND i.deleted = false
+          AND i.transactionDate BETWEEN :from AND :to
+          AND (:storeId IS NULL OR i.storeId = :storeId)
+        """)
+    BigDecimal sumCostByPeriod(
+        @Param("companyId") Integer companyId,
+        @Param("from") LocalDate from,
+        @Param("to") LocalDate to,
+        @Param("storeId") Integer storeId
+    );
+
+    @Query("""
         SELECT i.transactionDate, COALESCE(SUM(i.amount), 0)
         FROM Income i
         WHERE i.companyId = :companyId AND i.deleted = false

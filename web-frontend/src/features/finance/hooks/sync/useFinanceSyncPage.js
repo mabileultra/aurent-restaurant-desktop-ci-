@@ -25,6 +25,7 @@ export function useFinanceSyncPage() {
   const [backfillTo, setBackfillTo] = useState(todayIso());
   const [backfillZReports, setBackfillZReports] = useState(true);
   const [backfillPurchases, setBackfillPurchases] = useState(true);
+  const [backfillSales, setBackfillSales] = useState(true);
 
   const outboxQuery = useQuery({
     queryKey: tenantKey('finance-sync-outbox', page, pageSize, status),
@@ -42,6 +43,7 @@ export function useFinanceSyncPage() {
       const types = [
         backfillZReports ? 'z-reports' : null,
         backfillPurchases ? 'purchases' : null,
+        backfillSales ? 'sales' : null,
       ].filter(Boolean).join(',');
       return financeSyncApi.backfill({
         from: backfillFrom,
@@ -53,6 +55,7 @@ export function useFinanceSyncPage() {
       toast.success(t('finance.sync.backfillSuccess', {
         zReports: data.zReportsEnqueued,
         purchases: data.purchasesEnqueued,
+        sales: data.salesEnqueued ?? 0,
         skipped: data.skipped,
       }));
       queryClient.invalidateQueries({ queryKey: tenantKey('finance-sync-outbox') });
@@ -94,6 +97,8 @@ export function useFinanceSyncPage() {
     setBackfillZReports,
     backfillPurchases,
     setBackfillPurchases,
+    backfillSales,
+    setBackfillSales,
     outboxQuery,
     backfillMutation,
     retryMutation,

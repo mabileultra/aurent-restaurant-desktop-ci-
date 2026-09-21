@@ -75,6 +75,7 @@ class SaleIntegrationServiceImplTest {
             "CASH",
             null,
             LocalDate.of(2026, 9, 11),
+            null,
             null
         ));
 
@@ -98,6 +99,7 @@ class SaleIntegrationServiceImplTest {
             "CASH",
             null,
             LocalDate.of(2026, 9, 11),
+            null,
             null
         ));
 

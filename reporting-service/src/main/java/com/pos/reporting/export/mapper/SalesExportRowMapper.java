@@ -116,6 +116,7 @@ public class SalesExportRowMapper {
         for (CashierStatResponse row : rows) {
             Map<String, Object> mapped = new LinkedHashMap<>();
             mapped.put("cashier", row.cashierName());
+            mapped.put("transactions", row.transactionCount());
             mapped.put("revenue", row.revenue());
             data.add(mapped);
         }

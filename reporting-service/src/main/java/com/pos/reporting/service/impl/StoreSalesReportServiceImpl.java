@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -42,18 +43,38 @@ public class StoreSalesReportServiceImpl implements StoreSalesReportService {
     private StoreSalesRowResponse mapRow(Object[] row) {
         Integer storeId = row[0] != null ? ((Number) row[0]).intValue() : null;
         String storeName = row[1] != null ? row[1].toString() : (storeId != null ? "Store #" + storeId : "");
-        long receiptCount = row[2] instanceof Number n ? n.longValue() : Long.parseLong(row[2].toString());
-        long netQuantity = row[3] instanceof Number n ? n.longValue() : Long.parseLong(row[3].toString());
-        BigDecimal revenue = row[4] instanceof BigDecimal bd ? bd : new BigDecimal(row[4].toString());
+        long receiptCount = toLong(row[2]);
+        long netQuantity = toLong(row[3]);
+        long quantityReturned = toLong(row[4]);
+        BigDecimal revenue = toMoney(row[5]);
+        BigDecimal costEstimate = toMoney(row[6]);
+        BigDecimal margin = revenue.subtract(costEstimate).setScale(2, RoundingMode.HALF_UP);
         return new StoreSalesRowResponse(
             storeId,
             storeName,
             receiptCount,
             netQuantity,
-            0L,
+            quantityReturned,
             revenue,
-            BigDecimal.ZERO,
-            BigDecimal.ZERO
+            costEstimate,
+            margin
         );
+    }
+
+    private static long toLong(Object value) {
+        if (value == null) {
+            return 0L;
+        }
+        return ((Number) value).longValue();
+    }
+
+    private static BigDecimal toMoney(Object value) {
+        if (value == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        if (value instanceof BigDecimal bd) {
+            return bd.setScale(2, RoundingMode.HALF_UP);
+        }
+        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 }
