@@ -47,6 +47,5 @@ APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://aurent.uz,https://www.aurent.uz,https:/
 
 ## Дальше
 
-1. Экраны склада/каталога/биллинга на Base UI (≤300 строк + тесты в `test/`)
+1. Допиливать экраны склада/каталога/отчётов на r-aurent (≤300 строк + тесты в `test/`)
 2. Backend при нехватке API
-3. Удалить `web-frontend/src/restaurant` когда SPA готов

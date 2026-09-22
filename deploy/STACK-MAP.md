@@ -24,14 +24,14 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 | `restaurant-frontend` | Restaurant SPA | `:5174` | r-aurent.uz |
 | `desktop-electron` | Оболочка кассы → грузит aurent (потом handoff на r-aurent) | — | установщик |
 
-### Legacy (пока не удалять целиком)
+### Legacy
 
 | Что | Где | Статус |
 |-----|-----|--------|
-| Дубль restaurant UI | `web-frontend/src/restaurant` (~115 файлов) | Ещё смонтирован в `AppRoutes` как `/rst/*` **fallback**, если `VITE_RESTAURANT_APP_URL` пуст |
+| Дубль restaurant UI | `web-frontend/src/restaurant` | **Удалён** (фаза 7). На aurent `/rst/*` → handoff на r-aurent |
 | Старый Electron | `aurent-cashier-desktop` | Не трогать без отдельной задачи |
 
-**Правило удаления:** экран живёт и принят на **r-aurent** → только тогда убираем дубль из `web-frontend/src/restaurant` (по одному экрану/папке, не всё сразу).
+Handoff на aurent: `router/restaurant.routes.jsx` + `RestaurantSpaHandoff` + `VITE_RESTAURANT_APP_URL`.
 
 ---
 
@@ -77,7 +77,7 @@ Handoff: PIN/login на aurent → при `VITE_RESTAURANT_APP_URL` → `r-auren
 4. Меню = sellable UI  
 5. Заказы + касса (mixed/split/returns)  
 6. Dashboard / отчёты / настройки  
-7. Удалить весь `web-frontend/src/restaurant`
+7. ~~Удалить весь `web-frontend/src/restaurant`~~ **готово**
 
 Одна фаза за раз. Не смешивать с grocery/pharmacy/finance рефакторингом.
 

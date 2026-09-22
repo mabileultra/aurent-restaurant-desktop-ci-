@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import RouteFallback from './RouteFallback';
 import AppFallbackRedirect from './guards/AppFallbackRedirect';
-import { restaurantRoutes } from '../restaurant/app/RestaurantRoutes';
+import { restaurantRoutes } from './restaurant.routes';
 import { pharmacyRoutes } from '../pharmacy/app/PharmacyRoutes';
 import { publicRoutes } from './public.routes';
 import { cashierRoutes } from './cashier.routes';

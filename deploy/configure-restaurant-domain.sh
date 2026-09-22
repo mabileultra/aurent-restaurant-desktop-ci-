@@ -31,9 +31,9 @@ upsert_env() {
 }
 
 echo "==> Dual-domain env ($ENV_FILE)"
-# Frontend behind host nginx; API stays public for Electron cashiers.
-upsert_env HTTP_PORT '8088'
-upsert_env RESTAURANT_HTTP_PORT '5174'
+# Frontends only on localhost — HTTPS via host nginx :443. API public for Electron.
+upsert_env HTTP_PORT '127.0.0.1:8088'
+upsert_env RESTAURANT_HTTP_PORT '127.0.0.1:5174'
 upsert_env API_PORT '8080'
 upsert_env VITE_RESTAURANT_APP_URL 'https://r-aurent.uz'
 upsert_env VITE_MAIN_APP_URL 'https://aurent.uz'

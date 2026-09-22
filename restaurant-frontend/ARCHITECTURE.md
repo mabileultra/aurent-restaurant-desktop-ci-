@@ -9,7 +9,7 @@
 | Backend services | данные и auth | оба фронта |
 
 **Правило:** ресторанный UI делаем только здесь. Main фронт для ресторана не расширяем.  
-`web-frontend/src/restaurant` удалим **потом**, когда этот SPA самодостаточен.  
+Дубль `web-frontend/src/restaurant` **удалён** — на aurent `/rst/*` только handoff на r-aurent.  
 Супер-админ (компании, магазины, юзеры) остаётся на main + backend.
 
 **Живая карта стека / safe zones:** [`../deploy/STACK-MAP.md`](../deploy/STACK-MAP.md)
@@ -37,8 +37,7 @@
 
 ### Временно
 
-- `src/features/{stock,catalog,billing,reports}` — placeholder до своих экранов
-- Handoff на main **не используем**
+- Handoff обратно на main — только для platform-ролей / выход в супер-админку
 
 ---
 

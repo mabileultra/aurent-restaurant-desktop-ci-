@@ -132,6 +132,7 @@ ai-service
 backend
 api-gateway
 frontend
+restaurant-frontend
 telegram-web-support-bot
 telegram-support-bot
 "

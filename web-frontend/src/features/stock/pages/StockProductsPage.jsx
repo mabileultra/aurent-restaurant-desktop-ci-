@@ -1,5 +1,4 @@
 import { Filter, Plus } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import {
   BaseButton,
   ErrorBanner,
@@ -9,42 +8,20 @@ import {
 import StockProductsTable from '../components/StockProductsTable';
 import StockProductsModals from '../components/StockProductsModals';
 import { useStockProductsPage } from '../hooks/useStockProductsPage';
-import { useStockFlowPaths } from '../stockFlowPaths';
-import { useRestaurantWorkspaceStore } from '../../../restaurant/shared/hooks/useRestaurantWorkspaceStore';
 
-export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
-  const paths = useStockFlowPaths();
-  const inRst = paths.products.startsWith('/rst/');
-  const workspace = useRestaurantWorkspaceStore();
-  const p = useStockProductsPage({
-    preferredStoreId: inRst ? workspace.storeId : null,
-  });
+/** Grocery / retail stock products (restaurant stock lives on r-aurent). */
+export default function StockProductsPage() {
+  const p = useStockProductsPage({ preferredStoreId: null });
 
   const actions = (
     <>
-      {!embeddedInRstHub && inRst ? (
-        <>
-          <Link to={paths.inventoriesNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
-            {p.t('rst.admin.stockInventory')}
-          </Link>
-          <Link to={paths.receiptsNew} className="rst-stock-action-btn inline-flex items-center gap-2 rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium dark:border-slate-600">
-            {p.t('rst.admin.stockReceipt')}
-          </Link>
-        </>
-      ) : null}
-      {p.manage && !embeddedInRstHub ? (
+      {p.manage ? (
         <BaseButton onClick={p.handleAddProduct} className="admin-btn-primary">
           <Plus size={16} />
           {p.t('products.add')}
         </BaseButton>
       ) : null}
-      {!inRst && p.manage ? (
-        <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)} className="admin-btn-secondary">
-          <Plus size={16} />
-          {p.t('stockModule.add')}
-        </BaseButton>
-      ) : null}
-      {embeddedInRstHub && p.manage ? (
+      {p.manage ? (
         <BaseButton variant="secondary" onClick={() => p.setReceiveOpen(true)} className="admin-btn-secondary">
           <Plus size={16} />
           {p.t('stockModule.add')}
@@ -59,7 +36,7 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
 
   return (
     <PageLayout
-      title={embeddedInRstHub ? null : p.t('stockModule.title')}
+      title={p.t('stockModule.title')}
       actions={actions}
       filters={(
         <PageSearchField
@@ -71,7 +48,7 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
     >
       {p.isError && <ErrorBanner message={p.errorMessage} />}
 
-      <div className="rst-products-table-shell admin-table-shell">
+      <div className="admin-table-shell">
         <StockProductsTable
           t={p.t}
           rows={p.rows}

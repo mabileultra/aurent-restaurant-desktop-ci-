@@ -7,14 +7,18 @@
 #   r-aurent.uz, www.r-aurent.uz
 #
 # В .env Docker (обязательно при host nginx — иначе конфликт с :80):
-#   HTTP_PORT=8088
-#   RESTAURANT_HTTP_PORT=5174
+#   HTTP_PORT=127.0.0.1:8088
+#   RESTAURANT_HTTP_PORT=127.0.0.1:5174
 #   API_PORT=8080
 #   VITE_RESTAURANT_APP_URL=https://r-aurent.uz
 #   VITE_MAIN_APP_URL=https://aurent.uz
 #   APP_CORS_ALLOWED_ORIGIN_PATTERNS=https://aurent.uz,https://www.aurent.uz,https://r-aurent.uz,https://www.r-aurent.uz,http://localhost:*,http://127.0.0.1:*
 #
 # После смены VITE_* — rebuild frontend + restaurant-frontend.
+#
+# SSL: certbot один раз выписывает сертификат, затем этот файл должен
+# слушать :80 только с return 301 https, а :443 — с ssl_certificate + HSTS.
+# Не оставляйте proxy на :80 — иначе Chrome покажет «Не защищено».
 
 upstream aurent_main_frontend {
     server 127.0.0.1:8088;
@@ -26,17 +30,36 @@ upstream aurent_restaurant_frontend {
     keepalive 16;
 }
 
-# --- Основной SPA (платформа / розница / аптека) ---
+# --- HTTP → HTTPS ---
 server {
     listen 80;
     listen [::]:80;
     server_name aurent.uz www.aurent.uz;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name r-aurent.uz www.r-aurent.uz;
+    return 301 https://$host$request_uri;
+}
+
+# --- HTTPS: основной SPA ---
+server {
+    listen 443 ssl;
+    listen [::]:443 ssl;
+    server_name aurent.uz www.aurent.uz;
+
+    # После certbot:
+    # ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
+    # include /etc/letsencrypt/options-ssl-nginx.conf;
+    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     client_max_body_size 80m;
 
-    # После certbot раскомментируйте:
-    # return 301 https://$host$request_uri;
-
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
@@ -48,23 +71,27 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
         proxy_set_header X-Request-Id $request_id;
         proxy_read_timeout 180s;
         proxy_send_timeout 180s;
     }
 }
 
-# --- Ресторанный SPA (зал / кухня / админка заведения) ---
+# --- HTTPS: ресторанный SPA ---
 server {
-    listen 80;
-    listen [::]:80;
+    listen 443 ssl;
+    listen [::]:443 ssl;
     server_name r-aurent.uz www.r-aurent.uz;
+
+    # ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
+    # ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
+    # include /etc/letsencrypt/options-ssl-nginx.conf;
+    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     client_max_body_size 80m;
 
-    # return 301 https://$host$request_uri;
-
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
     add_header X-Content-Type-Options "nosniff" always;
     add_header X-Frame-Options "SAMEORIGIN" always;
     add_header Referrer-Policy "strict-origin-when-cross-origin" always;
@@ -76,14 +103,15 @@ server {
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Proto https;
         proxy_set_header X-Request-Id $request_id;
         proxy_read_timeout 180s;
         proxy_send_timeout 180s;
     }
 }
 
-# HTTPS:
+# Первый выпуск сертификата (если ещё нет):
 #   apt install -y nginx certbot python3-certbot-nginx
 #   nginx -t && systemctl reload nginx
 #   certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz
+# Затем раскомментируйте ssl_* в блоках :443 выше (или оставьте правки certbot).

@@ -6,20 +6,26 @@ import { redirectToRestaurantApp } from '../../utils/restaurantAppRedirect';
 
 /**
  * When VITE_RESTAURANT_APP_URL is set, any /rst/* hit on aurent must leave
- * for r-aurent (token handoff). Legacy /rst UI is local-dev fallback only.
+ * for r-aurent (token handoff). Without the URL, show nothing — local restaurant
+ * UI was removed; run restaurant-frontend on :5174 instead.
  */
-export default function RestaurantSpaHandoff({ children }) {
+export default function RestaurantSpaHandoff() {
   const location = useLocation();
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const split = isRestaurantAppSplitEnabled();
 
   useEffect(() => {
-    if (!split || !token) return;
+    if (!token) return;
+    if (!split) {
+      console.warn(
+        '[aurent] VITE_RESTAURANT_APP_URL is empty — set it to https://r-aurent.uz (or http://localhost:5174 in dev)'
+      );
+      return;
+    }
     const next = `${location.pathname}${location.search || ''}`;
-    redirectToRestaurantApp(next, { token, user });
+    redirectToRestaurantApp(next || '/rst/pos', { token, user });
   }, [split, token, user, location.pathname, location.search]);
 
-  if (split) return null;
-  return children;
+  return null;
 }
