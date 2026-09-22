@@ -32,13 +32,15 @@ import { syncAuthSession } from '../../utils/syncAuthSession';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
 import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
+import { isRestaurantAppSplitEnabled } from '../../config/restaurantAppUrl';
+import { redirectToRestaurantApp } from '../../utils/restaurantAppRedirect';
 import '../../styles/cashier/modals/index.css';
 
 export default function AppShellLayout() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuthStore();
+  const { user, token } = useAuthStore();
   const { hasModule } = useModuleAccess();
   const { businessType, isLoading: businessTypeLoading } = useCompanyBusinessType();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
@@ -91,15 +93,23 @@ export default function AppShellLayout() {
     if (businessTypeLoading) return;
     if (!isRestaurantWorldBusiness(businessType)) return;
     if (user?.role !== 'ADMIN' && user?.role !== 'MANAGER') return;
-    // Restaurant companies live in /rst — bounce platform home/billing into OS.
+    // Restaurant companies → r-aurent when split is on; else legacy /rst on aurent.
+    const split = isRestaurantAppSplitEnabled();
+    const goRst = (path) => {
+      if (split) {
+        redirectToRestaurantApp(path, { token, user });
+        return;
+      }
+      navigate(path, { replace: true });
+    };
     if (location.pathname === '/dashboard') {
-      navigate('/rst/admin/dashboard', { replace: true });
+      goRst('/rst/admin/dashboard');
       return;
     }
     if (location.pathname === '/billing' || location.pathname.startsWith('/billing/')) {
-      navigate('/rst/admin/billing', { replace: true });
+      goRst('/rst/admin/billing');
     }
-  }, [businessType, businessTypeLoading, location.pathname, navigate, user?.role]);
+  }, [businessType, businessTypeLoading, location.pathname, navigate, token, user]);
 
   useEffect(() => {
     const mq = window.matchMedia(VIEWPORT_MEDIA.desktop);
