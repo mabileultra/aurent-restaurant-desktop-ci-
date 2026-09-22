@@ -1,0 +1,49 @@
+.rst-floor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rst-floor-actions__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  height: 2.65rem;
+  min-width: 7.25rem;
+  padding: 0 1.05rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: #151b28;
+  color: var(--rst-ink);
+  font: inherit;
+  font-weight: 750;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.rst-floor-actions__btn:hover {
+  border-color: color-mix(in srgb, var(--rst-accent) 55%, var(--rst-line));
+  background: #1a2232;
+}
+
+.rst-floor-actions__btn--accent {
+  background: linear-gradient(180deg, #ff8d38, var(--rst-accent));
+  border-color: transparent;
+  color: #1b1208;
+  box-shadow:
+    0 0 0 1px rgb(255 122 26 / 0.28),
+    0 8px 18px rgb(255 122 26 / 0.24);
+}
+
+.rst-floor-actions__btn--accent:hover {
+  background: linear-gradient(180deg, #ffa04f, var(--rst-accent-hover));
+  border-color: transparent;
+}
+
+.rst-floor-actions__btn svg {
+  flex-shrink: 0;
+}

@@ -1,0 +1,43 @@
+.rst-cashier-orders {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.65rem;
+}
+
+.rst-cashier-orders__card {
+  display: grid;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.85rem;
+  background: #121722;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-cashier-orders__card:hover {
+  border-color: rgb(255 122 26 / 0.45);
+}
+
+.rst-cashier-orders__card strong {
+  font-size: 1rem;
+}
+
+.rst-cashier-orders__card span {
+  color: var(--rst-muted);
+  font-size: 0.82rem;
+}
+
+.rst-cashier-orders__card em {
+  font-style: normal;
+  font-weight: 800;
+  color: #ffd7b0;
+}

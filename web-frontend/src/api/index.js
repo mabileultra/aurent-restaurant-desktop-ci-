@@ -27,6 +27,7 @@ export { warehouseApi } from './warehouse.api';
 export { pharmacyWarehouseApi } from './pharmacyWarehouse.api';
 export { pharmacySalesApi } from './pharmacySales.api';
 export { pharmacyStockMarksApi } from './pharmacyStockMarks.api';
+export { aslRequestLogApi } from './aslRequestLog.api';
 export { pharmacyShiftApi } from './pharmacyShift.api';
 export { tenantDisplayApi } from './tenantDisplay.api';
 export { companyBusinessTypeApi } from './companyBusinessType.api';

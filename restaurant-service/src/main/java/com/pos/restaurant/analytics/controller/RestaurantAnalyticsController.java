@@ -28,9 +28,14 @@ public class RestaurantAnalyticsController {
 
     @GetMapping("/stores/{storeId}/dashboard")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    @Operation(summary = "Операционный дашборд за сегодня")
-    public DashboardResponse dashboard(@PathVariable Integer storeId) {
-        return analyticsService.dashboard(storeId);
+    @Operation(summary = "Операционный дашборд: KPI периода + live зал/кухня")
+    public DashboardResponse dashboard(
+        @PathVariable Integer storeId,
+        @RequestParam(required = false, defaultValue = "TODAY") String period,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
+    ) {
+        return analyticsService.dashboard(storeId, period, from, to);
     }
 
     @GetMapping("/stores/{storeId}/reports/sales")

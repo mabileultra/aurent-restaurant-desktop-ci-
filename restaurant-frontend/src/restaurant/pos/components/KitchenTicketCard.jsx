@@ -8,7 +8,6 @@ export default function KitchenTicketCard({
   canAdvance,
   advancing,
   onAdvance,
-  onChefCall,
   t,
 }) {
   const status = ticket.status;
@@ -80,8 +79,8 @@ export default function KitchenTicketCard({
         <div className="rst-kds-card__wait">{t('rst.kitchen.waitingServe')}</div>
       ) : null}
 
-      <div className="rst-kds-card__actions">
-        {canAdvance ? (
+      {canAdvance ? (
+        <div className="rst-kds-card__actions">
           <button
             type="button"
             className={`rst-kds-card__cta rst-kds-card__cta--${status}`}
@@ -90,18 +89,8 @@ export default function KitchenTicketCard({
           >
             {t(`rst.kitchen.action.${status}`)}
           </button>
-        ) : null}
-        {status === 'PREPARING' || status === 'READY' ? (
-          <button
-            type="button"
-            className="rst-kds-card__call"
-            onClick={() => onChefCall?.(ticket)}
-            title={t('rst.kitchen.chefCall')}
-          >
-            {t('rst.kitchen.callShort')}
-          </button>
-        ) : null}
-      </div>
+        </div>
+      ) : null}
     </article>
   );
 }

@@ -5,6 +5,7 @@ WITH stock_balance AS (
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
+      AND (:storeId < 0 OR store_id = :storeId)
     GROUP BY product_id
 )
 SELECT
@@ -17,6 +18,7 @@ SELECT
                 FROM stock_movement_facts m
                 WHERE m.company_id = p.company_id
                   AND m.product_id = p.product_id
+                  AND (:storeId < 0 OR m.store_id = :storeId)
                   AND m.unit_cost_estimate IS NOT NULL
                   AND m.unit_cost_estimate > 0
             ),

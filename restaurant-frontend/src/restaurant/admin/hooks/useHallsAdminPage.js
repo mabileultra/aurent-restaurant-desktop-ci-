@@ -9,6 +9,7 @@ import {
   gridSlot,
   TABLE_DEFAULT_SIZE,
 } from '../../pos/utils/resolveFloorPositions';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyHallForm = () => ({ name: '', sortOrder: 100 });
 
@@ -57,7 +58,7 @@ export function useHallsAdminPage() {
       setHallModal(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const saveTableMutation = useMutation({
@@ -84,7 +85,7 @@ export function useHallsAdminPage() {
       setTableModal(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const deactivateHallMutation = useMutation({
@@ -93,7 +94,7 @@ export function useHallsAdminPage() {
       toast.success(t('rst.admin.hallDeactivated'));
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
   const deactivateTableMutation = useMutation({
@@ -102,7 +103,7 @@ export function useHallsAdminPage() {
       toast.success(t('rst.admin.tableDeactivated'));
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
   const arrangeMutation = useMutation({
@@ -123,7 +124,7 @@ export function useHallsAdminPage() {
       toast.success(t('rst.admin.tablesArranged'));
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   return {

@@ -176,9 +176,7 @@ export default function UserFormModalFields({
             options={(
               roleAllowList?.length
                 ? roleAllowList
-                : isPlatform
-                  ? ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
-                  : ['MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
+                : ['MANAGER', 'CASHIER', 'WAITER', 'COURIER', 'COOK', 'ACCOUNTANT']
             ).map((role) => ({
               value: role,
               label: ({

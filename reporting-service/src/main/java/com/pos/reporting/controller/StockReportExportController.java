@@ -31,12 +31,13 @@ public class StockReportExportController {
     @Operation(summary = "Экспорт остатков")
     @ApiResponse(responseCode = "200", description = "Файл Excel")
     public ResponseEntity<byte[]> exportBalances(
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) Integer categoryId,
         @RequestParam(required = false) String search,
         @RequestParam(defaultValue = "false") boolean onlyWithStock
     ) {
         return SpreadsheetDownloadSupport.attachment(
-            stockReportExportService.exportBalances(categoryId, search, onlyWithStock),
+            stockReportExportService.exportBalances(storeId, categoryId, search, onlyWithStock),
             "stock_balances_export.xlsx"
         );
     }
@@ -97,6 +98,20 @@ public class StockReportExportController {
         return SpreadsheetDownloadSupport.attachment(
             stockReportExportService.exportTransfers(from, to, fromStoreId, toStoreId),
             "stock_transfers_export.xlsx"
+        );
+    }
+
+    @GetMapping(value = "/receipts/export")
+    @Operation(summary = "Экспорт приходов")
+    @ApiResponse(responseCode = "200", description = "Файл Excel")
+    public ResponseEntity<byte[]> exportReceipts(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+        @RequestParam(required = false) Integer storeId
+    ) {
+        return SpreadsheetDownloadSupport.attachment(
+            stockReportExportService.exportReceipts(from, to, storeId),
+            "stock_receipts_export.xlsx"
         );
     }
 }

@@ -1,11 +1,19 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import '../styles/order-workspace.css';
+import '../styles/item-compose-modal.css';
 
 function isKitchenLocked(status) {
   return status && status !== 'NEW' && status !== 'CANCELLED';
 }
 
-export default function OrderLines({ items, onQty, onRemove, locked = false, t }) {
+export default function OrderLines({
+  items,
+  onQty,
+  onRemove,
+  onEditNote,
+  locked = false,
+  t,
+}) {
   if (!items.length) {
     return <div className="rst-order-empty">{t('rst.order.emptyLines')}</div>;
   }
@@ -37,6 +45,9 @@ export default function OrderLines({ items, onQty, onRemove, locked = false, t }
                   ))}
                 </div>
               ) : null}
+              {line.note ? (
+                <div className="rst-order-line__note">«{line.note}»</div>
+              ) : null}
             </div>
 
             <div className="rst-order-line__actions">
@@ -49,6 +60,16 @@ export default function OrderLines({ items, onQty, onRemove, locked = false, t }
                 </span>
               ) : (
                 <>
+                  {onEditNote ? (
+                    <button
+                      type="button"
+                      className="rst-order-line__note-btn"
+                      title={t('rst.order.lineNote')}
+                      onClick={() => onEditNote(line)}
+                    >
+                      ✎
+                    </button>
+                  ) : null}
                   <div className="rst-qty-stepper">
                     <button
                       type="button"

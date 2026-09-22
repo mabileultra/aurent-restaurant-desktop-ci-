@@ -1,0 +1,76 @@
+.rst-rec-import__sources {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin: 0.85rem 0;
+}
+
+.rst-rec-import__sources label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.rst-rec-import__sources label.is-active {
+  border-color: color-mix(in srgb, var(--rst-accent) 45%, var(--rst-line));
+  background: color-mix(in srgb, var(--rst-accent) 8%, var(--rst-surface));
+}
+
+.rst-rec-import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.rst-rec-import__file {
+  display: none;
+}
+
+.rst-rec-import__meta {
+  margin: 0.75rem 0 0;
+  font-size: 0.85rem;
+  color: var(--rst-muted);
+}
+
+.rst-rec-import__table-wrap {
+  margin-top: 0.85rem;
+  max-height: 16rem;
+  overflow: auto;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+}
+
+.rst-rec-import__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.rst-rec-import__table th,
+.rst-rec-import__table td {
+  padding: 0.45rem 0.6rem;
+  border-bottom: 1px solid var(--rst-line);
+  text-align: left;
+}
+
+.rst-rec-import__table .is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-rec-import__table .is-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.78rem;
+}
+
+.rst-rec-import__more {
+  margin: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.78rem;
+  color: var(--rst-muted);
+}

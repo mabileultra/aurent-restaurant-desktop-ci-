@@ -7,20 +7,22 @@
 | Часть | Технологии |
 |-------|------------|
 | Backend | Java 17, Spring Boot 3, PostgreSQL |
-| Frontend | Vue 3, Vite, Bootstrap |
-| Касса | Electron (`desktop-electron/`) — оболочка вокруг `web-frontend` |
+| Frontend | React, Vite (main + restaurant SPA) |
+| Касса | Electron (`desktop-electron/`) — оболочка вокруг web-frontend |
 | Деплой | Docker Compose |
+
+**Карта prod / что не ломать:** [`deploy/STACK-MAP.md`](deploy/STACK-MAP.md)
 
 ## Структура
 
 ```
 postsystem/
-├── web-backend/                 # REST API
-├── web-frontend/                # Веб-интерфейс (менеджер/админ + UI кассы)
-├── restaurant-frontend/         # Отдельный SPA ресторана (Phase 1, порт 5174)
-├── telegram-web-support-bot/    # Бот поддержки CRM/POS (страница «Поддержка»)
-├── telegram-support-bot/        # Аптечный бот (поиск лекарств)
-├── deploy/                      # Скрипты деплоя на Ubuntu
+├── web-backend/                 # POS core API
+├── web-frontend/                # aurent.uz — платформа, grocery, pharmacy, finance
+├── restaurant-frontend/         # r-aurent.uz — зал / кухня / админка ресторана
+├── restaurant-service/          # API ресторана (/rst)
+├── desktop-electron/            # Оболочка кассы
+├── deploy/                      # Деплой + STACK-MAP.md
 ├── docker-compose.yml
 └── docker-compose.prod.yml
 ```

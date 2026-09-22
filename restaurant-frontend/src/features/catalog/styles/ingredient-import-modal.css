@@ -1,0 +1,48 @@
+.rst-ing-import__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+.rst-ing-import__file {
+  display: none;
+}
+
+.rst-ing-import__file-name {
+  margin: 0.85rem 0 0;
+  font-size: 0.88rem;
+  color: var(--rst-muted);
+}
+
+.rst-ingredient-export__stores {
+  margin-top: 0.85rem;
+}
+
+.rst-ingredient-export__label {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  color: var(--rst-muted);
+}
+
+.rst-ingredient-export__list {
+  max-height: 10rem;
+  overflow-y: auto;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  padding: 0.35rem;
+}
+
+.rst-ingredient-export__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  cursor: pointer;
+}
+
+.rst-ingredient-export__item:hover {
+  background: color-mix(in srgb, var(--rst-accent) 8%, transparent);
+}

@@ -78,13 +78,17 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         String barcodeContains,
         Boolean markedProduct,
         String businessTypeCode,
+        Integer storeId,
         Pageable pageable
     ) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        if (storeId != null) {
+            storeStockService.requireStoreForCompany(companyId, storeId);
+        }
         Specification<Product> spec = ProductSpecifications.warehouseFilter(
             companyId, search, barcodeContains, markedProduct, businessTypeCode
         );
-        return mapPage(productRepository.findAll(spec, pageable), null);
+        return mapPage(productRepository.findAll(spec, pageable), storeId);
     }
 
     @Override

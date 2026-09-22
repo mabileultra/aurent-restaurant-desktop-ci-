@@ -10,11 +10,12 @@ import org.springframework.data.domain.Pageable;
 public interface StockBalanceReportService {
 
     PageResponse<PosStockBalanceRow> balances(
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock,
         Pageable pageable
     );
 
-    List<PosStockBalanceRow> listAll(Integer categoryId, String search, boolean onlyWithStock);
+    List<PosStockBalanceRow> listAll(Integer storeId, Integer categoryId, String search, boolean onlyWithStock);
 }

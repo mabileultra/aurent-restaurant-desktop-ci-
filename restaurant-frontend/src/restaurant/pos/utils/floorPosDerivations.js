@@ -60,7 +60,13 @@ export function computeCommissionPreview(order, settings) {
 }
 
 export function emptyGuestForm() {
-  return { guestCount: 2, adultCount: 2, childrenCount: 0 };
+  return {
+    guestCount: 2,
+    adultCount: 2,
+    childrenCount: 0,
+    waiterUserId: '',
+    comment: '',
+  };
 }
 
 export function emptyCounterForm() {

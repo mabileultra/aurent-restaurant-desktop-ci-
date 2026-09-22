@@ -23,22 +23,6 @@ export default function ShiftsAdminPage() {
         </div>
       </div>
 
-      {p.workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-3">
-          <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
-          <select
-            className="form-select"
-            value={p.workspace.pickedStoreId}
-            onChange={(e) => p.workspace.setPickedStoreId(e.target.value)}
-          >
-            <option value="">{p.t('rst.admin.selectStore')}</option>
-            {p.workspace.restaurantStores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-
       {!p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (

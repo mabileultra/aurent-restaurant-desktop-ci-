@@ -21,7 +21,7 @@ public class StockCatalogStatsServiceImpl implements StockCatalogStatsService {
     public StockCatalogStatsResponse catalogStats() {
         Integer companyId = ReportingTenantContext.requireCompanyId();
         long activeProducts = productSnapshotFactRepository.countByCompanyIdAndActiveTrue(companyId);
-        long lowStockSkus = stockDashboardFactsRepository.countLowStockSkus(companyId);
+        long lowStockSkus = stockDashboardFactsRepository.countLowStockSkus(companyId, null);
         return new StockCatalogStatsResponse(activeProducts, lowStockSkus);
     }
 }

@@ -4,13 +4,13 @@ const WEIGHT_CATEGORIES = new Set(['MASS', 'VOLUME', 'LENGTH', 'AREA']);
 const PIECE_CATEGORIES = new Set(['COUNT', 'TIME']);
 
 const FALLBACK_CONFIG = {
-  PCS: { label: 'шт', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'COUNT' },
-  KG: { label: 'кг', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
-  G: { label: 'г', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'MASS' },
-  L: { label: 'л', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'VOLUME' },
-  M: { label: 'м', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'LENGTH' },
-  MM: { label: 'мм', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'LENGTH' },
-  M2: { label: 'м²', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'AREA' },
+  PCS: { code: 'PCS', label: 'шт', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'COUNT' },
+  KG: { code: 'KG', label: 'кг', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
+  G: { code: 'G', label: 'г', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'MASS' },
+  L: { code: 'L', label: 'л', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'VOLUME' },
+  M: { code: 'M', label: 'м', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'LENGTH' },
+  MM: { code: 'MM', label: 'мм', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'LENGTH' },
+  M2: { code: 'M2', label: 'м²', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'AREA' },
 };
 
 /** @type {Record<string, object>} */
@@ -26,10 +26,13 @@ let receiptUnitsList = [];
 let conversionsList = [];
 
 export function hydrateUnitsCatalog({ units = [], conversions = [] } = {}) {
-  const next = { ...FALLBACK_CONFIG };
+  const next = Object.fromEntries(
+    Object.entries(FALLBACK_CONFIG).map(([code, u]) => [code, u.code ? u : { ...u, code }]),
+  );
   const stock = [];
   const receipt = [];
   units.forEach((u) => {
+    if (!u?.code) return;
     const row = {
       code: u.code,
       category: u.category,
@@ -53,7 +56,8 @@ export function hydrateUnitsCatalog({ units = [], conversions = [] } = {}) {
 }
 
 export function getStockUnits() {
-  return stockUnitsList.length ? stockUnitsList : Object.values(unitConfigByCode);
+  if (stockUnitsList.length) return stockUnitsList;
+  return Object.entries(unitConfigByCode).map(([code, u]) => (u.code ? u : { ...u, code }));
 }
 
 export function getReceiptUnits() {

@@ -1,0 +1,101 @@
+.rst-stock-overview {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rst-stock-overview__toolbar,
+.rst-stock-overview__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.rst-stock-overview__toolbar {
+  justify-content: space-between;
+}
+
+.rst-stock-overview__kpi {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+  gap: 0.75rem;
+}
+
+.rst-stock-overview__kpi-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 55%),
+    var(--rst-surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+a.rst-stock-overview__kpi-card:hover {
+  border-color: rgb(255 122 26 / 0.35);
+  background:
+    linear-gradient(180deg, rgb(255 122 26 / 0.08), transparent 60%),
+    var(--rst-surface);
+}
+
+.rst-stock-overview__kpi-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rst-stock-overview__kpi-value {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--rst-ink);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.rst-stock-overview__kpi-sub {
+  font-size: 0.78rem;
+  color: var(--rst-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-stock-overview__kpi-card.is-emerald .rst-stock-overview__kpi-value { color: #34d399; }
+.rst-stock-overview__kpi-card.is-red .rst-stock-overview__kpi-value { color: #f87171; }
+.rst-stock-overview__kpi-card.is-orange .rst-stock-overview__kpi-value { color: #fb923c; }
+.rst-stock-overview__kpi-card.is-amber .rst-stock-overview__kpi-value { color: #fbbf24; }
+.rst-stock-overview__kpi-card.is-blue .rst-stock-overview__kpi-value { color: #60a5fa; }
+
+.rst-stock-overview__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.rst-stock-overview__links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: var(--rst-ink);
+  text-decoration: none;
+}
+
+.rst-stock-overview__links a:hover {
+  border-color: rgb(255 122 26 / 0.4);
+  color: var(--rst-accent, #ff7a1a);
+}

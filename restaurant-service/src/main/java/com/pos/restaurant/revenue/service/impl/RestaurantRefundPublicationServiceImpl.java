@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,21 +32,32 @@ public class RestaurantRefundPublicationServiceImpl implements RestaurantRefundP
 
     @Override
     public void publish(FloorOrder order, List<FloorOrderItem> items, FloorOrderPayment payment) {
+        publishPartial(order, items, payment, payment.getAmount(), order.getId().toString());
+    }
+
+    @Override
+    public void publishPartial(
+        FloorOrder order,
+        List<FloorOrderItem> returnedSlice,
+        FloorOrderPayment payment,
+        BigDecimal refundAmount,
+        String eventKey
+    ) {
         UUID returnEventId = UUID.randomUUID();
-        SaleCompletedEvent saleEvent = saleCompletedFactory.fromRefundedOrder(order, items, payment);
+        SaleCompletedEvent saleEvent = saleCompletedFactory.fromRefundedOrder(order, returnedSlice, payment);
         RevenueOutbox saleRow = outboxService.enqueue(
             RevenueOutboxChannel.SALE_COMPLETED,
             KafkaTopics.SALES_COMPLETED,
             order.getId().toString(),
-            "rst-sale-refund:" + order.getId(),
+            "rst-sale-refund:" + eventKey,
             writeJson(saleEvent)
         );
         RevenueOutbox financeRow = outboxService.enqueue(
             RevenueOutboxChannel.REFUND_EXPENSE,
             KafkaTopics.FINANCE_INTEGRATION,
-            "rst-refund:" + order.getId(),
+            "rst-refund:" + eventKey,
             "rst-refund:" + returnEventId,
-            writeJson(RestaurantRefundPayloadFactory.fromPaidOrder(order, payment, returnEventId))
+            writeJson(RestaurantRefundPayloadFactory.fromPaidOrder(order, payment, returnEventId, refundAmount))
         );
         scheduleSend(saleRow.getId());
         scheduleSend(financeRow.getId());

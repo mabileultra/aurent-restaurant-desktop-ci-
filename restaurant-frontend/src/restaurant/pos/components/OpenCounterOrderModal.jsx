@@ -1,4 +1,5 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
+import RstOverlay from '../../shared/components/RstOverlay';
 import '../../shared/styles/rst-modal.css';
 
 const emptyForm = () => ({
@@ -23,7 +24,7 @@ export default function OpenCounterOrderModal({
   const value = form ?? emptyForm();
 
   return (
-    <div className="rst-modal" role="dialog" aria-modal="true">
+    <RstOverlay onClose={onClose}>
       <div className="rst-modal__card rst-modal__card--wide">
         <h2 className="rst-modal__title">
           {isDelivery ? t('rst.pos.newDelivery') : t('rst.pos.newTakeaway')}
@@ -92,6 +93,6 @@ export default function OpenCounterOrderModal({
           </div>
         </form>
       </div>
-    </div>
+    </RstOverlay>
   );
 }

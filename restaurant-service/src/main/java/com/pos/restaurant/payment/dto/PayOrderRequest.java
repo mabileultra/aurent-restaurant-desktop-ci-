@@ -8,5 +8,24 @@ import java.math.BigDecimal;
 
 public record PayOrderRequest(
     @NotNull PaymentMethod method,
-    @NotNull @DecimalMin("0.01") BigDecimal amount
-) {}
+    @NotNull @DecimalMin("0.01") BigDecimal amount,
+    BigDecimal cashAmount,
+    BigDecimal cardAmount,
+    BigDecimal amountTendered,
+    BigDecimal changeGiven
+) {
+    public PayOrderRequest {
+        if (cashAmount == null) {
+            cashAmount = BigDecimal.ZERO;
+        }
+        if (cardAmount == null) {
+            cardAmount = BigDecimal.ZERO;
+        }
+        if (amountTendered == null) {
+            amountTendered = amount;
+        }
+        if (changeGiven == null) {
+            changeGiven = BigDecimal.ZERO;
+        }
+    }
+}

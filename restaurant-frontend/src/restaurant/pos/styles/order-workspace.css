@@ -27,19 +27,23 @@
 }
 
 .rst-order__back {
-  border: 0;
-  background: transparent;
-  color: var(--rst-muted);
-  font-weight: 700;
-  font-size: 0.95rem;
-  padding: 0.45rem 0.15rem;
-  min-height: 2.5rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: #121722;
+  color: var(--rst-ink);
+  font-weight: 800;
+  font-size: 0.9rem;
+  padding: 0.55rem 0.9rem;
+  min-height: 2.75rem;
   cursor: pointer;
   white-space: nowrap;
+  touch-action: manipulation;
 }
 
 .rst-order__back:hover {
-  color: var(--rst-accent);
+  color: #1b1208;
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
 }
 
 .rst-order__context-main {

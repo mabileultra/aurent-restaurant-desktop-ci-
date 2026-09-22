@@ -1,0 +1,131 @@
+.rst-stores__hint {
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid var(--rst-line);
+  background: rgb(255 255 255 / 0.03);
+  color: var(--rst-muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.rst-stores__hint a {
+  color: var(--rst-accent);
+  font-weight: 700;
+}
+
+.rst-admin-field__hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: var(--rst-muted);
+}
+
+.rst-admin-check {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  color: var(--rst-ink);
+  font-weight: 600;
+}
+
+.rst-stores__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.rst-stores__card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent);
+}
+
+.rst-stores__card.is-current {
+  border-color: rgb(255 122 26 / 0.45);
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.15);
+}
+
+.rst-stores__card.is-off {
+  opacity: 0.72;
+}
+
+.rst-stores__card-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.25rem;
+}
+
+.rst-stores__card-title h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--rst-ink);
+}
+
+.rst-stores__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: var(--rst-accent-soft);
+  color: var(--rst-accent);
+}
+
+.rst-stores__badge--off {
+  background: rgb(148 163 184 / 0.18);
+  color: var(--rst-muted);
+}
+
+.rst-stores__meta {
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.86rem;
+}
+
+.rst-stores__card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.rst-stores__int-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  color: var(--rst-ink);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rst-stores__int-link:hover {
+  border-color: rgb(255 122 26 / 0.45);
+  background: var(--rst-accent-soft);
+  color: var(--rst-accent);
+}
+
+@media (max-width: 760px) {
+  .rst-stores__card {
+    flex-direction: column;
+  }
+
+  .rst-stores__card-actions {
+    justify-content: flex-start;
+  }
+}

@@ -10,6 +10,8 @@ import {
   orderToMultikassaCartItems,
   restaurantPayTotal,
 } from './buildRestaurantFiscalSale';
+import { toPayAmountPayload } from './restaurantPayAmount';
+import { round2 } from '../../../utils/taxAmounts';
 
 /**
  * Фискализация (Multikassa, если включена) → оплата заказа → sale-like для экрана/печати.
@@ -18,6 +20,10 @@ export async function payRestaurantOrderWithFiscal({
   order,
   method,
   amount,
+  cashAmount,
+  cardAmount,
+  amountTendered,
+  changeGiven,
   storeId,
   storeName,
   shiftId = null,
@@ -29,13 +35,38 @@ export async function payRestaurantOrderWithFiscal({
   t,
 }) {
   const total = restaurantPayTotal(order);
-  const payAmount = amount != null ? Number(amount) : total;
+  const payAmount = toPayAmountPayload(amount != null ? Number(amount) : total);
+  const payMethod = String(method || 'CASH').toUpperCase();
+
+  let cash = cashAmount != null ? round2(cashAmount) : null;
+  let card = cardAmount != null ? round2(cardAmount) : null;
+  let tendered = amountTendered != null ? round2(amountTendered) : null;
+  let change = changeGiven != null ? round2(changeGiven) : null;
+
+  if (payMethod === 'CASH') {
+    cash = payAmount;
+    card = 0;
+    tendered = tendered != null && tendered >= payAmount ? tendered : payAmount;
+    change = round2(Math.max(0, tendered - payAmount));
+  } else if (payMethod === 'CARD') {
+    cash = 0;
+    card = payAmount;
+    tendered = payAmount;
+    change = 0;
+  } else if (payMethod === 'MIXED') {
+    cash = cash != null ? cash : 0;
+    card = card != null ? card : round2(Math.max(0, payAmount - cash));
+    tendered = tendered != null ? tendered : cash;
+    change = change != null ? change : round2(Math.max(0, tendered - cash));
+  }
+
   const payment = {
-    paymentMethod: method,
+    paymentMethod: payMethod,
     receiptType: 'SALE',
-    cashAmount: method === 'CASH' ? payAmount : 0,
-    cardAmount: method === 'CARD' ? payAmount : 0,
-    amountTendered: payAmount,
+    cashAmount: cash,
+    cardAmount: card,
+    amountTendered: tendered,
+    changeGiven: change,
   };
 
   const cartItems = orderToMultikassaCartItems(order, { serviceLabel });
@@ -60,8 +91,12 @@ export async function payRestaurantOrderWithFiscal({
   }
 
   const res = await rstOrderApi.pay(order.id, {
-    method,
+    method: payMethod,
     amount: payAmount,
+    cashAmount: cash,
+    cardAmount: card,
+    amountTendered: tendered,
+    changeGiven: change,
   });
   const paidOrder = res.data;
 
@@ -72,8 +107,12 @@ export async function payRestaurantOrderWithFiscal({
       commissionPercent: paidOrder.commissionPercent ?? order.commissionPercent,
       items: paidOrder.items?.length ? paidOrder.items : order.items,
     },
-    paymentMethod: method,
+    paymentMethod: payMethod,
     amount: payAmount,
+    cashAmount: cash,
+    cardAmount: card,
+    amountTendered: tendered,
+    changeGiven: change,
     fiscal: fiscalPayload,
     cashierName,
     waiterName,

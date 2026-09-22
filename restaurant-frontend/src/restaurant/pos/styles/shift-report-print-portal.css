@@ -1,0 +1,32 @@
+.rst-shift-print-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 0.45);
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.rst-shift-print-host {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 72mm;
+  background: #fff;
+  color: #111;
+}
+
+@media print {
+  .rst-shift-print-overlay {
+    display: none !important;
+  }
+
+  .rst-shift-print-host {
+    position: static;
+    left: auto;
+    width: auto;
+  }
+}

@@ -1,0 +1,73 @@
+/* Compact filter selects on stock report toolbars */
+
+.rst-report-store,
+.rst-report-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 0 1 auto;
+  width: min(14rem, 70%);
+  max-width: 14rem;
+  min-width: 10rem;
+  margin: 0;
+}
+
+.rst-report-store__label,
+.rst-report-filter__label {
+  font-size: 0.78rem;
+  font-weight: 650;
+  color: var(--rst-muted, #94a3b8);
+}
+
+.rst-report-store__select,
+.rst-report-filter__select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.5rem;
+  height: 2.5rem;
+  padding: 0.45rem 2rem 0.45rem 0.75rem;
+  border: 1px solid var(--rst-line, #2a3140);
+  border-radius: 10px;
+  background-color: var(--rst-surface-2, #121722);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 0.7rem;
+  color: var(--rst-ink, #f8fafc);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.2;
+  appearance: none;
+  cursor: pointer;
+}
+
+.rst-report-store__select:focus,
+.rst-report-filter__select:focus {
+  outline: none;
+  border-color: var(--rst-accent, #ff7a1a);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft, rgb(255 122 26 / 0.22));
+}
+
+.rst-embedded-stock .rst-report-store__select,
+.rst-embedded-stock .rst-report-filter__select {
+  background-color: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  border: 1px solid var(--rst-line) !important;
+  min-height: 2.5rem !important;
+  height: 2.5rem !important;
+  padding: 0.45rem 2rem 0.45rem 0.75rem !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2394a3b8' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.7rem center !important;
+  background-size: 0.7rem !important;
+}
+
+@media (max-width: 720px) {
+  .rst-report-store,
+  .rst-report-filter {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+}

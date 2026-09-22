@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public final class ProductSpecifications {
@@ -194,8 +195,34 @@ public final class ProductSpecifications {
 
             String q = search != null ? search.trim() : "";
             if (StringUtils.hasText(q)) {
-                String like = "%" + q.toLowerCase() + "%";
-                parts.add(cb.like(cb.lower(root.get("name")), like));
+                query.distinct(true);
+                Join<Product, ProductBarcode> extras = root.join("extraBarcodes", JoinType.LEFT);
+                String[] tokens = q.toLowerCase(Locale.ROOT).split("\\s+");
+                List<Predicate> andTokens = new ArrayList<>();
+                for (String token : tokens) {
+                    if (!StringUtils.hasText(token)) {
+                        continue;
+                    }
+                    String like = "%" + token + "%";
+                    var name = cb.like(cb.lower(root.get("name")), like);
+                    var sku = cb.like(cb.lower(root.get("sku")), like);
+                    var bc = cb.and(
+                        cb.isNotNull(root.get("barcode")),
+                        cb.like(cb.lower(root.get("barcode")), like)
+                    );
+                    var extraBc = cb.and(
+                        cb.isNotNull(extras.get("barcode")),
+                        cb.like(cb.lower(extras.get("barcode")), like)
+                    );
+                    var ikpu = cb.and(
+                        cb.isNotNull(root.get("ikpu")),
+                        cb.like(cb.lower(root.get("ikpu")), like)
+                    );
+                    andTokens.add(cb.or(name, sku, bc, extraBc, ikpu));
+                }
+                if (!andTokens.isEmpty()) {
+                    parts.add(cb.and(andTokens.toArray(new Predicate[0])));
+                }
             }
 
             if (markedProduct != null) {

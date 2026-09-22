@@ -147,7 +147,7 @@ class ProductImportSupportTest {
         ProductImportPreviewRow row = new ProductImportPreviewRow(
             7, "IS-001-L-7", "Name", "123", null, "A-1", "IS-001", "dona", null, "PIECE",
             java.math.BigDecimal.ZERO,
-            null, null, null,
+            null, java.math.BigDecimal.ZERO, null, null,
             ProductImportPreviewRow.STATUS_NEW,
             null, null, null
         );

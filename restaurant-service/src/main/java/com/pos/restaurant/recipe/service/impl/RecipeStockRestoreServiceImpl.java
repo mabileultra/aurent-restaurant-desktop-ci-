@@ -40,6 +40,16 @@ public class RecipeStockRestoreServiceImpl implements RecipeStockRestoreService 
 
     @Override
     public void restorePaidOrder(FloorOrder order, List<FloorOrderItem> items, FloorOrderPayment payment) {
+        restorePaidItems(order, items, payment, order.getId().toString());
+    }
+
+    @Override
+    public void restorePaidItems(
+        FloorOrder order,
+        List<FloorOrderItem> items,
+        FloorOrderPayment payment,
+        String eventKey
+    ) {
         Map<UUID, BigDecimal> consumed = explode(order, items);
         if (consumed.isEmpty()) {
             return;
@@ -57,8 +67,8 @@ public class RecipeStockRestoreServiceImpl implements RecipeStockRestoreService 
         RevenueOutbox row = outboxService.enqueue(
             RevenueOutboxChannel.STOCK_RESTORE,
             "pos.internal.stock-restore",
-            "rst-stock-restore:" + order.getId(),
-            "rst-stock-restore:" + order.getId(),
+            "rst-stock-restore:" + eventKey,
+            "rst-stock-restore:" + eventKey,
             writeJson(payload)
         );
         scheduleSend(row.getId());

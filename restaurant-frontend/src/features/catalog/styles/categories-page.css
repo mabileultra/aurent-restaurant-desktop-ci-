@@ -1,0 +1,35 @@
+.rst-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rst-categories__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rst-categories__toolbar.is-compact {
+  justify-content: flex-end;
+}
+
+.rst-categories__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.65rem;
+}
+
+.rst-categories__actions .rst-admin-field {
+  min-width: 11rem;
+}
+
+.rst-categories__delete-hint {
+  margin: 0;
+  color: var(--rst-ink);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}

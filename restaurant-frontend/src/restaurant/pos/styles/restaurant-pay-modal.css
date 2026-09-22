@@ -1,0 +1,184 @@
+.rst-pay-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 130;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rst-pay-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 0.55);
+  cursor: pointer;
+}
+
+.rst-pay-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 26rem);
+  border-radius: 14px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: var(--rst-surface, #161616);
+  color: inherit;
+  box-shadow: 0 24px 60px rgb(0 0 0 / 0.4);
+  display: flex;
+  flex-direction: column;
+  max-height: 92vh;
+  overflow: hidden;
+}
+
+.rst-pay-modal__head,
+.rst-pay-modal__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+}
+
+.rst-pay-modal__head {
+  border-bottom: 1px solid var(--rst-border, #2a2a2a);
+}
+
+.rst-pay-modal__head strong {
+  display: block;
+  font-size: 1.05rem;
+}
+
+.rst-pay-modal__head span {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.rst-pay-modal__icon-btn {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0.35rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rst-pay-modal__methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  padding: 0.75rem 1rem 0;
+}
+
+.rst-pay-modal__method {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.65rem 0.4rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: transparent;
+  color: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rst-pay-modal__method.is-active {
+  border-color: var(--rst-accent, #3b82f6);
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 16%, transparent);
+}
+
+.rst-pay-modal__body {
+  padding: 0.85rem 1rem 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  overflow: auto;
+}
+
+.rst-pay-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.rst-pay-modal__amount-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  font-size: 0.9rem;
+}
+
+.rst-pay-modal__amount-box strong {
+  font-size: 1.25rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-pay-modal__quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rst-pay-modal__quick button {
+  border: 1px solid var(--rst-border, #2a2a2a);
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rst-pay-modal__quick button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rst-pay-modal__change,
+.rst-pay-modal__split {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 10%, transparent);
+  font-size: 0.9rem;
+}
+
+.rst-pay-modal__split {
+  flex-direction: column;
+}
+
+.rst-pay-modal__split > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.rst-pay-modal__hint {
+  margin: 0;
+  opacity: 0.75;
+  font-size: 0.9rem;
+}
+
+.rst-pay-modal__error {
+  margin: 0;
+  color: #f87171;
+  font-size: 0.85rem;
+}
+
+.rst-pay-modal__footer {
+  border-top: 1px solid var(--rst-border, #2a2a2a);
+  justify-content: flex-end;
+}

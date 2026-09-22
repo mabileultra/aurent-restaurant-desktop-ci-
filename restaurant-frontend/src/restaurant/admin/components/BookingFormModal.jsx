@@ -1,4 +1,5 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
+import RstOverlay from '../../shared/components/RstOverlay';
 import '../../shared/styles/rst-modal.css';
 
 export default function BookingFormModal({
@@ -16,7 +17,7 @@ export default function BookingFormModal({
   if (!open) return null;
 
   return (
-    <div className="rst-modal" role="dialog" aria-modal="true">
+    <RstOverlay onClose={onClose}>
       <div className="rst-modal__card">
         <h2 className="rst-modal__title">
           {mode === 'edit' ? t('rst.booking.editTitle') : t('rst.booking.addTitle')}
@@ -112,6 +113,6 @@ export default function BookingFormModal({
           </div>
         </form>
       </div>
-    </div>
+    </RstOverlay>
   );
 }

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface RestaurantAnalyticsService {
 
-    DashboardResponse dashboard(Integer storeId);
+    DashboardResponse dashboard(Integer storeId, String periodKey, Instant from, Instant to);
 
     SalesReportResponse salesReport(Integer storeId, Instant from, Instant to);
 

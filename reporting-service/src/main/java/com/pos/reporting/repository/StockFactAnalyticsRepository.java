@@ -9,6 +9,7 @@ public interface StockFactAnalyticsRepository {
 
     Page<Object[]> balancesPage(
         Integer companyId,
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock,

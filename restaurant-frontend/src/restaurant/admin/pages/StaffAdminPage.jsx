@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import UserFormModal from '../../../features/tenant/components/users/UserFormModal';
@@ -11,7 +12,13 @@ export default function StaffAdminPage() {
   const p = useStaffAdminPage();
 
   if (p.workspace.noAssignment) {
-    return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
+    return (
+      <div className="rst-notice">
+        {p.t('rst.floor.noStore')}
+        {' '}
+        <Link to="/rst/admin/stores">{p.t('rst.admin.storesTitle')}</Link>
+      </div>
+    );
   }
 
   return (
@@ -30,23 +37,11 @@ export default function StaffAdminPage() {
         </div>
       </div>
 
-      {p.workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-3">
-          <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
-          <select
-            className="form-select"
-            value={p.workspace.pickedStoreId}
-            onChange={(e) => p.workspace.setPickedStoreId(e.target.value)}
-          >
-            <option value="">{p.t('rst.admin.selectStore')}</option>
-            {p.workspace.restaurantStores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-
-      <div className="rst-staff__hint">{p.t('rst.staff.ecosystemHint')}</div>
+      <div className="rst-staff__hint">
+        {p.t('rst.staff.ecosystemHint')}
+        {' '}
+        <Link to="/rst/admin/stores">{p.t('rst.nav.stores')}</Link>
+      </div>
 
       {!p.canManage ? (
         <div className="rst-staff__hint">{p.t('rst.staff.managerHint')}</div>

@@ -31,7 +31,7 @@ public class StockMovement {
     @JoinColumn(name = "store_id")
     private Store store;
 
-    @Column(name = "movement_type", nullable = false, length = 20)
+    @Column(name = "movement_type", nullable = false, length = 40)
     private String movementType;
 
     /** WRITE_OFF: DEFECT, EXPIRED, DAMAGE, SHORTAGE, OTHER */

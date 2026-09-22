@@ -13,6 +13,7 @@ import {
   toStoreIdSet,
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
+import { toastApiError } from '../../../utils/apiError';
 
 export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser, allowedRoles, defaultStoreIds }) {
   const { t } = useTranslation();
@@ -186,7 +187,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
       onClose();
     },
     onError: (err) =>
-      toast.error(err.response?.data?.message ?? (isEdit ? t('users.updateFailed') : t('users.createFailed'))),
+      toastApiError(err, isEdit ? t('users.updateFailed') : t('users.createFailed')),
   });
 
   const toggleStore = (id) => {

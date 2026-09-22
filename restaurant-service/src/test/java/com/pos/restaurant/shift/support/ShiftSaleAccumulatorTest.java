@@ -24,13 +24,20 @@ class ShiftSaleAccumulatorTest {
             .status(RestaurantShiftStatus.OPEN)
             .build();
 
-        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("10.00"));
-        accumulator.applyPayment(shift, PaymentMethod.CARD, new BigDecimal("25.50"));
+        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("10.00"), null, null);
+        accumulator.applyPayment(shift, PaymentMethod.CARD, new BigDecimal("25.50"), null, null);
+        accumulator.applyPayment(
+            shift,
+            PaymentMethod.MIXED,
+            new BigDecimal("30.00"),
+            new BigDecimal("10.00"),
+            new BigDecimal("20.00")
+        );
 
-        assertEquals(2, shift.getSaleCount());
-        assertEquals(new BigDecimal("35.50"), shift.getTotalAmount());
-        assertEquals(new BigDecimal("10.00"), shift.getCashAmount());
-        assertEquals(new BigDecimal("25.50"), shift.getCardAmount());
+        assertEquals(3, shift.getSaleCount());
+        assertEquals(new BigDecimal("65.50"), shift.getTotalAmount());
+        assertEquals(new BigDecimal("20.00"), shift.getCashAmount());
+        assertEquals(new BigDecimal("45.50"), shift.getCardAmount());
     }
 
     @Test
@@ -42,8 +49,8 @@ class ShiftSaleAccumulatorTest {
             .openedByUserId(UUID.randomUUID())
             .status(RestaurantShiftStatus.OPEN)
             .build();
-        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("40.00"));
-        accumulator.applyRefund(shift, PaymentMethod.CASH, new BigDecimal("15.00"));
+        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("40.00"), null, null);
+        accumulator.applyRefund(shift, PaymentMethod.CASH, new BigDecimal("15.00"), null, null);
 
         assertEquals(new BigDecimal("25.00"), shift.getTotalAmount());
         assertEquals(new BigDecimal("25.00"), shift.getCashAmount());

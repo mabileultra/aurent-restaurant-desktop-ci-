@@ -1,0 +1,51 @@
+.rst-rec-lines-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rst-rec-lines-toolbar__file {
+  display: none;
+}
+
+.rst-rec-lines-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  margin-bottom: 0.65rem;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--rst-accent) 35%, var(--rst-line));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--rst-accent) 8%, var(--rst-surface));
+}
+
+.rst-rec-lines-bulk p {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rst-rec-lines-bulk__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.rst-stock-doc-lines__head-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.rst-stock-doc-lines__check {
+  width: 2.25rem;
+  text-align: center;
+}
+
+.rst-stock-doc-lines__table tr.is-selected td {
+  background: color-mix(in srgb, var(--rst-accent) 7%, transparent);
+}

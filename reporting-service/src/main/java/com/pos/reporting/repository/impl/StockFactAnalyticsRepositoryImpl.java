@@ -22,6 +22,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
     @Override
     public Page<Object[]> balancesPage(
         Integer companyId,
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock,
@@ -30,7 +31,7 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         return nativePageExecutor.fetchPage(
             sqlResourceLoader.load("sql/stock/balances-page.sql"),
             sqlResourceLoader.load("sql/stock/balances-count.sql"),
-            query -> bindBalances(query, companyId, categoryId, search, onlyWithStock),
+            query -> bindBalances(query, companyId, storeId, categoryId, search, onlyWithStock),
             pageable
         );
     }
@@ -83,11 +84,13 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
     private static void bindBalances(
         Query query,
         Integer companyId,
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock
     ) {
         NativeQueryParamSupport.setParameterIfPresent(query, "companyId", companyId);
+        NativeQueryParamSupport.bindOptionalStoreId(query, "storeId", storeId);
         NativeQueryParamSupport.bindOptionalCategoryId(query, "categoryId", categoryId);
         NativeQueryParamSupport.setParameterIfPresent(
             query, "searchPattern", NativeQueryParamSupport.toContainsPattern(search)

@@ -75,9 +75,12 @@ public class ProductServiceImpl implements ProductService {
         String barcodeContains,
         Boolean markedProduct,
         String businessTypeCode,
+        Integer storeId,
         Pageable pageable
     ) {
-        return queryService.getWarehouseProducts(search, barcodeContains, markedProduct, businessTypeCode, pageable);
+        return queryService.getWarehouseProducts(
+            search, barcodeContains, markedProduct, businessTypeCode, storeId, pageable
+        );
     }
 
     @Override

@@ -12,7 +12,9 @@ public final class AslMarkingStoreSupport {
     "PHARMACY",
     "GROCERY",
     "UNIVERSAL",
-    "CONSTRUCTION"
+    "CONSTRUCTION",
+    "RESTAURANT",
+    "CANTEEN"
   );
 
   private AslMarkingStoreSupport() {

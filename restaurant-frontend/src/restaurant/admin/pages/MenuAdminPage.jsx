@@ -93,22 +93,6 @@ export default function MenuAdminPage() {
         <Link className="rst-shell__footer-link" to="/rst/admin/recipes">{p.t('rst.admin.toRecipes')}</Link>
       </div>
 
-      {p.workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-2">
-          <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
-          <select
-            className="form-select"
-            value={p.workspace.pickedStoreId}
-            onChange={(e) => p.workspace.setPickedStoreId(e.target.value)}
-          >
-            <option value="">{p.t('rst.admin.selectStore')}</option>
-            {p.workspace.restaurantStores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-
       <div className="rst-admin-filters rst-menu__filters">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('common.search')}</span>

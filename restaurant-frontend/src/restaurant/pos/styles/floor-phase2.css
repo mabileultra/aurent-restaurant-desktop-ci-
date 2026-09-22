@@ -1,0 +1,140 @@
+.rst-modal__card--wide {
+  max-width: 520px;
+}
+
+.rst-occupied-modal__meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem 1rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--rst-radius-md, 12px);
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid var(--rst-line);
+}
+
+.rst-occupied-modal__meta dt {
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.rst-occupied-modal__meta dd {
+  margin: 0.15rem 0 0;
+  font-weight: 700;
+  color: var(--rst-ink);
+}
+
+.rst-occupied-modal__lines {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  max-height: 180px;
+  overflow: auto;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+}
+
+.rst-occupied-modal__lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--rst-line);
+  font-size: 0.9rem;
+}
+
+.rst-occupied-modal__lines li:last-child {
+  border-bottom: 0;
+}
+
+.rst-occupied-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.rst-occupied-modal__actions .rst-btn,
+.rst-occupied-modal__actions .base-btn,
+.rst-occupied-modal__actions button {
+  width: 100%;
+}
+
+.rst-occupied-modal__history {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+  color: var(--rst-muted);
+  font-size: 0.82rem;
+}
+
+.rst-occupied-modal__history li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.2rem 0;
+}
+
+.rst-guest-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.rst-guest-stepper__btn {
+  width: 3rem;
+  height: 3rem;
+  border-radius: 12px;
+  border: 1px solid var(--rst-line);
+  background: #121722;
+  color: var(--rst-ink);
+  font-size: 1.35rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-guest-stepper__value {
+  min-width: 2.4rem;
+  text-align: center;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.rst-table-pick {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.5rem;
+  max-height: 240px;
+  overflow: auto;
+  margin-bottom: 1rem;
+}
+
+.rst-table-pick__item {
+  padding: 0.75rem 0.5rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font-weight: 700;
+  cursor: pointer;
+  text-align: center;
+}
+
+.rst-table-pick__item.is-active {
+  border-color: var(--rst-accent);
+  background: rgb(255 122 26 / 0.16);
+}
+
+.rst-table-pick__item em {
+  display: block;
+  margin-top: 0.25rem;
+  font-style: normal;
+  font-size: 0.75rem;
+  color: var(--rst-muted);
+  font-weight: 600;
+}

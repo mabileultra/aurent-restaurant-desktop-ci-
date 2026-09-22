@@ -27,6 +27,7 @@ public class StockBalanceReportServiceImpl implements StockBalanceReportService 
 
     @Override
     public PageResponse<PosStockBalanceRow> balances(
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock,
@@ -34,6 +35,7 @@ public class StockBalanceReportServiceImpl implements StockBalanceReportService 
     ) {
         Page<Object[]> page = stockFactAnalyticsRepository.balancesPage(
             ReportingTenantContext.requireCompanyId(),
+            storeId,
             categoryId,
             ReportingSearchSupport.normalizeLikePattern(search),
             onlyWithStock,
@@ -46,9 +48,9 @@ public class StockBalanceReportServiceImpl implements StockBalanceReportService 
     }
 
     @Override
-    public List<PosStockBalanceRow> listAll(Integer categoryId, String search, boolean onlyWithStock) {
+    public List<PosStockBalanceRow> listAll(Integer storeId, Integer categoryId, String search, boolean onlyWithStock) {
         return ReportingPageCollector.collectAll(
-            (page, size) -> balances(categoryId, search, onlyWithStock, PageRequest.of(page, size))
+            (page, size) -> balances(storeId, categoryId, search, onlyWithStock, PageRequest.of(page, size))
         );
     }
 

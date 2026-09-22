@@ -1,0 +1,45 @@
+.rst-cat-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  cursor: default;
+  border: 0;
+  background: transparent;
+}
+
+.rst-cat-menu {
+  position: fixed;
+  z-index: 90;
+  min-width: 160px;
+  padding: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  box-shadow: 0 16px 36px rgb(0 0 0 / 0.35);
+}
+
+.rst-cat-menu__item {
+  display: block;
+  width: 100%;
+  padding: 0.55rem 0.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--rst-ink);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rst-cat-menu__item:hover {
+  background: var(--rst-accent-soft);
+}
+
+.rst-cat-menu__item--danger {
+  color: #f87171;
+}
+
+.rst-cat-menu__item--danger:hover {
+  background: rgb(248 113 113 / 0.12);
+}

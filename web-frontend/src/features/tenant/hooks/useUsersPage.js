@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { companyApi, platformBusinessTypeApi, storeApi, userApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
 import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
+import { isRoleAllowedForBusinessType } from '../../platform/utils/rolesByBusinessType';
 import { TENANT_PAGE_SIZE_DEFAULT } from '../constants';
 import { asEntityList } from '../utils/companySelectOptions';
 
@@ -122,6 +123,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
       if (businessType) {
         const company = companyById.get(String(user.companyId ?? ''));
         if (!companyHasBusinessType(company, businessType)) return false;
+        if (!isRoleAllowedForBusinessType(user.role, businessType)) return false;
       }
       if (!q) return true;
       return [

@@ -38,7 +38,7 @@ public final class ProductImportSupport {
     public static ProductImportPreviewRow invalidRow(int rowNum, String message) {
         return new ProductImportPreviewRow(
             rowNum, "", "", null, null, null, null, "", null, null, BigDecimal.ZERO,
-            BigDecimal.ZERO, null, BigDecimal.ZERO,
+            BigDecimal.ZERO, BigDecimal.ZERO, null, BigDecimal.ZERO,
             ProductImportPreviewRow.STATUS_INVALID,
             null, null, message
         );
@@ -77,6 +77,7 @@ public final class ProductImportSupport {
                 resolvedSaleType,
                 fields.quantity(),
                 fields.sellingPrice(),
+                fields.costPrice(),
                 duplicate.getSellingPrice(),
                 fields.taxRatePercent(),
                 ProductImportPreviewRow.STATUS_DUPLICATE,
@@ -98,6 +99,7 @@ public final class ProductImportSupport {
             resolvedSaleType,
             fields.quantity(),
             fields.sellingPrice(),
+            fields.costPrice(),
             null,
             fields.taxRatePercent(),
             ProductImportPreviewRow.STATUS_NEW,

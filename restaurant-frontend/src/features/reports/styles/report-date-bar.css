@@ -1,0 +1,56 @@
+.rst-report-dates {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rst-report-dates__range {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  color: var(--rst-muted);
+}
+
+.rst-report-dates__range input {
+  border: 0;
+  background: transparent;
+  color: var(--rst-ink);
+  font-size: 0.88rem;
+  font-weight: 600;
+  min-height: 1.75rem;
+}
+
+.rst-report-dates__range input:focus {
+  outline: none;
+}
+
+.rst-report-dates__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.rst-report-dates__chip {
+  min-height: 2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-report-dates__chip.is-active,
+.rst-report-dates__chip:hover {
+  border-color: rgb(255 122 26 / 0.45);
+  background: var(--rst-accent-soft);
+  color: var(--rst-accent);
+}

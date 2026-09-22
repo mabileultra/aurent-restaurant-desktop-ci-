@@ -46,5 +46,7 @@
     <include file="v39-platform-admin-role.xml" relativeToChangelogFile="true"/>
     <include file="v40-platform-admin-user.xml" relativeToChangelogFile="true"/>
     <include file="v41-platform-admin-access.xml" relativeToChangelogFile="true"/>
+    <include file="v42-asl-request-log.xml" relativeToChangelogFile="true"/>
+    <include file="v43-stock-expense-production.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

@@ -7,6 +7,7 @@ import com.pos.reporting.service.DeadStockReportService;
 import com.pos.reporting.service.StockBalanceReportService;
 import com.pos.reporting.service.StockInventoryReportService;
 import com.pos.reporting.service.StockMovementReportService;
+import com.pos.reporting.service.StockReceiptReportService;
 import com.pos.reporting.service.StockReportExportService;
 import com.pos.reporting.service.StockTransferReportService;
 import lombok.RequiredArgsConstructor;
@@ -23,16 +24,18 @@ public class StockReportExportServiceImpl implements StockReportExportService {
     private final StockMovementReportService stockMovementReportService;
     private final StockInventoryReportService stockInventoryReportService;
     private final StockTransferReportService stockTransferReportService;
+    private final StockReceiptReportService stockReceiptReportService;
     private final StockExportRowMapper stockExportRowMapper;
     private final ReportExcelWriter reportExcelWriter;
 
     @Override
     public byte[] exportBalances(
+        Integer storeId,
         Integer categoryId,
         String search,
         boolean onlyWithStock
     ) {
-        var rows = stockBalanceReportService.listAll(categoryId, search, onlyWithStock);
+        var rows = stockBalanceReportService.listAll(storeId, categoryId, search, onlyWithStock);
         return reportExcelWriter.write(
             StockExportTemplate.STOCK_BALANCES,
             stockExportRowMapper.balanceRows(rows)
@@ -82,6 +85,15 @@ public class StockReportExportServiceImpl implements StockReportExportService {
         return reportExcelWriter.write(
             StockExportTemplate.STOCK_TRANSFERS,
             stockExportRowMapper.transferRows(rows)
+        );
+    }
+
+    @Override
+    public byte[] exportReceipts(LocalDate from, LocalDate to, Integer storeId) {
+        var rows = stockReceiptReportService.listAll(from, to, storeId);
+        return reportExcelWriter.write(
+            StockExportTemplate.STOCK_RECEIPTS,
+            stockExportRowMapper.receiptRows(rows)
         );
     }
 }

@@ -8,7 +8,10 @@ export default function RestaurantAdminGuard({ children }) {
   const user = useAuthStore((s) => s.user);
   const { hasModule } = useModuleAccess();
 
-  if (user?.role === 'WAITER' || user?.role === 'CASHIER') {
+  if (user?.role === 'CASHIER') {
+    return <Navigate to="/rst/cashier" replace />;
+  }
+  if (user?.role === 'WAITER') {
     return <Navigate to="/rst/pos" replace />;
   }
   if (user?.role === 'COOK') {

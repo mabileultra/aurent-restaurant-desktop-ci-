@@ -245,7 +245,9 @@ public class ProductImportServiceImpl implements ProductImportService {
             categoryId = resolveCategoryId(rowOpts.categoryId(), "Строка " + row.rowNum());
         }
 
-        BigDecimal costPrice = BigDecimal.ZERO;
+        BigDecimal costPrice = row.costPrice() != null && row.costPrice().signum() > 0
+            ? row.costPrice()
+            : BigDecimal.ZERO;
         BigDecimal taxRate = ProductImportParseUtil.normalizeTaxRatePercent(row.taxRatePercent());
         String unit = StringUtils.hasText(row.unitOfMeasure()) ? row.unitOfMeasure().trim() : "dona";
         ProductQuantityRules quantityRules = ProductQuantityRulesResolver.resolve(

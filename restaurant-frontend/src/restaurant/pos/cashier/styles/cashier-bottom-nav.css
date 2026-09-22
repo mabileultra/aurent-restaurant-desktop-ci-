@@ -1,0 +1,47 @@
+.rst-cashier-nav {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.55rem 0.65rem;
+  border-top: 1px solid var(--rst-line);
+  background: #0d121c;
+}
+
+.rst-cashier-nav__btn {
+  flex: 1 1 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 3.4rem;
+  padding: 0.35rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--rst-muted);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-cashier-nav__btn:hover {
+  color: var(--rst-ink);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.rst-cashier-nav__btn.is-active {
+  color: #1b1208;
+  background: var(--rst-accent);
+  border-color: var(--rst-accent);
+}
+
+@media (max-width: 900px) {
+  .rst-cashier-nav__btn span {
+    font-size: 0.65rem;
+  }
+}

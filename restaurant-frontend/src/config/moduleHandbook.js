@@ -1,6 +1,7 @@
 /** Restaurant SPA handbook — only /rst routes and shared stock handoff keys. */
 
 const ROUTE_MAP = [
+  { test: (p) => p.startsWith('/rst/cashier'), id: 'restaurantPos' },
   { test: (p) => p.startsWith('/rst/pos'), id: 'restaurantPos' },
   { test: (p) => p.startsWith('/rst/kitchen'), id: 'restaurantKitchen' },
   { test: (p) => p.startsWith('/rst/admin/booking'), id: 'restaurantBooking' },

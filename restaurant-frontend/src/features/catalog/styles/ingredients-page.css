@@ -1,0 +1,25 @@
+.rst-ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rst-ingredients__toolbar,
+.rst-ingredients__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rst-ingredients__filters .rst-nomenclature-tabs {
+  flex: 1 1 auto;
+}
+
+.rst-ingredients__filters .page-search-field,
+.rst-ingredients__filters > label,
+.rst-ingredients__filters > .ui-page-search {
+  flex: 0 1 16rem;
+  min-width: 12rem;
+}

@@ -8,6 +8,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Component
@@ -36,7 +37,9 @@ public class BillEligibilityPolicy {
         if (due.compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("Nothing to pay");
         }
-        if (amount.compareTo(due) != 0) {
+        BigDecimal dueScaled = due.setScale(2, RoundingMode.HALF_UP);
+        BigDecimal amountScaled = amount.setScale(2, RoundingMode.HALF_UP);
+        if (amountScaled.compareTo(dueScaled) != 0) {
             throw new BusinessException("Payment amount must equal the bill total");
         }
     }

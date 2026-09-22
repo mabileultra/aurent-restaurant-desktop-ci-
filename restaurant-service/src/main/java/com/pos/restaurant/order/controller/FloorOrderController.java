@@ -3,9 +3,11 @@ package com.pos.restaurant.order.controller;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
+import com.pos.restaurant.order.dto.TransferTableRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 import com.pos.restaurant.order.service.FloorOrderService;
@@ -109,6 +111,26 @@ public class FloorOrderController {
         @Valid @RequestBody AssignWaiterRequest request
     ) {
         return orderService.assignWaiter(orderId, request);
+    }
+
+    @PostMapping("/orders/{orderId}/transfer-table")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Перевести заказ на другой стол")
+    public OrderResponse transferTable(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody TransferTableRequest request
+    ) {
+        return orderService.transferTable(orderId, request);
+    }
+
+    @PostMapping("/orders/{orderId}/merge-tables")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Объединить столы в один заказ")
+    public OrderResponse mergeTables(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody MergeTablesRequest request
+    ) {
+        return orderService.mergeTables(orderId, request);
     }
 
     @PostMapping("/orders/{orderId}/items")

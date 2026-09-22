@@ -1,0 +1,175 @@
+.rst-touch-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 3.15rem;
+  padding: 0.65rem 0.95rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-touch-trigger:hover,
+.rst-touch-trigger:focus-visible {
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft);
+  outline: none;
+}
+
+.rst-touch-trigger__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rst-touch-trigger__chevron {
+  flex-shrink: 0;
+  color: var(--rst-muted);
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.rst-touch-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rst-touch-options__item {
+  min-height: 3.35rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-touch-options__item:hover {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.rst-touch-options__item.is-active {
+  border-color: var(--rst-accent);
+  background: rgb(255 122 26 / 0.18);
+  color: #ffd7b0;
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.35);
+}
+
+.rst-touch-date__presets {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+.rst-touch-date__preset {
+  min-height: 3rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-touch-date__preset:hover {
+  border-color: var(--rst-accent);
+}
+
+.rst-touch-date__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rst-touch-date__month {
+  flex: 1;
+  text-align: center;
+  font-size: 1.05rem;
+  text-transform: capitalize;
+  color: var(--rst-ink);
+}
+
+.rst-touch-date__nav-btn {
+  width: 3rem;
+  height: 3rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-touch-date__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin-bottom: 0.35rem;
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rst-touch-date__grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.rst-touch-date__day {
+  aspect-ratio: 1;
+  min-height: 2.85rem;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 750;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-touch-date__day.is-empty {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.rst-touch-date__day.is-today {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.rst-touch-date__day.is-active {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-touch-date__day:not(.is-empty):hover {
+  border-color: var(--rst-accent);
+}

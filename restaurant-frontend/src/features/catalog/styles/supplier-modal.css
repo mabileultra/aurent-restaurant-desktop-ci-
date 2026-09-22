@@ -1,0 +1,80 @@
+.rst-supplier-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rst-supplier-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.5);
+  cursor: pointer;
+}
+
+.rst-supplier-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 28rem);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.rst-supplier-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--rst-line);
+}
+
+.rst-supplier-modal__head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.rst-supplier-modal__close {
+  border: 0;
+  background: transparent;
+  color: var(--rst-muted);
+  cursor: pointer;
+}
+
+.rst-supplier-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.rst-supplier-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--rst-muted);
+}
+
+.rst-supplier-modal__field input {
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: var(--rst-bg, #fff);
+  color: var(--rst-text);
+  font: inherit;
+}
+
+.rst-supplier-modal__actions {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}

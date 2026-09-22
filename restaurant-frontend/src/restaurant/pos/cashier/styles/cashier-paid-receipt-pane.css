@@ -1,0 +1,131 @@
+.rst-paid-receipt-pane {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  min-width: 0;
+  height: min(70vh, 40rem);
+  border-radius: 12px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: var(--rst-surface, #161616);
+  overflow: hidden;
+}
+
+.rst-paid-receipt-pane__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--rst-border, #2a2a2a);
+}
+
+.rst-paid-receipt-pane__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.rst-paid-receipt-pane__back:hover {
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 12%, transparent);
+}
+
+.rst-paid-receipt-pane__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rst-paid-receipt-pane__close:hover {
+  background: color-mix(in srgb, #fff 8%, transparent);
+}
+
+.rst-paid-receipt-pane__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: 12px;
+  background: #1a1a1a;
+}
+
+.rst-paid-receipt-pane__paper {
+  max-width: 320px;
+  margin: 0 auto;
+  background: #fff;
+  color: #111;
+  border-radius: 4px;
+  padding: 8px;
+}
+
+.rst-paid-receipt-pane__placeholder {
+  margin: 2rem 1rem;
+  text-align: center;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.rst-paid-receipt-pane__footer {
+  flex-shrink: 0;
+  padding: 10px 12px;
+  border-top: 1px solid var(--rst-border, #2a2a2a);
+}
+
+.rst-paid-receipt-pane__footer {
+  display: flex;
+  gap: 8px;
+}
+
+.rst-paid-receipt-pane__print,
+.rst-paid-receipt-pane__return {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 42px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.rst-paid-receipt-pane__print {
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: transparent;
+  color: inherit;
+}
+
+.rst-paid-receipt-pane__print:hover:not(:disabled) {
+  border-color: var(--rst-accent, #3b82f6);
+}
+
+.rst-paid-receipt-pane__return {
+  border: none;
+  background: #b91c1c;
+  color: #fff;
+}
+
+.rst-paid-receipt-pane__return:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.rst-paid-receipt-pane__print:disabled,
+.rst-paid-receipt-pane__return:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

@@ -32,5 +32,7 @@ public record OrderResponse(
     BigDecimal commissionBaseAmount,
     BigDecimal commissionAmount,
     int linesCount,
-    List<OrderItemResponse> items
+    List<OrderItemResponse> items,
+    List<LinkedTableResponse> linkedTables,
+    List<WaiterHistoryEntryResponse> waiterHistory
 ) {}

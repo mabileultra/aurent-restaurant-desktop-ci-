@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { BaseButton } from '../../../components/ui';
 import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspaceEmpty';
 import PosZoomControls from '../components/PosZoomControls';
 import KitchenTicketCard from '../components/KitchenTicketCard';
+import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { KDS_COLUMNS } from '../utils/kitchenBoard';
@@ -97,6 +97,7 @@ export default function RestaurantKitchenPage() {
             </Link>
           ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />
+          <LanguageSwitcher variant="rst" />
           <span className="rst-pos__online">
             <span className="rst-pos__online-dot" aria-hidden />
             LIVE
@@ -139,16 +140,6 @@ export default function RestaurantKitchenPage() {
               <strong>{stats.ready}</strong>
             </div>
           </div>
-
-          <div className="rst-kds-top__actions">
-            <button
-              type="button"
-              className="rst-kds-chef"
-              onClick={() => toast(p.t('rst.kitchen.chefCallSent'))}
-            >
-              {p.t('rst.kitchen.chefCall')}
-            </button>
-          </div>
         </div>
 
         {p.isError ? <div className="rst-notice">{p.t('rst.kitchen.loadFailed')}</div> : null}
@@ -176,7 +167,6 @@ export default function RestaurantKitchenPage() {
                     canAdvance={p.canAdvance}
                     advancing={p.advancing}
                     onAdvance={p.advance}
-                    onChefCall={() => toast(p.t('rst.kitchen.chefCallSent'))}
                     t={p.t}
                   />
                 ))}

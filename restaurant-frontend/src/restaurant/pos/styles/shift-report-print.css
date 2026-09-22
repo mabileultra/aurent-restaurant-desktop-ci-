@@ -1,0 +1,48 @@
+.rst-shift-report {
+  color: #111;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.rst-shift-report__head {
+  text-align: center;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #111;
+}
+
+.rst-shift-report__company {
+  margin: 0;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.rst-shift-report__title {
+  margin: 4px 0 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 12px;
+}
+
+.rst-shift-report__meta {
+  margin: 2px 0 0;
+  font-size: 11px;
+}
+
+.rst-shift-report__section {
+  margin-top: 6px;
+}
+
+.rst-shift-report__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rst-shift-report__row.is-bold {
+  font-weight: 700;
+}
+
+.rst-shift-report__divider {
+  margin: 6px 0;
+  border-top: 1px dashed #111;
+}

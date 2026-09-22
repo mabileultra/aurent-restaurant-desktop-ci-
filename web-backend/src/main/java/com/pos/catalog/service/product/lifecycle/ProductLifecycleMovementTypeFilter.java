@@ -16,7 +16,10 @@ public final class ProductLifecycleMovementTypeFilter {
         StockMovementType.SALE,
         StockMovementType.RETURN,
         StockMovementType.WRITE_OFF,
-        StockMovementType.ADJUSTMENT
+        StockMovementType.ADJUSTMENT,
+        StockMovementType.EXPENSE,
+        StockMovementType.PRODUCTION_CONSUMPTION,
+        StockMovementType.PRODUCTION_OUTPUT
     );
 
     private ProductLifecycleMovementTypeFilter() {

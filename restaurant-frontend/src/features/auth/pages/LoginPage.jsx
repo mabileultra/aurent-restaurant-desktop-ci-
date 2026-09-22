@@ -3,6 +3,7 @@ import LoginBranding from '../components/LoginBranding';
 import LoginForm from '../components/LoginForm';
 import { useLoginPage } from '../hooks/useLoginPage';
 import RestaurantDesktopDownloadCorner from '../../desktop-download/components/RestaurantDesktopDownloadCorner';
+import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import '../../../styles/auth/login-page.css';
 
 export default function LoginPage() {
@@ -22,6 +23,7 @@ export default function LoginPage() {
         <Link to="/login" className="rst-login-page__brand-link">
           Aurent Restaurant
         </Link>
+        <LanguageSwitcher variant="rst" />
       </header>
       <main className="public-site__main login-page__stage">
         <div className="login-card">

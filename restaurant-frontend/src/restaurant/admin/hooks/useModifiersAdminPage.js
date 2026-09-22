@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyGroup = () => ({ name: '', minSelect: 0, maxSelect: 1, sortOrder: 100 });
 const emptyOption = () => ({ name: '', priceDelta: '0' });
@@ -74,7 +75,7 @@ export function useModifiersAdminPage() {
       setPage(0);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const saveOption = useMutation({
@@ -88,7 +89,7 @@ export function useModifiersAdminPage() {
       setOptionGroupId(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const deactivateGroup = useMutation({
@@ -98,7 +99,7 @@ export function useModifiersAdminPage() {
       if (optionGroupId) setOptionGroupId(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
   const optionGroup = groups.find((group) => group.id === optionGroupId) ?? null;

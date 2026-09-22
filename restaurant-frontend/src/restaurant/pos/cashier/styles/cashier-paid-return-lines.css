@@ -1,0 +1,115 @@
+.rst-paid-return__lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(42vh, 20rem);
+  overflow: auto;
+}
+
+.rst-paid-return__empty {
+  margin: 1rem 0;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+.rst-paid-return__line {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: #0f0f0f;
+}
+
+.rst-paid-return__line-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.rst-paid-return__line-name {
+  display: block;
+  font-weight: 650;
+  font-size: 0.9rem;
+  line-height: 1.35;
+}
+
+.rst-paid-return__line-meta {
+  display: block;
+  margin-top: 2px;
+  font-size: 0.78rem;
+  opacity: 0.7;
+}
+
+.rst-paid-return__line-sum {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+
+.rst-paid-return__line-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.rst-paid-return__stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  overflow: hidden;
+}
+
+.rst-paid-return__step-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rst-paid-return__step-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rst-paid-return__step-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 14%, transparent);
+}
+
+.rst-paid-return__step-value {
+  min-width: 2.25rem;
+  text-align: center;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-paid-return__max {
+  border: 1px solid var(--rst-border, #2a2a2a);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-weight: 650;
+  font-size: 0.78rem;
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.rst-paid-return__max:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.rst-paid-return__max:hover:not(:disabled) {
+  border-color: var(--rst-accent, #3b82f6);
+}

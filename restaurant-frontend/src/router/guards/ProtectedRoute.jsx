@@ -20,7 +20,10 @@ export default function ProtectedRoute({ children, requiredRole, module: moduleI
     redirectPlatformUserToMainApp();
     return null;
   }
-  if (user?.role === 'CASHIER' || user?.role === 'WAITER') {
+  if (user?.role === 'CASHIER') {
+    return <Navigate to="/rst/cashier" replace />;
+  }
+  if (user?.role === 'WAITER') {
     return <Navigate to="/rst/pos" replace />;
   }
   if (user?.role === 'COOK') {

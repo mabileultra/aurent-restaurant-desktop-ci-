@@ -1,0 +1,137 @@
+.rst-stock-tr__note {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--rst-muted, #64748b);
+}
+
+.rst-stock-tr__stores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1px solid var(--rst-line, #e2e8f0);
+  border-radius: 14px;
+  background: var(--rst-surface, #fff);
+}
+
+.rst-stock-tr__stores .rst-admin-field {
+  margin: 0;
+}
+
+@media (max-width: 640px) {
+  .rst-stock-tr__stores {
+    grid-template-columns: 1fr;
+  }
+}
+
+.rst-stock-tr__lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  border: 1px solid var(--rst-line, #e2e8f0);
+  border-radius: 14px;
+  background: var(--rst-surface, #fff);
+  overflow: hidden;
+}
+
+.rst-stock-tr__lines-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--rst-line, #e2e8f0);
+}
+
+.rst-stock-tr__lines-head strong {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--rst-ink, #0f172a);
+}
+
+.rst-stock-tr__lines table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.875rem;
+}
+
+.rst-stock-tr__lines th,
+.rst-stock-tr__lines td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--rst-line, #e2e8f0);
+  vertical-align: middle;
+  color: var(--rst-ink, #0f172a);
+}
+
+.rst-stock-tr__lines th {
+  color: var(--rst-muted, #64748b);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: left;
+}
+
+.rst-stock-tr__lines th:first-child,
+.rst-stock-tr__lines td:first-child {
+  width: 3rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--rst-muted, #64748b);
+}
+
+.rst-stock-tr__lines th:nth-child(3),
+.rst-stock-tr__lines td:nth-child(3) {
+  width: 8.5rem;
+}
+
+.rst-stock-tr__lines th:last-child,
+.rst-stock-tr__lines td:last-child {
+  width: 3.25rem;
+  text-align: right;
+}
+
+.rst-stock-tr__lines tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rst-stock-tr__lines .form-control {
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.65rem;
+}
+
+.rst-stock-tr__lines .product-lookup {
+  width: 100%;
+}
+
+.rst-stock-tr__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--rst-muted, #94a3b8);
+  cursor: pointer;
+}
+
+.rst-stock-tr__remove:hover:not(:disabled) {
+  color: #f87171;
+  background: rgb(248 113 113 / 0.12);
+}
+
+.rst-stock-tr__remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dark .rst-stock-tr__stores,
+.dark .rst-stock-tr__lines {
+  background: var(--rst-surface, #1a1f2a);
+  border-color: var(--rst-line, #334155);
+}

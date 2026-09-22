@@ -54,6 +54,11 @@ export function resolveCatalogSectionVisible(section, { productType, catalogProf
       case 'accountingCost':
       case 'accountingStock':
       case 'activeField':
+      case 'tasnif':
+      case 'tasnifSearch':
+      case 'fiscalIkpu':
+      case 'fiscalPackageCode':
+      case 'barcodes':
         return true;
       default:
         return false;

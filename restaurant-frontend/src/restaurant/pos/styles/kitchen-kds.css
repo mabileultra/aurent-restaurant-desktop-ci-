@@ -102,27 +102,6 @@
   color: #ff5c7a;
 }
 
-.rst-kds-top__actions {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  flex-wrap: wrap;
-}
-
-.rst-kds-chef {
-  height: 2.35rem;
-  padding: 0 0.9rem;
-  border: 0;
-  border-radius: 10px;
-  background: linear-gradient(180deg, #ff5c7a, #e11d48);
-  color: #fff;
-  font-weight: 900;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-  box-shadow: 0 8px 20px rgb(225 29 72 / 0.28);
-}
-
 .rst-kds {
   display: grid;
   grid-template-columns: repeat(4, minmax(200px, 1fr));
@@ -419,19 +398,6 @@
 .rst-kds-card__cta--READY {
   background: #30d158;
   color: #04140a;
-}
-
-.rst-kds-card__call {
-  min-width: 3.4rem;
-  border: 1px solid rgb(255 92 122 / 0.45);
-  border-radius: 10px;
-  background: rgb(255 92 122 / 0.12);
-  color: #fda4af;
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  cursor: pointer;
 }
 
 .rst-kds-foot {

@@ -1,0 +1,116 @@
+.rst-cashier-recent {
+  margin-top: 1.25rem;
+  padding-top: 1.1rem;
+  border-top: 1px solid var(--rst-border, #2a2a2a);
+}
+
+.rst-cashier-recent__head {
+  margin-bottom: 0.75rem;
+}
+
+.rst-cashier-recent__head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+
+.rst-cashier-recent__head p {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  opacity: 0.72;
+}
+
+.rst-cashier-recent__empty {
+  padding: 1rem 0.25rem;
+  font-size: 0.92rem;
+  opacity: 0.7;
+}
+
+.rst-cashier-recent__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: min(42vh, 28rem);
+  overflow: auto;
+}
+
+.rst-cashier-recent__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  border-radius: 10px;
+  background: var(--rst-surface, #161616);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rst-cashier-recent__row:hover:not(:disabled) {
+  border-color: var(--rst-accent, #3b82f6);
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 8%, transparent);
+}
+
+.rst-cashier-recent__row.is-selected {
+  border-color: var(--rst-accent, #3b82f6);
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 14%, transparent);
+  box-shadow: inset 3px 0 0 var(--rst-accent, #3b82f6);
+}
+
+.rst-cashier-recent__row:disabled,
+.rst-cashier-recent__row.is-busy {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.rst-cashier-recent__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem 0.65rem;
+  min-width: 0;
+}
+
+.rst-cashier-recent__channel,
+.rst-cashier-recent__client {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.rst-cashier-recent__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.55rem 0.75rem;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.rst-cashier-recent__pay {
+  opacity: 0.75;
+}
+
+.rst-cashier-recent__meta strong {
+  font-size: 0.95rem;
+  min-width: 4.5rem;
+  text-align: right;
+}
+
+@media (max-width: 720px) {
+  .rst-cashier-recent__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rst-cashier-recent__meta {
+    justify-content: space-between;
+  }
+}

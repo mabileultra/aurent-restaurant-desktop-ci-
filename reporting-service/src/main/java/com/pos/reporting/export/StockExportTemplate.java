@@ -70,6 +70,17 @@ public enum StockExportTemplate implements ExcelSheetTemplate {
             col("user", "Кто оформил"),
             col("notes", "Комментарий")
         )
+    ),
+
+    STOCK_RECEIPTS(
+        "Приходы",
+        List.of(
+            col("receipt_no", "№ прихода"),
+            col("created_at", "Дата"),
+            col("supplier", "Поставщик"),
+            col("total_qty", "Кол-во"),
+            col("total_cost", "Сумма")
+        )
     );
 
     private final String sheetName;

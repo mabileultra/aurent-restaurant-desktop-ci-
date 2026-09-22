@@ -1,7 +1,9 @@
 package com.pos.restaurant.shift.controller;
 
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
+import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.OpenShiftRequest;
+import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.dto.ShiftResponse;
 import com.pos.restaurant.shift.service.RestaurantShiftService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -59,11 +61,25 @@ public class RestaurantShiftController {
 
     @PostMapping("/shifts/{shiftId}/close")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
-    @Operation(summary = "Закрыть смену")
-    public ShiftResponse close(
+    @Operation(summary = "Закрыть смену (с Z-отчётом)")
+    public CloseShiftResult close(
         @PathVariable UUID shiftId,
         @Valid @RequestBody CloseShiftRequest request
     ) {
         return shiftService.close(shiftId, request);
+    }
+
+    @GetMapping("/shifts/{shiftId}/x-report")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "X-отчёт открытой смены")
+    public ShiftReportResponse xReport(@PathVariable UUID shiftId) {
+        return shiftService.xReport(shiftId);
+    }
+
+    @GetMapping("/shifts/{shiftId}/z-report")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Превью Z-отчёта открытой смены (без закрытия)")
+    public ShiftReportResponse zReportPreview(@PathVariable UUID shiftId) {
+        return shiftService.zReportPreview(shiftId);
     }
 }

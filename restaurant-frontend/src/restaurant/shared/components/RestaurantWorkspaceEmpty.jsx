@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom';
 import { BaseButton } from '../../../components/ui';
 import { getMainAppUrl } from '../../../config/mainAppUrl';
+import { useAuthStore } from '../../../store/authStore';
 import './restaurant-workspace-empty.css';
 
 /**
@@ -11,13 +13,19 @@ export default function RestaurantWorkspaceEmpty({
   zoomStyle,
   onLogout,
 }) {
+  const role = useAuthStore((s) => s.user?.role);
+  const canManageStores = role === 'ADMIN' || role === 'SUPER_ADMIN';
   const mainApp = getMainAppUrl();
   const storesUrl = `${mainApp}/stores`;
   const usersUrl = `${mainApp}/users`;
 
   let title = t('rst.floor.noStore');
   let hint = t('rst.floor.noStoreHint');
-  let actions = (
+  let actions = canManageStores ? (
+    <Link className="rst-workspace-empty__link" to="/rst/admin/stores">
+      {t('rst.admin.storesTitle')}
+    </Link>
+  ) : (
     <a className="rst-workspace-empty__link" href={storesUrl} target="_blank" rel="noreferrer">
       {t('rst.floor.openStoresOnMain')}
     </a>
@@ -44,6 +52,11 @@ export default function RestaurantWorkspaceEmpty({
   } else if (workspace.noCompanyRestaurants) {
     title = t('rst.floor.noRestaurantStoresTitle');
     hint = t('rst.floor.noRestaurantStoresHint');
+    actions = canManageStores ? (
+      <Link className="rst-workspace-empty__link" to="/rst/admin/stores">
+        {t('rst.admin.addRestaurant')}
+      </Link>
+    ) : actions;
   } else if (workspace.staffStoresWrongType) {
     title = t('rst.floor.wrongStoreTypeTitle');
     hint = t('rst.floor.wrongStoreTypeHint');

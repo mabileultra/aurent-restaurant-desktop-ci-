@@ -86,11 +86,11 @@
 }
 
 .rst-pos__actions a,
-.rst-pos__actions button {
+.rst-pos__actions > button {
   min-height: 2.75rem;
 }
 
-.rst-pos__actions button {
+.rst-pos__actions > button {
   padding: 0.55rem 1rem;
   font-size: 0.88rem;
   font-weight: 700;

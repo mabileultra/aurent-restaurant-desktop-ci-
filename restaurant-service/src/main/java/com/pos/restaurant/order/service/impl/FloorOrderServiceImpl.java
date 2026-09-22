@@ -5,23 +5,30 @@ import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
+import com.pos.restaurant.order.dto.TransferTableRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.order.service.FloorOrderService;
+import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +40,7 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final FloorTenantSupport tenantSupport;
     private final OrderLookup orderLookup;
     private final OrderResponseAssembler assembler;
+    private final OrderLinkedTablesSupport linkedTables;
     private final OrderOpenHandler openHandler;
     private final OrderOpenCounterHandler openCounterHandler;
     private final OrderUpdateGuestsHandler updateGuestsHandler;
@@ -41,6 +49,8 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderRemoveItemHandler removeItemHandler;
     private final OrderCancelHandler cancelHandler;
     private final OrderAssignWaiterHandler assignWaiterHandler;
+    private final OrderTransferTableHandler transferTableHandler;
+    private final OrderMergeTablesHandler mergeTablesHandler;
 
     @Override
     @Transactional
@@ -63,10 +73,16 @@ public class FloorOrderServiceImpl implements FloorOrderService {
             channel,
             List.of(OrderStatus.OPEN, OrderStatus.BILLING)
         );
+        if (orders.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> orderIds = orders.stream().map(FloorOrder::getId).toList();
+        Map<UUID, List<FloorOrderItem>> itemsByOrder = itemRepository.findByOrderIdInOrdered(orderIds).stream()
+            .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
         return orders.stream()
-            .map(order -> assembler.toResponse(
+            .map(order -> assembler.toBoardCard(
                 order,
-                itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId())
+                itemsByOrder.getOrDefault(order.getId(), Collections.emptyList())
             ))
             .toList();
     }
@@ -74,7 +90,11 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Override
     public OrderResponse get(UUID orderId) {
         var order = orderLookup.require(orderId);
-        return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
+        return assembler.toResponse(
+            order,
+            itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId),
+            linkedTables.allTables(order)
+        );
     }
 
     @Override
@@ -87,6 +107,18 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Transactional
     public OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request) {
         return assignWaiterHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse transferTable(UUID orderId, TransferTableRequest request) {
+        return transferTableHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse mergeTables(UUID orderId, MergeTablesRequest request) {
+        return mergeTablesHandler.handle(orderId, request);
     }
 
     @Override

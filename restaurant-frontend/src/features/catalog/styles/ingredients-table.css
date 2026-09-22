@@ -1,0 +1,76 @@
+.rst-ingredients-table {
+  border: 1px solid var(--rst-line);
+  border-radius: 14px;
+  background: var(--rst-surface);
+  overflow: hidden;
+}
+
+.rst-ingredients-table__scroll {
+  overflow-x: auto;
+}
+
+.rst-ingredients-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rst-ingredients-table th,
+.rst-ingredients-table td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--rst-line);
+  text-align: left;
+}
+
+.rst-ingredients-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.rst-ingredients-table .is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-ingredients-table .is-center {
+  text-align: center;
+  color: var(--rst-muted);
+  padding: 1.5rem 0.85rem;
+}
+
+.rst-ingredients-table .is-strong {
+  font-weight: 700;
+}
+
+.rst-ingredients-table .is-actions {
+  text-align: right;
+  width: 2.5rem;
+}
+
+.rst-ingredients-table .is-check {
+  width: 2.25rem;
+  text-align: center;
+}
+
+.rst-ingredients-table tr.is-selected td {
+  background: color-mix(in srgb, var(--rst-accent) 7%, transparent);
+}
+
+.rst-ingredients-table__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--rst-muted);
+  border-radius: 8px;
+  padding: 0.3rem;
+  cursor: pointer;
+}
+
+.rst-ingredients-table__menu-btn:hover {
+  background: color-mix(in srgb, var(--rst-accent) 12%, transparent);
+  color: var(--rst-accent);
+}

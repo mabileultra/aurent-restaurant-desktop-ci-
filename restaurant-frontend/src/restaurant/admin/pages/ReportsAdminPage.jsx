@@ -63,22 +63,6 @@ export default function ReportsAdminPage() {
         </div>
       </div>
 
-      {workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-3">
-          <span className="rst-admin-field__label">{t('rst.admin.selectStore')}</span>
-          <select
-            className="form-select"
-            value={workspace.pickedStoreId}
-            onChange={(e) => workspace.setPickedStoreId(e.target.value)}
-          >
-            <option value="">{t('rst.admin.selectStore')}</option>
-            {workspace.restaurantStores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : null}
-
       {!workspace.storeId ? (
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (

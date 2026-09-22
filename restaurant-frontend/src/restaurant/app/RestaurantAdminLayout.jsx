@@ -1,12 +1,15 @@
-import { NavLink, Outlet, Link } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { BaseButton } from '../../components/ui';
+import LanguageSwitcher from '../../components/shared/LanguageSwitcher';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
 import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
-import { RST_ADMIN_NAV } from './restaurantAdminNav';
+import { visibleRstAdminNavGroups } from './restaurantAdminNav';
+import RestaurantAdminNav from '../admin/components/RestaurantAdminNav';
+import RstWorkspaceStorePicker from '../shared/components/RstWorkspaceStorePicker';
 import '../shared/styles/restaurant-tokens.css';
 import '../admin/styles/admin-shell.css';
 import '../admin/styles/rst-billing.css';
@@ -16,6 +19,7 @@ export default function RestaurantAdminLayout() {
   const user = useAuthStore((s) => s.user);
   const { businessType } = useCompanyBusinessType();
   const restaurantOnly = isRestaurantWorldBusiness(businessType);
+  const groups = visibleRstAdminNavGroups(user?.role);
 
   return (
     <BillingAccessGuard>
@@ -25,19 +29,9 @@ export default function RestaurantAdminLayout() {
             <span className="rst-shell__brand-kicker">{t('rst.brandKicker')}</span>
             <span className="rst-shell__brand-name">{t('rst.brand')}</span>
           </div>
-          <nav className="rst-shell__links">
-            {RST_ADMIN_NAV.filter((item) => !item.adminOnly || user?.role === 'ADMIN').map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) => `rst-shell__link${isActive ? ' is-active' : ''}${item.enabled ? '' : ' is-disabled'}`}
-              >
-                <span>{t(`rst.nav.${item.key}`)}</span>
-                {!item.enabled ? <span className="rst-shell__stage">{t('rst.nav.later')}</span> : null}
-              </NavLink>
-            ))}
-          </nav>
+          <RestaurantAdminNav groups={groups} t={t} />
           <div className="rst-shell__footer">
+            <Link to="/rst/cashier">{t('rst.pos.toCashier')}</Link>
             <Link to="/rst/pos">{t('rst.pos.toFloor')}</Link>
             <Link to="/rst/kitchen">{t('rst.pos.toKitchen')}</Link>
             {!restaurantOnly ? (
@@ -47,8 +41,12 @@ export default function RestaurantAdminLayout() {
         </aside>
         <div className="rst-shell__main">
           <header className="rst-shell__top">
-            <strong>{user?.fullName || user?.username || ''}</strong>
+            <div className="rst-shell__top-left">
+              <strong>{user?.fullName || user?.username || ''}</strong>
+              <RstWorkspaceStorePicker t={t} />
+            </div>
             <div className="rst-shell__actions">
+              <LanguageSwitcher variant="rst" />
               <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
                 {t('nav.logout')}
               </BaseButton>

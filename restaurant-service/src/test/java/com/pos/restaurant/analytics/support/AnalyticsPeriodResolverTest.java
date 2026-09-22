@@ -27,4 +27,14 @@ class AnalyticsPeriodResolverTest {
         assertEquals(from, period.from());
         assertEquals(to, period.to());
     }
+
+    @Test
+    void previousOfKeepsEqualLength() {
+        Instant from = Instant.parse("2026-09-20T19:00:00Z");
+        Instant to = Instant.parse("2026-09-21T19:00:00Z");
+        var period = new AnalyticsPeriodResolver.Period(from, to);
+        var previous = resolver.previousOf(period);
+        assertEquals(from, previous.to());
+        assertEquals(ChronoUnit.MILLIS.between(from, to), ChronoUnit.MILLIS.between(previous.from(), previous.to()));
+    }
 }

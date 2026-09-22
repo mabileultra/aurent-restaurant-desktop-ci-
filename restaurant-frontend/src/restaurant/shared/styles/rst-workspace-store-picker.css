@@ -1,0 +1,49 @@
+.rst-store-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 200px;
+  max-width: 280px;
+}
+
+.rst-store-picker__label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.rst-store-picker__value {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--rst-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rst-store-picker__select {
+  min-height: 2.35rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.rst-store-picker__select:focus {
+  outline: none;
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft);
+}
+
+@media (max-width: 900px) {
+  .rst-store-picker {
+    min-width: 0;
+    max-width: none;
+    flex: 1;
+  }
+}

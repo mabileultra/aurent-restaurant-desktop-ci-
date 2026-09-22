@@ -43,6 +43,12 @@ public final class ProductImportRowParser {
             return Result.invalid(ProductImportSupport.invalidRow(rowNum, "Некорректная цена продажи"));
         }
 
+        BigDecimal costPrice = ProductImportParseUtil.parseDecimalOpt(ProductImportParseUtil.cell(row, "cost_price"))
+            .orElse(BigDecimal.ZERO);
+        if (costPrice.signum() < 0) {
+            costPrice = BigDecimal.ZERO;
+        }
+
         BigDecimal taxRate = ProductImportParseUtil.normalizeTaxRatePercent(
             ProductImportParseUtil.parseDecimalOpt(ProductImportParseUtil.cell(row, "tax_rate_percent_nds")).orElse(null)
         );
@@ -60,6 +66,7 @@ public final class ProductImportRowParser {
             storageLocation,
             uzInvoiceDocumentId,
             sellingOpt.get(),
+            costPrice,
             taxRate,
             qty,
             unit,

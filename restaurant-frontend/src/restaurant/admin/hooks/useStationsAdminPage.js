@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyForm = () => ({ code: '', name: '', sortOrder: 100 });
 
@@ -60,7 +61,7 @@ export function useStationsAdminPage() {
       setPage(0);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const deactivateMutation = useMutation({
@@ -69,7 +70,7 @@ export function useStationsAdminPage() {
       toast.success(t('rst.admin.stationDeactivated'));
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
   const startEdit = (station) => {

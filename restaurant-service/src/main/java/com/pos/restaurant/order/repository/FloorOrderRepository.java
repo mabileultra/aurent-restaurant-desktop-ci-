@@ -3,6 +3,7 @@ package com.pos.restaurant.order.repository;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -41,6 +42,19 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID> {
         @Param("storeId") Integer storeId,
         @Param("channel") OrderChannel channel,
         @Param("statuses") Collection<OrderStatus> statuses
+    );
+
+    @Query("""
+        select o from FloorOrder o
+        where o.companyId = :companyId and o.storeId = :storeId
+          and o.status in :statuses
+        order by o.closedAt desc, o.openedAt desc
+        """)
+    List<FloorOrder> findRecentByCompanyIdAndStoreIdAndStatusIn(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("statuses") Collection<OrderStatus> statuses,
+        Pageable pageable
     );
 
     @Query("select coalesce(max(o.orderNo), 0) from FloorOrder o where o.storeId = :storeId")

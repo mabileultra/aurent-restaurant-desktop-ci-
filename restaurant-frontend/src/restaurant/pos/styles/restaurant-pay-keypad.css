@@ -1,0 +1,61 @@
+.rst-pay-keypad {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rst-pay-keypad__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.rst-pay-keypad__key {
+  min-height: 3rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: color-mix(in srgb, #fff 4%, transparent);
+  color: inherit;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+.rst-pay-keypad__key:hover:not(:disabled) {
+  border-color: var(--rst-accent, #3b82f6);
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 14%, transparent);
+}
+
+.rst-pay-keypad__key:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.rst-pay-keypad__key:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rst-pay-keypad__key--action {
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.rst-pay-keypad__exact {
+  min-height: 2.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-accent, #3b82f6);
+  background: color-mix(in srgb, var(--rst-accent, #3b82f6) 18%, transparent);
+  color: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rst-pay-keypad__exact:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

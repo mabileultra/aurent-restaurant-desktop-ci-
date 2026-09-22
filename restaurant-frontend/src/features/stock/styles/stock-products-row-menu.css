@@ -1,0 +1,35 @@
+.rst-stock-row-menu__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  cursor: default;
+  border: 0;
+  background: transparent;
+}
+
+.rst-stock-row-menu {
+  position: fixed;
+  z-index: 90;
+  min-width: 10rem;
+  padding: 0.25rem 0;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+.rst-stock-row-menu__item {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.82rem;
+  color: var(--rst-text);
+  cursor: pointer;
+}
+
+.rst-stock-row-menu__item:hover {
+  background: color-mix(in srgb, var(--rst-accent) 10%, transparent);
+}

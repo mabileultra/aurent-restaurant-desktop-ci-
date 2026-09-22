@@ -1,0 +1,126 @@
+.rst-dash__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.rst-dash__toolbar-kicker {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--rst-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.rst-dash__toolbar-title {
+  margin: 0.15rem 0 0;
+  font-size: 1.55rem;
+  font-weight: 800;
+}
+
+.rst-dash__toolbar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: end;
+}
+
+.rst-dash__filter {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--rst-muted);
+}
+
+.rst-dash__filter select,
+.rst-dash__filter input {
+  min-width: 9rem;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface);
+  color: inherit;
+}
+
+.rst-dash__toolbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rst-dash__user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  font-size: 0.85rem;
+}
+
+.rst-dash__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.rst-dash__icon-btn:hover {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+}
+
+.rst-dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.rst-dash__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  color: inherit;
+  font-weight: 650;
+  text-decoration: none;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.rst-dash__action:hover {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+  transform: translateY(-1px);
+}
+
+.rst-dash__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  padding: 0.45rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  font-size: 0.85rem;
+}
+
+.rst-dash__chip.is-open {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+}

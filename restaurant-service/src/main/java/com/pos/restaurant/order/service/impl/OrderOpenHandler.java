@@ -15,6 +15,7 @@ import com.pos.restaurant.order.support.GuestCountPolicy;
 import com.pos.restaurant.order.support.GuestCounts;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.TableOpenPolicy;
+import com.pos.restaurant.order.support.WaiterHistoryRecorder;
 import com.pos.restaurant.booking.service.ReservationSeatOnOpenService;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import com.pos.shared.log.LogUtil;
@@ -23,6 +24,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -36,6 +38,7 @@ public class OrderOpenHandler {
     private final ShiftLookup shiftLookup;
     private final ReservationSeatOnOpenService reservationSeatOnOpenService;
     private final OrderResponseAssembler assembler;
+    private final WaiterHistoryRecorder waiterHistoryRecorder;
 
     @Transactional
     public OrderResponse handle(Integer tableId, OpenOrderRequest request) {
@@ -51,6 +54,7 @@ public class OrderOpenHandler {
             request.childrenCount()
         );
         var userId = tenantSupport.requireUserId();
+        UUID waiterUserId = request.waiterUserId() != null ? request.waiterUserId() : userId;
         FloorOrder saved = orderRepository.save(FloorOrder.builder()
             .companyId(table.getCompanyId())
             .storeId(table.getStoreId())
@@ -63,10 +67,11 @@ public class OrderOpenHandler {
             .adultCount(guests.adultCount())
             .childrenCount(guests.childrenCount())
             .openedByUserId(userId)
-            .waiterUserId(userId)
+            .waiterUserId(waiterUserId)
             .comment(blankToNull(request.comment()))
             .build());
         table.setStatus(TableStatus.OCCUPIED);
+        waiterHistoryRecorder.record(saved, waiterUserId);
         reservationSeatOnOpenService.markSeatedForTable(tableId);
         LogUtil.info(OrderOpenHandler.class, "Order opened: id={}, tableId={}", saved.getId(), tableId);
         return assembler.toResponse(saved, List.of());

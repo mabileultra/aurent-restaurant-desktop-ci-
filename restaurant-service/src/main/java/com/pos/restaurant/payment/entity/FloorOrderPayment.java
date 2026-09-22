@@ -48,6 +48,22 @@ public class FloorOrderPayment {
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;
 
+    @Column(name = "cash_amount", nullable = false, precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal cashAmount = BigDecimal.ZERO;
+
+    @Column(name = "card_amount", nullable = false, precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal cardAmount = BigDecimal.ZERO;
+
+    @Column(name = "amount_tendered", nullable = false, precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal amountTendered = BigDecimal.ZERO;
+
+    @Column(name = "change_given", nullable = false, precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal changeGiven = BigDecimal.ZERO;
+
     @Column(name = "paid_by_user_id", nullable = false)
     private UUID paidByUserId;
 
@@ -58,6 +74,18 @@ public class FloorOrderPayment {
     void prePersist() {
         if (paidAt == null) {
             paidAt = Instant.now();
+        }
+        if (cashAmount == null) {
+            cashAmount = BigDecimal.ZERO;
+        }
+        if (cardAmount == null) {
+            cardAmount = BigDecimal.ZERO;
+        }
+        if (amountTendered == null) {
+            amountTendered = amount == null ? BigDecimal.ZERO : amount;
+        }
+        if (changeGiven == null) {
+            changeGiven = BigDecimal.ZERO;
         }
     }
 }

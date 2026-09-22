@@ -1,0 +1,81 @@
+.rst-stock-products-table {
+  border: 1px solid var(--rst-line);
+  border-radius: 14px;
+  background: var(--rst-surface);
+  overflow: hidden;
+}
+
+.rst-stock-products-table__scroll {
+  overflow-x: auto;
+}
+
+.rst-stock-products-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rst-stock-products-table th,
+.rst-stock-products-table td {
+  padding: 0.7rem 0.85rem;
+  border-bottom: 1px solid var(--rst-line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.rst-stock-products-table th {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+  background: color-mix(in srgb, var(--rst-surface) 88%, var(--rst-line));
+}
+
+.rst-stock-products-table .is-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-stock-products-table .is-center {
+  text-align: center;
+  color: var(--rst-muted);
+  padding: 1.5rem 0.85rem;
+}
+
+.rst-stock-products-table .is-strong {
+  font-weight: 700;
+}
+
+.rst-stock-products-table .is-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.rst-stock-products-table .is-actions {
+  text-align: right;
+  width: 2.5rem;
+}
+
+.rst-stock-products-table__menu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--rst-muted);
+  border-radius: 8px;
+  padding: 0.3rem;
+  cursor: pointer;
+}
+
+.rst-stock-products-table__menu-btn:hover {
+  background: color-mix(in srgb, var(--rst-accent) 12%, transparent);
+  color: var(--rst-accent);
+}
+
+.rst-stock-products-table__empty {
+  padding: 0.9rem 1rem;
+  border-top: 1px solid var(--rst-line);
+  color: var(--rst-muted);
+  font-size: 0.88rem;
+}

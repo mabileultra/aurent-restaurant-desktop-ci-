@@ -48,7 +48,17 @@ public interface ProductQueryService {
         Boolean markedProduct,
         Pageable pageable
     ) {
-        return getWarehouseProducts(search, barcodeContains, markedProduct, null, pageable);
+        return getWarehouseProducts(search, barcodeContains, markedProduct, null, null, pageable);
+    }
+
+    default PageResponse<ProductResponse> getWarehouseProducts(
+        String search,
+        String barcodeContains,
+        Boolean markedProduct,
+        String businessTypeCode,
+        Pageable pageable
+    ) {
+        return getWarehouseProducts(search, barcodeContains, markedProduct, businessTypeCode, null, pageable);
     }
 
     PageResponse<ProductResponse> getWarehouseProducts(
@@ -56,6 +66,7 @@ public interface ProductQueryService {
         String barcodeContains,
         Boolean markedProduct,
         String businessTypeCode,
+        Integer storeId,
         Pageable pageable
     );
 

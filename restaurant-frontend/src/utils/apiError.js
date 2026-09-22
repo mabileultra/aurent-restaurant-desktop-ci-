@@ -1,15 +1,67 @@
+import toast from 'react-hot-toast';
+
+const GENERIC_API_MESSAGES = new Set([
+  'Validation failed',
+  'An unexpected error occurred',
+  'Internal error',
+  'Internal Server Error',
+  'Network Error',
+  'Request failed',
+]);
+
+function firstFromErrors(errors) {
+  if (!errors) return '';
+  if (Array.isArray(errors)) {
+    for (const item of errors) {
+      if (typeof item === 'string' && item.trim()) return item.trim();
+      if (item && typeof item.message === 'string' && item.message.trim()) {
+        return item.message.trim();
+      }
+    }
+    return '';
+  }
+  if (typeof errors === 'object') {
+    const parts = Object.entries(errors)
+      .filter(([, value]) => typeof value === 'string' && value.trim())
+      .map(([field, value]) => `${field}: ${value.trim()}`);
+    if (parts.length) return parts.join('; ');
+  }
+  return '';
+}
+
+function isGenericMessage(message) {
+  if (!message) return true;
+  return GENERIC_API_MESSAGES.has(message);
+}
+
 /**
- * Сообщение об ошибке из ответа API (единый формат ApiErrorResponse).
+ * Сообщение об ошибке из ответа API (ApiErrorResponse + ValidationErrorResponse.errors).
  */
 export function getApiErrorMessage(error, fallback = '') {
   const data = error?.response?.data;
-  if (typeof data?.message === 'string' && data.message.trim()) {
-    return data.message;
+  const fieldMsg = firstFromErrors(data?.errors);
+  const apiMsg = typeof data?.message === 'string' ? data.message.trim() : '';
+  const code = data?.code;
+
+  if (fieldMsg && (isGenericMessage(apiMsg) || code === 'VALIDATION_FAILED')) {
+    return fieldMsg;
   }
-  if (typeof error?.message === 'string' && error.message.trim()) {
-    return error.message;
+  if (apiMsg && !isGenericMessage(apiMsg)) {
+    return apiMsg;
   }
-  return fallback;
+  if (fieldMsg) {
+    return fieldMsg;
+  }
+  if (apiMsg) {
+    return apiMsg;
+  }
+
+  const networkOrAxios = typeof error?.message === 'string' ? error.message.trim() : '';
+  if (networkOrAxios && !isGenericMessage(networkOrAxios) && !error?.response) {
+    return networkOrAxios;
+  }
+
+  return fallback || '';
 }
 
 /** Код ошибки: BAD_REQUEST, NOT_FOUND, CONFLICT, INTERNAL_ERROR, … */
@@ -21,6 +73,13 @@ export function getApiErrorCode(error) {
 export function getApiErrorContext(error) {
   const ctx = error?.response?.data?.context;
   return ctx && typeof ctx === 'object' ? ctx : null;
+}
+
+/**
+ * Toast с текстом бэкенда (поля валидации / message) либо локальный fallback.
+ */
+export function toastApiError(error, fallback) {
+  toast.error(getApiErrorMessage(error, fallback));
 }
 
 const GENERIC_SERVER_ERROR = 'An unexpected error occurred';

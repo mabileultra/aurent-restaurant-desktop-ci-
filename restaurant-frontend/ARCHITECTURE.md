@@ -12,6 +12,8 @@
 `web-frontend/src/restaurant` удалим **потом**, когда этот SPA самодостаточен.  
 Супер-админ (компании, магазины, юзеры) остаётся на main + backend.
 
+**Живая карта стека / safe zones:** [`../deploy/STACK-MAP.md`](../deploy/STACK-MAP.md)
+
 ---
 
 ## Границы кода (жёстко)

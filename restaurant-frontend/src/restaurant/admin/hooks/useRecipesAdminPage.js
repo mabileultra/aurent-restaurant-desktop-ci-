@@ -8,6 +8,7 @@ import { rstMenuApi } from '../../api/menu.api';
 import { rstRecipeApi } from '../../api/recipe.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { readImageDataUrl } from '../../../utils/readImageDataUrl';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyLine = () => ({ productId: '', productName: '', unit: 'kg', qtyGross: '0.1', wastePercent: '0' });
 
@@ -125,7 +126,7 @@ export function useRecipesAdminPage() {
         toast.error(t('rst.admin.recipeNeedIngredient'));
         return;
       }
-      toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed'));
+      toastApiError(err, t('rst.admin.saveFailed'));
     },
   });
 
@@ -166,7 +167,7 @@ export function useRecipesAdminPage() {
         toast.error(t('rst.admin.recipeWizardInvalid'));
         return;
       }
-      toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed'));
+      toastApiError(err, t('rst.admin.saveFailed'));
     },
   });
 

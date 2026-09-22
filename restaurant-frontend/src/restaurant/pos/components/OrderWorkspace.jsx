@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
+import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import MenuPicker from './MenuPicker';
 import OrderLines from './OrderLines';
 import '../styles/order-workspace.css';
@@ -44,6 +45,7 @@ export default function OrderWorkspace({
   waiters = [],
   onAssignWaiter,
   assigningWaiter,
+  onEditNote,
   t,
 }) {
   const now = useLiveClock();
@@ -96,19 +98,17 @@ export default function OrderWorkspace({
   const commissionAmount = order.commissionAmount != null
     ? Number(order.commissionAmount)
     : Number(commissionPreview?.amount ?? 0);
-  const subtotalAmount = Number(order.subtotal ?? 0);
-  const payAmount = channel === 'DINE_IN'
-    ? Math.round((subtotalAmount + Number(commissionAmount || 0)) * 100) / 100
-    : subtotalAmount;
+  const payAmount = resolveRestaurantPayTotal(order, commissionPreview);
   const resolvedWaiter = waiterName
     || waiters.find((row) => String(row.id) === String(order.waiterUserId))?.name
     || null;
 
   const bumpGuests = (delta) => {
     if (!onGuestsChange || billing) return;
-    const next = Math.max(1, Math.min(99, Number(order.guestCount || 1) + delta));
-    if (next === order.guestCount) return;
-    onGuestsChange(next);
+    const guestCount = Math.max(1, Math.min(99, Number(order.guestCount || 1) + delta));
+    if (guestCount === order.guestCount) return;
+    const childrenCount = Math.min(Number(order.childrenCount || 0), guestCount);
+    onGuestsChange({ guestCount, childrenCount });
   };
 
   return (
@@ -155,6 +155,9 @@ export default function OrderWorkspace({
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
             <p className="rst-order__meta">{ticketMeta}</p>
+            {order.comment ? (
+              <p className="rst-order__comment">{order.comment}</p>
+            ) : null}
           </div>
           {digitalTimer ? <span className="rst-order__timer">{digitalTimer}</span> : null}
         </div>
@@ -198,6 +201,7 @@ export default function OrderWorkspace({
           items={order.items ?? []}
           onQty={onQty}
           onRemove={onRemove}
+          onEditNote={onEditNote}
           locked={billing}
           t={t}
         />
@@ -239,12 +243,6 @@ export default function OrderWorkspace({
           ) : null}
 
           <div className="rst-order__actions">
-            <button type="button" className="rst-order__action" disabled title={t('rst.order.soon')}>
-              {t('rst.order.split')}
-            </button>
-            <button type="button" className="rst-order__action" disabled title={t('rst.order.soon')}>
-              {t('rst.order.discount')}
-            </button>
             <button
               type="button"
               className="rst-order__action"
@@ -257,16 +255,12 @@ export default function OrderWorkspace({
               <button
                 type="button"
                 className="rst-order__action rst-order__action--pay"
-                onClick={() => onPay('CARD', payAmount)}
+                onClick={onPay}
                 disabled={paying}
               >
                 {t('rst.order.pay')}
               </button>
-            ) : (
-              <button type="button" className="rst-order__action rst-order__action--pay" disabled>
-                {t('rst.order.pay')}
-              </button>
-            )}
+            ) : null}
           </div>
           {canPay ? (
             <div className="rst-order__pay-extra">
@@ -279,9 +273,6 @@ export default function OrderWorkspace({
                 />
                 <span>{t('pos.printReceiptShort')}</span>
               </label>
-              <BaseButton type="button" variant="ghost" onClick={() => onPay('CASH', payAmount)} disabled={paying}>
-                {t('rst.order.payCash')}
-              </BaseButton>
             </div>
           ) : null}
 

@@ -28,11 +28,12 @@ public class StockDashboardFactsRepositoryImpl implements StockDashboardFactsRep
     }
 
     @Override
-    public Object[] currentStockTotals(Integer companyId) {
+    public Object[] currentStockTotals(Integer companyId, Integer storeId) {
         Query query = entityManager.createNativeQuery(
             sqlResourceLoader.load("sql/stock/dashboard-current-stock-totals.sql")
         );
         query.setParameter("companyId", companyId);
+        NativeQueryParamSupport.bindOptionalStoreId(query, "storeId", storeId);
         return (Object[]) query.getSingleResult();
     }
 
@@ -46,11 +47,12 @@ public class StockDashboardFactsRepositoryImpl implements StockDashboardFactsRep
     }
 
     @Override
-    public long countLowStockSkus(Integer companyId) {
+    public long countLowStockSkus(Integer companyId, Integer storeId) {
         Query query = entityManager.createNativeQuery(
             sqlResourceLoader.load("sql/stock/low-stock-count.sql")
         );
         query.setParameter("companyId", companyId);
+        NativeQueryParamSupport.bindOptionalStoreId(query, "storeId", storeId);
         Number total = (Number) query.getSingleResult();
         return total != null ? total.longValue() : 0L;
     }

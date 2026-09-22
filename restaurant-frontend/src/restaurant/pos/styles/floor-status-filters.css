@@ -1,0 +1,43 @@
+.rst-floor-filters {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  min-width: 0;
+  width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.05rem;
+  scrollbar-width: thin;
+}
+
+.rst-floor-filters__chip {
+  appearance: none;
+  flex: 0 0 auto;
+  height: 2.35rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: #121722;
+  color: var(--rst-muted);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.rst-floor-filters__chip:hover {
+  color: var(--rst-ink);
+  border-color: rgb(255 255 255 / 0.22);
+  background: #161d2a;
+}
+
+.rst-floor-filters__chip.is-active {
+  color: #1b1208;
+  background: linear-gradient(180deg, #ff8d38, var(--rst-accent));
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px rgb(255 122 26 / 0.28),
+    0 6px 14px rgb(255 122 26 / 0.2);
+}

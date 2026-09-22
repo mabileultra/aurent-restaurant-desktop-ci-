@@ -3,7 +3,8 @@ package com.pos.restaurant.shift.service.impl;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.shift.domain.RestaurantShiftStatus;
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
-import com.pos.restaurant.shift.dto.ShiftResponse;
+import com.pos.restaurant.shift.dto.CloseShiftResult;
+import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.entity.RestaurantShift;
 import com.pos.restaurant.shift.support.ShiftClosePolicy;
 import com.pos.restaurant.shift.support.ShiftLookup;
@@ -24,19 +25,22 @@ public class ShiftCloseHandler {
     private final FloorTenantSupport tenantSupport;
     private final ShiftClosePolicy closePolicy;
     private final ShiftResponseAssembler assembler;
+    private final BuildShiftReportHandler reportHandler;
 
     @Transactional
-    public ShiftResponse handle(UUID shiftId, CloseShiftRequest request) {
+    public CloseShiftResult handle(UUID shiftId, CloseShiftRequest request) {
         RestaurantShift shift = shiftLookup.require(shiftId);
         closePolicy.assertCanClose(shift);
+        Instant closedAt = Instant.now();
         shift.setStatus(RestaurantShiftStatus.CLOSED);
-        shift.setClosedAt(Instant.now());
+        shift.setClosedAt(closedAt);
         shift.setClosedByUserId(tenantSupport.requireUserId());
         shift.setClosingCash(request.closingCash());
         if (request.comment() != null && !request.comment().isBlank()) {
             shift.setComment(request.comment().trim());
         }
+        ShiftReportResponse zReport = reportHandler.zReportOf(shift, null, null, closedAt);
         LogUtil.info(ShiftCloseHandler.class, "Shift closed: id={}, storeId={}", shift.getId(), shift.getStoreId());
-        return assembler.toResponse(shift, 0);
+        return new CloseShiftResult(assembler.toResponse(shift, 0), zReport);
     }
 }

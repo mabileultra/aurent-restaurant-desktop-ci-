@@ -4,6 +4,8 @@ export const ASL_MARKING_STORE_TYPES = new Set([
   'GROCERY',
   'UNIVERSAL',
   'CONSTRUCTION',
+  'RESTAURANT',
+  'CANTEEN',
 ]);
 
 export function storeSupportsAslMarking(businessType) {

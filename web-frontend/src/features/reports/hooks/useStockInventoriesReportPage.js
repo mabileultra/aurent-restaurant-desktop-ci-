@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { stockReportApi } from '../../../api';
+import { warehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
@@ -14,17 +14,17 @@ export function useStockInventoriesReportPage() {
 
   const params = useMemo(
     () => ({ from, to, page, size: pageSize, storeId: storeId === '' ? undefined : Number(storeId) }),
-    [from, to, page, pageSize, storeId]
+    [from, to, page, pageSize, storeId],
   );
 
   const exportParams = useMemo(
     () => ({ from, to, storeId: storeId === '' ? undefined : Number(storeId) }),
-    [from, to, storeId]
+    [from, to, storeId],
   );
 
   const query = useQuery({
-    queryKey: ['stock-inventories-report', params],
-    queryFn: () => stockReportApi.inventories(params).then((r) => r.data),
+    queryKey: ['stock-inventories-list', params],
+    queryFn: () => warehouseApi.listInventories(params).then((r) => r.data),
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });
@@ -50,6 +50,8 @@ export function useStockInventoriesReportPage() {
     total: query.data?.totalElements ?? 0,
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,
+    isError: query.isError,
     handleStoreChange,
+    refetch: query.refetch,
   };
 }

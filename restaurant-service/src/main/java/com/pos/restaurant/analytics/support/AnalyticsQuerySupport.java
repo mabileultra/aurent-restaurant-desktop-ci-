@@ -266,6 +266,86 @@ public class AnalyticsQuerySupport {
             .getResultList();
     }
 
+    public long countTablesByStatus(Integer companyId, Integer storeId, TableStatus status) {
+        return (Long) em.createQuery("""
+            select count(t) from FloorTable t
+            where t.companyId = :companyId and t.storeId = :storeId and t.active = true
+              and t.status = :status
+            """)
+            .setParameter("companyId", companyId)
+            .setParameter("storeId", storeId)
+            .setParameter("status", status)
+            .getSingleResult();
+    }
+
+    public long countKitchenByStatuses(
+        Integer companyId, Integer storeId, List<KitchenTicketStatus> statuses
+    ) {
+        return (Long) em.createQuery("""
+            select count(t) from KitchenTicket t
+            where t.companyId = :companyId and t.storeId = :storeId
+              and t.status in :statuses
+            """)
+            .setParameter("companyId", companyId)
+            .setParameter("storeId", storeId)
+            .setParameter("statuses", statuses)
+            .getSingleResult();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<FloorOrder> openTableOrders(Integer companyId, Integer storeId) {
+        return em.createQuery("""
+            select o from FloorOrder o
+            join fetch o.table t
+            where o.companyId = :companyId and o.storeId = :storeId
+              and o.status in :statuses
+              and o.table is not null
+            order by o.openedAt asc
+            """)
+            .setParameter("companyId", companyId)
+            .setParameter("storeId", storeId)
+            .setParameter("statuses", List.of(OrderStatus.OPEN, OrderStatus.BILLING))
+            .setMaxResults(12)
+            .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<Object[]> kitchenQueueRows(Integer companyId, Integer storeId) {
+        return em.createQuery("""
+            select o.orderNo, coalesce(t.code, '—'), k.sentAt, k.status
+            from KitchenTicket k
+            join k.order o
+            left join o.table t
+            where k.companyId = :companyId and k.storeId = :storeId
+              and k.status in :active
+            order by k.sentAt asc
+            """)
+            .setParameter("companyId", companyId)
+            .setParameter("storeId", storeId)
+            .setParameter("active", List.of(
+                KitchenTicketStatus.NEW,
+                KitchenTicketStatus.ACCEPTED,
+                KitchenTicketStatus.PREPARING,
+                KitchenTicketStatus.READY
+            ))
+            .setMaxResults(12)
+            .getResultList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List<FloorOrder> recentOrdersAnyStatus(Integer companyId, Integer storeId, int limit) {
+        return em.createQuery("""
+            select o from FloorOrder o
+            left join fetch o.table
+            where o.companyId = :companyId and o.storeId = :storeId
+            order by o.updatedAt desc
+            """)
+            .setParameter("companyId", companyId)
+            .setParameter("storeId", storeId)
+            .setMaxResults(limit)
+            .getResultList();
+    }
+
     @SuppressWarnings("unchecked")
     public List<FloorReservation> recentReservations(Integer companyId, Integer storeId, Instant from, Instant to) {
         return em.createQuery("""

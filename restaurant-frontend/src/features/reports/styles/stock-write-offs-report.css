@@ -1,0 +1,116 @@
+.rst-wo-report,
+.rst-tr-report,
+.rst-mv-report,
+.rst-prd-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rst-wo-report__toolbar,
+.rst-tr-report__toolbar,
+.rst-mv-report__toolbar,
+.rst-prd-page__toolbar,
+.rst-wo-report__filters,
+.rst-tr-report__filters,
+.rst-mv-report__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.rst-wo-report__toolbar,
+.rst-tr-report__toolbar,
+.rst-mv-report__toolbar,
+.rst-prd-page__toolbar {
+  justify-content: space-between;
+}
+
+.rst-wo-report__table,
+.rst-tr-report__table,
+.rst-mv-report__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rst-wo-report__table th,
+.rst-wo-report__table td,
+.rst-tr-report__table th,
+.rst-tr-report__table td,
+.rst-mv-report__table th,
+.rst-mv-report__table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rst-line, #e2e8f0);
+  text-align: left;
+  color: var(--rst-ink, #0f172a);
+}
+
+.rst-wo-report__table th,
+.rst-tr-report__table th,
+.rst-mv-report__table th {
+  color: var(--rst-muted, #64748b);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.rst-wo-report__table .is-num,
+.rst-tr-report__table .is-num,
+.rst-mv-report__table .is-num,
+.rst-wo-report__table .is-center,
+.rst-tr-report__table .is-center,
+.rst-mv-report__table .is-center {
+  text-align: right;
+}
+
+.rst-wo-report__table .is-center,
+.rst-tr-report__table .is-center,
+.rst-mv-report__table .is-center {
+  text-align: center;
+}
+
+.rst-wo-report__table .is-strong,
+.rst-tr-report__table .is-strong,
+.rst-mv-report__table .is-strong {
+  font-weight: 600;
+}
+
+.rst-wo-report__table .is-mono,
+.rst-tr-report__table .is-mono,
+.rst-mv-report__table .is-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+}
+
+.rst-mv-report__type {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 6px;
+  background: #f1f5f9;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.rst-mv-report__table .is-plus { color: #047857; }
+.rst-mv-report__table .is-minus { color: #b91c1c; }
+
+.rst-prd-page__card {
+  padding: 1.25rem;
+  border: 1px solid var(--rst-line, #e2e8f0);
+  border-radius: 12px;
+  background: #fff;
+  color: #475569;
+  font-size: 0.9rem;
+}
+
+.rst-prd-page__card ol {
+  margin: 0.75rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.rst-prd-page__card li {
+  margin-bottom: 0.35rem;
+}

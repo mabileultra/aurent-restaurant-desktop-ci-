@@ -8,8 +8,10 @@ import com.pos.reporting.entity.StockReceiptFact;
 import com.pos.reporting.mapper.StockReceiptRowMapper;
 import com.pos.reporting.repository.StockReceiptFactRepository;
 import com.pos.reporting.security.ReportingTenantContext;
+import com.pos.reporting.util.ReportingPageCollector;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,6 +51,13 @@ public class StockReceiptReportServiceImpl implements StockReceiptReportService 
             page.getTotalElements(),
             page.getSize(),
             page.getNumber()
+        );
+    }
+
+    @Override
+    public List<StockReceiptRowResponse> listAll(LocalDate from, LocalDate to, Integer storeId) {
+        return ReportingPageCollector.collectAll(
+            (page, size) -> receipts(from, to, storeId, PageRequest.of(page, size))
         );
     }
 }

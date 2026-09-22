@@ -17,6 +17,7 @@ import {
   RotateCcw,
   Warehouse,
   AlertTriangle,
+  Activity,
   ArrowLeftRight,
   History,
   SlidersHorizontal,
@@ -56,6 +57,7 @@ export const ICONS = {
   RotateCcw,
   Warehouse,
   AlertTriangle,
+  Activity,
   ArrowLeftRight,
   History,
   SlidersHorizontal,
@@ -83,6 +85,7 @@ export const STOCK_ROUTES = [
   '/pharm/stock/receipts',
   '/pharm/stock/products',
   '/pharm/stock/asl-marks',
+  '/pharm/stock/asl-requests',
   '/stock/inventories/new',
   '/stock/transfers/new',
   '/stock/suppliers',
@@ -136,9 +139,15 @@ export function stockChildrenForBusinessType(businessType) {
     icon: ICONS.AlertTriangle,
     moduleId: 'stockReceipts',
   };
-  if (receiptsIdx < 0) return [...mapped, aslItem];
+  const aslRequestsItem = {
+    to: '/pharm/stock/asl-requests',
+    key: 'stockPharmacyAslRequests',
+    icon: ICONS.Activity,
+    moduleId: 'stockReceipts',
+  };
+  if (receiptsIdx < 0) return [...mapped, aslItem, aslRequestsItem];
   const next = [...mapped];
-  next.splice(receiptsIdx + 1, 0, aslItem);
+  next.splice(receiptsIdx + 1, 0, aslItem, aslRequestsItem);
   return next;
 }
 

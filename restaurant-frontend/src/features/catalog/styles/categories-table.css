@@ -1,0 +1,113 @@
+.rst-categories-table {
+  border: 1px solid var(--rst-line);
+  border-radius: 14px;
+  background: var(--rst-surface);
+  overflow: hidden;
+}
+
+.rst-categories-table__scroll {
+  overflow-x: auto;
+}
+
+.rst-categories-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.rst-categories-table th,
+.rst-categories-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--rst-line);
+  text-align: left;
+  vertical-align: middle;
+  color: var(--rst-ink);
+}
+
+.rst-categories-table th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+  background: color-mix(in srgb, var(--rst-surface) 88%, var(--rst-line));
+}
+
+.rst-categories-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.rst-categories-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--rst-accent) 6%, transparent);
+}
+
+.rst-categories-table .is-muted {
+  width: 3.25rem;
+  color: var(--rst-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-categories-table .is-strong {
+  font-weight: 700;
+}
+
+.rst-categories-table .is-desc {
+  color: var(--rst-muted);
+  max-width: 22rem;
+}
+
+.rst-categories-table .is-center {
+  text-align: center;
+  color: var(--rst-muted);
+  padding: 2rem 1rem;
+}
+
+.rst-categories-table .is-actions {
+  width: 2.75rem;
+  text-align: right;
+}
+
+.rst-categories-table__badge {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--rst-line);
+  background: color-mix(in srgb, var(--rst-surface) 70%, var(--rst-line));
+  color: var(--rst-ink);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.rst-categories-table__more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 8px;
+  border: 0;
+  color: var(--rst-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.rst-categories-table__more:hover {
+  color: var(--rst-accent);
+  background: color-mix(in srgb, var(--rst-accent) 12%, transparent);
+}
+
+.rst-categories-table__empty {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--rst-muted);
+}
+
+.rst-categories-table .table-pagination {
+  border-top: 1px solid var(--rst-line);
+  background: color-mix(in srgb, var(--rst-surface) 92%, var(--rst-line));
+}

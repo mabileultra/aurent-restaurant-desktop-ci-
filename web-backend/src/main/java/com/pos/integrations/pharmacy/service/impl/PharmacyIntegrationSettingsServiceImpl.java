@@ -4,16 +4,21 @@ import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
+import com.pos.integrations.pharmacy.domain.AslRequestOperation;
+import com.pos.integrations.pharmacy.domain.AslRequestOutcome;
 import com.pos.integrations.pharmacy.dto.AdminPharmacyIntegrationResponse;
 import com.pos.integrations.pharmacy.dto.CashierPharmacyIntegrationResponse;
 import com.pos.integrations.pharmacy.dto.MarkingVerifyResponse;
 import com.pos.integrations.pharmacy.dto.SavePharmacyIntegrationRequest;
 import com.pos.integrations.pharmacy.entity.StorePharmacyIntegration;
 import com.pos.integrations.pharmacy.repository.StorePharmacyIntegrationRepository;
+import com.pos.integrations.pharmacy.service.AslRequestLogWriteService;
 import com.pos.integrations.pharmacy.service.PharmacyIntegrationSettingsService;
 import com.pos.integrations.pharmacy.support.AslApiKeySupport;
 import com.pos.integrations.pharmacy.support.AslBelgisiMarkingClient;
 import com.pos.integrations.pharmacy.support.AslMarkingStoreSupport;
+import com.pos.integrations.pharmacy.support.AslRequestLogCallContext;
+import com.pos.integrations.pharmacy.support.AslRequestLogCallScope;
 import com.pos.integrations.pharmacy.support.PharmacyIntegrationDefaults;
 import com.pos.repository.StoreRepository;
 import com.pos.service.support.CashierSaleSupport;
@@ -34,6 +39,8 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   private final TenantAccessSupport tenantAccess;
   private final CashierSaleSupport cashierSaleSupport;
   private final AslBelgisiMarkingClient aslBelgisiMarkingClient;
+  private final AslRequestLogCallScope requestLogCallScope;
+  private final AslRequestLogWriteService requestLogWriteService;
 
   @Override
   @Transactional(readOnly = true)
@@ -96,8 +103,39 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
     if (!markingLookupReady(settings)) {
       throw new BadRequestException("ASL Belgisi marking is disabled for this store");
     }
+    Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
+    AslRequestLogCallContext ctx = new AslRequestLogCallContext(
+        companyId,
+        store.getId(),
+        AslRequestOperation.VERIFY,
+        code
+    );
+    requestLogCallScope.open(ctx);
     String baseUrl = normalizeBaseUrl(settings.getAslApiBaseUrl());
-    return aslBelgisiMarkingClient.verify(baseUrl, settings.getAslApiKey(), code);
+    try {
+      MarkingVerifyResponse response = aslBelgisiMarkingClient.verify(baseUrl, settings.getAslApiKey(), code);
+      AslRequestOutcome outcome = AslRequestOutcome.SENT_OK;
+      String message = response.found()
+          ? null
+          : "Код не найден в ASL (связь была)";
+      ctx.finish(outcome, response.status(), message);
+      return response;
+    } catch (BadRequestException ex) {
+      ctx.finish(AslRequestOutcome.SENT_FAIL, null, ex.getMessage());
+      throw ex;
+    } catch (Exception ex) {
+      ctx.finish(
+          AslRequestOutcome.SENT_FAIL,
+          null,
+          ex.getMessage() != null ? ex.getMessage() : "ASL verify failed"
+      );
+      throw ex;
+    } finally {
+      AslRequestLogCallContext closed = requestLogCallScope.close();
+      if (closed != null && closed.getOutcome() != null && companyId != null) {
+        requestLogWriteService.record(closed);
+      }
+    }
   }
 
   @Override
@@ -117,7 +155,7 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
     }
     if (!AslMarkingStoreSupport.supportsAslMarking(store.getBusinessType())) {
       throw new BadRequestException(
-        "ASL Belgisi marking is available for pharmacy, grocery, universal and construction stores"
+        "ASL Belgisi marking is available for pharmacy, grocery, universal, construction, restaurant and canteen stores"
       );
     }
   }

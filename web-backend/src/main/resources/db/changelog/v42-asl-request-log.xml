@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v42-asl-request-log" author="pos">
+        <createTable tableName="asl_request_log">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="operation" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="outcome" type="VARCHAR(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reached" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="http_status" type="INT"/>
+            <column name="endpoint" type="VARCHAR(256)"/>
+            <column name="mark_code_short" type="VARCHAR(64)"/>
+            <column name="asl_status" type="VARCHAR(64)"/>
+            <column name="message" type="VARCHAR(500)"/>
+            <column name="duration_ms" type="INT"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="asl_request_log" indexName="idx_asl_request_log_company_created">
+            <column name="company_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex tableName="asl_request_log" indexName="idx_asl_request_log_store_created">
+            <column name="store_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex tableName="asl_request_log" indexName="idx_asl_request_log_outcome_created">
+            <column name="outcome"/>
+            <column name="created_at"/>
+        </createIndex>
+        <createIndex tableName="asl_request_log" indexName="idx_asl_request_log_created">
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

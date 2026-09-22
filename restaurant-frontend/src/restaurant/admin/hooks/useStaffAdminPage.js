@@ -6,6 +6,7 @@ import { userApi } from '../../../api';
 import { useAuthStore } from '../../../store/authStore';
 import { rstCommissionApi } from '../../api/commission.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { toastApiError } from '../../../utils/apiError';
 
 export const RST_STAFF_ROLES = ['WAITER', 'COOK', 'CASHIER', 'MANAGER'];
 export const STAFF_PAGE_SIZE_OPTIONS = [10, 14, 20];
@@ -119,7 +120,7 @@ export function useStaffAdminPage() {
       qc.invalidateQueries({ queryKey: ['rst-staff-users'] });
       qc.invalidateQueries({ queryKey: ['users'] });
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.staff.toggleFailed')),
+    onError: (err) => toastApiError(err, t('rst.staff.toggleFailed')),
   });
 
   const saveDefaultMutation = useMutation({
@@ -129,7 +130,7 @@ export function useStaffAdminPage() {
       setDefaultPercentDraft(null);
       invalidateCommission();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.staff.commissionSaveFailed')),
+    onError: (err) => toastApiError(err, t('rst.staff.commissionSaveFailed')),
   });
 
   const applyAllMutation = useMutation({
@@ -140,7 +141,7 @@ export function useStaffAdminPage() {
       setWaiterDrafts({});
       invalidateCommission();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.staff.commissionSaveFailed')),
+    onError: (err) => toastApiError(err, t('rst.staff.commissionSaveFailed')),
   });
 
   const saveWaiterMutation = useMutation({
@@ -154,7 +155,7 @@ export function useStaffAdminPage() {
       });
       invalidateCommission();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.staff.commissionSaveFailed')),
+    onError: (err) => toastApiError(err, t('rst.staff.commissionSaveFailed')),
   });
 
   const clearWaiterMutation = useMutation({
@@ -168,7 +169,7 @@ export function useStaffAdminPage() {
       });
       invalidateCommission();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.staff.commissionSaveFailed')),
+    onError: (err) => toastApiError(err, t('rst.staff.commissionSaveFailed')),
   });
 
   const displayName = (user) => (

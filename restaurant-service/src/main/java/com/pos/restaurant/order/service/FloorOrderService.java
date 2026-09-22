@@ -3,9 +3,11 @@ package com.pos.restaurant.order.service;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
+import com.pos.restaurant.order.dto.TransferTableRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 
@@ -25,6 +27,10 @@ public interface FloorOrderService {
     OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request);
 
     OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request);
+
+    OrderResponse transferTable(UUID orderId, TransferTableRequest request);
+
+    OrderResponse mergeTables(UUID orderId, MergeTablesRequest request);
 
     OrderResponse addItem(UUID orderId, AddOrderItemRequest request);
 

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v43-stock-expense-production" author="pos">
+        <modifyDataType tableName="stock_movements" columnName="movement_type" newDataType="VARCHAR(40)"/>
+
+        <createTable tableName="stock_expenses">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="expense_number" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="reason" type="VARCHAR(40)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recipient" type="VARCHAR(200)"/>
+            <column name="notes" type="VARCHAR(1000)"/>
+            <column name="total_quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="stock_expenses" baseColumnNames="store_id"
+            referencedTableName="stores" referencedColumnNames="id"
+            constraintName="fk_stock_expenses_store"/>
+        <addForeignKeyConstraint
+            baseTableName="stock_expenses" baseColumnNames="created_by"
+            referencedTableName="users" referencedColumnNames="id"
+            constraintName="fk_stock_expenses_created_by"/>
+
+        <createIndex tableName="stock_expenses" indexName="idx_stock_expenses_store_created">
+            <column name="store_id"/>
+            <column name="created_at"/>
+        </createIndex>
+
+        <createTable tableName="stock_expense_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="expense_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="stock_expense_lines" baseColumnNames="expense_id"
+            referencedTableName="stock_expenses" referencedColumnNames="id"
+            constraintName="fk_stock_expense_lines_expense"/>
+        <addForeignKeyConstraint
+            baseTableName="stock_expense_lines" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_stock_expense_lines_product"/>
+
+        <createTable tableName="stock_productions">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="production_number" type="VARCHAR(40)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="output_product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="output_quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="output_unit_cost" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="notes" type="VARCHAR(1000)"/>
+            <column name="total_input_quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="total_input_cost" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="UUID"/>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="stock_productions" baseColumnNames="store_id"
+            referencedTableName="stores" referencedColumnNames="id"
+            constraintName="fk_stock_productions_store"/>
+        <addForeignKeyConstraint
+            baseTableName="stock_productions" baseColumnNames="output_product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_stock_productions_output"/>
+        <addForeignKeyConstraint
+            baseTableName="stock_productions" baseColumnNames="created_by"
+            referencedTableName="users" referencedColumnNames="id"
+            constraintName="fk_stock_productions_created_by"/>
+
+        <createIndex tableName="stock_productions" indexName="idx_stock_productions_store_created">
+            <column name="store_id"/>
+            <column name="created_at"/>
+        </createIndex>
+
+        <createTable tableName="stock_production_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="production_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="quantity" type="NUMERIC(18,3)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="unit_cost" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="line_cost" type="NUMERIC(18,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <addForeignKeyConstraint
+            baseTableName="stock_production_lines" baseColumnNames="production_id"
+            referencedTableName="stock_productions" referencedColumnNames="id"
+            constraintName="fk_stock_production_lines_production"/>
+        <addForeignKeyConstraint
+            baseTableName="stock_production_lines" baseColumnNames="product_id"
+            referencedTableName="products" referencedColumnNames="id"
+            constraintName="fk_stock_production_lines_product"/>
+    </changeSet>
+
+</databaseChangeLog>

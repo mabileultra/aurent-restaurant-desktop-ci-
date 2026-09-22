@@ -1,7 +1,9 @@
 package com.pos.restaurant.shift.service;
 
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
+import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.OpenShiftRequest;
+import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.dto.ShiftResponse;
 
 import java.util.List;
@@ -16,5 +18,9 @@ public interface RestaurantShiftService {
 
     ShiftResponse open(Integer storeId, OpenShiftRequest request);
 
-    ShiftResponse close(UUID shiftId, CloseShiftRequest request);
+    CloseShiftResult close(UUID shiftId, CloseShiftRequest request);
+
+    ShiftReportResponse xReport(UUID shiftId);
+
+    ShiftReportResponse zReportPreview(UUID shiftId);
 }

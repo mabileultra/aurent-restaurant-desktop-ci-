@@ -13,8 +13,19 @@ import {
   toStoreIdSet,
 } from '../utils/userFormModalUtils';
 import { asEntityList } from '../utils/companySelectOptions';
+import { companyHasBusinessType } from '../../platform/utils/moduleAccessByBusinessType';
+import { resolveUserFormRoles } from '../../platform/utils/rolesByBusinessType';
 
-export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser, allowedRoles, defaultStoreIds }) {
+export function useUserFormModal({
+  open,
+  onClose,
+  isPlatform,
+  mode,
+  editingUser,
+  allowedRoles,
+  defaultStoreIds,
+  businessTypeFilter = '',
+}) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { tenantKey } = useTenantScope();
@@ -44,19 +55,18 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
 
   const { register, handleSubmit, reset, watch, setValue, formState: { errors } } = form;
   const selectedRole = watch('role');
-  const roleAllowList = Array.isArray(allowedRoles) && allowedRoles.length > 0 ? allowedRoles : null;
-  const defaultCreateRole = roleAllowList?.[0] ?? (isPlatform ? 'ADMIN' : 'MANAGER');
-  const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
-  const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
-  const showPasswordField = !isCashierRole && (isPlatform || fieldOn('password') || !isEdit);
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
     queryFn: () => companyApi.listAll().then((r) => r.data),
     enabled: isPlatform && open,
   });
-  const companies = useMemo(() => asEntityList(companiesRaw), [companiesRaw]);
+  const companies = useMemo(() => {
+    const list = asEntityList(companiesRaw);
+    if (!isPlatform || !businessTypeFilter) return list;
+    return list.filter((company) => companyHasBusinessType(company, businessTypeFilter));
+  }, [companiesRaw, isPlatform, businessTypeFilter]);
 
   const { data: storesRaw, isLoading: storesLoading, isError: storesError } = useQuery({
     queryKey: isPlatform
@@ -80,8 +90,24 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     if (!isPlatform) return null;
     const id = isEdit ? user?.companyId : companyId ? Number(companyId) : null;
     if (!id) return null;
-    return companies.find((c) => Number(c.id) === Number(id)) ?? null;
-  }, [isPlatform, isEdit, user?.companyId, companyId, companies]);
+    return companies.find((c) => Number(c.id) === Number(id))
+      ?? asEntityList(companiesRaw).find((c) => Number(c.id) === Number(id))
+      ?? null;
+  }, [isPlatform, isEdit, user?.companyId, companyId, companies, companiesRaw]);
+
+  const roleAllowList = useMemo(
+    () => resolveUserFormRoles({
+      allowedRoles,
+      isPlatform,
+      companyBusinessType: selectedCompany?.businessType,
+      filterBusinessType: businessTypeFilter,
+    }),
+    [allowedRoles, isPlatform, selectedCompany?.businessType, businessTypeFilter],
+  );
+  const defaultCreateRole = roleAllowList[0] ?? (isPlatform ? 'ADMIN' : 'MANAGER');
+  const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
+  const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
+  const showPasswordField = !isCashierRole && (isPlatform || fieldOn('password') || !isEdit);
 
   const companyLoginCode =
     (isEdit ? user?.companyLoginCode : selectedCompany?.loginCode) || null;
@@ -164,6 +190,12 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     if (!isCashierRole) return;
     setStoreIds((prev) => (prev.size > 1 ? cashierStoreSet(prev) : prev));
   }, [isCashierRole]);
+
+  useEffect(() => {
+    if (!open || !roleAllowList.length) return;
+    if (roleAllowList.includes(selectedRole)) return;
+    setValue('role', roleAllowList[0], { shouldDirty: !isEdit, shouldValidate: true });
+  }, [open, roleAllowList, selectedRole, setValue, isEdit]);
 
   const { mutate: saveUser, isPending } = useMutation({
     mutationFn: (payload) => {

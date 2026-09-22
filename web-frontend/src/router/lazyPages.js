@@ -39,6 +39,7 @@ export const PharmacyReceiptDocumentPage = lazy(() => import('../features/pharma
 export const PharmacyReceiptPickPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyReceiptPickPage'));
 export const PharmacyProductsPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyProductsPage'));
 export const PharmacyAslWithdrawMonitorPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyAslWithdrawMonitorPage'));
+export const PharmacyAslRequestLogPage = lazy(() => import('../features/pharmacy-stock/pages/PharmacyAslRequestLogPage'));
 export const StockInventoryCreatePage = lazy(() => import('../features/stock/pages/StockInventoryCreatePage'));
 export const StockTransferCreatePage = lazy(() => import('../features/stock/pages/StockTransferCreatePage'));
 export const SuppliersPage = lazy(() => import('../features/catalog/pages/SuppliersPage'));

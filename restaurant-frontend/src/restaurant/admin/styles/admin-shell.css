@@ -111,6 +111,18 @@
   backdrop-filter: blur(8px);
 }
 
+.rst-shell__top-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.rst-shell__top-left > strong {
+  flex-shrink: 0;
+}
+
 .rst-shell__store {
   min-width: 220px;
 }
@@ -145,5 +157,14 @@
 
   .rst-shell__link {
     white-space: nowrap;
+  }
+
+  .rst-shell__top {
+    flex-wrap: wrap;
+  }
+
+  .rst-shell__top-left {
+    flex-wrap: wrap;
+    width: 100%;
   }
 }

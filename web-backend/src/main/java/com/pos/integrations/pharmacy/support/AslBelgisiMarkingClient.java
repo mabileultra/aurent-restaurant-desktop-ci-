@@ -39,6 +39,7 @@ public class AslBelgisiMarkingClient {
   private final ObjectMapper objectMapper;
   private final AslCodeVerificationClient codeVerificationClient;
   private final AslPharmaProductNameClient productNameClient;
+  private final AslRequestLogCallScope requestLogCallScope;
 
   public MarkingVerifyResponse verify(String baseUrl, String apiKey, String rawCode) {
     List<String> codes = AslMarkingCodeNormalizer.requestCodes(rawCode);
@@ -194,11 +195,13 @@ public class AslBelgisiMarkingClient {
         new HttpEntity<>(body, headers),
         String.class
       );
+      requestLogCallScope.noteHttp(response.getStatusCode().value(), url);
       if (response.getStatusCode().is3xxRedirection() && response.getHeaders().getLocation() != null) {
         return followRedirect(response.getHeaders().getLocation(), headers, body, requestedCode);
       }
       return parser().parse(requestedCode, response.getBody());
     } catch (HttpStatusCodeException ex) {
+      requestLogCallScope.noteHttp(ex.getStatusCode().value(), url);
       if (ex.getStatusCode().value() == 307 && ex.getResponseHeaders() != null
         && ex.getResponseHeaders().getLocation() != null) {
         return followRedirect(ex.getResponseHeaders().getLocation(), headers, body, requestedCode);
@@ -222,6 +225,7 @@ public class AslBelgisiMarkingClient {
       new HttpEntity<>(body, headers),
       String.class
     );
+    requestLogCallScope.noteHttp(redirected.getStatusCode().value(), target);
     return parser().parse(requestedCode, redirected.getBody());
   }
 

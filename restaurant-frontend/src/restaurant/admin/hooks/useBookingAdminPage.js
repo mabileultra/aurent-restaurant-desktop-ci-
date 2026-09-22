@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { rstBookingApi } from '../../api/booking.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { toastApiError } from '../../../utils/apiError';
 
 export const BOOKING_PAGE_SIZE_OPTIONS = [10, 14, 20];
 const DEFAULT_PAGE_SIZE = 14;
@@ -142,28 +143,28 @@ export function useBookingAdminPage() {
       setModal(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.booking.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.booking.saveFailed')),
   });
 
   const confirmMutation = useMutation({
     mutationFn: (id) => rstBookingApi.confirm(id),
     onSuccess: () => { toast.success(t('rst.booking.confirmed')); invalidate(); },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.booking.actionFailed')),
+    onError: (err) => toastApiError(err, t('rst.booking.actionFailed')),
   });
   const cancelMutation = useMutation({
     mutationFn: (id) => rstBookingApi.cancel(id),
     onSuccess: () => { toast.success(t('rst.booking.cancelled')); invalidate(); },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.booking.actionFailed')),
+    onError: (err) => toastApiError(err, t('rst.booking.actionFailed')),
   });
   const noShowMutation = useMutation({
     mutationFn: (id) => rstBookingApi.noShow(id),
     onSuccess: () => { toast.success(t('rst.booking.noShowMarked')); invalidate(); },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.booking.actionFailed')),
+    onError: (err) => toastApiError(err, t('rst.booking.actionFailed')),
   });
   const seatMutation = useMutation({
     mutationFn: (id) => rstBookingApi.seat(id),
     onSuccess: () => { toast.success(t('rst.booking.seated')); invalidate(); },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.booking.actionFailed')),
+    onError: (err) => toastApiError(err, t('rst.booking.actionFailed')),
   });
 
   return {

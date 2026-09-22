@@ -150,6 +150,9 @@ app:
     asl:
       connect-timeout-ms: ${ASL_CONNECT_TIMEOUT_MS:3000}
       read-timeout-ms: ${ASL_READ_TIMEOUT_MS:5000}
+      request-log:
+        retention-days: ${ASL_REQUEST_LOG_RETENTION_DAYS:30}
+        purge-cron: ${ASL_REQUEST_LOG_PURGE_CRON:0 40 3 * * *}
       mark-verify:
         core-pool-size: ${ASL_MARK_VERIFY_CORE:8}
         max-pool-size: ${ASL_MARK_VERIFY_MAX:16}

@@ -1,0 +1,100 @@
+.rst-cashier-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.25rem;
+  min-height: 6.5rem;
+  padding: 0.75rem 0.8rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.85rem;
+  background: #121722;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, transform 0.08s ease;
+}
+
+.rst-cashier-tile:hover {
+  border-color: rgb(255 255 255 / 0.22);
+}
+
+.rst-cashier-tile.is-selected {
+  border-color: var(--rst-accent);
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.45), 0 10px 22px rgb(0 0 0 / 0.35);
+}
+
+.rst-cashier-tile__code {
+  font-size: 1.45rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.rst-cashier-tile__status {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.rst-cashier-tile__amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #ffd7b0;
+}
+
+.rst-cashier-tile__seats {
+  font-size: 0.85rem;
+  color: var(--rst-muted);
+}
+
+.rst-cashier-tile__time {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-cashier-tile--FREE {
+  border-color: rgb(34 197 94 / 0.35);
+  background: linear-gradient(180deg, rgb(34 197 94 / 0.12), #121722 55%);
+}
+
+.rst-cashier-tile--FREE .rst-cashier-tile__status {
+  color: #86efac;
+}
+
+.rst-cashier-tile--OCCUPIED {
+  border-color: rgb(251 146 60 / 0.4);
+  background: linear-gradient(180deg, rgb(251 146 60 / 0.14), #121722 55%);
+}
+
+.rst-cashier-tile--OCCUPIED .rst-cashier-tile__status {
+  color: #fdba74;
+}
+
+.rst-cashier-tile--WAITING_PAYMENT {
+  border-color: rgb(250 204 21 / 0.45);
+  background: linear-gradient(180deg, rgb(250 204 21 / 0.16), #121722 55%);
+}
+
+.rst-cashier-tile--WAITING_PAYMENT .rst-cashier-tile__status {
+  color: #fde68a;
+}
+
+.rst-cashier-tile--RESERVED {
+  border-color: rgb(96 165 250 / 0.4);
+  background: linear-gradient(180deg, rgb(96 165 250 / 0.14), #121722 55%);
+}
+
+.rst-cashier-tile--RESERVED .rst-cashier-tile__status {
+  color: #93c5fd;
+}
+
+.rst-cashier-tile--BLOCKED,
+.rst-cashier-tile--CLEANING {
+  opacity: 0.72;
+}

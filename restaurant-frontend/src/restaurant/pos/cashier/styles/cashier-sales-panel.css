@@ -1,0 +1,41 @@
+.rst-cashier-sales .rst-floor-section-tabs {
+  flex-wrap: wrap;
+  max-width: 100%;
+  width: fit-content;
+}
+
+.rst-cashier-sales__paid {
+  margin-top: 0.25rem;
+}
+
+.rst-cashier-sales__paid .rst-cashier-recent {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+
+.rst-cashier-sales__paid .rst-cashier-recent__list {
+  max-height: min(70vh, 40rem);
+}
+
+.rst-cashier-sales__error {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.rst-cashier-sales__retry {
+  border: 1px solid var(--rst-border, #2a2a2a);
+  border-radius: 8px;
+  padding: 0.35rem 0.7rem;
+  background: transparent;
+  color: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.rst-cashier-sales__retry:hover {
+  border-color: var(--rst-accent, #3b82f6);
+}

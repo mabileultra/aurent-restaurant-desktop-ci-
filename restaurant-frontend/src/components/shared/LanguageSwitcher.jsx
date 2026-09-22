@@ -1,30 +1,41 @@
 import { useTranslation } from 'react-i18next';
 import clsx from 'clsx';
+import '../../restaurant/shared/styles/rst-lang-switch.css';
 
 const LANGS = [
   { code: 'ru', label: 'RU' },
   { code: 'uz', label: 'UZ' },
+  { code: 'en', label: 'EN' },
 ];
+
+function isActive(i18n, code) {
+  const current = String(i18n.resolvedLanguage || i18n.language || '').toLowerCase();
+  return current === code || current.startsWith(`${code}-`);
+}
 
 export default function LanguageSwitcher({ className = '', variant = 'default' }) {
   const { i18n } = useTranslation();
 
-  if (variant === 'cashier') {
+  const switchTo = (code) => {
+    try {
+      localStorage.setItem('pos-lang', code);
+    } catch {
+      /* ignore quota / private mode */
+    }
+    void i18n.changeLanguage(code);
+  };
+
+  if (variant === 'cashier' || variant === 'rst') {
+    const root = variant === 'rst' ? 'rst-lang-switch' : 'cashier-lang-switch';
+    const btn = variant === 'rst' ? 'rst-lang-switch__btn' : 'cashier-lang-switch__btn';
     return (
-      <div
-        className={clsx('cashier-lang-switch', className)}
-        role="group"
-        aria-label="Language"
-      >
+      <div className={clsx(root, className)} role="group" aria-label="Language">
         {LANGS.map(({ code, label }) => (
           <button
             key={code}
             type="button"
-            onClick={() => i18n.changeLanguage(code)}
-            className={clsx(
-              'cashier-lang-switch__btn',
-              i18n.language?.startsWith(code) && 'is-active'
-            )}
+            onClick={() => switchTo(code)}
+            className={clsx(btn, isActive(i18n, code) && 'is-active')}
           >
             {label}
           </button>
@@ -44,10 +55,10 @@ export default function LanguageSwitcher({ className = '', variant = 'default' }
           <button
             key={code}
             type="button"
-            onClick={() => i18n.changeLanguage(code)}
+            onClick={() => switchTo(code)}
             className={clsx(
               'public-lang-switch__btn',
-              i18n.language?.startsWith(code) && 'is-active'
+              isActive(i18n, code) && 'is-active'
             )}
           >
             {label}
@@ -58,21 +69,19 @@ export default function LanguageSwitcher({ className = '', variant = 'default' }
   }
 
   return (
-    <div className={clsx(
-      'flex items-center gap-1 rounded-lg border p-0.5',
-      'border-slate-300 bg-slate-100/90 dark:border-slate-700 dark:bg-slate-800/80',
-      className
-    )}>
+    <div
+      className={clsx('rst-lang-switch', className)}
+      role="group"
+      aria-label="Language"
+    >
       {LANGS.map(({ code, label }) => (
         <button
           key={code}
           type="button"
-          onClick={() => i18n.changeLanguage(code)}
+          onClick={() => switchTo(code)}
           className={clsx(
-            'px-2.5 py-1 rounded-md text-xs font-semibold transition',
-            i18n.language?.startsWith(code)
-              ? 'bg-emerald-500 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-200/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/80 dark:hover:text-white'
+            'rst-lang-switch__btn',
+            isActive(i18n, code) && 'is-active'
           )}
         >
           {label}

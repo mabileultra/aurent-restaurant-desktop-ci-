@@ -11,6 +11,7 @@ import com.pos.restaurant.order.domain.OrderItemStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
+import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class OrderCancelHandler {
     private final KitchenTicketLineRepository ticketLineRepository;
     private final OrderLookup orderLookup;
     private final FloorTenantSupport tenantSupport;
+    private final OrderLinkedTablesSupport linkedTables;
 
     @Transactional
     public void handle(UUID orderId) {
@@ -39,9 +41,8 @@ public class OrderCancelHandler {
         }
         order.setStatus(OrderStatus.CANCELLED);
         order.setClosedAt(Instant.now());
-        if (order.getTable() != null) {
-            order.getTable().setStatus(TableStatus.FREE);
-        }
+        linkedTables.applyStatus(order, TableStatus.FREE);
+        linkedTables.clearLinks(orderId);
         for (KitchenTicket ticket : ticketRepository.findByOrderId(orderId)) {
             if (ticket.getStatus() == KitchenTicketStatus.SERVED || ticket.getStatus() == KitchenTicketStatus.CANCELLED) {
                 continue;

@@ -4,6 +4,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useAuthStore } from '../../../store/authStore';
 import { orderApi } from '../../../services/api';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyForm = () => ({
   clientName: '',
@@ -34,7 +35,7 @@ export function useOrderAddWizard({ open, onClose, stores, onCreated }) {
       onClose();
     },
     onError: (err) => {
-      toast.error(err?.response?.data?.message ?? t('orders.wizard.createFailed'));
+      toastApiError(err, t('orders.wizard.createFailed'));
     },
   });
 

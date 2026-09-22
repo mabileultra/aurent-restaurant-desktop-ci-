@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-050-floor-order-waiter-history" author="pos">
+        <createTable tableName="floor_order_waiter_history">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="waiter_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="assigned_by_user_id" type="UUID"/>
+            <column name="assigned_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_floor_order_waiter_hist_order" tableName="floor_order_waiter_history">
+            <column name="order_id"/>
+            <column name="assigned_at"/>
+        </createIndex>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_waiter_history"
+            baseColumnNames="order_id"
+            referencedTableName="floor_orders"
+            referencedColumnNames="id"
+            constraintName="fk_floor_order_waiter_hist_order"
+            onDelete="CASCADE"/>
+    </changeSet>
+
+    <changeSet id="rst-051-floor-order-table-links" author="pos">
+        <createTable tableName="floor_order_table_links">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="linked_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="linked_by_user_id" type="UUID"/>
+        </createTable>
+        <addUniqueConstraint
+            tableName="floor_order_table_links"
+            columnNames="table_id"
+            constraintName="uq_floor_order_table_links_table"/>
+        <createIndex indexName="idx_floor_order_table_links_order" tableName="floor_order_table_links">
+            <column name="order_id"/>
+        </createIndex>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_table_links"
+            baseColumnNames="order_id"
+            referencedTableName="floor_orders"
+            referencedColumnNames="id"
+            constraintName="fk_floor_order_table_links_order"
+            onDelete="CASCADE"/>
+        <addForeignKeyConstraint
+            baseTableName="floor_order_table_links"
+            baseColumnNames="table_id"
+            referencedTableName="floor_tables"
+            referencedColumnNames="id"
+            constraintName="fk_floor_order_table_links_table"/>
+    </changeSet>
+
+    <changeSet id="rst-052-floor-order-merges" author="pos">
+        <createTable tableName="floor_order_merges">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="primary_order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secondary_order_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="primary_table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="secondary_table_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="merged_by_user_id" type="UUID"/>
+            <column name="merged_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex indexName="idx_floor_order_merges_primary" tableName="floor_order_merges">
+            <column name="primary_order_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

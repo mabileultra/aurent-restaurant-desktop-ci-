@@ -1,0 +1,179 @@
+.rst-shift-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.rst-shift-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgb(0 0 0 / 0.55);
+  cursor: pointer;
+}
+
+.rst-shift-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(96vw, 26rem);
+  border-radius: 14px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: var(--rst-surface, #161616);
+  color: inherit;
+  padding: 16px 18px 18px;
+  box-shadow: 0 24px 48px rgb(0 0 0 / 0.45);
+}
+
+.rst-shift-modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.rst-shift-modal__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 750;
+}
+
+.rst-shift-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.rst-shift-modal__close:hover {
+  background: color-mix(in srgb, #fff 8%, transparent);
+}
+
+.rst-shift-modal__meta {
+  margin: 8px 0 0;
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
+
+.rst-shift-modal__status {
+  margin: 6px 0 0;
+  font-size: 0.9rem;
+}
+
+.rst-shift-modal__status .is-open {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.rst-shift-modal__stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: #0f0f0f;
+}
+
+.rst-shift-modal__stats > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+  opacity: 0.9;
+}
+
+.rst-shift-modal__stats strong {
+  font-size: 0.95rem;
+  opacity: 1;
+}
+
+.rst-shift-modal__stats-wide {
+  grid-column: 1 / -1;
+}
+
+.rst-shift-modal__stats-wide.is-warn strong {
+  color: #fbbf24;
+}
+
+.rst-shift-modal__hint {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  opacity: 0.72;
+}
+
+.rst-shift-modal__cash {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  font-size: 0.8125rem;
+}
+
+.rst-shift-modal__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.rst-shift-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.rst-shift-modal__btn:hover:not(:disabled) {
+  border-color: var(--rst-accent, #3b82f6);
+}
+
+.rst-shift-modal__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.rst-shift-modal__btn--primary {
+  border: none;
+  background: var(--rst-accent, #3b82f6);
+  color: #fff;
+}
+
+.rst-shift-modal__btn--danger {
+  border: none;
+  background: #b91c1c;
+  color: #fff;
+}
+
+.rst-shift-modal__btn--danger:hover:not(:disabled) {
+  background: #991b1b;
+}
+
+.rst-shift-modal .spin {
+  animation: rst-shift-spin 0.8s linear infinite;
+}
+
+@keyframes rst-shift-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

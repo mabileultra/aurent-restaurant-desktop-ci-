@@ -42,8 +42,11 @@ export function useStockProductsPage({ preferredStoreId = null } = {}) {
       barcode: applied.barcode.trim() || undefined,
       markedProduct:
         applied.markedProduct === '' ? undefined : applied.markedProduct === 'true',
+      storeId: preferredStoreId != null && preferredStoreId !== ''
+        ? Number(preferredStoreId)
+        : undefined,
     }),
-    [search, page, pageSize, applied]
+    [search, page, pageSize, applied, preferredStoreId]
   );
 
   const { data, isPending, isFetching, isError, error } = useQuery({

@@ -14,6 +14,7 @@ public record ProductImportRowFields(
     String storageLocation,
     String uzInvoiceDocumentId,
     BigDecimal sellingPrice,
+    BigDecimal costPrice,
     BigDecimal taxRatePercent,
     BigDecimal quantity,
     String unitOfMeasure,

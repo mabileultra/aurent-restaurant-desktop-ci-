@@ -22,7 +22,25 @@ public class ExcelSpreadsheetReader {
 
     public List<Map<String, String>> read(InputStream in, ExcelTemplate template) {
         DataFormatter formatter = new DataFormatter();
-        try (Workbook wb = WorkbookFactory.create(in)) {
+        byte[] bytes;
+        try {
+            bytes = in.readAllBytes();
+        } catch (IOException e) {
+            throw new BadRequestException("Не удалось прочитать Excel: " + e.getMessage());
+        }
+        if (bytes.length == 0) {
+            throw new BadRequestException("Файл пуст");
+        }
+        String head = new String(bytes, 0, Math.min(bytes.length, 256), java.nio.charset.StandardCharsets.UTF_8)
+            .trim()
+            .toLowerCase(Locale.ROOT);
+        if (head.startsWith("<!doctype") || head.startsWith("<html") || head.contains("<html")) {
+            throw new BadRequestException(
+                "Файл является HTML, а не Excel. Скачайте шаблон из системы (.xlsx) "
+                    + "или сохраните счёт-фактуру как настоящий Excel — не веб-страницу."
+            );
+        }
+        try (Workbook wb = WorkbookFactory.create(new java.io.ByteArrayInputStream(bytes))) {
             Sheet sheet = wb.getSheetAt(0);
             Row headerRow = sheet.getRow(0);
             if (headerRow == null) {

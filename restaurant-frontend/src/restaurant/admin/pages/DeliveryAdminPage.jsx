@@ -6,6 +6,7 @@ import DeliveryOrderEditModal from '../components/DeliveryOrderEditModal';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
 import { useDeliveryAdminPage } from '../hooks/useDeliveryAdminPage';
+import { getApiErrorMessage } from '../../../utils/apiError';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -21,7 +22,7 @@ function fmtDate(value, locale) {
 export default function DeliveryAdminPage() {
   const p = useDeliveryAdminPage();
   const locale = p.t('common.locale', { defaultValue: 'ru-RU' });
-  const errorMessage = p.error?.response?.data?.message ?? p.error?.message ?? p.t('rst.delivery.loadFailed');
+  const errorMessage = getApiErrorMessage(p.error, p.t('rst.delivery.loadFailed'));
 
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
@@ -40,22 +41,6 @@ export default function DeliveryAdminPage() {
           </BaseButton>
         </div>
       </div>
-
-      {p.workspace.canPickStore ? (
-        <label className="rst-admin-field rst-admin-field--full mb-3">
-          <span className="rst-admin-field__label">{p.t('rst.admin.selectStore')}</span>
-          <select
-            className="form-select"
-            value={p.workspace.pickedStoreId}
-            onChange={(e) => p.workspace.setPickedStoreId(e.target.value)}
-          >
-            <option value="">{p.t('rst.admin.selectStore')}</option>
-            {p.workspace.restaurantStores.map((store) => (
-              <option key={store.id} value={store.id}>{store.name}</option>
-            ))}
-          </select>
-        </label>
-      ) : null}
 
       {!p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>

@@ -14,11 +14,12 @@ export function isRestaurantWorldBusiness(code) {
  */
 export function resolveAppHomePath(role, businessType) {
   if (role === 'COOK') return '/rst/kitchen';
-  if (role === 'WAITER' || role === 'CASHIER') return '/rst/pos';
+  if (role === 'CASHIER') return '/rst/cashier';
+  if (role === 'WAITER') return '/rst/pos';
   if (role === 'ADMIN' || role === 'MANAGER') {
     return isRestaurantWorldBusiness(businessType) || !businessType
       ? '/rst/admin/dashboard'
-      : '/rst/pos';
+      : '/rst/cashier';
   }
   return '/rst/pos';
 }

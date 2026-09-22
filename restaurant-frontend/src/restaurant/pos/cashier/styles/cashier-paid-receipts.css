@@ -1,0 +1,31 @@
+.rst-paid-receipts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  margin-top: 0.25rem;
+}
+
+.rst-paid-receipts.has-selection {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 1fr);
+  align-items: stretch;
+}
+
+.rst-paid-receipts__list {
+  min-width: 0;
+  min-height: 0;
+}
+
+.rst-paid-receipts.has-selection .rst-cashier-recent__list {
+  max-height: min(70vh, 40rem);
+}
+
+@media (max-width: 900px) {
+  .rst-paid-receipts.has-selection {
+    grid-template-columns: 1fr;
+  }
+
+  .rst-paid-receipts.has-selection .rst-paid-receipts__list {
+    display: none;
+  }
+}

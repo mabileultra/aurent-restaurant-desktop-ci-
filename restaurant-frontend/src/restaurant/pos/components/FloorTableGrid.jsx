@@ -1,9 +1,14 @@
 import { useMemo } from 'react';
+import { Search, CalendarPlus, Plus } from 'lucide-react';
 import FloorTableCard, { useNowTick } from './FloorTableCard';
 import FloorStatusLegend from './FloorStatusLegend';
+import FloorStatusFilters from './FloorStatusFilters';
 import { TABLE_STATUSES } from '../utils/tableStatus';
+import { ALL_HALLS_ID, filterTablesByStatus } from '../utils/floorStatusFilters';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import '../styles/floor-table-grid.css';
+import '../styles/floor-actions.css';
+import '../styles/floor-phase2.css';
 
 function matchesQuery(table, query, waiterNameById) {
   if (!query) return true;
@@ -18,23 +23,28 @@ function matchesQuery(table, query, waiterNameById) {
 }
 
 export default function FloorTableGrid({
-  hall,
+  hallTables,
   halls,
   selectedHallId,
   onSelectHall,
+  statusFilter,
+  onStatusFilter,
   selectedTableId,
   onTableClick,
   onNewOrder,
+  onOpenBookings,
+  canCreateBooking,
   search,
   onSearchChange,
   waiterNameById,
   t,
 }) {
   const now = useNowTick();
-  const tables = hall?.tables ?? [];
+  const tables = hallTables ?? [];
   const visible = useMemo(
-    () => tables.filter((table) => matchesQuery(table, search, waiterNameById)),
-    [tables, search, waiterNameById],
+    () => filterTablesByStatus(tables, statusFilter)
+      .filter((table) => matchesQuery(table, search, waiterNameById)),
+    [tables, statusFilter, search, waiterNameById],
   );
 
   const counts = useMemo(() => {
@@ -58,7 +68,7 @@ export default function FloorTableGrid({
     return sum / open.length;
   }, [tables]);
 
-  if (!hall) {
+  if (!halls?.length) {
     return (
       <div className="rst-floor-grid rst-floor-grid--empty">
         <p>{t('rst.floor.selectHall')}</p>
@@ -69,34 +79,65 @@ export default function FloorTableGrid({
   return (
     <div className="rst-floor-grid">
       <div className="rst-floor-grid__toolbar">
-        <div className="rst-floor-grid__halls">
-          {(halls ?? []).map((item) => (
+        <div className="rst-floor-grid__toolbar-row">
+          <div className="rst-floor-grid__halls" role="tablist" aria-label={t('rst.floor.allHalls')}>
             <button
-              key={item.id}
               type="button"
-              className={`rst-floor-grid__hall${selectedHallId === item.id ? ' is-active' : ''}`}
-              onClick={() => onSelectHall(item.id)}
+              role="tab"
+              aria-selected={selectedHallId === ALL_HALLS_ID}
+              className={`rst-floor-grid__hall${selectedHallId === ALL_HALLS_ID ? ' is-active' : ''}`}
+              onClick={() => onSelectHall(ALL_HALLS_ID)}
             >
-              <span>{item.name}</span>
-              <em>{item.tables?.length ?? 0}</em>
+              <span>{t('rst.floor.allHalls')}</span>
+              <em>{halls.reduce((n, h) => n + (h.tables?.length ?? 0), 0)}</em>
             </button>
-          ))}
+            {halls.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedHallId === item.id}
+                className={`rst-floor-grid__hall${selectedHallId === item.id ? ' is-active' : ''}`}
+                onClick={() => onSelectHall(item.id)}
+              >
+                <span>{item.name}</span>
+                <em>{item.tables?.length ?? 0}</em>
+              </button>
+            ))}
+          </div>
+          <div className="rst-floor-grid__tools">
+            <label className="rst-floor-grid__search">
+              <span className="visually-hidden">{t('rst.floor.search')}</span>
+              <Search className="rst-floor-grid__search-ico" size={16} strokeWidth={2.2} aria-hidden />
+              <input
+                type="search"
+                value={search}
+                onChange={(e) => onSearchChange(e.target.value)}
+                placeholder={t('rst.floor.searchPh')}
+              />
+            </label>
+            <div className="rst-floor-actions">
+              {onNewOrder ? (
+                <button
+                  type="button"
+                  className="rst-floor-actions__btn rst-floor-actions__btn--accent"
+                  onClick={onNewOrder}
+                >
+                  <Plus size={16} strokeWidth={2.4} aria-hidden />
+                  {t('rst.floor.newOrder')}
+                </button>
+              ) : null}
+              {onOpenBookings ? (
+                <button type="button" className="rst-floor-actions__btn" onClick={onOpenBookings}>
+                  <CalendarPlus size={16} strokeWidth={2.2} aria-hidden />
+                  {canCreateBooking ? t('rst.floor.newBooking') : t('rst.floor.bookingsTab')}
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
-        <div className="rst-floor-grid__tools">
-          <label className="rst-floor-grid__search">
-            <span className="visually-hidden">{t('rst.floor.search')}</span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => onSearchChange(e.target.value)}
-              placeholder={t('rst.floor.searchPh')}
-            />
-          </label>
-          {onNewOrder ? (
-            <button type="button" className="rst-floor-grid__new" onClick={onNewOrder}>
-              {t('rst.floor.newOrder')}
-            </button>
-          ) : null}
+        <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
+          <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
         </div>
       </div>
 

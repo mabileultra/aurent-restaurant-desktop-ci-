@@ -2,7 +2,9 @@ package com.pos.restaurant.shift.service.impl;
 
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
+import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.OpenShiftRequest;
+import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.dto.ShiftResponse;
 import com.pos.restaurant.shift.entity.RestaurantShift;
 import com.pos.restaurant.shift.repository.RestaurantShiftRepository;
@@ -29,6 +31,7 @@ public class RestaurantShiftServiceImpl implements RestaurantShiftService {
     private final ShiftResponseAssembler assembler;
     private final ShiftOpenHandler openHandler;
     private final ShiftCloseHandler closeHandler;
+    private final BuildShiftReportHandler reportHandler;
 
     @Override
     @Transactional(readOnly = true)
@@ -53,7 +56,17 @@ public class RestaurantShiftServiceImpl implements RestaurantShiftService {
     }
 
     @Override
-    public ShiftResponse close(UUID shiftId, CloseShiftRequest request) {
+    public CloseShiftResult close(UUID shiftId, CloseShiftRequest request) {
         return closeHandler.handle(shiftId, request);
+    }
+
+    @Override
+    public ShiftReportResponse xReport(UUID shiftId) {
+        return reportHandler.xReport(shiftId, null, null);
+    }
+
+    @Override
+    public ShiftReportResponse zReportPreview(UUID shiftId) {
+        return reportHandler.zPreview(shiftId, null, null);
     }
 }

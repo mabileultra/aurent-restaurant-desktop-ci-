@@ -8,16 +8,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class AslMarkingStoreSupportTest {
 
   @Test
-  void allowsRetailAndPharmacy() {
+  void allowsRetailPharmacyAndRestaurant() {
     assertTrue(AslMarkingStoreSupport.supportsAslMarking("GROCERY"));
     assertTrue(AslMarkingStoreSupport.supportsAslMarking("universal"));
     assertTrue(AslMarkingStoreSupport.supportsAslMarking("CONSTRUCTION"));
     assertTrue(AslMarkingStoreSupport.supportsAslMarking("PHARMACY"));
+    assertTrue(AslMarkingStoreSupport.supportsAslMarking("RESTAURANT"));
+    assertTrue(AslMarkingStoreSupport.supportsAslMarking("canteen"));
   }
 
   @Test
-  void rejectsRestaurant() {
-    assertFalse(AslMarkingStoreSupport.supportsAslMarking("RESTAURANT"));
+  void rejectsUnsupported() {
+    assertFalse(AslMarkingStoreSupport.supportsAslMarking("UNKNOWN"));
     assertFalse(AslMarkingStoreSupport.supportsAslMarking(null));
   }
 

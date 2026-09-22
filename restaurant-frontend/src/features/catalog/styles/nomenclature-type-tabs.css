@@ -1,0 +1,35 @@
+.rst-nomenclature-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.rst-nomenclature-tabs__btn {
+  appearance: none;
+  height: 2.35rem;
+  padding: 0 0.95rem;
+  border: 1px solid var(--rst-line, #2a3140);
+  border-radius: 999px;
+  background: #121722;
+  color: var(--rst-muted, #94a3b8);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  cursor: pointer;
+  transition: border-color 0.12s ease, color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.rst-nomenclature-tabs__btn:hover {
+  color: var(--rst-ink, #f8fafc);
+  border-color: rgb(255 255 255 / 0.22);
+  background: #161d2a;
+}
+
+.rst-nomenclature-tabs__btn.is-active {
+  color: #1b1208;
+  background: linear-gradient(180deg, #ff8d38, var(--rst-accent, #ff7a1a));
+  border-color: transparent;
+  box-shadow:
+    0 0 0 1px rgb(255 122 26 / 0.28),
+    0 6px 14px rgb(255 122 26 / 0.2);
+}

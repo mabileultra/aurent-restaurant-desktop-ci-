@@ -18,15 +18,16 @@ public final class RestaurantFinanceIncomeFactory {
     }
 
     public static Map<String, Object> fromPaidOrder(FloorOrder order, FloorOrderPayment payment, BigDecimal total) {
-        boolean card = payment.getMethod() == PaymentMethod.CARD;
+        BigDecimal cash = resolveCash(payment);
+        BigDecimal card = resolveCard(payment);
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("companyId", order.getCompanyId());
         payload.put("storeId", order.getStoreId());
         payload.put("saleId", order.getId());
         payload.put("receiptNumber", RestaurantSaleCompletedFactory.receiptNumber(order));
         payload.put("totalAmount", total);
-        payload.put("cashAmount", card ? BigDecimal.ZERO : payment.getAmount());
-        payload.put("cardAmount", card ? payment.getAmount() : BigDecimal.ZERO);
+        payload.put("cashAmount", cash);
+        payload.put("cardAmount", card);
         payload.put("paymentMethod", payment.getMethod().name());
         payload.put(
             "transactionDate",
@@ -34,5 +35,25 @@ public final class RestaurantFinanceIncomeFactory {
         );
         payload.put("createdBy", payment.getPaidByUserId());
         return payload;
+    }
+
+    private static BigDecimal resolveCash(FloorOrderPayment payment) {
+        if (payment.getCashAmount() != null && payment.getCashAmount().signum() > 0) {
+            return payment.getCashAmount();
+        }
+        if (payment.getMethod() == PaymentMethod.CARD || payment.getMethod() == PaymentMethod.MIXED) {
+            return BigDecimal.ZERO;
+        }
+        return payment.getAmount();
+    }
+
+    private static BigDecimal resolveCard(FloorOrderPayment payment) {
+        if (payment.getCardAmount() != null && payment.getCardAmount().signum() > 0) {
+            return payment.getCardAmount();
+        }
+        if (payment.getMethod() == PaymentMethod.CARD) {
+            return payment.getAmount();
+        }
+        return BigDecimal.ZERO;
     }
 }

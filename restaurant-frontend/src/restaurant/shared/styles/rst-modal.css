@@ -1,3 +1,126 @@
+/* Shared restaurant modal skin (BaseModal + legacy .rst-modal). */
+
+.base-modal-overlay--rst {
+  background: rgb(8 9 11 / 0.72);
+  z-index: 60;
+}
+
+.base-modal--rst {
+  border-color: var(--rst-line);
+  background: linear-gradient(180deg, #1c2330 0%, var(--rst-surface) 48%);
+  box-shadow: 0 22px 48px rgb(0 0 0 / 0.45);
+  border-radius: 18px;
+}
+
+.base-modal--rst .base-modal__header {
+  border-bottom-color: var(--rst-line);
+  background: rgb(255 255 255 / 0.02);
+  padding: 1rem 1.15rem;
+}
+
+.base-modal--rst .base-modal__title {
+  color: var(--rst-ink);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.base-modal--rst .base-modal__body {
+  padding: 1.15rem 1.2rem 0.35rem;
+}
+
+.base-modal--rst .base-modal__footer {
+  border-top-color: var(--rst-line);
+  background: rgb(0 0 0 / 0.12);
+  padding: 0.95rem 1.15rem;
+  gap: 0.65rem;
+}
+
+.rst-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rst-modal-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+.rst-modal-form__grid--1 {
+  grid-template-columns: 1fr;
+}
+
+.rst-modal-form__full {
+  grid-column: 1 / -1;
+}
+
+.base-modal--rst .base-field__label {
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.base-modal--rst .base-field__control,
+.base-modal--rst select.base-field__control {
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 10px;
+  min-height: 2.65rem;
+}
+
+.base-modal--rst .base-field__control:focus,
+.base-modal--rst select.base-field__control:focus {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+}
+
+/* Bootstrap-ish class used in stock / admin forms inside BaseModal */
+.base-modal--rst .form-control,
+.base-modal--rst .form-select,
+.base-modal--rst .rst-admin-field input:not([type='checkbox']):not([type='radio']):not([type='file']),
+.base-modal--rst .rst-admin-field select,
+.base-modal--rst .rst-admin-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 2.65rem;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9375rem;
+  line-height: 1.35;
+  border: 1px solid var(--rst-line) !important;
+  border-radius: 10px;
+  background: var(--rst-surface-2) !important;
+  color: var(--rst-ink) !important;
+  box-shadow: none !important;
+}
+
+.base-modal--rst .rst-admin-field textarea.form-control {
+  min-height: 4.5rem;
+  resize: vertical;
+}
+
+.base-modal--rst .form-control:focus,
+.base-modal--rst .form-select:focus,
+.base-modal--rst .rst-admin-field input:focus,
+.base-modal--rst .rst-admin-field select:focus,
+.base-modal--rst .rst-admin-field textarea:focus {
+  border-color: var(--rst-accent) !important;
+  box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
+  outline: none !important;
+}
+
+.base-modal--rst .rst-admin-field__label {
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* Legacy overlay used by older modals */
 .rst-modal {
   position: fixed;
   inset: 0;
@@ -44,11 +167,35 @@
 .rst-modal__card textarea,
 .rst-modal__card .form-select {
   width: 100%;
+  min-height: 3rem;
+  padding: 0.65rem 0.9rem;
+  font-size: 1rem;
+  line-height: 1.3;
   background: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
-  border-radius: 8px;
+  border-radius: 10px;
   box-shadow: none !important;
+}
+
+.rst-modal__card select,
+.rst-modal__card .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='%2393a0b8' d='M4.5 6l3.5 3.5L11.5 6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 0.85rem center !important;
+  background-size: 1rem !important;
+  padding-right: 2.4rem;
+}
+
+.rst-modal__actions .btn,
+.rst-modal__actions button,
+.rst-modal__actions .rst-btn,
+.rst-modal__actions .base-btn {
+  min-height: 3rem;
+  padding: 0.65rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 700;
 }
 
 .rst-modal__card input:focus,
@@ -66,4 +213,10 @@
 .rst-modal__card label span,
 .rst-modal__card .rst-admin-field__label {
   color: var(--rst-muted);
+}
+
+@media (max-width: 560px) {
+  .rst-modal-form__grid {
+    grid-template-columns: 1fr;
+  }
 }

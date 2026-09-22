@@ -21,17 +21,27 @@ import ReportsHubAdminPage from '../admin/pages/ReportsHubAdminPage';
 import WaiterCommissionReportPage from '../admin/pages/WaiterCommissionReportPage';
 import AuditAdminPage from '../admin/pages/AuditAdminPage';
 import StaffAdminPage from '../admin/pages/StaffAdminPage';
+import StoresAdminPage from '../admin/pages/StoresAdminPage';
+import IntegrationsAdminPage from '../admin/pages/IntegrationsAdminPage';
 import RstStockFlowScope from '../admin/components/RstStockFlowScope';
 import RestaurantFloorPosPage from '../pos/pages/RestaurantFloorPosPage';
+import RestaurantCashierPosPage from '../pos/cashier/pages/RestaurantCashierPosPage';
 import RestaurantKitchenPage from '../pos/pages/RestaurantKitchenPage';
+import RestaurantCashierGuard from './RestaurantCashierGuard';
 import RstCatalogProductsPage from '../admin/pages/RstCatalogProductsPage';
 import RstCategoriesPage from '../admin/pages/RstCategoriesPage';
 import RstWarehouseBalancesPage from '../admin/pages/RstWarehouseBalancesPage';
 import RstStockInventoriesPage from '../admin/pages/RstStockInventoriesPage';
 import RstStockReceiptsPage from '../admin/pages/RstStockReceiptsPage';
+import RstStockReceiptDocumentPage from '../admin/pages/RstStockReceiptDocumentPage';
 import RstSuppliersPage from '../admin/pages/RstSuppliersPage';
-import StockInventoryCreatePage from '../../features/stock/pages/StockInventoryCreatePage';
-import StockReceiptCreatePage from '../../features/stock/pages/StockReceiptCreatePage';
+import RstStockOverviewPage from '../admin/pages/RstStockOverviewPage';
+import RstStockWriteOffsPage from '../admin/pages/RstStockWriteOffsPage';
+import RstStockExpensesPage from '../admin/pages/RstStockExpensesPage';
+import RstStockTransfersPage from '../admin/pages/RstStockTransfersPage';
+import RstStockProductionPage from '../admin/pages/RstStockProductionPage';
+import RstStockMovementsPage from '../admin/pages/RstStockMovementsPage';
+import RestaurantGuidePage from '../admin/pages/RestaurantGuidePage';
 import LowStockReportPage from '../../features/reports/pages/LowStockReportPage';
 
 export const restaurantRoutes = (
@@ -52,6 +62,16 @@ export const restaurantRoutes = (
             <RestaurantFloorPosPage />
           </BillingAccessGuard>
         </RestaurantPosGuard>
+      )}
+    />
+    <Route
+      path="cashier"
+      element={(
+        <RestaurantCashierGuard>
+          <BillingAccessGuard>
+            <RestaurantCashierPosPage />
+          </BillingAccessGuard>
+        </RestaurantCashierGuard>
       )}
     />
     <Route
@@ -86,15 +106,21 @@ export const restaurantRoutes = (
           </RstStockFlowScope>
         )}
       >
-        <Route index element={<Navigate to="categories" replace />} />
+        <Route index element={<RstStockOverviewPage />} />
         <Route path="products" element={<RstCatalogProductsPage />} />
         <Route path="categories" element={<RstCategoriesPage />} />
         <Route path="balances" element={<RstWarehouseBalancesPage />} />
-        <Route path="inventories" element={<RstStockInventoriesPage />} />
-        <Route path="suppliers" element={<RstSuppliersPage />} />
         <Route path="receipts" element={<RstStockReceiptsPage />} />
-        <Route path="inventories/new" element={<StockInventoryCreatePage />} />
-        <Route path="receipts/new" element={<StockReceiptCreatePage />} />
+        <Route path="receipts/new" element={<RstStockReceiptDocumentPage />} />
+        <Route path="receipts/:id" element={<RstStockReceiptDocumentPage />} />
+        <Route path="expenses" element={<RstStockExpensesPage />} />
+        <Route path="transfers" element={<RstStockTransfersPage />} />
+        <Route path="production" element={<RstStockProductionPage />} />
+        <Route path="write-offs" element={<RstStockWriteOffsPage />} />
+        <Route path="inventories" element={<RstStockInventoriesPage />} />
+        <Route path="movements" element={<RstStockMovementsPage />} />
+        <Route path="suppliers" element={<RstSuppliersPage />} />
+        <Route path="inventories/new" element={<Navigate to="/rst/admin/stock/inventories" replace />} />
       </Route>
       <Route path="recipes" element={<RecipesAdminPage />} />
       <Route path="staff" element={<StaffAdminPage />} />
@@ -121,6 +147,23 @@ export const restaurantRoutes = (
         )}
       />
       <Route path="audit" element={<AuditAdminPage />} />
+      <Route path="guide" element={<RestaurantGuidePage />} />
+      <Route
+        path="stores"
+        element={(
+          <ProtectedRoute requiredRole="ADMIN">
+            <StoresAdminPage />
+          </ProtectedRoute>
+        )}
+      />
+      <Route
+        path="integrations"
+        element={(
+          <ProtectedRoute requiredRole="ADMIN">
+            <IntegrationsAdminPage />
+          </ProtectedRoute>
+        )}
+      />
       <Route
         path="billing"
         element={(

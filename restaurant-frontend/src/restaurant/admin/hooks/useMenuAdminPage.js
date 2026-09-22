@@ -7,6 +7,7 @@ import { rstMenuApi } from '../../api/menu.api';
 import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { readImageDataUrl } from '../../../utils/readImageDataUrl';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyForm = () => ({
   name: '',
@@ -126,7 +127,7 @@ export function useMenuAdminPage() {
       setEditingId(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
   const deactivateMutation = useMutation({
@@ -135,7 +136,7 @@ export function useMenuAdminPage() {
       toast.success(t('rst.admin.menuDeactivated'));
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.admin.deleteFailed')),
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
   const startEdit = (item) => {

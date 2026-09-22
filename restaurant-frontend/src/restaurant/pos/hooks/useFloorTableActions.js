@@ -1,0 +1,188 @@
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
+import { rstOrderApi } from '../../api/order.api';
+import {
+  freeTablesForTransfer,
+  occupiedTablesForMerge,
+} from '../utils/floorStatusFilters';
+import { toastApiError } from '../../../utils/apiError';
+
+/**
+ * Floor Phase-2 actions: inspect occupied table, transfer, merge, reassign waiter.
+ */
+export function useFloorTableActions({
+  t,
+  storeId,
+  halls,
+  waiterNameById,
+  access,
+  setActiveOrderId,
+}) {
+  const canTransferMerge = !!access?.canTransferMerge;
+  const canAssignWaiter = !!access?.canAssignWaiter;
+  const canCancelOrder = !!access?.canCancelOrder;
+  const qc = useQueryClient();
+  const [inspectTable, setInspectTable] = useState(null);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [mergeOpen, setMergeOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [targetTableId, setTargetTableId] = useState(null);
+  const [assignWaiterId, setAssignWaiterId] = useState('');
+
+  const orderId = inspectTable?.activeOrder?.id ?? null;
+
+  const inspectOrderQuery = useQuery({
+    queryKey: ['rst-order-inspect', orderId],
+    queryFn: () => rstOrderApi.get(orderId).then((r) => r.data),
+    enabled: !!orderId,
+  });
+
+  const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
+
+  const closeInspect = () => {
+    setInspectTable(null);
+    setTransferOpen(false);
+    setMergeOpen(false);
+    setAssignOpen(false);
+    setTargetTableId(null);
+    setAssignWaiterId('');
+  };
+
+  const transferMutation = useMutation({
+    mutationFn: (targetId) => rstOrderApi.transferTable(orderId, { targetTableId: targetId }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success(t('rst.floor.transferDone'));
+      closeInspect();
+      invalidateFloor();
+    },
+    onError: (err) => toastApiError(err, t('rst.floor.transferFailed')),
+  });
+
+  const mergeMutation = useMutation({
+    mutationFn: (secondaryId) => rstOrderApi.mergeTables(orderId, { secondaryTableId: secondaryId }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success(t('rst.floor.mergeDone'));
+      setMergeOpen(false);
+      setTargetTableId(null);
+      invalidateFloor();
+      qc.invalidateQueries({ queryKey: ['rst-order-inspect', orderId] });
+    },
+    onError: (err) => toastApiError(err, t('rst.floor.mergeFailed')),
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (waiterUserId) => rstOrderApi.assignWaiter(orderId, { waiterUserId }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success(t('rst.order.waiterAssigned'));
+      setAssignOpen(false);
+      setAssignWaiterId('');
+      qc.invalidateQueries({ queryKey: ['rst-order-inspect', orderId] });
+      invalidateFloor();
+    },
+    onError: (err) => toastApiError(err, t('rst.order.waiterAssignFailed')),
+  });
+
+  const cancelInspectMutation = useMutation({
+    mutationFn: () => rstOrderApi.cancel(orderId),
+    onSuccess: () => {
+      toast.success(t('rst.order.cancelled'));
+      closeInspect();
+      invalidateFloor();
+    },
+    onError: (err) => toastApiError(err, t('rst.order.cancelFailed')),
+  });
+
+  const openOccupied = (table) => {
+    setInspectTable(table);
+    setTransferOpen(false);
+    setMergeOpen(false);
+    setAssignOpen(false);
+  };
+
+  const continueOrder = () => {
+    if (!orderId) return;
+    setActiveOrderId(orderId);
+    closeInspect();
+  };
+
+  const confirmTransfer = () => {
+    if (!targetTableId) return;
+    const target = freeTablesForTransfer(halls, inspectTable?.id).find((row) => row.id === targetTableId);
+    if (!window.confirm(t('rst.floor.transferConfirmAsk', {
+      from: inspectTable?.code,
+      to: target?.code ?? targetTableId,
+    }))) return;
+    transferMutation.mutate(targetTableId);
+  };
+
+  const confirmMerge = () => {
+    if (!targetTableId) return;
+    const target = occupiedTablesForMerge(halls, inspectTable?.id).find((row) => row.id === targetTableId);
+    if (!window.confirm(t('rst.floor.mergeConfirmAsk', {
+      from: inspectTable?.code,
+      to: target?.code ?? targetTableId,
+    }))) return;
+    mergeMutation.mutate(targetTableId);
+  };
+
+  const confirmAssign = () => {
+    if (!assignWaiterId || !orderId) return;
+    assignMutation.mutate(assignWaiterId);
+  };
+
+  const handleCancelOrder = () => {
+    if (!orderId) return;
+    if (!window.confirm(t('rst.order.confirmCancel'))) return;
+    cancelInspectMutation.mutate();
+  };
+
+  return {
+    inspectTable,
+    openOccupied,
+    closeInspect,
+    continueOrder,
+    inspectOrder: inspectOrderQuery.data,
+    inspectOrderLoading: inspectOrderQuery.isLoading,
+    transferOpen,
+    openTransfer: () => {
+      if (!canTransferMerge) return;
+      setTargetTableId(null);
+      setTransferOpen(true);
+    },
+    closeTransfer: () => setTransferOpen(false),
+    mergeOpen,
+    openMerge: () => {
+      if (!canTransferMerge) return;
+      setTargetTableId(null);
+      setMergeOpen(true);
+    },
+    closeMerge: () => setMergeOpen(false),
+    assignOpen,
+    openAssign: () => {
+      if (!canAssignWaiter) return;
+      setAssignWaiterId('');
+      setAssignOpen(true);
+    },
+    closeAssign: () => setAssignOpen(false),
+    targetTableId,
+    setTargetTableId,
+    assignWaiterId,
+    setAssignWaiterId,
+    freeTables: freeTablesForTransfer(halls, inspectTable?.id),
+    mergeCandidateTables: occupiedTablesForMerge(halls, inspectTable?.id),
+    confirmTransfer,
+    confirmMerge,
+    confirmAssign,
+    handleCancelOrder,
+    transferPending: transferMutation.isPending,
+    mergePending: mergeMutation.isPending,
+    assignPending: assignMutation.isPending,
+    currentWaiterName: inspectTable?.activeOrder?.waiterUserId
+      ? waiterNameById.get(String(inspectTable.activeOrder.waiterUserId))
+      : null,
+    canCancelInspect: canCancelOrder || !(inspectTable?.activeOrder?.linesCount > 0),
+    canTransferMerge,
+    canAssignWaiter,
+  };
+}

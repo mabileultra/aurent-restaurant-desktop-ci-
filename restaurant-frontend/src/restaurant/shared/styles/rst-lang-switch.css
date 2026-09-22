@@ -1,0 +1,96 @@
+/* RU / UZ / EN — restaurant POS + admin headers (dark chrome, orange active) */
+
+.rst-lang-switch {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 0.1rem;
+  padding: 0.12rem;
+  min-height: 2.15rem;
+  border: 1px solid var(--rst-line, #2a3344);
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.28);
+}
+
+.rst-lang-switch__btn {
+  min-width: 2rem;
+  min-height: 1.9rem;
+  padding: 0.25rem 0.55rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--rst-muted, #8b93a7);
+  cursor: pointer;
+  touch-action: manipulation;
+  line-height: 1;
+}
+
+.rst-lang-switch__btn:hover:not(.is-active) {
+  color: var(--rst-ink, #f4f6fb);
+  background: rgb(255 255 255 / 0.06);
+}
+
+.rst-lang-switch__btn.is-active {
+  background: var(--rst-accent, #ff7a1a);
+  color: #1b1208;
+}
+
+.rst-lang-switch__btn:focus {
+  outline: none;
+}
+
+.rst-lang-switch__btn:focus-visible {
+  outline: 2px solid var(--rst-accent, #ff7a1a);
+  outline-offset: 1px;
+}
+
+/* Admin shell top bar — same dark tokens as POS */
+.rst-shell .rst-lang-switch {
+  background: rgb(0 0 0 / 0.35);
+  border-color: var(--rst-line, #2a3344);
+}
+
+.rst-shell .rst-lang-switch__btn {
+  color: var(--rst-muted, #8b93a7);
+}
+
+.rst-shell .rst-lang-switch__btn:hover:not(.is-active) {
+  color: var(--rst-ink, #f4f6fb);
+  background: rgb(255 255 255 / 0.07);
+}
+
+.rst-shell .rst-lang-switch__btn.is-active {
+  background: var(--rst-accent, #ff7a1a);
+  color: #1b1208;
+}
+
+/* Login */
+.rst-login-page__brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.rst-login-page .rst-lang-switch {
+  background: rgb(0 0 0 / 0.28);
+  border-color: rgb(255 255 255 / 0.16);
+}
+
+.rst-login-page .rst-lang-switch__btn {
+  color: #94a3b8;
+}
+
+.rst-login-page .rst-lang-switch__btn:hover:not(.is-active) {
+  color: #f8fafc;
+  background: rgb(255 255 255 / 0.08);
+}
+
+.rst-login-page .rst-lang-switch__btn.is-active {
+  background: var(--rst-accent, #ff7a1a);
+  color: #1b1208;
+}

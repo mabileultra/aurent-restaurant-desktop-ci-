@@ -19,6 +19,8 @@ public record ProductImportPreviewRow(
     String saleType,
     BigDecimal quantity,
     BigDecimal fileSellingPrice,
+    /** Себестоимость / закупочная из файла (cost_price), если есть. */
+    BigDecimal costPrice,
     BigDecimal existingSellingPrice,
     BigDecimal taxRatePercent,
     String status,

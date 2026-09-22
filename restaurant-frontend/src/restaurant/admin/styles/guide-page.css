@@ -1,0 +1,229 @@
+.rst-guide {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.rst-guide__hero {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background:
+    linear-gradient(180deg, rgb(255 255 255 / 0.04), transparent 55%),
+    var(--rst-surface);
+}
+
+.rst-guide__hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ff8d38, var(--rst-accent, #ff7a1a));
+  color: #1b1208;
+  flex-shrink: 0;
+}
+
+.rst-guide__intro {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgb(255 122 26 / 0.28);
+  background: rgb(255 122 26 / 0.08);
+  color: var(--rst-ink);
+  font-size: 0.92rem;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.rst-guide__toc {
+  padding: 0.75rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+}
+
+.rst-guide__toc-title {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.rst-guide__toc-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rst-guide__toc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  max-width: 100%;
+  min-height: 2rem;
+  padding: 0.3rem 0.65rem 0.3rem 0.45rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: var(--rst-surface-2);
+  color: var(--rst-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rst-guide__toc-btn > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 11rem;
+}
+
+.rst-guide__toc-btn:hover {
+  color: var(--rst-ink);
+  border-color: rgb(255 122 26 / 0.35);
+}
+
+.rst-guide__toc-btn.is-active {
+  color: #1b1208;
+  background: linear-gradient(180deg, #ff8d38, var(--rst-accent, #ff7a1a));
+  border-color: transparent;
+}
+
+.rst-guide__toc-btn.is-active .rst-guide__toc-num {
+  color: #1b1208;
+  opacity: 1;
+}
+
+.rst-guide__toc-num {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 0.72rem;
+  opacity: 0.85;
+}
+
+.rst-guide__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rst-guide__sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.rst-guide__section {
+  scroll-margin-top: 1rem;
+  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+}
+
+.rst-guide__section-head {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 0.65rem 0.7rem;
+  align-items: start;
+  margin-bottom: 0.85rem;
+}
+
+.rst-guide__section-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.65rem;
+  height: 1.65rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.06);
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.rst-guide__section-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+  color: var(--rst-accent, #ff7a1a);
+}
+
+.rst-guide__section-title {
+  margin: 0 0 0.25rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--rst-ink);
+}
+
+.rst-guide__section-lead {
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.rst-guide__steps {
+  margin: 0;
+  padding: 0 0 0 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  color: var(--rst-ink);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.rst-guide__steps li::marker {
+  font-weight: 800;
+  color: var(--rst-accent, #ff7a1a);
+}
+
+.rst-guide__notes {
+  list-style: none;
+  margin: 0.85rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rst-guide__notes li {
+  position: relative;
+  padding-left: 0.95rem;
+  color: var(--rst-muted);
+  font-size: 0.84rem;
+  line-height: 1.4;
+}
+
+.rst-guide__notes li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.45rem;
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: var(--rst-accent, #ff7a1a);
+}

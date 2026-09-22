@@ -3,15 +3,20 @@ package com.pos.integrations.pharmacy.service.impl;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
+import com.pos.integrations.pharmacy.domain.AslRequestOperation;
+import com.pos.integrations.pharmacy.domain.AslRequestOutcome;
 import com.pos.integrations.pharmacy.dto.MarkingWithdrawItemResult;
 import com.pos.integrations.pharmacy.dto.MarkingWithdrawRequest;
 import com.pos.integrations.pharmacy.dto.MarkingWithdrawResponse;
 import com.pos.integrations.pharmacy.entity.StorePharmacyIntegration;
 import com.pos.integrations.pharmacy.repository.StorePharmacyIntegrationRepository;
+import com.pos.integrations.pharmacy.service.AslRequestLogWriteService;
 import com.pos.integrations.pharmacy.service.PharmacyIntegrationSettingsService;
 import com.pos.integrations.pharmacy.service.PharmacyMarkingWithdrawService;
 import com.pos.integrations.pharmacy.support.AslApiKeySupport;
 import com.pos.integrations.pharmacy.support.AslBelgisiWithdrawClient;
+import com.pos.integrations.pharmacy.support.AslRequestLogCallContext;
+import com.pos.integrations.pharmacy.support.AslRequestLogCallScope;
 import com.pos.integrations.pharmacy.support.PharmacyIntegrationDefaults;
 import com.pos.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +36,8 @@ public class PharmacyMarkingWithdrawServiceImpl implements PharmacyMarkingWithdr
   private final StorePharmacyIntegrationRepository integrationRepository;
   private final PharmacyIntegrationSettingsService settingsService;
   private final AslBelgisiWithdrawClient withdrawClient;
+  private final AslRequestLogCallScope requestLogCallScope;
+  private final AslRequestLogWriteService requestLogWriteService;
 
   @Override
   @Transactional(readOnly = true)
@@ -58,17 +65,56 @@ public class PharmacyMarkingWithdrawServiceImpl implements PharmacyMarkingWithdr
 
     if (!markingLookupReady(settings)) {
       // Нет ключа ASL — локальный склад всё равно можно закрыть после продажи/фискала.
-      List<MarkingWithdrawItemResult> local = codes.stream()
-        .map(code -> MarkingWithdrawItemResult.ok(code, fiscalConfirmed ? "FISCAL_SUBMITTED" : "LOCAL_ONLY"))
-        .toList();
+      Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
+      List<MarkingWithdrawItemResult> local = new ArrayList<>();
+      for (String code : codes) {
+        if (companyId != null) {
+          requestLogWriteService.recordNotSent(
+              companyId,
+              store.getId(),
+              AslRequestOperation.WITHDRAW,
+              code,
+              fiscalConfirmed ? "LOCAL_ONLY / FISCAL_SUBMITTED — ключ ASL не задан" : "LOCAL_ONLY — ключ ASL не задан"
+          );
+        }
+        local.add(MarkingWithdrawItemResult.ok(code, fiscalConfirmed ? "FISCAL_SUBMITTED" : "LOCAL_ONLY"));
+      }
       return summarize(local);
     }
 
     String baseUrl = normalizeBaseUrl(settings.getAslApiBaseUrl());
     String apiKey = settings.getAslApiKey();
+    Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
     List<MarkingWithdrawItemResult> results = new ArrayList<>();
     for (String code : codes) {
-      results.add(withdrawClient.confirm(baseUrl, apiKey, code, fiscalConfirmed));
+      AslRequestLogCallContext ctx = new AslRequestLogCallContext(
+          companyId,
+          store.getId(),
+          AslRequestOperation.WITHDRAW,
+          code
+      );
+      requestLogCallScope.open(ctx);
+      MarkingWithdrawItemResult item;
+      try {
+        item = withdrawClient.confirm(baseUrl, apiKey, code, fiscalConfirmed);
+        if (item.success()) {
+          ctx.finish(AslRequestOutcome.SENT_OK, item.status(), null);
+        } else if (item.pending()) {
+          ctx.finish(AslRequestOutcome.SENT_WAITING, item.status(), item.message());
+        } else {
+          ctx.finish(AslRequestOutcome.SENT_FAIL, item.status(), item.message());
+        }
+      } catch (Exception ex) {
+        String message = ex.getMessage() != null ? ex.getMessage() : "ASL withdraw failed";
+        ctx.finish(AslRequestOutcome.SENT_FAIL, null, message);
+        item = MarkingWithdrawItemResult.fail(code, message);
+      } finally {
+        AslRequestLogCallContext closed = requestLogCallScope.close();
+        if (closed != null && closed.getOutcome() != null && companyId != null) {
+          requestLogWriteService.record(closed);
+        }
+      }
+      results.add(item);
     }
     return summarize(results);
   }

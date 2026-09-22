@@ -53,6 +53,10 @@ public class FloorOrderItem {
     @Builder.Default
     private BigDecimal quantity = BigDecimal.ONE;
 
+    @Column(name = "returned_quantity", nullable = false, precision = 18, scale = 3)
+    @Builder.Default
+    private BigDecimal returnedQuantity = BigDecimal.ZERO;
+
     @Column(name = "unit_price", nullable = false, precision = 18, scale = 2)
     @Builder.Default
     private BigDecimal unitPrice = BigDecimal.ZERO;

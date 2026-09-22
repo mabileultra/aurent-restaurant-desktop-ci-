@@ -59,12 +59,12 @@ public class StockDashboardServiceImpl implements StockDashboardService {
         BigDecimal writeOffCost = NativeAggregateRowSupport.toBigDecimal(writeOffTotals, 1);
 
         Object[] stockTotals = NativeAggregateRowSupport.normalize(
-            stockDashboardFactsRepository.currentStockTotals(companyId)
+            stockDashboardFactsRepository.currentStockTotals(companyId, storeId)
         );
         long currentStockUnits = NativeAggregateRowSupport.toLong(stockTotals, 0);
         BigDecimal currentStockCost = NativeAggregateRowSupport.toBigDecimal(stockTotals, 1);
 
-        long lowStockSkuCount = stockDashboardFactsRepository.countLowStockSkus(companyId);
+        long lowStockSkuCount = stockDashboardFactsRepository.countLowStockSkus(companyId, storeId);
 
         List<StockDashboardWriteOffDayPoint> dailyWriteOff = mapDailyWriteOff(
             stockDashboardFactsRepository.dailyWriteOffUnits(companyId, start, end, storeId)

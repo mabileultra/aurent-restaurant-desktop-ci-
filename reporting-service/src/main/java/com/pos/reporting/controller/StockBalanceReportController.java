@@ -29,13 +29,14 @@ public class StockBalanceReportController {
     @GetMapping("/balances")
     @Operation(summary = "Остатки товаров (reporting_db)")
     public ResponseEntity<PageResponse<PosStockBalanceRow>> balances(
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) Integer categoryId,
         @RequestParam(required = false) String search,
         @RequestParam(defaultValue = "false") boolean onlyWithStock,
         @PageableDefault(size = 20) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            stockBalanceReportService.balances(categoryId, search, onlyWithStock, pageable)
+            stockBalanceReportService.balances(storeId, categoryId, search, onlyWithStock, pageable)
         );
     }
 }

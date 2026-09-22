@@ -7,6 +7,7 @@ import AdminThemeSync from './components/shared/AdminThemeSync';
 import AppViewportSync from './components/shared/AppViewportSync';
 import AuthBootstrap from './components/shared/AuthBootstrap';
 import AuthSessionGuard from './components/shared/AuthSessionGuard';
+import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
 
 export default function App() {
@@ -17,8 +18,10 @@ export default function App() {
       <BrowserRouter>
         <AuthBootstrap>
           <AuthSessionGuard>
-            <AdminThemeSync />
-            <AppRoutes />
+            <UnitsCatalogBootstrap>
+              <AdminThemeSync />
+              <AppRoutes />
+            </UnitsCatalogBootstrap>
           </AuthSessionGuard>
         </AuthBootstrap>
       </BrowserRouter>

@@ -1,4 +1,5 @@
 import { extractVatFromInclusive, round2 } from '../../../utils/taxAmounts';
+import { resolveRestaurantPayTotal } from './restaurantPayAmount';
 
 const DEFAULT_VAT = 12;
 
@@ -44,11 +45,8 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
   return lines;
 }
 
-export function restaurantPayTotal(order) {
-  const subtotal = round2(Number(order?.subtotal) || 0);
-  const service = round2(Number(order?.commissionAmount) || 0);
-  if (order?.channel === 'DINE_IN') return round2(subtotal + service);
-  return subtotal;
+export function restaurantPayTotal(order, commissionPreview = null) {
+  return resolveRestaurantPayTotal(order, commissionPreview);
 }
 
 /**
@@ -58,6 +56,10 @@ export function buildRestaurantFiscalSale({
   order,
   paymentMethod,
   amount,
+  cashAmount,
+  cardAmount,
+  amountTendered,
+  changeGiven,
   fiscal = null,
   cashierName,
   waiterName,
@@ -68,14 +70,18 @@ export function buildRestaurantFiscalSale({
 }) {
   const cartLines = orderToMultikassaCartItems(order, { serviceLabel });
   const items = cartLines.map((line, idx) => {
+    const orderItem = (order?.items ?? []).filter(isBillable)[idx];
     const lineTotal = round2(line.unitPrice * line.quantity);
     const taxRatePercent = line.taxRate ?? DEFAULT_VAT;
+    const returnedQuantity = Number(orderItem?.returnedQuantity) || 0;
     return {
-      id: `${order?.id || 'rst'}-${idx}`,
+      id: orderItem?.id || `${order?.id || 'rst'}-${idx}`,
       productName: line.name,
       saleType: 'PIECE',
       unitOfMeasure: line.unitOfMeasure || 'шт',
       quantity: line.quantity,
+      returnedQuantity,
+      returnableQuantity: Math.max(0, (Number(line.quantity) || 0) - returnedQuantity),
       unitPrice: line.unitPrice,
       lineTotal,
       taxAmount: extractVatFromInclusive(lineTotal, taxRatePercent),
@@ -83,6 +89,7 @@ export function buildRestaurantFiscalSale({
       taxRatePercent,
       ikpu: null,
       productSku: null,
+      isServiceLine: String(line.productId || '').startsWith('rst-service-'),
     };
   });
 
@@ -104,6 +111,25 @@ export function buildRestaurantFiscalSale({
   const employeeParts = [cashierName].filter(Boolean);
   if (waiterName) employeeParts.push(waiterName);
 
+  let cash = cashAmount != null ? round2(cashAmount) : null;
+  let card = cardAmount != null ? round2(cardAmount) : null;
+  let tendered = amountTendered != null ? round2(amountTendered) : null;
+  let change = changeGiven != null ? round2(changeGiven) : null;
+  if (cash == null && card == null) {
+    if (method === 'CARD') {
+      cash = 0;
+      card = paid;
+    } else if (method === 'MIXED') {
+      cash = 0;
+      card = paid;
+    } else {
+      cash = paid;
+      card = 0;
+    }
+  }
+  if (tendered == null) tendered = method === 'CASH' ? paid : (cash ?? paid);
+  if (change == null) change = method === 'CASH' ? round2(Math.max(0, tendered - paid)) : 0;
+
   return {
     id: order?.id,
     receiptNumber,
@@ -123,12 +149,12 @@ export function buildRestaurantFiscalSale({
     returnAmount: 0,
     paymentMethod: method,
     cardType: null,
-    cashAmount: method === 'CASH' ? paid : 0,
-    cardAmount: method === 'CARD' ? paid : 0,
+    cashAmount: cash ?? 0,
+    cardAmount: card ?? 0,
     receiptType: 'SALE',
-    amountTendered: paid,
-    changeGiven: 0,
-    status: 'COMPLETED',
+    amountTendered: tendered ?? paid,
+    changeGiven: change ?? 0,
+    status: order?.status === 'REFUNDED' ? 'REFUNDED' : 'COMPLETED',
     notes: null,
     fiscalStatus: fiscal?.fiscalStatus || null,
     fiscalSign: fiscal?.fiscalSign || null,

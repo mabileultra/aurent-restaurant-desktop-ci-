@@ -18,8 +18,37 @@ public final class RestaurantRefundPayloadFactory {
     private RestaurantRefundPayloadFactory() {}
 
     public static Map<String, Object> fromPaidOrder(FloorOrder order, FloorOrderPayment payment, UUID returnEventId) {
-        boolean card = payment.getMethod() == PaymentMethod.CARD;
         BigDecimal amount = payment.getAmount() != null ? payment.getAmount() : BigDecimal.ZERO;
+        return fromPaidOrder(order, payment, returnEventId, amount);
+    }
+
+    public static Map<String, Object> fromPaidOrder(
+        FloorOrder order,
+        FloorOrderPayment payment,
+        UUID returnEventId,
+        BigDecimal refundAmount
+    ) {
+        BigDecimal amount = refundAmount != null ? refundAmount : BigDecimal.ZERO;
+        BigDecimal cash;
+        BigDecimal card;
+        if (payment.getMethod() == PaymentMethod.MIXED) {
+            BigDecimal cashPaid = payment.getCashAmount() != null ? payment.getCashAmount() : BigDecimal.ZERO;
+            BigDecimal cardPaid = payment.getCardAmount() != null ? payment.getCardAmount() : BigDecimal.ZERO;
+            BigDecimal paid = cashPaid.add(cardPaid);
+            if (paid.signum() <= 0) {
+                cash = amount;
+                card = BigDecimal.ZERO;
+            } else {
+                cash = amount.multiply(cashPaid).divide(paid, 2, java.math.RoundingMode.HALF_UP);
+                card = amount.subtract(cash).max(BigDecimal.ZERO);
+            }
+        } else if (payment.getMethod() == PaymentMethod.CARD) {
+            cash = BigDecimal.ZERO;
+            card = amount;
+        } else {
+            cash = amount;
+            card = BigDecimal.ZERO;
+        }
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("companyId", order.getCompanyId());
         payload.put("storeId", order.getStoreId());
@@ -27,8 +56,8 @@ public final class RestaurantRefundPayloadFactory {
         payload.put("saleId", order.getId());
         payload.put("receiptNumber", RestaurantSaleCompletedFactory.receiptNumber(order));
         payload.put("refundAmount", amount);
-        payload.put("cashAmount", card ? BigDecimal.ZERO : amount);
-        payload.put("cardAmount", card ? amount : BigDecimal.ZERO);
+        payload.put("cashAmount", cash);
+        payload.put("cardAmount", card);
         payload.put("paymentMethod", payment.getMethod().name());
         payload.put(
             "transactionDate",

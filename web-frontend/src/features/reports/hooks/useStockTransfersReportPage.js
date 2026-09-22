@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
-import { stockReportApi } from '../../../api';
+import { warehouseApi } from '../../../api';
 import { REPORT_PAGE_SIZE_DEFAULT } from '../constants';
 import { useReportDateRange } from './useReportDateRange';
 import { useReportPagination } from './useReportPagination';
@@ -22,7 +22,7 @@ export function useStockTransfersReportPage() {
       fromStoreId: fromStoreId === '' ? undefined : Number(fromStoreId),
       toStoreId: toStoreId === '' ? undefined : Number(toStoreId),
     }),
-    [from, to, page, pageSize, fromStoreId, toStoreId]
+    [from, to, page, pageSize, fromStoreId, toStoreId],
   );
 
   const exportParams = useMemo(
@@ -32,12 +32,12 @@ export function useStockTransfersReportPage() {
       fromStoreId: fromStoreId === '' ? undefined : Number(fromStoreId),
       toStoreId: toStoreId === '' ? undefined : Number(toStoreId),
     }),
-    [from, to, fromStoreId, toStoreId]
+    [from, to, fromStoreId, toStoreId],
   );
 
   const query = useQuery({
-    queryKey: ['stock-transfers-report', params],
-    queryFn: () => stockReportApi.transfers(params).then((r) => r.data),
+    queryKey: ['stock-transfers-list', params],
+    queryFn: () => warehouseApi.listTransfers(params).then((r) => r.data),
     enabled: rangeEnabled,
     placeholderData: keepPreviousData,
   });
@@ -69,6 +69,7 @@ export function useStockTransfersReportPage() {
     total: query.data?.totalElements ?? 0,
     totalPages: query.data?.totalPages ?? 0,
     isPending: query.isPending,
+    isError: query.isError,
     handleFromStoreChange,
     handleToStoreChange,
   };

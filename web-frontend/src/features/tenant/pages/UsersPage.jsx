@@ -75,6 +75,7 @@ export default function UsersPage({ mode = 'tenant' }) {
         isPlatform={p.isPlatform}
         mode={p.modalMode}
         editingUser={p.editingUser}
+        businessTypeFilter={p.isPlatform ? p.businessType : ''}
       />
     </PageLayout>
   );

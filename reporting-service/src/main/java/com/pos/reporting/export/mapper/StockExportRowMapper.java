@@ -1,5 +1,6 @@
 package com.pos.reporting.export.mapper;
 
+import com.pos.reporting.dto.StockReceiptRowResponse;
 import com.pos.reporting.dto.stock.pos.PosDeadStockRow;
 import com.pos.reporting.dto.stock.pos.PosStockBalanceRow;
 import com.pos.reporting.dto.stock.pos.PosStockInventoryRow;
@@ -99,6 +100,20 @@ public class StockExportRowMapper {
             mapped.put("total_qty", row.totalQuantity());
             mapped.put("user", blank(row.createdByName()));
             mapped.put("notes", blank(row.notes()));
+            data.add(mapped);
+        }
+        return data;
+    }
+
+    public List<Map<String, Object>> receiptRows(List<StockReceiptRowResponse> rows) {
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (StockReceiptRowResponse row : rows) {
+            Map<String, Object> mapped = new LinkedHashMap<>();
+            mapped.put("receipt_no", blank(row.receiptNumber()));
+            mapped.put("created_at", format(row.createdAt()));
+            mapped.put("supplier", blank(row.supplierName()));
+            mapped.put("total_qty", row.totalQuantity());
+            mapped.put("total_cost", row.totalCost());
             data.add(mapped);
         }
         return data;

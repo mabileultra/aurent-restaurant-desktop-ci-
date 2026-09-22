@@ -1,0 +1,154 @@
+.rst-ingredient-modal,
+.rst-ingredient-delete {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.rst-ingredient-modal__backdrop,
+.rst-ingredient-delete__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.5);
+  cursor: pointer;
+}
+
+.rst-ingredient-modal__panel,
+.rst-ingredient-delete__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 28rem);
+  max-height: 90vh;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.18);
+}
+
+.rst-ingredient-modal__panel.is-receipt {
+  width: min(100%, 34rem);
+}
+
+.rst-ingredient-modal__receipt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--rst-accent) 35%, var(--rst-line));
+  background: color-mix(in srgb, var(--rst-accent) 7%, var(--rst-surface));
+}
+
+.rst-ingredient-modal__receipt-title {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--rst-accent);
+}
+
+.rst-ingredient-modal__stock {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rst-ingredient-modal__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--rst-line);
+}
+
+.rst-ingredient-modal__head h2,
+.rst-ingredient-delete__panel h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.rst-ingredient-delete__panel {
+  padding: 1.1rem;
+}
+
+.rst-ingredient-delete__panel p {
+  margin: 0.6rem 0 1rem;
+  color: var(--rst-muted);
+}
+
+.rst-ingredient-modal__close {
+  border: 0;
+  background: transparent;
+  color: var(--rst-muted);
+  cursor: pointer;
+}
+
+.rst-ingredient-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.rst-ingredient-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--rst-muted);
+}
+
+.rst-ingredient-modal__field input {
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  padding: 0.55rem 0.7rem;
+  background: var(--rst-bg, #fff);
+  color: var(--rst-text);
+  font: inherit;
+}
+
+.rst-ingredient-modal__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.rst-ingredient-modal__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.rst-ingredient-modal__hint {
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: rgb(255 122 26 / 0.08);
+  border: 1px solid rgb(255 122 26 / 0.22);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--rst-muted);
+  line-height: 1.35;
+}
+
+.rst-ingredient-modal__actions,
+.rst-ingredient-delete__actions {
+  display: flex;
+  gap: 0.65rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 560px) {
+  .rst-ingredient-modal__row {
+    grid-template-columns: 1fr;
+  }
+}

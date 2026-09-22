@@ -8,6 +8,7 @@ import { rstShiftApi } from '../../api/shift.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
+import { toastApiError } from '../../../utils/apiError';
 
 function displayUserName(user) {
   return user.fullName
@@ -60,7 +61,7 @@ export function useKitchenPosPage() {
         toast.success(t('rst.kitchen.servedCleared'));
       }
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.kitchen.statusFailed')),
+    onError: (err) => toastApiError(err, t('rst.kitchen.statusFailed')),
   });
 
   const tickets = ticketsQuery.data ?? [];

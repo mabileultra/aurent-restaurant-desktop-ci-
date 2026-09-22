@@ -97,6 +97,13 @@
   gap: 0.4rem;
 }
 
+.rst-receipt-modal__pay-actions {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
 .rst-receipt-modal__btn {
   display: inline-flex;
   align-items: center;
@@ -128,6 +135,16 @@
 
 .rst-receipt-modal__btn--primary:hover:not(:disabled) {
   background: #005538;
+}
+
+.rst-receipt-modal__btn--danger {
+  border-color: #b91c1c;
+  background: #fff;
+  color: #b91c1c;
+}
+
+.rst-receipt-modal__btn--danger:hover:not(:disabled) {
+  background: #fef2f2;
 }
 
 .rst-receipt-modal__btn--icon {

@@ -5,6 +5,7 @@ WITH stock_balance AS (
     FROM stock_movement_facts
     WHERE company_id = :companyId
       AND product_id IS NOT NULL
+      AND (:storeId < 0 OR store_id = :storeId)
     GROUP BY product_id
 )
 SELECT COUNT(*)

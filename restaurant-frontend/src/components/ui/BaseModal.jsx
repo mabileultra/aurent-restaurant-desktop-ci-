@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import clsx from 'clsx';
 import BaseButton from './BaseButton';
@@ -21,11 +22,26 @@ export default function BaseModal({
   overlayClassName,
   footerClassName,
   hideHeader = false,
+  closeOnOverlay = true,
 }) {
+  useEffect(() => {
+    if (!open || !onClose) return undefined;
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [open, onClose]);
+
   if (!open) return null;
 
   return (
-    <div className={clsx('base-modal-overlay', overlayClassName)}>
+    <div
+      className={clsx('base-modal-overlay', overlayClassName)}
+      onClick={(e) => {
+        if (closeOnOverlay && e.target === e.currentTarget) onClose?.();
+      }}
+    >
       <div
         className={clsx('base-modal', SIZE[size], className)}
         role="dialog"

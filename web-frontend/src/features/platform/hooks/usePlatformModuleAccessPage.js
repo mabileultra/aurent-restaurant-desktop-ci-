@@ -18,6 +18,7 @@ import {
   filterModulesForBusinessType,
   normalizeBusinessTypeCode,
 } from '../utils/moduleAccessByBusinessType';
+import { isRoleAllowedForBusinessType } from '../utils/rolesByBusinessType';
 import { isPlatformAdminRole, isSuperAdminRole } from '../../../utils/platformRoles';
 import { useAuthStore } from '../../../store/authStore';
 
@@ -89,7 +90,8 @@ export function usePlatformModuleAccessPage() {
     return scopedUsers.filter((user) => {
       if (isPlatformAdminRole(user.role)) return false;
       const company = companyById.get(String(user.companyId ?? ''));
-      return companyHasBusinessType(company, businessType);
+      if (!companyHasBusinessType(company, businessType)) return false;
+      return isRoleAllowedForBusinessType(user.role, businessType);
     });
   }, [scopedUsers, businessType, companyById]);
 

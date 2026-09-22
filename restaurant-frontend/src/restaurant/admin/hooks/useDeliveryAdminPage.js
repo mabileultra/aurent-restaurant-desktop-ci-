@@ -6,6 +6,7 @@ import { orderApi } from '../../../api';
 import { ORDERS_PAGE_SIZE_DEFAULT } from '../../../features/orders/constants';
 import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { toastApiError } from '../../../utils/apiError';
 
 const emptyEditForm = () => ({
   clientName: '',
@@ -93,7 +94,7 @@ export function useDeliveryAdminPage() {
       setEditForm(emptyEditForm());
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.delivery.saveFailed')),
+    onError: (err) => toastApiError(err, t('rst.delivery.saveFailed')),
   });
 
   const cancelMutation = useMutation({
@@ -103,7 +104,7 @@ export function useDeliveryAdminPage() {
       setCancelOrder(null);
       invalidate();
     },
-    onError: (err) => toast.error(err?.response?.data?.message ?? t('rst.delivery.cancelFailed')),
+    onError: (err) => toastApiError(err, t('rst.delivery.cancelFailed')),
   });
 
   const rows = data?.content ?? [];

@@ -16,14 +16,17 @@ import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
+import com.pos.restaurant.order.entity.FloorOrderTableLink;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
+import com.pos.restaurant.order.repository.FloorOrderTableLinkRepository;
 import com.pos.restaurant.order.support.OrderTotals;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,21 +44,40 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     private final FloorTenantSupport tenantSupport;
     private final FloorOrderRepository orderRepository;
     private final FloorOrderItemRepository itemRepository;
+    private final FloorOrderTableLinkRepository linkRepository;
     private final FloorReservationRepository reservationRepository;
     private final OrderTotals orderTotals;
 
     @Override
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
-        Map<Integer, FloorOrder> openOrders = orderRepository
-            .findTableOrdersByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, List.of(OrderStatus.OPEN, OrderStatus.BILLING))
-            .stream()
-            .collect(Collectors.toMap(order -> order.getTable().getId(), order -> order, (a, b) -> a));
+        List<OrderStatus> activeStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
+        Map<Integer, FloorOrder> openOrders = new HashMap<>();
+        for (FloorOrder order : orderRepository.findTableOrdersByCompanyIdAndStoreIdAndStatusIn(
+            companyId, storeId, activeStatuses
+        )) {
+            if (order.getTable() != null) {
+                openOrders.putIfAbsent(order.getTable().getId(), order);
+            }
+        }
+        for (FloorOrderTableLink link : linkRepository.findActiveByStore(companyId, storeId, activeStatuses)) {
+            openOrders.putIfAbsent(link.getTable().getId(), link.getOrder());
+        }
+
         Map<UUID, List<FloorOrderItem>> itemsByOrder = openOrders.values().stream()
             .collect(Collectors.toMap(
                 FloorOrder::getId,
-                order -> itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId())
+                order -> itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId()),
+                (a, b) -> a
             ));
+
+        Map<UUID, List<String>> linkedCodesByOrder = new HashMap<>();
+        for (FloorOrderTableLink link : linkRepository.findActiveByStore(companyId, storeId, activeStatuses)) {
+            linkedCodesByOrder
+                .computeIfAbsent(link.getOrder().getId(), ignored -> new ArrayList<>())
+                .add(link.getTable().getCode());
+        }
+
         Map<Integer, FloorReservation> reservations = new HashMap<>();
         for (FloorReservation reservation : reservationRepository.findByStoreAndStatuses(
             companyId,
@@ -107,6 +129,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                         }
                         List<FloorOrderItem> items = itemsByOrder.getOrDefault(order.getId(), List.of());
                         BigDecimal subtotal = orderTotals.billable(items);
+                        List<String> linkedCodes = linkedCodesByOrder.getOrDefault(order.getId(), List.of());
                         return new TableResponse(
                             mapped.id(),
                             mapped.hallId(),
@@ -131,7 +154,8 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                                 subtotal,
                                 items.size(),
                                 order.getWaiterUserId(),
-                                order.getOpenedAt()
+                                order.getOpenedAt(),
+                                linkedCodes
                             ),
                             reservationSummary
                         );

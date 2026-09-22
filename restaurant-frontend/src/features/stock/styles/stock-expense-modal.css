@@ -1,0 +1,14 @@
+.rst-expense-modal .product-lookup {
+  width: 100%;
+}
+
+.rst-expense-modal__stock-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.75rem;
+  color: rgb(100 116 139);
+}
+
+.dark .rst-expense-modal__stock-hint {
+  color: rgb(148 163 184);
+}

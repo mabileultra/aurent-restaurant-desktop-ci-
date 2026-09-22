@@ -18,6 +18,7 @@ export default function RestaurantReceiptModal({
   onClose,
   onRefund,
   refunding = false,
+  allowRefund = true,
   t,
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -112,23 +113,27 @@ export default function RestaurantReceiptModal({
               <Settings2 size={15} />
               {t('printSettings.toggleShort')}
             </button>
-            <button
-              type="button"
-              className="rst-receipt-modal__btn"
-              onClick={() => onRefund?.(sale?.id)}
-              disabled={refunding || !onRefund || !sale?.id}
-            >
-              {refunding ? t('common.loading') : t('rst.order.refund')}
-            </button>
-            <button
-              type="button"
-              className="rst-receipt-modal__btn rst-receipt-modal__btn--primary"
-              onClick={handlePrint}
-              disabled={printing}
-            >
-              <Printer size={15} />
-              {printing ? t('common.loading') : t('receipt.print')}
-            </button>
+            <div className="rst-receipt-modal__pay-actions">
+              <button
+                type="button"
+                className="rst-receipt-modal__btn rst-receipt-modal__btn--primary"
+                onClick={handlePrint}
+                disabled={printing}
+              >
+                <Printer size={15} />
+                {printing ? t('common.loading') : t('receipt.print')}
+              </button>
+              {allowRefund ? (
+                <button
+                  type="button"
+                  className="rst-receipt-modal__btn rst-receipt-modal__btn--danger"
+                  onClick={() => onRefund?.(sale?.id)}
+                  disabled={refunding || !onRefund || !sale?.id}
+                >
+                  {refunding ? t('common.loading') : t('rst.order.refund')}
+                </button>
+              ) : null}
+            </div>
             <button
               type="button"
               className="rst-receipt-modal__btn rst-receipt-modal__btn--icon"
@@ -156,15 +161,27 @@ export default function RestaurantReceiptModal({
           <button type="button" className="rst-receipt-modal__btn" onClick={onClose}>
             {t('rst.order.receiptDone')}
           </button>
-          <button
-            type="button"
-            className="rst-receipt-modal__btn rst-receipt-modal__btn--primary"
-            onClick={handlePrint}
-            disabled={printing}
-          >
-            <Printer size={15} />
-            {printing ? t('common.loading') : t('receipt.print')}
-          </button>
+          <div className="rst-receipt-modal__pay-actions">
+            <button
+              type="button"
+              className="rst-receipt-modal__btn rst-receipt-modal__btn--primary"
+              onClick={handlePrint}
+              disabled={printing}
+            >
+              <Printer size={15} />
+              {printing ? t('common.loading') : t('receipt.print')}
+            </button>
+            {allowRefund ? (
+              <button
+                type="button"
+                className="rst-receipt-modal__btn rst-receipt-modal__btn--danger"
+                onClick={() => onRefund?.(sale?.id)}
+                disabled={refunding || !onRefund || !sale?.id}
+              >
+                {refunding ? t('common.loading') : t('rst.order.refund')}
+              </button>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>,

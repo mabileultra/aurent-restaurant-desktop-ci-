@@ -1,0 +1,127 @@
+.rst-item-compose {
+  width: min(520px, 100%);
+}
+
+.rst-item-compose__group {
+  margin-bottom: 1rem;
+}
+
+.rst-item-compose__group strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--rst-ink);
+}
+
+.rst-item-compose__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rst-item-compose__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 3.15rem;
+  padding: 0.7rem 0.95rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: #121722;
+  color: var(--rst-ink);
+  font: inherit;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-item-compose__option em {
+  font-style: normal;
+  color: var(--rst-muted);
+  font-weight: 700;
+}
+
+.rst-item-compose__option.is-active {
+  border-color: var(--rst-accent);
+  background: rgb(255 122 26 / 0.16);
+}
+
+.rst-item-compose__option:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rst-item-compose__note {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.85rem;
+}
+
+.rst-item-compose__note span {
+  color: var(--rst-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.rst-item-compose__note textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+  font-size: 1rem !important;
+}
+
+.rst-item-compose__error {
+  margin: 0 0 0.75rem;
+  color: #fca5a5;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.rst-order-line__note {
+  margin-top: 0.35rem;
+  color: #c5cce0;
+  font-size: 0.82rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+
+.rst-order-line__note-btn {
+  min-height: 2.45rem;
+  min-width: 2.45rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: #121722;
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-order-line__note-btn:hover {
+  color: var(--rst-ink);
+  border-color: var(--rst-accent);
+}
+
+.rst-order__comment {
+  margin: 0.35rem 0 0.65rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.04);
+  border: 1px solid var(--rst-line);
+  color: #c5cce0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.rst-order__guest-split {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.85rem;
+  margin-top: 0.35rem;
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+}

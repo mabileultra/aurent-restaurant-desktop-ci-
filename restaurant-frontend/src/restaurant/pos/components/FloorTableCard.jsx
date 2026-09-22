@@ -137,6 +137,11 @@ export default function FloorTableCard({ table, selected, onClick, t, now, waite
               {elapsed ? <span>{elapsed}</span> : null}
             </div>
             <WaiterRow name={waiterName} emptyLabel={t('rst.floor.waiterNone')} />
+            {order?.linkedTableCodes?.length ? (
+              <div className="rst-table-card__hint">
+                {table.code} + {order.linkedTableCodes.join(' + ')}
+              </div>
+            ) : null}
             {status === 'WAITING_PAYMENT' ? (
               <div className="rst-table-card__hint">{t('rst.floor.billReadyHint')}</div>
             ) : (

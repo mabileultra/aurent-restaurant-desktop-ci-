@@ -45,6 +45,7 @@ class BillEligibilityPolicyTest {
         BigDecimal due = new BigDecimal("25.00");
         assertDoesNotThrow(() -> policy.assertCanPay(order, due, due));
         assertThrows(BusinessException.class, () -> policy.assertCanPay(order, due, new BigDecimal("20.00")));
+        assertDoesNotThrow(() -> policy.assertCanPay(order, due, new BigDecimal("25.0")));
         assertThrows(BusinessException.class, () -> policy.assertCanPay(
             FloorOrder.builder().status(OrderStatus.OPEN).build(),
             due,
