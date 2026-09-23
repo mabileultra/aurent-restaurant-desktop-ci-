@@ -228,6 +228,13 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
                 .map(CashierShift::getCashRegister)
                 .orElse(null);
         }
+        // Pharmacy shifts live in pharmacy-service and do not populate grocery CashierShift —
+        // fall back to the store's first active register so Multikassa settings/fiscal still work.
+        if (register == null && store.getId() != null) {
+            register = cashRegisterRepository
+                .findFirstByStore_IdAndStatusIgnoreCaseOrderByRegisterNumberAsc(store.getId(), "ACTIVE")
+                .orElse(null);
+        }
         return register;
     }
 

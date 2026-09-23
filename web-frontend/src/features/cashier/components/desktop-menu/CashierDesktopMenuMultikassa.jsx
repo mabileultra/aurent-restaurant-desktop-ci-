@@ -28,14 +28,15 @@ export default function CashierDesktopMenuMultikassa({ t }) {
   const { shift } = useCashierShiftView(storeId, {
     catalogKind: isPharmacy ? 'pharmacy' : 'grocery',
   });
-  const cashRegisterId = shift?.cashRegisterId ?? null;
+  const shiftRegisterId = shift?.cashRegisterId ?? null;
   const [settingsOpen, setSettingsOpen] = useState(false);
   const qc = useQueryClient();
   const { data: caps, isLoading } = useMultikassaCashierStatus({
     storeId,
-    cashRegisterId,
+    cashRegisterId: shiftRegisterId,
     enabled: storeId != null,
   });
+  const cashRegisterId = shiftRegisterId ?? caps?.cashRegisterId ?? null;
   const status = describeMultikassaStatus(caps, t);
   const printQr = caps?.printFiscalQr !== false;
   const enabled = Boolean(caps?.enabled);
@@ -46,8 +47,8 @@ export default function CashierDesktopMenuMultikassa({ t }) {
         .updateCashierFlags(storeId, cashRegisterId, { printFiscalQr: nextPrintQr })
         .then((r) => r.data),
     onSuccess: (data) => {
-      qc.setQueryData(['multikassa-cashier-caps', storeId, cashRegisterId], data);
-      qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
+      qc.setQueryData(['multikassa-cashier-caps', storeId, shiftRegisterId], data);
+      qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
       toast.success(
         data?.printFiscalQr === false
           ? t('desktop.multikassaQrOffToast')
@@ -143,7 +144,7 @@ export default function CashierDesktopMenuMultikassa({ t }) {
             cashRegisterId={cashRegisterId}
             onClose={() => {
               setSettingsOpen(false);
-              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
+              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
             }}
           />
         </Suspense>

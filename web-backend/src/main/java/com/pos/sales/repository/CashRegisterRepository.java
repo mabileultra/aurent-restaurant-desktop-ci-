@@ -55,6 +55,12 @@ public interface CashRegisterRepository extends JpaRepository<CashRegister, Long
     Optional<CashRegister> findFirstByStore_IdOrderByRegisterNumberAsc(Integer storeId);
 
     @EntityGraph(attributePaths = {"store"})
+    Optional<CashRegister> findFirstByStore_IdAndStatusIgnoreCaseOrderByRegisterNumberAsc(
+        Integer storeId,
+        String status
+    );
+
+    @EntityGraph(attributePaths = {"store"})
     Optional<CashRegister> findByDeviceId(String deviceId);
 
     Optional<CashRegister> findByStore_IdAndEquipmentSerialIgnoreCase(Integer storeId, String equipmentSerial);

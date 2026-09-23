@@ -48,6 +48,12 @@ public class PharmacyCashierShift {
     @Column(name = "cashier_name")
     private String cashierName;
 
+    @Column(name = "cash_register_id")
+    private Long cashRegisterId;
+
+    @Column(name = "register_number")
+    private Integer registerNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     @Builder.Default

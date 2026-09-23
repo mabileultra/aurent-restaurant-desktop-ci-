@@ -5,6 +5,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { multikassaApi } from '../../../api/multikassa.api';
+import { cashierTerminalApi } from '../../../api/cashierTerminal.api';
 import {
   describeMultikassaStatus,
   useMultikassaCashierStatus,
@@ -13,6 +14,7 @@ import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
 import { getApiErrorMessage } from '../../../utils/apiError';
+import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../../utils/cashierTerminalIdentity';
 
 const MultikassaSettingsModal = lazy(() =>
   import('../../cash-registers/components/MultikassaSettingsModal'),
@@ -39,14 +41,16 @@ export default function MultikassaCashierControls({ className = '' }) {
   const { shift } = useCashierShiftView(storeId, {
     catalogKind: isPharmacy ? 'pharmacy' : 'grocery',
   });
-  const cashRegisterId = shift?.cashRegisterId ?? null;
+  const shiftRegisterId = shift?.cashRegisterId ?? null;
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsRegisterId, setSettingsRegisterId] = useState(null);
   const qc = useQueryClient();
   const { data: caps, isLoading } = useMultikassaCashierStatus({
     storeId,
-    cashRegisterId,
+    cashRegisterId: shiftRegisterId,
     enabled: storeId != null,
   });
+  const cashRegisterId = shiftRegisterId ?? caps?.cashRegisterId ?? settingsRegisterId ?? null;
   const status = describeMultikassaStatus(caps, t);
   const printQr = caps?.printFiscalQr !== false;
   const enabled = Boolean(caps?.enabled);
@@ -57,8 +61,8 @@ export default function MultikassaCashierControls({ className = '' }) {
         .updateCashierFlags(storeId, cashRegisterId, { printFiscalQr: nextPrintQr })
         .then((r) => r.data),
     onSuccess: (data) => {
-      qc.setQueryData(['multikassa-cashier-caps', storeId, cashRegisterId], data);
-      qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
+      qc.setQueryData(['multikassa-cashier-caps', storeId, shiftRegisterId], data);
+      qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
       toast.success(
         data?.printFiscalQr === false
           ? t('desktop.multikassaQrOffToast')
@@ -71,11 +75,29 @@ export default function MultikassaCashierControls({ className = '' }) {
     },
   });
 
-  const openSettings = () => {
-    if (!cashRegisterId) {
+  const openSettings = async () => {
+    let registerId = cashRegisterId;
+    if (!registerId && storeId != null) {
+      try {
+        const identity = await resolveCashierTerminalIdentity();
+        const terminal = buildTerminalRequest(identity);
+        if (terminal) {
+          const reg = await cashierTerminalApi.register(storeId, terminal).then((r) => r.data);
+          registerId = reg?.cashRegisterId ?? null;
+          if (registerId != null) {
+            setSettingsRegisterId(registerId);
+            qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
+          }
+        }
+      } catch {
+        /* fall through to toast */
+      }
+    }
+    if (!registerId) {
       toast.error(t('cashRegisters.multikassa.needOpenShift'), { id: 'multikassa-settings' });
       return;
     }
+    setSettingsRegisterId(registerId);
     setSettingsOpen(true);
   };
 
@@ -89,6 +111,8 @@ export default function MultikassaCashierControls({ className = '' }) {
   };
 
   if (storeId == null) return null;
+
+  const modalRegisterId = settingsRegisterId ?? cashRegisterId;
 
   return (
     <>
@@ -129,14 +153,14 @@ export default function MultikassaCashierControls({ className = '' }) {
         </div>
       </div>
 
-      {settingsOpen && cashRegisterId ? (
+      {settingsOpen && modalRegisterId ? (
         <Suspense fallback={null}>
           <MultikassaSettingsModal
             open={settingsOpen}
-            cashRegisterId={cashRegisterId}
+            cashRegisterId={modalRegisterId}
             onClose={() => {
               setSettingsOpen(false);
-              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, cashRegisterId] });
+              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
             }}
           />
         </Suspense>

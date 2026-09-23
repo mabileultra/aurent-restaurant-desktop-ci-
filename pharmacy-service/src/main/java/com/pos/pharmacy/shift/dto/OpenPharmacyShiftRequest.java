@@ -9,6 +9,8 @@ public record OpenPharmacyShiftRequest(
     @Size(max = 200) String storeName,
     @Size(max = 200) String cashierName,
     @DecimalMin("0") BigDecimal openingCash,
-    @Size(max = 1000) String comment
+    @Size(max = 1000) String comment,
+    Long cashRegisterId,
+    Integer registerNumber
 ) {
 }

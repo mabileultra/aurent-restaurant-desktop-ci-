@@ -6,12 +6,14 @@ import com.pos.sales.entity.CashRegister;
 import com.pos.sales.entity.CashierShift;
 import com.pos.sales.repository.CashierShiftRepository;
 import com.pos.security.RoleName;
+import com.pos.service.support.CashierSaleSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
 /**
- * Кассир может править Multikassa только на кассе своей открытой смены.
+ * Кассир может править Multikassa на кассе своей открытой grocery-смены.
+ * Для аптеки (смена в pharmacy-service) — на любой кассе магазина, куда кассиру разрешены продажи.
  * ADMIN / MANAGER / SUPER_ADMIN — без этого ограничения.
  */
 @Component
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class MultikassaCashierRegisterGuard {
 
     private final CashierShiftRepository cashierShiftRepository;
+    private final CashierSaleSupport cashierSaleSupport;
 
     public void assertCashierMayConfigureRegister(User user, CashRegister register) {
         if (user == null || register == null) {
@@ -41,7 +44,12 @@ public class MultikassaCashierRegisterGuard {
             .map(CashierShift::getCashRegister)
             .filter(cr -> cr != null && register.getId().equals(cr.getId()))
             .isPresent();
-        if (!ownsOpenShift) {
+        if (ownsOpenShift) {
+            return;
+        }
+        try {
+            cashierSaleSupport.requireStoreForSale(user, storeId);
+        } catch (RuntimeException ex) {
             throw new AccessDeniedException(
                 "Кассир может настраивать Multikassa только на кассе своей открытой смены"
             );

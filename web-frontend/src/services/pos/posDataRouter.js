@@ -2,6 +2,7 @@
  * Единый роутер POS: все операции кассы идут через этот модуль (API или SQLite).
  */
 import { categoryApi, productApi, saleApi, cashierShiftApi, pharmacyWarehouseApi, pharmacySalesApi, pharmacyShiftApi } from '../api';
+import { cashierTerminalApi } from '../../api/cashierTerminal.api';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../utils/cashierTerminalIdentity';
 import { POS_PRODUCT_PAGE_SIZE, posCatalogPageSize } from '../../features/cashier/components/pos/posCatalogConstants';
 import { isApiUnreachableError } from '../../utils/apiNetworkError';
@@ -235,16 +236,27 @@ export async function posOpenShift(storeId, user, storeName = '', { catalogKind 
   try {
     const identity = await resolveCashierTerminalIdentity();
     const terminal = buildTerminalRequest(identity);
-    const body =
-      catalogKind === 'pharmacy'
-        ? {
-            storeName: storeName || undefined,
-            cashierName: user?.fullName || user?.username || undefined,
-            ...(terminal ? { terminal } : {}),
-          }
-        : terminal
-          ? { terminal }
-          : null;
+    let body;
+    if (catalogKind === 'pharmacy') {
+      let cashRegisterId;
+      let registerNumber;
+      if (terminal) {
+        try {
+          const reg = await cashierTerminalApi.register(storeId, terminal).then((r) => r.data);
+          cashRegisterId = reg?.cashRegisterId;
+          registerNumber = reg?.registerNumber;
+        } catch {
+          /* open shift without register binding — Multikassa falls back to store register */
+        }
+      }
+      body = {
+        storeName: storeName || undefined,
+        cashierName: user?.fullName || user?.username || undefined,
+        ...(cashRegisterId != null ? { cashRegisterId, registerNumber } : {}),
+      };
+    } else {
+      body = terminal ? { terminal } : null;
+    }
     const res = await apiClient.open(storeId, body);
     const shift = res.data;
     if (isDesktopOfflineBridge() && user?.id) {

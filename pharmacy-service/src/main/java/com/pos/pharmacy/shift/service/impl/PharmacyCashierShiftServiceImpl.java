@@ -55,7 +55,9 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
             throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_ALREADY_OPEN);
         }
 
-        OpenPharmacyShiftRequest body = request != null ? request : new OpenPharmacyShiftRequest(null, null, null, null);
+        OpenPharmacyShiftRequest body = request != null
+            ? request
+            : new OpenPharmacyShiftRequest(null, null, null, null, null, null);
         BigDecimal openingCash = body.openingCash() != null ? body.openingCash() : BigDecimal.ZERO;
         if (openingCash.signum() < 0) {
             throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_OPENING_CASH_NEGATIVE);
@@ -67,6 +69,8 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
             .storeName(blankToNull(body.storeName()))
             .cashierId(cashierId)
             .cashierName(blankToNull(body.cashierName()))
+            .cashRegisterId(body.cashRegisterId())
+            .registerNumber(body.registerNumber())
             .status(PharmacyShiftStatus.OPEN)
             .openingCash(openingCash)
             .comment(blankToNull(body.comment()))
