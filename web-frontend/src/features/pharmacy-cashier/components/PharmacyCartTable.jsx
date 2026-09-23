@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { lineDiscountAmount, lineSubtotal } from '../../../store/cartStore';
@@ -5,6 +6,9 @@ import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import { formatCartPackPieceQty } from '../utils/pharmacyPackQty';
 import { isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
+import {
+  pharmacyCartDisplayPrice,
+} from '../utils/pharmacyCartActions';
 import {
   formatExpiryDisplay,
   productBatch,
@@ -24,8 +28,16 @@ export default function PharmacyCartTable({
   onSelectLine,
   onQtyDelta,
   onRemove,
+  onUpdatePrice,
 }) {
   const { t } = useTranslation();
+  const [editingPriceLineId, setEditingPriceLineId] = useState(null);
+  const [priceDraft, setPriceDraft] = useState('');
+
+  const commitPrice = (lineId) => {
+    onUpdatePrice?.(lineId, priceDraft);
+    setEditingPriceLineId(null);
+  };
 
   if (!items.length) {
     return (
@@ -69,9 +81,11 @@ export default function PharmacyCartTable({
               const needsRx = productRequiresPrescription(item);
               const marksCounted = isMarkCountedLine(item);
               const discount = lineDiscountAmount(item);
+              const displayPrice = pharmacyCartDisplayPrice(item);
               const meta = [batch ? `${t('pharmacyCashier.colBatch')}: ${batch}` : '', expiry ? `${t('pharmacyCashier.colExpiryShort')}: ${expiry}` : '']
                 .filter(Boolean)
                 .join(' · ');
+              const editingPrice = Boolean(onUpdatePrice) && editingPriceLineId === item.lineId;
 
               return (
                 <tr
@@ -104,15 +118,49 @@ export default function PharmacyCartTable({
                   <td className="pharmacy-cart-table__mono pharmacy-cart-table__clip" title={form}>
                     <span className="pharmacy-cart-table__cell-text">{form}</span>
                   </td>
-                  <td className="pharmacy-cart-table__num">
-                    <span className="pharmacy-cart-table__money">
-                      {fmt(item.packUnitPrice || item.unitPrice)}
-                    </span>
-                    {item.pharmacySellByPiece && Number(item.unitsInPack) > 1 ? (
-                      <span className="pharmacy-cart-table__piece-price-hint">
-                        {t('pharmacyCashier.perPackShort')}
-                      </span>
-                    ) : null}
+                  <td className="pharmacy-cart-table__num" onClick={(e) => e.stopPropagation()}>
+                    {editingPrice ? (
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        className="pharmacy-cart-table__price-input"
+                        value={priceDraft}
+                        onChange={(e) => setPriceDraft(e.target.value)}
+                        onBlur={() => commitPrice(item.lineId)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') commitPrice(item.lineId);
+                          if (e.key === 'Escape') setEditingPriceLineId(null);
+                        }}
+                        autoFocus
+                        aria-label={t('pharmacyCashier.colPrice')}
+                      />
+                    ) : onUpdatePrice ? (
+                      <button
+                        type="button"
+                        className="pharmacy-cart-table__price-btn"
+                        onClick={() => {
+                          setEditingPriceLineId(item.lineId);
+                          setPriceDraft(String(displayPrice));
+                        }}
+                        title={t('pharmacyCashier.priceEditHint')}
+                      >
+                        <span className="pharmacy-cart-table__money">{fmt(displayPrice)}</span>
+                        {item.pharmacySellByPiece && Number(item.unitsInPack) > 1 ? (
+                          <span className="pharmacy-cart-table__piece-price-hint">
+                            {t('pharmacyCashier.perPackShort')}
+                          </span>
+                        ) : null}
+                      </button>
+                    ) : (
+                      <>
+                        <span className="pharmacy-cart-table__money">{fmt(displayPrice)}</span>
+                        {item.pharmacySellByPiece && Number(item.unitsInPack) > 1 ? (
+                          <span className="pharmacy-cart-table__piece-price-hint">
+                            {t('pharmacyCashier.perPackShort')}
+                          </span>
+                        ) : null}
+                      </>
+                    )}
                   </td>
                   <td className="pharmacy-cart-table__num" onClick={(e) => e.stopPropagation()}>
                     <div className="pharmacy-cart-table__qty-ctrl">

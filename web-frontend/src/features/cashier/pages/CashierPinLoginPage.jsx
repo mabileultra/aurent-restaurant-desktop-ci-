@@ -1,6 +1,4 @@
-import { Link } from 'react-router-dom';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
-import { adminLoginPath } from '../../../utils/authLogin';
 import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
 import CashierPinLoginHeader from '../components/pin-login/CashierPinLoginHeader';
 import CashierPinLoginCompanyPopover from '../components/pin-login/CashierPinLoginCompanyPopover';
@@ -32,8 +30,8 @@ export default function CashierPinLoginPage() {
 
   return (
     <div className={`cashier-pin-login${touchLayout ? ' cashier-pin-login--touch' : ''}`}>
-      <div className="cashier-pin-login__top-actions">
-        {showCompanyCodeField ? (
+      {showCompanyCodeField ? (
+        <div className="cashier-pin-login__top-actions">
           <CashierPinLoginCompanyPopover
             t={t}
             value={companyCode}
@@ -43,16 +41,8 @@ export default function CashierPinLoginPage() {
             onToggle={() => setCompanyPopoverOpen((v) => !v)}
             onClose={() => setCompanyPopoverOpen(false)}
           />
-        ) : null}
-        <Link
-          to={adminLoginPath()}
-          className="cashier-pin-login__admin-chip"
-          aria-label={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
-          title={t('cashierLogin.adminLogin', { defaultValue: 'Вход администратора' })}
-        >
-          A
-        </Link>
-      </div>
+        </div>
+      ) : null}
 
       <div className="cashier-pin-login__layout">
         <CashierPinLoginVisual />

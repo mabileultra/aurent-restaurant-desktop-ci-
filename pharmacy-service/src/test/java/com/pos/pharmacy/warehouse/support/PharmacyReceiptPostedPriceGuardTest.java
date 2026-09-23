@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PharmacyReceiptPostedPriceGuardTest {
 
@@ -24,16 +23,12 @@ class PharmacyReceiptPostedPriceGuardTest {
     }
 
     @Test
-    void rejectsStockFieldsOnPostedReceipt() {
+    void allowsStockFieldsOnPostedReceipt() {
         StockReceipt posted = StockReceipt.builder().status(StockReceiptStatus.POSTED).build();
-        BusinessException error = assertThrows(
-            BusinessException.class,
-            () -> guard.requireMassField(posted, PharmacyReceiptMassField.QUANTITY)
-        );
-        assertTrue(error.getMessage().contains("цены"));
-        assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.BATCH));
-        assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.EXPIRY));
-        assertThrows(BusinessException.class, () -> guard.requireMassField(posted, PharmacyReceiptMassField.UNITS_IN_PACK));
+        assertDoesNotThrow(() -> guard.requireMassField(posted, PharmacyReceiptMassField.QUANTITY));
+        assertDoesNotThrow(() -> guard.requireMassField(posted, PharmacyReceiptMassField.BATCH));
+        assertDoesNotThrow(() -> guard.requireMassField(posted, PharmacyReceiptMassField.EXPIRY));
+        assertDoesNotThrow(() -> guard.requireMassField(posted, PharmacyReceiptMassField.UNITS_IN_PACK));
     }
 
     @Test
@@ -42,5 +37,11 @@ class PharmacyReceiptPostedPriceGuardTest {
         assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.QUANTITY));
         assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.UNITS_IN_PACK));
         assertDoesNotThrow(() -> guard.requireMassField(draft, PharmacyReceiptMassField.BATCH));
+    }
+
+    @Test
+    void rejectsUnknownStatus() {
+        StockReceipt other = StockReceipt.builder().status("ARCHIVED").build();
+        assertThrows(BusinessException.class, () -> guard.requireMassField(other, PharmacyReceiptMassField.RETAIL));
     }
 }

@@ -2524,6 +2524,7 @@
     "qtyPackShort": "уп",
     "qtyPieceShort": "шт",
     "perPackShort": "/ уп.",
+    "priceEditHint": "Нажмите, чтобы изменить цену",
     "qtyPacks": "Упаковки",
     "qtyPieces": "Штуки",
     "sumCurrency": "сум",

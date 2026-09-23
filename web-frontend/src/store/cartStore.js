@@ -223,15 +223,19 @@ export const useCartStore = create((set, get) => ({
     });
   },
 
-  updateUnitPrice: (lineId, unitPrice) => {
-    const price = Math.max(0, round2(unitPrice));
+  patchLine: (lineId, patch) => {
     const nextItems = get().items.map((i) =>
-      i.lineId === lineId ? syncDiscountFromPercent({ ...i, unitPrice: price }) : i
+      i.lineId === lineId ? syncDiscountFromPercent({ ...i, ...patch }) : i
     );
     set({
       items: nextItems,
       orderDiscountAmount: capOrderDiscount(nextItems, get().orderDiscountAmount),
     });
+  },
+
+  updateUnitPrice: (lineId, unitPrice) => {
+    const price = Math.max(0, round2(unitPrice));
+    get().patchLine(lineId, { unitPrice: price });
   },
 
   updateDiscountPercent: (lineId, discountPercent) => {

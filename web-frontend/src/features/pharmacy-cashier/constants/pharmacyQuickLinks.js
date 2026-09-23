@@ -18,7 +18,6 @@ export const PHARMACY_EXTERNAL_URLS = {
 
 /** Основные кнопки рядом с поиском */
 export const PHARMACY_TOOLBAR_LINKS = [
-  { id: PHARMACY_QUICK_LINK_IDS.ADMIN, kind: 'admin' },
   { id: PHARMACY_QUICK_LINK_IDS.DMED, kind: 'dmed', requiresDmed: true },
   { id: PHARMACY_QUICK_LINK_IDS.IKPU, kind: 'external', urlKey: 'ikpu' },
 ];

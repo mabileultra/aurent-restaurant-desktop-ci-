@@ -64,8 +64,6 @@ export default function PharmacySearchStrip({
     enabled: !scanDisabled,
   });
 
-  const adminLink = PHARMACY_TOOLBAR_LINKS.find((l) => l.id === PHARMACY_QUICK_LINK_IDS.ADMIN);
-
   const runToggle = (linkId) => {
     const fromToolbar = PHARMACY_TOOLBAR_LINKS.find((l) => l.id === linkId);
     const fromMore = PHARMACY_MORE_LINKS.find((l) => l.id === linkId);
@@ -172,18 +170,6 @@ export default function PharmacySearchStrip({
             </button>
           );
         })}
-
-        {adminLink && toolbar.isLinkVisible(adminLink) ? (
-          <button
-            type="button"
-            className="pharmacy-search-strip__icon-btn"
-            title={t('pharmacyCashier.integrations.linkTitles.admin')}
-            aria-label={t('pharmacyCashier.integrations.linkTitles.admin')}
-            onClick={() => toolbar.handleLink(adminLink)}
-          >
-            <PharmacyIntegrationIcon linkId={PHARMACY_QUICK_LINK_IDS.ADMIN} />
-          </button>
-        ) : null}
 
         <div className="pharmacy-search-strip__more-wrap">
           <button

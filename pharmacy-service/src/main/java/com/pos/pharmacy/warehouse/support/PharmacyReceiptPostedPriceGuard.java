@@ -7,7 +7,7 @@ import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
 import org.springframework.stereotype.Component;
 
-/** На проведённом приходе разрешены только цены, не остаток и не серия. */
+/** Массовое изменение строк: черновик и проведённый приход. */
 @Component
 public class PharmacyReceiptPostedPriceGuard {
 
@@ -15,14 +15,10 @@ public class PharmacyReceiptPostedPriceGuard {
         if (receipt == null || field == null) {
             throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_MASS_FIELD_REQUIRED);
         }
-        if (StockReceiptStatus.DRAFT.equals(receipt.getStatus())) {
+        if (StockReceiptStatus.DRAFT.equals(receipt.getStatus())
+            || StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
             return;
         }
-        if (!StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
-            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_DRAFT_ONLY);
-        }
-        if (field.locksStock()) {
-            throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_POSTED_FIELD_LOCKED);
-        }
+        throw PharmacyErrors.of(PharmacyReceiptErrors.PHARM_RECEIPT_DRAFT_ONLY);
     }
 }

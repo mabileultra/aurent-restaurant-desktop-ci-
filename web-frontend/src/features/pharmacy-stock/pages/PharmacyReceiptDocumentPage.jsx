@@ -317,7 +317,7 @@ export default function PharmacyReceiptDocumentPage() {
                 } : undefined}
               />
             ) : null}
-            {canEditPrices ? <PharmacyReceiptMassEditBar t={t} mass={mass} priceOnly={isPosted} /> : null}
+            {canEditPrices ? <PharmacyReceiptMassEditBar t={t} mass={mass} /> : null}
             <div className="pharmacy-stock__table-wrap">
               <table className="pharmacy-stock__table">
                 <thead>

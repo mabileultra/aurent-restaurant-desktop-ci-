@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useMenuAdminPage } from '../hooks/useMenuAdminPage';
 import MenuCardMenu from '../components/MenuCardMenu';
 import MenuDishFilters from '../components/MenuDishFilters';
@@ -14,11 +13,6 @@ export default function MenuAdminPage() {
   const p = useMenuAdminPage();
   const [cardMenu, setCardMenu] = useState(null);
 
-  const showList = () => {
-    p.closeComposer();
-    setCardMenu(null);
-  };
-
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
   }
@@ -30,30 +24,16 @@ export default function MenuAdminPage() {
           <h1 className="rst-coming__title">{p.t('rst.admin.menuTitle')}</h1>
           <p className="rst-coming__text">{p.t('rst.admin.menuSubtitle')}</p>
         </div>
-        <div className="rst-menu__switch" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={!p.composerOpen}
-            className={`rst-menu__switch-btn${!p.composerOpen ? ' is-active' : ''}`}
-            onClick={showList}
-          >
-            {p.t('rst.admin.menuList')}
-          </button>
-          <Link className="rst-menu__switch-btn" role="tab" to="/rst/admin/recipes">
-            {p.t('rst.admin.toRecipes')}
-          </Link>
-        </div>
       </div>
 
       <MenuDishFilters p={p} />
-      <MenuDishForm p={p} />
       <MenuDishList
         p={p}
         onOpenMenu={(item, rect) => {
           setCardMenu((cur) => (cur?.item?.id === item.id ? null : { item, rect }));
         }}
       />
+      <MenuDishForm p={p} />
 
       <MenuCardMenu
         menu={cardMenu}

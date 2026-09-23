@@ -1,23 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { BaseButton, BaseModal } from '../../../components/ui';
-import {
-  PHARM_RECEIPT_MASS_FIELDS,
-  PHARM_RECEIPT_MASS_PRICE_FIELDS,
-} from '../utils/pharmacyReceiptMassFields';
+import { PHARM_RECEIPT_MASS_FIELDS } from '../utils/pharmacyReceiptMassFields';
 import '../styles/pharmacy-receipt-mass.css';
 
-export default function PharmacyReceiptMassEditBar({ t, mass, priceOnly = false }) {
-  const fields = priceOnly ? PHARM_RECEIPT_MASS_PRICE_FIELDS : PHARM_RECEIPT_MASS_FIELDS;
+export default function PharmacyReceiptMassEditBar({ t, mass }) {
+  const fields = PHARM_RECEIPT_MASS_FIELDS;
   const [field, setField] = useState('VAT');
   const [value, setValue] = useState('12');
   const current = fields.find((item) => item.id === field) || fields[0];
-
-  useEffect(() => {
-    if (priceOnly && !PHARM_RECEIPT_MASS_PRICE_FIELDS.some((item) => item.id === field)) {
-      setField('VAT');
-      setValue('12');
-    }
-  }, [priceOnly, field]);
 
   return (
     <>

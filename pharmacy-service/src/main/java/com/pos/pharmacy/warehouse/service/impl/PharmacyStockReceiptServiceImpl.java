@@ -10,6 +10,7 @@ import com.pos.pharmacy.exception.PharmacyException;
 import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyReceiptErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacySqlConstraintError;
+import com.pos.pharmacy.warehouse.domain.PharmacyReceiptMassField;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.dto.*;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
@@ -41,8 +42,10 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -261,9 +264,14 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             ? null
             : new HashSet<>(request.lineIds());
         List<StockReceiptLine> changed = new ArrayList<>();
+        Map<UUID, BigDecimal> previousQuantities = new HashMap<>();
+        boolean trackQty = PharmacyReceiptMassField.QUANTITY.equals(request.field());
         for (StockReceiptLine line : receipt.getLines()) {
             if (selected != null && !selected.contains(line.getId())) {
                 continue;
+            }
+            if (trackQty && line.getId() != null) {
+                previousQuantities.put(line.getId(), line.getQuantity());
             }
             pharmacyReceiptMassApplier.apply(line, request.field(), request.value());
             changed.add(line);
@@ -273,7 +281,7 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
         }
         pharmacyReceipt.recalculateTotals(receipt);
         stockReceiptRepository.save(receipt);
-        postedPriceSync.sync(receipt, changed);
+        postedPriceSync.sync(receipt, changed, previousQuantities);
         return new PharmacyReceiptRevalueResult(changed.size());
     }
 

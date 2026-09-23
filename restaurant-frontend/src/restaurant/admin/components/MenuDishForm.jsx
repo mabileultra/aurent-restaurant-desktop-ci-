@@ -1,48 +1,48 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
+import RstModal from '../../shared/components/RstModal';
 
 export default function MenuDishForm({ p }) {
-  if (!p.composerOpen) return null;
-
   return (
-    <form
-      className="rst-admin-form rst-menu__form"
-      onSubmit={(e) => {
-        e.preventDefault();
-        p.saveMutation.mutate();
-      }}
+    <RstModal
+      open={p.composerOpen}
+      title={p.editingId
+        ? p.t('rst.admin.editDish', { defaultValue: 'Изменить блюдо' })
+        : p.t('rst.admin.addDish')}
+      onClose={p.closeComposer}
+      onSubmit={() => p.saveMutation.mutate()}
+      isPending={p.saveMutation.isPending}
+      asForm
+      size="lg"
+      cancelLabel={p.t('common.cancel')}
+      submitLabel={p.editingId ? p.t('common.save') : p.t('rst.admin.addDish')}
     >
-      <div className="rst-admin-form__grid rst-admin-form__grid--menu">
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.dishName')}</span>
-          <BaseInput
-            value={p.form.name}
-            onChange={(e) => p.setForm({ ...p.form, name: e.target.value })}
-            required
-          />
-        </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.dishCategory')}</span>
-          <BaseInput
-            value={p.form.category}
-            placeholder={p.t('rst.admin.dishCategoryHint')}
-            onChange={(e) => p.setForm({ ...p.form, category: e.target.value })}
-          />
-        </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.sku')}</span>
-          <BaseInput value={p.form.sku} onChange={(e) => p.setForm({ ...p.form, sku: e.target.value })} />
-        </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.price')}</span>
-          <BaseInput
-            type="number"
-            min={0}
-            step="0.01"
-            value={p.form.price}
-            onChange={(e) => p.setForm({ ...p.form, price: e.target.value })}
-            required
-          />
-        </label>
+      <div className="rst-modal-form__grid rst-menu-modal__grid">
+        <BaseInput
+          label={p.t('rst.admin.dishName')}
+          required
+          value={p.form.name}
+          onChange={(e) => p.setForm({ ...p.form, name: e.target.value })}
+        />
+        <BaseInput
+          label={p.t('rst.admin.dishCategory')}
+          value={p.form.category}
+          placeholder={p.t('rst.admin.dishCategoryHint')}
+          onChange={(e) => p.setForm({ ...p.form, category: e.target.value })}
+        />
+        <BaseInput
+          label={p.t('rst.admin.sku')}
+          value={p.form.sku}
+          onChange={(e) => p.setForm({ ...p.form, sku: e.target.value })}
+        />
+        <BaseInput
+          label={p.t('rst.admin.price')}
+          type="number"
+          min={0}
+          step="0.01"
+          required
+          value={p.form.price}
+          onChange={(e) => p.setForm({ ...p.form, price: e.target.value })}
+        />
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('rst.admin.station')}</span>
           <select
@@ -56,35 +56,31 @@ export default function MenuDishForm({ p }) {
             ))}
           </select>
         </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.prepMinutes')}</span>
+        <BaseInput
+          label={p.t('rst.admin.prepMinutes')}
+          type="number"
+          min={0}
+          value={p.form.prepMinutes}
+          onChange={(e) => p.setForm({ ...p.form, prepMinutes: e.target.value })}
+          placeholder="15"
+        />
+        <BaseInput
+          label={p.t('rst.admin.dishTags')}
+          value={p.form.tags}
+          onChange={(e) => p.setForm({ ...p.form, tags: e.target.value })}
+          placeholder={p.t('rst.admin.dishTagsHint')}
+        />
+        <div className="rst-modal-form__full">
           <BaseInput
-            type="number"
-            min={0}
-            value={p.form.prepMinutes}
-            onChange={(e) => p.setForm({ ...p.form, prepMinutes: e.target.value })}
-            placeholder="15"
-          />
-        </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.dishTags')}</span>
-          <BaseInput
-            value={p.form.tags}
-            onChange={(e) => p.setForm({ ...p.form, tags: e.target.value })}
-            placeholder={p.t('rst.admin.dishTagsHint')}
-          />
-        </label>
-        <label className="rst-admin-field rst-admin-field--wide">
-          <span className="rst-admin-field__label">{p.t('rst.admin.dishDescription')}</span>
-          <BaseInput
+            label={p.t('rst.admin.dishDescription')}
             value={p.form.description}
             onChange={(e) => p.setForm({ ...p.form, description: e.target.value })}
             placeholder={p.t('rst.admin.dishDescriptionHint')}
           />
-        </label>
+        </div>
       </div>
 
-      <div className="rst-admin-form__grid rst-admin-form__grid--menu-extra">
+      <div className="rst-modal-form__grid rst-menu-modal__extra">
         <div className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('rst.admin.dishImage')}</span>
           <label className="rst-file">
@@ -132,15 +128,6 @@ export default function MenuDishForm({ p }) {
           )}
         </div>
       </div>
-
-      <div className="rst-admin-form__actions">
-        <BaseButton type="submit" disabled={p.saveMutation.isPending}>
-          {p.editingId ? p.t('common.save') : p.t('rst.admin.addDish')}
-        </BaseButton>
-        <BaseButton type="button" variant="ghost" onClick={p.closeComposer}>
-          {p.t('common.cancel')}
-        </BaseButton>
-      </div>
-    </form>
+    </RstModal>
   );
 }

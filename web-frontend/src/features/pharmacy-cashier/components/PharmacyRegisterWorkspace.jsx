@@ -82,6 +82,7 @@ export default function PharmacyRegisterWorkspace({
             onSelectLine={cart.setSelectedLineId}
             onQtyDelta={cart.handleQtyDelta}
             onRemove={cart.removeItem}
+            onUpdatePrice={cart.onUpdatePrice}
           />
         </section>
 

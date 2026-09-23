@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { openPharmacyAdminLogin, openPharmacyExternalUrl } from '../utils/pharmacyIntegrationLinks';
+import { openPharmacyExternalUrl } from '../utils/pharmacyIntegrationLinks';
 
 export function usePharmacyIntegrationToolbar({
   capabilities,
@@ -12,10 +12,6 @@ export function usePharmacyIntegrationToolbar({
   const { t } = useTranslation();
 
   const handleLink = useCallback((link) => {
-    if (link.kind === 'admin') {
-      openPharmacyAdminLogin();
-      return;
-    }
     if (link.kind === 'dmed') {
       if (!capabilities.dmedEnabled) {
         toast(t('pharmacyCashier.integrations.dmedDisabled'));

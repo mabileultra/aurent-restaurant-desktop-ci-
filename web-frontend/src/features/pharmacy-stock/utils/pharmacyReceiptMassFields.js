@@ -10,10 +10,6 @@ export const PHARM_RECEIPT_MASS_FIELDS = [
   { id: 'EXPIRY', label: 'pharmacyStock.expiry', kind: 'date' },
 ];
 
-export const PHARM_RECEIPT_MASS_PRICE_FIELDS = PHARM_RECEIPT_MASS_FIELDS.filter((item) => (
-  item.id === 'PURCHASE' || item.id === 'VAT' || item.id === 'MARKUP' || item.id === 'RETAIL'
-));
-
 export const PHARM_RECEIPT_MASS_NUMERIC = new Set([
   'QUANTITY',
   'UNITS_IN_PACK',

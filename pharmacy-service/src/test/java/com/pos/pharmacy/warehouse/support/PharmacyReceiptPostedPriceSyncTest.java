@@ -15,11 +15,14 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,9 +36,13 @@ class PharmacyReceiptPostedPriceSyncTest {
     private ProductRepository productRepository;
     @Mock
     private PharmacyCatalogCacheEvictor catalogCacheEvictor;
+    @Mock
+    private PharmacyReceiptStockIncrease stockIncrease;
+    @Mock
+    private PharmacyReceiptStockReversal stockReversal;
 
     @Test
-    void copiesLinePricesToLotAndProduct() {
+    void copiesLinePricesBatchAndExpiryToLotAndProduct() {
         UUID lineId = UUID.randomUUID();
         UUID productId = UUID.randomUUID();
         Product product = Product.builder()
@@ -51,6 +58,8 @@ class PharmacyReceiptPostedPriceSyncTest {
             .unitSellingPrice(new BigDecimal("140.00"))
             .retailPrice(new BigDecimal("140.00"))
             .vatPercent(new BigDecimal("12"))
+            .batchNumber("B-9")
+            .expiryDate(LocalDate.of(2027, 5, 1))
             .build();
         StockLot lot = StockLot.builder()
             .id(UUID.randomUUID())
@@ -58,6 +67,7 @@ class PharmacyReceiptPostedPriceSyncTest {
             .receiptLine(line)
             .purchasePrice(new BigDecimal("10.00"))
             .unitSellingPrice(new BigDecimal("12.00"))
+            .quantity(new BigDecimal("5.000"))
             .build();
         StockReceipt receipt = StockReceipt.builder()
             .status(StockReceiptStatus.POSTED)
@@ -67,13 +77,13 @@ class PharmacyReceiptPostedPriceSyncTest {
         when(stockLotRepository.findByReceiptLineIds(List.of(lineId))).thenReturn(List.of(lot));
         when(productRepository.findAllById(any())).thenReturn(List.of(product));
 
-        PharmacyReceiptPostedPriceSync sync = new PharmacyReceiptPostedPriceSync(
-            stockLotRepository, productRepository, catalogCacheEvictor
-        );
+        PharmacyReceiptPostedPriceSync sync = newSync();
         sync.sync(receipt, List.of(line));
 
         assertEquals(new BigDecimal("100.00"), lot.getPurchasePrice());
         assertEquals(new BigDecimal("140.00"), lot.getUnitSellingPrice());
+        assertEquals("B-9", lot.getBatchNumber());
+        assertEquals(LocalDate.of(2027, 5, 1), lot.getExpiryDate());
         assertEquals(new BigDecimal("100.00"), product.getCostPrice());
         assertEquals(new BigDecimal("140.00"), product.getSellingPrice());
         verify(stockLotRepository).saveAll(List.of(lot));
@@ -82,15 +92,60 @@ class PharmacyReceiptPostedPriceSyncTest {
         assertEquals(1, products.getValue().size());
         verify(catalogCacheEvictor).onStoreStockChanged(3, 7);
         verify(catalogCacheEvictor).onProductChanged(3);
+        verify(stockIncrease, never()).increase(any(), any(), any());
+        verify(stockReversal, never()).reverse(any(), any(), any());
+    }
+
+    @Test
+    void adjustsLotAndStoreStockWhenQuantityChanges() {
+        UUID lineId = UUID.randomUUID();
+        UUID productId = UUID.randomUUID();
+        Product product = Product.builder().id(productId).name("Аспирин").build();
+        StockReceiptLine line = StockReceiptLine.builder()
+            .id(lineId)
+            .product(product)
+            .quantity(new BigDecimal("12.000"))
+            .purchasePrice(new BigDecimal("10.00"))
+            .unitSellingPrice(new BigDecimal("15.00"))
+            .build();
+        StockLot lot = StockLot.builder()
+            .id(UUID.randomUUID())
+            .product(product)
+            .receiptLine(line)
+            .quantity(new BigDecimal("10.000"))
+            .purchasePrice(new BigDecimal("10.00"))
+            .unitSellingPrice(new BigDecimal("15.00"))
+            .build();
+        StockReceipt receipt = StockReceipt.builder()
+            .status(StockReceiptStatus.POSTED)
+            .companyId(3)
+            .storeId(7)
+            .build();
+        when(stockLotRepository.findByReceiptLineIds(List.of(lineId))).thenReturn(List.of(lot));
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+
+        newSync().sync(receipt, List.of(line), Map.of(lineId, new BigDecimal("10.000")));
+
+        assertEquals(new BigDecimal("12.000"), lot.getQuantity());
+        verify(stockIncrease).increase(eq(7), any(), eq(Map.of(productId, new BigDecimal("2.000"))));
+        verify(stockReversal, never()).reverse(any(), any(), any());
     }
 
     @Test
     void skipsDraftReceipts() {
         StockReceipt receipt = StockReceipt.builder().status(StockReceiptStatus.DRAFT).build();
-        PharmacyReceiptPostedPriceSync sync = new PharmacyReceiptPostedPriceSync(
-            stockLotRepository, productRepository, catalogCacheEvictor
-        );
+        PharmacyReceiptPostedPriceSync sync = newSync();
         sync.sync(receipt, List.of(StockReceiptLine.builder().id(UUID.randomUUID()).build()));
         verify(stockLotRepository, never()).findByReceiptLineIds(any());
+    }
+
+    private PharmacyReceiptPostedPriceSync newSync() {
+        return new PharmacyReceiptPostedPriceSync(
+            stockLotRepository,
+            productRepository,
+            catalogCacheEvictor,
+            stockIncrease,
+            stockReversal
+        );
     }
 }

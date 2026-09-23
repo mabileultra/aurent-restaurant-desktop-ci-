@@ -4,6 +4,7 @@ import WeightEntryModal from '../../cashier/components/WeightEntryModal';
 import PharmacyQtyModal from '../components/PharmacyQtyModal';
 import PharmacyRegisterWorkspace from '../components/PharmacyRegisterWorkspace';
 import { usePharmacyPosPage } from '../hooks/usePharmacyPosPage';
+import { updatePharmacyCartLinePrice } from '../utils/pharmacyCartActions';
 import '../styles/pharmacy-cashier.css';
 
 export default function PharmacyPosPage() {
@@ -37,6 +38,7 @@ export default function PharmacyPosPage() {
           setSelectedLineId: p.setSelectedLineId,
           handleQtyDelta: p.cartHandlers.handleQtyDelta,
           removeItem: p.removeItem,
+          onUpdatePrice: updatePharmacyCartLinePrice,
           checkNo: p.checkNo,
           parkedCarts: p.parkedCarts,
           onNewReceipt: p.handleNewReceipt,

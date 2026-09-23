@@ -31,42 +31,29 @@
   line-height: 1.35;
 }
 
-.rst-menu__switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.22rem;
-  border: 1px solid var(--rst-line);
-  border-radius: 12px;
-  background: var(--rst-surface);
-  box-shadow: 0 8px 18px rgb(0 0 0 / 0.16);
+.rst-menu-modal__grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.rst-menu__switch-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 2.25rem;
-  padding: 0.35rem 0.95rem;
-  border: 0;
-  border-radius: 9px;
-  background: transparent;
-  color: var(--rst-ink);
-  font: inherit;
-  font-size: 0.85rem;
-  font-weight: 700;
-  text-decoration: none;
-  cursor: pointer;
-  white-space: nowrap;
+.rst-menu-modal__extra {
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.2fr);
+  margin-top: 0.15rem;
 }
 
-.rst-menu__switch-btn.is-active {
-  background: var(--rst-accent);
-  color: #1b1208;
+.rst-menu-modal__extra .rst-admin-chips {
+  max-height: 7.5rem;
+  overflow: auto;
 }
 
-.rst-menu__switch-btn:hover:not(.is-active) {
-  background: var(--rst-surface-2);
+.rst-menu-modal__extra .rst-file__preview {
+  max-height: 72px;
+}
+
+@media (max-width: 720px) {
+  .rst-menu-modal__grid,
+  .rst-menu-modal__extra {
+    grid-template-columns: 1fr;
+  }
 }
 
 .rst-menu__filters {
@@ -75,19 +62,11 @@
   gap: 0.5rem !important;
 }
 
-.rst-menu__form {
-  margin-bottom: 0 !important;
-  padding: 0.65rem 0.75rem !important;
-  gap: 0.55rem !important;
-}
-
-.rst-menu__filters .rst-admin-field,
-.rst-menu__form .rst-admin-field {
+.rst-menu__filters .rst-admin-field {
   gap: 0.2rem;
 }
 
-.rst-menu__filters .rst-admin-field__label,
-.rst-menu__form .rst-admin-field__label {
+.rst-menu__filters .rst-admin-field__label {
   font-size: 0.72rem;
   line-height: 1.2;
 }
@@ -95,28 +74,11 @@
 .rst-menu__filters input:not([type="checkbox"]):not([type="radio"]),
 .rst-menu__filters select,
 .rst-menu__filters .form-select,
-.rst-menu__form input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
-.rst-menu__form select,
-.rst-menu__form .form-select,
-.rst-menu__form .base-input,
 .rst-menu__filters .base-input {
   min-height: 2rem !important;
   padding-top: 0.3rem !important;
   padding-bottom: 0.3rem !important;
   font-size: 0.85rem !important;
-}
-
-.rst-menu__form .rst-admin-form__actions {
-  margin-top: 0.15rem;
-}
-
-.rst-menu__form .rst-file__preview {
-  max-height: 56px;
-}
-
-.rst-menu__form .rst-admin-chips {
-  max-height: 4.5rem;
-  overflow: auto;
 }
 
 .rst-menu-card {
