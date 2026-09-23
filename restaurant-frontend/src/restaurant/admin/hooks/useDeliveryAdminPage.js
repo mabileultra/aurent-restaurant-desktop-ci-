@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
-import { orderApi } from '../../../api';
+import { userApi } from '../../../api';
 import { ORDERS_PAGE_SIZE_DEFAULT } from '../../../features/orders/constants';
 import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { rstOrderApi } from '../../api/order.api';
+import { buildCouriers, buildWaiterNameById } from '../../pos/utils/floorPosDerivations';
 import { toastApiError } from '../../../utils/apiError';
 
 const emptyEditForm = () => ({
@@ -13,15 +15,30 @@ const emptyEditForm = () => ({
   clientPhone: '',
   deliveryAddress: '',
   comment: '',
-  courierId: '',
+  courierUserId: '',
+});
+
+const emptyCreateForm = () => ({
+  clientName: '',
+  clientPhone: '',
+  deliveryAddress: '',
+  comment: '',
 });
 
 const emptyFilters = () => ({
   search: '',
   status: 'all',
+  deliveryStatus: 'all',
   createdFrom: '',
   createdTo: '',
 });
+
+function orderDue(order) {
+  const sub = Number(order?.subtotal || 0);
+  const commission = Number(order?.commissionAmount || 0);
+  const discount = Number(order?.discountAmount || 0);
+  return Math.max(0, sub + commission - discount);
+}
 
 export function useDeliveryAdminPage() {
   const { t } = useTranslation();
@@ -32,35 +49,38 @@ export function useDeliveryAdminPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(ORDERS_PAGE_SIZE_DEFAULT);
   const [addOpen, setAddOpen] = useState(false);
+  const [createForm, setCreateForm] = useState(emptyCreateForm);
   const [editOrderId, setEditOrderId] = useState(null);
   const [editForm, setEditForm] = useState(emptyEditForm);
   const [cancelOrder, setCancelOrder] = useState(null);
 
   const queryParams = useMemo(() => ({
-    storeId: workspace.storeId ?? undefined,
+    channel: 'DELIVERY',
     page,
     size: pageSize,
-    search: applied.search.trim() || undefined,
+    q: applied.search.trim() || undefined,
     status: applied.status !== 'all' ? applied.status : undefined,
-    createdFrom: applied.createdFrom || undefined,
-    createdTo: applied.createdTo || undefined,
-  }), [workspace.storeId, page, pageSize, applied]);
+    deliveryStatus: applied.deliveryStatus !== 'all' ? applied.deliveryStatus : undefined,
+    openedFrom: applied.createdFrom || undefined,
+    openedTo: applied.createdTo || undefined,
+  }), [page, pageSize, applied]);
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ['rst-delivery', queryParams],
-    queryFn: () => orderApi.getAll(queryParams).then((r) => r.data),
+    queryKey: ['rst-delivery', workspace.storeId, queryParams],
+    queryFn: () => rstOrderApi.search(workspace.storeId, queryParams).then((r) => r.data),
     enabled: workspace.storeId != null,
   });
 
-  const couriersQuery = useQuery({
-    queryKey: ['order-couriers'],
-    queryFn: () => orderApi.getCouriers().then((r) => r.data),
+  const staffQuery = useQuery({
+    queryKey: ['rst-delivery-staff', workspace.storeId],
+    queryFn: () => userApi.getAll().then((r) => r.data ?? []),
+    enabled: workspace.storeId != null,
     staleTime: 60_000,
   });
 
   const editDetailQuery = useQuery({
     queryKey: ['rst-delivery-order', editOrderId],
-    queryFn: () => orderApi.getById(editOrderId).then((r) => r.data),
+    queryFn: () => rstOrderApi.get(editOrderId).then((r) => r.data),
     enabled: editOrderId != null,
   });
 
@@ -72,7 +92,7 @@ export function useDeliveryAdminPage() {
       clientPhone: detail.clientPhone ?? '',
       deliveryAddress: detail.deliveryAddress ?? '',
       comment: detail.comment ?? '',
-      courierId: detail.courierId ? String(detail.courierId) : '',
+      courierUserId: detail.courierUserId ? String(detail.courierUserId) : '',
     });
   }, [editDetailQuery.data]);
 
@@ -80,13 +100,29 @@ export function useDeliveryAdminPage() {
     queryClient.invalidateQueries({ queryKey: ['rst-delivery'] });
   }, [queryClient]);
 
+  const createMutation = useMutation({
+    mutationFn: () => rstOrderApi.openDelivery(workspace.storeId, {
+      clientName: createForm.clientName.trim(),
+      clientPhone: createForm.clientPhone.trim(),
+      deliveryAddress: createForm.deliveryAddress.trim(),
+      comment: createForm.comment.trim() || undefined,
+    }).then((r) => r.data),
+    onSuccess: () => {
+      toast.success(t('rst.delivery.created', { defaultValue: 'Заказ доставки создан' }));
+      setAddOpen(false);
+      setCreateForm(emptyCreateForm());
+      invalidate();
+    },
+    onError: (err) => toastApiError(err, t('rst.delivery.createFailed', { defaultValue: 'Не удалось создать заказ' })),
+  });
+
   const updateMutation = useMutation({
-    mutationFn: () => orderApi.update(editOrderId, {
+    mutationFn: () => rstOrderApi.updateDeliveryDetails(editOrderId, {
       clientName: editForm.clientName.trim(),
       clientPhone: editForm.clientPhone.trim(),
       deliveryAddress: editForm.deliveryAddress.trim(),
       comment: editForm.comment.trim() || undefined,
-      courierId: editForm.courierId || null,
+      courierUserId: editForm.courierUserId || null,
     }),
     onSuccess: () => {
       toast.success(t('rst.delivery.saved'));
@@ -98,7 +134,7 @@ export function useDeliveryAdminPage() {
   });
 
   const cancelMutation = useMutation({
-    mutationFn: (id) => orderApi.cancel(id),
+    mutationFn: (id) => rstOrderApi.cancel(id),
     onSuccess: () => {
       toast.success(t('rst.delivery.cancelled'));
       setCancelOrder(null);
@@ -107,11 +143,27 @@ export function useDeliveryAdminPage() {
     onError: (err) => toastApiError(err, t('rst.delivery.cancelFailed')),
   });
 
+  const deliveryStatusMutation = useMutation({
+    mutationFn: ({ orderId, deliveryStatus }) =>
+      rstOrderApi.updateDeliveryStatus(orderId, { deliveryStatus }),
+    onSuccess: () => {
+      toast.success(t('rst.delivery.statusUpdated', { defaultValue: 'Статус доставки обновлён' }));
+      invalidate();
+    },
+    onError: (err) => toastApiError(err, t('rst.delivery.statusFailed', { defaultValue: 'Не удалось сменить статус' })),
+  });
+
+  const couriers = useMemo(
+    () => buildCouriers(staffQuery.data, workspace.storeId),
+    [staffQuery.data, workspace.storeId],
+  );
+  const courierNameById = useMemo(() => buildWaiterNameById(staffQuery.data), [staffQuery.data]);
+
   const rows = data?.content ?? [];
   const stats = useMemo(() => ({
     total: data?.totalElements ?? 0,
-    newCount: rows.filter((r) => r.status === 'NEW').length,
-    active: rows.filter((r) => r.status !== 'CANCELLED' && r.status !== 'COMPLETED').length,
+    newCount: rows.filter((r) => r.status === 'OPEN').length,
+    active: rows.filter((r) => r.status === 'OPEN' || r.status === 'BILLING').length,
     cancelled: rows.filter((r) => r.status === 'CANCELLED').length,
   }), [data?.totalElements, rows]);
 
@@ -135,6 +187,10 @@ export function useDeliveryAdminPage() {
     applyFilters,
     resetFilters,
     rows,
+    orderDue,
+    courierNameById,
+    couriers,
+    couriersLoading: staffQuery.isPending,
     stats,
     loading: isPending,
     isError,
@@ -151,9 +207,14 @@ export function useDeliveryAdminPage() {
     },
     addOpen,
     setAddOpen,
-    onOrderCreated: invalidate,
-    couriers: couriersQuery.data ?? [],
-    couriersLoading: couriersQuery.isPending,
+    createForm,
+    setCreateForm,
+    createDelivery: () => createMutation.mutate(),
+    creating: createMutation.isPending,
+    closeAdd: () => {
+      setAddOpen(false);
+      setCreateForm(emptyCreateForm());
+    },
     editOrderId,
     editForm,
     setEditForm,
@@ -161,7 +222,6 @@ export function useDeliveryAdminPage() {
     openEdit: (row) => {
       setEditOrderId(row.id);
       setEditForm(emptyEditForm());
-      couriersQuery.refetch();
     },
     closeEdit: () => {
       setEditOrderId(null);
@@ -173,7 +233,13 @@ export function useDeliveryAdminPage() {
     setCancelOrder,
     confirmCancel: () => cancelMutation.mutate(cancelOrder.id),
     cancelling: cancelMutation.isPending,
-    canEditRow: (row) => row.status !== 'CANCELLED' && row.status !== 'COMPLETED',
-    canCancelRow: (row) => row.status !== 'CANCELLED' && row.status !== 'COMPLETED',
+    advanceDeliveryStatus: (row, next) => {
+      if (!next) return;
+      deliveryStatusMutation.mutate({ orderId: row.id, deliveryStatus: next });
+    },
+    advancingDelivery: deliveryStatusMutation.isPending,
+    canEditRow: (row) => row.status === 'OPEN' || row.status === 'BILLING',
+    canCancelRow: (row) => row.status === 'OPEN' || row.status === 'BILLING',
+    canAdvanceDelivery: (row) => row.status !== 'CANCELLED' && row.status !== 'REFUNDED',
   };
 }

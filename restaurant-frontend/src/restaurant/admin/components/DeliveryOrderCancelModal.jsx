@@ -15,7 +15,7 @@ export default function DeliveryOrderCancelModal({
       <div className="delivery-order-cancel-modal">
         <p className="delivery-order-cancel-modal__text">
           {t('restaurantDelivery.cancelHint', {
-            number: order.externalNumber || `#${order.id}`,
+            number: order.orderNo != null ? `#${order.orderNo}` : `#${String(order.id).slice(0, 8)}`,
             client: order.clientName || '—',
           })}
         </p>

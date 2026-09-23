@@ -3,7 +3,7 @@ import RestaurantAuthGuard from './guards/RestaurantAuthGuard';
 import RestaurantSpaHandoff from './guards/RestaurantSpaHandoff';
 
 /**
- * Thin /rst mount on aurent: auth + handoff to r-aurent.
+ * Thin /rst mount on aurent: auth + opaque retired stub (no silent hop to r-aurent).
  * Legacy restaurant UI lived under src/restaurant — removed; source of truth is restaurant-frontend.
  */
 export const restaurantRoutes = (

@@ -69,13 +69,6 @@
 }
 
 /* Login */
-.rst-login-page__brand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-
 .rst-login-page .rst-lang-switch {
   background: rgb(0 0 0 / 0.28);
   border-color: rgb(255 255 255 / 0.16);

@@ -31,18 +31,15 @@ import {
 import { syncAuthSession } from '../../utils/syncAuthSession';
 import { VIEWPORT_MEDIA } from '../../utils/viewportBreakpoints';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
-import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
-import { isRestaurantAppSplitEnabled } from '../../config/restaurantAppUrl';
-import { redirectToRestaurantApp } from '../../utils/restaurantAppRedirect';
 import '../../styles/cashier/modals/index.css';
 
 export default function AppShellLayout() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, token } = useAuthStore();
+  const { user } = useAuthStore();
   const { hasModule } = useModuleAccess();
-  const { businessType, isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const { businessType } = useCompanyBusinessType();
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const [sidebarOpen, setSidebarOpen] = useState(
     () => typeof window !== 'undefined' && window.matchMedia(VIEWPORT_MEDIA.desktop).matches
@@ -88,28 +85,6 @@ export default function AppShellLayout() {
   const reportsSalesNav = filterByModule(REPORT_SALES_CHILDREN);
   const reportsStockNav = filterByModule(REPORT_STOCK_CHILDREN);
   const usersNav = filterByModule(USER_CHILDREN);
-
-  useEffect(() => {
-    if (businessTypeLoading) return;
-    if (!isRestaurantWorldBusiness(businessType)) return;
-    if (user?.role !== 'ADMIN' && user?.role !== 'MANAGER') return;
-    // Restaurant companies → r-aurent when split is on; else legacy /rst on aurent.
-    const split = isRestaurantAppSplitEnabled();
-    const goRst = (path) => {
-      if (split) {
-        redirectToRestaurantApp(path, { token, user });
-        return;
-      }
-      navigate(path, { replace: true });
-    };
-    if (location.pathname === '/dashboard') {
-      goRst('/rst/admin/dashboard');
-      return;
-    }
-    if (location.pathname === '/billing' || location.pathname.startsWith('/billing/')) {
-      goRst('/rst/admin/billing');
-    }
-  }, [businessType, businessTypeLoading, location.pathname, navigate, token, user]);
 
   useEffect(() => {
     const mq = window.matchMedia(VIEWPORT_MEDIA.desktop);

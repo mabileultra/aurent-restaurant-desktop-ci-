@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -10,11 +10,22 @@ import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
 import { toastApiError } from '../../../utils/apiError';
 
+const STATION_FILTER_KEY = 'rst-kds-station-filter';
+
 function displayUserName(user) {
   return user.fullName
     || [user.lastName, user.firstName, user.patronymic].filter(Boolean).join(' ')
     || user.username
     || String(user.id);
+}
+
+function readStoredStation(storeId) {
+  try {
+    const raw = localStorage.getItem(`${STATION_FILTER_KEY}:${storeId}`);
+    return raw || 'all';
+  } catch {
+    return 'all';
+  }
 }
 
 export function useKitchenPosPage() {
@@ -23,10 +34,37 @@ export function useKitchenPosPage() {
   const user = useAuthStore((s) => s.user);
   const workspace = useRestaurantWorkspaceStore();
   const canAdvance = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'COOK';
+  const [stationFilter, setStationFilterState] = useState('all');
+
+  useEffect(() => {
+    if (workspace.storeId == null) return;
+    setStationFilterState(readStoredStation(workspace.storeId));
+  }, [workspace.storeId]);
+
+  const setStationFilter = (value) => {
+    setStationFilterState(value);
+    if (workspace.storeId != null) {
+      try {
+        localStorage.setItem(`${STATION_FILTER_KEY}:${workspace.storeId}`, value);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
+
+  const stationsQuery = useQuery({
+    queryKey: ['rst-kitchen-stations', workspace.storeId],
+    queryFn: () => rstKitchenApi.listStations(workspace.storeId, true).then((r) => r.data ?? []),
+    enabled: workspace.storeId != null,
+    staleTime: 60_000,
+  });
 
   const ticketsQuery = useQuery({
-    queryKey: ['rst-kitchen-tickets', workspace.storeId],
-    queryFn: () => rstKitchenApi.listTickets(workspace.storeId).then((r) => r.data),
+    queryKey: ['rst-kitchen-tickets', workspace.storeId, stationFilter],
+    queryFn: () => rstKitchenApi.listTickets(
+      workspace.storeId,
+      stationFilter !== 'all' ? { stationId: stationFilter } : undefined,
+    ).then((r) => r.data),
     enabled: workspace.storeId != null,
     refetchInterval: 5_000,
   });
@@ -74,10 +112,15 @@ export function useKitchenPosPage() {
     return map;
   }, [staffQuery.data]);
 
+  const stations = stationsQuery.data ?? [];
+
   return {
     t,
     workspace,
     columns,
+    stations,
+    stationFilter,
+    setStationFilter,
     waiterNameById,
     shift: shiftQuery.data ?? null,
     isLoading: workspace.isLoading || ticketsQuery.isLoading,

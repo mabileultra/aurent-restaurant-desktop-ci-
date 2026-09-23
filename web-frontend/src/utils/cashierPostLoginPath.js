@@ -1,15 +1,13 @@
 import { normalizeBusinessTypeCode } from '../config/productCatalogConfig';
 
 /**
- * Куда вести кассу после PIN / из /cashier index.
- * WAITER всегда зал. CASHIER — по типу магазина/компании.
+ * Куда вести кассу после PIN / из /cashier index на aurent.
+ * Restaurant floor belongs on r-aurent — main SPA stays on /cashier|pharm.
  */
 export function resolveCashierPostLoginPath(role, businessType) {
-  if (role === 'WAITER') return '/rst/pos';
-  if (role === 'COOK') return '/rst/kitchen';
+  if (role === 'WAITER' || role === 'COOK') return '/cashier';
 
   const type = normalizeBusinessTypeCode(businessType);
-  if (type === 'RESTAURANT' || type === 'CANTEEN') return '/rst/pos';
   if (type === 'PHARMACY') return '/pharm/pos';
   return '/cashier/pos';
 }

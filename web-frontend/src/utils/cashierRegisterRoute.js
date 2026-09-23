@@ -12,6 +12,7 @@ export function isCashierRegisterScreen(pathname) {
 
 export function resolveCashierRegisterPath(businessType) {
   const type = normalizeBusinessTypeCode(businessType);
+  // Restaurant registers live on r-aurent; /rst on aurent is the opaque retired stub.
   if (type === 'RESTAURANT' || type === 'CANTEEN') return '/rst/pos';
   if (type === 'PHARMACY') return PHARM_POS_PATH;
   return '/cashier/pos';

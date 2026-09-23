@@ -31,7 +31,7 @@ export const cashierRoutes = (
     />
     <Route path="restaurant" element={<Navigate to="/rst/pos" replace />} />
     <Route path="pharmacy" element={<Navigate to={PHARM_POS_PATH} replace />} />
-    <Route path="kitchen" element={<Navigate to="/rst/kitchen" replace />} />
+    <Route path="kitchen" element={<Navigate to="/rst/pos" replace />} />
     <Route path="sales" element={<CashierMySalesPage />} />
     <Route path="handbook" element={<HandbookPage scope="cashier" />} />
     <Route path="handbook/:moduleId" element={<HandbookPage scope="cashier" />} />

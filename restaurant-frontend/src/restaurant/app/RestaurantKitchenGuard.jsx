@@ -9,10 +9,10 @@ export default function RestaurantKitchenGuard({ children }) {
   const { hasModule } = useModuleAccess();
 
   if (!KITCHEN_ROLES.has(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (!hasModule('restaurantKitchen') && !hasModule('restaurantFloor')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }

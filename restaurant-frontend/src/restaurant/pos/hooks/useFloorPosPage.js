@@ -266,6 +266,7 @@ export function useFloorPosPage() {
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
     sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
+    discountMutation: m.discountMutation,
     payMutation: m.payMutation, printReceiptEnabled, setPrintReceiptEnabled,
     paidReceipt, closePaidReceipt: () => setPaidReceipt(null),
     payModalOpen, openPayModal: () => setPayModalOpen(true),

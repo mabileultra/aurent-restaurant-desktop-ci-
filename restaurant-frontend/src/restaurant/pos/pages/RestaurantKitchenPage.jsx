@@ -144,6 +144,28 @@ export default function RestaurantKitchenPage() {
 
         {p.isError ? <div className="rst-notice">{p.t('rst.kitchen.loadFailed')}</div> : null}
 
+        {(p.stations?.length > 0) ? (
+          <div className="rst-kds-stations" role="tablist" aria-label={p.t('rst.kitchen.stationsFilter', { defaultValue: 'Станции' })}>
+            <button
+              type="button"
+              className={p.stationFilter === 'all' ? 'is-active' : ''}
+              onClick={() => p.setStationFilter('all')}
+            >
+              {p.t('rst.kitchen.allStations', { defaultValue: 'Все станции' })}
+            </button>
+            {p.stations.map((station) => (
+              <button
+                key={station.id}
+                type="button"
+                className={p.stationFilter === String(station.id) ? 'is-active' : ''}
+                onClick={() => p.setStationFilter(String(station.id))}
+              >
+                {station.name}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <div className="rst-kds">
           {KDS_COLUMNS.map((status, index) => (
             <section key={status} className={`rst-kds__col rst-kds__col--${status}`}>

@@ -7,26 +7,14 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
 import { useAuthStore } from '../../../store/authStore';
-import { resetClientSessionState } from '../../../utils/authSession';
+import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
-
 import { resolveAppHomePath } from '../../../utils/appHomePath';
-import { companyBusinessTypeApi } from '../../../api';
-import { maybeRedirectRestaurantLogin } from '../../../utils/restaurantAppRedirect';
+import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
 
-async function resolvePostLoginPath(role) {
-  try {
-    const res = await companyBusinessTypeApi.get();
-    return resolveAppHomePath(role, res.data?.defaultTypeCode);
-  } catch {
-    return resolveAppHomePath(role, null);
-  }
-}
-
-function redirectedToRestaurantApp(role, path) {
-  const { token, user } = useAuthStore.getState();
-  return maybeRedirectRestaurantLogin(role, path, { token, user });
+async function resolvePostLoginPath(role, businessPayload) {
+  return resolveAppHomePath(role, businessPayload?.defaultTypeCode);
 }
 
 export function useLoginPage() {
@@ -48,10 +36,14 @@ export function useLoginPage() {
     if (!hasHydrated || !token) return;
     let cancelled = false;
     (async () => {
-      const path = await resolvePostLoginPath(user?.role);
+      const { access, businessPayload } = await fetchMainAppAccess(user?.role);
       if (cancelled) return;
-      if (redirectedToRestaurantApp(user?.role, path)) return;
-      navigate(path, { replace: true });
+      if (!access.ok) {
+        logoutAndResetSession();
+        return;
+      }
+      const path = await resolvePostLoginPath(user?.role, businessPayload);
+      if (!cancelled) navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };
   }, [hasHydrated, token, user, navigate]);
@@ -85,9 +77,16 @@ export function useLoginPage() {
       }
       resetClientSessionState();
       setAuth(accessToken, profile);
+
+      const { access, businessPayload } = await fetchMainAppAccess(profile.role);
+      if (!access.ok) {
+        logoutAndResetSession();
+        toast.error(t('login.wrongAppUnknown'));
+        return;
+      }
+
       toast.success(t('login.welcome', { name: profile.fullName }));
-      const path = await resolvePostLoginPath(profile.role);
-      if (redirectedToRestaurantApp(profile.role, path)) return;
+      const path = await resolvePostLoginPath(profile.role, businessPayload);
       navigate(path, { replace: true });
     } catch (err) {
       const apiMsg = err.response?.data?.message;

@@ -130,6 +130,65 @@
   margin-bottom: 1rem;
 }
 
+.rst-tech__food-cost {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgb(255 122 26 / 0.06), transparent);
+}
+
+.rst-tech__food-cost.is-empty {
+  display: block;
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+  background: transparent;
+}
+
+.rst-tech__food-cost.is-high {
+  border-color: rgb(220 80 60 / 0.45);
+  background: linear-gradient(180deg, rgb(220 80 60 / 0.1), transparent);
+}
+
+.rst-tech__food-cost-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.rst-tech__food-cost-item span {
+  color: var(--rst-muted);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.rst-tech__food-cost-item strong {
+  font-size: 0.98rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-tech__food-cost-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+}
+
+.rst-tech__food-cost-hint.is-warn {
+  color: #e07a66;
+}
+
+@media (max-width: 720px) {
+  .rst-tech__food-cost:not(.is-empty) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .rst-tech__table {
   width: 100%;
   margin: 0;
@@ -199,8 +258,44 @@
   }
 }
 
-.rst-tech .rst-admin-form {
-  margin-bottom: 1rem;
+.rst-tech-wizard__dish {
+  margin-top: 0.35rem;
+}
+
+.rst-tech-wizard__ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rst-line);
+}
+
+.rst-tech-wizard__ingredients-head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.rst-tech-wizard__ingredients-head strong {
+  color: var(--rst-ink);
+  font-size: 0.95rem;
+}
+
+.rst-tech-wizard__add {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.base-modal--rst.base-modal--xl .base-modal__body {
+  max-height: min(72vh, 44rem);
+  overflow: auto;
+}
+
+@media (max-width: 640px) {
+  .rst-tech-wizard__dish {
+    grid-template-columns: 1fr;
+  }
 }
 
 .rst-tech__output {

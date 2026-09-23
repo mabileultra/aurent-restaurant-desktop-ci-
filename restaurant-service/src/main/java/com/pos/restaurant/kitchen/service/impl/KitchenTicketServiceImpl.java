@@ -45,7 +45,7 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
     }
 
     @Override
-    public List<KitchenTicketResponse> listBoard(Integer storeId) {
+    public List<KitchenTicketResponse> listBoard(Integer storeId, UUID stationId) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<KitchenTicket> tickets = ticketRepository.findActiveBoard(
             companyId,
@@ -53,6 +53,11 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
             List.of(KitchenTicketStatus.SERVED, KitchenTicketStatus.CANCELLED),
             Instant.now().minus(BOARD_WINDOW)
         );
+        if (stationId != null) {
+            tickets = tickets.stream()
+                .filter(ticket -> ticket.getStation() != null && stationId.equals(ticket.getStation().getId()))
+                .toList();
+        }
         if (tickets.isEmpty()) {
             return List.of();
         }

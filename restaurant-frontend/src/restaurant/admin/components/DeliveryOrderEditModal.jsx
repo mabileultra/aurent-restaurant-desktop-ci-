@@ -4,8 +4,8 @@ import '../styles/delivery-order-edit-modal.css';
 export default function DeliveryOrderEditModal({
   open,
   form,
-  couriers,
-  couriersLoading,
+  couriers = [],
+  couriersLoading = false,
   loading,
   saving,
   onChange,
@@ -71,8 +71,8 @@ export default function DeliveryOrderEditModal({
           <div className="delivery-order-edit-modal__field">
             <BaseSelect
               label={t('orders.wizard.assignCourier')}
-              value={form.courierId}
-              onChange={(e) => onChange({ ...form, courierId: e.target.value })}
+              value={form.courierUserId || ''}
+              onChange={(e) => onChange({ ...form, courierUserId: e.target.value })}
               disabled={couriersLoading}
               placeholder={t('orders.filterDash')}
               options={[
@@ -81,7 +81,11 @@ export default function DeliveryOrderEditModal({
               ]}
             />
             {!couriersLoading && couriers.length === 0 ? (
-              <p className="delivery-order-edit-modal__hint">{t('orders.noCourierUsers')}</p>
+              <p className="delivery-order-edit-modal__hint">
+                {t('rst.delivery.noCouriers', {
+                  defaultValue: 'Нет сотрудников магазина для назначения курьером',
+                })}
+              </p>
             ) : null}
           </div>
 

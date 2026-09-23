@@ -1,6 +1,7 @@
 package com.pos.restaurant.order.dto;
 
 import com.pos.restaurant.order.domain.OrderChannel;
+import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
 
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ public record OrderResponse(
     String tableCode,
     Integer storeId,
     OrderStatus status,
+    DeliveryStatus deliveryStatus,
     int guestCount,
     int adultCount,
     int childrenCount,
@@ -24,6 +26,7 @@ public record OrderResponse(
     String deliveryAddress,
     UUID openedByUserId,
     UUID waiterUserId,
+    UUID courierUserId,
     String comment,
     Instant openedAt,
     Instant closedAt,
@@ -31,6 +34,7 @@ public record OrderResponse(
     BigDecimal commissionPercent,
     BigDecimal commissionBaseAmount,
     BigDecimal commissionAmount,
+    BigDecimal discountAmount,
     int linesCount,
     List<OrderItemResponse> items,
     List<LinkedTableResponse> linkedTables,

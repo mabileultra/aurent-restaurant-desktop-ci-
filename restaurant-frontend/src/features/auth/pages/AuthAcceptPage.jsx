@@ -1,24 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuthStore } from '../../../store/authStore';
-import { resetClientSessionState } from '../../../utils/authSession';
+import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
-import { companyBusinessTypeApi } from '../../../api';
 import {
   readHandoffFromHash,
   clearHandoffHash,
   safeRestaurantNextPath,
 } from '../../../utils/sessionHandoff';
+import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAccess';
 import '../../../styles/auth/auth-accept.css';
-
-async function resolveHome(role) {
-  try {
-    const res = await companyBusinessTypeApi.get();
-    return resolveAppHomePath(role, res.data?.defaultTypeCode);
-  } catch {
-    return resolveAppHomePath(role, null);
-  }
-}
 
 /** Accepts session handoff from aurent (or localhost:5173) via URL hash. */
 export default function AuthAcceptPage() {
@@ -38,8 +29,16 @@ export default function AuthAcceptPage() {
       }
       resetClientSessionState();
       setAuth(handoff.token, handoff.user || { role: 'ADMIN' });
+
+      const { access, businessPayload } = await fetchRestaurantAppAccess(handoff.user?.role);
+      if (!access.ok) {
+        logoutAndResetSession();
+        setError('Нет такого аккаунта');
+        return;
+      }
+
       const next = safeRestaurantNextPath(searchParams.get('next'));
-      const path = next || await resolveHome(handoff.user?.role);
+      const path = next || resolveAppHomePath(handoff.user?.role, businessPayload?.defaultTypeCode);
       if (!cancelled) navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };

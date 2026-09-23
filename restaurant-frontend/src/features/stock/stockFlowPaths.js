@@ -18,7 +18,7 @@ export const RST_STOCK_FLOW_PATHS = {
   transfers: '/rst/admin/stock/transfers',
   production: '/rst/admin/stock/production',
   movements: '/rst/admin/stock/movements',
-  lowStockReport: '/rst/admin/stock/balances',
+  lowStockReport: '/rst/admin/reports/low',
   suppliers: '/rst/admin/stock/suppliers',
 };
 

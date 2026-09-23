@@ -1,3 +1,8 @@
+/**
+ * Legacy helpers for building a one-time handoff URL to the restaurant SPA.
+ * Login / WorldGate / cashier guards no longer call these (no silent hop).
+ * Kept for tests and rare manual tooling.
+ */
 import { getRestaurantAppUrl } from '../config/restaurantAppUrl';
 import { isPlatformUser } from './platformRoles';
 
@@ -32,7 +37,7 @@ export function redirectToRestaurantApp(path, { token, user } = {}) {
   return true;
 }
 
-/** After login: send restaurant roles to the other origin when configured. */
+/** @deprecated Silent login hop retired — prefer opaque WrongApp denial. */
 export function maybeRedirectRestaurantLogin(role, path, auth) {
   if (isPlatformUser(role)) return false;
   if (!isRestaurantSpaPath(path)) return false;

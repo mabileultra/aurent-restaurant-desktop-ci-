@@ -2,6 +2,7 @@ package com.pos.restaurant.order.service.impl;
 
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
@@ -50,6 +51,7 @@ public class OrderOpenCounterHandler {
             .shift(shift)
             .orderNo(orderRepository.findMaxOrderNo(storeId) + 1)
             .status(OrderStatus.OPEN)
+            .deliveryStatus(channel == OrderChannel.DELIVERY ? DeliveryStatus.NEW : null)
             .guestCount(1)
             .adultCount(1)
             .childrenCount(0)

@@ -18,12 +18,14 @@ export default function LoginPage() {
 
   return (
     <div className="public-site rst-login-page">
-      <RestaurantDesktopDownloadCorner />
       <header className="rst-login-page__brand">
         <Link to="/login" className="rst-login-page__brand-link">
           Aurent Restaurant
         </Link>
-        <LanguageSwitcher variant="rst" />
+        <div className="rst-login-page__tools">
+          <LanguageSwitcher variant="rst" />
+          <RestaurantDesktopDownloadCorner />
+        </div>
       </header>
       <main className="public-site__main login-page__stage">
         <div className="login-card">

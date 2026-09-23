@@ -24,6 +24,18 @@ export function buildWaiters(staffRows, storeId) {
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/** Delivery couriers: store staff who can run deliveries (no new role required). */
+const COURIER_ROLES = new Set(['WAITER', 'CASHIER', 'ADMIN', 'MANAGER']);
+
+export function buildCouriers(staffRows, storeId) {
+  if (storeId == null) return [];
+  return (staffRows ?? [])
+    .filter((row) => COURIER_ROLES.has(row.role) && row.active !== false)
+    .filter((row) => userStoreIds(row).includes(Number(storeId)))
+    .map((row) => ({ id: row.id, fullName: displayUserName(row) }))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+}
+
 export function buildWaiterNameById(staffRows) {
   const map = new Map();
   for (const row of staffRows ?? []) {

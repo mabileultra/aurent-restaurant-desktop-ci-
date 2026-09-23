@@ -5,6 +5,7 @@ import {
   resolveMultikassaFiscalErrorMessage,
   wrapMultikassaFiscalError,
 } from '../../../services/multikassa';
+import { FISCAL_STATUS } from '../../../services/multikassa/multikassaConstants';
 import {
   buildRestaurantFiscalSale,
   orderToMultikassaCartItems,
@@ -13,8 +14,24 @@ import {
 import { toPayAmountPayload } from './restaurantPayAmount';
 import { round2 } from '../../../utils/taxAmounts';
 
+function pendingFiscalFromError(err) {
+  return {
+    fiscalStatus: FISCAL_STATUS.PENDING,
+    fiscalSign: null,
+    fiscalReceiptSeq: null,
+    multikassaSaleId: null,
+    fiscalQrUrl: null,
+    fiscalTerminalId: null,
+    fiscalError: err?.message || 'Pending fiscal sync',
+    multikassaRetryBody: null,
+    clientOperationId: null,
+  };
+}
+
 /**
- * Фискализация (Multikassa, если включена) → оплата заказа → sale-like для экрана/печати.
+ * Оплата заказа с Multikassa.
+ * - requireBeforeSale: фискал → pay (жёсткий OFD-режим).
+ * - иначе: pay → фискал (не оставляем «чек есть, оплаты нет»; при сбое фискала продажа остаётся).
  */
 export async function payRestaurantOrderWithFiscal({
   order,
@@ -70,35 +87,67 @@ export async function payRestaurantOrderWithFiscal({
   };
 
   const cartItems = orderToMultikassaCartItems(order, { serviceLabel });
+  const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId);
+  const requireBeforeSale = Boolean(capabilities?.enabled && capabilities?.requireBeforeSale);
+
+  const fiscalArgs = {
+    capabilities,
+    cartItems,
+    payment,
+    total: payAmount,
+    shiftId,
+    cashierName: cashierName || 'CASHIER',
+    contractorName: storeName,
+    offline: false,
+    clientSaleId: order?.id ? `rst-${order.id}` : null,
+  };
+
   let fiscalPayload = null;
-  try {
-    const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId);
-    fiscalPayload = await fiscalizeSaleBeforeCommit({
-      capabilities,
-      cartItems,
-      payment,
-      total: payAmount,
-      shiftId,
-      cashierName: cashierName || 'CASHIER',
-      contractorName: storeName,
-      offline: false,
-      clientSaleId: order?.id ? `rst-${order.id}` : null,
-    });
-  } catch (err) {
-    const wrapped = wrapMultikassaFiscalError(err);
-    wrapped.message = resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message;
-    throw wrapped;
+
+  if (requireBeforeSale) {
+    try {
+      fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
+    } catch (err) {
+      const wrapped = wrapMultikassaFiscalError(err);
+      wrapped.message = resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message;
+      throw wrapped;
+    }
   }
 
-  const res = await rstOrderApi.pay(order.id, {
-    method: payMethod,
-    amount: payAmount,
-    cashAmount: cash,
-    cardAmount: card,
-    amountTendered: tendered,
-    changeGiven: change,
-  });
-  const paidOrder = res.data;
+  let paidOrder;
+  try {
+    const res = await rstOrderApi.pay(order.id, {
+      method: payMethod,
+      amount: payAmount,
+      cashAmount: cash,
+      cardAmount: card,
+      amountTendered: tendered,
+      changeGiven: change,
+    });
+    paidOrder = res.data;
+  } catch (payErr) {
+    if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
+      payErr.fiscalOrphan = fiscalPayload;
+      payErr.message = [
+        payErr.message || 'Оплата не прошла',
+        t?.('rst.order.fiscalOrphanHint', {
+          defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
+        }),
+      ].filter(Boolean).join('. ');
+    }
+    throw payErr;
+  }
+
+  if (!requireBeforeSale && capabilities?.enabled) {
+    try {
+      fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
+    } catch (err) {
+      const wrapped = wrapMultikassaFiscalError(err);
+      fiscalPayload = pendingFiscalFromError({
+        message: resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message,
+      });
+    }
+  }
 
   const sale = buildRestaurantFiscalSale({
     order: {

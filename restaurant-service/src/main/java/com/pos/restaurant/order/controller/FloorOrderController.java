@@ -1,6 +1,8 @@
 package com.pos.restaurant.order.controller;
 
+import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
+import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
 import com.pos.restaurant.order.dto.MergeTablesRequest;
@@ -8,7 +10,10 @@ import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.dto.TransferTableRequest;
+import com.pos.restaurant.order.dto.UpdateDeliveryDetailsRequest;
+import com.pos.restaurant.order.dto.UpdateDeliveryStatusRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
+import com.pos.restaurant.order.dto.UpdateOrderDiscountRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 import com.pos.restaurant.order.service.FloorOrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +21,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,6 +40,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
 
@@ -86,6 +99,24 @@ public class FloorOrderController {
         return orderService.listActiveByChannel(storeId, channel);
     }
 
+    @GetMapping("/stores/{storeId}/orders")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Поиск заказов канала (админка доставки / история)")
+    public Page<OrderResponse> search(
+        @PathVariable Integer storeId,
+        @RequestParam OrderChannel channel,
+        @RequestParam(required = false) OrderStatus status,
+        @RequestParam(required = false) DeliveryStatus deliveryStatus,
+        @RequestParam(required = false) String q,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate openedFrom,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate openedTo,
+        @PageableDefault(size = 20, sort = "openedAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        Instant from = openedFrom == null ? null : openedFrom.atStartOfDay().toInstant(ZoneOffset.UTC);
+        Instant to = openedTo == null ? null : openedTo.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
+        return orderService.searchByChannel(storeId, channel, status, deliveryStatus, q, from, to, pageable);
+    }
+
     @GetMapping("/orders/{orderId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
     @Operation(summary = "Детали заказа")
@@ -101,6 +132,36 @@ public class FloorOrderController {
         @Valid @RequestBody UpdateGuestsRequest request
     ) {
         return orderService.updateGuests(orderId, request);
+    }
+
+    @PatchMapping("/orders/{orderId}/delivery")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Обновить данные доставки")
+    public OrderResponse updateDeliveryDetails(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody UpdateDeliveryDetailsRequest request
+    ) {
+        return orderService.updateDeliveryDetails(orderId, request);
+    }
+
+    @PatchMapping("/orders/{orderId}/delivery-status")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Сменить статус доставки")
+    public OrderResponse updateDeliveryStatus(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody UpdateDeliveryStatusRequest request
+    ) {
+        return orderService.updateDeliveryStatus(orderId, request);
+    }
+
+    @PatchMapping("/orders/{orderId}/discount")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Установить скидку на заказ")
+    public OrderResponse updateDiscount(
+        @PathVariable UUID orderId,
+        @Valid @RequestBody UpdateOrderDiscountRequest request
+    ) {
+        return orderService.updateDiscount(orderId, request);
     }
 
     @PatchMapping("/orders/{orderId}/waiter")

@@ -554,12 +554,12 @@ export const adminRoutes = (
       )}
     />
     <Route path="cash-registers" element={<Navigate to="/cash-registers/list" replace />} />
-    <Route path="restaurant/hall" element={<Navigate to="/rst/admin/dashboard" replace />} />
-    <Route path="restaurant/floor" element={<Navigate to="/rst/admin/dashboard" replace />} />
-    <Route path="restaurant/kitchen" element={<Navigate to="/rst/kitchen" replace />} />
-    <Route path="restaurant/booking" element={<Navigate to="/rst/admin/booking" replace />} />
-    <Route path="restaurant/delivery" element={<Navigate to="/rst/admin/delivery" replace />} />
-    <Route path="restaurant" element={<Navigate to="/rst/admin/dashboard" replace />} />
+    <Route path="restaurant/hall" element={<Navigate to="/dashboard" replace />} />
+    <Route path="restaurant/floor" element={<Navigate to="/dashboard" replace />} />
+    <Route path="restaurant/kitchen" element={<Navigate to="/dashboard" replace />} />
+    <Route path="restaurant/booking" element={<Navigate to="/dashboard" replace />} />
+    <Route path="restaurant/delivery" element={<Navigate to="/dashboard" replace />} />
+    <Route path="restaurant" element={<Navigate to="/dashboard" replace />} />
     <Route
       path="billing"
       element={(

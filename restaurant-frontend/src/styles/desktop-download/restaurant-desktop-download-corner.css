@@ -1,19 +1,16 @@
 .rst-dl-corner {
-  position: absolute;
-  top: 0.85rem;
-  right: 1rem;
-  z-index: 5;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.35rem;
+  flex-shrink: 0;
 }
 
 .rst-dl-corner__btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.15rem;
+  height: 2.15rem;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.06);
@@ -32,11 +29,4 @@
   opacity: 0.4;
   cursor: default;
   pointer-events: none;
-}
-
-@media (max-width: 480px) {
-  .rst-dl-corner {
-    top: 0.65rem;
-    right: 0.65rem;
-  }
 }

@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
-import { companyBusinessTypeApi } from '../../../api';
 import { useAuthStore } from '../../../store/authStore';
 import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayout';
 import {
@@ -15,20 +14,20 @@ import {
 } from '../../../utils/authLogin';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { resolveCashierPostLoginPath } from '../../../utils/cashierPostLoginPath';
-import { maybeRedirectRestaurantLogin } from '../../../utils/restaurantAppRedirect';
+import { fetchMainAppAccess } from '../../../utils/fetchMainAppAccess';
+import { logoutAndResetSession } from '../../../utils/authSession';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
 import { logAuth } from '../../../services/desktop/activityLog';
 
 async function resolvePinHomePath(role) {
   if (role === 'WAITER' || role === 'COOK') {
-    return resolveCashierPostLoginPath(role);
+    return { path: resolveCashierPostLoginPath(role), access: { ok: false, reason: 'restaurant_role' } };
   }
-  try {
-    const res = await companyBusinessTypeApi.get();
-    return resolveCashierPostLoginPath(role, res.data?.defaultTypeCode);
-  } catch {
-    return resolveCashierPostLoginPath(role, null);
-  }
+  const { access, businessPayload } = await fetchMainAppAccess(role);
+  return {
+    path: resolveCashierPostLoginPath(role, businessPayload?.defaultTypeCode),
+    access,
+  };
 }
 
 export function useCashierPinLoginPage() {
@@ -66,13 +65,14 @@ export function useCashierPinLoginPage() {
       }
       if (!window.location.pathname.startsWith('/cashier/login')) return;
 
-      const path = await resolvePinHomePath(user.role);
+      const { path, access } = await resolvePinHomePath(user.role);
       if (cancelled || freshLoginRef.current) return;
-      const { token: currentToken, user: currentUser } = useAuthStore.getState();
-      if (maybeRedirectRestaurantLogin(user.role, path, { token: currentToken, user: currentUser })) {
+      if (!access.ok) {
+        logoutAndResetSession();
+        toast.error(t('login.wrongAppUnknown'));
         return;
       }
-      navigate(path.startsWith('/rst') || path.startsWith('/pharm') ? path : '/cashier', { replace: true });
+      navigate(path.startsWith('/pharm') ? path : '/cashier', { replace: true });
     })();
 
     return () => {
@@ -139,11 +139,14 @@ export function useCashierPinLoginPage() {
       setCompanyPopoverOpen(false);
       freshLoginRef.current = true;
 
-      const path = await resolvePinHomePath(profile.role);
-      if (maybeRedirectRestaurantLogin(profile.role, path, { token: accessToken, user: sessionUser })) {
+      const { path, access } = await resolvePinHomePath(profile.role);
+      if (!access.ok) {
+        logoutAndResetSession();
+        toast.error(t('login.wrongAppUnknown'));
+        freshLoginRef.current = false;
         return;
       }
-      navigate(path, { replace: true });
+      navigate(path.startsWith('/pharm') ? path : path.startsWith('/cashier') ? path : '/cashier', { replace: true });
       window.setTimeout(() => {
         freshLoginRef.current = false;
       }, 4000);

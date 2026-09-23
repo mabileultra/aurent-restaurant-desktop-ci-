@@ -10,6 +10,7 @@ import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import { visibleRstAdminNavGroups } from './restaurantAdminNav';
 import RestaurantAdminNav from '../admin/components/RestaurantAdminNav';
 import RstWorkspaceStorePicker from '../shared/components/RstWorkspaceStorePicker';
+import { getMainAppUrl } from '../../config/mainAppUrl';
 import '../shared/styles/restaurant-tokens.css';
 import '../admin/styles/admin-shell.css';
 import '../admin/styles/rst-billing.css';
@@ -35,7 +36,7 @@ export default function RestaurantAdminLayout() {
             <Link to="/rst/pos">{t('rst.pos.toFloor')}</Link>
             <Link to="/rst/kitchen">{t('rst.pos.toKitchen')}</Link>
             {!restaurantOnly ? (
-              <Link to="/dashboard">{t('rst.admin.toPlatform')}</Link>
+              <a href={`${getMainAppUrl()}/dashboard`}>{t('rst.admin.toPlatform')}</a>
             ) : null}
           </div>
         </aside>

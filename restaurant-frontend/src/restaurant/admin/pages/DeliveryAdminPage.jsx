@@ -1,10 +1,10 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
-import OrdersModals from '../../../features/orders/components/OrdersModals';
 import DeliveryOrderCancelModal from '../components/DeliveryOrderCancelModal';
+import DeliveryOrderCreateModal from '../components/DeliveryOrderCreateModal';
 import DeliveryOrderEditModal from '../components/DeliveryOrderEditModal';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
+import { deliveryStatusLabel, NEXT_DELIVERY_STATUS, orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
 import { useDeliveryAdminPage } from '../hooks/useDeliveryAdminPage';
 import { getApiErrorMessage } from '../../../utils/apiError';
 import '../../shared/styles/rst-blocks.css';
@@ -12,7 +12,8 @@ import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
 import '../styles/delivery-admin.css';
 
-const STATUS_FILTERS = ['all', 'NEW', 'DELIVERED', 'COMPLETED', 'CANCELLED'];
+const STATUS_FILTERS = ['all', 'OPEN', 'BILLING', 'CLOSED', 'CANCELLED', 'REFUNDED'];
+const DELIVERY_STATUS_FILTERS = ['all', 'NEW', 'READY', 'ON_THE_WAY', 'DELIVERED'];
 
 function fmtDate(value, locale) {
   if (!value) return '—';
@@ -80,6 +81,20 @@ export default function DeliveryAdminPage() {
               </select>
             </label>
             <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('rst.delivery.colDeliveryStatus', { defaultValue: 'Доставка' })}</span>
+              <select
+                className="form-select"
+                value={p.filters.deliveryStatus}
+                onChange={(e) => p.setFilters({ ...p.filters, deliveryStatus: e.target.value })}
+              >
+                {DELIVERY_STATUS_FILTERS.map((status) => (
+                  <option key={status} value={status}>
+                    {status === 'all' ? p.t('rst.admin.filterAll') : deliveryStatusLabel(p.t, status)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.delivery.from')}</span>
               <BaseInput
                 type="date"
@@ -116,9 +131,10 @@ export default function DeliveryAdminPage() {
                   <tr>
                     <th className="rst-data-table__num">#</th>
                     <th>{p.t('rst.delivery.colDate')}</th>
-                    <th>{p.t('rst.delivery.colExternal')}</th>
+                    <th>{p.t('rst.delivery.colOrderNo', { defaultValue: '№' })}</th>
                     <th>{p.t('rst.delivery.colClient')}</th>
                     <th>{p.t('rst.delivery.colCourier')}</th>
+                    <th>{p.t('rst.delivery.colDeliveryStatus', { defaultValue: 'Доставка' })}</th>
                     <th>{p.t('rst.delivery.colTotal')}</th>
                     <th>{p.t('rst.delivery.colStatus')}</th>
                     <th className="rst-data-table__actions">{p.t('common.actions')}</th>
@@ -127,18 +143,20 @@ export default function DeliveryAdminPage() {
                 <tbody>
                   {p.loading ? (
                     <tr>
-                      <td colSpan={8} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                      <td colSpan={9} className="rst-data-table__empty">{p.t('common.loading')}</td>
                     </tr>
                   ) : p.rows.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="rst-data-table__empty">{p.t('rst.delivery.empty')}</td>
+                      <td colSpan={9} className="rst-data-table__empty">{p.t('rst.delivery.empty')}</td>
                     </tr>
                   ) : (
-                    p.rows.map((row, index) => (
+                    p.rows.map((row, index) => {
+                      const nextDelivery = NEXT_DELIVERY_STATUS[row.deliveryStatus || 'NEW'];
+                      return (
                       <tr key={row.id}>
                         <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
-                        <td>{fmtDate(row.createdAt, locale)}</td>
-                        <td>{row.externalNumber || '—'}</td>
+                        <td>{fmtDate(row.openedAt, locale)}</td>
+                        <td>{row.orderNo ?? '—'}</td>
                         <td className="rst-data-table__wrap">
                           <strong>{row.clientName || '—'}</strong>
                           {row.clientPhone ? (
@@ -148,8 +166,17 @@ export default function DeliveryAdminPage() {
                             <div className="rst-halls__row-meta">{row.deliveryAddress}</div>
                           ) : null}
                         </td>
-                        <td>{row.courierName || '—'}</td>
-                        <td>{fmtMoneyCompact(row.totalAmount)}</td>
+                        <td>
+                          {row.courierUserId
+                            ? (p.courierNameById.get(String(row.courierUserId)) || '—')
+                            : '—'}
+                        </td>
+                        <td>
+                          <span className={`rst-delivery__status rst-delivery__status--${row.deliveryStatus || 'NEW'}`}>
+                            {deliveryStatusLabel(p.t, row.deliveryStatus || 'NEW')}
+                          </span>
+                        </td>
+                        <td>{fmtMoneyCompact(p.orderDue(row))}</td>
                         <td>
                           <span className={`rst-delivery__status rst-delivery__status--${row.status}`}>
                             {orderStatusLabel(p.t, row.status)}
@@ -157,6 +184,17 @@ export default function DeliveryAdminPage() {
                         </td>
                         <td className="rst-data-table__actions">
                           <div className="rst-delivery__actions">
+                            {p.canAdvanceDelivery(row) && nextDelivery ? (
+                              <BaseButton
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                disabled={p.advancingDelivery}
+                                onClick={() => p.advanceDeliveryStatus(row, nextDelivery)}
+                              >
+                                {deliveryStatusLabel(p.t, nextDelivery)}
+                              </BaseButton>
+                            ) : null}
                             {p.canEditRow(row) ? (
                               <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.openEdit(row)}>
                                 {p.t('common.edit')}
@@ -170,7 +208,8 @@ export default function DeliveryAdminPage() {
                           </div>
                         </td>
                       </tr>
-                    ))
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -191,17 +230,14 @@ export default function DeliveryAdminPage() {
         </>
       )}
 
-      <OrdersModals
-        filtersOpen={false}
-        onFiltersClose={() => {}}
-        filters={{}}
-        onFiltersChange={() => {}}
-        onFiltersApply={() => {}}
-        onFiltersReset={() => {}}
-        addOpen={p.addOpen}
-        onAddClose={() => p.setAddOpen(false)}
-        stores={p.workspace.restaurantStores}
-        onOrderCreated={p.onOrderCreated}
+      <DeliveryOrderCreateModal
+        open={p.addOpen}
+        form={p.createForm}
+        saving={p.creating}
+        onChange={p.setCreateForm}
+        onClose={p.closeAdd}
+        onSubmit={p.createDelivery}
+        t={p.t}
       />
 
       <DeliveryOrderEditModal

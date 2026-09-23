@@ -14,11 +14,11 @@ describe('resolveAppHomePath', () => {
     expect(resolveAppHomePath('CASHIER')).toBe('/cashier/pos');
   });
 
-  it('routes restaurant world cashiers and staff to /rst', () => {
-    expect(resolveAppHomePath('CASHIER', 'RESTAURANT')).toBe('/rst/pos');
-    expect(resolveAppHomePath('CASHIER', 'CANTEEN')).toBe('/rst/pos');
-    expect(resolveAppHomePath('WAITER')).toBe('/rst/pos');
-    expect(resolveAppHomePath('COOK')).toBe('/rst/kitchen');
-    expect(resolveAppHomePath('ADMIN', 'RESTAURANT')).toBe('/rst/admin/dashboard');
+  it('keeps restaurant types on main homes (no /rst)', () => {
+    expect(resolveAppHomePath('CASHIER', 'RESTAURANT')).toBe('/cashier/pos');
+    expect(resolveAppHomePath('CASHIER', 'CANTEEN')).toBe('/cashier/pos');
+    expect(resolveAppHomePath('WAITER')).toBe('/dashboard');
+    expect(resolveAppHomePath('COOK')).toBe('/dashboard');
+    expect(resolveAppHomePath('ADMIN', 'RESTAURANT')).toBe('/dashboard');
   });
 });

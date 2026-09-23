@@ -17,10 +17,10 @@ export default function RestaurantCashierGuard({ children }) {
     return <Navigate to="/rst/pos" replace />;
   }
   if (!usesCashierPos(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (!hasModule('restaurantPos') && !hasModule('restaurantFloor')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }

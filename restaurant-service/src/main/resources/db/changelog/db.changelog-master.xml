@@ -22,5 +22,8 @@
     <include file="db/changelog/v15-floor-order-ops.xml"/>
     <include file="db/changelog/v16-payment-split.xml"/>
     <include file="db/changelog/v17-order-item-returned-qty.xml"/>
+    <include file="db/changelog/v18-order-discount.xml"/>
+    <include file="db/changelog/v19-order-courier.xml"/>
+    <include file="db/changelog/v20-delivery-status.xml"/>
 
 </databaseChangeLog>

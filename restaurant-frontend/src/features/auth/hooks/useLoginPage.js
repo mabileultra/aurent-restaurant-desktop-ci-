@@ -7,20 +7,14 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
 import { useAuthStore } from '../../../store/authStore';
-import { resetClientSessionState } from '../../../utils/authSession';
+import { logoutAndResetSession, resetClientSessionState } from '../../../utils/authSession';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { isDesktopCashier, cashierLoginPath } from '../../../utils/authLogin';
-
 import { resolveAppHomePath } from '../../../utils/appHomePath';
-import { companyBusinessTypeApi } from '../../../api';
+import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAccess';
 
-async function resolvePostLoginPath(role) {
-  try {
-    const res = await companyBusinessTypeApi.get();
-    return resolveAppHomePath(role, res.data?.defaultTypeCode);
-  } catch {
-    return resolveAppHomePath(role, null);
-  }
+async function resolvePostLoginPath(role, businessPayload) {
+  return resolveAppHomePath(role, businessPayload?.defaultTypeCode);
 }
 
 export function useLoginPage() {
@@ -42,7 +36,13 @@ export function useLoginPage() {
     if (!hasHydrated || !token) return;
     let cancelled = false;
     (async () => {
-      const path = await resolvePostLoginPath(user?.role);
+      const { access, businessPayload } = await fetchRestaurantAppAccess(user?.role);
+      if (cancelled) return;
+      if (!access.ok) {
+        logoutAndResetSession();
+        return;
+      }
+      const path = await resolvePostLoginPath(user?.role, businessPayload);
       if (!cancelled) navigate(path, { replace: true });
     })();
     return () => { cancelled = true; };
@@ -77,8 +77,16 @@ export function useLoginPage() {
       }
       resetClientSessionState();
       setAuth(accessToken, profile);
+
+      const { access, businessPayload } = await fetchRestaurantAppAccess(profile.role);
+      if (!access.ok) {
+        logoutAndResetSession();
+        toast.error(t('login.wrongAppUnknown'));
+        return;
+      }
+
       toast.success(t('login.welcome', { name: profile.fullName }));
-      const path = await resolvePostLoginPath(profile.role);
+      const path = await resolvePostLoginPath(profile.role, businessPayload);
       navigate(path, { replace: true });
     } catch (err) {
       const apiMsg = err.response?.data?.message;

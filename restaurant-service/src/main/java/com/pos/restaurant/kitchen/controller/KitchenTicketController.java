@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -38,8 +39,11 @@ public class KitchenTicketController {
     @GetMapping("/stores/{storeId}/kitchen-tickets")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
     @Operation(summary = "Доска кухни")
-    public List<KitchenTicketResponse> board(@PathVariable Integer storeId) {
-        return ticketService.listBoard(storeId);
+    public List<KitchenTicketResponse> board(
+        @PathVariable Integer storeId,
+        @RequestParam(required = false) UUID stationId
+    ) {
+        return ticketService.listBoard(storeId, stationId);
     }
 
     @PatchMapping("/kitchen-tickets/{ticketId}/status")

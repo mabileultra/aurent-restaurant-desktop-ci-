@@ -11,7 +11,7 @@ public interface KitchenTicketService {
 
     OrderResponse send(UUID orderId);
 
-    List<KitchenTicketResponse> listBoard(Integer storeId);
+    List<KitchenTicketResponse> listBoard(Integer storeId, UUID stationId);
 
     KitchenTicketResponse updateStatus(UUID ticketId, KitchenTicketStatus status);
 }

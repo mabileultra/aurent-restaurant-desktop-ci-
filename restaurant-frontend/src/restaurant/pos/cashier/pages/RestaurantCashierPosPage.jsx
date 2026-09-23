@@ -113,6 +113,8 @@ export default function RestaurantCashierPosPage() {
               canPay={p.canPay}
               onRequestBill={() => p.billMutation.mutate()}
               onPay={p.openPayModal}
+              onDiscount={(amount) => p.discountMutation.mutate(amount)}
+              discountPending={p.discountMutation.isPending}
               onGuestsChange={(payload) => p.updateGuestsMutation.mutate(payload)}
               guestsPending={p.updateGuestsMutation.isPending}
               billingPending={p.billMutation.isPending}

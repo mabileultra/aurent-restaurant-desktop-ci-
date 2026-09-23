@@ -1,6 +1,7 @@
 package com.pos.restaurant.order.service.impl;
 
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
@@ -10,7 +11,10 @@ import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.dto.TransferTableRequest;
+import com.pos.restaurant.order.dto.UpdateDeliveryDetailsRequest;
+import com.pos.restaurant.order.dto.UpdateDeliveryStatusRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
+import com.pos.restaurant.order.dto.UpdateOrderDiscountRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
@@ -21,9 +25,12 @@ import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -44,6 +51,9 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderOpenHandler openHandler;
     private final OrderOpenCounterHandler openCounterHandler;
     private final OrderUpdateGuestsHandler updateGuestsHandler;
+    private final OrderUpdateDeliveryDetailsHandler updateDeliveryDetailsHandler;
+    private final OrderUpdateDeliveryStatusHandler updateDeliveryStatusHandler;
+    private final OrderUpdateDiscountHandler updateDiscountHandler;
     private final OrderAddItemHandler addItemHandler;
     private final OrderUpdateItemHandler updateItemHandler;
     private final OrderRemoveItemHandler removeItemHandler;
@@ -88,6 +98,42 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     }
 
     @Override
+    public Page<OrderResponse> searchByChannel(
+        Integer storeId,
+        OrderChannel channel,
+        OrderStatus status,
+        DeliveryStatus deliveryStatus,
+        String q,
+        Instant openedFrom,
+        Instant openedTo,
+        Pageable pageable
+    ) {
+        Integer companyId = tenantSupport.requireCompanyId();
+        String query = q == null || q.isBlank() ? null : q.trim();
+        Page<FloorOrder> page = orderRepository.searchByChannel(
+            companyId,
+            storeId,
+            channel,
+            status,
+            deliveryStatus,
+            query,
+            openedFrom,
+            openedTo,
+            pageable
+        );
+        if (page.isEmpty()) {
+            return page.map(order -> assembler.toBoardCard(order, List.of()));
+        }
+        List<UUID> orderIds = page.getContent().stream().map(FloorOrder::getId).toList();
+        Map<UUID, List<FloorOrderItem>> itemsByOrder = itemRepository.findByOrderIdInOrdered(orderIds).stream()
+            .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
+        return page.map(order -> assembler.toBoardCard(
+            order,
+            itemsByOrder.getOrDefault(order.getId(), Collections.emptyList())
+        ));
+    }
+
+    @Override
     public OrderResponse get(UUID orderId) {
         var order = orderLookup.require(orderId);
         return assembler.toResponse(
@@ -101,6 +147,24 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Transactional
     public OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request) {
         return updateGuestsHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateDeliveryDetails(UUID orderId, UpdateDeliveryDetailsRequest request) {
+        return updateDeliveryDetailsHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateDeliveryStatus(UUID orderId, UpdateDeliveryStatusRequest request) {
+        return updateDeliveryStatusHandler.handle(orderId, request);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateDiscount(UUID orderId, UpdateOrderDiscountRequest request) {
+        return updateDiscountHandler.handle(orderId, request);
     }
 
     @Override

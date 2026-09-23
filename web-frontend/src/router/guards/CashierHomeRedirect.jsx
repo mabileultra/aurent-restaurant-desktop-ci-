@@ -9,8 +9,9 @@ export default function CashierHomeRedirect() {
   const { storeId } = useCashierStore();
   const { store, isPending, skipOnline, isError } = useCashierStoreTypeQuery(storeId);
 
+  // Floor roles do not belong on aurent — retired /rst stub shows opaque deny.
   if (user?.role === 'WAITER' || user?.role === 'COOK') {
-    return <CashierSpaNavigate to={resolveCashierPostLoginPath(user.role)} />;
+    return <CashierSpaNavigate to="/rst/pos" />;
   }
 
   if (storeId == null || skipOnline || isError || isPending) {

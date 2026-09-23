@@ -1,3 +1,26 @@
+.rst-kds-stations {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.rst-kds-stations button {
+  border: 1px solid var(--rst-line);
+  background: #121821;
+  color: #cbd5e1;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-kds-stations button.is-active {
+  background: #f8fafc;
+  color: #0f172a;
+  border-color: #f8fafc;
+}
+
 .rst-kds-page {
   min-height: 0;
   flex: 1;

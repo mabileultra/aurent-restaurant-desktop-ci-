@@ -13,7 +13,9 @@ export function isPharmacyWorldBusiness(code) {
 }
 
 /**
- * Домашний маршрут после входа.
+ * Домашний маршрут после входа на aurent (main SPA).
+ * Restaurant-only / floor roles are denied by evaluateMainAppAccess before navigate;
+ * this helper must not emit retired /rst paths.
  * @param {string|undefined} role
  * @param {string|undefined} businessType — defaultTypeCode компании
  */
@@ -22,15 +24,10 @@ export function resolveAppHomePath(role, businessType) {
   if (role === 'CASHIER') {
     // /cashier без хвоста конфликтует с public/cashier/ в nginx (403 на директории).
     if (isPharmacyWorldBusiness(businessType)) return PHARM_POS_PATH;
-    if (isRestaurantWorldBusiness(businessType)) return '/rst/pos';
     return '/cashier/pos';
   }
-  if (role === 'WAITER') return '/rst/pos';
-  if (role === 'COOK') return '/rst/kitchen';
+  if (role === 'WAITER' || role === 'COOK') return '/dashboard';
   if (role === 'ACCOUNTANT') return '/finance/dashboard';
-  if (isRestaurantWorldBusiness(businessType) && (role === 'ADMIN' || role === 'MANAGER')) {
-    return '/rst/admin/dashboard';
-  }
   if (isPharmacyWorldBusiness(businessType) && (role === 'ADMIN' || role === 'MANAGER')) {
     return PHARM_STOCK_PATHS.products;
   }

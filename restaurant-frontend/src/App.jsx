@@ -9,6 +9,7 @@ import AuthBootstrap from './components/shared/AuthBootstrap';
 import AuthSessionGuard from './components/shared/AuthSessionGuard';
 import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
+import RestaurantWorldGate from './router/guards/RestaurantWorldGate';
 
 export default function App() {
   return (
@@ -20,7 +21,9 @@ export default function App() {
           <AuthSessionGuard>
             <UnitsCatalogBootstrap>
               <AdminThemeSync />
-              <AppRoutes />
+              <RestaurantWorldGate>
+                <AppRoutes />
+              </RestaurantWorldGate>
             </UnitsCatalogBootstrap>
           </AuthSessionGuard>
         </AuthBootstrap>

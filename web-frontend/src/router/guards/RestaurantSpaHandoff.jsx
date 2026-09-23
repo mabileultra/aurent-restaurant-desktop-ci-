@@ -1,31 +1,41 @@
 import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { isRestaurantAppSplitEnabled } from '../../config/restaurantAppUrl';
-import { redirectToRestaurantApp } from '../../utils/restaurantAppRedirect';
+import '../../features/auth/components/wrong-app.css';
 
 /**
- * When VITE_RESTAURANT_APP_URL is set, any /rst/* hit on aurent must leave
- * for r-aurent (token handoff). Without the URL, show nothing — local restaurant
- * UI was removed; run restaurant-frontend on :5174 instead.
+ * /rst/* on aurent is retired — opaque message, no mention of the other domain.
  */
 export default function RestaurantSpaHandoff() {
-  const location = useLocation();
+  const { t } = useTranslation();
   const token = useAuthStore((s) => s.token);
-  const user = useAuthStore((s) => s.user);
   const split = isRestaurantAppSplitEnabled();
 
   useEffect(() => {
-    if (!token) return;
     if (!split) {
-      console.warn(
-        '[aurent] VITE_RESTAURANT_APP_URL is empty — set it to https://r-aurent.uz (or http://localhost:5174 in dev)'
-      );
-      return;
+      console.warn('[aurent] VITE_RESTAURANT_APP_URL is empty');
     }
-    const next = `${location.pathname}${location.search || ''}`;
-    redirectToRestaurantApp(next || '/rst/pos', { token, user });
-  }, [split, token, user, location.pathname, location.search]);
+  }, [split]);
 
-  return null;
+  if (!token) return null;
+
+  return (
+    <div className="wrong-app">
+      <div className="wrong-app__card">
+        <h1 className="wrong-app__title">
+          {t('login.wrongAppTitle', { defaultValue: 'Ошибка входа' })}
+        </h1>
+        <p className="wrong-app__body">
+          {t('login.wrongAppUnknown', { defaultValue: 'Нет такого аккаунта' })}
+        </p>
+        <div className="wrong-app__actions">
+          <Link className="wrong-app__btn wrong-app__btn--primary" to="/login">
+            {t('login.signIn', { defaultValue: 'Войти' })}
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
 }

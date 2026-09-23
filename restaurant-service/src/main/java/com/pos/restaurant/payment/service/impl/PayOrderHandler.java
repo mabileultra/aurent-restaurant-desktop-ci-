@@ -1,5 +1,6 @@
 package com.pos.restaurant.payment.service.impl;
 
+import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.commission.service.WaiterCommissionService;
@@ -58,7 +59,11 @@ public class PayOrderHandler {
         BigDecimal subtotal = orderTotals.billable(items);
         waiterCommissionService.applyOnPayment(order, subtotal);
         BigDecimal service = order.getCommissionAmount() == null ? BigDecimal.ZERO : order.getCommissionAmount();
-        BigDecimal due = subtotal.add(service).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal discount = order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount();
+        BigDecimal due = subtotal.add(service).subtract(discount).setScale(2, RoundingMode.HALF_UP);
+        if (due.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BusinessException("Nothing to pay after discount");
+        }
         eligibilityPolicy.assertCanPay(order, due, request.amount());
         PaymentSplitPolicy.Split split = paymentSplitPolicy.resolve(request, due);
         FloorOrderPayment payment = paymentRepository.save(FloorOrderPayment.builder()

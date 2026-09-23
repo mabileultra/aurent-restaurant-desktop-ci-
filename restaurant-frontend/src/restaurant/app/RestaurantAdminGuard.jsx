@@ -18,10 +18,10 @@ export default function RestaurantAdminGuard({ children }) {
     return <Navigate to="/rst/kitchen" replace />;
   }
   if (!ADMIN_ROLES.has(user?.role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (!hasModule('restaurantFloor')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }

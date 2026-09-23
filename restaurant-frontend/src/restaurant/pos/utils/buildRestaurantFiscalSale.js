@@ -42,6 +42,18 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
     });
   }
 
+  const discount = round2(Math.max(0, Number(order?.discountAmount) || 0));
+  if (discount > 0) {
+    lines.push({
+      productId: `rst-discount-${order?.id || 'x'}`,
+      name: 'Скидка',
+      quantity: 1,
+      unitPrice: -discount,
+      taxRate: DEFAULT_VAT,
+      unitOfMeasure: 'шт',
+    });
+  }
+
   return lines;
 }
 
@@ -97,6 +109,7 @@ export function buildRestaurantFiscalSale({
     (order?.items ?? []).filter(isBillable).reduce((acc, item) => acc + lineTotalOf(item), 0),
   );
   const serviceAmount = round2(Number(order?.commissionAmount) || 0);
+  const discountTotal = round2(Math.max(0, Number(order?.discountAmount) || 0));
   const totalAmount = restaurantPayTotal(order);
   const taxTotal = round2(
     items.reduce((acc, item) => acc + (Number(item.taxAmount) || 0), 0),
@@ -141,9 +154,9 @@ export function buildRestaurantFiscalSale({
     items,
     subtotal: dishesSubtotal,
     taxTotal,
-    discountTotal: 0,
+    discountTotal,
     lineDiscountTotal: 0,
-    orderDiscountAmount: 0,
+    orderDiscountAmount: discountTotal,
     orderDiscountPercent: 0,
     totalAmount,
     returnAmount: 0,

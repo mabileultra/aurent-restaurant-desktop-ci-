@@ -1,6 +1,7 @@
 package com.pos.restaurant.order.entity;
 
 import com.pos.restaurant.floor.entity.FloorTable;
+import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.shift.entity.RestaurantShift;
@@ -84,11 +85,19 @@ public class FloorOrder {
     @Column(name = "delivery_address", length = 400)
     private String deliveryAddress;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "delivery_status", length = 24)
+    private DeliveryStatus deliveryStatus;
+
     @Column(name = "opened_by_user_id", nullable = false)
     private UUID openedByUserId;
 
     @Column(name = "waiter_user_id")
     private UUID waiterUserId;
+
+    /** Optional courier for DELIVERY channel (company user id). */
+    @Column(name = "courier_user_id")
+    private UUID courierUserId;
 
     @Column(name = "commission_percent", precision = 6, scale = 2)
     private BigDecimal commissionPercent;
@@ -98,6 +107,11 @@ public class FloorOrder {
 
     @Column(name = "commission_amount", precision = 18, scale = 2)
     private BigDecimal commissionAmount;
+
+    /** Order-level discount (absolute money), applied at pay time. */
+    @Column(name = "discount_amount", precision = 18, scale = 2, nullable = false)
+    @Builder.Default
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shift_id")

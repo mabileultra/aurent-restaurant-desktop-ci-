@@ -4,6 +4,7 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import MenuPicker from './MenuPicker';
+import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
 import '../styles/order-workspace.css';
 
@@ -30,6 +31,8 @@ export default function OrderWorkspace({
   onSendKitchen,
   onRequestBill,
   onPay,
+  onDiscount,
+  discountPending,
   onGuestsChange,
   guestsPending,
   canCancel,
@@ -98,7 +101,10 @@ export default function OrderWorkspace({
   const commissionAmount = order.commissionAmount != null
     ? Number(order.commissionAmount)
     : Number(commissionPreview?.amount ?? 0);
+  const discountAmount = Number(order.discountAmount) || 0;
   const payAmount = resolveRestaurantPayTotal(order, commissionPreview);
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const canEditDiscount = order.status === 'OPEN' || order.status === 'BILLING';
   const resolvedWaiter = waiterName
     || waiters.find((row) => String(row.id) === String(order.waiterUserId))?.name
     || null;
@@ -220,10 +226,12 @@ export default function OrderWorkspace({
               <strong className="rst-order__total-val">{fmtMoneyCompact(commissionAmount || 0)}</strong>
             </div>
           ) : null}
-          <div className="rst-order__total-row rst-order__total-row--loyalty">
-            <span>{t('rst.order.loyalty')}:</span>
-            <span className="rst-order__loyalty-val">{t('rst.order.loyaltyZero')}</span>
-          </div>
+          {discountAmount > 0 ? (
+            <div className="rst-order__total-row">
+              <span>{t('rst.order.discount')}:</span>
+              <strong className="rst-order__total-val">−{fmtMoneyCompact(discountAmount)}</strong>
+            </div>
+          ) : null}
           <div className="rst-order__total-row rst-order__total-row--grand">
             <span>{t('rst.order.totalDue')}</span>
             <strong>{fmtMoneyCompact(payAmount)}</strong>
@@ -243,6 +251,16 @@ export default function OrderWorkspace({
           ) : null}
 
           <div className="rst-order__actions">
+            {canEditDiscount && onDiscount ? (
+              <button
+                type="button"
+                className="rst-order__action"
+                onClick={() => setDiscountOpen(true)}
+                disabled={discountPending}
+              >
+                {t('rst.order.discount')}
+              </button>
+            ) : null}
             <button
               type="button"
               className="rst-order__action"
@@ -283,6 +301,19 @@ export default function OrderWorkspace({
           ) : null}
         </div>
       </aside>
+
+      <OrderDiscountModal
+        open={discountOpen}
+        subtotal={order.subtotal}
+        currentDiscount={discountAmount}
+        saving={Boolean(discountPending)}
+        onClose={() => setDiscountOpen(false)}
+        onSubmit={(amount) => {
+          onDiscount?.(amount);
+          setDiscountOpen(false);
+        }}
+        t={t}
+      />
     </div>
   );
 }

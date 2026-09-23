@@ -21,10 +21,10 @@ export default function RestaurantPosGuard({ children }) {
     return <Navigate to="/rst/cashier" replace />;
   }
   if (!FLOOR_ROLES.has(role)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   if (!hasModule('restaurantPos') && !hasModule('restaurantFloor')) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/login" replace />;
   }
   return children;
 }

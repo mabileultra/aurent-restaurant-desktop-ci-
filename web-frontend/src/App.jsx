@@ -12,6 +12,7 @@ import DesktopApiBootstrap from './components/shared/DesktopApiBootstrap';
 import TenantDisplayBootstrap from './components/shared/TenantDisplayBootstrap';
 import UnitsCatalogBootstrap from './components/shared/UnitsCatalogBootstrap';
 import AppRoutes from './router/AppRoutes';
+import MainWorldGate from './router/guards/MainWorldGate';
 import ObservabilityErrorBoundary from './observability/ObservabilityErrorBoundary';
 
 export default function App() {
@@ -27,7 +28,9 @@ export default function App() {
             <TenantDisplayBootstrap>
               <UnitsCatalogBootstrap>
                 <AdminThemeSync />
-                <AppRoutes />
+                <MainWorldGate>
+                  <AppRoutes />
+                </MainWorldGate>
               </UnitsCatalogBootstrap>
             </TenantDisplayBootstrap>
           </DesktopApiBootstrap>

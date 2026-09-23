@@ -1,6 +1,10 @@
 import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
+import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
+import RecipeWizardModal from '../components/RecipeWizardModal';
 import { useRecipesAdminPage } from '../hooks/useRecipesAdminPage';
+import { formatFoodCostPercent, lineIngredientCost } from '../utils/recipeFoodCost';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -23,80 +27,12 @@ export default function RecipesAdminPage() {
           <h1 className="rst-coming__title">{p.t('rst.admin.recipesTitle')}</h1>
           <p className="rst-coming__text mb-0">{p.t('rst.admin.recipesSubtitle')}</p>
         </div>
-        <BaseButton type="button" onClick={() => p.setWizardOpen(true)}>
-          {p.t('rst.admin.recipeWizardOpen')}
-        </BaseButton>
-      </div>
-
-      {p.wizardOpen ? (
-        <div className="rst-admin-form">
-          <div>
-            <h2 className="rst-coming__title mb-1">{p.t('rst.admin.recipeWizardTitle')}</h2>
-            <p className="rst-coming__text mb-0">{p.t('rst.admin.recipeWizardHint')}</p>
-          </div>
-
-          <div className="rst-admin-form__grid rst-admin-form__grid--recipe">
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.admin.dishName')}</span>
-              <BaseInput
-                value={p.wizard.name}
-                onChange={(e) => p.setWizard({ ...p.wizard, name: e.target.value })}
-              />
-            </label>
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.admin.price')}</span>
-              <BaseInput
-                type="number"
-                min="0"
-                step="0.01"
-                value={p.wizard.price}
-                onChange={(e) => p.setWizard({ ...p.wizard, price: e.target.value })}
-              />
-            </label>
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.admin.dishCategory')}</span>
-              <BaseInput
-                value={p.wizard.category}
-                placeholder={p.t('rst.admin.dishCategoryHint')}
-                onChange={(e) => p.setWizard({ ...p.wizard, category: e.target.value })}
-              />
-            </label>
-            <div className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.admin.dishImage')}</span>
-              <label className="rst-file">
-                <input
-                  className="rst-file__input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => p.onWizardImage(e.target.files?.[0])}
-                />
-                <span className="rst-file__btn">{p.t('rst.admin.chooseFile')}</span>
-                <span className="rst-file__name">
-                  {p.wizard.imageName || p.t('rst.admin.noFileSelected')}
-                </span>
-              </label>
-              {p.wizard.imageUrl ? (
-                <div className="rst-file__preview-wrap">
-                  <img src={p.wizard.imageUrl} alt="" className="rst-file__preview" />
-                  <BaseButton
-                    type="button"
-                    variant="ghost"
-                    onClick={() => p.setWizard({ ...p.wizard, imageUrl: '', imageName: '' })}
-                  >
-                    {p.t('rst.admin.clearImage')}
-                  </BaseButton>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <p className="rst-admin-form__note mb-0">
-            {p.t('rst.admin.recipeWizardIngredients')}
-            {' · '}
-            <Link to={stockProductsPath}>{p.t('rst.admin.toStockProducts')}</Link>
-          </p>
+        <div className="rst-halls__actions">
+          <BaseButton type="button" size="sm" onClick={p.openWizard}>
+            {p.t('rst.admin.recipeWizardOpen')}
+          </BaseButton>
         </div>
-      ) : null}
+      </div>
 
       <div className="rst-tech__split">
         <aside className="rst-tech__dishes">
@@ -105,6 +41,7 @@ export default function RecipesAdminPage() {
           ) : null}
           {p.dishes.map((dish) => {
             const hasRecipe = p.recipes.some((recipe) => recipe.menuItemId === dish.id);
+            const dishFc = p.dishFoodCostById[dish.id];
             return (
               <button
                 key={dish.id}
@@ -124,6 +61,9 @@ export default function RecipesAdminPage() {
                   <span>
                     {dish.category ? `${dish.category} · ` : ''}
                     {hasRecipe ? p.t('rst.admin.recipeReady') : p.t('rst.admin.recipeEmpty')}
+                    {hasRecipe && dishFc?.pricedLines > 0
+                      ? ` · ${formatFoodCostPercent(dishFc.percent)}`
+                      : ''}
                   </span>
                 </div>
               </button>
@@ -132,16 +72,18 @@ export default function RecipesAdminPage() {
         </aside>
 
         <div className="rst-tech__card">
-          {!selectedDish && !p.wizardOpen ? (
+          {!selectedDish ? (
             <div className="rst-empty">{p.t('rst.admin.recipePickDish')}</div>
           ) : (
             <>
               <header className="rst-tech__head">
                 <div>
-                  <h2 className="rst-coming__title">
-                    {p.wizardOpen ? p.t('rst.admin.recipeWizardIngredients') : selectedDish?.name}
-                  </h2>
-                  <p className="rst-coming__text mb-0">{p.t('rst.admin.recipeOutput')}</p>
+                  <h2 className="rst-coming__title">{selectedDish.name}</h2>
+                  <p className="rst-coming__text mb-0">
+                    {p.t('rst.admin.recipeOutput')}
+                    {' · '}
+                    {p.t('rst.admin.price')}: {fmtMoneyCompact(selectedDish.price)}
+                  </p>
                 </div>
                 <label className="rst-admin-field rst-tech__output">
                   <span className="rst-admin-field__label">{p.t('rst.admin.outputQty')}</span>
@@ -155,6 +97,8 @@ export default function RecipesAdminPage() {
                 </label>
               </header>
 
+              <RecipeFoodCostSummary t={p.t} foodCost={p.foodCost} />
+
               <div className="rst-tech__table-wrap">
                 <table className="rst-tech__table">
                   <thead>
@@ -164,80 +108,100 @@ export default function RecipesAdminPage() {
                       <th>{p.t('rst.admin.wastePercent')}</th>
                       <th>{p.t('rst.admin.qtyNet')}</th>
                       <th>{p.t('rst.admin.unit')}</th>
+                      <th>{p.t('rst.admin.lineCost')}</th>
                       <th />
                     </tr>
                   </thead>
                   <tbody>
-                    {p.lines.map((line, index) => (
-                      <tr key={`${line.productId}-${index}`}>
-                        <td>
-                          <BaseInput
-                            value={line.productName}
-                            placeholder={p.t('rst.admin.ingredientSearch')}
-                            onFocus={() => p.setActiveLineIndex(index)}
-                            onChange={(e) => {
-                              p.setActiveLineIndex(index);
-                              p.setSearch(e.target.value);
-                              p.setLines((current) => current.map((row, i) => (
-                                i === index ? { ...row, productName: e.target.value, productId: '' } : row
-                              )));
-                            }}
-                          />
-                          {p.activeLineIndex === index && p.search.trim().length > 0 ? (
-                            <div className="rst-tech__suggest">
-                              {p.products.length === 0 ? (
-                                <span className="rst-tech__suggest-empty">
-                                  {p.t('rst.admin.ingredientEmpty')}
-                                  {' '}
-                                  <Link to={stockProductsPath}>{p.t('rst.admin.toStockProducts')}</Link>
-                                </span>
-                              ) : p.products.map((product) => (
-                                <button key={product.id} type="button" onClick={() => p.pickProduct(index, product)}>
-                                  {product.name}
-                                  {product.sku ? ` · ${product.sku}` : ''}
-                                </button>
-                              ))}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td>
-                          <BaseInput
-                            type="number"
-                            min="0.001"
-                            step="0.001"
-                            value={line.qtyGross}
-                            onChange={(e) => p.setLines((current) => current.map((row, i) => (
-                              i === index ? { ...row, qtyGross: e.target.value } : row
-                            )))}
-                          />
-                        </td>
-                        <td>
-                          <BaseInput
-                            type="number"
-                            min="0"
-                            step="0.1"
-                            value={line.wastePercent}
-                            onChange={(e) => p.setLines((current) => current.map((row, i) => (
-                              i === index ? { ...row, wastePercent: e.target.value } : row
-                            )))}
-                          />
-                        </td>
-                        <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
-                        <td>
-                          <BaseInput
-                            value={line.unit}
-                            onChange={(e) => p.setLines((current) => current.map((row, i) => (
-                              i === index ? { ...row, unit: e.target.value } : row
-                            )))}
-                          />
-                        </td>
-                        <td>
-                          <BaseButton type="button" variant="ghost" size="sm" onClick={() => p.removeLine(index)}>
-                            ×
-                          </BaseButton>
-                        </td>
-                      </tr>
-                    ))}
+                    {p.lines.map((line, index) => {
+                      const unitCost = line.costPrice != null
+                        ? line.costPrice
+                        : (line.productId ? p.costByProductId[String(line.productId)] : null);
+                      const lineCost = lineIngredientCost(line, unitCost);
+                      return (
+                        <tr key={`${line.productId}-${index}`}>
+                          <td>
+                            <BaseInput
+                              value={line.productName}
+                              placeholder={p.t('rst.admin.ingredientSearch')}
+                              onFocus={() => p.setActiveLineIndex(index)}
+                              onChange={(e) => {
+                                p.setActiveLineIndex(index);
+                                p.setSearch(e.target.value);
+                                p.setLines((current) => current.map((row, i) => (
+                                  i === index
+                                    ? {
+                                      ...row,
+                                      productName: e.target.value,
+                                      productId: '',
+                                      costPrice: null,
+                                    }
+                                    : row
+                                )));
+                              }}
+                            />
+                            {p.activeLineIndex === index && p.search.trim().length > 0 ? (
+                              <div className="rst-tech__suggest">
+                                {p.products.length === 0 ? (
+                                  <span className="rst-tech__suggest-empty">
+                                    {p.t('rst.admin.ingredientEmpty')}
+                                    {' '}
+                                    <Link to={stockProductsPath}>{p.t('rst.admin.toStockProducts')}</Link>
+                                  </span>
+                                ) : p.products.map((product) => (
+                                  <button key={product.id} type="button" onClick={() => p.pickProduct(index, product)}>
+                                    {product.name}
+                                    {product.sku ? ` · ${product.sku}` : ''}
+                                    {product.costPrice != null
+                                      ? ` · ${fmtMoneyCompact(product.costPrice)}`
+                                      : ''}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null}
+                          </td>
+                          <td>
+                            <BaseInput
+                              type="number"
+                              min="0.001"
+                              step="0.001"
+                              value={line.qtyGross}
+                              onChange={(e) => p.setLines((current) => current.map((row, i) => (
+                                i === index ? { ...row, qtyGross: e.target.value } : row
+                              )))}
+                            />
+                          </td>
+                          <td>
+                            <BaseInput
+                              type="number"
+                              min="0"
+                              step="0.1"
+                              value={line.wastePercent}
+                              onChange={(e) => p.setLines((current) => current.map((row, i) => (
+                                i === index ? { ...row, wastePercent: e.target.value } : row
+                              )))}
+                            />
+                          </td>
+                          <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
+                          <td>
+                            <BaseInput
+                              value={line.unit}
+                              onChange={(e) => p.setLines((current) => current.map((row, i) => (
+                                i === index ? { ...row, unit: e.target.value } : row
+                              )))}
+                            />
+                          </td>
+                          <td className="rst-tech__net">
+                            {lineCost != null ? fmtMoneyCompact(lineCost) : '—'}
+                          </td>
+                          <td>
+                            <BaseButton type="button" variant="ghost" size="sm" onClick={() => p.removeLine(index)}>
+                              ×
+                            </BaseButton>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -247,34 +211,21 @@ export default function RecipesAdminPage() {
                   {p.t('rst.admin.addIngredient')}
                 </BaseButton>
                 <div className="rst-tech__actions-main">
-                  {p.wizardOpen ? (
-                    <>
-                      <BaseButton type="button" variant="ghost" onClick={() => p.setWizardOpen(false)}>
-                        {p.t('common.cancel')}
-                      </BaseButton>
-                      <BaseButton
-                        type="button"
-                        onClick={() => p.wizardMutation.mutate()}
-                        disabled={p.wizardMutation.isPending}
-                      >
-                        {p.t('rst.admin.recipeWizardSave')}
-                      </BaseButton>
-                    </>
-                  ) : (
-                    <BaseButton
-                      type="button"
-                      onClick={() => p.saveMutation.mutate()}
-                      disabled={p.saveMutation.isPending || !selectedDish}
-                    >
-                      {p.t('common.save')}
-                    </BaseButton>
-                  )}
+                  <BaseButton
+                    type="button"
+                    onClick={() => p.saveMutation.mutate()}
+                    disabled={p.saveMutation.isPending || !selectedDish}
+                  >
+                    {p.t('common.save')}
+                  </BaseButton>
                 </div>
               </div>
             </>
           )}
         </div>
       </div>
+
+      <RecipeWizardModal p={p} />
     </section>
   );
 }

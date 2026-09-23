@@ -5,14 +5,14 @@ import {
 } from '../../src/utils/cashierPostLoginPath';
 
 describe('resolveCashierPostLoginPath', () => {
-  it('sends waiters and cooks to restaurant floor/kitchen', () => {
-    expect(resolveCashierPostLoginPath('WAITER')).toBe('/rst/pos');
-    expect(resolveCashierPostLoginPath('COOK')).toBe('/rst/kitchen');
+  it('keeps waiters and cooks on /cashier (access gate denies them)', () => {
+    expect(resolveCashierPostLoginPath('WAITER')).toBe('/cashier');
+    expect(resolveCashierPostLoginPath('COOK')).toBe('/cashier');
   });
 
-  it('routes cashier by business type', () => {
-    expect(resolveCashierPostLoginPath('CASHIER', 'RESTAURANT')).toBe('/rst/pos');
-    expect(resolveCashierPostLoginPath('CASHIER', 'CANTEEN')).toBe('/rst/pos');
+  it('routes cashier by business type without /rst', () => {
+    expect(resolveCashierPostLoginPath('CASHIER', 'RESTAURANT')).toBe('/cashier/pos');
+    expect(resolveCashierPostLoginPath('CASHIER', 'CANTEEN')).toBe('/cashier/pos');
     expect(resolveCashierPostLoginPath('CASHIER', 'PHARMACY')).toBe('/pharm/pos');
     expect(resolveCashierPostLoginPath('CASHIER', 'GROCERY')).toBe('/cashier/pos');
     expect(resolveCashierPostLoginPath('CASHIER')).toBe('/cashier/pos');

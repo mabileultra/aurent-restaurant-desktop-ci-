@@ -12,6 +12,7 @@ import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFis
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
+import { printKitchenTicket } from '../utils/printKitchenTicket';
 import { toastApiError } from '../../../utils/apiError';
 
 export function useFloorPosMutations(deps) {
@@ -161,7 +162,15 @@ export function useFloorPosMutations(deps) {
 
   const sendKitchenMutation = useMutation({
     mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
-    onSuccess: (res) => { setOrderData(res); toast.success(t('rst.order.sentKitchen')); },
+    onSuccess: (res) => {
+      setOrderData(res);
+      toast.success(t('rst.order.sentKitchen'));
+      try {
+        printKitchenTicket({ order: res.data, t });
+      } catch {
+        /* print is best-effort */
+      }
+    },
     onError: (err) => errMsg(err, 'rst.order.sendFailed'),
   });
 
@@ -186,6 +195,15 @@ export function useFloorPosMutations(deps) {
       toast.success(t('rst.order.billRequested'));
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
+  });
+
+  const discountMutation = useMutation({
+    mutationFn: (discountAmount) => rstOrderApi.updateDiscount(activeOrderId, { discountAmount }),
+    onSuccess: (res) => {
+      setOrderData(res);
+      toast.success(t('rst.order.discountSaved', { defaultValue: 'Скидка сохранена' }));
+    },
+    onError: (err) => errMsg(err, 'rst.order.discountFailed'),
   });
 
   const payMutation = useMutation({
@@ -288,6 +306,6 @@ export function useFloorPosMutations(deps) {
     openMutation, openCounterMutation, openShiftMutation, closeShiftMutation,
     addItemMutation, updateItemMutation, removeItemMutation, assignWaiterMutation,
     updateGuestsMutation, sendKitchenMutation, cancelMutation, billMutation,
-    payMutation, refundMutation,
+    discountMutation, payMutation, refundMutation,
   };
 }
