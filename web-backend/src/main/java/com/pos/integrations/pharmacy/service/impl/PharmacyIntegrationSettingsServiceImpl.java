@@ -121,7 +121,10 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
       ctx.finish(outcome, response.status(), message);
       return response;
     } catch (BadRequestException ex) {
-      ctx.finish(AslRequestOutcome.SENT_FAIL, null, ex.getMessage());
+      // Пустой/мусорный КМ (напр. «Маркировкаланган») — до ASL не доходили.
+      boolean notSent = ex.getMessage() != null
+          && ex.getMessage().toLowerCase(java.util.Locale.ROOT).contains("marking code is required");
+      ctx.finish(notSent ? AslRequestOutcome.NOT_SENT : AslRequestOutcome.SENT_FAIL, null, ex.getMessage());
       throw ex;
     } catch (Exception ex) {
       ctx.finish(

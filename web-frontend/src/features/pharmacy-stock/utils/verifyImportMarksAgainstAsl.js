@@ -1,5 +1,6 @@
 import { pharmacyIntegrationApi } from '../../../api';
 import { isAslIntegrationDisabledError } from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
+import { isPlausibleImportMarkCode } from './isPlausibleImportMarkCode';
 import { runLimited } from './runLimited';
 
 /** Параллельность к ASL: много потоков, проверка всё равно полная по каждому КМ. */
@@ -29,7 +30,7 @@ export async function verifyImportMarksAgainstAsl({
     const entries = Array.isArray(list) ? list : [];
     for (const entry of entries) {
       const code = String(entry?.code || '').trim();
-      if (!code) continue;
+      if (!isPlausibleImportMarkCode(code)) continue;
       jobs.push({ lineId, code });
     }
   }

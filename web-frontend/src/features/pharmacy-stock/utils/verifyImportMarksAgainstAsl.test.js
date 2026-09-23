@@ -17,12 +17,16 @@ describe('verifyImportMarksAgainstAsl', () => {
   });
 
   it('checks every code and splits accepted vs rejected precisely', async () => {
+    const OK = '010478001234567821AAAA91OK';
+    const SOLD = '010478001234567821AAAA91SL';
+    const MISS = '010478001234567821AAAA91MS';
+    const ERR = '010478001234567821AAAA91ER';
     const progress = [];
     const verifyMarking = vi.fn(async ({ code }) => {
       await Promise.resolve();
-      if (code === 'OK') return { found: true, status: 'INTRODUCED' };
-      if (code === 'SOLD') return { found: true, alreadySold: true };
-      if (code === 'MISS') return { found: false };
+      if (code === OK) return { found: true, status: 'INTRODUCED' };
+      if (code === SOLD) return { found: true, alreadySold: true };
+      if (code === MISS) return { found: false };
       throw new Error('boom');
     });
 
@@ -30,14 +34,14 @@ describe('verifyImportMarksAgainstAsl', () => {
       storeId: 5,
       concurrency: 2,
       byLineId: {
-        L1: [{ code: 'OK' }, { code: 'SOLD' }],
-        L2: [{ code: 'MISS' }, { code: 'ERR' }],
+        L1: [{ code: OK }, { code: SOLD }],
+        L2: [{ code: MISS }, { code: ERR }],
       },
       verifyMarking,
       onProgress: (p) => progress.push(p),
     });
 
-    expect(accepted.L1).toEqual([{ code: 'OK', aslStatus: 'INTRODUCED' }]);
+    expect(accepted.L1).toEqual([{ code: OK, aslStatus: 'INTRODUCED' }]);
     expect(accepted.L2).toEqual([]);
     expect(rejected.map((r) => r.reason)).toEqual(['alreadySold', 'notFound', 'error']);
     expect(verifyMarking).toHaveBeenCalledTimes(4);
@@ -56,7 +60,21 @@ describe('verifyImportMarksAgainstAsl', () => {
     });
   });
 
+  it('skips Didox marked flag without calling ASL', async () => {
+    const verifyMarking = vi.fn(async () => ({ found: true }));
+    const { total, done } = await verifyImportMarksAgainstAsl({
+      storeId: 5,
+      byLineId: { L1: [{ code: 'Маркировкаланган' }] },
+      verifyMarking,
+    });
+    expect(total).toBe(0);
+    expect(done).toBe(0);
+    expect(verifyMarking).not.toHaveBeenCalled();
+  });
+
   it('classifies disabled ASL as noIntegration instead of raw errors', async () => {
+    const A = '010478001234567821AAAA91AA';
+    const B = '010478001234567821AAAA91BB';
     const verifyMarking = vi.fn(async () => {
       const err = new Error('ASL Belgisi marking is disabled for this store');
       err.response = { data: { message: 'ASL Belgisi marking is disabled for this store' } };
@@ -66,7 +84,7 @@ describe('verifyImportMarksAgainstAsl', () => {
     const { rejected } = await verifyImportMarksAgainstAsl({
       storeId: 5,
       concurrency: 2,
-      byLineId: { L1: [{ code: 'A' }, { code: 'B' }] },
+      byLineId: { L1: [{ code: A }, { code: B }] },
       verifyMarking,
     });
 

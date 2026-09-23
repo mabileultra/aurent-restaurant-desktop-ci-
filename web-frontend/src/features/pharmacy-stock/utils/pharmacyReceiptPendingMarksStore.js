@@ -1,16 +1,18 @@
 /** Временное хранение КМ из Excel-импорта до скана/проведения на документе. */
 
+import { filterPlausibleImportMarkCodes } from './isPlausibleImportMarkCode';
+
 const PREFIX = 'pharmacy-receipt-import-marks:v1:';
 
 export function savePendingImportMarks(receiptId, rows) {
   if (!receiptId) return;
   const payload = (rows || [])
-    .filter((row) => Array.isArray(row?.markCodes) && row.markCodes.length > 0)
     .map((row) => ({
       barcode: row.barcode || null,
       excelName: row.excelName || null,
-      markCodes: row.markCodes.map((c) => String(c).trim()).filter(Boolean),
-    }));
+      markCodes: filterPlausibleImportMarkCodes(row?.markCodes),
+    }))
+    .filter((row) => row.markCodes.length > 0);
   try {
     if (!payload.length) {
       sessionStorage.removeItem(PREFIX + receiptId);
@@ -53,7 +55,8 @@ export function matchPendingMarksToLines(lines = [], pending = []) {
     });
     if (hitIndex < 0) continue;
     used.add(hitIndex);
-    const codes = pending[hitIndex].markCodes || [];
+    const codes = filterPlausibleImportMarkCodes(pending[hitIndex].markCodes || []);
+    if (!codes.length) continue;
     byLineId[line.id] = codes.map((code) => ({ code, aslStatus: 'IMPORT' }));
   }
   return byLineId;

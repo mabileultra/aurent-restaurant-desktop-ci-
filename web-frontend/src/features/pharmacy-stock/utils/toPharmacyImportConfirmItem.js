@@ -1,3 +1,5 @@
+import { filterPlausibleImportMarkCodes } from './isPlausibleImportMarkCode';
+
 export function toPharmacyImportConfirmItem(item) {
   const expiry = item.expiryDate && String(item.expiryDate).length >= 8 ? item.expiryDate : undefined;
   return {
@@ -15,7 +17,7 @@ export function toPharmacyImportConfirmItem(item) {
     barcode: item.barcode,
     ikpu: item.ikpu,
     unitsInPack: item.unitsInPack,
-    markCodes: Array.isArray(item.markCodes) ? item.markCodes : [],
+    markCodes: filterPlausibleImportMarkCodes(item.markCodes),
     markedProduct: Boolean(item.markedProduct),
     prescriptionRequired: item.prescriptionRequired === true
       ? true

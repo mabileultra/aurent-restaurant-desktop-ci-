@@ -8,8 +8,15 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-/** Парсинг колонки КМ в Excel: несколько кодов через ; , | или перевод строки. */
+/**
+ * Парсинг колонки КМ в Excel: несколько кодов через ; , | или перевод строки.
+ * Флаг Didox «Маркировкаланган» и прочий текст без DataMatrix отбрасываем —
+ * иначе ASL-журнал засоряется «Marking code is required».
+ */
 public final class PharmacyImportMarkCodesParser {
+
+    /** Как у ASL: короче — не КМ идентификации. */
+    private static final int MIN_CODE_LENGTH = 20;
 
     private PharmacyImportMarkCodesParser() {
     }
@@ -27,7 +34,7 @@ public final class PharmacyImportMarkCodesParser {
         List<String> out = new ArrayList<>();
         for (String part : parts) {
             String code = part == null ? "" : part.trim();
-            if (!StringUtils.hasText(code)) {
+            if (!isPlausibleMarkCode(code)) {
                 continue;
             }
             String key = code.toLowerCase(Locale.ROOT);
@@ -36,5 +43,27 @@ public final class PharmacyImportMarkCodesParser {
             }
         }
         return out;
+    }
+
+    /** Реальный КМ: не флаг фактуры, длина как у DataMatrix, есть цифры. */
+    public static boolean isPlausibleMarkCode(String code) {
+        if (!StringUtils.hasText(code)) {
+            return false;
+        }
+        String trimmed = code.trim();
+        if (PharmacyImportInvoiceMarkLook.flagCell(trimmed)) {
+            return false;
+        }
+        if (trimmed.length() < MIN_CODE_LENGTH) {
+            return false;
+        }
+        boolean hasDigit = false;
+        for (int i = 0; i < trimmed.length(); i++) {
+            if (Character.isDigit(trimmed.charAt(i))) {
+                hasDigit = true;
+                break;
+            }
+        }
+        return hasDigit;
     }
 }
