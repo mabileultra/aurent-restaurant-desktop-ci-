@@ -16,12 +16,16 @@ import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -51,6 +55,37 @@ public class ProductCatalogService {
             page.getSize(),
             page.getNumber()
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> listLowStock(int limit) {
+        Integer companyId = tenant.requireCompanyId();
+        int safeLimit = Math.max(1, Math.min(limit, 500));
+        List<String> idRows = productRepository.findLowStockIds(companyId, PageRequest.of(0, safeLimit));
+        if (idRows == null || idRows.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> ids = new ArrayList<>(idRows.size());
+        for (String raw : idRows) {
+            if (raw != null && !raw.isBlank()) {
+                ids.add(UUID.fromString(raw.trim()));
+            }
+        }
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        Map<UUID, Product> byId = new LinkedHashMap<>();
+        for (Product product : productRepository.findAllById(ids)) {
+            byId.put(product.getId(), product);
+        }
+        List<Product> ordered = new ArrayList<>(ids.size());
+        for (UUID id : ids) {
+            Product product = byId.get(id);
+            if (product != null) {
+                ordered.add(product);
+            }
+        }
+        return listResponseAssembler.assemble(ordered, null);
     }
 
     @Transactional(readOnly = true)

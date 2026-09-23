@@ -2,12 +2,19 @@ import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, subDays, startOfMonth, parseISO, isValid } from 'date-fns';
-import { reportApi, productApi } from '../../../api';
+import { reportApi, productApi, pharmacyWarehouseApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
+import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { useDateFnsLocale } from '../../../hooks/useDateFnsLocale';
 import { formatDashboardMoney } from '../constants';
 
 const todayStr = () => format(new Date(), 'yyyy-MM-dd');
+
+function asLowStockList(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.content)) return data.content;
+  return [];
+}
 
 function formatPeriodLabel(from, to, dateLocale, t) {
   const fromDate = parseISO(from);
@@ -26,6 +33,7 @@ export function useDashboardPage() {
   const { t } = useTranslation();
   const dateLocale = useDateFnsLocale();
   const { tenantKey, tenantReady } = useTenantScope();
+  const { isPharmacyCompany, isLoading: businessTypeLoading } = useCompanyBusinessType();
   const today = todayStr();
 
   const presets = useMemo(
@@ -50,11 +58,16 @@ export function useDashboardPage() {
     enabled: tenantReady && Boolean(from && to && from <= to),
   });
 
-  const { data: lowStock } = useQuery({
-    queryKey: tenantKey('dashboard-low-stock'),
-    queryFn: () => productApi.getLowStock().then((r) => r.data),
-    enabled: tenantReady,
+  const { data: lowStockRaw } = useQuery({
+    queryKey: tenantKey('dashboard-low-stock', isPharmacyCompany ? 'pharmacy' : 'grocery'),
+    queryFn: () => (
+      isPharmacyCompany
+        ? pharmacyWarehouseApi.getLowStock({ limit: 500 }).then((r) => asLowStockList(r.data))
+        : productApi.getLowStock().then((r) => asLowStockList(r.data))
+    ),
+    enabled: tenantReady && !businessTypeLoading,
   });
+  const lowStock = asLowStockList(lowStockRaw);
 
   const { data: topProducts } = useQuery({
     queryKey: tenantKey('dashboard-top-products', from, to),

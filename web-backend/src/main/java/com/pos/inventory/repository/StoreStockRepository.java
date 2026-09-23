@@ -36,6 +36,14 @@ public interface StoreStockRepository extends JpaRepository<StoreStock, UUID> {
     );
 
     @Query("""
+        SELECT ss.product.id, COALESCE(SUM(ss.quantity), 0)
+        FROM StoreStock ss
+        WHERE ss.product.id IN :productIds
+        GROUP BY ss.product.id
+        """)
+    List<Object[]> sumQuantitiesByProductIds(@Param("productIds") Collection<UUID> productIds);
+
+    @Query("""
         SELECT ss
         FROM StoreStock ss
         JOIN FETCH ss.product p

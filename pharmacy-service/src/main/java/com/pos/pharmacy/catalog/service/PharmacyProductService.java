@@ -8,6 +8,7 @@ import com.pos.pharmacy.catalog.dto.UpdateProductRequest;
 import com.pos.pharmacy.common.PageResponse;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.UUID;
 
 /** Каталог аптеки: только PHARMACY, без grocery API. */
@@ -20,6 +21,8 @@ public interface PharmacyProductService {
         Integer storeId,
         Pageable pageable
     );
+
+    List<ProductResponse> listLowStock(int limit);
 
     ProductResponse get(UUID id, Integer storeId);
 

@@ -50,6 +50,22 @@ public class StoreStockService {
         return map;
     }
 
+    /** Сумма по всем магазинам. Нет строк склада — ключа нет. */
+    @Transactional(readOnly = true)
+    public Map<UUID, BigDecimal> sumQuantities(Collection<UUID> productIds) {
+        if (productIds == null || productIds.isEmpty()) {
+            return Map.of();
+        }
+        Map<UUID, BigDecimal> map = new HashMap<>();
+        for (Object[] row : storeStockRepository.sumQuantitiesByProductIds(productIds)) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            map.put((UUID) row[0], QuantityUtil.normalizeFromNumber((Number) row[1]));
+        }
+        return map;
+    }
+
     public void requireAvailable(Product product, Store store, BigDecimal quantity) {
         if (!com.pos.util.StockCalculator.tracksStock(product)) {
             return;

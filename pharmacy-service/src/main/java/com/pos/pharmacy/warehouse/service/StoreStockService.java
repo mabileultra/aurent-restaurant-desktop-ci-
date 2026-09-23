@@ -51,6 +51,35 @@ public class StoreStockService {
         return result;
     }
 
+    private static BigDecimal toQty(Object raw) {
+        if (raw == null) {
+            return BigDecimal.ZERO;
+        }
+        if (raw instanceof BigDecimal decimal) {
+            return decimal;
+        }
+        if (raw instanceof Number number) {
+            return new BigDecimal(number.toString());
+        }
+        return new BigDecimal(raw.toString());
+    }
+
+    /** Сумма остатка товара по всем магазинам. Нет строки — ключа нет. */
+    @Transactional(readOnly = true)
+    public Map<UUID, BigDecimal> sumQuantities(Collection<UUID> productIds) {
+        Map<UUID, BigDecimal> result = new HashMap<>();
+        if (productIds == null || productIds.isEmpty()) {
+            return result;
+        }
+        for (Object[] row : storeStockRepository.sumByProductIds(productIds)) {
+            if (row == null || row.length < 2 || row[0] == null) {
+                continue;
+            }
+            result.put((UUID) row[0], QuantityUtil.normalize(toQty(row[1])));
+        }
+        return result;
+    }
+
     @Transactional
     public void increase(Product product, Integer storeId, BigDecimal quantity) {
         if (product == null || storeId == null || quantity == null) {

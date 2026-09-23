@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
+import { AlertTriangle } from 'lucide-react';
 import { pharmacyWarehouseApi } from '../../../api';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { invalidateProductCaches } from '../../../utils/productCache';
@@ -129,6 +130,7 @@ export default function PharmacyProductsPage() {
                 <PharmacySelectAllTh t={t} selection={selection} disabled={rows.length === 0} />
                 <th>№</th>
                 <th>{t('pharmacyStock.colName')}</th>
+                <th className="text-right">{t('stockModule.colQty')}</th>
                 <th>{t('pharmacyStock.retailPrice')}</th>
                 <th>{t('pharmacyStock.colManufacturer')}</th>
                 <th>{t('pharmacyStock.colForm')}</th>
@@ -143,13 +145,13 @@ export default function PharmacyProductsPage() {
             <tbody>
               {listQuery.isLoading ? (
                 <tr>
-                  <td colSpan={12}>
+                  <td colSpan={13}>
                     <div className="pharmacy-stock__empty">{t('common.loading')}</div>
                   </td>
                 </tr>
               ) : rows.length === 0 ? (
                 <tr>
-                  <td colSpan={12}>
+                  <td colSpan={13}>
                     <div className="pharmacy-stock__empty">{t('pharmacyStock.catalogEmpty')}</div>
                   </td>
                 </tr>
@@ -166,6 +168,10 @@ export default function PharmacyProductsPage() {
                     {p.active === false ? (
                       <span className="pharmacy-stock__inline-badge">{t('pharmacyStock.productInactive')}</span>
                     ) : null}
+                  </td>
+                  <td className={`text-right font-semibold ${p.lowStock ? 'text-red-600' : ''}`}>
+                    {p.stockQuantity ?? 0}
+                    {p.lowStock ? <AlertTriangle size={12} className="ml-1 inline" /> : null}
                   </td>
                   <td>{formatMoney(p.sellingPrice)}</td>
                   <td>{productManufacturer(p) || '—'}</td>

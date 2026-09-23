@@ -42,4 +42,28 @@ public interface ProductRepository extends JpaRepository<Product, UUID>, JpaSpec
         ORDER BY p.updatedAt ASC NULLS LAST, p.id ASC
         """)
     Page<Product> findForReportingSnapshot(@Param("companyId") Integer companyId, Pageable pageable);
+
+    /**
+     * Grocery low-stock: остаток по store_stock (или поле товара), без аптеки.
+     * Pageable задаёт LIMIT.
+     */
+    @Query(value = """
+        SELECT CAST(p.id AS varchar)
+        FROM products p
+        LEFT JOIN business_types bt ON bt.id = p.business_type_id
+        LEFT JOIN (
+            SELECT product_id, SUM(quantity) AS qty
+            FROM store_stock
+            GROUP BY product_id
+        ) s ON s.product_id = p.id
+        WHERE p.company_id = :companyId
+          AND p.is_active = true
+          AND COALESCE(s.qty, p.stock_quantity, 0) <= COALESCE(p.low_stock_alert, 10)
+          AND (bt.code IS NULL OR UPPER(bt.code) <> 'PHARMACY')
+        ORDER BY COALESCE(s.qty, p.stock_quantity, 0) ASC, p.name ASC
+        """, nativeQuery = true)
+    List<String> findGroceryLowStockIds(
+        @Param("companyId") Integer companyId,
+        Pageable pageable
+    );
 }

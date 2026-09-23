@@ -19,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -39,6 +40,14 @@ public class PharmacyProductController {
         @PageableDefault(size = 50) Pageable pageable
     ) {
         return ResponseEntity.ok(pharmacyProductService.list(search, activeOnly, scope, storeId, pageable));
+    }
+
+    @GetMapping("/low-stock")
+    @Operation(summary = "Аптечные товары с остатком ниже порога")
+    public ResponseEntity<List<ProductResponse>> listLowStock(
+        @RequestParam(defaultValue = "500") int limit
+    ) {
+        return ResponseEntity.ok(pharmacyProductService.listLowStock(limit));
     }
 
     @GetMapping("/barcode/{barcode}")

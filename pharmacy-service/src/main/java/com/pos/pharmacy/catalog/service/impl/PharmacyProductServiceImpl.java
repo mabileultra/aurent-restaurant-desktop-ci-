@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -33,6 +34,12 @@ public class PharmacyProductServiceImpl implements PharmacyProductService {
     ) {
         Boolean active = ProductListScope.activeFilter(scope, activeOnly);
         return catalogService.list(search, active, storeId, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ProductResponse> listLowStock(int limit) {
+        return catalogService.listLowStock(limit);
     }
 
     @Override

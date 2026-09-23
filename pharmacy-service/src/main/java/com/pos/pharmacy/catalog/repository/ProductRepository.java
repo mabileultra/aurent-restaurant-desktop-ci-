@@ -44,4 +44,26 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     Optional<Product> findFirstByCompanyIdAndSkuStartingWith(Integer companyId, String skuPrefix);
 
     Optional<Product> findFirstByCompanyIdAndBarcode(Integer companyId, String barcode);
+
+    /**
+     * Остаток — сумма по магазинам, если она есть, иначе поле товара.
+     * Порог NULL считается как 10 (дефолт карточки).
+     */
+    @Query(value = """
+        SELECT CAST(p.id AS varchar)
+        FROM products p
+        LEFT JOIN (
+            SELECT product_id, SUM(quantity) AS qty
+            FROM store_stock
+            GROUP BY product_id
+        ) s ON s.product_id = p.id
+        WHERE p.company_id = :companyId
+          AND p.is_active = true
+          AND COALESCE(s.qty, p.stock_quantity, 0) <= COALESCE(p.low_stock_alert, 10)
+        ORDER BY COALESCE(s.qty, p.stock_quantity, 0) ASC, p.name ASC
+        """, nativeQuery = true)
+    List<String> findLowStockIds(
+        @Param("companyId") Integer companyId,
+        Pageable pageable
+    );
 }

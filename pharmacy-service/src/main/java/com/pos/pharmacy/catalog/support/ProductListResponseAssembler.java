@@ -46,7 +46,7 @@ public class ProductListResponseAssembler {
         Supplier<Map<UUID, Map<String, String>>> attrsTask =
             () -> productAttributeService.getAttributesByProductIds(ids);
         Supplier<Map<UUID, BigDecimal>> stockTask = storeId == null
-            ? Map::of
+            ? () -> storeStockService.sumQuantities(ids)
             : () -> storeStockService.getQuantities(storeId, ids);
 
         @SuppressWarnings("unchecked")
@@ -63,12 +63,25 @@ public class ProductListResponseAssembler {
         List<ProductResponse> out = new ArrayList<>(products.size());
         for (Product product : products) {
             Map<String, String> attributes = attrsById.getOrDefault(product.getId(), Map.of());
-            BigDecimal stockQty = storeId != null
-                ? stockById.getOrDefault(product.getId(), BigDecimal.ZERO)
-                : (product.getStockQuantity() != null ? product.getStockQuantity() : BigDecimal.ZERO);
+            BigDecimal stockQty = resolveStockQty(product, storeId, stockById);
             out.add(toResponse(product, stockQty, attributes));
         }
         return out;
+    }
+
+    /**
+     * С магазином — остаток этой точки (нет строки = 0).
+     * Без магазина — сумма по складам, а если движений по точкам нет, поле товара.
+     */
+    private static BigDecimal resolveStockQty(Product product, Integer storeId, Map<UUID, BigDecimal> stockById) {
+        if (storeId != null) {
+            return stockById.getOrDefault(product.getId(), BigDecimal.ZERO);
+        }
+        if (stockById.containsKey(product.getId())) {
+            BigDecimal summed = stockById.get(product.getId());
+            return summed != null ? summed : BigDecimal.ZERO;
+        }
+        return product.getStockQuantity() != null ? product.getStockQuantity() : BigDecimal.ZERO;
     }
 
     static ProductResponse toResponse(Product product, BigDecimal stockQty, Map<String, String> attributes) {

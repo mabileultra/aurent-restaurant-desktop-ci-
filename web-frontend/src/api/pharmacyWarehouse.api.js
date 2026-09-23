@@ -15,6 +15,7 @@ export const pharmacyWarehouseApi = {
   listLots: (params) => api.get('/pharmacy/lots', { params }),
   fefoHints: (params) => api.get('/pharmacy/lots/fefo-hints', { params }),
   listProducts: (params, config) => api.get('/pharmacy/products', { params, ...config }),
+  getLowStock: (params) => api.get('/pharmacy/products/low-stock', { params }),
   getProduct: (id, params) => api.get(`/pharmacy/products/${id}`, { params }),
   getByBarcode: (barcode, storeId) =>
     api.get(`/pharmacy/products/barcode/${encodeURIComponent(barcode)}`, {

@@ -59,4 +59,29 @@ class ProductListResponseAssemblerTest {
         verify(productAttributeService).getAttributesByProductIds(any());
         verify(storeStockService).getQuantities(eq(9), any());
     }
+
+    @Test
+    void assembleWithoutStoreUsesWarehouseSum() {
+        UUID id = UUID.randomUUID();
+        Product product = Product.builder()
+            .id(id)
+            .sku("S1")
+            .name("Test")
+            .lowStockAlert(10)
+            .stockQuantity(new BigDecimal("80"))
+            .build();
+        when(productAttributeService.getAttributesByProductIds(any())).thenReturn(Map.of());
+        when(storeStockService.sumQuantities(any())).thenReturn(Map.of(id, new BigDecimal("2")));
+
+        ProductListResponseAssembler assembler = new ProductListResponseAssembler(
+            productAttributeService,
+            storeStockService,
+            Runnable::run
+        );
+
+        var responses = assembler.assemble(List.of(product), null);
+
+        assertEquals(new BigDecimal("2"), responses.get(0).stockQuantity());
+        assertEquals(true, responses.get(0).lowStock());
+    }
 }

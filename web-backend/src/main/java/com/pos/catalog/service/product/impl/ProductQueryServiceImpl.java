@@ -125,7 +125,16 @@ public class ProductQueryServiceImpl implements ProductQueryService {
         Map<UUID, Integer> storeCounts = catalogLoader.loadStoreCounts(content);
         Map<UUID, Integer> dispatched = assembler.loadDispatchedCounts(content);
         if (storeId == null) {
-            return PageResponse.from(page.map(p -> assembler.toResponse(p, storeCounts, dispatched)));
+            Map<UUID, BigDecimal> companyQty = storeStockService.sumQuantities(
+                content.stream().map(Product::getId).toList()
+            );
+            return PageResponse.from(page.map(p -> {
+                ProductResponse base = assembler.toResponse(p, storeCounts, dispatched);
+                if (!companyQty.containsKey(p.getId())) {
+                    return base;
+                }
+                return assembler.withStockQuantity(base, companyQty.get(p.getId()));
+            }));
         }
         Map<UUID, BigDecimal> storeQty = storeStockService.getQuantities(
             content.stream().map(Product::getId).toList(),

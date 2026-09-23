@@ -1,0 +1,41 @@
+---
+description: Low-stock / «Мало на складе» must use live warehouse qty (not reporting facts alone)
+globs:
+  - web-frontend/**/useDashboardPage*
+  - web-frontend/**/DashboardLowStock*
+  - web-frontend/**/DashboardKpiGrid*
+  - web-frontend/**/pharmacyWarehouse.api*
+  - web-frontend/**/PharmacyProductsPage*
+  - web-backend/**/ProductLowStockQuerySupport*
+  - web-backend/**/ProductQueryServiceImpl*
+  - web-backend/**/StoreStockService*
+  - web-backend/**/StoreStockRepository*
+  - web-backend/**/ProductRepository*
+  - pharmacy-service/**/ProductRepository*
+  - pharmacy-service/**/ProductCatalogService*
+  - pharmacy-service/**/ProductListResponseAssembler*
+  - pharmacy-service/**/StoreStockService*
+  - pharmacy-service/**/StoreStockRepository*
+  - pharmacy-service/**/PharmacyProductController*
+alwaysApply: false
+---
+
+# Low-stock / «Мало на складе» (do not regress)
+
+Dashboard KPI + table and catalog low-stock markers break often when agents switch sources. Keep live warehouse qty.
+
+## Invariants
+
+1. **Dashboard routing** (`useDashboardPage`): pharmacy company → `pharmacyWarehouseApi.getLowStock`; grocery → `productApi.getLowStock`. Do not send pharmacy tenants to grocery `/products/low-stock` only.
+2. **Response shape**: treat low-stock payload as a **list** (`Array.isArray` or `.content`). Empty/error → count `0`, never assume reporting page wrapper.
+3. **Grocery source of truth** (`ProductLowStockQuerySupport`): query **local** `store_stock` / `products.stock_quantity` (e.g. `findGroceryLowStockIds`). Do **not** make dashboard low-stock depend only on reporting-service facts (`/reports/stock/low-stock`) — facts lag and return empty → «0».
+4. **Pharmacy source of truth**: `GET /pharmacy/products/low-stock` must compare **sum of `store_stock`** (fallback `products.stock_quantity`) to `low_stock_alert` (NULL → 10). Do not filter only on denormalized `p.stockQuantity` if store rows exist.
+5. **Catalog list qty**: grocery list without `storeId` and pharmacy list without `storeId` must resolve qty via store sum when present, then recompute `lowStock` (`qty <= lowStockAlert`). With `storeId`, keep per-store qty.
+6. **Isolation**: grocery low-stock **excludes** pharmacy business type; pharmacy stays on pharmacy-service.
+
+## Do not
+
+- Rewire dashboard low-stock back to reporting-only «for consistency with reports».
+- Drop pharmacy `/low-stock` or the pharmacy branch in `useDashboardPage`.
+- Show product/pharmacy stock from card field alone when `store_stock` has rows (silent wrong «ok» / missing alerts).
+- «Simplify» by removing `sumQuantities` / `findGroceryLowStockIds` / pharmacy native low-stock SQL without an equivalent live source.
