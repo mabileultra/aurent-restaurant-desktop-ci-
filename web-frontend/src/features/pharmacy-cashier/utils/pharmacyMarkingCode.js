@@ -17,25 +17,35 @@ export function normalizePharmacyMarkingCode(raw) {
 }
 
 /**
- * Эвристика: код маркировки ASL Belgisi (DataMatrix), а не обычный штрихкод EAN.
+ * Эвристика: код маркировки ASL Belgisi (DataMatrix / QR КМ), а не EAN и не ИКПУ/МХИК.
+ * В ASL уходит именно этот КМ (`codes`), никогда поле ikpu карточки.
  */
 export function isPharmacyMarkingCode(raw) {
   const code = normalizePharmacyMarkingCode(raw);
   if (!code) return false;
 
+  const lower = code.toLowerCase().replace(/ё/g, 'е');
+  // Флаг Didox на фактуре — не DataMatrix
+  if (lower.includes('маркировкаланган') || lower.includes('markirovkalangan')) {
+    return false;
+  }
+
+  // ИКПУ/МХИК: ровно 14–17 цифр без серии/криптохвоста
+  if (/^\d{14,17}$/.test(code)) return false;
+
   const source = String(raw);
-  // GS1 separator в сыром скане (или € вместо GS)
+  // GS1 separator в сыром скане (или € вместо GS) — типичный DataMatrix
   if (source.includes('\u001d') || source.includes('€')) return true;
 
-  // Типичный EAN-8/13/14 — не маркировка
-  if (/^\d{8}$/.test(code) || /^\d{12,14}$/.test(code)) return false;
+  // Типичный EAN-8/13 — не маркировка (14 уже отсекли выше как возможный GTIN/ИКПУ)
+  if (/^\d{8}$/.test(code) || /^\d{12,13}$/.test(code)) return false;
 
-  // GS1 AI «01» + GTIN 14 цифр (в начале или после скобок)
-  if (/01\d{14}/.test(code) || /\(01\)\d{14}/.test(code)) return true;
+  // GS1 КМ: AI 01 + GTIN14 + AI 21 (серия). Одних «01+14 цифр» мало — так выглядит и МХИК.
+  if (/01\d{14}21/.test(code) || /\(01\)\d{14}\(21\)/.test(code)) return true;
 
-  // Длинный криптокод КМ
+  // Длинный криптокод КМ (латиница + цифры)
   if (code.length >= 20 && /[A-Za-z]/.test(code) && /\d/.test(code)) return true;
-  if (code.length >= 24 && /[A-Za-z0-9]/.test(code)) return true;
+  if (code.length >= 25 && /[A-Za-z0-9]/.test(code)) return true;
 
   return false;
 }

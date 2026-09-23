@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public final class PharmacyImportMarkCodesParser {
 
-    /** Как у ASL: короче — не КМ идентификации. */
+    /** Как у ASL / FE: короче — не КИ DataMatrix. */
     private static final int MIN_CODE_LENGTH = 20;
 
     private PharmacyImportMarkCodesParser() {
@@ -45,7 +45,10 @@ public final class PharmacyImportMarkCodesParser {
         return out;
     }
 
-    /** Реальный КМ: не флаг фактуры, длина как у DataMatrix, есть цифры. */
+    /**
+     * Реальный КМ (DataMatrix), не флаг «Маркировкаланган» и не ИКПУ/МХИК (14–17 цифр).
+     * Согласовано с {@code isPharmacyMarkingCode} на кассе.
+     */
     public static boolean isPlausibleMarkCode(String code) {
         if (!StringUtils.hasText(code)) {
             return false;
@@ -54,16 +57,30 @@ public final class PharmacyImportMarkCodesParser {
         if (PharmacyImportInvoiceMarkLook.flagCell(trimmed)) {
             return false;
         }
+        // ИКПУ/МХИК — только цифры, без AI 21 / криптохвоста
+        if (trimmed.matches("\\d{14,17}")) {
+            return false;
+        }
         if (trimmed.length() < MIN_CODE_LENGTH) {
             return false;
         }
         boolean hasDigit = false;
+        boolean hasLetter = false;
         for (int i = 0; i < trimmed.length(); i++) {
-            if (Character.isDigit(trimmed.charAt(i))) {
+            char ch = trimmed.charAt(i);
+            if (Character.isDigit(ch)) {
                 hasDigit = true;
-                break;
+            } else if ((ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z')) {
+                hasLetter = true;
             }
         }
-        return hasDigit;
+        if (!hasDigit) {
+            return false;
+        }
+        // GS1 КМ: 01+GTIN+21… или длинный код с латиницей (серия/крипто)
+        if (trimmed.matches("(?s).*01\\d{14}21.*") || trimmed.matches("(?s).*\\(01\\)\\d{14}\\(21\\).*")) {
+            return true;
+        }
+        return hasLetter;
     }
 }

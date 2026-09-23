@@ -31,6 +31,13 @@ describe('pharmacyMarkingCode', () => {
     expect(isCompletePharmacyMarkingScan('4780012345678')).toBe(false);
   });
 
+  it('does not treat IKPU/MXIK or Didox flag as a marking QR', () => {
+    expect(isPharmacyMarkingCode('03004409005039001')).toBe(false);
+    expect(isPharmacyMarkingCode('01004409005039001')).toBe(false);
+    expect(isPharmacyMarkingCode('Маркировкаланган')).toBe(false);
+    expect(isPharmacyMarkingCode('010478001234567821SERIAL91X')).toBe(true);
+  });
+
   it('reads GTIN from parenthesis AI and digit-only payloads', () => {
     expect(extractGtinFromMarkingCode('(01)03838989563233(21)ABC')).toBe('03838989563233');
     expect(extractGtinFromMarkingCode('010383898956323321999888777')).toBe('03838989563233');

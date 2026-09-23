@@ -1,12 +1,8 @@
-/** Отсекаем флаг Didox и мусор — в ASL уходят только похожие на DataMatrix КМ. */
-const MIN_CODE_LENGTH = 20;
+import { isPharmacyMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
 
+/** Импорт → ASL: только DataMatrix КМ, не ИКПУ и не «Маркировкаланган». */
 export function isPlausibleImportMarkCode(raw) {
-  const code = String(raw || '').trim();
-  if (!code || code.length < MIN_CODE_LENGTH) return false;
-  const lower = code.toLowerCase().replace(/ё/g, 'е');
-  if (lower.includes('маркировкаланган') || lower.includes('markirovkalangan')) return false;
-  return /\d/.test(code);
+  return isPharmacyMarkingCode(raw);
 }
 
 export function filterPlausibleImportMarkCodes(codes) {

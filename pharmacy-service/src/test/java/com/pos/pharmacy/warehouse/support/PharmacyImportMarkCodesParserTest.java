@@ -45,4 +45,12 @@ class PharmacyImportMarkCodesParserTest {
         assertTrue(PharmacyImportMarkCodesParser.parse("short").isEmpty());
         assertTrue(PharmacyImportMarkCodesParser.parse("AAAAAAAAAAAAAAAAAAAA").isEmpty());
     }
+
+    @Test
+    void dropsIkpuMxikDigits() {
+        assertTrue(PharmacyImportMarkCodesParser.parse("03004409005039001").isEmpty());
+        assertTrue(PharmacyImportMarkCodesParser.parse("01004409005039001").isEmpty());
+        assertFalse(PharmacyImportMarkCodesParser.isPlausibleMarkCode("03004409005039001"));
+        assertTrue(PharmacyImportMarkCodesParser.isPlausibleMarkCode("010478001234567821AAAA91X"));
+    }
 }
