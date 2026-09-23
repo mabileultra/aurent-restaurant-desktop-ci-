@@ -5,7 +5,6 @@ export default function CashierMySalesWorkspace({
   t,
   catalogKind,
   shiftLoading,
-  shiftId,
   rows,
   salesLoading,
   filtering,
@@ -23,10 +22,6 @@ export default function CashierMySalesWorkspace({
 }) {
   if (shiftLoading) {
     return <p className="text-muted small">{t('common.loading')}</p>;
-  }
-
-  if (!shiftId) {
-    return <div className="alert alert-warning mb-0">{t('pos.shiftRequired')}</div>;
   }
 
   return (

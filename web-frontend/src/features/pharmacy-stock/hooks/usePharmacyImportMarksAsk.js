@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
-import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
+import { resolveMarkingVerifyUserMessage } from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import {
   matchPendingMarksToLines,
   takePendingImportMarks,
@@ -116,7 +116,17 @@ export function usePharmacyImportMarksAsk({
         summary: summarizeImportAslVerify(accepted, rejected),
       });
     } catch (error) {
-      toast.error(resolvePharmacyApiError(error, t, 'pharmacyStock.marks.verifyFailed'));
+      toast.error(resolveMarkingVerifyUserMessage({
+        aslEnabled: Boolean(aslEnabled),
+        aslError: error,
+        t,
+        keys: {
+          noIntegration: 'pharmacyStock.marks.noIntegration',
+          notFound: 'pharmacyStock.marks.notFound',
+          catalogMiss: 'pharmacyStock.marks.notFound',
+          verifyFailed: 'pharmacyStock.marks.verifyFailed',
+        },
+      }));
     } finally {
       setVerifying(false);
     }

@@ -64,6 +64,7 @@ export default function SalesLedgerPage() {
 
       <SalesLedgerModals
         t={p.t}
+        catalogKind={p.catalogKind}
         filtersOpen={p.filtersOpen}
         onFiltersClose={() => p.setFiltersOpen(false)}
         filters={p.filters}

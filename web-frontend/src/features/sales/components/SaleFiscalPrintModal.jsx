@@ -4,20 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { Printer, X, Settings2 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { saleApi } from '../../../api';
+import { saleApi, pharmacySalesApi } from '../../../api';
 import {
   printFiscalReceipt,
   resolveEscposPrintErrorMessage,
 } from '../../../services/cashierEscpos';
 import { FiscalReceiptBody, ThermalPrintSettingsPanel } from '../../../components/receipt';
 
-export default function SaleFiscalPrintModal({ saleId, onClose }) {
+export default function SaleFiscalPrintModal({ saleId, onClose, catalogKind = 'grocery' }) {
   const { t } = useTranslation();
   const [printSettingsOpen, setPrintSettingsOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
+  const client = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
   const { data: sale, isPending, isError, error } = useQuery({
-    queryKey: ['sale-fiscal', saleId],
-    queryFn: () => saleApi.getById(saleId).then((r) => r.data),
+    queryKey: ['sale-fiscal', catalogKind, saleId],
+    queryFn: () => client.getById(saleId).then((r) => r.data),
     enabled: Boolean(saleId),
   });
 

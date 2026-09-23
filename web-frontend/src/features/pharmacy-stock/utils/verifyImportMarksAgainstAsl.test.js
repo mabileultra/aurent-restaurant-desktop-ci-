@@ -50,8 +50,27 @@ describe('verifyImportMarksAgainstAsl', () => {
       rejectedCount: 3,
       notFoundCount: 1,
       alreadySoldCount: 1,
+      noIntegrationCount: 0,
       errorCount: 1,
       rejected,
     });
+  });
+
+  it('classifies disabled ASL as noIntegration instead of raw errors', async () => {
+    const verifyMarking = vi.fn(async () => {
+      const err = new Error('ASL Belgisi marking is disabled for this store');
+      err.response = { data: { message: 'ASL Belgisi marking is disabled for this store' } };
+      throw err;
+    });
+
+    const { rejected } = await verifyImportMarksAgainstAsl({
+      storeId: 5,
+      concurrency: 2,
+      byLineId: { L1: [{ code: 'A' }, { code: 'B' }] },
+      verifyMarking,
+    });
+
+    expect(rejected.every((r) => r.reason === 'noIntegration')).toBe(true);
+    expect(summarizeImportAslVerify({}, rejected).noIntegrationCount).toBe(2);
   });
 });

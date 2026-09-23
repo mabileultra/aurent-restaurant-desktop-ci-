@@ -22,4 +22,17 @@ describe('pharmacyCheckoutLineFromCartItem', () => {
       pharmacySellByPiece: false,
     })).toBeNull();
   });
+
+  it('converts piece sale even when markedProduct is true but no KM', () => {
+    const line = pharmacyCheckoutLineFromCartItem({
+      quantity: 112,
+      unitPrice: 2455.14,
+      unitsInPack: 100,
+      pharmacySellByPiece: true,
+      packUnitPrice: 245513.66,
+      markedProduct: true,
+    });
+    expect(line.quantity).toBe(1.12);
+    expect(line.unitPrice).toBe(245513.66);
+  });
 });

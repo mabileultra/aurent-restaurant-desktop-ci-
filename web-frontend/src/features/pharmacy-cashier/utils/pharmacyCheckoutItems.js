@@ -15,8 +15,9 @@ function lineMarks(item) {
 export function buildPharmacyCheckoutLineItems(items) {
   return items.map((item) => {
     const marks = lineMarks(item);
-    // Маркировка: qty = число КМ (упаковок), без пересчёта в штуки.
-    if (isMarkCountedLine(item) || item?.markedProduct === true || marks.length > 0) {
+    // Только строки с КМ: qty = число марок (упаковок). Флаг markedProduct без КМ
+    // не отменяет поштучный пересчёт — иначе 112 шт уходит как 112 уп.
+    if (isMarkCountedLine(item) || marks.length > 0) {
       return {
         productId: item.productId,
         quantity: roundQty(marks.length > 0 ? marks.length : item.quantity),
@@ -50,7 +51,6 @@ function needsPharmacyPackCheckout(items) {
     (line) => line.pharmacySellByPiece === true
       || line.packUnitPrice != null
       || isMarkCountedLine(line)
-      || line?.markedProduct === true
       || lineMarks(line).length > 0,
   );
 }

@@ -5,6 +5,7 @@ import ReturnDetailModal from '../ReturnDetailModal';
 import ReturnReasonModal from '../ReturnReasonModal';
 
 export default function ReturnsModals({
+  catalogKind = 'grocery',
   filtersOpen,
   onFiltersClose,
   filters,
@@ -42,6 +43,7 @@ export default function ReturnsModals({
         returnId={detailId}
         reasonPreview={detailReason}
         onClose={onDetailClose}
+        catalogKind={catalogKind}
       />
 
       <ReturnReasonModal
@@ -56,6 +58,7 @@ export default function ReturnsModals({
         open={createReturnOpen}
         onClose={onCreateReturnClose}
         onSuccess={onReturnSuccess}
+        catalogKind={catalogKind}
       />
 
       <SalePartialReturnModal
@@ -63,6 +66,7 @@ export default function ReturnsModals({
         saleId={continueReturnSaleId}
         onClose={onContinueReturnClose}
         onSuccess={onReturnSuccess}
+        catalogKind={catalogKind}
       />
     </>
   );

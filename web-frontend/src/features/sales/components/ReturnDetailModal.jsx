@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
-import { returnApi } from '../../../api';
+import { returnApi, pharmacySalesApi } from '../../../api';
 
 import { fmtMoney } from '../../../utils/formatMoney';
 
@@ -23,12 +23,19 @@ function InfoRow({ label, value }) {
   );
 }
 
-export default function ReturnDetailModal({ open, returnId, reasonPreview, onClose }) {
+export default function ReturnDetailModal({
+  open,
+  returnId,
+  reasonPreview,
+  onClose,
+  catalogKind = 'grocery',
+}) {
   const { t } = useTranslation();
+  const client = catalogKind === 'pharmacy' ? pharmacySalesApi : returnApi;
 
   const { data: sale, isPending, isError, error } = useQuery({
-    queryKey: ['return-detail', returnId],
-    queryFn: () => returnApi.getById(returnId).then((r) => r.data),
+    queryKey: ['return-detail', catalogKind, returnId],
+    queryFn: () => client.getById(returnId).then((r) => r.data),
     enabled: open && !!returnId,
   });
 

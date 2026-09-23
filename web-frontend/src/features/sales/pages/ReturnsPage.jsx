@@ -50,6 +50,7 @@ export default function ReturnsPage() {
 
       <ReturnsTable
         t={p.t}
+        catalogKind={p.catalogKind}
         rows={p.rows}
         loading={p.loading}
         showEmptyHint={p.showEmptyHint}
@@ -69,6 +70,7 @@ export default function ReturnsPage() {
       />
 
       <ReturnsModals
+        catalogKind={p.catalogKind}
         filtersOpen={p.filtersOpen}
         onFiltersClose={() => p.setFiltersOpen(false)}
         filters={p.filters}

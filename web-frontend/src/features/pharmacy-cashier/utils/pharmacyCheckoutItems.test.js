@@ -44,4 +44,23 @@ describe('resolveCheckoutLineItems', () => {
     expect(lines[0].quantity).toBe(2);
     expect(lines[0].unitPrice).toBe(50000);
   });
+
+  it('pack-converts markedProduct without KM (piece sale)', () => {
+    const items = [
+      {
+        productId: 'p3',
+        quantity: 112,
+        unitPrice: 2455.14,
+        discount: 0,
+        markedProduct: true,
+        unitsInPack: 100,
+        pharmacySellByPiece: true,
+        packUnitPrice: 245513.66,
+      },
+    ];
+    const lines = resolveCheckoutLineItems(items);
+    expect(lines[0].quantity).toBe(1.12);
+    expect(lines[0].unitPrice).toBe(245513.66);
+    expect(lines[0].productMarks).toBeUndefined();
+  });
 });

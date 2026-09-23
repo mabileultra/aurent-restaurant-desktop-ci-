@@ -1,4 +1,5 @@
 import { pharmacyIntegrationApi } from '../../../api';
+import { isAslIntegrationDisabledError } from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import { runLimited } from './runLimited';
 
 /** Параллельность к ASL: много потоков, проверка всё равно полная по каждому КМ. */
@@ -62,8 +63,8 @@ export async function verifyImportMarksAgainstAsl({
     } catch (error) {
       rejected.push({
         code: job.code,
-        reason: 'error',
-        message: error?.response?.data?.message || error?.message || null,
+        reason: isAslIntegrationDisabledError(error) ? 'noIntegration' : 'error',
+        message: null,
       });
     } finally {
       done += 1;

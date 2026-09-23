@@ -1,0 +1,36 @@
+---
+description: Pharmacy Multikassa — cash register binding must not regress
+globs:
+  - pharmacy-service/**/shift/**
+  - web-backend/**/multikassa/**
+  - web-frontend/**/Multikassa*
+  - web-frontend/**/posDataRouter.js
+  - web-frontend/**/CashierDesktopMenuMultikassa*
+alwaysApply: false
+---
+
+# Pharmacy + Multikassa (do not regress)
+
+After pharmacy cutover, shifts live in **pharmacy-service**; Multikassa settings live on **cash_registers** in **web-backend**. Never disconnect them again.
+
+## Invariants
+
+1. **Pharmacy shift must expose `cashRegisterId`** (and ideally `registerNumber`) in `PharmacyShiftResponse`. Do not hardcode `null` in `PharmacyShiftResponseAssembler`.
+2. **On pharmacy shift open**, FE resolves the terminal via `/cashier/terminal/register` and passes `cashRegisterId` into pharmacy open body; pharmacy persists it on `pharmacy_cashier_shifts`.
+3. **Multikassa resolve** (`MultikassaSettingsServiceImpl.resolveRegisterForCashier`): if no grocery open shift, fall back to the store’s first **ACTIVE** cash register. Do not remove this fallback for pharmacy.
+4. **Cashier Multikassa UI** may open settings using `shift.cashRegisterId ?? caps.cashRegisterId` (and terminal register as last resort). Never require only grocery `CashierShift`.
+5. **Guard** (`MultikassaCashierRegisterGuard`): cashiers without grocery open shift may still configure Multikassa for a store they can sell at (pharmacy path). Do not restore “grocery shift only”.
+
+## Do not
+
+- Tie Multikassa only to `web-backend` `CashierShift` for pharmacy POS.
+- Drop `cash_register_id` from pharmacy shifts / Liquibase v15 without a replacement.
+- Copy grocery shift APIs into pharmacy without keeping register binding.
+
+## Contrast (why ASL “just works”)
+
+ASL / DMED capabilities are **store/company integration flags**, not cash-register-bound. Multikassa is **per cash register** — that difference must stay explicit.
+
+## When changing POS / shifts / Multikassa
+
+Touch the smallest surface; keep grocery path unchanged; verify pharmacy POS can open Multikassa settings with an open pharmacy shift.

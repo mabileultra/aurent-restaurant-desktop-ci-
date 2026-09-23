@@ -7,6 +7,7 @@ import SalesLedgerRowMenu from './SalesLedgerRowMenu';
 
 export default function SalesLedgerModals({
   t,
+  catalogKind = 'grocery',
   filtersOpen,
   onFiltersClose,
   filters,
@@ -48,7 +49,11 @@ export default function SalesLedgerModals({
 
       {printSaleId
         ? createPortal(
-            <SaleFiscalPrintModal saleId={printSaleId} onClose={onPrintClose} />,
+            <SaleFiscalPrintModal
+              saleId={printSaleId}
+              catalogKind={catalogKind}
+              onClose={onPrintClose}
+            />,
             document.body
           )
         : null}
@@ -57,6 +62,7 @@ export default function SalesLedgerModals({
         open={createReturnOpen}
         onClose={onCreateReturnClose}
         onSuccess={onReturnSuccess}
+        catalogKind={catalogKind}
       />
 
       <SalePartialReturnModal
@@ -64,6 +70,7 @@ export default function SalesLedgerModals({
         saleId={returnSaleId}
         onClose={onReturnSaleClose}
         onSuccess={onReturnSuccess}
+        catalogKind={catalogKind}
       />
     </>
   );

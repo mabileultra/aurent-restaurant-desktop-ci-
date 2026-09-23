@@ -3,11 +3,16 @@ import { useMutation, useQuery, useQueryClient, keepPreviousData } from '@tansta
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
-import { returnApi, storeApi } from '../../../api';
+import { returnApi, storeApi, pharmacySalesApi } from '../../../api';
+import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
+import { useTenantScope } from '../../../hooks/useTenantScope';
 import { RETURNS_DEFAULT_FILTERS, SALES_PAGE_SIZE_DEFAULT } from '../constants';
 
 export function useReturnsPage() {
   const { t } = useTranslation();
+  const { tenantKey, tenantReady } = useTenantScope();
+  const { isPharmacyCompany, isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const catalogKind = isPharmacyCompany ? 'pharmacy' : 'grocery';
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(SALES_PAGE_SIZE_DEFAULT);
@@ -30,8 +35,9 @@ export function useReturnsPage() {
   }, [qc]);
 
   const { data: stores = [] } = useQuery({
-    queryKey: ['stores'],
+    queryKey: tenantKey('stores'),
     queryFn: () => storeApi.getAll().then((r) => r.data),
+    enabled: tenantReady,
   });
 
   const queryParams = useMemo(
@@ -59,29 +65,48 @@ export function useReturnsPage() {
   );
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ['returns', queryParams],
-    queryFn: () => returnApi.getAll(queryParams).then((r) => r.data),
+    queryKey: tenantKey('returns', catalogKind, queryParams),
+    queryFn: () => (
+      catalogKind === 'pharmacy'
+        ? pharmacySalesApi.getReturns(queryParams)
+        : returnApi.getAll(queryParams)
+    ).then((r) => r.data),
+    enabled: tenantReady && !businessTypeLoading,
     placeholderData: keepPreviousData,
   });
 
   const updateReasonMutation = useMutation({
-    mutationFn: ({ id, reason }) => returnApi.updateReason(id, { reason }),
+    mutationFn: ({ id, reason }) => {
+      if (catalogKind === 'pharmacy') {
+        return Promise.reject(new Error(t('returnsModule.pharmacyReasonSoon', {
+          defaultValue: 'Изменение причины возврата для аптеки пока недоступно',
+        })));
+      }
+      return returnApi.updateReason(id, { reason });
+    },
     onSuccess: () => {
       toast.success(t('returnsModule.updateReasonSuccess'));
       qc.invalidateQueries({ queryKey: ['returns'] });
       setEditRow(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('returnsModule.updateReasonFailed')),
+    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('returnsModule.updateReasonFailed')),
   });
 
   const cancelReturnMutation = useMutation({
-    mutationFn: (id) => returnApi.delete(id),
+    mutationFn: (id) => {
+      if (catalogKind === 'pharmacy') {
+        return Promise.reject(new Error(t('returnsModule.pharmacyCancelSoon', {
+          defaultValue: 'Отмена возврата для аптеки пока недоступна из журнала',
+        })));
+      }
+      return returnApi.delete(id);
+    },
     onSuccess: () => {
       toast.success(t('returnsModule.cancelReturnSuccess'));
       qc.invalidateQueries({ queryKey: ['returns'] });
       setMenuOpenId(null);
     },
-    onError: (e) => toast.error(e.response?.data?.message ?? t('returnsModule.cancelReturnFailed')),
+    onError: (e) => toast.error(e.response?.data?.message ?? e.message ?? t('returnsModule.cancelReturnFailed')),
   });
 
   const rows = data?.content ?? [];
@@ -99,6 +124,12 @@ export function useReturnsPage() {
   }, []);
 
   const handleExportExcel = useCallback(async () => {
+    if (catalogKind === 'pharmacy') {
+      toast.error(t('returnsModule.exportPharmacySoon', {
+        defaultValue: 'Экспорт Excel для аптеки пока недоступен',
+      }));
+      return;
+    }
     setExporting(true);
     try {
       const res = await returnApi.exportExcel(exportParams);
@@ -121,7 +152,7 @@ export function useReturnsPage() {
     } finally {
       setExporting(false);
     }
-  }, [exportParams, applied.dateFrom, applied.dateTo, t]);
+  }, [catalogKind, exportParams, applied.dateFrom, applied.dateTo, t]);
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -172,6 +203,7 @@ export function useReturnsPage() {
 
   return {
     t,
+    catalogKind,
     search,
     page,
     pageSize,

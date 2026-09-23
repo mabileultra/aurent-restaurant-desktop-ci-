@@ -10,13 +10,14 @@ export function summarizeImportAslVerify(accepted, rejected) {
   const byReason = {
     notFound: 0,
     alreadySold: 0,
+    noIntegration: 0,
     error: 0,
   };
 
   const rejectedList = Array.isArray(rejected) ? rejected : [];
   for (const item of rejectedList) {
     const reason = item?.reason;
-    if (reason === 'notFound' || reason === 'alreadySold' || reason === 'error') {
+    if (reason === 'notFound' || reason === 'alreadySold' || reason === 'noIntegration' || reason === 'error') {
       byReason[reason] += 1;
     } else {
       byReason.error += 1;
@@ -28,6 +29,7 @@ export function summarizeImportAslVerify(accepted, rejected) {
     rejectedCount: rejectedList.length,
     notFoundCount: byReason.notFound,
     alreadySoldCount: byReason.alreadySold,
+    noIntegrationCount: byReason.noIntegration,
     errorCount: byReason.error,
     rejected: rejectedList,
   };

@@ -7,7 +7,7 @@ import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFis
 import { assessPharmacyMarkLifecycle } from '../utils/pharmacyMarkLifecycle';
 import { markingIdentityKeys } from '../utils/pharmacyMarkIdentity';
 import { resolveCashierMarkedProduct } from '../utils/resolveCashierMarkedProduct';
-import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
+import { resolveMarkingVerifyUserMessage } from '../utils/resolveMarkingVerifyUserMessage';
 
 /**
  * Скан / вставка КМ из поля поиска — та же логика, что модалка ASL.
@@ -90,17 +90,12 @@ export function usePharmacyMarkingScan({
 
       setLastScan({ code: mark, result: resolved.aslResult, product: null });
       if (!silent) {
-        if (resolved.aslResult?.found && resolved.aslResult.productName) {
-          toast.error(t('pharmacyCashier.integrations.markingCatalogMiss', {
-            name: resolved.aslResult.productName,
-          }));
-        } else if (resolved.aslError) {
-          toast.error(resolvePharmacyApiError(resolved.aslError, t, 'pharmacyCashier.integrations.markingNotFound'));
-        } else if (!aslMarkingEnabled) {
-          toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
-        } else {
-          toast.error(t('pharmacyCashier.integrations.markingNotFound'));
-        }
+        toast.error(resolveMarkingVerifyUserMessage({
+          aslEnabled: Boolean(aslMarkingEnabled),
+          aslResult: resolved.aslResult,
+          aslError: resolved.aslError,
+          t,
+        }));
       }
     } finally {
       keys.forEach((k) => pendingRef.current.delete(k));

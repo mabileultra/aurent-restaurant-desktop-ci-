@@ -3,8 +3,9 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { format, parseISO } from 'date-fns';
 import toast from 'react-hot-toast';
-import { saleApi, storeApi } from '../../../api';
+import { saleApi, storeApi, pharmacySalesApi } from '../../../api';
 import { useTenantScope } from '../../../hooks/useTenantScope';
+import { useCompanyBusinessType } from '../../../hooks/useCompanyBusinessType';
 import { salePaymentLabel } from '../../../utils/salePaymentLabel';
 import { SALES_LEDGER_DEFAULT_FILTERS, SALES_PAGE_SIZE_DEFAULT } from '../constants';
 
@@ -12,6 +13,9 @@ export function useSalesLedgerPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { tenantKey, tenantReady } = useTenantScope();
+  const { isPharmacyCompany, isLoading: businessTypeLoading } = useCompanyBusinessType();
+  const catalogKind = isPharmacyCompany ? 'pharmacy' : 'grocery';
+  const salesClient = catalogKind === 'pharmacy' ? pharmacySalesApi : saleApi;
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(SALES_PAGE_SIZE_DEFAULT);
@@ -64,9 +68,9 @@ export function useSalesLedgerPage() {
   }, [search, applied]);
 
   const { data, isPending, isError, error } = useQuery({
-    queryKey: tenantKey('sales-ledger', queryParams),
-    queryFn: () => saleApi.getAll(queryParams).then((r) => r.data),
-    enabled: tenantReady,
+    queryKey: tenantKey('sales-ledger', catalogKind, queryParams),
+    queryFn: () => salesClient.getAll(queryParams).then((r) => r.data),
+    enabled: tenantReady && !businessTypeLoading,
   });
 
   const rows = data?.content ?? [];
@@ -126,6 +130,12 @@ export function useSalesLedgerPage() {
   }, []);
 
   const handleExportSalesExcel = useCallback(async () => {
+    if (catalogKind === 'pharmacy') {
+      toast.error(t('salesLedger.exportPharmacySoon', {
+        defaultValue: 'Экспорт Excel для аптеки пока недоступен',
+      }));
+      return;
+    }
     try {
       const res = await saleApi.exportLines(exportParams);
       const blob = new Blob([res.data], {
@@ -141,7 +151,7 @@ export function useSalesLedgerPage() {
     } catch (e) {
       toast.error(e?.response?.data?.message ?? t('salesLedger.exportFailed'));
     }
-  }, [exportParams, t]);
+  }, [catalogKind, exportParams, t]);
 
   const handleSearchChange = (value) => {
     setSearch(value);
@@ -177,6 +187,7 @@ export function useSalesLedgerPage() {
 
   return {
     t,
+    catalogKind,
     search,
     page,
     pageSize,

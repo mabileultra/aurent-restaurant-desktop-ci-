@@ -1,0 +1,32 @@
+---
+description: Pharmacy POS pack qty + marked without KM — do not regress
+globs:
+  - web-frontend/**/pharmacyCheckoutItems*
+  - web-frontend/**/pharmacyPackSale*
+  - web-frontend/**/pharmacyPackQty*
+  - web-frontend/**/usePharmacyMarkingScan*
+  - web-frontend/**/usePharmacyCartHandlers*
+alwaysApply: false
+---
+
+# Pharmacy POS — pack sale / marking (do not regress)
+
+Stock is stored in **packs**. Piece sale encodes cart qty in **pieces**, then checkout converts to pack qty for the API.
+
+## Invariants
+
+1. **`pharmacyCheckoutLineFromCartItem` / `buildPharmacyCheckoutLineItems`**: skip pack→piece conversion **only when КМ are present** (`productMarks` / `productMark` / `markCode` / `isMarkCountedLine`).  
+   Do **not** skip conversion just because `markedProduct === true` without marks.
+2. Selling `1 уп + 12 шт` with `unitsInPack=100` must send API qty **`1.12`** packs, not `112`.
+3. Keep grocery checkout path unchanged; pharmacy routing is via `needsPharmacyPackCheckout` / `pharmacySellByPiece` / packUnitPrice / marks.
+
+## Do not
+
+- Restore `if (item?.markedProduct === true) return null` in `pharmacyCheckoutLineFromCartItem`.
+- Treat `markedProduct` alone as mark-counted in `buildPharmacyCheckoutLineItems`.
+- Send piece qty / piece price as pack qty for unmarked piece sales.
+
+## Tests to keep green
+
+- `pharmacyCheckoutItems.test.js` — marked without KM still pack-converts.
+- `pharmacyPackSale.test.js` — markedProduct without KM converts pieces → packs.

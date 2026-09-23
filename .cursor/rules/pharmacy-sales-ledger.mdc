@@ -1,0 +1,39 @@
+---
+description: Pharmacy admin sales/returns ledger must use pharmacy-service
+globs:
+  - web-frontend/**/useSalesLedgerPage*
+  - web-frontend/**/useReturnsPage*
+  - web-frontend/**/pharmacySales.api*
+  - web-frontend/**/SaleFiscalPrintModal*
+  - web-frontend/**/SalesLedgerModals*
+  - web-frontend/**/ReturnsModals*
+  - pharmacy-service/**/sales/**
+alwaysApply: false
+---
+
+# Pharmacy sales ledger / returns (do not regress)
+
+After cutover, pharmacy sales live in **pharmacy_db** / **pharmacy-service**. Grocery `saleApi` / `returnApi` (pos_db) have **no** pharmacy rows.
+
+## Invariants
+
+1. When `useCompanyBusinessType().isPharmacyCompany`, admin **Продажи** and **Возвраты** must call `pharmacySalesApi` (`GET /pharmacy/sales`, `GET /pharmacy/sales/returns`), not `saleApi` / `returnApi`.
+2. Pharmacy-service must keep company-wide list endpoints for ADMIN/MANAGER: `listSales`, `listReturns` (VOIDED/REFUNDED). Do not leave only `my-sales`.
+3. Print / partial return from ledger: pass `catalogKind: 'pharmacy'` into modals so they use `pharmacySalesApi.getById` / return flow.
+4. Aggregate reports (`reportApi` → reporting-service / Kafka `sale_facts`) are a **separate** path — do not “fix” them by pointing ledger at grocery again.
+5. Grocery companies must keep using `saleApi` / `returnApi` unchanged.
+
+## Do not
+
+- Hardcode admin ledger to grocery `saleApi.getAll` for all tenants.
+- Delete `GET /pharmacy/sales` or `GET /pharmacy/sales/returns` without FE replacement.
+- Assume pharmacy returns are in web-backend `/returns` table.
+
+## Contrast
+
+| Surface | Source |
+|---------|--------|
+| Админ журнал продаж/возвратов (аптека) | pharmacy-service |
+| Мои продажи (касса) | pharmacy `my-sales` |
+| Отчёты by-products / daily / cashiers | reporting-service (Kafka) |
+| Продуктовый журнал | web-backend sales |

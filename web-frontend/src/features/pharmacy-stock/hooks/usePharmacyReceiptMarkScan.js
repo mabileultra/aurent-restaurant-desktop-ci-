@@ -1,13 +1,16 @@
 import { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api';
-import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
 import { isAslMarkAlreadySold } from '../../pharmacy-cashier/utils/aslMarkingAlreadySold';
 import {
   isCompletePharmacyMarkingScan,
   isPharmacyMarkingCode,
   normalizePharmacyMarkingCode,
 } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+import {
+  isAslIntegrationDisabledError,
+  resolveMarkingVerifyUserMessage,
+} from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import { matchReceiptLineByMarking } from '../utils/matchReceiptLineByMarking';
 
 /**
@@ -71,15 +74,32 @@ export function usePharmacyReceiptMarkScan({
         setLastHit({ status: 'no-line', code, aslResult });
         return false;
       }
-      const ok = acceptVerifiedMark(line, rawCode, aslResult?.status || (aslEnabled ? 'VERIFIED' : 'SCAN'));
+      const ok = acceptVerifiedMark(
+        line,
+        rawCode,
+        aslResult?.status || (aslEnabled ? 'VERIFIED' : 'SCAN'),
+      );
       if (ok) {
         setDraft('');
         setLastHit({ status: 'ok', code, line, aslResult });
       }
       return ok;
     } catch (error) {
-      toast.error(resolvePharmacyApiError(error, t, 'pharmacyStock.marks.verifyFailed'));
-      setLastHit({ status: 'error', code });
+      toast.error(resolveMarkingVerifyUserMessage({
+        aslEnabled: Boolean(aslEnabled),
+        aslError: error,
+        t,
+        keys: {
+          noIntegration: 'pharmacyStock.marks.noIntegration',
+          notFound: 'pharmacyStock.marks.notFound',
+          catalogMiss: 'pharmacyStock.marks.notFound',
+          verifyFailed: 'pharmacyStock.marks.verifyFailed',
+        },
+      }));
+      setLastHit({
+        status: isAslIntegrationDisabledError(error) ? 'no-integration' : 'error',
+        code,
+      });
       return false;
     } finally {
       pendingRef.current = false;

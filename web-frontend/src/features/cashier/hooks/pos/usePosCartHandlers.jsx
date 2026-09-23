@@ -12,6 +12,7 @@ import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
 import { applyPharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkedScanCart';
+import { resolveMarkingVerifyUserMessage } from '../../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
@@ -166,11 +167,31 @@ export function usePosCartHandlers({
           setSearch('');
           return true;
         }
-        toast.error(t('pos.barcodeNotFound'));
+        toast.error(resolveMarkingVerifyUserMessage({
+          aslEnabled: Boolean(aslMarkingEnabled),
+          aslResult: resolved.aslResult,
+          t,
+          keys: {
+            noIntegration: 'pharmacyCashier.integrations.markingApiDisabled',
+            notFound: 'pos.markingNotFound',
+            catalogMiss: 'pharmacyCashier.integrations.markingCatalogMiss',
+            verifyFailed: 'pos.markingNotFound',
+          },
+        }));
         setSearch('');
         return true;
       } catch (e) {
-        toast.error(e.response?.data?.message ?? t('pos.barcodeNotFound'));
+        toast.error(resolveMarkingVerifyUserMessage({
+          aslEnabled: Boolean(aslMarkingEnabled),
+          aslError: e,
+          t,
+          keys: {
+            noIntegration: 'pharmacyCashier.integrations.markingApiDisabled',
+            notFound: 'pos.markingNotFound',
+            catalogMiss: 'pharmacyCashier.integrations.markingCatalogMiss',
+            verifyFailed: 'pos.markingNotFound',
+          },
+        }));
         setSearch('');
         return true;
       } finally {

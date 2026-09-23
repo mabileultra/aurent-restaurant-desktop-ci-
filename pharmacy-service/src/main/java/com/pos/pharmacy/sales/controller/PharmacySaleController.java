@@ -5,6 +5,7 @@ import com.pos.pharmacy.sales.dto.CreateSaleRequest;
 import com.pos.pharmacy.sales.dto.MarkSoldCheckRequest;
 import com.pos.pharmacy.sales.dto.MarkSoldCheckResponse;
 import com.pos.pharmacy.sales.dto.PartialReturnRequest;
+import com.pos.pharmacy.sales.dto.PharmacyReturnRowResponse;
 import com.pos.pharmacy.sales.dto.SaleResponse;
 import com.pos.pharmacy.sales.service.PharmacySaleCheckoutService;
 import com.pos.pharmacy.sales.service.PharmacySalePartialReturnService;
@@ -23,6 +24,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.UUID;
 
 @RestController
@@ -58,6 +60,42 @@ public class PharmacySaleController {
     @Operation(summary = "Чек по номеру")
     public ResponseEntity<SaleResponse> getByReceipt(@PathVariable String receiptNumber) {
         return ResponseEntity.ok(queryService.getByReceiptNumber(receiptNumber));
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Журнал аптечных продаж компании")
+    public ResponseEntity<PageResponse<SaleResponse>> listSales(
+        @RequestParam(required = false) LocalDate from,
+        @RequestParam(required = false) LocalDate to,
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) String search,
+        @RequestParam(required = false) String receiptNumber,
+        @RequestParam(required = false) String saleId,
+        @RequestParam(required = false) String cashierName,
+        @RequestParam(required = false) String paymentMethod,
+        @RequestParam(required = false) String status,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(queryService.listSales(
+            from, to, storeId, search, receiptNumber, saleId, cashierName, paymentMethod, status, pageable
+        ));
+    }
+
+    @GetMapping("/returns")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Журнал аптечных возвратов (VOIDED / REFUNDED)")
+    public ResponseEntity<PageResponse<PharmacyReturnRowResponse>> listReturns(
+        @RequestParam(required = false) LocalDate from,
+        @RequestParam(required = false) LocalDate to,
+        @RequestParam(required = false) Integer storeId,
+        @RequestParam(required = false) String fiscalSearch,
+        @RequestParam(required = false) String cashierName,
+        @PageableDefault(size = 20) Pageable pageable
+    ) {
+        return ResponseEntity.ok(queryService.listReturns(
+            from, to, storeId, fiscalSearch, cashierName, pageable
+        ));
     }
 
     @GetMapping("/{id}")

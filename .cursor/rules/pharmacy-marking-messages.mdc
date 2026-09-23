@@ -1,0 +1,29 @@
+---
+description: Pharmacy ASL marking verify — clear user messages, no API dumps
+globs:
+  - web-frontend/**/resolveMarkingVerifyUserMessage*
+  - web-frontend/**/usePharmacyMarkingScan*
+  - web-frontend/**/usePharmacyReceiptMarkScan*
+  - web-frontend/**/verifyImportMarksAgainstAsl*
+  - web-frontend/**/usePharmacyImportMarksAsk*
+  - web-frontend/**/usePosCartHandlers*
+alwaysApply: false
+---
+
+# Pharmacy marking verify messages (do not regress)
+
+When КМ check fails, show **one** clear message — never raw backend English / stack dumps via `resolvePharmacyApiError` on the not-found path.
+
+## Invariants
+
+1. Use `resolveMarkingVerifyUserMessage` / `classifyMarkingVerifyFailure`:
+   - **No ASL integration** (FE off or backend “marking is disabled”) → `markingApiDisabled` / `marks.noIntegration`
+   - **ASL on, code/product missing** → `markingCatalogNeed` / `marks.notFound`
+   - **ASL found name, not in catalog** → `markingCatalogMiss`
+2. Import ASL verify: map disabled errors to reason `noIntegration` (do not store raw `error.message` for every code).
+3. Do not toast `resolvePharmacyApiError` for marking not-found when a classified user message exists.
+
+## Do not
+
+- Prefer `aslError` API text over “нет интеграции” when ASL is off.
+- List dozens of identical “disabled” import failures without collapsing to `noIntegration`.

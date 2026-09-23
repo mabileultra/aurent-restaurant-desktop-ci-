@@ -2,6 +2,8 @@ import { api } from './client';
 
 export const pharmacySalesApi = {
   create: (data, config) => api.post('/pharmacy/sales', data, config),
+  getAll: (params) => api.get('/pharmacy/sales', { params }),
+  getReturns: (params) => api.get('/pharmacy/sales/returns', { params }),
   getById: (id) => api.get(`/pharmacy/sales/${id}`),
   getReceipt: (receiptNumber) =>
     api.get(`/pharmacy/sales/receipt/${encodeURIComponent(String(receiptNumber).trim())}`),

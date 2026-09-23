@@ -1,0 +1,23 @@
+---
+description: Pharmacy cashier my-sales must work without open shift filter-only
+globs:
+  - web-frontend/**/useCashierMySalesPage*
+  - web-frontend/**/CashierMySalesWorkspace*
+  - web-frontend/**/cashierShiftStability*
+alwaysApply: false
+---
+
+# Pharmacy / cashier «Мои продажи» (do not regress)
+
+Cashiers must see past sales and voids after the shift is closed or a new shift is opened.
+
+## Invariants
+
+1. `useCashierMySalesPage`: query is **enabled with `storeId`** even when there is no open shift.
+2. Do **not** require `shiftId` to load the list; omit shift filter so previous-shift sales/returns appear.
+3. Do **not** block the workspace with only `pos.shiftRequired` when `shiftId` is null — show the list.
+
+## Do not
+
+- Restore `enabled: !!shiftId && !!storeId` without an alternate path for closed-shift history.
+- Always pass current open `shiftId` into `my-sales` if that hides prior voids/returns.

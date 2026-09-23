@@ -49,9 +49,14 @@ export function useCashierMySalesPage() {
     setPage(0);
   }, [appliedFilters]);
 
+  // Без фильтра по смене: после закрытия/переоткрытия должны быть видны
+  // продажи и возвраты предыдущих смен (аптека и grocery).
   const salesQueryParams = useMemo(
-    () => ({ ...buildCashierSalesQueryParams(appliedFilters, page), shiftId }),
-    [appliedFilters, page, shiftId]
+    () => ({
+      ...buildCashierSalesQueryParams(appliedFilters, page),
+      ...(storeId ? { storeId } : {}),
+    }),
+    [appliedFilters, page, storeId]
   );
 
   const {
@@ -61,7 +66,7 @@ export function useCashierMySalesPage() {
   } = useQuery({
     queryKey: ['my-sales', catalogKind, salesQueryParams],
     queryFn: () => posFetchMySales(storeId, salesQueryParams, { catalogKind }),
-    enabled: !!shiftId && !!storeId,
+    enabled: !!storeId,
   });
 
   const rows = useMemo(() => sales?.content ?? [], [sales?.content]);

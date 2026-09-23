@@ -31,7 +31,6 @@ export default function CashierMySalesPage() {
           t={t}
           catalogKind={p.catalogKind}
           shiftLoading={p.shiftLoading}
-          shiftId={p.shiftId}
           rows={p.rows}
           salesLoading={p.salesLoading}
           filtering={p.filtering}

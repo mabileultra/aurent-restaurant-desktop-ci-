@@ -37,6 +37,7 @@ export default function PharmacyReceiptImportMarksVerifyModal({
   const reasonLabel = (reason) => {
     if (reason === 'alreadySold') return t('pharmacyStock.marks.alreadySold');
     if (reason === 'notFound') return t('pharmacyStock.marks.notFound');
+    if (reason === 'noIntegration') return t('pharmacyStock.marks.noIntegration');
     return t('pharmacyStock.marks.verifyFailed');
   };
 
@@ -99,22 +100,37 @@ export default function PharmacyReceiptImportMarksVerifyModal({
               <li>
                 {t('pharmacyStock.marks.importResultSold', { count: resultSummary.alreadySoldCount })}
               </li>
+              {(resultSummary.noIntegrationCount || 0) > 0 ? (
+                <li>
+                  {t('pharmacyStock.marks.importResultNoIntegration', {
+                    count: resultSummary.noIntegrationCount,
+                  })}
+                </li>
+              ) : null}
               <li>
                 {t('pharmacyStock.marks.importResultErrors', { count: resultSummary.errorCount })}
               </li>
             </ul>
-            {resultSummary.rejectedCount > 0 ? (
+            {(resultSummary.noIntegrationCount || 0) > 0 ? (
+              <p className="pharmacy-import-marks-ask__warn">
+                {t('pharmacyStock.marks.noIntegration')}
+              </p>
+            ) : null}
+            {resultSummary.rejectedCount > 0 && !(resultSummary.noIntegrationCount > 0
+              && resultSummary.noIntegrationCount === resultSummary.rejectedCount) ? (
               <div className="pharmacy-import-marks-ask__rejected">
                 <div className="pharmacy-import-marks-ask__rejected-title">
                   {t('pharmacyStock.marks.importResultRejectedList')}
                 </div>
                 <ul className="pharmacy-import-marks-ask__rejected-list">
-                  {resultSummary.rejected.map((item) => (
-                    <li key={`${item.reason}:${item.code}`}>
-                      <code>{item.code}</code>
-                      <span>{reasonLabel(item.reason)}</span>
-                    </li>
-                  ))}
+                  {resultSummary.rejected
+                    .filter((item) => item.reason !== 'noIntegration')
+                    .map((item) => (
+                      <li key={`${item.reason}:${item.code}`}>
+                        <code>{item.code}</code>
+                        <span>{reasonLabel(item.reason)}</span>
+                      </li>
+                    ))}
                 </ul>
               </div>
             ) : null}

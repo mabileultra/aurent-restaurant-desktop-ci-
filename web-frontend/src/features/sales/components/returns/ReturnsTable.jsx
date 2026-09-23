@@ -8,6 +8,7 @@ const COL_COUNT = 9;
 
 export default function ReturnsTable({
   t,
+  catalogKind = 'grocery',
   rows,
   loading,
   showEmptyHint,
@@ -88,10 +89,14 @@ export default function ReturnsTable({
                           label: t('returnsModule.viewInfo'),
                           onClick: () => onOpenDetail(row),
                         },
-                        {
-                          label: t('returnsModule.editReason'),
-                          onClick: () => onEditReason(row),
-                        },
+                        ...(catalogKind !== 'pharmacy'
+                          ? [
+                              {
+                                label: t('returnsModule.editReason'),
+                                onClick: () => onEditReason(row),
+                              },
+                            ]
+                          : []),
                         ...(row.status === 'REFUNDED'
                           ? [
                               {
@@ -100,7 +105,7 @@ export default function ReturnsTable({
                               },
                             ]
                           : []),
-                        ...(row.status === 'VOIDED'
+                        ...(row.status === 'VOIDED' && catalogKind !== 'pharmacy'
                           ? [
                               {
                                 label: t('returnsModule.cancelReturn'),
