@@ -4,7 +4,6 @@ import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
-import com.pos.pharmacy.catalog.support.PharmacyPackSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacySaleErrors;
 import com.pos.pharmacy.util.QuantityUtil;
@@ -139,19 +138,11 @@ public class PharmacyReceiptPostedPriceSync {
             if (line.getVatPercent() != null) {
                 product.setTaxRate(line.getVatPercent());
             }
-            syncUnitsInPack(product.getId(), line.getUnitsInPack());
+            PharmacyReceiptUnitsInPackSync.apply(product, line.getUnitsInPack(), productAttributeService);
         }
         productRepository.saveAll(products);
         catalogCacheEvictor.onStoreStockChanged(receipt.getCompanyId(), receipt.getStoreId());
         catalogCacheEvictor.onProductChanged(receipt.getCompanyId());
-    }
-
-    private void syncUnitsInPack(UUID productId, BigDecimal unitsInPack) {
-        if (productId == null || unitsInPack == null || unitsInPack.compareTo(BigDecimal.ZERO) <= 0) {
-            return;
-        }
-        String value = QuantityUtil.normalize(unitsInPack).stripTrailingZeros().toPlainString();
-        productAttributeService.upsertAttribute(productId, PharmacyPackSupport.ATTR_UNITS_IN_PACK, value);
     }
 
     private void applyStockDeltas(

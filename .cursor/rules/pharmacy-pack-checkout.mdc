@@ -4,6 +4,8 @@ globs:
   - web-frontend/**/pharmacyCheckoutItems*
   - web-frontend/**/pharmacyPackSale*
   - web-frontend/**/pharmacyPackQty*
+  - web-frontend/**/pharmacyProductMeta*
+  - web-frontend/**/PharmacyQtyModal*
   - web-frontend/**/usePharmacyMarkingScan*
   - web-frontend/**/usePharmacyCartHandlers*
 alwaysApply: false
@@ -19,14 +21,17 @@ Stock is stored in **packs**. Piece sale encodes cart qty in **pieces**, then ch
    Do **not** skip conversion just because `markedProduct === true` without marks.
 2. Selling `1 уп + 12 шт` with `unitsInPack=100` must send API qty **`1.12`** packs, not `112`.
 3. Keep grocery checkout path unchanged; pharmacy routing is via `needsPharmacyPackCheckout` / `pharmacySellByPiece` / packUnitPrice / marks.
+4. Modal / `productSellByPiece` UX: see `pharmacy-qty-modal.mdc` (do not re-lock piece sale via stale `soldIndividually`).
 
 ## Do not
 
 - Restore `if (item?.markedProduct === true) return null` in `pharmacyCheckoutLineFromCartItem`.
 - Treat `markedProduct` alone as mark-counted in `buildPharmacyCheckoutLineItems`.
 - Send piece qty / piece price as pack qty for unmarked piece sales.
+- Block piece UI solely because `soldIndividually === false` when `units_in_pack > 1`.
 
 ## Tests to keep green
 
 - `pharmacyCheckoutItems.test.js` — marked without KM still pack-converts.
 - `pharmacyPackSale.test.js` — markedProduct without KM converts pieces → packs.
+- `pharmacyProductMeta.test.js` — pack>1 allows piece unless `sell_by_piece=false`.

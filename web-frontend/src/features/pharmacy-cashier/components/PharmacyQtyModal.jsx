@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { pharmacyWarehouseApi } from '../../../api';
+import { useCartStore } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { roundQty } from '../../../utils/quantityFormat';
 import {
@@ -30,6 +31,22 @@ function lotKeyOf(lot) {
   return `${lot?.batchNumber || ''}|${lot?.expiryDate || ''}`;
 }
 
+/** Упаковки этого товара уже в открытом чеке. */
+function packsAlreadyInCart(items, productId, unitsInPack) {
+  if (!productId || !Array.isArray(items)) return 0;
+  let packs = 0;
+  for (const item of items) {
+    if (item?.productId !== productId && item?.id !== productId) continue;
+    const qty = Number(item.quantity) || 0;
+    if (item.pharmacySellByPiece && unitsInPack > 1) {
+      packs += qty / unitsInPack;
+    } else {
+      packs += qty;
+    }
+  }
+  return packs;
+}
+
 /**
  * Модалка «Добавить товар в чек» — раскладка как в Осон, наш визуал.
  * КМ по-прежнему со скана в поиске кассы; чекбокс маркировки — статус товара.
@@ -50,6 +67,7 @@ export default function PharmacyQtyModal({
   const [packOnly, setPackOnly] = useState(false);
   const [markingOn, setMarkingOn] = useState(false);
   const [error, setError] = useState('');
+  const cartItems = useCartStore((s) => s.items);
 
   const unitsInPack = productUnitsInPack(product) || Number(product?.unitsInPack) || 1;
   const productAllowsPiece = productSellByPiece(product);
@@ -59,11 +77,6 @@ export default function PharmacyQtyModal({
   const piecePrice = unitsInPack > 1
     ? pharmacyPieceUnitPrice(packPrice, unitsInPack)
     : packPrice;
-  const stockPacks = Number(
-    product?.pharmacySellByPiece && product?.packUnitPrice != null && unitsInPack > 1
-      ? (Number(product.stockQuantity ?? 0) / unitsInPack)
-      : (product?.stockQuantity ?? 0),
-  );
   const manufacturer = productAttr(product, 'manufacturer', 'производитель', 'producer')
     || product?.manufacturer
     || '';
@@ -73,6 +86,7 @@ export default function PharmacyQtyModal({
   const uniqueBarcodes = [...new Set(barcodes)];
   const showPackUi = unitsInPack > 1;
   const markedProduct = Boolean(product?.markedProduct);
+  const soldPacks = packsAlreadyInCart(cartItems, product?.id, unitsInPack);
 
   const lotsQuery = useQuery({
     queryKey: ['pharmacy-lots', storeId, product?.id],
@@ -83,6 +97,17 @@ export default function PharmacyQtyModal({
     enabled: Boolean(open && storeId && product?.id),
   });
   const lots = lotsQuery.data ?? [];
+
+  const stockPacks = useMemo(() => {
+    if (lots.length > 0) {
+      return lots.reduce((sum, lot) => sum + (Number(lot.quantity) || 0), 0);
+    }
+    const raw = Number(product?.stockQuantity ?? 0);
+    if (product?.pharmacySellByPiece && product?.packUnitPrice != null && unitsInPack > 1) {
+      return raw / unitsInPack;
+    }
+    return raw;
+  }, [lots, product, unitsInPack]);
 
   useEffect(() => {
     if (!open || !product) return;
@@ -164,6 +189,7 @@ export default function PharmacyQtyModal({
     onConfirm?.({
       packs: normalized.packs,
       pieces: sellByPiece ? normalized.pieces : 0,
+      sellByPiece,
       lot: selectedLot
         ? { ...selectedLot, batchNumber: batchText.trim() || selectedLot.batchNumber }
         : (batchText.trim() ? { batchNumber: batchText.trim(), expiryDate: expiryValue || null } : null),
@@ -252,33 +278,37 @@ export default function PharmacyQtyModal({
             />
           </FieldRow>
 
-          <div className="pharmacy-qty-modal__pair">
-            <FieldRow label={t('pharmacyCashier.colPrice')}>
-              <span className="pharmacy-qty-modal__box">{fmt(packPrice)}</span>
-            </FieldRow>
-            <FieldRow label={t('pharmacyCashier.vatShort')}>
-              <span className="pharmacy-qty-modal__box">{fmt(Number(product.taxRate ?? 0))}</span>
-            </FieldRow>
-          </div>
-
-          <div className="pharmacy-qty-modal__pair">
-            <FieldRow label={showPackUi ? t('pharmacyCashier.pricePerPieceShort') : t('pharmacyCashier.pricePerPiece')}>
-              <span className="pharmacy-qty-modal__box">{fmt(piecePrice)}</span>
-            </FieldRow>
-            <FieldRow label={t('pharmacyCashier.soldPacks')}>
-              <span className="pharmacy-qty-modal__box">0 {t('pharmacyCashier.qtyPackShort')}</span>
-            </FieldRow>
-          </div>
-
-          <div className="pharmacy-qty-modal__pair">
-            <FieldRow label={t('pharmacyCashier.remaining')}>
-              <span className="pharmacy-qty-modal__box">
+          <div className="pharmacy-qty-modal__metrics">
+            <div className="pharmacy-qty-modal__metric">
+              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.colPrice')}</span>
+              <span className="pharmacy-qty-modal__metric-value">{fmt(packPrice)}</span>
+            </div>
+            <div className="pharmacy-qty-modal__metric">
+              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.vatShort')}</span>
+              <span className="pharmacy-qty-modal__metric-value">{fmt(Number(product.taxRate ?? 0))}</span>
+            </div>
+            <div className="pharmacy-qty-modal__metric">
+              <span className="pharmacy-qty-modal__metric-label">
+                {showPackUi ? t('pharmacyCashier.pricePerPieceShort') : t('pharmacyCashier.pricePerPiece')}
+              </span>
+              <span className="pharmacy-qty-modal__metric-value">{fmt(piecePrice)}</span>
+            </div>
+            <div className="pharmacy-qty-modal__metric">
+              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.inPack')}</span>
+              <span className="pharmacy-qty-modal__metric-value">{showPackUi ? unitsInPack : 1}</span>
+            </div>
+            <div className="pharmacy-qty-modal__metric pharmacy-qty-modal__metric--sold">
+              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.soldPacks')}</span>
+              <span className="pharmacy-qty-modal__metric-value">
+                {roundQty(soldPacks)} {t('pharmacyCashier.qtyPackShort')}
+              </span>
+            </div>
+            <div className="pharmacy-qty-modal__metric pharmacy-qty-modal__metric--stock">
+              <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.remaining')}</span>
+              <span className="pharmacy-qty-modal__metric-value">
                 {roundQty(stockPacks)} {t('pharmacyCashier.qtyPackShort')}
               </span>
-            </FieldRow>
-            <FieldRow label={t('pharmacyCashier.inPack')}>
-              <span className="pharmacy-qty-modal__box">{showPackUi ? unitsInPack : 1}</span>
-            </FieldRow>
+            </div>
           </div>
 
           <div className="pharmacy-qty-modal__qty-block">

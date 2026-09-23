@@ -14,14 +14,21 @@ describe('productSellByPiece', () => {
     expect(productSellByPiece({ attributes: { units_in_pack: '100' } })).toBe(true);
   });
 
-  it('honors explicit disable', () => {
+  it('honors explicit disable via sell_by_piece', () => {
     expect(productSellByPiece({
       attributes: { units_in_pack: '100', sell_by_piece: 'false' },
     })).toBe(false);
     expect(productSellByPiece({
       attributes: { units_in_pack: '100' },
-      soldIndividually: false,
+      sellByPiece: false,
     })).toBe(false);
+  });
+
+  it('allows piece sale when only soldIndividually is false (stale after pack sync)', () => {
+    expect(productSellByPiece({
+      attributes: { units_in_pack: '23' },
+      soldIndividually: false,
+    })).toBe(true);
   });
 
   it('is off for single-unit products', () => {

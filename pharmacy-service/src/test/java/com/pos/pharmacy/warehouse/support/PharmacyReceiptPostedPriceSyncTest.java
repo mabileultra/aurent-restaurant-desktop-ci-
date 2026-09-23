@@ -91,6 +91,9 @@ class PharmacyReceiptPostedPriceSyncTest {
         assertEquals(LocalDate.of(2027, 5, 1), lot.getExpiryDate());
         assertEquals(new BigDecimal("100.00"), product.getCostPrice());
         assertEquals(new BigDecimal("140.00"), product.getSellingPrice());
+        assertEquals(true, product.isSoldIndividually());
+        assertEquals(true, product.isAllowFraction());
+        assertEquals(3, product.getQuantityScale());
         verify(productAttributeService).upsertAttribute(productId, PharmacyPackSupport.ATTR_UNITS_IN_PACK, "10");
         verify(stockLotRepository).saveAll(List.of(lot));
         ArgumentCaptor<List<Product>> products = ArgumentCaptor.captor();

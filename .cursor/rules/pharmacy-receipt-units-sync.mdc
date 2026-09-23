@@ -3,9 +3,11 @@ description: Pharmacy receipt units_in_pack must sync to product card for POS
 globs:
   - pharmacy-service/**/PharmacyReceiptPostedPriceSync*
   - pharmacy-service/**/PharmacyReceiptActivation*
+  - pharmacy-service/**/PharmacyReceiptUnitsInPackSync*
   - pharmacy-service/**/ProductAttributeService*
   - web-frontend/**/pharmacy-cart-table.css
   - web-frontend/**/PharmacyCartTable*
+  - web-frontend/**/pharmacyProductMeta*
 alwaysApply: false
 ---
 
@@ -15,11 +17,14 @@ Cashier «В УП.» reads `product_attributes.units_in_pack`, not the receipt l
 
 ## Invariants
 
-1. On **post** (`PharmacyReceiptActivation`) and **posted mass/line sync** (`PharmacyReceiptPostedPriceSync`), copy line `unitsInPack` into product attribute `units_in_pack` via `ProductAttributeService.upsertAttribute` (do not wipe other attributes).
-2. Keep syncing cost / retail / VAT as today; pack size is additional, not instead of prices.
-3. Dark POS cart price edit input must use `--pharm-cell-bg` / `--pharm-ink` (never hardcoded white bg + `color: inherit`).
+1. On **post** (`PharmacyReceiptActivation`) and **posted mass/line sync** (`PharmacyReceiptPostedPriceSync`), copy line `unitsInPack` into product attribute `units_in_pack` via `PharmacyReceiptUnitsInPackSync` / `ProductAttributeService.upsertAttribute` (do not wipe other attributes).
+2. When `unitsInPack > 1`, also set `soldIndividually=true`, `allowFraction=true`, and `quantityScale ≥ 3` so the cashier can sell by piece (do not leave a stale pack-only flag after sync).
+3. Keep syncing cost / retail / VAT as today; pack size is additional, not instead of prices.
+4. Dark POS cart price edit input must use `--pharm-cell-bg` / `--pharm-ink` (never hardcoded white bg + `color: inherit`).
+5. Cashier `productSellByPiece`: honor explicit `sell_by_piece=false`; do **not** treat bare `soldIndividually=false` as pack-only when `units_in_pack > 1` (see `pharmacy-qty-modal.mdc`).
 
 ## Do not
 
 - Assume changing only `stock_receipt_lines.units_in_pack` updates the cashier table.
 - Call `saveAttributes` (full replace) just to set pack size.
+- Sync pack size without enabling piece/fraction flags when units > 1.

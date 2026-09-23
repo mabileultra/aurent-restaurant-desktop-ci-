@@ -183,12 +183,16 @@ export function usePharmacyCartHandlers({
   );
 
   const handleQtyConfirm = useCallback(
-    ({ packs = 0, pieces = 0, lot, productMarks } = {}) => {
+    ({ packs = 0, pieces = 0, lot, productMarks, sellByPiece: sellByPieceFromModal } = {}) => {
       const product = qtyModalProduct;
       if (!product) return;
       const unitsInPack = productUnitsInPack(product) || Number(product.unitsInPack) || 1;
       const marks = Array.isArray(productMarks) ? productMarks.filter(Boolean) : [];
-      const sellByPiece = marks.length > 0 ? false : productSellByPiece(product);
+      const sellByPiece = marks.length > 0
+        ? false
+        : (typeof sellByPieceFromModal === 'boolean'
+          ? sellByPieceFromModal
+          : productSellByPiece(product));
       const qty = marks.length > 0
         ? marks.length
         : toCartQuantity({ packs, pieces, unitsInPack, sellByPiece });

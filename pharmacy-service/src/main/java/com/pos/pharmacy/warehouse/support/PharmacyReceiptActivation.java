@@ -3,7 +3,6 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
 import com.pos.pharmacy.catalog.service.ProductAttributeService;
-import com.pos.pharmacy.catalog.support.PharmacyPackSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.exception.PharmacyException;
@@ -109,14 +108,7 @@ public class PharmacyReceiptActivation {
             if (line.vatPercent() != null) {
                 product.setTaxRate(line.vatPercent());
             }
-            if (line.unitsInPack() != null && line.unitsInPack().compareTo(BigDecimal.ZERO) > 0) {
-                String units = QuantityUtil.normalize(line.unitsInPack()).stripTrailingZeros().toPlainString();
-                productAttributeService.upsertAttribute(
-                    product.getId(),
-                    PharmacyPackSupport.ATTR_UNITS_IN_PACK,
-                    units
-                );
-            }
+            PharmacyReceiptUnitsInPackSync.apply(product, line.unitsInPack(), productAttributeService);
             quantities.merge(product.getId(), line.quantity(), QuantityUtil::add);
         }
         stockIncrease.increase(storeId, products, quantities);

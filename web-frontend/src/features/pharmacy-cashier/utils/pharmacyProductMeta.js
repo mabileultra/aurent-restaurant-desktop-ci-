@@ -147,7 +147,11 @@ export function productRequiresPrescription(productOrLine) {
     || normalized === 'рецепт';
 }
 
-/** Можно продавать поштучно из упаковки. Явный запрет в карточке важнее. */
+/**
+ * Можно продавать поштучно из упаковки.
+ * Явный sell_by_piece / sellByPiece важнее; soldIndividually=false без атрибута
+ * не блокирует (часто устаревший флаг после sync фасовки с фактуры).
+ */
 export function productSellByPiece(productOrLine) {
   const pack = productUnitsInPack(productOrLine);
   if (pack == null || pack <= 1) return false;
@@ -158,7 +162,6 @@ export function productSellByPiece(productOrLine) {
     return true;
   }
   if (productOrLine?.sellByPiece === false) return false;
-  if (productOrLine?.soldIndividually === false) return false;
   return true;
 }
 

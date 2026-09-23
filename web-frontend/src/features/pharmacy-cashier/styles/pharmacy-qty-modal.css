@@ -1,16 +1,28 @@
-/* Модалка «Добавить товар в чек» — раскладка Осон, наш визуал */
+/**
+ * Модалка «Добавить товар в чек».
+ * Цвета — только --pharm-* / --pos-* (свет/тём переключаются с кассой).
+ */
 
 .pharmacy-qty-modal {
-  --pqm-ink: #1e293b;
-  --pqm-muted: #64748b;
-  --pqm-line: #cbd5e1;
-  --pqm-surface: #f8fafc;
-  --pqm-accent: #fbbf24;
-  --pqm-accent-soft: #fef3c7;
-  --pqm-focus: #2563eb;
-  --pqm-focus-soft: #dbeafe;
-  --pqm-head: #334155;
-  --pqm-radius: 6px;
+  --pqm-ink: var(--pharm-ink, var(--pos-text, #e8eef7));
+  --pqm-muted: var(--pharm-muted, var(--pos-muted, #94a3b8));
+  --pqm-line: var(--pharm-border, var(--pos-border, #2a3548));
+  --pqm-surface: var(--pharm-surface, var(--pos-surface, #151b26));
+  --pqm-elevated: var(--pharm-elevated, var(--pos-surface-elevated, #1c2433));
+  --pqm-cell: var(--pharm-cell-bg, var(--pqm-elevated));
+  --pqm-hover: var(--pharm-hover, var(--pos-surface-hover, #243044));
+  --pqm-brand: var(--pharm-brand, #006847);
+  --pqm-brand-hover: var(--pharm-brand-hover, #005538);
+  --pqm-brand-soft: var(--pharm-brand-soft, rgb(0 104 71 / 0.14));
+  --pqm-teal: var(--pharm-teal, #0d9488);
+  --pqm-teal-soft: var(--pharm-teal-soft, rgb(13 148 136 / 0.16));
+  --pqm-focus-ring: var(--pharm-focus-ring, rgb(0 104 71 / 0.28));
+  --pqm-ok-text: var(--pharm-ok-text, #7dffc4);
+  --pqm-warn-text: var(--pharm-warn-text, #ffd666);
+  --pqm-danger-text: var(--pharm-danger-text, #ff9b94);
+  --pqm-radius: var(--pharm-radius, 12px);
+  --pqm-radius-sm: var(--pharm-radius-sm, 8px);
+  --pqm-shadow: 0 24px 64px rgb(0 0 0 / 0.45), 0 0 0 1px rgb(0 104 71 / 0.22);
 
   position: fixed;
   inset: 0;
@@ -19,28 +31,34 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  color: var(--pqm-ink);
 }
 
 .pharmacy-qty-modal__backdrop {
   position: absolute;
   inset: 0;
   border: none;
-  background: rgba(15, 23, 42, 0.48);
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgb(0 104 71 / 0.18), transparent 70%),
+    rgb(8 12 18 / 0.62);
   cursor: pointer;
+  backdrop-filter: blur(6px);
 }
 
 .pharmacy-qty-modal__panel--sale {
   position: relative;
-  width: min(480px, 100%);
-  max-height: min(92vh, 760px);
+  width: min(440px, 100%);
+  max-height: min(92vh, 780px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #fff;
+  background:
+    linear-gradient(165deg, rgb(0 104 71 / 0.08) 0%, transparent 42%),
+    var(--pqm-elevated);
   color: var(--pqm-ink);
   border: 1px solid var(--pqm-line);
-  border-radius: 10px;
-  box-shadow: 0 22px 48px rgb(15 23 42 / 0.28);
+  border-radius: calc(var(--pqm-radius) + 2px);
+  box-shadow: var(--pqm-shadow);
 }
 
 .pharmacy-qty-modal__head {
@@ -48,59 +66,73 @@
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  padding: 0.55rem 0.75rem;
-  background: var(--pqm-head);
+  padding: 0.7rem 0.9rem;
+  background: linear-gradient(90deg, var(--pqm-brand) 0%, #0a7a55 55%, var(--pqm-teal) 100%);
   color: #fff;
 }
 
 .pharmacy-qty-modal__title {
   margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.8rem;
   font-weight: 700;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: #fff;
 }
 
 .pharmacy-qty-modal__x {
   border: 0;
-  background: transparent;
-  color: #e2e8f0;
-  font-size: 1.35rem;
+  background: rgb(255 255 255 / 0.12);
+  color: #fff;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 999px;
+  font-size: 1.15rem;
   line-height: 1;
   cursor: pointer;
-  padding: 0 0.15rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
 }
 
 .pharmacy-qty-modal__x:hover {
-  color: #fff;
+  background: rgb(255 255 255 / 0.22);
 }
 
 .pharmacy-qty-modal__name-bar {
   flex-shrink: 0;
   margin: 0;
-  padding: 0.65rem 0.85rem;
-  background: var(--pqm-accent-soft);
-  border-bottom: 1px solid #f59e0b;
+  padding: 0.75rem 0.95rem;
+  background: var(--pqm-brand-soft);
+  border-bottom: 1px solid rgb(0 104 71 / 0.28);
   color: var(--pqm-ink);
   font-size: 1.05rem;
   font-weight: 800;
   line-height: 1.3;
+  letter-spacing: -0.01em;
   word-break: break-word;
 }
 
 .pharmacy-qty-modal__body {
   flex: 1 1 auto;
   overflow-y: auto;
-  padding: 0.7rem 0.85rem 0.55rem;
+  padding: 0.75rem 0.9rem 0.65rem;
   background: var(--pqm-surface);
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.45rem;
+  color-scheme: dark;
+}
+
+.cashier-app--light .pharmacy-qty-modal__body {
+  color-scheme: light;
 }
 
 .pharmacy-qty-modal__row {
   display: grid;
-  grid-template-columns: 7.6rem minmax(0, 1fr);
+  grid-template-columns: 7.2rem minmax(0, 1fr);
   gap: 0.45rem;
   align-items: center;
 }
@@ -121,10 +153,12 @@
 }
 
 .pharmacy-qty-modal__row-label {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 650;
   color: var(--pqm-muted);
   line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .pharmacy-qty-modal__row-control {
@@ -134,16 +168,17 @@
 .pharmacy-qty-modal__box {
   display: block;
   width: 100%;
-  min-height: 30px;
-  padding: 0.28rem 0.45rem;
+  min-height: 32px;
+  padding: 0.32rem 0.5rem;
   border: 1px solid var(--pqm-line);
-  border-radius: var(--pqm-radius);
-  background: #fff;
+  border-radius: var(--pqm-radius-sm);
+  background: var(--pqm-cell);
   color: var(--pqm-ink);
   font-size: 0.84rem;
   font-weight: 650;
   line-height: 1.35;
   box-sizing: border-box;
+  font-variant-numeric: tabular-nums;
 }
 
 .pharmacy-qty-modal__box--wrap {
@@ -153,21 +188,71 @@
 .pharmacy-qty-modal__box--input {
   outline: none;
   font-weight: 600;
+  appearance: none;
 }
 
 .pharmacy-qty-modal__box--input:focus {
-  border-color: var(--pqm-focus);
-  box-shadow: 0 0 0 2px rgb(37 99 235 / 0.18);
+  border-color: var(--pqm-brand);
+  box-shadow: 0 0 0 3px var(--pqm-focus-ring);
+}
+
+.pharmacy-qty-modal__box--input option {
+  background: var(--pqm-elevated);
+  color: var(--pqm-ink);
 }
 
 .pharmacy-qty-modal__pair {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.45rem 0.65rem;
+  gap: 0.45rem 0.55rem;
 }
 
 .pharmacy-qty-modal__pair .pharmacy-qty-modal__row {
-  grid-template-columns: 5.2rem minmax(0, 1fr);
+  grid-template-columns: 4.8rem minmax(0, 1fr);
+}
+
+.pharmacy-qty-modal__metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+  margin: 0.1rem 0 0.15rem;
+}
+
+.pharmacy-qty-modal__metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--pqm-line);
+  border-radius: var(--pqm-radius-sm);
+  background: var(--pqm-cell);
+  min-width: 0;
+}
+
+.pharmacy-qty-modal__metric-label {
+  font-size: 0.68rem;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--pqm-muted);
+}
+
+.pharmacy-qty-modal__metric-value {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--pqm-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  word-break: break-word;
+}
+
+.pharmacy-qty-modal__metric--stock .pharmacy-qty-modal__metric-value {
+  color: var(--pqm-ok-text);
+}
+
+.pharmacy-qty-modal__metric--sold .pharmacy-qty-modal__metric-value {
+  color: var(--pqm-teal);
 }
 
 .pharmacy-qty-modal__inline-check {
@@ -186,7 +271,7 @@
 
 .pharmacy-qty-modal__inline-check input {
   margin-top: 0.1rem;
-  accent-color: var(--pqm-focus);
+  accent-color: var(--pqm-brand);
 }
 
 .pharmacy-qty-modal__inline-check:has(input:disabled) {
@@ -195,22 +280,26 @@
 }
 
 .pharmacy-qty-modal__qty-block {
-  margin-top: 0.25rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid #e2e8f0;
+  margin-top: 0.2rem;
+  padding: 0.55rem 0.55rem 0.45rem;
+  border: 1px solid var(--pqm-line);
+  border-radius: var(--pqm-radius-sm);
+  background: var(--pqm-elevated);
 }
 
 .pharmacy-qty-modal__qty-label {
-  margin: 0 0 0.4rem;
-  font-size: 0.8rem;
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--pqm-ink);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--pqm-muted);
 }
 
 .pharmacy-qty-modal__steppers {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.55rem;
+  gap: 0.5rem;
 }
 
 .pharmacy-qty-modal__steppers--single {
@@ -221,21 +310,23 @@
   display: grid;
   grid-template-columns: 1fr auto auto;
   align-items: stretch;
-  min-height: 52px;
+  min-height: 54px;
   border: 1px solid var(--pqm-line);
-  border-radius: var(--pqm-radius);
-  background: #fff;
+  border-radius: var(--pqm-radius-sm);
+  background: var(--pqm-cell);
   overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .pharmacy-qty-modal__stepper.is-active {
-  border-color: var(--pqm-focus);
-  background: var(--pqm-focus-soft);
-  box-shadow: inset 0 0 0 1px rgb(37 99 235 / 0.2);
+  border-color: var(--pqm-brand);
+  background: var(--pqm-brand-soft);
+  box-shadow: inset 0 0 0 1px rgb(0 104 71 / 0.25), 0 0 0 3px var(--pqm-focus-ring);
 }
 
 .pharmacy-qty-modal__stepper.is-disabled {
-  opacity: 0.45;
+  opacity: 0.42;
+  filter: grayscale(0.15);
 }
 
 .pharmacy-qty-modal__stepper-input {
@@ -243,32 +334,34 @@
   min-width: 0;
   border: 0;
   background: transparent;
-  padding: 0.35rem 0.5rem;
+  padding: 0.35rem 0.55rem;
   font-size: 1.55rem;
   font-weight: 800;
   color: var(--pqm-ink);
   text-align: left;
   outline: none;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
 
 .pharmacy-qty-modal__stepper-side {
   display: flex;
   flex-direction: column;
   border-left: 1px solid var(--pqm-line);
-  width: 1.55rem;
+  width: 1.65rem;
 }
 
 .pharmacy-qty-modal__stepper-side button {
   flex: 1;
   border: 0;
   border-bottom: 1px solid var(--pqm-line);
-  background: #f1f5f9;
-  color: #475569;
+  background: var(--pqm-hover);
+  color: var(--pqm-muted);
   font-size: 0.65rem;
   line-height: 1;
   cursor: pointer;
   padding: 0;
+  transition: background 0.12s ease, color 0.12s ease;
 }
 
 .pharmacy-qty-modal__stepper-side button:last-child {
@@ -276,7 +369,8 @@
 }
 
 .pharmacy-qty-modal__stepper-side button:hover:not(:disabled) {
-  background: #e2e8f0;
+  background: var(--pqm-brand-soft);
+  color: var(--pqm-brand);
 }
 
 .pharmacy-qty-modal__stepper-side button:disabled {
@@ -288,25 +382,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 2rem;
+  min-width: 2.1rem;
   padding: 0 0.35rem;
   border-left: 1px solid var(--pqm-line);
   font-style: normal;
-  font-size: 0.78rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--pqm-muted);
-  background: #fff;
-}
-
-.pharmacy-qty-modal__stepper.is-active .pharmacy-qty-modal__stepper-unit {
   background: transparent;
 }
 
 .pharmacy-qty-modal__hint {
-  margin: 0.4rem 0 0;
-  font-size: 0.78rem;
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: var(--pqm-focus);
+  color: var(--pqm-teal);
   line-height: 1.35;
 }
 
@@ -315,23 +407,25 @@
 }
 
 .pharmacy-qty-modal__total-bar {
-  margin-top: 0.45rem;
-  padding: 0.7rem 0.85rem;
-  background: var(--pqm-accent-soft);
-  border: 1px solid #f59e0b;
-  border-radius: var(--pqm-radius);
+  margin-top: 0.35rem;
+  padding: 0.75rem 0.9rem;
+  background: linear-gradient(135deg, var(--pqm-brand-soft), var(--pqm-teal-soft));
+  border: 1px solid rgb(0 104 71 / 0.35);
+  border-radius: var(--pqm-radius-sm);
   text-align: center;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--pqm-ink);
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.06);
 }
 
 .pharmacy-qty-modal__error {
   margin: 0.35rem 0 0;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #b42318;
+  color: var(--pqm-danger-text);
 }
 
 .pharmacy-qty-modal__footer {
@@ -340,9 +434,9 @@
   justify-content: space-between;
   gap: 0.75rem;
   flex-shrink: 0;
-  padding: 0.65rem 0.85rem 0.75rem;
-  border-top: 1px solid #e2e8f0;
-  background: #fff;
+  padding: 0.7rem 0.9rem 0.8rem;
+  border-top: 1px solid var(--pqm-line);
+  background: var(--pqm-elevated);
 }
 
 .pharmacy-qty-modal__marking {
@@ -357,7 +451,7 @@
 }
 
 .pharmacy-qty-modal__marking input {
-  accent-color: var(--pqm-focus);
+  accent-color: var(--pqm-brand);
 }
 
 .pharmacy-qty-modal__marking:has(input:disabled) {
@@ -372,38 +466,57 @@
 }
 
 .pharmacy-qty-modal__btn {
-  min-height: 36px;
-  min-width: 88px;
-  padding: 0 0.9rem;
-  border-radius: var(--pqm-radius);
+  min-height: 38px;
+  min-width: 92px;
+  padding: 0 0.95rem;
+  border-radius: var(--pqm-radius-sm);
   border: 1px solid var(--pqm-line);
   font-size: 0.84rem;
   font-weight: 700;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .pharmacy-qty-modal__btn--cancel {
-  background: #fff;
-  color: #475569;
+  background: transparent;
+  color: var(--pqm-muted);
 }
 
 .pharmacy-qty-modal__btn--cancel:hover {
-  background: #f8fafc;
+  background: var(--pqm-hover);
+  color: var(--pqm-ink);
 }
 
 .pharmacy-qty-modal__btn--ok {
-  background: #fff;
-  color: var(--pqm-ink);
-  border-color: #94a3b8;
+  background: var(--pqm-brand);
+  color: #fff;
+  border-color: var(--pqm-brand);
+  box-shadow: 0 6px 16px rgb(0 104 71 / 0.28);
 }
 
 .pharmacy-qty-modal__btn--ok:hover {
-  background: #f1f5f9;
-  border-color: var(--pqm-ink);
+  background: var(--pqm-brand-hover);
+  border-color: var(--pqm-brand-hover);
+}
+
+/* Light POS already sets --pharm-*; soft adjustments for washed surfaces */
+.cashier-app--light .pharmacy-qty-modal {
+  --pqm-shadow: 0 22px 48px rgb(26 46 40 / 0.18), 0 0 0 1px rgb(0 104 71 / 0.12);
+}
+
+.cashier-app--light .pharmacy-qty-modal__backdrop {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgb(0 104 71 / 0.1), transparent 70%),
+    rgb(26 46 40 / 0.42);
+}
+
+.cashier-app--light .pharmacy-qty-modal__metric--sold .pharmacy-qty-modal__metric-value {
+  color: var(--pqm-brand);
 }
 
 @media (max-width: 420px) {
-  .pharmacy-qty-modal__pair {
+  .pharmacy-qty-modal__pair,
+  .pharmacy-qty-modal__metrics {
     grid-template-columns: 1fr;
   }
 

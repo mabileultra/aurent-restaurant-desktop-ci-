@@ -1,0 +1,43 @@
+---
+description: Pharmacy qty modal pack/piece + theme — do not regress
+globs:
+  - web-frontend/**/PharmacyQtyModal*
+  - web-frontend/**/pharmacy-qty-modal.css
+  - web-frontend/**/pharmacyProductMeta*
+  - web-frontend/**/usePharmacyCartHandlers*
+  - pharmacy-service/**/PharmacyReceiptUnitsInPackSync*
+  - pharmacy-service/**/PharmacyReceiptPostedPriceSync*
+  - pharmacy-service/**/PharmacyReceiptActivation*
+alwaysApply: false
+---
+
+# PharmacyQtyModal — pack/piece + theme (do not regress)
+
+Regression started after receipt→product `units_in_pack` sync left `sold_individually=false` while pack size became >1: piece field locked, «Продано» stayed `0`.
+
+## Behavior invariants
+
+1. **`productSellByPiece`**: when `units_in_pack > 1`, allow piece sale unless explicit `sell_by_piece` / `sellByPiece` is false. Do **not** treat bare `soldIndividually=false` as pack-only.
+2. **Receipt sync** (`PharmacyReceiptUnitsInPackSync`): on `unitsInPack > 1` also set `soldIndividually=true`, `allowFraction=true`, `quantityScale ≥ 3`.
+3. **«Продано»**: packs of this product already in the open cart — never hardcode `0`.
+4. **«Осталось»**: prefer sum of lot quantities from warehouse API; fallback to product stock (convert pieces→packs if cart payload already converted).
+5. **Confirm**: pass `sellByPiece` from the modal into `handleQtyConfirm` (do not re-derive only from product flags and drop the cashier’s checkbox choice).
+6. Pack-only checkbox may default from `!productAllowsPiece`, but when `units_in_pack > 1` and piece is allowed, the piece stepper must be editable.
+
+## Theme / design invariants
+
+1. Modal CSS must use **`--pharm-*`** tokens from `.pharmacy-cashier` / `.cashier-app--pharmacy-pos` (light via `.cashier-app--light`). No hardcoded white / slate-only palette.
+2. Light and dark must both stay readable (inputs, steppers, total bar, footer).
+3. Keep Oson-like field layout (identity → lot → prices → qty steppers → total → footer); polish is visual only.
+
+## Do not
+
+- Reintroduce `if (soldIndividually === false) return false` as a hard block when pack size > 1.
+- Hardcode «Продано» as `0`.
+- Style the modal with fixed light-only colors (`#fff` panels, amber name bar) that ignore POS theme.
+- Change pack→piece checkout math (see `pharmacy-pack-checkout.mdc`).
+
+## Tests to keep green
+
+- `pharmacyProductMeta.test.js` — pack>1 + stale `soldIndividually=false` still allows piece; `sell_by_piece=false` blocks.
+- `PharmacyReceiptPostedPriceSyncTest` — units>1 enables soldIndividually / allowFraction / quantityScale.
