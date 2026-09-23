@@ -20,6 +20,7 @@ import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
+import com.pos.restaurant.order.repository.spec.FloorOrderSpecifications;
 import com.pos.restaurant.order.service.FloorOrderService;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
@@ -110,15 +111,17 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     ) {
         Integer companyId = tenantSupport.requireCompanyId();
         String query = q == null || q.isBlank() ? null : q.trim();
-        Page<FloorOrder> page = orderRepository.searchByChannel(
-            companyId,
-            storeId,
-            channel,
-            status,
-            deliveryStatus,
-            query,
-            openedFrom,
-            openedTo,
+        Page<FloorOrder> page = orderRepository.findAll(
+            FloorOrderSpecifications.searchByChannel(
+                companyId,
+                storeId,
+                channel,
+                status,
+                deliveryStatus,
+                query,
+                openedFrom,
+                openedTo
+            ),
             pageable
         );
         if (page.isEmpty()) {
