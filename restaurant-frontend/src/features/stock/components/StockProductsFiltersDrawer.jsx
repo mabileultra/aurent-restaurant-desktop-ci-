@@ -1,6 +1,7 @@
 import { X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect, BaseButton } from '../../../components/ui';
+import StockProductsFilterLinks from './StockProductsFilterLinks';
 import '../styles/stock-products-filters.css';
 
 export default function StockProductsFiltersDrawer({
@@ -10,6 +11,7 @@ export default function StockProductsFiltersDrawer({
   onChange,
   onApply,
   onReset,
+  links,
 }) {
   const { t } = useTranslation();
   if (!open) return null;
@@ -27,6 +29,7 @@ export default function StockProductsFiltersDrawer({
           </button>
         </div>
         <div className="rst-stock-filters__body">
+          <StockProductsFilterLinks links={links} onNavigate={onClose} />
           <label className="rst-stock-filters__field">
             <span>{t('stockModule.filters.barcode')}</span>
             <input

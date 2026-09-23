@@ -62,6 +62,31 @@
   overflow: auto;
 }
 
+.rst-stock-filters__links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rst-stock-filters__links a {
+  display: flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.rst-stock-filters__links a:hover {
+  border-color: rgb(255 122 26 / 0.45);
+  color: var(--rst-accent, #ff7a1a);
+}
+
 .rst-stock-filters__field {
   display: flex;
   flex-direction: column;

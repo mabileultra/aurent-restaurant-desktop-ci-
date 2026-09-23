@@ -32,14 +32,13 @@ const emptyFilters = () => ({
   availability: 'all',
 });
 
-export const MENU_CARD_PAGE_SIZE = 24;
-
 export function useMenuAdminPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const workspace = useRestaurantWorkspaceStore();
   const [form, setForm] = useState(emptyForm());
   const [editingId, setEditingId] = useState(null);
+  const [composerOpen, setComposerOpen] = useState(false);
   const [filters, setFilters] = useState(emptyFilters());
 
   const itemsQuery = useQuery({
@@ -125,6 +124,7 @@ export function useMenuAdminPage() {
       toast.success(t('rst.admin.menuSaved'));
       setForm(emptyForm());
       setEditingId(null);
+      setComposerOpen(false);
       invalidate();
     },
     onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
@@ -139,7 +139,20 @@ export function useMenuAdminPage() {
     onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
+  const closeComposer = () => {
+    setEditingId(null);
+    setForm(emptyForm());
+    setComposerOpen(false);
+  };
+
+  const openComposer = () => {
+    setEditingId(null);
+    setForm(emptyForm());
+    setComposerOpen(true);
+  };
+
   const startEdit = (item) => {
+    setComposerOpen(true);
     setEditingId(item.id);
     setForm({
       name: item.name,
@@ -195,7 +208,9 @@ export function useMenuAdminPage() {
     form,
     setForm,
     editingId,
-    setEditingId,
+    composerOpen,
+    openComposer,
+    closeComposer,
     saveMutation,
     deactivateMutation,
     startEdit,
@@ -203,9 +218,6 @@ export function useMenuAdminPage() {
     onImageFile,
     stationName,
     isLoading: workspace.isLoading || itemsQuery.isLoading,
-    resetForm: () => {
-      setEditingId(null);
-      setForm(emptyForm());
-    },
+    resetForm: closeComposer,
   };
 }

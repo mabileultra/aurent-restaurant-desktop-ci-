@@ -1,26 +1,72 @@
-/* Compact top controls → taller dish board */
-
 .rst-menu {
   display: flex;
   flex-direction: column;
-  gap: 0.65rem;
+  gap: 0.75rem;
   min-height: 0;
 }
 
-.rst-menu__toolbar {
-  margin-bottom: 0 !important;
-  gap: 0.5rem !important;
+.rst-menu__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
 }
 
-.rst-menu__toolbar .rst-coming__title {
-  font-size: 1.25rem;
+.rst-menu__intro {
+  min-width: 0;
+  flex: 1 1 16rem;
+}
+
+.rst-menu__intro .rst-coming__title {
+  margin-bottom: 0.2rem;
+  font-size: 1.35rem;
   line-height: 1.2;
-  margin-bottom: 0.15rem;
 }
 
-.rst-menu__toolbar .rst-coming__text {
-  font-size: 0.8rem;
-  line-height: 1.3;
+.rst-menu__intro .rst-coming__text {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.rst-menu__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.22rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: var(--rst-surface);
+  box-shadow: 0 8px 18px rgb(0 0 0 / 0.16);
+}
+
+.rst-menu__switch-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.25rem;
+  padding: 0.35rem 0.95rem;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.rst-menu__switch-btn.is-active {
+  background: var(--rst-accent);
+  color: #1b1208;
+}
+
+.rst-menu__switch-btn:hover:not(.is-active) {
+  background: var(--rst-surface-2);
 }
 
 .rst-menu__filters {
@@ -248,10 +294,7 @@
 .rst-menu-board {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;
-  margin-top: 0.15rem;
-  min-height: min(52vh, 640px);
-  max-height: min(72vh, 820px);
+  min-height: 0;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
   background: linear-gradient(180deg, #151b26, var(--rst-bg));
@@ -273,22 +316,22 @@
   font-size: 0.9rem;
 }
 
-.rst-menu-board__head span {
-  color: var(--rst-muted);
-  font-size: 0.8rem;
+.rst-menu-board__head-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.rst-menu-board__scroll {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-  padding: 0.75rem;
+.rst-menu-board__head-actions span {
+  color: var(--rst-muted);
+  font-size: 0.8rem;
 }
 
 .rst-menu-board__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
+  padding: 0.75rem;
 }
 
 @media (min-width: 700px) {

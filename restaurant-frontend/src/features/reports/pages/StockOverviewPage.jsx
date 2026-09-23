@@ -25,22 +25,24 @@ export default function StockOverviewPage({ hideTitle = false } = {}) {
 
   return (
     <div className="rst-stock-overview">
-      <div className="rst-stock-overview__toolbar">
-        {hideTitle ? <div /> : (
+      {hideTitle ? null : (
+        <div className="rst-stock-overview__toolbar">
           <div>
             <h1 className="rst-coming__title">{t('stockReports.dashboardTitle')}</h1>
             <p className="rst-coming__text mb-0">{t('rst.stock.overviewHint')}</p>
           </div>
-        )}
-        <BaseButton type="button" variant="secondary" onClick={() => p.refetch()}>
-          <RefreshCw size={16} aria-hidden />
-          {t('common.refresh', { defaultValue: 'Refresh' })}
-        </BaseButton>
-      </div>
+        </div>
+      )}
 
       <div className="rst-stock-overview__filters">
         <ReportDateBar from={p.from} to={p.to} onFrom={p.setFrom} onTo={p.setTo} />
-        <ReportStoreSelect stores={p.stores} value={p.storeId} onChange={p.setStoreId} />
+        <div className="rst-stock-overview__filters-end">
+          <ReportStoreSelect stores={p.stores} value={p.storeId} onChange={p.setStoreId} />
+          <BaseButton type="button" variant="secondary" onClick={() => p.refetch()}>
+            <RefreshCw size={16} aria-hidden />
+            {t('common.refresh', { defaultValue: 'Refresh' })}
+          </BaseButton>
+        </div>
       </div>
 
       {p.isError ? (

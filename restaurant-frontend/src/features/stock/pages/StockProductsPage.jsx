@@ -1,5 +1,4 @@
 import { Filter } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { BaseButton, ErrorBanner, PageSearchField } from '../../../components/ui';
 import StockProductsTable from '../components/StockProductsTable';
 import StockProductsFiltersDrawer from '../components/StockProductsFiltersDrawer';
@@ -32,21 +31,6 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
           <p className="rst-coming__text mb-0">{p.t('rst.stock.balancesReadOnlyHint')}</p>
         )}
         <div className="rst-stock-products__actions">
-          <Link to={paths.products}>
-            <BaseButton type="button" variant="secondary">
-              {p.t('rst.nav.stockProducts')}
-            </BaseButton>
-          </Link>
-          <Link to={paths.receipts}>
-            <BaseButton type="button" variant="secondary">
-              {p.t('rst.admin.stockReceipt')}
-            </BaseButton>
-          </Link>
-          <Link to={paths.writeOffs}>
-            <BaseButton type="button" variant="secondary">
-              {p.t('rst.nav.stockWriteOffs')}
-            </BaseButton>
-          </Link>
           <BaseButton type="button" variant="secondary" onClick={() => p.setFiltersOpen(true)}>
             <Filter size={16} aria-hidden />
             {p.t('products.toolbar.filters')}
@@ -100,6 +84,11 @@ export default function StockProductsPage({ embeddedInRstHub = false } = {}) {
         onChange={p.setFilters}
         onReset={p.resetFilters}
         onApply={p.applyFilters}
+        links={[
+          { to: paths.products, label: p.t('rst.nav.stockProducts') },
+          { to: paths.receipts, label: p.t('rst.admin.stockReceipt') },
+          { to: paths.writeOffs, label: p.t('rst.nav.stockWriteOffs') },
+        ]}
       />
     </div>
   );

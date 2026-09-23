@@ -139,40 +139,6 @@
   margin-top: 1.25rem;
 }
 
-.billing-metrics--compact .billing-metric {
-  padding: 0.85rem 1rem;
-}
-
-.billing-metrics--compact .billing-metric::before {
-  display: none;
-}
-
-.billing-footer--slim {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.5rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid var(--billing-line);
-  border-radius: 1rem;
-  background: #fff;
-}
-
-.billing-footer__slim-text {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 0.45rem;
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.4;
-  color: #64748b;
-}
-
-.billing-footer__slim-text svg {
-  flex-shrink: 0;
-  margin-top: 0.1rem;
-  color: #15803d;
-}
-
 .billing-hero__side {
   display: flex;
   flex-direction: column;
