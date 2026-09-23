@@ -51,11 +51,10 @@ server {
     listen [::]:443 ssl;
     server_name aurent.uz www.aurent.uz;
 
-    # После certbot:
-    # ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
-    # include /etc/letsencrypt/options-ssl-nginx.conf;
-    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     client_max_body_size 80m;
 
@@ -84,10 +83,10 @@ server {
     listen [::]:443 ssl;
     server_name r-aurent.uz www.r-aurent.uz;
 
-    # ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
-    # ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
-    # include /etc/letsencrypt/options-ssl-nginx.conf;
-    # ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
+    ssl_certificate /etc/letsencrypt/live/aurent.uz/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/aurent.uz/privkey.pem;
+    include /etc/letsencrypt/options-ssl-nginx.conf;
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 
     client_max_body_size 80m;
 
@@ -114,4 +113,5 @@ server {
 #   apt install -y nginx certbot python3-certbot-nginx
 #   nginx -t && systemctl reload nginx
 #   certbot --nginx -d aurent.uz -d www.aurent.uz -d r-aurent.uz -d www.r-aurent.uz
-# Затем раскомментируйте ssl_* в блоках :443 выше (или оставьте правки certbot).
+# SSL-пути выше уже включены; после первого certbot проверьте, что
+# /etc/letsencrypt/live/aurent.uz/* существует, затем: nginx -t && systemctl reload nginx.

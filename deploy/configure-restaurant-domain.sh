@@ -64,11 +64,41 @@ if [[ ! -f "$NGINX_SRC" ]]; then
 fi
 
 echo "==> Install host nginx site"
+if [[ -f "$NGINX_DST" ]]; then
+  cp -a "$NGINX_DST" "${NGINX_DST}.bak.$(date +%Y%m%d%H%M%S)"
+fi
 cp "$NGINX_SRC" "$NGINX_DST"
 ln -sf "$NGINX_DST" "$NGINX_LINK"
 rm -f /etc/nginx/sites-enabled/default
 
-nginx -t
+if [[ ! -f /etc/letsencrypt/live/aurent.uz/fullchain.pem ]]; then
+  echo "==> WARN: нет /etc/letsencrypt/live/aurent.uz — временно отключаю ssl_* до certbot"
+  if sed --version >/dev/null 2>&1; then
+    sed -i 's/^\([[:space:]]*listen .*ssl;\)/# \1/' "$NGINX_DST"
+    sed -i 's/^\([[:space:]]*ssl_certificate\)/# \1/' "$NGINX_DST"
+    sed -i 's/^\([[:space:]]*ssl_certificate_key\)/# \1/' "$NGINX_DST"
+    sed -i 's/^\([[:space:]]*include \/etc\/letsencrypt\/options-ssl-nginx.conf;\)/# \1/' "$NGINX_DST"
+    sed -i 's/^\([[:space:]]*ssl_dhparam\)/# \1/' "$NGINX_DST"
+  else
+    sed -i '' 's/^\([[:space:]]*listen .*ssl;\)/# \1/' "$NGINX_DST"
+    sed -i '' 's/^\([[:space:]]*ssl_certificate\)/# \1/' "$NGINX_DST"
+    sed -i '' 's/^\([[:space:]]*ssl_certificate_key\)/# \1/' "$NGINX_DST"
+    sed -i '' 's/^\([[:space:]]*include \/etc\/letsencrypt\/options-ssl-nginx.conf;\)/# \1/' "$NGINX_DST"
+    sed -i '' 's/^\([[:space:]]*ssl_dhparam\)/# \1/' "$NGINX_DST"
+  fi
+fi
+
+if ! nginx -t; then
+  echo "==> ERROR: nginx -t failed after writing $NGINX_DST" >&2
+  latest_bak="$(ls -1t ${NGINX_DST}.bak.* 2>/dev/null | head -1 || true)"
+  if [[ -n "$latest_bak" ]]; then
+    echo "==> Restoring $latest_bak"
+    cp -a "$latest_bak" "$NGINX_DST"
+    nginx -t
+  else
+    exit 1
+  fi
+fi
 systemctl enable nginx >/dev/null 2>&1 || true
 systemctl reload nginx || systemctl restart nginx
 

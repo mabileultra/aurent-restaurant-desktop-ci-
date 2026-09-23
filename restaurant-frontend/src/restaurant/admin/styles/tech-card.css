@@ -10,6 +10,7 @@
   align-items: stretch;
   gap: 0.65rem;
   overflow-x: auto;
+  border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
   background: linear-gradient(180deg, #151b26, var(--rst-bg));
   padding: 0.75rem;
@@ -17,15 +18,15 @@
 }
 
 .rst-tech__dishes .rst-empty {
-  grid-column: 1 / -1;
   flex: 1 1 auto;
   min-height: 120px;
   min-width: 100%;
+}
 
 .rst-tech__dish {
   display: flex;
-  flex-direction: column;
   flex: 0 0 168px;
+  flex-direction: column;
   align-items: stretch;
   gap: 0;
   min-width: 0;
@@ -114,15 +115,16 @@
 }
 
 .rst-tech__card {
-  border: 1px solid var(--rst-line);
   min-width: 0;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
   background: var(--rst-surface);
   padding: 1rem 1.1rem 1.15rem;
+}
 
 .rst-tech__head {
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   margin-bottom: 1rem;
@@ -130,7 +132,7 @@
 
 .rst-tech__table {
   width: 100%;
-  border-collapse: collapse;
+  margin: 0;
   border-collapse: collapse;
   font-size: 0.9rem;
 }
@@ -140,6 +142,7 @@
   padding: 0.55rem 0.45rem;
   border-bottom: 1px solid var(--rst-line);
   vertical-align: middle;
+}
 
 .rst-tech__table th {
   color: var(--rst-muted);
@@ -184,19 +187,17 @@
   background: #1f242c;
 }
 
-
-@media (max-width: 1100px) {
 @media (max-width: 900px) {
   .rst-tech__dishes {
     max-height: none;
+  }
 }
 
 @media (max-width: 520px) {
-  .rst-tech__dishes {
   .rst-tech__dish {
     flex-basis: 148px;
+  }
 }
-
 
 .rst-tech .rst-admin-form {
   margin-bottom: 1rem;
@@ -207,10 +208,6 @@
   flex: 0 0 auto;
 }
 
-.rst-tech__head {
-  align-items: flex-end;
-}
-
 .rst-tech__table-wrap {
   overflow-x: auto;
   margin-top: 0.25rem;
@@ -219,11 +216,6 @@
   background: var(--rst-surface-2);
 }
 
-.rst-tech__table {
-  margin: 0;
-}
-
-.rst-tech__table th,
 .rst-tech__table th:nth-child(1),
 .rst-tech__table td:nth-child(1) {
   width: auto;
