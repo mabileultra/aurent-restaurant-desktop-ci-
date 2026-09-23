@@ -31,6 +31,10 @@ public class PharmacyImportTasnifClientImpl implements PharmacyImportTasnifClien
         if (!StringUtils.hasText(mxik)) {
             return PharmacyImportTasnifHit.miss();
         }
+        String code = normalizeMxik(mxik);
+        if (code == null) {
+            return PharmacyImportTasnifHit.miss();
+        }
         URI uri = UriComponentsBuilder
             .fromUriString(properties.getBaseUrl())
             .path("/integration-mxik/get/information")
@@ -38,18 +42,37 @@ public class PharmacyImportTasnifClientImpl implements PharmacyImportTasnifClien
             .queryParam("size", 1)
             .queryParam("type", properties.getSearchType())
             .queryParam("lang", properties.getDefaultLang())
-            .queryParam("mxikCode", mxik.trim())
+            .queryParam("mxikCode", code)
             .build()
             .toUri();
         try {
-            JsonNode root = restClient.get()
+            return restClient.get()
                 .uri(uri)
-                .retrieve()
-                .body(JsonNode.class);
-            return PharmacyImportTasnifPayloadRead.first(root);
+                .exchange((request, response) -> {
+                    if (response.getStatusCode().isError()) {
+                        LogUtil.warn(
+                            PharmacyImportTasnifClientImpl.class,
+                            "tasnif HTTP {} mxik={}",
+                            response.getStatusCode().value(),
+                            code
+                        );
+                        return PharmacyImportTasnifHit.miss();
+                    }
+                    JsonNode root = response.bodyTo(JsonNode.class);
+                    return PharmacyImportTasnifPayloadRead.first(root);
+                });
         } catch (RestClientException ex) {
-            LogUtil.warn(PharmacyImportTasnifClientImpl.class, "tasnif lookup failed mxik={}: {}", mxik, ex.getMessage());
+            LogUtil.warn(PharmacyImportTasnifClientImpl.class, "tasnif lookup failed mxik={}: {}", code, ex.getMessage());
+            return PharmacyImportTasnifHit.miss();
+        }
+    }
+
+    /** Тасниф принимает ровно 17 цифр; Excel часто теряет ведущий 0. */
+    static String normalizeMxik(String mxik) {
+        String digits = mxik.replaceAll("\\D", "");
+        if (digits.length() < 14) {
             return null;
         }
+        return PharmacyImportIkpu.pad17(digits);
     }
 }

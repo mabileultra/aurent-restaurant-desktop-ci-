@@ -15,4 +15,17 @@ class PharmacyImportIkpuTest {
         );
         assertNull(PharmacyImportIkpu.code("Маркировкаланган"));
     }
+
+    @Test
+    void padsLeadingZeroWhenExcelDropsIt() {
+        assertEquals("03004409005039001", PharmacyImportIkpu.code("3004409005039001"));
+        assertEquals("03004409005039001", PharmacyImportIkpu.pad17("3004409005039001"));
+    }
+
+    @Test
+    void expandsScientificNotation() {
+        // 16 значащих цифр без ведущего 0 → E+15 в Excel
+        assertEquals("03004409005039001", PharmacyImportIkpu.code("3,004409005039001E+15"));
+        assertEquals("03004409005039001", PharmacyImportIkpu.code("3.004409005039001E+15"));
+    }
 }
