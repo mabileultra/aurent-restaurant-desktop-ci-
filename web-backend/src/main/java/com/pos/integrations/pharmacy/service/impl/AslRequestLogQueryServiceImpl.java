@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -50,16 +51,21 @@ public class AslRequestLogQueryServiceImpl implements AslRequestLogQueryService 
           .orElseThrow(() -> new com.pos.exception.ResourceNotFoundException("Store not found"));
       tenantAccess.assertCanAccessStore(store);
     }
-    String q = StringUtils.hasText(search) ? search.trim() : null;
+    String searchPattern = StringUtils.hasText(search)
+        ? "%" + search.trim().toLowerCase() + "%"
+        : "";
+    // PostgreSQL + Hibernate: null Instant / CONCAT('%', null, '%') → lower(bytea) / untyped params.
+    Instant fromBound = from != null ? from : Instant.EPOCH;
+    Instant toBound = to != null ? to : Instant.now().plus(3650, ChronoUnit.DAYS);
     Page<AslRequestLog> page = repository.search(
         companyId,
         storeId,
         operation,
         outcome,
         reached,
-        from,
-        to,
-        q,
+        fromBound,
+        toBound,
+        searchPattern,
         pageable
     );
     Map<Integer, String> storeNames = loadStoreNames(page.getContent());

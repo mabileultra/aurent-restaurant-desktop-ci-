@@ -67,10 +67,10 @@ export default function LowStockReportPage() {
                 <tr key={row.productId} className="border-b border-slate-100 dark:border-slate-800">
                   <AdminTableNoIdCells page={r.page} pageSize={r.pageSize} index={index} id={row.productId} />
                   <ReportProductNameCell name={row.productName} sku={row.sku} barcode={row.barcode} />
-                  <td className="px-4 py-3 text-right">{row.currentStock}</td>
-                  <td className="px-4 py-3 text-right">{row.minStock}</td>
+                  <td className="px-4 py-3 text-right">{row.stockQuantity}</td>
+                  <td className="px-4 py-3 text-right">{row.lowStockAlert}</td>
                   <td className="px-4 py-3 text-right text-red-600">{row.deficit}</td>
-                  <td className="px-4 py-3 text-right">{fmtMoney(row.stockValue)}</td>
+                  <td className="px-4 py-3 text-right">{fmtMoney(row.stockValueEstimate)}</td>
                 </tr>
               ))}
           </tbody>

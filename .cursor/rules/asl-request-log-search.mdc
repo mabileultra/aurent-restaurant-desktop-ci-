@@ -1,0 +1,23 @@
+---
+description: ASL request log list search must not use CONCAT with null (lower bytea)
+globs:
+  - web-backend/**/AslRequestLog*
+  - web-frontend/**/PharmacyAsl*
+alwaysApply: false
+---
+
+# ASL request log search (do not regress)
+
+`GET /admin/asl-request-logs` fails with PostgreSQL `function lower(bytea) does not exist` when JPQL uses `LOWER(CONCAT('%', :search, '%'))` and `:search` is null (empty filter). Hibernate binds the null concat as bytea.
+
+## Invariants
+
+1. Build LIKE pattern in Java: `""` or `"%query%"` — never pass null into CONCAT in JPQL.
+2. Compare with `CAST(:searchPattern AS string) = '' OR ... LIKE LOWER(CAST(:searchPattern AS string))`.
+3. Date bounds: never `(:from IS NULL OR createdAt >= :from)` for Instant — use sentinel `Instant.EPOCH` / far future and always compare (same as pharmacy sales ledger).
+4. Retention hint («старше 30 дней») is UI-only; purge job stays separate.
+
+## Do not
+
+- Reintroduce `CONCAT('%', :search, '%')` with nullable `:search`.
+- Assume grocery paths share this table — `asl_request_log` is pharmacy/admin in web-backend.

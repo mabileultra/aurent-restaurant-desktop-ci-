@@ -21,13 +21,13 @@ public interface AslRequestLogRepository extends JpaRepository<AslRequestLog, Lo
         AND (:operation IS NULL OR l.operation = :operation)
         AND (:outcome IS NULL OR l.outcome = :outcome)
         AND (:reached IS NULL OR l.reached = :reached)
-        AND (:from IS NULL OR l.createdAt >= :from)
-        AND (:to IS NULL OR l.createdAt <= :to)
+        AND l.createdAt >= :from
+        AND l.createdAt <= :to
         AND (
-          :search IS NULL
-          OR LOWER(l.markCodeShort) LIKE LOWER(CONCAT('%', :search, '%'))
-          OR LOWER(COALESCE(l.message, '')) LIKE LOWER(CONCAT('%', :search, '%'))
-          OR LOWER(COALESCE(l.aslStatus, '')) LIKE LOWER(CONCAT('%', :search, '%'))
+          CAST(:searchPattern AS string) = ''
+          OR LOWER(COALESCE(l.markCodeShort, '')) LIKE LOWER(CAST(:searchPattern AS string))
+          OR LOWER(COALESCE(l.message, '')) LIKE LOWER(CAST(:searchPattern AS string))
+          OR LOWER(COALESCE(l.aslStatus, '')) LIKE LOWER(CAST(:searchPattern AS string))
         )
       """)
   Page<AslRequestLog> search(
@@ -38,7 +38,7 @@ public interface AslRequestLogRepository extends JpaRepository<AslRequestLog, Lo
       @Param("reached") Boolean reached,
       @Param("from") Instant from,
       @Param("to") Instant to,
-      @Param("search") String search,
+      @Param("searchPattern") String searchPattern,
       Pageable pageable
   );
 
