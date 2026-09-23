@@ -151,8 +151,14 @@
   border: 1px solid var(--pos-green, #15803d);
   border-radius: 6px;
   text-align: right;
-  background: #fff;
-  color: inherit;
+  background: var(--pharm-cell-bg, var(--pharm-surface, #fff));
+  color: var(--pharm-ink, #111);
+  caret-color: var(--pharm-ink, #111);
+}
+
+.pharmacy-cart-table__price-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pos-green, #15803d) 40%, transparent);
 }
 
 .pharmacy-cart-table__cell--ok {

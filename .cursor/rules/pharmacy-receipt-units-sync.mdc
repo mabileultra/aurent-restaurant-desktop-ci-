@@ -1,0 +1,25 @@
+---
+description: Pharmacy receipt units_in_pack must sync to product card for POS
+globs:
+  - pharmacy-service/**/PharmacyReceiptPostedPriceSync*
+  - pharmacy-service/**/PharmacyReceiptActivation*
+  - pharmacy-service/**/ProductAttributeService*
+  - web-frontend/**/pharmacy-cart-table.css
+  - web-frontend/**/PharmacyCartTable*
+alwaysApply: false
+---
+
+# Pharmacy receipt → POS pack size (do not regress)
+
+Cashier «В УП.» reads `product_attributes.units_in_pack`, not the receipt line.
+
+## Invariants
+
+1. On **post** (`PharmacyReceiptActivation`) and **posted mass/line sync** (`PharmacyReceiptPostedPriceSync`), copy line `unitsInPack` into product attribute `units_in_pack` via `ProductAttributeService.upsertAttribute` (do not wipe other attributes).
+2. Keep syncing cost / retail / VAT as today; pack size is additional, not instead of prices.
+3. Dark POS cart price edit input must use `--pharm-cell-bg` / `--pharm-ink` (never hardcoded white bg + `color: inherit`).
+
+## Do not
+
+- Assume changing only `stock_receipt_lines.units_in_pack` updates the cashier table.
+- Call `saveAttributes` (full replace) just to set pack size.

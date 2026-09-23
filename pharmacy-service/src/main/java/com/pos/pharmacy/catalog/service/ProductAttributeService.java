@@ -59,4 +59,20 @@ public class ProductAttributeService {
                 .build());
         });
     }
+
+    /** Одно поле без удаления остальных атрибутов (приход → карточка). */
+    @Transactional
+    public void upsertAttribute(UUID productId, String fieldKey, String valueText) {
+        if (productId == null || fieldKey == null || fieldKey.isBlank() || valueText == null) {
+            return;
+        }
+        String key = fieldKey.trim();
+        ProductAttribute.ProductAttributeId id = new ProductAttribute.ProductAttributeId(productId, key);
+        ProductAttribute attr = repository.findById(id).orElseGet(() -> ProductAttribute.builder()
+            .productId(productId)
+            .fieldKey(key)
+            .build());
+        attr.setValueText(valueText);
+        repository.save(attr);
+    }
 }

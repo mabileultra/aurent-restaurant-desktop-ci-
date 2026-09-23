@@ -3,6 +3,8 @@ package com.pos.pharmacy.warehouse.support;
 import com.pos.pharmacy.cache.PharmacyCatalogCacheEvictor;
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
+import com.pos.pharmacy.catalog.service.ProductAttributeService;
+import com.pos.pharmacy.catalog.support.PharmacyPackSupport;
 import com.pos.pharmacy.warehouse.domain.StockReceiptStatus;
 import com.pos.pharmacy.warehouse.entity.StockLot;
 import com.pos.pharmacy.warehouse.entity.StockReceipt;
@@ -35,6 +37,8 @@ class PharmacyReceiptPostedPriceSyncTest {
     @Mock
     private ProductRepository productRepository;
     @Mock
+    private ProductAttributeService productAttributeService;
+    @Mock
     private PharmacyCatalogCacheEvictor catalogCacheEvictor;
     @Mock
     private PharmacyReceiptStockIncrease stockIncrease;
@@ -58,6 +62,7 @@ class PharmacyReceiptPostedPriceSyncTest {
             .unitSellingPrice(new BigDecimal("140.00"))
             .retailPrice(new BigDecimal("140.00"))
             .vatPercent(new BigDecimal("12"))
+            .unitsInPack(new BigDecimal("10"))
             .batchNumber("B-9")
             .expiryDate(LocalDate.of(2027, 5, 1))
             .build();
@@ -86,6 +91,7 @@ class PharmacyReceiptPostedPriceSyncTest {
         assertEquals(LocalDate.of(2027, 5, 1), lot.getExpiryDate());
         assertEquals(new BigDecimal("100.00"), product.getCostPrice());
         assertEquals(new BigDecimal("140.00"), product.getSellingPrice());
+        verify(productAttributeService).upsertAttribute(productId, PharmacyPackSupport.ATTR_UNITS_IN_PACK, "10");
         verify(stockLotRepository).saveAll(List.of(lot));
         ArgumentCaptor<List<Product>> products = ArgumentCaptor.captor();
         verify(productRepository).saveAll(products.capture());
@@ -143,6 +149,7 @@ class PharmacyReceiptPostedPriceSyncTest {
         return new PharmacyReceiptPostedPriceSync(
             stockLotRepository,
             productRepository,
+            productAttributeService,
             catalogCacheEvictor,
             stockIncrease,
             stockReversal

@@ -2,6 +2,8 @@ package com.pos.pharmacy.warehouse.support;
 
 import com.pos.pharmacy.catalog.entity.Product;
 import com.pos.pharmacy.catalog.repository.ProductRepository;
+import com.pos.pharmacy.catalog.service.ProductAttributeService;
+import com.pos.pharmacy.catalog.support.PharmacyPackSupport;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCatalogErrors;
 import com.pos.pharmacy.exception.PharmacyException;
@@ -34,6 +36,7 @@ public class PharmacyReceiptActivation {
     private final PharmacyMassExecutor massExecutor;
     private final PharmacyReceiptStockIncrease stockIncrease;
     private final ProductRepository productRepository;
+    private final ProductAttributeService productAttributeService;
     private final StockLotRepository stockLotRepository;
     private final StockReceiptLineRepository lineRepository;
     private final TransactionTemplate transactionTemplate;
@@ -42,6 +45,7 @@ public class PharmacyReceiptActivation {
         PharmacyMassExecutor massExecutor,
         PharmacyReceiptStockIncrease stockIncrease,
         ProductRepository productRepository,
+        ProductAttributeService productAttributeService,
         StockLotRepository stockLotRepository,
         StockReceiptLineRepository lineRepository,
         PlatformTransactionManager transactionManager
@@ -49,6 +53,7 @@ public class PharmacyReceiptActivation {
         this.massExecutor = massExecutor;
         this.stockIncrease = stockIncrease;
         this.productRepository = productRepository;
+        this.productAttributeService = productAttributeService;
         this.stockLotRepository = stockLotRepository;
         this.lineRepository = lineRepository;
         this.transactionTemplate = new TransactionTemplate(transactionManager);
@@ -104,6 +109,14 @@ public class PharmacyReceiptActivation {
             if (line.vatPercent() != null) {
                 product.setTaxRate(line.vatPercent());
             }
+            if (line.unitsInPack() != null && line.unitsInPack().compareTo(BigDecimal.ZERO) > 0) {
+                String units = QuantityUtil.normalize(line.unitsInPack()).stripTrailingZeros().toPlainString();
+                productAttributeService.upsertAttribute(
+                    product.getId(),
+                    PharmacyPackSupport.ATTR_UNITS_IN_PACK,
+                    units
+                );
+            }
             quantities.merge(product.getId(), line.quantity(), QuantityUtil::add);
         }
         stockIncrease.increase(storeId, products, quantities);
@@ -153,6 +166,7 @@ public class PharmacyReceiptActivation {
         BigDecimal purchasePrice,
         BigDecimal sellingPrice,
         BigDecimal vatPercent,
+        BigDecimal unitsInPack,
         String batchNumber,
         LocalDate expiryDate
     ) {
@@ -164,6 +178,7 @@ public class PharmacyReceiptActivation {
                 line.getPurchasePrice(),
                 line.getUnitSellingPrice(),
                 line.getVatPercent(),
+                line.getUnitsInPack(),
                 line.getBatchNumber(),
                 line.getExpiryDate()
             );
