@@ -280,9 +280,10 @@
 .rst-tech__table td:nth-child(3) .base-field__control {
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
 
-.rst-tech__table input:focus {
 .rst-tech__table .base-field__control:focus {
+  border-color: var(--rst-accent) !important;
   box-shadow: 0 0 0 3px var(--rst-accent-soft) !important;
 }
 
