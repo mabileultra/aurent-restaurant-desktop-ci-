@@ -45,8 +45,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
         SELECT s FROM Sale s
         WHERE s.companyId = :companyId
           AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND (:fromInstant IS NULL OR s.createdAt >= :fromInstant)
-          AND (:toInstant IS NULL OR s.createdAt < :toInstant)
+          AND s.createdAt >= :fromInstant
+          AND s.createdAt < :toInstant
           AND (:paymentMethod IS NULL OR s.paymentMethod = :paymentMethod)
           AND (:status IS NULL OR s.status = :status)
           AND (
@@ -88,8 +88,8 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
         WHERE s.companyId = :companyId
           AND s.status IN :statuses
           AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND (:fromInstant IS NULL OR s.createdAt >= :fromInstant)
-          AND (:toInstant IS NULL OR s.createdAt < :toInstant)
+          AND s.createdAt >= :fromInstant
+          AND s.createdAt < :toInstant
           AND (
             :search IS NULL
             OR LOWER(s.receiptNumber) LIKE LOWER(CONCAT('%', CAST(:search AS string), '%'))

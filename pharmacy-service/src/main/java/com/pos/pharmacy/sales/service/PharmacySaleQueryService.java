@@ -23,6 +23,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -204,16 +205,20 @@ public class PharmacySaleQueryService {
         return map;
     }
 
+    /**
+     * PostgreSQL cannot type-check {@code :instant IS NULL OR createdAt >= :instant}.
+     * Always bind concrete bounds (same pattern as grocery SalesQuerySupport).
+     */
     private static Instant startOfDay(LocalDate date) {
         if (date == null) {
-            return null;
+            return Instant.EPOCH;
         }
         return date.atStartOfDay(REPORT_ZONE).toInstant();
     }
 
     private static Instant startOfNextDay(LocalDate date) {
         if (date == null) {
-            return null;
+            return Instant.now().plus(3650, ChronoUnit.DAYS);
         }
         return date.plusDays(1).atStartOfDay(REPORT_ZONE).toInstant();
     }

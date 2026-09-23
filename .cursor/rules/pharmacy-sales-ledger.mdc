@@ -19,9 +19,10 @@ After cutover, pharmacy sales live in **pharmacy_db** / **pharmacy-service**. Gr
 
 1. When `useCompanyBusinessType().isPharmacyCompany`, admin **Продажи** and **Возвраты** must call `pharmacySalesApi` (`GET /pharmacy/sales`, `GET /pharmacy/sales/returns`), not `saleApi` / `returnApi`.
 2. Pharmacy-service must keep company-wide list endpoints for ADMIN/MANAGER: `listSales`, `listReturns` (VOIDED/REFUNDED). Do not leave only `my-sales`.
-3. Print / partial return from ledger: pass `catalogKind: 'pharmacy'` into modals so they use `pharmacySalesApi.getById` / return flow.
-4. Aggregate reports (`reportApi` → reporting-service / Kafka `sale_facts`) are a **separate** path — do not “fix” them by pointing ledger at grocery again.
-5. Grocery companies must keep using `saleApi` / `returnApi` unchanged.
+3. Date filters: never bind null Instant with `(:from IS NULL OR createdAt >= :from)` — PostgreSQL errors with «could not determine data type of parameter». Use sentinel bounds (`Instant.EPOCH` / far future) and always compare.
+4. Print / partial return from ledger: pass `catalogKind: 'pharmacy'` into modals so they use `pharmacySalesApi.getById` / return flow.
+5. Aggregate reports (`reportApi` → reporting-service / Kafka `sale_facts`) are a **separate** path — do not “fix” them by pointing ledger at grocery again.
+6. Grocery companies must keep using `saleApi` / `returnApi` unchanged.
 
 ## Do not
 
