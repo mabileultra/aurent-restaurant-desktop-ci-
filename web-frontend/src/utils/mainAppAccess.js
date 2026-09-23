@@ -4,8 +4,8 @@ import { isRestaurantWorldBusiness } from './appHomePath';
 
 /** Pure restaurant companies belong on r-aurent — not on aurent.uz. */
 export function companyFitsMainApp(businessPayload) {
-  // Fail closed when types are unknown (API error / missing payload).
-  if (businessPayload == null) return false;
+  // Unknown payload (API error): caller decides fail-open vs fail-closed.
+  if (businessPayload == null) return null;
 
   const def = normalizeBusinessTypeCode(businessPayload?.defaultTypeCode);
   const codes = (businessPayload?.types || [])
@@ -25,11 +25,13 @@ export function roleRequiresRestaurantApp(role) {
 }
 
 /**
- * @returns {{ ok: true } | { ok: false, reason: 'restaurant_only' | 'restaurant_role' }}
+ * @returns {{ ok: true } | { ok: false, reason: 'restaurant_only' | 'restaurant_role' | 'unknown' }}
  */
 export function evaluateMainAppAccess({ role, businessPayload }) {
   if (isPlatformUser(role)) return { ok: true };
   if (roleRequiresRestaurantApp(role)) return { ok: false, reason: 'restaurant_role' };
-  if (!companyFitsMainApp(businessPayload)) return { ok: false, reason: 'restaurant_only' };
+  const fit = companyFitsMainApp(businessPayload);
+  if (fit == null) return { ok: false, reason: 'unknown' };
+  if (!fit) return { ok: false, reason: 'restaurant_only' };
   return { ok: true };
 }

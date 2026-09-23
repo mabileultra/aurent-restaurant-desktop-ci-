@@ -38,6 +38,10 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
     const file = event.target.files?.[0];
     event.target.value = '';
     if (!file) return;
+    if (!receiptId) {
+      toast.error(t('pharmacyStock.importFailed'));
+      return;
+    }
     setBusy(true);
     try {
       const { data } = await pharmacyWarehouseApi.importParse(receiptId, file);
@@ -62,7 +66,14 @@ export function usePharmacyReceiptImport({ receiptId, t, onImported }) {
       setInvoiceAlreadyImported(Boolean(data.invoiceAlreadyImported));
       setStep('columns');
     } catch (err) {
-      toast.error(resolvePharmacyApiError(err, t, 'pharmacyStock.importFailed'));
+      const aborted = err?.code === 'ERR_CANCELED' || err?.name === 'CanceledError';
+      toast.error(
+        aborted
+          ? t('pharmacyStock.importAborted', {
+            defaultValue: 'Импорт прерван — выберите файл ещё раз',
+          })
+          : resolvePharmacyApiError(err, t, 'pharmacyStock.importFailed'),
+      );
     } finally {
       setBusy(false);
     }

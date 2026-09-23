@@ -1,0 +1,25 @@
+---
+description: Main/restaurant world gates must not abort pharmacy flows
+globs:
+  - web-frontend/**/MainWorldGate*
+  - web-frontend/**/mainAppAccess*
+  - web-frontend/**/fetchMainAppAccess*
+  - restaurant-frontend/**/RestaurantWorldGate*
+alwaysApply: false
+---
+
+# World gates — do not abort in-app flows
+
+## Intent
+
+`MainWorldGate` blocks **confirmed** restaurant-only accounts on aurent.uz. That is product intent.
+
+## Do not regress
+
+1. **Never** set `loading=true` on revalidation after the user was already allowed — remounting `AppRoutes` aborts file pick / Excel import / open dialogs.
+2. On **`/company-business-types` transport error**: do **not** logout an already-allowed session. First paint may fail-open; only deny when the API returns an explicit restaurant-only payload (or floor role).
+3. `companyFitsMainApp(null)` is **unknown** (`null`), not `false`. Gate handles unknown; do not map unknown → `restaurant_only` logout.
+
+## Tests
+
+- `mainAppAccess.test.js` — null payload → `reason: 'unknown'`; pharmacy/grocery still ok.

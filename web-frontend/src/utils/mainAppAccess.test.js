@@ -17,7 +17,7 @@ describe('mainAppAccess', () => {
       defaultTypeCode: 'RESTAURANT',
       types: [{ code: 'RESTAURANT' }, { code: 'CANTEEN' }],
     })).toBe(false);
-    expect(companyFitsMainApp(null)).toBe(false);
+    expect(companyFitsMainApp(null)).toBe(null);
     expect(evaluateMainAppAccess({
       role: 'WAITER',
       businessPayload: { defaultTypeCode: 'UNIVERSAL' },
@@ -29,7 +29,7 @@ describe('mainAppAccess', () => {
     expect(evaluateMainAppAccess({
       role: 'ADMIN',
       businessPayload: null,
-    })).toEqual({ ok: false, reason: 'restaurant_only' });
+    })).toEqual({ ok: false, reason: 'unknown' });
   });
 
   it('allows mixed companies on main', () => {

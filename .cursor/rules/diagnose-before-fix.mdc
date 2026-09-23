@@ -1,0 +1,36 @@
+---
+description: Diagnose before fixing — bug vs intentional business logic
+alwaysApply: true
+---
+
+# Diagnose first: why → bug or by design
+
+When the user reports unexpected POS/UI/API behavior (or asks «почему так»), answer in this order. Do **not** jump straight to a code change.
+
+## 1. Explain why (first)
+
+In 1–3 short sentences: what the code/data/rule is doing and **why** that produces what they see. Cite the concrete gate (flag, attribute, sync path, checkout convert) when known.
+
+## 2. Classify (required)
+
+Say clearly which one it is:
+
+| Label | Meaning | What to do |
+|-------|---------|------------|
+| **Баг** | Broken / regresses after a change / contradicts documented invariants or product intent | Fix; add/keep a `.cursor/rules/*.mdc` invariant so it does not regress |
+| **Бизнес-логика** | Intentional across the project (pack stock, piece checkout, marking, pharmacy cutover, themes, etc.) | **Do not “fix” or rewrite.** Explain that it is by design; only change if the user explicitly asks to change the product rule |
+| **Данные / настройка** | Code is fine; product flags, attrs, or stale sync left the entity in a bad state | Prefer data/sync repair or a narrow guard; do not invent a new global UX |
+
+If unsure, say **неясно** and what evidence is missing — still do not silently treat business rules as bugs.
+
+## 3. Only then act
+
+- **Баг** → fix the minimal path; preserve existing pack/checkout/marking rules unless the bug is inside them.
+- **Бизнес-логика** → explain; offer change only if they ask («хочу поменять правило»).
+- **Данные** → fix the sync/flag/card; do not loosen project-wide invariants to hide bad rows.
+
+## Do not
+
+- “Improve” pack→piece, marking, stock-in-packs, or theme tokens because they feel odd without classifying first.
+- Override or delete invariants in `.cursor/rules/pharmacy-*.mdc` (and similar) unless fixing a proven bug those rules already describe.
+- Answer with only a patch and no “why / bug vs by design” when the user is confused about behavior.

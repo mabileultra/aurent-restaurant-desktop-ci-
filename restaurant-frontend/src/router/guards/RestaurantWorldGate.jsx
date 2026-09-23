@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
@@ -7,6 +7,7 @@ import WrongAppScreen from '../../features/auth/components/WrongAppScreen';
 
 /**
  * Blocks grocery/pharmacy/platform sessions on r-aurent with a clear message.
+ * Do not remount the SPA while re-checking — that aborts in-flight dialogs.
  */
 export default function RestaurantWorldGate({ children }) {
   const { t } = useTranslation();
@@ -15,25 +16,44 @@ export default function RestaurantWorldGate({ children }) {
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
   const [loading, setLoading] = useState(Boolean(token));
   const [denied, setDenied] = useState(null);
+  const allowedRef = useRef(false);
 
   useEffect(() => {
     if (!hasHydrated) return undefined;
     if (!token) {
+      allowedRef.current = false;
       setLoading(false);
       return undefined;
     }
 
     let cancelled = false;
-    setLoading(true);
+    const firstCheck = !allowedRef.current;
+    if (firstCheck) setLoading(true);
+
     (async () => {
-      const { access } = await fetchRestaurantAppAccess(user?.role);
+      const { access, fetchError } = await fetchRestaurantAppAccess(user?.role);
       if (cancelled) return;
+
+      if (fetchError) {
+        if (allowedRef.current) {
+          setLoading(false);
+          return;
+        }
+        allowedRef.current = true;
+        setDenied(null);
+        setLoading(false);
+        return;
+      }
+
       if (!access.ok) {
+        allowedRef.current = false;
         logoutAndResetSession();
         setDenied(access.reason || 'not_restaurant');
         setLoading(false);
         return;
       }
+
+      allowedRef.current = true;
       setDenied(null);
       setLoading(false);
     })();
