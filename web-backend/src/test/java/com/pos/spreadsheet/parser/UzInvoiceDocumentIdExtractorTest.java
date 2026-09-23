@@ -58,4 +58,18 @@ class UzInvoiceDocumentIdExtractorTest {
         assertEquals("IS-00008429-L-4", row.get("sku"));
         assertEquals("IS-00008429", row.get(UzInvoiceDocumentIdExtractor.ROW_KEY_UZ_INVOICE_DOCUMENT_ID));
     }
+
+    @Test
+    void ignoresClientCodeCli() {
+        assertNull(UzInvoiceDocumentIdExtractor.extractFromPlainText("Покупатель CLI-12937 договор 41 20"));
+        assertNull(UzInvoiceDocumentIdExtractor.extractFromPlainText("CLI-12937"));
+    }
+
+    @Test
+    void prefersIsOverCliInSameGrid() {
+        List<List<String>> grid = new ArrayList<>();
+        grid.add(Arrays.asList("Клиент CLI-12937", "", ""));
+        grid.add(Arrays.asList("13.04.2024 даги IS-00008429-сонли", "", ""));
+        assertEquals("IS-00008429", UzInvoiceDocumentIdExtractor.extractFromGrid(grid));
+    }
 }
