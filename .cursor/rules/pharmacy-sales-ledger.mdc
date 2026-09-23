@@ -23,12 +23,14 @@ After cutover, pharmacy sales live in **pharmacy_db** / **pharmacy-service**. Gr
 4. Print / partial return from ledger: pass `catalogKind: 'pharmacy'` into modals so they use `pharmacySalesApi.getById` / return flow.
 5. Aggregate reports (`reportApi` → reporting-service / Kafka `sale_facts`) are a **separate** path — do not “fix” them by pointing ledger at grocery again.
 6. Grocery companies must keep using `saleApi` / `returnApi` unchanged.
+7. Ledger `storeName`: if API returns blank but `storeId` is set (common when pharmacy shift.store_name is empty), FE fills name from `/stores` list — never show «—» when the store is known.
 
 ## Do not
 
 - Hardcode admin ledger to grocery `saleApi.getAll` for all tenants.
 - Delete `GET /pharmacy/sales` or `GET /pharmacy/sales/returns` without FE replacement.
 - Assume pharmacy returns are in web-backend `/returns` table.
+- Drop the storeId→storeName enrichment on sales/returns ledger without an equivalent BE store name.
 
 ## Contrast
 

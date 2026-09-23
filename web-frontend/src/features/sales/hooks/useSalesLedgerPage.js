@@ -73,7 +73,20 @@ export function useSalesLedgerPage() {
     enabled: tenantReady && !businessTypeLoading,
   });
 
-  const rows = data?.content ?? [];
+  const rows = useMemo(() => {
+    const content = data?.content ?? [];
+    if (!stores.length) return content;
+    const nameById = new Map(
+      stores
+        .filter((s) => s?.id != null)
+        .map((s) => [Number(s.id), s.name])
+    );
+    return content.map((row) => {
+      if (row.storeName || row.storeId == null) return row;
+      const name = nameById.get(Number(row.storeId));
+      return name ? { ...row, storeName: name } : row;
+    });
+  }, [data?.content, stores]);
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const loading = isPending;
