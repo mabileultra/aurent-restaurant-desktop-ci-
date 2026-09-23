@@ -45,10 +45,14 @@ if [[ "${EUID}" -ne 0 ]]; then
   exit 0
 fi
 
-# Free public :80 so host nginx can bind (Docker will later bind 127.0.0.1:8088)
+# Free public :80 only if Docker still publishes it (blocks host nginx).
+# Already on 127.0.0.1:8088/5174 — do not stop; partial deploys must not leave SPA down.
 if command -v docker >/dev/null 2>&1 && [[ -f "$ROOT/docker-compose.prod.yml" ]]; then
-  echo "==> Stop frontends briefly to free :80"
-  (cd "$ROOT" && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" stop frontend restaurant-frontend 2>/dev/null) || true
+  if ss -lntp 2>/dev/null | grep -E '0\.0\.0\.0:80\b' | grep -qi docker \
+    || netstat -lntp 2>/dev/null | grep -E '0\.0\.0\.0:80\b' | grep -qi docker; then
+    echo "==> Stop frontends briefly to free public :80"
+    (cd "$ROOT" && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" stop frontend restaurant-frontend 2>/dev/null) || true
+  fi
 fi
 
 export DEBIAN_FRONTEND=noninteractive
@@ -124,6 +128,12 @@ if command -v certbot >/dev/null 2>&1; then
   fi
 else
   echo "==> SKIP certbot (не установлен)"
+fi
+
+# SPA proxies /api → gateway on :8088/:5174. Always bring them back after nginx work.
+if command -v docker >/dev/null 2>&1 && [[ -f "$ROOT/docker-compose.prod.yml" ]]; then
+  echo "==> Ensure frontends up (127.0.0.1:8088 / 5174)"
+  (cd "$ROOT" && docker compose -f docker-compose.prod.yml --env-file "$ENV_FILE" up -d --no-deps frontend restaurant-frontend) || true
 fi
 
 echo "==> configure-restaurant-domain: done"
