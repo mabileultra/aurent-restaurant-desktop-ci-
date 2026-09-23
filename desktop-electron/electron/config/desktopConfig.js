@@ -2,10 +2,16 @@ const fs = require('fs');
 const path = require('path');
 const { app } = require('electron');
 const { buildOrigin, buildHealthUrl, parseServerUrl } = require('../core/serverUrl');
-const { resolveDesktopUrls } = require('../../config/desktopUrls');
+const { resolveDesktopUrls, PRODUCTION_RESTAURANT_ORIGIN } = require('../../config/desktopUrls');
 const { resolveUiMode, UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./uiMode');
 const { resolveOfflineFirst } = require('./offlineFirst');
-const { buildLoginUrl, normalizeCompanyLoginCode } = require('./loginUrl');
+const {
+  buildLoginUrl,
+  normalizeCompanyLoginCode,
+  normalizeAppWorld,
+  APP_WORLD_MAIN,
+  APP_WORLD_RESTAURANT,
+} = require('./loginUrl');
 
 function userConfigPath() {
   return path.join(app.getPath('userData'), 'config.json');
@@ -69,10 +75,18 @@ function loadDesktopConfig({ isPackaged }) {
 
   let restaurantUrl = String(user.restaurantUrl || envUrls.restaurantUrl || '').trim();
   restaurantUrl = restaurantUrl.replace(/\/$/, '');
+  if (!restaurantUrl) {
+    restaurantUrl = PRODUCTION_RESTAURANT_ORIGIN;
+  }
+
+  const appWorld = normalizeAppWorld(
+    process.env.AURENT_APP_WORLD || user.appWorld || APP_WORLD_MAIN
+  );
 
   return {
     cashierUrl,
     restaurantUrl,
+    appWorld,
     backendOrigin,
     apiUrl,
     apiHealthUrl: user.apiHealthUrl || buildHealthUrl(backendOrigin),
@@ -99,7 +113,7 @@ function saveUiMode(mode) {
   });
 }
 
-function saveServerConfig({ host, webPort, apiPort, companyLoginCode }) {
+function saveServerConfig({ host, webPort, apiPort, companyLoginCode, appWorld, restaurantUrl }) {
   const code = normalizeCompanyLoginCode(companyLoginCode);
   if (!code) {
     throw new Error('Код компании: 5 цифр, от 10000 до 99999');
@@ -117,11 +131,18 @@ function saveServerConfig({ host, webPort, apiPort, companyLoginCode }) {
 
   const current = readUserConfig() || {};
   const uiMode = resolveUiMode({ userConfig: current });
+  const world = normalizeAppWorld(appWorld || current.appWorld || APP_WORLD_MAIN);
+  const envUrls = resolveDesktopUrls({ isPackaged: app.isPackaged });
+  const rstUrl = String(restaurantUrl || current.restaurantUrl || envUrls.restaurantUrl || PRODUCTION_RESTAURANT_ORIGIN)
+    .trim()
+    .replace(/\/$/, '');
 
   return writeUserConfig({
     useRemoteUi: uiMode !== UI_MODE_BUNDLED,
     uiMode,
     cashierUrl: webOrigin,
+    restaurantUrl: rstUrl,
+    appWorld: world,
     backendOrigin: apiOrigin,
     webPort: web,
     apiPort: api,
@@ -147,5 +168,8 @@ module.exports = {
   saveUiMode,
   saveOfflineFirst,
   normalizeCompanyLoginCode,
+  normalizeAppWorld,
   configFromUserFile,
+  APP_WORLD_MAIN,
+  APP_WORLD_RESTAURANT,
 };

@@ -9,11 +9,13 @@ const DEFAULT_API_PORT = '443';
 
 function readExistingForForm(existing) {
   const defaults = parseServerUrl(PRODUCTION_ORIGIN);
+  const world = existing?.appWorld === 'restaurant' ? 'restaurant' : 'main';
   let parsed = {
     host: defaults.host,
     webPort: defaults.port || DEFAULT_WEB_PORT,
     apiPort: defaults.port || DEFAULT_API_PORT,
     companyLoginCode: '',
+    appWorld: world,
   };
 
   if (existing?.cashierUrl) {
@@ -23,6 +25,7 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || web.port || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
+      appWorld: world,
     };
   } else if (existing?.backendOrigin) {
     const api = parseServerUrl(existing.backendOrigin);
@@ -31,6 +34,7 @@ function readExistingForForm(existing) {
       webPort: existing.webPort || DEFAULT_WEB_PORT,
       apiPort: existing.apiPort || api.port || DEFAULT_API_PORT,
       companyLoginCode: existing.companyLoginCode || '',
+      appWorld: world,
     };
   }
 
@@ -38,9 +42,9 @@ function readExistingForForm(existing) {
 }
 
 function buildSetupHtml(current) {
-  const { host, webPort, apiPort, companyLoginCode } = readExistingForForm(current);
+  const { host, webPort, apiPort, companyLoginCode, appWorld } = readExistingForForm(current);
   const intro =
-    'Укажите адрес сервера магазина. После сохранения откроется вход в кассу.';
+    'Укажите адрес сервера и тип кассы. Ресторан открывается на r-aurent без перехода между сайтами.';
   const hint =
     'Порт <strong>443</strong> для HTTPS (www.aurent.uz). Для HTTP в локальной сети — <strong>8081</strong>. Проверка: <strong>/api/v1/actuator/health</strong> → {"status":"UP"}.';
 
@@ -59,9 +63,10 @@ function buildSetupHtml(current) {
     h1 { font-size: 1.25rem; margin: 0 0 8px; }
     p { margin: 0 0 16px; color: #475569; font-size: 0.9rem; line-height: 1.45; }
     label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: #334155; }
-    input {
+    input, select {
       width: 100%; padding: 10px 12px; margin-bottom: 14px;
       border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem;
+      background: #fff;
     }
     button {
       width: 100%; padding: 12px; border: none; border-radius: 8px;
@@ -76,7 +81,12 @@ function buildSetupHtml(current) {
   <h1>Настройка сервера Aurent</h1>
   <p>${intro}</p>
   <form id="f">
-    <label for="host">Адрес сервера (IP или домен)</label>
+    <label for="appWorld">Тип кассы</label>
+    <select id="appWorld" name="appWorld" required>
+      <option value="main"${appWorld !== 'restaurant' ? ' selected' : ''}>Магазин / аптека (aurent.uz)</option>
+      <option value="restaurant"${appWorld === 'restaurant' ? ' selected' : ''}>Ресторан (r-aurent.uz)</option>
+    </select>
+    <label for="host">Адрес API-сервера (IP или домен)</label>
     <input id="host" name="host" placeholder="www.aurent.uz или IP сервера" value="${host}" required autocomplete="off" />
     <label for="companyLoginCode">Код компании (для входа кассиров)</label>
     <input id="companyLoginCode" name="companyLoginCode" placeholder="10000" inputmode="numeric" maxlength="5" pattern="[0-9]{5}" value="${companyLoginCode}" required autocomplete="off" style="letter-spacing:0.08em;font-family:ui-monospace,monospace;" />
@@ -100,7 +110,8 @@ function buildSetupHtml(current) {
       const webPort = document.getElementById('webPort').value.trim() || '443';
       const apiPort = document.getElementById('apiPort').value.trim() || webPort;
       const companyLoginCode = document.getElementById('companyLoginCode').value.replace(/\\D/g, '').slice(0, 5);
-      window.setupApi.save({ host, webPort, apiPort, companyLoginCode });
+      const appWorld = document.getElementById('appWorld').value;
+      window.setupApi.save({ host, webPort, apiPort, companyLoginCode, appWorld });
     });
   </script>
 </body>
@@ -112,7 +123,7 @@ function showSetupWindow(existing) {
     let settled = false;
     const win = new BrowserWindow({
       width: 440,
-      height: 560,
+      height: 620,
       resizable: false,
       center: true,
       show: false,

@@ -54,3 +54,26 @@ test('bundled with files uses local origin', async () => {
   assert.equal(result.source, 'bundled');
   assert.equal(result.url, 'http://127.0.0.1:47811/cashier/login?companyLoginCode=10001');
 });
+
+test('restaurant world always opens r-aurent remote, never bundled', async () => {
+  let started = false;
+  const result = await resolveCashierStartUrl({
+    cfg: {
+      ...cfg,
+      appWorld: 'restaurant',
+      restaurantUrl: 'https://r-aurent.uz',
+      uiMode: UI_MODE_BUNDLED,
+    },
+    bundledRoot: '/ui',
+    startServer: async () => {
+      started = true;
+      return { origin: 'http://127.0.0.1:9' };
+    },
+    stopServer: async () => {},
+  });
+  assert.equal(started, false);
+  assert.equal(result.source, 'remote');
+  assert.equal(result.reason, 'restaurant_world');
+  assert.equal(result.url, 'https://r-aurent.uz/cashier/login?companyLoginCode=10001');
+  assert.equal(result.uiOrigin, 'https://r-aurent.uz');
+});

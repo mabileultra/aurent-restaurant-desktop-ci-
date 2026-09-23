@@ -11,7 +11,12 @@ function getActiveUiOrigin() {
 }
 
 function cashierUrlForUi(cfg) {
-  return getActiveUiOrigin() || String(cfg?.cashierUrl || '').replace(/\/$/, '');
+  if (getActiveUiOrigin()) return getActiveUiOrigin();
+  const world = String(cfg?.appWorld || '').toLowerCase();
+  if (world === 'restaurant' || world === 'rst') {
+    return String(cfg?.restaurantUrl || cfg?.cashierUrl || '').replace(/\/$/, '');
+  }
+  return String(cfg?.cashierUrl || '').replace(/\/$/, '');
 }
 
 module.exports = {

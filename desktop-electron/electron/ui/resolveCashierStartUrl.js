@@ -1,14 +1,27 @@
-const { buildLoginUrl } = require('../config/loginUrl');
+const { buildLoginUrl, normalizeAppWorld, APP_WORLD_RESTAURANT, loginUiOrigin } = require('../config/loginUrl');
 const { resolveUiMode, UI_MODE_BUNDLED } = require('../config/uiMode');
 
 async function resolveCashierStartUrl({
   cfg,
   bundledRoot,
-  currentServer = null,
+  currentServer,
   startServer,
   stopServer,
   env = process.env,
 } = {}) {
+  // Restaurant world always opens r-aurent (or configured restaurantUrl) — no domain hop after login.
+  if (normalizeAppWorld(cfg?.appWorld) === APP_WORLD_RESTAURANT) {
+    if (typeof stopServer === 'function') await stopServer();
+    const remoteOrigin = loginUiOrigin(cfg);
+    return {
+      url: buildLoginUrl(cfg),
+      source: 'remote',
+      reason: 'restaurant_world',
+      uiOrigin: remoteOrigin,
+      localServer: null,
+    };
+  }
+
   const mode = cfg?.uiMode || resolveUiMode({ userConfig: cfg, env });
   const remoteOrigin = String(cfg?.cashierUrl || '').replace(/\/$/, '');
   const remoteUrl = buildLoginUrl(cfg);

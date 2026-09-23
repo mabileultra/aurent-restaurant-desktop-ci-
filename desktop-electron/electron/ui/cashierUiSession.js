@@ -2,7 +2,7 @@ const { resolveCashierStartUrl } = require('./resolveCashierStartUrl');
 const { startLocalUiServer } = require('./localUiServer');
 const { resolveBundledUiRoot } = require('./bundledUiRoot');
 const { setActiveUiOrigin } = require('./activeUiOrigin');
-const { buildLoginUrl } = require('../config/loginUrl');
+const { buildLoginUrl, loginUiOrigin } = require('../config/loginUrl');
 
 function createCashierUiSession({
   loadConfig,
@@ -56,7 +56,7 @@ function createCashierUiSession({
       url: buildLoginUrl(cfg),
       source: 'remote-fallback',
       reason: 'load_failed',
-      uiOrigin: String(cfg.cashierUrl || '').replace(/\/$/, ''),
+      uiOrigin: loginUiOrigin(cfg),
       localServer: null,
     });
   }
