@@ -76,7 +76,11 @@ public class StockFactAnalyticsRepositoryImpl implements StockFactAnalyticsRepos
         return nativePageExecutor.fetchPage(
             sqlResourceLoader.load("sql/stock/low-stock-page.sql"),
             sqlResourceLoader.load("sql/stock/low-stock-count.sql"),
-            query -> query.setParameter("companyId", companyId),
+            query -> {
+                query.setParameter("companyId", companyId);
+                // count SQL shared with dashboard requires :storeId; null → all stores
+                NativeQueryParamSupport.bindOptionalStoreId(query, "storeId", null);
+            },
             pageable
         );
     }
