@@ -1,5 +1,4 @@
-export const userFormInputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
-  focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:border-slate-700 dark:bg-slate-800 dark:text-white`;
+export const userFormInputCls = 'user-form-modal__input';
 
 export function toStoreIdSet(ids) {
   const list = Array.isArray(ids) ? ids : [];

@@ -1,0 +1,131 @@
+.user-form-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.user-form-modal__loading {
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.9rem;
+}
+
+.user-form-modal__hint {
+  margin: 0.35rem 0 0;
+  color: var(--rst-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.user-form-modal__error {
+  margin: 0.35rem 0 0;
+  color: #e07a66;
+  font-size: 0.78rem;
+}
+
+.user-form-modal__warn {
+  margin: 0.35rem 0 0;
+  color: #d4a017;
+  font-size: 0.78rem;
+}
+
+.user-form-modal__muted {
+  color: var(--rst-muted);
+}
+
+.user-form-modal__mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-weight: 600;
+  color: var(--rst-ink);
+}
+
+.user-form-modal__section-title {
+  margin: 0 0 0.45rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.user-form-modal__cred-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+  background: rgb(255 255 255 / 0.03);
+}
+
+.user-form-modal__cred-panel p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.user-form-modal__password {
+  position: relative;
+}
+
+.user-form-modal__eye {
+  position: absolute;
+  top: 2.15rem;
+  right: 0.55rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.35rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--rst-muted);
+  cursor: pointer;
+}
+
+.user-form-modal__eye:hover {
+  color: var(--rst-ink);
+}
+
+.user-form-modal__stores {
+  max-height: 10rem;
+  overflow: auto;
+  margin-top: 0.45rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+}
+
+.user-form-modal__store-row {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0.35rem 0;
+  font-size: 0.9rem;
+  color: var(--rst-ink);
+  cursor: pointer;
+}
+
+.user-form-modal__store-row .is-inactive {
+  color: #d4a017;
+}
+
+.user-form-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--rst-line);
+}
+
+.user-form-modal__spinner {
+  margin-right: 0.35rem;
+  vertical-align: -2px;
+  animation: user-form-spin 0.8s linear infinite;
+}
+
+@keyframes user-form-spin {
+  to { transform: rotate(360deg); }
+}
