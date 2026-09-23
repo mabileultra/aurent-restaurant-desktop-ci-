@@ -1,9 +1,10 @@
 /**
  * Browser print for a kitchen ticket / chit after send-to-kitchen.
+ * Uses a hidden iframe (not window.open) so the POS tab never navigates to about:blank.
  * Desktop ESC/POS kitchen printers can hook later; window.print is enough for pilot.
  */
 export function printKitchenTicket({ order, t }) {
-  if (!order) return;
+  if (typeof window === 'undefined' || !order) return;
 
   const lines = (order.items || []).filter((item) => {
     const status = String(item.itemStatus || '').toUpperCase();
@@ -49,14 +50,48 @@ export function printKitchenTicket({ order, t }) {
     <h1>${escapeHtml(header)}</h1>
     <div class="meta">${new Date().toLocaleString()}${order.clientName ? ` · ${escapeHtml(order.clientName)}` : ''}</div>
     ${sections}
-    <script>window.onload=()=>{window.print();setTimeout(()=>window.close(),300)}</script>
     </body></html>`;
 
-  const win = window.open('', '_blank', 'noopener,noreferrer,width=420,height=640');
-  if (!win) return;
-  win.document.open();
-  win.document.write(html);
-  win.document.close();
+  const iframe = document.createElement('iframe');
+  iframe.setAttribute('aria-hidden', 'true');
+  iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0;pointer-events:none';
+  document.body.appendChild(iframe);
+
+  const frameWindow = iframe.contentWindow;
+  const frameDoc = frameWindow?.document;
+  if (!frameDoc) {
+    iframe.remove();
+    return;
+  }
+
+  frameDoc.open();
+  frameDoc.write(html);
+  frameDoc.close();
+
+  const cleanup = () => {
+    try {
+      iframe.remove();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  const triggerPrint = () => {
+    try {
+      frameWindow.focus();
+      frameWindow.print();
+    } finally {
+      // Delay so the print dialog can attach to the frame contents.
+      window.setTimeout(cleanup, 1000);
+    }
+  };
+
+  if (frameDoc.readyState === 'complete') {
+    triggerPrint();
+  } else {
+    iframe.onload = triggerPrint;
+    window.setTimeout(triggerPrint, 250);
+  }
 }
 
 function escapeHtml(value) {
