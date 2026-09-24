@@ -35,6 +35,7 @@ export {
 export { runMultikassaOperation } from './runMultikassaOperation';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';
 export { fiscalizeShiftOperation } from './fiscalizeShiftOperation';
+export { isFiscalShiftAlreadyOpenError } from './isFiscalShiftAlreadyOpenError';
 export { fiscalizeRefundBeforeCommit } from './fiscalizeRefundBeforeCommit';
 export { retryPendingFiscalOnPayload } from './retryPendingFiscalOnPayload';
 export {

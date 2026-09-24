@@ -24,6 +24,7 @@ import { resolvePosRoute } from './posRouteResolver';
 import {
   fiscalizeSaleBeforeCommit,
   fiscalizeShiftOperation,
+  isFiscalShiftAlreadyOpenError,
   loadMultikassaCapabilities,
   wrapMultikassaFiscalError,
 } from '../multikassa';
@@ -283,6 +284,10 @@ export async function posOpenShift(storeId, user, storeName = '', { catalogKind 
         zReportNumber: shift?.zReportId,
       });
     } catch (fiscalErr) {
+      // Фискальная смена уже открыта на этом компьютере — POS-смену оставляем.
+      if (isFiscalShiftAlreadyOpenError(fiscalErr)) {
+        return shift;
+      }
       try {
         await apiClient.close(shift.id);
       } catch {

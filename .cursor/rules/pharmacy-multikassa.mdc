@@ -20,6 +20,7 @@ After pharmacy cutover, shifts live in **pharmacy-service**; Multikassa settings
 3. **Multikassa resolve** (`MultikassaSettingsServiceImpl.resolveRegisterForCashier`): if no grocery open shift, fall back to the store’s first **ACTIVE** cash register. Do not remove this fallback for pharmacy.
 4. **Cashier Multikassa UI** may open settings using `shift.cashRegisterId ?? caps.cashRegisterId` (and terminal register as last resort). Never require only grocery `CashierShift`.
 5. **Guard** (`MultikassaCashierRegisterGuard`): cashiers without grocery open shift may still configure Multikassa for a store they can sell at (pharmacy path). Do not restore “grocery shift only”.
+6. **Fiscal open already open** (`posOpenShift`): if Multikassa says the fiscal shift is already open, keep the POS shift. Do not `close` it as rollback — that loop shows «откройте смену», then «смена открыта», and the row is CLOSED ~1s later. A register without Multikassa must still open normally.
 
 ## Do not
 
