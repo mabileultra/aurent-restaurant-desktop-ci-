@@ -18,7 +18,7 @@ import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAcces
 import { logoutAndResetSession } from '../../../utils/authSession';
 import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
 
-const PIN_ROLES = new Set(['CASHIER']);
+const PIN_ROLES = new Set(['CASHIER', 'WAITER', 'COOK']);
 
 async function resolvePinHomePath(role) {
   const { access, businessPayload } = await fetchRestaurantAppAccess(role);

@@ -9,6 +9,7 @@ export default function UserFormModalFields({
   isEdit,
   user,
   isCashierRole,
+  isPinRole,
   pinRequired,
   showPasswordField,
   fieldOn,
@@ -19,6 +20,7 @@ export default function UserFormModalFields({
   companyLoginCode,
   passwordVisible,
   setPasswordVisible,
+  setPinDirty,
   register,
   setValue,
   selectedRole,
@@ -63,7 +65,7 @@ export default function UserFormModalFields({
             <span className="user-form-modal__mono">{user?.username}</span>
           </p>
           <p className="user-form-modal__hint">
-            {isCashierRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
+            {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
           </p>
         </div>
       ) : null}
@@ -92,15 +94,18 @@ export default function UserFormModalFields({
         error={errors.username ? t('validation.required') : undefined}
       />
 
-      {isCashierRole ? (
+      {isPinRole ? (
         <div className="rst-admin-field">
           <BaseInput
             label={t('users.pin', { defaultValue: 'PIN-код кассира' })}
             required={pinRequired}
             inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="••••"
-            {...register('pin', { required: pinRequired })}
+            autoComplete="off"
+            placeholder={isEdit ? t('users.pinEditHint', { defaultValue: 'Оставьте пустым, если менять PIN не нужно' }) : '••••'}
+            {...register('pin', {
+              required: pinRequired,
+              onChange: () => setPinDirty?.(true),
+            })}
           />
           <p className="user-form-modal__hint">
             {pinRequired

@@ -27,6 +27,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
   const [storeIds, setStoreIds] = useState(() => new Set());
   const [companyId, setCompanyId] = useState('');
   const [passwordVisible, setPasswordVisible] = useState(false);
+  const [pinDirty, setPinDirty] = useState(false);
   const [createdCredentials, setCreatedCredentials] = useState(null);
   const createCredentialsRef = useRef(null);
 
@@ -48,9 +49,10 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
   const roleAllowList = Array.isArray(allowedRoles) && allowedRoles.length > 0 ? allowedRoles : null;
   const defaultCreateRole = roleAllowList?.[0] ?? (isPlatform ? 'ADMIN' : 'MANAGER');
   const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
+  const isPinRole = isCashierRole || selectedRole === 'COOK';
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
-  const pinRequired = !isEdit || (isCashierRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER');
-  const showPasswordField = !isCashierRole && (isPlatform || fieldOn('password') || !isEdit);
+  const pinRequired = !isEdit || (isPinRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER' && user?.role !== 'COOK');
+  const showPasswordField = !isPinRole && (isPlatform || fieldOn('password') || !isEdit);
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],
@@ -120,16 +122,27 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     if (!open) {
       formInitializedRef.current = false;
       setPasswordVisible(false);
+      setPinDirty(false);
       return;
     }
     if (formInitializedRef.current) return;
     if (isEdit && !user?.id) return;
 
     formInitializedRef.current = true;
+    setPinDirty(false);
 
     if (isEdit) {
       const role = user.role ?? 'MANAGER';
-      const initialStores = toStoreIdSet(user.storeIds);
+      let initialStores = toStoreIdSet(user.storeIds);
+      // Staff page filters by current store; if API omitted storeIds, keep assignment on this store.
+      if (
+        initialStores.size === 0
+        && (role === 'CASHIER' || role === 'WAITER')
+        && Array.isArray(defaultStoreIds)
+        && defaultStoreIds.length > 0
+      ) {
+        initialStores = toStoreIdSet(defaultStoreIds);
+      }
       reset({
         firstName: user.firstName ?? '',
         lastName: user.lastName ?? '',
@@ -223,6 +236,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
       if (selectedStoreIds.length > 1) {
         selectedStoreIds = [selectedStoreIds[0]];
       }
+    }
+    if (isPinRole) {
       if (pinRequired && (!pin || pin.replace(/\D/g, '').length < 4)) {
         toast.error(t('users.pinRequired', { defaultValue: 'PIN обязателен (4–6 цифр)' }));
         return;
@@ -260,9 +275,15 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
         toast.error(t('users.passwordMinLength'));
         return;
       }
+      const pinDigits = pin.replace(/\D/g, '');
+      const shouldSendPin = pinDirty && pinDigits.length > 0;
+      if (shouldSendPin && (pinDigits.length < 4 || pinDigits.length > 6)) {
+        toast.error(t('users.pinRequired', { defaultValue: 'PIN обязателен (4–6 цифр)' }));
+        return;
+      }
       const payload = {
         username,
-        ...(pin ? { pin } : {}),
+        ...(shouldSendPin ? { pin: pinDigits } : {}),
         firstName,
         lastName,
         patronymic,
@@ -285,8 +306,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
       patronymic,
       username,
       email,
-      pin: isCashierRole ? pin : undefined,
-      ...(isCashierRole || pwd.length === 0 ? {} : { password: pwd }),
+      pin: isPinRole ? pin : undefined,
+      ...(isPinRole || pwd.length === 0 ? {} : { password: pwd }),
       role,
       companyId: isPlatform && companyId ? Number(companyId) : undefined,
       storeIds: selectedStoreIds,
@@ -294,8 +315,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     if (isPlatform) {
       createCredentialsRef.current = {
         username,
-        password: isCashierRole ? null : String(data.password || '').trim(),
-        pin: isCashierRole ? pin : null,
+        password: isPinRole ? null : String(data.password || '').trim(),
+        pin: isPinRole ? pin : null,
         role,
         companyLoginCode,
       };
@@ -323,6 +344,7 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     isEdit,
     user,
     isCashierRole,
+    isPinRole,
     pinRequired,
     showPasswordField,
     fieldOn,
@@ -333,6 +355,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     companyLoginCode,
     passwordVisible,
     setPasswordVisible,
+    pinDirty,
+    setPinDirty,
     createdCredentials,
     dismissCredentials,
     register,

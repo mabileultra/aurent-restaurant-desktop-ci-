@@ -46,12 +46,14 @@ public class UserPinServiceImpl implements UserPinService {
             user.setPinDigest(null);
         }
         if (usesPin(newRoleName) && !usesPin(oldRoleName) && !StringUtils.hasText(pinFromRequest)) {
-            throw IdentityExceptions.badRequest("Cashier PIN is required when assigning CASHIER role");
+            throw IdentityExceptions.badRequest("PIN is required when assigning cashier, waiter, or cook");
         }
     }
 
     private static boolean usesPin(String roleName) {
-        return "CASHIER".equalsIgnoreCase(roleName) || "WAITER".equalsIgnoreCase(roleName);
+        return "CASHIER".equalsIgnoreCase(roleName)
+            || "WAITER".equalsIgnoreCase(roleName)
+            || "COOK".equalsIgnoreCase(roleName);
     }
 
     private String digestUniquePin(Integer companyId, String pin, java.util.UUID excludeUserId) {

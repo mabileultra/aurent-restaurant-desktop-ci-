@@ -111,7 +111,7 @@ export function redirectToLogin() {
 }
 
 export function cashierSessionMatchesCompany(user, companyCode) {
-  if (!user || !['CASHIER', 'WAITER'].includes(user.role)) return true;
+  if (!user || !['CASHIER', 'WAITER', 'COOK'].includes(user.role)) return true;
   const expected = normalizeCompanyLoginCode(companyCode);
   if (!expected) return true;
   const sessionCode = normalizeCompanyLoginCode(user.companyLoginCode);

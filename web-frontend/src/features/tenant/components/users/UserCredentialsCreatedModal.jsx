@@ -7,7 +7,7 @@ function buildCredentialsText(cred, t) {
     lines.push(`${t('users.platformCompanyCode')}: ${cred.companyLoginCode}`);
   }
   lines.push(`${t('users.credentialsLogin')}: ${cred.username}`);
-  if ((cred.role === 'CASHIER' || cred.role === 'WAITER') && cred.pin) {
+  if ((cred.role === 'CASHIER' || cred.role === 'WAITER' || cred.role === 'COOK') && cred.pin) {
     lines.push(`${t('users.pin')}: ${cred.pin}`);
   } else if (cred.password) {
     lines.push(`${t('users.password')}: ${cred.password}`);
@@ -43,7 +43,7 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
             <span className="text-slate-500">{t('users.credentialsLogin')}:</span>{' '}
             <span className="font-mono font-semibold">{credentials.username}</span>
           </p>
-          {credentials.role === 'CASHIER' || credentials.role === 'WAITER' ? (
+          {credentials.role === 'CASHIER' || credentials.role === 'WAITER' || credentials.role === 'COOK' ? (
             <p>
               <span className="text-slate-500">{t('users.pin')}:</span>{' '}
               <span className="font-mono font-semibold">{credentials.pin}</span>

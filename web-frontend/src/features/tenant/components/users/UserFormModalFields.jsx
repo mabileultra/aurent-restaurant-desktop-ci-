@@ -10,6 +10,7 @@ export default function UserFormModalFields({
   isEdit,
   user,
   isCashierRole,
+  isPinRole,
   pinRequired,
   showPasswordField,
   fieldOn,
@@ -20,6 +21,7 @@ export default function UserFormModalFields({
   companyLoginCode,
   passwordVisible,
   setPasswordVisible,
+  setPinDirty,
   register,
   setValue,
   selectedRole,
@@ -65,7 +67,7 @@ export default function UserFormModalFields({
             <span className="font-mono font-semibold">{user?.username}</span>
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            {isCashierRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
+            {isPinRole ? t('users.pinHiddenHint') : t('users.passwordHiddenHint')}
           </p>
         </div>
       ) : null}
@@ -90,7 +92,7 @@ export default function UserFormModalFields({
         />
         {errors.username && <p className="mt-1 text-xs text-red-400">{t('validation.required')}</p>}
       </div>
-      {isCashierRole ? (
+      {isPinRole ? (
         <div>
           <label className="mb-1 block text-xs text-slate-500 dark:text-slate-400">
             {t('users.pin', { defaultValue: 'PIN-код кассира' })}
@@ -98,9 +100,12 @@ export default function UserFormModalFields({
           </label>
           <input
             inputMode="numeric"
-            autoComplete="one-time-code"
-            placeholder="••••"
-            {...register('pin', { required: pinRequired })}
+            autoComplete="off"
+            placeholder={isEdit ? t('users.pinEditHint', { defaultValue: 'Оставьте пустым, если менять PIN не нужно' }) : '••••'}
+            {...register('pin', {
+              required: pinRequired,
+              onChange: () => setPinDirty?.(true),
+            })}
             className={userFormInputCls}
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">

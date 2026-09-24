@@ -24,9 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class CashierPinAuthServiceImpl implements CashierPinAuthService {
+
+    private static final Set<String> PIN_LOGIN_ROLES = Set.of("CASHIER", "WAITER", "COOK");
 
     private final UserLookupSupport userLookup;
     private final TenantAccessSupport tenantAccess;
@@ -56,11 +60,14 @@ public class CashierPinAuthServiceImpl implements CashierPinAuthService {
         User user = userLookup.findOneWithDetails(
                 UserSpecifications.lookup()
                     .companyId(company.id())
-                    .roleName("CASHIER")
                     .activeOnly()
                     .pinDigest(digest)
             )
             .orElseThrow(() -> new BadRequestException("Invalid PIN"));
+        String roleName = user.getRole() != null ? user.getRole().getName() : "";
+        if (!PIN_LOGIN_ROLES.contains(roleName)) {
+            throw new BadRequestException("Invalid PIN");
+        }
         loginGuard.assertAllowed(user, company);
 
         userSyncSupport.syncUpdate(user);
