@@ -19,6 +19,19 @@ public final class DbExceptionTranslator {
         String root = rootCauseMessage(ex);
         String lower = root.toLowerCase();
 
+        // Unique-constraint names first — substring "pin_digest" also matches them and must not
+        // be mislabeled as a missing-column / stale-schema error.
+        if (lower.contains("uq_users_company_pin_digest")) {
+            return "Такой PIN уже используется в компании";
+        }
+        if (lower.contains("uq_users_tenant_username")
+            || (lower.contains("duplicate key") && lower.contains("username"))) {
+            return "Логин уже занят (такой username уже есть в системе)";
+        }
+        if (lower.contains("uq_users_company_email")
+            || (lower.contains("duplicate key") && lower.contains("email"))) {
+            return "Email уже зарегистрирован в этой компании";
+        }
         if (lower.contains("pin_digest") || lower.contains("module_access_custom")) {
             return "Схема БД устарела: на сервере выполните bash deploy/update.sh";
         }
@@ -30,17 +43,6 @@ public final class DbExceptionTranslator {
         }
         if (lower.contains("lazyinitialization")) {
             return "Ошибка загрузки данных. Обновите backend и повторите запрос.";
-        }
-        if (lower.contains("uq_users_tenant_username")
-            || (lower.contains("duplicate key") && lower.contains("username"))) {
-            return "Логин уже занят (такой username уже есть в системе)";
-        }
-        if (lower.contains("uq_users_company_email")
-            || (lower.contains("duplicate key") && lower.contains("email"))) {
-            return "Email уже зарегистрирован в этой компании";
-        }
-        if (lower.contains("uq_users_company_pin_digest")) {
-            return "Такой PIN уже используется в компании";
         }
         if (lower.contains("duplicate key") || lower.contains("unique constraint")) {
             return "Пользователь с такими данными уже существует";

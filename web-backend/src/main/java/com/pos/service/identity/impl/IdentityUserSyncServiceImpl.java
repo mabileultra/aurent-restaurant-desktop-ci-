@@ -56,6 +56,7 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
 
     private void upsertToPos(UserSyncRequest request) {
         reconcileLegacyUsernameOwner(request);
+        reconcilePinDigestOwner(request);
 
         Role role = roleRepository.findByName(request.role())
             .orElseThrow(() -> PosExceptions.badRequest("Invalid role: " + request.role()));
@@ -93,6 +94,37 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
         userRepository.save(user);
         authenticatedUserCache.evict(user.getId());
         LogUtil.info(IdentityUserSyncServiceImpl.class, "Identity user synced to pos_db: id={}, op={}", user.getId(), request.operation());
+    }
+
+    /**
+     * Identity is source of truth for PIN. Free the digest from any other pos_db row so
+     * bootstrap/sync can land the real user — otherwise open/close shift gets 403 (no user in core).
+     */
+    private void reconcilePinDigestOwner(UserSyncRequest request) {
+        if (!StringUtils.hasText(request.pinDigest()) || request.companyId() == null || request.id() == null) {
+            return;
+        }
+        List<User> conflicts = userRepository.findByCompany_IdAndPinDigest(request.companyId(), request.pinDigest());
+        boolean cleared = false;
+        for (User other : conflicts) {
+            if (other.getId().equals(request.id())) {
+                continue;
+            }
+            other.setPinDigest(null);
+            userRepository.save(other);
+            authenticatedUserCache.evict(other.getId());
+            cleared = true;
+            LogUtil.warn(
+                IdentityUserSyncServiceImpl.class,
+                "Cleared conflicting pin_digest on pos_db user: id={}, companyId={}, for identityUserId={}",
+                other.getId(),
+                request.companyId(),
+                request.id()
+            );
+        }
+        if (cleared) {
+            entityManager.flush();
+        }
     }
 
     private Set<Store> resolveStores(Integer companyId, List<Integer> storeIds) {

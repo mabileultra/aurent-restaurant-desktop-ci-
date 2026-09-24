@@ -60,11 +60,20 @@ public class CashierShiftServiceImpl implements CashierShiftService {
         User cashier = currentUserProvider.requireCurrentUser();
         Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
 
-        cashierShiftRepository
-            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN)
-            .ifPresent(s -> {
-                throw new BadRequestException("Смена уже открыта");
-            });
+        var existingOpen = cashierShiftRepository
+            .findByCashierIdAndStoreIdAndStatus(cashier.getId(), store.getId(), CashierShift.ShiftStatus.OPEN);
+        if (existingOpen.isPresent()) {
+            // Idempotent: POS may show Open when GET current failed while OPEN still exists.
+            CashierShift open = existingOpen.get();
+            LogUtil.info(
+                CashierShiftServiceImpl.class,
+                "Shift already open — returning existing: id={}, storeId={}, cashierId={}",
+                open.getId(),
+                store.getId(),
+                cashier.getId()
+            );
+            return toLiveResponse(open, store.getName());
+        }
 
         CashRegister register = cashRegisterTerminalService.resolveActiveRegister(storeId, terminal);
         CashierShift saved = persistNewOpenShift(cashier, store, register);

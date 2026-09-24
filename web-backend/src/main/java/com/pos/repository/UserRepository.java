@@ -58,4 +58,6 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
         ORDER BY u.fullName
         """)
     List<User> findByCompanyIdWithDetails(@Param("companyId") Integer companyId);
+
+    List<User> findByCompany_IdAndPinDigest(Integer companyId, String pinDigest);
 }

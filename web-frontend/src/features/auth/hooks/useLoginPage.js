@@ -36,9 +36,9 @@ export function useLoginPage() {
     if (!hasHydrated || !token) return;
     let cancelled = false;
     (async () => {
-      const { access, businessPayload } = await fetchMainAppAccess(user?.role);
+      const { access, businessPayload, fetchError } = await fetchMainAppAccess(user?.role);
       if (cancelled) return;
-      if (!access.ok) {
+      if (!access.ok && !fetchError) {
         logoutAndResetSession();
         return;
       }
@@ -78,8 +78,8 @@ export function useLoginPage() {
       resetClientSessionState();
       setAuth(accessToken, profile);
 
-      const { access, businessPayload } = await fetchMainAppAccess(profile.role);
-      if (!access.ok) {
+      const { access, businessPayload, fetchError } = await fetchMainAppAccess(profile.role);
+      if (!access.ok && !fetchError) {
         logoutAndResetSession();
         toast.error(t('login.wrongAppUnknown'));
         return;

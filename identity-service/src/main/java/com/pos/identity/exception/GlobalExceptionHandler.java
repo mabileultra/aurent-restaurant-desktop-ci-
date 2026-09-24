@@ -31,6 +31,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IdentityException.class)
     public ResponseEntity<ApiErrorResponse> handleIdentity(IdentityException ex, HttpServletRequest req) {
         int status = ex.getStatus().value();
+        if (status >= 400 && status < 500) {
+            LogUtil.warn(GlobalExceptionHandler.class, "Identity {}: {} ({})", status, ex.getMessage(), req.getRequestURI());
+        }
         return ResponseEntity.status(status).body(
             ApiErrorResponse.of(
                 status,
@@ -48,6 +51,7 @@ public class GlobalExceptionHandler {
             .findFirst()
             .map(err -> err.getField() + ": " + err.getDefaultMessage())
             .orElse("Validation error");
+        LogUtil.warn(GlobalExceptionHandler.class, "Validation 400: {} ({})", message, req.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(
             ApiErrorResponse.of(
                 HttpStatus.BAD_REQUEST.value(),

@@ -30,4 +30,16 @@ class DbExceptionTranslatorTest {
 
         assertInstanceOf(ConflictException.class, thrown);
     }
+
+    @Test
+    void clientMessage_mapsPinDigestUniqueConstraintNotSchemaStale() {
+        String message = DbExceptionTranslator.clientMessage(
+            new DataIntegrityViolationException(
+                "ERROR: duplicate key value violates unique constraint \"uq_users_company_pin_digest\"\n"
+                    + "Detail: Key (company_id, pin_digest)=(41, abc) already exists."
+            )
+        );
+
+        assertEquals("Такой PIN уже используется в компании", message);
+    }
 }

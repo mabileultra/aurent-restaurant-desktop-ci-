@@ -58,7 +58,7 @@ export default function CashierPosTopbar({
         </div>
         <div className="cashier-topbar__actions">
           <CashierNotificationsBell />
-          {!shiftIsOpen && storeId ? (
+          {storeId && !shiftIsOpen && shift?.status !== 'OPEN' ? (
             <button type="button" className="cashier-pos-topbar__open-shift" onClick={openShift}>
               {t('pos.openShift')}
             </button>

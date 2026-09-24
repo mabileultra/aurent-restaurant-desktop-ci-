@@ -99,7 +99,7 @@ public class UserUpdateHandler {
             user.setRole(role);
         }
 
-        if (req.pin() != null) {
+        if (StringUtils.hasText(req.pin())) {
             userPinService.applyForUpdate(user, accessPolicy.companyId(user), req.pin());
         }
 

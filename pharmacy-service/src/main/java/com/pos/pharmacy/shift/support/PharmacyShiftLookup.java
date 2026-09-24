@@ -7,6 +7,7 @@ import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.shift.domain.PharmacyShiftStatus;
 import com.pos.pharmacy.shift.entity.PharmacyCashierShift;
 import com.pos.pharmacy.shift.repository.PharmacyCashierShiftRepository;
+import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,27 @@ public class PharmacyShiftLookup {
         }
         return shiftRepository
             .findByCashierIdAndStoreIdAndStatus(cashierId, storeId, PharmacyShiftStatus.OPEN)
-            .map(this::assertCompany);
+            .flatMap(this::forCurrentCompany);
+    }
+
+    /**
+     * Wrong-company OPEN rows must not 500 the current-shift endpoint — that leaves the POS
+     * showing «Open shift» while POST /open still hits exists() → «already open».
+     */
+    private Optional<PharmacyCashierShift> forCurrentCompany(PharmacyCashierShift shift) {
+        Integer companyId = PharmacyTenantContext.getCompanyId();
+        if (companyId != null && !companyId.equals(shift.getCompanyId())) {
+            LogUtil.warn(
+                PharmacyShiftLookup.class,
+                "Ignoring pharmacy OPEN shift for other company: shiftId={}, shiftCompanyId={}, jwtCompanyId={}, cashierId={}",
+                shift.getId(),
+                shift.getCompanyId(),
+                companyId,
+                shift.getCashierId()
+            );
+            return Optional.empty();
+        }
+        return Optional.of(shift);
     }
 
     public PharmacyCashierShift requireOpen(Integer storeId) {

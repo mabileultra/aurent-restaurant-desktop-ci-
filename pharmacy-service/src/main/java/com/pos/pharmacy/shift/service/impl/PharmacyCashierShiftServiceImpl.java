@@ -51,8 +51,32 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
         if (storeId == null) {
             throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_STORE_REQUIRED);
         }
-        if (shiftRepository.existsByCashierIdAndStoreIdAndStatus(cashierId, storeId, PharmacyShiftStatus.OPEN)) {
-            throw PharmacyErrors.of(PharmacyShiftErrors.PHARM_SHIFT_ALREADY_OPEN);
+
+        Optional<PharmacyCashierShift> existingOpen = shiftRepository
+            .findByCashierIdAndStoreIdAndStatus(cashierId, storeId, PharmacyShiftStatus.OPEN);
+        if (existingOpen.isPresent()) {
+            PharmacyCashierShift open = existingOpen.get();
+            if (companyId.equals(open.getCompanyId())) {
+                // Idempotent: UI may show Open after a failed/403 current fetch while OPEN exists.
+                LogUtil.info(
+                    PharmacyCashierShiftServiceImpl.class,
+                    "Pharmacy shift already open — returning existing: id={}, storeId={}, cashierId={}",
+                    open.getId(),
+                    storeId,
+                    cashierId
+                );
+                return assembler.toResponse(open);
+            }
+            LogUtil.warn(
+                PharmacyCashierShiftServiceImpl.class,
+                "Closing orphan pharmacy OPEN shift (company mismatch): id={}, shiftCompanyId={}, jwtCompanyId={}",
+                open.getId(),
+                open.getCompanyId(),
+                companyId
+            );
+            open.setStatus(PharmacyShiftStatus.CLOSED);
+            open.setClosedAt(Instant.now());
+            shiftRepository.save(open);
         }
 
         OpenPharmacyShiftRequest body = request != null

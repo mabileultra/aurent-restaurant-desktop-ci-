@@ -30,8 +30,8 @@ export default function AuthAcceptPage() {
       resetClientSessionState();
       setAuth(handoff.token, handoff.user || { role: 'ADMIN' });
 
-      const { access, businessPayload } = await fetchMainAppAccess(handoff.user?.role);
-      if (!access.ok) {
+      const { access, businessPayload, fetchError } = await fetchMainAppAccess(handoff.user?.role);
+      if (!access.ok && !fetchError) {
         logoutAndResetSession();
         setError('Нет такого аккаунта');
         return;

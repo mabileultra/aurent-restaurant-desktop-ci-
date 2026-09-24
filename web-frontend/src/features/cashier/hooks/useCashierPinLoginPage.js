@@ -21,12 +21,13 @@ import { logAuth } from '../../../services/desktop/activityLog';
 
 async function resolvePinHomePath(role) {
   if (role === 'WAITER' || role === 'COOK') {
-    return { path: resolveCashierPostLoginPath(role), access: { ok: false, reason: 'restaurant_role' } };
+    return { path: resolveCashierPostLoginPath(role), access: { ok: false, reason: 'restaurant_role' }, fetchError: false };
   }
-  const { access, businessPayload } = await fetchMainAppAccess(role);
+  const { access, businessPayload, fetchError } = await fetchMainAppAccess(role);
   return {
     path: resolveCashierPostLoginPath(role, businessPayload?.defaultTypeCode),
     access,
+    fetchError,
   };
 }
 
@@ -65,9 +66,10 @@ export function useCashierPinLoginPage() {
       }
       if (!window.location.pathname.startsWith('/cashier/login')) return;
 
-      const { path, access } = await resolvePinHomePath(user.role);
+      const { path, access, fetchError } = await resolvePinHomePath(user.role);
       if (cancelled || freshLoginRef.current) return;
-      if (!access.ok) {
+      // Transport / 403 while user is missing from pos_db must not kick off login.
+      if (!access.ok && !fetchError) {
         logoutAndResetSession();
         toast.error(t('login.wrongAppUnknown'));
         return;
@@ -139,8 +141,8 @@ export function useCashierPinLoginPage() {
       setCompanyPopoverOpen(false);
       freshLoginRef.current = true;
 
-      const { path, access } = await resolvePinHomePath(profile.role);
-      if (!access.ok) {
+      const { path, access, fetchError } = await resolvePinHomePath(profile.role);
+      if (!access.ok && !fetchError) {
         logoutAndResetSession();
         toast.error(t('login.wrongAppUnknown'));
         freshLoginRef.current = false;

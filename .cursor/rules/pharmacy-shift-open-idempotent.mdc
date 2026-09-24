@@ -1,0 +1,23 @@
+---
+description: Pharmacy shift open must be idempotent when OPEN already exists
+globs: pharmacy-service/src/main/java/com/pos/pharmacy/shift/**/*.java,web-backend/src/main/java/com/pos/sales/service/cashier/**/*.java,web-frontend/src/components/layout/cashier/CashierPosTopbar.jsx
+alwaysApply: false
+---
+
+# Pharmacy / cashier shift open vs «already open»
+
+## Symptom
+
+POS shows **Open shift** but POST open returns «Смена уже открыта».
+
+## Cause
+
+`GET …/shifts/current` must agree with `POST …/open` for the same cashier+store.
+
+Do **not** throw from `findOpen` on company mismatch (that 4xx/5xx → UI thinks no shift). Do **not** use bare `exists(OPEN)` on open without company check.
+
+## Do
+
+1. `findOpen`: wrong `company_id` → empty Optional + warn (not throw).
+2. `open`: same-company OPEN → **return existing** (idempotent). Foreign-company OPEN → close orphan, then create.
+3. Topbar Open button: hide when `shift?.status === 'OPEN'` even if latch `shiftIsOpen` is still false.

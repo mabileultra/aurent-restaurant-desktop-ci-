@@ -1,0 +1,22 @@
+---
+description: Identity→POS core user sync must not open circuit on PIN conflicts
+globs: web-backend/src/main/java/com/pos/service/identity/**/*.java,web-backend/src/main/java/com/pos/util/DbExceptionTranslator.java,identity-service/src/main/java/com/pos/identity/client/PosCoreClient.java,web-frontend/src/features/cashier/hooks/useCashierPinLoginPage.js,web-frontend/src/features/auth/hooks/useLoginPage.js
+alwaysApply: false
+---
+
+# Identity ↔ POS core sync — PIN and circuit
+
+## Intent
+
+Identity is source of truth for users/PIN. POS core must accept sync so cashiers exist in `pos_db` (open/close shift needs authenticated user there).
+
+## Do not regress
+
+1. **`uq_users_company_pin_digest` before generic `pin_digest`** in `DbExceptionTranslator` — never map unique PIN conflict to «Схема БД устарела».
+2. **On identity sync upsert**: clear conflicting `pin_digest` on other `pos_db` rows in the same company (same as username reconcile). Do not leave bootstrap failing forever.
+3. **`PosCoreClient.postVoid`**: 4xx from POS core must throw `BadRequestException` (ignored by circuit) — never let business 409 trip shared `pos-core` circuit (that yields 503 «POS core is temporarily unavailable» on user create / store validate).
+4. **Login / PIN home**: on `/company-business-types` transport or 403 (`fetchError`), fail-open like `MainWorldGate` — do not `logoutAndResetSession` for `reason: 'unknown'`.
+
+## Symptom if broken
+
+Cashier PIN authenticates, then shift open/close or admin user add shows «POS core is temporarily unavailable»; nginx shows flood of `403 /company-business-types` for one company.

@@ -92,8 +92,17 @@ public class PosCoreClient {
                     .uri(path)
                     .body(body)
                     .retrieve()
+                    .onStatus(HttpStatusCode::is4xxClientError, (req, res) -> {
+                        // Business conflicts (e.g. duplicate PIN) must not trip the shared
+                        // circuit — otherwise login/user/shift flows get 503 "POS core unavailable".
+                        throw new BadRequestException(
+                            "POS core rejected " + path + " with " + res.getStatusCode().value()
+                        );
+                    })
                     .toBodilessEntity()
             );
+        } catch (BadRequestException ex) {
+            LogUtil.warn(PosCoreClient.class, "POS core call failed: path={}, error={}", path, ex.getMessage());
         } catch (Exception ex) {
             LogUtil.warn(PosCoreClient.class, "POS core call failed: path={}, error={}", path, ex.getMessage());
         }
