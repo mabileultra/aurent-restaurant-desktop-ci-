@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import LoginBranding from '../components/LoginBranding';
 import LoginForm from '../components/LoginForm';
 import { useLoginPage } from '../hooks/useLoginPage';
@@ -9,12 +9,18 @@ import '../../../styles/auth/login-page.css';
 export default function LoginPage() {
   const {
     t,
+    shouldRedirectToCashierLogin,
+    cashierLoginPath,
     showPass,
     toggleShowPass,
     loading,
     form,
     onSubmit,
   } = useLoginPage();
+
+  if (shouldRedirectToCashierLogin) {
+    return <Navigate to={cashierLoginPath()} replace />;
+  }
 
   return (
     <div className="public-site rst-login-page">
