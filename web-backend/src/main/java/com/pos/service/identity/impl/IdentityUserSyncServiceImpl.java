@@ -156,12 +156,13 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
                 ? username.substring(0, 100 - suffix.length()) + suffix
                 : username + suffix;
             legacy.setUsername(renamed);
+            legacy.setPinDigest(null);
             userRepository.save(legacy);
             entityManager.flush();
             authenticatedUserCache.evict(legacyId);
             LogUtil.warn(
                 IdentityUserSyncServiceImpl.class,
-                "Renamed legacy pos_db user to free username: id={}, username={}",
+                "Renamed legacy pos_db user and cleared pin_digest: id={}, username={}",
                 legacyId,
                 username
             );
@@ -184,7 +185,16 @@ public class IdentityUserSyncServiceImpl implements IdentityUserSyncService {
             return;
         }
         if (hasBlockingReferences(userId)) {
-            LogUtil.warn(IdentityUserSyncServiceImpl.class, "Identity delete skipped in pos_db (references): userId={}", userId);
+            user.setPinDigest(null);
+            user.setActive(false);
+            userRepository.save(user);
+            entityManager.flush();
+            authenticatedUserCache.evict(userId);
+            LogUtil.warn(
+                IdentityUserSyncServiceImpl.class,
+                "Identity delete kept pos_db row (references), cleared pin_digest: userId={}",
+                userId
+            );
             return;
         }
         authenticatedUserCache.evict(userId);
