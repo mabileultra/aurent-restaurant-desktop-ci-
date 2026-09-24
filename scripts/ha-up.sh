@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Scale web-backend replicas (HA) while keeping a single api-gateway.
-#   BACKEND_REPLICAS=2 bash deploy/ha-up.sh
+#   BACKEND_REPLICAS=2 bash scripts/ha-up.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

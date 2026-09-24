@@ -1,6 +1,6 @@
 # HA overlay — scale POS core backend behind a single api-gateway (Docker DNS RR).
 # Usage:
-#   HA=1 BACKEND_REPLICAS=2 bash deploy/ha-up.sh
+#   HA=1 BACKEND_REPLICAS=2 bash scripts/ha-up.sh
 #   # or:
 #   docker compose -f docker-compose.prod.yml -f docker-compose.ha.yml --env-file .env \
 #     up -d --scale backend=${BACKEND_REPLICAS:-2} --no-recreate redpanda

@@ -2,8 +2,8 @@
 # Простой нагрузочный тест API (health). Безопасен для прода — только GET health.
 #
 # Usage:
-#   bash deploy/load-test.sh
-#   LOAD_TEST_REQUESTS=200 LOAD_TEST_CONCURRENCY=20 bash deploy/load-test.sh
+#   bash scripts/load-test.sh
+#   LOAD_TEST_REQUESTS=200 LOAD_TEST_CONCURRENCY=20 bash scripts/load-test.sh
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

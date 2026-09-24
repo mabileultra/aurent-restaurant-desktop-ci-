@@ -78,7 +78,7 @@ bash deploy/backup.sh restore backups/postgres/pos_db_YYYYMMDD_HHMMSS.sql.gz
 ## 8. Ежедневные проверки (5 минут)
 
 - [ ] `bash deploy/backup.sh verify-latest` — бэкап целый
-- [ ] `bash deploy/load-test.sh` — p95 < 2с (опционально)
+- [ ] `bash scripts/load-test.sh` — p95 < 2с (опционально)
 - [ ] `bash deploy/health-alert.sh` — без ошибок
 - [ ] Супер-админ → Мониторинг — ошибок за 24ч в норме
 - [ ] Последний бэкап не старше 24ч
@@ -152,7 +152,7 @@ COMPOSE=1 bash pharmacy-service/scripts/purge-pharmacy-from-pos-db.sh --execute
 
 ```bash
 # 2× web-backend, один api-gateway (DNS round-robin на backend)
-BACKEND_REPLICAS=2 bash deploy/ha-up.sh
+BACKEND_REPLICAS=2 bash scripts/ha-up.sh
 ```
 
 Redpanda в prod больше не `dev-container`: persistent volume `redpanda_data`, `REDPANDA_SMP` / `REDPANDA_MEMORY`.

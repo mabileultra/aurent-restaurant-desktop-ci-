@@ -21,7 +21,7 @@ desktop-electron/** → Release Desktop → downloads/desktop/ на сервер
 | `backup.sh` | Бэкапы Postgres | *(нет)* = создать · `restore <файл>` · `install-cron` |
 | `publish-desktop.sh` | Артефакты Electron → `downloads/desktop/` + `manifest.json` | *(нет)* |
 
-См. также: `CASHIER_GUIDE.md`, `CASHIER_SECURITY_CHECKLIST.md`, `RUNBOOK.md`.
+См. также: `RUNBOOK.md`, `docs/CASHIER_GUIDE.md`, `docs/CASHIER_SECURITY_CHECKLIST.md`.
 
 Дополнительно: `nginx-host.conf.example` (опциональный SSL на хосте).
 
