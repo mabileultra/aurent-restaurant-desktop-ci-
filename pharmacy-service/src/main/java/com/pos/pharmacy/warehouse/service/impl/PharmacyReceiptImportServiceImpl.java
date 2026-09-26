@@ -14,6 +14,7 @@ import com.pos.pharmacy.warehouse.service.PharmacyStockReceiptService;
 import com.pos.pharmacy.config.PharmacyExecutorNames;
 import com.pos.pharmacy.support.PharmacyParallelTasks;
 import com.pos.pharmacy.warehouse.support.*;
+import com.pos.pharmacy.util.ProductImportParseUtil;
 import com.pos.pharmacy.importing.spreadsheet.parser.ExcelBarcodeText;
 import com.pos.pharmacy.importing.spreadsheet.parser.pdf.DidoxInvoiceFooterFilter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -28,7 +29,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.Supplier;
@@ -75,7 +78,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
     @Override
     @Transactional(readOnly = true)
     public PharmacyImportParseResponse parse(UUID receiptId, MultipartFile file) {
-        requireDraft(receiptId);
+        StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         List<List<String>> grid = gridSupport.readGrid(file);
         int headerRow = gridSupport.findHeaderRow(grid);
@@ -85,7 +88,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             file.getOriginalFilename(),
             headerRow,
             invoiceId,
-            matchSupport.isInvoiceImported(companyId, invoiceId),
+            matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId),
             gridSupport.columns(grid.get(headerRow), rows),
             rows
         );
@@ -97,8 +100,11 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
-        boolean invoiceImported = matchSupport.isInvoiceImported(companyId, invoiceId);
+        boolean blocked = matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId);
         List<List<String>> rows = request.rows() != null ? request.rows() : List.of();
+        Set<String> savedSkus = blocked
+            ? Set.of()
+            : matchSupport.savedInvoiceSkus(companyId, invoiceId, rows.size());
         Map<String, Integer> roles = PharmacyImportRoleMap.normalize(
             request.roles(),
             PharmacyImportRoleMap.rowWidth(rows)
@@ -110,15 +116,16 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         for (int i = 0; i < rows.size(); i++) {
             final int rowIndex = i;
             final List<String> row = rows.get(i);
+            final boolean rowDuplicate = blocked || skuAlreadySaved(savedSkus, invoiceId, rowIndex);
             tasks.add(() -> mapRow(
-                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), invoiceImported, invoiceId
+                rowIndex, row, roles, defaultMarkup, request.useFinalSums(), rowDuplicate, invoiceId
             ));
         }
         List<PharmacyImportMatchItem> items = PharmacyParallelTasks.supplyAll(tasks, importExecutor).stream()
             .filter(item -> item != null)
             .sorted(Comparator.comparingInt(PharmacyImportMatchItem::rowIndex))
             .toList();
-        return new PharmacyImportMatchResponse(invoiceId, invoiceImported, items);
+        return new PharmacyImportMatchResponse(invoiceId, blocked, items);
     }
 
     @Override
@@ -126,8 +133,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         StockReceipt receipt = requireDraft(receiptId);
         Integer companyId = tenant.requireCompanyId();
         String invoiceId = PharmacyImportMatchSupport.normalizeInvoiceId(request.uzInvoiceDocumentId());
-        String ownInvoice = PharmacyImportMatchSupport.normalizeInvoiceId(receipt.getInvoiceNumber());
-        if (matchSupport.isInvoiceImported(companyId, invoiceId) && !invoiceId.equals(ownInvoice)) {
+        if (matchSupport.isImportedOnAnotherReceipt(companyId, receipt, invoiceId)) {
             throw PharmacyErrors.of(
                 PharmacyReceiptErrors.PHARM_IMPORT_INVOICE_DUPLICATE,
                 PharmacyImportMatchSupport.duplicateMessage(invoiceId)
@@ -165,7 +171,7 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         Map<String, Integer> roles,
         BigDecimal defaultMarkup,
         boolean useFinalSums,
-        boolean invoiceImported,
+        boolean rowDuplicate,
         String invoiceId
     ) {
         String name = PharmacyImportRoleCells.text(row, roles, PharmacyImportRoles.NAME);
@@ -241,8 +247,8 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
             name,
             blankToNull(manufacturer),
             blankToNull(country),
-            invoiceImported ? STATUS_DUPLICATE : STATUS_NEW,
-            invoiceImported ? PharmacyImportMatchSupport.duplicateMessage(invoiceId) : null,
+            rowDuplicate ? STATUS_DUPLICATE : STATUS_NEW,
+            rowDuplicate ? PharmacyImportMatchSupport.duplicateMessage(invoiceId) : null,
             null,
             null,
             qty,
@@ -300,6 +306,14 @@ public class PharmacyReceiptImportServiceImpl implements PharmacyReceiptImportSe
         }
         pharmacyReceipt.requireDraft(receipt);
         return receipt;
+    }
+
+    private static boolean skuAlreadySaved(Set<String> savedSkus, String invoiceId, int rowIndex) {
+        if (savedSkus.isEmpty() || invoiceId == null) {
+            return false;
+        }
+        String sku = ProductImportParseUtil.resolveUzInvoiceSku(invoiceId, rowIndex + 1);
+        return savedSkus.contains(sku.toUpperCase(Locale.ROOT));
     }
 
     private static boolean looksLikeTotal(String name) {
