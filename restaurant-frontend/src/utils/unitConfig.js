@@ -6,7 +6,7 @@ const PIECE_CATEGORIES = new Set(['COUNT', 'TIME']);
 const FALLBACK_CONFIG = {
   PCS: { code: 'PCS', label: 'шт', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'COUNT' },
   KG: { code: 'KG', label: 'кг', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
-  G: { code: 'G', label: 'г', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'MASS' },
+  G: { code: 'G', label: 'г', minQty: 0.001, step: 0.1, scale: 3, hasScale: true, category: 'MASS' },
   L: { code: 'L', label: 'л', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'VOLUME' },
   M: { code: 'M', label: 'м', minQty: 0.001, step: 0.1, scale: 3, hasScale: false, category: 'LENGTH' },
   MM: { code: 'MM', label: 'мм', minQty: 1, step: 1, scale: 0, hasScale: false, category: 'LENGTH' },
@@ -84,13 +84,13 @@ export const MEASURED_UNIT_CODES = ['KG', 'G', 'L', 'M', 'MM', 'M2', 'M3', 'ML',
 export const UNIT_DEFAULTS = {
   PCS: { unitOfMeasure: 'pcs', quantityScale: 0, allowFraction: false },
   KG: { unitOfMeasure: 'kg', quantityScale: 3, allowFraction: true },
-  G: { unitOfMeasure: 'g', quantityScale: 0, allowFraction: true },
+  G: { unitOfMeasure: 'g', quantityScale: 3, allowFraction: true },
   L: { unitOfMeasure: 'l', quantityScale: 3, allowFraction: true },
   M: { unitOfMeasure: 'm', quantityScale: 3, allowFraction: true },
   MM: { unitOfMeasure: 'mm', quantityScale: 0, allowFraction: true },
   M2: { unitOfMeasure: 'm2', quantityScale: 3, allowFraction: true },
   M3: { unitOfMeasure: 'm3', quantityScale: 3, allowFraction: true },
-  ML: { unitOfMeasure: 'ml', quantityScale: 0, allowFraction: true },
+  ML: { unitOfMeasure: 'ml', quantityScale: 3, allowFraction: true },
 };
 
 export function getUnitConfig(unitCode) {

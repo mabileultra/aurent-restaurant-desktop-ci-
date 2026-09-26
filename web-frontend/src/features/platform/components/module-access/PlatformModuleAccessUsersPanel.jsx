@@ -7,6 +7,7 @@ export default function PlatformModuleAccessUsersPanel(props) {
     t,
     usersLoading,
     filteredUsers,
+    listResetKey,
     unconfiguredCount,
     userFilter,
     onUserFilterChange,
@@ -38,6 +39,7 @@ export default function PlatformModuleAccessUsersPanel(props) {
         t={t}
         usersLoading={usersLoading}
         filteredUsers={filteredUsers}
+        listResetKey={listResetKey}
         selectedUserId={selectedUserId}
         onSelectUser={onSelectUser}
         selectedUserIds={selectedUserIds}

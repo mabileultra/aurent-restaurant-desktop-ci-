@@ -8,6 +8,7 @@ export default function PlatformModuleAccessWorkspace({ p }) {
         t={p.t}
         usersLoading={p.usersLoading}
         filteredUsers={p.filteredUsers}
+        listResetKey={p.usersListResetKey}
         unconfiguredCount={p.unconfiguredCount}
         userFilter={p.userFilter}
         onUserFilterChange={p.setUserFilter}

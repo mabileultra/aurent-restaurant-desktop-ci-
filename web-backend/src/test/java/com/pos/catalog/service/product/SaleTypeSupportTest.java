@@ -63,6 +63,16 @@ class SaleTypeSupportTest {
     }
 
     @Test
+    void importRules_gramGetsWeightScale() {
+        ProductQuantityRules rules = ProductQuantityRulesResolver.resolve(
+            SaleType.WEIGHT, UnitCode.G, null, null, null
+        );
+        assertEquals(UnitCode.G, rules.unitCode());
+        assertEquals(3, rules.quantityScale());
+        assertTrue(rules.allowFraction());
+    }
+
+    @Test
     void importRules_millimeterGetsWeightWithMm() {
         ProductQuantityRules rules = ProductQuantityRulesResolver.resolve(null, null, null, null, "мм");
         assertEquals(SaleType.WEIGHT, rules.saleType());

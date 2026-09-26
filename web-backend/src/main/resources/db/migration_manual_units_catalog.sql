@@ -31,11 +31,11 @@ INSERT INTO units (code, category, label_ru, label_uz, label_short_ru, quantity_
 VALUES
     ('T', 'MASS', 'Тонна', 'Tonna', 'т', 3, TRUE, 0.001, 0.1, 5, FALSE, TRUE),
     ('KG', 'MASS', 'Килограмм', 'Kilogramm', 'кг', 3, TRUE, 0.001, 0.1, 10, TRUE, FALSE),
-    ('G', 'MASS', 'Грамм', 'Gramm', 'г', 0, TRUE, 1, 1, 20, TRUE, FALSE),
+    ('G', 'MASS', 'Грамм', 'Gramm', 'г', 3, TRUE, 0.001, 0.1, 20, TRUE, FALSE),
     ('MG', 'MASS', 'Миллиграмм', 'Milligramm', 'мг', 0, TRUE, 1, 1, 30, TRUE, FALSE),
     ('M3', 'VOLUME', 'Кубический метр', 'Kub metr', 'м³', 3, TRUE, 0.001, 0.1, 40, TRUE, FALSE),
     ('L', 'VOLUME', 'Литр', 'Litr', 'л', 3, TRUE, 0.001, 0.1, 50, TRUE, FALSE),
-    ('ML', 'VOLUME', 'Миллилитр', 'Millilitr', 'мл', 0, TRUE, 1, 1, 60, TRUE, FALSE),
+    ('ML', 'VOLUME', 'Миллилитр', 'Millilitr', 'мл', 3, TRUE, 0.001, 0.1, 60, TRUE, FALSE),
     ('KM', 'LENGTH', 'Километр', 'Kilometr', 'км', 3, TRUE, 0.001, 0.1, 70, TRUE, FALSE),
     ('M', 'LENGTH', 'Метр', 'Metr', 'м', 3, TRUE, 0.001, 0.1, 80, TRUE, FALSE),
     ('CM', 'LENGTH', 'Сантиметр', 'Santimetr', 'см', 0, TRUE, 1, 1, 90, TRUE, FALSE),

@@ -105,6 +105,8 @@ export function usePlatformModuleAccessPage() {
     [typedUsers, companyId, userSearch, userFilter]
   );
 
+  const usersListResetKey = `${businessType}|${companyId}|${userFilter}|${userSearch}`;
+
   const unconfiguredCount = useMemo(
     () => companyUsers.filter((u) => !u.moduleAccessCustom).length,
     [companyUsers]
@@ -325,6 +327,7 @@ export function usePlatformModuleAccessPage() {
     selectedCompanyBusinessType,
     usersLoading,
     filteredUsers,
+    usersListResetKey,
     unconfiguredCount,
     userSearch,
     setUserSearch,

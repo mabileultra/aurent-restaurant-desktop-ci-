@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Grams/ml: allow fractional qty like kg (1.2 g, 1.3 ml). -->
+    <changeSet id="v44-fractional-g-ml-units" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="units"/>
+        </preConditions>
+        <sql>
+            UPDATE units
+            SET quantity_scale = 3,
+                allow_fraction = TRUE,
+                pos_min_qty = 0.001,
+                pos_step = 0.1
+            WHERE code IN ('G', 'ML');
+        </sql>
+        <sql>
+            UPDATE products
+            SET quantity_scale = 3,
+                allow_fraction = TRUE
+            WHERE unit_code IN ('G', 'ML')
+              AND sale_type = 'WEIGHT'
+              AND quantity_scale &lt; 3;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
