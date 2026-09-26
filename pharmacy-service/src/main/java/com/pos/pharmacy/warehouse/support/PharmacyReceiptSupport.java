@@ -148,7 +148,7 @@ public class PharmacyReceiptSupport {
             .purchasePrice(purchase)
             .unitSellingPrice(unitSelling)
             .lineCost(lineCost)
-            .batchNumber(trimToNull(req.batchNumber()))
+            .batchNumber(batchOrNull(req.batchNumber()))
             .expiryDate(req.expiryDate())
             .vatPercent(vat)
             .markupPercent(markup)
@@ -204,5 +204,14 @@ public class PharmacyReceiptSupport {
             return null;
         }
         return value.trim();
+    }
+
+    /** Колонка stock_receipt_lines.batch_number — varchar(80). Длинную серию режем, иначе падает весь импорт. */
+    public static String batchOrNull(String value) {
+        String trimmed = trimToNull(value);
+        if (trimmed == null || trimmed.length() <= 80) {
+            return trimmed;
+        }
+        return trimmed.substring(0, 80);
     }
 }
