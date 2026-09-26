@@ -8,12 +8,13 @@ import { resolvePharmacyProductByMarking } from './resolvePharmacyProductByMarki
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 /**
- * Резолв КМ на кассе:
+ * Резолв КМ на кассе аптеки:
  * 1) локальный sold-кэш
- * 2) свой склад stock_marks (быстро)
- * 3) товар по GTIN
+ * 2) свой склад stock_marks
+ * 3) товар по GTIN в каталоге
  * 4) sale_sold_marks на бэке
- * 5) ASL — мягко (если включено)
+ * 5) если товар уже наш — в чек без ASL
+ * 6) ASL только когда товара нет у себя (нужен GTIN / чужой код)
  */
 export async function resolveCashierMarkedProduct({
   products,
@@ -86,8 +87,18 @@ export async function resolveCashierMarkedProduct({
         };
       }
     } catch {
-      // сеть — дальше ASL / локальный каталог
+      // сеть — свой товар всё равно кладём в чек, чужой код уйдёт в ASL
     }
+  }
+
+  if (product) {
+    return {
+      status: 'ok',
+      mark,
+      product: withMark(product, mark),
+      aslResult: null,
+      aslError: null,
+    };
   }
 
   if (aslEnabled && storeId) {
