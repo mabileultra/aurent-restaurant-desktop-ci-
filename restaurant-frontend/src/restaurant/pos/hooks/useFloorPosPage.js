@@ -45,6 +45,7 @@ export function useFloorPosPage() {
   const [counterForm, setCounterForm] = useState(emptyCounterForm());
   const [activeOrderId, setActiveOrderId] = useState(null);
   const [pendingMenuItem, setPendingMenuItem] = useState(null);
+  const [pendingVariants, setPendingVariants] = useState(null);
   const [selectedModifierIds, setSelectedModifierIds] = useState([]);
   const [pendingItemNote, setPendingItemNote] = useState('');
   const [lineNoteEdit, setLineNoteEdit] = useState(null);
@@ -136,7 +137,7 @@ export function useFloorPosPage() {
     t, storeId, storeName: workspace.storeName, channel, guestForm, openTable, counterForm,
     openingCash, closingCash, shift, activeOrderId, order, commissionPreview, waiterNameById,
     user, printReceiptEnabled, setOpenTable, setActiveOrderId, setCounterModalOpen,
-    setCounterForm, setShiftModal, setPendingMenuItem, setSelectedModifierIds, setPendingItemNote,
+    setCounterForm, setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote,
     setPaidReceipt, closePayModal: () => setPayModalOpen(false),
   });
 
@@ -222,9 +223,26 @@ export function useFloorPosPage() {
 
   const handleAddItem = (menuItem) => {
     if (order?.status === 'BILLING') return;
+    setPendingVariants(null);
     setPendingMenuItem(menuItem);
     setSelectedModifierIds([]);
     setPendingItemNote('');
+  };
+
+  const handleComposeFamily = (family) => {
+    if (order?.status === 'BILLING') return;
+    const variants = family?.variants ?? [];
+    if (!variants.length) return;
+    setPendingVariants(variants.length > 1 ? variants : null);
+    setPendingMenuItem(variants[0]);
+    setSelectedModifierIds([]);
+    setPendingItemNote('');
+  };
+
+  const selectComposeVariant = (variant) => {
+    if (!variant || variant.id === pendingMenuItem?.id) return;
+    setPendingMenuItem(variant);
+    setSelectedModifierIds([]);
   };
 
   const toggleModifier = (optionId) => {
@@ -268,7 +286,7 @@ export function useFloorPosPage() {
     menuItems: menuQuery.data ?? [],
     isLoading: workspace.isLoading || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
-    handleTableClick, handleAddItem,
+    handleTableClick, handleAddItem, handleComposeFamily,
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
     sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
@@ -277,9 +295,10 @@ export function useFloorPosPage() {
     paidReceipt, closePaidReceipt: () => setPaidReceipt(null),
     payModalOpen, openPayModal: () => setPayModalOpen(true),
     closePayModal: () => setPayModalOpen(false),
-    refundMutation: m.refundMutation, pendingMenuItem,
+    refundMutation: m.refundMutation, pendingMenuItem, pendingVariants,
     pendingItemNote, setPendingItemNote,
     modifierGroups: modifierQuery.data ?? [], selectedModifierIds, toggleModifier,
+    selectComposeVariant,
     confirmModifiers: () => m.addItemMutation.mutate({
       menuItem: pendingMenuItem,
       modifierOptionIds: selectedModifierIds,
@@ -287,6 +306,7 @@ export function useFloorPosPage() {
     }),
     closeModifiers: () => {
       setPendingMenuItem(null);
+      setPendingVariants(null);
       setSelectedModifierIds([]);
       setPendingItemNote('');
     },

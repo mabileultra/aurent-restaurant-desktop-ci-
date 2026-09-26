@@ -1,4 +1,5 @@
-export const PIN_LOGIN_HERO_URL = '/cashier/pin-login-hero.jpg';
+export const PIN_LOGIN_HERO_URL = '/cashier/pin-login-hero.webp';
+export const PIN_LOGIN_HERO_FALLBACK_URL = '/cashier/pin-login-hero.jpg';
 
 export const PIN_MIN = 4;
 

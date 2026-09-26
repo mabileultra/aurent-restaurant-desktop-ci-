@@ -24,6 +24,7 @@ export default function OrderWorkspace({
   hallName,
   waiterName,
   onAddItem,
+  onComposeFamily,
   onQty,
   onRemove,
   onCancel,
@@ -147,7 +148,13 @@ export default function OrderWorkspace({
         {billing ? (
           <div className="rst-order-empty">{t('rst.order.billingHint')}</div>
         ) : (
-          <MenuPicker items={menuItems} onAdd={onAddItem} t={t} qtyByMenuId={qtyByMenuId} />
+          <MenuPicker
+            items={menuItems}
+            onAdd={onAddItem}
+            onComposeFamily={onComposeFamily}
+            t={t}
+            qtyByMenuId={qtyByMenuId}
+          />
         )}
       </section>
 

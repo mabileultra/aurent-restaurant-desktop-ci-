@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
-import MenuVariantPickModal, { groupMenuFamilies } from './MenuVariantPickModal';
+import { groupMenuFamilies } from './MenuVariantPickModal';
 import '../styles/order-workspace.css';
 
 const TAG_ORDER = ['HIT', 'SPICY', 'CHEF', 'GRILL', 'FRESH', 'TEA'];
@@ -23,11 +23,10 @@ function familyInCheck(family, qtyByMenuId) {
   return family.variants.reduce((sum, item) => sum + (qtyByMenuId[item.id] || 0), 0);
 }
 
-export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
+export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenuId = {} }) {
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
-  const [variantPick, setVariantPick] = useState(null);
   const searchRef = useRef(null);
 
   const visible = useMemo(() => {
@@ -146,7 +145,8 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
               className={className}
               onClick={() => {
                 setFocusedId(family.key);
-                if (family.multi) setVariantPick(family.variants);
+                if (onComposeFamily) onComposeFamily(family);
+                else if (family.multi) onAdd(family.variants[0]);
                 else onAdd(item);
               }}
             >
@@ -188,17 +188,6 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
         })}
       </div>
 
-      {variantPick ? (
-        <MenuVariantPickModal
-          variants={variantPick}
-          t={t}
-          onClose={() => setVariantPick(null)}
-          onPick={(item) => {
-            setVariantPick(null);
-            onAdd(item);
-          }}
-        />
-      ) : null}
     </div>
   );
 }

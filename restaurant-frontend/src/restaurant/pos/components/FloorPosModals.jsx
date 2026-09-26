@@ -114,6 +114,8 @@ export default function FloorPosModals({ p, waiterMode = false }) {
       ) : null}
       <ModifierPickModal
         item={p.pendingMenuItem}
+        variants={p.pendingVariants}
+        onSelectVariant={p.selectComposeVariant}
         groups={p.modifierGroups}
         selectedIds={p.selectedModifierIds}
         onToggle={p.toggleModifier}

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { BaseButton, BaseInput, BaseModal } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { round2 } from '../../../utils/taxAmounts';
+import '../styles/order-discount-modal.css';
 
 export default function OrderDiscountModal({
   open,
@@ -42,9 +43,11 @@ export default function OrderDiscountModal({
           onSubmit(computed);
         }}
       >
-        <div className="rst-order-discount__modes">
+        <div className="rst-order-discount__modes" role="tablist" aria-label={t('rst.order.discountTitle')}>
           <button
             type="button"
+            role="tab"
+            aria-selected={mode === 'amount'}
             className={mode === 'amount' ? 'is-active' : ''}
             onClick={() => setMode('amount')}
           >
@@ -52,6 +55,8 @@ export default function OrderDiscountModal({
           </button>
           <button
             type="button"
+            role="tab"
+            aria-selected={mode === 'percent'}
             className={mode === 'percent' ? 'is-active' : ''}
             onClick={() => setMode('percent')}
           >
@@ -89,17 +94,6 @@ export default function OrderDiscountModal({
           <BaseButton type="submit" disabled={saving}>{t('common.save')}</BaseButton>
         </div>
       </form>
-      <style>{`
-        .rst-order-discount { display: grid; gap: 12px; }
-        .rst-order-discount__modes { display: flex; gap: 8px; }
-        .rst-order-discount__modes button {
-          flex: 1; padding: 8px; border-radius: 8px; border: 1px solid #cbd5e1; background: #fff;
-        }
-        .rst-order-discount__modes button.is-active { background: #0f172a; color: #fff; border-color: #0f172a; }
-        .rst-order-discount__field { display: grid; gap: 6px; font-size: 0.875rem; }
-        .rst-order-discount__preview { margin: 0; font-size: 0.875rem; color: #64748b; }
-        .rst-order-discount__actions { display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
-      `}</style>
     </BaseModal>
   );
 }

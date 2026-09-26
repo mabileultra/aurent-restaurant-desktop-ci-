@@ -26,7 +26,7 @@ export function useFloorPosMutations(deps) {
     openingCash, closingCash, shift, activeOrderId, order, commissionPreview,
     waiterNameById, user, printReceiptEnabled,
     setOpenTable, setActiveOrderId, setCounterModalOpen, setCounterForm,
-    setShiftModal, setPendingMenuItem, setSelectedModifierIds, setPendingItemNote, setPaidReceipt,
+    setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote, setPaidReceipt,
     closePayModal,
   } = deps;
 
@@ -115,6 +115,7 @@ export function useFloorPosMutations(deps) {
     onSuccess: (res) => {
       setOrderData(res);
       setPendingMenuItem(null);
+      setPendingVariants?.(null);
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
     },

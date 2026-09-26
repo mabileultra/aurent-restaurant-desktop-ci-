@@ -186,6 +186,7 @@ export default function RestaurantFloorPosPage() {
                   : null
               }
               onAddItem={p.handleAddItem}
+              onComposeFamily={p.handleComposeFamily}
               onQty={p.handleQty}
               onRemove={(itemId) => p.removeItemMutation.mutate(itemId)}
               onCancel={() => {

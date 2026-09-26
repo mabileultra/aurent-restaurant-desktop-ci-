@@ -1,0 +1,72 @@
+.rst-order-discount {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.rst-order-discount__modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  padding: 0.3rem;
+  border-radius: 12px;
+  border: 1px solid var(--rst-line);
+  background: #0d121c;
+}
+
+.rst-order-discount__modes button {
+  min-height: 2.6rem;
+  padding: 0.45rem 0.75rem;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--rst-muted);
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-order-discount__modes button:hover:not(.is-active) {
+  color: var(--rst-ink);
+  background: rgb(255 255 255 / 0.04);
+}
+
+.rst-order-discount__modes button.is-active {
+  background: var(--rst-accent, #ff7a1a);
+  color: #fff;
+  box-shadow: 0 1px 0 rgb(0 0 0 / 0.25);
+}
+
+.rst-order-discount__field {
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: var(--rst-muted);
+}
+
+.rst-order-discount__field .base-input,
+.rst-order-discount__field input {
+  min-height: 2.85rem;
+  font-size: 1.05rem !important;
+  font-weight: 700;
+}
+
+.rst-order-discount__preview {
+  margin: 0;
+  padding: 0.65rem 0.8rem;
+  border-radius: 10px;
+  border: 1px solid var(--rst-line);
+  background: rgb(255 255 255 / 0.03);
+  color: var(--rst-ink);
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.rst-order-discount__actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
