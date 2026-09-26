@@ -98,9 +98,6 @@ public class CompanyBusinessTypeAssignmentServiceImpl implements CompanyBusiness
         if (companyId == null) {
             return;
         }
-        if (!assignmentRepository.findDetailedByCompanyId(companyId).isEmpty()) {
-            return;
-        }
         String parsed = BusinessTypeParser.parseOrDefault(businessTypeCode, BusinessTypeCodes.UNIVERSAL);
         BusinessTypeDefinition type = typeRepository.findByCodeIgnoreCase(parsed)
             .or(() -> typeRepository.findByCodeIgnoreCase(BusinessTypeCodes.UNIVERSAL))
@@ -108,11 +105,46 @@ public class CompanyBusinessTypeAssignmentServiceImpl implements CompanyBusiness
         if (type == null) {
             return;
         }
-        assignmentRepository.save(CompanyBusinessType.builder()
-            .companyId(companyId)
-            .businessTypeId(type.getId())
-            .defaultType(true)
-            .build());
+
+        List<CompanyBusinessType> existing = assignmentRepository.findDetailedByCompanyId(companyId);
+        if (existing.isEmpty()) {
+            assignmentRepository.save(CompanyBusinessType.builder()
+                .companyId(companyId)
+                .businessTypeId(type.getId())
+                .businessType(type)
+                .defaultType(true)
+                .build());
+            return;
+        }
+
+        // Platform company.businessType changed: keep multi-type list, but always
+        // ensure the synced code is assigned and is the default (PIN / WorldGate read this).
+        boolean alreadyDefault = existing.stream()
+            .anyMatch(row -> row.isDefaultType() && type.getId().equals(row.getBusinessTypeId()));
+        if (alreadyDefault) {
+            return;
+        }
+
+        boolean hasType = false;
+        for (CompanyBusinessType row : existing) {
+            boolean match = type.getId().equals(row.getBusinessTypeId());
+            row.setDefaultType(match);
+            if (match) {
+                hasType = true;
+            }
+        }
+        if (!hasType) {
+            existing.add(CompanyBusinessType.builder()
+                .companyId(companyId)
+                .businessTypeId(type.getId())
+                .businessType(type)
+                .defaultType(true)
+                .build());
+        }
+        assignmentRepository.saveAll(existing);
+        LogUtil.info(CompanyBusinessTypeAssignmentServiceImpl.class,
+            "Company business type default aligned from sync: companyId={}, default={}",
+            companyId, type.getCode());
     }
 
     @Override

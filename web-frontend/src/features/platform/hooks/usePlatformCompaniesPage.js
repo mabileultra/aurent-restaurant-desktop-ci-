@@ -82,20 +82,28 @@ export function usePlatformCompaniesPage() {
         businessType: defaultType?.code ?? businessType,
       };
 
-      const companyRes = editing
-        ? await companyApi.update(editing.id, payload)
-        : await companyApi.create(payload);
+      let companyId = editing?.id ?? null;
+      if (!companyId) {
+        const companyRes = await companyApi.create(payload);
+        companyId = companyRes.data?.id;
+      }
 
-      const companyId = editing?.id ?? companyRes.data?.id;
+      // Assignments drive PIN / r-aurent WorldGate — set them before platform sync of legacy field.
       if (companyId && businessTypeIds.length > 0) {
         const assigned = await companyBusinessTypeApi.setForCompany(companyId, {
           businessTypeIds,
           defaultBusinessTypeId: defaultBusinessTypeId ?? businessTypeIds[0],
         }).then((r) => r.data);
         const syncedType = assigned?.defaultTypeCode || defaultType?.code;
-        if (syncedType && String(syncedType).toUpperCase() !== String(payload.businessType || '').toUpperCase()) {
-          await companyApi.update(companyId, { businessType: syncedType });
+        if (syncedType) {
+          payload.businessType = syncedType;
         }
+      }
+
+      if (editing?.id) {
+        await companyApi.update(editing.id, payload);
+      } else if (companyId && payload.businessType !== (defaultType?.code ?? businessType)) {
+        await companyApi.update(companyId, { businessType: payload.businessType });
       }
     },
     onSuccess: () => {
