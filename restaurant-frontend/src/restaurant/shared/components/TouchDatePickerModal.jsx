@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import RstModal from './RstModal';
 import { BaseButton } from '../../../components/ui';
 import '../styles/touch-pickers.css';
@@ -50,6 +51,7 @@ export default function TouchDatePickerModal({
   onClose,
   t,
 }) {
+  const { i18n } = useTranslation();
   const selected = parseIso(value);
   const [cursor, setCursor] = useState(() => startOfMonth(selected || new Date()));
 
@@ -66,7 +68,7 @@ export default function TouchDatePickerModal({
 
   if (!open) return null;
 
-  const monthLabel = cursor.toLocaleDateString(t('common.locale', { defaultValue: 'ru-RU' }), {
+  const monthLabel = cursor.toLocaleDateString(i18n.language || 'ru', {
     month: 'long',
     year: 'numeric',
   });

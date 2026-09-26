@@ -18,6 +18,7 @@ export const RST_ADMIN_NAV_GROUPS = [
     key: 'menuKitchen',
     items: [
       { to: '/rst/admin/menu', key: 'menu', enabled: true },
+      { to: '/rst/admin/menu-categories', key: 'menuCategories', enabled: true },
       { to: '/rst/admin/modifiers', key: 'modifiers', enabled: true },
       { to: '/rst/admin/recipes', key: 'recipes', enabled: true },
       { to: '/rst/admin/stations', key: 'stations', enabled: true },

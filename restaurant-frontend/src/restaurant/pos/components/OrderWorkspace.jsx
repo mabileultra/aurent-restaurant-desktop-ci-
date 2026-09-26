@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
@@ -254,7 +253,7 @@ export default function OrderWorkspace({
             {canEditDiscount && onDiscount ? (
               <button
                 type="button"
-                className="rst-order__action"
+                className="rst-order__action rst-order__action--discount"
                 onClick={() => setDiscountOpen(true)}
                 disabled={discountPending}
               >
@@ -263,7 +262,7 @@ export default function OrderWorkspace({
             ) : null}
             <button
               type="button"
-              className="rst-order__action"
+              className="rst-order__action rst-order__action--bill"
               onClick={canRequestBill ? onRequestBill : undefined}
               disabled={!canRequestBill || billingPending}
             >
@@ -279,6 +278,15 @@ export default function OrderWorkspace({
                 {t('rst.order.pay')}
               </button>
             ) : null}
+            {canCancel ? (
+              <button
+                type="button"
+                className="rst-order__action rst-order__action--cancel"
+                onClick={onCancel}
+              >
+                {t('rst.order.cancel')}
+              </button>
+            ) : null}
           </div>
           {canPay ? (
             <div className="rst-order__pay-extra">
@@ -292,12 +300,6 @@ export default function OrderWorkspace({
                 <span>{t('pos.printReceiptShort')}</span>
               </label>
             </div>
-          ) : null}
-
-          {canCancel ? (
-            <BaseButton type="button" variant="ghost" onClick={onCancel}>
-              {t('rst.order.cancel')}
-            </BaseButton>
           ) : null}
         </div>
       </aside>

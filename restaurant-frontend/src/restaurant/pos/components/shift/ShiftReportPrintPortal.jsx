@@ -7,6 +7,10 @@ import {
   resolveEscposPrintErrorMessage,
 } from '../../../../services/cashierEscpos';
 import { printThermalReceiptDialog } from '../../../../utils/printReceipt';
+import {
+  waitForReceiptDomReady,
+  waitForReceiptPaintSettled,
+} from '../../../../utils/receiptPrintWait';
 import '../../styles/shift-report-print-portal.css';
 
 /**
@@ -41,6 +45,8 @@ export default function ShiftReportPrintPortal({
 
     const run = async () => {
       try {
+        await waitForReceiptDomReady({ useModalShell: true });
+        await waitForReceiptPaintSettled();
         if (isCashierEscposReportPrintAvailable()) {
           await printThermalDocument({ shiftReport, t, useModalShell: true });
         } else {
@@ -62,7 +68,7 @@ export default function ShiftReportPrintPortal({
       }
     };
 
-    const timer = window.setTimeout(run, 80);
+    const timer = window.setTimeout(run, 120);
     return () => {
       cancelled = true;
       window.clearTimeout(timer);
@@ -78,12 +84,20 @@ export default function ShiftReportPrintPortal({
           <strong>{t('receipt.printingReportTitle', { defaultValue: 'Печатается отчёт…' })}</strong>
         </div>
       ) : null}
-      <div
-        id={RECEIPT_PRINT_DOM.fiscalPrintShellId}
-        className="rst-shift-print-host"
-        aria-hidden
-      >
-        <div className="bg-white text-black">{children}</div>
+      <div className="fiscal-print-scene rst-shift-print-scene" aria-hidden={!open}>
+        <div className={RECEIPT_PRINT_DOM.fiscalPrintDialogClass}>
+          <div
+            id={RECEIPT_PRINT_DOM.fiscalPrintShellId}
+            className="rst-shift-print-host"
+          >
+            <div
+              id={RECEIPT_PRINT_DOM.receiptPrintAreaId}
+              className="receipt-print-root rst-shift-report-print-root"
+            >
+              {children}
+            </div>
+          </div>
+        </div>
       </div>
     </>,
     document.body,

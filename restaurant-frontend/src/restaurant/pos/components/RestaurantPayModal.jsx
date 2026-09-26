@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Banknote, CreditCard, Split, X } from 'lucide-react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { PAYMENT_CARD_PROVIDERS } from '../constants/paymentCardProviders';
 import {
   buildRestaurantPayPayload,
   deriveRestaurantPay,
@@ -17,7 +18,7 @@ const METHODS = [
 ];
 
 /**
- * Cash / card / mixed payment dialog with change + numeric keypad.
+ * Cash / card / mixed payment dialog with card rails (Humo, Uzcard, Payme, Click).
  */
 export default function RestaurantPayModal({
   open,
@@ -28,12 +29,13 @@ export default function RestaurantPayModal({
   t,
 }) {
   const [method, setMethod] = useState('CASH');
+  const [cardType, setCardType] = useState(null);
   const [tendered, setTendered] = useState('');
   const [cashPart, setCashPart] = useState('');
 
   const derived = useMemo(
-    () => deriveRestaurantPay(totalDue, { method, tendered, cashPart }),
-    [totalDue, method, tendered, cashPart],
+    () => deriveRestaurantPay(totalDue, { method, tendered, cashPart, cardType }),
+    [totalDue, method, tendered, cashPart, cardType],
   );
 
   if (!open || typeof document === 'undefined') return null;
@@ -42,13 +44,15 @@ export default function RestaurantPayModal({
     setMethod(next);
     setTendered('');
     setCashPart('');
+    if (next === 'CASH') setCardType(null);
   };
 
   const submit = () => {
     if (!derived.canSubmit || paying) return;
-    onConfirm?.(buildRestaurantPayPayload(derived, method));
+    onConfirm?.(buildRestaurantPayPayload(derived, method, cardType));
   };
 
+  const showCardRails = method === 'CARD' || method === 'MIXED';
   const showKeypad = method === 'CASH' || method === 'MIXED';
   const keypadValue = method === 'MIXED' ? cashPart : tendered;
   const setKeypadValue = method === 'MIXED' ? setCashPart : setTendered;
@@ -98,6 +102,35 @@ export default function RestaurantPayModal({
         </div>
 
         <div className="rst-pay-modal__body">
+          {showCardRails ? (
+            <div className="rst-pay-modal__rails">
+              <p className="rst-pay-modal__rails-lead">
+                {t('pos.cardTypeLead', { defaultValue: 'Выберите способ' })}
+              </p>
+              <div className="rst-pay-modal__providers" role="group" aria-label={t('rst.order.payCard')}>
+                {PAYMENT_CARD_PROVIDERS.map((provider) => {
+                  const label = t(provider.labelKey);
+                  const active = cardType === provider.cardType;
+                  return (
+                    <button
+                      key={provider.id}
+                      type="button"
+                      className={`rst-pay-modal__provider rst-pay-modal__provider--${provider.tone}${active ? ' is-active' : ''}`}
+                      disabled={paying}
+                      title={label}
+                      aria-label={label}
+                      aria-pressed={active}
+                      onClick={() => setCardType(provider.cardType)}
+                    >
+                      <img src={provider.logoSrc} alt="" draggable={false} />
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
+
           {method === 'CASH' ? (
             <>
               <div className="rst-pay-modal__amount-box">
@@ -109,10 +142,6 @@ export default function RestaurantPayModal({
                 <strong>{fmtMoneyCompact(derived.changeGiven)}</strong>
               </div>
             </>
-          ) : null}
-
-          {method === 'CARD' ? (
-            <p className="rst-pay-modal__hint">{t('rst.order.payCardHint')}</p>
           ) : null}
 
           {method === 'MIXED' ? (

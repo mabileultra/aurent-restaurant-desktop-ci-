@@ -24,7 +24,7 @@ export function usePrefetchCashierSales(storeId, enabled = true) {
     qc.prefetchQuery({
       queryKey: ['rst-recent-paid', storeId, false],
       queryFn: () =>
-        rstPaymentApi.listRecentPaid(storeId, { refunded: false, limit: 40 }).then((r) => r.data ?? []),
+        rstPaymentApi.listRecentPaid(storeId, { refunded: false, limit: 100 }).then((r) => r.data ?? []),
     });
   }, [enabled, storeId, qc]);
 }

@@ -8,8 +8,8 @@ import { rstCommissionApi } from '../../api/commission.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
-import '../styles/analytics-admin.css';
 import '../styles/stations-admin.css';
+import '../styles/staff-admin.css';
 
 function toDateInput(date) {
   const d = date instanceof Date ? date : new Date(date);
@@ -67,7 +67,7 @@ export default function WaiterCommissionReportPage() {
   }
 
   return (
-    <section>
+    <section className="rst-commission-report">
       <div className="rst-halls__toolbar">
         <div>
           <h1 className="rst-coming__title">{t('rst.admin.reportsCommissionCard')}</h1>
@@ -75,7 +75,7 @@ export default function WaiterCommissionReportPage() {
         </div>
       </div>
 
-      <div className="rst-admin-filters mb-3">
+      <div className="rst-admin-filters">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.reports.from')}</span>
           <BaseInput type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
@@ -90,7 +90,7 @@ export default function WaiterCommissionReportPage() {
         <div className="rst-notice">{t('rst.admin.reportsLoadFailed')}</div>
       ) : null}
 
-      <div className="rst-staff__stats mb-3">
+      <div className="rst-staff__stats">
         <div className="rst-staff__stat">
           <strong>{report?.orderCount ?? 0}</strong>
           <span>{t('rst.commission.orders')}</span>

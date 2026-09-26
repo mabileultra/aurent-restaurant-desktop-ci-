@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import RestaurantStoreFormModal from '../components/RestaurantStoreFormModal';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useStoresAdminPage } from '../hooks/useStoresAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -31,7 +32,7 @@ export default function StoresAdminPage() {
         <Link to="/rst/admin/integrations">{p.t('rst.nav.integrations')}</Link>
       </div>
 
-      <label className="rst-admin-field rst-admin-field--full mb-3">
+      <label className="rst-admin-field rst-admin-field--full">
         <span className="rst-admin-field__label">{p.t('common.search')}</span>
         <BaseInput
           value={p.search}
@@ -80,32 +81,40 @@ export default function StoresAdminPage() {
                   </p>
                 </div>
                 <div className="rst-stores__card-actions">
-                  {!isCurrent && row.active !== false ? (
-                    <BaseButton type="button" variant="ghost" onClick={() => p.useAsWorkspace(row)}>
-                      {p.t('rst.admin.useRestaurant')}
-                    </BaseButton>
-                  ) : null}
-                  <BaseButton type="button" variant="ghost" onClick={() => p.openEdit(row)}>
-                    {p.t('common.edit')}
-                  </BaseButton>
-                  <Link
-                    className="rst-stores__int-link"
-                    to="/rst/admin/integrations"
-                    onClick={() => p.workspace.setPickedStoreId(String(row.id))}
-                  >
-                    {p.t('rst.nav.integrations')}
-                  </Link>
-                  <BaseButton
-                    type="button"
-                    variant="ghost"
-                    onClick={() => p.toggleMutation.mutate(row.id)}
-                    disabled={p.toggleMutation.isPending}
-                  >
-                    {row.active === false ? p.t('stores.activate') : p.t('stores.deactivate')}
-                  </BaseButton>
-                  <BaseButton type="button" variant="ghost" onClick={() => p.tryDelete(row)}>
-                    {p.t('common.delete')}
-                  </BaseButton>
+                  <RstRowActions
+                    t={p.t}
+                    items={[
+                      !isCurrent && row.active !== false
+                        ? {
+                            key: 'use',
+                            label: p.t('rst.admin.useRestaurant'),
+                            onClick: () => p.useAsWorkspace(row),
+                          }
+                        : null,
+                      {
+                        key: 'edit',
+                        label: p.t('common.edit'),
+                        onClick: () => p.openEdit(row),
+                      },
+                      {
+                        key: 'integrations',
+                        label: p.t('rst.nav.integrations'),
+                        to: '/rst/admin/integrations',
+                        onClick: () => p.workspace.setPickedStoreId(String(row.id)),
+                      },
+                      {
+                        key: 'toggle',
+                        label: row.active === false ? p.t('stores.activate') : p.t('stores.deactivate'),
+                        onClick: () => p.toggleMutation.mutate(row.id),
+                      },
+                      {
+                        key: 'delete',
+                        label: p.t('common.delete'),
+                        danger: true,
+                        onClick: () => p.tryDelete(row),
+                      },
+                    ]}
+                  />
                 </div>
               </article>
             );

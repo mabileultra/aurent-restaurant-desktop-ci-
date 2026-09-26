@@ -1,7 +1,10 @@
 package com.pos.restaurant.modifier.entity;
 
+import com.pos.restaurant.modifier.domain.ModifierGroupKind;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -39,6 +42,11 @@ public class ModifierGroup {
     @Column(nullable = false, length = 120)
     private String name;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "group_kind", nullable = false, length = 16)
+    @Builder.Default
+    private ModifierGroupKind groupKind = ModifierGroupKind.STANDARD;
+
     @Column(name = "min_select", nullable = false)
     @Builder.Default
     private int minSelect = 0;
@@ -50,6 +58,11 @@ public class ModifierGroup {
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 100;
+
+    /** When true, group is offered on every dish in the store (in addition to per-item links). */
+    @Column(name = "available_for_all", nullable = false)
+    @Builder.Default
+    private boolean availableForAll = false;
 
     @Column(nullable = false)
     @Builder.Default

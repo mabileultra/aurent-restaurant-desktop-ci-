@@ -9,6 +9,7 @@ public record OrderItemResponse(
     UUID id,
     UUID menuItemId,
     String name,
+    String portionText,
     BigDecimal quantity,
     BigDecimal returnedQuantity,
     BigDecimal unitPrice,

@@ -1,6 +1,7 @@
 package com.pos.restaurant.order.support;
 
 import com.pos.restaurant.floor.entity.FloorTable;
+import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.LinkedTableResponse;
 import com.pos.restaurant.order.dto.OrderItemModifierResponse;
@@ -135,6 +136,7 @@ public class OrderResponseAssembler {
             item.getId(),
             menuItemId,
             item.getName(),
+            MenuPortionFormat.display(item.getMenuItem()),
             item.getQuantity(),
             item.getReturnedQuantity() == null ? BigDecimal.ZERO : item.getReturnedQuantity(),
             item.getUnitPrice(),

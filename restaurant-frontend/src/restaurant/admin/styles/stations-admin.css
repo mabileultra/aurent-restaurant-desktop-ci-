@@ -134,7 +134,31 @@
 }
 
 .rst-admin-filters__reset {
-  justify-self: start;
+  justify-self: stretch;
+  align-self: end;
+  width: 100%;
+  min-height: 2.5rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.rst-admin-filters__reset:hover:not(:disabled) {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
+}
+
+@media (min-width: 900px) {
+  .rst-admin-filters__reset {
+    justify-self: start;
+    width: auto;
+    min-width: 7rem;
+  }
 }
 
 .rst-admin-chips {
@@ -354,19 +378,17 @@
 }
 
 .rst-data-table__actions {
-  width: 16.5rem;
+  width: 3rem;
   text-align: right;
   white-space: nowrap;
 }
 
 .rst-modifiers .rst-data-table__actions {
-  width: 18rem;
+  width: 3rem;
 }
 
-.rst-data-table__actions .btn,
-.rst-data-table__actions button,
-.rst-data-table__actions a {
-  margin-left: 0.25rem;
+.rst-data-table__actions .rst-row-actions {
+  margin-left: 0;
 }
 
 .rst-data-table code {

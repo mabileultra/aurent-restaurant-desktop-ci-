@@ -13,7 +13,13 @@ import java.util.UUID;
 
 public interface FloorOrderItemRepository extends JpaRepository<FloorOrderItem, UUID> {
 
-    List<FloorOrderItem> findByOrderIdOrderBySortOrderAscCreatedAtAsc(UUID orderId);
+    @Query("""
+        select i from FloorOrderItem i
+        left join fetch i.menuItem
+        where i.order.id = :orderId
+        order by i.sortOrder asc, i.createdAt asc
+        """)
+    List<FloorOrderItem> findByOrderIdOrderBySortOrderAscCreatedAtAsc(@Param("orderId") UUID orderId);
 
     @Query("""
         select i from FloorOrderItem i

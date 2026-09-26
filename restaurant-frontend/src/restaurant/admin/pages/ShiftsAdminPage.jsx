@@ -1,6 +1,7 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
 import { useShiftsAdminPage } from '../hooks/useShiftsAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -43,18 +44,19 @@ export default function ShiftsAdminPage() {
           </div>
 
           <div className="rst-admin-filters">
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.admin.shiftStatus')}</span>
-              <select
-                className="form-select"
-                value={p.filters.status}
-                onChange={(e) => p.setFilters({ ...p.filters, status: e.target.value })}
-              >
-                <option value="all">{p.t('rst.admin.filterAll')}</option>
-                <option value="open">{p.t('rst.shift.openLabel')}</option>
-                <option value="closed">{p.t('rst.shift.closedLabel')}</option>
-              </select>
-            </label>
+            <BaseSelect
+              className="rst-admin-field"
+              size="sm"
+              searchable={false}
+              label={p.t('rst.admin.shiftStatus')}
+              value={p.filters.status}
+              onChange={(e) => p.setFilters({ ...p.filters, status: e.target.value })}
+              options={[
+                { value: 'all', label: p.t('rst.admin.filterAll') },
+                { value: 'open', label: p.t('rst.shift.openLabel') },
+                { value: 'closed', label: p.t('rst.shift.closedLabel') },
+              ]}
+            />
             <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.admin.shiftsFrom')}</span>
               <BaseInput
@@ -71,9 +73,7 @@ export default function ShiftsAdminPage() {
                 onChange={(e) => p.setFilters({ ...p.filters, toDate: e.target.value })}
               />
             </label>
-            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={p.resetFilters}>
-              {p.t('rst.admin.filterReset')}
-            </BaseButton>
+            <RstFilterResetButton t={p.t} onClick={p.resetFilters} />
           </div>
 
           {p.isError ? <div className="rst-notice">{p.t('rst.admin.shiftsLoadFailed')}</div> : null}

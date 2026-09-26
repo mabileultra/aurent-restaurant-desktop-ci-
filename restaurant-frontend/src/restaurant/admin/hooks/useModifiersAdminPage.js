@@ -6,7 +6,14 @@ import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { toastApiError } from '../../../utils/apiError';
 
-const emptyGroup = () => ({ name: '', minSelect: 0, maxSelect: 1, sortOrder: 100 });
+const emptyGroup = () => ({
+  name: '',
+  groupKind: 'STANDARD',
+  minSelect: 0,
+  maxSelect: 1,
+  sortOrder: 100,
+  availableForAll: false,
+});
 const emptyOption = () => ({ name: '', priceDelta: '0' });
 const emptyFilters = () => ({ search: '' });
 
@@ -55,15 +62,18 @@ export function useModifiersAdminPage() {
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-modifiers', workspace.storeId] });
+    qc.invalidateQueries({ queryKey: ['rst-menu-modifiers'] });
   };
 
   const saveGroup = useMutation({
     mutationFn: () => {
       const body = {
         name: groupForm.name,
+        groupKind: 'STANDARD',
         minSelect: Number(groupForm.minSelect) || 0,
         maxSelect: Number(groupForm.maxSelect) || 1,
         sortOrder: Number(groupForm.sortOrder) || 100,
+        availableForAll: Boolean(groupForm.availableForAll),
       };
       if (editingGroupId) return rstModifierApi.updateGroup(editingGroupId, body);
       return rstModifierApi.createGroup(workspace.storeId, body);
@@ -141,9 +151,11 @@ export function useModifiersAdminPage() {
       setEditingGroupId(group.id);
       setGroupForm({
         name: group.name,
+        groupKind: 'STANDARD',
         minSelect: group.minSelect,
         maxSelect: group.maxSelect,
         sortOrder: group.sortOrder,
+        availableForAll: Boolean(group.availableForAll),
       });
     },
     resetGroup: () => {

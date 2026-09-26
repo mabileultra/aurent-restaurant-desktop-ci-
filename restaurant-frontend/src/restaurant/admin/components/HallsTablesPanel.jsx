@@ -1,4 +1,5 @@
 import { BaseButton } from '../../../components/ui';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useInfiniteScrollSlice } from '../../shared/hooks/useInfiniteScrollSlice';
 import '../styles/halls-admin.css';
 
@@ -65,18 +66,26 @@ export default function HallsTablesPanel({
                     {t(`rst.status.${table.status}`)} · {t('rst.floor.seats', { count: table.seatCount })}
                   </span>
                 </button>
-                <BaseButton
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    if (window.confirm(t('rst.admin.confirmDeactivateTable'))) {
-                      onDeactivateTable?.(table.id);
-                    }
-                  }}
-                >
-                  {t('common.delete')}
-                </BaseButton>
+                <RstRowActions
+                  t={t}
+                  items={[
+                    {
+                      key: 'edit',
+                      label: t('common.edit'),
+                      onClick: () => onEditTable?.(table),
+                    },
+                    {
+                      key: 'delete',
+                      label: t('common.delete'),
+                      danger: true,
+                      onClick: () => {
+                        if (window.confirm(t('rst.admin.confirmDeactivateTable'))) {
+                          onDeactivateTable?.(table.id);
+                        }
+                      },
+                    },
+                  ]}
+                />
               </div>
             ))}
             {hasMoreTables ? (

@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom';
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import UserFormModal from '../../../features/tenant/components/users/UserFormModal';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useStaffAdminPage, RST_STAFF_ROLES } from '../hooks/useStaffAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -10,6 +11,7 @@ import '../styles/staff-admin.css';
 
 export default function StaffAdminPage() {
   const p = useStaffAdminPage();
+  const waiters = p.waitersForCommission ?? [];
 
   if (p.workspace.noAssignment) {
     return (
@@ -51,43 +53,99 @@ export default function StaffAdminPage() {
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (
         <>
-          <div className="rst-staff__commission">
-            <div>
-              <strong>{p.t('rst.staff.commissionTitle')}</strong>
-              <p className="rst-staff__commission-hint mb-0">{p.t('rst.staff.commissionHint')}</p>
-            </div>
-            <div className="rst-staff__commission-controls">
-              <label className="rst-admin-field">
-                <span className="rst-admin-field__label">{p.t('rst.staff.commissionDefault')}</span>
-                <BaseInput
-                  type="number"
-                  min={0}
-                  max={100}
-                  step="0.01"
-                  value={p.draftDefault}
-                  disabled={!p.canEditCommission || p.commissionBusy || p.commissionLoading}
-                  onChange={(e) => p.setDefaultPercentDraft(e.target.value)}
-                />
-              </label>
-              {p.canEditCommission ? (
-                <div className="rst-staff__commission-actions">
-                  <BaseButton type="button" variant="ghost" disabled={p.commissionBusy} onClick={p.saveDefault}>
-                    {p.t('rst.staff.commissionSaveDefault')}
-                  </BaseButton>
-                  <BaseButton type="button" disabled={p.commissionBusy} onClick={p.applyAll}>
-                    {p.t('rst.staff.commissionApplyAll')}
-                  </BaseButton>
-                </div>
-              ) : null}
-            </div>
-          </div>
-
           <div className="rst-staff__stats">
             <div className="rst-staff__stat"><strong>{p.stats.total}</strong><span>{p.t('rst.staff.statTotal')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.waiters}</strong><span>{p.t('roles.WAITER')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.cooks}</strong><span>{p.t('roles.COOK')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.cashiers}</strong><span>{p.t('roles.CASHIER')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.active}</strong><span>{p.t('rst.staff.statActive')}</span></div>
+          </div>
+
+          <div className="rst-staff__commission">
+            <div className="rst-staff__commission-top">
+              <div>
+                <strong>{p.t('rst.staff.commissionTitle')}</strong>
+                <p className="rst-staff__commission-hint mb-0">{p.t('rst.staff.commissionHint')}</p>
+              </div>
+              <div className="rst-staff__commission-controls">
+                <label className="rst-admin-field">
+                  <span className="rst-admin-field__label">{p.t('rst.staff.commissionDefault')}</span>
+                  <BaseInput
+                    type="number"
+                    min={0}
+                    max={100}
+                    step="0.01"
+                    value={p.draftDefault}
+                    disabled={!p.canEditCommission || p.commissionBusy || p.commissionLoading}
+                    onChange={(e) => p.setDefaultPercentDraft(e.target.value)}
+                  />
+                </label>
+                {p.canEditCommission ? (
+                  <div className="rst-staff__commission-actions">
+                    <BaseButton type="button" size="sm" variant="ghost" disabled={p.commissionBusy} onClick={p.saveDefault}>
+                      {p.t('rst.staff.commissionSaveDefault')}
+                    </BaseButton>
+                    <BaseButton type="button" size="sm" disabled={p.commissionBusy} onClick={p.applyAll}>
+                      {p.t('rst.staff.commissionApplyAll')}
+                    </BaseButton>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+
+            {waiters.length > 0 ? (
+              <div className="rst-staff__waiter-rates">
+                <div className="rst-staff__waiter-rates-head">{p.t('rst.staff.commissionPersonalTitle')}</div>
+                <div className="rst-staff__waiter-rates-list">
+                  {waiters.map((user) => {
+                    const rate = p.waiterRate(user.id);
+                    return (
+                      <div key={user.id} className="rst-staff__waiter-rate">
+                        <span className="rst-staff__waiter-name">{p.displayName(user)}</span>
+                        <BaseInput
+                          type="number"
+                          min={0}
+                          max={100}
+                          step="0.01"
+                          value={p.waiterDraft(user.id)}
+                          disabled={!p.canEditCommission || p.commissionBusy}
+                          onChange={(e) => p.setWaiterDraft(user.id, e.target.value)}
+                        />
+                        <span className="rst-staff__rate-meta">
+                          {rate.custom
+                            ? p.t('rst.staff.commissionCustom')
+                            : p.t('rst.staff.commissionInherited')}
+                        </span>
+                        {p.canEditCommission ? (
+                          <div className="rst-staff__rate-actions">
+                            <BaseButton
+                              type="button"
+                              size="sm"
+                              variant="ghost"
+                              disabled={p.commissionBusy}
+                              onClick={() => p.saveWaiterPercent(user.id)}
+                            >
+                              {p.t('common.save')}
+                            </BaseButton>
+                            {rate.custom ? (
+                              <BaseButton
+                                type="button"
+                                size="sm"
+                                variant="ghost"
+                                disabled={p.commissionBusy}
+                                onClick={() => p.clearWaiterPercent(user.id)}
+                              >
+                                {p.t('rst.staff.commissionUseDefault')}
+                              </BaseButton>
+                            ) : null}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : null}
           </div>
 
           <div className="rst-admin-filters rst-staff__filters">
@@ -99,25 +157,21 @@ export default function StaffAdminPage() {
                 placeholder={p.t('rst.staff.search')}
               />
             </label>
-            <div className="rst-staff__roles">
-              <button
-                type="button"
-                className={`rst-staff__role${!p.roleFilter ? ' is-active' : ''}`}
-                onClick={() => p.setRoleFilter('')}
-              >
-                {p.t('rst.staff.allRoles')}
-              </button>
-              {RST_STAFF_ROLES.map((role) => (
-                <button
-                  key={role}
-                  type="button"
-                  className={`rst-staff__role${p.roleFilter === role ? ' is-active' : ''}`}
-                  onClick={() => p.setRoleFilter(role)}
-                >
-                  {p.t(`roles.${role}`, { defaultValue: role })}
-                </button>
-              ))}
-            </div>
+            <BaseSelect
+              className="rst-admin-field"
+              size="sm"
+              searchable={false}
+              label={p.t('rst.staff.role')}
+              value={p.roleFilter}
+              onChange={(e) => p.setRoleFilter(e.target.value)}
+              options={[
+                { value: '', label: p.t('rst.staff.allRoles') },
+                ...RST_STAFF_ROLES.map((role) => ({
+                  value: role,
+                  label: p.t(`roles.${role}`, { defaultValue: role }),
+                })),
+              ]}
+            />
           </div>
 
           {p.isError ? <div className="rst-notice">{p.t('rst.staff.loadFailed')}</div> : null}
@@ -135,106 +189,58 @@ export default function StaffAdminPage() {
                     <th>{p.t('rst.staff.name')}</th>
                     <th>{p.t('rst.staff.username')}</th>
                     <th>{p.t('rst.staff.role')}</th>
-                    <th>{p.t('rst.staff.commissionCol')}</th>
                     <th>{p.t('rst.staff.status')}</th>
-                    <th className="rst-data-table__actions">{p.t('common.actions')}</th>
+                    <th className="rst-data-table__actions" aria-label={p.t('common.actions')} />
                   </tr>
                 </thead>
                 <tbody>
                   {p.isLoading ? (
                     <tr>
-                      <td colSpan={7} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                      <td colSpan={6} className="rst-data-table__empty">{p.t('common.loading')}</td>
                     </tr>
                   ) : p.rows.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="rst-data-table__empty">{p.t('rst.staff.empty')}</td>
+                      <td colSpan={6} className="rst-data-table__empty">{p.t('rst.staff.empty')}</td>
                     </tr>
                   ) : (
-                    p.rows.map((user, index) => {
-                      const rate = p.waiterRate(user.id);
-                      const isWaiter = user.role === 'WAITER';
-                      return (
-                        <tr key={user.id}>
-                          <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
-                          <td className="rst-data-table__wrap">{p.displayName(user)}</td>
-                          <td><code>{user.username || '—'}</code></td>
-                          <td>
-                            <span className={`rst-staff__badge rst-staff__badge--${user.role}`}>
-                              {p.t(`roles.${user.role}`, { defaultValue: user.role })}
-                            </span>
-                          </td>
-                          <td>
-                            {isWaiter ? (
-                              <div className="rst-staff__rate">
-                                <BaseInput
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  step="0.01"
-                                  value={p.waiterDraft(user.id)}
-                                  disabled={!p.canEditCommission || p.commissionBusy}
-                                  onChange={(e) => p.setWaiterDraft(user.id, e.target.value)}
-                                />
-                                <span className="rst-staff__rate-meta">
-                                  {rate.custom
-                                    ? p.t('rst.staff.commissionCustom')
-                                    : p.t('rst.staff.commissionInherited')}
-                                </span>
-                                {p.canEditCommission ? (
-                                  <div className="rst-staff__rate-actions">
-                                    <BaseButton
-                                      type="button"
-                                      size="sm"
-                                      variant="ghost"
-                                      disabled={p.commissionBusy}
-                                      onClick={() => p.saveWaiterPercent(user.id)}
-                                    >
-                                      {p.t('common.save')}
-                                    </BaseButton>
-                                    {rate.custom ? (
-                                      <BaseButton
-                                        type="button"
-                                        size="sm"
-                                        variant="ghost"
-                                        disabled={p.commissionBusy}
-                                        onClick={() => p.clearWaiterPercent(user.id)}
-                                      >
-                                        {p.t('rst.staff.commissionUseDefault')}
-                                      </BaseButton>
-                                    ) : null}
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : (
-                              <span className="rst-staff__rate-na">—</span>
-                            )}
-                          </td>
-                          <td>
-                            <span className={`rst-staff__status${user.active !== false ? ' is-on' : ' is-off'}`}>
-                              {user.active !== false ? p.t('rst.staff.active') : p.t('rst.staff.inactive')}
-                            </span>
-                          </td>
-                          <td className="rst-data-table__actions">
-                            {p.canManage ? (
-                              <div className="rst-staff__actions">
-                                <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.openEdit(user)}>
-                                  {p.t('common.edit')}
-                                </BaseButton>
-                                <BaseButton
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  disabled={p.toggleMutation.isPending}
-                                  onClick={() => p.toggleMutation.mutate(user.id)}
-                                >
-                                  {user.active !== false ? p.t('rst.staff.deactivate') : p.t('rst.staff.activate')}
-                                </BaseButton>
-                              </div>
-                            ) : null}
-                          </td>
-                        </tr>
-                      );
-                    })
+                    p.rows.map((user, index) => (
+                      <tr key={user.id}>
+                        <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
+                        <td className="rst-data-table__wrap">{p.displayName(user)}</td>
+                        <td><code>{user.username || '—'}</code></td>
+                        <td>
+                          <span className={`rst-staff__badge rst-staff__badge--${user.role}`}>
+                            {p.t(`roles.${user.role}`, { defaultValue: user.role })}
+                          </span>
+                        </td>
+                        <td>
+                          <span className={`rst-staff__status${user.active !== false ? ' is-on' : ' is-off'}`}>
+                            {user.active !== false ? p.t('rst.staff.active') : p.t('rst.staff.inactive')}
+                          </span>
+                        </td>
+                        <td className="rst-data-table__actions">
+                          {p.canManage ? (
+                            <RstRowActions
+                              t={p.t}
+                              items={[
+                                {
+                                  key: 'edit',
+                                  label: p.t('common.edit'),
+                                  onClick: () => p.openEdit(user),
+                                },
+                                {
+                                  key: 'toggle',
+                                  label: user.active !== false
+                                    ? p.t('rst.staff.deactivate')
+                                    : p.t('rst.staff.activate'),
+                                  onClick: () => p.toggleMutation.mutate(user.id),
+                                },
+                              ]}
+                            />
+                          ) : null}
+                        </td>
+                      </tr>
+                    ))
                   )}
                 </tbody>
               </table>

@@ -12,17 +12,19 @@ public interface KitchenTicketLineRepository extends JpaRepository<KitchenTicket
 
     @Query("""
         select l from KitchenTicketLine l
-        join fetch l.orderItem
+        join fetch l.orderItem oi
+        left join fetch oi.menuItem
         where l.ticket.id = :ticketId
-        order by l.orderItem.sortOrder
+        order by oi.sortOrder
         """)
     List<KitchenTicketLine> findByTicketId(@Param("ticketId") UUID ticketId);
 
     @Query("""
         select l from KitchenTicketLine l
-        join fetch l.orderItem
+        join fetch l.orderItem oi
+        left join fetch oi.menuItem
         where l.ticket.id in :ticketIds
-        order by l.orderItem.sortOrder
+        order by oi.sortOrder
         """)
     List<KitchenTicketLine> findByTicketIdIn(@Param("ticketIds") List<UUID> ticketIds);
 }

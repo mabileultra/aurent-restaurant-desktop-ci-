@@ -1,7 +1,20 @@
-import { BaseButton } from '../../../components/ui';
+import { BaseButton, BaseSelect } from '../../../components/ui';
 import RstOverlay from '../../shared/components/RstOverlay';
 import '../../shared/styles/rst-modal.css';
 import '../styles/floor-phase2.css';
+
+function GuestStepper({ label, value, onDec, onInc }) {
+  return (
+    <div className="rst-open-table__field">
+      <span className="rst-open-table__label">{label}</span>
+      <div className="rst-guest-stepper">
+        <button type="button" className="rst-guest-stepper__btn" onClick={onDec} aria-label="-">−</button>
+        <span className="rst-guest-stepper__value">{value}</span>
+        <button type="button" className="rst-guest-stepper__btn" onClick={onInc} aria-label="+">+</button>
+      </div>
+    </div>
+  );
+}
 
 export default function OpenTableModal({
   open,
@@ -39,78 +52,50 @@ export default function OpenTableModal({
 
   return (
     <RstOverlay onClose={onClose}>
-      <div className="rst-modal__card">
+      <div className="rst-modal__card rst-open-table">
         <h2 className="rst-modal__title">{t('rst.floor.tableTitle', { code: table.code })}</h2>
         <p className="rst-modal__text">{t('rst.order.guestsHint')}</p>
         <form
+          className="rst-modal-form rst-open-table__form"
           onSubmit={(e) => {
             e.preventDefault();
             onSubmit();
           }}
         >
-          <span className="d-block mb-1 small">{t('rst.order.guestCount')}</span>
-          <div className="rst-guest-stepper">
-            <button
-              type="button"
-              className="rst-guest-stepper__btn"
-              onClick={() => setGuests(Number(form.guestCount) - 1)}
-              aria-label="-"
-            >
-              −
-            </button>
-            <span className="rst-guest-stepper__value">{form.guestCount}</span>
-            <button
-              type="button"
-              className="rst-guest-stepper__btn"
-              onClick={() => setGuests(Number(form.guestCount) + 1)}
-              aria-label="+"
-            >
-              +
-            </button>
-          </div>
+          <GuestStepper
+            label={t('rst.order.guestCount')}
+            value={form.guestCount}
+            onDec={() => setGuests(Number(form.guestCount) - 1)}
+            onInc={() => setGuests(Number(form.guestCount) + 1)}
+          />
 
-          <span className="d-block mb-1 small">{t('rst.order.childrenCount')}</span>
-          <div className="rst-guest-stepper">
-            <button
-              type="button"
-              className="rst-guest-stepper__btn"
-              onClick={() => setChildren(Number(form.childrenCount || 0) - 1)}
-              aria-label="-"
-            >
-              −
-            </button>
-            <span className="rst-guest-stepper__value">{form.childrenCount || 0}</span>
-            <button
-              type="button"
-              className="rst-guest-stepper__btn"
-              onClick={() => setChildren(Number(form.childrenCount || 0) + 1)}
-              aria-label="+"
-            >
-              +
-            </button>
-          </div>
-          <p className="rst-modal__text">
-            {t('rst.order.adultsShort', { count: form.adultCount ?? Math.max(0, (form.guestCount || 0) - (form.childrenCount || 0)) })}
+          <GuestStepper
+            label={t('rst.order.childrenCount')}
+            value={form.childrenCount || 0}
+            onDec={() => setChildren(Number(form.childrenCount || 0) - 1)}
+            onInc={() => setChildren(Number(form.childrenCount || 0) + 1)}
+          />
+
+          <p className="rst-open-table__adults">
+            {t('rst.order.adultsShort', {
+              count: form.adultCount ?? Math.max(0, (form.guestCount || 0) - (form.childrenCount || 0)),
+            })}
           </p>
 
           {waiters.length > 0 ? (
-            <label className="d-block mb-3">
-              <span className="d-block mb-1 small">{t('rst.order.waiter')}</span>
-              <select
-                className="form-select"
-                value={form.waiterUserId || ''}
-                onChange={(e) => onChange({ ...form, waiterUserId: e.target.value || '' })}
-              >
-                <option value="">{t('rst.order.waiterMe')}</option>
-                {waiters.map((waiter) => (
-                  <option key={waiter.id} value={waiter.id}>{waiter.name}</option>
-                ))}
-              </select>
-            </label>
+            <BaseSelect
+              label={t('rst.order.waiter')}
+              value={form.waiterUserId || ''}
+              onChange={(e) => onChange({ ...form, waiterUserId: e.target.value || '' })}
+              options={[
+                { value: '', label: t('rst.order.waiterMe') },
+                ...waiters.map((waiter) => ({ value: waiter.id, label: waiter.name })),
+              ]}
+            />
           ) : null}
 
-          <label className="d-block mb-3">
-            <span className="d-block mb-1 small">{t('rst.order.orderComment')}</span>
+          <label className="rst-open-table__field">
+            <span className="rst-open-table__label">{t('rst.order.orderComment')}</span>
             <textarea
               className="form-control"
               rows={3}

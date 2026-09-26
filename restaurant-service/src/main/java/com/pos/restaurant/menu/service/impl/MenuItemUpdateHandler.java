@@ -5,16 +5,20 @@ import com.pos.restaurant.modifier.support.MenuItemModifierBinder;
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.menu.domain.MenuItemType;
+import com.pos.restaurant.menu.domain.MenuPortionUnit;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
+import com.pos.restaurant.menu.support.MenuCategoryLookup;
+import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 
@@ -26,6 +30,7 @@ public class MenuItemUpdateHandler {
     private final MenuItemMapper itemMapper;
     private final FloorTenantSupport tenantSupport;
     private final KitchenStationLookup stationLookup;
+    private final MenuCategoryLookup categoryLookup;
     private final MenuItemModifierBinder modifierBinder;
 
     @Transactional
@@ -46,10 +51,20 @@ public class MenuItemUpdateHandler {
             item.setSortOrder(request.sortOrder());
         }
         item.setStationId(stationLookup.resolveOptional(request.stationId(), companyId, item.getStoreId()));
-        item.setCategory(blankToNull(request.category()));
+        MenuCategoryLookup.Resolved category = categoryLookup.resolveOptional(
+            request.menuCategoryId(), companyId, item.getStoreId()
+        );
+        item.setMenuCategoryId(category.id());
+        item.setCategory(category.name());
         item.setImageUrl(blankToNull(request.imageUrl()));
         item.setDescription(blankToNull(request.description()));
         item.setPrepMinutes(normalizePrep(request.prepMinutes()));
+        BigDecimal portionAmount = resolvePortionAmount(request);
+        MenuPortionUnit portionUnit = resolvePortionUnit(request);
+        item.setPortionAmount(portionAmount);
+        item.setPortionUnit(portionUnit);
+        item.setPortionGrams(MenuPortionFormat.gramsFromAmount(portionAmount, portionUnit));
+        item.setPortionLabel(blankToNull(request.portionLabel()));
         item.setTags(normalizeTags(request.tags()));
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);
@@ -68,6 +83,35 @@ public class MenuItemUpdateHandler {
             return null;
         }
         return value;
+    }
+
+    private static BigDecimal resolvePortionAmount(SaveMenuItemRequest request) {
+        BigDecimal amount = normalizePortionAmount(request.portionAmount());
+        if (amount != null) {
+            return amount;
+        }
+        if (request.portionGrams() != null && request.portionGrams() > 0) {
+            return BigDecimal.valueOf(request.portionGrams());
+        }
+        return null;
+    }
+
+    private static MenuPortionUnit resolvePortionUnit(SaveMenuItemRequest request) {
+        BigDecimal amount = normalizePortionAmount(request.portionAmount());
+        if (amount != null) {
+            return request.portionUnit() == null ? MenuPortionUnit.PORTION : request.portionUnit();
+        }
+        if (request.portionGrams() != null && request.portionGrams() > 0) {
+            return MenuPortionUnit.G;
+        }
+        return null;
+    }
+
+    private static BigDecimal normalizePortionAmount(BigDecimal value) {
+        if (value == null || value.signum() <= 0) {
+            return null;
+        }
+        return value.setScale(3, RoundingMode.HALF_UP);
     }
 
     private static String normalizeTags(String value) {

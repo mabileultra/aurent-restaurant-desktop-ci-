@@ -10,13 +10,24 @@
   font-size: 1.05rem;
 }
 
-.rst-shift-print-host {
+.rst-shift-print-scene {
   position: fixed;
   left: -10000px;
   top: 0;
   width: 72mm;
+  z-index: 1390;
+  pointer-events: none;
+}
+
+.rst-shift-print-host {
+  width: 72mm;
   background: #fff;
   color: #111;
+}
+
+.rst-shift-report-print-root {
+  min-height: 140px;
+  padding: 2mm 3mm;
 }
 
 @media print {
@@ -24,9 +35,10 @@
     display: none !important;
   }
 
-  .rst-shift-print-host {
+  .rst-shift-print-scene {
     position: static;
     left: auto;
     width: auto;
+    pointer-events: auto;
   }
 }

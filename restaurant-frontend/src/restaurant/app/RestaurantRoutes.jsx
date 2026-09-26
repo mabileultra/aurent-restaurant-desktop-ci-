@@ -9,6 +9,7 @@ import ProtectedRoute from '../../router/guards/ProtectedRoute';
 import { TenantBillingPage } from '../../router/lazyPages';
 import HallsAdminPage from '../admin/pages/HallsAdminPage';
 import MenuAdminPage from '../admin/pages/MenuAdminPage';
+import MenuCategoriesAdminPage from '../admin/pages/MenuCategoriesAdminPage';
 import StationsAdminPage from '../admin/pages/StationsAdminPage';
 import ModifiersAdminPage from '../admin/pages/ModifiersAdminPage';
 import RecipesAdminPage from '../admin/pages/RecipesAdminPage';
@@ -96,6 +97,7 @@ export const restaurantRoutes = (
       <Route path="dashboard" element={<DashboardAdminPage />} />
       <Route path="halls" element={<HallsAdminPage />} />
       <Route path="menu" element={<MenuAdminPage />} />
+      <Route path="menu-categories" element={<MenuCategoriesAdminPage />} />
       <Route path="stations" element={<StationsAdminPage />} />
       <Route path="modifiers" element={<ModifiersAdminPage />} />
       <Route

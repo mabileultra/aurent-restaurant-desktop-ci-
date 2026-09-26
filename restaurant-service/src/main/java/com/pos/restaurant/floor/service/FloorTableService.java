@@ -16,5 +16,7 @@ public interface FloorTableService {
 
     List<TableResponse> updateLayout(Integer hallId, UpdateTableLayoutRequest request);
 
+    TableResponse markReady(Integer tableId);
+
     void deactivate(Integer tableId);
 }

@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { productApi } from '../../../api/product.api';
+import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { rstRecipeApi } from '../../api/recipe.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
@@ -14,11 +15,25 @@ import { computeRecipeFoodCost } from '../utils/recipeFoodCost';
 const emptyLine = () => ({
   productId: '',
   productName: '',
-  unit: 'kg',
+  unit: '',
   qtyGross: '0.1',
   wastePercent: '0',
   costPrice: null,
 });
+
+const emptyFilters = () => ({
+  search: '',
+  category: '',
+  stationId: '',
+  availability: 'all',
+});
+
+/** 2 rows × ~5 cards on desktop. */
+export const RECIPE_DISH_PAGE_SIZE_OPTIONS = [10, 14, 20];
+const DEFAULT_DISH_PAGE_SIZE = 10;
+
+export const RECIPE_LINE_PAGE_SIZE_OPTIONS = [5, 8, 10];
+const DEFAULT_LINE_PAGE_SIZE = 5;
 
 function qtyNetOf(line) {
   const gross = Number(line.qtyGross) || 0;
@@ -53,15 +68,32 @@ export function useRecipesAdminPage() {
   const [wizard, setWizard] = useState({
     name: '',
     price: '',
-    category: '',
+    menuCategoryId: '',
     imageUrl: '',
     imageName: '',
   });
+  const [filters, setFilters] = useState(emptyFilters);
+  const [dishPage, setDishPage] = useState(0);
+  const [dishPageSize, setDishPageSize] = useState(DEFAULT_DISH_PAGE_SIZE);
+  const [linePage, setLinePage] = useState(0);
+  const [linePageSize, setLinePageSize] = useState(DEFAULT_LINE_PAGE_SIZE);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const dishesQuery = useQuery({
     queryKey: ['rst-menu-admin', workspace.storeId],
     queryFn: () => rstMenuApi.list(workspace.storeId, false).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+
+  const stationsQuery = useQuery({
+    queryKey: ['rst-stations', workspace.storeId],
+    queryFn: () => rstKitchenApi.listStations(workspace.storeId, true).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+
+  const menuCategoriesQuery = useQuery({
+    queryKey: ['rst-menu-categories', workspace.storeId],
+    queryFn: () => rstMenuApi.listCategories(workspace.storeId, true).then((r) => r.data),
     enabled: workspace.storeId != null,
   });
 
@@ -131,6 +163,7 @@ export function useRecipesAdminPage() {
     if (!selectedRecipe) {
       setOutputQty('1');
       setLines([emptyLine()]);
+      setLinePage(0);
       return;
     }
     setOutputQty(String(selectedRecipe.outputQty ?? '1'));
@@ -146,6 +179,7 @@ export function useRecipesAdminPage() {
         costPrice: fromCache != null ? fromCache : null,
       };
     }));
+    setLinePage(0);
   }, [selectedRecipe]);
 
   useEffect(() => {
@@ -203,7 +237,7 @@ export function useRecipesAdminPage() {
         available: true,
         sortOrder: 100,
         itemType: 'DISH',
-        category: wizard.category.trim() || null,
+        menuCategoryId: wizard.menuCategoryId || null,
         imageUrl: wizard.imageUrl || null,
         modifierGroupIds: [],
       }).then((r) => r.data);
@@ -215,7 +249,7 @@ export function useRecipesAdminPage() {
       toast.success(t('rst.admin.recipeWizardSaved'));
       setWizardOpen(false);
       setWizardPrevSelectedId(null);
-      setWizard({ name: '', price: '', category: '', imageUrl: '', imageName: '' });
+      setWizard({ name: '', price: '', menuCategoryId: '', imageUrl: '', imageName: '' });
       setSearch('');
       setActiveLineIndex(null);
       qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
@@ -237,9 +271,14 @@ export function useRecipesAdminPage() {
   });
 
   const pickProduct = (index, product) => {
-    const unit = typeof product.unitCode === 'object'
-      ? (product.unitCode?.displayLabel || product.unitCode?.code || 'kg')
-      : (product.unitCode || 'kg');
+    const unitObj = typeof product.unitCode === 'object' ? product.unitCode : null;
+    const unit = unitObj?.displayLabel
+      || unitObj?.name
+      || unitObj?.code
+      || product.unitLabel
+      || product.unitName
+      || (typeof product.unitCode === 'string' ? product.unitCode : null)
+      || 'шт';
     const cost = Number(product.costPrice);
     setLines((current) => current.map((line, i) => (
       i === index
@@ -305,7 +344,7 @@ export function useRecipesAdminPage() {
   const openWizard = () => {
     setWizardPrevSelectedId(selectedId);
     setSelectedId(null);
-    setWizard({ name: '', price: '', category: '', imageUrl: '', imageName: '' });
+    setWizard({ name: '', price: '', menuCategoryId: '', imageUrl: '', imageName: '' });
     setOutputQty('1');
     setLines([emptyLine()]);
     setSearch('');
@@ -315,25 +354,107 @@ export function useRecipesAdminPage() {
 
   const closeWizard = () => {
     setWizardOpen(false);
-    setWizard({ name: '', price: '', category: '', imageUrl: '', imageName: '' });
+    setWizard({ name: '', price: '', menuCategoryId: '', imageUrl: '', imageName: '' });
     setSearch('');
     setActiveLineIndex(null);
     setSelectedId(wizardPrevSelectedId);
     setWizardPrevSelectedId(null);
   };
 
+  const allDishes = useMemo(
+    () => (dishesQuery.data ?? []).filter((item) => item.active),
+    [dishesQuery.data],
+  );
+
+  const stations = stationsQuery.data ?? [];
+
+  const categories = useMemo(() => {
+    const set = new Set();
+    for (const dish of allDishes) {
+      const name = String(dish.category ?? '').trim();
+      if (name) set.add(name);
+    }
+    return [...set].sort((a, b) => a.localeCompare(b));
+  }, [allDishes]);
+
+  const filteredDishes = useMemo(() => {
+    const q = filters.search.trim().toLowerCase();
+    return allDishes.filter((item) => {
+      if (filters.category && String(item.category ?? '') !== filters.category) return false;
+      if (filters.stationId && String(item.stationId ?? '') !== filters.stationId) return false;
+      if (filters.availability === 'available' && !item.available) return false;
+      if (filters.availability === 'unavailable' && item.available) return false;
+      if (!q) return true;
+      const hay = `${item.name || ''} ${item.sku || ''} ${item.category || ''}`.toLowerCase();
+      return hay.includes(q);
+    });
+  }, [allDishes, filters]);
+
+  const dishTotal = filteredDishes.length;
+  const dishTotalPages = Math.max(1, Math.ceil(dishTotal / dishPageSize) || 1);
+  const safeDishPage = Math.min(dishPage, dishTotalPages - 1);
+  const pagedDishes = useMemo(() => {
+    const start = safeDishPage * dishPageSize;
+    return filteredDishes.slice(start, start + dishPageSize);
+  }, [filteredDishes, safeDishPage, dishPageSize]);
+
+  const lineTotal = lines.length;
+  const lineTotalPages = Math.max(1, Math.ceil(lineTotal / linePageSize) || 1);
+  const safeLinePage = Math.min(linePage, lineTotalPages - 1);
+  const pagedLines = useMemo(() => {
+    const start = safeLinePage * linePageSize;
+    return lines.slice(start, start + linePageSize).map((line, offset) => ({
+      line,
+      index: start + offset,
+    }));
+  }, [lines, safeLinePage, linePageSize]);
+
   return {
     t,
     workspace,
-    dishes: (dishesQuery.data ?? []).filter((item) => item.active),
+    dishes: pagedDishes,
+    dishTotal,
+    dishPage: safeDishPage,
+    dishPageSize,
+    dishTotalPages,
+    dishPageSizeOptions: RECIPE_DISH_PAGE_SIZE_OPTIONS,
+    setDishPage: (next) => setDishPage(Math.max(0, Math.min(next, dishTotalPages - 1))),
+    setDishPageSize: (size) => {
+      setDishPageSize(size);
+      setDishPage(0);
+    },
+    filters,
+    setFilters: (next) => {
+      setFilters(next);
+      setDishPage(0);
+    },
+    resetFilters: () => {
+      setFilters(emptyFilters());
+      setDishPage(0);
+    },
+    stations,
+    categories,
+    menuCategories: menuCategoriesQuery.data ?? [],
     recipes: recipesQuery.data ?? [],
     products: Array.isArray(productsQuery.data) ? productsQuery.data : [],
     selectedId,
     setSelectedId,
+    selectedDish,
     outputQty,
     setOutputQty,
     lines,
     setLines,
+    pagedLines,
+    lineTotal,
+    linePage: safeLinePage,
+    linePageSize,
+    lineTotalPages,
+    linePageSizeOptions: RECIPE_LINE_PAGE_SIZE_OPTIONS,
+    setLinePage: (next) => setLinePage(Math.max(0, Math.min(next, lineTotalPages - 1))),
+    setLinePageSize: (size) => {
+      setLinePageSize(size);
+      setLinePage(0);
+    },
     search,
     setSearch,
     activeLineIndex,
@@ -351,9 +472,21 @@ export function useRecipesAdminPage() {
     setWizard,
     wizardMutation,
     onWizardImage,
-    addLine: () => setLines((current) => [...current, emptyLine()]),
+    addLine: () => {
+      setLines((current) => {
+        const next = [...current, emptyLine()];
+        setLinePage(Math.floor((next.length - 1) / linePageSize));
+        return next;
+      });
+      setActiveLineIndex(null);
+    },
     removeLine: (index) => {
-      setLines((current) => current.filter((_, i) => i !== index));
+      setLines((current) => {
+        const next = current.filter((_, i) => i !== index);
+        const pages = Math.max(1, Math.ceil(next.length / linePageSize) || 1);
+        setLinePage((page) => Math.min(page, pages - 1));
+        return next;
+      });
       setActiveLineIndex(null);
     },
   };

@@ -105,10 +105,10 @@ export default function ShiftReportPrintBody({ report, t }) {
         <Row label={t('pos.shiftSales')} value={String(report.saleCount ?? 0)} />
         <MoneyRow label={t('pos.shiftTotal')} amount={report.totalAmount} currency={currency} bold always />
         <MoneyRow label={t('pos.shiftCash')} amount={report.cashAmount} currency={currency} always />
-        <MoneyRow label={t('pos.shiftCard')} amount={report.cardAmount} currency={currency} />
-        <MoneyRow label={t('rst.shift.openingCash')} amount={report.openingCash} currency={currency} />
+        <MoneyRow label={t('pos.shiftCard')} amount={report.cardAmount} currency={currency} always />
+        <MoneyRow label={t('rst.shift.openingCash')} amount={report.openingCash} currency={currency} always />
         {report.reportType === 'Z' ? (
-          <MoneyRow label={t('rst.shift.closingCash')} amount={report.closingCash} currency={currency} />
+          <MoneyRow label={t('rst.shift.closingCash')} amount={report.closingCash} currency={currency} always />
         ) : null}
       </section>
 

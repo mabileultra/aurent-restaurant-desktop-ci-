@@ -6,16 +6,32 @@ import { GuideSectionsList } from '../guide/GuideSection';
 import { GUIDE_SECTIONS } from '../guide/guideSections';
 import '../styles/guide-page.css';
 
+function findScrollRoot(fromEl) {
+  let node = fromEl?.parentElement ?? null;
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node);
+    const oy = style.overflowY;
+    if ((oy === 'auto' || oy === 'scroll') && node.scrollHeight > node.clientHeight + 1) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return document.querySelector('.rst-shell__content') || document.scrollingElement || document.documentElement;
+}
+
 export default function RestaurantGuidePage() {
   const { t } = useTranslation();
   const [activeId, setActiveId] = useState(GUIDE_SECTIONS[0].id);
   const lockRef = useRef(null);
+  const pageRef = useRef(null);
 
   useEffect(() => {
     const nodes = GUIDE_SECTIONS
       .map((s) => document.getElementById(`guide-${s.id}`))
       .filter(Boolean);
     if (!nodes.length) return undefined;
+
+    const root = findScrollRoot(pageRef.current);
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -27,7 +43,7 @@ export default function RestaurantGuidePage() {
           setActiveId(visible[0].target.id.replace(/^guide-/, ''));
         }
       },
-      { rootMargin: '-10% 0px -55% 0px', threshold: [0.12, 0.4, 0.65] },
+      { root: root === document.scrollingElement ? null : root, rootMargin: '-12% 0px -55% 0px', threshold: [0.12, 0.4, 0.65] },
     );
     nodes.forEach((n) => observer.observe(n));
     return () => {
@@ -46,12 +62,16 @@ export default function RestaurantGuidePage() {
       lockRef.current = null;
     }, 750);
 
-    const top = el.getBoundingClientRect().top + window.scrollY - 12;
-    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+    const root = findScrollRoot(pageRef.current);
+    const rootTop = root === document.scrollingElement || root === document.documentElement
+      ? 0
+      : root.getBoundingClientRect().top;
+    const offset = el.getBoundingClientRect().top - rootTop + (root.scrollTop || 0) - 88;
+    root.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
   };
 
   return (
-    <div className="rst-guide">
+    <div className="rst-guide" ref={pageRef}>
       <header className="rst-guide__hero">
         <div className="rst-guide__hero-icon">
           <BookOpen size={22} aria-hidden />

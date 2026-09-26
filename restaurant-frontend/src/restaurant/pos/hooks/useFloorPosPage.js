@@ -194,6 +194,12 @@ export function useFloorPosPage() {
       toast.error(t('rst.order.alreadyOpen'));
       return;
     }
+    if (table.status === 'CLEANING') {
+      if (!m.markReadyMutation.isPending) {
+        m.markReadyMutation.mutate(table.id);
+      }
+      return;
+    }
     if (table.status === 'RESERVED' || table.reservation) {
       setReservedTable(table);
       return;

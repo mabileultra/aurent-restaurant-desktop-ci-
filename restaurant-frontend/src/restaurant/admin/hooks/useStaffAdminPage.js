@@ -73,6 +73,15 @@ export function useStaffAdminPage() {
       .sort((a, b) => String(a.fullName || a.username).localeCompare(String(b.fullName || b.username)));
   }, [usersQuery.data, workspace.storeId, roleFilter, search]);
 
+  const waitersForCommission = useMemo(() => {
+    const storeId = workspace.storeId;
+    if (storeId == null) return [];
+    return (usersQuery.data ?? [])
+      .filter((user) => user.role === 'WAITER' && user.active !== false)
+      .filter((user) => userStoreIds(user).includes(Number(storeId)))
+      .sort((a, b) => String(a.fullName || a.username).localeCompare(String(b.fullName || b.username)));
+  }, [usersQuery.data, workspace.storeId]);
+
   const overrideMap = useMemo(() => {
     const map = new Map();
     for (const row of commissionQuery.data?.overrides ?? []) {
@@ -196,6 +205,7 @@ export function useStaffAdminPage() {
     canManage,
     canEditCommission,
     staff,
+    waitersForCommission,
     rows,
     stats,
     page: safePage,

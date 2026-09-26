@@ -23,6 +23,11 @@
   margin-bottom: 1.1rem;
 }
 
+.rst-pos .rst-open-table .rst-modal__title,
+.rst-pos .rst-open-table .rst-modal__text {
+  margin: 0;
+}
+
 .rst-pos .rst-modal__card input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
 .rst-pos .rst-modal__card select,
 .rst-pos .rst-modal__card textarea,
@@ -57,7 +62,7 @@
 
 .rst-pos .rst-guest-stepper {
   gap: 0.85rem;
-  margin-bottom: 1.25rem;
+  margin: 0;
 }
 
 .rst-pos .rst-guest-stepper__btn {

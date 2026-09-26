@@ -24,6 +24,7 @@ public class FloorTableServiceImpl implements FloorTableService {
     private final TableCreateHandler createHandler;
     private final TableUpdateHandler updateHandler;
     private final TableLayoutUpdateHandler layoutUpdateHandler;
+    private final TableMarkReadyHandler markReadyHandler;
     private final TableDeactivateHandler deactivateHandler;
 
     @Override
@@ -50,6 +51,12 @@ public class FloorTableServiceImpl implements FloorTableService {
     @Transactional
     public List<TableResponse> updateLayout(Integer hallId, UpdateTableLayoutRequest request) {
         return layoutUpdateHandler.handle(hallId, request);
+    }
+
+    @Override
+    @Transactional
+    public TableResponse markReady(Integer tableId) {
+        return markReadyHandler.handle(tableId);
     }
 
     @Override

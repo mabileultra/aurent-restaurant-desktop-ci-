@@ -38,7 +38,12 @@ export default function CashierTopBar({
       <div className="rst-cashier-top__actions">
         <PosZoomControls zoom={zoom} t={t} />
         <LanguageSwitcher variant="rst" />
-        <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
+        <BaseButton
+          type="button"
+          variant="ghost"
+          className="rst-exit-btn"
+          onClick={() => logoutAndResetSession()}
+        >
           {t('nav.logout')}
         </BaseButton>
       </div>

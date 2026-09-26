@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { rstOrderApi } from '../../api/order.api';
+import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
 import {
   isCashierEscposPrintAvailable,
@@ -13,6 +14,10 @@ import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
 import { printKitchenTicket } from '../utils/printKitchenTicket';
+import {
+  printOrdinarySaleReceipt,
+  saleNeedsFiscalPrint,
+} from '../utils/printOrdinarySaleReceipt';
 import { toastApiError } from '../../../utils/apiError';
 
 export function useFloorPosMutations(deps) {
@@ -161,14 +166,24 @@ export function useFloorPosMutations(deps) {
   });
 
   const sendKitchenMutation = useMutation({
-    mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
-    onSuccess: (res) => {
+    mutationFn: async () => {
+      const newItemIds = (order?.items ?? [])
+        .filter((item) => String(item.itemStatus || '').toUpperCase() === 'NEW')
+        .map((item) => item.id);
+      const res = await rstOrderApi.sendToKitchen(activeOrderId);
+      return { res, newItemIds };
+    },
+    onSuccess: async ({ res, newItemIds }) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
       try {
-        printKitchenTicket({ order: res.data, t });
+        await printKitchenTicket({
+          order: res.data,
+          t,
+          onlyItemIds: newItemIds,
+        });
       } catch {
-        /* print is best-effort */
+        /* print is best-effort — order already sent */
       }
     },
     onError: (err) => errMsg(err, 'rst.order.sendFailed'),
@@ -239,6 +254,7 @@ export function useFloorPosMutations(deps) {
         cardAmount: payload.cardAmount,
         amountTendered: payload.amountTendered,
         changeGiven: payload.changeGiven,
+        cardType: payload.cardType || null,
         storeId, storeName,
         shiftId: shift?.id ?? null,
         cashRegisterId: shift?.cashRegisterId ?? null,
@@ -258,7 +274,11 @@ export function useFloorPosMutations(deps) {
       let printed = false;
       if (shouldPrint) {
         try {
-          await printFiscalReceipt({ sale, t, useModalShell: true });
+          if (saleNeedsFiscalPrint(sale)) {
+            await printFiscalReceipt({ sale, t, useModalShell: true });
+          } else {
+            await printOrdinarySaleReceipt({ sale, t });
+          }
           printed = true;
           toast.success(t('receipt.printSent'), {
             id: CASHIER_ESCPOS_TOAST.toastId,
@@ -266,7 +286,7 @@ export function useFloorPosMutations(deps) {
           });
         } catch (err) {
           toast.error(
-            (isCashierEscposPrintAvailable()
+            (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
               ? resolveEscposPrintErrorMessage(err, t)
               : err?.message) ?? t('receipt.printFailed'),
             {
@@ -302,10 +322,19 @@ export function useFloorPosMutations(deps) {
     onError: (err) => errMsg(err, 'rst.order.refundFailed'),
   });
 
+  const markReadyMutation = useMutation({
+    mutationFn: (tableId) => rstFloorApi.markReady(tableId).then((r) => r.data),
+    onSuccess: () => {
+      invalidateFloor();
+      toast.success(t('rst.floor.cleaningDone'));
+    },
+    onError: (err) => errMsg(err, 'rst.floor.cleaningReadyFailed'),
+  });
+
   return {
     openMutation, openCounterMutation, openShiftMutation, closeShiftMutation,
     addItemMutation, updateItemMutation, removeItemMutation, assignWaiterMutation,
     updateGuestsMutation, sendKitchenMutation, cancelMutation, billMutation,
-    discountMutation, payMutation, refundMutation,
+    discountMutation, payMutation, refundMutation, markReadyMutation,
   };
 }

@@ -48,7 +48,12 @@ export default function RestaurantAdminLayout() {
             </div>
             <div className="rst-shell__actions">
               <LanguageSwitcher variant="rst" />
-              <BaseButton type="button" variant="ghost" onClick={() => logoutAndResetSession()}>
+              <BaseButton
+                type="button"
+                variant="ghost"
+                className="rst-exit-btn"
+                onClick={() => logoutAndResetSession()}
+              >
                 {t('nav.logout')}
               </BaseButton>
             </div>

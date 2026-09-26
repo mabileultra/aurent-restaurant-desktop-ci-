@@ -164,8 +164,17 @@
   color: #fff;
 }
 
+.rst-shift-modal__btn--danger.is-blocked {
+  background: #7f1d1d;
+  opacity: 0.72;
+}
+
 .rst-shift-modal__btn--danger:hover:not(:disabled) {
   background: #991b1b;
+}
+
+.rst-shift-modal__btn--danger.is-blocked:hover:not(:disabled) {
+  background: #7f1d1d;
 }
 
 .rst-shift-modal .spin {

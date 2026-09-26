@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseInput } from '../../../components/ui';
 import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { rstAnalyticsApi } from '../../api/analytics.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/analytics-admin.css';
@@ -90,9 +91,9 @@ export default function ReportsAdminPage() {
                 }}
               />
             </label>
-            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={() => reportQuery.refetch()}>
+            <RstFilterResetButton t={t} onClick={() => reportQuery.refetch()}>
               {t('common.refresh')}
-            </BaseButton>
+            </RstFilterResetButton>
           </div>
 
           {reportQuery.isError ? <div className="rst-notice">{t('rst.admin.reportsLoadFailed')}</div> : null}

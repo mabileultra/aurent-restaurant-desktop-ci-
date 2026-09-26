@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import BookingFormModal from '../../admin/components/BookingFormModal';
@@ -17,7 +18,8 @@ export default function BookingWorkspace({
   compact = false,
 }) {
   const p = useBookingAdminPage();
-  const locale = p.t('common.locale', { defaultValue: 'ru-RU' });
+  const { i18n } = useTranslation();
+  const locale = i18n.language || 'ru';
   const canCreate = access.canCreate !== false;
   const canManage = access.canManage !== false;
 

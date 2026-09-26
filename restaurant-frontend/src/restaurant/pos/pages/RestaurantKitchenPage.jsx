@@ -102,7 +102,7 @@ export default function RestaurantKitchenPage() {
             <span className="rst-pos__online-dot" aria-hidden />
             LIVE
           </span>
-          <BaseButton type="button" variant="ghost" className="rst-pos__exit" onClick={() => logoutAndResetSession()}>
+          <BaseButton type="button" variant="ghost" className="rst-exit-btn" onClick={() => logoutAndResetSession()}>
             {p.t('nav.logout')}
           </BaseButton>
         </div>

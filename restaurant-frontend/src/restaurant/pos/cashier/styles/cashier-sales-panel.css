@@ -1,11 +1,22 @@
+.rst-cashier-sales {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
 .rst-cashier-sales .rst-floor-section-tabs {
   flex-wrap: wrap;
   max-width: 100%;
   width: fit-content;
+  flex-shrink: 0;
 }
 
 .rst-cashier-sales__paid {
+  flex: 1;
+  min-height: 0;
   margin-top: 0.25rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .rst-cashier-sales__paid .rst-cashier-recent {
@@ -14,16 +25,13 @@
   border-top: 0;
 }
 
-.rst-cashier-sales__paid .rst-cashier-recent__list {
-  max-height: min(70vh, 40rem);
-}
-
 .rst-cashier-sales__error {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
   margin-bottom: 0.75rem;
+  flex-shrink: 0;
 }
 
 .rst-cashier-sales__retry {

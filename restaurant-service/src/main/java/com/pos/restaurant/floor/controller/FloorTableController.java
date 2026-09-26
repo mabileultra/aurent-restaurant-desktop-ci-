@@ -59,6 +59,13 @@ public class FloorTableController {
         return tableService.update(tableId, request);
     }
 
+    @PostMapping("/tables/{tableId}/ready")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Завершить уборку — стол свободен")
+    public TableResponse markReady(@PathVariable Integer tableId) {
+        return tableService.markReady(tableId);
+    }
+
     @PutMapping("/halls/{hallId}/tables/layout")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Обновить расположение столов")

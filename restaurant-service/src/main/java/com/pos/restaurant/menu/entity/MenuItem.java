@@ -1,6 +1,7 @@
 package com.pos.restaurant.menu.entity;
 
 import com.pos.restaurant.menu.domain.MenuItemType;
+import com.pos.restaurant.menu.domain.MenuPortionUnit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -66,8 +67,12 @@ public class MenuItem {
     @Column(name = "station_id")
     private UUID stationId;
 
+    /** Denormalized section name for POS filters (synced from menu category). */
     @Column(length = 80)
     private String category;
+
+    @Column(name = "menu_category_id")
+    private UUID menuCategoryId;
 
     @Column(name = "image_url", columnDefinition = "text")
     private String imageUrl;
@@ -77,6 +82,29 @@ public class MenuItem {
 
     @Column(name = "prep_minutes")
     private Integer prepMinutes;
+
+    /** Finished plate weight in grams (legacy; prefer portionAmount + unit=G). */
+    @Column(name = "portion_grams")
+    private Integer portionGrams;
+
+    /** Portion size: 0.7 plov, 250 grams, 1 piece. */
+    @Column(name = "portion_amount", precision = 18, scale = 3)
+    private BigDecimal portionAmount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "portion_unit", length = 16)
+    private MenuPortionUnit portionUnit;
+
+    /** Free-form override, e.g. "большая тарелка". */
+    @Column(name = "portion_label", length = 40)
+    private String portionLabel;
+
+    /**
+     * Shared id for size variants of one dish (own price + recipe each).
+     * Null = standalone dish.
+     */
+    @Column(name = "variant_group_id")
+    private UUID variantGroupId;
 
     /** Comma-separated codes: HIT,SPICY,CHEF,GRILL,FRESH,TEA */
     @Column(length = 120)

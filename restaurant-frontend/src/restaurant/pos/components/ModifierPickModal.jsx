@@ -57,35 +57,55 @@ export default function ModifierPickModal({
           {hasGroups ? t('rst.order.pickModifiers') : t('rst.order.addNoteHint')}
         </p>
 
-        {(groups ?? []).map((group) => (
-          <div key={group.id} className="rst-item-compose__group">
-            <strong>{group.name}</strong>
-            <p className="rst-modal__text mb-1">
-              {t('rst.admin.selectRange', { min: group.minSelect, max: group.maxSelect })}
-            </p>
-            <div className="rst-item-compose__options">
-              {(group.options ?? []).map((option) => {
-                const checked = selectedIds.includes(option.id);
-                const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
-                return (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className={`rst-item-compose__option${checked ? ' is-active' : ''}`}
-                    disabled={disabled}
-                    onClick={() => {
-                      setError('');
-                      onToggle(option.id);
-                    }}
-                  >
-                    <span>{option.name}</span>
-                    <em>{fmtMoneyCompact(option.priceDelta)}</em>
-                  </button>
-                );
-              })}
+        {hasGroups ? (
+          <div className="rst-item-compose__addons">
+            <div className="rst-item-compose__addons-head">
+              <strong>{t('rst.order.addonsSection')}</strong>
             </div>
+            {(groups ?? []).map((group) => {
+              const isSize = (group.groupKind || 'STANDARD') === 'SIZE';
+              return (
+              <div
+                key={group.id}
+                className={`rst-item-compose__group${isSize ? ' rst-item-compose__group--size' : ''}`}
+              >
+                <strong>
+                  {isSize ? t('rst.order.sizeGroupTitle') : group.name}
+                  {group.availableForAll && !isSize ? (
+                    <em className="rst-item-compose__scope">{t('rst.order.addonStoreWide')}</em>
+                  ) : null}
+                </strong>
+                <p className="rst-modal__text mb-1">
+                  {isSize
+                    ? t('rst.order.sizePickHint')
+                    : t('rst.admin.selectRange', { min: group.minSelect, max: group.maxSelect })}
+                </p>
+                <div className="rst-item-compose__options">
+                  {(group.options ?? []).map((option) => {
+                    const checked = selectedIds.includes(option.id);
+                    const disabled = !checked && !canToggleModifierOption(group, option.id, selectedIds);
+                    return (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={`rst-item-compose__option${checked ? ' is-active' : ''}${isSize ? ' rst-item-compose__option--size' : ''}`}
+                        disabled={disabled}
+                        onClick={() => {
+                          setError('');
+                          onToggle(option.id);
+                        }}
+                      >
+                        <span>{option.name}</span>
+                        <em>{fmtMoneyCompact(option.priceDelta)}</em>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              );
+            })}
           </div>
-        ))}
+        ) : null}
 
         <label className="rst-item-compose__note">
           <span>{t('rst.order.lineNote')}</span>

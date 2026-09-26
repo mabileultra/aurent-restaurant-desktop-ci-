@@ -21,10 +21,16 @@ public class MenuItemResponseFactory {
             base.available(),
             base.sortOrder(),
             base.stationId(),
+            base.menuCategoryId(),
             base.category(),
             base.imageUrl(),
             base.description(),
             base.prepMinutes(),
+            base.portionGrams(),
+            base.portionAmount(),
+            base.portionUnit(),
+            base.portionLabel(),
+            base.variantGroupId(),
             base.tags(),
             groupIds == null ? List.of() : List.copyOf(groupIds)
         );

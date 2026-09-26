@@ -1,8 +1,26 @@
+.rst-booking {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 0;
+}
+
+.rst-booking .rst-halls__toolbar {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.rst-booking .rst-halls__actions {
+  flex: 0 0 auto;
+}
+
 .rst-booking__stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.75rem;
-  margin-bottom: 1rem;
+  margin: 0;
 }
 
 .rst-booking__stat {

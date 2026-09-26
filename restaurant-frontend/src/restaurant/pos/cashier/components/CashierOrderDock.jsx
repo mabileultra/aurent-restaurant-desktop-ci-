@@ -79,28 +79,36 @@ export default function CashierOrderDock({
       </div>
 
       <div className="rst-cashier-dock__actions">
-        <BaseButton type="button" variant="ghost" onClick={onOpenFull}>
-          {t('rst.cashier.openFull')}
-        </BaseButton>
-        {canSendKitchen ? (
-          <BaseButton type="button" disabled={sendingKitchen} onClick={onSendKitchen}>
-            {t('rst.order.sendKitchen')}
-          </BaseButton>
-        ) : null}
-        {canRequestBill ? (
-          <BaseButton type="button" disabled={billingPending} onClick={onRequestBill}>
-            {t('rst.order.requestBill')}
-          </BaseButton>
-        ) : null}
         {canPay ? (
           <BaseButton
             type="button"
+            className="rst-cashier-dock__pay"
             disabled={paying}
             onClick={onPay}
           >
             {t('rst.order.pay')}
           </BaseButton>
         ) : null}
+        {canRequestBill ? (
+          <BaseButton
+            type="button"
+            className="rst-cashier-dock__bill"
+            disabled={billingPending}
+            onClick={onRequestBill}
+          >
+            {t('rst.order.requestBill')}
+          </BaseButton>
+        ) : null}
+        <div className="rst-cashier-dock__actions-row">
+          <BaseButton type="button" variant="ghost" onClick={onOpenFull}>
+            {t('rst.cashier.openFull')}
+          </BaseButton>
+          {canSendKitchen ? (
+            <BaseButton type="button" disabled={sendingKitchen} onClick={onSendKitchen}>
+              {t('rst.order.sendKitchen')}
+            </BaseButton>
+          ) : null}
+        </div>
       </div>
     </aside>
   );

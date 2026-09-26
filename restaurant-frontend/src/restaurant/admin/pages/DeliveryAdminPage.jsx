@@ -1,10 +1,13 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { useTranslation } from 'react-i18next';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import DeliveryOrderCancelModal from '../components/DeliveryOrderCancelModal';
 import DeliveryOrderCreateModal from '../components/DeliveryOrderCreateModal';
 import DeliveryOrderEditModal from '../components/DeliveryOrderEditModal';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { deliveryStatusLabel, NEXT_DELIVERY_STATUS, orderStatusLabel } from '../../../features/orders/utils/ordersDisplayUtils';
+import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useDeliveryAdminPage } from '../hooks/useDeliveryAdminPage';
 import { getApiErrorMessage } from '../../../utils/apiError';
 import '../../shared/styles/rst-blocks.css';
@@ -22,7 +25,8 @@ function fmtDate(value, locale) {
 
 export default function DeliveryAdminPage() {
   const p = useDeliveryAdminPage();
-  const locale = p.t('common.locale', { defaultValue: 'ru-RU' });
+  const { i18n } = useTranslation();
+  const locale = i18n.language || 'ru';
   const errorMessage = getApiErrorMessage(p.error, p.t('rst.delivery.loadFailed'));
 
   if (p.workspace.noAssignment) {
@@ -66,34 +70,30 @@ export default function DeliveryAdminPage() {
                 }}
               />
             </label>
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.delivery.colStatus')}</span>
-              <select
-                className="form-select"
-                value={p.filters.status}
-                onChange={(e) => p.setFilters({ ...p.filters, status: e.target.value })}
-              >
-                {STATUS_FILTERS.map((status) => (
-                  <option key={status} value={status}>
-                    {status === 'all' ? p.t('rst.admin.filterAll') : orderStatusLabel(p.t, status)}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.delivery.colDeliveryStatus', { defaultValue: 'Доставка' })}</span>
-              <select
-                className="form-select"
-                value={p.filters.deliveryStatus}
-                onChange={(e) => p.setFilters({ ...p.filters, deliveryStatus: e.target.value })}
-              >
-                {DELIVERY_STATUS_FILTERS.map((status) => (
-                  <option key={status} value={status}>
-                    {status === 'all' ? p.t('rst.admin.filterAll') : deliveryStatusLabel(p.t, status)}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <BaseSelect
+              className="rst-admin-field"
+              size="sm"
+              searchable={false}
+              label={p.t('rst.delivery.colStatus')}
+              value={p.filters.status}
+              onChange={(e) => p.setFilters({ ...p.filters, status: e.target.value })}
+              options={STATUS_FILTERS.map((status) => ({
+                value: status,
+                label: status === 'all' ? p.t('rst.admin.filterAll') : orderStatusLabel(p.t, status),
+              }))}
+            />
+            <BaseSelect
+              className="rst-admin-field"
+              size="sm"
+              searchable={false}
+              label={p.t('rst.delivery.colDeliveryStatus', { defaultValue: 'Доставка' })}
+              value={p.filters.deliveryStatus}
+              onChange={(e) => p.setFilters({ ...p.filters, deliveryStatus: e.target.value })}
+              options={DELIVERY_STATUS_FILTERS.map((status) => ({
+                value: status,
+                label: status === 'all' ? p.t('rst.admin.filterAll') : deliveryStatusLabel(p.t, status),
+              }))}
+            />
             <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.delivery.from')}</span>
               <BaseInput
@@ -113,9 +113,7 @@ export default function DeliveryAdminPage() {
             <BaseButton type="button" onClick={p.applyFilters}>
               {p.t('common.search')}
             </BaseButton>
-            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={p.resetFilters}>
-              {p.t('rst.admin.filterReset')}
-            </BaseButton>
+            <RstFilterResetButton t={p.t} onClick={p.resetFilters} />
           </div>
 
           {p.isError ? <div className="rst-notice">{errorMessage}</div> : null}
@@ -137,7 +135,7 @@ export default function DeliveryAdminPage() {
                     <th>{p.t('rst.delivery.colDeliveryStatus', { defaultValue: 'Доставка' })}</th>
                     <th>{p.t('rst.delivery.colTotal')}</th>
                     <th>{p.t('rst.delivery.colStatus')}</th>
-                    <th className="rst-data-table__actions">{p.t('common.actions')}</th>
+                    <th className="rst-data-table__actions" aria-label={p.t('common.actions')} />
                   </tr>
                 </thead>
                 <tbody>
@@ -183,29 +181,33 @@ export default function DeliveryAdminPage() {
                           </span>
                         </td>
                         <td className="rst-data-table__actions">
-                          <div className="rst-delivery__actions">
-                            {p.canAdvanceDelivery(row) && nextDelivery ? (
-                              <BaseButton
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                disabled={p.advancingDelivery}
-                                onClick={() => p.advanceDeliveryStatus(row, nextDelivery)}
-                              >
-                                {deliveryStatusLabel(p.t, nextDelivery)}
-                              </BaseButton>
-                            ) : null}
-                            {p.canEditRow(row) ? (
-                              <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.openEdit(row)}>
-                                {p.t('common.edit')}
-                              </BaseButton>
-                            ) : null}
-                            {p.canCancelRow(row) ? (
-                              <BaseButton type="button" size="sm" variant="ghost" onClick={() => p.setCancelOrder(row)}>
-                                {p.t('common.cancel')}
-                              </BaseButton>
-                            ) : null}
-                          </div>
+                          <RstRowActions
+                            t={p.t}
+                            items={[
+                              p.canAdvanceDelivery(row) && nextDelivery
+                                ? {
+                                    key: 'advance',
+                                    label: deliveryStatusLabel(p.t, nextDelivery),
+                                    onClick: () => p.advanceDeliveryStatus(row, nextDelivery),
+                                  }
+                                : null,
+                              p.canEditRow(row)
+                                ? {
+                                    key: 'edit',
+                                    label: p.t('common.edit'),
+                                    onClick: () => p.openEdit(row),
+                                  }
+                                : null,
+                              p.canCancelRow(row)
+                                ? {
+                                    key: 'cancel',
+                                    label: p.t('common.cancel'),
+                                    danger: true,
+                                    onClick: () => p.setCancelOrder(row),
+                                  }
+                                : null,
+                            ]}
+                          />
                         </td>
                       </tr>
                       );

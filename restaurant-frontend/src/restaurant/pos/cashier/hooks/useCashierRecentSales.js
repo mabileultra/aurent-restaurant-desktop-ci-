@@ -23,7 +23,7 @@ export function useCashierRecentSales({
   const listQuery = useQuery({
     queryKey: ['rst-recent-paid', storeId, refunded],
     queryFn: () =>
-      rstPaymentApi.listRecentPaid(storeId, { refunded, limit: 40 }).then((r) => r.data ?? []),
+      rstPaymentApi.listRecentPaid(storeId, { refunded, limit: 100 }).then((r) => r.data ?? []),
     enabled: enabled && storeId != null,
     staleTime: 15_000,
     refetchInterval: 20_000,

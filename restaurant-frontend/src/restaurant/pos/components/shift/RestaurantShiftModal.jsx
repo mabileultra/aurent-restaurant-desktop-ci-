@@ -128,12 +128,23 @@ export default function RestaurantShiftModal({
   if (!open || typeof document === 'undefined') return null;
 
   const isOpen = Boolean(shift?.id);
+  const openOrders = Number(shift?.openOrderCount) || 0;
+  const hasOpenOrders = openOrders > 0;
+  const printBusy = Boolean(printReport);
   const busy =
     openMutation.isPending ||
     closeMutation.isPending ||
     xMutation.isPending ||
     zMutation.isPending ||
-    Boolean(printReport);
+    printBusy;
+
+  const handleCloseShift = () => {
+    if (hasOpenOrders) {
+      toast.error(t('rst.shift.closeBlockedOpenOrders', { count: openOrders }));
+      return;
+    }
+    closeMutation.mutate();
+  };
 
   return (
     <>
@@ -207,7 +218,11 @@ export default function RestaurantShiftModal({
             ) : null}
 
             {isOpen ? (
-              <p className="rst-shift-modal__hint">{t('rst.shift.reportsHint')}</p>
+              <p className="rst-shift-modal__hint">
+                {hasOpenOrders
+                  ? t('rst.shift.closeBlockedHint', { count: openOrders })
+                  : t('rst.shift.reportsHint')}
+              </p>
             ) : (
               <p className="rst-shift-modal__hint">{t('rst.shift.openHint')}</p>
             )}
@@ -249,9 +264,10 @@ export default function RestaurantShiftModal({
                   </button>
                   <button
                     type="button"
-                    className="rst-shift-modal__btn rst-shift-modal__btn--danger"
-                    disabled={busy || (shift.openOrderCount ?? 0) > 0}
-                    onClick={() => closeMutation.mutate()}
+                    className={`rst-shift-modal__btn rst-shift-modal__btn--danger${hasOpenOrders ? ' is-blocked' : ''}`}
+                    disabled={busy}
+                    title={hasOpenOrders ? t('rst.shift.closeBlockedOpenOrders', { count: openOrders }) : undefined}
+                    onClick={handleCloseShift}
                   >
                     {closeMutation.isPending ? (
                       <Loader size={16} className="spin" />

@@ -45,6 +45,41 @@
   overflow: auto;
 }
 
+.rst-admin-field__hint {
+  margin: 0.15rem 0 0.45rem;
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.rst-admin-chip.is-locked {
+  cursor: default;
+  opacity: 0.95;
+}
+
+.rst-admin-chip.is-locked em {
+  margin-left: 0.35rem;
+  font-style: normal;
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--rst-accent);
+}
+
+.rst-admin-field--check .rst-admin-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+  color: var(--rst-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.rst-admin-field--check .rst-admin-check input {
+  margin-top: 0.15rem;
+}
+
 .rst-menu-modal__extra .rst-file__preview {
   max-height: 72px;
 }
@@ -74,11 +109,21 @@
 .rst-menu__filters input:not([type="checkbox"]):not([type="radio"]),
 .rst-menu__filters select,
 .rst-menu__filters .form-select,
-.rst-menu__filters .base-input {
+.rst-menu__filters .base-input,
+.rst-menu__filters .base-select__trigger {
   min-height: 2rem !important;
   padding-top: 0.3rem !important;
   padding-bottom: 0.3rem !important;
   font-size: 0.85rem !important;
+}
+
+.rst-menu__filters .base-select {
+  min-width: 0;
+}
+
+.rst-menu__filters .base-select__label {
+  font-size: 0.72rem;
+  line-height: 1.2;
 }
 
 .rst-menu-card {
@@ -331,53 +376,11 @@
   font-size: 0.78rem;
 }
 
-.rst-menu-card-menu__backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  border: 0;
-  background: transparent;
-  cursor: default;
-}
-
-.rst-menu-card-menu {
-  position: fixed;
-  z-index: 90;
-  min-width: 9.5rem;
-  padding: 0.3rem;
+.rst-menu-board__pagination {
+  margin-top: 0.75rem;
+  border-radius: 12px;
   border: 1px solid var(--rst-line);
-  border-radius: 10px;
-  background: var(--rst-surface);
-  box-shadow: var(--rst-shadow);
-}
-
-.rst-menu-card-menu button,
-.rst-menu-card-menu a {
-  display: block;
-  width: 100%;
-  padding: 0.5rem 0.65rem;
-  border: 0;
-  border-radius: 7px;
-  background: transparent;
-  color: var(--rst-ink);
-  font-size: 0.82rem;
-  font-weight: 600;
-  text-align: left;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.rst-menu-card-menu button:hover,
-.rst-menu-card-menu a:hover {
-  background: var(--rst-surface-2);
-}
-
-.rst-menu-card-menu .is-danger {
-  color: #fca5a5;
-}
-
-.rst-menu-card-menu .is-danger:hover {
-  background: rgb(239 68 68 / 0.12);
+  background: rgb(20 25 36 / 0.92);
 }
 
 @media (min-width: 900px) {

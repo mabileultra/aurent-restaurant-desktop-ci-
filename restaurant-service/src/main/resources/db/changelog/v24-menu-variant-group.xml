@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v24-menu-variant-group" author="aurent">
+        <addColumn tableName="menu_items">
+            <column name="variant_group_id" type="UUID"/>
+        </addColumn>
+        <createIndex tableName="menu_items" indexName="idx_menu_items_variant_group">
+            <column name="company_id"/>
+            <column name="store_id"/>
+            <column name="variant_group_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

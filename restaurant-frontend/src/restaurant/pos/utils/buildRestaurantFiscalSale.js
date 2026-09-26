@@ -72,6 +72,7 @@ export function buildRestaurantFiscalSale({
   cardAmount,
   amountTendered,
   changeGiven,
+  cardType = null,
   fiscal = null,
   cashierName,
   waiterName,
@@ -161,7 +162,7 @@ export function buildRestaurantFiscalSale({
     totalAmount,
     returnAmount: 0,
     paymentMethod: method,
-    cardType: null,
+    cardType: cardType || null,
     cashAmount: cash ?? 0,
     cardAmount: card ?? 0,
     receiptType: 'SALE',
@@ -177,6 +178,6 @@ export function buildRestaurantFiscalSale({
     fiscalizedAt: fiscal?.fiscalStatus === 'FISCALIZED' ? new Date().toISOString() : null,
     fiscalTerminalId: fiscal?.fiscalTerminalId || fiscal?.terminalId || null,
     serviceAmount,
-    printFiscalQr: true,
+    printFiscalQr: fiscal?.fiscalStatus === 'FISCALIZED',
   };
 }

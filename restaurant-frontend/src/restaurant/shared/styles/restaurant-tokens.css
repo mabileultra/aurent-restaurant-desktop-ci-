@@ -46,6 +46,21 @@
   text-decoration: none;
 }
 
+/* Logout on dark restaurant chrome — same look in admin / POS / kitchen */
+.rst-app .rst-exit-btn,
+.rst-app .rst-pos__exit {
+  border-color: rgb(239 68 68 / 0.45) !important;
+  color: #fca5a5 !important;
+  background: rgb(239 68 68 / 0.1) !important;
+}
+
+.rst-app .rst-exit-btn:hover:not(:disabled),
+.rst-app .rst-pos__exit:hover:not(:disabled) {
+  color: #fecaca !important;
+  border-color: rgb(239 68 68 / 0.7) !important;
+  background: rgb(239 68 68 / 0.18) !important;
+}
+
 .rst-app .bg-emerald-500,
 .rst-app .bg-emerald-600,
 .rst-app .bg-emerald-700,

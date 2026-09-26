@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v22-menu-portion-amount-unit" author="aurent">
+        <addColumn tableName="menu_items">
+            <column name="portion_amount" type="numeric(18,3)"/>
+            <column name="portion_unit" type="varchar(16)"/>
+        </addColumn>
+        <sql>
+            UPDATE menu_items
+            SET portion_amount = portion_grams,
+                portion_unit = 'G'
+            WHERE portion_grams IS NOT NULL
+              AND portion_grams > 0
+              AND portion_amount IS NULL
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

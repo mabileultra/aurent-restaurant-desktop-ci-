@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import RstOverlay from '../../shared/components/RstOverlay';
 import '../../shared/styles/rst-modal.css';
 
@@ -29,25 +29,24 @@ export default function BookingFormModal({
             onSubmit();
           }}
         >
-          <label className="rst-admin-field">
-            <span className="rst-admin-field__label">{t('rst.booking.table')}</span>
-            <select
-              className="form-select"
-              value={form.tableId}
-              onChange={(e) => onChange({ ...form, tableId: e.target.value })}
-              required
-              disabled={tablesLoading}
-            >
-              <option value="">
-                {tablesLoading ? t('common.loading') : t('rst.booking.selectTable')}
-              </option>
-              {tableOptions.map((table) => (
-                <option key={table.id} value={table.id}>
-                  {table.label} — {t(`rst.status.${table.status}`, { defaultValue: table.status })}
-                </option>
-              ))}
-            </select>
-          </label>
+          <BaseSelect
+            label={t('rst.booking.table')}
+            value={form.tableId}
+            onChange={(e) => onChange({ ...form, tableId: e.target.value })}
+            required
+            disabled={tablesLoading}
+            placeholder={tablesLoading ? t('common.loading') : t('rst.booking.selectTable')}
+            options={[
+              {
+                value: '',
+                label: tablesLoading ? t('common.loading') : t('rst.booking.selectTable'),
+              },
+              ...tableOptions.map((table) => ({
+                value: table.id,
+                label: `${table.label} — ${t(`rst.status.${table.status}`, { defaultValue: table.status })}`,
+              })),
+            ]}
+          />
 
           <label className="rst-admin-field">
             <span className="rst-admin-field__label">{t('rst.booking.clientName')}</span>

@@ -10,7 +10,18 @@ import {
 import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
 import { FiscalReceiptBody, ThermalPrintSettingsPanel } from '../../../components/receipt';
 import { RECEIPT_PRINT_DOM } from '../../../config/receiptPrintConfig';
+import {
+  printOrdinarySaleReceipt,
+  saleNeedsFiscalPrint,
+} from '../utils/printOrdinarySaleReceipt';
 import '../styles/receipt-modal.css';
+
+async function printSaleReceipt(sale, t) {
+  if (saleNeedsFiscalPrint(sale)) {
+    return printFiscalReceipt({ sale, t, useModalShell: true });
+  }
+  return printOrdinarySaleReceipt({ sale, t });
+}
 
 export default function RestaurantReceiptModal({
   sale,
@@ -29,14 +40,14 @@ export default function RestaurantReceiptModal({
     if (!sale || printing) return;
     setPrinting(true);
     try {
-      await printFiscalReceipt({ sale, t, useModalShell: true });
+      await printSaleReceipt(sale, t);
       toast.success(t('receipt.printSent'), {
         id: CASHIER_ESCPOS_TOAST.toastId,
         duration: CASHIER_ESCPOS_TOAST.successDurationMs,
       });
     } catch (e) {
       toast.error(
-        (isCashierEscposPrintAvailable()
+        (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
           ? resolveEscposPrintErrorMessage(e, t)
           : e?.message) ?? t('receipt.printFailed'),
         {
@@ -57,14 +68,14 @@ export default function RestaurantReceiptModal({
       if (cancelled) return;
       setPrinting(true);
       try {
-        await printFiscalReceipt({ sale, t, useModalShell: true });
+        await printSaleReceipt(sale, t);
         toast.success(t('receipt.printSent'), {
           id: CASHIER_ESCPOS_TOAST.toastId,
           duration: CASHIER_ESCPOS_TOAST.successDurationMs,
         });
       } catch (e) {
         toast.error(
-          (isCashierEscposPrintAvailable()
+          (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
             ? resolveEscposPrintErrorMessage(e, t)
             : e?.message) ?? t('receipt.printFailed'),
           {

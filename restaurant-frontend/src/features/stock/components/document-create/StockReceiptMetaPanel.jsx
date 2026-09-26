@@ -20,37 +20,42 @@ export default function StockReceiptMetaPanel({
 
   return (
     <div className="rst-stock-doc-meta">
-      <label className="rst-admin-field">
-        <span className="rst-admin-field__label">{t('stockReports.colSupplier')}</span>
-        <select className="form-select" value={supplierId} onChange={onSupplierChange}>
-          <option value="">—</option>
-          {supplierList.map((s) => (
-            <option key={s.id} value={s.id}>{s.name}</option>
-          ))}
-        </select>
+      <div className="rst-admin-field">
+        <BaseSelect
+          label={t('stockReports.colSupplier')}
+          value={supplierId}
+          onChange={onSupplierChange}
+          placeholder="—"
+          options={[
+            { value: '', label: '—' },
+            ...supplierList.map((s) => ({ value: s.id, label: s.name })),
+          ]}
+        />
         {paths.suppliers ? (
           <Link to={paths.suppliers} className="rst-stock-doc-meta__link">
             {t('finance.expenses.addSupplier', { defaultValue: t('suppliersModule.add') })}
           </Link>
         ) : null}
-      </label>
+      </div>
 
       {needsStorePick ? (
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{t('stockReports.colStore')}</span>
-          <select className="form-select" value={storeId} onChange={onStoreChange}>
-            <option value="">{t('stockModal.pickStore')}</option>
-            {stores.map((s) => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
-        </label>
+        <BaseSelect
+          label={t('stockReports.colStore')}
+          value={storeId}
+          onChange={onStoreChange}
+          placeholder={t('stockModal.pickStore')}
+          options={[
+            { value: '', label: t('stockModal.pickStore') },
+            ...stores.map((s) => ({ value: s.id, label: s.name })),
+          ]}
+        />
       ) : null}
 
       <BaseSelect
         label={t('stockReports.paymentType')}
         value={paymentType}
         onChange={onPaymentTypeChange}
+        searchable={false}
         options={[
           { value: 'CASH', label: t('stockReports.paymentCash') },
           { value: 'CREDIT', label: t('stockReports.paymentCredit') },

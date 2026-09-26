@@ -1,6 +1,7 @@
 package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
 import com.pos.restaurant.menu.entity.MenuItem;
@@ -29,6 +30,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final FloorTenantSupport tenantSupport;
     private final MenuItemCreateHandler createHandler;
     private final MenuItemUpdateHandler updateHandler;
+    private final MenuItemCreateVariantHandler createVariantHandler;
     private final MenuItemDeactivateHandler deactivateHandler;
     private final MenuItemModifierLinkRepository linkRepository;
     private final MenuItemResponseFactory responseFactory;
@@ -70,6 +72,16 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Transactional
     public MenuItemResponse update(UUID itemId, SaveMenuItemRequest request) {
         return updateHandler.handle(itemId, request);
+    }
+
+    @Override
+    @Transactional
+    public MenuItemResponse createVariant(UUID itemId, CreateMenuVariantRequest request) {
+        MenuItemResponse created = createVariantHandler.handle(itemId, request);
+        List<UUID> groups = linkRepository.findByMenuItemId(created.id()).stream()
+            .map(MenuItemModifierLink::getGroupId)
+            .toList();
+        return responseFactory.withGroups(created, groups);
     }
 
     @Override

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import RstModal from '../../shared/components/RstModal';
 import { lineIngredientCost } from '../utils/recipeFoodCost';
@@ -40,11 +40,16 @@ export default function RecipeWizardModal({ p }) {
           value={p.wizard.price}
           onChange={(e) => p.setWizard({ ...p.wizard, price: e.target.value })}
         />
-        <BaseInput
+        <BaseSelect
+          size="sm"
+          searchable={false}
           label={p.t('rst.admin.dishCategory')}
-          value={p.wizard.category}
-          placeholder={p.t('rst.admin.dishCategoryHint')}
-          onChange={(e) => p.setWizard({ ...p.wizard, category: e.target.value })}
+          value={p.wizard.menuCategoryId || ''}
+          onChange={(e) => p.setWizard({ ...p.wizard, menuCategoryId: e.target.value })}
+          options={[
+            { value: '', label: p.t('rst.admin.dishCategoryNone') },
+            ...(p.menuCategories ?? []).map((row) => ({ value: row.id, label: row.name })),
+          ]}
         />
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('rst.admin.outputQty')}</span>
@@ -190,14 +195,7 @@ export default function RecipeWizardModal({ p }) {
                       />
                     </td>
                     <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
-                    <td>
-                      <BaseInput
-                        value={line.unit}
-                        onChange={(e) => p.setLines((current) => current.map((row, i) => (
-                          i === index ? { ...row, unit: e.target.value } : row
-                        )))}
-                      />
-                    </td>
+                    <td className="rst-tech__unit">{line.unit || '—'}</td>
                     <td className="rst-tech__net">
                       {lineCost != null ? fmtMoneyCompact(lineCost) : '—'}
                     </td>

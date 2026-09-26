@@ -32,6 +32,7 @@ public class GetOrderPaymentHandler {
             payment.getCardAmount(),
             payment.getAmountTendered(),
             payment.getChangeGiven(),
+            payment.getCardType(),
             payment.getPaidAt()
         );
     }

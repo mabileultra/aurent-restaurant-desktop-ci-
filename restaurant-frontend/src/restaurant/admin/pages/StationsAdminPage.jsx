@@ -1,5 +1,6 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useStationsAdminPage } from '../hooks/useStationsAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -83,7 +84,7 @@ export default function StationsAdminPage() {
                 <th>{p.t('rst.admin.stationCode')}</th>
                 <th>{p.t('rst.admin.stationName')}</th>
                 <th>{p.t('rst.admin.sortOrder')}</th>
-                <th className="rst-data-table__actions">{p.t('common.actions')}</th>
+                <th className="rst-data-table__actions" aria-label={p.t('common.actions')} />
               </tr>
             </thead>
             <tbody>
@@ -103,20 +104,26 @@ export default function StationsAdminPage() {
                     <td>{station.name}</td>
                     <td>{station.sortOrder}</td>
                     <td className="rst-data-table__actions">
-                      <BaseButton type="button" variant="ghost" onClick={() => p.startEdit(station)}>
-                        {p.t('common.edit')}
-                      </BaseButton>
-                      <BaseButton
-                        type="button"
-                        variant="ghost"
-                        onClick={() => {
-                          if (window.confirm(p.t('rst.admin.confirmDeactivateStation'))) {
-                            p.deactivateMutation.mutate(station.id);
-                          }
-                        }}
-                      >
-                        {p.t('common.delete')}
-                      </BaseButton>
+                      <RstRowActions
+                        t={p.t}
+                        items={[
+                          {
+                            key: 'edit',
+                            label: p.t('common.edit'),
+                            onClick: () => p.startEdit(station),
+                          },
+                          {
+                            key: 'delete',
+                            label: p.t('common.delete'),
+                            danger: true,
+                            onClick: () => {
+                              if (window.confirm(p.t('rst.admin.confirmDeactivateStation'))) {
+                                p.deactivateMutation.mutate(station.id);
+                              }
+                            },
+                          },
+                        ]}
+                      />
                     </td>
                   </tr>
                 ))

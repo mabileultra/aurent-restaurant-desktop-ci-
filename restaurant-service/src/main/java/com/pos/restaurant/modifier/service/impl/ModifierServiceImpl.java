@@ -53,25 +53,54 @@ public class ModifierServiceImpl implements ModifierService {
         Integer companyId = tenantSupport.requireCompanyId();
         var item = menuItemRepository.findByIdAndCompanyId(menuItemId, companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found: " + menuItemId));
-        List<UUID> groupIds = linkRepository.findByMenuItemId(item.getId()).stream()
+        List<UUID> linkedIds = linkRepository.findByMenuItemId(item.getId()).stream()
             .map(MenuItemModifierLink::getGroupId)
             .toList();
-        if (groupIds.isEmpty()) {
+
+        java.util.LinkedHashMap<UUID, ModifierGroup> byId = new java.util.LinkedHashMap<>();
+        if (!linkedIds.isEmpty()) {
+            for (ModifierGroup group : groupRepository.findByIdInAndCompanyIdAndStoreIdAndActiveTrue(
+                linkedIds, companyId, item.getStoreId()
+            )) {
+                byId.put(group.getId(), group);
+            }
+        }
+        for (ModifierGroup group : groupRepository.findByCompanyIdAndStoreIdAndAvailableForAllTrueAndActiveTrue(
+            companyId, item.getStoreId()
+        )) {
+            // Size presets stay dish-linked only — never auto-apply store-wide.
+            if (group.getGroupKind() == com.pos.restaurant.modifier.domain.ModifierGroupKind.SIZE) {
+                continue;
+            }
+            byId.putIfAbsent(group.getId(), group);
+        }
+        if (byId.isEmpty()) {
             return List.of();
         }
-        List<ModifierGroup> groups = groupRepository.findByIdInAndCompanyIdAndStoreIdAndActiveTrue(
-            groupIds, companyId, item.getStoreId()
-        );
-        return assemble(groups);
+        return assemble(List.copyOf(byId.values()));
     }
 
     private List<ModifierGroupResponse> assemble(List<ModifierGroup> groups) {
         if (groups.isEmpty()) {
             return List.of();
         }
-        List<UUID> ids = groups.stream().map(ModifierGroup::getId).toList();
+        List<ModifierGroup> ordered = groups.stream()
+            .sorted((a, b) -> {
+                boolean aSize = a.getGroupKind() == com.pos.restaurant.modifier.domain.ModifierGroupKind.SIZE;
+                boolean bSize = b.getGroupKind() == com.pos.restaurant.modifier.domain.ModifierGroupKind.SIZE;
+                if (aSize != bSize) {
+                    return aSize ? -1 : 1;
+                }
+                int bySort = Integer.compare(a.getSortOrder(), b.getSortOrder());
+                if (bySort != 0) {
+                    return bySort;
+                }
+                return String.valueOf(a.getName()).compareToIgnoreCase(String.valueOf(b.getName()));
+            })
+            .toList();
+        List<UUID> ids = ordered.stream().map(ModifierGroup::getId).toList();
         List<ModifierOption> options = optionRepository.findByGroupIdInAndActiveTrueOrderBySortOrderAscNameAsc(ids);
-        return assembler.toResponses(groups, options);
+        return assembler.toResponses(ordered, options);
     }
 
     @Override

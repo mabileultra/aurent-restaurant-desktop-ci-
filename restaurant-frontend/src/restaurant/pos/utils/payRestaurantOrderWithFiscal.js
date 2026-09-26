@@ -41,6 +41,7 @@ export async function payRestaurantOrderWithFiscal({
   cardAmount,
   amountTendered,
   changeGiven,
+  cardType = null,
   storeId,
   storeName,
   shiftId = null,
@@ -123,6 +124,7 @@ export async function payRestaurantOrderWithFiscal({
       cardAmount: card,
       amountTendered: tendered,
       changeGiven: change,
+      ...(cardType ? { cardType } : {}),
     });
     paidOrder = res.data;
   } catch (payErr) {
@@ -162,6 +164,7 @@ export async function payRestaurantOrderWithFiscal({
     cardAmount: card,
     amountTendered: tendered,
     changeGiven: change,
+    cardType,
     fiscal: fiscalPayload,
     cashierName,
     waiterName,

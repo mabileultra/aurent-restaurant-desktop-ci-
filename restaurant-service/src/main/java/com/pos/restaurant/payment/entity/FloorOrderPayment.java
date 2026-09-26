@@ -1,6 +1,7 @@
 package com.pos.restaurant.payment.entity;
 
 import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -63,6 +64,11 @@ public class FloorOrderPayment {
     @Column(name = "change_given", nullable = false, precision = 18, scale = 2)
     @Builder.Default
     private BigDecimal changeGiven = BigDecimal.ZERO;
+
+    /** Optional rail for CARD / MIXED: HUMO, UZCARD, PAYME, CLICK. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "card_type", length = 16)
+    private PaymentCardType cardType;
 
     @Column(name = "paid_by_user_id", nullable = false)
     private UUID paidByUserId;

@@ -4,6 +4,7 @@ import com.pos.restaurant.kitchen.dto.KitchenTicketLineResponse;
 import com.pos.restaurant.kitchen.dto.KitchenTicketResponse;
 import com.pos.restaurant.kitchen.entity.KitchenTicket;
 import com.pos.restaurant.kitchen.entity.KitchenTicketLine;
+import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
@@ -63,6 +64,7 @@ public class KitchenTicketAssembler {
         return new KitchenTicketLineResponse(
             item.getId(),
             item.getName(),
+            MenuPortionFormat.display(item.getMenuItem()),
             item.getQuantity(),
             item.getNote(),
             modifiers

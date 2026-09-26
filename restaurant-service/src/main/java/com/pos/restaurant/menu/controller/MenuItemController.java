@@ -1,5 +1,6 @@
 package com.pos.restaurant.menu.controller;
 
+import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
 import com.pos.restaurant.menu.service.MenuItemService;
@@ -61,6 +62,17 @@ public class MenuItemController {
         @Valid @RequestBody SaveMenuItemRequest request
     ) {
         return menuItemService.update(itemId, request);
+    }
+
+    @PostMapping("/menu-items/{itemId}/variants")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Добавить размер-вариант блюда (своя цена и порция)")
+    @ApiResponse(responseCode = "201", description = "Вариант создан")
+    public ResponseEntity<MenuItemResponse> createVariant(
+        @PathVariable UUID itemId,
+        @Valid @RequestBody CreateMenuVariantRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(menuItemService.createVariant(itemId, request));
     }
 
     @DeleteMapping("/menu-items/{itemId}")

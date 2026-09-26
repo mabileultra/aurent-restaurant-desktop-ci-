@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import RstModal from '../../shared/components/RstModal';
 
 export default function MenuDishForm({ p }) {
@@ -23,11 +23,16 @@ export default function MenuDishForm({ p }) {
           value={p.form.name}
           onChange={(e) => p.setForm({ ...p.form, name: e.target.value })}
         />
-        <BaseInput
+        <BaseSelect
+          size="sm"
+          searchable={false}
           label={p.t('rst.admin.dishCategory')}
-          value={p.form.category}
-          placeholder={p.t('rst.admin.dishCategoryHint')}
-          onChange={(e) => p.setForm({ ...p.form, category: e.target.value })}
+          value={p.form.menuCategoryId || ''}
+          onChange={(e) => p.setForm({ ...p.form, menuCategoryId: e.target.value })}
+          options={[
+            { value: '', label: p.t('rst.admin.dishCategoryNone') },
+            ...p.menuCategories.map((row) => ({ value: row.id, label: row.name })),
+          ]}
         />
         <BaseInput
           label={p.t('rst.admin.sku')}
@@ -43,19 +48,17 @@ export default function MenuDishForm({ p }) {
           value={p.form.price}
           onChange={(e) => p.setForm({ ...p.form, price: e.target.value })}
         />
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{p.t('rst.admin.station')}</span>
-          <select
-            className="form-select"
-            value={p.form.stationId}
-            onChange={(e) => p.setForm({ ...p.form, stationId: e.target.value })}
-          >
-            <option value="">{p.t('rst.admin.noStation')}</option>
-            {p.stations.map((station) => (
-              <option key={station.id} value={station.id}>{station.name}</option>
-            ))}
-          </select>
-        </label>
+        <BaseSelect
+          size="sm"
+          searchable={false}
+          label={p.t('rst.admin.station')}
+          value={p.form.stationId}
+          onChange={(e) => p.setForm({ ...p.form, stationId: e.target.value })}
+          options={[
+            { value: '', label: p.t('rst.admin.noStation') },
+            ...p.stations.map((station) => ({ value: station.id, label: station.name })),
+          ]}
+        />
         <BaseInput
           label={p.t('rst.admin.prepMinutes')}
           type="number"
@@ -63,6 +66,33 @@ export default function MenuDishForm({ p }) {
           value={p.form.prepMinutes}
           onChange={(e) => p.setForm({ ...p.form, prepMinutes: e.target.value })}
           placeholder="15"
+        />
+        <BaseInput
+          label={p.t('rst.admin.portionAmount')}
+          type="number"
+          min={0.001}
+          step="0.1"
+          value={p.form.portionAmount}
+          onChange={(e) => p.setForm({ ...p.form, portionAmount: e.target.value })}
+          placeholder="1 / 1.5 / 0.7"
+        />
+        <BaseSelect
+          size="sm"
+          searchable={false}
+          label={p.t('rst.admin.portionUnit')}
+          value={p.form.portionUnit || 'PORTION'}
+          onChange={(e) => p.setForm({ ...p.form, portionUnit: e.target.value })}
+          options={[
+            { value: 'PORTION', label: p.t('rst.admin.portionUnitPortion') },
+            { value: 'G', label: p.t('rst.admin.portionUnitG') },
+            { value: 'PCS', label: p.t('rst.admin.portionUnitPcs') },
+          ]}
+        />
+        <BaseInput
+          label={p.t('rst.admin.portionLabel')}
+          value={p.form.portionLabel}
+          onChange={(e) => p.setForm({ ...p.form, portionLabel: e.target.value })}
+          placeholder={p.t('rst.admin.portionLabelHint')}
         />
         <BaseInput
           label={p.t('rst.admin.dishTags')}
@@ -111,9 +141,18 @@ export default function MenuDishForm({ p }) {
 
         <div className="rst-admin-field">
           <span className="rst-admin-field__label">{p.t('rst.admin.modifierGroups')}</span>
+          <p className="rst-admin-field__hint mb-0">{p.t('rst.admin.modifierGroupsDishHint')}</p>
           {p.groups.length ? (
             <div className="rst-admin-chips">
               {p.groups.map((group) => {
+                if (group.availableForAll) {
+                  return (
+                    <span key={group.id} className="rst-admin-chip is-on is-locked" title={p.t('rst.admin.modifierScopeAll')}>
+                      {group.name}
+                      <em>{p.t('rst.admin.modifierScopeAllShort')}</em>
+                    </span>
+                  );
+                }
                 const on = (p.form.modifierGroupIds ?? []).includes(group.id);
                 return (
                   <label key={group.id} className={`rst-admin-chip${on ? ' is-on' : ''}`}>

@@ -1,5 +1,6 @@
 package com.pos.restaurant.menu.service;
 
+import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
 
@@ -13,6 +14,8 @@ public interface MenuItemService {
     MenuItemResponse create(Integer storeId, SaveMenuItemRequest request);
 
     MenuItemResponse update(UUID itemId, SaveMenuItemRequest request);
+
+    MenuItemResponse createVariant(UUID itemId, CreateMenuVariantRequest request);
 
     void deactivate(UUID itemId);
 }

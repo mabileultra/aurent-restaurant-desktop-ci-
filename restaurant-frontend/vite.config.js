@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 
 /**
  * Local stack (same split as web-frontend):
- * identity 8081 · platform 8084 · gateway/backend 8088
+ * identity 8081 · platform 8084 · restaurant 8087 · gateway 8080
  * Override: VITE_DEV_API_PROXY / VITE_DEV_IDENTITY_PROXY / VITE_DEV_PLATFORM_PROXY
  */
 export default defineConfig({
@@ -53,7 +53,7 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/api': {
-        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088',
+        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8080',
         changeOrigin: true,
       },
     },

@@ -7,6 +7,7 @@ import java.util.UUID;
 public record KitchenTicketLineResponse(
     UUID orderItemId,
     String name,
+    String portionText,
     BigDecimal quantity,
     String note,
     List<String> modifiers

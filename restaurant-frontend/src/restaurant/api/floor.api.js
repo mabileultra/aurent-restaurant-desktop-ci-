@@ -11,6 +11,7 @@ export const rstFloorApi = {
   listTables: (hallId) => api.get(rst(`/halls/${hallId}/tables`)),
   createTable: (hallId, data) => api.post(rst(`/halls/${hallId}/tables`), data),
   updateTable: (tableId, data) => api.put(rst(`/tables/${tableId}`), data),
+  markReady: (tableId) => api.post(rst(`/tables/${tableId}/ready`)),
   updateLayout: (hallId, data) => api.put(rst(`/halls/${hallId}/tables/layout`), data),
   deactivateTable: (tableId) => api.delete(rst(`/tables/${tableId}`)),
 };

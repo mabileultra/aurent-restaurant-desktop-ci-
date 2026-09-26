@@ -4,6 +4,7 @@ import MenuCardMenu from '../components/MenuCardMenu';
 import MenuDishFilters from '../components/MenuDishFilters';
 import MenuDishForm from '../components/MenuDishForm';
 import MenuDishList from '../components/MenuDishList';
+import MenuVariantFormModal from '../components/MenuVariantFormModal';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -34,6 +35,7 @@ export default function MenuAdminPage() {
         }}
       />
       <MenuDishForm p={p} />
+      <MenuVariantFormModal p={p} />
 
       <MenuCardMenu
         menu={cardMenu}
@@ -42,6 +44,10 @@ export default function MenuAdminPage() {
         onEdit={(item) => {
           setCardMenu(null);
           p.startEdit(item);
+        }}
+        onAddVariant={(item) => {
+          setCardMenu(null);
+          p.openVariantForm(item);
         }}
         onDelete={(item) => {
           setCardMenu(null);

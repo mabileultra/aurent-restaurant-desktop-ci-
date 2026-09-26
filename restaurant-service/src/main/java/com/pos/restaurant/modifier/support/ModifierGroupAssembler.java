@@ -19,9 +19,13 @@ public class ModifierGroupAssembler {
             group.getId(),
             group.getStoreId(),
             group.getName(),
+            group.getGroupKind() == null
+                ? com.pos.restaurant.modifier.domain.ModifierGroupKind.STANDARD
+                : group.getGroupKind(),
             group.getMinSelect(),
             group.getMaxSelect(),
             group.getSortOrder(),
+            group.isAvailableForAll(),
             group.isActive(),
             options.stream().map(this::toOption).toList()
         );

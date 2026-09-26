@@ -10,6 +10,10 @@ import {
 import { CASHIER_ESCPOS_TOAST } from '../../../../config/cashierEscposConfig';
 import { FiscalReceiptBody } from '../../../../components/receipt';
 import { loadRestaurantReceiptSale } from '../../utils/loadRestaurantReceiptSale';
+import {
+  printOrdinarySaleReceipt,
+  saleNeedsFiscalPrint,
+} from '../../utils/printOrdinarySaleReceipt';
 import '../styles/cashier-paid-receipt-pane.css';
 
 export default function CashierPaidReceiptPane({
@@ -46,14 +50,18 @@ export default function CashierPaidReceiptPane({
     if (!sale || printing) return;
     setPrinting(true);
     try {
-      await printFiscalReceipt({ sale, t, useModalShell: false });
+      if (saleNeedsFiscalPrint(sale)) {
+        await printFiscalReceipt({ sale, t, useModalShell: false });
+      } else {
+        await printOrdinarySaleReceipt({ sale, t });
+      }
       toast.success(t('receipt.printSent'), {
         id: CASHIER_ESCPOS_TOAST.toastId,
         duration: CASHIER_ESCPOS_TOAST.successDurationMs,
       });
     } catch (e) {
       toast.error(
-        (isCashierEscposPrintAvailable()
+        (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
           ? resolveEscposPrintErrorMessage(e, t)
           : e?.message) ?? t('receipt.printFailed'),
         {

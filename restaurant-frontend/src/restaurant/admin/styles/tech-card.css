@@ -1,3 +1,21 @@
+.rst-tech {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  min-height: 0;
+}
+
+.rst-tech .rst-halls__toolbar {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.rst-tech .rst-halls__actions {
+  flex: 0 0 auto;
+}
+
 .rst-tech__split {
   display: flex;
   flex-direction: column;
@@ -5,11 +23,21 @@
   min-width: 0;
 }
 
-.rst-tech__dishes {
+.rst-tech__dishes-panel {
   display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  min-width: 0;
+}
+
+.rst-tech__dishes {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-rows: repeat(2, auto);
+  grid-auto-rows: auto;
   align-items: stretch;
   gap: 0.65rem;
-  overflow-x: auto;
+  overflow: visible;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
   background: linear-gradient(180deg, #151b26, var(--rst-bg));
@@ -18,18 +46,19 @@
 }
 
 .rst-tech__dishes .rst-empty {
-  flex: 1 1 auto;
+  grid-column: 1 / -1;
   min-height: 120px;
-  min-width: 100%;
+  min-width: 0;
 }
 
 .rst-tech__dish {
   display: flex;
-  flex: 0 0 168px;
+  flex: unset;
+  width: 100%;
+  min-width: 0;
   flex-direction: column;
   align-items: stretch;
   gap: 0;
-  min-width: 0;
   padding: 0;
   border: 1.5px solid var(--rst-line);
   border-radius: 14px;
@@ -40,6 +69,11 @@
   cursor: pointer;
   box-shadow: 0 8px 20px rgb(0 0 0 / 0.18);
   transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.rst-tech__dishes-pagination,
+.rst-tech__lines-pagination {
+  margin: 0;
 }
 
 .rst-tech__dish:hover {
@@ -246,15 +280,22 @@
   background: #1f242c;
 }
 
+@media (max-width: 1100px) {
+  .rst-tech__dishes {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 900px) {
   .rst-tech__dishes {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     max-height: none;
   }
 }
 
 @media (max-width: 520px) {
-  .rst-tech__dish {
-    flex-basis: 148px;
+  .rst-tech__dishes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -381,6 +422,13 @@
 .rst-tech__net {
   color: var(--rst-ink);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.rst-tech__unit {
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+  font-weight: 650;
   white-space: nowrap;
 }
 

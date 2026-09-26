@@ -16,11 +16,14 @@ const emptyForm = () => ({
   available: true,
   sortOrder: 100,
   stationId: '',
-  category: '',
+  menuCategoryId: '',
   imageUrl: '',
   imageName: '',
   description: '',
   prepMinutes: '',
+  portionAmount: '',
+  portionUnit: 'PORTION',
+  portionLabel: '',
   tags: '',
   modifierGroupIds: [],
 });
@@ -32,6 +35,17 @@ const emptyFilters = () => ({
   availability: 'all',
 });
 
+const emptyVariantForm = () => ({
+  price: '',
+  portionAmount: '',
+  portionUnit: 'PORTION',
+  portionLabel: '',
+  sku: '',
+});
+
+export const MENU_PAGE_SIZE_OPTIONS = [10, 14, 20];
+const DEFAULT_PAGE_SIZE = 14;
+
 export function useMenuAdminPage() {
   const { t } = useTranslation();
   const qc = useQueryClient();
@@ -40,6 +54,10 @@ export function useMenuAdminPage() {
   const [editingId, setEditingId] = useState(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [filters, setFilters] = useState(emptyFilters());
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [variantSource, setVariantSource] = useState(null);
+  const [variantForm, setVariantForm] = useState(emptyVariantForm);
 
   const itemsQuery = useQuery({
     queryKey: ['rst-menu-admin', workspace.storeId],
@@ -59,20 +77,23 @@ export function useMenuAdminPage() {
     enabled: workspace.storeId != null,
   });
 
+  const menuCategoriesQuery = useQuery({
+    queryKey: ['rst-menu-categories', workspace.storeId],
+    queryFn: () => rstMenuApi.listCategories(workspace.storeId, true).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+
   const stations = stationsQuery.data ?? [];
+  const menuCategories = menuCategoriesQuery.data ?? [];
   const items = useMemo(
     () => (itemsQuery.data ?? []).filter((item) => item.active),
     [itemsQuery.data],
   );
 
-  const categories = useMemo(() => {
-    const set = new Set();
-    for (const item of items) {
-      const value = String(item.category ?? '').trim();
-      if (value) set.add(value);
-    }
-    return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
-  }, [items]);
+  const categories = useMemo(
+    () => menuCategories.map((row) => row.name),
+    [menuCategories],
+  );
 
   const filteredItems = useMemo(() => {
     const q = filters.search.trim().toLowerCase();
@@ -87,13 +108,13 @@ export function useMenuAdminPage() {
     });
   }, [items, filters]);
 
-  const filterKey = [
-    workspace.storeId,
-    filters.search,
-    filters.category,
-    filters.stationId,
-    filters.availability,
-  ].join('|');
+  const total = filteredItems.length;
+  const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+  const safePage = Math.min(page, Math.max(0, totalPages - 1));
+  const rows = useMemo(() => {
+    const start = safePage * pageSize;
+    return filteredItems.slice(start, start + pageSize);
+  }, [filteredItems, safePage, pageSize]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
@@ -110,10 +131,13 @@ export function useMenuAdminPage() {
         sortOrder: Number(form.sortOrder) || 100,
         itemType: 'DISH',
         stationId: form.stationId || null,
-        category: form.category.trim() || null,
+        menuCategoryId: form.menuCategoryId || null,
         imageUrl: form.imageUrl || null,
         description: form.description.trim() || null,
         prepMinutes: form.prepMinutes === '' ? null : Number(form.prepMinutes),
+        portionAmount: form.portionAmount === '' ? null : Number(form.portionAmount),
+        portionUnit: form.portionAmount === '' ? null : (form.portionUnit || 'PORTION'),
+        portionLabel: form.portionLabel.trim() || null,
         tags: form.tags.trim() || null,
         modifierGroupIds: form.modifierGroupIds,
       };
@@ -139,6 +163,27 @@ export function useMenuAdminPage() {
     onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
+  const createVariantMutation = useMutation({
+    mutationFn: () => rstMenuApi.createVariant(variantSource.id, {
+      price: Number(variantForm.price),
+      portionAmount: variantForm.portionAmount === '' ? null : Number(variantForm.portionAmount),
+      portionUnit: variantForm.portionAmount === '' ? null : (variantForm.portionUnit || 'PORTION'),
+      portionLabel: variantForm.portionLabel.trim() || null,
+      sku: variantForm.sku.trim() || null,
+    }),
+    onSuccess: () => {
+      toast.success(t('rst.admin.variantCreated'));
+      setVariantSource(null);
+      invalidate();
+    },
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
+  });
+
+  const openVariantForm = (item) => {
+    setVariantSource(item);
+    setVariantForm({ ...emptyVariantForm(), price: String(item.price ?? '') });
+  };
+
   const closeComposer = () => {
     setEditingId(null);
     setForm(emptyForm());
@@ -161,11 +206,17 @@ export function useMenuAdminPage() {
       available: item.available,
       sortOrder: item.sortOrder,
       stationId: item.stationId ?? '',
-      category: item.category ?? '',
+      menuCategoryId: item.menuCategoryId ?? '',
       imageUrl: item.imageUrl ?? '',
       imageName: item.imageUrl ? t('rst.admin.imageAttached') : '',
       description: item.description ?? '',
       prepMinutes: item.prepMinutes == null ? '' : String(item.prepMinutes),
+      portionAmount: item.portionAmount != null
+        ? String(item.portionAmount)
+        : (item.portionGrams != null ? String(item.portionGrams) : ''),
+      portionUnit: item.portionUnit
+        || (item.portionGrams != null ? 'G' : 'PORTION'),
+      portionLabel: item.portionLabel ?? '',
       tags: item.tags ?? '',
       modifierGroupIds: item.modifierGroupIds ?? [],
     });
@@ -198,13 +249,30 @@ export function useMenuAdminPage() {
     workspace,
     items,
     filteredItems,
-    filterKey,
+    rows,
     stations,
+    menuCategories,
     categories,
     groups: (groupsQuery.data ?? []).filter((group) => group.active),
     filters,
-    setFilters,
-    resetFilters: () => setFilters(emptyFilters()),
+    setFilters: (next) => {
+      setFilters(next);
+      setPage(0);
+    },
+    resetFilters: () => {
+      setFilters(emptyFilters());
+      setPage(0);
+    },
+    page: safePage,
+    pageSize,
+    total,
+    totalPages,
+    setPage: (next) => setPage(Math.max(0, Math.min(next, totalPages - 1))),
+    setPageSize: (nextSize) => {
+      setPageSize(nextSize);
+      setPage(0);
+    },
+    pageSizeOptions: MENU_PAGE_SIZE_OPTIONS,
     form,
     setForm,
     editingId,
@@ -213,6 +281,12 @@ export function useMenuAdminPage() {
     closeComposer,
     saveMutation,
     deactivateMutation,
+    createVariantMutation,
+    variantSource,
+    variantForm,
+    setVariantForm,
+    openVariantForm,
+    closeVariantForm: () => setVariantSource(null),
     startEdit,
     toggleGroup,
     onImageFile,

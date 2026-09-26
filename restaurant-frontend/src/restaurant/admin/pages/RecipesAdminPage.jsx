@@ -1,6 +1,8 @@
 import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
+import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import MenuDishFilters from '../components/MenuDishFilters';
 import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
 import RecipeWizardModal from '../components/RecipeWizardModal';
 import { useRecipesAdminPage } from '../hooks/useRecipesAdminPage';
@@ -8,6 +10,7 @@ import { formatFoodCostPercent, lineIngredientCost } from '../utils/recipeFoodCo
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
+import '../styles/menu-admin.css';
 import '../styles/tech-card.css';
 
 export default function RecipesAdminPage() {
@@ -17,7 +20,7 @@ export default function RecipesAdminPage() {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
   }
 
-  const selectedDish = p.dishes.find((dish) => dish.id === p.selectedId);
+  const selectedDish = p.selectedDish;
   const stockProductsPath = '/rst/admin/stock/products?create=1';
 
   return (
@@ -34,42 +37,58 @@ export default function RecipesAdminPage() {
         </div>
       </div>
 
+      <MenuDishFilters p={p} />
+
       <div className="rst-tech__split">
-        <aside className="rst-tech__dishes">
-          {p.dishes.length === 0 ? (
-            <div className="rst-empty">{p.t('rst.admin.recipeNoDishes')}</div>
+        <div className="rst-tech__dishes-panel">
+          <aside className="rst-tech__dishes">
+            {p.dishTotal === 0 ? (
+              <div className="rst-empty">{p.t('rst.admin.recipeNoDishes')}</div>
+            ) : null}
+            {p.dishes.map((dish) => {
+              const hasRecipe = p.recipes.some((recipe) => recipe.menuItemId === dish.id);
+              const dishFc = p.dishFoodCostById[dish.id];
+              return (
+                <button
+                  key={dish.id}
+                  type="button"
+                  className={`rst-tech__dish${p.selectedId === dish.id ? ' is-active' : ''}`}
+                  onClick={() => p.setSelectedId(dish.id)}
+                >
+                  <div className="rst-tech__dish-media">
+                    {dish.imageUrl ? (
+                      <img src={dish.imageUrl} alt="" />
+                    ) : (
+                      <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
+                    )}
+                  </div>
+                  <div className="rst-tech__dish-body">
+                    <strong>{dish.name}</strong>
+                    <span>
+                      {dish.category ? `${dish.category} · ` : ''}
+                      {hasRecipe ? p.t('rst.admin.recipeReady') : p.t('rst.admin.recipeEmpty')}
+                      {hasRecipe && dishFc?.pricedLines > 0
+                        ? ` · ${formatFoodCostPercent(dishFc.percent)}`
+                        : ''}
+                    </span>
+                  </div>
+                </button>
+              );
+            })}
+          </aside>
+          {p.dishTotal > 0 ? (
+            <TablePagination
+              className="rst-tech__dishes-pagination"
+              page={p.dishPage}
+              pageSize={p.dishPageSize}
+              total={p.dishTotal}
+              totalPages={p.dishTotalPages}
+              pageSizeOptions={p.dishPageSizeOptions}
+              onPageChange={p.setDishPage}
+              onPageSizeChange={p.setDishPageSize}
+            />
           ) : null}
-          {p.dishes.map((dish) => {
-            const hasRecipe = p.recipes.some((recipe) => recipe.menuItemId === dish.id);
-            const dishFc = p.dishFoodCostById[dish.id];
-            return (
-              <button
-                key={dish.id}
-                type="button"
-                className={`rst-tech__dish${p.selectedId === dish.id ? ' is-active' : ''}`}
-                onClick={() => p.setSelectedId(dish.id)}
-              >
-                <div className="rst-tech__dish-media">
-                  {dish.imageUrl ? (
-                    <img src={dish.imageUrl} alt="" />
-                  ) : (
-                    <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
-                  )}
-                </div>
-                <div className="rst-tech__dish-body">
-                  <strong>{dish.name}</strong>
-                  <span>
-                    {dish.category ? `${dish.category} · ` : ''}
-                    {hasRecipe ? p.t('rst.admin.recipeReady') : p.t('rst.admin.recipeEmpty')}
-                    {hasRecipe && dishFc?.pricedLines > 0
-                      ? ` · ${formatFoodCostPercent(dishFc.percent)}`
-                      : ''}
-                  </span>
-                </div>
-              </button>
-            );
-          })}
-        </aside>
+        </div>
 
         <div className="rst-tech__card">
           {!selectedDish ? (
@@ -113,13 +132,13 @@ export default function RecipesAdminPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {p.lines.map((line, index) => {
+                    {p.pagedLines.map(({ line, index }) => {
                       const unitCost = line.costPrice != null
                         ? line.costPrice
                         : (line.productId ? p.costByProductId[String(line.productId)] : null);
                       const lineCost = lineIngredientCost(line, unitCost);
                       return (
-                        <tr key={`${line.productId}-${index}`}>
+                        <tr key={`${line.productId || 'new'}-${index}`}>
                           <td>
                             <BaseInput
                               value={line.productName}
@@ -183,14 +202,7 @@ export default function RecipesAdminPage() {
                             />
                           </td>
                           <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
-                          <td>
-                            <BaseInput
-                              value={line.unit}
-                              onChange={(e) => p.setLines((current) => current.map((row, i) => (
-                                i === index ? { ...row, unit: e.target.value } : row
-                              )))}
-                            />
-                          </td>
+                          <td className="rst-tech__unit">{line.unit || '—'}</td>
                           <td className="rst-tech__net">
                             {lineCost != null ? fmtMoneyCompact(lineCost) : '—'}
                           </td>
@@ -205,6 +217,19 @@ export default function RecipesAdminPage() {
                   </tbody>
                 </table>
               </div>
+
+              {p.lineTotal > 0 ? (
+                <TablePagination
+                  className="rst-tech__lines-pagination"
+                  page={p.linePage}
+                  pageSize={p.linePageSize}
+                  total={p.lineTotal}
+                  totalPages={p.lineTotalPages}
+                  pageSizeOptions={p.linePageSizeOptions}
+                  onPageChange={p.setLinePage}
+                  onPageSizeChange={p.setLinePageSize}
+                />
+              ) : null}
 
               <div className="rst-tech__actions">
                 <BaseButton type="button" variant="ghost" onClick={p.addLine}>

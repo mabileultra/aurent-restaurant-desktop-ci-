@@ -1,6 +1,8 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { useTranslation } from 'react-i18next';
+import { BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { AUDIT_TYPE_FILTERS, useAuditAdminPage } from '../hooks/useAuditAdminPage';
+import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -8,7 +10,8 @@ import '../styles/analytics-admin.css';
 
 export default function AuditAdminPage() {
   const p = useAuditAdminPage();
-  const locale = p.t('common.locale', { defaultValue: 'ru-RU' });
+  const { i18n } = useTranslation();
+  const locale = i18n.language || 'ru';
 
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
@@ -36,22 +39,17 @@ export default function AuditAdminPage() {
                 placeholder={p.t('rst.audit.searchPh')}
               />
             </label>
-            <label className="rst-admin-field">
-              <span className="rst-admin-field__label">{p.t('rst.audit.type')}</span>
-              <select
-                className="form-select"
-                value={p.filters.type}
-                onChange={(e) => p.setFilters({ ...p.filters, type: e.target.value })}
-              >
-                {AUDIT_TYPE_FILTERS.map((type) => (
-                  <option key={type} value={type}>
-                    {type === 'all'
-                      ? p.t('rst.admin.filterAll')
-                      : p.t(`rst.audit.type_${type}`, { defaultValue: type })}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <BaseSelect
+              label={p.t('rst.audit.type')}
+              value={p.filters.type}
+              onChange={(e) => p.setFilters({ ...p.filters, type: e.target.value })}
+              options={AUDIT_TYPE_FILTERS.map((type) => ({
+                value: type,
+                label: type === 'all'
+                  ? p.t('rst.admin.filterAll')
+                  : p.t(`rst.audit.type_${type}`, { defaultValue: type }),
+              }))}
+            />
             <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.reports.from')}</span>
               <BaseInput
@@ -68,12 +66,10 @@ export default function AuditAdminPage() {
                 onChange={(e) => p.setFilters({ ...p.filters, toDate: e.target.value })}
               />
             </label>
-            <BaseButton type="button" variant="ghost" onClick={p.refetch}>
+            <RstFilterResetButton t={p.t} onClick={p.refetch}>
               {p.t('common.refresh')}
-            </BaseButton>
-            <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={p.resetFilters}>
-              {p.t('rst.admin.filterReset')}
-            </BaseButton>
+            </RstFilterResetButton>
+            <RstFilterResetButton t={p.t} onClick={p.resetFilters} />
           </div>
 
           {p.isError ? <div className="rst-notice">{p.t('rst.admin.auditLoadFailed')}</div> : null}

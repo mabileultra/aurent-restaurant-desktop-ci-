@@ -1,5 +1,6 @@
 package com.pos.restaurant.payment.dto;
 
+import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +13,8 @@ public record PayOrderRequest(
     BigDecimal cashAmount,
     BigDecimal cardAmount,
     BigDecimal amountTendered,
-    BigDecimal changeGiven
+    BigDecimal changeGiven,
+    PaymentCardType cardType
 ) {
     public PayOrderRequest {
         if (cashAmount == null) {

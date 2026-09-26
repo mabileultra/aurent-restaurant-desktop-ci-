@@ -1,6 +1,8 @@
 import { MoreVertical } from 'lucide-react';
 import { BaseButton } from '../../../components/ui';
+import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
 
 function dishTags(item, t) {
   return String(item.tags || '')
@@ -20,7 +22,7 @@ export default function MenuDishList({ p, onOpenMenu }) {
       <div className="rst-menu-board__head">
         <strong>{p.t('rst.admin.menuList')}</strong>
         <div className="rst-menu-board__head-actions">
-          <span>{p.filteredItems.length}</span>
+          <span>{p.total}</span>
           <BaseButton type="button" onClick={p.openComposer}>
             {p.t('rst.admin.addDish')}
           </BaseButton>
@@ -29,13 +31,19 @@ export default function MenuDishList({ p, onOpenMenu }) {
 
       {p.isLoading ? (
         <div className="rst-menu-board__empty">{p.t('common.loading')}</div>
-      ) : p.filteredItems.length === 0 ? (
+      ) : p.total === 0 ? (
         <div className="rst-menu-board__empty">{p.t('rst.admin.menuEmpty')}</div>
       ) : (
         <div className="rst-menu-board__grid">
-          {p.filteredItems.map((item) => {
+          {p.rows.map((item) => {
             const station = p.stationName(item.stationId);
-            const metaParts = [item.category || null, station || null, item.sku || null].filter(Boolean);
+            const portion = formatMenuPortion(item);
+            const metaParts = [
+              item.category || null,
+              portion || null,
+              station || null,
+              item.sku || null,
+            ].filter(Boolean);
             const tags = dishTags(item, p.t);
 
             return (
@@ -75,6 +83,9 @@ export default function MenuDishList({ p, onOpenMenu }) {
                     </div>
                   ) : null}
                   <h3 className="rst-menu-card__title">{item.name}</h3>
+                  {item.variantGroupId ? (
+                    <p className="rst-menu-card__meta">{p.t('rst.admin.variantBadge')}</p>
+                  ) : null}
                   {item.description ? (
                     <p className="rst-menu-card__desc">{item.description}</p>
                   ) : null}
@@ -88,6 +99,19 @@ export default function MenuDishList({ p, onOpenMenu }) {
           })}
         </div>
       )}
+
+      {p.total > 0 ? (
+        <TablePagination
+          className="rst-data-card__pagination rst-menu-board__pagination"
+          page={p.page}
+          pageSize={p.pageSize}
+          total={p.total}
+          totalPages={p.totalPages}
+          pageSizeOptions={p.pageSizeOptions}
+          onPageChange={p.setPage}
+          onPageSizeChange={p.setPageSize}
+        />
+      ) : null}
     </div>
   );
 }

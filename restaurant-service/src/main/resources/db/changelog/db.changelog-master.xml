@@ -25,5 +25,12 @@
     <include file="db/changelog/v18-order-discount.xml"/>
     <include file="db/changelog/v19-order-courier.xml"/>
     <include file="db/changelog/v20-delivery-status.xml"/>
+    <include file="db/changelog/v21-menu-portion.xml"/>
+    <include file="db/changelog/v22-menu-portion-amount-unit.xml"/>
+    <include file="db/changelog/v23-modifier-group-kind.xml"/>
+    <include file="db/changelog/v24-menu-variant-group.xml"/>
+    <include file="db/changelog/v25-menu-categories.xml"/>
+    <include file="db/changelog/v26-modifier-available-for-all.xml"/>
+    <include file="db/changelog/v27-payment-card-type.xml"/>
 
 </databaseChangeLog>

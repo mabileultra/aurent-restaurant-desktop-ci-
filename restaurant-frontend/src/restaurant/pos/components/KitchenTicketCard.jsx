@@ -49,7 +49,10 @@ export default function KitchenTicketCard({
           <li key={line.orderItemId} className="rst-kds-card__line">
             <div className="rst-kds-card__line-main">
               {status === 'READY' ? <span className="rst-kds-card__check" aria-hidden>✓</span> : null}
-              <strong>{Number(line.quantity)}× {line.name}</strong>
+              <strong>
+                {Number(line.quantity)}× {line.name}
+                {line.portionText ? ` · ${line.portionText}` : ''}
+              </strong>
               {status === 'PREPARING' && overdue ? (
                 <em className="rst-kds-card__ready-pill">{t('rst.kitchen.lineReady')}</em>
               ) : null}

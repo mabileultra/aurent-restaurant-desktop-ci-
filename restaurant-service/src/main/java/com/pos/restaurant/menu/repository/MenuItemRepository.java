@@ -17,4 +17,6 @@ public interface MenuItemRepository extends JpaRepository<MenuItem, UUID> {
     );
 
     Optional<MenuItem> findByIdAndCompanyId(UUID id, Integer companyId);
+
+    List<MenuItem> findByMenuCategoryIdAndCompanyId(UUID menuCategoryId, Integer companyId);
 }

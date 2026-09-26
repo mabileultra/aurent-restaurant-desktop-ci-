@@ -1,0 +1,16 @@
+#rst-kitchen-ticket-print-host,
+#rst-ordinary-sale-print-host {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 72mm;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.rst-kds-print__title {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}

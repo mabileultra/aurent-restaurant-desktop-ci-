@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
+import MenuVariantPickModal, { groupMenuFamilies } from './MenuVariantPickModal';
 import '../styles/order-workspace.css';
 
 const TAG_ORDER = ['HIT', 'SPICY', 'CHEF', 'GRILL', 'FRESH', 'TEA'];
@@ -17,20 +19,16 @@ function parseTags(raw) {
   );
 }
 
+function familyInCheck(family, qtyByMenuId) {
+  return family.variants.reduce((sum, item) => sum + (qtyByMenuId[item.id] || 0), 0);
+}
+
 export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
+  const [variantPick, setVariantPick] = useState(null);
   const searchRef = useRef(null);
-
-  const categories = useMemo(() => {
-    const map = new Map();
-    items.forEach((item) => {
-      const name = item.category || t('rst.order.uncategorized');
-      map.set(name, (map.get(name) || 0) + 1);
-    });
-    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
-  }, [items, t]);
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -41,6 +39,17 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
       return hay.includes(q);
     });
   }, [items, category, query, t]);
+
+  const families = useMemo(() => groupMenuFamilies(visible), [visible]);
+
+  const categories = useMemo(() => {
+    const map = new Map();
+    groupMenuFamilies(items).forEach((family) => {
+      const name = family.primary.category || t('rst.order.uncategorized');
+      map.set(name, (map.get(name) || 0) + 1);
+    });
+    return [...map.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+  }, [items, t]);
 
   useEffect(() => {
     const onKey = (event) => {
@@ -97,7 +106,7 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
           onClick={() => setCategory('')}
         >
           {t('rst.order.allCategories')}
-          <em>{items.length}</em>
+          <em>{groupMenuFamilies(items).length}</em>
         </button>
         {categories.map(([name, count]) => (
           <button
@@ -113,10 +122,17 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
       </div>
 
       <div className="rst-menu-grid">
-        {visible.map((item) => {
-          const inCheck = qtyByMenuId[item.id] || 0;
-          const focused = focusedId === item.id;
+        {families.map((family) => {
+          const item = family.primary;
+          const inCheck = familyInCheck(family, qtyByMenuId);
+          const focused = focusedId === family.key;
           const tags = parseTags(item.tags);
+          const portion = family.multi
+            ? t('rst.order.variantSizes', { count: family.variants.length })
+            : formatMenuPortion(item);
+          const priceLabel = family.multi && family.minPrice !== family.maxPrice
+            ? t('rst.order.priceFrom', { price: fmtMoneyCompact(family.minPrice) })
+            : fmtMoneyCompact(item.price);
           const className = [
             'rst-menu-card',
             inCheck > 0 ? 'is-in-check' : '',
@@ -125,12 +141,13 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
 
           return (
             <button
-              key={item.id}
+              key={family.key}
               type="button"
               className={className}
               onClick={() => {
-                setFocusedId(item.id);
-                onAdd(item);
+                setFocusedId(family.key);
+                if (family.multi) setVariantPick(family.variants);
+                else onAdd(item);
               }}
             >
               <div className="rst-menu-card__media">
@@ -158,17 +175,30 @@ export default function MenuPicker({ items, onAdd, t, qtyByMenuId = {} }) {
               ) : null}
 
               <span className="rst-menu-card__name">{item.name}</span>
+              {portion ? <span className="rst-menu-card__portion">{portion}</span> : null}
               {item.description ? (
                 <span className="rst-menu-card__desc">{item.description}</span>
               ) : null}
               <span className="rst-menu-card__footer">
-                <span className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</span>
+                <span className="rst-menu-card__price">{priceLabel}</span>
                 <span className="rst-menu-card__add" aria-hidden>+</span>
               </span>
             </button>
           );
         })}
       </div>
+
+      {variantPick ? (
+        <MenuVariantPickModal
+          variants={variantPick}
+          t={t}
+          onClose={() => setVariantPick(null)}
+          onPick={(item) => {
+            setVariantPick(null);
+            onAdd(item);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

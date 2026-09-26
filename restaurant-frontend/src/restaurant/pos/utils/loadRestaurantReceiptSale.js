@@ -45,6 +45,7 @@ export async function loadRestaurantReceiptSale({
     cardAmount: payment?.cardAmount,
     amountTendered: payment?.amountTendered,
     changeGiven: payment?.changeGiven,
+    cardType: payment?.cardType || null,
     storeId: order?.storeId,
     storeName,
     cashierName,

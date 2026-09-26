@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { useTranslation } from 'react-i18next';
+import { BaseInput, BaseSelect } from '../../../components/ui';
+import RstFilterResetButton from './RstFilterResetButton';
 import TouchOptionPickerModal from './TouchOptionPickerModal';
 import TouchDatePickerModal from './TouchDatePickerModal';
 import '../styles/touch-pickers.css';
@@ -28,7 +30,8 @@ export default function BookingFiltersBar({
   touchPickers = false,
 }) {
   const [picker, setPicker] = useState(null);
-  const locale = t('common.locale', { defaultValue: 'ru-RU' });
+  const { i18n } = useTranslation();
+  const locale = i18n.language || 'ru';
 
   const statusOptions = useMemo(
     () => STATUS_FILTERS.map((status) => ({
@@ -54,18 +57,12 @@ export default function BookingFiltersBar({
             placeholder={t('rst.booking.searchPh')}
           />
         </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{t('rst.booking.status')}</span>
-          <select
-            className="form-select"
-            value={filters.status}
-            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-          >
-            {statusOptions.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </label>
+        <BaseSelect
+          label={t('rst.booking.status')}
+          value={filters.status}
+          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+          options={statusOptions}
+        />
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.booking.from')}</span>
           <BaseInput
@@ -82,9 +79,7 @@ export default function BookingFiltersBar({
             onChange={(e) => setFilters({ ...filters, toDate: e.target.value })}
           />
         </label>
-        <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={resetFilters}>
-          {t('rst.admin.filterReset')}
-        </BaseButton>
+        <RstFilterResetButton t={t} onClick={resetFilters} />
       </div>
     );
   }
@@ -141,9 +136,7 @@ export default function BookingFiltersBar({
           </button>
         </div>
 
-        <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={resetFilters}>
-          {t('rst.admin.filterReset')}
-        </BaseButton>
+        <RstFilterResetButton t={t} onClick={resetFilters} />
       </div>
 
       <TouchOptionPickerModal

@@ -136,7 +136,7 @@ export default function RestaurantFloorPosPage() {
           <BaseButton
             type="button"
             variant="ghost"
-            className="rst-pos__exit"
+            className="rst-exit-btn"
             onClick={() => logoutAndResetSession()}
           >
             {p.t('nav.logout')}

@@ -18,4 +18,9 @@ public interface ModifierGroupRepository extends JpaRepository<ModifierGroup, UU
         Integer companyId,
         Integer storeId
     );
+
+    List<ModifierGroup> findByCompanyIdAndStoreIdAndAvailableForAllTrueAndActiveTrue(
+        Integer companyId,
+        Integer storeId
+    );
 }

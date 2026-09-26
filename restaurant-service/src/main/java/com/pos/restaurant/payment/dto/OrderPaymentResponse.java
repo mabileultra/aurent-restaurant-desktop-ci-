@@ -1,5 +1,6 @@
 package com.pos.restaurant.payment.dto;
 
+import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
 
 import java.math.BigDecimal;
@@ -15,5 +16,6 @@ public record OrderPaymentResponse(
     BigDecimal cardAmount,
     BigDecimal amountTendered,
     BigDecimal changeGiven,
+    PaymentCardType cardType,
     Instant paidAt
 ) {}

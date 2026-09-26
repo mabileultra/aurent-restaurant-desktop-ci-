@@ -74,6 +74,7 @@ public class PayOrderHandler {
             .cardAmount(split.cardAmount())
             .amountTendered(split.amountTendered())
             .changeGiven(split.changeGiven())
+            .cardType(resolveCardType(request))
             .paidByUserId(tenantSupport.requireUserId())
             .build());
         order.setStatus(OrderStatus.CLOSED);
@@ -103,5 +104,13 @@ public class PayOrderHandler {
         recipeConsumePublicationService.publishPaidOrder(order, items, payment);
         LogUtil.info(PayOrderHandler.class, "Order paid: orderId={}, method={}", orderId, request.method());
         return assembler.toResponse(order, items);
+    }
+
+    private static com.pos.restaurant.payment.domain.PaymentCardType resolveCardType(PayOrderRequest request) {
+        if (request.method() != com.pos.restaurant.payment.domain.PaymentMethod.CARD
+            && request.method() != com.pos.restaurant.payment.domain.PaymentMethod.MIXED) {
+            return null;
+        }
+        return request.cardType();
     }
 }

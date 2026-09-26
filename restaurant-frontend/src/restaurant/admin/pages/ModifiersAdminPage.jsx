@@ -1,6 +1,8 @@
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstFilterResetButton from '../../shared/components/RstFilterResetButton';
+import RstRowActions from '../../shared/components/RstRowActions';
 import { useModifiersAdminPage } from '../hooks/useModifiersAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -34,9 +36,7 @@ export default function ModifiersAdminPage() {
             }}
           />
         </label>
-        <BaseButton type="button" variant="ghost" className="rst-admin-filters__reset" onClick={p.resetFilters}>
-          {p.t('rst.admin.filterReset')}
-        </BaseButton>
+        <RstFilterResetButton t={p.t} onClick={p.resetFilters} />
       </div>
 
       <form
@@ -72,6 +72,17 @@ export default function ModifiersAdminPage() {
               value={p.groupForm.maxSelect}
               onChange={(e) => p.setGroupForm({ ...p.groupForm, maxSelect: e.target.value })}
             />
+          </label>
+          <label className="rst-admin-field rst-admin-field--check">
+            <span className="rst-admin-field__label">{p.t('rst.admin.modifierAvailableForAll')}</span>
+            <label className="rst-admin-check">
+              <input
+                type="checkbox"
+                checked={Boolean(p.groupForm.availableForAll)}
+                onChange={(e) => p.setGroupForm({ ...p.groupForm, availableForAll: e.target.checked })}
+              />
+              <span>{p.t('rst.admin.modifierAvailableForAllHint')}</span>
+            </label>
           </label>
         </div>
         <div className="rst-admin-form__actions">
@@ -146,18 +157,19 @@ export default function ModifiersAdminPage() {
                 <th className="rst-data-table__num">#</th>
                 <th>{p.t('rst.admin.modifierGroupName')}</th>
                 <th>{p.t('rst.admin.selectRangeLabel')}</th>
+                <th>{p.t('rst.admin.modifierScope')}</th>
                 <th>{p.t('rst.admin.options')}</th>
-                <th className="rst-data-table__actions">{p.t('common.actions')}</th>
+                <th className="rst-data-table__actions" aria-label={p.t('common.actions')} />
               </tr>
             </thead>
             <tbody>
               {p.isLoading ? (
                 <tr>
-                  <td colSpan={5} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                  <td colSpan={6} className="rst-data-table__empty">{p.t('common.loading')}</td>
                 </tr>
               ) : p.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="rst-data-table__empty">{p.t('rst.admin.modifiersEmpty')}</td>
+                  <td colSpan={6} className="rst-data-table__empty">{p.t('rst.admin.modifiersEmpty')}</td>
                 </tr>
               ) : (
                 p.rows.map((group, index) => {
@@ -167,6 +179,11 @@ export default function ModifiersAdminPage() {
                       <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
                       <td>{group.name}</td>
                       <td>{p.t('rst.admin.selectRange', { min: group.minSelect, max: group.maxSelect })}</td>
+                      <td>
+                        {group.availableForAll
+                          ? p.t('rst.admin.modifierScopeAll')
+                          : p.t('rst.admin.modifierScopeLinked')}
+                      </td>
                       <td className="rst-data-table__wrap">
                         {options.length === 0 ? (
                           <span className="rst-halls__row-meta">{p.t('rst.admin.noOptions')}</span>
@@ -179,23 +196,31 @@ export default function ModifiersAdminPage() {
                         )}
                       </td>
                       <td className="rst-data-table__actions">
-                        <BaseButton type="button" variant="ghost" onClick={() => p.startEditGroup(group)}>
-                          {p.t('common.edit')}
-                        </BaseButton>
-                        <BaseButton type="button" variant="ghost" onClick={() => p.setOptionGroupId(group.id)}>
-                          {p.t('rst.admin.addOption')}
-                        </BaseButton>
-                        <BaseButton
-                          type="button"
-                          variant="ghost"
-                          onClick={() => {
-                            if (window.confirm(p.t('rst.admin.confirmDeactivateModifierGroup'))) {
-                              p.deactivateGroup.mutate(group.id);
-                            }
-                          }}
-                        >
-                          {p.t('common.delete')}
-                        </BaseButton>
+                        <RstRowActions
+                          t={p.t}
+                          items={[
+                            {
+                              key: 'edit',
+                              label: p.t('common.edit'),
+                              onClick: () => p.startEditGroup(group),
+                            },
+                            {
+                              key: 'option',
+                              label: p.t('rst.admin.addOption'),
+                              onClick: () => p.setOptionGroupId(group.id),
+                            },
+                            {
+                              key: 'delete',
+                              label: p.t('common.delete'),
+                              danger: true,
+                              onClick: () => {
+                                if (window.confirm(p.t('rst.admin.confirmDeactivateModifierGroup'))) {
+                                  p.deactivateGroup.mutate(group.id);
+                                }
+                              },
+                            },
+                          ]}
+                        />
                       </td>
                     </tr>
                   );

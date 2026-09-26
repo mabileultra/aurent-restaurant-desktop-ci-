@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v25-menu-categories" author="aurent">
+        <createTable tableName="menu_categories">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(80)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sort_order" type="INT" defaultValueNumeric="100">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="menu_categories" indexName="idx_menu_categories_store">
+            <column name="company_id"/>
+            <column name="store_id"/>
+            <column name="sort_order"/>
+        </createIndex>
+        <createIndex tableName="menu_categories" indexName="idx_menu_categories_store_name">
+            <column name="store_id"/>
+            <column name="name"/>
+        </createIndex>
+
+        <addColumn tableName="menu_items">
+            <column name="menu_category_id" type="UUID"/>
+        </addColumn>
+        <addForeignKeyConstraint
+            baseTableName="menu_items"
+            baseColumnNames="menu_category_id"
+            referencedTableName="menu_categories"
+            referencedColumnNames="id"
+            constraintName="fk_menu_items_menu_category"/>
+        <createIndex tableName="menu_items" indexName="idx_menu_items_menu_category">
+            <column name="menu_category_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="v25-menu-categories-backfill" author="aurent">
+        <sql>
+            INSERT INTO menu_categories (id, company_id, store_id, name, sort_order, active, created_at, updated_at)
+            SELECT gen_random_uuid(), company_id, store_id, TRIM(category), 100, TRUE, NOW(), NOW()
+            FROM menu_items
+            WHERE category IS NOT NULL AND TRIM(category) &lt;&gt; ''
+            GROUP BY company_id, store_id, TRIM(category);
+
+            UPDATE menu_items mi
+            SET menu_category_id = mc.id
+            FROM menu_categories mc
+            WHERE mi.menu_category_id IS NULL
+              AND mi.company_id = mc.company_id
+              AND mi.store_id = mc.store_id
+              AND mi.category IS NOT NULL
+              AND TRIM(mi.category) = mc.name;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
