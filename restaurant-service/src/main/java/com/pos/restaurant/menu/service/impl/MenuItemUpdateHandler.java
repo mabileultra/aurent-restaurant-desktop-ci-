@@ -41,6 +41,9 @@ public class MenuItemUpdateHandler {
         item.setName(request.name().trim());
         item.setSku(blankToNull(request.sku()));
         item.setPrice(request.price().setScale(2, RoundingMode.HALF_UP));
+        item.setTaxRate(request.taxRate() == null
+            ? BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP)
+            : request.taxRate().setScale(2, RoundingMode.HALF_UP));
         if (request.itemType() != null) {
             item.setItemType(request.itemType());
         }

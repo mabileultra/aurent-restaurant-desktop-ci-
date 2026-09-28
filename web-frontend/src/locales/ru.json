@@ -2351,6 +2351,7 @@
     "newReceiptConfirm": "Открыть новый чек? Текущие позиции будут удалены.",
     "newReceiptDone": "Открыт чек #{{n}}",
     "parkedCount": "Отложено: {{count}}",
+    "parkedLookup": "Отложенные",
     "parkedSlot": "Отложенный №{{n}}",
     "clearReceipt": "Очистить",
     "searchTitle": "Остатки аптечного склада",

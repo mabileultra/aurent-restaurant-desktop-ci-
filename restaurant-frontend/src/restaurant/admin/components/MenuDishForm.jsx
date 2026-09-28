@@ -51,6 +51,17 @@ export default function MenuDishForm({ p }) {
         <BaseSelect
           size="sm"
           searchable={false}
+          label={p.t('rst.admin.vat')}
+          value={String(p.form.taxRate ?? '0')}
+          onChange={(e) => p.setForm({ ...p.form, taxRate: e.target.value })}
+          options={[
+            { value: '0', label: '0%' },
+            { value: '12', label: '12%' },
+          ]}
+        />
+        <BaseSelect
+          size="sm"
+          searchable={false}
           label={p.t('rst.admin.station')}
           value={p.form.stationId}
           onChange={(e) => p.setForm({ ...p.form, stationId: e.target.value })}

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Search, CalendarPlus, Plus } from 'lucide-react';
+import { Search, Plus } from 'lucide-react';
 import FloorTableCard, { useNowTick } from './FloorTableCard';
 import FloorStatusLegend from './FloorStatusLegend';
 import FloorStatusFilters from './FloorStatusFilters';
@@ -32,8 +32,7 @@ export default function FloorTableGrid({
   selectedTableId,
   onTableClick,
   onNewOrder,
-  onOpenBookings,
-  canCreateBooking,
+  sectionSwitch,
   search,
   onSearchChange,
   waiterNameById,
@@ -116,8 +115,9 @@ export default function FloorTableGrid({
                 placeholder={t('rst.floor.searchPh')}
               />
             </label>
-            <div className="rst-floor-actions">
-              {onNewOrder ? (
+            {sectionSwitch}
+            {onNewOrder ? (
+              <div className="rst-floor-actions">
                 <button
                   type="button"
                   className="rst-floor-actions__btn rst-floor-actions__btn--accent"
@@ -126,14 +126,8 @@ export default function FloorTableGrid({
                   <Plus size={16} strokeWidth={2.4} aria-hidden />
                   {t('rst.floor.newOrder')}
                 </button>
-              ) : null}
-              {onOpenBookings ? (
-                <button type="button" className="rst-floor-actions__btn" onClick={onOpenBookings}>
-                  <CalendarPlus size={16} strokeWidth={2.2} aria-hidden />
-                  {canCreateBooking ? t('rst.floor.newBooking') : t('rst.floor.bookingsTab')}
-                </button>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
           </div>
         </div>
         <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">

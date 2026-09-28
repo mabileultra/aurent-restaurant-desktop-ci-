@@ -61,6 +61,11 @@ public class FloorOrderItem {
     @Builder.Default
     private BigDecimal unitPrice = BigDecimal.ZERO;
 
+    /** VAT percent copied from the dish when the line was added. */
+    @Column(name = "tax_rate", nullable = false, precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal taxRate = BigDecimal.ZERO;
+
     @Column(name = "station_id")
     private UUID stationId;
 

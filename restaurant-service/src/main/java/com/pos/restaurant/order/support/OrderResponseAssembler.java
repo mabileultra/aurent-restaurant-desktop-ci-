@@ -141,6 +141,7 @@ public class OrderResponseAssembler {
             item.getReturnedQuantity() == null ? BigDecimal.ZERO : item.getReturnedQuantity(),
             item.getUnitPrice(),
             lineTotal(item.getQuantity(), item.getUnitPrice()),
+            taxRateOf(item),
             item.getNote(),
             item.getItemStatus(),
             item.getSortOrder(),
@@ -149,6 +150,13 @@ public class OrderResponseAssembler {
                 .map(mod -> new OrderItemModifierResponse(mod.getId(), mod.getName(), mod.getPriceDelta()))
                 .toList()
         );
+    }
+
+    private static BigDecimal taxRateOf(FloorOrderItem item) {
+        if (item.getMenuItem() != null && item.getMenuItem().getTaxRate() != null) {
+            return item.getMenuItem().getTaxRate();
+        }
+        return item.getTaxRate() == null ? BigDecimal.ZERO : item.getTaxRate();
     }
 
     public BigDecimal lineTotal(BigDecimal quantity, BigDecimal unitPrice) {

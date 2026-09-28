@@ -21,6 +21,10 @@
     grid-template-columns: minmax(140px, 0.7fr) minmax(0, 1.6fr) minmax(120px, 0.55fr);
   }
 
+  .rst-admin-form__grid.rst-admin-form__grid--printers {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
   .rst-admin-form__grid--menu {
     grid-template-columns:
       minmax(0, 1.2fr)

@@ -14,6 +14,7 @@ public record MenuItemResponse(
     String name,
     String sku,
     BigDecimal price,
+    BigDecimal taxRate,
     boolean active,
     boolean available,
     int sortOrder,

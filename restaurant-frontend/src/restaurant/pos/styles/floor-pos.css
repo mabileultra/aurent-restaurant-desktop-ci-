@@ -79,10 +79,39 @@
   color: var(--rst-ink);
 }
 
+.rst-pos__top .rst-shift-bar {
+  margin: 0;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 18rem;
+}
+
+.rst-pos__top .rst-shift-bar.is-closed {
+  max-width: none;
+}
+
+.rst-pos__top .rst-shift-bar__meta {
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rst-pos__top .rst-shift-bar__actions button {
+  min-height: 1.65rem;
+  padding: 0.1rem 0.6rem;
+  font-size: 0.72rem;
+}
+
 .rst-pos__actions {
   display: flex;
   align-items: center;
   gap: 0.55rem;
+  margin-left: auto;
 }
 
 .rst-pos__actions a,

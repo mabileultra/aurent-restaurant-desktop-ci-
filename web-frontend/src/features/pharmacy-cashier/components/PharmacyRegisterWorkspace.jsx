@@ -4,7 +4,6 @@ import PharmacyProductSearchTable from './PharmacyProductSearchTable';
 import PharmacySearchStrip from './PharmacySearchStrip';
 import PharmacyStockProductCount from './PharmacyStockProductCount';
 import PharmacyPayColumn from './PharmacyPayColumn';
-import PharmacyParkedCartsStrip from './PharmacyParkedCartsStrip';
 import CashierRegisterShell from '../../cashier/components/shell/CashierRegisterShell';
 import { useTranslation } from 'react-i18next';
 import { focusPharmacyScanField } from '../utils/focusPharmacyScanField';
@@ -64,17 +63,13 @@ export default function PharmacyRegisterWorkspace({
           <PharmacyCartPaneHead
             receiptNo={cart.checkNo}
             itemsCount={cart.items.length}
-            parkedCount={cart.parkedCarts?.length ?? 0}
+            parkedCarts={cart.parkedCarts}
+            onRestoreParked={cart.onRestoreParked}
+            onRemoveParked={cart.onRemoveParked}
+            onClearParked={cart.onClearParked}
             onNewReceipt={cart.onNewReceipt}
             onClear={cart.onClearCart}
             disabled={checkoutMutation.isPending}
-          />
-          <PharmacyParkedCartsStrip
-            t={t}
-            parkedCarts={cart.parkedCarts}
-            onRestore={cart.onRestoreParked}
-            onRemove={cart.onRemoveParked}
-            onClearAll={cart.onClearParked}
           />
           <PharmacyCartTable
             items={cart.items}

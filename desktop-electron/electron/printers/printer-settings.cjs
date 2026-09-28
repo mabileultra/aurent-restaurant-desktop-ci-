@@ -1,10 +1,22 @@
 const { readUserConfig, writeUserConfig } = require('../config/desktopConfig');
 
+function readStationPrinters(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const out = {};
+  for (const [key, value] of Object.entries(raw)) {
+    const name = typeof value === 'string' ? value.trim() : '';
+    if (key && name) out[String(key)] = name;
+  }
+  return out;
+}
+
 function readPrinterSettings() {
   const cfg = readUserConfig() || {};
   return {
     receiptPrinterName: cfg.receiptPrinterName || '',
     labelPrinterName: cfg.labelPrinterName || '',
+    billPrinterName: cfg.billPrinterName || '',
+    stationPrinters: readStationPrinters(cfg.stationPrinters),
   };
 }
 
@@ -15,6 +27,12 @@ function writePrinterSettings(settings) {
   }
   if (typeof settings?.labelPrinterName === 'string') {
     patch.labelPrinterName = settings.labelPrinterName.trim();
+  }
+  if (typeof settings?.billPrinterName === 'string') {
+    patch.billPrinterName = settings.billPrinterName.trim();
+  }
+  if (settings?.stationPrinters && typeof settings.stationPrinters === 'object') {
+    patch.stationPrinters = readStationPrinters(settings.stationPrinters);
   }
   writeUserConfig(patch);
   return readPrinterSettings();

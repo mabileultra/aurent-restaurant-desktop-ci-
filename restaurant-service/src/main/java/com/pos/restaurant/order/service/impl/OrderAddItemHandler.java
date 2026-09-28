@@ -95,6 +95,7 @@ public class OrderAddItemHandler {
             .name(menuItem.getName())
             .quantity(quantity)
             .unitPrice(menuItem.getPrice().add(extras).setScale(2, RoundingMode.HALF_UP))
+            .taxRate(menuItem.getTaxRate() == null ? BigDecimal.ZERO : menuItem.getTaxRate())
             .stationId(menuItem.getStationId())
             .note(note)
             .sortOrder(nextSort)

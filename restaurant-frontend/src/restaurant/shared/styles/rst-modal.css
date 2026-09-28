@@ -113,6 +113,59 @@
   outline: none !important;
 }
 
+html.rst-theme.rst-theme--light .base-modal {
+  --rst-surface: #ffffff;
+  --rst-surface-2: #f3f5f8;
+  --rst-ink: #12151c;
+  --rst-muted: #5c6578;
+  --rst-line: #e3e7ee;
+  background: #ffffff !important;
+  color: #12151c;
+  border-color: #e3e7ee;
+}
+
+html.rst-theme.rst-theme--light .base-modal .base-modal__header,
+html.rst-theme.rst-theme--light .base-modal .base-modal__body,
+html.rst-theme.rst-theme--light .base-modal .base-modal__footer,
+html.rst-theme.rst-theme--light .base-modal .rst-modal-form {
+  background: #ffffff !important;
+  color: #12151c !important;
+  border-color: #e3e7ee;
+}
+
+html.rst-theme.rst-theme--light .base-modal .base-modal__title,
+html.rst-theme.rst-theme--light .base-modal .base-field__label,
+html.rst-theme.rst-theme--light .base-modal .base-select__label,
+html.rst-theme.rst-theme--light .base-modal .rst-admin-field__label,
+html.rst-theme.rst-theme--light .base-modal .rst-admin-field__hint {
+  color: #12151c;
+}
+
+html.rst-theme.rst-theme--light .base-modal .base-field__label,
+html.rst-theme.rst-theme--light .base-modal .base-select__label,
+html.rst-theme.rst-theme--light .base-modal .rst-admin-field__label,
+html.rst-theme.rst-theme--light .base-modal .rst-admin-field__hint {
+  color: #5c6578;
+}
+
+html.rst-theme.rst-theme--light .base-modal .base-field__control,
+html.rst-theme.rst-theme--light .base-modal .form-control,
+html.rst-theme.rst-theme--light .base-modal .form-select,
+html.rst-theme.rst-theme--light .base-modal textarea,
+html.rst-theme.rst-theme--light .base-modal select,
+html.rst-theme.rst-theme--light .base-modal .base-select__trigger,
+html.rst-theme.rst-theme--light .base-modal .rst-tech__table,
+html.rst-theme.rst-theme--light .base-modal .rst-tech__table .base-field__control,
+html.rst-theme.rst-theme--light .base-modal .rst-file,
+html.rst-theme.rst-theme--light .base-modal .rst-stock-tr__stores,
+html.rst-theme.rst-theme--light .base-modal .rst-stock-tr__lines,
+html.rst-theme.rst-theme--light .base-modal .rst-stock-prd__output,
+html.rst-theme.rst-theme--light .base-modal .rst-stock-prd__inputs {
+  background: #f3f5f8 !important;
+  color: #12151c !important;
+  border-color: #e3e7ee !important;
+}
+
 .base-modal--rst .rst-admin-field__label {
   color: var(--rst-muted);
   font-size: 0.78rem;

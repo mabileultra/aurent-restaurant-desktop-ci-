@@ -61,6 +61,7 @@ public class MenuItemCreateVariantHandler {
             .name(name)
             .sku(blankToNull(request.sku()))
             .price(request.price().setScale(2, RoundingMode.HALF_UP))
+            .taxRate(source.getTaxRate() == null ? BigDecimal.ZERO : source.getTaxRate())
             .available(source.isAvailable())
             .active(true)
             .stationId(source.getStationId())

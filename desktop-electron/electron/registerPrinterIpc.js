@@ -12,6 +12,7 @@ const {
   resolveLabelPrinterName,
 } = require('./printers/resolve.cjs');
 const { getMainWindow } = require('./printers/window-ref.cjs');
+const { printTicketHtml } = require('./printers/print-ticket.cjs');
 const { registerLabelPrintIpc } = require('./labelPrintIpc');
 
 function registerPrinterIpc() {
@@ -19,6 +20,9 @@ function registerPrinterIpc() {
   ipcMain.handle('desktop:get-printer-settings', () => readPrinterSettings());
   ipcMain.handle('desktop:set-printer-settings', (_e, settings) =>
     writePrinterSettings(settings || {}),
+  );
+  ipcMain.handle('desktop:print-ticket-html', (_e, payload) =>
+    printTicketHtml(payload || {}),
   );
 
   ipcMain.handle('desktop:open-printer-picker', async () => {

@@ -1,5 +1,6 @@
 import { Eraser, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import PharmacyParkedCartsStrip from './PharmacyParkedCartsStrip';
 import '../styles/pharmacy-cart-pane-head.css';
 
 /**
@@ -8,7 +9,10 @@ import '../styles/pharmacy-cart-pane-head.css';
 export default function PharmacyCartPaneHead({
   receiptNo,
   itemsCount,
-  parkedCount = 0,
+  parkedCarts = [],
+  onRestoreParked,
+  onRemoveParked,
+  onClearParked,
   onNewReceipt,
   onClear,
   disabled = false,
@@ -30,14 +34,17 @@ export default function PharmacyCartPaneHead({
         <span className="pharmacy-cart-pane-head__count">
           {t('pharmacyCashier.receiptItems', { count: itemsCount })}
         </span>
-        {parkedCount > 0 ? (
-          <span className="pharmacy-cart-pane-head__parked">
-            {t('pharmacyCashier.parkedCount', { count: parkedCount })}
-          </span>
-        ) : null}
       </div>
 
       <div className="pharmacy-cart-pane-head__actions">
+        <PharmacyParkedCartsStrip
+          t={t}
+          parkedCarts={parkedCarts}
+          onRestore={onRestoreParked}
+          onRemove={onRemoveParked}
+          onClearAll={onClearParked}
+          disabled={disabled}
+        />
         <button
           type="button"
           className="pharmacy-cart-pane-head__btn pharmacy-cart-pane-head__btn--new"

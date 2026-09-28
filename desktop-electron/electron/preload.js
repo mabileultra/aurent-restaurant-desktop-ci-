@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   openLabelPrinterPicker: () => invoke('desktop:open-label-printer-picker'),
   openBarcodePage: () => invoke('desktop:open-barcode-page'),
   printReceiptEscpos: (payload) => invoke('desktop:print-receipt-escpos', payload),
+  printTicketHtml: (payload) => invoke('desktop:print-ticket-html', payload || {}),
   printZReportEscpos: (payload) => invoke('desktop:print-z-report-escpos', payload),
   printShiftReportEscpos: (payload) => invoke('desktop:print-shift-report-escpos', payload),
   printLabelsEscpos: (payload) => invoke('desktop:print-label-escpos', payload),

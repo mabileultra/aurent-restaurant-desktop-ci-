@@ -59,6 +59,20 @@
   opacity: 1;
 }
 
+.rst-floor-section-tabs--toolbar {
+  margin: 0;
+  padding: 0.15rem;
+  border-radius: 999px;
+  flex: 0 0 auto;
+}
+
+.rst-floor-section-tabs--toolbar .rst-floor-section-tabs__btn {
+  min-height: 2.15rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+}
+
 .rst-floor-section-tabs__btn.is-active:hover {
   color: #1b1208;
   background: linear-gradient(180deg, #ff9a4d, var(--rst-accent-hover));

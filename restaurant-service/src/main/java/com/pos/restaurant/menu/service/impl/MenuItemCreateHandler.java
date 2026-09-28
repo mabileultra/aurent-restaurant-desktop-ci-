@@ -44,6 +44,7 @@ public class MenuItemCreateHandler {
             .name(request.name().trim())
             .sku(blankToNull(request.sku()))
             .price(scalePrice(request.price()))
+            .taxRate(scaleTax(request.taxRate()))
             .available(request.available() == null || request.available())
             .sortOrder(request.sortOrder() == null ? 100 : request.sortOrder())
             .stationId(stationLookup.resolveOptional(request.stationId(), companyId, storeId))
@@ -66,6 +67,13 @@ public class MenuItemCreateHandler {
 
     private static BigDecimal scalePrice(BigDecimal price) {
         return price.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private static BigDecimal scaleTax(BigDecimal taxRate) {
+        if (taxRate == null) {
+            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        return taxRate.setScale(2, RoundingMode.HALF_UP);
     }
 
     private static String blankToNull(String value) {

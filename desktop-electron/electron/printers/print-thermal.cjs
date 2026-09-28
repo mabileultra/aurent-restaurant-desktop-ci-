@@ -233,6 +233,7 @@ async function runSilentLabelPrint(webContents, options = {}) {
 
 module.exports = {
   IS_WIN,
+  invokeWebContentsPrint,
   paperWidthPx,
   waitForLabelImages,
   waitForPaintFrames,

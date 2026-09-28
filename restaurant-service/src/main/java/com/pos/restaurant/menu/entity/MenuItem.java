@@ -56,6 +56,11 @@ public class MenuItem {
     @Builder.Default
     private BigDecimal price = BigDecimal.ZERO;
 
+    /** VAT percent. Zero until it is set on the dish card. */
+    @Column(name = "tax_rate", nullable = false, precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal taxRate = BigDecimal.ZERO;
+
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;

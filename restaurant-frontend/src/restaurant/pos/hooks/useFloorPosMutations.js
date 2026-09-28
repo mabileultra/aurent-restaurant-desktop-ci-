@@ -14,6 +14,7 @@ import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
 import { printKitchenTicket } from '../utils/printKitchenTicket';
+import { printGuestBill } from '../utils/printGuestBill';
 import {
   printOrdinarySaleReceipt,
   saleNeedsFiscalPrint,
@@ -178,11 +179,16 @@ export function useFloorPosMutations(deps) {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
       try {
-        await printKitchenTicket({
+        const printed = await printKitchenTicket({
           order: res.data,
           t,
           onlyItemIds: newItemIds,
         });
+        if (printed?.configured && printed.missing?.length) {
+          toast.error(t('rst.admin.kitchenPrinterMissing', {
+            stations: printed.missing.join(', '),
+          }));
+        }
       } catch {
         /* print is best-effort — order already sent */
       }
@@ -204,11 +210,18 @@ export function useFloorPosMutations(deps) {
 
   const billMutation = useMutation({
     mutationFn: () => rstOrderApi.requestBill(activeOrderId),
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       setOrderData(res);
       invalidateFloor();
       invalidateCounter();
       toast.success(t('rst.order.billRequested'));
+      try {
+        const printed = await printGuestBill({ order: res.data, t });
+        if (printed?.mode === 'silent') toast.success(t('rst.admin.billPrinted'));
+        if (printed?.mode === 'missing') toast.error(t('rst.admin.billPrinterMissing'));
+      } catch {
+        toast.error(t('receipt.printFailed'));
+      }
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
   });

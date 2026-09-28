@@ -52,16 +52,47 @@ function WaiterShiftHint({ p }) {
   );
 }
 
+function FloorSectionSwitch({ p }) {
+  if (!p.access.canViewBooking) return null;
+  return (
+    <div className="rst-floor-section-tabs rst-floor-section-tabs--toolbar" role="tablist" aria-label={p.t('rst.pos.tables')}>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={p.floorSection === 'tables'}
+        className={`rst-floor-section-tabs__btn${p.floorSection === 'tables' ? ' is-active' : ''}`}
+        onClick={() => p.setFloorSection('tables')}
+      >
+        <LayoutGrid size={15} aria-hidden />
+        {p.t('rst.pos.tables')}
+      </button>
+      <button
+        type="button"
+        role="tab"
+        aria-selected={p.floorSection === 'bookings'}
+        className={`rst-floor-section-tabs__btn${p.floorSection === 'bookings' ? ' is-active' : ''}`}
+        onClick={() => p.setFloorSection('bookings')}
+      >
+        <CalendarDays size={15} aria-hidden />
+        {p.t('rst.pos.bookings')}
+      </button>
+    </div>
+  );
+}
+
 function FloorBody({ p, a }) {
   if (p.floorSection === 'bookings') {
     return (
-      <BookingWorkspace
-        compact
-        access={{
-          canCreate: p.access.canCreateBooking,
-          canManage: p.access.canManageBooking,
-        }}
-      />
+      <>
+        <FloorSectionSwitch p={p} />
+        <BookingWorkspace
+          compact
+          access={{
+            canCreate: p.access.canCreateBooking,
+            canManage: p.access.canManageBooking,
+          }}
+        />
+      </>
     );
   }
 
@@ -79,12 +110,7 @@ function FloorBody({ p, a }) {
         onTableClick={p.handleTableClick}
         search={p.floorSearch}
         onSearchChange={p.setFloorSearch}
-        onOpenBookings={
-          p.access.canViewBooking
-            ? () => p.setFloorSection('bookings')
-            : undefined
-        }
-        canCreateBooking={p.access.canCreateBooking}
+        sectionSwitch={<FloorSectionSwitch p={p} />}
         waiterNameById={p.waiterNameById}
         t={p.t}
       />
@@ -131,6 +157,7 @@ export default function RestaurantFloorPosPage() {
             {user?.fullName || user?.username ? ` · ${user.fullName || user.username}` : ''}
           </span>
         </div>
+        <WaiterShiftHint p={p} />
         <div className="rst-pos__actions">
           <PosZoomControls zoom={zoom} t={p.t} />
           <RestaurantThemeSwitch />
@@ -147,33 +174,6 @@ export default function RestaurantFloorPosPage() {
       </header>
 
       <div className="rst-pos__body">
-        {!p.activeOrderId ? <WaiterShiftHint p={p} /> : null}
-
-        {!p.activeOrderId && p.access.canViewBooking ? (
-          <div className="rst-floor-section-tabs" role="tablist" aria-label={p.t('rst.pos.tables')}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={p.floorSection === 'tables'}
-              className={`rst-floor-section-tabs__btn${p.floorSection === 'tables' ? ' is-active' : ''}`}
-              onClick={() => p.setFloorSection('tables')}
-            >
-              <LayoutGrid size={16} aria-hidden />
-              {p.t('rst.pos.tables')}
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={p.floorSection === 'bookings'}
-              className={`rst-floor-section-tabs__btn${p.floorSection === 'bookings' ? ' is-active' : ''}`}
-              onClick={() => p.setFloorSection('bookings')}
-            >
-              <CalendarDays size={16} aria-hidden />
-              {p.t('rst.pos.bookings')}
-            </button>
-          </div>
-        ) : null}
-
         {p.activeOrderId ? (
           p.order ? (
             <OrderWorkspace

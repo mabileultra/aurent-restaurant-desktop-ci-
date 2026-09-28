@@ -9,6 +9,7 @@ import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWor
 import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
 import { toastApiError } from '../../../utils/apiError';
+import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
 
@@ -103,6 +104,18 @@ export function useKitchenPosPage() {
   });
 
   const tickets = ticketsQuery.data ?? [];
+
+  useEffect(() => {
+    const rows = ticketsQuery.data;
+    if (!rows?.length) return undefined;
+    let cancelled = false;
+    printKitchenBoardTickets(rows, t).catch(() => {
+      if (cancelled) return;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [ticketsQuery.data, t]);
   const columns = groupTicketsByStatus(tickets);
   const waiterNameById = useMemo(() => {
     const map = new Map();

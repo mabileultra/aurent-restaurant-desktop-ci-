@@ -2,6 +2,7 @@ import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
 import { useStationsAdminPage } from '../hooks/useStationsAdminPage';
+import RestaurantPrinterSettings from '../components/RestaurantPrinterSettings';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -21,6 +22,8 @@ export default function StationsAdminPage() {
           <p className="rst-coming__text mb-0">{p.t('rst.admin.stationsSubtitle')}</p>
         </div>
       </div>
+
+      <RestaurantPrinterSettings stations={p.stations} t={p.t} />
 
       <form
         className="rst-admin-form"

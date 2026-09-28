@@ -32,7 +32,7 @@
 
 .rst-floor-grid__toolbar-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 0.55rem 0.85rem;
   align-items: center;
   justify-content: space-between;
@@ -40,6 +40,7 @@
 }
 
 .rst-floor-grid__toolbar-row--filters {
+  flex-wrap: wrap;
   padding-top: 0.4rem;
   border-top: 1px solid var(--rst-line);
 }
@@ -49,9 +50,9 @@
   flex-wrap: nowrap;
   gap: 0.35rem;
   min-width: 0;
-  flex: 1 1 14rem;
+  flex: 1 1 auto;
   overflow-x: auto;
-  padding-bottom: 0.1rem;
+  overflow-y: hidden;
   scrollbar-width: thin;
 }
 
@@ -180,8 +181,8 @@
   min-height: 0;
   overflow: auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0.95rem;
+  grid-template-columns: repeat(auto-fill, minmax(188px, 1fr));
+  gap: 0.65rem;
   align-content: start;
   padding: 0.35rem 0.2rem 0.55rem;
   background-image:
@@ -195,9 +196,9 @@
   --card-accent: var(--rst-line);
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  min-height: 210px;
-  padding: 0.95rem;
+  gap: 0.45rem;
+  min-height: 168px;
+  padding: 0.7rem;
   border: 1.5px solid var(--card-accent);
   border-radius: 18px;
   background:
@@ -262,7 +263,7 @@
   flex-direction: column;
   gap: 0.35rem;
   justify-content: center;
-  min-height: 5.5rem;
+  min-height: 4.2rem;
 }
 
 .rst-table-card__amount {
@@ -284,7 +285,7 @@
 
 .rst-table-card__guest,
 .rst-table-card__seats {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 800;
   color: var(--rst-ink);
   line-height: 1.2;

@@ -14,6 +14,7 @@ public record OrderItemResponse(
     BigDecimal returnedQuantity,
     BigDecimal unitPrice,
     BigDecimal lineTotal,
+    BigDecimal taxRate,
     String note,
     OrderItemStatus itemStatus,
     int sortOrder,

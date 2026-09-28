@@ -3,6 +3,11 @@
  * Browser print only — no OFD / Multikassa / ESC/POS fiscal path.
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import {
+  getDesktopPrinterSettings,
+  isDesktopPrinter,
+  printTicketHtml,
+} from './desktopPrinters';
 
 const HOST_ID = 'rst-ordinary-sale-print-host';
 
@@ -82,6 +87,15 @@ export async function printOrdinarySaleReceipt({ sale, t } = {}) {
       <div class="rst-ord-print__row"><span>${escapeHtml(methodLabel)}</span><strong>${fmtMoneyCompact(sale.cashAmount != null || sale.cardAmount != null ? (Number(sale.cashAmount) || 0) + (Number(sale.cardAmount) || 0) : totalAmount)}</strong></div>
       ${Number(sale.changeGiven) > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача')}</span><strong>${fmtMoneyCompact(sale.changeGiven)}</strong></div>` : ''}
     </div>`;
+  if (isDesktopPrinter()) {
+    const settings = await getDesktopPrinterSettings();
+    const printer = settings?.receiptPrinterName || '';
+    if (printer) {
+      await printTicketHtml(host.innerHTML, printer);
+      return { mode: 'silent', fiscal: false };
+    }
+  }
+
   document.body.appendChild(host);
 
   try {

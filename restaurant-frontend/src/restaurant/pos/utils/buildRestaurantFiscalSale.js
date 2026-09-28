@@ -1,7 +1,11 @@
 import { extractVatFromInclusive, round2 } from '../../../utils/taxAmounts';
 import { resolveRestaurantPayTotal } from './restaurantPayAmount';
 
-const DEFAULT_VAT = 12;
+function vatPercent(item) {
+  const rate = Number(item?.taxRate);
+  if (!Number.isFinite(rate) || rate < 0) return 0;
+  return rate;
+}
 
 function isBillable(item) {
   return item && String(item.itemStatus || '').toUpperCase() !== 'CANCELLED';
@@ -20,7 +24,7 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
     name: item.name || 'Блюдо',
     quantity: Number(item.quantity) || 0,
     unitPrice: Number(item.unitPrice) || 0,
-    taxRate: DEFAULT_VAT,
+    taxRate: vatPercent(item),
     unitOfMeasure: 'шт',
   }));
 
@@ -37,7 +41,7 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
       name: label,
       quantity: 1,
       unitPrice: serviceAmount,
-      taxRate: DEFAULT_VAT,
+      taxRate: 0,
       unitOfMeasure: 'шт',
     });
   }
@@ -49,7 +53,7 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
       name: 'Скидка',
       quantity: 1,
       unitPrice: -discount,
-      taxRate: DEFAULT_VAT,
+      taxRate: 0,
       unitOfMeasure: 'шт',
     });
   }
@@ -85,7 +89,7 @@ export function buildRestaurantFiscalSale({
   const items = cartLines.map((line, idx) => {
     const orderItem = (order?.items ?? []).filter(isBillable)[idx];
     const lineTotal = round2(line.unitPrice * line.quantity);
-    const taxRatePercent = line.taxRate ?? DEFAULT_VAT;
+    const taxRatePercent = line.taxRate ?? 0;
     const returnedQuantity = Number(orderItem?.returnedQuantity) || 0;
     return {
       id: orderItem?.id || `${order?.id || 'rst'}-${idx}`,

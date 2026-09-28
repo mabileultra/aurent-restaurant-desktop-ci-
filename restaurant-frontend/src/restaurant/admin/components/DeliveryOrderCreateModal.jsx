@@ -1,4 +1,5 @@
 import { BaseButton, BaseInput, BaseModal } from '../../../components/ui';
+import '../../shared/styles/rst-modal.css';
 import '../styles/delivery-order-edit-modal.css';
 
 /** Create restaurant-floor delivery order (rst channel), not retail /orders. */
@@ -20,6 +21,8 @@ export default function DeliveryOrderCreateModal({
       open={open}
       onClose={onClose}
       title={t('rst.delivery.addTitle', { defaultValue: 'Новая доставка' })}
+      className="base-modal--rst"
+      overlayClassName="base-modal-overlay--rst"
     >
       <form
         className="delivery-order-edit-modal"

@@ -17,6 +17,7 @@ public class MenuItemResponseFactory {
             base.name(),
             base.sku(),
             base.price(),
+            base.taxRate(),
             base.active(),
             base.available(),
             base.sortOrder(),

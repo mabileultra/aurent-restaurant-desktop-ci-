@@ -2221,6 +2221,7 @@
     "newReceiptConfirm": "Yangi chek ochilsinmi? Joriy pozitsiyalar o‘chiriladi.",
     "newReceiptDone": "Chek #{{n}} ochildi",
     "parkedCount": "Saqlangan: {{count}}",
+    "parkedLookup": "Saqlanganlar",
     "parkedSlot": "Saqlangan №{{n}}",
     "clearReceipt": "Tozalash",
     "searchTitle": "Dorixona ombori qoldiqlari",
