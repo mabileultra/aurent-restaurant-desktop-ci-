@@ -6,8 +6,8 @@
 
 .rst-kds-stations button {
   border: 1px solid var(--rst-line);
-  background: #121821;
-  color: #cbd5e1;
+  background: var(--rst-surface-2);
+  color: var(--rst-muted);
   border-radius: 999px;
   padding: 0.35rem 0.85rem;
   font-size: 0.8rem;
@@ -16,9 +16,9 @@
 }
 
 .rst-kds-stations button.is-active {
-  background: #f8fafc;
-  color: #0f172a;
-  border-color: #f8fafc;
+  background: var(--rst-ink);
+  color: var(--rst-bg);
+  border-color: var(--rst-ink);
 }
 
 .rst-kds-page {
@@ -39,7 +39,7 @@
   padding: 0.65rem 0.85rem;
   border: 1px solid var(--rst-line);
   border-radius: 14px;
-  background: linear-gradient(180deg, #151c28, #10151f);
+  background: var(--rst-surface);
 }
 
 .rst-kds-top__brand {
@@ -141,7 +141,7 @@
   flex-direction: column;
   border: 1px solid var(--rst-line);
   border-radius: 16px;
-  background: rgb(16 20 30 / 0.92);
+  background: var(--rst-surface);
   padding: 0.7rem;
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
 }
@@ -202,9 +202,9 @@
   flex-direction: column;
   gap: 0.55rem;
   padding: 0.75rem;
-  border: 1.5px solid #2a3344;
+  border: 1.5px solid var(--rst-line);
   border-radius: 14px;
-  background: linear-gradient(180deg, #1a2230, #121821);
+  background: var(--rst-surface-2);
   box-shadow: 0 10px 24px rgb(0 0 0 / 0.28);
 }
 
@@ -444,10 +444,10 @@
 .rst-kds-foot__hints kbd {
   padding: 0.08rem 0.3rem;
   border-radius: 5px;
-  border: 1px solid #2a3344;
-  background: #151b26;
+  border: 1px solid var(--rst-line);
+  background: var(--rst-surface-2);
   font: inherit;
-  color: #c5cce0;
+  color: var(--rst-ink);
 }
 
 @media (max-width: 1200px) {

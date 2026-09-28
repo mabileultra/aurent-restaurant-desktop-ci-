@@ -42,8 +42,12 @@
   padding: 0.45rem 0.6rem;
   border: 1px solid var(--rst-line);
   border-radius: 10px;
-  background: var(--rst-surface);
-  color: inherit;
+  background-color: var(--rst-surface);
+  color: var(--rst-ink);
+}
+
+.rst-dash__filter select {
+  padding-right: 2.1rem;
 }
 
 .rst-dash__toolbar-user {

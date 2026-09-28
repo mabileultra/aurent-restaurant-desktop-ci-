@@ -90,7 +90,7 @@
   padding: 0.7rem 0.95rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font: inherit;
   font-weight: 650;
@@ -155,7 +155,7 @@
   padding: 0 0.55rem;
   border: 1px solid var(--rst-line);
   border-radius: 10px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-muted);
   font-size: 0.85rem;
   font-weight: 700;

@@ -10,7 +10,7 @@
   padding: 0 0.95rem;
   border: 1px solid var(--rst-line, #2a3140);
   border-radius: 999px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-muted, #94a3b8);
   font: inherit;
   font-size: 0.82rem;
@@ -22,7 +22,7 @@
 .rst-nomenclature-tabs__btn:hover {
   color: var(--rst-ink, #f8fafc);
   border-color: rgb(255 255 255 / 0.22);
-  background: #161d2a;
+  background: var(--rst-surface);
 }
 
 .rst-nomenclature-tabs__btn.is-active {

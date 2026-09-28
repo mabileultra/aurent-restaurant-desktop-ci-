@@ -7,6 +7,7 @@ import RestaurantWorkspaceEmpty from '../../shared/components/RestaurantWorkspac
 import PosZoomControls from '../components/PosZoomControls';
 import KitchenTicketCard from '../components/KitchenTicketCard';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
+import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { KDS_COLUMNS } from '../utils/kitchenBoard';
@@ -97,6 +98,7 @@ export default function RestaurantKitchenPage() {
             </Link>
           ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />
+          <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />
           <span className="rst-pos__online">
             <span className="rst-pos__online-dot" aria-hidden />

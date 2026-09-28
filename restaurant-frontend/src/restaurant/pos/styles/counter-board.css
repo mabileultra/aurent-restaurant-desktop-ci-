@@ -63,7 +63,7 @@
   padding: 1rem;
   border: 1.5px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   color: inherit;
   text-align: left;
   transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;

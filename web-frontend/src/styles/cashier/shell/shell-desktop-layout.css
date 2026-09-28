@@ -108,7 +108,7 @@ html.cashier-shell--desktop #root {
   color: var(--pos-ink);
 }
 
-.cashier-app.cashier-app--light.cashier-app--desktop .cashier-desktop-menu:hover .cashier-desktop-menu__trigger,
+.cashier-app.cashier-app--light.cashier-app--desktop .cashier-desktop-menu__trigger:hover,
 .cashier-app.cashier-app--light.cashier-app--desktop .cashier-desktop-menu.is-open .cashier-desktop-menu__trigger {
   background: var(--pos-surface-hover);
   border-color: var(--pos-ink);

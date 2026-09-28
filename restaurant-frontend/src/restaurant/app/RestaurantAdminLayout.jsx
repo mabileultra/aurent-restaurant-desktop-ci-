@@ -4,6 +4,7 @@ import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { BaseButton } from '../../components/ui';
 import LanguageSwitcher from '../../components/shared/LanguageSwitcher';
+import RestaurantThemeSwitch from '../shared/components/RestaurantThemeSwitch';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
 import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
@@ -47,6 +48,7 @@ export default function RestaurantAdminLayout() {
               <RstWorkspaceStorePicker t={t} />
             </div>
             <div className="rst-shell__actions">
+              <RestaurantThemeSwitch />
               <LanguageSwitcher variant="rst" />
               <BaseButton
                 type="button"

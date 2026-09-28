@@ -9,7 +9,7 @@
   padding: 1rem;
   border: 1.5px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 10px 24px rgb(0 0 0 / 0.18);
 }
 
@@ -168,7 +168,7 @@
   padding: 1rem;
   border: 1.5px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   color: inherit;
   text-decoration: none;
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.16);
@@ -221,7 +221,7 @@
 .rst-dash__chart-card {
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   padding: 1rem 1rem 0.75rem;
   min-height: 360px;
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.18);

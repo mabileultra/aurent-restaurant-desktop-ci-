@@ -11,6 +11,7 @@ import {
   Server,
   Tag,
 } from 'lucide-react';
+import { useCallback, useEffect, useRef } from 'react';
 import BrandMark from '../../../../components/shared/BrandMark';
 import { isDesktopCashier } from '../../../../utils/authLogin';
 import { BRAND_LOGO_SIZES } from '../../../../config/brandLogos';
@@ -27,6 +28,7 @@ export default function CashierDesktopMenuPanel({
     open,
     setOpen,
     run,
+    toggleFullscreen,
     printerLabel,
     labelPrinterLabel,
     scaleLabel,
@@ -38,38 +40,66 @@ export default function CashierDesktopMenuPanel({
     checkAppUpdates,
     openServerSetup,
     reloadUi,
+    reloadingUi,
   } = menu;
 
   const label = appName || 'Aurent';
   const desktop = isDesktopCashier();
+  const closeTimerRef = useRef(null);
+
+  const cancelClose = useCallback(() => {
+    if (closeTimerRef.current != null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  }, []);
+
+  const openMenu = useCallback(() => {
+    cancelClose();
+    setOpen(true);
+  }, [cancelClose, setOpen]);
+
+  const scheduleClose = useCallback(() => {
+    if (reloadingUi) return;
+    cancelClose();
+    closeTimerRef.current = window.setTimeout(() => {
+      closeTimerRef.current = null;
+      setOpen(false);
+    }, 200);
+  }, [cancelClose, reloadingUi, setOpen]);
+
+  useEffect(() => () => cancelClose(), [cancelClose]);
 
   return (
     <div
       ref={rootRef}
       className={`cashier-desktop-menu${open ? ' is-open' : ''}`}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
+      onMouseEnter={openMenu}
+      onMouseLeave={scheduleClose}
     >
       <button
         type="button"
         className="cashier-desktop-menu__trigger"
         aria-haspopup="menu"
         aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          cancelClose();
+          setOpen((v) => !v);
+        }}
       >
         {desktop ? (
           <BrandMark
             variant="full"
-            height={BRAND_LOGO_SIZES.fullDesktop}
+            height={BRAND_LOGO_SIZES.pharmacyDesktop}
             className="cashier-desktop-menu__logo"
           />
         ) : (
           <>
-            <BrandMark variant="full" height={BRAND_LOGO_SIZES.fullDesktop} className="cashier-desktop-menu__logo" />
+            <BrandMark variant="full" height={BRAND_LOGO_SIZES.pharmacyDesktop} className="cashier-desktop-menu__logo" />
             <span className="cashier-desktop-menu__label">{label}</span>
           </>
         )}
-        <ChevronDown size={14} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
+        <ChevronDown size={12} strokeWidth={2.5} className="cashier-desktop-menu__chevron" aria-hidden />
       </button>
       <div className="cashier-desktop-menu__panel" role="menu">
         <button
@@ -162,16 +192,27 @@ export default function CashierDesktopMenuPanel({
           type="button"
           className="cashier-desktop-menu__item"
           role="menuitem"
-          onClick={() => reloadUi()}
+          disabled={reloadingUi}
+          aria-busy={reloadingUi}
+          onClick={reloadUi}
         >
-          <RefreshCw size={15} strokeWidth={2} aria-hidden />
-          <span>{t('desktop.reload')}</span>
+          <RefreshCw
+            size={15}
+            strokeWidth={2}
+            className={reloadingUi ? 'cashier-desktop-menu__spin' : undefined}
+            aria-hidden
+          />
+          <span>
+            {reloadingUi
+              ? t('desktop.reloading', { defaultValue: 'Загрузка…' })
+              : t('desktop.reload')}
+          </span>
         </button>
         <button
           type="button"
           className="cashier-desktop-menu__item"
           role="menuitem"
-          onClick={() => run(() => window.desktopCashier.toggleFullscreen())}
+          onClick={toggleFullscreen}
         >
           <Maximize size={15} strokeWidth={2} aria-hidden />
           <span>{t('desktop.fullscreen')}</span>

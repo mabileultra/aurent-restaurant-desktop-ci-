@@ -6,7 +6,7 @@
   width: 11.5rem;
   padding: 0.85rem 0.6rem;
   border-right: 1px solid var(--rst-line);
-  background: #0f1520;
+  background: var(--rst-surface);
   overflow: auto;
 }
 
@@ -47,15 +47,15 @@
 }
 
 .rst-cashier-halls__btn:hover {
-  background: rgb(255 255 255 / 0.05);
+  background: color-mix(in srgb, var(--rst-ink) 6%, transparent);
 }
 
 .rst-cashier-halls__btn.is-active {
   border-color: rgb(255 122 26 / 0.45);
-  background: rgb(255 122 26 / 0.14);
-  color: #ffd7b0;
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
 }
 
 .rst-cashier-halls__btn.is-active span {
-  color: #ffd7b0;
+  color: var(--rst-ink);
 }

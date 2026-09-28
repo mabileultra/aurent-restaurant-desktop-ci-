@@ -3,19 +3,19 @@
   min-height: 420px;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius);
-  background:
-    linear-gradient(180deg, #1e2228, #191c21),
+  background-color: var(--rst-bg-deep);
+  background-image:
     repeating-linear-gradient(
       90deg,
       transparent,
       transparent 47px,
-      rgb(255 255 255 / 0.03) 48px
+      color-mix(in srgb, var(--rst-line) 80%, transparent) 48px
     ),
     repeating-linear-gradient(
       0deg,
       transparent,
       transparent 47px,
-      rgb(255 255 255 / 0.03) 48px
+      color-mix(in srgb, var(--rst-line) 80%, transparent) 48px
     );
   overflow: auto;
 }

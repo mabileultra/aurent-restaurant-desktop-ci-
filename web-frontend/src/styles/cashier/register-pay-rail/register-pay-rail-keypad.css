@@ -16,6 +16,8 @@
   flex-shrink: 1;
   min-height: 0;
   width: 100%;
+  /* Не раздувать на высоких мониторах: ~4 квадратных ряда от ширины. */
+  max-height: min(100%, calc(100cqw * 1.42));
   padding: 2px 0;
   display: flex;
   flex-direction: column;
@@ -26,7 +28,8 @@
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: none;
+  max-height: 100%;
+  height: 100%;
   width: 100%;
   gap: var(--pos-keypad-gap, 6px);
   overflow: hidden;
@@ -152,7 +155,7 @@
   }
 }
 
-/* POS desktop — читаемые клавиши фиксированной высоты */
+/* POS desktop — на низкой колонке чуть плотнее шрифт; высоту ключей даёт grid, не fixed px */
 @container pay-shell (max-height: 720px) {
   .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail .pos-pay-cash__hint {
     display: none;
@@ -164,10 +167,7 @@
   }
 
   .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
-    height: var(--pos-keypad-key-h, 48px);
-    min-height: var(--pos-keypad-key-h, 48px);
-    max-height: var(--pos-keypad-key-h, 48px);
-    font-size: var(--pos-keypad-digit-size);
+    font-size: clamp(0.875rem, 7cqi, var(--pos-keypad-digit-size, 1.2rem));
   }
 }
 
@@ -178,10 +178,7 @@
   }
 
   .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
-    height: var(--pos-keypad-key-h, 46px);
-    min-height: var(--pos-keypad-key-h, 46px);
-    max-height: var(--pos-keypad-key-h, 46px);
-    font-size: var(--pos-keypad-digit-size);
+    font-size: clamp(0.8125rem, 6.5cqi, var(--pos-keypad-digit-size, 1.1rem));
   }
 }
 
@@ -198,9 +195,6 @@
 
   .cashier-app.cashier-app--pos-desktop .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
   .cashier-app.cashier-app--pos-desktop .pos-pay-panel--register-rail.is-step-cash .pos-keypad__key {
-    height: var(--pos-keypad-key-h, 44px);
-    min-height: var(--pos-keypad-key-h, 44px);
-    max-height: var(--pos-keypad-key-h, 44px);
-    font-size: var(--pos-keypad-digit-size);
+    font-size: clamp(0.75rem, 6cqi, 1rem);
   }
 }

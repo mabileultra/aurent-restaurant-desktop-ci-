@@ -8,7 +8,7 @@
   padding: 0.75rem 0.8rem;
   border: 1px solid var(--rst-line);
   border-radius: 0.85rem;
-  background: #121722;
+  background: var(--rst-surface);
   color: inherit;
   font: inherit;
   text-align: left;
@@ -18,7 +18,7 @@
 }
 
 .rst-cashier-tile:hover {
-  border-color: rgb(255 255 255 / 0.22);
+  border-color: color-mix(in srgb, var(--rst-ink) 22%, transparent);
 }
 
 .rst-cashier-tile.is-selected {
@@ -60,7 +60,7 @@
 
 .rst-cashier-tile--FREE {
   border-color: rgb(34 197 94 / 0.35);
-  background: linear-gradient(180deg, rgb(34 197 94 / 0.12), #121722 55%);
+  background: linear-gradient(180deg, rgb(34 197 94 / 0.12), var(--rst-surface) 55%);
 }
 
 .rst-cashier-tile--FREE .rst-cashier-tile__status {
@@ -69,7 +69,7 @@
 
 .rst-cashier-tile--OCCUPIED {
   border-color: rgb(251 146 60 / 0.4);
-  background: linear-gradient(180deg, rgb(251 146 60 / 0.14), #121722 55%);
+  background: linear-gradient(180deg, rgb(251 146 60 / 0.14), var(--rst-surface) 55%);
 }
 
 .rst-cashier-tile--OCCUPIED .rst-cashier-tile__status {
@@ -78,7 +78,7 @@
 
 .rst-cashier-tile--WAITING_PAYMENT {
   border-color: rgb(250 204 21 / 0.45);
-  background: linear-gradient(180deg, rgb(250 204 21 / 0.16), #121722 55%);
+  background: linear-gradient(180deg, rgb(250 204 21 / 0.16), var(--rst-surface) 55%);
 }
 
 .rst-cashier-tile--WAITING_PAYMENT .rst-cashier-tile__status {
@@ -87,7 +87,7 @@
 
 .rst-cashier-tile--RESERVED {
   border-color: rgb(96 165 250 / 0.4);
-  background: linear-gradient(180deg, rgb(96 165 250 / 0.14), #121722 55%);
+  background: linear-gradient(180deg, rgb(96 165 250 / 0.14), var(--rst-surface) 55%);
 }
 
 .rst-cashier-tile--RESERVED .rst-cashier-tile__status {
@@ -97,4 +97,33 @@
 .rst-cashier-tile--BLOCKED,
 .rst-cashier-tile--CLEANING {
   opacity: 0.72;
+}
+
+html.rst-theme--light .rst-cashier-tile__amount {
+  color: var(--rst-ink);
+}
+
+html.rst-theme--light .rst-cashier-tile--FREE .rst-cashier-tile__status {
+  color: #15803d;
+}
+
+html.rst-theme--light .rst-cashier-tile--OCCUPIED .rst-cashier-tile__status {
+  color: #c2410c;
+}
+
+html.rst-theme--light .rst-cashier-tile--WAITING_PAYMENT .rst-cashier-tile__status {
+  color: #a16207;
+}
+
+html.rst-theme--light .rst-cashier-tile--RESERVED .rst-cashier-tile__status {
+  color: #1d4ed8;
+}
+
+html.rst-theme--light .rst-cashier-tile--BLOCKED,
+html.rst-theme--light .rst-cashier-tile--CLEANING {
+  opacity: 1;
+}
+
+html.rst-theme--light .rst-cashier-tile--CLEANING .rst-cashier-tile__status {
+  color: #c2410c;
 }

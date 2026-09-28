@@ -14,6 +14,7 @@ export function useCashierDesktopMenu() {
   const { t } = useTranslation();
   const rootRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [reloadingUi, setReloadingUi] = useState(false);
   const [printerName, setPrinterName] = useState('');
   const [labelPrinterName, setLabelPrinterName] = useState('');
   const [scalePort, setScalePort] = useState('');
@@ -69,21 +70,38 @@ export function useCashierDesktopMenu() {
     }
   };
 
-  const reloadUi = async () => {
+  /** Fullscreen: не ждать close/IPC — иначе меню ещё fade'ится, потом окно «догоняет». */
+  const toggleFullscreen = () => {
     close();
+    try {
+      void window.desktopCashier?.toggleFullscreen?.();
+    } catch {
+      /* ignore */
+    }
+  };
+
+  /** «Обновить»: спиннер сразу, reload без долгого ожидания ensureStartUrl. */
+  const reloadUi = () => {
+    if (reloadingUi) return;
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       toast.error(t('desktop.reloadNeedsInternet'));
       return;
     }
     if (typeof window.desktopCashier?.reload !== 'function') return;
-    try {
-      const result = await window.desktopCashier.reload();
-      if (result?.ok === false && result?.reason === 'offline') {
+    setReloadingUi(true);
+    void window.desktopCashier
+      .reload()
+      .then((result) => {
+        if (result?.ok === false && result?.reason === 'offline') {
+          setReloadingUi(false);
+          toast.error(t('desktop.reloadNeedsInternet'));
+        }
+        // ok: страница уходит в reload — спиннер остаётся до unload
+      })
+      .catch(() => {
+        setReloadingUi(false);
         toast.error(t('desktop.reloadNeedsInternet'));
-      }
-    } catch {
-      toast.error(t('desktop.reloadNeedsInternet'));
-    }
+      });
   };
 
   const openPrinterPicker = async () => {
@@ -210,6 +228,9 @@ export function useCashierDesktopMenu() {
     setOpen,
     close,
     run,
+    toggleFullscreen,
+    reloadUi,
+    reloadingUi,
     printerName,
     labelPrinterName,
     scalePort,
@@ -220,7 +241,6 @@ export function useCashierDesktopMenu() {
     openBarcodePage,
     checkAppUpdates,
     openServerSetup,
-    reloadUi,
     printerLabel: printerName || t('desktop.receiptPrinterNotSet'),
     labelPrinterLabel: labelPrinterName || t('desktop.receiptPrinterNotSet'),
     scaleLabel: scalePort || t('desktop.scaleNotSet'),

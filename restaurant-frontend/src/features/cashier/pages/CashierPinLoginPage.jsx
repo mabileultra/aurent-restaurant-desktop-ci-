@@ -13,6 +13,8 @@ export default function CashierPinLoginPage() {
     touchLayout,
     dots,
     dotCount,
+    pinError,
+    pinFull,
     loading,
     canSubmit,
     companyCode,
@@ -55,6 +57,8 @@ export default function CashierPinLoginPage() {
               t={t}
               dots={dots}
               dotCount={dotCount}
+              pinError={pinError}
+              pinFull={pinFull}
               loading={loading}
               canSubmit={canSubmit}
               onDigit={pressDigit}

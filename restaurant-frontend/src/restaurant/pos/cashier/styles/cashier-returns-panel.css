@@ -1,6 +1,27 @@
+.rst-cashier-returns {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .rst-cashier-returns-hint {
   margin: 0 0 1rem;
   font-size: 0.9rem;
-  opacity: 0.75;
+  color: var(--rst-muted);
   max-width: 40rem;
+  flex-shrink: 0;
+}
+
+.rst-cashier-returns .rst-cashier-recent {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin-top: 0.35rem;
+}
+
+.rst-cashier-returns .rst-cashier-recent__list {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
 }

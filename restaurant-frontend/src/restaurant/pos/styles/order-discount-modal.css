@@ -10,7 +10,7 @@
   padding: 0.3rem;
   border-radius: 12px;
   border: 1px solid var(--rst-line);
-  background: #0d121c;
+  background: var(--rst-surface-2);
 }
 
 .rst-order-discount__modes button {

@@ -64,7 +64,7 @@
   flex-shrink: 0;
   padding: 0.55rem 0.85rem;
   border-bottom: 1px solid var(--rst-line);
-  background: #0d121c;
+  background: var(--rst-bg);
 }
 
 .rst-cashier-top__brand {
@@ -103,6 +103,16 @@
   border-color: rgb(34 197 94 / 0.35);
   background: rgb(34 197 94 / 0.1);
   color: #86efac;
+}
+
+html.rst-theme--light .rst-cashier-top__shift {
+  color: #b91c1c;
+  background: rgb(248 113 113 / 0.14);
+}
+
+html.rst-theme--light .rst-cashier-top__shift.is-open {
+  color: #15803d;
+  background: rgb(34 197 94 / 0.16);
 }
 
 .rst-cashier-top__actions {

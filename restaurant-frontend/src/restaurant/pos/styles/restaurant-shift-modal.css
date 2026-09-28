@@ -23,7 +23,7 @@
   border-radius: 14px;
   border: 1px solid var(--rst-border, #2a2a2a);
   background: var(--rst-surface, #161616);
-  color: inherit;
+  color: var(--rst-ink, #f4f6fb);
   padding: 16px 18px 18px;
   box-shadow: 0 24px 48px rgb(0 0 0 / 0.45);
 }
@@ -82,7 +82,7 @@
   padding: 10px;
   border-radius: 10px;
   border: 1px solid var(--rst-border, #2a2a2a);
-  background: #0f0f0f;
+  background: var(--rst-surface-2);
 }
 
 .rst-shift-modal__stats > div {
@@ -119,6 +119,19 @@
   gap: 6px;
   margin-top: 12px;
   font-size: 0.8125rem;
+  color: var(--rst-ink, #f4f6fb);
+}
+
+.rst-shift-modal__cash .base-field__control {
+  background-color: var(--rst-surface-2, #1c2230);
+  color: var(--rst-ink, #f4f6fb);
+  border: 1px solid var(--rst-line, #2a3344);
+  border-radius: 10px;
+}
+
+.rst-shift-modal__cash .base-field__control:focus {
+  border-color: var(--rst-accent, #ff7a1a);
+  box-shadow: 0 0 0 3px var(--rst-accent-soft, rgb(255 122 26 / 0.18));
 }
 
 .rst-shift-modal__actions {

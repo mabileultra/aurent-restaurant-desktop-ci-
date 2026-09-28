@@ -66,7 +66,6 @@ async function reloadActiveUi({ clearSession = false, navigateToStart = false } 
   if (!mainWindow || mainWindow.isDestroyed()) {
     return { ok: false, reason: 'no_window' };
   }
-  const start = await uiSession.ensureStartUrl();
   const online = typeof net.isOnline === 'function' ? net.isOnline() : true;
   const currentUrl = mainWindow.webContents.getURL() || '';
 
@@ -75,10 +74,32 @@ async function reloadActiveUi({ clearSession = false, navigateToStart = false } 
     return {
       ok: false,
       reason: 'offline',
-      url: currentUrl || start.url,
-      source: start.source,
+      url: currentUrl,
+      source: 'current',
     };
   }
+
+  // Обычный soft reload: сначала страница, потом ensureStartUrl (иначе UI ждёт сеть/старт).
+  if (!clearSession && !navigateToStart && currentUrl && !currentUrl.startsWith('data:')) {
+    try {
+      mainWindow.webContents.reloadIgnoringCache();
+    } catch {
+      mainWindow.reload();
+    }
+    try {
+      const start = await uiSession.ensureStartUrl();
+      return {
+        ok: true,
+        url: start.url,
+        source: start.source,
+        reason: start.reason,
+      };
+    } catch {
+      return { ok: true, url: currentUrl, source: 'current' };
+    }
+  }
+
+  const start = await uiSession.ensureStartUrl();
 
   // «Обновить» = soft reload текущей страницы. Не кидать на PIN-логин.
   if (clearSession || navigateToStart) {

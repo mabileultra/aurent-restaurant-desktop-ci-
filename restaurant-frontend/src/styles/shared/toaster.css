@@ -1,8 +1,10 @@
-/* Keep toasts inside the app window (desktop cashier clips otherwise). */
+/* Keep toasts inside the app window (desktop cashier clips otherwise).
+   Above cashier-pin-login (z-index 2147483600) so login errors stay visible. */
 .app-toaster {
   inset: 12px !important;
   overflow: hidden !important;
   pointer-events: none !important;
+  z-index: 2147483646 !important;
 }
 
 .app-toaster [role='status'] {

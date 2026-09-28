@@ -38,7 +38,7 @@
   min-width: 0;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.18);
   overflow: hidden;
 }
@@ -173,7 +173,7 @@
   padding: 0.85rem;
   border: 1.5px solid var(--rst-line);
   border-radius: 14px;
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   text-align: left;
   box-shadow: 0 8px 20px rgb(0 0 0 / 0.16);
   transition: border-color 0.12s ease, transform 0.12s ease, box-shadow 0.12s ease;

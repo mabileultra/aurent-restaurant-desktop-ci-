@@ -23,18 +23,20 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Клавиатура: занимает оставшееся место, ПРОДАЖА всегда внизу колонки */
+/* Клавиатура: остаток колонки, но capped по ширине (~квадратные ряды) */
 .cashier-app .pos-register-pay-rail__keypad-wrap {
   flex: 1 1 auto;
   flex-shrink: 1;
   min-height: 0;
+  max-height: min(100%, calc(100cqw * 1.42));
   overflow: hidden;
 }
 
 .cashier-app .pos-register-pay-rail__keypad-wrap .pos-keypad {
   flex: 1 1 auto;
   min-height: 0;
-  max-height: none;
+  max-height: 100%;
+  height: 100%;
   overflow: hidden;
 }
 

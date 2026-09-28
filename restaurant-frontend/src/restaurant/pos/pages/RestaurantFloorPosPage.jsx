@@ -9,6 +9,7 @@ import FloorPosModals from '../components/FloorPosModals';
 import OrderWorkspace from '../components/OrderWorkspace';
 import PosZoomControls from '../components/PosZoomControls';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
+import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import '../../shared/styles/restaurant-tokens.css';
@@ -132,6 +133,7 @@ export default function RestaurantFloorPosPage() {
         </div>
         <div className="rst-pos__actions">
           <PosZoomControls zoom={zoom} t={p.t} />
+          <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />
           <BaseButton
             type="button"

@@ -123,12 +123,46 @@
 }
 
 .rst-app .form-select,
-.rst-app input:not([type="checkbox"]):not([type="radio"]),
+.rst-app input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not(.base-select__input):not(.base-select__search),
 .rst-app textarea,
 .rst-app select {
-  background: var(--rst-surface-2);
+  background-color: var(--rst-surface-2);
   color: var(--rst-ink);
   border-color: var(--rst-line);
+}
+
+.rst-app select,
+.rst-app .form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238b93a7' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 0.75rem;
+  padding-right: 2.1rem;
+}
+
+.rst-app select option {
+  background-color: var(--rst-surface);
+  color: var(--rst-ink);
+}
+
+.rst-app input::placeholder,
+.rst-app textarea::placeholder {
+  color: var(--rst-muted);
+  opacity: 1;
+}
+
+.rst-app input[type="checkbox"],
+.rst-app input[type="radio"] {
+  accent-color: var(--rst-accent);
+}
+
+.rst-app input:-webkit-autofill,
+.rst-app textarea:-webkit-autofill,
+.rst-app select:-webkit-autofill {
+  -webkit-text-fill-color: var(--rst-ink);
+  caret-color: var(--rst-ink);
+  box-shadow: 0 0 0 1000px var(--rst-surface-2) inset;
 }
 
 .rst-app .form-select:focus,
@@ -353,4 +387,17 @@ html.rst-theme .text-emerald-800,
 html.rst-theme .dark\:text-emerald-300,
 html.rst-theme .dark\:text-emerald-400 {
   color: var(--rst-accent) !important;
+}
+
+/* Light theme: page, panels, text, lines. Accent and status colors stay. */
+html.rst-theme.rst-theme--light,
+html.rst-theme.rst-theme--light .rst-app {
+  --rst-bg: #ffffff;
+  --rst-bg-deep: #f4f6f8;
+  --rst-surface: #ffffff;
+  --rst-surface-2: #f3f5f8;
+  --rst-ink: #12151c;
+  --rst-muted: #5c6578;
+  --rst-line: #e3e7ee;
+  --rst-shadow: 0 12px 32px rgb(15 23 42 / 0.08);
 }

@@ -50,7 +50,7 @@
   padding: 0.75rem 1rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font: inherit;
   font-size: 1.05rem;
@@ -82,7 +82,7 @@
   min-height: 3rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font: inherit;
   font-weight: 700;
@@ -115,7 +115,7 @@
   height: 3rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font-size: 1.6rem;
   line-height: 1;
@@ -146,7 +146,7 @@
   min-height: 2.85rem;
   border: 1px solid transparent;
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font: inherit;
   font-size: 1rem;

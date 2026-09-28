@@ -717,6 +717,9 @@
     },
     "brand": "Aurent Restaurant",
     "brandKicker": "Restaurant OS",
+    "theme": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
     "cashier": {
       "backToCashier": "Back to cashier",
       "currentOrder": "Current order",

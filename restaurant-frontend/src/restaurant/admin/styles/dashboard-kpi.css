@@ -12,7 +12,7 @@
   padding: 1rem;
   border: 1.5px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1b2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 10px 24px rgb(0 0 0 / 0.18);
   text-decoration: none;
   color: inherit;

@@ -5,14 +5,14 @@
   gap: 1rem;
   margin-bottom: 0.85rem;
   padding: 0.72rem 1rem;
-  border: 1px solid #2a3140;
+  border: 1px solid var(--rst-line);
   border-radius: 14px;
-  background: #141820;
+  background: var(--rst-surface);
 }
 
 .rst-shift-bar.is-closed {
-  background: #1a1416;
-  border-color: #5a3030;
+  background: color-mix(in srgb, #ff453a 10%, var(--rst-surface));
+  border-color: color-mix(in srgb, #ff453a 45%, var(--rst-line));
 }
 
 .rst-shift-bar__meta {
@@ -20,7 +20,7 @@
   flex-wrap: wrap;
   gap: 0.65rem 1.25rem;
   font-size: 0.84rem;
-  color: #93a0b8;
+  color: var(--rst-muted);
 }
 
 .rst-shift-bar__meta strong {
@@ -36,7 +36,7 @@
 
 .rst-shift-bar__actions .btn,
 .rst-shift-bar__actions button {
-  color: #f4f6fb !important;
-  border-color: #3a4356 !important;
-  background: #1a2030 !important;
+  color: var(--rst-ink) !important;
+  border-color: var(--rst-line) !important;
+  background: var(--rst-surface-2) !important;
 }

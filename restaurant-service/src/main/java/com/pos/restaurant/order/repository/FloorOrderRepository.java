@@ -58,6 +58,24 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
         Pageable pageable
     );
 
+    @Query("""
+        select o from FloorOrder o
+        where o.companyId = :companyId and o.storeId = :storeId
+          and (
+            o.status = com.pos.restaurant.order.domain.OrderStatus.REFUNDED
+            or exists (
+              select 1 from FloorOrderItem i
+              where i.order = o and i.returnedQuantity > 0
+            )
+          )
+        order by o.closedAt desc, o.openedAt desc
+        """)
+    List<FloorOrder> findRecentRefundedByCompanyIdAndStoreId(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        Pageable pageable
+    );
+
     @Query("select coalesce(max(o.orderNo), 0) from FloorOrder o where o.storeId = :storeId")
     int findMaxOrderNo(@Param("storeId") Integer storeId);
 

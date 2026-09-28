@@ -82,7 +82,7 @@
   font-size: clamp(1rem, 4.5cqi, var(--pos-pay-cash-change-font));
 }
 
-/* ── Клавиатура сжимается; ПРОДАЖА всегда видна ── */
+/* ── Клавиатура: растёт в остаток, но не выше «квадратных» 4 рядов от ширины ── */
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail {
   justify-content: flex-start;
@@ -94,9 +94,11 @@
   flex-shrink: 1;
   min-height: 0;
   height: auto;
-  max-height: none;
+  /* 4 ряда ≈ квадрат от ширины колонки (+gap). На высоком мониторе не раздувается. */
+  max-height: min(100%, calc(100cqw * 1.42));
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   overflow: hidden;
 }
 
@@ -104,8 +106,9 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;
-  max-height: none;
+  width: 100%;
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -115,22 +118,25 @@
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__grid {
   flex: 1 1 auto;
   min-height: 0;
-  height: auto;
+  width: 100%;
+  height: 100%;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-template-rows: repeat(4, minmax(0, 1fr));
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key {
+  width: 100%;
   height: auto;
   min-height: 0;
   max-height: none;
-  font-size: var(--pos-keypad-digit-size, 1.25rem);
+  aspect-ratio: auto;
+  font-size: clamp(0.9375rem, 7.5cqi, var(--pos-keypad-digit-size, 1.25rem));
 }
 
 .cashier-app.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action,
 .cashier-app.cashier-app--pharmacy-pos.cashier-app--pos-screen .pos-register-pay-rail__keypad-wrap .pos-keypad__key--action {
-  font-size: var(--pos-keypad-action-size, 0.75rem);
+  font-size: clamp(0.625rem, 4.2cqi, var(--pos-keypad-action-size, 0.75rem));
 }
 
 /* ── Продажа + печать ── */

@@ -1,4 +1,5 @@
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
+import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwitch';
 import PosZoomControls from '../../components/PosZoomControls';
 import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
@@ -37,6 +38,7 @@ export default function CashierTopBar({
 
       <div className="rst-cashier-top__actions">
         <PosZoomControls zoom={zoom} t={t} />
+        <RestaurantThemeSwitch />
         <LanguageSwitcher variant="rst" />
         <BaseButton
           type="button"

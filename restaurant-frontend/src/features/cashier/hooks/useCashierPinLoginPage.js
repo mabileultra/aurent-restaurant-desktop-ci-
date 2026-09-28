@@ -16,7 +16,7 @@ import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAccess';
 import { logoutAndResetSession } from '../../../utils/authSession';
-import { normalizePin, PIN_MIN } from '../utils/cashierPinUtils';
+import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
 
 const PIN_ROLES = new Set(['CASHIER', 'WAITER', 'COOK']);
 
@@ -39,6 +39,7 @@ export function useCashierPinLoginPage() {
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
   const [pin, setPin] = useState('');
+  const [pinError, setPinError] = useState('');
   const [companyCode, setCompanyCode] = useState('');
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -95,7 +96,7 @@ export function useCashierPinLoginPage() {
   );
 
   const canSubmit = useMemo(
-    () => normalizePin(pin).length >= PIN_MIN && Boolean(normalizedCompanyCode),
+    () => normalizePin(pin).length === PIN_MAX && Boolean(normalizedCompanyCode),
     [pin, normalizedCompanyCode]
   );
 
@@ -108,6 +109,7 @@ export function useCashierPinLoginPage() {
       return;
     }
     setLoading(true);
+    setPinError('');
     try {
       const res = await authApi.cashierPinLogin({
         companyLoginCode: loginCode,
@@ -115,11 +117,11 @@ export function useCashierPinLoginPage() {
       });
       const { token: accessToken, ...profile } = res.data;
       if (!accessToken) {
-        toast.error(t('login.failed'));
+        setPinError(t('login.failed'));
         return;
       }
       if (!PIN_ROLES.has(profile.role)) {
-        toast.error(t('login.failed'));
+        setPinError(t('login.failed'));
         return;
       }
       const loginCodeFromProfile = normalizeCompanyLoginCode(profile.companyLoginCode);
@@ -135,7 +137,7 @@ export function useCashierPinLoginPage() {
       const { path, access } = await resolvePinHomePath(profile.role);
       if (!access.ok) {
         logoutAndResetSession();
-        toast.error(t('login.wrongAppUnknown'));
+        setPinError(t('login.wrongAppUnknown'));
         freshLoginRef.current = false;
         return;
       }
@@ -144,9 +146,8 @@ export function useCashierPinLoginPage() {
         freshLoginRef.current = false;
       }, 4000);
     } catch (err) {
-      toast.error(resolveAuthErrorMessage(err, t), {
-        id: err.response ? 'cashier-login-api' : 'cashier-login-network',
-      });
+      const message = resolveAuthErrorMessage(err, t);
+      setPinError(message || t('login.badPin', { defaultValue: 'Неверный PIN' }));
       setPin('');
     } finally {
       setLoading(false);
@@ -154,14 +155,21 @@ export function useCashierPinLoginPage() {
   }, [canSubmit, loading, normalizedCompanyCode, pin, setAuth, navigate, t]);
 
   const pressDigit = useCallback((d) => {
-    setPin((p) => normalizePin(p + String(d)));
+    setPinError('');
+    setPin((p) => {
+      const current = normalizePin(p);
+      if (current.length >= PIN_MAX) return current;
+      return normalizePin(current + String(d));
+    });
   }, []);
 
   const backspace = useCallback(() => {
+    setPinError('');
     setPin((p) => normalizePin(p).slice(0, -1));
   }, []);
 
   const clear = useCallback(() => {
+    setPinError('');
     setPin('');
   }, []);
 
@@ -193,7 +201,8 @@ export function useCashierPinLoginPage() {
   }, [loading, pressDigit, backspace, submit]);
 
   const dots = normalizePin(pin);
-  const dotCount = Math.max(PIN_MIN, dots.length);
+  const dotCount = PIN_MAX;
+  const pinFull = dots.length >= PIN_MAX;
 
   return {
     t,
@@ -201,6 +210,8 @@ export function useCashierPinLoginPage() {
     pin,
     dots,
     dotCount,
+    pinError,
+    pinFull,
     loading,
     canSubmit,
     companyCode,

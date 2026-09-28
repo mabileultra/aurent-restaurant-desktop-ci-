@@ -221,22 +221,21 @@ export function useFloorPosPage() {
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
 
+  const addItemNow = (menuItem) => {
+    if (!menuItem || order?.status === 'BILLING') return;
+    m.addItemMutation.mutate({
+      menuItem,
+      modifierOptionIds: [],
+      note: '',
+    });
+  };
+
   const handleAddItem = (menuItem) => {
-    if (order?.status === 'BILLING') return;
-    setPendingVariants(null);
-    setPendingMenuItem(menuItem);
-    setSelectedModifierIds([]);
-    setPendingItemNote('');
+    addItemNow(menuItem);
   };
 
   const handleComposeFamily = (family) => {
-    if (order?.status === 'BILLING') return;
-    const variants = family?.variants ?? [];
-    if (!variants.length) return;
-    setPendingVariants(variants.length > 1 ? variants : null);
-    setPendingMenuItem(variants[0]);
-    setSelectedModifierIds([]);
-    setPendingItemNote('');
+    addItemNow(family?.primary ?? family?.variants?.[0]);
   };
 
   const selectComposeVariant = (variant) => {
@@ -252,6 +251,10 @@ export function useFloorPosPage() {
   };
 
   const openLineNote = (line) => {
+    setPendingMenuItem(null);
+    setPendingVariants(null);
+    setSelectedModifierIds([]);
+    setPendingItemNote('');
     setLineNoteEdit({ id: line.id, name: line.name, note: line.note || '' });
   };
 

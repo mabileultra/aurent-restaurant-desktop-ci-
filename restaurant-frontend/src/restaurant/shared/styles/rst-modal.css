@@ -7,14 +7,14 @@
 
 .base-modal--rst {
   border-color: var(--rst-line);
-  background: linear-gradient(180deg, #1c2330 0%, var(--rst-surface) 48%);
+  background: var(--rst-surface);
   box-shadow: 0 22px 48px rgb(0 0 0 / 0.45);
   border-radius: 18px;
 }
 
 .base-modal--rst .base-modal__header {
   border-bottom-color: var(--rst-line);
-  background: rgb(255 255 255 / 0.02);
+  background: color-mix(in srgb, var(--rst-ink) 4%, transparent);
   padding: 1rem 1.15rem;
 }
 
@@ -31,7 +31,7 @@
 
 .base-modal--rst .base-modal__footer {
   border-top-color: var(--rst-line);
-  background: rgb(0 0 0 / 0.12);
+  background: color-mix(in srgb, var(--rst-ink) 6%, transparent);
   padding: 0.95rem 1.15rem;
   gap: 0.65rem;
 }
@@ -66,7 +66,7 @@
 
 .base-modal--rst .base-field__control,
 .base-modal--rst select.base-field__control {
-  background: var(--rst-surface-2) !important;
+  background-color: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
   border-radius: 10px;
@@ -93,7 +93,7 @@
   line-height: 1.35;
   border: 1px solid var(--rst-line) !important;
   border-radius: 10px;
-  background: var(--rst-surface-2) !important;
+  background-color: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   box-shadow: none !important;
 }
@@ -121,6 +121,16 @@
 }
 
 /* Legacy overlay used by older modals */
+.rst-line-note-modal {
+  z-index: 80;
+  align-items: center;
+  padding: 1.25rem;
+}
+
+.rst-line-note {
+  width: min(440px, 100%);
+}
+
 .rst-modal {
   position: fixed;
   inset: 0;
@@ -171,7 +181,7 @@
   padding: 0.65rem 0.9rem;
   font-size: 1rem;
   line-height: 1.3;
-  background: var(--rst-surface-2) !important;
+  background-color: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
   border-radius: 10px;

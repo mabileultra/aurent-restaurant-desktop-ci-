@@ -204,6 +204,19 @@
   background: #f8fafc;
 }
 
+.cashier-pin-login__pin-display.is-error {
+  border-color: #f87171;
+  background: #fef2f2;
+}
+
+.cashier-pin-login__pin-error {
+  margin: 0.625rem 0 0;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
 .cashier-pin-login__dots {
   display: flex;
   align-items: center;

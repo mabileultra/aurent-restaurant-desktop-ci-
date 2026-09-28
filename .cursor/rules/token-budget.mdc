@@ -1,0 +1,26 @@
+---
+description: Spend fewer tokens — short answers, narrow search, no dump
+alwaysApply: true
+---
+
+# Token budget
+
+## Default behavior
+
+- Answer in **1–5 short sentences** unless the user asks for detail.
+- **One** focused tool pass when possible; no broad repo sweeps «на всякий случай».
+- Prefer `rg`/`Glob` with a **narrow path** over whole-repo search.
+- Do **not** re-read huge files already in context; do **not** paste long logs/diffs into the reply.
+- Do **not** start parallel explore agents / Bugbot / Security Review unless the user asks.
+- Do **not** restate the whole plan after every step — only what changed / what to do next.
+- New chat for a **new** topic; keep this thread for the same bug/feature.
+
+## When coding
+
+- Touch the smallest set of files; no drive-by refactors.
+- Skip long explanations of unchanged code.
+- Ask one clarifying question instead of exploring five wrong trees.
+
+## Deploy / prod
+
+- Prefer the user’s stated ship path; do not re-open deploy/docs unless the task is deploy.

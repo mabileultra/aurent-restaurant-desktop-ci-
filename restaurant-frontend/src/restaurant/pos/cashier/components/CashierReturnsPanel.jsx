@@ -28,7 +28,7 @@ export default function CashierReturnsPanel({ p }) {
   };
 
   return (
-    <div className="rst-cashier-panel">
+    <div className="rst-cashier-panel rst-cashier-returns">
       <h2 className="rst-cashier-halls__title">{p.t('rst.cashier.tabReturns')}</h2>
       <p className="rst-cashier-returns-hint">{p.t('rst.cashier.returnsHint')}</p>
       {recent.isError ? (

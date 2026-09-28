@@ -14,7 +14,7 @@
   padding: 0 1.05rem;
   border: 1px solid var(--rst-line);
   border-radius: 999px;
-  background: #151b28;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font: inherit;
   font-weight: 750;
@@ -27,7 +27,7 @@
 
 .rst-floor-actions__btn:hover {
   border-color: color-mix(in srgb, var(--rst-accent) 55%, var(--rst-line));
-  background: #1a2232;
+  background: var(--rst-surface);
 }
 
 .rst-floor-actions__btn--accent {

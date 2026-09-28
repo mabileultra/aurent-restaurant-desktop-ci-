@@ -6,7 +6,7 @@
   min-height: 0;
   padding: 0.85rem 1rem;
   overflow: auto;
-  background: #0b0f16;
+  background: var(--rst-bg-deep);
 }
 
 .rst-cashier-tables__head {

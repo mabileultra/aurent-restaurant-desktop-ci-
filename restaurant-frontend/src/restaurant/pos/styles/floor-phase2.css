@@ -128,7 +128,7 @@
   height: 3rem;
   border-radius: 12px;
   border: 1px solid var(--rst-line);
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font-size: 1.35rem;
   font-weight: 700;
@@ -156,7 +156,7 @@
   padding: 0.75rem 0.5rem;
   border: 1px solid var(--rst-line);
   border-radius: 12px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font-weight: 700;
   cursor: pointer;

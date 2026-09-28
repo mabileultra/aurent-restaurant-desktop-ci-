@@ -201,7 +201,7 @@
   padding: 0.45rem 0.65rem;
   border-radius: 12px;
   border: 1px solid var(--rst-line, #2a2a2a);
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font-size: 0.86rem;
   font-weight: 800;
@@ -219,7 +219,7 @@
 .rst-pay-modal__provider.is-active {
   border-color: var(--rst-accent);
   box-shadow: 0 0 0 1px rgb(255 122 26 / 0.35), 0 8px 18px rgb(255 122 26 / 0.16);
-  background: linear-gradient(180deg, rgb(255 122 26 / 0.14), #121722 75%);
+  background: linear-gradient(180deg, rgb(255 122 26 / 0.14), var(--rst-surface) 75%);
 }
 
 .rst-pay-modal__provider--humo.is-active { border-color: #3b82f6; box-shadow: 0 0 0 1px rgb(59 130 246 / 0.35); }

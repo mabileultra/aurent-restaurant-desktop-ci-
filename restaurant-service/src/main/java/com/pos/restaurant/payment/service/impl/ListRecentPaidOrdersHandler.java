@@ -41,13 +41,18 @@ public class ListRecentPaidOrdersHandler {
     public List<PaidOrderSummaryResponse> handle(Integer storeId, boolean refunded, Integer limit) {
         Integer companyId = tenantSupport.requireCompanyId();
         int size = limit == null ? DEFAULT_LIMIT : Math.min(Math.max(limit, 1), MAX_LIMIT);
-        OrderStatus status = refunded ? OrderStatus.REFUNDED : OrderStatus.CLOSED;
-        List<FloorOrder> orders = orderRepository.findRecentByCompanyIdAndStoreIdAndStatusIn(
-            companyId,
-            storeId,
-            List.of(status),
-            PageRequest.of(0, size)
-        );
+        List<FloorOrder> orders = refunded
+            ? orderRepository.findRecentRefundedByCompanyIdAndStoreId(
+                companyId,
+                storeId,
+                PageRequest.of(0, size)
+            )
+            : orderRepository.findRecentByCompanyIdAndStoreIdAndStatusIn(
+                companyId,
+                storeId,
+                List.of(OrderStatus.CLOSED),
+                PageRequest.of(0, size)
+            );
         if (orders.isEmpty()) {
             return List.of();
         }

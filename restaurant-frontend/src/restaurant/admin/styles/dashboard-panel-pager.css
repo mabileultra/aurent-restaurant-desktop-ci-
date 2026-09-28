@@ -16,7 +16,7 @@
   height: 2.2rem;
   border: 1px solid var(--rst-line);
   border-radius: 9px;
-  background: #121722;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   cursor: pointer;
 }

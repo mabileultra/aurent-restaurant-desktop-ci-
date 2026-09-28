@@ -56,17 +56,80 @@
   color: var(--cashier-panel-muted);
 }
 
-.cashier-app.cashier-app--terminal .cashier-sales-filters__input,
-.cashier-app.cashier-app--terminal .cashier-sales-filters__select {
+.cashier-app.cashier-app--terminal .cashier-sales-filters__input {
   background: var(--pos-surface-elevated, #1c2433);
   border-color: var(--cashier-panel-border);
   color: var(--cashier-panel-text);
 }
 
-.cashier-app.cashier-app--terminal .cashier-sales-filters__input:focus,
-.cashier-app.cashier-app--terminal .cashier-sales-filters__select:focus {
+.cashier-app.cashier-app--terminal .cashier-sales-filters__input:focus {
   border-color: var(--pos-green);
   box-shadow: 0 0 0 2px var(--pos-green-soft);
+}
+
+/* BaseSelect (оплата / статус) — не нативный select */
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select.base-select {
+  background: transparent;
+  border: none;
+  padding: 0;
+  box-shadow: none;
+  color: inherit;
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__label {
+  color: var(--cashier-panel-muted);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__trigger {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: var(--cashier-panel-border);
+  color: var(--cashier-panel-text);
+  box-shadow: none;
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select:not(.base-select--disabled) .base-select__trigger:hover {
+  border-color: color-mix(in srgb, var(--pos-green) 40%, var(--cashier-panel-border));
+  background: var(--cashier-panel-surface-2);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__trigger:focus-within,
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select.base-select--open .base-select__trigger {
+  border-color: var(--pos-green);
+  box-shadow: 0 0 0 2px var(--pos-green-soft);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__value {
+  color: var(--cashier-panel-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__value--placeholder {
+  color: var(--cashier-panel-muted);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__chevron {
+  color: var(--cashier-panel-muted);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__menu {
+  background: var(--pos-surface-elevated, #1c2433);
+  border-color: var(--cashier-panel-border);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+  color: var(--cashier-panel-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__option {
+  color: var(--cashier-panel-text);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__option:hover,
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__option--highlight {
+  background: var(--pos-green-soft);
+  color: var(--pos-green);
+}
+
+.cashier-app.cashier-app--terminal .cashier-sales-filters__select .base-select__option--selected {
+  background: color-mix(in srgb, var(--pos-green) 18%, transparent);
+  color: var(--pos-green);
 }
 
 .cashier-app.cashier-app--terminal .cashier-sales-shift-strip {

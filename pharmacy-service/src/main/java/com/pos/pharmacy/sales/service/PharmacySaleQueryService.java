@@ -64,7 +64,17 @@ public class PharmacySaleQueryService {
     public PageResponse<SaleResponse> mySales(Integer storeId, UUID shiftId, Pageable pageable) {
         UUID cashierId = PharmacyTenantContext.getUserId();
         Integer companyId = PharmacyTenantContext.getCompanyId();
-        Page<Sale> page = saleRepository.findMySales(companyId, cashierId, storeId, shiftId, pageable);
+        // Не (:shiftId IS NULL OR …) — PostgreSQL/Hibernate ломает typed null UUID.
+        Page<Sale> page;
+        if (shiftId != null && storeId != null) {
+            page = saleRepository.findMySalesByStoreAndShift(companyId, cashierId, storeId, shiftId, pageable);
+        } else if (shiftId != null) {
+            page = saleRepository.findMySalesByShift(companyId, cashierId, shiftId, pageable);
+        } else if (storeId != null) {
+            page = saleRepository.findMySalesByStore(companyId, cashierId, storeId, pageable);
+        } else {
+            page = saleRepository.findMySalesAll(companyId, cashierId, pageable);
+        }
         Map<UUID, PharmacyCashierShift> shifts = loadShifts(page.getContent());
         return PageResponse.from(page.map((sale) -> mapWithShift(sale, shifts)));
     }

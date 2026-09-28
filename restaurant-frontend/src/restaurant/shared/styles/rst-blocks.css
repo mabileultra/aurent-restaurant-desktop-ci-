@@ -2,7 +2,7 @@
   padding: 0.9rem 1rem;
   border-radius: var(--rst-radius-lg);
   border: 1px solid var(--rst-line);
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.18);
 }
 

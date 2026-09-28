@@ -28,14 +28,57 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
         SELECT s FROM Sale s
         WHERE s.companyId = :companyId
           AND s.cashierId = :cashierId
-          AND (:storeId IS NULL OR s.storeId = :storeId)
-          AND (:shiftId IS NULL OR s.cashierShiftId = :shiftId)
+          AND s.storeId = :storeId
         ORDER BY s.createdAt DESC
         """)
-    Page<Sale> findMySales(
+    Page<Sale> findMySalesByStore(
         @Param("companyId") Integer companyId,
         @Param("cashierId") UUID cashierId,
         @Param("storeId") Integer storeId,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.companyId = :companyId
+          AND s.cashierId = :cashierId
+          AND s.storeId = :storeId
+          AND s.cashierShiftId = :shiftId
+        ORDER BY s.createdAt DESC
+        """)
+    Page<Sale> findMySalesByStoreAndShift(
+        @Param("companyId") Integer companyId,
+        @Param("cashierId") UUID cashierId,
+        @Param("storeId") Integer storeId,
+        @Param("shiftId") UUID shiftId,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.companyId = :companyId
+          AND s.cashierId = :cashierId
+        ORDER BY s.createdAt DESC
+        """)
+    Page<Sale> findMySalesAll(
+        @Param("companyId") Integer companyId,
+        @Param("cashierId") UUID cashierId,
+        Pageable pageable
+    );
+
+    @EntityGraph(attributePaths = {"items", "items.product"})
+    @Query("""
+        SELECT s FROM Sale s
+        WHERE s.companyId = :companyId
+          AND s.cashierId = :cashierId
+          AND s.cashierShiftId = :shiftId
+        ORDER BY s.createdAt DESC
+        """)
+    Page<Sale> findMySalesByShift(
+        @Param("companyId") Integer companyId,
+        @Param("cashierId") UUID cashierId,
         @Param("shiftId") UUID shiftId,
         Pageable pageable
     );

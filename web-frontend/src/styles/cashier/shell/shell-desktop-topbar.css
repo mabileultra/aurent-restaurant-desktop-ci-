@@ -6,12 +6,15 @@
 }
 
 .cashier-app--desktop .cashier-topbar--compact .cashier-desktop-menu__trigger {
-  padding: 0 8px;
-  gap: 4px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 6px;
+  gap: 2px;
+  border-radius: 8px;
 }
 
 .cashier-app--desktop .cashier-topbar--compact .cashier-desktop-menu__logo {
-  max-height: 26px;
+  max-height: 18px;
 }
 
 .cashier-app--desktop .cashier-topbar--pos .cashier-topbar__row--main {
@@ -90,7 +93,7 @@
   transition: transform 0.15s ease, opacity 0.15s ease;
 }
 
-.cashier-desktop-menu:hover .cashier-desktop-menu__trigger,
+.cashier-desktop-menu__trigger:hover,
 .cashier-desktop-menu.is-open .cashier-desktop-menu__trigger {
   background: var(--pos-green-soft);
   border-color: rgb(0 104 71 / 0.35);
@@ -98,7 +101,7 @@
   color: var(--pos-green);
 }
 
-.cashier-desktop-menu:hover .cashier-desktop-menu__chevron,
+.cashier-desktop-menu__trigger:hover .cashier-desktop-menu__chevron,
 .cashier-desktop-menu.is-open .cashier-desktop-menu__chevron {
   opacity: 1;
   transform: rotate(180deg);
@@ -106,7 +109,8 @@
 
 .cashier-desktop-menu__panel {
   position: absolute;
-  top: calc(100% + 6px);
+  /* Вплотную к триггеру: зазор ломал hit-test (panel с pointer-events:none → leave). */
+  top: 100%;
   left: 0;
   z-index: 1301;
   display: flex;
@@ -116,7 +120,8 @@
   max-width: min(260px, calc(100vw - 24px));
   max-height: min(78vh, 560px);
   overflow: auto;
-  padding: 6px;
+  /* Визуальный отступ вместо gap в top — попадания курсора не теряем. */
+  padding: 10px 6px 6px;
   border: 1px solid var(--pos-border);
   border-radius: 12px;
   background: #fff;
@@ -124,30 +129,24 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   transition:
-    opacity 0.15s ease,
-    visibility 0.15s ease,
-    transform 0.15s ease;
+    opacity 0.12s ease,
+    visibility 0.12s ease,
+    transform 0.12s ease;
 }
 
-/* Мостик для наведения с кнопки на список */
-.cashier-desktop-menu__panel::before {
-  content: '';
-  position: absolute;
-  top: -8px;
-  left: 0;
-  right: 0;
-  height: 8px;
-}
-
-.cashier-desktop-menu:hover .cashier-desktop-menu__panel,
-.cashier-desktop-menu.is-open .cashier-desktop-menu__panel,
-.cashier-desktop-menu:focus-within .cashier-desktop-menu__panel {
+/* Только React .is-open — без :hover, иначе клик «закрыть» и hover снова открывают и мигают. */
+.cashier-desktop-menu.is-open .cashier-desktop-menu__panel {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
   transform: translateY(0);
+}
+
+/* При закрытии не тянуть fade — иначе fullscreen/quit кажутся «с задержкой». */
+.cashier-desktop-menu:not(.is-open) .cashier-desktop-menu__panel {
+  transition: none;
 }
 
 .cashier-desktop-menu__item {
@@ -165,7 +164,17 @@
   font-weight: 600;
   text-align: left;
   cursor: pointer;
+  box-sizing: border-box;
+  overflow: hidden;
   transition: background 0.12s ease, color 0.12s ease;
+}
+
+.cashier-desktop-menu__item > span:not(.cashier-desktop-menu__item-text) {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .cashier-desktop-menu__item svg {
@@ -187,6 +196,7 @@
 .cashier-desktop-menu__item--stacked {
   align-items: flex-start;
   min-height: 42px;
+  height: auto;
 }
 
 .cashier-desktop-menu__item--stacked svg {
@@ -196,21 +206,30 @@
 .cashier-desktop-menu__item-text {
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  flex: 1;
+  gap: 2px;
+  flex: 1 1 auto;
   min-width: 0;
+  overflow: hidden;
+}
+
+.cashier-desktop-menu__item-text > span:first-child {
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .cashier-desktop-menu__item-meta {
   font-size: 10px;
   color: var(--pos-muted, #64748b);
   font-weight: 500;
+  line-height: 1.35;
   white-space: normal;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+.cashier-desktop-menu__item:hover .cashier-desktop-menu__item-meta {
+  color: color-mix(in srgb, var(--pos-green) 55%, var(--pos-muted, #64748b));
 }
 
 .cashier-desktop-menu__item--danger:hover {
@@ -290,7 +309,7 @@
 
 .cashier-desktop-menu__mode {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   width: 100%;
   min-height: 42px;
@@ -303,12 +322,24 @@
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s;
+  box-sizing: border-box;
+  overflow: hidden;
+  transition: border-color 0.12s, background 0.12s, box-shadow 0.12s, color 0.12s;
+}
+
+.cashier-desktop-menu__mode .cashier-desktop-menu__item-text {
+  padding-top: 2px;
 }
 
 .cashier-desktop-menu__mode.is-toggle:hover:not(:disabled) {
-  border-color: color-mix(in srgb, var(--pos-green) 40%, var(--pos-border));
+  background: var(--pos-green-soft);
+  border-color: rgb(0 104 71 / 0.35);
+  color: var(--pos-green);
   box-shadow: 0 2px 10px rgb(0 80 55 / 0.1);
+}
+
+.cashier-desktop-menu__mode.is-toggle:hover:not(:disabled) .cashier-desktop-menu__item-meta {
+  color: color-mix(in srgb, var(--pos-green) 55%, var(--pos-muted, #64748b));
 }
 
 .cashier-desktop-menu__mode:disabled {
@@ -322,6 +353,7 @@
   justify-content: center;
   width: 26px;
   height: 26px;
+  margin-top: 1px;
   border-radius: 8px;
   background: var(--pos-green-soft);
   color: var(--pos-green);

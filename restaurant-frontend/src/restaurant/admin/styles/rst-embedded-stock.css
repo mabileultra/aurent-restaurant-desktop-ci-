@@ -80,7 +80,7 @@
 .rst-embedded-stock textarea,
 .rst-embedded-stock .form-select,
 .rst-embedded-stock .base-select__trigger {
-  background: var(--rst-surface-2) !important;
+  background-color: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
   border-radius: 8px;

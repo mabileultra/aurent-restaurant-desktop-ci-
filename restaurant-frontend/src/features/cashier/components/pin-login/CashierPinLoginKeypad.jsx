@@ -4,6 +4,8 @@ export default function CashierPinLoginKeypad({
   t,
   dots,
   dotCount,
+  pinError,
+  pinFull,
   loading,
   canSubmit,
   onDigit,
@@ -13,7 +15,11 @@ export default function CashierPinLoginKeypad({
 }) {
   return (
     <div className="cashier-pin-login__card">
-      <div className="cashier-pin-login__pin-display">
+      <div
+        className={`cashier-pin-login__pin-display${pinError ? ' is-error' : ''}`}
+        aria-invalid={Boolean(pinError)}
+        aria-describedby={pinError ? 'cashier-pin-error' : undefined}
+      >
         <div
           className="cashier-pin-login__dots"
           aria-label={t('cashierLogin.subtitle', { defaultValue: 'Введите PIN-код' })}
@@ -29,13 +35,19 @@ export default function CashierPinLoginKeypad({
         </div>
       </div>
 
+      {pinError ? (
+        <p id="cashier-pin-error" className="cashier-pin-login__pin-error" role="alert">
+          {pinError}
+        </p>
+      ) : null}
+
       <div className="cashier-pin-login__keypad">
         {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => (
           <button
             key={n}
             type="button"
             onClick={() => onDigit(n)}
-            disabled={loading}
+            disabled={loading || pinFull}
             className="cashier-pin-login__key"
           >
             {n}
@@ -52,7 +64,7 @@ export default function CashierPinLoginKeypad({
         <button
           type="button"
           onClick={() => onDigit(0)}
-          disabled={loading}
+          disabled={loading || pinFull}
           className="cashier-pin-login__key"
         >
           0

@@ -16,8 +16,10 @@ Cashiers must see past sales and voids after the shift is closed or a new shift 
 1. `useCashierMySalesPage`: query is **enabled with `storeId`** even when there is no open shift.
 2. Do **not** require `shiftId` to load the list; omit shift filter so previous-shift sales/returns appear.
 3. Do **not** block the workspace with only `pos.shiftRequired` when `shiftId` is null — show the list.
+4. Pharmacy BE `findMySales`: never `(:shiftId IS NULL OR …)` / typed null UUID — split queries by store/shift (same class of bug as Instant null in ledger).
 
 ## Do not
 
 - Restore `enabled: !!shiftId && !!storeId` without an alternate path for closed-shift history.
 - Always pass current open `shiftId` into `my-sales` if that hides prior voids/returns.
+- Reintroduce JPQL `(:shiftId IS NULL OR s.cashierShiftId = :shiftId)` in pharmacy sales.

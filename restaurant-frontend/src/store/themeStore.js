@@ -1,3 +1,48 @@
+export const RESTAURANT_THEME_STORAGE_KEY = 'pos-restaurant-theme';
+
+/** @typedef {'dark' | 'light'} RestaurantTheme */
+
+const restaurantThemeListeners = new Set();
+/** @type {RestaurantTheme | null} */
+let restaurantThemeSnapshot = null;
+
+/** @returns {RestaurantTheme} */
+export function readRestaurantTheme() {
+  if (restaurantThemeSnapshot === 'light' || restaurantThemeSnapshot === 'dark') {
+    return restaurantThemeSnapshot;
+  }
+  try {
+    const v = localStorage.getItem(RESTAURANT_THEME_STORAGE_KEY);
+    if (v === 'light' || v === 'dark') {
+      restaurantThemeSnapshot = v;
+      return v;
+    }
+  } catch {
+    /* ignore */
+  }
+  restaurantThemeSnapshot = 'dark';
+  return 'dark';
+}
+
+/** @param {() => void} listener */
+export function subscribeRestaurantTheme(listener) {
+  restaurantThemeListeners.add(listener);
+  return () => restaurantThemeListeners.delete(listener);
+}
+
+/** @param {RestaurantTheme} theme */
+export function setRestaurantTheme(theme) {
+  const next = theme === 'light' ? 'light' : 'dark';
+  restaurantThemeSnapshot = next;
+  try {
+    localStorage.setItem(RESTAURANT_THEME_STORAGE_KEY, next);
+  } catch {
+    /* ignore */
+  }
+  syncRestaurantTheme(next);
+  restaurantThemeListeners.forEach((listener) => listener());
+}
+
 /** Админка — всегда светлая. Сбрасывает следы тёмной кассы на <html>. */
 export function syncRootTheme() {
   if (typeof document === 'undefined') return;
@@ -5,6 +50,8 @@ export function syncRootTheme() {
   root.classList.remove(
     'dark',
     'rst-theme',
+    'rst-theme--light',
+    'rst-theme--dark',
     'cashier-theme--light',
     'cashier-theme--dark',
     'app-theme--cashier',
@@ -23,9 +70,11 @@ export function syncRootTheme() {
   }
 }
 
-/** Restaurant OS — тёмная оболочка + Tailwind dark: для встроенных Aurent UI. */
-export function syncRestaurantTheme() {
+/** Restaurant OS — тёмная или светлая оболочка. Кнопки и акценты не меняются. */
+export function syncRestaurantTheme(theme = readRestaurantTheme()) {
   if (typeof document === 'undefined') return;
+  const light = theme === 'light';
+  restaurantThemeSnapshot = light ? 'light' : 'dark';
   const root = document.documentElement;
   root.classList.remove(
     'cashier-theme--light',
@@ -33,17 +82,22 @@ export function syncRestaurantTheme() {
     'app-theme--cashier',
     'app-theme--public',
     'app-theme--admin',
+    'rst-theme--light',
+    'rst-theme--dark',
   );
-  root.classList.add('dark', 'rst-theme');
-  root.style.colorScheme = 'dark';
-  root.style.backgroundColor = '#121418';
+  root.classList.add('rst-theme', light ? 'rst-theme--light' : 'rst-theme--dark');
+  root.classList.toggle('dark', !light);
+  const bg = light ? '#f4f6f8' : '#121418';
+  const ink = light ? '#12151c' : '#f3efe6';
+  root.style.colorScheme = light ? 'light' : 'dark';
+  root.style.backgroundColor = bg;
   if (document.body) {
-    document.body.style.backgroundColor = '#121418';
-    document.body.style.color = '#f3efe6';
+    document.body.style.backgroundColor = bg;
+    document.body.style.color = ink;
   }
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
-    meta.setAttribute('content', '#121418');
+    meta.setAttribute('content', bg);
   }
 }
 
@@ -54,6 +108,8 @@ export function syncPublicTheme() {
   root.classList.remove(
     'dark',
     'rst-theme',
+    'rst-theme--light',
+    'rst-theme--dark',
     'cashier-theme--light',
     'cashier-theme--dark',
     'app-theme--cashier',

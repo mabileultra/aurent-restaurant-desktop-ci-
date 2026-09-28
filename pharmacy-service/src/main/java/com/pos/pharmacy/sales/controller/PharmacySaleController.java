@@ -98,13 +98,6 @@ public class PharmacySaleController {
         ));
     }
 
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
-    @Operation(summary = "Продажа по ID")
-    public ResponseEntity<SaleResponse> getById(@PathVariable UUID id) {
-        return ResponseEntity.ok(queryService.getById(id));
-    }
-
     @GetMapping("/my-sales")
     @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
     @Operation(summary = "Мои продажи")
@@ -114,6 +107,13 @@ public class PharmacySaleController {
         @PageableDefault(size = 50) Pageable pageable
     ) {
         return ResponseEntity.ok(queryService.mySales(storeId, shiftId, pageable));
+    }
+
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('CASHIER', 'WAITER', 'ADMIN', 'MANAGER')")
+    @Operation(summary = "Продажа по ID")
+    public ResponseEntity<SaleResponse> getById(@PathVariable UUID id) {
+        return ResponseEntity.ok(queryService.getById(id));
     }
 
     @PostMapping("/{id}/void")

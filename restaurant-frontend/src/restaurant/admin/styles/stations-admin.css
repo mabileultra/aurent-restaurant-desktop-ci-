@@ -6,7 +6,7 @@
   padding: 1rem;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
 }
 
@@ -90,7 +90,7 @@
 .rst-admin-form textarea,
 .rst-admin-filters input:not([type="checkbox"]):not([type="radio"]),
 .rst-admin-filters select {
-  background: var(--rst-surface-2) !important;
+  background-color: var(--rst-surface-2) !important;
   color: var(--rst-ink) !important;
   border: 1px solid var(--rst-line) !important;
   border-radius: 8px;
@@ -113,7 +113,7 @@
   padding: 0.9rem 1rem;
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   box-shadow: 0 8px 22px rgb(0 0 0 / 0.16);
 }
 
@@ -263,7 +263,7 @@
 .rst-data-card {
   border: 1px solid var(--rst-line);
   border-radius: var(--rst-radius-lg);
-  background: linear-gradient(180deg, #1a2230, var(--rst-surface));
+  background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
   overflow: hidden;
   box-shadow: 0 10px 28px rgb(0 0 0 / 0.2);
 }
@@ -275,7 +275,7 @@
   gap: 0.75rem;
   padding: 0.85rem 1.05rem;
   border-bottom: 1px solid var(--rst-line);
-  background: rgb(12 16 24 / 0.85);
+  background: var(--rst-surface-2);
 }
 
 .rst-data-card__head strong {
@@ -313,15 +313,15 @@
   white-space: nowrap;
   font-size: 0.7rem;
   font-weight: 800;
-  color: #9aa6bf;
+  color: var(--rst-muted);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  background: #141a24;
+  background: var(--rst-surface-2);
 }
 
 .rst-data-table td {
   padding: 0.82rem 1rem;
-  border-bottom: 1px solid rgb(42 51 68 / 0.85);
+  border-bottom: 1px solid var(--rst-line);
   text-align: left;
   vertical-align: middle;
   overflow: hidden;
@@ -422,7 +422,7 @@
   padding: 0.65rem 0.85rem !important;
   border-top: 1px solid var(--rst-line) !important;
   border-color: var(--rst-line) !important;
-  background: #121822;
+  background: var(--rst-surface);
 }
 
 .rst-app .rst-data-card__pagination.table-pagination {
@@ -432,7 +432,7 @@
 .rst-app .rst-data-card .table-pagination__page-btn {
   border-radius: 8px;
   border: 1px solid var(--rst-line);
-  background: #161c28;
+  background: var(--rst-surface-2);
   color: var(--rst-ink);
   font-weight: 700;
 }
@@ -452,7 +452,7 @@
 .rst-app .rst-data-card .table-pagination__nav-btn {
   border-radius: 8px;
   border: 1px solid var(--rst-line);
-  background: #161c28;
+  background: var(--rst-surface-2);
   color: var(--rst-muted);
 }
 
