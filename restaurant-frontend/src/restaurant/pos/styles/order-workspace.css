@@ -323,10 +323,15 @@
   gap: 0.4rem;
   overflow-x: auto;
   overflow-y: hidden;
-  padding-bottom: 0.15rem;
+  padding-bottom: 0;
+  scrollbar-width: none;
   background: var(--rst-surface);
   position: relative;
   z-index: 2;
+}
+
+.rst-menu-cats::-webkit-scrollbar {
+  display: none;
 }
 
 .rst-menu-cat {
@@ -359,7 +364,7 @@
 
 .rst-menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
   gap: 0.45rem;
   overflow-x: hidden;
   overflow-y: auto;
@@ -435,7 +440,7 @@
 .rst-menu-card__img,
 .rst-menu-card__ph {
   width: 100%;
-  height: 68px;
+  height: 88px;
   object-fit: cover;
   border-radius: 10px;
   background: var(--rst-bg-deep);
@@ -529,8 +534,8 @@
 }
 
 .rst-menu-card__add {
-  width: 2rem;
-  height: 2rem;
+  width: 2.45rem;
+  height: 2.45rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
