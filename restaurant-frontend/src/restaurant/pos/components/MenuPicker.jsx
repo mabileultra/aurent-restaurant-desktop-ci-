@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
 import { groupMenuFamilies } from './MenuVariantPickModal';
@@ -76,8 +77,7 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
     return <div className="rst-empty">{t('rst.order.emptyMenu')}</div>;
   }
 
-  return (
-    <div className="rst-menu">
+  const search = (
       <label className="rst-menu__search">
         <span className="rst-menu__search-ico" aria-hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -97,6 +97,14 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
           <em>{t('rst.order.searchEsc')}</em>
         </span>
       </label>
+  );
+  const searchSlot = typeof document !== 'undefined'
+    ? document.getElementById('rst-pos-search-slot')
+    : null;
+
+  return (
+    <div className="rst-menu">
+      {searchSlot ? createPortal(search, searchSlot) : search}
 
       <div className="rst-menu-cats">
         <button

@@ -158,6 +158,7 @@ export default function RestaurantFloorPosPage() {
           </span>
         </div>
         <WaiterShiftHint p={p} />
+        <div id="rst-pos-search-slot" className="rst-pos__search" />
         <div className="rst-pos__actions">
           <PosZoomControls zoom={zoom} t={p.t} />
           <RestaurantThemeSwitch />

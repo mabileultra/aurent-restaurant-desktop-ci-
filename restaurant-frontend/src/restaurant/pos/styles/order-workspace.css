@@ -29,6 +29,7 @@
 .rst-order__context {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   gap: 0.85rem;
   margin-bottom: 0.85rem;
   padding-bottom: 0.75rem;
@@ -276,6 +277,23 @@
   box-shadow: 0 0 0 3px var(--rst-accent-soft);
 }
 
+.rst-pos__search .rst-menu__search input {
+  height: 2.15rem;
+  padding: 0 5.5rem 0 2.2rem;
+  font-size: 0.82rem;
+}
+
+.rst-pos__search .rst-menu__search-ico {
+  left: 0.65rem;
+  width: 0.9rem;
+  height: 0.9rem;
+}
+
+.rst-pos__search .rst-menu__search-hint {
+  right: 0.55rem;
+  font-size: 0.65rem;
+}
+
 .rst-menu__search-hint {
   position: absolute;
   right: 0.75rem;
@@ -300,14 +318,20 @@
 
 .rst-menu-cats {
   display: flex;
+  flex: 0 0 auto;
   flex-wrap: nowrap;
-  gap: 0.5rem;
-  overflow: auto;
-  padding-bottom: 0.2rem;
+  gap: 0.4rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 0.15rem;
+  background: var(--rst-surface);
+  position: relative;
+  z-index: 2;
 }
 
 .rst-menu-cat {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 0.4rem;
   border: 1px solid var(--rst-line);
@@ -335,12 +359,15 @@
 
 .rst-menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 0.75rem;
-  overflow: auto;
-  flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 0.45rem;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  flex: 1 1 0;
+  min-height: 0;
   align-content: start;
-  padding: 0.15rem;
+  padding: 0.1rem;
 }
 
 .rst-menu-card {
@@ -348,9 +375,9 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 0.4rem;
-  min-height: 220px;
-  padding: 0.55rem;
+  gap: 0.28rem;
+  min-height: 0;
+  padding: 0.4rem;
   border: 1.5px solid var(--rst-line);
   border-radius: 14px;
   background: linear-gradient(180deg, var(--rst-surface-2), var(--rst-surface));
@@ -408,7 +435,7 @@
 .rst-menu-card__img,
 .rst-menu-card__ph {
   width: 100%;
-  height: 104px;
+  height: 68px;
   object-fit: cover;
   border-radius: 10px;
   background: var(--rst-bg-deep);
@@ -483,7 +510,7 @@
   font-size: 0.74rem;
   line-height: 1.3;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -502,8 +529,8 @@
 }
 
 .rst-menu-card__add {
-  width: 2.55rem;
-  height: 2.55rem;
+  width: 2rem;
+  height: 2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
