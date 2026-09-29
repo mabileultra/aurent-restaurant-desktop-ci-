@@ -86,8 +86,6 @@ export default function RestaurantPrinterSettings({ stations, t }) {
 
   return (
     <div className="rst-admin-form">
-      <strong>{t('rst.admin.printersTitle')}</strong>
-      <p className="rst-coming__text mb-0">{t('rst.admin.printersHint')}</p>
       <div className="rst-admin-form__grid rst-admin-form__grid--printers">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.admin.receiptPrinter')}</span>

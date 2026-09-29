@@ -16,6 +16,7 @@ import {
   PackageMinus,
   PackagePlus,
   Plug,
+  Printer,
   ScrollText,
   Settings2,
   Shuffle,
@@ -69,6 +70,7 @@ export const RST_NAV_ITEM_ICONS = {
   audit: ScrollText,
   stores: Store,
   integrations: Plug,
+  printers: Printer,
   billing: CreditCard,
   guide: BookMarked,
 };

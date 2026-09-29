@@ -11,6 +11,7 @@ import HallsAdminPage from '../admin/pages/HallsAdminPage';
 import MenuAdminPage from '../admin/pages/MenuAdminPage';
 import MenuCategoriesAdminPage from '../admin/pages/MenuCategoriesAdminPage';
 import StationsAdminPage from '../admin/pages/StationsAdminPage';
+import PrintersAdminPage from '../admin/pages/PrintersAdminPage';
 import ModifiersAdminPage from '../admin/pages/ModifiersAdminPage';
 import RecipesAdminPage from '../admin/pages/RecipesAdminPage';
 import ShiftsAdminPage from '../admin/pages/ShiftsAdminPage';
@@ -99,6 +100,7 @@ export const restaurantRoutes = (
       <Route path="menu" element={<MenuAdminPage />} />
       <Route path="menu-categories" element={<MenuCategoriesAdminPage />} />
       <Route path="stations" element={<StationsAdminPage />} />
+      <Route path="printers" element={<PrintersAdminPage />} />
       <Route path="modifiers" element={<ModifiersAdminPage />} />
       <Route
         path="stock"

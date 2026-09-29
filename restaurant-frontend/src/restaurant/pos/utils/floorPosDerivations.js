@@ -96,14 +96,14 @@ export function resolveBackLabelKey(posMode) {
   return 'rst.order.backToFloor';
 }
 
-export function resolveOrderFlags(order) {
+export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const items = order?.items ?? [];
+  const hasBillable = items.some((item) => item.itemStatus !== 'CANCELLED');
+  const hasNew = items.some((item) => item.itemStatus === 'NEW');
   return {
     canCancel: items.length === 0,
-    canSendKitchen: order?.status === 'OPEN' && items.some((item) => item.itemStatus === 'NEW'),
-    canRequestBill: order?.status === 'OPEN'
-      && items.some((item) => item.itemStatus !== 'CANCELLED')
-      && !items.some((item) => item.itemStatus === 'NEW'),
+    canSendKitchen: kitchenBoardEnabled && order?.status === 'OPEN' && hasNew,
+    canRequestBill: order?.status === 'OPEN' && hasBillable && (!kitchenBoardEnabled || !hasNew),
     canPay: order?.status === 'BILLING',
   };
 }

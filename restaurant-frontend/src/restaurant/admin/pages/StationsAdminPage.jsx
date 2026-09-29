@@ -2,7 +2,6 @@ import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
 import { useStationsAdminPage } from '../hooks/useStationsAdminPage';
-import RestaurantPrinterSettings from '../components/RestaurantPrinterSettings';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -23,7 +22,26 @@ export default function StationsAdminPage() {
         </div>
       </div>
 
-      <RestaurantPrinterSettings stations={p.stations} t={p.t} />
+      <form
+        className="rst-admin-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          p.setKitchenBoard(!p.kitchenBoardEnabled);
+        }}
+      >
+        <div>
+          <h2 className="rst-coming__title">{p.t('rst.admin.kitchenBoardTitle')}</h2>
+          <p className="rst-coming__text mb-0">{p.t('rst.admin.kitchenBoardHint')}</p>
+        </div>
+        <div className="rst-admin-form__actions">
+          <BaseButton type="submit" disabled={p.kitchenBoardSaving}>
+            {p.kitchenBoardEnabled ? p.t('rst.admin.kitchenBoardTurnOff') : p.t('rst.admin.kitchenBoardTurnOn')}
+          </BaseButton>
+          <span className="rst-admin-field__label">
+            {p.kitchenBoardEnabled ? p.t('rst.admin.kitchenBoardOn') : p.t('rst.admin.kitchenBoardOff')}
+          </span>
+        </div>
+      </form>
 
       <form
         className="rst-admin-form"

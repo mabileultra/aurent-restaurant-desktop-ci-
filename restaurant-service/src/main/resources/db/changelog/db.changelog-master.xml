@@ -33,5 +33,6 @@
     <include file="db/changelog/v26-modifier-available-for-all.xml"/>
     <include file="db/changelog/v27-payment-card-type.xml"/>
     <include file="db/changelog/v28-menu-tax-rate.xml"/>
+    <include file="db/changelog/v29-kitchen-board.xml"/>
 
 </databaseChangeLog>

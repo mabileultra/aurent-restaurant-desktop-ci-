@@ -9,6 +9,7 @@ import { rstModifierApi } from '../../api/modifier.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstShiftApi } from '../../api/shift.api';
 import { rstCommissionApi } from '../../api/commission.api';
+import { rstKitchenApi } from '../../api/kitchen.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
@@ -129,7 +130,14 @@ export function useFloorPosPage() {
     () => computeCommissionPreview(order, commissionQuery.data),
     [order, commissionQuery.data],
   );
-  const orderFlags = resolveOrderFlags(order);
+  const kitchenBoardQuery = useQuery({
+    queryKey: ['rst-kitchen-board', storeId],
+    queryFn: () => rstKitchenApi.getKitchenBoard(storeId).then((r) => r.data),
+    enabled: storeId != null,
+    staleTime: 15_000,
+  });
+  const kitchenBoardEnabled = kitchenBoardQuery.data?.enabled !== false;
+  const orderFlags = resolveOrderFlags(order, kitchenBoardEnabled);
   const shiftOpenLabel = shift?.openedAt ? formatShiftOpenDuration(shift.openedAt) : null;
   const backLabelKey = resolveBackLabelKey(posMode);
 

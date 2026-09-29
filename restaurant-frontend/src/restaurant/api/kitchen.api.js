@@ -3,6 +3,8 @@ import { api } from '../../api/client';
 const rst = (path) => `/rst${path}`;
 
 export const rstKitchenApi = {
+  getKitchenBoard: (storeId) => api.get(rst(`/stores/${storeId}/kitchen-board`)),
+  setKitchenBoard: (storeId, enabled) => api.put(rst(`/stores/${storeId}/kitchen-board`), { enabled }),
   listStations: (storeId, activeOnly = false) =>
     api.get(rst(`/stores/${storeId}/kitchen-stations`), { params: { activeOnly } }),
   createStation: (storeId, data) => api.post(rst(`/stores/${storeId}/kitchen-stations`), data),

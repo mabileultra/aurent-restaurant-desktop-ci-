@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class BillEligibilityPolicy {
 
-    public void assertCanRequestBill(FloorOrder order, List<FloorOrderItem> items) {
+    public void assertCanRequestBill(FloorOrder order, List<FloorOrderItem> items, boolean kitchenBoardEnabled) {
         if (order.getStatus() != OrderStatus.OPEN) {
             throw new BusinessException("Bill can be requested only for an open order");
         }
@@ -24,9 +24,11 @@ public class BillEligibilityPolicy {
         if (billable.isEmpty()) {
             throw new BusinessException("Cannot request a bill for an empty order");
         }
-        boolean hasUnsent = billable.stream().anyMatch(item -> item.getItemStatus() == OrderItemStatus.NEW);
-        if (hasUnsent) {
-            throw new BusinessException("Send new items to the kitchen before requesting the bill");
+        if (kitchenBoardEnabled) {
+            boolean hasUnsent = billable.stream().anyMatch(item -> item.getItemStatus() == OrderItemStatus.NEW);
+            if (hasUnsent) {
+                throw new BusinessException("Send new items to the kitchen before requesting the bill");
+            }
         }
     }
 

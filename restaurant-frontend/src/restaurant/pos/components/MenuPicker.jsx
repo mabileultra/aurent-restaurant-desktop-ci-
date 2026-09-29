@@ -103,7 +103,7 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
     : null;
 
   return (
-    <div className="rst-menu">
+    <div className="rst-menu rst-menu--pos">
       {searchSlot ? createPortal(search, searchSlot) : search}
 
       <div className="rst-menu-cats">
@@ -131,6 +131,7 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
       <div className="rst-menu-grid">
         {families.map((family) => {
           const item = family.primary;
+          const imageUrl = family.variants.find((variant) => variant.imageUrl)?.imageUrl || '';
           const inCheck = familyInCheck(family, qtyByMenuId);
           const focused = focusedId === family.key;
           const tags = parseTags(item.tags);
@@ -159,8 +160,8 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
               }}
             >
               <div className="rst-menu-card__media">
-                {item.imageUrl ? (
-                  <img src={item.imageUrl} alt="" className="rst-menu-card__img" />
+                {imageUrl ? (
+                  <img src={imageUrl} alt="" className="rst-menu-card__img" />
                 ) : (
                   <span className="rst-menu-card__ph" aria-hidden />
                 )}

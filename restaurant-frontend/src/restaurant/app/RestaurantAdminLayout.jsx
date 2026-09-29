@@ -1,4 +1,5 @@
 import { Outlet, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
@@ -8,6 +9,8 @@ import RestaurantThemeSwitch from '../shared/components/RestaurantThemeSwitch';
 import { useCompanyBusinessType } from '../../hooks/useCompanyBusinessType';
 import { isRestaurantWorldBusiness } from '../../utils/appHomePath';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
+import { rstKitchenApi } from '../api/kitchen.api';
+import { useRestaurantWorkspaceStore } from '../shared/hooks/useRestaurantWorkspaceStore';
 import { visibleRstAdminNavGroups } from './restaurantAdminNav';
 import RestaurantAdminNav from '../admin/components/RestaurantAdminNav';
 import RstWorkspaceStorePicker from '../shared/components/RstWorkspaceStorePicker';
@@ -22,6 +25,14 @@ export default function RestaurantAdminLayout() {
   const { businessType } = useCompanyBusinessType();
   const restaurantOnly = isRestaurantWorldBusiness(businessType);
   const groups = visibleRstAdminNavGroups(user?.role);
+  const workspace = useRestaurantWorkspaceStore();
+  const kitchenBoardQuery = useQuery({
+    queryKey: ['rst-kitchen-board', workspace.storeId],
+    queryFn: () => rstKitchenApi.getKitchenBoard(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null,
+    staleTime: 15_000,
+  });
+  const kitchenBoardEnabled = kitchenBoardQuery.data?.enabled !== false;
 
   return (
     <BillingAccessGuard>
@@ -35,7 +46,7 @@ export default function RestaurantAdminLayout() {
           <div className="rst-shell__footer">
             <Link to="/rst/cashier">{t('rst.pos.toCashier')}</Link>
             <Link to="/rst/pos">{t('rst.pos.toFloor')}</Link>
-            <Link to="/rst/kitchen">{t('rst.pos.toKitchen')}</Link>
+            {kitchenBoardEnabled ? <Link to="/rst/kitchen">{t('rst.pos.toKitchen')}</Link> : null}
             {!restaurantOnly ? (
               <a href={`${getMainAppUrl()}/dashboard`}>{t('rst.admin.toPlatform')}</a>
             ) : null}

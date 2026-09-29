@@ -39,6 +39,21 @@ export function useStationsAdminPage() {
     return stations.slice(start, start + pageSize);
   }, [stations, safePage, pageSize]);
 
+  const kitchenBoardQuery = useQuery({
+    queryKey: ['rst-kitchen-board', workspace.storeId],
+    queryFn: () => rstKitchenApi.getKitchenBoard(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+
+  const kitchenBoardMutation = useMutation({
+    mutationFn: (enabled) => rstKitchenApi.setKitchenBoard(workspace.storeId, enabled).then((r) => r.data),
+    onSuccess: (data) => {
+      qc.setQueryData(['rst-kitchen-board', workspace.storeId], data);
+      toast.success(t('rst.admin.kitchenBoardSaved'));
+    },
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
+  });
+
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-stations-admin', workspace.storeId] });
     qc.invalidateQueries({ queryKey: ['rst-stations', workspace.storeId] });
@@ -102,6 +117,9 @@ export function useStationsAdminPage() {
     editingId,
     saveMutation,
     deactivateMutation,
+    kitchenBoardEnabled: kitchenBoardQuery.data?.enabled !== false,
+    kitchenBoardSaving: kitchenBoardMutation.isPending,
+    setKitchenBoard: (enabled) => kitchenBoardMutation.mutate(enabled),
     startEdit,
     resetForm: () => {
       setEditingId(null);

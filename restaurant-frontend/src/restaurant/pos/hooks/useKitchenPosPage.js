@@ -60,14 +60,22 @@ export function useKitchenPosPage() {
     staleTime: 60_000,
   });
 
+  const kitchenBoardQuery = useQuery({
+    queryKey: ['rst-kitchen-board', workspace.storeId],
+    queryFn: () => rstKitchenApi.getKitchenBoard(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null,
+    staleTime: 15_000,
+  });
+  const kitchenBoardEnabled = kitchenBoardQuery.isError || kitchenBoardQuery.data?.enabled !== false;
+
   const ticketsQuery = useQuery({
     queryKey: ['rst-kitchen-tickets', workspace.storeId, stationFilter],
     queryFn: () => rstKitchenApi.listTickets(
       workspace.storeId,
       stationFilter !== 'all' ? { stationId: stationFilter } : undefined,
     ).then((r) => r.data),
-    enabled: workspace.storeId != null,
-    refetchInterval: 5_000,
+    enabled: workspace.storeId != null && kitchenBoardEnabled,
+    refetchInterval: kitchenBoardEnabled ? 5_000 : false,
   });
 
   const staffQuery = useQuery({
@@ -140,6 +148,8 @@ export function useKitchenPosPage() {
     isError: ticketsQuery.isError,
     canAdvance,
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',
+    kitchenBoardEnabled,
+    kitchenBoardLoading: kitchenBoardQuery.isLoading,
     advance: (ticket) => {
       const next = NEXT_TICKET_STATUS[ticket.status];
       if (!next) return;

@@ -66,6 +66,22 @@ export default function RestaurantKitchenPage() {
     );
   }
 
+  if (p.kitchenBoardLoading) {
+    return (
+      <div className="rst-app rst-pos" style={zoom.rootStyle}>
+        <div className="rst-notice">{p.t('common.loading')}</div>
+      </div>
+    );
+  }
+
+  if (!p.kitchenBoardEnabled) {
+    return (
+      <div className="rst-app rst-pos" style={zoom.rootStyle}>
+        <div className="rst-notice">{p.t('rst.kitchen.boardOff')}</div>
+      </div>
+    );
+  }
+
   if (p.workspace.noAssignment || p.workspace.multipleAssignment) {
     return (
       <RestaurantWorkspaceEmpty

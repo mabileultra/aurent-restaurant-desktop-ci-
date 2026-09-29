@@ -15,6 +15,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,10 +37,14 @@ public class SendToKitchenHandler {
     private final KitchenStationRepository stationRepository;
     private final OrderLookup orderLookup;
     private final OrderResponseAssembler assembler;
+    private final KitchenBoardService kitchenBoardService;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
         FloorOrder order = orderLookup.requireOpen(orderId);
+        if (!kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId())) {
+            throw new BusinessException("Kitchen board is turned off");
+        }
         List<FloorOrderItem> newItems = itemRepository.findByOrderIdAndItemStatus(orderId, OrderItemStatus.NEW);
         if (newItems.isEmpty()) {
             throw new BusinessException("There are no new items to send to the kitchen");

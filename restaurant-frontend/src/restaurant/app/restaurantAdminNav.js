@@ -69,6 +69,7 @@ export const RST_ADMIN_NAV_GROUPS = [
   {
     key: 'system',
     items: [
+      { to: '/rst/admin/printers', key: 'printers', enabled: true },
       { to: '/rst/admin/stores', key: 'stores', enabled: true, adminOnly: true },
       { to: '/rst/admin/integrations', key: 'integrations', enabled: true, adminOnly: true },
       { to: '/rst/admin/billing', key: 'billing', enabled: true, adminOnly: true },
