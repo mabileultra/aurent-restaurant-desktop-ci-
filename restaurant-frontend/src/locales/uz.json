@@ -619,6 +619,9 @@
       "printersKitchenTitle": "Oshxona",
       "printersKitchenOn": "Stansiya cheki buyurtma oshxonaga yuborilganda chiqadi.",
       "printersKitchenOff": "Oshxona doskasi o‘chiq. Pastdagi stansiyalar hozir chop etmaydi.",
+      "printersCategoriesTitle": "Bo‘limlar bo‘yicha avtochop",
+      "printersCategoriesHint": "Faqat avtochop yoqilgan bo‘limlar. Taom cheki bo‘lim printeriga ketadi, kassa yoki oshxona stansiyasiga emas.",
+      "printersCategoriesEmpty": "Avtochop yoqilgan bo‘limlar yo‘q.",
       "printersDesktopOnly": "Hozir brauzer ochiq — Windows printerlari bu yerda ko‘rinmaydi.",
       "printersDesktopOnlySteps": "1) Restoranni Aurent desktop ilovasida oching (Chrome/Edge emas). 2) Adminka → Printerlar. 3) «To‘lovdan keyingi chek» va stansiyalarni tanlang. 4) To‘lovni shu kompyuterdagi ilovadan oling.",
       "printersNeedUpdate": "Bu desktop oynasi hali printerlarni ko‘rsata olmaydi. Ilovani yoping va yangilangach qayta oching.",
@@ -1707,7 +1710,8 @@
         "installedHint": "Ilova sifatida ochilgan."
       },
       "mobile": {
-        "checkTab": "Chek"
+        "checkTab": "Chek",
+        "backFloor": "Zal"
       }
     }
   },
