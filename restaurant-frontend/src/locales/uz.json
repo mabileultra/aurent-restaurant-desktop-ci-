@@ -1396,6 +1396,7 @@
       "allCategories": "Barcha taomlar",
       "alreadyOpen": "Stolda buyurtma bor",
       "newCheck": "Yangi hisob",
+      "newCheckOpened": "Yangi hisob ochildi",
       "checksCount": "Hisoblar: {{count}}",
       "backToFloor": "Zal rejasiga",
       "badgeNew": "Yangi",

@@ -187,6 +187,24 @@ export function useFloorPosPage() {
     setReservedTable(null);
   };
 
+  const openExtraCheck = (table, seed = {}) => {
+    if (!table?.id) return;
+    if (!access.canOpenOrder) {
+      toast.error(t('rst.floor.noOpenPermission'));
+      return;
+    }
+    if (!ensureShift()) return;
+    if (m.openExtraCheckMutation.isPending) return;
+    tableActions.closeInspect();
+    setReservedTable(null);
+    setOpenTable(null);
+    m.openExtraCheckMutation.mutate({
+      tableId: table.id,
+      guestCount: seed.guestCount,
+      waiterUserId: seed.waiterUserId,
+    });
+  };
+
   const handleTableClick = (table) => {
     const openOrderId = table.activeOrder?.id ?? table.activeOrderId;
     if (openOrderId) {
@@ -286,7 +304,8 @@ export function useFloorPosPage() {
     halls, selectedHall, hallTables, orderHallName,
     selectedHallId, setSelectedHallId,
     statusFilter, setStatusFilter,
-    openTable, setOpenTable, reservedTable, setReservedTable, beginOpenTable,
+    openTable, setOpenTable, reservedTable, setReservedTable, beginOpenTable, openExtraCheck,
+    openExtraCheckPending: m.openExtraCheckMutation.isPending,
     guestForm, setGuestForm,
     activeOrderId, setActiveOrderId, order,
     menuItems: menuQuery.data ?? [],

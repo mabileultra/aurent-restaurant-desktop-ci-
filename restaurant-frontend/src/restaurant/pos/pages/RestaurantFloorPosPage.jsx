@@ -220,10 +220,14 @@ export default function RestaurantFloorPosPage() {
               }
               assigningWaiter={p.assignWaiterMutation.isPending}
               onEditNote={p.openLineNote}
-              onNewCheck={p.access?.canOpenOrder && p.order?.tableId ? () => {
+              onNewCheck={p.access?.canOpenOrder && p.order?.tableId && !p.openExtraCheckPending ? () => {
                 const table = (p.halls || []).flatMap((hall) => hall.tables || [])
-                  .find((row) => row.id === p.order.tableId);
-                if (table) p.beginOpenTable(table);
+                  .find((row) => row.id === p.order.tableId)
+                  || { id: p.order.tableId };
+                p.openExtraCheck(table, {
+                  guestCount: p.order.guestCount,
+                  waiterUserId: p.order.waiterUserId,
+                });
               } : undefined}
               t={p.t}
             />

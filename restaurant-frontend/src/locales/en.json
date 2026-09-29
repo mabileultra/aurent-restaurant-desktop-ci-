@@ -1399,6 +1399,7 @@
       "allCategories": "All dishes",
       "alreadyOpen": "There is already an order on the table.",
       "newCheck": "New check",
+      "newCheckOpened": "New check opened",
       "checksCount": "Checks: {{count}}",
       "backToFloor": "Back to floor plan",
       "badgeNew": "new",

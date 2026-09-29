@@ -88,6 +88,28 @@ export function useFloorPosMutations(deps) {
     onError: (err) => errMsg(err, 'rst.order.openFailed'),
   });
 
+  /** Extra check on an already occupied table — no guest form. */
+  const openExtraCheckMutation = useMutation({
+    mutationFn: ({ tableId, guestCount = 1, waiterUserId } = {}) => {
+      const guests = Math.max(1, Number(guestCount) || 1);
+      const payload = {
+        guestCount: guests,
+        adultCount: guests,
+        childrenCount: 0,
+      };
+      if (waiterUserId) payload.waiterUserId = waiterUserId;
+      return rstOrderApi.open(tableId, payload).then((r) => r.data);
+    },
+    onSuccess: (created) => {
+      setOpenTable(null);
+      setActiveOrderId(created.id);
+      invalidateFloor();
+      invalidateShift();
+      toast.success(t('rst.order.newCheckOpened', { defaultValue: 'Новый счёт открыт' }));
+    },
+    onError: (err) => errMsg(err, 'rst.order.openFailed'),
+  });
+
   const openCounterMutation = useMutation({
     mutationFn: () => {
       const payload = {
@@ -396,7 +418,7 @@ export function useFloorPosMutations(deps) {
   });
 
   return {
-    openMutation, openCounterMutation, openShiftMutation, closeShiftMutation,
+    openMutation, openExtraCheckMutation, openCounterMutation, openShiftMutation, closeShiftMutation,
     addItemMutation, updateItemMutation, removeItemMutation, assignWaiterMutation,
     updateGuestsMutation, sendKitchenMutation, cancelMutation, billMutation,
     discountMutation, payMutation, refundMutation, markReadyMutation,

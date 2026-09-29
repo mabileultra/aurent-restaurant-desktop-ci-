@@ -65,10 +65,15 @@ export default function FloorPosModals({ p, waiterMode = false }) {
         onSelectOrder={a.selectOrder}
         onNewCheck={() => {
           const table = a.inspectTable;
-          a.closeInspect();
-          if (table) p.beginOpenTable(table);
+          const seed = (a.checks || []).find((row) => row.id === a.selectedOrderId)
+            || a.checks?.[0]
+            || table?.activeOrder;
+          p.openExtraCheck(table, {
+            guestCount: seed?.guestCount,
+            waiterUserId: seed?.waiterUserId,
+          });
         }}
-        canOpenOrder={p.access?.canOpenOrder}
+        canOpenOrder={p.access?.canOpenOrder && !p.openExtraCheckPending}
         t={p.t}
       />
       {!waiterMode && a.canTransferMerge ? (
