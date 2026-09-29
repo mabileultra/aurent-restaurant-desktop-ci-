@@ -4,7 +4,7 @@
  */
 const path = require('path');
 const fs = require('fs');
-const { app, BrowserWindow, ipcMain, shell, dialog, net } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog, net, session } = require('electron');
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
@@ -326,6 +326,11 @@ app.whenReady().then(async () => {
   })();
 
   const start = await uiSession.ensureStartUrl();
+  try {
+    await session.defaultSession.clearCache();
+  } catch (err) {
+    console.error('[ui] cache clear failed', err?.message || err);
+  }
   createWindow(start);
   const { setMainWindow } = require('./printers/window-ref.cjs');
   setMainWindow(mainWindow);

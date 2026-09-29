@@ -3,6 +3,7 @@ import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwi
 import PosZoomControls from '../../components/PosZoomControls';
 import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
+import DesktopAdminEntry from '../../../shared/components/DesktopAdminEntry';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import '../styles/cashier-shell.css';
 
@@ -16,6 +17,7 @@ export default function CashierTopBar({
 }) {
   return (
     <header className="rst-cashier-top">
+      <DesktopAdminEntry label={t('cashierLogin.adminLogin')} />
       <div className="rst-cashier-top__brand">
         <span className="rst-cashier-top__name">{t('rst.cashier.title')}</span>
         <span className="rst-cashier-top__meta">

@@ -1,4 +1,4 @@
-const { app } = require('electron');
+const { app, session } = require('electron');
 const { hasUserConfig, loadDesktopConfig, buildLoginUrl } = require('../config/desktopConfig');
 const { cashierUrlForUi } = require('../ui/activeUiOrigin');
 const { showSetupWindow } = require('../setup/setupWindow');
@@ -31,6 +31,11 @@ async function reloadCashierLogin(mainWindow, cfg, { clearSession = false, login
   if (!mainWindow || mainWindow.isDestroyed()) return;
   if (clearSession) {
     await clearCashierWebStorage(mainWindow, cfg);
+  }
+  try {
+    await session.defaultSession.clearCache();
+  } catch {
+    // stale page must not block login
   }
   await mainWindow.loadURL(loginUrl || buildLoginUrl(cfg));
 }
