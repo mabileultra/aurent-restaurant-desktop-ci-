@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
-import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
+import { isDesktopPrinter, listDesktopPrinters } from '../../pos/utils/desktopPrinters';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { toastApiError } from '../../../utils/apiError';
 
-const emptyForm = () => ({ name: '', sortOrder: 100, autoPrint: false, printStationId: '' });
+const emptyForm = () => ({ name: '', sortOrder: 100, autoPrint: false, printPrinterName: '' });
 
 export const MENU_CAT_PAGE_SIZE_OPTIONS = [10, 14, 20];
 const DEFAULT_PAGE_SIZE = 14;
@@ -21,12 +21,23 @@ export function useMenuCategoriesAdminPage() {
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const stationsQuery = useQuery({
-    queryKey: ['rst-kitchen-stations', workspace.storeId],
-    queryFn: () => rstKitchenApi.listStations(workspace.storeId, true).then((r) => r.data ?? []),
-    enabled: workspace.storeId != null,
-    staleTime: 60_000,
-  });
+  const [printers, setPrinters] = useState([]);
+  const desktop = isDesktopPrinter();
+
+  useEffect(() => {
+    if (!desktop) return undefined;
+    let cancelled = false;
+    listDesktopPrinters()
+      .then((list) => {
+        if (!cancelled) setPrinters(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (!cancelled) setPrinters([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [desktop]);
 
   const categoriesQuery = useQuery({
     queryKey: ['rst-menu-categories-admin', workspace.storeId],
@@ -60,7 +71,7 @@ export function useMenuCategoriesAdminPage() {
         name: form.name.trim(),
         sortOrder: Number(form.sortOrder) || 100,
         autoPrint: Boolean(form.autoPrint),
-        printStationId: form.autoPrint && form.printStationId ? form.printStationId : null,
+        printPrinterName: form.autoPrint && form.printPrinterName ? form.printPrinterName : null,
       };
       if (editingId) return rstMenuApi.updateCategory(editingId, body);
       return rstMenuApi.createCategory(workspace.storeId, body);
@@ -90,7 +101,7 @@ export function useMenuCategoriesAdminPage() {
       name: row.name,
       sortOrder: row.sortOrder,
       autoPrint: Boolean(row.autoPrint),
-      printStationId: row.printStationId || '',
+      printPrinterName: row.printPrinterName || '',
     });
   };
 
@@ -110,7 +121,8 @@ export function useMenuCategoriesAdminPage() {
     pageSizeOptions: MENU_CAT_PAGE_SIZE_OPTIONS,
     form,
     setForm,
-    stations: stationsQuery.data ?? [],
+    printers,
+    desktop,
     editingId,
     isLoading: categoriesQuery.isLoading,
     saveMutation,

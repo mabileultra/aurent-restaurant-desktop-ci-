@@ -15,6 +15,12 @@ export default function PrintersAdminPage() {
     enabled: workspace.storeId != null,
   });
   const stations = (stationsQuery.data ?? []).filter((station) => station.active);
+  const boardQuery = useQuery({
+    queryKey: ['rst-kitchen-board', workspace.storeId],
+    queryFn: () => rstKitchenApi.getKitchenBoard(workspace.storeId).then((r) => r.data),
+    enabled: workspace.storeId != null,
+  });
+  const kitchenBoardEnabled = boardQuery.data?.enabled !== false;
 
   if (workspace.noAssignment) {
     return <div className="rst-notice">{t('rst.floor.noStore')}</div>;
@@ -31,7 +37,11 @@ export default function PrintersAdminPage() {
       {!workspace.storeId ? (
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (
-        <RestaurantPrinterSettings stations={stations} t={t} />
+        <RestaurantPrinterSettings
+          stations={stations}
+          kitchenBoardEnabled={kitchenBoardEnabled}
+          t={t}
+        />
       )}
     </section>
   );

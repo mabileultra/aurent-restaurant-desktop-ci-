@@ -78,6 +78,24 @@
   color: var(--rst-muted);
 }
 
+.rst-admin-field--check .rst-admin-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  width: auto;
+  color: var(--rst-ink);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
+
+.rst-admin-field--check .rst-admin-check input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.1rem;
+  flex: 0 0 auto;
+  accent-color: var(--rst-accent, #ff7a1a);
+}
+
 .rst-admin-field .form-select,
 .rst-admin-field input,
 .rst-admin-filters .form-select,

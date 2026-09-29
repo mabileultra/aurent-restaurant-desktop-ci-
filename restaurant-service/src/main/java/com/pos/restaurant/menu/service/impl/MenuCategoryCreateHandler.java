@@ -2,7 +2,6 @@ package com.pos.restaurant.menu.service.impl;
 
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
-import com.pos.restaurant.kitchen.support.KitchenStationLookup;
 import com.pos.restaurant.menu.dto.MenuCategoryResponse;
 import com.pos.restaurant.menu.dto.SaveMenuCategoryRequest;
 import com.pos.restaurant.menu.entity.MenuCategory;
@@ -14,8 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.UUID;
-
 @Component
 @RequiredArgsConstructor
 public class MenuCategoryCreateHandler {
@@ -24,7 +21,6 @@ public class MenuCategoryCreateHandler {
     private final MenuCategoryMapper categoryMapper;
     private final FloorTenantSupport tenantSupport;
     private final MenuCategoryNameUniquenessValidator nameUniquenessValidator;
-    private final KitchenStationLookup stationLookup;
 
     @Transactional
     public MenuCategoryResponse handle(Integer storeId, SaveMenuCategoryRequest request) {
@@ -32,9 +28,6 @@ public class MenuCategoryCreateHandler {
         String name = request.name().trim();
         nameUniquenessValidator.assertUniqueOnCreate(storeId, name);
         boolean autoPrint = Boolean.TRUE.equals(request.autoPrint());
-        UUID printStationId = autoPrint
-            ? requirePrintStation(request.printStationId(), companyId, storeId)
-            : null;
         MenuCategory saved = categoryRepository.save(MenuCategory.builder()
             .companyId(companyId)
             .storeId(storeId)
@@ -42,16 +35,17 @@ public class MenuCategoryCreateHandler {
             .sortOrder(request.sortOrder() == null ? 100 : request.sortOrder())
             .active(true)
             .autoPrint(autoPrint)
-            .printStationId(printStationId)
+            .printPrinterName(autoPrint ? requirePrinterName(request.printPrinterName()) : null)
             .build());
         LogUtil.info(MenuCategoryCreateHandler.class, "Menu category created: id={}, storeId={}", saved.getId(), storeId);
         return categoryMapper.toResponse(saved);
     }
 
-    private UUID requirePrintStation(UUID stationId, Integer companyId, Integer storeId) {
-        if (stationId == null) {
-            throw new BusinessException("Choose a station for immediate printing");
+    private static String requirePrinterName(String raw) {
+        String name = raw == null ? "" : raw.trim();
+        if (name.isEmpty()) {
+            throw new BusinessException("Choose a printer for immediate printing");
         }
-        return stationLookup.requireActive(stationId, companyId, storeId).getId();
+        return name;
     }
 }

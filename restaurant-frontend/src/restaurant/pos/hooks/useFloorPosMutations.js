@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstFloorApi } from '../../api/floor.api';
@@ -50,12 +49,6 @@ export function useFloorPosMutations(deps) {
   } = deps;
 
   const qc = useQueryClient();
-  const stationsQuery = useQuery({
-    queryKey: ['rst-kitchen-stations', storeId],
-    queryFn: () => rstKitchenApi.listStations(storeId, true).then((r) => r.data ?? []),
-    enabled: storeId != null,
-    staleTime: 60_000,
-  });
   const categoriesQuery = useQuery({
     queryKey: ['rst-menu-categories', storeId],
     queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
@@ -152,19 +145,12 @@ export function useFloorPosMutations(deps) {
       const piece = addedPiece(order?.items, res.data?.items, vars?.menuItem?.id);
       if (!piece) return;
       try {
-        let stations = stationsQuery.data;
         let categories = categoriesQuery.data;
-        if (storeId != null && (!stations?.length || !categories?.length)) {
-          [stations, categories] = await Promise.all([
-            stations?.length ? stations : qc.fetchQuery({
-              queryKey: ['rst-kitchen-stations', storeId],
-              queryFn: () => rstKitchenApi.listStations(storeId, true).then((r) => r.data ?? []),
-            }),
-            categories?.length ? categories : qc.fetchQuery({
-              queryKey: ['rst-menu-categories', storeId],
-              queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
-            }),
-          ]);
+        if (storeId != null && !categories?.length) {
+          categories = await qc.fetchQuery({
+            queryKey: ['rst-menu-categories', storeId],
+            queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
+          });
         }
         const category = (categories || []).find(
           (item) => String(item.id) === String(vars?.menuItem?.menuCategoryId),
@@ -174,11 +160,10 @@ export function useFloorPosMutations(deps) {
           line: piece.line,
           quantity: piece.quantity,
           category,
-          stations,
           t,
         });
         if (printed?.mode === 'missing') {
-          toast.error(t('rst.admin.barPrinterMissing', { station: printed.label }));
+          toast.error(t('rst.admin.menuCategoryPrinterMissing', { name: printed.label }));
         }
       } catch (err) {
         toast.error(err?.message || t('receipt.printFailed'));

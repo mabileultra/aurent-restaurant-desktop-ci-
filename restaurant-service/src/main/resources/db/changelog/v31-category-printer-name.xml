@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v31-category-printer-name" author="aurent">
+        <addColumn tableName="menu_categories">
+            <column name="print_printer_name" type="VARCHAR(255)"/>
+        </addColumn>
+        <dropForeignKeyConstraint
+            baseTableName="menu_categories"
+            constraintName="fk_menu_categories_print_station"/>
+        <dropColumn tableName="menu_categories" columnName="print_station_id"/>
+    </changeSet>
+
+</databaseChangeLog>

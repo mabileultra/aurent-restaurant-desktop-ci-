@@ -35,5 +35,6 @@
     <include file="db/changelog/v28-menu-tax-rate.xml"/>
     <include file="db/changelog/v29-kitchen-board.xml"/>
     <include file="db/changelog/v30-category-autoprint.xml"/>
+    <include file="db/changelog/v31-category-printer-name.xml"/>
 
 </databaseChangeLog>

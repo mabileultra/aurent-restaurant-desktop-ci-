@@ -9,5 +9,5 @@ public record MenuCategoryResponse(
     int sortOrder,
     boolean active,
     boolean autoPrint,
-    UUID printStationId
+    String printPrinterName
 ) {}

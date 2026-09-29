@@ -51,8 +51,8 @@ public class MenuCategory {
     @Builder.Default
     private boolean autoPrint = false;
 
-    @Column(name = "print_station_id")
-    private UUID printStationId;
+    @Column(name = "print_printer_name", length = 255)
+    private String printPrinterName;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

@@ -69,18 +69,16 @@ async function sendGroups(groups, settings) {
   return { mode: printed ? 'silent' : 'skip', missing, configured, errors };
 }
 
-/** Category auto-print: slip goes to that station's printer even if the kitchen board is off. */
-export async function printCategoryTicketOnAdd({ order, line, quantity, category, stations, t } = {}) {
-  if (!order || !line || !category?.autoPrint || !category.printStationId || !isDesktopPrinter()) {
+/** Category auto-print: slip goes to the printer named on the section. */
+export async function printCategoryTicketOnAdd({ order, line, quantity, category, t } = {}) {
+  if (!order || !line || !category?.autoPrint || !isDesktopPrinter()) {
     return { mode: 'skip' };
   }
-  const station = (stations || []).find((item) => String(item.id) === String(category.printStationId));
-  const settings = await getDesktopPrinterSettings();
-  const printer = settings?.stationPrinters?.[String(category.printStationId)] || '';
-  if (!printer) return { mode: 'missing', label: station?.name || category.name || '' };
+  const printer = String(category.printPrinterName || '').trim();
+  if (!printer) return { mode: 'missing', label: category.name || '' };
   const qty = Number(quantity) || 1;
   await printTicketLines({
-    title: station?.name || category.name || '',
+    title: category.name || '',
     printerName: printer,
     lines: [
       headerFor(order, t),

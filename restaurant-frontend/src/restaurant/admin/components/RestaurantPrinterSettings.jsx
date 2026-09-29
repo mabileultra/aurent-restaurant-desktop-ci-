@@ -31,7 +31,7 @@ function PrinterSelect({ value, printers, disabled, noneLabel, onChange }) {
 }
 
 /** Printers attached to this desktop: cashier receipt, guest bill, each kitchen station. */
-export default function RestaurantPrinterSettings({ stations, t }) {
+export default function RestaurantPrinterSettings({ stations, kitchenBoardEnabled = true, t }) {
   const desktop = isDesktopPrinter();
   const canList = desktop && typeof window.desktopCashier?.listPrinters === 'function';
   const [printers, setPrinters] = useState([]);
@@ -101,48 +101,59 @@ export default function RestaurantPrinterSettings({ stations, t }) {
   return (
     <div className="rst-admin-form">
       {loadError ? <p className="rst-coming__text">{t('rst.admin.printersLoadFailed')}</p> : null}
-      <div className="rst-admin-form__grid rst-admin-form__grid--printers">
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{t('rst.admin.receiptPrinter')}</span>
-          <PrinterSelect
-            value={settings.receiptPrinterName}
-            printers={printers}
-            disabled={saving}
-            noneLabel={none}
-            onChange={(value) => save({ ...settings, receiptPrinterName: value })}
-          />
-          <span className="rst-admin-field__hint">{t('rst.admin.receiptPrinterHint')}</span>
-        </label>
-        <label className="rst-admin-field">
-          <span className="rst-admin-field__label">{t('rst.admin.billPrinter')}</span>
-          <PrinterSelect
-            value={settings.billPrinterName}
-            printers={printers}
-            disabled={saving}
-            noneLabel={none}
-            onChange={(value) => save({ ...settings, billPrinterName: value })}
-          />
-          <span className="rst-admin-field__hint">{t('rst.admin.billPrinterHint')}</span>
-        </label>
-      </div>
-      {(stations || []).map((station) => (
-        <label key={station.id} className="rst-admin-field">
-          <span className="rst-admin-field__label">{station.name}</span>
-          <PrinterSelect
-            value={settings.stationPrinters?.[station.id] || ''}
-            printers={printers}
-            disabled={saving}
-            noneLabel={none}
-            onChange={(value) => {
-              const stationPrinters = { ...(settings.stationPrinters || {}) };
-              if (value) stationPrinters[station.id] = value;
-              else delete stationPrinters[station.id];
-              save({ ...settings, stationPrinters });
-            }}
-          />
-          <span className="rst-admin-field__hint">{t('rst.admin.stationPrinterHint')}</span>
-        </label>
-      ))}
+      <section className="rst-printers__block">
+        <h2 className="rst-printers__title">{t('rst.admin.printersPayTitle')}</h2>
+        <p className="rst-printers__note">{t('rst.admin.printersPayHint')}</p>
+        <div className="rst-admin-form__grid rst-admin-form__grid--printers">
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.admin.receiptPrinter')}</span>
+            <PrinterSelect
+              value={settings.receiptPrinterName}
+              printers={printers}
+              disabled={saving}
+              noneLabel={none}
+              onChange={(value) => save({ ...settings, receiptPrinterName: value })}
+            />
+            <span className="rst-admin-field__hint">{t('rst.admin.receiptPrinterHint')}</span>
+          </label>
+          <label className="rst-admin-field">
+            <span className="rst-admin-field__label">{t('rst.admin.billPrinter')}</span>
+            <PrinterSelect
+              value={settings.billPrinterName}
+              printers={printers}
+              disabled={saving}
+              noneLabel={none}
+              onChange={(value) => save({ ...settings, billPrinterName: value })}
+            />
+            <span className="rst-admin-field__hint">{t('rst.admin.billPrinterHint')}</span>
+          </label>
+        </div>
+      </section>
+      <section className={`rst-printers__block${kitchenBoardEnabled ? '' : ' is-off'}`}>
+        <h2 className="rst-printers__title">{t('rst.admin.printersKitchenTitle')}</h2>
+        <p className="rst-printers__note">
+          {kitchenBoardEnabled ? t('rst.admin.printersKitchenOn') : t('rst.admin.printersKitchenOff')}
+        </p>
+        <div className="rst-admin-form__grid rst-admin-form__grid--printers">
+          {(stations || []).map((station) => (
+            <label key={station.id} className="rst-admin-field">
+              <span className="rst-admin-field__label">{station.name}</span>
+              <PrinterSelect
+                value={settings.stationPrinters?.[station.id] || ''}
+                printers={printers}
+                disabled={saving}
+                noneLabel={none}
+                onChange={(value) => {
+                  const stationPrinters = { ...(settings.stationPrinters || {}) };
+                  if (value) stationPrinters[station.id] = value;
+                  else delete stationPrinters[station.id];
+                  save({ ...settings, stationPrinters });
+                }}
+              />
+            </label>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
