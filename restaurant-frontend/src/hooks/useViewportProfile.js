@@ -3,7 +3,7 @@ import { resolveViewportProfile } from '../utils/viewportBreakpoints';
 
 function readProfile() {
   if (typeof window === 'undefined') {
-    return { compact: false, desktop: true, canonical: false };
+    return { compact: false, desktop: true, canonical: false, posTerminal: false };
   }
   return resolveViewportProfile(window.innerWidth, window.innerHeight);
 }

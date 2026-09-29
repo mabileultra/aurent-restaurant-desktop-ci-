@@ -15,11 +15,18 @@ export const VIEWPORT_CANONICAL = {
   HEIGHT_MAX: 820,
 };
 
+/** Short landscape POS panels (e.g. ~1000×500 / 1024×540) — desktop waiter, not phone shell. */
+export const VIEWPORT_POS_TERMINAL = {
+  WIDTH_MIN: 900,
+  HEIGHT_MAX: 620,
+};
+
 export const VIEWPORT_MEDIA = {
   compact: `(max-width: ${VIEWPORT_BP.COMPACT_MAX}px)`,
   desktop: `(min-width: ${VIEWPORT_BP.DESKTOP}px)`,
   lg: `(min-width: ${VIEWPORT_BP.LG}px)`,
   canonical: `(min-width: ${VIEWPORT_CANONICAL.WIDTH_MIN}px) and (max-width: ${VIEWPORT_CANONICAL.WIDTH_MAX}px) and (max-height: ${VIEWPORT_CANONICAL.HEIGHT_MAX}px)`,
+  posTerminal: `(min-width: ${VIEWPORT_POS_TERMINAL.WIDTH_MIN}px) and (max-height: ${VIEWPORT_POS_TERMINAL.HEIGHT_MAX}px)`,
 };
 
 export function resolveViewportProfile(width, height) {
@@ -33,7 +40,12 @@ export function resolveViewportProfile(width, height) {
     && h > 0
     && h <= VIEWPORT_CANONICAL.HEIGHT_MAX
   );
-  return { compact, desktop, canonical };
+  const posTerminal = (
+    w >= VIEWPORT_POS_TERMINAL.WIDTH_MIN
+    && h > 0
+    && h <= VIEWPORT_POS_TERMINAL.HEIGHT_MAX
+  );
+  return { compact, desktop, canonical, posTerminal };
 }
 
 export const VIEWPORT_HTML_CLASSES = [

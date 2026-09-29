@@ -948,7 +948,8 @@
   }
 }
 
-@media (max-width: 900px) {
+/* Stack only on phone-narrow; keep side-by-side on short POS (~1000×500). */
+@media (max-width: 799px) {
   .rst-order {
     grid-template-columns: 1fr;
   }
