@@ -34,6 +34,17 @@ function itemLines(item) {
   return lines;
 }
 
+/** Prefer station binding; if unset / unmapped, use the only configured kitchen printer. */
+function resolveStationPrinter(map, stationId) {
+  const keyed = stationId ? String(map[String(stationId)] || '').trim() : '';
+  if (keyed) return keyed;
+  const values = Object.values(map || {})
+    .map((name) => String(name || '').trim())
+    .filter(Boolean);
+  const unique = [...new Set(values)];
+  return unique.length === 1 ? unique[0] : '';
+}
+
 async function sendGroups(groups, settings) {
   const map = settings?.stationPrinters || {};
   const configured = Object.keys(map).length > 0;
@@ -41,7 +52,7 @@ async function sendGroups(groups, settings) {
   const errors = [];
   let printed = 0;
   for (const group of groups) {
-    const printer = group.stationId ? map[String(group.stationId)] : '';
+    const printer = resolveStationPrinter(map, group.stationId);
     if (!printer) {
       missing.push(group.label);
       continue;
@@ -66,7 +77,9 @@ async function sendGroups(groups, settings) {
       errors.push(`${group.label}: ${err?.message || 'печать не выполнена'}`);
     }
   }
-  return { mode: printed ? 'silent' : 'skip', missing, configured, errors };
+  if (printed) return { mode: 'silent', missing, configured, errors };
+  if (missing.length && !errors.length) return { mode: 'missing', missing, configured, errors };
+  return { mode: 'skip', missing, configured, errors };
 }
 
 /** Category auto-print: slip goes to the printer named on the section. */
@@ -87,7 +100,6 @@ export async function printCategoryTicketOnAdd({ order, line, quantity, category
       ...itemLines({ ...line, quantity: qty }),
     ],
   });
-  if (line.id != null) markPrintedKitchenLines([line.id]);
   return { mode: 'silent' };
 }
 

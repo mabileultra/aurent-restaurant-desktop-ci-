@@ -64,7 +64,7 @@ function createEscposPrinter(deviceName, options = {}) {
   }
 
   const locale = normalizeLocale(options.locale);
-  const characterSet = resolveCharacterSet(locale);
+  const characterSet = resolveCharacterSet(locale, Boolean(options.payloadHasCyrillic));
   const width = resolvePrintWidth(options);
   const driver = loadPrinterDriver();
 

@@ -619,6 +619,7 @@
       "printersKitchenTitle": "Kitchen",
       "printersKitchenOn": "A station ticket prints when the order is sent to the kitchen.",
       "printersKitchenOff": "The kitchen board is off. The stations below do not print right now.",
+      "printersKitchenMissing": "Kitchen ticket was not printed: assign a station printer in printer settings on this PC.",
       "printersCategoriesTitle": "Auto-print by section",
       "printersCategoriesHint": "Only sections with auto-print on. The dish ticket uses the section printer, not the cash receipt or a kitchen station.",
       "printersCategoriesEmpty": "No sections with auto-print.",

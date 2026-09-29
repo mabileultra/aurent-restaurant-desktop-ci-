@@ -619,6 +619,7 @@
       "printersKitchenTitle": "Oshxona",
       "printersKitchenOn": "Stansiya cheki buyurtma oshxonaga yuborilganda chiqadi.",
       "printersKitchenOff": "Oshxona doskasi o‘chiq. Pastdagi stansiyalar hozir chop etmaydi.",
+      "printersKitchenMissing": "Oshxona cheki chop etilmadi: shu kompyuterdagi printer sozlamalarida stansiya printerini belgilang.",
       "printersCategoriesTitle": "Bo‘limlar bo‘yicha avtochop",
       "printersCategoriesHint": "Faqat avtochop yoqilgan bo‘limlar. Taom cheki bo‘lim printeriga ketadi, kassa yoki oshxona stansiyasiga emas.",
       "printersCategoriesEmpty": "Avtochop yoqilgan bo‘limlar yo‘q.",

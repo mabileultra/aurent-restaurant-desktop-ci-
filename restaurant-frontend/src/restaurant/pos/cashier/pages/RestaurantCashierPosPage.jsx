@@ -150,9 +150,8 @@ export default function RestaurantCashierPosPage() {
         )}
       </div>
 
-      <CashierBottomNav tab={p.tab} onSelect={handleTab} t={p.t} />
-
-      <PosHardwareBar t={p.t} />
+      {showFull ? null : <CashierBottomNav tab={p.tab} onSelect={handleTab} t={p.t} />}
+      {showFull ? null : <PosHardwareBar t={p.t} />}
       <FloorPosModals p={p} />
     </div>
   );

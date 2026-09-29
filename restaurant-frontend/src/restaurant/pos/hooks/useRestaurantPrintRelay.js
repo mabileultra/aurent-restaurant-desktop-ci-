@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { rstPrintApi } from '../../api/print.api';
 import { isDesktopPrinter } from '../utils/desktopPrinters';
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
@@ -12,6 +13,7 @@ export function useRestaurantPrintRelay(storeId, t) {
   const busyRef = useRef(false);
   const tRef = useRef(t);
   tRef.current = t;
+  const warnedMissingRef = useRef(new Set());
 
   useEffect(() => {
     if (storeId == null || !isDesktopPrinter()) return undefined;
@@ -30,6 +32,22 @@ export function useRestaurantPrintRelay(storeId, t) {
           try {
             const outcome = await executeRestaurantPrintJob(job, { t: tRef.current });
             if (outcome?.ack && job.id) ackIds.push(job.id);
+            if (
+              !outcome?.ack
+              && outcome?.mode === 'missing'
+              && outcome?.configured
+              && job.kind === 'KITCHEN_SEND'
+            ) {
+              const key = `${storeId}:kitchen-missing`;
+              if (!warnedMissingRef.current.has(key)) {
+                warnedMissingRef.current.add(key);
+                toast.error(
+                  tRef.current('rst.admin.printersKitchenMissing', {
+                    defaultValue: 'Кухонный чек не напечатан: назначьте принтер станции в настройках принтеров на этом ПК.',
+                  }),
+                );
+              }
+            }
           } catch {
             /* leave pending for retry */
           }

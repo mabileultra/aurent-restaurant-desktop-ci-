@@ -11,6 +11,12 @@ const {
 } = require('./escpos-shift-report-builder.cjs');
 const { validateLabelPayload, buildLabelsOnPrinter } = require('./escpos-label-builder.cjs');
 const { createReceiptPrinter, createLabelPrinter } = require('./escpos-printer-service.cjs');
+const {
+  normalizeLocale,
+  normalizePrintText,
+  preparePrinterEncoding,
+  payloadContainsCyrillic,
+} = require('./escpos-encoding.cjs');
 const { listSystemPrinters } = require('../printers/resolve.cjs');
 const { matchPrinterName } = require('../printers/printer-match.cjs');
 
@@ -108,14 +114,26 @@ function validatePlainTicket(payload) {
 
 /**
  * Кухонный чек и счёт гостю: RAW ESC/POS на выбранный принтер, не HTML-страница.
+ * Xprinter: обязательно выход из китайского режима + code page (как у фискального чека).
  * @param {object} payload
  */
 async function printPlainTicketEscpos(payload) {
   const requested = String(payload?.printerName || '').trim();
+  const locale = normalizeLocale(payload?.locale);
+  const hasCyrillic = payloadContainsCyrillic({
+    title: payload?.title,
+    lines: payload?.lines,
+  });
+  const safePayload = {
+    ...payload,
+    locale,
+    title: normalizePrintText(payload?.title || '', locale),
+    lines: (payload?.lines || []).map((line) => normalizePrintText(line, locale)),
+  };
   try {
     return await runEscposPrintJob({
       jobType: 'plain_ticket',
-      payload,
+      payload: safePayload,
       resolvePrinterName: async () => {
         const printers = await listSystemPrinters();
         return matchPrinterName(requested, printers) || requested;
@@ -125,8 +143,10 @@ async function printPlainTicketEscpos(payload) {
         createReceiptPrinter(deviceName, {
           locale: p.locale || 'ru',
           paperWmm: paperMmForPrinter(deviceName, p.paperWmm),
+          payloadHasCyrillic: hasCyrillic && locale !== 'uz',
         }),
       buildOnPrinter: (printer, p) => {
+        preparePrinterEncoding(printer, p.locale);
         const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
         const wrap = (text) => {
           const src = String(text || '').replace(/\s+/g, ' ').trim();

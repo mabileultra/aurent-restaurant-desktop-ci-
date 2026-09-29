@@ -3,7 +3,9 @@ package com.pos.restaurant.order.service.impl;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.menu.entity.MenuCategory;
 import com.pos.restaurant.menu.entity.MenuItem;
+import com.pos.restaurant.menu.repository.MenuCategoryRepository;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.modifier.entity.MenuItemModifierLink;
 import com.pos.restaurant.modifier.entity.ModifierGroup;
@@ -22,6 +24,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -39,6 +42,7 @@ public class OrderAddItemHandler {
     private final FloorOrderItemRepository itemRepository;
     private final FloorOrderItemModifierRepository itemModifierRepository;
     private final MenuItemRepository menuItemRepository;
+    private final MenuCategoryRepository menuCategoryRepository;
     private final MenuItemModifierLinkRepository linkRepository;
     private final ModifierGroupRepository groupRepository;
     private final ModifierOptionRepository optionRepository;
@@ -46,6 +50,7 @@ public class OrderAddItemHandler {
     private final OrderLookup orderLookup;
     private final FloorTenantSupport tenantSupport;
     private final OrderResponseAssembler assembler;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public OrderResponse handle(UUID orderId, AddOrderItemRequest request) {
@@ -81,6 +86,7 @@ public class OrderAddItemHandler {
                 && itemModifierRepository.findByOrderItemIdIn(List.of(existing.get().getId())).isEmpty()) {
                 FloorOrderItem line = existing.get();
                 line.setQuantity(line.getQuantity().add(quantity));
+                enqueueCategorySlip(order, line, quantity, menuItem);
                 LogUtil.info(OrderAddItemHandler.class, "Order item qty increased: id={}", line.getId());
                 return reload(order);
             }
@@ -108,8 +114,24 @@ public class OrderAddItemHandler {
                 .priceDelta(option.getPriceDelta())
                 .build())
             .toList());
+        enqueueCategorySlip(order, saved, quantity, menuItem);
         LogUtil.info(OrderAddItemHandler.class, "Order item added: orderId={}", orderId);
         return reload(order);
+    }
+
+    private void enqueueCategorySlip(
+        FloorOrder order,
+        FloorOrderItem line,
+        BigDecimal quantity,
+        MenuItem menuItem
+    ) {
+        if (menuItem.getMenuCategoryId() == null) {
+            return;
+        }
+        MenuCategory category = menuCategoryRepository
+            .findByIdAndCompanyId(menuItem.getMenuCategoryId(), menuItem.getCompanyId())
+            .orElse(null);
+        printJobPublisher.categorySlip(order, line, quantity, category);
     }
 
     private List<ModifierGroup> assignedGroups(MenuItem menuItem, Integer companyId) {

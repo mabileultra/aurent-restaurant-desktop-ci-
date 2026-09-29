@@ -8,7 +8,6 @@ import {
   isDesktopPrinter,
   listDesktopPrinters,
   printTicketLines,
-  markPrintedKitchenLines,
 } from './desktopPrinters';
 
 function parsePayload(raw) {
@@ -72,7 +71,6 @@ async function runCategorySlip(payload, t) {
       ...itemLines({ ...line, quantity: qty }),
     ],
   });
-  if (line.id != null) markPrintedKitchenLines([line.id]);
   return { mode: 'silent', ack: true };
 }
 
@@ -100,7 +98,14 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
       onlyItemIds: payload.itemIds || [],
     });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
-    return { ack: false, mode: printed?.mode || 'skip' };
+    // Leave pending: another desktop may own the station printer.
+    return {
+      ack: false,
+      mode: printed?.mode || 'skip',
+      missing: printed?.missing,
+      configured: printed?.configured,
+      errors: printed?.errors,
+    };
   }
 
   if (job.kind === 'CATEGORY_SLIP') {
