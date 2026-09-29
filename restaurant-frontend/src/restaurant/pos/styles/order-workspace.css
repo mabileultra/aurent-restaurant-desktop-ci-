@@ -453,7 +453,7 @@
   height: 88px;
   min-height: 88px;
   max-height: 88px;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center;
   border-radius: 10px;
   background: var(--rst-surface-2);

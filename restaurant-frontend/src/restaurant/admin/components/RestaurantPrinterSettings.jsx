@@ -33,12 +33,14 @@ function PrinterSelect({ value, printers, disabled, noneLabel, onChange }) {
 /** Printers attached to this desktop: cashier receipt, guest bill, each kitchen station. */
 export default function RestaurantPrinterSettings({ stations, t }) {
   const desktop = isDesktopPrinter();
+  const canList = desktop && typeof window.desktopCashier?.listPrinters === 'function';
   const [printers, setPrinters] = useState([]);
   const [settings, setSettings] = useState(null);
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!desktop) return undefined;
+    if (!canList) return undefined;
     let cancelled = false;
     Promise.all([listDesktopPrinters(), getDesktopPrinterSettings()])
       .then(([list, saved]) => {
@@ -52,12 +54,19 @@ export default function RestaurantPrinterSettings({ stations, t }) {
         });
       })
       .catch(() => {
-        if (!cancelled) setSettings(null);
+        if (cancelled) return;
+        setLoadError(true);
+        setSettings({
+          receiptPrinterName: '',
+          labelPrinterName: '',
+          billPrinterName: '',
+          stationPrinters: {},
+        });
       });
     return () => {
       cancelled = true;
     };
-  }, [desktop]);
+  }, [canList]);
 
   const save = async (next) => {
     setSaving(true);
@@ -80,12 +89,18 @@ export default function RestaurantPrinterSettings({ stations, t }) {
   if (!desktop) {
     return <p className="rst-coming__text">{t('rst.admin.printersDesktopOnly')}</p>;
   }
-  if (!settings) return null;
+  if (!canList) {
+    return <p className="rst-coming__text">{t('rst.admin.printersNeedUpdate')}</p>;
+  }
+  if (!settings) {
+    return <p className="rst-coming__text">{t('common.loading')}</p>;
+  }
 
   const none = t('rst.admin.printerNone');
 
   return (
     <div className="rst-admin-form">
+      {loadError ? <p className="rst-coming__text">{t('rst.admin.printersLoadFailed')}</p> : null}
       <div className="rst-admin-form__grid rst-admin-form__grid--printers">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.admin.receiptPrinter')}</span>

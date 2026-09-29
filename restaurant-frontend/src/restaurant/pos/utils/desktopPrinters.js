@@ -2,7 +2,7 @@
 
 export function isDesktopPrinter() {
   const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
-  return Boolean(desk?.isDesktop && typeof desk.printTicketHtml === 'function');
+  return Boolean(desk?.isDesktop);
 }
 
 export function listDesktopPrinters() {

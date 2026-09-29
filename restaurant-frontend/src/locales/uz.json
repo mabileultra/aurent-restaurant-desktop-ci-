@@ -51,7 +51,8 @@
     "companyCode": "Kompaniya kodi",
     "companyCodePlaceholder": "97125",
     "companyCodeRequired": "Kompaniya kodini kiriting",
-    "subtitle": "PIN-kodni kiriting"
+    "subtitle": "PIN-kodni kiriting",
+    "adminLogin": "Admin kirish"
   },
   "categories": {
     "actions": "Amallar",
@@ -604,6 +605,8 @@
       "printersTitle": "Shu kompyuter printerlari",
       "printersHint": "Kassir cheki, mehmon hisobi va oshxona cheki tanlangan Windows printerga darhol ketadi. Ofitsiant planshetida printer shart emas — stansiya kompyuteri chiqaradi.",
       "printersDesktopOnly": "Printerlar Aurent desktop ilovasida tanlanadi, brauzerda emas.",
+      "printersNeedUpdate": "Bu desktop oynasi hali printerlarni ko‘rsata olmaydi. Ilovani yoping va yangilangach qayta oching.",
+      "printersLoadFailed": "Shu kompyuter printerlarini o‘qib bo‘lmadi.",
       "printersSaved": "Printerlar saqlandi",
       "receiptPrinter": "Kassir cheki",
       "billPrinter": "Mehmon hisobi",

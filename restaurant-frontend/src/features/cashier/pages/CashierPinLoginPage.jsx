@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom';
 import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
+import { adminLoginPath } from '../../../utils/authLogin';
 import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
 import CashierPinLoginHeader from '../components/pin-login/CashierPinLoginHeader';
 import CashierPinLoginCompanyPopover from '../components/pin-login/CashierPinLoginCompanyPopover';
@@ -32,6 +34,9 @@ export default function CashierPinLoginPage() {
 
   return (
     <div className={`cashier-pin-login${touchLayout ? ' cashier-pin-login--touch' : ''}`}>
+      <Link className="cashier-pin-login__admin-entry" to={adminLoginPath()}>
+        {t('cashierLogin.adminLogin')}
+      </Link>
       {showCompanyCodeField ? (
         <div className="cashier-pin-login__top-actions">
           <CashierPinLoginCompanyPopover

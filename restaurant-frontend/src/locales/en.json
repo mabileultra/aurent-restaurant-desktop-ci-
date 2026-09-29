@@ -51,7 +51,8 @@
     "companyCode": "Company code",
     "companyCodePlaceholder": "97125",
     "companyCodeRequired": "Enter company code",
-    "subtitle": "Enter your PIN"
+    "subtitle": "Enter your PIN",
+    "adminLogin": "Admin sign-in"
   },
   "categories": {
     "actions": "Actions",
@@ -604,6 +605,8 @@
       "printersTitle": "Printers on this computer",
       "printersHint": "The cashier receipt, guest bill, and kitchen tickets go straight to the chosen Windows printer. A waiter tablet does not need a printer — the station computer prints.",
       "printersDesktopOnly": "Pick printers in the Aurent desktop app, not in the browser.",
+      "printersNeedUpdate": "This desktop window cannot list printers yet. Quit the app and open it again after the update.",
+      "printersLoadFailed": "Could not read the printers on this computer.",
       "printersSaved": "Printers saved",
       "receiptPrinter": "Cashier receipt",
       "billPrinter": "Guest bill",

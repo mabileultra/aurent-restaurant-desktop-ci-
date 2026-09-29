@@ -159,19 +159,17 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
                 else onAdd(item);
               }}
             >
-              <div className="rst-menu-card__media">
-                {imageUrl ? (
+              {imageUrl ? (
+                <div className="rst-menu-card__media">
                   <img src={imageUrl} alt="" className="rst-menu-card__img" />
-                ) : (
-                  <span className="rst-menu-card__ph" aria-hidden />
-                )}
-                {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
-                  <span className="rst-menu-card__prep">~{item.prepMinutes} {t('rst.order.prepMin')}</span>
-                ) : null}
-                {inCheck > 0 ? (
-                  <span className="rst-menu-card__badge">{t('rst.order.inCheck', { count: inCheck })}</span>
-                ) : null}
-              </div>
+                  {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                    <span className="rst-menu-card__prep">~{item.prepMinutes} {t('rst.order.prepMin')}</span>
+                  ) : null}
+                </div>
+              ) : null}
+              {inCheck > 0 ? (
+                <span className="rst-menu-card__badge">{t('rst.order.inCheck', { count: inCheck })}</span>
+              ) : null}
 
               {tags.length ? (
                 <div className="rst-menu-card__tags">
