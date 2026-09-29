@@ -38,5 +38,6 @@
     <include file="db/changelog/v31-category-printer-name.xml"/>
     <include file="db/changelog/v32-service-percent.xml"/>
     <include file="db/changelog/v33-several-checks-per-table.xml"/>
+    <include file="db/changelog/v34-drop-all-one-check-indexes.xml"/>
 
 </databaseChangeLog>
