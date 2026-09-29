@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { BaseSelect } from '../../../components/ui';
+import { BaseButton, BaseSelect } from '../../../components/ui';
 import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
   listDesktopPrinters,
+  printTicketLines,
   saveDesktopPrinterSettings,
 } from '../../pos/utils/desktopPrinters';
 
@@ -39,6 +40,7 @@ export default function RestaurantPrinterSettings({ stations, kitchenBoardEnable
   const [settings, setSettings] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState('');
 
   useEffect(() => {
     if (!canList) return undefined;
@@ -87,8 +89,38 @@ export default function RestaurantPrinterSettings({ stations, kitchenBoardEnable
     }
   };
 
+  const testPrint = async (printerName, key) => {
+    const name = String(printerName || '').trim();
+    if (!name) {
+      toast.error(t('rst.admin.printersTestPick'));
+      return;
+    }
+    setTesting(key);
+    try {
+      await printTicketLines({
+        title: t('rst.admin.printersTest'),
+        lines: [
+          t('rst.admin.printersTestOk'),
+          name,
+          new Date().toLocaleString(),
+        ],
+        printerName: name,
+      });
+      toast.success(t('rst.admin.printersTestOk'));
+    } catch {
+      toast.error(t('rst.admin.printersTestFailed'));
+    } finally {
+      setTesting('');
+    }
+  };
+
   if (!desktop) {
-    return <p className="rst-coming__text">{t('rst.admin.printersDesktopOnly')}</p>;
+    return (
+      <div className="rst-printers-desktop-only">
+        <p className="rst-coming__text">{t('rst.admin.printersDesktopOnly')}</p>
+        <p className="rst-coming__text mb-0">{t('rst.admin.printersDesktopOnlySteps')}</p>
+      </div>
+    );
   }
   if (!canList) {
     return <p className="rst-coming__text">{t('rst.admin.printersNeedUpdate')}</p>;
@@ -98,6 +130,7 @@ export default function RestaurantPrinterSettings({ stations, kitchenBoardEnable
   }
 
   const none = t('rst.admin.printerNone');
+  const busy = saving || Boolean(testing);
 
   return (
     <div className="rst-admin-form">
@@ -108,24 +141,44 @@ export default function RestaurantPrinterSettings({ stations, kitchenBoardEnable
         <div className="rst-admin-form__grid rst-admin-form__grid--printers">
           <label className="rst-admin-field">
             <span className="rst-admin-field__label">{t('rst.admin.receiptPrinter')}</span>
-            <PrinterSelect
-              value={settings.receiptPrinterName}
-              printers={printers}
-              disabled={saving}
-              noneLabel={none}
-              onChange={(value) => save({ ...settings, receiptPrinterName: value })}
-            />
+            <div className="rst-printers__row">
+              <PrinterSelect
+                value={settings.receiptPrinterName}
+                printers={printers}
+                disabled={busy}
+                noneLabel={none}
+                onChange={(value) => save({ ...settings, receiptPrinterName: value })}
+              />
+              <BaseButton
+                type="button"
+                variant="ghost"
+                disabled={busy || !settings.receiptPrinterName}
+                onClick={() => testPrint(settings.receiptPrinterName, 'receipt')}
+              >
+                {testing === 'receipt' ? t('common.loading') : t('rst.admin.printersTest')}
+              </BaseButton>
+            </div>
             <span className="rst-admin-field__hint">{t('rst.admin.receiptPrinterHint')}</span>
           </label>
           <label className="rst-admin-field">
             <span className="rst-admin-field__label">{t('rst.admin.billPrinter')}</span>
-            <PrinterSelect
-              value={settings.billPrinterName}
-              printers={printers}
-              disabled={saving}
-              noneLabel={none}
-              onChange={(value) => save({ ...settings, billPrinterName: value })}
-            />
+            <div className="rst-printers__row">
+              <PrinterSelect
+                value={settings.billPrinterName}
+                printers={printers}
+                disabled={busy}
+                noneLabel={none}
+                onChange={(value) => save({ ...settings, billPrinterName: value })}
+              />
+              <BaseButton
+                type="button"
+                variant="ghost"
+                disabled={busy || !settings.billPrinterName}
+                onClick={() => testPrint(settings.billPrinterName, 'bill')}
+              >
+                {testing === 'bill' ? t('common.loading') : t('rst.admin.printersTest')}
+              </BaseButton>
+            </div>
             <span className="rst-admin-field__hint">{t('rst.admin.billPrinterHint')}</span>
           </label>
         </div>
@@ -136,23 +189,37 @@ export default function RestaurantPrinterSettings({ stations, kitchenBoardEnable
           {kitchenBoardEnabled ? t('rst.admin.printersKitchenOn') : t('rst.admin.printersKitchenOff')}
         </p>
         <div className="rst-admin-form__grid rst-admin-form__grid--printers">
-          {(stations || []).map((station) => (
-            <label key={station.id} className="rst-admin-field">
-              <span className="rst-admin-field__label">{station.name}</span>
-              <PrinterSelect
-                value={settings.stationPrinters?.[station.id] || ''}
-                printers={printers}
-                disabled={saving}
-                noneLabel={none}
-                onChange={(value) => {
-                  const stationPrinters = { ...(settings.stationPrinters || {}) };
-                  if (value) stationPrinters[station.id] = value;
-                  else delete stationPrinters[station.id];
-                  save({ ...settings, stationPrinters });
-                }}
-              />
-            </label>
-          ))}
+          {(stations || []).map((station) => {
+            const value = settings.stationPrinters?.[station.id] || '';
+            const testKey = `station:${station.id}`;
+            return (
+              <label key={station.id} className="rst-admin-field">
+                <span className="rst-admin-field__label">{station.name}</span>
+                <div className="rst-printers__row">
+                  <PrinterSelect
+                    value={value}
+                    printers={printers}
+                    disabled={busy}
+                    noneLabel={none}
+                    onChange={(next) => {
+                      const stationPrinters = { ...(settings.stationPrinters || {}) };
+                      if (next) stationPrinters[station.id] = next;
+                      else delete stationPrinters[station.id];
+                      save({ ...settings, stationPrinters });
+                    }}
+                  />
+                  <BaseButton
+                    type="button"
+                    variant="ghost"
+                    disabled={busy || !value}
+                    onClick={() => testPrint(value, testKey)}
+                  >
+                    {testing === testKey ? t('common.loading') : t('rst.admin.printersTest')}
+                  </BaseButton>
+                </div>
+              </label>
+            );
+          })}
         </div>
       </section>
     </div>

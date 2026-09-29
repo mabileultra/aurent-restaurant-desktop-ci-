@@ -21,6 +21,29 @@
   color: #f0b429;
 }
 
+.rst-printers__row {
+  display: flex;
+  gap: 0.45rem;
+  align-items: stretch;
+}
+
+.rst-printers__row > :first-child {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.rst-printers-desktop-only {
+  max-width: 36rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--rst-accent, #f97316) 40%, var(--rst-line, #2a2a2a));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--rst-accent, #f97316) 10%, transparent);
+}
+
+.rst-printers-desktop-only .rst-coming__text {
+  margin: 0 0 0.55rem;
+}
+
 .rst-admin-field__hint {
   display: block;
   margin: 0.2rem 0 0.65rem;
