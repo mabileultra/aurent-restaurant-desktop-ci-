@@ -106,10 +106,13 @@
 }
 
 .rst-waiter-floor__list {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.45rem;
+  gap: 0.5rem;
   align-content: start;
+  align-items: start;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -119,9 +122,12 @@
 .rst-waiter-tile {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  min-height: 3.85rem;
-  padding: 0.5rem 0.55rem;
+  gap: 0.28rem;
+  width: 100%;
+  height: auto;
+  min-height: 5.25rem;
+  flex-shrink: 0;
+  padding: 0.65rem 0.7rem;
   border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
   border-radius: 0.85rem;
   background: var(--rst-surface, #121820);
@@ -130,6 +136,7 @@
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  box-sizing: border-box;
 }
 
 .rst-waiter-tile.is-selected {

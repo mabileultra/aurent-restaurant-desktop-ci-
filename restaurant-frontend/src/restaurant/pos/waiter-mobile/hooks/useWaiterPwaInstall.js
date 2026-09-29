@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 function isStandaloneDisplay() {
   if (typeof window === 'undefined') return false;
@@ -6,13 +6,24 @@ function isStandaloneDisplay() {
   return Boolean(window.navigator.standalone);
 }
 
+function detectInstallPlatform() {
+  if (typeof navigator === 'undefined') return 'other';
+  const ua = navigator.userAgent || '';
+  const iOS = /iPad|iPhone|iPod/.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (iOS) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  return 'other';
+}
+
 /**
  * Chrome/Android install prompt for waiter phone shell.
- * iOS has no beforeinstallprompt — UI shows manual hint instead.
+ * iOS has no beforeinstallprompt — UI shows manual steps instead.
  */
 export function useWaiterPwaInstall({ enabled }) {
   const [deferred, setDeferred] = useState(null);
   const [installed, setInstalled] = useState(() => isStandaloneDisplay());
+  const platform = useMemo(() => detectInstallPlatform(), []);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -49,10 +60,11 @@ export function useWaiterPwaInstall({ enabled }) {
   }, [deferred]);
 
   return {
+    enabled: Boolean(enabled),
     installed,
     canPrompt,
-    /** True when native prompt unavailable (e.g. iOS Safari) but not yet standalone. */
-    showManualHint: enabled && !installed && !canPrompt,
+    platform,
+    showManualHint: enabled && !installed,
     install,
   };
 }

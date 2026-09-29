@@ -19,6 +19,7 @@ import WaiterMobileFloorBoard from '../waiter-mobile/components/WaiterMobileFloo
 import WaiterMobileOrderWorkspace from '../waiter-mobile/components/WaiterMobileOrderWorkspace';
 import WaiterMobileBookingBoard from '../waiter-mobile/components/WaiterMobileBookingBoard';
 import WaiterEnterMobileButton from '../waiter-mobile/components/WaiterEnterMobileButton';
+import { usesCashierPos } from '../cashier/utils/cashierNav';
 import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/floor-pos.css';
@@ -253,6 +254,7 @@ export default function RestaurantFloorPosPage() {
               storeName={p.workspace.storeName ?? ''}
               roleLabel={p.t(`roles.${user?.role || 'WAITER'}`, { defaultValue: p.t('roles.WAITER') })}
               canAdmin={p.canAdmin}
+              canCashier={usesCashierPos(user?.role)}
               showExitMobile={mobile.showExitMobile}
               onExitMobile={mobile.exitMobile}
             />

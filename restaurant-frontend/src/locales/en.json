@@ -1708,8 +1708,11 @@
         "language": "Language",
         "enterMobile": "Mobile view",
         "exitMobile": "Desktop view",
-        "addToHome": "Add to Home Screen",
-        "addToHomeHint": "Chrome → ⋮ → Add to Home Screen (or Share → Add to Home Screen on iOS).",
+        "addToHome": "Install app",
+        "addToHomeHint": "Browser menu → Install app / Add to Home Screen.",
+        "addToHomeIos": "Safari: Share → Add to Home Screen. Then open the Aurent icon.",
+        "addToHomeAndroid": "Chrome: ⋮ → Install app or Add to Home Screen.",
+        "openCashier": "Open cashier",
         "installedHint": "Running as an installed app."
       },
       "mobile": {

@@ -111,6 +111,11 @@ export default function WaiterMobileOrderWorkspace({
             {digitalTimer ? ` · ${digitalTimer}` : ''}
           </span>
         </div>
+        {channel === 'DINE_IN' && onNewCheck ? (
+          <button type="button" className="rst-waiter-order__new-check" onClick={onNewCheck}>
+            {t('rst.order.newCheck')}
+          </button>
+        ) : null}
       </header>
 
       {channel === 'DINE_IN' ? (
@@ -120,36 +125,29 @@ export default function WaiterMobileOrderWorkspace({
             <span>{t('rst.order.guestsShort', { count: order.guestCount })}</span>
             <button type="button" disabled={billing || guestsPending} onClick={() => bumpGuests(1)}>+</button>
           </div>
-          {waiters.length === 0 ? (
+          {waiters.length > 0 ? (
+            <label className="rst-waiter-order__assign">
+              <span className="rst-waiter-order__assign-label">{t('rst.floor.waiter')}</span>
+              <select
+                value={order.waiterUserId || ''}
+                disabled={billing || assigningWaiter}
+                onChange={(e) => {
+                  if (!e.target.value || !onAssignWaiter) return;
+                  onAssignWaiter(e.target.value);
+                }}
+              >
+                <option value="">{t('rst.floor.waiterNone')}</option>
+                {waiters.map((waiter) => (
+                  <option key={waiter.id} value={waiter.id}>{waiter.name}</option>
+                ))}
+              </select>
+            </label>
+          ) : (
             <span className="rst-waiter-order__waiter">
-              {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
+              {resolvedWaiter || t('rst.floor.waiterNone')}
             </span>
-          ) : null}
-          {onNewCheck ? (
-            <button type="button" className="rst-waiter-order__new-check" onClick={onNewCheck}>
-              {t('rst.order.newCheck')}
-            </button>
-          ) : null}
+          )}
         </div>
-      ) : null}
-
-      {channel === 'DINE_IN' && waiters.length > 0 ? (
-        <label className="rst-waiter-order__assign">
-          <span>{t('rst.floor.waiter')}</span>
-          <select
-            value={order.waiterUserId || ''}
-            disabled={billing || assigningWaiter}
-            onChange={(e) => {
-              if (!e.target.value || !onAssignWaiter) return;
-              onAssignWaiter(e.target.value);
-            }}
-          >
-            <option value="">{t('rst.floor.waiterNone')}</option>
-            {waiters.map((waiter) => (
-              <option key={waiter.id} value={waiter.id}>{waiter.name}</option>
-            ))}
-          </select>
-        </label>
       ) : null}
 
       <div className="rst-waiter-order__tabs" role="tablist">
@@ -177,15 +175,13 @@ export default function WaiterMobileOrderWorkspace({
 
       <div className="rst-waiter-order__body">
         {tab === 'menu' ? (
-          <>
-            <MenuPicker
-              items={menuItems}
-              onAdd={onAddItem}
-              onComposeFamily={onComposeFamily}
-              t={t}
-              qtyByMenuId={qtyByMenuId}
-            />
-          </>
+          <MenuPicker
+            items={menuItems}
+            onAdd={onAddItem}
+            onComposeFamily={onComposeFamily}
+            t={t}
+            qtyByMenuId={qtyByMenuId}
+          />
         ) : (
           <>
             <OrderLines
@@ -225,54 +221,56 @@ export default function WaiterMobileOrderWorkspace({
         {billing ? (
           <p className="rst-waiter-order__bar-hint">{t('rst.order.billingHint')}</p>
         ) : null}
-        {tab === 'menu' ? (
-          <button
-            type="button"
-            className="rst-waiter-order__total-chip"
-            onClick={() => setTab('check')}
-          >
-            <span>{t('rst.order.totalDue')}</span>
-            <strong>{fmtMoneyCompact(payAmount)}</strong>
-          </button>
-        ) : null}
-        <div className="rst-waiter-order__bar-actions">
-          {canEditDiscount && onDiscount ? (
+        <div className="rst-waiter-order__bar-row">
+          {tab === 'menu' ? (
             <button
               type="button"
-              className="rst-waiter-order__btn rst-waiter-order__btn--ghost"
-              onClick={() => setDiscountOpen(true)}
-              disabled={discountPending}
+              className="rst-waiter-order__total-chip"
+              onClick={() => setTab('check')}
             >
-              {t('rst.order.discount')}
+              <span>{t('rst.order.totalDue')}</span>
+              <strong>{fmtMoneyCompact(payAmount)}</strong>
             </button>
           ) : null}
-          {canSendKitchen ? (
+          <div className="rst-waiter-order__bar-actions">
+            {canEditDiscount && onDiscount ? (
+              <button
+                type="button"
+                className="rst-waiter-order__btn rst-waiter-order__btn--ghost"
+                onClick={() => setDiscountOpen(true)}
+                disabled={discountPending}
+              >
+                {t('rst.order.discount')}
+              </button>
+            ) : null}
+            {canSendKitchen ? (
+              <button
+                type="button"
+                className="rst-waiter-order__btn rst-waiter-order__btn--kitchen"
+                onClick={onSendKitchen}
+                disabled={sendingKitchen}
+              >
+                {t('rst.order.sendKitchenKds')}
+              </button>
+            ) : null}
             <button
               type="button"
-              className="rst-waiter-order__btn rst-waiter-order__btn--kitchen"
-              onClick={onSendKitchen}
-              disabled={sendingKitchen}
+              className="rst-waiter-order__btn rst-waiter-order__btn--bill"
+              onClick={canRequestBill ? onRequestBill : undefined}
+              disabled={!canRequestBill || billingPending}
             >
-              {t('rst.order.sendKitchenKds')}
+              {t('rst.order.requestBill')}
             </button>
-          ) : null}
-          <button
-            type="button"
-            className="rst-waiter-order__btn rst-waiter-order__btn--bill"
-            onClick={canRequestBill ? onRequestBill : undefined}
-            disabled={!canRequestBill || billingPending}
-          >
-            {t('rst.order.requestBill')}
-          </button>
-          {canCancel ? (
-            <button
-              type="button"
-              className="rst-waiter-order__btn rst-waiter-order__btn--ghost"
-              onClick={onCancel}
-            >
-              {t('rst.order.cancel')}
-            </button>
-          ) : null}
+            {canCancel ? (
+              <button
+                type="button"
+                className="rst-waiter-order__btn rst-waiter-order__btn--ghost"
+                onClick={onCancel}
+              >
+                {t('rst.order.cancel')}
+              </button>
+            ) : null}
+          </div>
         </div>
       </footer>
 

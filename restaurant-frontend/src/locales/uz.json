@@ -1705,8 +1705,11 @@
         "language": "Til",
         "enterMobile": "Mobil ko'rinish",
         "exitMobile": "Oddiy ko'rinish (PK)",
-        "addToHome": "Bosh ekranga qo'shish",
-        "addToHomeHint": "Chrome → ⋮ → «Bosh ekranga qo'shish» (Safari: Ulashish → Bosh ekranga).",
+        "addToHome": "Ilovani o'rnatish",
+        "addToHomeHint": "Brauzer menyusi → «Ilovani o'rnatish» / «Bosh ekranga qo'shish».",
+        "addToHomeIos": "Safari: «Ulashish» → «Bosh ekranga». Keyin Aurent belgisini oching.",
+        "addToHomeAndroid": "Chrome: ⋮ → «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish».",
+        "openCashier": "Kassani ochish",
         "installedHint": "Ilova sifatida ochilgan."
       },
       "mobile": {

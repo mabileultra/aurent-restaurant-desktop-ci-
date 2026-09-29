@@ -17,6 +17,7 @@ export default function WaiterMobileHeaderActions({
   storeName,
   roleLabel,
   canAdmin = false,
+  canCashier = false,
   showExitMobile,
   onExitMobile,
 }) {
@@ -57,6 +58,7 @@ export default function WaiterMobileHeaderActions({
         storeName={storeName}
         roleLabel={roleLabel}
         canAdmin={canAdmin}
+        canCashier={canCashier}
         fullscreenPreferred={fullscreen.preferred}
         fullscreenSupported={fullscreen.supported}
         onFullscreenChange={fullscreen.setFullscreenPreferred}
