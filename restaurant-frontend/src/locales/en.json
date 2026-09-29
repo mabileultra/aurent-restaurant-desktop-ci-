@@ -937,7 +937,11 @@
     "mobileDownload": {
       "aria": "Download mobile app",
       "short": "Mobile",
-      "title": "Mobile app"
+      "title": "Mobile app",
+      "iosStep1": "In Safari, tap Share (square with arrow).",
+      "iosStep2": "Scroll and choose Add to Home Screen.",
+      "iosStep3": "Confirm Add — the Aurent icon appears.",
+      "iosNoStore": "There is no App Store app — on iPhone install only via Safari to the Home Screen."
     },
     "floor": {
       "actionAcceptPay": "Take payment",
@@ -1717,7 +1721,8 @@
         "exitMobile": "Desktop view",
         "addToHome": "Install app",
         "addToHomeHint": "Browser menu → Install app / Add to Home Screen.",
-        "addToHomeIos": "Safari: Share → Add to Home Screen. Then open the Aurent icon.",
+        "addToHomeIos": "Safari only: Share → Add to Home Screen. Chrome and other iPhone browsers cannot install.",
+        "addToHomeIosSafari": "Not Safari. Open this page in Safari, then Share → Add to Home Screen.",
         "addToHomeAndroid": "Chrome: ⋮ → Install app or Add to Home Screen.",
         "openCashier": "Open cashier",
         "installedHint": "Running as an installed app."

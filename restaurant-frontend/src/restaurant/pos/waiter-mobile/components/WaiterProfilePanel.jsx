@@ -15,7 +15,8 @@ function initialsFromName(name) {
   return parts.slice(0, 2).map((p) => p[0]?.toUpperCase() || '').join('');
 }
 
-function installHintKey(platform) {
+function installHintKey(platform, iosNeedsSafari) {
+  if (platform === 'ios' && iosNeedsSafari) return 'rst.waiter.profile.addToHomeIosSafari';
   if (platform === 'ios') return 'rst.waiter.profile.addToHomeIos';
   if (platform === 'android') return 'rst.waiter.profile.addToHomeAndroid';
   return 'rst.waiter.profile.addToHomeHint';
@@ -122,7 +123,7 @@ export default function WaiterProfilePanel({
               </button>
             ) : null}
             <p className="rst-waiter-profile__hint">
-              {t(installHintKey(pwa?.platform), {
+              {t(installHintKey(pwa?.platform, pwa?.iosNeedsSafari), {
                 defaultValue: t('rst.waiter.profile.addToHomeHint'),
               })}
             </p>

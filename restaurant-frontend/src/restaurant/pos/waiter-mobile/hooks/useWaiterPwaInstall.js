@@ -6,24 +6,36 @@ function isStandaloneDisplay() {
   return Boolean(window.navigator.standalone);
 }
 
+function isIosDevice() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  return /iPad|iPhone|iPod/.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+/** Chrome/Firefox/Edge on iOS — Add to Home Screen only works in Safari. */
+function isIosNonSafari() {
+  if (!isIosDevice()) return false;
+  const ua = navigator.userAgent || '';
+  return /CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|DuckDuckGo/i.test(ua);
+}
+
 function detectInstallPlatform() {
   if (typeof navigator === 'undefined') return 'other';
-  const ua = navigator.userAgent || '';
-  const iOS = /iPad|iPhone|iPod/.test(ua)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  if (iOS) return 'ios';
-  if (/Android/i.test(ua)) return 'android';
+  if (isIosDevice()) return 'ios';
+  if (/Android/i.test(navigator.userAgent || '')) return 'android';
   return 'other';
 }
 
 /**
  * Chrome/Android install prompt for waiter phone shell.
- * iOS has no beforeinstallprompt — UI shows manual steps instead.
+ * iOS has no beforeinstallprompt — only Safari → Share → Add to Home Screen.
  */
 export function useWaiterPwaInstall({ enabled }) {
   const [deferred, setDeferred] = useState(null);
   const [installed, setInstalled] = useState(() => isStandaloneDisplay());
   const platform = useMemo(() => detectInstallPlatform(), []);
+  const iosNeedsSafari = useMemo(() => isIosNonSafari(), []);
 
   useEffect(() => {
     if (!enabled) return undefined;
@@ -64,6 +76,7 @@ export function useWaiterPwaInstall({ enabled }) {
     installed,
     canPrompt,
     platform,
+    iosNeedsSafari,
     showManualHint: enabled && !installed,
     install,
   };

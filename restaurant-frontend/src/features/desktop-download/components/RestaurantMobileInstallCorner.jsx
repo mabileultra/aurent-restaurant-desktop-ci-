@@ -4,13 +4,16 @@ import { useTranslation } from 'react-i18next';
 import { useWaiterPwaInstall } from '../../../restaurant/pos/waiter-mobile/hooks/useWaiterPwaInstall';
 import '../../../styles/desktop-download/restaurant-mobile-install-corner.css';
 
-function hintKey(platform) {
-  if (platform === 'ios') return 'rst.waiter.profile.addToHomeIos';
-  if (platform === 'android') return 'rst.waiter.profile.addToHomeAndroid';
+function installHintKey(pwa) {
+  if (pwa.platform === 'ios' && pwa.iosNeedsSafari) {
+    return 'rst.waiter.profile.addToHomeIosSafari';
+  }
+  if (pwa.platform === 'ios') return 'rst.waiter.profile.addToHomeIos';
+  if (pwa.platform === 'android') return 'rst.waiter.profile.addToHomeAndroid';
   return 'rst.waiter.profile.addToHomeHint';
 }
 
-/** Login header: install restaurant PWA on the phone (no separate APK store build). */
+/** Login header: install restaurant PWA on the phone (no separate APK/App Store build). */
 export default function RestaurantMobileInstallCorner() {
   const { t } = useTranslation();
   const pwa = useWaiterPwaInstall({ enabled: true });
@@ -29,14 +32,18 @@ export default function RestaurantMobileInstallCorner() {
       if (event.key === 'Escape') setOpen(false);
     };
     document.addEventListener('mousedown', onDoc);
+    document.addEventListener('touchstart', onDoc);
     document.addEventListener('keydown', onKey);
     return () => {
       document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('touchstart', onDoc);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);
 
   if (isDesktopShell || pwa.installed) return null;
+
+  const isIos = pwa.platform === 'ios';
 
   return (
     <div className="rst-mobile-install" ref={rootRef}>
@@ -65,7 +72,17 @@ export default function RestaurantMobileInstallCorner() {
               <X size={16} aria-hidden />
             </button>
           </div>
-          <p className="rst-mobile-install__text">{t(hintKey(pwa.platform))}</p>
+
+          <p className="rst-mobile-install__text">{t(installHintKey(pwa))}</p>
+
+          {isIos && !pwa.iosNeedsSafari ? (
+            <ol className="rst-mobile-install__steps">
+              <li>{t('rst.mobileDownload.iosStep1')}</li>
+              <li>{t('rst.mobileDownload.iosStep2')}</li>
+              <li>{t('rst.mobileDownload.iosStep3')}</li>
+            </ol>
+          ) : null}
+
           {pwa.canPrompt ? (
             <button
               type="button"
@@ -78,6 +95,10 @@ export default function RestaurantMobileInstallCorner() {
               <Smartphone size={16} aria-hidden />
               {t('rst.waiter.profile.addToHome')}
             </button>
+          ) : null}
+
+          {isIos ? (
+            <p className="rst-mobile-install__note">{t('rst.mobileDownload.iosNoStore')}</p>
           ) : null}
         </div>
       ) : null}

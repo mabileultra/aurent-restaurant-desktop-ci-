@@ -937,7 +937,11 @@
     "mobileDownload": {
       "aria": "Mobil ilovani yuklab olish",
       "short": "Mobil",
-      "title": "Mobil ilova"
+      "title": "Mobil ilova",
+      "iosStep1": "Safari pastida «Ulashish» (kvadrat strelka) ni bosing.",
+      "iosStep2": "Pastga aylantirib «Bosh ekranga» ni tanlang.",
+      "iosStep3": "«Qo‘shish» — Aurent belgisi chiqadi.",
+      "iosNoStore": "App Store’da alohida ilova yo‘q — iPhone’da faqat Safari orqali bosh ekranga."
     },
     "floor": {
       "actionAcceptPay": "To‘lovni qabul qilish",
@@ -1714,7 +1718,8 @@
         "exitMobile": "Oddiy ko'rinish (PK)",
         "addToHome": "Ilovani o'rnatish",
         "addToHomeHint": "Brauzer menyusi → «Ilovani o'rnatish» / «Bosh ekranga qo'shish».",
-        "addToHomeIos": "Safari: «Ulashish» → «Bosh ekranga». Keyin Aurent belgisini oching.",
+        "addToHomeIos": "Faqat Safari: «Ulashish» → «Bosh ekranga». Chrome va boshqa iPhone brauzerlar o‘rnata olmaydi.",
+        "addToHomeIosSafari": "Safari emas. Sahifani Safari’da oching, keyin «Ulashish» → «Bosh ekranga».",
         "addToHomeAndroid": "Chrome: ⋮ → «Ilovani o'rnatish» yoki «Bosh ekranga qo'shish».",
         "openCashier": "Kassani ochish",
         "installedHint": "Ilova sifatida ochilgan."

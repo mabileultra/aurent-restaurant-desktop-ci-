@@ -73,6 +73,25 @@
   line-height: 1.4;
 }
 
+.rst-mobile-install__steps {
+  margin: 0.55rem 0 0;
+  padding-left: 1.15rem;
+  color: #d5dde8;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.rst-mobile-install__steps li + li {
+  margin-top: 0.28rem;
+}
+
+.rst-mobile-install__note {
+  margin: 0.55rem 0 0;
+  color: #7f8b9c;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
 .rst-mobile-install__cta {
   display: inline-flex;
   align-items: center;
