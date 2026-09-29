@@ -110,6 +110,10 @@ export function usePosRegisterPayRail({
     onOpenPaymentFlow({ step: 'creditCustomer', payMethod: 'advance' });
   }, [guardCheckout, onOpenPaymentFlow]);
 
+  const submitCorporate = useCallback(() => {
+    submitCard('CORPORATE');
+  }, [submitCard]);
+
   return {
     tendered,
     setTendered,
@@ -124,6 +128,7 @@ export function usePosRegisterPayRail({
     submitCashless,
     openCredit,
     openAdvance,
+    submitCorporate,
     printReceiptEnabled,
     handlePrintReceiptChange,
     saleDisabled: checkoutDisabled || isPending || hasPartialCash,

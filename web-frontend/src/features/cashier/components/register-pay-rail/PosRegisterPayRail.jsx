@@ -41,9 +41,11 @@ export default function PosRegisterPayRail({
       <div className="pos-register-pay-rail__pay-block">
         <PosRegisterPayMethods
           disabled={checkoutDisabled || isPending}
+          cardPayBlocked={rail.cardPayBlocked}
           onCashless={rail.submitCashless}
           onCredit={rail.openCredit}
           onAdvance={rail.openAdvance}
+          onCorporate={rail.submitCorporate}
         />
 
         <PosRegisterCardProviders

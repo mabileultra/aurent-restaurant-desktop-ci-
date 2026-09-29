@@ -43,6 +43,7 @@
   --pay-tile-cashless: #059669;
   --pay-tile-credit: #7c3aed;
   --pay-tile-advance: #ea580c;
+  --pay-tile-corporate: #0f766e;
 
   --pay-provider-bg: #ffffff;
   --pay-provider-border: #c5ccd6;
@@ -106,6 +107,7 @@
   --pay-tile-cashless: #2ec4b6;
   --pay-tile-credit: #c4b5fd;
   --pay-tile-advance: #fdba74;
+  --pay-tile-corporate: #5eead4;
 
   /* Светлые pastel-кнопки — тёмные логотипы читаются */
   --pay-provider-bg: #f8fafc;

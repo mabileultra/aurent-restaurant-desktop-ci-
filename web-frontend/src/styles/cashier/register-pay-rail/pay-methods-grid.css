@@ -17,7 +17,7 @@
 
 .pos-register-pay-methods__grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 4px;
   padding: 3px;
   border-radius: 12px;
@@ -76,6 +76,10 @@
   color: var(--pay-tile-advance);
 }
 
+.pos-register-pay-methods__tile--corporate .pos-register-pay-methods__tile-icon {
+  color: var(--pay-tile-corporate);
+}
+
 .pos-register-pay-methods__tile-label {
   overflow: hidden;
   max-width: 100%;
@@ -83,6 +87,8 @@
   font-weight: 700;
   line-height: 1.15;
   text-align: center;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }
