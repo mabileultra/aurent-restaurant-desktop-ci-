@@ -9,6 +9,7 @@ const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
 const { loadDesktopConfig, saveUiMode, saveOfflineFirst } = require('./config/desktopConfig');
+const { buildAdminLoginUrl } = require('./config/loginUrl');
 const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./config/uiMode');
 const { buildAppMenu } = require('./menu/appMenu');
 const {
@@ -54,6 +55,10 @@ function rebuildAppMenu() {
       });
       openActivityLogViewer(mainWindow);
     },
+    openAdminLogin: () => reloadCashierLogin(mainWindow, refreshDesktopConfig(), {
+      clearSession: true,
+      loginUrl: buildAdminLoginUrl(refreshDesktopConfig()),
+    }),
     openActivityLogFolder: async () => {
       const { ensureLogsDir, logsRootDir } = require('./activity-log/activityLogStore.cjs');
       ensureLogsDir();

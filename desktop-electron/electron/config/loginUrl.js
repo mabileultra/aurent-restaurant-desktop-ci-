@@ -32,11 +32,16 @@ function buildLoginUrl(cfg) {
   return `${base}?${new URLSearchParams({ companyLoginCode: code })}`;
 }
 
+function buildAdminLoginUrl(cfg) {
+  return `${loginUiOrigin(cfg)}/login?admin=1`;
+}
+
 module.exports = {
   normalizeCompanyLoginCode,
   normalizeAppWorld,
   loginUiOrigin,
   buildLoginUrl,
+  buildAdminLoginUrl,
   APP_WORLD_MAIN,
   APP_WORLD_RESTAURANT,
 };

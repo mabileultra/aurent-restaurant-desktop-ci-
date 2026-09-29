@@ -10,7 +10,6 @@ import OrderWorkspace from '../components/OrderWorkspace';
 import PosZoomControls from '../components/PosZoomControls';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
-import DesktopAdminEntry from '../../shared/components/DesktopAdminEntry';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import '../../shared/styles/restaurant-tokens.css';
@@ -151,7 +150,6 @@ export default function RestaurantFloorPosPage() {
   return (
     <div className="rst-app rst-pos" style={zoom.rootStyle}>
       <header className="rst-pos__top">
-        <DesktopAdminEntry label={p.t('cashierLogin.adminLogin')} />
         <div className="rst-pos__brand">
           <span className="rst-pos__brand-name">{p.t('rst.waiter.title')}</span>
           <span className="rst-pos__brand-meta">

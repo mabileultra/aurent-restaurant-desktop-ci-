@@ -437,27 +437,36 @@
 
 .rst-menu.rst-menu--pos .rst-menu-card__media {
   position: relative;
-  flex: 0 0 88px;
+  flex: 0 0 auto;
   width: 100%;
-  height: 88px;
-  min-height: 88px;
-  max-height: 88px;
-  aspect-ratio: auto;
+  aspect-ratio: 5 / 4;
   overflow: hidden;
+  border-radius: 10px;
+  background: linear-gradient(145deg, var(--rst-surface-2), var(--rst-bg));
 }
 
 .rst-menu.rst-menu--pos .rst-menu-card__media img,
 .rst-menu.rst-menu--pos .rst-menu-card__img,
-.rst-menu.rst-menu--pos .rst-menu-card__ph {
+.rst-menu.rst-menu--pos .rst-menu-card__media-empty {
+  position: absolute;
+  inset: 0;
   width: 100%;
-  height: 88px;
-  min-height: 88px;
-  max-height: 88px;
+  height: 100%;
+}
+
+.rst-menu.rst-menu--pos .rst-menu-card__media img,
+.rst-menu.rst-menu--pos .rst-menu-card__img {
   object-fit: cover;
   object-position: center;
-  border-radius: 10px;
-  background: var(--rst-surface-2);
   display: block;
+}
+
+.rst-menu.rst-menu--pos .rst-menu-card__media-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rst-muted);
+  font-size: 0.72rem;
 }
 
 .rst-menu-card__prep {

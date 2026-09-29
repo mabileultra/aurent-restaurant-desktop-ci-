@@ -12,6 +12,7 @@ function buildAppMenu({
   setOfflineFirst,
   openActivityLogs,
   openActivityLogFolder,
+  openAdminLogin,
 }) {
   const showUiModeMenu = allowBundledUi || uiMode === UI_MODE_BUNDLED || offlineFirst;
   const uiModeItems = showUiModeMenu
@@ -69,6 +70,15 @@ function buildAppMenu({
     {
       label: 'Вид',
       submenu: [
+        {
+          label: 'Вход в админку',
+          click: () => {
+            if (typeof openAdminLogin === 'function') {
+              Promise.resolve(openAdminLogin()).catch(() => {});
+            }
+          },
+        },
+        { type: 'separator' },
         {
           label: 'Настройка сервера…',
           accelerator: 'CmdOrCtrl+,',
