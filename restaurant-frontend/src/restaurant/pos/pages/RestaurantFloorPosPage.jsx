@@ -30,6 +30,8 @@ import '../waiter-mobile/styles/waiter-mobile-floor.css';
 import '../waiter-mobile/styles/waiter-mobile-order.css';
 import '../waiter-mobile/styles/waiter-mobile-booking.css';
 import '../waiter-mobile/styles/waiter-mobile-shell.css';
+import '../waiter-mobile/styles/waiter-mobile-overlays.css';
+import '../../admin/styles/booking-admin.css';
 
 /** Compact shift status for waiter — no cash totals / close. */
 function WaiterShiftHint({ p }) {
@@ -204,8 +206,9 @@ export default function RestaurantFloorPosPage() {
   const a = p.tableActions;
 
   if (p.workspace.isLoading) {
+    const loadingClass = mobile.enabled ? 'rst-app rst-pos rst-pos--waiter-mobile' : 'rst-app rst-pos';
     return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
+      <div className={loadingClass} style={mobile.enabled ? { '--rst-ui-scale': '1' } : zoom.rootStyle}>
         <div className="rst-notice">{p.t('common.loading')}</div>
       </div>
     );
@@ -222,11 +225,16 @@ export default function RestaurantFloorPosPage() {
     );
   }
 
-  const rootClass = `rst-app rst-pos${mobile.enabled ? ' rst-pos--waiter-mobile' : ''}`;
+  const rootClass = [
+    'rst-app rst-pos',
+    mobile.enabled ? 'rst-pos--waiter-mobile' : '',
+    mobile.enabled && p.activeOrderId ? 'rst-pos--waiter-order-open' : '',
+  ].filter(Boolean).join(' ');
   const orderProps = buildOrderWorkspaceProps(p);
+  const shellStyle = mobile.enabled ? { '--rst-ui-scale': '1' } : zoom.rootStyle;
 
   return (
-    <div className={rootClass} style={zoom.rootStyle}>
+    <div className={rootClass} style={shellStyle}>
       <header className="rst-pos__top">
         <div className="rst-pos__brand">
           <span className="rst-pos__brand-name">{p.t('rst.waiter.title')}</span>

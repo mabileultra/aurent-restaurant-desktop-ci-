@@ -37,7 +37,7 @@ class BillEligibilityPolicyTest {
             .unitPrice(new BigDecimal("10.00"))
             .build();
         assertThrows(BusinessException.class, () -> policy.assertCanRequestBill(order, List.of(unsent), true));
-        assertDoesNotThrow(() -> policy.assertCanRequestBill(order, List.of(unsent), false));
+        assertThrows(BusinessException.class, () -> policy.assertCanRequestBill(order, List.of(unsent), false));
     }
 
     @Test

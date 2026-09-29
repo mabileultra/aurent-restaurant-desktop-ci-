@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { UserRound } from 'lucide-react';
 import { BaseButton } from '../../../../components/ui';
@@ -24,6 +24,15 @@ export default function WaiterMobileHeaderActions({
   const [profileOpen, setProfileOpen] = useState(false);
   const fullscreen = useWaiterFullscreen({ enabled });
   const pwa = useWaiterPwaInstall({ enabled });
+
+  useEffect(() => {
+    if (!enabled || !profileOpen) return undefined;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [enabled, profileOpen]);
 
   if (!enabled) return null;
 

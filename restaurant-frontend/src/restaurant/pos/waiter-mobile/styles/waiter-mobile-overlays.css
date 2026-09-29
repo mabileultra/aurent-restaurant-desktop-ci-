@@ -1,0 +1,44 @@
+/**
+ * Modals / overlays on waiter phone — above profile sheet, bottom-aligned dialogs.
+ */
+
+.rst-pos.rst-pos--waiter-mobile .base-modal-overlay--rst,
+.rst-pos.rst-pos--waiter-mobile .rst-modal,
+.rst-pos.rst-pos--waiter-mobile .rst-shift-modal {
+  z-index: 1300;
+  align-items: flex-end;
+  padding: 0;
+}
+
+.rst-pos.rst-pos--waiter-mobile .base-modal--rst,
+.rst-pos.rst-pos--waiter-mobile .rst-modal__card,
+.rst-pos.rst-pos--waiter-mobile .rst-shift-modal__dialog {
+  width: 100%;
+  max-width: 100%;
+  max-height: min(92dvh, 36rem);
+  margin: 0;
+  border-radius: 1rem 1rem 0 0;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-modal__actions,
+.rst-pos.rst-pos--waiter-mobile .base-modal--rst .base-modal__footer {
+  flex-direction: column;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-modal__actions .base-btn,
+.rst-pos.rst-pos--waiter-mobile .rst-modal__actions button,
+.rst-pos.rst-pos--waiter-mobile .base-modal--rst .base-modal__footer button {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-order-line__actions button {
+  min-width: 2.35rem;
+  min-height: 2.35rem;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-order-line {
+  padding: 0.55rem 0.45rem;
+}

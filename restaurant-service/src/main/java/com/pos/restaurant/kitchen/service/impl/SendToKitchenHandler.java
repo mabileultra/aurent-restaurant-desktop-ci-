@@ -15,6 +15,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,39 +39,46 @@ public class SendToKitchenHandler {
     private final OrderLookup orderLookup;
     private final OrderResponseAssembler assembler;
     private final KitchenBoardService kitchenBoardService;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
         FloorOrder order = orderLookup.requireActive(orderId);
-        if (!kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId())) {
-            throw new BusinessException("Kitchen board is turned off");
-        }
+        boolean kitchenBoard = kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId());
         List<FloorOrderItem> newItems = itemRepository.findByOrderIdAndItemStatus(orderId, OrderItemStatus.NEW);
         if (newItems.isEmpty()) {
             throw new BusinessException("There are no new items to send to the kitchen");
         }
-        Map<UUID, List<FloorOrderItem>> byStation = new LinkedHashMap<>();
-        for (FloorOrderItem item : newItems) {
-            byStation.computeIfAbsent(item.getStationId(), key -> new ArrayList<>()).add(item);
-        }
-        for (Map.Entry<UUID, List<FloorOrderItem>> entry : byStation.entrySet()) {
-            KitchenStation station = resolveStation(entry.getKey(), order.getCompanyId());
-            KitchenTicket ticket = ticketRepository.save(KitchenTicket.builder()
-                .companyId(order.getCompanyId())
-                .storeId(order.getStoreId())
-                .order(order)
-                .station(station)
-                .status(KitchenTicketStatus.NEW)
-                .build());
-            for (FloorOrderItem item : entry.getValue()) {
-                ticketLineRepository.save(KitchenTicketLine.builder()
-                    .ticket(ticket)
-                    .orderItem(item)
+        List<UUID> sentItemIds = newItems.stream().map(FloorOrderItem::getId).toList();
+        if (kitchenBoard) {
+            Map<UUID, List<FloorOrderItem>> byStation = new LinkedHashMap<>();
+            for (FloorOrderItem item : newItems) {
+                byStation.computeIfAbsent(item.getStationId(), key -> new ArrayList<>()).add(item);
+            }
+            for (Map.Entry<UUID, List<FloorOrderItem>> entry : byStation.entrySet()) {
+                KitchenStation station = resolveStation(entry.getKey(), order.getCompanyId());
+                KitchenTicket ticket = ticketRepository.save(KitchenTicket.builder()
+                    .companyId(order.getCompanyId())
+                    .storeId(order.getStoreId())
+                    .order(order)
+                    .station(station)
+                    .status(KitchenTicketStatus.NEW)
                     .build());
+                for (FloorOrderItem item : entry.getValue()) {
+                    ticketLineRepository.save(KitchenTicketLine.builder()
+                        .ticket(ticket)
+                        .orderItem(item)
+                        .build());
+                    item.setItemStatus(OrderItemStatus.SENT_TO_KITCHEN);
+                }
+            }
+        } else {
+            for (FloorOrderItem item : newItems) {
                 item.setItemStatus(OrderItemStatus.SENT_TO_KITCHEN);
             }
         }
         LogUtil.info(SendToKitchenHandler.class, "Sent {} items to kitchen: orderId={}", newItems.size(), orderId);
+        printJobPublisher.kitchenSend(order, sentItemIds);
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
     }
 

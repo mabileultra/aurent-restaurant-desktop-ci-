@@ -14,6 +14,7 @@ import com.pos.restaurant.order.support.OrderTotals;
 import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.payment.support.BillEligibilityPolicy;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,7 @@ public class RequestBillHandler {
     private final KitchenBoardService kitchenBoardService;
     private final ServiceChargeSupport serviceChargeSupport;
     private final TableSeatSync tableSeatSync;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
@@ -51,6 +53,7 @@ public class RequestBillHandler {
         order.setStatus(OrderStatus.BILLING);
         tableSeatSync.refresh(linkedTables.allTables(order), TableStatus.WAITING_PAYMENT);
         LogUtil.info(RequestBillHandler.class, "Bill requested: orderId={}", orderId);
+        printJobPublisher.guestBill(order);
         return assembler.toResponse(order, items, linkedTables.allTables(order));
     }
 }

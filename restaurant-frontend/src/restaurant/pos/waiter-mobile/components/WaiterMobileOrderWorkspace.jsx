@@ -55,6 +55,10 @@ export default function WaiterMobileOrderWorkspace({
   const [tab, setTab] = useState('menu');
   const [discountOpen, setDiscountOpen] = useState(false);
 
+  useEffect(() => {
+    setTab('menu');
+  }, [order.id]);
+
   const billing = order.status === 'BILLING';
   const channel = order.channel || 'DINE_IN';
 
@@ -93,7 +97,7 @@ export default function WaiterMobileOrderWorkspace({
     <div className="rst-waiter-order">
       <header className="rst-waiter-order__top">
         <button type="button" className="rst-waiter-order__back" onClick={onBack}>
-          ← {backLabel || t('rst.order.backToFloor')}
+          ← {t('rst.waiter.mobile.backFloor')}
         </button>
         <div className="rst-waiter-order__title">
           <strong>
@@ -116,9 +120,11 @@ export default function WaiterMobileOrderWorkspace({
             <span>{t('rst.order.guestsShort', { count: order.guestCount })}</span>
             <button type="button" disabled={billing || guestsPending} onClick={() => bumpGuests(1)}>+</button>
           </div>
-          <span className="rst-waiter-order__waiter">
-            {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
-          </span>
+          {waiters.length === 0 ? (
+            <span className="rst-waiter-order__waiter">
+              {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
+            </span>
+          ) : null}
           {onNewCheck ? (
             <button type="button" className="rst-waiter-order__new-check" onClick={onNewCheck}>
               {t('rst.order.newCheck')}
@@ -179,9 +185,6 @@ export default function WaiterMobileOrderWorkspace({
               t={t}
               qtyByMenuId={qtyByMenuId}
             />
-            {billing ? (
-              <p className="rst-waiter-order__billing">{t('rst.order.billingHint')}</p>
-            ) : null}
           </>
         ) : (
           <>
@@ -219,14 +222,19 @@ export default function WaiterMobileOrderWorkspace({
       </div>
 
       <footer className="rst-waiter-order__bar">
-        <button
-          type="button"
-          className="rst-waiter-order__total-chip"
-          onClick={() => setTab('check')}
-        >
-          <span>{t('rst.order.totalDue')}</span>
-          <strong>{fmtMoneyCompact(payAmount)}</strong>
-        </button>
+        {billing ? (
+          <p className="rst-waiter-order__bar-hint">{t('rst.order.billingHint')}</p>
+        ) : null}
+        {tab === 'menu' ? (
+          <button
+            type="button"
+            className="rst-waiter-order__total-chip"
+            onClick={() => setTab('check')}
+          >
+            <span>{t('rst.order.totalDue')}</span>
+            <strong>{fmtMoneyCompact(payAmount)}</strong>
+          </button>
+        ) : null}
         <div className="rst-waiter-order__bar-actions">
           {canEditDiscount && onDiscount ? (
             <button

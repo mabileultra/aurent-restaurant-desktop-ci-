@@ -6,7 +6,7 @@
   min-height: 0;
   flex: 1;
   gap: 0.45rem;
-  padding: 0.45rem 0.55rem 0.55rem;
+  padding: max(0.45rem, env(safe-area-inset-top, 0px)) 0.55rem 0.55rem;
 }
 
 .rst-waiter-order__top {
@@ -53,8 +53,19 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.45rem 0.65rem;
+  gap: 0.35rem 0.55rem;
   flex-shrink: 0;
+  font-size: 0.78rem;
+}
+
+.rst-waiter-order__waiter {
+  flex: 1 1 100%;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-order__new-check {
+  flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .rst-waiter-order__guests {
@@ -218,10 +229,24 @@
   flex: 0 0 auto;
 }
 
-.rst-waiter-order__billing {
+.rst-waiter-order__bar-hint {
   margin: 0;
-  font-size: 0.82rem;
-  color: var(--rst-muted, #9aa6b2);
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.65rem;
+  background: rgba(250, 204, 21, 0.12);
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #fde68a;
+}
+
+.rst-waiter-order__body .rst-menu__search {
+  width: 100%;
+  margin-bottom: 0.35rem;
+}
+
+.rst-waiter-order__body .rst-menu__search input {
+  font-size: 1rem;
+  min-height: 2.55rem;
 }
 
 .rst-waiter-order__totals {

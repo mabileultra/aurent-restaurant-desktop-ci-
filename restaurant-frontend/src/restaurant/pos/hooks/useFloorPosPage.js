@@ -25,6 +25,7 @@ import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
+import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
 
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 12_000;
@@ -60,6 +61,7 @@ export function useFloorPosPage() {
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
   const storeId = workspace.storeId;
+  useRestaurantPrintRelay(storeId, t);
   const onFloor = posMode === 'floor';
 
   const floorQuery = useQuery({

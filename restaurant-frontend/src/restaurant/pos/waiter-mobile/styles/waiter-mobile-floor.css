@@ -76,16 +76,40 @@
   min-width: 0;
   border: 0;
   background: transparent;
-  color: inherit;
+  color: #f2f5f8;
   font: inherit;
   font-size: 1rem;
   outline: none;
 }
 
+.rst-waiter-floor__filters {
+  width: 100%;
+}
+
+.rst-waiter-floor__filters .rst-floor-filters {
+  flex-wrap: wrap;
+  overflow-x: visible;
+  gap: 0.35rem;
+  padding-bottom: 0;
+  scrollbar-width: none;
+}
+
+.rst-waiter-floor__filters .rst-floor-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.rst-waiter-floor__filters .rst-floor-filters__chip {
+  height: 2.15rem;
+  padding: 0 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
 .rst-waiter-floor__list {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+  align-content: start;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
@@ -95,9 +119,9 @@
 .rst-waiter-tile {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
-  min-height: 5.5rem;
-  padding: 0.85rem 0.95rem;
+  gap: 0.28rem;
+  min-height: 4.75rem;
+  padding: 0.65rem 0.7rem;
   border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
   border-radius: 1rem;
   background: var(--rst-surface, #121820);
@@ -113,45 +137,58 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--rst-accent, #ff7a1a) 45%, transparent);
 }
 
-.rst-waiter-tile__top,
+.rst-waiter-tile__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.35rem;
+}
+
 .rst-waiter-tile__mid,
 .rst-waiter-tile__meta {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .rst-waiter-tile__code {
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0.02em;
 }
 
 .rst-waiter-tile__status {
-  font-size: 0.72rem;
+  font-size: 0.58rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--rst-muted, #9aa6b2);
+  text-align: right;
+  line-height: 1.15;
+  max-width: 46%;
 }
 
 .rst-waiter-tile__amount {
-  font-size: 1.15rem;
+  font-size: 0.95rem;
   font-weight: 800;
 }
 
 .rst-waiter-tile__seats,
 .rst-waiter-tile__guests,
 .rst-waiter-tile__meta {
-  font-size: 0.82rem;
+  font-size: 0.72rem;
   color: var(--rst-muted, #9aa6b2);
 }
 
+.rst-waiter-tile__meta {
+  flex-wrap: wrap;
+}
+
 .rst-waiter-tile__waiter {
-  font-weight: 600;
-  color: inherit;
+  display: none;
 }
 
 .rst-waiter-tile--FREE {

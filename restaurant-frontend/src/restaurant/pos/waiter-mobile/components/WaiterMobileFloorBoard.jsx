@@ -82,7 +82,9 @@ export default function WaiterMobileFloorBoard({
           />
         </label>
 
-        <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
+        <div className="rst-waiter-floor__filters">
+          <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
+        </div>
       </div>
 
       {visible.length === 0 ? (

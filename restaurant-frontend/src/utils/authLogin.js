@@ -94,13 +94,19 @@ export function cashierLoginPath() {
   return CASHIER_LOGIN_PATH;
 }
 
+/** Куда вести без сессии: POS/официант → PIN, админка ресторана → login?admin=1. */
+export function unauthenticatedLoginPath(pathname = '') {
+  const p = pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
+  if (isDesktopCashier()) return cashierLoginPath();
+  if (p.startsWith(CASHIER_LOGIN_PATH)) return cashierLoginPath();
+  if (p.startsWith('/rst') && !p.startsWith('/rst/admin')) return cashierLoginPath();
+  if (p.startsWith('/cashier')) return cashierLoginPath();
+  return adminLoginPath();
+}
+
 /** Куда отправлять при logout / 401 в контексте кассы или десктопа. */
 export function defaultLoginPath() {
-  if (isDesktopCashier()) return cashierLoginPath();
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/cashier')) {
-    return cashierLoginPath();
-  }
-  return adminLoginPath();
+  return unauthenticatedLoginPath();
 }
 
 export function redirectToLogin() {

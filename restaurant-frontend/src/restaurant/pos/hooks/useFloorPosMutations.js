@@ -1,6 +1,5 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
-import { rstMenuApi } from '../../api/menu.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
@@ -14,29 +13,11 @@ import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFis
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
-import { printCategoryTicketOnAdd, printKitchenTicket } from '../utils/printKitchenTicket';
-import { printGuestBill } from '../utils/printGuestBill';
 import {
   printOrdinarySaleReceipt,
   saleNeedsFiscalPrint,
 } from '../utils/printOrdinarySaleReceipt';
 import { toastApiError } from '../../../utils/apiError';
-
-function addedPiece(prevItems, nextItems, menuItemId) {
-  if (!menuItemId) return null;
-  const next = (nextItems || []).filter(
-    (item) => String(item.menuItemId) === String(menuItemId)
-      && String(item.itemStatus || '').toUpperCase() !== 'CANCELLED',
-  );
-  const prevQty = new Map((prevItems || []).map((item) => [String(item.id), Number(item.quantity) || 0]));
-  for (const line of next) {
-    const before = prevQty.get(String(line.id));
-    if (before == null) return { line, quantity: Number(line.quantity) || 1 };
-    const delta = (Number(line.quantity) || 0) - before;
-    if (delta > 0) return { line, quantity: delta };
-  }
-  return null;
-}
 
 export function useFloorPosMutations(deps) {
   const {
@@ -49,12 +30,6 @@ export function useFloorPosMutations(deps) {
   } = deps;
 
   const qc = useQueryClient();
-  const categoriesQuery = useQuery({
-    queryKey: ['rst-menu-categories', storeId],
-    queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
-    enabled: storeId != null,
-    staleTime: 60_000,
-  });
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
   const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', storeId] });
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
@@ -158,38 +133,12 @@ export function useFloorPosMutations(deps) {
       modifierOptionIds: modifierOptionIds ?? [],
       note: note?.trim() || undefined,
     }),
-    onSuccess: async (res, vars) => {
+    onSuccess: (res) => {
       setOrderData(res);
       setPendingMenuItem(null);
       setPendingVariants?.(null);
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
-      const piece = addedPiece(order?.items, res.data?.items, vars?.menuItem?.id);
-      if (!piece) return;
-      try {
-        let categories = categoriesQuery.data;
-        if (storeId != null && !categories?.length) {
-          categories = await qc.fetchQuery({
-            queryKey: ['rst-menu-categories', storeId],
-            queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
-          });
-        }
-        const category = (categories || []).find(
-          (item) => String(item.id) === String(vars?.menuItem?.menuCategoryId),
-        );
-        const printed = await printCategoryTicketOnAdd({
-          order: res.data,
-          line: piece.line,
-          quantity: piece.quantity,
-          category,
-          t,
-        });
-        if (printed?.mode === 'missing') {
-          toast.error(t('rst.admin.menuCategoryPrinterMissing', { name: printed.label }));
-        }
-      } catch (err) {
-        toast.error(err?.message || t('receipt.printFailed'));
-      }
     },
     onError: (err) => errMsg(err, 'rst.order.saveFailed'),
   });
@@ -239,33 +188,10 @@ export function useFloorPosMutations(deps) {
   });
 
   const sendKitchenMutation = useMutation({
-    mutationFn: async () => {
-      const newItemIds = (order?.items ?? [])
-        .filter((item) => String(item.itemStatus || '').toUpperCase() === 'NEW')
-        .map((item) => item.id);
-      const res = await rstOrderApi.sendToKitchen(activeOrderId);
-      return { res, newItemIds };
-    },
-    onSuccess: async ({ res, newItemIds }) => {
+    mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
+    onSuccess: (res) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
-      try {
-        const printed = await printKitchenTicket({
-          order: res.data,
-          t,
-          onlyItemIds: newItemIds,
-        });
-        if (printed?.configured && printed.missing?.length) {
-          toast.error(t('rst.admin.kitchenPrinterMissing', {
-            stations: printed.missing.join(', '),
-          }));
-        }
-        if (printed?.errors?.length) {
-          toast.error(printed.errors[0]);
-        }
-      } catch (err) {
-        toast.error(err?.message || t('receipt.printFailed'));
-      }
     },
     onError: (err) => errMsg(err, 'rst.order.sendFailed'),
   });
@@ -284,18 +210,11 @@ export function useFloorPosMutations(deps) {
 
   const billMutation = useMutation({
     mutationFn: () => rstOrderApi.requestBill(activeOrderId),
-    onSuccess: async (res) => {
+    onSuccess: (res) => {
       setOrderData(res);
       invalidateFloor();
       invalidateCounter();
       toast.success(t('rst.order.billRequested'));
-      try {
-        const printed = await printGuestBill({ order: res.data, t });
-        if (printed?.mode === 'silent') toast.success(t('rst.admin.billPrinted'));
-        if (printed?.mode === 'missing') toast.error(t('rst.admin.billPrinterMissing'));
-      } catch {
-        toast.error(t('receipt.printFailed'));
-      }
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
   });

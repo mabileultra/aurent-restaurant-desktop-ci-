@@ -31,6 +31,11 @@
 .rst-pos.rst-pos--waiter-mobile .rst-shift-bar {
   flex: 1 1 100%;
   min-width: 0;
+  font-size: 0.78rem;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-pos__brand-name {
+  font-size: 0.92rem;
 }
 
 .rst-pos.rst-pos--waiter-mobile .rst-pos__search {
@@ -59,6 +64,35 @@
 .rst-pos.rst-pos--waiter-mobile [role='tab'] {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
+}
+
+/* Order open — hide duplicate top chrome (back lives in order header). */
+.rst-pos.rst-pos--waiter-mobile.rst-pos--waiter-order-open .rst-pos__top {
+  display: none;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs {
+  width: 100%;
+  margin: 0;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs--toolbar {
+  width: 100%;
+  display: flex;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs--toolbar .rst-floor-section-tabs__btn {
+  flex: 1;
+  min-width: 0;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-waiter-floor__toolbar .rst-floor-section-tabs--toolbar {
+  order: -1;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-notice {
+  margin: 0.35rem 0.65rem;
+  font-size: 0.88rem;
 }
 
 @media (hover: none) {

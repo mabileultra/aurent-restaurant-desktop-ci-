@@ -107,3 +107,23 @@
 .rst-waiter-booking__pager {
   margin-top: 0.25rem;
 }
+
+.rst-waiter-booking .rst-admin-filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.rst-waiter-booking .rst-admin-filters .rst-admin-field:first-child {
+  grid-column: 1 / -1;
+}
+
+.rst-waiter-booking .rst-admin-filters__reset {
+  grid-column: 1 / -1;
+}
+
+.rst-waiter-booking .rst-admin-filters__reset button,
+.rst-waiter-booking .rst-admin-filters__reset .base-btn {
+  width: 100%;
+  min-height: 2.45rem;
+}

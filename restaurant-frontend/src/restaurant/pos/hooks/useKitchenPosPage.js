@@ -10,6 +10,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
+import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
 
@@ -34,6 +35,7 @@ export function useKitchenPosPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const workspace = useRestaurantWorkspaceStore();
+  useRestaurantPrintRelay(workspace.storeId, t);
   const canAdvance = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'COOK';
   const [stationFilter, setStationFilterState] = useState('all');
 
