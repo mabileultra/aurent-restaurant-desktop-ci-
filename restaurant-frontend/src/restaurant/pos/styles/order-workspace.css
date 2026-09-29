@@ -604,6 +604,17 @@
   min-height: 0;
 }
 
+.rst-order__billing-note {
+  margin: 0.35rem 0 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--rst-accent) 35%, var(--rst-line));
+  background: color-mix(in srgb, var(--rst-accent) 12%, transparent);
+  color: var(--rst-muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
 .rst-order-line {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

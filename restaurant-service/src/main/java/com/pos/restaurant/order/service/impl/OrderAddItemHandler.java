@@ -49,7 +49,7 @@ public class OrderAddItemHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId, AddOrderItemRequest request) {
-        FloorOrder order = orderLookup.requireOpen(orderId);
+        FloorOrder order = orderLookup.requireActive(orderId);
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem menuItem = menuItemRepository.findByIdAndCompanyId(request.menuItemId(), companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found: " + request.menuItemId()));

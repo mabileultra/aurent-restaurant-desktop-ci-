@@ -102,7 +102,9 @@ export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const hasNew = items.some((item) => item.itemStatus === 'NEW');
   return {
     canCancel: items.length === 0,
-    canSendKitchen: kitchenBoardEnabled && order?.status === 'OPEN' && hasNew,
+    canSendKitchen: kitchenBoardEnabled
+      && (order?.status === 'OPEN' || order?.status === 'BILLING')
+      && hasNew,
     canRequestBill: order?.status === 'OPEN' && hasBillable && (!kitchenBoardEnabled || !hasNew),
     canPay: order?.status === 'BILLING',
   };

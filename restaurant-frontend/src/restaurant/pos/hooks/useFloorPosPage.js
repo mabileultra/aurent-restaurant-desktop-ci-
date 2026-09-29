@@ -237,13 +237,15 @@ export function useFloorPosPage() {
   };
 
   const handleQty = (line, nextQty) => {
-    if (order?.status === 'BILLING' || line.itemStatus !== 'NEW') return;
+    if (line.itemStatus !== 'NEW') return;
+    if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
 
   const addItemNow = (menuItem) => {
-    if (!menuItem || order?.status === 'BILLING') return;
+    if (!menuItem) return;
+    if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
     m.addItemMutation.mutate({
       menuItem,
       modifierOptionIds: [],

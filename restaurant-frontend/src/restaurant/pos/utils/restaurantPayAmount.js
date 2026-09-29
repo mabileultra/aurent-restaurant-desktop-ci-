@@ -13,10 +13,7 @@ export function resolveServicePreview(order, halls = []) {
   const subtotal = round2(Number(order.subtotal) || 0);
   if (order.servicePercent != null && order.servicePercent !== '') {
     const percent = Number(order.servicePercent) || 0;
-    const amount = order.serviceAmount != null
-      ? round2(Number(order.serviceAmount) || 0)
-      : round2((subtotal * percent) / 100);
-    return { percent, amount };
+    return { percent, amount: round2((subtotal * percent) / 100) };
   }
   const billed = order.status === 'BILLING' || order.status === 'CLOSED';
   if (billed && order.commissionAmount != null) {

@@ -41,7 +41,7 @@ public class SendToKitchenHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
-        FloorOrder order = orderLookup.requireOpen(orderId);
+        FloorOrder order = orderLookup.requireActive(orderId);
         if (!kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId())) {
             throw new BusinessException("Kitchen board is turned off");
         }

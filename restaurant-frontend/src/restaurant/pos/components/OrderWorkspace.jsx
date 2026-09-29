@@ -142,17 +142,16 @@ export default function OrderWorkspace({
           </div>
         </div>
 
+        <MenuPicker
+          items={menuItems}
+          onAdd={onAddItem}
+          onComposeFamily={onComposeFamily}
+          t={t}
+          qtyByMenuId={qtyByMenuId}
+        />
         {billing ? (
-          <div className="rst-order-empty">{t('rst.order.billingHint')}</div>
-        ) : (
-          <MenuPicker
-            items={menuItems}
-            onAdd={onAddItem}
-            onComposeFamily={onComposeFamily}
-            t={t}
-            qtyByMenuId={qtyByMenuId}
-          />
-        )}
+          <p className="rst-order__billing-note">{t('rst.order.billingHint')}</p>
+        ) : null}
       </section>
 
       <aside className="rst-order__ticket">
@@ -216,7 +215,6 @@ export default function OrderWorkspace({
           onQty={onQty}
           onRemove={onRemove}
           onEditNote={onEditNote}
-          locked={billing}
           t={t}
         />
 

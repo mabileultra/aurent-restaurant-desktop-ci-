@@ -1401,7 +1401,7 @@
       "backToFloor": "Zal rejasiga",
       "badgeNew": "Yangi",
       "billRequested": "Hisob qo‘yildi",
-      "billingHint": "Hisob qo‘yildi. Pozitsiyalar o‘zgarmaydi.",
+      "billingHint": "Hisob qo‘yildi. To‘lovgacha pozitsiyalarni qo‘shish yoki olib tashlash mumkin (oshxonadagilar bundan mustasno).",
       "blocked": "Stol bloklangan",
       "cancel": "Buyurtmani bekor qilish",
       "billFailed": "Hisob qo‘yib bo‘lmadi",
@@ -1682,7 +1682,19 @@
       }
     },
     "waiter": {
-      "title": "Ofitsiant"
+      "title": "Ofitsiant",
+      "profile": {
+        "title": "Profil",
+        "myData": "Mening ma'lumotlarim",
+        "name": "Ism",
+        "role": "Rol",
+        "store": "Zal / filial",
+        "settings": "Sozlamalar",
+        "fullscreen": "To'liq ekran rejimi",
+        "fullscreenHint": "Zal ochiq bo'lganda brauzer panelini yashiradi.",
+        "fullscreenUnsupported": "Bu brauzer to'liq ekranni qo'llab-quvvatlamaydi. Saytni bosh ekranga qo'shing.",
+        "language": "Til"
+      }
     }
   },
   "sales": {

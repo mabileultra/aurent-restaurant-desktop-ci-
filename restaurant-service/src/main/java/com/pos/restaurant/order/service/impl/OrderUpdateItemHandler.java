@@ -27,7 +27,7 @@ public class OrderUpdateItemHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId, UUID itemId, UpdateOrderItemRequest request) {
-        FloorOrder order = orderLookup.requireOpen(orderId);
+        FloorOrder order = orderLookup.requireActive(orderId);
         FloorOrderItem item = itemRepository.findByIdAndOrderId(itemId, orderId)
             .orElseThrow(() -> new NotFoundException("Order item not found: " + itemId));
         mutabilityPolicy.assertMutable(item);

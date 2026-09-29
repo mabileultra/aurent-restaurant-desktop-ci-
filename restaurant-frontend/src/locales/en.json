@@ -1404,7 +1404,7 @@
       "backToFloor": "Back to floor plan",
       "badgeNew": "new",
       "billRequested": "Fully Invoiced",
-      "billingHint": "Your invoice has been issued and your items are unchanged.",
+      "billingHint": "Bill issued. You can add or remove items before payment (except items already in the kitchen).",
       "billFailed": "Could not issue the bill",
       "blocked": "Table locked",
       "cancel": "Cancel order",
@@ -1685,7 +1685,19 @@
       }
     },
     "waiter": {
-      "title": "Waiter"
+      "title": "Waiter",
+      "profile": {
+        "title": "Profile",
+        "myData": "My details",
+        "name": "Name",
+        "role": "Role",
+        "store": "Hall / branch",
+        "settings": "Settings",
+        "fullscreen": "Fullscreen mode",
+        "fullscreenHint": "Hides browser chrome while the floor is open.",
+        "fullscreenUnsupported": "This browser cannot go fullscreen. Add the site to your home screen.",
+        "language": "Language"
+      }
     }
   },
   "sales": {
