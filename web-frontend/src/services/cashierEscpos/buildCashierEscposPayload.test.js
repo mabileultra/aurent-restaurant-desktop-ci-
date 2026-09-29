@@ -120,3 +120,13 @@ describe('buildCashierEscposPayload shift label', () => {
     expect(withRegister.branding.shiftNo).toBe('2');
   });
 });
+
+describe('buildCashierEscposPayload plastic label', () => {
+  it('appends card type to plastic payment row', () => {
+    const plain = buildCashierEscposPayload(FISCAL_SALE, t);
+    expect(plain.labels.plastic).toBe('fiscalReceipt.plastic');
+
+    const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
+    expect(corporate.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardCorporate');
+  });
+});

@@ -8,6 +8,7 @@ import { usePrintSettingsStore } from '../../store/printSettingsStore';
 import { resolveFiscalReceiptTypeLabel } from '../../utils/fiscalReceiptFormat';
 import { resolveFiscalReceiptMeta } from '../../utils/resolveFiscalReceiptMeta';
 import { resolveReceiptShiftLabel } from '../../utils/resolveReceiptShiftLabel';
+import { cardTypeLabel } from '../../utils/salePaymentLabel';
 
 /**
  * Карта включённых полей чека из tenant store.
@@ -132,6 +133,11 @@ export function buildCashierEscposPayload(sale, t) {
   }
 
   const printSettings = usePrintSettingsStore.getState();
+  const labels = buildEscposLabels(t);
+  const cardTypeText = cardTypeLabel(sale.cardType, t);
+  if (cardTypeText) {
+    labels.plastic = `${labels.plastic} · ${cardTypeText}`;
+  }
 
   return {
     sale: {
@@ -147,7 +153,7 @@ export function buildCashierEscposPayload(sale, t) {
     receiptFields,
     qrValue,
     paperWmm: Number(printSettings.paperWidthMm) || 80,
-    labels: buildEscposLabels(t),
+    labels,
     locale: String(i18n.language || 'ru').split('-')[0],
   };
 }
