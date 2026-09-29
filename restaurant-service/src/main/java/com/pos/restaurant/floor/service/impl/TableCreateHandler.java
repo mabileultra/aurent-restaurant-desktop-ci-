@@ -9,6 +9,7 @@ import com.pos.restaurant.floor.mapper.FloorTableMapper;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.TableCodeUniquenessValidator;
+import com.pos.restaurant.floor.support.ServicePercentRules;
 import com.pos.restaurant.floor.support.TableStatusPolicy;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class TableCreateHandler {
             .code(code)
             .label(blankToNull(request.label()))
             .seatCount(request.seatCount())
+            .servicePercent(ServicePercentRules.optional(request.servicePercent()))
             .posX(request.posX())
             .posY(request.posY())
             .width(request.width())

@@ -50,6 +50,18 @@ export default function TableFormModal({ open, mode, form, onChange, onClose, on
             ))}
           </select>
         </div>
+        <div className="rst-modal-form__full">
+          <BaseInput
+            label={t('rst.admin.servicePercent')}
+            type="number"
+            min={0}
+            max={100}
+            step="0.01"
+            value={form.servicePercent ?? ''}
+            onChange={(e) => onChange({ ...form, servicePercent: e.target.value })}
+          />
+          <p className="rst-modal-form__hint">{t('rst.admin.servicePercentTableHint')}</p>
+        </div>
       </div>
     </RstModal>
   );

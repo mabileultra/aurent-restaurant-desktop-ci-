@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useFloorPosPage } from '../../hooks/useFloorPosPage';
+import { tableActiveOrders } from '../../utils/floorStatusFilters';
 import { isCashierHallTab } from '../utils/cashierNav';
 import { usePrefetchCashierSales } from './usePrefetchCashierSales';
 
@@ -45,7 +46,12 @@ export function useCashierPosPage() {
 
   const selectTable = (table) => {
     setSelectedTableId(table?.id ?? null);
-    const openOrderId = table?.activeOrder?.id ?? table?.activeOrderId;
+    const orders = tableActiveOrders(table);
+    if (orders.length > 1) {
+      floor.handleTableClick(table);
+      return;
+    }
+    const openOrderId = orders[0]?.id ?? table?.activeOrder?.id ?? table?.activeOrderId;
     if (openOrderId) {
       floor.setActiveOrderId(openOrderId);
       setTabState('hall');

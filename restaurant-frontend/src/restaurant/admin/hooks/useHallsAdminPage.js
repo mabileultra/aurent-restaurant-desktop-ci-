@@ -11,7 +11,7 @@ import {
 } from '../../pos/utils/resolveFloorPositions';
 import { toastApiError } from '../../../utils/apiError';
 
-const emptyHallForm = () => ({ name: '', sortOrder: 100 });
+const emptyHallForm = () => ({ name: '', sortOrder: 100, servicePercent: 0 });
 
 const nextTableForm = (existingTables = []) => {
   const slot = findFreeGridSlot(existingTables, TABLE_DEFAULT_SIZE);
@@ -19,6 +19,7 @@ const nextTableForm = (existingTables = []) => {
     code: '',
     label: '',
     seatCount: 4,
+    servicePercent: '',
     status: 'FREE',
     width: TABLE_DEFAULT_SIZE,
     height: TABLE_DEFAULT_SIZE,
@@ -49,7 +50,11 @@ export function useHallsAdminPage() {
 
   const saveHallMutation = useMutation({
     mutationFn: (payload) => {
-      const body = { name: payload.name, sortOrder: Number(payload.sortOrder) };
+      const body = {
+        name: payload.name,
+        sortOrder: Number(payload.sortOrder),
+        servicePercent: Number(payload.servicePercent) || 0,
+      };
       if (payload.id) return rstFloorApi.updateHall(payload.id, body);
       return rstFloorApi.createHall(workspace.storeId, body);
     },
@@ -71,6 +76,9 @@ export function useHallsAdminPage() {
         code: payload.code,
         label: payload.label || null,
         seatCount: Number(payload.seatCount),
+        servicePercent: String(payload.servicePercent ?? '').trim() === ''
+          ? null
+          : Number(payload.servicePercent),
         posX: existing ? Number(existing.posX) : Number(payload.posX),
         posY: existing ? Number(existing.posY) : Number(payload.posY),
         width: existing ? Number(existing.width) : Number(payload.width),

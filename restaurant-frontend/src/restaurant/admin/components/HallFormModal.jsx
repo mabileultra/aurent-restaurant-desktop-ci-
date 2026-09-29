@@ -29,6 +29,19 @@ export default function HallFormModal({ open, mode, form, onChange, onClose, onS
           value={form.sortOrder}
           onChange={(e) => onChange({ ...form, sortOrder: e.target.value })}
         />
+        <div>
+          <BaseInput
+            label={t('rst.admin.servicePercent')}
+            type="number"
+            min={0}
+            max={100}
+            step="0.01"
+            required
+            value={form.servicePercent ?? 0}
+            onChange={(e) => onChange({ ...form, servicePercent: e.target.value })}
+          />
+          <p className="rst-modal-form__hint">{t('rst.admin.servicePercentHallHint')}</p>
+        </div>
       </div>
     </RstModal>
   );

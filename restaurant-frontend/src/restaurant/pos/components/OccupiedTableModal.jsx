@@ -27,6 +27,11 @@ export default function OccupiedTableModal({
   canCancel,
   canTransferMerge,
   canAssignWaiter,
+  checks = [],
+  selectedOrderId,
+  onSelectOrder,
+  onNewCheck,
+  canOpenOrder,
   t,
 }) {
   if (!open || !table) return null;
@@ -43,6 +48,22 @@ export default function OccupiedTableModal({
         <h2 className="rst-modal__title">
           {t('rst.floor.tableTitle', { code: table.code })}{linked}
         </h2>
+
+        {checks.length > 1 ? (
+          <div className="rst-occupied-modal__checks">
+            {checks.map((check) => (
+              <button
+                key={check.id}
+                type="button"
+                className={`rst-occupied-modal__check${check.id === selectedOrderId ? ' is-active' : ''}`}
+                onClick={() => onSelectOrder?.(check.id)}
+              >
+                <span>{t('rst.floor.checkNo', { no: check.orderNo })}</span>
+                <strong>{fmtMoneyCompact(check.subtotal || 0)}</strong>
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         {orderLoading && !order ? (
           <p className="rst-modal__text">{t('common.loading')}</p>
@@ -100,6 +121,11 @@ export default function OccupiedTableModal({
               <BaseButton type="button" onClick={onContinue}>
                 {t('rst.floor.continueOrder')}
               </BaseButton>
+              {canOpenOrder ? (
+                <BaseButton type="button" variant="ghost" onClick={onNewCheck}>
+                  {t('rst.order.newCheck')}
+                </BaseButton>
+              ) : null}
               {canAssignWaiter ? (
                 <BaseButton type="button" variant="ghost" onClick={onAssignWaiter}>
                   {t('rst.floor.assignWaiter')}

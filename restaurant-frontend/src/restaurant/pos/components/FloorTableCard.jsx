@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { tableActiveOrders } from '../utils/floorStatusFilters';
 import { tableStatusClass } from '../utils/tableStatus';
 import { formatDigitalTimer, formatElapsed } from '../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
@@ -104,7 +105,9 @@ function WaiterRow({ name, emptyLabel }) {
 
 export default function FloorTableCard({ table, selected, onClick, t, now, waiterNameById }) {
   const status = tableStatusClass(table.status);
-  const order = table.activeOrder;
+  const orders = tableActiveOrders(table);
+  const order = orders[0] || table.activeOrder;
+  const checksSum = orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0);
   const reservation = table.reservation;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
   const cleaningTimer = status === 'CLEANING' && table.updatedAt
@@ -131,9 +134,13 @@ export default function FloorTableCard({ table, selected, onClick, t, now, waite
       <div className="rst-table-card__body">
         {order && (status === 'OCCUPIED' || status === 'WAITING_PAYMENT') ? (
           <>
-            <div className="rst-table-card__amount">{fmtMoneyCompact(order.subtotal)}</div>
+            <div className="rst-table-card__amount">{fmtMoneyCompact(orders.length > 1 ? checksSum : order.subtotal)}</div>
             <div className="rst-table-card__meta-line">
-              <span>{t('rst.floor.checkNo', { no: order.orderNo })}</span>
+              <span>
+                {orders.length > 1
+                  ? t('rst.order.checksCount', { count: orders.length })
+                  : t('rst.floor.checkNo', { no: order.orderNo })}
+              </span>
               {elapsed ? <span>{elapsed}</span> : null}
             </div>
             <WaiterRow name={waiterName} emptyLabel={t('rst.floor.waiterNone')} />

@@ -211,7 +211,7 @@ export default function RestaurantFloorPosPage() {
               guestsPending={p.updateGuestsMutation.isPending}
               billingPending={p.billMutation.isPending}
               paying={false}
-              commissionPreview={p.commissionPreview}
+              servicePreview={p.servicePreview}
               waiters={p.access.canAssignWaiter ? p.waiters : []}
               onAssignWaiter={
                 p.access.canAssignWaiter
@@ -220,6 +220,11 @@ export default function RestaurantFloorPosPage() {
               }
               assigningWaiter={p.assignWaiterMutation.isPending}
               onEditNote={p.openLineNote}
+              onNewCheck={p.access?.canOpenOrder && p.order?.tableId ? () => {
+                const table = (p.halls || []).flatMap((hall) => hall.tables || [])
+                  .find((row) => row.id === p.order.tableId);
+                if (table) p.beginOpenTable(table);
+              } : undefined}
               t={p.t}
             />
           ) : (

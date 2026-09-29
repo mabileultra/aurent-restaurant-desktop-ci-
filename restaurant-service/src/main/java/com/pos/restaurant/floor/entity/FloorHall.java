@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -45,6 +46,10 @@ public class FloorHall {
     @Column(nullable = false)
     @Builder.Default
     private boolean active = true;
+
+    @Column(name = "service_percent", nullable = false, precision = 5, scale = 2)
+    @Builder.Default
+    private BigDecimal servicePercent = BigDecimal.ZERO;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
+import { BaseSelect } from '../../../components/ui';
 import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
@@ -16,17 +17,17 @@ function printerOptions(printers, current) {
 function PrinterSelect({ value, printers, disabled, noneLabel, onChange }) {
   const names = printerOptions(printers, value);
   return (
-    <select
-      className="form-select"
+    <BaseSelect
+      searchable={false}
       value={value || ''}
       disabled={disabled}
+      placeholder={noneLabel}
       onChange={(e) => onChange(e.target.value)}
-    >
-      <option value="">{noneLabel}</option>
-      {names.map((name) => (
-        <option key={name} value={name}>{name}</option>
-      ))}
-    </select>
+      options={[
+        { value: '', label: noneLabel },
+        ...names.map((name) => ({ value: name, label: name })),
+      ]}
+    />
   );
 }
 

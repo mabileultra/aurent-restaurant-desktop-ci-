@@ -17,7 +17,7 @@ export default function CashierOrderDock({
   billingPending,
   paying,
   sendingKitchen,
-  commissionPreview = null,
+  servicePreview = null,
   onOpenFull,
   onSendKitchen,
   onRequestBill,
@@ -45,7 +45,7 @@ export default function CashierOrderDock({
   }
 
   const items = (order.items ?? []).filter((row) => row.itemStatus !== 'CANCELLED');
-  const total = resolveRestaurantPayTotal(order, commissionPreview);
+  const total = resolveRestaurantPayTotal(order, servicePreview);
 
   return (
     <aside className="rst-cashier-dock">

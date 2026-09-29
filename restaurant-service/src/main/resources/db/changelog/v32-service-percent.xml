@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v32-service-percent" author="aurent">
+        <addColumn tableName="floor_halls">
+            <column name="service_percent" type="NUMERIC(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <addColumn tableName="floor_tables">
+            <column name="service_percent" type="NUMERIC(5,2)"/>
+        </addColumn>
+        <addColumn tableName="floor_orders">
+            <column name="service_percent" type="NUMERIC(5,2)"/>
+            <column name="service_amount" type="NUMERIC(18,2)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

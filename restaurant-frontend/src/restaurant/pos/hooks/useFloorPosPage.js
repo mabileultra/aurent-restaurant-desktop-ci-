@@ -8,7 +8,6 @@ import { rstMenuApi } from '../../api/menu.api';
 import { rstModifierApi } from '../../api/modifier.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstShiftApi } from '../../api/shift.api';
-import { rstCommissionApi } from '../../api/commission.api';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
@@ -19,8 +18,9 @@ import {
 } from '../../../utils/receiptPrintPreference';
 import {
   emptyGuestForm, emptyCounterForm, buildWaiters, buildWaiterNameById,
-  resolveOrderHallName, computeCommissionPreview, resolveBackLabelKey, resolveOrderFlags,
+  resolveOrderHallName, resolveBackLabelKey, resolveOrderFlags,
 } from '../utils/floorPosDerivations';
+import { resolveServicePreview } from '../utils/restaurantPayAmount';
 import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { useFloorPosMutations } from './useFloorPosMutations';
@@ -96,11 +96,6 @@ export function useFloorPosPage() {
     queryFn: () => rstOrderApi.get(activeOrderId).then((r) => r.data),
     enabled: !!activeOrderId,
   });
-  const commissionQuery = useQuery({
-    queryKey: ['rst-waiter-commission', storeId],
-    queryFn: () => rstCommissionApi.getSettings(storeId).then((r) => r.data),
-    enabled: storeId != null && !!activeOrderId,
-  });
   const staffQuery = useQuery({
     queryKey: ['rst-pos-staff', storeId],
     queryFn: () => userApi.getAll().then((r) => r.data ?? []),
@@ -126,9 +121,9 @@ export function useFloorPosPage() {
   );
   const waiters = useMemo(() => buildWaiters(staffQuery.data, storeId), [staffQuery.data, storeId]);
   const waiterNameById = useMemo(() => buildWaiterNameById(staffQuery.data), [staffQuery.data]);
-  const commissionPreview = useMemo(
-    () => computeCommissionPreview(order, commissionQuery.data),
-    [order, commissionQuery.data],
+  const servicePreview = useMemo(
+    () => resolveServicePreview(order, halls),
+    [order, halls],
   );
   const kitchenBoardQuery = useQuery({
     queryKey: ['rst-kitchen-board', storeId],
@@ -143,7 +138,7 @@ export function useFloorPosPage() {
 
   const m = useFloorPosMutations({
     t, storeId, storeName: workspace.storeName, channel, guestForm, openTable, counterForm,
-    openingCash, closingCash, shift, activeOrderId, order, commissionPreview, waiterNameById,
+    openingCash, closingCash, shift, activeOrderId, order, servicePreview, waiterNameById,
     user, printReceiptEnabled, setOpenTable, setActiveOrderId, setCounterModalOpen,
     setCounterForm, setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote,
     setPaidReceipt, closePayModal: () => setPayModalOpen(false),
@@ -334,7 +329,7 @@ export function useFloorPosPage() {
     backLabelKey,
     shift, shiftOpenLabel, floorSearch, setFloorSearch, waiters, waiterNameById,
     assignWaiterMutation: m.assignWaiterMutation,
-    updateGuestsMutation: m.updateGuestsMutation, commissionPreview,
+    updateGuestsMutation: m.updateGuestsMutation, servicePreview,
     shiftModal, setShiftModal, openingCash, setOpeningCash, closingCash, setClosingCash,
     openShiftMutation: m.openShiftMutation, closeShiftMutation: m.closeShiftMutation,
     tableActions,

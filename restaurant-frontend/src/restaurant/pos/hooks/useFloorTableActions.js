@@ -24,13 +24,17 @@ export function useFloorTableActions({
   const canCancelOrder = !!access?.canCancelOrder;
   const qc = useQueryClient();
   const [inspectTable, setInspectTable] = useState(null);
+  const [selectedOrderId, setSelectedOrderId] = useState(null);
   const [transferOpen, setTransferOpen] = useState(false);
   const [mergeOpen, setMergeOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [targetTableId, setTargetTableId] = useState(null);
   const [assignWaiterId, setAssignWaiterId] = useState('');
 
-  const orderId = inspectTable?.activeOrder?.id ?? null;
+  const checks = Array.isArray(inspectTable?.activeOrders) && inspectTable.activeOrders.length
+    ? inspectTable.activeOrders
+    : (inspectTable?.activeOrder ? [inspectTable.activeOrder] : []);
+  const orderId = selectedOrderId ?? checks[0]?.id ?? null;
 
   const inspectOrderQuery = useQuery({
     queryKey: ['rst-order-inspect', orderId],
@@ -42,6 +46,7 @@ export function useFloorTableActions({
 
   const closeInspect = () => {
     setInspectTable(null);
+    setSelectedOrderId(null);
     setTransferOpen(false);
     setMergeOpen(false);
     setAssignOpen(false);
@@ -94,6 +99,10 @@ export function useFloorTableActions({
   });
 
   const openOccupied = (table) => {
+    const rows = Array.isArray(table?.activeOrders) && table.activeOrders.length
+      ? table.activeOrders
+      : (table?.activeOrder ? [table.activeOrder] : []);
+    setSelectedOrderId(rows[0]?.id ?? null);
     setInspectTable(table);
     setTransferOpen(false);
     setMergeOpen(false);
@@ -139,6 +148,9 @@ export function useFloorTableActions({
 
   return {
     inspectTable,
+    checks,
+    selectedOrderId: orderId,
+    selectOrder: setSelectedOrderId,
     openOccupied,
     closeInspect,
     continueOrder,

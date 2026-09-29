@@ -17,6 +17,7 @@ function openTableEdit(p, table) {
       code: source.code,
       label: source.label ?? '',
       seatCount: source.seatCount,
+      servicePercent: source.servicePercent == null ? '' : source.servicePercent,
       status: source.status,
       posX: source.posX,
       posY: source.posY,
@@ -52,7 +53,12 @@ export default function HallsAdminPage() {
                 variant="ghost"
                 onClick={() => p.setHallModal({
                   mode: 'edit',
-                  form: { id: p.selectedHall.id, name: p.selectedHall.name, sortOrder: p.selectedHall.sortOrder },
+                  form: {
+                    id: p.selectedHall.id,
+                    name: p.selectedHall.name,
+                    sortOrder: p.selectedHall.sortOrder,
+                    servicePercent: p.selectedHall.servicePercent ?? 0,
+                  },
                 })}
               >
                 {p.t('rst.admin.editHall')}
@@ -99,6 +105,7 @@ export default function HallsAdminPage() {
           <HallsTablesPanel
             tables={tables}
             hallId={p.selectedHall.id}
+            hallServicePercent={p.selectedHall.servicePercent}
             onAddTable={() => p.setTableModal({ mode: 'create', form: p.nextTableForm(tables) })}
             onEditTable={(table) => openTableEdit(p, table)}
             onDeactivateTable={(id) => p.deactivateTableMutation.mutate(id)}
@@ -123,7 +130,20 @@ export default function HallsAdminPage() {
         form={p.tableModal?.form ?? p.nextTableForm()}
         onChange={(form) => p.setTableModal((prev) => ({ ...prev, form }))}
         onClose={() => p.setTableModal(null)}
-        onSubmit={() => p.saveTableMutation.mutate(p.tableModal.form)}
+        onSubmit={() => {
+          const form = p.tableModal.form;
+          const hallPercent = Number(p.selectedHall?.servicePercent) || 0;
+          const own = String(form.servicePercent ?? '').trim();
+          const previous = tables.find((table) => table.id === form.id);
+          const previousOwn = previous?.servicePercent == null ? '' : String(previous.servicePercent);
+          const changed = own !== '' && Number(own) !== Number(previousOwn === '' ? NaN : previousOwn);
+          if (hallPercent > 0 && changed) {
+            const shown = Number.isInteger(hallPercent) ? String(hallPercent) : String(hallPercent);
+            const ok = window.confirm(p.t('rst.admin.tableServiceConfirm', { percent: shown }));
+            if (!ok) return;
+          }
+          p.saveTableMutation.mutate(form);
+        }}
         isPending={p.saveTableMutation.isPending}
         t={p.t}
       />

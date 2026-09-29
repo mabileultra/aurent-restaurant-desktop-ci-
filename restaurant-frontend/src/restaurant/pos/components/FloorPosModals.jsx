@@ -60,6 +60,15 @@ export default function FloorPosModals({ p, waiterMode = false }) {
         canCancel={a.canCancelInspect}
         canTransferMerge={a.canTransferMerge}
         canAssignWaiter={a.canAssignWaiter}
+        checks={a.checks}
+        selectedOrderId={a.selectedOrderId}
+        onSelectOrder={a.selectOrder}
+        onNewCheck={() => {
+          const table = a.inspectTable;
+          a.closeInspect();
+          if (table) p.beginOpenTable(table);
+        }}
+        canOpenOrder={p.access?.canOpenOrder}
         t={p.t}
       />
       {!waiterMode && a.canTransferMerge ? (
@@ -148,7 +157,7 @@ export default function FloorPosModals({ p, waiterMode = false }) {
       {canPay && p.payModalOpen && p.order ? (
         <RestaurantPayModal
           open={p.payModalOpen}
-          totalDue={resolveRestaurantPayTotal(p.order, p.commissionPreview)}
+          totalDue={resolveRestaurantPayTotal(p.order, p.servicePreview)}
           paying={p.payMutation.isPending}
           onClose={p.closePayModal}
           onConfirm={(payload) => p.payMutation.mutate(payload)}

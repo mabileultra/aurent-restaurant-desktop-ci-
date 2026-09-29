@@ -54,7 +54,7 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
             billingPending={p.billMutation.isPending}
             paying={p.payMutation.isPending}
             sendingKitchen={p.sendKitchenMutation.isPending}
-            commissionPreview={p.commissionPreview}
+            servicePreview={p.servicePreview}
             onOpenFull={() => setFullOrder(true)}
             onSendKitchen={() => p.sendKitchenMutation.mutate()}
             onRequestBill={() => p.billMutation.mutate()}

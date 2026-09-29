@@ -7,6 +7,7 @@ import com.pos.restaurant.floor.mapper.FloorHallMapper;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.HallNameUniquenessValidator;
+import com.pos.restaurant.floor.support.ServicePercentRules;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -28,6 +29,7 @@ public class HallUpdateHandler {
         nameUniquenessValidator.assertUniqueOnUpdate(hall.getCompanyId(), hall.getStoreId(), name, hallId);
         hall.setName(name);
         hall.setSortOrder(request.sortOrder());
+        hall.setServicePercent(ServicePercentRules.required(request.servicePercent()));
         LogUtil.info(HallUpdateHandler.class, "Hall updated: id={}", hallId);
         return hallMapper.toResponse(hall, tableRepository.countByHallIdAndActiveTrue(hallId));
     }

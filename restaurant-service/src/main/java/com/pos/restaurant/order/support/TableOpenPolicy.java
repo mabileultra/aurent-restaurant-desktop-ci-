@@ -21,7 +21,7 @@ public class TableOpenPolicy {
             throw new BusinessException("Table is blocked");
         }
         if (status == TableStatus.OCCUPIED || status == TableStatus.WAITING_PAYMENT) {
-            throw new BusinessException("Table already has an open order");
+            return;
         }
         if (!OPENABLE.contains(status)) {
             throw new BusinessException("Cannot open an order on table status " + status);

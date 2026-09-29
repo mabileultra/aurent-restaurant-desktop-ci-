@@ -2,7 +2,9 @@ package com.pos.restaurant.floor.dto;
 
 import com.pos.restaurant.floor.domain.TableStatus;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record TableResponse(
     Integer id,
@@ -19,5 +21,7 @@ public record TableResponse(
     boolean active,
     Instant updatedAt,
     ActiveOrderSummary activeOrder,
-    TableReservationSummary reservation
+    TableReservationSummary reservation,
+    BigDecimal servicePercent,
+    List<ActiveOrderSummary> activeOrders
 ) {}

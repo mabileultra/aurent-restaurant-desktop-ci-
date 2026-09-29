@@ -18,7 +18,21 @@
 }
 
 .rst-floor-tabs__name {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   min-width: 0;
+}
+
+.rst-floor-tabs__fee {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-floor-tabs__btn.is-active .rst-floor-tabs__fee {
+  color: #1b1208;
 }
 
 .rst-floor-tabs__count {

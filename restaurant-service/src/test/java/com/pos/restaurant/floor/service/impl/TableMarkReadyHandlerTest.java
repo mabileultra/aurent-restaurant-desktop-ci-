@@ -31,7 +31,7 @@ class TableMarkReadyHandlerTest {
     void cleaningBecomesFree() {
         FloorTable table = FloorTable.builder().id(7).status(TableStatus.CLEANING).build();
         TableResponse response = new TableResponse(
-            7, 1, "Hall", "1", null, 4, 0, 0, 80, 80, TableStatus.FREE, true, null, null, null
+            7, 1, "Hall", "1", null, 4, 0, 0, 80, 80, TableStatus.FREE, true, null, null, null, null, null
         );
         when(entityLookup.requireTable(7)).thenReturn(table);
         when(tableMapper.toResponse(table)).thenReturn(response);
@@ -47,7 +47,7 @@ class TableMarkReadyHandlerTest {
     void alreadyFreeIsIdempotent() {
         FloorTable table = FloorTable.builder().id(7).status(TableStatus.FREE).build();
         TableResponse response = new TableResponse(
-            7, 1, "Hall", "1", null, 4, 0, 0, 80, 80, TableStatus.FREE, true, null, null, null
+            7, 1, "Hall", "1", null, 4, 0, 0, 80, 80, TableStatus.FREE, true, null, null, null, null, null
         );
         when(entityLookup.requireTable(7)).thenReturn(table);
         when(tableMapper.toResponse(table)).thenReturn(response);

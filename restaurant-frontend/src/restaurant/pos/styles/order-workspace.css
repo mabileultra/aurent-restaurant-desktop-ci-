@@ -144,6 +144,19 @@
   margin-bottom: 0.65rem;
 }
 
+.rst-order__new-check {
+  flex: 1 1 100%;
+  min-height: 2.4rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--rst-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
 .rst-order__guest-stepper {
   display: inline-flex;
   align-items: center;

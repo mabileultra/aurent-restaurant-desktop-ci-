@@ -25,7 +25,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,19 +51,20 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<OrderStatus> activeStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
-        Map<Integer, FloorOrder> openOrders = new HashMap<>();
+        Map<Integer, List<FloorOrder>> openOrders = new HashMap<>();
         for (FloorOrder order : orderRepository.findTableOrdersByCompanyIdAndStoreIdAndStatusIn(
             companyId, storeId, activeStatuses
         )) {
             if (order.getTable() != null) {
-                openOrders.putIfAbsent(order.getTable().getId(), order);
+                addOpenOrder(openOrders, order.getTable().getId(), order);
             }
         }
         for (FloorOrderTableLink link : linkRepository.findActiveByStore(companyId, storeId, activeStatuses)) {
-            openOrders.putIfAbsent(link.getTable().getId(), link.getOrder());
+            addOpenOrder(openOrders, link.getTable().getId(), link.getOrder());
         }
 
         Map<UUID, List<FloorOrderItem>> itemsByOrder = openOrders.values().stream()
+            .flatMap(List::stream)
             .collect(Collectors.toMap(
                 FloorOrder::getId,
                 order -> itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId()),
@@ -96,7 +96,6 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                     .stream()
                     .map(table -> {
                         TableResponse mapped = tableMapper.toResponse(table);
-                        FloorOrder order = openOrders.get(table.getId());
                         FloorReservation reservation = reservations.get(table.getId());
                         TableReservationSummary reservationSummary = reservation == null
                             ? null
@@ -108,28 +107,11 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                                 reservation.getReservedAt(),
                                 reservation.getNotes()
                             );
-                        if (order == null) {
-                            return new TableResponse(
-                                mapped.id(),
-                                mapped.hallId(),
-                                mapped.hallName(),
-                                mapped.code(),
-                                mapped.label(),
-                                mapped.seatCount(),
-                                mapped.posX(),
-                                mapped.posY(),
-                                mapped.width(),
-                                mapped.height(),
-                                mapped.status(),
-                                mapped.active(),
-                                mapped.updatedAt(),
-                                null,
-                                reservationSummary
-                            );
-                        }
-                        List<FloorOrderItem> items = itemsByOrder.getOrDefault(order.getId(), List.of());
-                        BigDecimal subtotal = orderTotals.billable(items);
-                        List<String> linkedCodes = linkedCodesByOrder.getOrDefault(order.getId(), List.of());
+                        List<FloorOrder> ordersHere = openOrders.getOrDefault(table.getId(), List.of());
+                        List<ActiveOrderSummary> summaries = ordersHere.stream()
+                            .map(row -> toSummary(row, itemsByOrder, linkedCodesByOrder))
+                            .toList();
+                        ActiveOrderSummary first = summaries.isEmpty() ? null : summaries.get(0);
                         return new TableResponse(
                             mapped.id(),
                             mapped.hallId(),
@@ -144,20 +126,10 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                             mapped.status(),
                             mapped.active(),
                             mapped.updatedAt(),
-                            new ActiveOrderSummary(
-                                order.getId(),
-                                order.getOrderNo(),
-                                order.getStatus(),
-                                order.getGuestCount(),
-                                order.getAdultCount(),
-                                order.getChildrenCount(),
-                                subtotal,
-                                items.size(),
-                                order.getWaiterUserId(),
-                                order.getOpenedAt(),
-                                linkedCodes
-                            ),
-                            reservationSummary
+                            first,
+                            reservationSummary,
+                            mapped.servicePercent(),
+                            summaries
                         );
                     })
                     .toList();
@@ -166,10 +138,43 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                     hall.getName(),
                     hall.getSortOrder(),
                     hall.isActive(),
+                    hall.getServicePercent(),
                     tables
                 );
             })
             .toList();
         return new FloorSnapshotResponse(storeId, hallResponses);
+    }
+
+    private static void addOpenOrder(Map<Integer, List<FloorOrder>> openOrders, Integer tableId, FloorOrder order) {
+        if (tableId == null || order == null) {
+            return;
+        }
+        List<FloorOrder> list = openOrders.computeIfAbsent(tableId, ignored -> new ArrayList<>());
+        if (list.stream().noneMatch(row -> row.getId().equals(order.getId()))) {
+            list.add(order);
+        }
+        list.sort((a, b) -> Integer.compare(a.getOrderNo(), b.getOrderNo()));
+    }
+
+    private ActiveOrderSummary toSummary(
+        FloorOrder order,
+        Map<UUID, List<FloorOrderItem>> itemsByOrder,
+        Map<UUID, List<String>> linkedCodesByOrder
+    ) {
+        List<FloorOrderItem> items = itemsByOrder.getOrDefault(order.getId(), List.of());
+        return new ActiveOrderSummary(
+            order.getId(),
+            order.getOrderNo(),
+            order.getStatus(),
+            order.getGuestCount(),
+            order.getAdultCount(),
+            order.getChildrenCount(),
+            orderTotals.billable(items),
+            items.size(),
+            order.getWaiterUserId(),
+            order.getOpenedAt(),
+            linkedCodesByOrder.getOrDefault(order.getId(), List.of())
+        );
     }
 }

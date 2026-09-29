@@ -35,6 +35,8 @@ public record OrderResponse(
     BigDecimal commissionBaseAmount,
     BigDecimal commissionAmount,
     BigDecimal discountAmount,
+    BigDecimal servicePercent,
+    BigDecimal serviceAmount,
     int linesCount,
     List<OrderItemResponse> items,
     List<LinkedTableResponse> linkedTables,

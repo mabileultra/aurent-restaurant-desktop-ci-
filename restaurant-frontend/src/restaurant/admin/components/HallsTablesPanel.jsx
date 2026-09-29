@@ -5,9 +5,20 @@ import '../styles/halls-admin.css';
 
 const TABLES_LIST_PAGE_SIZE = 20;
 
+function serviceMark(table, hallServicePercent, t) {
+  const own = table.servicePercent != null && table.servicePercent !== '';
+  const percent = own ? Number(table.servicePercent) : Number(hallServicePercent) || 0;
+  if (!(percent > 0)) return '';
+  const shown = Number.isInteger(percent) ? String(percent) : String(percent);
+  return own
+    ? t('rst.admin.serviceOwnShort', { percent: shown })
+    : t('rst.admin.serviceHallShort', { percent: shown });
+}
+
 export default function HallsTablesPanel({
   tables,
   hallId,
+  hallServicePercent = 0,
   onAddTable,
   onEditTable,
   onDeactivateTable,
@@ -53,7 +64,9 @@ export default function HallsTablesPanel({
           </div>
         ) : (
           <>
-            {visibleTables.map((table) => (
+            {visibleTables.map((table) => {
+              const mark = serviceMark(table, hallServicePercent, t);
+              return (
               <div key={table.id} className="rst-halls__row">
                 <button
                   type="button"
@@ -64,6 +77,7 @@ export default function HallsTablesPanel({
                   <span className="rst-halls__row-meta">
                     {table.label ? `${table.label} · ` : ''}
                     {t(`rst.status.${table.status}`)} · {t('rst.floor.seats', { count: table.seatCount })}
+                    {mark ? ` · ${mark}` : ''}
                   </span>
                 </button>
                 <RstRowActions
@@ -87,7 +101,8 @@ export default function HallsTablesPanel({
                   ]}
                 />
               </div>
-            ))}
+              );
+            })}
             {hasMoreTables ? (
               <div ref={tableSentinelRef} className="rst-halls__scroll-sentinel" aria-hidden>
                 {t('rst.admin.loadingMore')}

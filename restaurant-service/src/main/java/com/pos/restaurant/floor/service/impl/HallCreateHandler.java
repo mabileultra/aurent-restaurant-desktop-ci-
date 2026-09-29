@@ -7,6 +7,7 @@ import com.pos.restaurant.floor.mapper.FloorHallMapper;
 import com.pos.restaurant.floor.repository.FloorHallRepository;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.floor.support.HallNameUniquenessValidator;
+import com.pos.restaurant.floor.support.ServicePercentRules;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -31,6 +32,7 @@ public class HallCreateHandler {
             .storeId(storeId)
             .name(name)
             .sortOrder(request.sortOrder())
+            .servicePercent(ServicePercentRules.required(request.servicePercent()))
             .active(true)
             .build());
         LogUtil.info(HallCreateHandler.class, "Hall created: id={}, storeId={}", saved.getId(), storeId);

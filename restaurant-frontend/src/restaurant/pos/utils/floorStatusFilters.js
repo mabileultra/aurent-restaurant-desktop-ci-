@@ -32,6 +32,12 @@ export function freeTablesForTransfer(halls, excludeTableId) {
     .filter((table) => table.status === 'FREE' || table.status === 'CLEANING');
 }
 
+export function tableActiveOrders(table) {
+  if (Array.isArray(table?.activeOrders) && table.activeOrders.length) return table.activeOrders;
+  if (table?.activeOrder) return [table.activeOrder];
+  return [];
+}
+
 export function occupiedTablesForMerge(halls, excludeTableId) {
   return collectHallTables(halls, ALL_HALLS_ID)
     .filter((table) => table.id !== excludeTableId)

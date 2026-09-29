@@ -41,7 +41,7 @@ function addedPiece(prevItems, nextItems, menuItemId) {
 export function useFloorPosMutations(deps) {
   const {
     t, storeId, storeName, channel, guestForm, openTable, counterForm,
-    openingCash, closingCash, shift, activeOrderId, order, commissionPreview,
+    openingCash, closingCash, shift, activeOrderId, order, servicePreview,
     waiterNameById, user, printReceiptEnabled,
     setOpenTable, setActiveOrderId, setCounterModalOpen, setCounterForm,
     setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote, setPaidReceipt,
@@ -294,14 +294,14 @@ export function useFloorPosMutations(deps) {
       const orderForPay = {
         ...order,
         channel,
-        commissionPercent: order.commissionPercent != null
-          ? order.commissionPercent : (commissionPreview?.percent ?? 0),
-        commissionAmount: order.commissionAmount != null
-          ? order.commissionAmount
-          : (channel === 'DINE_IN' ? (commissionPreview?.amount ?? 0) : 0),
+        servicePercent: order.servicePercent != null
+          ? order.servicePercent : (servicePreview?.percent ?? 0),
+        serviceAmount: order.serviceAmount != null
+          ? order.serviceAmount
+          : (channel === 'DINE_IN' ? (servicePreview?.amount ?? 0) : 0),
       };
       const due = toPayAmountPayload(
-        payload.amount ?? restaurantPayTotal(orderForPay, commissionPreview),
+        payload.amount ?? restaurantPayTotal(orderForPay, servicePreview),
       );
       const method = payload.method || 'CASH';
       const waiterName = orderForPay.waiterUserId
@@ -309,8 +309,8 @@ export function useFloorPosMutations(deps) {
       const customerLabel = channel === 'DINE_IN'
         ? (orderForPay.tableCode ? t('rst.order.receiptTable', { code: orderForPay.tableCode }) : null)
         : (orderForPay.clientName || null);
-      const serviceLabel = channel === 'DINE_IN' && Number(orderForPay.commissionAmount) > 0
-        ? t('rst.order.serviceLine', { percent: Number(orderForPay.commissionPercent ?? 0) })
+      const serviceLabel = channel === 'DINE_IN' && Number(orderForPay.serviceAmount) > 0
+        ? t('rst.order.serviceLine', { percent: Number(orderForPay.servicePercent ?? 0) })
         : null;
       return payRestaurantOrderWithFiscal({
         order: orderForPay,

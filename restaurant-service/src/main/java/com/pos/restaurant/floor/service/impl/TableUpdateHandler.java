@@ -6,6 +6,7 @@ import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.mapper.FloorTableMapper;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.TableCodeUniquenessValidator;
+import com.pos.restaurant.floor.support.ServicePercentRules;
 import com.pos.restaurant.floor.support.TableStatusPolicy;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class TableUpdateHandler {
         table.setCode(code);
         table.setLabel(blankToNull(request.label()));
         table.setSeatCount(request.seatCount());
+        table.setServicePercent(ServicePercentRules.optional(request.servicePercent()));
         table.setPosX(request.posX());
         table.setPosY(request.posY());
         table.setWidth(request.width());

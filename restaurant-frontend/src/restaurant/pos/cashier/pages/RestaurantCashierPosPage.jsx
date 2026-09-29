@@ -122,7 +122,12 @@ export default function RestaurantCashierPosPage() {
               paying={p.payMutation.isPending}
               printReceiptEnabled={p.printReceiptEnabled}
               onPrintReceiptChange={p.setPrintReceiptEnabled}
-              commissionPreview={p.commissionPreview}
+              onNewCheck={p.access?.canOpenOrder && p.order?.tableId ? () => {
+                const table = (p.halls || []).flatMap((hall) => hall.tables || [])
+                  .find((row) => row.id === p.order.tableId);
+                if (table) p.beginOpenTable(table);
+              } : undefined}
+              servicePreview={p.servicePreview}
               waiters={p.access.canAssignWaiter ? p.waiters : []}
               onAssignWaiter={
                 p.access.canAssignWaiter

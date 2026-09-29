@@ -44,11 +44,12 @@ export default function OrderWorkspace({
   paying,
   printReceiptEnabled = true,
   onPrintReceiptChange,
-  commissionPreview,
+  servicePreview,
   waiters = [],
   onAssignWaiter,
   assigningWaiter,
   onEditNote,
+  onNewCheck,
   t,
 }) {
   const now = useLiveClock();
@@ -95,14 +96,10 @@ export default function OrderWorkspace({
     ? 0
     : Math.round((kitchenCount / linesCount) * 100);
 
-  const commissionPercent = order.commissionPercent != null
-    ? Number(order.commissionPercent)
-    : Number(commissionPreview?.percent ?? 0);
-  const commissionAmount = order.commissionAmount != null
-    ? Number(order.commissionAmount)
-    : Number(commissionPreview?.amount ?? 0);
+  const servicePercent = Number(servicePreview?.percent) || 0;
+  const serviceAmount = Number(servicePreview?.amount) || 0;
   const discountAmount = Number(order.discountAmount) || 0;
-  const payAmount = resolveRestaurantPayTotal(order, commissionPreview);
+  const payAmount = resolveRestaurantPayTotal(order, servicePreview);
   const [discountOpen, setDiscountOpen] = useState(false);
   const canEditDiscount = order.status === 'OPEN' || order.status === 'BILLING';
   const resolvedWaiter = waiterName
@@ -181,6 +178,11 @@ export default function OrderWorkspace({
               <span>{t('rst.order.guestsShort', { count: order.guestCount })}</span>
               <button type="button" disabled={billing || guestsPending} onClick={() => bumpGuests(1)}>+</button>
             </div>
+            {onNewCheck ? (
+              <button type="button" className="rst-order__new-check" onClick={onNewCheck}>
+                {t('rst.order.newCheck')}
+              </button>
+            ) : null}
             {waiters.length > 0 ? (
               <label className="rst-order__waiter">
                 <span>{t('rst.floor.waiter')}</span>
@@ -223,13 +225,10 @@ export default function OrderWorkspace({
             <span>{t('rst.order.subtotal', { count: linesCount })}:</span>
             <strong className="rst-order__total-val">{fmtMoneyCompact(order.subtotal)}</strong>
           </div>
-          {channel === 'DINE_IN' ? (
+          {channel === 'DINE_IN' && servicePercent > 0 ? (
             <div className="rst-order__total-row rst-order__total-row--service">
-              <span>
-                {t('rst.order.serviceLine', { percent: commissionPercent || 0 })}
-                <em className="rst-order__auto">AUTO</em>
-              </span>
-              <strong className="rst-order__total-val">{fmtMoneyCompact(commissionAmount || 0)}</strong>
+              <span>{t('rst.order.serviceLine', { percent: servicePercent })}</span>
+              <strong className="rst-order__total-val">{fmtMoneyCompact(serviceAmount)}</strong>
             </div>
           ) : null}
           {discountAmount > 0 ? (

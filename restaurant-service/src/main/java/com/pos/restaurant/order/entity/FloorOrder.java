@@ -108,6 +108,12 @@ public class FloorOrder {
     @Column(name = "commission_amount", precision = 18, scale = 2)
     private BigDecimal commissionAmount;
 
+    @Column(name = "service_percent", precision = 5, scale = 2)
+    private BigDecimal servicePercent;
+
+    @Column(name = "service_amount", precision = 18, scale = 2)
+    private BigDecimal serviceAmount;
+
     /** Order-level discount (absolute money), applied at pay time. */
     @Column(name = "discount_amount", precision = 18, scale = 2, nullable = false)
     @Builder.Default

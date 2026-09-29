@@ -56,6 +56,13 @@
   grid-column: 1 / -1;
 }
 
+.rst-modal-form__hint {
+  margin: 0.3rem 0 0;
+  color: var(--rst-muted);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
 .base-modal--rst .base-field__label {
   color: var(--rst-muted);
   font-size: 0.78rem;

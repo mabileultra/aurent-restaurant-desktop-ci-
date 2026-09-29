@@ -11,6 +11,8 @@ import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.OrderTotals;
+import com.pos.restaurant.order.support.ServiceChargeSupport;
+import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.payment.support.BillEligibilityPolicy;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
@@ -34,6 +36,8 @@ public class RequestBillHandler {
     private final OrderTotals orderTotals;
     private final WaiterCommissionService waiterCommissionService;
     private final KitchenBoardService kitchenBoardService;
+    private final ServiceChargeSupport serviceChargeSupport;
+    private final TableSeatSync tableSeatSync;
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
@@ -43,8 +47,9 @@ public class RequestBillHandler {
         eligibilityPolicy.assertCanRequestBill(order, items, kitchenBoard);
         BigDecimal subtotal = orderTotals.billable(items);
         waiterCommissionService.applyOnPayment(order, subtotal);
+        serviceChargeSupport.snapshot(order, subtotal);
         order.setStatus(OrderStatus.BILLING);
-        linkedTables.applyStatus(order, TableStatus.WAITING_PAYMENT);
+        tableSeatSync.refresh(linkedTables.allTables(order), TableStatus.WAITING_PAYMENT);
         LogUtil.info(RequestBillHandler.class, "Bill requested: orderId={}", orderId);
         return assembler.toResponse(order, items, linkedTables.allTables(order));
     }

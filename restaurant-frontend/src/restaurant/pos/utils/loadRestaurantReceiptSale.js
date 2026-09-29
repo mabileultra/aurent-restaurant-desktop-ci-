@@ -13,8 +13,9 @@ function channelCustomerLabel(order, t) {
 
 function serviceLabelOf(order, t) {
   if (order?.channel !== 'DINE_IN') return null;
-  if (!(Number(order.commissionAmount) > 0)) return null;
-  return t('rst.order.serviceLine', { percent: Number(order.commissionPercent ?? 0) });
+  const amount = Number(order.serviceAmount ?? order.commissionAmount);
+  if (!(amount > 0)) return null;
+  return t('rst.order.serviceLine', { percent: Number(order.servicePercent ?? order.commissionPercent ?? 0) });
 }
 
 /**

@@ -1,12 +1,10 @@
 package com.pos.restaurant.order.service.impl;
 
-import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.OrderChannel;
-import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -44,9 +42,6 @@ public class OrderOpenHandler {
     public OrderResponse handle(Integer tableId, OpenOrderRequest request) {
         FloorTable table = entityLookup.requireTable(tableId);
         tableOpenPolicy.assertCanOpen(table.getStatus());
-        if (orderRepository.existsByTableIdAndStatusIn(tableId, List.of(OrderStatus.OPEN, OrderStatus.BILLING))) {
-            throw new BusinessException("Table already has an open order");
-        }
         var shift = shiftLookup.requireOpen(table.getStoreId());
         GuestCounts guests = guestCountPolicy.normalize(
             request.guestCount(),

@@ -13,6 +13,8 @@ import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.OrderTotals;
+import com.pos.restaurant.order.support.TableSeatSync;
+import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.payment.dto.PayOrderRequest;
 import com.pos.restaurant.payment.entity.FloorOrderPayment;
 import com.pos.restaurant.payment.repository.FloorOrderPaymentRepository;
@@ -51,6 +53,8 @@ public class PayOrderHandler {
     private final ShiftSaleAccumulator shiftSaleAccumulator;
     private final WaiterCommissionService waiterCommissionService;
     private final OrderLinkedTablesSupport linkedTables;
+    private final ServiceChargeSupport serviceChargeSupport;
+    private final TableSeatSync tableSeatSync;
 
     @Transactional
     public OrderResponse handle(UUID orderId, PayOrderRequest request) {
@@ -58,7 +62,7 @@ public class PayOrderHandler {
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         BigDecimal subtotal = orderTotals.billable(items);
         waiterCommissionService.applyOnPayment(order, subtotal);
-        BigDecimal service = order.getCommissionAmount() == null ? BigDecimal.ZERO : order.getCommissionAmount();
+        BigDecimal service = serviceChargeSupport.amountForPay(order, subtotal);
         BigDecimal discount = order.getDiscountAmount() == null ? BigDecimal.ZERO : order.getDiscountAmount();
         BigDecimal due = subtotal.add(service).subtract(discount).setScale(2, RoundingMode.HALF_UP);
         if (due.compareTo(BigDecimal.ZERO) <= 0) {
@@ -79,8 +83,9 @@ public class PayOrderHandler {
             .build());
         order.setStatus(OrderStatus.CLOSED);
         order.setClosedAt(Instant.now());
-        linkedTables.applyStatus(order, TableStatus.CLEANING);
+        var seated = linkedTables.allTables(order);
         linkedTables.clearLinks(orderId);
+        tableSeatSync.refresh(seated, TableStatus.CLEANING);
         if (order.getShift() != null) {
             shiftSaleAccumulator.applyPayment(
                 order.getShift(),

@@ -1,4 +1,4 @@
-import { BaseButton, BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import RstRowActions from '../../shared/components/RstRowActions';
 import { useMenuCategoriesAdminPage } from '../hooks/useMenuCategoriesAdminPage';
@@ -59,21 +59,22 @@ export default function MenuCategoriesAdminPage() {
             <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryPrinter')}</span>
               {p.desktop ? (
-                <select
-                  className="form-select"
-                  value={p.form.printPrinterName || ''}
+                <BaseSelect
+                  searchable={false}
                   required
+                  value={p.form.printPrinterName || ''}
+                  placeholder={p.t('rst.admin.printerNone')}
                   onChange={(e) => p.setForm({ ...p.form, printPrinterName: e.target.value })}
-                >
-                  <option value="">{p.t('rst.admin.printerNone')}</option>
-                  {(p.form.printPrinterName
-                    && !p.printers.some((printer) => printer.name === p.form.printPrinterName)
-                    ? [p.form.printPrinterName]
-                    : []
-                  ).concat(p.printers.map((printer) => printer.name).filter(Boolean)).map((name) => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
+                  options={[
+                    { value: '', label: p.t('rst.admin.printerNone') },
+                    ...(p.form.printPrinterName
+                      && !p.printers.some((printer) => printer.name === p.form.printPrinterName)
+                      ? [p.form.printPrinterName]
+                      : []
+                    ).concat(p.printers.map((printer) => printer.name).filter(Boolean))
+                      .map((name) => ({ value: name, label: name })),
+                  ]}
+                />
               ) : (
                 <span className="rst-admin-field__hint">{p.t('rst.admin.printersDesktopOnly')}</span>
               )}

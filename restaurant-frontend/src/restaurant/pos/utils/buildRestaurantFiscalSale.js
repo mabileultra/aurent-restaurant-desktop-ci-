@@ -28,9 +28,9 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
     unitOfMeasure: 'шт',
   }));
 
-  const serviceAmount = round2(Number(order?.commissionAmount) || 0);
+  const serviceAmount = round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
   if (serviceAmount > 0) {
-    const percent = Number(order?.commissionPercent);
+    const percent = Number(order?.servicePercent ?? order?.commissionPercent);
     const label =
       serviceLabel ||
       (Number.isFinite(percent) && percent > 0
@@ -113,7 +113,7 @@ export function buildRestaurantFiscalSale({
   const dishesSubtotal = round2(
     (order?.items ?? []).filter(isBillable).reduce((acc, item) => acc + lineTotalOf(item), 0),
   );
-  const serviceAmount = round2(Number(order?.commissionAmount) || 0);
+  const serviceAmount = round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
   const discountTotal = round2(Math.max(0, Number(order?.discountAmount) || 0));
   const totalAmount = restaurantPayTotal(order);
   const taxTotal = round2(

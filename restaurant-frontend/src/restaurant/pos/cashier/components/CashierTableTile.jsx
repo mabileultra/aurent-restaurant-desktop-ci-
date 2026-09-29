@@ -1,3 +1,4 @@
+import { tableActiveOrders } from '../../utils/floorStatusFilters';
 import { tableStatusClass } from '../../utils/tableStatus';
 import { formatElapsed } from '../../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
@@ -14,9 +15,12 @@ export default function CashierTableTile({
   t,
 }) {
   const status = tableStatusClass(table.status);
-  const order = table.activeOrder;
+  const orders = tableActiveOrders(table);
+  const order = orders[0] || null;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
-  const amount = order ? Number(order.subtotal || 0) : null;
+  const amount = orders.length
+    ? orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0)
+    : null;
 
   return (
     <button
@@ -33,7 +37,9 @@ export default function CashierTableTile({
           {t('rst.floor.seats', { count: table.seatCount ?? 0 })}
         </span>
       )}
-      {elapsed ? <span className="rst-cashier-tile__time">{elapsed}</span> : null}
+      {orders.length > 1 ? (
+        <span className="rst-cashier-tile__time">{t('rst.order.checksCount', { count: orders.length })}</span>
+      ) : elapsed ? <span className="rst-cashier-tile__time">{elapsed}</span> : null}
     </button>
   );
 }

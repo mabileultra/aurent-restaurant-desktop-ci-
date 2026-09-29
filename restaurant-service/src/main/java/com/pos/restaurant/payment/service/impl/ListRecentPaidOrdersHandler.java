@@ -83,9 +83,9 @@ public class ListRecentPaidOrdersHandler {
         FloorOrderPayment payment,
         List<FloorOrderItem> items
     ) {
-        BigDecimal service = order.getCommissionAmount() == null
-            ? BigDecimal.ZERO
-            : order.getCommissionAmount();
+        BigDecimal service = order.getServiceAmount() != null
+            ? order.getServiceAmount()
+            : (order.getCommissionAmount() == null ? BigDecimal.ZERO : order.getCommissionAmount());
         BigDecimal subtotal;
         BigDecimal paidAmount;
         if (payment != null && payment.getAmount() != null) {

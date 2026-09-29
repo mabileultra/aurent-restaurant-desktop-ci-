@@ -16,6 +16,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.math.BigDecimal;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,13 +48,13 @@ class HallCreateHandlerTest {
 
     @Test
     void createsHallForTenantStore() {
-        SaveHallRequest request = new SaveHallRequest("  Зал 1  ", 10);
+        SaveHallRequest request = new SaveHallRequest("  Зал 1  ", 10, BigDecimal.ZERO);
         when(hallRepository.save(any(FloorHall.class))).thenAnswer(invocation -> {
             FloorHall hall = invocation.getArgument(0);
             hall.setId(3);
             return hall;
         });
-        HallResponse response = new HallResponse(3, 4, "Зал 1", 10, true, 0);
+        HallResponse response = new HallResponse(3, 4, "Зал 1", 10, true, 0, BigDecimal.ZERO);
         when(hallMapper.toResponse(any(FloorHall.class), anyInt())).thenReturn(response);
 
         HallResponse result = handler.handle(4, request);
@@ -72,6 +74,6 @@ class HallCreateHandlerTest {
         doThrow(new BusinessException("Hall name already exists: VIP"))
             .when(nameUniquenessValidator).assertUniqueOnCreate(7, 4, "VIP");
 
-        assertThrows(BusinessException.class, () -> handler.handle(4, new SaveHallRequest("VIP", 1)));
+        assertThrows(BusinessException.class, () -> handler.handle(4, new SaveHallRequest("VIP", 1, BigDecimal.ZERO)));
     }
 }

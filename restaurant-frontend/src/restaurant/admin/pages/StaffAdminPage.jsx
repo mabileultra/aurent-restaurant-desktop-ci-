@@ -11,7 +11,6 @@ import '../styles/staff-admin.css';
 
 export default function StaffAdminPage() {
   const p = useStaffAdminPage();
-  const waiters = p.waitersForCommission ?? [];
 
   if (p.workspace.noAssignment) {
     return (
@@ -59,93 +58,6 @@ export default function StaffAdminPage() {
             <div className="rst-staff__stat"><strong>{p.stats.cooks}</strong><span>{p.t('roles.COOK')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.cashiers}</strong><span>{p.t('roles.CASHIER')}</span></div>
             <div className="rst-staff__stat"><strong>{p.stats.active}</strong><span>{p.t('rst.staff.statActive')}</span></div>
-          </div>
-
-          <div className="rst-staff__commission">
-            <div className="rst-staff__commission-top">
-              <div>
-                <strong>{p.t('rst.staff.commissionTitle')}</strong>
-                <p className="rst-staff__commission-hint mb-0">{p.t('rst.staff.commissionHint')}</p>
-              </div>
-              <div className="rst-staff__commission-controls">
-                <label className="rst-admin-field">
-                  <span className="rst-admin-field__label">{p.t('rst.staff.commissionDefault')}</span>
-                  <BaseInput
-                    type="number"
-                    min={0}
-                    max={100}
-                    step="0.01"
-                    value={p.draftDefault}
-                    disabled={!p.canEditCommission || p.commissionBusy || p.commissionLoading}
-                    onChange={(e) => p.setDefaultPercentDraft(e.target.value)}
-                  />
-                </label>
-                {p.canEditCommission ? (
-                  <div className="rst-staff__commission-actions">
-                    <BaseButton type="button" size="sm" variant="ghost" disabled={p.commissionBusy} onClick={p.saveDefault}>
-                      {p.t('rst.staff.commissionSaveDefault')}
-                    </BaseButton>
-                    <BaseButton type="button" size="sm" disabled={p.commissionBusy} onClick={p.applyAll}>
-                      {p.t('rst.staff.commissionApplyAll')}
-                    </BaseButton>
-                  </div>
-                ) : null}
-              </div>
-            </div>
-
-            {waiters.length > 0 ? (
-              <div className="rst-staff__waiter-rates">
-                <div className="rst-staff__waiter-rates-head">{p.t('rst.staff.commissionPersonalTitle')}</div>
-                <div className="rst-staff__waiter-rates-list">
-                  {waiters.map((user) => {
-                    const rate = p.waiterRate(user.id);
-                    return (
-                      <div key={user.id} className="rst-staff__waiter-rate">
-                        <span className="rst-staff__waiter-name">{p.displayName(user)}</span>
-                        <BaseInput
-                          type="number"
-                          min={0}
-                          max={100}
-                          step="0.01"
-                          value={p.waiterDraft(user.id)}
-                          disabled={!p.canEditCommission || p.commissionBusy}
-                          onChange={(e) => p.setWaiterDraft(user.id, e.target.value)}
-                        />
-                        <span className="rst-staff__rate-meta">
-                          {rate.custom
-                            ? p.t('rst.staff.commissionCustom')
-                            : p.t('rst.staff.commissionInherited')}
-                        </span>
-                        {p.canEditCommission ? (
-                          <div className="rst-staff__rate-actions">
-                            <BaseButton
-                              type="button"
-                              size="sm"
-                              variant="ghost"
-                              disabled={p.commissionBusy}
-                              onClick={() => p.saveWaiterPercent(user.id)}
-                            >
-                              {p.t('common.save')}
-                            </BaseButton>
-                            {rate.custom ? (
-                              <BaseButton
-                                type="button"
-                                size="sm"
-                                variant="ghost"
-                                disabled={p.commissionBusy}
-                                onClick={() => p.clearWaiterPercent(user.id)}
-                              >
-                                {p.t('rst.staff.commissionUseDefault')}
-                              </BaseButton>
-                            ) : null}
-                          </div>
-                        ) : null}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ) : null}
           </div>
 
           <div className="rst-admin-filters rst-staff__filters">

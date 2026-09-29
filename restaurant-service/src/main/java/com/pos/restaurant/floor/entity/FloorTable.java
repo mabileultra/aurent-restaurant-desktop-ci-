@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 @Entity
@@ -54,6 +55,10 @@ public class FloorTable {
     @Column(name = "seat_count", nullable = false)
     @Builder.Default
     private int seatCount = 4;
+
+    /** Null means the hall percent applies. */
+    @Column(name = "service_percent", precision = 5, scale = 2)
+    private BigDecimal servicePercent;
 
     @Column(name = "pos_x", nullable = false)
     @Builder.Default
