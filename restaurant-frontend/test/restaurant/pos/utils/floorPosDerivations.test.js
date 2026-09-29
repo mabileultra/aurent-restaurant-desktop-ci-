@@ -38,7 +38,9 @@ describe('floorPosDerivations', () => {
   it('resolves order action flags', () => {
     expect(resolveOrderFlags({ status: 'BILLING', items: [{ itemStatus: 'READY' }] }).canPay).toBe(true);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }).canSendKitchen).toBe(true);
-    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(false);
+    // Send stays available with board off and after bill when NEW lines exist.
+    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(true);
+    expect(resolveOrderFlags({ status: 'BILLING', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(true);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canRequestBill).toBe(true);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, true).canRequestBill).toBe(false);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'SENT_TO_KITCHEN' }] }, false).canRequestBill).toBe(true);

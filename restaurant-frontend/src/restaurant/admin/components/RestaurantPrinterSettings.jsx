@@ -44,7 +44,7 @@ export default function RestaurantPrinterSettings({
   stations,
   categories = [],
   storeId,
-  kitchenBoardEnabled = true,
+  kitchenBoardEnabled: _kitchenBoardEnabled = true,
   t,
 }) {
   const qc = useQueryClient();
@@ -293,11 +293,9 @@ export default function RestaurantPrinterSettings({
           </div>
         </div>
       </section>
-      <section className={`rst-printers__block${kitchenBoardEnabled ? '' : ' is-off'}`}>
+      <section className="rst-printers__block">
         <h2 className="rst-printers__title">{t('rst.admin.printersKitchenTitle')}</h2>
-        <p className="rst-printers__note">
-          {kitchenBoardEnabled ? t('rst.admin.printersKitchenOn') : t('rst.admin.printersKitchenOff')}
-        </p>
+        <p className="rst-printers__note">{t('rst.admin.printersKitchenOn')}</p>
         <div className="rst-admin-form__grid rst-admin-form__grid--printers">
           {(stations || []).map((station) => {
             const value = stationPrinter(settings, station.id);
@@ -309,7 +307,7 @@ export default function RestaurantPrinterSettings({
                   <PrinterSelect
                     value={value}
                     printers={printers}
-                    disabled={busy || !kitchenBoardEnabled}
+                    disabled={busy}
                     noneLabel={none}
                     onChange={(next) => {
                       const current = settingsRef.current || settings;
@@ -323,7 +321,7 @@ export default function RestaurantPrinterSettings({
                   <BaseButton
                     type="button"
                     variant="ghost"
-                    disabled={busy || !value || !kitchenBoardEnabled}
+                    disabled={busy || !value}
                     onClick={() => testPrint(value, testKey)}
                   >
                     {testing === testKey ? t('common.loading') : t('rst.admin.printersTest')}

@@ -219,7 +219,9 @@ export default function WaiterMobileOrderWorkspace({
 
       <footer className="rst-waiter-order__bar">
         {billing ? (
-          <p className="rst-waiter-order__bar-hint">{t('rst.order.billingHint')}</p>
+          <p className="rst-waiter-order__bar-hint">
+            {newCount > 0 ? t('rst.order.billingHintUnsent') : t('rst.order.billingHint')}
+          </p>
         ) : null}
         <div className="rst-waiter-order__bar-row">
           {tab === 'menu' ? (

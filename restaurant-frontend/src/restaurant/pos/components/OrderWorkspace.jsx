@@ -155,7 +155,9 @@ export default function OrderWorkspace({
           qtyByMenuId={qtyByMenuId}
         />
         {billing ? (
-          <p className="rst-order__billing-note">{t('rst.order.billingHint')}</p>
+          <p className="rst-order__billing-note">
+            {newCount > 0 ? t('rst.order.billingHintUnsent') : t('rst.order.billingHint')}
+          </p>
         ) : null}
       </section>
 
