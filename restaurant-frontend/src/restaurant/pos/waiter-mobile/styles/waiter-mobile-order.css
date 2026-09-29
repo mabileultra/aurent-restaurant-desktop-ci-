@@ -18,10 +18,10 @@
 
 .rst-waiter-order__back {
   flex-shrink: 0;
-  min-height: 2.55rem;
-  padding: 0.4rem 0.75rem;
+  min-height: 2.35rem;
+  padding: 0.3rem 0.65rem;
   border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   background: var(--rst-surface-2, #1a222c);
   color: inherit;
   font: inherit;
@@ -71,21 +71,21 @@
 .rst-waiter-order__guests {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  min-height: 2.4rem;
-  padding: 0.15rem;
-  border-radius: 0.75rem;
+  gap: 0.25rem;
+  min-height: 2.2rem;
+  padding: 0.1rem;
+  border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.05);
 }
 
 .rst-waiter-order__guests button {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 2rem;
+  height: 2rem;
   border: 0;
-  border-radius: 0.55rem;
+  border-radius: 0.5rem;
   background: var(--rst-surface, #121820);
   color: inherit;
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   touch-action: manipulation;
 }
@@ -100,11 +100,11 @@
 }
 
 .rst-waiter-order__new-check {
-  min-height: 2.3rem;
+  min-height: 2.15rem;
   margin-left: auto;
-  padding: 0.35rem 0.7rem;
+  padding: 0.28rem 0.6rem;
   border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
-  border-radius: 0.65rem;
+  border-radius: 0.55rem;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -146,9 +146,9 @@
 
 .rst-waiter-order__tab {
   position: relative;
-  min-height: 2.55rem;
+  min-height: 2.3rem;
   border: 0;
-  border-radius: 0.7rem;
+  border-radius: 0.6rem;
   background: transparent;
   color: inherit;
   font: inherit;
@@ -207,11 +207,12 @@
 
 .rst-waiter-order__body .rst-menu-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .rst-waiter-order__body .rst-menu-card {
-  min-height: 8.5rem;
+  min-height: 5.25rem;
+  padding: 0.55rem 0.6rem;
 }
 
 .rst-waiter-order__body .rst-menu-cats {
@@ -225,7 +226,7 @@
 }
 
 .rst-waiter-order__body .rst-menu-cat {
-  min-height: 2.4rem;
+  min-height: 2.2rem;
   flex: 0 0 auto;
 }
 
@@ -246,7 +247,7 @@
 
 .rst-waiter-order__body .rst-menu__search input {
   font-size: 1rem;
-  min-height: 2.55rem;
+  min-height: 2.35rem;
 }
 
 .rst-waiter-order__totals {
@@ -286,10 +287,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  min-height: 2.55rem;
-  padding: 0.45rem 0.8rem;
+  min-height: 2.3rem;
+  padding: 0.35rem 0.7rem;
   border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
-  border-radius: 0.75rem;
+  border-radius: 0.65rem;
   background: rgba(255, 255, 255, 0.04);
   color: inherit;
   font: inherit;
@@ -304,12 +305,12 @@
 }
 
 .rst-waiter-order__btn {
-  min-height: 2.85rem;
-  padding: 0.45rem 0.55rem;
+  min-height: 2.55rem;
+  padding: 0.35rem 0.45rem;
   border: 0;
-  border-radius: 0.8rem;
+  border-radius: 0.7rem;
   font: inherit;
-  font-size: 0.88rem;
+  font-size: 0.82rem;
   font-weight: 750;
   touch-action: manipulation;
 }
@@ -319,13 +320,11 @@
 }
 
 .rst-waiter-order__btn--kitchen {
-  grid-column: 1 / -1;
   background: var(--rst-accent, #ff7a1a);
   color: #1b1208;
 }
 
 .rst-waiter-order__btn--bill {
-  grid-column: 1 / -1;
   background: #facc15;
   color: #1b1208;
 }

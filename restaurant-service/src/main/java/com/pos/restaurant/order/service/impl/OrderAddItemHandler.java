@@ -82,7 +82,6 @@ public class OrderAddItemHandler {
                 FloorOrderItem line = existing.get();
                 line.setQuantity(line.getQuantity().add(quantity));
                 LogUtil.info(OrderAddItemHandler.class, "Order item qty increased: id={}", line.getId());
-                maybeCategorySlip(order, line, quantity, menuItem);
                 return reload(order);
             }
         }
