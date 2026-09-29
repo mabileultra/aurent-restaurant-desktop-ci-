@@ -939,13 +939,44 @@
 }
 
 @media (max-width: 1100px) {
-  .rst-order__actions {
+  .rst-order__footer:not(.rst-order__footer--waiter) .rst-order__actions {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .rst-order__action--bill {
+  .rst-order__footer:not(.rst-order__footer--waiter) .rst-order__action--bill {
     grid-column: 1 / -1;
   }
+}
+
+/* Waiter desktop ticket — one compact row (not cashier mega KDS + stacked bill). */
+.rst-order__footer--waiter {
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+
+.rst-order__footer--waiter .rst-order__actions {
+  grid-template-columns: repeat(auto-fit, minmax(5.25rem, 1fr));
+  gap: 0.3rem;
+}
+
+.rst-order__footer--waiter .rst-order__action {
+  min-height: 2.45rem;
+  padding: 0.35rem 0.4rem;
+  font-size: 0.78rem;
+  border-radius: 10px;
+}
+
+.rst-order__footer--waiter .rst-order__action--send {
+  border-color: transparent;
+  background: var(--rst-accent, #ff7a1a);
+  color: #1b1208;
+  font-weight: 850;
+  text-transform: none;
+  letter-spacing: 0.01em;
+}
+
+.rst-order__footer--waiter .rst-order__action--bill {
+  grid-column: auto;
 }
 
 /* Stack only on phone-narrow; keep side-by-side on short POS (~1000×500). */

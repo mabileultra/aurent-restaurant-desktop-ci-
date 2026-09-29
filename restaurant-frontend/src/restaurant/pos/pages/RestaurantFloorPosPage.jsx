@@ -191,6 +191,7 @@ function buildOrderWorkspaceProps(p) {
         waiterUserId: p.order.waiterUserId,
       });
     } : undefined,
+    footerVariant: 'waiter',
     t: p.t,
   };
 }

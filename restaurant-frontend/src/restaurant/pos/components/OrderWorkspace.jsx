@@ -51,6 +51,8 @@ export default function OrderWorkspace({
   assigningWaiter,
   onEditNote,
   onNewCheck,
+  /** Waiter floor: compact action row (Send inline). Cashier keeps separate KDS block. */
+  footerVariant = 'default',
   t,
 }) {
   const now = useLiveClock();
@@ -244,8 +246,8 @@ export default function OrderWorkspace({
           </div>
         </div>
 
-        <div className="rst-order__footer">
-          {canSendKitchen ? (
+        <div className={`rst-order__footer${footerVariant === 'waiter' ? ' rst-order__footer--waiter' : ''}`}>
+          {footerVariant !== 'waiter' && canSendKitchen ? (
             <button
               type="button"
               className="rst-order__kds"
@@ -265,6 +267,16 @@ export default function OrderWorkspace({
                 disabled={discountPending}
               >
                 {t('rst.order.discount')}
+              </button>
+            ) : null}
+            {footerVariant === 'waiter' && canSendKitchen ? (
+              <button
+                type="button"
+                className="rst-order__action rst-order__action--send"
+                onClick={onSendKitchen}
+                disabled={sendingKitchen}
+              >
+                {t('rst.order.sendKitchenKds')}
               </button>
             ) : null}
             <button
