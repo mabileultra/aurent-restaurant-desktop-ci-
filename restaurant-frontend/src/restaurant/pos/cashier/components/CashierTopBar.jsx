@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwitch';
 import PosZoomControls from '../../components/PosZoomControls';
@@ -12,6 +13,7 @@ export default function CashierTopBar({
   shiftOpenLabel,
   zoom,
   userLabel,
+  canAdmin = false,
   t,
 }) {
   return (
@@ -37,6 +39,11 @@ export default function CashierTopBar({
       </div>
 
       <div className="rst-cashier-top__actions">
+        {canAdmin ? (
+          <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
+            <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
+          </Link>
+        ) : null}
         <PosZoomControls zoom={zoom} t={t} />
         <RestaurantThemeSwitch />
         <LanguageSwitcher variant="rst" />

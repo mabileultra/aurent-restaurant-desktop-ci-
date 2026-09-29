@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { LayoutGrid, CalendarDays } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
 import { logoutAndResetSession } from '../../../utils/authSession';
@@ -160,6 +161,11 @@ export default function RestaurantFloorPosPage() {
         <WaiterShiftHint p={p} />
         <div id="rst-pos-search-slot" className="rst-pos__search" />
         <div className="rst-pos__actions">
+          {p.canAdmin ? (
+            <Link to="/rst/admin/dashboard">
+              <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
+            </Link>
+          ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />
           <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />

@@ -109,8 +109,8 @@ export default function RestaurantKitchenPage() {
         </div>
         <div className="rst-pos__actions">
           {p.canAdmin ? (
-            <Link to="/rst/admin/stations">
-              <BaseButton type="button" variant="ghost">{p.t('rst.pos.toAdmin')}</BaseButton>
+            <Link to="/rst/admin/dashboard">
+              <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
             </Link>
           ) : null}
           <PosZoomControls zoom={zoom} t={p.t} />

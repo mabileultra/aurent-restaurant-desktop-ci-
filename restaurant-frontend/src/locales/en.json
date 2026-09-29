@@ -1543,7 +1543,8 @@
       "zoomIn": "Enlarge",
       "zoomLabel": "Interface scale",
       "zoomOut": "Subtract",
-      "zoomReset": "Reset zoom level"
+      "zoomReset": "Reset zoom level",
+      "backToAdmin": "← Admin"
     },
     "reports": {
       "amount": "Amount",

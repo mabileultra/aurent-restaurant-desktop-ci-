@@ -1540,7 +1540,8 @@
       "zoomIn": "Kattalashtirish",
       "zoomLabel": "Interfeys masshtabi",
       "zoomOut": "Kichiklashtirish",
-      "zoomReset": "Masshtabni tiklash"
+      "zoomReset": "Masshtabni tiklash",
+      "backToAdmin": "← Adminka"
     },
     "reports": {
       "amount": "Summa",

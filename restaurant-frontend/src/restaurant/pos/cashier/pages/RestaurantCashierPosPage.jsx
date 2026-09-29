@@ -70,6 +70,7 @@ export default function RestaurantCashierPosPage() {
         shiftOpenLabel={p.shiftOpenLabel}
         zoom={zoom}
         userLabel={user?.fullName || user?.username}
+        canAdmin={p.canAdmin}
         t={p.t}
       />
 
