@@ -92,6 +92,7 @@ export default function RestaurantCashierPosPage() {
               menuItems={p.menuItems}
               onBack={exitFullOrder}
               backLabel={p.t('rst.cashier.backToCashier')}
+              hideBack
               hallName={p.orderHallName}
               waiterName={
                 p.order.waiterUserId

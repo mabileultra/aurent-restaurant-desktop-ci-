@@ -21,6 +21,7 @@ export default function OrderWorkspace({
   menuItems,
   onBack,
   backLabel,
+  hideBack = false,
   hallName,
   waiterName,
   onAddItem,
@@ -118,9 +119,11 @@ export default function OrderWorkspace({
     <div className="rst-order">
       <section className="rst-order__catalog">
         <div className="rst-order__context">
-          <button type="button" className="rst-order__back" onClick={onBack}>
-            ← {backLabel || t('rst.order.backToFloor')}
-          </button>
+          {hideBack ? null : (
+            <button type="button" className="rst-order__back" onClick={onBack}>
+              ← {backLabel || t('rst.order.backToFloor')}
+            </button>
+          )}
           <div className="rst-order__context-main">
             {channel === 'DINE_IN' ? (
               <h2 className="rst-order__context-title">
