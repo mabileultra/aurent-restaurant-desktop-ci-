@@ -38,7 +38,9 @@ describe('floorPosDerivations', () => {
   it('resolves order action flags', () => {
     expect(resolveOrderFlags({ status: 'BILLING', items: [{ itemStatus: 'READY' }] }).canPay).toBe(true);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }).canSendKitchen).toBe(true);
-    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canRequestBill).toBe(false);
+    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(false);
+    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canRequestBill).toBe(true);
+    expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, true).canRequestBill).toBe(false);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'SENT_TO_KITCHEN' }] }, false).canRequestBill).toBe(true);
     expect(displayUserName({ username: 'x' })).toBe('x');
   });

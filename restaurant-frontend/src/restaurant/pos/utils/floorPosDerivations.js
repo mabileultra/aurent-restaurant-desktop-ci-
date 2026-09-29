@@ -96,14 +96,17 @@ export function resolveBackLabelKey(posMode) {
   return 'rst.order.backToFloor';
 }
 
-export function resolveOrderFlags(order, _kitchenBoardEnabled = true) {
+export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const items = order?.items ?? [];
   const hasBillable = items.some((item) => item.itemStatus !== 'CANCELLED');
   const hasNew = items.some((item) => item.itemStatus === 'NEW');
+  const boardOn = kitchenBoardEnabled !== false;
   return {
     canCancel: items.length === 0,
-    canSendKitchen: (order?.status === 'OPEN' || order?.status === 'BILLING') && hasNew,
-    canRequestBill: order?.status === 'OPEN' && hasBillable && !hasNew,
+    // Kitchen board off: no station route / no kitchen send button.
+    canSendKitchen: boardOn && (order?.status === 'OPEN' || order?.status === 'BILLING') && hasNew,
+    // Board off: bill without sending NEW items (matches kitchenBoardHint).
+    canRequestBill: order?.status === 'OPEN' && hasBillable && (boardOn ? !hasNew : true),
     canPay: order?.status === 'BILLING',
   };
 }

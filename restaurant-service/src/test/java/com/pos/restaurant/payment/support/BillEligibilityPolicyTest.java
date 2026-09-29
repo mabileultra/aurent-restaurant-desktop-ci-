@@ -29,7 +29,7 @@ class BillEligibilityPolicyTest {
     }
 
     @Test
-    void requestBill_rejectsUnsentItems() {
+    void requestBill_rejectsUnsentItemsWhenKitchenBoardOn() {
         FloorOrder order = FloorOrder.builder().status(OrderStatus.OPEN).build();
         FloorOrderItem unsent = FloorOrderItem.builder()
             .itemStatus(OrderItemStatus.NEW)
@@ -37,7 +37,17 @@ class BillEligibilityPolicyTest {
             .unitPrice(new BigDecimal("10.00"))
             .build();
         assertThrows(BusinessException.class, () -> policy.assertCanRequestBill(order, List.of(unsent), true));
-        assertThrows(BusinessException.class, () -> policy.assertCanRequestBill(order, List.of(unsent), false));
+    }
+
+    @Test
+    void requestBill_allowsUnsentItemsWhenKitchenBoardOff() {
+        FloorOrder order = FloorOrder.builder().status(OrderStatus.OPEN).build();
+        FloorOrderItem unsent = FloorOrderItem.builder()
+            .itemStatus(OrderItemStatus.NEW)
+            .quantity(BigDecimal.ONE)
+            .unitPrice(new BigDecimal("10.00"))
+            .build();
+        assertDoesNotThrow(() -> policy.assertCanRequestBill(order, List.of(unsent), false));
     }
 
     @Test

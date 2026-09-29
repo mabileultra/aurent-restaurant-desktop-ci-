@@ -78,7 +78,10 @@ public class SendToKitchenHandler {
             }
         }
         LogUtil.info(SendToKitchenHandler.class, "Sent {} items to kitchen: orderId={}", newItems.size(), orderId);
-        printJobPublisher.kitchenSend(order, sentItemIds);
+        // Station slips only with the kitchen board — same rule as admin printer copy.
+        if (kitchenBoard) {
+            printJobPublisher.kitchenSend(order, sentItemIds);
+        }
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
     }
 

@@ -309,7 +309,7 @@ export default function RestaurantPrinterSettings({
                   <PrinterSelect
                     value={value}
                     printers={printers}
-                    disabled={busy}
+                    disabled={busy || !kitchenBoardEnabled}
                     noneLabel={none}
                     onChange={(next) => {
                       const current = settingsRef.current || settings;
@@ -323,7 +323,7 @@ export default function RestaurantPrinterSettings({
                   <BaseButton
                     type="button"
                     variant="ghost"
-                    disabled={busy || !value}
+                    disabled={busy || !value || !kitchenBoardEnabled}
                     onClick={() => testPrint(value, testKey)}
                   >
                     {testing === testKey ? t('common.loading') : t('rst.admin.printersTest')}
