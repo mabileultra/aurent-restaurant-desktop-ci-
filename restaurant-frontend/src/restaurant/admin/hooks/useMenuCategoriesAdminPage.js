@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
+import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { toastApiError } from '../../../utils/apiError';
 
-const emptyForm = () => ({ name: '', sortOrder: 100 });
+const emptyForm = () => ({ name: '', sortOrder: 100, autoPrint: false, printStationId: '' });
 
 export const MENU_CAT_PAGE_SIZE_OPTIONS = [10, 14, 20];
 const DEFAULT_PAGE_SIZE = 14;
@@ -19,6 +20,13 @@ export function useMenuCategoriesAdminPage() {
   const [editingId, setEditingId] = useState(null);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const stationsQuery = useQuery({
+    queryKey: ['rst-kitchen-stations', workspace.storeId],
+    queryFn: () => rstKitchenApi.listStations(workspace.storeId, true).then((r) => r.data ?? []),
+    enabled: workspace.storeId != null,
+    staleTime: 60_000,
+  });
 
   const categoriesQuery = useQuery({
     queryKey: ['rst-menu-categories-admin', workspace.storeId],
@@ -51,6 +59,8 @@ export function useMenuCategoriesAdminPage() {
       const body = {
         name: form.name.trim(),
         sortOrder: Number(form.sortOrder) || 100,
+        autoPrint: Boolean(form.autoPrint),
+        printStationId: form.autoPrint && form.printStationId ? form.printStationId : null,
       };
       if (editingId) return rstMenuApi.updateCategory(editingId, body);
       return rstMenuApi.createCategory(workspace.storeId, body);
@@ -76,7 +86,12 @@ export function useMenuCategoriesAdminPage() {
 
   const startEdit = (row) => {
     setEditingId(row.id);
-    setForm({ name: row.name, sortOrder: row.sortOrder });
+    setForm({
+      name: row.name,
+      sortOrder: row.sortOrder,
+      autoPrint: Boolean(row.autoPrint),
+      printStationId: row.printStationId || '',
+    });
   };
 
   return {
@@ -95,6 +110,7 @@ export function useMenuCategoriesAdminPage() {
     pageSizeOptions: MENU_CAT_PAGE_SIZE_OPTIONS,
     form,
     setForm,
+    stations: stationsQuery.data ?? [],
     editingId,
     isLoading: categoriesQuery.isLoading,
     saveMutation,

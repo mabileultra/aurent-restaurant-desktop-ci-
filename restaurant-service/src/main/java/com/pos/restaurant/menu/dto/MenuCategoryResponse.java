@@ -7,5 +7,7 @@ public record MenuCategoryResponse(
     Integer storeId,
     String name,
     int sortOrder,
-    boolean active
+    boolean active,
+    boolean autoPrint,
+    UUID printStationId
 ) {}

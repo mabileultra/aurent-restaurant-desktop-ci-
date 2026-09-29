@@ -11,6 +11,8 @@ const {
 } = require('./escpos-shift-report-builder.cjs');
 const { validateLabelPayload, buildLabelsOnPrinter } = require('./escpos-label-builder.cjs');
 const { createReceiptPrinter, createLabelPrinter } = require('./escpos-printer-service.cjs');
+const { listSystemPrinters } = require('../printers/resolve.cjs');
+const { matchPrinterName } = require('../printers/printer-match.cjs');
 
 function wrapEscposError(err) {
   if (err instanceof EscposPrintError) {
@@ -89,6 +91,82 @@ async function printLabelsEscpos(payload, deps) {
   }
 }
 
+function paperMmForPrinter(name, explicit) {
+  const given = Number(explicit);
+  if (given >= 40 && given <= 120) return given;
+  return /58/.test(String(name || '')) ? 58 : 80;
+}
+
+function validatePlainTicket(payload) {
+  if (!String(payload?.printerName || '').trim()) {
+    throw new Error('Принтер станции не выбран');
+  }
+  if (!Array.isArray(payload?.lines) || payload.lines.length === 0) {
+    throw new Error('Пустой чек');
+  }
+}
+
+/**
+ * Кухонный чек и счёт гостю: RAW ESC/POS на выбранный принтер, не HTML-страница.
+ * @param {object} payload
+ */
+async function printPlainTicketEscpos(payload) {
+  const requested = String(payload?.printerName || '').trim();
+  try {
+    return await runEscposPrintJob({
+      jobType: 'plain_ticket',
+      payload,
+      resolvePrinterName: async () => {
+        const printers = await listSystemPrinters();
+        return matchPrinterName(requested, printers) || requested;
+      },
+      validatePayload: validatePlainTicket,
+      createPrinter: (deviceName, p) =>
+        createReceiptPrinter(deviceName, {
+          locale: p.locale || 'ru',
+          paperWmm: paperMmForPrinter(deviceName, p.paperWmm),
+        }),
+      buildOnPrinter: (printer, p) => {
+        const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
+        const wrap = (text) => {
+          const src = String(text || '').replace(/\s+/g, ' ').trim();
+          if (!src) return [];
+          if (src.length <= width) return [src];
+          const out = [];
+          let rest = src;
+          while (rest.length > width) {
+            let cut = rest.lastIndexOf(' ', width);
+            if (cut < 8) cut = width;
+            out.push(rest.slice(0, cut).trimEnd());
+            rest = rest.slice(cut).trimStart();
+          }
+          if (rest) out.push(rest);
+          return out;
+        };
+        if (p.title) {
+          printer.alignCenter();
+          printer.bold(true);
+          wrap(p.title).forEach((line) => printer.println(line));
+          printer.bold(false);
+          printer.alignLeft();
+        }
+        for (const raw of p.lines) {
+          const text = String(raw ?? '');
+          if (text === '---') {
+            printer.drawLine();
+            continue;
+          }
+          wrap(text).forEach((line) => printer.println(line));
+        }
+        printer.cut();
+      },
+      noPrinterHint: 'Принтер станции не выбран.',
+    });
+  } catch (err) {
+    wrapEscposError(err);
+  }
+}
+
 function registerEscposIpcHandler(ipcMain, channel, handler) {
   ipcMain.handle(channel, async (_event, payload) => {
     try {
@@ -115,6 +193,9 @@ function registerEscposIpcHandlers(ipcMain, deps) {
   );
   registerEscposIpcHandler(ipcMain, 'desktop:print-label-escpos', (payload) =>
     printLabelsEscpos(payload, deps),
+  );
+  registerEscposIpcHandler(ipcMain, 'desktop:print-plain-escpos', (payload) =>
+    printPlainTicketEscpos(payload),
   );
 }
 

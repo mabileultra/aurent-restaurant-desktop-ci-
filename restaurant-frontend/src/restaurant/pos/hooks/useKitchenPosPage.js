@@ -117,8 +117,12 @@ export function useKitchenPosPage() {
     const rows = ticketsQuery.data;
     if (!rows?.length) return undefined;
     let cancelled = false;
-    printKitchenBoardTickets(rows, t).catch(() => {
+    printKitchenBoardTickets(rows, t).then((printed) => {
+      if (cancelled || !printed?.errors?.length) return;
+      toast.error(printed.errors[0]);
+    }).catch((err) => {
       if (cancelled) return;
+      toast.error(err?.message || t('receipt.printFailed'));
     });
     return () => {
       cancelled = true;

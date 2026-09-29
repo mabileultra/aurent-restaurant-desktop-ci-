@@ -111,6 +111,7 @@ export default function RestaurantPrinterSettings({ stations, t }) {
             noneLabel={none}
             onChange={(value) => save({ ...settings, receiptPrinterName: value })}
           />
+          <span className="rst-admin-field__hint">{t('rst.admin.receiptPrinterHint')}</span>
         </label>
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.admin.billPrinter')}</span>
@@ -121,13 +122,12 @@ export default function RestaurantPrinterSettings({ stations, t }) {
             noneLabel={none}
             onChange={(value) => save({ ...settings, billPrinterName: value })}
           />
+          <span className="rst-admin-field__hint">{t('rst.admin.billPrinterHint')}</span>
         </label>
       </div>
       {(stations || []).map((station) => (
         <label key={station.id} className="rst-admin-field">
-          <span className="rst-admin-field__label">
-            {t('rst.admin.stationPrinter')}: {station.name}
-          </span>
+          <span className="rst-admin-field__label">{station.name}</span>
           <PrinterSelect
             value={settings.stationPrinters?.[station.id] || ''}
             printers={printers}
@@ -140,6 +140,7 @@ export default function RestaurantPrinterSettings({ stations, t }) {
               save({ ...settings, stationPrinters });
             }}
           />
+          <span className="rst-admin-field__hint">{t('rst.admin.stationPrinterHint')}</span>
         </label>
       ))}
     </div>

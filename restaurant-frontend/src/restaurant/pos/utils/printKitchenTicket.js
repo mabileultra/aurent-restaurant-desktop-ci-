@@ -6,17 +6,9 @@ import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
   markPrintedKitchenLines,
-  printTicketHtml,
+  printTicketLines,
   readPrintedKitchenLines,
 } from './desktopPrinters';
-
-function escapeHtml(value) {
-  return String(value || '')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
 
 function headerFor(order, t) {
   const channel = order?.channel || 'DINE_IN';
@@ -29,35 +21,24 @@ function headerFor(order, t) {
   return `${table} #${order?.orderNo || ''}`;
 }
 
-function linesHtml(items) {
-  return items.map((item) => {
-    const qty = Number(item.quantity) || 0;
-    const note = item.note ? `<div>※ ${escapeHtml(item.note)}</div>` : '';
-    const mods = (item.modifiers || [])
-      .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
-      .filter(Boolean)
-      .map((name) => escapeHtml(name))
-      .join(', ');
-    const modsHtml = mods ? `<div>+ ${mods}</div>` : '';
-    const portion = item.portionText ? ` · ${escapeHtml(item.portionText)}` : '';
-    return `<p><strong>${qty}×</strong> ${escapeHtml(item.name || '')}${portion}${modsHtml}${note}</p>`;
-  }).join('');
-}
-
-function ticketHtml({ title, header, station, items, extra }) {
-  return `
-    <p><strong>${escapeHtml(title)}</strong></p>
-    <p><strong>${escapeHtml(header)}</strong></p>
-    <p>${escapeHtml(new Date().toLocaleString())}${extra ? ` · ${escapeHtml(extra)}` : ''}</p>
-    <h3>${escapeHtml(station)}</h3>
-    ${linesHtml(items)}
-  `;
+function itemLines(item) {
+  const qty = Number(item.quantity) || 0;
+  const portion = item.portionText ? ` · ${item.portionText}` : '';
+  const lines = [`${qty} x ${item.name || ''}${portion}`];
+  const mods = (item.modifiers || [])
+    .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
+    .filter(Boolean)
+    .join(', ');
+  if (mods) lines.push(`+ ${mods}`);
+  if (item.note) lines.push(`* ${item.note}`);
+  return lines;
 }
 
 async function sendGroups(groups, settings) {
   const map = settings?.stationPrinters || {};
   const configured = Object.keys(map).length > 0;
   const missing = [];
+  const errors = [];
   let printed = 0;
   for (const group of groups) {
     const printer = group.stationId ? map[String(group.stationId)] : '';
@@ -67,17 +48,49 @@ async function sendGroups(groups, settings) {
     }
     const fresh = group.items.filter((item) => !readPrintedKitchenLines().has(String(item.lineId)));
     if (!fresh.length) continue;
-    markPrintedKitchenLines(fresh.map((item) => item.lineId));
-    await printTicketHtml(ticketHtml({
-      title: group.title,
-      header: group.header,
-      station: group.label,
-      items: fresh,
-      extra: group.extra,
-    }), printer);
-    printed += 1;
+    try {
+      await printTicketLines({
+        title: group.title,
+        printerName: printer,
+        lines: [
+          group.header,
+          [new Date().toLocaleString(), group.extra].filter(Boolean).join(' · '),
+          group.label,
+          '---',
+          ...fresh.flatMap(itemLines),
+        ],
+      });
+      markPrintedKitchenLines(fresh.map((item) => item.lineId));
+      printed += 1;
+    } catch (err) {
+      errors.push(`${group.label}: ${err?.message || 'печать не выполнена'}`);
+    }
   }
-  return { mode: printed ? 'silent' : 'skip', missing, configured };
+  return { mode: printed ? 'silent' : 'skip', missing, configured, errors };
+}
+
+/** Category auto-print: slip goes to that station's printer even if the kitchen board is off. */
+export async function printCategoryTicketOnAdd({ order, line, quantity, category, stations, t } = {}) {
+  if (!order || !line || !category?.autoPrint || !category.printStationId || !isDesktopPrinter()) {
+    return { mode: 'skip' };
+  }
+  const station = (stations || []).find((item) => String(item.id) === String(category.printStationId));
+  const settings = await getDesktopPrinterSettings();
+  const printer = settings?.stationPrinters?.[String(category.printStationId)] || '';
+  if (!printer) return { mode: 'missing', label: station?.name || category.name || '' };
+  const qty = Number(quantity) || 1;
+  await printTicketLines({
+    title: station?.name || category.name || '',
+    printerName: printer,
+    lines: [
+      headerFor(order, t),
+      new Date().toLocaleString(),
+      '---',
+      ...itemLines({ ...line, quantity: qty }),
+    ],
+  });
+  if (line.id != null) markPrintedKitchenLines([line.id]);
+  return { mode: 'silent' };
 }
 
 export async function printKitchenTicket({ order, t, onlyItemIds } = {}) {

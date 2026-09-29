@@ -3,21 +3,31 @@
  */
 const { BrowserWindow } = require('electron');
 const { invokeWebContentsPrint } = require('./print-thermal.cjs');
+const { listSystemPrinters } = require('./resolve.cjs');
+const { matchPrinterName } = require('./printer-match.cjs');
 
-function ticketDocument(bodyHtml) {
+function paperMm(name) {
+  return /58/.test(String(name || '')) ? 58 : 80;
+}
+
+function ticketDocument(bodyHtml, mm) {
+  const width = Math.max(40, mm - 6);
   return `<!doctype html><html><head><meta charset="utf-8"><style>
-    @page { size: 80mm auto; margin: 3mm; }
-    body { margin: 0; width: 72mm; color: #000; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.35; }
+    @page { size: ${mm}mm auto; margin: 2mm; }
+    body { margin: 0; width: ${width}mm; color: #000; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.35; }
     h3 { margin: 8px 0 4px; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #000; }
     p { margin: 0 0 4px; }
   </style></head><body>${bodyHtml || ''}</body></html>`;
 }
 
 async function printTicketHtml({ html, printerName } = {}) {
-  const deviceName = String(printerName || '').trim();
-  if (!deviceName) {
+  const requested = String(printerName || '').trim();
+  if (!requested) {
     throw new Error('Принтер не выбран');
   }
+  const printers = await listSystemPrinters();
+  const deviceName = matchPrinterName(requested, printers) || requested;
+  const mm = paperMm(deviceName);
   const win = new BrowserWindow({
     show: false,
     width: 420,
@@ -25,7 +35,7 @@ async function printTicketHtml({ html, printerName } = {}) {
     webPreferences: { sandbox: true, contextIsolation: true },
   });
   try {
-    const doc = ticketDocument(html);
+    const doc = ticketDocument(html, mm);
     await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(doc)}`);
     await invokeWebContentsPrint(
       win.webContents,
@@ -35,6 +45,7 @@ async function printTicketHtml({ html, printerName } = {}) {
         printBackground: true,
         margins: { marginType: 'none' },
         preferCSSPageSize: true,
+        pageSize: { width: mm * 1000, height: 200000 },
       },
       12000,
       { acceptCallbackTimeout: true },

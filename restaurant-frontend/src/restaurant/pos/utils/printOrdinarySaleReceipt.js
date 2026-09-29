@@ -6,7 +6,7 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
-  printTicketHtml,
+  printTicketLines,
 } from './desktopPrinters';
 
 const HOST_ID = 'rst-ordinary-sale-print-host';
@@ -91,7 +91,25 @@ export async function printOrdinarySaleReceipt({ sale, t } = {}) {
     const settings = await getDesktopPrinterSettings();
     const printer = settings?.receiptPrinterName || '';
     if (printer) {
-      await printTicketHtml(host.innerHTML, printer);
+      const textLines = [];
+      textLines.push(ordinaryLabel);
+      if (sale.storeName) textLines.push(sale.storeName);
+      textLines.push(`№${sale.receiptNumber || sale.id || '—'} · ${when}`);
+      if (sale.customerName) textLines.push(sale.customerName);
+      if (sale.cashierName || sale.employeeName) {
+        textLines.push(`${t?.('fiscalReceipt.cashier', { defaultValue: 'Кассир' }) || 'Кассир'}: ${sale.cashierName || sale.employeeName}`);
+      }
+      textLines.push('---');
+      for (const item of sale.items || []) {
+        const qty = Number(item.quantity) || 0;
+        const name = item.name || item.productName || '';
+        textLines.push(`${qty} x ${name}`);
+        textLines.push(`${fmtMoneyCompact(item.unitPrice ?? item.price ?? 0)} · ${fmtMoneyCompact(item.lineTotal ?? item.total ?? 0)}`);
+      }
+      textLines.push('---');
+      textLines.push(`${t?.('rst.order.totalDue', { defaultValue: 'Итого' }) || 'Итого'} ${fmtMoneyCompact(totalAmount)}`);
+      textLines.push(`${methodLabel} ${fmtMoneyCompact(sale.cashAmount != null || sale.cardAmount != null ? (Number(sale.cashAmount) || 0) + (Number(sale.cardAmount) || 0) : totalAmount)}`);
+      await printTicketLines({ title, lines: textLines, printerName: printer });
       return { mode: 'silent', fiscal: false };
     }
   }

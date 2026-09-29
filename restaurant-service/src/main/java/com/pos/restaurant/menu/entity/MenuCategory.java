@@ -47,6 +47,13 @@ public class MenuCategory {
     @Builder.Default
     private boolean active = true;
 
+    @Column(name = "auto_print", nullable = false)
+    @Builder.Default
+    private boolean autoPrint = false;
+
+    @Column(name = "print_station_id")
+    private UUID printStationId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 

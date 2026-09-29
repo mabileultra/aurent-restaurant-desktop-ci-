@@ -1,5 +1,7 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
+import { rstKitchenApi } from '../../api/kitchen.api';
+import { rstMenuApi } from '../../api/menu.api';
 import { rstOrderApi } from '../../api/order.api';
 import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
@@ -13,13 +15,29 @@ import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFis
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
-import { printKitchenTicket } from '../utils/printKitchenTicket';
+import { printCategoryTicketOnAdd, printKitchenTicket } from '../utils/printKitchenTicket';
 import { printGuestBill } from '../utils/printGuestBill';
 import {
   printOrdinarySaleReceipt,
   saleNeedsFiscalPrint,
 } from '../utils/printOrdinarySaleReceipt';
 import { toastApiError } from '../../../utils/apiError';
+
+function addedPiece(prevItems, nextItems, menuItemId) {
+  if (!menuItemId) return null;
+  const next = (nextItems || []).filter(
+    (item) => String(item.menuItemId) === String(menuItemId)
+      && String(item.itemStatus || '').toUpperCase() !== 'CANCELLED',
+  );
+  const prevQty = new Map((prevItems || []).map((item) => [String(item.id), Number(item.quantity) || 0]));
+  for (const line of next) {
+    const before = prevQty.get(String(line.id));
+    if (before == null) return { line, quantity: Number(line.quantity) || 1 };
+    const delta = (Number(line.quantity) || 0) - before;
+    if (delta > 0) return { line, quantity: delta };
+  }
+  return null;
+}
 
 export function useFloorPosMutations(deps) {
   const {
@@ -32,6 +50,18 @@ export function useFloorPosMutations(deps) {
   } = deps;
 
   const qc = useQueryClient();
+  const stationsQuery = useQuery({
+    queryKey: ['rst-kitchen-stations', storeId],
+    queryFn: () => rstKitchenApi.listStations(storeId, true).then((r) => r.data ?? []),
+    enabled: storeId != null,
+    staleTime: 60_000,
+  });
+  const categoriesQuery = useQuery({
+    queryKey: ['rst-menu-categories', storeId],
+    queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
+    enabled: storeId != null,
+    staleTime: 60_000,
+  });
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
   const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', storeId] });
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
@@ -113,12 +143,46 @@ export function useFloorPosMutations(deps) {
       modifierOptionIds: modifierOptionIds ?? [],
       note: note?.trim() || undefined,
     }),
-    onSuccess: (res) => {
+    onSuccess: async (res, vars) => {
       setOrderData(res);
       setPendingMenuItem(null);
       setPendingVariants?.(null);
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
+      const piece = addedPiece(order?.items, res.data?.items, vars?.menuItem?.id);
+      if (!piece) return;
+      try {
+        let stations = stationsQuery.data;
+        let categories = categoriesQuery.data;
+        if (storeId != null && (!stations?.length || !categories?.length)) {
+          [stations, categories] = await Promise.all([
+            stations?.length ? stations : qc.fetchQuery({
+              queryKey: ['rst-kitchen-stations', storeId],
+              queryFn: () => rstKitchenApi.listStations(storeId, true).then((r) => r.data ?? []),
+            }),
+            categories?.length ? categories : qc.fetchQuery({
+              queryKey: ['rst-menu-categories', storeId],
+              queryFn: () => rstMenuApi.listCategories(storeId, true).then((r) => r.data ?? []),
+            }),
+          ]);
+        }
+        const category = (categories || []).find(
+          (item) => String(item.id) === String(vars?.menuItem?.menuCategoryId),
+        );
+        const printed = await printCategoryTicketOnAdd({
+          order: res.data,
+          line: piece.line,
+          quantity: piece.quantity,
+          category,
+          stations,
+          t,
+        });
+        if (printed?.mode === 'missing') {
+          toast.error(t('rst.admin.barPrinterMissing', { station: printed.label }));
+        }
+      } catch (err) {
+        toast.error(err?.message || t('receipt.printFailed'));
+      }
     },
     onError: (err) => errMsg(err, 'rst.order.saveFailed'),
   });
@@ -189,8 +253,11 @@ export function useFloorPosMutations(deps) {
             stations: printed.missing.join(', '),
           }));
         }
-      } catch {
-        /* print is best-effort — order already sent */
+        if (printed?.errors?.length) {
+          toast.error(printed.errors[0]);
+        }
+      } catch (err) {
+        toast.error(err?.message || t('receipt.printFailed'));
       }
     },
     onError: (err) => errMsg(err, 'rst.order.sendFailed'),
@@ -288,12 +355,11 @@ export function useFloorPosMutations(deps) {
       let printed = false;
       if (shouldPrint) {
         try {
-          if (saleNeedsFiscalPrint(sale)) {
-            await printFiscalReceipt({ sale, t, useModalShell: true });
+          if (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()) {
+            await printFiscalReceipt({ sale, t, useModalShell: false });
           } else {
             await printOrdinarySaleReceipt({ sale, t });
           }
-          printed = true;
           toast.success(t('receipt.printSent'), {
             id: CASHIER_ESCPOS_TOAST.toastId,
             duration: CASHIER_ESCPOS_TOAST.successDurationMs,
@@ -310,7 +376,6 @@ export function useFloorPosMutations(deps) {
           );
         }
       }
-      setPaidReceipt({ sale, autoPrint: shouldPrint && !printed });
     },
     onError: (err) => {
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {

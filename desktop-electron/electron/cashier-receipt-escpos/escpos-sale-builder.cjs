@@ -53,9 +53,37 @@ function resolveReceiptTypeDisplay(sale, L) {
  * @param {boolean} [bold]
  */
 function appendRow(printer, label, value, bold = false) {
+  const left = String(label ?? '');
+  const right = String(value ?? '');
+  const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
   if (bold) printer.bold(true);
-  printer.leftRight(String(label), String(value));
+  if (left.length + 1 + right.length <= width) {
+    printer.leftRight(left, right);
+  } else {
+    printer.alignLeft();
+    printer.println(left);
+    printer.alignRight();
+    wrapPlain(right, width).forEach((line) => printer.println(line));
+    printer.alignLeft();
+  }
   if (bold) printer.bold(false);
+}
+
+function wrapPlain(text, width) {
+  const src = String(text || '').replace(/\s+/g, ' ').trim();
+  const limit = Math.max(8, width);
+  if (!src) return [''];
+  if (src.length <= limit) return [src];
+  const out = [];
+  let rest = src;
+  while (rest.length > limit) {
+    let cut = rest.lastIndexOf(' ', limit);
+    if (cut < 8) cut = limit;
+    out.push(rest.slice(0, cut).trimEnd());
+    rest = rest.slice(cut).trimStart();
+  }
+  if (rest) out.push(rest);
+  return out;
 }
 
 /**

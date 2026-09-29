@@ -40,6 +40,35 @@ export default function MenuCategoriesAdminPage() {
               required
             />
           </label>
+          <label className="rst-admin-field rst-admin-field--check">
+            <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryAutoPrint')}</span>
+            <input
+              type="checkbox"
+              checked={Boolean(p.form.autoPrint)}
+              onChange={(e) => p.setForm({
+                ...p.form,
+                autoPrint: e.target.checked,
+                printStationId: e.target.checked ? p.form.printStationId : '',
+              })}
+            />
+            <span className="rst-admin-field__hint">{p.t('rst.admin.menuCategoryAutoPrintHint')}</span>
+          </label>
+          {p.form.autoPrint ? (
+            <label className="rst-admin-field">
+              <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryPrintStation')}</span>
+              <select
+                className="form-select"
+                value={p.form.printStationId || ''}
+                required
+                onChange={(e) => p.setForm({ ...p.form, printStationId: e.target.value })}
+              >
+                <option value="">{p.t('rst.admin.menuCategoryPrintStationHint')}</option>
+                {p.stations.map((station) => (
+                  <option key={station.id} value={station.id}>{station.name}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
           <label className="rst-admin-field">
             <span className="rst-admin-field__label">{p.t('rst.admin.sortOrder')}</span>
             <BaseInput
@@ -74,6 +103,7 @@ export default function MenuCategoriesAdminPage() {
               <tr>
                 <th className="rst-data-table__num">#</th>
                 <th>{p.t('rst.admin.menuCategoryName')}</th>
+                <th>{p.t('rst.admin.menuCategoryAutoPrint')}</th>
                 <th>{p.t('rst.admin.sortOrder')}</th>
                 <th className="rst-data-table__actions" aria-label={p.t('common.actions')} />
               </tr>
@@ -81,17 +111,22 @@ export default function MenuCategoriesAdminPage() {
             <tbody>
               {p.isLoading ? (
                 <tr>
-                  <td colSpan={4} className="rst-data-table__empty">{p.t('common.loading')}</td>
+                  <td colSpan={5} className="rst-data-table__empty">{p.t('common.loading')}</td>
                 </tr>
               ) : p.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="rst-data-table__empty">{p.t('rst.admin.menuCategoriesEmpty')}</td>
+                  <td colSpan={5} className="rst-data-table__empty">{p.t('rst.admin.menuCategoriesEmpty')}</td>
                 </tr>
               ) : (
                 p.rows.map((row, index) => (
                   <tr key={row.id}>
                     <td className="rst-data-table__num">{p.page * p.pageSize + index + 1}</td>
                     <td>{row.name}</td>
+                    <td>
+                      {row.autoPrint
+                        ? (p.stations.find((station) => station.id === row.printStationId)?.name || p.t('rst.admin.menuCategoryAutoPrint'))
+                        : '—'}
+                    </td>
                     <td>{row.sortOrder}</td>
                     <td className="rst-data-table__actions">
                       <RstRowActions

@@ -1,7 +1,9 @@
 package com.pos.restaurant.menu.service.impl;
 
+import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.kitchen.support.KitchenStationLookup;
 import com.pos.restaurant.menu.dto.MenuCategoryResponse;
 import com.pos.restaurant.menu.dto.SaveMenuCategoryRequest;
 import com.pos.restaurant.menu.entity.MenuCategory;
@@ -27,6 +29,7 @@ public class MenuCategoryUpdateHandler {
     private final MenuCategoryMapper categoryMapper;
     private final FloorTenantSupport tenantSupport;
     private final MenuCategoryNameUniquenessValidator nameUniquenessValidator;
+    private final KitchenStationLookup stationLookup;
 
     @Transactional
     public MenuCategoryResponse handle(UUID categoryId, SaveMenuCategoryRequest request) {
@@ -40,6 +43,11 @@ public class MenuCategoryUpdateHandler {
         if (request.sortOrder() != null) {
             category.setSortOrder(request.sortOrder());
         }
+        boolean autoPrint = Boolean.TRUE.equals(request.autoPrint());
+        category.setAutoPrint(autoPrint);
+        category.setPrintStationId(autoPrint
+            ? requirePrintStation(request.printStationId(), companyId, category.getStoreId())
+            : null);
         if (renamed) {
             List<MenuItem> items = itemRepository.findByMenuCategoryIdAndCompanyId(categoryId, companyId);
             for (MenuItem item : items) {
@@ -48,5 +56,12 @@ public class MenuCategoryUpdateHandler {
         }
         LogUtil.info(MenuCategoryUpdateHandler.class, "Menu category updated: id={}", categoryId);
         return categoryMapper.toResponse(category);
+    }
+
+    private UUID requirePrintStation(UUID stationId, Integer companyId, Integer storeId) {
+        if (stationId == null) {
+            throw new BusinessException("Choose a station for immediate printing");
+        }
+        return stationLookup.requireActive(stationId, companyId, storeId).getId();
     }
 }

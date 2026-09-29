@@ -34,5 +34,6 @@
     <include file="db/changelog/v27-payment-card-type.xml"/>
     <include file="db/changelog/v28-menu-tax-rate.xml"/>
     <include file="db/changelog/v29-kitchen-board.xml"/>
+    <include file="db/changelog/v30-category-autoprint.xml"/>
 
 </databaseChangeLog>
