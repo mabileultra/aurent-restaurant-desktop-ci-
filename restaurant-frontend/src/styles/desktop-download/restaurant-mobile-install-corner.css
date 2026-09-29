@@ -1,0 +1,100 @@
+.rst-mobile-install {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.rst-mobile-install__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.15rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 122, 26, 0.45);
+  background: rgba(255, 122, 26, 0.16);
+  color: #ffd7b0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-mobile-install__trigger:hover {
+  background: rgba(255, 122, 26, 0.28);
+  color: #fff;
+}
+
+.rst-mobile-install__panel {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 40;
+  width: min(18.5rem, calc(100vw - 1.5rem));
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #151c28;
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.45);
+}
+
+.rst-mobile-install__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+}
+
+.rst-mobile-install__head strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #e8edf5;
+}
+
+.rst-mobile-install__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #9aa8bc;
+  cursor: pointer;
+}
+
+.rst-mobile-install__text {
+  margin: 0;
+  color: #9aa8bc;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.rst-mobile-install__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+  margin-top: 0.65rem;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.65rem;
+  border: 0;
+  border-radius: 10px;
+  background: #ff7a1a;
+  color: #1b1208;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+@media (max-width: 480px) {
+  .rst-mobile-install__panel {
+    right: -0.25rem;
+  }
+}

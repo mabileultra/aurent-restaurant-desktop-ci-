@@ -934,6 +934,11 @@
       "mac": "macOS",
       "windows": "Windows"
     },
+    "mobileDownload": {
+      "aria": "Mobil ilovani yuklab olish",
+      "short": "Mobil",
+      "title": "Mobil ilova"
+    },
     "floor": {
       "actionAcceptPay": "To‘lovni qabul qilish",
       "actionOpen": "+ Stolni ochish",

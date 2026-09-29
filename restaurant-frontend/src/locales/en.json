@@ -934,6 +934,11 @@
       "mac": "macOS",
       "windows": "Windows"
     },
+    "mobileDownload": {
+      "aria": "Download mobile app",
+      "short": "Mobile",
+      "title": "Mobile app"
+    },
     "floor": {
       "actionAcceptPay": "Take payment",
       "actionOpen": "+ Open table",

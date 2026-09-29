@@ -3,6 +3,7 @@ import LoginBranding from '../components/LoginBranding';
 import LoginForm from '../components/LoginForm';
 import { useLoginPage } from '../hooks/useLoginPage';
 import RestaurantDesktopDownloadCorner from '../../desktop-download/components/RestaurantDesktopDownloadCorner';
+import RestaurantMobileInstallCorner from '../../desktop-download/components/RestaurantMobileInstallCorner';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import '../../../styles/auth/login-page.css';
 
@@ -30,6 +31,7 @@ export default function LoginPage() {
         </Link>
         <div className="rst-login-page__tools">
           <LanguageSwitcher variant="rst" />
+          <RestaurantMobileInstallCorner />
           <RestaurantDesktopDownloadCorner />
         </div>
       </header>
