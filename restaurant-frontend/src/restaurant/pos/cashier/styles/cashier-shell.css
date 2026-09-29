@@ -231,32 +231,32 @@
 
 .rst-cashier-full .rst-order__guest-stepper {
   grid-area: guests;
-  min-height: 1.7rem;
+  min-height: 2.35rem;
   flex-shrink: 0;
 }
 
 .rst-cashier-full .rst-order__guest-stepper button {
-  width: 1.7rem;
-  height: 1.7rem;
-  min-height: 1.7rem;
-  font-size: 1rem;
+  width: 2.35rem;
+  height: 2.35rem;
+  min-height: 2.35rem;
+  font-size: 1.2rem;
 }
 
 .rst-cashier-full .rst-order__guest-stepper span {
-  min-width: 4.2rem;
-  padding: 0 0.3rem;
-  font-size: 0.66rem;
+  min-width: 4.8rem;
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
 }
 
 .rst-cashier-full .rst-order__new-check {
   grid-area: new;
   flex: none;
   width: 100%;
-  min-height: 1.7rem;
-  padding: 0.15rem 0.45rem;
-  font-size: 0.72rem;
+  min-height: 2.35rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.78rem;
   white-space: nowrap;
-  border-radius: 0.55rem;
+  border-radius: 0.6rem;
 }
 
 .rst-cashier-full .rst-order__waiter {
@@ -277,10 +277,10 @@
 .rst-cashier-full .rst-order__waiter select {
   flex: 1 1 auto;
   min-width: 0;
-  height: 1.7rem;
-  min-height: 1.7rem;
-  padding: 0.1rem 0.35rem;
-  font-size: 0.72rem;
+  height: 2.25rem;
+  min-height: 2.25rem;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.78rem;
   border-radius: 8px;
 }
 
@@ -377,9 +377,9 @@
 }
 
 .rst-cashier-full .rst-order__kds {
-  min-height: 2.05rem;
+  min-height: 2.65rem;
   border-radius: 10px;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   box-shadow: none;
 }
 
@@ -388,9 +388,9 @@
 }
 
 .rst-cashier-full .rst-order__action {
-  min-height: 2rem;
-  padding: 0.25rem 0.35rem;
-  font-size: 0.72rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.45rem;
+  font-size: 0.8rem;
   border-radius: 10px;
 }
 
