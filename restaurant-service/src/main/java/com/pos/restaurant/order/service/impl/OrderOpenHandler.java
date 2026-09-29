@@ -5,6 +5,7 @@ import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.support.FloorEntityLookup;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.OrderChannel;
+import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
