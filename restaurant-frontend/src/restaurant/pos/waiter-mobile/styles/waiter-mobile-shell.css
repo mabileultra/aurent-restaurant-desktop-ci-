@@ -1,0 +1,71 @@
+/**
+ * Waiter mobile polish — safe areas, overscroll, tap feedback.
+ * Scoped to .rst-pos--waiter-mobile and waiter-mobile sheets.
+ */
+
+.rst-pos.rst-pos--waiter-mobile {
+  height: 100dvh;
+  max-height: 100dvh;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-pos__top {
+  flex-wrap: wrap;
+  gap: 0.45rem 0.65rem;
+  padding-top: max(0.55rem, env(safe-area-inset-top, 0px));
+  padding-right: max(0.65rem, env(safe-area-inset-right, 0px));
+  padding-bottom: 0.55rem;
+  padding-left: max(0.65rem, env(safe-area-inset-left, 0px));
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-pos__brand-meta {
+  font-size: 0.78rem;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-shift-bar {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-pos__search {
+  display: none;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-pos__body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs--toolbar {
+  width: 100%;
+}
+
+.rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs__btn {
+  flex: 1;
+  min-height: 2.55rem;
+}
+
+.rst-pos.rst-pos--waiter-mobile button,
+.rst-pos.rst-pos--waiter-mobile a,
+.rst-pos.rst-pos--waiter-mobile [role='tab'] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+@media (hover: none) {
+  .rst-pos.rst-pos--waiter-mobile .rst-waiter-tile:active,
+  .rst-pos.rst-pos--waiter-mobile .rst-waiter-order__btn:active,
+  .rst-pos.rst-pos--waiter-mobile .rst-waiter-floor__hall:active {
+    transform: scale(0.985);
+    opacity: 0.92;
+  }
+}

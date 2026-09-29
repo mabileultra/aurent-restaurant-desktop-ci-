@@ -1,0 +1,157 @@
+/* Waiter mobile profile sheet — bottom sheet over floor POS. */
+
+.rst-waiter-profile {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.rst-waiter-profile__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: rgba(8, 12, 20, 0.55);
+  cursor: pointer;
+}
+
+.rst-waiter-profile__sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 28rem);
+  max-height: min(88dvh, 40rem);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 1rem 1.1rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  padding-left: max(1.1rem, env(safe-area-inset-left, 0px));
+  padding-right: max(1.1rem, env(safe-area-inset-right, 0px));
+  border-radius: 1rem 1rem 0 0;
+  background: var(--rst-surface, #121820);
+  color: var(--rst-fg, #f2f5f8);
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.rst-waiter-profile__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.rst-waiter-profile__head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 650;
+}
+
+.rst-waiter-profile__section {
+  margin-bottom: 1.15rem;
+}
+
+.rst-waiter-profile__section h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.rst-waiter-profile__dl {
+  margin: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.rst-waiter-profile__dl > div {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.rst-waiter-profile__dl dt {
+  font-size: 0.72rem;
+  opacity: 0.65;
+}
+
+.rst-waiter-profile__dl dd {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 550;
+}
+
+.rst-waiter-profile__toggle {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+  padding: 0.65rem 0.7rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+.rst-waiter-profile__toggle span {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.rst-waiter-profile__toggle strong {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.rst-waiter-profile__toggle small {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  opacity: 0.7;
+}
+
+.rst-waiter-profile__toggle input {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin-top: 0.15rem;
+  flex-shrink: 0;
+}
+
+.rst-waiter-profile__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.9rem;
+}
+
+.rst-waiter-profile__foot {
+  padding-top: 0.35rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 0.45rem;
+}
+
+.rst-waiter-profile__foot .rst-exit-btn,
+.rst-waiter-profile__admin {
+  width: 100%;
+}
+
+.rst-waiter-profile__admin {
+  display: block;
+  text-decoration: none;
+}
+
+.rst-waiter-profile__admin .base-btn,
+.rst-waiter-profile__admin button {
+  width: 100%;
+  min-height: 2.75rem;
+}
+
+.rst-waiter-profile__foot .rst-exit-btn {
+  min-height: 2.75rem;
+}

@@ -1,0 +1,237 @@
+/* Waiter phone floor — tall list, large touch targets. */
+
+.rst-waiter-floor {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 0;
+  flex: 1;
+  padding: 0.55rem 0.65rem calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+.rst-waiter-floor--empty,
+.rst-waiter-floor__empty {
+  display: grid;
+  place-items: center;
+  min-height: 10rem;
+  padding: 1.5rem;
+  color: var(--rst-muted, #9aa6b2);
+  text-align: center;
+}
+
+.rst-waiter-floor__toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.rst-waiter-floor__halls {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 0.1rem;
+}
+
+.rst-waiter-floor__halls::-webkit-scrollbar {
+  display: none;
+}
+
+.rst-waiter-floor__hall {
+  flex: 0 0 auto;
+  min-height: 2.55rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+  touch-action: manipulation;
+}
+
+.rst-waiter-floor__hall.is-active {
+  border-color: var(--rst-accent, #ff7a1a);
+  background: color-mix(in srgb, var(--rst-accent, #ff7a1a) 18%, transparent);
+}
+
+.rst-waiter-floor__search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.65rem;
+  padding: 0 0.75rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.85rem;
+  background: var(--rst-surface, #121820);
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-floor__search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1rem;
+  outline: none;
+}
+
+.rst-waiter-floor__list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding-bottom: 0.5rem;
+}
+
+.rst-waiter-tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 5.5rem;
+  padding: 0.85rem 0.95rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 1rem;
+  background: var(--rst-surface, #121820);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-waiter-tile.is-selected {
+  border-color: var(--rst-accent, #ff7a1a);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--rst-accent, #ff7a1a) 45%, transparent);
+}
+
+.rst-waiter-tile__top,
+.rst-waiter-tile__mid,
+.rst-waiter-tile__meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.rst-waiter-tile__code {
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.rst-waiter-tile__status {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-tile__amount {
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.rst-waiter-tile__seats,
+.rst-waiter-tile__guests,
+.rst-waiter-tile__meta {
+  font-size: 0.82rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-tile__waiter {
+  font-weight: 600;
+  color: inherit;
+}
+
+.rst-waiter-tile--FREE {
+  border-color: rgb(34 197 94 / 0.35);
+  background: linear-gradient(180deg, rgb(34 197 94 / 0.12), var(--rst-surface, #121820) 55%);
+}
+
+.rst-waiter-tile--FREE .rst-waiter-tile__status {
+  color: #86efac;
+}
+
+.rst-waiter-tile--OCCUPIED {
+  border-color: rgb(251 146 60 / 0.4);
+  background: linear-gradient(180deg, rgb(251 146 60 / 0.14), var(--rst-surface, #121820) 55%);
+}
+
+.rst-waiter-tile--OCCUPIED .rst-waiter-tile__status {
+  color: #fdba74;
+}
+
+.rst-waiter-tile--WAITING_PAYMENT {
+  border-color: rgb(250 204 21 / 0.45);
+  background: linear-gradient(180deg, rgb(250 204 21 / 0.16), var(--rst-surface, #121820) 55%);
+}
+
+.rst-waiter-tile--WAITING_PAYMENT .rst-waiter-tile__status {
+  color: #fde68a;
+}
+
+.rst-waiter-tile--RESERVED {
+  border-color: rgb(96 165 250 / 0.4);
+  background: linear-gradient(180deg, rgb(96 165 250 / 0.14), var(--rst-surface, #121820) 55%);
+}
+
+.rst-waiter-tile--RESERVED .rst-waiter-tile__status {
+  color: #93c5fd;
+}
+
+.rst-waiter-tile--BLOCKED,
+.rst-waiter-tile--CLEANING {
+  opacity: 0.72;
+}
+
+html.rst-theme--light .rst-waiter-tile--FREE .rst-waiter-tile__status {
+  color: #15803d;
+}
+
+html.rst-theme--light .rst-waiter-tile--OCCUPIED .rst-waiter-tile__status {
+  color: #c2410c;
+}
+
+html.rst-theme--light .rst-waiter-tile--WAITING_PAYMENT .rst-waiter-tile__status {
+  color: #a16207;
+}
+
+html.rst-theme--light .rst-waiter-tile--RESERVED .rst-waiter-tile__status {
+  color: #1d4ed8;
+}
+
+.rst-waiter-profile-trigger {
+  min-height: 2.55rem;
+  gap: 0.35rem;
+}
+
+.rst-waiter-enter-mobile {
+  min-width: 2.55rem;
+  min-height: 2.55rem;
+  padding-inline: 0.55rem;
+}
+
+.rst-waiter-profile__exit-mobile {
+  width: 100%;
+  min-height: 2.65rem;
+  margin-bottom: 0.75rem;
+  justify-content: center;
+}
+
+.rst-waiter-profile__pwa-hint {
+  margin: 0 0 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: var(--rst-muted, #9aa6b2);
+}

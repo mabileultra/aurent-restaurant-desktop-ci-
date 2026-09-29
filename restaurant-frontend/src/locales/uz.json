@@ -1694,7 +1694,15 @@
         "fullscreen": "To'liq ekran rejimi",
         "fullscreenHint": "Zal ochiq bo'lganda brauzer panelini yashiradi.",
         "fullscreenUnsupported": "Bu brauzer to'liq ekranni qo'llab-quvvatlamaydi. Saytni bosh ekranga qo'shing.",
-        "language": "Til"
+        "language": "Til",
+        "enterMobile": "Mobil ko'rinish",
+        "exitMobile": "Oddiy ko'rinish (PK)",
+        "addToHome": "Bosh ekranga qo'shish",
+        "addToHomeHint": "Chrome → ⋮ → «Bosh ekranga qo'shish» (Safari: Ulashish → Bosh ekranga).",
+        "installedHint": "Ilova sifatida ochilgan."
+      },
+      "mobile": {
+        "checkTab": "Chek"
       }
     }
   },

@@ -1697,7 +1697,15 @@
         "fullscreen": "Fullscreen mode",
         "fullscreenHint": "Hides browser chrome while the floor is open.",
         "fullscreenUnsupported": "This browser cannot go fullscreen. Add the site to your home screen.",
-        "language": "Language"
+        "language": "Language",
+        "enterMobile": "Mobile view",
+        "exitMobile": "Desktop view",
+        "addToHome": "Add to Home Screen",
+        "addToHomeHint": "Chrome → ⋮ → Add to Home Screen (or Share → Add to Home Screen on iOS).",
+        "installedHint": "Running as an installed app."
+      },
+      "mobile": {
+        "checkTab": "Check"
       }
     }
   },

@@ -1,0 +1,311 @@
+/* Waiter phone order — tabs + sticky action bar. */
+
+.rst-waiter-order {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  gap: 0.45rem;
+  padding: 0.45rem 0.55rem 0.55rem;
+}
+
+.rst-waiter-order__top {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.rst-waiter-order__back {
+  flex-shrink: 0;
+  min-height: 2.55rem;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.75rem;
+  background: var(--rst-surface-2, #1a222c);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__title {
+  min-width: 0;
+  display: grid;
+  gap: 0.1rem;
+}
+
+.rst-waiter-order__title strong {
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.15;
+}
+
+.rst-waiter-order__title span {
+  font-size: 0.75rem;
+  color: var(--rst-muted, #9aa6b2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rst-waiter-order__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem 0.65rem;
+  flex-shrink: 0;
+}
+
+.rst-waiter-order__guests {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.4rem;
+  padding: 0.15rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rst-waiter-order__guests button {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: var(--rst-surface, #121820);
+  color: inherit;
+  font-size: 1.15rem;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__guests button:disabled {
+  opacity: 0.4;
+}
+
+.rst-waiter-order__waiter {
+  font-size: 0.82rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-order__new-check {
+  min-height: 2.3rem;
+  margin-left: auto;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.65rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 650;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__assign {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+
+.rst-waiter-order__assign select {
+  min-height: 2.4rem;
+  min-width: 9rem;
+  max-width: 60%;
+  padding: 0.35rem 0.55rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  background: var(--rst-surface, #121820);
+  color: inherit;
+  font: inherit;
+}
+
+.rst-waiter-order__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+  flex-shrink: 0;
+  padding: 0.25rem;
+  border-radius: 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rst-waiter-order__tab {
+  position: relative;
+  min-height: 2.55rem;
+  border: 0;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__tab.is-active {
+  background: var(--rst-surface, #121820);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.rst-waiter-order__tab em,
+.rst-waiter-order__tab i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  margin-left: 0.35rem;
+  padding: 0 0.3rem;
+  border-radius: 999px;
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.rst-waiter-order__tab em {
+  background: rgba(255, 122, 26, 0.22);
+  color: #ffd7b0;
+}
+
+.rst-waiter-order__tab i {
+  background: rgb(34 197 94 / 0.22);
+  color: #86efac;
+}
+
+.rst-waiter-order__body {
+  min-height: 0;
+  flex: 1;
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.rst-waiter-order__body .rst-menu--pos {
+  min-height: 0;
+  flex: 1;
+}
+
+.rst-waiter-order__body .rst-menu__search-hint {
+  display: none;
+}
+
+.rst-waiter-order__body .rst-menu-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.rst-waiter-order__body .rst-menu-card {
+  min-height: 8.5rem;
+}
+
+.rst-waiter-order__body .rst-menu-cats {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.rst-waiter-order__body .rst-menu-cats::-webkit-scrollbar {
+  display: none;
+}
+
+.rst-waiter-order__body .rst-menu-cat {
+  min-height: 2.4rem;
+  flex: 0 0 auto;
+}
+
+.rst-waiter-order__billing {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-order__totals {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.65rem 0.15rem 0.25rem;
+  border-top: 1px solid var(--rst-line, rgba(255, 255, 255, 0.1));
+}
+
+.rst-waiter-order__totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.rst-waiter-order__totals > div.is-grand {
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.rst-waiter-order__bar {
+  flex-shrink: 0;
+  display: grid;
+  gap: 0.45rem;
+  padding-top: 0.35rem;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  border-top: 1px solid var(--rst-line, rgba(255, 255, 255, 0.1));
+  background: var(--rst-bg, #0c1018);
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+}
+
+.rst-waiter-order__total-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.55rem;
+  padding: 0.45rem 0.8rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__bar-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.rst-waiter-order__btn {
+  min-height: 2.85rem;
+  padding: 0.45rem 0.55rem;
+  border: 0;
+  border-radius: 0.8rem;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 750;
+  touch-action: manipulation;
+}
+
+.rst-waiter-order__btn:disabled {
+  opacity: 0.45;
+}
+
+.rst-waiter-order__btn--kitchen {
+  grid-column: 1 / -1;
+  background: var(--rst-accent, #ff7a1a);
+  color: #1b1208;
+}
+
+.rst-waiter-order__btn--bill {
+  grid-column: 1 / -1;
+  background: #facc15;
+  color: #1b1208;
+}
+
+.rst-waiter-order__btn--ghost {
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+}

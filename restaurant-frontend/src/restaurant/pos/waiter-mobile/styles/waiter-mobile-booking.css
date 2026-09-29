@@ -1,0 +1,109 @@
+/* Waiter phone bookings — card list over shared booking API. */
+
+.rst-waiter-booking {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  min-height: 0;
+  flex: 1;
+  padding: 0.55rem 0.65rem calc(1rem + env(safe-area-inset-bottom, 0px));
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.rst-waiter-booking__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rst-waiter-booking__bar strong {
+  font-size: 1rem;
+}
+
+.rst-waiter-booking__hint {
+  font-size: 0.8rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-booking__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.4rem;
+}
+
+.rst-waiter-booking__stats > div {
+  display: grid;
+  gap: 0.1rem;
+  padding: 0.55rem 0.5rem;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.04);
+  text-align: center;
+}
+
+.rst-waiter-booking__stats strong {
+  font-size: 1.1rem;
+}
+
+.rst-waiter-booking__stats span {
+  font-size: 0.68rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-booking__empty {
+  padding: 1.5rem 0.75rem;
+  text-align: center;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-booking__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.rst-waiter-booking__card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.8rem 0.85rem;
+  border: 1px solid var(--rst-line, rgba(255, 255, 255, 0.12));
+  border-radius: 0.95rem;
+  background: var(--rst-surface, #121820);
+}
+
+.rst-waiter-booking__card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.55rem;
+}
+
+.rst-waiter-booking__card-top strong {
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.rst-waiter-booking__card-meta {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.82rem;
+  color: var(--rst-muted, #9aa6b2);
+}
+
+.rst-waiter-booking__card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.rst-waiter-booking__card-actions button {
+  min-height: 2.4rem;
+}
+
+.rst-waiter-booking__pager {
+  margin-top: 0.25rem;
+}
