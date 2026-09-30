@@ -6,6 +6,14 @@ function isKitchenLocked(status) {
   return status && status !== 'NEW' && status !== 'CANCELLED';
 }
 
+function categoryTone(name) {
+  const s = String(name || '').trim().toLowerCase();
+  if (!s) return 0;
+  let h = 0;
+  for (let i = 0; i < s.length; i += 1) h = (h * 33 + s.charCodeAt(i)) >>> 0;
+  return (h % 8) + 1;
+}
+
 export default function OrderLines({
   items,
   onQty,
@@ -13,6 +21,7 @@ export default function OrderLines({
   onEditNote,
   locked = false,
   allowKitchenRefuse = false,
+  categoryByMenuId = null,
   t,
 }) {
   if (!items.length) {
@@ -27,10 +36,15 @@ export default function OrderLines({
         const canEditNew = !locked && isNew;
         const canEditKitchen = allowKitchenRefuse && kitchen;
         const canEdit = canEditNew || canEditKitchen;
+        const category = categoryByMenuId?.[line.menuItemId]
+          || categoryByMenuId?.[String(line.menuItemId)]
+          || '';
+        const tone = categoryTone(category);
         return (
           <div
             key={line.id}
-            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canEditKitchen ? ' is-open' : ''}`}
+            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canEditKitchen ? ' is-open' : ''}${tone ? ` is-cat-${tone}` : ''}`}
+            title={category || undefined}
           >
             <div className="rst-order-line__main">
               <div className="rst-order-line__title">

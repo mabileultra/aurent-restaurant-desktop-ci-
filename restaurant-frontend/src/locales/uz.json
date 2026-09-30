@@ -773,6 +773,7 @@
     "cashier": {
       "backToCashier": "Kassaga",
       "currentOrder": "Joriy buyurtma",
+      "openedAt": "Ochilgan",
       "fullOrderHint": "Stol {{code}} · menyu va pozitsiyalar",
       "halls": "Zal",
       "navLabel": "Kassa",

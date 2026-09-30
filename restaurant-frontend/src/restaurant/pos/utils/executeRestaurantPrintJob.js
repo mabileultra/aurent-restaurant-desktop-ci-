@@ -34,6 +34,31 @@ async function localHasPrinter(printerName) {
   }
 }
 
+/** Warm cache once; avoid serial IPC on every slip. */
+let printerNameSetCache = { at: 0, set: null };
+
+async function localHasPrinterFast(printerName) {
+  const name = String(printerName || '').trim();
+  if (!name) return false;
+  const now = Date.now();
+  if (!printerNameSetCache.set || now - printerNameSetCache.at > 60_000) {
+    try {
+      const list = await listDesktopPrintersCached();
+      const set = new Set(
+        (Array.isArray(list) ? list : [])
+          .map((p) => String(p?.name || p).trim().toLowerCase())
+          .filter(Boolean),
+      );
+      printerNameSetCache = { at: now, set };
+    } catch {
+      return localHasPrinter(name);
+    }
+  }
+  const lower = name.toLowerCase();
+  return printerNameSetCache.set.has(lower)
+    || [...printerNameSetCache.set].some((n) => n === lower);
+}
+
 function headerFor(order, t) {
   const channel = order?.channel || 'DINE_IN';
   if (channel === 'TAKEAWAY') return `TAKEAWAY #${order.orderNo || ''}`;
@@ -70,7 +95,7 @@ function batchItemLines(line) {
 
 async function runCategorySlip(payload, t) {
   const printer = String(payload.printerName || '').trim();
-  if (!(await localHasPrinter(printer))) return { mode: 'skip', ack: false };
+  if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
 
   // Fast path: payload already has dish text (no second round-trip to order API).
   if (payload.itemName || payload.header) {
@@ -114,7 +139,7 @@ async function runCategorySlip(payload, t) {
 
 async function runCategoryBatch(payload) {
   const printer = String(payload.printerName || '').trim();
-  if (!(await localHasPrinter(printer))) return { mode: 'skip', ack: false };
+  if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
   const dishLines = (payload.lines || []).flatMap((line, index) => {
     const block = batchItemLines(line);
     return index === 0 ? block : ['', ...block];

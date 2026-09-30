@@ -773,6 +773,7 @@
     "cashier": {
       "backToCashier": "К кассе",
       "currentOrder": "Текущий заказ",
+      "openedAt": "Открыт",
       "fullOrderHint": "Стол {{code}} · меню и позиции",
       "halls": "Зал",
       "navLabel": "Касса",

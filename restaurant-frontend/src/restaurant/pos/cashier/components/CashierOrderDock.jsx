@@ -1,8 +1,26 @@
+import { useEffect, useMemo, useState } from 'react';
 import { BaseButton } from '../../../../components/ui';
 import OrderLines from '../../components/OrderLines';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
 import '../styles/cashier-order-dock.css';
+
+function useLiveClock() {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return now;
+}
+
+function formatOpenedAt(iso) {
+  if (!iso) return null;
+  const at = new Date(iso);
+  if (!Number.isFinite(at.getTime())) return null;
+  return at.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
 
 /**
  * Right column — current order summary + fast pay / open actions.
@@ -12,6 +30,7 @@ export default function CashierOrderDock({
   loading,
   tableCode,
   waiterName = null,
+  menuItems = [],
   canRequestBill,
   canPay,
   canSendKitchen,
@@ -29,6 +48,16 @@ export default function CashierOrderDock({
   allowKitchenRefuse = false,
   t,
 }) {
+  const now = useLiveClock();
+
+  const categoryByMenuId = useMemo(() => {
+    const map = {};
+    for (const item of menuItems || []) {
+      if (item?.id != null) map[item.id] = item.category || '';
+    }
+    return map;
+  }, [menuItems]);
+
   if (loading) {
     return (
       <aside className="rst-cashier-dock">
@@ -50,6 +79,8 @@ export default function CashierOrderDock({
 
   const items = (order.items ?? []).filter((row) => row.itemStatus !== 'CANCELLED');
   const total = resolveRestaurantPayTotal(order, servicePreview);
+  const openedClock = formatOpenedAt(order.openedAt);
+  const openedTimer = formatDigitalTimer(order.openedAt, now);
 
   return (
     <aside className="rst-cashier-dock">
@@ -72,6 +103,12 @@ export default function CashierOrderDock({
               {t('rst.order.waiter')}: {waiterName}
             </p>
           ) : null}
+          {openedClock ? (
+            <p className="rst-cashier-dock__opened">
+              {t('rst.cashier.openedAt', { defaultValue: 'Открыт' })}: {openedClock}
+              {openedTimer ? ` · ${openedTimer}` : ''}
+            </p>
+          ) : null}
         </div>
         <BaseButton type="button" variant="ghost" onClick={onClear}>
           {t('common.close')}
@@ -81,6 +118,7 @@ export default function CashierOrderDock({
       <div className="rst-cashier-dock__lines">
         <OrderLines
           items={items}
+          categoryByMenuId={categoryByMenuId}
           allowKitchenRefuse={allowKitchenRefuse}
           onQty={onQty}
           onRemove={onRemove}
@@ -114,16 +152,14 @@ export default function CashierOrderDock({
             {t('rst.order.requestBill')}
           </BaseButton>
         ) : null}
-        <div className="rst-cashier-dock__actions-row">
-          <BaseButton type="button" variant="ghost" onClick={onOpenFull}>
-            {t('rst.cashier.openFull')}
+        <BaseButton type="button" variant="ghost" onClick={onOpenFull}>
+          {t('rst.cashier.openFull')}
+        </BaseButton>
+        {canSendKitchen ? (
+          <BaseButton type="button" disabled={sendingKitchen} onClick={onSendKitchen}>
+            {t('rst.order.sendKitchen')}
           </BaseButton>
-          {canSendKitchen ? (
-            <BaseButton type="button" disabled={sendingKitchen} onClick={onSendKitchen}>
-              {t('rst.order.sendKitchen')}
-            </BaseButton>
-          ) : null}
-        </div>
+        ) : null}
       </div>
     </aside>
   );

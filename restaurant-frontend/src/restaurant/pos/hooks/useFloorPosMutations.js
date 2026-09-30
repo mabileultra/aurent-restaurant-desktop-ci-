@@ -21,6 +21,7 @@ import {
 import { printGuestBill } from '../utils/printGuestBill';
 import {
   flushRestaurantPrintRelay,
+  clearGuestBillPrintedLocally,
   markGuestBillPrintedLocally,
 } from '../utils/restaurantPrintFlush';
 import {
@@ -286,6 +287,7 @@ export function useFloorPosMutations(deps) {
       toast.success(t('rst.order.billRequested'));
       if (isDesktopPrinter() && res?.data) {
         try {
+          clearGuestBillPrintedLocally(res.data.id);
           const printed = await printGuestBill({ order: res.data, t });
           if (printed?.mode === 'silent') {
             markGuestBillPrintedLocally(res.data.id);

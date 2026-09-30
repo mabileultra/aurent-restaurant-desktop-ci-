@@ -57,7 +57,8 @@ async function sendGroups(groups, settings) {
   const configured = Object.keys(map).length > 0;
   const missing = [];
   const errors = [];
-  let printed = 0;
+  const tasks = [];
+
   for (const group of groups) {
     const printer = resolveStationPrinter(map, group.stationId);
     if (!printer) {
@@ -66,8 +67,8 @@ async function sendGroups(groups, settings) {
     }
     const fresh = group.items.filter((item) => !readPrintedKitchenLines().has(String(item.lineId)));
     if (!fresh.length) continue;
-    try {
-      await printTicketLines({
+    tasks.push(
+      printTicketLines({
         title: group.title,
         printerName: printer,
         lines: [
@@ -77,13 +78,21 @@ async function sendGroups(groups, settings) {
           '---',
           ...fresh.flatMap(itemLines),
         ],
-      });
-      markPrintedKitchenLines(fresh.map((item) => item.lineId));
-      printed += 1;
-    } catch (err) {
-      errors.push(`${group.label}: ${err?.message || 'печать не выполнена'}`);
-    }
+      })
+        .then(() => {
+          markPrintedKitchenLines(fresh.map((item) => item.lineId));
+          return { ok: true };
+        })
+        .catch((err) => {
+          errors.push(`${group.label}: ${err?.message || 'печать не выполнена'}`);
+          return { ok: false };
+        }),
+    );
   }
+
+  const settled = await Promise.all(tasks);
+  const printed = settled.filter((row) => row?.ok).length;
+
   // Partial: some stations printed here, others still need a printer (this PC or another).
   if (printed && missing.length) {
     return { mode: 'partial', missing, configured, errors };

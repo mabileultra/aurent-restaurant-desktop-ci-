@@ -5,17 +5,18 @@ import { isDesktopPrinter, listDesktopPrintersCached } from '../utils/desktopPri
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
-const POLL_MS = 350;
+const POLL_MS = 200;
 
 /**
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).
+ * Jobs for different printers run in parallel so one slow device does not block others.
  */
 export function useRestaurantPrintRelay(storeId, t) {
   const busyRef = useRef(false);
+  const pendingFlushRef = useRef(false);
   const tRef = useRef(t);
   tRef.current = t;
   const warnedMissingRef = useRef(new Set());
-  const tickRef = useRef(null);
 
   useEffect(() => {
     if (storeId == null || !isDesktopPrinter()) return undefined;
@@ -24,16 +25,31 @@ export function useRestaurantPrintRelay(storeId, t) {
     listDesktopPrintersCached().catch(() => {});
 
     const tick = async () => {
-      if (cancelled || busyRef.current) return;
+      if (cancelled) return;
+      if (busyRef.current) {
+        pendingFlushRef.current = true;
+        return;
+      }
       busyRef.current = true;
       try {
-        const res = await rstPrintApi.pollPending(storeId);
-        const jobs = res.data ?? [];
-        const ackIds = [];
-        for (const job of jobs) {
+        do {
+          pendingFlushRef.current = false;
+          const res = await rstPrintApi.pollPending(storeId);
           if (cancelled) break;
-          try {
-            const outcome = await executeRestaurantPrintJob(job, { t: tRef.current });
+          const jobs = res.data ?? [];
+          if (!jobs.length) continue;
+
+          const results = await Promise.allSettled(
+            jobs.map(async (job) => {
+              const outcome = await executeRestaurantPrintJob(job, { t: tRef.current });
+              return { job, outcome };
+            }),
+          );
+
+          const ackIds = [];
+          for (const result of results) {
+            if (result.status !== 'fulfilled') continue;
+            const { job, outcome } = result.value;
             if (outcome?.ack && job.id) ackIds.push(job.id);
             if (
               !outcome?.ack
@@ -54,31 +70,33 @@ export function useRestaurantPrintRelay(storeId, t) {
                 );
               }
             }
-          } catch {
-            /* leave pending for retry */
           }
-        }
-        if (ackIds.length && !cancelled) {
-          await rstPrintApi.acknowledge(storeId, ackIds);
-        }
+          if (ackIds.length && !cancelled) {
+            await rstPrintApi.acknowledge(storeId, ackIds);
+          }
+        } while (pendingFlushRef.current && !cancelled);
       } catch {
         /* network blip — next poll */
       } finally {
         busyRef.current = false;
+        if (pendingFlushRef.current && !cancelled) {
+          pendingFlushRef.current = false;
+          window.setTimeout(() => {
+            if (!cancelled) tick();
+          }, 0);
+        }
       }
     };
 
-    tickRef.current = tick;
     tick();
     const id = window.setInterval(tick, POLL_MS);
     const offFlush = onRestaurantPrintFlush(() => {
-      window.setTimeout(() => {
-        if (!cancelled) tick();
-      }, 40);
+      if (cancelled) return;
+      pendingFlushRef.current = true;
+      tick();
     });
     return () => {
       cancelled = true;
-      tickRef.current = null;
       window.clearInterval(id);
       offFlush();
     };

@@ -773,6 +773,7 @@
     "cashier": {
       "backToCashier": "Back to cashier",
       "currentOrder": "Current order",
+      "openedAt": "Opened",
       "fullOrderHint": "Table {{code}} · menu & lines",
       "halls": "Hall",
       "navLabel": "Cashier",

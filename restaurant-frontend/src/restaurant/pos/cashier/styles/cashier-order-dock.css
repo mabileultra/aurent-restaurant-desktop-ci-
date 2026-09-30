@@ -1,9 +1,9 @@
 .rst-cashier-dock {
-  flex: 0 0 26rem;
+  flex: 0 0 30rem;
   display: flex;
   flex-direction: column;
-  width: 26rem;
-  min-width: 22rem;
+  width: 30rem;
+  min-width: 26rem;
   border-left: 1px solid var(--rst-line);
   background: var(--rst-surface);
   min-height: 0;
@@ -34,13 +34,19 @@
   color: var(--rst-ink);
 }
 
-.rst-cashier-dock__waiter {
+.rst-cashier-dock__waiter,
+.rst-cashier-dock__opened {
   margin: 0.2rem 0 0 !important;
-  font-size: 0.95rem !important;
+  font-size: 0.92rem !important;
   font-weight: 700 !important;
   color: var(--rst-muted) !important;
   line-height: 1.3;
   word-break: break-word;
+}
+
+.rst-cashier-dock__opened {
+  font-variant-numeric: tabular-nums;
+  color: #93c5fd !important;
 }
 
 .rst-cashier-dock__empty {
@@ -77,38 +83,31 @@
 }
 
 .rst-cashier-dock__actions {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6.5rem, 1fr));
+  gap: 0.4rem;
   padding: 0.75rem 0.85rem 1rem;
   border-top: 1px solid rgb(255 255 255 / 0.06);
   background: linear-gradient(180deg, rgb(0 0 0 / 0.12), transparent);
 }
 
-.rst-cashier-dock__actions-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.45rem;
-}
-
-.rst-cashier-dock__actions-row:has(> :nth-child(2)) {
-  grid-template-columns: 1fr 1fr;
-}
-
 .rst-cashier-dock__actions .base-btn,
 .rst-cashier-dock__actions button {
   width: 100%;
-  min-height: 2.85rem;
+  min-height: 2.75rem;
+  padding-inline: 0.45rem;
+  font-size: 0.82rem;
   font-weight: 800;
-  border-radius: 12px;
+  border-radius: 10px;
+  white-space: nowrap;
 }
 
 .rst-cashier-dock__pay {
-  min-height: 3.35rem !important;
+  min-height: 2.75rem !important;
   border: 0 !important;
   background: linear-gradient(180deg, #ff9340, var(--rst-accent)) !important;
   color: #1b1208 !important;
-  font-size: 1.02rem !important;
+  font-size: 0.88rem !important;
   letter-spacing: 0.02em;
   box-shadow: 0 0 0 1px rgb(255 122 26 / 0.35), 0 10px 22px rgb(255 122 26 / 0.22);
 }
@@ -119,7 +118,7 @@
 }
 
 .rst-cashier-dock__bill {
-  min-height: 3rem !important;
+  min-height: 2.75rem !important;
   border-color: rgb(251 191 36 / 0.4) !important;
   background: linear-gradient(180deg, rgb(251 191 36 / 0.16), var(--rst-surface) 70%) !important;
   color: #fcd34d !important;

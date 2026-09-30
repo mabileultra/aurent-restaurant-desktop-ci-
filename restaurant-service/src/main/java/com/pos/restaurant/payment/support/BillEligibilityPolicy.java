@@ -15,8 +15,8 @@ import java.util.List;
 public class BillEligibilityPolicy {
 
     public void assertCanRequestBill(FloorOrder order, List<FloorOrderItem> items, boolean kitchenBoardEnabled) {
-        if (order.getStatus() != OrderStatus.OPEN) {
-            throw new BusinessException("Bill can be requested only for an open order");
+        if (order.getStatus() != OrderStatus.OPEN && order.getStatus() != OrderStatus.BILLING) {
+            throw new BusinessException("Bill can be requested only for an active order");
         }
         List<FloorOrderItem> billable = items.stream()
             .filter(item -> item.getItemStatus() != OrderItemStatus.CANCELLED)

@@ -648,6 +648,15 @@
   background: color-mix(in srgb, #f59e0b 8%, var(--rst-surface-2));
 }
 
+.rst-order-line.is-cat-1 { border-left-color: #38bdf8; background: color-mix(in srgb, #38bdf8 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-2 { border-left-color: #a78bfa; background: color-mix(in srgb, #a78bfa 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-3 { border-left-color: #34d399; background: color-mix(in srgb, #34d399 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-4 { border-left-color: #fbbf24; background: color-mix(in srgb, #fbbf24 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-5 { border-left-color: #fb7185; background: color-mix(in srgb, #fb7185 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-6 { border-left-color: #2dd4bf; background: color-mix(in srgb, #2dd4bf 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-7 { border-left-color: #c084fc; background: color-mix(in srgb, #c084fc 10%, var(--rst-surface-2)); }
+.rst-order-line.is-cat-8 { border-left-color: #fdba74; background: color-mix(in srgb, #fdba74 10%, var(--rst-surface-2)); }
+
 .rst-order-line__refuse {
   min-height: 2.55rem;
   padding: 0.35rem 0.7rem;

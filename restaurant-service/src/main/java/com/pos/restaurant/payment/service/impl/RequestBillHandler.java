@@ -43,7 +43,7 @@ public class RequestBillHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
-        FloorOrder order = orderLookup.requireOpen(orderId);
+        FloorOrder order = orderLookup.requireActive(orderId);
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         boolean kitchenBoard = kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId());
         eligibilityPolicy.assertCanRequestBill(order, items, kitchenBoard);

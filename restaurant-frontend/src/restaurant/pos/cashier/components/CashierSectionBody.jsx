@@ -53,6 +53,7 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
                 ? (p.waiterNameById.get(String(p.order.waiterUserId)) || null)
                 : null
             }
+            menuItems={p.menuItems ?? []}
             canRequestBill={p.canRequestBill}
             canPay={p.canPay}
             canSendKitchen={p.canSendKitchen}

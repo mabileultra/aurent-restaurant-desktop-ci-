@@ -6,6 +6,11 @@ export function flushRestaurantPrintRelay() {
   window.dispatchEvent(new CustomEvent(EVENT));
 }
 
+/** Immediate flush without waiting for React effect listeners (same tick). */
+export function flushRestaurantPrintRelaySoon() {
+  flushRestaurantPrintRelay();
+}
+
 export function onRestaurantPrintFlush(handler) {
   if (typeof window === 'undefined') return () => {};
   const run = () => {
@@ -31,7 +36,13 @@ export function markGuestBillPrintedLocally(orderId) {
   }
 }
 
-export function wasGuestBillPrintedLocally(orderId, withinMs = 20_000) {
+/** Clear before intentional reprint so poll can print if local print failed. */
+export function clearGuestBillPrintedLocally(orderId) {
+  if (orderId == null) return;
+  recentGuestBills.delete(String(orderId));
+}
+
+export function wasGuestBillPrintedLocally(orderId, withinMs = 8_000) {
   if (orderId == null) return false;
   const at = recentGuestBills.get(String(orderId));
   return at != null && Date.now() - at < withinMs;

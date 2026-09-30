@@ -106,7 +106,9 @@ export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
     // Always allow send while there are NEW lines (incl. after bill). Board only gates KDS + bill-before-send.
     canSendKitchen: (order?.status === 'OPEN' || order?.status === 'BILLING') && hasNew,
     // Board off: bill without sending NEW first. Board on: must send before bill.
-    canRequestBill: order?.status === 'OPEN' && hasBillable && (boardOn ? !hasNew : true),
+    canRequestBill: (order?.status === 'OPEN' || order?.status === 'BILLING')
+      && hasBillable
+      && (boardOn ? !hasNew : true),
     canPay: order?.status === 'BILLING',
   };
 }

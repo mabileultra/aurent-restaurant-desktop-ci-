@@ -92,6 +92,14 @@ export default function OrderWorkspace({
     return map;
   }, [order.items]);
 
+  const categoryByMenuId = useMemo(() => {
+    const map = {};
+    for (const item of menuItems || []) {
+      if (item?.id != null) map[item.id] = item.category || '';
+    }
+    return map;
+  }, [menuItems]);
+
   const activeLines = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED');
   const linesCount = activeLines.length;
   const newCount = activeLines.filter((line) => line.itemStatus === 'NEW').length;
@@ -231,6 +239,7 @@ export default function OrderWorkspace({
           onRemove={onRemove}
           onEditNote={onEditNote}
           allowKitchenRefuse={allowKitchenRefuse}
+          categoryByMenuId={categoryByMenuId}
           t={t}
         />
 
