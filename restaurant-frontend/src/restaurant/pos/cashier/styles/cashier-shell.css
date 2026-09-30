@@ -379,7 +379,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 11.5rem minmax(0, 1fr) 30rem;
+  grid-template-columns: 11.5rem minmax(0, 1fr) minmax(26rem, 30rem);
   overflow: hidden;
 }
 

@@ -1,9 +1,9 @@
 .rst-cashier-dock {
-  flex: 0 0 34rem;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  width: 34rem;
-  min-width: 30rem;
+  width: 100%;
+  min-width: 0;
   border-left: 1px solid var(--rst-line);
   background: var(--rst-surface);
   min-height: 0;
@@ -64,6 +64,22 @@
   min-height: 0;
   overflow: auto;
   padding: 0.55rem 0.65rem;
+}
+
+.rst-cashier-dock__lines .rst-order-lines {
+  flex: none;
+  overflow: visible;
+  min-height: 0;
+}
+
+.rst-cashier-dock__lines .rst-order-line {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.rst-cashier-dock__lines .rst-order-line__title strong {
+  color: var(--rst-ink);
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .rst-cashier-dock__total {

@@ -13,14 +13,10 @@ import {
   optimisticRemoveItem,
   optimisticUpdateQty,
 } from '../utils/optimisticOrderPatch';
-import { printGuestBill } from '../utils/printGuestBill';
 import {
   flushRestaurantPrintRelay,
-  clearGuestBillPrintedLocally,
-  markGuestBillPrintedLocally,
 } from '../utils/restaurantPrintFlush';
 import { toastApiError } from '../../../utils/apiError';
-import { isDesktopPrinter } from '../utils/desktopPrinters';
 
 export function useFloorPosMutations(deps) {
   const {
@@ -284,22 +280,12 @@ export function useFloorPosMutations(deps) {
 
   const billMutation = useMutation({
     mutationFn: () => rstOrderApi.requestBill(activeOrderId),
-    onSuccess: async (res) => {
+    onSuccess: (res) => {
       setOrderData(res);
       invalidateFloor();
       invalidateCounter();
       toast.success(t('rst.order.billRequested'));
-      if (isDesktopPrinter() && res?.data) {
-        try {
-          clearGuestBillPrintedLocally(res.data.id);
-          const printed = await printGuestBill({ order: res.data, t });
-          if (printed?.mode === 'silent') {
-            markGuestBillPrintedLocally(res.data.id);
-          }
-        } catch {
-          /* relay poll will retry */
-        }
-      }
+      // One print path only: server GUEST_BILL → desktop relay (avoid local+relay double slip).
       flushRestaurantPrintRelay();
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
