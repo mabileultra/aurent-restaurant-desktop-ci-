@@ -297,14 +297,16 @@ export default function OrderWorkspace({
                 {t('rst.order.sendKitchenKds')}
               </button>
             ) : null}
-            <button
-              type="button"
-              className="rst-order__action rst-order__action--bill"
-              onClick={canRequestBill ? onRequestBill : undefined}
-              disabled={!canRequestBill || billingPending}
-            >
-              {t('rst.order.requestBill')}
-            </button>
+            {canRequestBill ? (
+              <button
+                type="button"
+                className="rst-order__action rst-order__action--bill"
+                onClick={onRequestBill}
+                disabled={billingPending}
+              >
+                {t('rst.order.requestBill')}
+              </button>
+            ) : null}
             {canPay ? (
               <button
                 type="button"

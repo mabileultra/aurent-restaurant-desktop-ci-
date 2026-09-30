@@ -262,14 +262,16 @@ export default function WaiterMobileOrderWorkspace({
                 {t('rst.order.sendKitchenKds')}
               </button>
             ) : null}
-            <button
-              type="button"
-              className="rst-waiter-order__btn rst-waiter-order__btn--bill"
-              onClick={canRequestBill ? onRequestBill : undefined}
-              disabled={!canRequestBill || billingPending}
-            >
-              {t('rst.order.requestBill')}
-            </button>
+            {canRequestBill ? (
+              <button
+                type="button"
+                className="rst-waiter-order__btn rst-waiter-order__btn--bill"
+                onClick={onRequestBill}
+                disabled={billingPending}
+              >
+                {t('rst.order.requestBill')}
+              </button>
+            ) : null}
             {canCancel ? (
               <button
                 type="button"
