@@ -23,6 +23,27 @@ public class ProductStorePriceApplier {
 
     private final StoreRepository storeRepository;
 
+    /**
+     * Если в запросе нет цен по магазинам — раздаёт sellingPrice по всем активным магазинам компании.
+     */
+    public void applyStorePricesOrAllActive(Product product, List<ProductStorePriceRequest> rows, BigDecimal sellingPrice) {
+        if (rows != null && !rows.isEmpty()) {
+            applyStorePrices(product, rows);
+            return;
+        }
+        if (sellingPrice == null || product.getCompany() == null) {
+            return;
+        }
+        Integer companyId = product.getCompany().getId();
+        List<ProductStorePriceRequest> forAll = storeRepository.findByCompanyIdOrderByNameAsc(companyId).stream()
+            .filter(Store::isActive)
+            .map(s -> new ProductStorePriceRequest(s.getId(), sellingPrice))
+            .toList();
+        if (!forAll.isEmpty()) {
+            applyStorePrices(product, forAll);
+        }
+    }
+
     public void applyStorePrices(Product product, List<ProductStorePriceRequest> rows) {
         if (rows == null) {
             return;

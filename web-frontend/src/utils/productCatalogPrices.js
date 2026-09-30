@@ -37,23 +37,26 @@ export function resolveStorePricesForPayload({
     return buildStorePrices(storeRows, sellingPrice);
   }
 
+  // Блок скрыт → розничная цена во все активные магазины (не только в устаревшие storeRows).
   const ids = [];
-  for (const row of storeRows || []) {
-    if (row?.storeId === '' || row?.storeId == null) continue;
-    const id = Number(row.storeId);
-    if (!Number.isFinite(id) || ids.includes(id)) continue;
-    ids.push(id);
-  }
-  if (ids.length === 0 && fallbackStoreId != null && fallbackStoreId !== '') {
-    const id = Number(fallbackStoreId);
-    if (Number.isFinite(id)) ids.push(id);
-  }
-  if (ids.length === 0 && Array.isArray(fallbackStoreIds)) {
+  if (Array.isArray(fallbackStoreIds) && fallbackStoreIds.length > 0) {
     for (const raw of fallbackStoreIds) {
       const id = Number(raw);
       if (!Number.isFinite(id) || ids.includes(id)) continue;
       ids.push(id);
     }
+  }
+  if (ids.length === 0) {
+    for (const row of storeRows || []) {
+      if (row?.storeId === '' || row?.storeId == null) continue;
+      const id = Number(row.storeId);
+      if (!Number.isFinite(id) || ids.includes(id)) continue;
+      ids.push(id);
+    }
+  }
+  if (ids.length === 0 && fallbackStoreId != null && fallbackStoreId !== '') {
+    const id = Number(fallbackStoreId);
+    if (Number.isFinite(id)) ids.push(id);
   }
   return ids.map((storeId) => ({ storeId, price: base }));
 }

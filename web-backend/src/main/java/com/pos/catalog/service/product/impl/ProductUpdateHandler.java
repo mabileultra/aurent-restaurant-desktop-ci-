@@ -163,6 +163,9 @@ public class ProductUpdateHandler {
             storePriceApplier.applyStorePrices(product, req.storePrices());
         } else if (req.sellingPrice() != null) {
             storePriceApplier.syncWithSellingPrice(product, previousSelling, req.sellingPrice());
+            if (product.getStorePrices() == null || product.getStorePrices().isEmpty()) {
+                storePriceApplier.applyStorePricesOrAllActive(product, null, req.sellingPrice());
+            }
         }
         if (StringUtils.hasText(req.businessTypeCode())) {
             product.setBusinessType(

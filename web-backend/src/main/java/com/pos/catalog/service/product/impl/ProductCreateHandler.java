@@ -95,7 +95,7 @@ public class ProductCreateHandler {
         Product product = buildNewProduct(req, companyId, category);
         applyBusinessType(product, req.businessTypeCode(), category);
         Product saved = productRepository.save(product);
-        storePriceApplier.applyStorePrices(saved, req.storePrices());
+        storePriceApplier.applyStorePricesOrAllActive(saved, req.storePrices(), req.sellingPrice());
         storePriceApplier.applyExtraBarcodes(saved, req.additionalBarcodes(), saved.getBarcode());
         Product persisted = productRepository.save(saved);
 
@@ -149,7 +149,7 @@ public class ProductCreateHandler {
         extensionService.applyOnCreate(product, req);
 
         Product saved = productRepository.save(product);
-        storePriceApplier.applyStorePrices(saved, req.storePrices());
+        storePriceApplier.applyStorePricesOrAllActive(saved, req.storePrices(), req.sellingPrice());
         storePriceApplier.applyExtraBarcodes(saved, req.additionalBarcodes(), saved.getBarcode());
         Product persisted = productRepository.save(saved);
 

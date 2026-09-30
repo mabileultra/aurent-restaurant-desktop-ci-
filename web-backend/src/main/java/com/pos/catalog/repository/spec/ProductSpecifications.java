@@ -148,18 +148,24 @@ public final class ProductSpecifications {
             addBusinessTypeFilter(parts, root, cb, businessTypeCode);
 
             if (storeId != null) {
-                Subquery<Long> sq = query.subquery(Long.class);
-                Root<ProductStorePrice> spRoot = sq.from(ProductStorePrice.class);
-                sq.select(cb.literal(1L));
-                sq.where(
-                    cb.equal(spRoot.get("product").get("id"), root.get("id")),
-                    cb.equal(spRoot.get("store").get("id"), storeId),
+                // Цена в этом магазине ИЛИ вообще нет цен по магазинам
+                // (блок «цены магазинов» выключен — товар доступен везде по sellingPrice).
+                Subquery<Long> forStore = query.subquery(Long.class);
+                Root<ProductStorePrice> storePriceRoot = forStore.from(ProductStorePrice.class);
+                forStore.select(cb.literal(1L));
+                forStore.where(
+                    cb.equal(storePriceRoot.get("product").get("id"), root.get("id")),
+                    cb.equal(storePriceRoot.get("store").get("id"), storeId),
                     cb.equal(
                         root.get("company").get("id"),
-                        spRoot.get("store").get("company").get("id")
+                        storePriceRoot.get("store").get("company").get("id")
                     )
                 );
-                parts.add(cb.exists(sq));
+                Subquery<Long> anyStore = query.subquery(Long.class);
+                Root<ProductStorePrice> anyRoot = anyStore.from(ProductStorePrice.class);
+                anyStore.select(cb.literal(1L));
+                anyStore.where(cb.equal(anyRoot.get("product").get("id"), root.get("id")));
+                parts.add(cb.or(cb.exists(forStore), cb.not(cb.exists(anyStore))));
             }
 
             return parts.isEmpty() ? cb.conjunction() : cb.and(parts.toArray(new Predicate[0]));

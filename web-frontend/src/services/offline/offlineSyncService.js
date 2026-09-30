@@ -16,8 +16,8 @@ import { logCatalog, logSale } from '../desktop/activityLog';
 /** Отправка очереди продаж — часто (лёгкий запрос). */
 export const SALES_SYNC_INTERVAL_MS = 60_000;
 
-/** Полный каталог — редко: не чаще этого интервала. */
-export const CATALOG_MAX_AGE_MS = 4 * 60 * 60 * 1000;
+/** Полный каталог: не чаще этого интервала (раньше 4ч — новые товары не попадали на десктоп). */
+export const CATALOG_MAX_AGE_MS = 15 * 60 * 1000;
 
 /** Как часто проверять, не пора ли обновить каталог (без скачивания). */
 export const CATALOG_STALE_CHECK_MS = 30 * 60 * 1000;

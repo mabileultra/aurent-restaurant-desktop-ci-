@@ -51,6 +51,20 @@ describe('resolveStorePricesForPayload', () => {
     ]);
   });
 
+  it('when hidden, prefers all active stores over incomplete storeRows', () => {
+    expect(
+      resolveStorePricesForPayload({
+        storeRows: [{ storeId: '3', price: '1' }],
+        sellingPrice: 35000,
+        storePricesEnabled: false,
+        fallbackStoreIds: [3, 7],
+      })
+    ).toEqual([
+      { storeId: 3, price: 35000 },
+      { storeId: 7, price: 35000 },
+    ]);
+  });
+
   it('buildStorePrices still fills empty row price from selling', () => {
     expect(buildStorePrices([{ storeId: '5', price: '' }], 14000)).toEqual([
       { storeId: 5, price: 14000 },

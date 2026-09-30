@@ -170,7 +170,10 @@ public class ProductQueryServiceImpl implements ProductQueryService {
             throw PosExceptions.badRequest("Product is not active");
         }
         if (storeId != null
-            && productStorePriceRepository.findByProduct_IdAndStore_Id(product.getId(), storeId).isEmpty()) {
+            && productStorePriceRepository.findByProduct_IdAndStore_Id(product.getId(), storeId).isEmpty()
+            && productStorePriceRepository.countByProduct_Id(product.getId()) > 0) {
+            // Нет строки для этого магазина, но цены в других есть — недоступен.
+            // Если цен по магазинам нет вовсе — доступен везде по sellingPrice.
             throw PosExceptions.badRequest("Product is not available in this store");
         }
         return product;
