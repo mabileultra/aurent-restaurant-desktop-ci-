@@ -47,7 +47,12 @@ export function useCashierPinLoginPage() {
   const touchLayout = useCashierPosTouchLayout();
 
   useEffect(() => {
-    if (!hasHydrated || !token || !PIN_ROLES.has(user?.role)) return;
+    if (!hasHydrated || !token) return;
+    // Сессия админа/пароля на PIN-экране — сбрасываем, иначе PWA «прыгает» в админку.
+    if (!PIN_ROLES.has(user?.role)) {
+      logoutAndResetSession();
+      return;
+    }
     if (freshLoginRef.current) return;
 
     let cancelled = false;

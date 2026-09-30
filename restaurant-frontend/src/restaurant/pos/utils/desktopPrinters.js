@@ -9,7 +9,7 @@ export function listDesktopPrinters() {
   return window.desktopCashier.listPrinters();
 }
 
-const PRINTER_LIST_TTL_MS = 15_000;
+const PRINTER_LIST_TTL_MS = 60_000;
 let printerListCache = { at: 0, list: null, pending: null };
 
 /** Cached Windows printer list — avoids IPC on every kitchen/category slip. */

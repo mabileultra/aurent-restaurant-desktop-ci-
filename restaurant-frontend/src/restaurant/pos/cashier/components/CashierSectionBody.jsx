@@ -48,6 +48,11 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
             order={p.order}
             loading={!!p.activeOrderId && !p.order}
             tableCode={tableCode}
+            waiterName={
+              p.order?.waiterUserId
+                ? (p.waiterNameById.get(String(p.order.waiterUserId)) || null)
+                : null
+            }
             canRequestBill={p.canRequestBill}
             canPay={p.canPay}
             canSendKitchen={p.canSendKitchen}

@@ -2,6 +2,7 @@ package com.pos.restaurant.order.service.impl;
 
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.exception.NotFoundException;
+import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.menu.entity.MenuCategory;
 import com.pos.restaurant.menu.entity.MenuItem;
@@ -15,6 +16,7 @@ import com.pos.restaurant.modifier.repository.ModifierGroupRepository;
 import com.pos.restaurant.modifier.repository.ModifierOptionRepository;
 import com.pos.restaurant.modifier.support.ModifierSelectionPolicy;
 import com.pos.restaurant.order.domain.OrderItemStatus;
+import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -22,8 +24,11 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.entity.FloorOrderItemModifier;
 import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
+import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.ServiceChargeSupport;
+import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
@@ -53,10 +58,14 @@ public class OrderAddItemHandler {
     private final OrderResponseAssembler assembler;
     private final PrintJobPublisher printJobPublisher;
     private final KitchenBoardService kitchenBoardService;
+    private final OrderLinkedTablesSupport linkedTables;
+    private final TableSeatSync tableSeatSync;
+    private final ServiceChargeSupport serviceChargeSupport;
 
     @Transactional
     public OrderResponse handle(UUID orderId, AddOrderItemRequest request) {
         FloorOrder order = orderLookup.requireActive(orderId);
+        reopenIfBilling(order);
         Integer companyId = tenantSupport.requireCompanyId();
         MenuItem menuItem = menuItemRepository.findByIdAndCompanyId(request.menuItemId(), companyId)
             .orElseThrow(() -> new NotFoundException("Menu item not found: " + request.menuItemId()));
@@ -119,6 +128,17 @@ public class OrderAddItemHandler {
         enqueueCategorySlip(order, saved, quantity, menuItem);
         LogUtil.info(OrderAddItemHandler.class, "Order item added: orderId={}", orderId);
         return reload(order);
+    }
+
+    /** Дозаказ after bill stays on the same check — reopen for send → bill again. */
+    private void reopenIfBilling(FloorOrder order) {
+        if (order.getStatus() != OrderStatus.BILLING) {
+            return;
+        }
+        order.setStatus(OrderStatus.OPEN);
+        serviceChargeSupport.clearSnapshot(order);
+        tableSeatSync.refresh(linkedTables.allTables(order), TableStatus.OCCUPIED);
+        LogUtil.info(OrderAddItemHandler.class, "Order reopened for more items: id={}", order.getId());
     }
 
     private void enqueueCategorySlip(

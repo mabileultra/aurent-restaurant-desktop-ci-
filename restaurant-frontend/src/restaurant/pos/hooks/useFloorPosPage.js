@@ -240,7 +240,9 @@ export function useFloorPosPage() {
   };
 
   const handleQty = (line, nextQty) => {
-    if (line.itemStatus !== 'NEW') return;
+    const isNew = line.itemStatus === 'NEW';
+    const kitchen = line.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
+    if (!isNew && !(access.canCancelOrder && kitchen)) return;
     if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });

@@ -34,6 +34,15 @@
   color: var(--rst-ink);
 }
 
+.rst-cashier-dock__waiter {
+  margin: 0.2rem 0 0 !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  color: var(--rst-muted) !important;
+  line-height: 1.3;
+  word-break: break-word;
+}
+
 .rst-cashier-dock__empty {
   flex: 1;
   display: grid;

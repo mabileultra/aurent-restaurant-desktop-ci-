@@ -9,6 +9,7 @@ import {
   listDesktopPrintersCached,
   printTicketLines,
 } from './desktopPrinters';
+import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
 
 function parsePayload(raw) {
   try {
@@ -141,6 +142,9 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
   if (!payload) return { ack: false };
 
   if (job.kind === 'GUEST_BILL') {
+    if (wasGuestBillPrintedLocally(payload.orderId)) {
+      return { ack: true, mode: 'silent' };
+    }
     const orderRes = await rstOrderApi.get(payload.orderId);
     const printed = await printGuestBill({ order: orderRes.data, t });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };

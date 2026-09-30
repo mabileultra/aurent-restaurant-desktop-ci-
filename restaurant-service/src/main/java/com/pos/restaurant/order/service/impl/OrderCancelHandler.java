@@ -15,7 +15,6 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.TableSeatSync;
-import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,6 @@ public class OrderCancelHandler {
     private final FloorTenantSupport tenantSupport;
     private final OrderLinkedTablesSupport linkedTables;
     private final TableSeatSync tableSeatSync;
-    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public void handle(UUID orderId) {
@@ -45,8 +43,6 @@ public class OrderCancelHandler {
         if (!items.isEmpty() && !tenantSupport.canCancelOrdersWithItems()) {
             throw new ForbiddenException("Only a manager or cashier can cancel an order with items");
         }
-        // Void slips before marking cancelled (publisher skips CANCELLED / NEW).
-        printJobPublisher.voidSlipsForItems(order, items);
         order.setStatus(OrderStatus.CANCELLED);
         order.setClosedAt(Instant.now());
         var seated = linkedTables.allTables(order);

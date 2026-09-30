@@ -30,7 +30,12 @@ export function useLoginPage() {
 
   const isDesktop = Boolean(window.desktopCashier?.isDesktop);
   const isAdminLogin = searchParams.get('admin') === '1';
-  const shouldRedirectToCashierLogin = isDesktopCashier() && !isAdminLogin;
+  const isStandalonePwa = typeof window !== 'undefined' && (
+    window.matchMedia('(display-mode: standalone)').matches
+    || Boolean(window.navigator.standalone)
+  );
+  /** PWA / десктоп-касса — только PIN; пароль остаётся на /login?admin=1 */
+  const shouldRedirectToCashierLogin = !isAdminLogin && (isDesktopCashier() || isStandalonePwa);
 
   useEffect(() => {
     if (!hasHydrated || !token) return;

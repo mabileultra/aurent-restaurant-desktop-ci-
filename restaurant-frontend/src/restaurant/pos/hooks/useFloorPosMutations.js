@@ -14,10 +14,21 @@ import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
 import {
+  optimisticAddItem,
+  optimisticRemoveItem,
+  optimisticUpdateQty,
+} from '../utils/optimisticOrderPatch';
+import { printGuestBill } from '../utils/printGuestBill';
+import {
+  flushRestaurantPrintRelay,
+  markGuestBillPrintedLocally,
+} from '../utils/restaurantPrintFlush';
+import {
   printOrdinarySaleReceipt,
   saleNeedsFiscalPrint,
 } from '../utils/printOrdinarySaleReceipt';
 import { toastApiError } from '../../../utils/apiError';
+import { isDesktopPrinter } from '../utils/desktopPrinters';
 
 export function useFloorPosMutations(deps) {
   const {
@@ -35,6 +46,14 @@ export function useFloorPosMutations(deps) {
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
   const invalidateRecentPaid = () => qc.invalidateQueries({ queryKey: ['rst-recent-paid', storeId] });
   const setOrderData = (res) => qc.setQueryData(['rst-order', activeOrderId], res.data);
+  const orderKey = ['rst-order', activeOrderId];
+  const patchOrder = (updater) => {
+    if (!activeOrderId) return undefined;
+    const prev = qc.getQueryData(orderKey);
+    if (!prev) return undefined;
+    qc.setQueryData(orderKey, updater(prev));
+    return prev;
+  };
   const errMsg = (err, key) => toastApiError(err, t(key));
 
   const openMutation = useMutation({
@@ -142,31 +161,71 @@ export function useFloorPosMutations(deps) {
       modifierOptionIds: modifierOptionIds ?? [],
       note: note?.trim() || undefined,
     }),
-    onSuccess: (res) => {
+    onMutate: async ({ menuItem, modifierOptionIds, note }) => {
+      await qc.cancelQueries({ queryKey: orderKey });
+      const prev = qc.getQueryData(orderKey);
+      patchOrder((order) => optimisticAddItem(order, menuItem, { modifierOptionIds, note }));
+      return { wasBilling: prev?.status === 'BILLING' };
+    },
+    onSuccess: (res, _vars, ctx) => {
       setOrderData(res);
       setPendingMenuItem(null);
       setPendingVariants?.(null);
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
+      if (ctx?.wasBilling) {
+        invalidateFloor();
+      }
+      flushRestaurantPrintRelay();
     },
-    onError: (err) => errMsg(err, 'rst.order.saveFailed'),
+    onError: (err) => {
+      qc.invalidateQueries({ queryKey: orderKey });
+      errMsg(err, 'rst.order.saveFailed');
+    },
   });
 
   const updateItemMutation = useMutation({
     mutationFn: ({ itemId, quantity, note }) => {
+      if (String(itemId).startsWith('tmp-')) {
+        return Promise.resolve({ data: qc.getQueryData(orderKey) });
+      }
       const body = {};
       if (quantity != null) body.quantity = quantity;
       if (note !== undefined) body.note = note;
       return rstOrderApi.updateItem(activeOrderId, itemId, body);
     },
-    onSuccess: setOrderData,
-    onError: (err) => errMsg(err, 'rst.order.saveFailed'),
+    onMutate: async ({ itemId, quantity }) => {
+      if (quantity == null) return undefined;
+      await qc.cancelQueries({ queryKey: orderKey });
+      patchOrder((order) => optimisticUpdateQty(order, itemId, quantity));
+    },
+    onSuccess: (res) => {
+      if (res?.data) setOrderData(res);
+    },
+    onError: (err) => {
+      qc.invalidateQueries({ queryKey: orderKey });
+      errMsg(err, 'rst.order.saveFailed');
+    },
   });
 
   const removeItemMutation = useMutation({
-    mutationFn: (itemId) => rstOrderApi.removeItem(activeOrderId, itemId),
-    onSuccess: setOrderData,
-    onError: (err) => errMsg(err, 'rst.order.saveFailed'),
+    mutationFn: (itemId) => {
+      if (String(itemId).startsWith('tmp-')) {
+        return Promise.resolve({ data: qc.getQueryData(orderKey) });
+      }
+      return rstOrderApi.removeItem(activeOrderId, itemId);
+    },
+    onMutate: async (itemId) => {
+      await qc.cancelQueries({ queryKey: orderKey });
+      patchOrder((order) => optimisticRemoveItem(order, itemId));
+    },
+    onSuccess: (res) => {
+      if (res?.data) setOrderData(res);
+    },
+    onError: (err) => {
+      qc.invalidateQueries({ queryKey: orderKey });
+      errMsg(err, 'rst.order.saveFailed');
+    },
   });
 
   const assignWaiterMutation = useMutation({
@@ -201,6 +260,7 @@ export function useFloorPosMutations(deps) {
     onSuccess: (res) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
+      flushRestaurantPrintRelay();
     },
     onError: (err) => errMsg(err, 'rst.order.sendFailed'),
   });
@@ -219,11 +279,22 @@ export function useFloorPosMutations(deps) {
 
   const billMutation = useMutation({
     mutationFn: () => rstOrderApi.requestBill(activeOrderId),
-    onSuccess: (res) => {
+    onSuccess: async (res) => {
       setOrderData(res);
       invalidateFloor();
       invalidateCounter();
       toast.success(t('rst.order.billRequested'));
+      if (isDesktopPrinter() && res?.data) {
+        try {
+          const printed = await printGuestBill({ order: res.data, t });
+          if (printed?.mode === 'silent') {
+            markGuestBillPrintedLocally(res.data.id);
+          }
+        } catch {
+          /* relay poll will retry */
+        }
+      }
+      flushRestaurantPrintRelay();
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
   });

@@ -23,6 +23,12 @@ public class ServiceChargeSupport {
         order.setServiceAmount(ServicePercentRules.amount(subtotal, percent));
     }
 
+    /** Drop bill snapshot when the check is reopened for more items. */
+    public void clearSnapshot(FloorOrder order) {
+        order.setServicePercent(null);
+        order.setServiceAmount(null);
+    }
+
     /** Guest service on an already billed order. Percent stays as snapshotted. */
     public BigDecimal amountForPay(FloorOrder order, BigDecimal subtotal) {
         if (order.getServicePercent() != null) {

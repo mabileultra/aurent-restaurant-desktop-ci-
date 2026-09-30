@@ -2,7 +2,7 @@
   "name": "Aurent Restaurant",
   "short_name": "Aurent",
   "description": "Касса и зал ресторана Aurent",
-  "start_url": "/login",
+  "start_url": "/cashier/login",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",

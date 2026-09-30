@@ -11,6 +11,7 @@ export default function CashierOrderDock({
   order,
   loading,
   tableCode,
+  waiterName = null,
   canRequestBill,
   canPay,
   canSendKitchen,
@@ -66,6 +67,11 @@ export default function CashierOrderDock({
             {' · '}
             №{order.orderNo}
           </p>
+          {waiterName ? (
+            <p className="rst-cashier-dock__waiter">
+              {t('rst.order.waiter')}: {waiterName}
+            </p>
+          ) : null}
         </div>
         <BaseButton type="button" variant="ghost" onClick={onClear}>
           {t('common.close')}

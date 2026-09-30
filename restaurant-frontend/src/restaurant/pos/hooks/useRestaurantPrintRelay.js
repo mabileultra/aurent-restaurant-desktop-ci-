@@ -1,10 +1,11 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { rstPrintApi } from '../../api/print.api';
-import { isDesktopPrinter } from '../utils/desktopPrinters';
+import { isDesktopPrinter, listDesktopPrintersCached } from '../utils/desktopPrinters';
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
+import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
-const POLL_MS = 800;
+const POLL_MS = 350;
 
 /**
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).
@@ -14,11 +15,13 @@ export function useRestaurantPrintRelay(storeId, t) {
   const tRef = useRef(t);
   tRef.current = t;
   const warnedMissingRef = useRef(new Set());
+  const tickRef = useRef(null);
 
   useEffect(() => {
     if (storeId == null || !isDesktopPrinter()) return undefined;
 
     let cancelled = false;
+    listDesktopPrintersCached().catch(() => {});
 
     const tick = async () => {
       if (cancelled || busyRef.current) return;
@@ -65,11 +68,19 @@ export function useRestaurantPrintRelay(storeId, t) {
       }
     };
 
+    tickRef.current = tick;
     tick();
     const id = window.setInterval(tick, POLL_MS);
+    const offFlush = onRestaurantPrintFlush(() => {
+      window.setTimeout(() => {
+        if (!cancelled) tick();
+      }, 40);
+    });
     return () => {
       cancelled = true;
+      tickRef.current = null;
       window.clearInterval(id);
+      offFlush();
     };
   }, [storeId]);
 }

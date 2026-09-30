@@ -186,7 +186,14 @@ export default function OrderWorkspace({
               <button type="button" disabled={billing || guestsPending} onClick={() => bumpGuests(1)}>+</button>
             </div>
             {onNewCheck ? (
-              <button type="button" className="rst-order__new-check" onClick={onNewCheck}>
+              <button
+                type="button"
+                className="rst-order__new-check"
+                title={t('rst.order.newCheckHint', {
+                  defaultValue: 'Отдельный чек за столом. Для дозаказа просто добавьте блюда сюда.',
+                })}
+                onClick={onNewCheck}
+              >
                 {t('rst.order.newCheck')}
               </button>
             ) : null}

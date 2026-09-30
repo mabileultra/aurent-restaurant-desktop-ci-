@@ -25,11 +25,12 @@ export default function OrderLines({
         const kitchen = isKitchenLocked(line.itemStatus);
         const isNew = line.itemStatus === 'NEW';
         const canEditNew = !locked && isNew;
-        const canRefuseKitchen = allowKitchenRefuse && kitchen;
+        const canEditKitchen = allowKitchenRefuse && kitchen;
+        const canEdit = canEditNew || canEditKitchen;
         return (
           <div
             key={line.id}
-            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canRefuseKitchen ? ' is-open' : ''}`}
+            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canEditKitchen ? ' is-open' : ''}`}
           >
             <div className="rst-order-line__main">
               <div className="rst-order-line__title">
@@ -53,9 +54,9 @@ export default function OrderLines({
             </div>
 
             <div className="rst-order-line__actions">
-              {canEditNew ? (
+              {canEdit ? (
                 <>
-                  {onEditNote ? (
+                  {canEditNew && onEditNote ? (
                     <button
                       type="button"
                       className="rst-order-line__note-btn"
@@ -88,27 +89,14 @@ export default function OrderLines({
                     type="button"
                     className="rst-order-line__remove"
                     aria-label={t('common.delete')}
+                    title={canEditKitchen
+                      ? t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ позиции' })
+                      : undefined}
                     onClick={() => onRemove(line.id)}
                   >
                     ✕
                   </button>
                 </>
-              ) : canRefuseKitchen ? (
-                <button
-                  type="button"
-                  className="rst-order-line__refuse"
-                  title={t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ (на принтер кухни)' })}
-                  onClick={() => {
-                    if (window.confirm(t('rst.order.confirmRefuseKitchenItem', {
-                      name: line.name,
-                      defaultValue: `Отказать «${line.name}» и отправить на принтер кухни?`,
-                    }))) {
-                      onRemove(line.id);
-                    }
-                  }}
-                >
-                  {t('rst.order.refuseShort', { defaultValue: 'Отказ' })}
-                </button>
               ) : kitchen ? (
                 <span className="rst-order-line__lock" title={t('rst.order.onKitchen')} aria-hidden>
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
