@@ -9,6 +9,7 @@ import com.pos.restaurant.floor.dto.FloorSnapshotResponse;
 import com.pos.restaurant.floor.dto.TableReservationSummary;
 import com.pos.restaurant.floor.dto.TableResponse;
 import com.pos.restaurant.floor.entity.FloorHall;
+import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.mapper.FloorTableMapper;
 import com.pos.restaurant.floor.repository.FloorHallRepository;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
@@ -54,6 +55,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<OrderStatus> activeStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
+        List<FloorOrderTableLink> links = linkRepository.findActiveByStore(companyId, storeId, activeStatuses);
         Map<Integer, List<FloorOrder>> openOrders = new HashMap<>();
         for (FloorOrder order : orderRepository.findTableOrdersByCompanyIdAndStoreIdAndStatusIn(
             companyId, storeId, activeStatuses
@@ -62,20 +64,22 @@ public class FloorQueryServiceImpl implements FloorQueryService {
                 addOpenOrder(openOrders, order.getTable().getId(), order);
             }
         }
-        for (FloorOrderTableLink link : linkRepository.findActiveByStore(companyId, storeId, activeStatuses)) {
+        for (FloorOrderTableLink link : links) {
             addOpenOrder(openOrders, link.getTable().getId(), link.getOrder());
         }
 
-        Map<UUID, List<FloorOrderItem>> itemsByOrder = openOrders.values().stream()
+        List<UUID> orderIds = openOrders.values().stream()
             .flatMap(List::stream)
-            .collect(Collectors.toMap(
-                FloorOrder::getId,
-                order -> itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(order.getId()),
-                (a, b) -> a
-            ));
+            .map(FloorOrder::getId)
+            .distinct()
+            .toList();
+        Map<UUID, List<FloorOrderItem>> itemsByOrder = orderIds.isEmpty()
+            ? Map.of()
+            : itemRepository.findByOrderIdInOrdered(orderIds).stream()
+                .collect(Collectors.groupingBy(item -> item.getOrder().getId()));
 
         Map<UUID, List<String>> linkedCodesByOrder = new HashMap<>();
-        for (FloorOrderTableLink link : linkRepository.findActiveByStore(companyId, storeId, activeStatuses)) {
+        for (FloorOrderTableLink link : links) {
             linkedCodesByOrder
                 .computeIfAbsent(link.getOrder().getId(), ignored -> new ArrayList<>())
                 .add(link.getTable().getCode());
@@ -93,9 +97,13 @@ public class FloorQueryServiceImpl implements FloorQueryService {
             companyId,
             storeId
         );
+        Map<Integer, List<FloorTable>> tablesByHall = tableRepository
+            .findByCompanyIdAndStoreIdAndActiveTrueOrderByHallSortAndCode(companyId, storeId)
+            .stream()
+            .collect(Collectors.groupingBy(table -> table.getHall().getId()));
         List<FloorSnapshotResponse.HallFloorResponse> hallResponses = halls.stream()
             .map(hall -> {
-                List<TableResponse> tables = tableRepository.findByHallIdAndActiveTrueOrderByCodeAsc(hall.getId())
+                List<TableResponse> tables = tablesByHall.getOrDefault(hall.getId(), List.of())
                     .stream()
                     .map(table -> {
                         TableResponse mapped = tableMapper.toResponse(table);

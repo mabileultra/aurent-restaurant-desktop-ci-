@@ -37,9 +37,10 @@ export function useFloorTableActions({
   const orderId = selectedOrderId ?? checks[0]?.id ?? null;
 
   const inspectOrderQuery = useQuery({
-    queryKey: ['rst-order-inspect', orderId],
+    queryKey: ['rst-order', orderId],
     queryFn: () => rstOrderApi.get(orderId).then((r) => r.data),
     enabled: !!orderId,
+    staleTime: 4_000,
   });
 
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
@@ -71,7 +72,7 @@ export function useFloorTableActions({
       setMergeOpen(false);
       setTargetTableId(null);
       invalidateFloor();
-      qc.invalidateQueries({ queryKey: ['rst-order-inspect', orderId] });
+      qc.invalidateQueries({ queryKey: ['rst-order', orderId] });
     },
     onError: (err) => toastApiError(err, t('rst.floor.mergeFailed')),
   });
@@ -82,7 +83,7 @@ export function useFloorTableActions({
       toast.success(t('rst.order.waiterAssigned'));
       setAssignOpen(false);
       setAssignWaiterId('');
-      qc.invalidateQueries({ queryKey: ['rst-order-inspect', orderId] });
+      qc.invalidateQueries({ queryKey: ['rst-order', orderId] });
       invalidateFloor();
     },
     onError: (err) => toastApiError(err, t('rst.order.waiterAssignFailed')),

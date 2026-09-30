@@ -42,5 +42,6 @@
     <include file="db/changelog/v35-print-jobs.xml"/>
     <include file="db/changelog/v36-print-job-claim.xml"/>
     <include file="db/changelog/v37-activity-time-indexes.xml"/>
+    <include file="db/changelog/v38-active-order-index.xml"/>
 
 </databaseChangeLog>
