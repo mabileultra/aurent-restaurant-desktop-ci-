@@ -12,6 +12,7 @@ import com.pos.restaurant.order.entity.FloorOrderItemModifier;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -61,11 +62,13 @@ public class KitchenTicketAssembler {
         List<String> modifiers = modifiersByItem.getOrDefault(item.getId(), List.of()).stream()
             .map(FloorOrderItemModifier::getName)
             .toList();
+        BigDecimal qty = line.getQuantity() != null ? line.getQuantity() : item.getQuantity();
         return new KitchenTicketLineResponse(
+            line.getId(),
             item.getId(),
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
-            item.getQuantity(),
+            qty,
             item.getNote(),
             modifiers
         );

@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 public record KitchenTicketLineResponse(
+    UUID id,
     UUID orderItemId,
     String name,
     String portionText,

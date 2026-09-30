@@ -4,6 +4,8 @@ const rst = (path) => `/rst${path}`;
 
 export const rstFloorApi = {
   getFloorSnapshot: (storeId) => api.get(rst(`/stores/${storeId}/floor`)),
+  /** Tiny watermark — poll often; full floor only when revision changes. */
+  getFloorRevision: (storeId) => api.get(rst(`/stores/${storeId}/floor-revision`)),
   listHalls: (storeId) => api.get(rst(`/stores/${storeId}/halls`)),
   createHall: (storeId, data) => api.post(rst(`/stores/${storeId}/halls`), data),
   updateHall: (hallId, data) => api.put(rst(`/halls/${hallId}`), data),

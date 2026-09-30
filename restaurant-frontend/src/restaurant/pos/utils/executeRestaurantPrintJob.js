@@ -11,6 +11,7 @@ import {
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
 import { kitchenTicketMetaLines } from './ticketLayout';
+import { resolvePrintWaiterName } from './printWaiterNames';
 
 function parsePayload(raw) {
   try {
@@ -83,16 +84,11 @@ function batchItemLines(line) {
   });
 }
 
-function lookupWaiterName(waiterUserId, waiterNameById) {
-  if (waiterUserId == null || !waiterNameById) return null;
-  return waiterNameById.get?.(String(waiterUserId))
-    || waiterNameById[String(waiterUserId)]
-    || null;
-}
-
-function metaFromPayload(payload, order, t, waiterNameById) {
-  const waiterName = lookupWaiterName(
-    payload?.waiterUserId ?? order?.waiterUserId,
+async function metaFromPayload(payload, order, t, waiterNameById, storeId) {
+  const waiterUserId = payload?.waiterUserId ?? order?.waiterUserId;
+  const waiterName = await resolvePrintWaiterName(
+    storeId ?? order?.storeId,
+    waiterUserId,
     waiterNameById,
   );
   return kitchenTicketMetaLines({
@@ -103,7 +99,7 @@ function metaFromPayload(payload, order, t, waiterNameById) {
   });
 }
 
-async function runCategorySlip(payload, t, waiterNameById) {
+async function runCategorySlip(payload, t, waiterNameById, storeId) {
   const printer = String(payload.printerName || '').trim();
   if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
 
@@ -114,7 +110,7 @@ async function runCategorySlip(payload, t, waiterNameById) {
       title: payload.categoryName || '',
       printerName: printer,
       lines: [
-        ...metaFromPayload(payload, null, t, waiterNameById),
+        ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
         '---',
         ...itemLines({
           name: payload.itemName,
@@ -138,7 +134,7 @@ async function runCategorySlip(payload, t, waiterNameById) {
     title: payload.categoryName || '',
     printerName: printer,
     lines: [
-      ...metaFromPayload(payload, order, t, waiterNameById),
+      ...(await metaFromPayload(payload, order, t, waiterNameById, storeId ?? order.storeId)),
       '---',
       ...itemLines({ ...line, quantity: qty }),
       '---',
@@ -147,7 +143,7 @@ async function runCategorySlip(payload, t, waiterNameById) {
   return { mode: 'silent', ack: true };
 }
 
-async function runCategoryBatch(payload, t, waiterNameById) {
+async function runCategoryBatch(payload, t, waiterNameById, storeId) {
   const printer = String(payload.printerName || '').trim();
   if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
   const dishLines = (payload.lines || []).flatMap((line, index) => {
@@ -159,7 +155,7 @@ async function runCategoryBatch(payload, t, waiterNameById) {
     title: payload.title || '',
     printerName: printer,
     lines: [
-      ...metaFromPayload(payload, null, t, waiterNameById),
+      ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
       '---',
       ...dishLines,
       '---',
@@ -171,7 +167,7 @@ async function runCategoryBatch(payload, t, waiterNameById) {
 /**
  * @returns {Promise<{ ack: boolean, mode?: string }>}
  */
-export async function executeRestaurantPrintJob(job, { t, waiterNameById } = {}) {
+export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeId } = {}) {
   if (!job || !isDesktopPrinter()) return { ack: false };
   const payload = parsePayload(job.payload);
   if (!payload) return { ack: false };
@@ -181,7 +177,11 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById } = {})
       return { ack: true, mode: 'silent' };
     }
     const orderRes = await rstOrderApi.get(payload.orderId);
-    const printed = await printGuestBill({ order: orderRes.data, t });
+    const printed = await printGuestBill({
+      order: orderRes.data,
+      t,
+      waiterNameById,
+    });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
     if (printed?.mode === 'missing') return { ack: true, mode: 'missing' };
     return { ack: false, mode: printed?.mode || 'skip' };
@@ -189,10 +189,23 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById } = {})
 
   if (job.kind === 'KITCHEN_SEND') {
     const orderRes = await rstOrderApi.get(payload.orderId);
+    const order = orderRes.data;
+    const qtyByItemId = Object.fromEntries(
+      (payload.lines || [])
+        .filter((row) => row?.itemId != null)
+        .map((row) => [String(row.itemId), row.quantity]),
+    );
+    const waiterName = await resolvePrintWaiterName(
+      storeId ?? order?.storeId,
+      order?.waiterUserId,
+      waiterNameById,
+    );
     const printed = await printKitchenTicket({
-      order: orderRes.data,
+      order,
       t,
-      onlyItemIds: payload.itemIds || [],
+      onlyItemIds: payload.itemIds || (payload.lines || []).map((row) => row.itemId),
+      qtyByItemId,
+      waiterName,
       waiterNameById,
     });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
@@ -206,11 +219,11 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById } = {})
   }
 
   if (job.kind === 'CATEGORY_BATCH') {
-    return runCategoryBatch(payload, t, waiterNameById);
+    return runCategoryBatch(payload, t, waiterNameById, storeId);
   }
 
   if (job.kind === 'CATEGORY_SLIP') {
-    return runCategorySlip(payload, t, waiterNameById);
+    return runCategorySlip(payload, t, waiterNameById, storeId);
   }
 
   return { ack: false };

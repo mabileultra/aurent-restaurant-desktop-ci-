@@ -34,18 +34,37 @@ export function optimisticAddItem(order, menuItem, { note, modifierOptionIds } =
   const cleanNote = note?.trim() || '';
   const noMods = !(modifierOptionIds?.length);
   if (noMods && !cleanNote) {
-    const idx = items.findIndex((row) => (
+    const idxNew = items.findIndex((row) => (
       row.menuItemId === menuItem.id
       && row.itemStatus === 'NEW'
       && !row.note
       && !(row.modifiers?.length)
     ));
-    if (idx >= 0) {
-      const row = items[idx];
+    if (idxNew >= 0) {
+      const row = items[idxNew];
       const quantity = Number(row.quantity || 0) + 1;
-      items[idx] = {
+      items[idxNew] = {
         ...row,
         quantity,
+        lineTotal: lineTotal(quantity, row.unitPrice),
+      };
+      return withSubtotal(base, items);
+    }
+    const idxKitchen = items.findIndex((row) => (
+      row.menuItemId === menuItem.id
+      && row.itemStatus
+      && row.itemStatus !== 'NEW'
+      && row.itemStatus !== 'CANCELLED'
+      && !row.note
+      && !(row.modifiers?.length)
+    ));
+    if (idxKitchen >= 0) {
+      const row = items[idxKitchen];
+      const quantity = Number(row.quantity || 0) + 1;
+      items[idxKitchen] = {
+        ...row,
+        quantity,
+        sentQuantity: Number(row.sentQuantity) || 0,
         lineTotal: lineTotal(quantity, row.unitPrice),
       };
       return withSubtotal(base, items);

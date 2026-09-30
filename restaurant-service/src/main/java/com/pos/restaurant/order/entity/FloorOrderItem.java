@@ -57,6 +57,11 @@ public class FloorOrderItem {
     @Builder.Default
     private BigDecimal returnedQuantity = BigDecimal.ZERO;
 
+    /** Qty already fired to kitchen; pending send = quantity − sentQuantity. */
+    @Column(name = "sent_quantity", nullable = false, precision = 18, scale = 3)
+    @Builder.Default
+    private BigDecimal sentQuantity = BigDecimal.ZERO;
+
     @Column(name = "unit_price", nullable = false, precision = 18, scale = 2)
     @Builder.Default
     private BigDecimal unitPrice = BigDecimal.ZERO;

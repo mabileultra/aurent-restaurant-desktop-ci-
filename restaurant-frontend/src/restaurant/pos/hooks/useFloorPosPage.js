@@ -23,12 +23,16 @@ import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
+import { useStoreFloorSync } from './useStoreFloorSync';
 
 const COUNTER_STALE_MS = 15_000;
-const FLOOR_STALE_MS = 12_000;
+const FLOOR_STALE_MS = 8_000;
 const SHIFT_STALE_MS = 20_000;
 const MENU_STALE_MS = 10 * 60_000;
-const ORDER_STALE_MS = 4_000;
+const ORDER_STALE_MS = 3_000;
+/** Fallback if revision poll misses; primary sync is useStoreFloorSync (~2s watermark). */
+const FLOOR_POLL_MS = 20_000;
+const ORDER_POLL_MS = 12_000;
 
 export function useFloorPosPage() {
   const { t } = useTranslation();
@@ -62,12 +66,16 @@ export function useFloorPosPage() {
   const qc = useQueryClient();
   const onFloor = posMode === 'floor';
 
+  useStoreFloorSync(storeId, { activeOrderId });
+
   const floorQuery = useQuery({
     queryKey: ['rst-floor', storeId],
     queryFn: () => rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data),
     enabled: storeId != null && (onFloor || !!activeOrderId),
     staleTime: FLOOR_STALE_MS,
-    refetchInterval: activeOrderId || !onFloor ? false : 15_000,
+    // Keep polling on the board even when a ticket is open (phone / other POS edits).
+    refetchInterval: onFloor || activeOrderId ? FLOOR_POLL_MS : false,
+    refetchOnWindowFocus: true,
   });
   const counterQuery = useQuery({
     queryKey: ['rst-counter-orders', storeId, channel],
@@ -75,6 +83,7 @@ export function useFloorPosPage() {
     enabled: storeId != null && !!channel && !activeOrderId,
     staleTime: COUNTER_STALE_MS,
     refetchInterval: 10_000,
+    refetchOnWindowFocus: true,
   });
   const shiftQuery = useQuery({
     queryKey: ['rst-shift-current', storeId],
@@ -102,6 +111,8 @@ export function useFloorPosPage() {
     queryFn: () => rstOrderApi.get(activeOrderId).then((r) => r.data),
     enabled: !!activeOrderId,
     staleTime: ORDER_STALE_MS,
+    refetchInterval: activeOrderId ? ORDER_POLL_MS : false,
+    refetchOnWindowFocus: true,
     placeholderData: orderFloorSeed,
   });
   const staffQuery = useQuery({
@@ -263,7 +274,9 @@ export function useFloorPosPage() {
   const handleQty = (line, nextQty) => {
     const isNew = line.itemStatus === 'NEW';
     const kitchen = line.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
-    if (!isNew && !(access.canCancelOrder && kitchen)) return;
+    const sent = Number(line.sentQuantity) || 0;
+    const waiterPendingOk = kitchen && nextQty >= sent;
+    if (!isNew && !(access.canCancelOrder && kitchen) && !waiterPendingOk) return;
     if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });

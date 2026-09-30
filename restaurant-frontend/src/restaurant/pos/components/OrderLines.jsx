@@ -1,9 +1,17 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { lineHasPendingSend } from '../utils/floorPosDerivations';
 import '../styles/order-workspace.css';
 import '../styles/item-compose-modal.css';
 
 function isKitchenLocked(status) {
   return status && status !== 'NEW' && status !== 'CANCELLED';
+}
+
+function pendingQty(line) {
+  if (line?.itemStatus === 'NEW') return Number(line.quantity) || 0;
+  const qty = Number(line?.quantity) || 0;
+  const sent = line?.sentQuantity == null ? qty : (Number(line.sentQuantity) || 0);
+  return Math.max(0, qty - sent);
 }
 
 function categoryTone(name) {
@@ -33,23 +41,34 @@ export default function OrderLines({
       {items.map((line) => {
         const kitchen = isKitchenLocked(line.itemStatus);
         const isNew = line.itemStatus === 'NEW';
+        const pending = lineHasPendingSend(line);
+        const reorderPending = kitchen && pending;
         const canEditNew = !locked && isNew;
         const canEditKitchen = allowKitchenRefuse && kitchen;
-        const canEdit = canEditNew || canEditKitchen;
+        const canEditPending = !locked && reorderPending;
+        const canEdit = canEditNew || canEditKitchen || canEditPending;
         const category = categoryByMenuId?.[line.menuItemId]
           || categoryByMenuId?.[String(line.menuItemId)]
           || '';
         const tone = categoryTone(category);
+        const minQty = kitchen && !allowKitchenRefuse
+          ? (line.sentQuantity == null ? Number(line.quantity) || 0 : Number(line.sentQuantity) || 0)
+          : 0;
         return (
           <div
             key={line.id}
-            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canEditKitchen ? ' is-open' : ''}${tone ? ` is-cat-${tone}` : ''}`}
+            className={`rst-order-line${isNew || reorderPending ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canEditKitchen || canEditPending ? ' is-open' : ''}${tone ? ` is-cat-${tone}` : ''}`}
             title={category || undefined}
           >
             <div className="rst-order-line__main">
               <div className="rst-order-line__title">
                 <strong>{line.name}</strong>
                 {isNew ? <span className="rst-order-line__pill rst-order-line__pill--new">{t('rst.order.badgeNew')}</span> : null}
+                {reorderPending ? (
+                  <span className="rst-order-line__pill rst-order-line__pill--new">
+                    {t('rst.order.badgeReorder', { defaultValue: `+${pendingQty(line)}`, count: pendingQty(line) })}
+                  </span>
+                ) : null}
                 {kitchen ? <span className="rst-order-line__pill rst-order-line__pill--kitchen">{t('rst.order.onKitchen')}</span> : null}
               </div>
               <div className="rst-order-line__meta">
@@ -85,6 +104,7 @@ export default function OrderLines({
                       type="button"
                       className="rst-qty"
                       aria-label="-"
+                      disabled={minQty > 0 && Number(line.quantity) <= minQty}
                       onClick={() => onQty(line, Number(line.quantity) - 1)}
                     >
                       −
@@ -99,17 +119,19 @@ export default function OrderLines({
                       +
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    className="rst-order-line__remove"
-                    aria-label={t('common.delete')}
-                    title={canEditKitchen
-                      ? t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ позиции' })
-                      : undefined}
-                    onClick={() => onRemove(line.id)}
-                  >
-                    ✕
-                  </button>
+                  {canEditNew || canEditKitchen ? (
+                    <button
+                      type="button"
+                      className="rst-order-line__remove"
+                      aria-label={t('common.delete')}
+                      title={canEditKitchen
+                        ? t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ позиции' })
+                        : undefined}
+                      onClick={() => onRemove(line.id)}
+                    >
+                      ✕
+                    </button>
+                  ) : null}
                 </>
               ) : kitchen ? (
                 <span className="rst-order-line__lock" title={t('rst.order.onKitchen')} aria-hidden>

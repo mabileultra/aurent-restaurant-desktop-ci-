@@ -5,6 +5,7 @@ import com.pos.restaurant.booking.entity.FloorReservation;
 import com.pos.restaurant.booking.repository.FloorReservationRepository;
 import com.pos.restaurant.booking.support.ReservationLookup;
 import com.pos.restaurant.floor.dto.ActiveOrderSummary;
+import com.pos.restaurant.floor.dto.FloorRevisionResponse;
 import com.pos.restaurant.floor.dto.FloorSnapshotResponse;
 import com.pos.restaurant.floor.dto.TableReservationSummary;
 import com.pos.restaurant.floor.dto.TableResponse;
@@ -49,6 +50,13 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     private final FloorOrderTableLinkRepository linkRepository;
     private final FloorReservationRepository reservationRepository;
     private final OrderTotals orderTotals;
+
+    @Override
+    public FloorRevisionResponse getRevision(Integer storeId) {
+        Integer companyId = tenantSupport.requireCompanyId();
+        Long millis = orderRepository.findFloorRevisionMillis(companyId, storeId);
+        return new FloorRevisionResponse(storeId, millis == null ? 0L : millis);
+    }
 
     @Override
     @Cacheable(cacheNames = RestaurantCacheNames.FLOOR, key = "#storeId")

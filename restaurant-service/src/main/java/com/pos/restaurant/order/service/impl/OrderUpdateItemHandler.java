@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.UUID;
 
@@ -35,15 +36,26 @@ public class OrderUpdateItemHandler {
         FloorOrderItem item = itemRepository.findByIdAndOrderId(itemId, orderId)
             .orElseThrow(() -> new NotFoundException("Order item not found: " + itemId));
 
+        var qty = request.quantity().setScale(3, RoundingMode.HALF_UP);
+        BigDecimal sent = item.getSentQuantity() == null ? BigDecimal.ZERO : item.getSentQuantity();
+
         if (item.getItemStatus() == OrderItemStatus.NEW) {
             mutabilityPolicy.assertMutable(item);
         } else if (item.getItemStatus() == OrderItemStatus.CANCELLED) {
             throw new ForbiddenException("Cannot change a cancelled item");
         } else if (!tenantSupport.canCancelOrdersWithItems()) {
-            throw new ForbiddenException("Only a manager or cashier can change a kitchen item");
+            // Waiter: only the unsent reorder delta (cannot go below already sent).
+            if (qty.compareTo(sent) < 0) {
+                throw new ForbiddenException("Only a manager or cashier can change a kitchen item");
+            }
+        } else if (qty.compareTo(sent) < 0) {
+            item.setSentQuantity(qty);
         }
 
-        item.setQuantity(request.quantity().setScale(3, RoundingMode.HALF_UP));
+        item.setQuantity(qty);
+        if (item.getSentQuantity() != null && item.getSentQuantity().compareTo(qty) > 0) {
+            item.setSentQuantity(qty);
+        }
         if (request.note() != null && item.getItemStatus() == OrderItemStatus.NEW) {
             item.setNote(request.note().isBlank() ? null : request.note().trim());
         }

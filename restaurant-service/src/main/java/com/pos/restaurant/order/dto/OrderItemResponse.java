@@ -12,6 +12,7 @@ public record OrderItemResponse(
     String portionText,
     BigDecimal quantity,
     BigDecimal returnedQuantity,
+    BigDecimal sentQuantity,
     BigDecimal unitPrice,
     BigDecimal lineTotal,
     BigDecimal taxRate,

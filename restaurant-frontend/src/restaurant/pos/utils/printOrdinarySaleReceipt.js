@@ -4,12 +4,14 @@
  * Restaurant pay flow does not call this; reprint is from paid-receipt UI.
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { resolveReceiptQrValue } from '../../../utils/fiscalReceiptFormat';
 import {
   getDesktopPrinterSettings,
   isDesktopPrinter,
   printTicketLines,
 } from './desktopPrinters';
-import { moneyRow, qtyNameRow, ticketStamp } from './ticketLayout';
+import { buildRestaurantTicketBody, formatTicketItemLines } from './buildRestaurantTicketBody';
+import { ticketStamp } from './ticketLayout';
 
 const HOST_ID = 'rst-ordinary-sale-print-host';
 
@@ -22,50 +24,52 @@ function isFiscalizedSale(sale) {
 }
 
 /**
- * @param {{ sale: object, t?: Function }} opts
+ * @param {{ sale: object, t?: Function, shift?: object|null }} opts
  */
-export async function printOrdinarySaleReceipt({ sale, t } = {}) {
+export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
   if (typeof window === 'undefined' || !sale) return { mode: 'skip' };
 
   const title = t?.('rst.order.receiptTitle', { defaultValue: 'Чек' }) || 'Чек';
-  const when = sale.createdAt ? ticketStamp(sale.createdAt) : ticketStamp();
+  const qrValue = isFiscalizedSale(sale) ? resolveReceiptQrValue(sale) : '';
+  const textLines = buildRestaurantTicketBody({
+    kind: 'sale',
+    sale,
+    t,
+    shift,
+    paymentMethod: sale.paymentMethod,
+    qrValue,
+  });
 
-  const lines = (sale.items || []).map((item) => {
-    const qty = Number(item.quantity) || 0;
-    const name = escapeHtml(item.name || item.productName || '');
-    const total = fmtMoneyCompact(item.lineTotal ?? item.total ?? 0);
-    const unit = fmtMoneyCompact(item.unitPrice ?? item.price ?? 0);
-    return `<div class="rst-ord-print__line">
-      <div><strong>${qty}×</strong> ${name}</div>
-      <div class="rst-ord-print__prices">${unit} · <strong>${total}</strong></div>
-    </div>`;
-  }).join('');
+  if (isDesktopPrinter()) {
+    const settings = await getDesktopPrinterSettings();
+    const printer = settings?.receiptPrinterName || '';
+    if (printer) {
+      await printTicketLines({ title, lines: textLines, printerName: printer });
+      return { mode: 'silent', fiscal: false };
+    }
+  }
+
+  const when = sale.createdAt ? ticketStamp(sale.createdAt) : ticketStamp();
+  const itemHtml = (sale.items || [])
+    .filter((row) => !row.isServiceLine)
+    .map((item) => {
+      const rows = formatTicketItemLines(item);
+      return `<div class="rst-ord-print__line">${rows.map((row) => `<div>${escapeHtml(row)}</div>`).join('')}</div>`;
+    })
+    .join('');
 
   const service = Number(sale.serviceAmount) || 0;
   const discount = Number(sale.discountTotal ?? sale.orderDiscountAmount) || 0;
   const subtotal = Number(sale.subtotal) || 0;
   const totalAmount = Number(sale.totalAmount) || 0;
+  const vat = Number(sale.taxTotal) || 0;
   const method = String(sale.paymentMethod || 'CASH').toUpperCase();
   const methodLabel = method === 'CARD'
     ? (t?.('sales.paymentCard', { defaultValue: 'Карта' }) || 'Карта')
     : method === 'MIXED'
       ? (t?.('salesLedger.filters.mixed', { defaultValue: 'Смешанная' }) || 'Смешанная')
       : (t?.('sales.paymentCash', { defaultValue: 'Наличные' }) || 'Наличные');
-  const paidSum = sale.cashAmount != null || sale.cardAmount != null
-    ? (Number(sale.cashAmount) || 0) + (Number(sale.cardAmount) || 0)
-    : totalAmount;
-
-  const customer = sale.customerName
-    ? `<p class="rst-ord-print__meta">${escapeHtml(sale.customerName)}</p>`
-    : '';
-  const store = sale.storeName
-    ? `<p class="rst-ord-print__store">${escapeHtml(sale.storeName)}</p>`
-    : '';
-  const cashier = sale.cashierName || sale.employeeName
-    ? `<p class="rst-ord-print__meta">${escapeHtml(
-      t?.('fiscalReceipt.cashier', { defaultValue: 'Кассир' }) || 'Кассир',
-    )}: ${escapeHtml(sale.cashierName || sale.employeeName)}</p>`
-    : '';
+  const withoutService = Math.max(0, subtotal - discount);
 
   document.getElementById(HOST_ID)?.remove();
   const host = document.createElement('div');
@@ -74,58 +78,26 @@ export async function printOrdinarySaleReceipt({ sale, t } = {}) {
   host.innerHTML = `
     <div class="rst-ord-print">
       <p class="rst-ord-print__title">${escapeHtml(title)}</p>
-      ${store}
+      ${sale.storeName ? `<p class="rst-ord-print__store">${escapeHtml(sale.storeName)}</p>` : ''}
       <p class="rst-ord-print__meta">№${escapeHtml(sale.receiptNumber || sale.id || '—')} · ${escapeHtml(when)}</p>
-      ${customer}
-      ${cashier}
+      ${sale.customerName ? `<p class="rst-ord-print__meta">${escapeHtml(sale.customerName)}</p>` : ''}
+      ${sale.cashierName || sale.employeeName ? `<p class="rst-ord-print__meta">${escapeHtml(
+        t?.('fiscalReceipt.cashier', { defaultValue: 'Кассир' }) || 'Кассир',
+      )}: ${escapeHtml(sale.cashierName || sale.employeeName)}</p>` : ''}
       <hr />
-      ${lines || `<p>${escapeHtml(t?.('rst.order.emptyLines', { defaultValue: 'Нет позиций' }) || 'Нет позиций')}</p>`}
+      ${itemHtml || `<p>${escapeHtml(t?.('rst.order.emptyLines', { defaultValue: 'Нет позиций' }) || 'Нет позиций')}</p>`}
       <hr />
       <div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.subtotalShort', { defaultValue: 'Подытог' }) || 'Подытог')}</span><strong>${fmtMoneyCompact(subtotal)}</strong></div>
       ${service > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.serviceShort', { defaultValue: 'Обслуживание' }) || 'Обслуживание')}</span><strong>${fmtMoneyCompact(service)}</strong></div>` : ''}
       ${discount > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка')}</span><strong>−${fmtMoneyCompact(discount)}</strong></div>` : ''}
-      <div class="rst-ord-print__row rst-ord-print__row--grand"><span>${escapeHtml(t?.('rst.order.totalDue', { defaultValue: 'Итого' }) || 'Итого')}</span><strong>${fmtMoneyCompact(totalAmount)}</strong></div>
-      <div class="rst-ord-print__row"><span>${escapeHtml(methodLabel)}</span><strong>${fmtMoneyCompact(paidSum)}</strong></div>
+      <div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.paymentFormLine', { method: methodLabel, defaultValue: `Форма оплаты: ${methodLabel}` }) || `Форма оплаты: ${methodLabel}`)}</span></div>
+      ${vat > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.vatShort', { defaultValue: 'НДС' }) || 'НДС')}</span><strong>${fmtMoneyCompact(vat)}</strong></div>` : ''}
+      ${service > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.withoutService', { defaultValue: 'Без обслуживания' }) || 'Без обслуживания')}</span><strong>${fmtMoneyCompact(withoutService)}</strong></div>` : ''}
+      <div class="rst-ord-print__row rst-ord-print__row--grand"><span>${escapeHtml(t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО')}</span><strong>${fmtMoneyCompact(totalAmount)}</strong></div>
       ${Number(sale.changeGiven) > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача')}</span><strong>${fmtMoneyCompact(sale.changeGiven)}</strong></div>` : ''}
+      ${qrValue ? `<p class="rst-ord-print__meta">${escapeHtml(t?.('rst.order.ofdQrHint', { defaultValue: 'ОФД / QR' }) || 'ОФД / QR')}</p><p class="rst-ord-print__meta">${escapeHtml(qrValue)}</p>` : ''}
       <p class="rst-ord-print__footer">${escapeHtml(t?.('rst.order.billFooter', { defaultValue: 'Спасибо за визит!' }) || 'Спасибо за визит!')}</p>
     </div>`;
-  if (isDesktopPrinter()) {
-    const settings = await getDesktopPrinterSettings();
-    const printer = settings?.receiptPrinterName || '';
-    if (printer) {
-      const textLines = [];
-      if (sale.storeName) textLines.push(sale.storeName);
-      textLines.push(`№${sale.receiptNumber || sale.id || '—'} · ${when}`);
-      if (sale.customerName) textLines.push(sale.customerName);
-      if (sale.cashierName || sale.employeeName) {
-        textLines.push(`${t?.('fiscalReceipt.cashier', { defaultValue: 'Кассир' }) || 'Кассир'}: ${sale.cashierName || sale.employeeName}`);
-      }
-      textLines.push('---');
-      for (const item of sale.items || []) {
-        textLines.push(qtyNameRow(item.quantity, item.name || item.productName || ''));
-        textLines.push(moneyRow('  ', item.lineTotal ?? item.total ?? 0));
-      }
-      textLines.push('---');
-      if (subtotal > 0) {
-        textLines.push(moneyRow(t?.('rst.order.subtotalShort', { defaultValue: 'Подытог' }) || 'Подытог', subtotal));
-      }
-      if (service > 0) {
-        textLines.push(moneyRow(t?.('rst.order.serviceShort', { defaultValue: 'Обслуживание' }) || 'Обслуживание', service));
-      }
-      if (discount > 0) {
-        textLines.push(moneyRow(t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка', -discount));
-      }
-      textLines.push(moneyRow(t?.('rst.order.totalDue', { defaultValue: 'Итого' }) || 'Итого', totalAmount));
-      textLines.push(moneyRow(methodLabel, paidSum));
-      if (Number(sale.changeGiven) > 0) {
-        textLines.push(moneyRow(t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача', sale.changeGiven));
-      }
-      textLines.push('---');
-      textLines.push(t?.('rst.order.billFooter', { defaultValue: 'Спасибо за визит!' }) || 'Спасибо за визит!');
-      await printTicketLines({ title, lines: textLines, printerName: printer });
-      return { mode: 'silent', fiscal: false };
-    }
-  }
 
   document.body.appendChild(host);
 
@@ -166,9 +138,8 @@ function printViaIframe(bodyHtml) {
         .rst-ord-print__store { margin: 0 0 4px; text-align: center; font-weight: 700; }
         .rst-ord-print__meta { margin: 2px 0; font-size: 11px; }
         .rst-ord-print__line { margin: 6px 0; }
-        .rst-ord-print__prices { font-size: 11px; }
         .rst-ord-print__row { display: flex; justify-content: space-between; gap: 8px; margin: 3px 0; }
-        .rst-ord-print__row--grand { margin-top: 6px; font-size: 14px; }
+        .rst-ord-print__row--grand { margin-top: 6px; font-size: 15px; font-weight: 900; }
         .rst-ord-print__footer { margin: 10px 0 0; text-align: center; font-size: 11px; }
         hr { border: 0; border-top: 1px dashed #000; margin: 8px 0; }
       </style></head><body>${bodyHtml}</body></html>`);
@@ -190,13 +161,12 @@ function printViaIframe(bodyHtml) {
       window.setTimeout(trigger, 50);
     } else {
       iframe.onload = () => window.setTimeout(trigger, 50);
-      window.setTimeout(trigger, 300);
     }
   });
 }
 
 function escapeHtml(value) {
-  return String(value || '')
+  return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')

@@ -142,22 +142,22 @@
 }
 
 .rst-order-line__note {
-  margin-top: 0.35rem;
+  margin-top: 0.4rem;
   color: #c5cce0;
-  font-size: 0.82rem;
+  font-size: 0.95rem;
   font-style: italic;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .rst-order-line__note-btn {
-  min-height: 2.45rem;
-  min-width: 2.45rem;
-  padding: 0 0.55rem;
+  min-height: 2.9rem;
+  min-width: 2.9rem;
+  padding: 0 0.6rem;
   border: 1px solid var(--rst-line);
   border-radius: 10px;
   background: var(--rst-surface-2);
   color: var(--rst-muted);
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   touch-action: manipulation;

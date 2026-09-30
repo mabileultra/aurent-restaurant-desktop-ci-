@@ -39,5 +39,11 @@ public interface FloorOrderItemRepository extends JpaRepository<FloorOrderItem, 
         OrderItemStatus itemStatus
     );
 
+    Optional<FloorOrderItem> findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
+        UUID orderId,
+        UUID menuItemId,
+        Collection<OrderItemStatus> itemStatuses
+    );
+
     List<FloorOrderItem> findByOrderIdAndItemStatus(UUID orderId, OrderItemStatus itemStatus);
 }

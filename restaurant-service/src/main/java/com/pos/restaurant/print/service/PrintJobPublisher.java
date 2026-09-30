@@ -39,26 +39,37 @@ public class PrintJobPublisher {
         enqueue(order, PrintJobKind.GUEST_BILL, new PrintJobPayloads.GuestBill(order.getId()));
     }
 
-    public void kitchenSend(FloorOrder order, List<UUID> itemIds) {
-        if (itemIds == null || itemIds.isEmpty()) {
+    public void kitchenSend(FloorOrder order, List<PrintJobPayloads.KitchenSendLine> lines) {
+        if (lines == null || lines.isEmpty()) {
             return;
         }
-        enqueue(order, PrintJobKind.KITCHEN_SEND, new PrintJobPayloads.KitchenSend(order.getId(), itemIds));
+        List<UUID> itemIds = lines.stream().map(PrintJobPayloads.KitchenSendLine::itemId).toList();
+        enqueue(order, PrintJobKind.KITCHEN_SEND, new PrintJobPayloads.KitchenSend(order.getId(), itemIds, lines));
     }
 
     /**
      * When KDS board is off: one batch job per Windows printer for all sent auto-print lines.
      */
     public void categorySlipsForItems(FloorOrder order, List<FloorOrderItem> items) {
-        enqueueCategoryBatches(order, items, false);
+        enqueueCategoryBatches(order, items, null, false);
+    }
+
+    /** Board off + reorder: print only the pending delta qty per line. */
+    public void categorySlipsForPending(FloorOrder order, List<FloorOrderItem> items, Map<UUID, BigDecimal> qtyByItemId) {
+        enqueueCategoryBatches(order, items, qtyByItemId, false);
     }
 
     /** Cancel / refuse: void slip to the same section printers that received the dishes. */
     public void voidSlipsForItems(FloorOrder order, List<FloorOrderItem> items) {
-        enqueueCategoryBatches(order, items, true);
+        enqueueCategoryBatches(order, items, null, true);
     }
 
-    private void enqueueCategoryBatches(FloorOrder order, List<FloorOrderItem> items, boolean voidSlip) {
+    private void enqueueCategoryBatches(
+        FloorOrder order,
+        List<FloorOrderItem> items,
+        Map<UUID, BigDecimal> qtyOverride,
+        boolean voidSlip
+    ) {
         if (order == null || items == null || items.isEmpty()) {
             return;
         }
@@ -92,7 +103,12 @@ public class PrintJobPublisher {
             if (printer.isEmpty()) {
                 continue;
             }
-            BigDecimal qty = item.getQuantity() == null ? BigDecimal.ONE : item.getQuantity();
+            BigDecimal qty = qtyOverride != null && qtyOverride.containsKey(item.getId())
+                ? qtyOverride.get(item.getId())
+                : (item.getQuantity() == null ? BigDecimal.ONE : item.getQuantity());
+            if (qty == null || qty.signum() <= 0) {
+                continue;
+            }
             byPrinter.computeIfAbsent(printer, key -> new ArrayList<>()).add(new PrintJobPayloads.CategoryBatchLine(
                 item.getName(),
                 qty,

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-042-order-item-sent-qty" author="pos">
+        <addColumn tableName="floor_order_items">
+            <column name="sent_quantity" type="NUMERIC(18, 3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+        <sql>
+            UPDATE floor_order_items
+            SET sent_quantity = quantity
+            WHERE item_status &lt;&gt; 'NEW'
+              AND item_status &lt;&gt; 'CANCELLED'
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-043-kitchen-ticket-line-qty" author="pos">
+        <addColumn tableName="kitchen_ticket_lines">
+            <column name="quantity" type="NUMERIC(18, 3)"/>
+        </addColumn>
+        <sql>
+            UPDATE kitchen_ticket_lines ktl
+            SET quantity = foi.quantity
+            FROM floor_order_items foi
+            WHERE foi.id = ktl.order_item_id
+              AND ktl.quantity IS NULL
+        </sql>
+        <dropUniqueConstraint
+            tableName="kitchen_ticket_lines"
+            constraintName="uq_kitchen_ticket_lines_item"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { rstPrintApi } from '../../api/print.api';
 import { isDesktopPrinter, listDesktopPrintersCached } from '../utils/desktopPrinters';
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
+import { prefetchPrintWaiterRoster, seedPrintWaiterRoster } from '../utils/printWaiterNames';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
 const POLL_MS = 500;
@@ -18,13 +19,21 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   tRef.current = t;
   const waiterMapRef = useRef(waiterNameById);
   waiterMapRef.current = waiterNameById;
+  const storeIdRef = useRef(storeId);
+  storeIdRef.current = storeId;
   const warnedMissingRef = useRef(new Set());
+
+  useEffect(() => {
+    if (storeId == null) return;
+    seedPrintWaiterRoster(storeId, waiterNameById);
+  }, [storeId, waiterNameById]);
 
   useEffect(() => {
     if (storeId == null || !isDesktopPrinter()) return undefined;
 
     let cancelled = false;
     listDesktopPrintersCached().catch(() => {});
+    prefetchPrintWaiterRoster(storeId, waiterMapRef.current).catch(() => {});
 
     const tick = async () => {
       if (cancelled) return;
@@ -46,6 +55,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
               const outcome = await executeRestaurantPrintJob(job, {
                 t: tRef.current,
                 waiterNameById: waiterMapRef.current,
+                storeId: storeIdRef.current,
               });
               return { job, outcome };
             }),

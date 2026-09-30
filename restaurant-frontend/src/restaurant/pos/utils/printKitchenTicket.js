@@ -10,6 +10,7 @@ import {
   readPrintedKitchenLines,
 } from './desktopPrinters';
 import { kitchenTicketMetaLines } from './ticketLayout';
+import { resolvePrintWaiterName } from './printWaiterNames';
 
 function itemLines(item) {
   const qty = Number(item.quantity) || 0;
@@ -24,11 +25,9 @@ function itemLines(item) {
   return lines;
 }
 
-function resolveWaiterName(order, waiterName, waiterNameById) {
+async function resolveWaiterName(order, waiterName, waiterNameById) {
   if (waiterName) return waiterName;
-  const id = order?.waiterUserId;
-  if (id == null || !waiterNameById) return null;
-  return waiterNameById.get?.(String(id)) || waiterNameById[String(id)] || null;
+  return resolvePrintWaiterName(order?.storeId, order?.waiterUserId, waiterNameById);
 }
 
 /** Prefer station binding; if unset / unmapped, use the only configured kitchen printer. */
@@ -109,13 +108,14 @@ export async function printCategoryTicketOnAdd({
   const printer = String(category.printPrinterName || '').trim();
   if (!printer) return { mode: 'missing', label: category.name || '' };
   const qty = Number(quantity) || 1;
+  const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
   await printTicketLines({
     title: category.name || '',
     printerName: printer,
     lines: [
       ...kitchenTicketMetaLines({
         order,
-        waiterName: resolveWaiterName(order, waiterName, waiterNameById),
+        waiterName: resolvedWaiter,
         t,
       }),
       '---',
@@ -127,13 +127,16 @@ export async function printCategoryTicketOnAdd({
 }
 
 export async function printKitchenTicket({
-  order, t, onlyItemIds, waiterName, waiterNameById,
+  order, t, onlyItemIds, qtyByItemId, waiterName, waiterNameById,
 } = {}) {
   if (!order || !isDesktopPrinter() || !onlyItemIds?.length) {
     return { mode: 'skip', missing: [], configured: false };
   }
 
   const allow = new Set(onlyItemIds.map(String));
+  const qtyMap = qtyByItemId instanceof Map
+    ? qtyByItemId
+    : new Map(Object.entries(qtyByItemId || {}).map(([id, qty]) => [String(id), qty]));
   const lines = (order.items || []).filter((item) => {
     const status = String(item.itemStatus || '').toUpperCase();
     if (status === 'CANCELLED') return false;
@@ -152,10 +155,11 @@ export async function printKitchenTicket({
         items: [],
       });
     }
+    const qty = qtyMap.has(String(line.id)) ? qtyMap.get(String(line.id)) : line.quantity;
     byStation.get(key).items.push({
-      lineId: line.id,
+      lineId: `${line.id}:${qty}`,
       name: line.name,
-      quantity: line.quantity,
+      quantity: qty,
       note: line.note,
       modifiers: line.modifiers,
       portionText: line.portionText,
@@ -163,9 +167,10 @@ export async function printKitchenTicket({
   }
 
   const title = t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек';
+  const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
   const meta = kitchenTicketMetaLines({
     order,
-    waiterName: resolveWaiterName(order, waiterName, waiterNameById),
+    waiterName: resolvedWaiter,
     t,
   });
   const settings = await getDesktopPrinterSettings();
@@ -179,15 +184,18 @@ export async function printKitchenTicket({
 }
 
 /** KDS machine prints NEW tickets for stations bound on this computer. */
-export async function printKitchenBoardTickets(tickets, t, waiterNameById) {
+export async function printKitchenBoardTickets(tickets, t, waiterNameById, storeId = null) {
   if (!isDesktopPrinter() || !tickets?.length) return { mode: 'skip' };
   const groups = [];
   for (const ticket of tickets) {
     if (String(ticket.status || '').toUpperCase() !== 'NEW') continue;
     const items = (ticket.lines || [])
-      .filter((line) => line.orderItemId && !readPrintedKitchenLines().has(String(line.orderItemId)))
+      .filter((line) => {
+        const key = line.id ? String(line.id) : `${ticket.id}:${line.orderItemId}`;
+        return line.orderItemId && !readPrintedKitchenLines().has(key);
+      })
       .map((line) => ({
-        lineId: line.orderItemId,
+        lineId: line.id ? String(line.id) : `${ticket.id}:${line.orderItemId}`,
         name: line.name,
         quantity: line.quantity,
         note: line.note,
@@ -195,13 +203,17 @@ export async function printKitchenBoardTickets(tickets, t, waiterNameById) {
         portionText: line.portionText,
       }));
     if (!items.length) continue;
+    const ticketWithStore = storeId != null && ticket.storeId == null
+      ? { ...ticket, storeId }
+      : ticket;
+    const resolvedWaiter = await resolveWaiterName(ticketWithStore, null, waiterNameById);
     groups.push({
       stationId: ticket.stationId,
       label: ticket.stationName || t?.('rst.kitchen.defaultStation', { defaultValue: 'Кухня' }) || 'Кухня',
       title: t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек',
       meta: kitchenTicketMetaLines({
         order: ticket,
-        waiterName: resolveWaiterName(ticket, null, waiterNameById),
+        waiterName: resolvedWaiter,
         t,
       }),
       extra: ticket.clientName || '',

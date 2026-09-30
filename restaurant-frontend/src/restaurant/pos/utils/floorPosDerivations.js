@@ -96,14 +96,24 @@ export function resolveBackLabelKey(posMode) {
   return 'rst.order.backToFloor';
 }
 
+/** Unsent qty: NEW lines, or kitchen lines with quantity > sentQuantity (reorder). */
+export function lineHasPendingSend(line) {
+  if (!line || line.itemStatus === 'CANCELLED') return false;
+  if (line.itemStatus === 'NEW') return true;
+  const qty = Number(line.quantity) || 0;
+  // Missing sentQuantity (old API) → treat kitchen line as fully sent.
+  const sent = line.sentQuantity == null ? qty : (Number(line.sentQuantity) || 0);
+  return qty > sent;
+}
+
 export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const items = order?.items ?? [];
   const hasBillable = items.some((item) => item.itemStatus !== 'CANCELLED');
-  const hasNew = items.some((item) => item.itemStatus === 'NEW');
+  const hasNew = items.some((item) => lineHasPendingSend(item));
   const boardOn = kitchenBoardEnabled !== false;
   return {
     canCancel: items.length === 0,
-    // Always allow send while there are NEW lines (incl. after bill). Board only gates KDS + bill-before-send.
+    // Always allow send while there is pending kitchen qty (incl. after bill). Board only gates KDS + bill-before-send.
     canSendKitchen: (order?.status === 'OPEN' || order?.status === 'BILLING') && hasNew,
     // Board off: bill without sending NEW first. Board on: must send before bill.
     canRequestBill: (order?.status === 'OPEN' || order?.status === 'BILLING')

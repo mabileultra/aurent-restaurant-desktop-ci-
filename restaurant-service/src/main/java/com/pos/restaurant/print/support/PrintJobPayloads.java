@@ -10,7 +10,14 @@ public final class PrintJobPayloads {
 
     public record GuestBill(UUID orderId) {}
 
-    public record KitchenSend(UUID orderId, List<UUID> itemIds) {}
+    public record KitchenSendLine(UUID itemId, BigDecimal quantity) {}
+
+    /** itemIds kept for older print relays; prefer lines when present (reorder delta qty). */
+    public record KitchenSend(UUID orderId, List<UUID> itemIds, List<KitchenSendLine> lines) {
+        public KitchenSend(UUID orderId, List<UUID> itemIds) {
+            this(orderId, itemIds, null);
+        }
+    }
 
     public record CategorySlip(
         UUID orderId,

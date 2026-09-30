@@ -88,17 +88,32 @@ public class OrderAddItemHandler {
             .setScale(3, RoundingMode.HALF_UP);
         String note = blankToNull(request.note());
         if (note == null && optionIds.isEmpty()) {
-            var existing = itemRepository.findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatus(
+            var existingNew = itemRepository.findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatus(
                 orderId,
                 menuItem.getId(),
                 OrderItemStatus.NEW
             );
-            if (existing.isPresent()
-                && itemModifierRepository.findByOrderItemIdIn(List.of(existing.get().getId())).isEmpty()) {
-                FloorOrderItem line = existing.get();
+            if (existingNew.isPresent()
+                && itemModifierRepository.findByOrderItemIdIn(List.of(existingNew.get().getId())).isEmpty()) {
+                FloorOrderItem line = existingNew.get();
                 line.setQuantity(line.getQuantity().add(quantity));
                 enqueueCategorySlip(order, line, quantity, menuItem);
                 LogUtil.info(OrderAddItemHandler.class, "Order item qty increased: id={}", line.getId());
+                return reload(order);
+            }
+            // Same dish already on kitchen — bump total qty; pending send = quantity − sentQuantity.
+            var existingKitchen = itemRepository
+                .findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
+                    orderId,
+                    menuItem.getId(),
+                    List.of(OrderItemStatus.NEW, OrderItemStatus.CANCELLED)
+                );
+            if (existingKitchen.isPresent()
+                && itemModifierRepository.findByOrderItemIdIn(List.of(existingKitchen.get().getId())).isEmpty()) {
+                FloorOrderItem line = existingKitchen.get();
+                line.setQuantity(line.getQuantity().add(quantity));
+                enqueueCategorySlip(order, line, quantity, menuItem);
+                LogUtil.info(OrderAddItemHandler.class, "Kitchen item qty increased (reorder): id={}", line.getId());
                 return reload(order);
             }
         }

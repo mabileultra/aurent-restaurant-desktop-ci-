@@ -100,7 +100,10 @@ export default function OrderWorkspace({
 
   const activeLines = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED');
   const linesCount = activeLines.length;
-  const newCount = activeLines.filter((line) => line.itemStatus === 'NEW').length;
+  const newCount = activeLines.filter((line) => (
+    line.itemStatus === 'NEW'
+    || (line.sentQuantity != null && (Number(line.quantity) || 0) > (Number(line.sentQuantity) || 0))
+  )).length;
   const kitchenCount = activeLines.filter((line) => line.itemStatus !== 'NEW').length;
   const progress = linesCount === 0
     ? 0

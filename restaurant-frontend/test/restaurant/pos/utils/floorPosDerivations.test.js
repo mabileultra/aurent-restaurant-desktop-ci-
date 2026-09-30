@@ -3,6 +3,7 @@ import {
   buildWaiters,
   computeCommissionPreview,
   displayUserName,
+  lineHasPendingSend,
   resolveOrderFlags,
   userStoreIds,
 } from '../../../../src/restaurant/pos/utils/floorPosDerivations';
@@ -46,4 +47,36 @@ describe('floorPosDerivations', () => {
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'SENT_TO_KITCHEN' }] }, false).canRequestBill).toBe(true);
     expect(displayUserName({ username: 'x' })).toBe('x');
   });
+
+  it('detects pending send on kitchen reorder delta', () => {
+    expect(lineHasPendingSend({ itemStatus: 'NEW', quantity: 1 })).toBe(true);
+    expect(lineHasPendingSend({
+      itemStatus: 'SENT_TO_KITCHEN', quantity: 2, sentQuantity: 1,
+    })).toBe(true);
+    expect(lineHasPendingSend({
+      itemStatus: 'SENT_TO_KITCHEN', quantity: 2, sentQuantity: 2,
+    })).toBe(false);
+    // Old API without sentQuantity → treat as fully sent
+    expect(lineHasPendingSend({ itemStatus: 'SENT_TO_KITCHEN', quantity: 2 })).toBe(false);
+    expect(lineHasPendingSend({ itemStatus: 'CANCELLED', quantity: 1 })).toBe(false);
+  });
+
+  it('enables send and blocks bill when kitchen line has unsent reorder', () => {
+    const items = [{
+      itemStatus: 'SENT_TO_KITCHEN',
+      quantity: 3,
+      sentQuantity: 2,
+    }];
+    const flags = resolveOrderFlags({ status: 'OPEN', items }, true);
+    expect(flags.canSendKitchen).toBe(true);
+    expect(flags.canRequestBill).toBe(false);
+
+    const afterSend = resolveOrderFlags({
+      status: 'OPEN',
+      items: [{ itemStatus: 'SENT_TO_KITCHEN', quantity: 3, sentQuantity: 3 }],
+    }, true);
+    expect(afterSend.canSendKitchen).toBe(false);
+    expect(afterSend.canRequestBill).toBe(true);
+  });
 });
+

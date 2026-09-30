@@ -11,6 +11,7 @@ import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard'
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
 import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
+import { useStoreFloorSync } from './useStoreFloorSync';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
 
@@ -37,6 +38,8 @@ export function useKitchenPosPage() {
   const workspace = useRestaurantWorkspaceStore();
   const canAdvance = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'COOK';
   const [stationFilter, setStationFilterState] = useState('all');
+
+  useStoreFloorSync(workspace.storeId, { syncKitchen: true });
 
   useEffect(() => {
     if (workspace.storeId == null) return;
@@ -126,7 +129,7 @@ export function useKitchenPosPage() {
     const rows = ticketsQuery.data;
     if (!rows?.length) return undefined;
     let cancelled = false;
-    printKitchenBoardTickets(rows, t, waiterNameById).then((printed) => {
+    printKitchenBoardTickets(rows, t, waiterNameById, workspace.storeId).then((printed) => {
       if (cancelled || !printed?.errors?.length) return;
       toast.error(printed.errors[0]);
     }).catch((err) => {
@@ -136,7 +139,7 @@ export function useKitchenPosPage() {
     return () => {
       cancelled = true;
     };
-  }, [ticketsQuery.data, t, waiterNameById]);
+  }, [ticketsQuery.data, t, waiterNameById, workspace.storeId]);
   const columns = groupTicketsByStatus(tickets);
 
   const stations = stationsQuery.data ?? [];

@@ -16,12 +16,14 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.print.service.PrintJobPublisher;
+import com.pos.restaurant.print.support.PrintJobPayloads;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,17 +47,23 @@ public class SendToKitchenHandler {
     public OrderResponse handle(UUID orderId) {
         FloorOrder order = orderLookup.requireActive(orderId);
         boolean kitchenBoard = kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId());
-        List<FloorOrderItem> newItems = itemRepository.findByOrderIdAndItemStatus(orderId, OrderItemStatus.NEW);
-        if (newItems.isEmpty()) {
+        List<FloorOrderItem> allItems = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
+        List<PendingFire> pending = allItems.stream()
+            .map(item -> new PendingFire(item, pendingQty(item)))
+            .filter(row -> row.qty().signum() > 0)
+            .toList();
+        if (pending.isEmpty()) {
             throw new BusinessException("There are no new items to send to the kitchen");
         }
-        List<UUID> sentItemIds = newItems.stream().map(FloorOrderItem::getId).toList();
+        List<PrintJobPayloads.KitchenSendLine> sendLines = pending.stream()
+            .map(row -> new PrintJobPayloads.KitchenSendLine(row.item().getId(), row.qty()))
+            .toList();
         if (kitchenBoard) {
-            Map<UUID, List<FloorOrderItem>> byStation = new LinkedHashMap<>();
-            for (FloorOrderItem item : newItems) {
-                byStation.computeIfAbsent(item.getStationId(), key -> new ArrayList<>()).add(item);
+            Map<UUID, List<PendingFire>> byStation = new LinkedHashMap<>();
+            for (PendingFire row : pending) {
+                byStation.computeIfAbsent(row.item().getStationId(), key -> new ArrayList<>()).add(row);
             }
-            for (Map.Entry<UUID, List<FloorOrderItem>> entry : byStation.entrySet()) {
+            for (Map.Entry<UUID, List<PendingFire>> entry : byStation.entrySet()) {
                 KitchenStation station = resolveStation(entry.getKey(), order.getCompanyId());
                 KitchenTicket ticket = ticketRepository.save(KitchenTicket.builder()
                     .companyId(order.getCompanyId())
@@ -64,28 +72,51 @@ public class SendToKitchenHandler {
                     .station(station)
                     .status(KitchenTicketStatus.NEW)
                     .build());
-                for (FloorOrderItem item : entry.getValue()) {
+                for (PendingFire row : entry.getValue()) {
+                    FloorOrderItem item = row.item();
                     ticketLineRepository.save(KitchenTicketLine.builder()
                         .ticket(ticket)
                         .orderItem(item)
+                        .quantity(row.qty())
                         .build());
-                    item.setItemStatus(OrderItemStatus.SENT_TO_KITCHEN);
+                    markSent(item);
                 }
             }
         } else {
-            for (FloorOrderItem item : newItems) {
-                item.setItemStatus(OrderItemStatus.SENT_TO_KITCHEN);
+            for (PendingFire row : pending) {
+                markSent(row.item());
             }
         }
-        LogUtil.info(SendToKitchenHandler.class, "Sent {} items to kitchen: orderId={}", newItems.size(), orderId);
+        LogUtil.info(SendToKitchenHandler.class, "Sent {} lines to kitchen: orderId={}", pending.size(), orderId);
         if (kitchenBoard) {
-            // KDS on: station tickets on Send.
-            printJobPublisher.kitchenSend(order, sentItemIds);
+            printJobPublisher.kitchenSend(order, sendLines);
         } else {
-            // KDS off: no station printers — category auto-print slips on Send.
-            printJobPublisher.categorySlipsForItems(order, newItems);
+            Map<UUID, BigDecimal> qtyByItem = new LinkedHashMap<>();
+            List<FloorOrderItem> fired = new ArrayList<>();
+            for (PendingFire row : pending) {
+                fired.add(row.item());
+                qtyByItem.put(row.item().getId(), row.qty());
+            }
+            printJobPublisher.categorySlipsForPending(order, fired, qtyByItem);
         }
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
+    }
+
+    private static BigDecimal pendingQty(FloorOrderItem item) {
+        if (item.getItemStatus() == OrderItemStatus.CANCELLED) {
+            return BigDecimal.ZERO;
+        }
+        BigDecimal qty = item.getQuantity() == null ? BigDecimal.ZERO : item.getQuantity();
+        BigDecimal sent = item.getSentQuantity() == null ? BigDecimal.ZERO : item.getSentQuantity();
+        BigDecimal pending = qty.subtract(sent);
+        return pending.signum() > 0 ? pending : BigDecimal.ZERO;
+    }
+
+    private static void markSent(FloorOrderItem item) {
+        item.setSentQuantity(item.getQuantity() == null ? BigDecimal.ZERO : item.getQuantity());
+        if (item.getItemStatus() == OrderItemStatus.NEW) {
+            item.setItemStatus(OrderItemStatus.SENT_TO_KITCHEN);
+        }
     }
 
     private KitchenStation resolveStation(UUID stationId, Integer companyId) {
@@ -94,4 +125,6 @@ public class SendToKitchenHandler {
         }
         return stationRepository.findByIdAndCompanyId(stationId, companyId).orElse(null);
     }
+
+    private record PendingFire(FloorOrderItem item, BigDecimal qty) {}
 }

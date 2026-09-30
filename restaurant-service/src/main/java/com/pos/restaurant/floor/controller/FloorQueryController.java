@@ -1,5 +1,6 @@
 package com.pos.restaurant.floor.controller;
 
+import com.pos.restaurant.floor.dto.FloorRevisionResponse;
 import com.pos.restaurant.floor.dto.FloorSnapshotResponse;
 import com.pos.restaurant.floor.service.FloorQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,5 +27,13 @@ public class FloorQueryController {
     @ApiResponse(responseCode = "200", description = "Залы и столы")
     public FloorSnapshotResponse getFloorSnapshot(@PathVariable Integer storeId) {
         return floorQueryService.getSnapshot(storeId);
+    }
+
+    @GetMapping("/stores/{storeId}/floor-revision")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
+    @Operation(summary = "Watermark активности зала (лёгкий sync)")
+    @ApiResponse(responseCode = "200", description = "revision epoch-millis")
+    public FloorRevisionResponse getFloorRevision(@PathVariable Integer storeId) {
+        return floorQueryService.getRevision(storeId);
     }
 }

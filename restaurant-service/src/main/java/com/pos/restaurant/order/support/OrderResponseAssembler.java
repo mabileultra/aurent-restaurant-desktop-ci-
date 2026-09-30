@@ -158,6 +158,7 @@ public class OrderResponseAssembler {
             MenuPortionFormat.display(item.getMenuItem()),
             item.getQuantity(),
             item.getReturnedQuantity() == null ? BigDecimal.ZERO : item.getReturnedQuantity(),
+            item.getSentQuantity() == null ? BigDecimal.ZERO : item.getSentQuantity(),
             item.getUnitPrice(),
             lineTotal(item.getQuantity(), item.getUnitPrice()),
             taxRateOf(item),

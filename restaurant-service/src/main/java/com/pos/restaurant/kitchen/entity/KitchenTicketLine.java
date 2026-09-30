@@ -1,6 +1,7 @@
 package com.pos.restaurant.kitchen.entity;
 
 import com.pos.restaurant.order.entity.FloorOrderItem;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Entity
@@ -37,4 +39,8 @@ public class KitchenTicketLine {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_item_id", nullable = false)
     private FloorOrderItem orderItem;
+
+    /** Snapshot at fire time (supports reorder on the same order line). */
+    @Column(precision = 18, scale = 3)
+    private BigDecimal quantity;
 }
