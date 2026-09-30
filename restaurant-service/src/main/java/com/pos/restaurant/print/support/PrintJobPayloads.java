@@ -19,6 +19,7 @@ public final class PrintJobPayloads {
         String categoryName,
         String printerName,
         String header,
+        UUID waiterUserId,
         String itemName,
         String portionText,
         String note,
@@ -31,6 +32,7 @@ public final class PrintJobPayloads {
         String printerName,
         String title,
         String header,
+        UUID waiterUserId,
         List<CategoryBatchLine> lines
     ) {}
 

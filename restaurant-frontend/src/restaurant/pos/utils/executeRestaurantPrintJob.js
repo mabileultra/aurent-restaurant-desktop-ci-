@@ -10,7 +10,7 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
-import { ticketStamp } from './ticketLayout';
+import { kitchenTicketMetaLines } from './ticketLayout';
 
 function parsePayload(raw) {
   try {
@@ -60,17 +60,6 @@ async function localHasPrinterFast(printerName) {
     || [...printerNameSetCache.set].some((n) => n === lower);
 }
 
-function headerFor(order, t) {
-  const channel = order?.channel || 'DINE_IN';
-  if (channel === 'TAKEAWAY') return `TAKEAWAY #${order.orderNo || ''}`;
-  if (channel === 'DELIVERY') return `DELIVERY #${order.orderNo || ''}`;
-  const table = t?.('rst.order.tableHeading', {
-    code: order?.tableCode || '—',
-    defaultValue: `Стол ${order?.tableCode || '—'}`,
-  }) || `TABLE ${order?.tableCode || '—'}`;
-  return `${table} · №${order?.orderNo || ''}`;
-}
-
 function itemLines(item) {
   const qty = Number(item.quantity) || 0;
   const portion = item.portionText ? ` (${item.portionText})` : '';
@@ -94,7 +83,27 @@ function batchItemLines(line) {
   });
 }
 
-async function runCategorySlip(payload, t) {
+function lookupWaiterName(waiterUserId, waiterNameById) {
+  if (waiterUserId == null || !waiterNameById) return null;
+  return waiterNameById.get?.(String(waiterUserId))
+    || waiterNameById[String(waiterUserId)]
+    || null;
+}
+
+function metaFromPayload(payload, order, t, waiterNameById) {
+  const waiterName = lookupWaiterName(
+    payload?.waiterUserId ?? order?.waiterUserId,
+    waiterNameById,
+  );
+  return kitchenTicketMetaLines({
+    order,
+    header: payload?.header || null,
+    waiterName,
+    t,
+  });
+}
+
+async function runCategorySlip(payload, t, waiterNameById) {
   const printer = String(payload.printerName || '').trim();
   if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
 
@@ -105,8 +114,7 @@ async function runCategorySlip(payload, t) {
       title: payload.categoryName || '',
       printerName: printer,
       lines: [
-        payload.header || '',
-        ticketStamp(),
+        ...metaFromPayload(payload, null, t, waiterNameById),
         '---',
         ...itemLines({
           name: payload.itemName,
@@ -116,7 +124,7 @@ async function runCategorySlip(payload, t) {
           modifiers: payload.modifiers || [],
         }),
         '---',
-      ].filter((line, idx) => idx > 0 || line),
+      ],
     });
     return { mode: 'silent', ack: true };
   }
@@ -130,8 +138,7 @@ async function runCategorySlip(payload, t) {
     title: payload.categoryName || '',
     printerName: printer,
     lines: [
-      headerFor(order, t),
-      ticketStamp(),
+      ...metaFromPayload(payload, order, t, waiterNameById),
       '---',
       ...itemLines({ ...line, quantity: qty }),
       '---',
@@ -140,7 +147,7 @@ async function runCategorySlip(payload, t) {
   return { mode: 'silent', ack: true };
 }
 
-async function runCategoryBatch(payload) {
+async function runCategoryBatch(payload, t, waiterNameById) {
   const printer = String(payload.printerName || '').trim();
   if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
   const dishLines = (payload.lines || []).flatMap((line, index) => {
@@ -152,12 +159,11 @@ async function runCategoryBatch(payload) {
     title: payload.title || '',
     printerName: printer,
     lines: [
-      payload.header || '',
-      ticketStamp(),
+      ...metaFromPayload(payload, null, t, waiterNameById),
       '---',
       ...dishLines,
       '---',
-    ].filter((line, idx) => idx > 0 || line),
+    ],
   });
   return { mode: 'silent', ack: true };
 }
@@ -165,7 +171,7 @@ async function runCategoryBatch(payload) {
 /**
  * @returns {Promise<{ ack: boolean, mode?: string }>}
  */
-export async function executeRestaurantPrintJob(job, { t } = {}) {
+export async function executeRestaurantPrintJob(job, { t, waiterNameById } = {}) {
   if (!job || !isDesktopPrinter()) return { ack: false };
   const payload = parsePayload(job.payload);
   if (!payload) return { ack: false };
@@ -187,6 +193,7 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
       order: orderRes.data,
       t,
       onlyItemIds: payload.itemIds || [],
+      waiterNameById,
     });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
     return {
@@ -199,11 +206,11 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
   }
 
   if (job.kind === 'CATEGORY_BATCH') {
-    return runCategoryBatch(payload);
+    return runCategoryBatch(payload, t, waiterNameById);
   }
 
   if (job.kind === 'CATEGORY_SLIP') {
-    return runCategorySlip(payload, t);
+    return runCategorySlip(payload, t, waiterNameById);
   }
 
   return { ack: false };

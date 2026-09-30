@@ -3,6 +3,7 @@ import { tableActiveOrders } from '../utils/floorStatusFilters';
 import { tableStatusClass } from '../utils/tableStatus';
 import { formatDigitalTimer, formatElapsed } from '../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { resolveTableChecksTotal } from '../utils/restaurantPayAmount';
 import '../styles/floor-table-grid.css';
 
 function statusActionLabel(status, t) {
@@ -103,11 +104,11 @@ function WaiterRow({ name, emptyLabel }) {
   );
 }
 
-export default function FloorTableCard({ table, selected, onClick, onPrefetchOrder, t, now, waiterNameById }) {
+export default function FloorTableCard({ table, halls = [], selected, onClick, onPrefetchOrder, t, now, waiterNameById }) {
   const status = tableStatusClass(table.status);
   const orders = tableActiveOrders(table);
   const order = orders[0] || table.activeOrder;
-  const checksSum = orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0);
+  const checksSum = resolveTableChecksTotal(table, halls);
   const reservation = table.reservation;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
   const cleaningTimer = status === 'CLEANING' && table.updatedAt
@@ -143,7 +144,7 @@ export default function FloorTableCard({ table, selected, onClick, onPrefetchOrd
       <div className="rst-table-card__body">
         {order && (status === 'OCCUPIED' || status === 'WAITING_PAYMENT') ? (
           <>
-            <div className="rst-table-card__amount">{fmtMoneyCompact(orders.length > 1 ? checksSum : order.subtotal)}</div>
+            <div className="rst-table-card__amount">{fmtMoneyCompact(checksSum)}</div>
             <div className="rst-table-card__meta-line">
               <span>
                 {orders.length > 1

@@ -31,7 +31,7 @@ public class PaymentController {
     private final PaymentService paymentService;
 
     @PostMapping("/orders/{orderId}/bill")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
     @Operation(summary = "Выставить счёт")
     public OrderResponse requestBill(@PathVariable UUID orderId) {
         return paymentService.requestBill(orderId);

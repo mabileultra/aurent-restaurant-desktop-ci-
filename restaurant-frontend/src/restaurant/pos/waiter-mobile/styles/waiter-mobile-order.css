@@ -337,7 +337,9 @@
 
 .rst-waiter-order__body .rst-order-line__meta {
   margin-top: 0.1rem;
-  font-size: 0.7rem;
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--rst-ink);
 }
 
 .rst-waiter-order__body .rst-qty {

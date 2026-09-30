@@ -146,6 +146,7 @@ export default function FloorTableGrid({
             <FloorTableCard
               key={table.id}
               table={table}
+              halls={halls}
               selected={selectedTableId === table.id}
               onClick={onTableClick}
               onPrefetchOrder={onPrefetchOrder}

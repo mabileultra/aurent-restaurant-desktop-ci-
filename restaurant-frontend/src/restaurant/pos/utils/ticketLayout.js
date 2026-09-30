@@ -28,3 +28,34 @@ export function ticketStamp(iso) {
   if (!Number.isFinite(d.getTime())) return new Date().toLocaleString();
   return d.toLocaleString();
 }
+
+/** Top of kitchen / auto-print slips: table (or channel), waiter, time. */
+export function kitchenTicketMetaLines({
+  order,
+  header,
+  waiterName,
+  t,
+  at,
+} = {}) {
+  const channel = order?.channel || 'DINE_IN';
+  let tableLine = header;
+  if (!tableLine) {
+    if (channel === 'TAKEAWAY') {
+      tableLine = `TAKEAWAY #${order?.orderNo || ''}`;
+    } else if (channel === 'DELIVERY') {
+      tableLine = `DELIVERY #${order?.orderNo || ''}`;
+    } else {
+      const code = order?.tableCode || '—';
+      tableLine = t?.('rst.order.tableHeading', {
+        code,
+        defaultValue: `Стол ${code}`,
+      }) || `Стол ${code}`;
+      tableLine = `${tableLine} · №${order?.orderNo || ''}`;
+    }
+  }
+  const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';
+  const lines = [tableLine];
+  if (waiterName) lines.push(`${waiterLabel}: ${waiterName}`);
+  lines.push(ticketStamp(at));
+  return lines.filter(Boolean);
+}

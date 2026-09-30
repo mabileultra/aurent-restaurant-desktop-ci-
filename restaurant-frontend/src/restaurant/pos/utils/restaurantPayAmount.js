@@ -1,7 +1,40 @@
 import { round2 } from '../../../utils/taxAmounts';
+import { tableActiveOrders } from './floorStatusFilters';
 
 function dineIn(order) {
   return (order?.channel || 'DINE_IN') === 'DINE_IN';
+}
+
+/**
+ * Table override wins; otherwise hall percent. Floor tiles only have table
+ * fields, so pass halls (or hallServicePercent on the table) when available.
+ */
+export function resolveTableServicePercent(table, halls = []) {
+  if (!table) return 0;
+  if (table.servicePercent != null && table.servicePercent !== '') {
+    return Number(table.servicePercent) || 0;
+  }
+  if (table.hallServicePercent != null && table.hallServicePercent !== '') {
+    return Number(table.hallServicePercent) || 0;
+  }
+  for (const hall of halls || []) {
+    if ((hall.tables || []).some((row) => row.id === table.id)) {
+      return Number(hall.servicePercent) || 0;
+    }
+  }
+  return 0;
+}
+
+/** Occupied-table amount: dishes + service (same rule as the pay dock). */
+export function resolveTableChecksTotal(table, halls = []) {
+  const orders = tableActiveOrders(table);
+  if (!orders.length) return null;
+  const percent = resolveTableServicePercent(table, halls);
+  return round2(orders.reduce((sum, row) => {
+    const subtotal = round2(Number(row.subtotal) || 0);
+    const service = round2((subtotal * percent) / 100);
+    return sum + subtotal + service;
+  }, 0));
 }
 
 /**

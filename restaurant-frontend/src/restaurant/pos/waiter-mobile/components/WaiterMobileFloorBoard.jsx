@@ -98,6 +98,7 @@ export default function WaiterMobileFloorBoard({
             <WaiterMobileTableTile
               key={table.id}
               table={table}
+              halls={halls}
               selected={selectedTableId === table.id}
               now={now}
               waiterNameById={waiterNameById}

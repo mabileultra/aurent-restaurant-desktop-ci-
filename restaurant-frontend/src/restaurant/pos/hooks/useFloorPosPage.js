@@ -60,7 +60,6 @@ export function useFloorPosPage() {
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
   const storeId = workspace.storeId;
   const qc = useQueryClient();
-  useRestaurantPrintRelay(storeId, t);
   const onFloor = posMode === 'floor';
 
   const floorQuery = useQuery({
@@ -131,6 +130,7 @@ export function useFloorPosPage() {
   );
   const waiters = useMemo(() => buildWaiters(staffQuery.data, storeId), [staffQuery.data, storeId]);
   const waiterNameById = useMemo(() => buildWaiterNameById(staffQuery.data), [staffQuery.data]);
+  useRestaurantPrintRelay(storeId, t, waiterNameById);
   const servicePreview = useMemo(
     () => resolveServicePreview(order, halls),
     [order, halls],
@@ -372,7 +372,7 @@ export function useFloorPosPage() {
     lineNotePending: m.updateItemMutation.isPending,
     canCancel: access.canCancelOrder || orderFlags.canCancel,
     canSendKitchen: orderFlags.canSendKitchen,
-    canRequestBill: orderFlags.canRequestBill,
+    canRequestBill: access.canRequestBill && orderFlags.canRequestBill,
     canPay: access.canPay && orderFlags.canPay,
     canAdmin: access.canConfigureHall,
     backLabelKey,

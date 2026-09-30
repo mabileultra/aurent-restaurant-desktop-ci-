@@ -279,7 +279,9 @@
 
 .rst-cashier-full .rst-order-line__meta {
   margin-top: 0.02rem;
-  font-size: 0.64rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--rst-ink);
 }
 
 .rst-cashier-full .rst-order-line__mods {

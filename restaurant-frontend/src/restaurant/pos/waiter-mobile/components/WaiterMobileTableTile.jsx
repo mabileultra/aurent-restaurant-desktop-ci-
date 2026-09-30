@@ -2,12 +2,14 @@ import { tableActiveOrders } from '../../utils/floorStatusFilters';
 import { tableStatusClass } from '../../utils/tableStatus';
 import { formatElapsed } from '../../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import { resolveTableChecksTotal } from '../../utils/restaurantPayAmount';
 
 /**
  * Large touch tile for waiter phone floor — status color, amount, guests, timer.
  */
 export default function WaiterMobileTableTile({
   table,
+  halls = [],
   selected,
   now,
   waiterNameById,
@@ -19,9 +21,7 @@ export default function WaiterMobileTableTile({
   const orders = tableActiveOrders(table);
   const order = orders[0] || null;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
-  const amount = orders.length
-    ? orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0)
-    : null;
+  const amount = resolveTableChecksTotal(table, halls);
   const waiter = order?.waiterUserId
     ? (waiterNameById?.get(String(order.waiterUserId)) || null)
     : null;

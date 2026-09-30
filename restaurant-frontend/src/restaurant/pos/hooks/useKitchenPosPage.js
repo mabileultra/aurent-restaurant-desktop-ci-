@@ -35,7 +35,6 @@ export function useKitchenPosPage() {
   const qc = useQueryClient();
   const user = useAuthStore((s) => s.user);
   const workspace = useRestaurantWorkspaceStore();
-  useRestaurantPrintRelay(workspace.storeId, t);
   const canAdvance = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'COOK';
   const [stationFilter, setStationFilterState] = useState('all');
 
@@ -114,12 +113,20 @@ export function useKitchenPosPage() {
   });
 
   const tickets = ticketsQuery.data ?? [];
+  const waiterNameById = useMemo(() => {
+    const map = new Map();
+    for (const row of staffQuery.data ?? []) {
+      map.set(String(row.id), displayUserName(row));
+    }
+    return map;
+  }, [staffQuery.data]);
+  useRestaurantPrintRelay(workspace.storeId, t, waiterNameById);
 
   useEffect(() => {
     const rows = ticketsQuery.data;
     if (!rows?.length) return undefined;
     let cancelled = false;
-    printKitchenBoardTickets(rows, t).then((printed) => {
+    printKitchenBoardTickets(rows, t, waiterNameById).then((printed) => {
       if (cancelled || !printed?.errors?.length) return;
       toast.error(printed.errors[0]);
     }).catch((err) => {
@@ -129,15 +136,8 @@ export function useKitchenPosPage() {
     return () => {
       cancelled = true;
     };
-  }, [ticketsQuery.data, t]);
+  }, [ticketsQuery.data, t, waiterNameById]);
   const columns = groupTicketsByStatus(tickets);
-  const waiterNameById = useMemo(() => {
-    const map = new Map();
-    for (const row of staffQuery.data ?? []) {
-      map.set(String(row.id), displayUserName(row));
-    }
-    return map;
-  }, [staffQuery.data]);
 
   const stations = stationsQuery.data ?? [];
 

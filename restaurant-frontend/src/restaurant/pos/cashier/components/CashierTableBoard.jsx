@@ -6,6 +6,7 @@ import '../styles/cashier-table-board.css';
 
 export default function CashierTableBoard({
   tables = [],
+  halls = [],
   statusFilter = 'ALL',
   selectedTableId,
   activeOrderId,
@@ -37,6 +38,7 @@ export default function CashierTableBoard({
             <CashierTableTile
               key={table.id}
               table={table}
+              halls={halls}
               selected={table.id === selectedId}
               now={now}
               onClick={onTableClick}

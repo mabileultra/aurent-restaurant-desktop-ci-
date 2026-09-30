@@ -2,6 +2,7 @@ import { tableActiveOrders } from '../../utils/floorStatusFilters';
 import { tableStatusClass } from '../../utils/tableStatus';
 import { formatElapsed } from '../../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import { resolveTableChecksTotal } from '../../utils/restaurantPayAmount';
 import '../styles/cashier-table-tile.css';
 
 /**
@@ -9,6 +10,7 @@ import '../styles/cashier-table-tile.css';
  */
 export default function CashierTableTile({
   table,
+  halls = [],
   selected,
   now,
   onClick,
@@ -19,9 +21,7 @@ export default function CashierTableTile({
   const orders = tableActiveOrders(table);
   const order = orders[0] || null;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
-  const amount = orders.length
-    ? orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0)
-    : null;
+  const amount = resolveTableChecksTotal(table, halls);
 
   const warm = () => {
     if (!onPrefetchOrder) return;

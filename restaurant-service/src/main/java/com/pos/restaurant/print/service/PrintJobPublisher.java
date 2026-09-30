@@ -105,12 +105,14 @@ public class PrintJobPublisher {
         }
 
         String header = ticketHeader(order);
+        UUID waiterUserId = order.getWaiterUserId();
         for (Map.Entry<String, List<PrintJobPayloads.CategoryBatchLine>> entry : byPrinter.entrySet()) {
             enqueue(order, PrintJobKind.CATEGORY_BATCH, new PrintJobPayloads.CategoryBatch(
                 order.getId(),
                 entry.getKey(),
                 titleByPrinter.getOrDefault(entry.getKey(), voidSlip ? "ОТКАЗ" : ""),
                 header,
+                waiterUserId,
                 entry.getValue()
             ));
         }
@@ -137,6 +139,7 @@ public class PrintJobPublisher {
             category.getName(),
             printer,
             ticketHeader(order),
+            order.getWaiterUserId(),
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
             item.getNote(),
@@ -175,7 +178,7 @@ public class PrintJobPublisher {
         String table = order.getTable() == null || order.getTable().getCode() == null
             ? "—"
             : order.getTable().getCode();
-        return "TABLE " + table + " #" + no;
+        return "Стол " + table + " · №" + no;
     }
 
     private void enqueue(FloorOrder order, PrintJobKind kind, Object payload) {

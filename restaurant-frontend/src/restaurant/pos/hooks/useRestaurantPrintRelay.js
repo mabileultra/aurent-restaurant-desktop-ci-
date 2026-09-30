@@ -11,11 +11,13 @@ const POLL_MS = 500;
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).
  * Jobs for different printers run in parallel so one slow device does not block others.
  */
-export function useRestaurantPrintRelay(storeId, t) {
+export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const busyRef = useRef(false);
   const pendingFlushRef = useRef(false);
   const tRef = useRef(t);
   tRef.current = t;
+  const waiterMapRef = useRef(waiterNameById);
+  waiterMapRef.current = waiterNameById;
   const warnedMissingRef = useRef(new Set());
 
   useEffect(() => {
@@ -41,7 +43,10 @@ export function useRestaurantPrintRelay(storeId, t) {
 
           const results = await Promise.allSettled(
             jobs.map(async (job) => {
-              const outcome = await executeRestaurantPrintJob(job, { t: tRef.current });
+              const outcome = await executeRestaurantPrintJob(job, {
+                t: tRef.current,
+                waiterNameById: waiterMapRef.current,
+              });
               return { job, outcome };
             }),
           );

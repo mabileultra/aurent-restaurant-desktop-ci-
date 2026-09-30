@@ -9,18 +9,7 @@ import {
   printTicketLines,
   readPrintedKitchenLines,
 } from './desktopPrinters';
-import { ticketStamp } from './ticketLayout';
-
-function headerFor(order, t) {
-  const channel = order?.channel || 'DINE_IN';
-  if (channel === 'TAKEAWAY') return `TAKEAWAY #${order.orderNo || ''}`;
-  if (channel === 'DELIVERY') return `DELIVERY #${order.orderNo || ''}`;
-  const table = t?.('rst.order.tableHeading', {
-    code: order?.tableCode || '—',
-    defaultValue: `Стол ${order?.tableCode || '—'}`,
-  }) || `TABLE ${order?.tableCode || '—'}`;
-  return `${table} · №${order?.orderNo || ''}`;
-}
+import { kitchenTicketMetaLines } from './ticketLayout';
 
 function itemLines(item) {
   const qty = Number(item.quantity) || 0;
@@ -33,6 +22,13 @@ function itemLines(item) {
   if (mods) lines.push(`   + ${mods}`);
   if (item.note) lines.push(`   * ${item.note}`);
   return lines;
+}
+
+function resolveWaiterName(order, waiterName, waiterNameById) {
+  if (waiterName) return waiterName;
+  const id = order?.waiterUserId;
+  if (id == null || !waiterNameById) return null;
+  return waiterNameById.get?.(String(id)) || waiterNameById[String(id)] || null;
 }
 
 /** Prefer station binding; if unset / unmapped, use the only configured kitchen printer. */
@@ -73,8 +69,7 @@ async function sendGroups(groups, settings) {
         title: group.title,
         printerName: printer,
         lines: [
-          group.header,
-          ticketStamp(),
+          ...group.meta,
           group.label ? `≫ ${group.label}` : '',
           '---',
           ...fresh.flatMap(itemLines),
@@ -105,7 +100,9 @@ async function sendGroups(groups, settings) {
 }
 
 /** Category auto-print: slip goes to the printer named on the section. */
-export async function printCategoryTicketOnAdd({ order, line, quantity, category, t } = {}) {
+export async function printCategoryTicketOnAdd({
+  order, line, quantity, category, t, waiterName, waiterNameById,
+} = {}) {
   if (!order || !line || !category?.autoPrint || !isDesktopPrinter()) {
     return { mode: 'skip' };
   }
@@ -116,8 +113,11 @@ export async function printCategoryTicketOnAdd({ order, line, quantity, category
     title: category.name || '',
     printerName: printer,
     lines: [
-      headerFor(order, t),
-      ticketStamp(),
+      ...kitchenTicketMetaLines({
+        order,
+        waiterName: resolveWaiterName(order, waiterName, waiterNameById),
+        t,
+      }),
       '---',
       ...itemLines({ ...line, quantity: qty }),
       '---',
@@ -126,7 +126,9 @@ export async function printCategoryTicketOnAdd({ order, line, quantity, category
   return { mode: 'silent' };
 }
 
-export async function printKitchenTicket({ order, t, onlyItemIds } = {}) {
+export async function printKitchenTicket({
+  order, t, onlyItemIds, waiterName, waiterNameById,
+} = {}) {
   if (!order || !isDesktopPrinter() || !onlyItemIds?.length) {
     return { mode: 'skip', missing: [], configured: false };
   }
@@ -161,19 +163,23 @@ export async function printKitchenTicket({ order, t, onlyItemIds } = {}) {
   }
 
   const title = t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек';
-  const header = headerFor(order, t);
+  const meta = kitchenTicketMetaLines({
+    order,
+    waiterName: resolveWaiterName(order, waiterName, waiterNameById),
+    t,
+  });
   const settings = await getDesktopPrinterSettings();
   const groups = [...byStation.values()].map((group) => ({
     ...group,
     title,
-    header,
+    meta,
     extra: order.clientName || '',
   }));
   return sendGroups(groups, settings);
 }
 
 /** KDS machine prints NEW tickets for stations bound on this computer. */
-export async function printKitchenBoardTickets(tickets, t) {
+export async function printKitchenBoardTickets(tickets, t, waiterNameById) {
   if (!isDesktopPrinter() || !tickets?.length) return { mode: 'skip' };
   const groups = [];
   for (const ticket of tickets) {
@@ -193,7 +199,11 @@ export async function printKitchenBoardTickets(tickets, t) {
       stationId: ticket.stationId,
       label: ticket.stationName || t?.('rst.kitchen.defaultStation', { defaultValue: 'Кухня' }) || 'Кухня',
       title: t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек',
-      header: headerFor(ticket, t),
+      meta: kitchenTicketMetaLines({
+        order: ticket,
+        waiterName: resolveWaiterName(ticket, null, waiterNameById),
+        t,
+      }),
       extra: ticket.clientName || '',
       items,
     });

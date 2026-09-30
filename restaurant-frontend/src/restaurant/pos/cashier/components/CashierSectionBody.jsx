@@ -37,6 +37,7 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
         />
         <CashierTableBoard
           tables={p.hallTables}
+          halls={p.halls}
           statusFilter={p.statusFilter}
           selectedTableId={p.selectedTableId}
           activeOrderId={p.activeOrderId}
