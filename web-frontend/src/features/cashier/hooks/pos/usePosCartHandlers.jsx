@@ -294,29 +294,41 @@ export function usePosCartHandlers({
       try {
         const decoded = decodeWeightBarcode(trimmed);
         if (decoded) {
-          const { data: product } = await scalesApi.getByPlu(decoded.plu, storeId);
-          if (!shiftIsOpen) {
-            toast.error(t('pos.shiftRequired'));
-            return false;
+          try {
+            const { data: product } = await scalesApi.getByPlu(decoded.plu, storeId);
+            if (!shiftIsOpen) {
+              toast.error(t('pos.shiftRequired'));
+              return false;
+            }
+            if (!product?.active) {
+              toast.error(t('pos.productInactive'));
+              return false;
+            }
+            const payload = cartProductPayload(product);
+            const lineId = addWeightLine(payload, decoded.weightKg);
+            const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
+            if (line) showLineAddedToast(line, product.name);
+            if (lineId) setSelectedLineId(lineId);
+            setSearch('');
+            return true;
+          } catch {
+            // Не весовой товар с похожим на этикетку кодом — ищем как обычный штрихкод
           }
-          if (!product?.active) {
-            toast.error(t('pos.productInactive'));
-            return false;
-          }
-          const payload = cartProductPayload(product);
-          const lineId = addWeightLine(payload, decoded.weightKg);
-          const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
-          if (line) showLineAddedToast(line, product.name);
-          if (lineId) setSelectedLineId(lineId);
-          setSearch('');
-          return true;
         }
 
-        const product = await posFetchProductByBarcode(storeId, trimmed);
-        if (product) {
-          addProductToCart(product);
-          setSearch('');
-          return true;
+        const digits = trimmed.replace(/\D/g, '');
+        const barcodeCandidates = [trimmed];
+        if (digits && digits !== trimmed) barcodeCandidates.push(digits);
+        // EAN-13 со check digit, в карточке часто лежит 12 цифр без контрольной
+        if (digits.length === 13) barcodeCandidates.push(digits.slice(0, 12));
+
+        for (const code of barcodeCandidates) {
+          const product = await posFetchProductByBarcode(storeId, code);
+          if (product) {
+            addProductToCart(product);
+            setSearch('');
+            return true;
+          }
         }
         if (!silent) toast.error(t('pos.barcodeNotFound'));
         return false;

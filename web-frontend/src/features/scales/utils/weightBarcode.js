@@ -50,7 +50,8 @@ export function decodeWeightBarcode(raw) {
   if (ean13CheckDigit(body) !== digits[12]) return null;
   const plu = normalizePlu(digits.slice(2, 7));
   const grams = Number(digits.slice(7, 12));
-  if (!plu || grams < 1) return null;
+  // PLU «0» / все нули — не весовая этикетка (часто обычный внутренний штрихкод 20…)
+  if (!plu || plu === '0' || grams < 1) return null;
   return {
     plu,
     weightKg: Math.round(grams) / 1000,

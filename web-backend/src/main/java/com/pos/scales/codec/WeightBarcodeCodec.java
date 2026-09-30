@@ -56,7 +56,8 @@ public class WeightBarcodeCodec {
         // 20PPPPPWWWWW C  или  2XPPPPPWWWWW C — PLU в позициях 2..6 (0-based: 2-6)
         String pluRaw = digits.substring(2, 7);
         String plu = pluValidator.normalizeOrNull(pluRaw);
-        if (plu == null) {
+        // PLU «0» — не весовая этикетка (часто обычный штучный штрихкод с префиксом 20)
+        if (plu == null || "0".equals(plu)) {
             return Optional.empty();
         }
         int grams = Integer.parseInt(digits.substring(7, 12));

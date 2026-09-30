@@ -358,6 +358,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       businessConfigFields: isRestaurantIngredient ? [] : businessConfig?.fields,
       showSection,
       selectedStoreId,
+      stores,
     });
     const stockQty = showSection('accounting') && showSection('accountingStock')
       ? (submitValues.initialStock ?? 0)

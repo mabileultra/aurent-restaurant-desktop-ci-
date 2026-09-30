@@ -21,12 +21,14 @@ export function buildStorePrices(rows, sellingPrice) {
 /**
  * Если блок «цены по магазинам» скрыт — не берём цену из storeRows
  * (там может остаться устаревшее значение вроде 1), только розничную.
+ * Без storeId касса товар не видит: fallback — выбранный магазин, иначе все активные.
  */
 export function resolveStorePricesForPayload({
   storeRows,
   sellingPrice,
   storePricesEnabled = true,
   fallbackStoreId = null,
+  fallbackStoreIds = null,
 }) {
   const base = toPositivePrice(sellingPrice);
   if (base == null) return [];
@@ -45,6 +47,13 @@ export function resolveStorePricesForPayload({
   if (ids.length === 0 && fallbackStoreId != null && fallbackStoreId !== '') {
     const id = Number(fallbackStoreId);
     if (Number.isFinite(id)) ids.push(id);
+  }
+  if (ids.length === 0 && Array.isArray(fallbackStoreIds)) {
+    for (const raw of fallbackStoreIds) {
+      const id = Number(raw);
+      if (!Number.isFinite(id) || ids.includes(id)) continue;
+      ids.push(id);
+    }
   }
   return ids.map((storeId) => ({ storeId, price: base }));
 }

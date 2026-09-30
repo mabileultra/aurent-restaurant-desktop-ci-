@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class WeightBarcodeCodecTest {
 
@@ -28,5 +29,11 @@ class WeightBarcodeCodecTest {
         assertTrue(decoded.isPresent());
         assertEquals("12", decoded.get().plu());
         assertEquals(0, new BigDecimal("1.250").compareTo(decoded.get().weightKg()));
+    }
+
+    @Test
+    void rejectsRetailBarcodeThatLooksLikeWeightWithZeroPlu() {
+        // 200000015866 + check digit 2 — штучный код, не весовая этикетка
+        assertFalse(codec.tryDecode("2000000158662").isPresent());
     }
 }

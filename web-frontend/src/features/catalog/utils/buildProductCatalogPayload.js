@@ -13,15 +13,20 @@ export function buildProductCatalogPayload({
   businessConfigFields,
   showSection,
   selectedStoreId = null,
+  stores = null,
 }) {
   const visible = pickVisibleCatalogFormValues(values, showSection);
 
   const storePricesEnabled = isCatalogSectionOn(showSection, 'storePrices');
+  const fallbackStoreIds = Array.isArray(stores)
+    ? stores.map((s) => s?.id).filter((id) => id != null && id !== '')
+    : null;
   const storePrices = resolveStorePricesForPayload({
     storeRows,
     sellingPrice: visible.sellingPrice,
     storePricesEnabled,
     fallbackStoreId: selectedStoreId,
+    fallbackStoreIds,
   });
 
   const barcodesOn = isCatalogSectionOn(showSection, 'extraBarcodes');
