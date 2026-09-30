@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useRestaurantStores } from '../../../hooks/useRestaurantStores';
@@ -41,12 +41,15 @@ export function useRestaurantWorkspaceStore() {
 
   const staffUsesAssignment = isFloorStaff || isCook;
   const pickableStores = staffUsesAssignment ? staffPool : restaurantStores;
+  const storesLoading = staffUsesAssignment ? (cashier.storeLoading || isLoading) : isLoading;
 
   const effectiveStoreId = useMemo(() => {
-    if (pickedStoreId) {
-      const id = Number(pickedStoreId);
-      if (pickableStores.some((s) => Number(s.id) === id)) return id;
-    }
+    const picked = Number(pickedStoreId);
+    const pickedId = Number.isFinite(picked) && picked > 0 ? picked : null;
+    const pickedInList = pickedId != null && pickableStores.some((s) => Number(s.id) === pickedId);
+    // Start page queries with the last branch immediately; do not wait for the store list.
+    if (storesLoading && pickedId != null) return pickedId;
+    if (pickedInList) return pickedId;
     if (staffUsesAssignment) {
       if (staffPool.length === 1) return Number(staffPool[0].id);
       if (cashier.storeId != null && staffPool.some((s) => Number(s.id) === Number(cashier.storeId))) {
@@ -56,7 +59,26 @@ export function useRestaurantWorkspaceStore() {
     }
     if (restaurantStores.length === 1) return Number(restaurantStores[0].id);
     return null;
-  }, [pickedStoreId, pickableStores, staffUsesAssignment, staffPool, cashier.storeId, restaurantStores]);
+  }, [
+    storesLoading,
+    pickedStoreId,
+    pickableStores,
+    staffUsesAssignment,
+    staffPool,
+    cashier.storeId,
+    restaurantStores,
+  ]);
+
+  useEffect(() => {
+    if (storesLoading) return;
+    if (effectiveStoreId != null) {
+      if (String(pickedStoreId) !== String(effectiveStoreId)) {
+        setPickedStoreId(String(effectiveStoreId));
+      }
+      return;
+    }
+    if (pickedStoreId && pickableStores.length > 0) setPickedStoreId('');
+  }, [storesLoading, effectiveStoreId, pickedStoreId, pickableStores.length, setPickedStoreId]);
 
   const storeName = useMemo(() => {
     const match = pickableStores.find((s) => Number(s.id) === Number(effectiveStoreId));
@@ -82,7 +104,7 @@ export function useRestaurantWorkspaceStore() {
     storeName,
     restaurantStores: pickableStores,
     allRestaurantStores: restaurantStores,
-    isLoading: staffUsesAssignment ? (cashier.storeLoading || isLoading) : isLoading,
+    isLoading: storesLoading,
     noAssignment: noCompanyRestaurants || noStaffStores || staffStoresWrongType,
     noCompanyRestaurants,
     noStaffStores,

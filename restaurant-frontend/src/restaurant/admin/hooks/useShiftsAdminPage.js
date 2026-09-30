@@ -102,7 +102,7 @@ export function useShiftsAdminPage() {
       setPage(0);
     },
     pageSizeOptions: SHIFTS_PAGE_SIZE_OPTIONS,
-    isLoading: workspace.isLoading || shiftsQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || shiftsQuery.isLoading,
     isError: shiftsQuery.isError,
   };
 }

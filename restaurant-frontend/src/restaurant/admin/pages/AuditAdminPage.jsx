@@ -26,7 +26,7 @@ export default function AuditAdminPage() {
         </div>
       </div>
 
-      {!p.workspace.storeId ? (
+      {p.workspace.isLoading && p.workspace.storeId == null ? null : !p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (
         <>

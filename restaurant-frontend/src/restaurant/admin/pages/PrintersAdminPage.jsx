@@ -44,7 +44,7 @@ export default function PrintersAdminPage() {
           <p className="rst-coming__text mb-0">{t('rst.admin.printersHint')}</p>
         </div>
       </div>
-      {!workspace.storeId ? (
+      {workspace.isLoading && workspace.storeId == null ? null : !workspace.storeId ? (
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (
         <RestaurantPrinterSettings

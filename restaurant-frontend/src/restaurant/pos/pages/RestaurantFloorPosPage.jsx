@@ -209,7 +209,7 @@ export default function RestaurantFloorPosPage() {
   const mobile = useWaiterMobileLayout();
   const a = p.tableActions;
 
-  if (p.workspace.isLoading) {
+  if (p.workspace.isLoading && p.workspace.storeId == null) {
     const loadingClass = mobile.enabled ? 'rst-app rst-pos rst-pos--waiter-mobile' : 'rst-app rst-pos';
     return (
       <div className={loadingClass} style={mobile.enabled ? { '--rst-ui-scale': '1' } : zoom.rootStyle}>

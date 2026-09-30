@@ -41,7 +41,7 @@ export default function DashboardAdminPage() {
         userLabel={p.user?.fullName || p.user?.username || 'Admin'}
       />
 
-      {!p.workspace.storeId ? (
+      {p.workspace.isLoading && p.workspace.storeId == null ? null : !p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : p.dashQuery.isError ? (
         <div className="rst-notice">{p.t('rst.admin.dashboardLoadFailed')}</div>

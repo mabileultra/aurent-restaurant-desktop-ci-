@@ -125,6 +125,6 @@ export function useStationsAdminPage() {
       setEditingId(null);
       setForm(emptyForm());
     },
-    isLoading: workspace.isLoading || stationsQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || stationsQuery.isLoading,
   };
 }

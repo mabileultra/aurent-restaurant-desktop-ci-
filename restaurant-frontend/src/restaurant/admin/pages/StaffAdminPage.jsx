@@ -48,7 +48,7 @@ export default function StaffAdminPage() {
         <div className="rst-staff__hint">{p.t('rst.staff.managerHint')}</div>
       ) : null}
 
-      {!p.workspace.storeId ? (
+      {p.workspace.isLoading && p.workspace.storeId == null ? null : !p.workspace.storeId ? (
         <div className="rst-notice">{p.t('rst.admin.selectStore')}</div>
       ) : (
         <>

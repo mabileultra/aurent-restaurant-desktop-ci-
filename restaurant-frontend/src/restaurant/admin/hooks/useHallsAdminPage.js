@@ -152,6 +152,6 @@ export function useHallsAdminPage() {
     deactivateHallMutation,
     deactivateTableMutation,
     arrangeMutation,
-    isLoading: workspace.isLoading || floorQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || floorQuery.isLoading,
   };
 }

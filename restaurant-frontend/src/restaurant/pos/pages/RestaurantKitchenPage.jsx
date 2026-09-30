@@ -58,7 +58,7 @@ export default function RestaurantKitchenPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [p]);
 
-  if (p.workspace.isLoading) {
+  if (p.workspace.isLoading && p.workspace.storeId == null) {
     return (
       <div className="rst-app rst-pos" style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('common.loading')}</div>
@@ -66,15 +66,7 @@ export default function RestaurantKitchenPage() {
     );
   }
 
-  if (p.kitchenBoardLoading) {
-    return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
-        <div className="rst-notice">{p.t('common.loading')}</div>
-      </div>
-    );
-  }
-
-  if (!p.kitchenBoardEnabled) {
+  if (!p.kitchenBoardLoading && !p.kitchenBoardEnabled) {
     return (
       <div className="rst-app rst-pos" style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('rst.kitchen.boardOff')}</div>

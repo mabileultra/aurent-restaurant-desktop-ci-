@@ -64,7 +64,7 @@ export default function ReportsAdminPage() {
         </div>
       </div>
 
-      {!workspace.storeId ? (
+      {workspace.isLoading && workspace.storeId == null ? null : !workspace.storeId ? (
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (
         <>

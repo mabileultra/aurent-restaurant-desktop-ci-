@@ -294,7 +294,7 @@ export function useMenuAdminPage() {
     toggleGroup,
     onImageFile,
     stationName,
-    isLoading: workspace.isLoading || itemsQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || itemsQuery.isLoading,
     resetForm: closeComposer,
   };
 }

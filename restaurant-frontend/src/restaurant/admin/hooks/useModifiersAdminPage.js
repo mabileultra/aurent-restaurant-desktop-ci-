@@ -146,7 +146,7 @@ export function useModifiersAdminPage() {
     optionGroup,
     saveOption,
     deactivateGroup,
-    isLoading: workspace.isLoading || groupsQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || groupsQuery.isLoading,
     startEditGroup: (group) => {
       setEditingGroupId(group.id);
       setGroupForm({

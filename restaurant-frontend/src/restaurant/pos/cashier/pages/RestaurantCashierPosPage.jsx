@@ -40,7 +40,7 @@ export default function RestaurantCashierPosPage() {
     p.setTab(next);
   };
 
-  if (p.workspace.isLoading) {
+  if (p.workspace.isLoading && p.workspace.storeId == null) {
     return (
       <div className="rst-app rst-cashier" style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('common.loading')}</div>

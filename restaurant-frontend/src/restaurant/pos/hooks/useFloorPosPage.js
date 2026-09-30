@@ -338,7 +338,8 @@ export function useFloorPosPage() {
     activeOrderId, setActiveOrderId, order, orderPartial,
     menuItems: menuQuery.data ?? [],
     prefetchOrder,
-    isLoading: workspace.isLoading || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
+    isLoading: (workspace.storeId == null && workspace.isLoading)
+      || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
     handleTableClick, handleAddItem, handleComposeFamily,
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,

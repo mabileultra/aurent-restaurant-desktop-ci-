@@ -195,7 +195,7 @@ export function useBookingAdminPage() {
       setPage(0);
     },
     pageSizeOptions: BOOKING_PAGE_SIZE_OPTIONS,
-    isLoading: workspace.isLoading || reservationsQuery.isPending,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || reservationsQuery.isPending,
     modal,
     setModal,
     openCreate: () => {

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
@@ -85,6 +85,8 @@ export function useAuditAdminPage() {
     queryKey: ['rst-activity', workspace.storeId, params],
     queryFn: () => rstAnalyticsApi.activity(workspace.storeId, params).then((r) => r.data),
     enabled: workspace.storeId != null,
+    staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 
   const filtered = useMemo(() => {

@@ -5,7 +5,7 @@ import { isDesktopPrinter, listDesktopPrintersCached } from '../utils/desktopPri
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
-const POLL_MS = 200;
+const POLL_MS = 500;
 
 /**
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).

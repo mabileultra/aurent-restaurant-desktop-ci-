@@ -150,7 +150,7 @@ export function useKitchenPosPage() {
     setStationFilter,
     waiterNameById,
     shift: shiftQuery.data ?? null,
-    isLoading: workspace.isLoading || ticketsQuery.isLoading,
+    isLoading: (workspace.storeId == null && workspace.isLoading) || ticketsQuery.isLoading,
     isError: ticketsQuery.isError,
     canAdvance,
     canAdmin: user?.role === 'ADMIN' || user?.role === 'MANAGER',

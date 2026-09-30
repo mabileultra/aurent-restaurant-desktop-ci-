@@ -8,25 +8,66 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPrintJob, UUID> {
 
-    @Query("""
-        select j from RestaurantPrintJob j
-        where j.companyId = :companyId
-          and j.storeId = :storeId
-          and j.status = :status
-          and j.createdAt > :since
-        order by j.createdAt asc
-        """)
-    List<RestaurantPrintJob> findPendingForStore(
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+        UPDATE restaurant_print_jobs
+        SET status = 'PENDING',
+            claimed_at = NULL
+        WHERE company_id = :companyId
+          AND store_id = :storeId
+          AND status = 'CLAIMED'
+          AND claimed_at IS NOT NULL
+          AND claimed_at < :staleBefore
+        """, nativeQuery = true)
+    int reclaimStaleClaims(
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId,
-        @Param("status") PrintJobStatus status,
-        @Param("since") Instant since
+        @Param("staleBefore") Instant staleBefore
     );
+
+    /**
+     * Atomically claim a batch of pending jobs (SKIP LOCKED — one desktop wins each row).
+     * @return claimed job ids
+     */
+    @Query(value = """
+        UPDATE restaurant_print_jobs
+        SET status = 'CLAIMED',
+            claimed_at = :now
+        WHERE id IN (
+            SELECT id FROM (
+                SELECT id
+                FROM restaurant_print_jobs
+                WHERE company_id = :companyId
+                  AND store_id = :storeId
+                  AND status = 'PENDING'
+                  AND created_at > :since
+                ORDER BY created_at ASC
+                LIMIT :batch
+                FOR UPDATE SKIP LOCKED
+            ) locked
+        )
+        RETURNING id
+        """, nativeQuery = true)
+    List<UUID> claimPendingIds(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("since") Instant since,
+        @Param("now") Instant now,
+        @Param("batch") int batch
+    );
+
+    @Query("""
+        select j from RestaurantPrintJob j
+        where j.id in :ids
+        order by j.createdAt asc
+        """)
+    List<RestaurantPrintJob> findAllByIdOrdered(@Param("ids") Collection<UUID> ids);
 
     @Modifying(clearAutomatically = true)
     @Query("""
@@ -36,13 +77,13 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         where j.id in :ids
           and j.companyId = :companyId
           and j.storeId = :storeId
-          and j.status = :pending
+          and j.status in :fromStatuses
         """)
-    int markDone(
+    int markDoneFromStatuses(
         @Param("ids") List<UUID> ids,
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId,
-        @Param("pending") PrintJobStatus pending,
+        @Param("fromStatuses") Collection<PrintJobStatus> fromStatuses,
         @Param("done") PrintJobStatus done,
         @Param("now") Instant now
     );

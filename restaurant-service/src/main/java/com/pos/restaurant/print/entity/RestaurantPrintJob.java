@@ -45,12 +45,15 @@ public class RestaurantPrintJob {
     private String payload;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 16)
+    @Column(name = "status", nullable = false, length = 24)
     @Builder.Default
     private PrintJobStatus status = PrintJobStatus.PENDING;
 
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
+    @Column(name = "claimed_at")
+    private Instant claimedAt;
 
     @Column(name = "completed_at")
     private Instant completedAt;
