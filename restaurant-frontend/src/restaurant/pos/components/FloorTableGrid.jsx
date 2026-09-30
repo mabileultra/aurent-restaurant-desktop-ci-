@@ -31,6 +31,7 @@ export default function FloorTableGrid({
   onStatusFilter,
   selectedTableId,
   onTableClick,
+  onPrefetchOrder,
   onNewOrder,
   sectionSwitch,
   search,
@@ -147,6 +148,7 @@ export default function FloorTableGrid({
               table={table}
               selected={selectedTableId === table.id}
               onClick={onTableClick}
+              onPrefetchOrder={onPrefetchOrder}
               t={t}
               now={now}
               waiterNameById={waiterNameById}

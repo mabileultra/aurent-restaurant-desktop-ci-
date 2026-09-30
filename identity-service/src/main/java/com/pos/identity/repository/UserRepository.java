@@ -51,5 +51,23 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
         """)
     List<User> findPlatformOperatorsForModuleAccess();
 
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN FETCH u.role
+        LEFT JOIN FETCH u.storeIds sid
+        WHERE u.companyId = :companyId
+          AND u.isActive = true
+          AND u.role.name <> 'SUPER_ADMIN'
+          AND EXISTS (
+            SELECT 1 FROM User u2 JOIN u2.storeIds s
+            WHERE u2.id = u.id AND s = :storeId
+          )
+        ORDER BY u.fullName
+        """)
+    List<User> findActiveByCompanyIdAndStoreId(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId
+    );
+
     long count();
 }

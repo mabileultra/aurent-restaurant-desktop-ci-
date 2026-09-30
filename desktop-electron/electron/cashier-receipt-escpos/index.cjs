@@ -168,16 +168,28 @@ async function printPlainTicketEscpos(payload) {
           printer.bold(true);
           wrap(p.title).forEach((line) => printer.println(line));
           printer.bold(false);
+          printer.newLine();
           printer.alignLeft();
         }
         for (const raw of p.lines) {
           const text = String(raw ?? '');
+          if (!text) {
+            printer.newLine();
+            continue;
+          }
           if (text === '---') {
             printer.drawLine();
             continue;
           }
+          if (text.startsWith('≫ ') || text.startsWith('>> ')) {
+            printer.bold(true);
+            wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
+            printer.bold(false);
+            continue;
+          }
           wrap(text).forEach((line) => printer.println(line));
         }
+        printer.newLine();
         printer.cut();
       },
       noPrinterHint: 'Принтер станции не выбран.',

@@ -20,6 +20,7 @@ export default function WaiterMobileFloorBoard({
   onStatusFilter,
   selectedTableId,
   onTableClick,
+  onPrefetchOrder,
   sectionSwitch,
   search,
   onSearchChange,
@@ -101,6 +102,7 @@ export default function WaiterMobileFloorBoard({
               now={now}
               waiterNameById={waiterNameById}
               onClick={onTableClick}
+              onPrefetchOrder={onPrefetchOrder}
               t={t}
             />
           ))}

@@ -12,6 +12,7 @@ export default function WaiterMobileTableTile({
   now,
   waiterNameById,
   onClick,
+  onPrefetchOrder,
   t,
 }) {
   const status = tableStatusClass(table.status);
@@ -26,11 +27,20 @@ export default function WaiterMobileTableTile({
     : null;
   const guests = order?.guestCount ?? table.reservation?.guestCount ?? null;
 
+  const warm = () => {
+    if (!onPrefetchOrder) return;
+    for (const row of orders) {
+      if (row?.id) onPrefetchOrder(row.id);
+    }
+  };
+
   return (
     <button
       type="button"
       className={`rst-waiter-tile rst-waiter-tile--${status}${selected ? ' is-selected' : ''}`}
       onClick={() => onClick(table)}
+      onPointerEnter={warm}
+      onFocus={warm}
     >
       <span className="rst-waiter-tile__top">
         <span className="rst-waiter-tile__code">{table.code}</span>

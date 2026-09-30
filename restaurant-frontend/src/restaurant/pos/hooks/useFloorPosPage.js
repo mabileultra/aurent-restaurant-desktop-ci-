@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { userApi } from '../../../api';
@@ -13,15 +13,12 @@ import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWor
 import { useAuthStore } from '../../../store/authStore';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
 import {
-  isPosReceiptPrintEnabled,
-  setPosReceiptPrintEnabled,
-} from '../../../utils/receiptPrintPreference';
-import {
   emptyGuestForm, emptyCounterForm, buildWaiters, buildWaiterNameById,
   resolveOrderHallName, resolveBackLabelKey, resolveOrderFlags,
 } from '../utils/floorPosDerivations';
 import { resolveServicePreview } from '../utils/restaurantPayAmount';
 import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
+import { orderPlaceholderFromFloor } from '../utils/orderFloorPlaceholder';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
@@ -30,6 +27,8 @@ import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 12_000;
 const SHIFT_STALE_MS = 20_000;
+const MENU_STALE_MS = 10 * 60_000;
+const ORDER_STALE_MS = 4_000;
 
 export function useFloorPosPage() {
   const { t } = useTranslation();
@@ -55,12 +54,12 @@ export function useFloorPosPage() {
   const [openingCash, setOpeningCash] = useState('0');
   const [closingCash, setClosingCash] = useState('0');
   const [floorSearch, setFloorSearch] = useState('');
-  const [printReceiptEnabled, setPrintReceiptEnabledState] = useState(() => isPosReceiptPrintEnabled());
   const [paidReceipt, setPaidReceipt] = useState(null);
   const [payModalOpen, setPayModalOpen] = useState(false);
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
   const storeId = workspace.storeId;
+  const qc = useQueryClient();
   useRestaurantPrintRelay(storeId, t);
   const onFloor = posMode === 'floor';
 
@@ -91,16 +90,24 @@ export function useFloorPosPage() {
   const menuQuery = useQuery({
     queryKey: ['rst-menu-pos', storeId],
     queryFn: () => rstMenuApi.list(storeId, true).then((r) => r.data),
-    enabled: storeId != null && !!activeOrderId,
+    enabled: storeId != null,
+    staleTime: MENU_STALE_MS,
   });
+  const floorHalls = floorQuery.data?.halls;
+  const orderFloorSeed = useMemo(
+    () => (activeOrderId ? orderPlaceholderFromFloor(floorHalls, activeOrderId) : undefined),
+    [floorHalls, activeOrderId],
+  );
   const orderQuery = useQuery({
     queryKey: ['rst-order', activeOrderId],
     queryFn: () => rstOrderApi.get(activeOrderId).then((r) => r.data),
     enabled: !!activeOrderId,
+    staleTime: ORDER_STALE_MS,
+    placeholderData: orderFloorSeed,
   });
   const staffQuery = useQuery({
     queryKey: ['rst-pos-staff', storeId],
-    queryFn: () => userApi.getAll().then((r) => r.data ?? []),
+    queryFn: () => userApi.getPosRoster(storeId).then((r) => r.data ?? []),
     enabled: storeId != null,
     staleTime: 60_000,
   });
@@ -117,6 +124,7 @@ export function useFloorPosPage() {
   const hallTables = collectHallTables(halls, selectedHallId);
   const shift = shiftQuery.data ?? null;
   const order = orderQuery.data;
+  const orderPartial = !!activeOrderId && !!order && orderQuery.isPlaceholderData;
   const orderHallName = useMemo(
     () => resolveOrderHallName(halls, order, selectedHall?.name),
     [halls, order, selectedHall?.name],
@@ -134,14 +142,32 @@ export function useFloorPosPage() {
     staleTime: 15_000,
   });
   const kitchenBoardEnabled = kitchenBoardQuery.data?.enabled !== false;
-  const orderFlags = resolveOrderFlags(order, kitchenBoardEnabled);
+  const rawFlags = resolveOrderFlags(order, kitchenBoardEnabled);
+  const orderFlags = orderPartial
+    ? {
+      ...rawFlags,
+      canCancel: false,
+      canSendKitchen: false,
+      canRequestBill: false,
+      canPay: false,
+    }
+    : rawFlags;
   const shiftOpenLabel = shift?.openedAt ? formatShiftOpenDuration(shift.openedAt) : null;
   const backLabelKey = resolveBackLabelKey(posMode);
+
+  const prefetchOrder = (orderId) => {
+    if (!orderId) return;
+    qc.prefetchQuery({
+      queryKey: ['rst-order', orderId],
+      queryFn: () => rstOrderApi.get(orderId).then((r) => r.data),
+      staleTime: ORDER_STALE_MS,
+    });
+  };
 
   const m = useFloorPosMutations({
     t, storeId, storeName: workspace.storeName, channel, guestForm, openTable, counterForm,
     openingCash, closingCash, shift, activeOrderId, order, servicePreview, waiterNameById,
-    user, printReceiptEnabled, setOpenTable, setActiveOrderId, setCounterModalOpen,
+    user, setOpenTable, setActiveOrderId, setCounterModalOpen,
     setCounterForm, setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote,
     setPaidReceipt, closePayModal: () => setPayModalOpen(false),
   });
@@ -171,11 +197,6 @@ export function useFloorPosPage() {
     setReservedTable(null);
     tableActions.closeInspect();
     if (mode === 'floor') setFloorSection('tables');
-  };
-
-  const setPrintReceiptEnabled = (enabled) => {
-    setPrintReceiptEnabledState(enabled);
-    setPosReceiptPrintEnabled(enabled);
   };
 
   const beginOpenTable = (table) => {
@@ -314,8 +335,9 @@ export function useFloorPosPage() {
     openTable, setOpenTable, reservedTable, setReservedTable, beginOpenTable, openExtraCheck,
     openExtraCheckPending: m.openExtraCheckMutation.isPending,
     guestForm, setGuestForm,
-    activeOrderId, setActiveOrderId, order,
+    activeOrderId, setActiveOrderId, order, orderPartial,
     menuItems: menuQuery.data ?? [],
+    prefetchOrder,
     isLoading: workspace.isLoading || (onFloor ? floorQuery.isLoading : counterQuery.isLoading),
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
     handleTableClick, handleAddItem, handleComposeFamily,
@@ -323,7 +345,7 @@ export function useFloorPosPage() {
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
     sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
     discountMutation: m.discountMutation,
-    payMutation: m.payMutation, printReceiptEnabled, setPrintReceiptEnabled,
+    payMutation: m.payMutation,
     paidReceipt, closePaidReceipt: () => setPaidReceipt(null),
     payModalOpen, openPayModal: () => setPayModalOpen(true),
     closePayModal: () => setPayModalOpen(false),

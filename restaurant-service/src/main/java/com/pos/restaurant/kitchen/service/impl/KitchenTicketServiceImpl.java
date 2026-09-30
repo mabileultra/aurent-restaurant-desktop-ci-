@@ -1,5 +1,6 @@
 package com.pos.restaurant.kitchen.service.impl;
 
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.kitchen.domain.KitchenTicketStatus;
 import com.pos.restaurant.kitchen.dto.KitchenTicketResponse;
@@ -37,11 +38,16 @@ public class KitchenTicketServiceImpl implements KitchenTicketService {
     private final KitchenTicketAssembler assembler;
     private final SendToKitchenHandler sendHandler;
     private final UpdateKitchenTicketStatusHandler updateStatusHandler;
+    private final RestaurantHotCache hotCache;
 
     @Override
     @Transactional
     public OrderResponse send(UUID orderId) {
-        return sendHandler.handle(orderId);
+        OrderResponse response = sendHandler.handle(orderId);
+        if (response != null) {
+            hotCache.evictFloor(response.storeId());
+        }
+        return response;
     }
 
     @Override

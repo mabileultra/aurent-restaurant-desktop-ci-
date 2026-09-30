@@ -18,10 +18,12 @@ import com.pos.identity.service.user.support.UserAccessPolicy;
 import com.pos.identity.util.DbExceptionTranslator;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -55,6 +57,34 @@ public class UserServiceImpl implements UserService {
             .filter(accessPolicy::canView)
             .map(userMapper::toResponse)
             .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> findPosRoster(Integer storeId) {
+        if (storeId == null) {
+            throw IdentityExceptions.badRequest("storeId is required");
+        }
+        User me = tenantAccess.currentUser();
+        Integer companyId = me.getCompanyId();
+        if (companyId == null) {
+            throw IdentityExceptions.badRequest("Your account is not linked to a company");
+        }
+        assertPosRosterStoreAccess(me, storeId);
+        return userRepository.findActiveByCompanyIdAndStoreId(companyId, storeId).stream()
+            .map(userMapper::toResponse)
+            .collect(Collectors.toList());
+    }
+
+    private void assertPosRosterStoreAccess(User me, Integer storeId) {
+        String role = me.getRole() != null ? me.getRole().getName() : "";
+        if (RoleName.isPlatformScope(role) || "ADMIN".equals(role) || "MANAGER".equals(role)) {
+            return;
+        }
+        Set<Integer> mine = me.getStoreIds() == null ? Set.of() : me.getStoreIds();
+        if (!mine.contains(storeId)) {
+            throw new AccessDeniedException("Store is not assigned to your account");
+        }
     }
 
     @Override

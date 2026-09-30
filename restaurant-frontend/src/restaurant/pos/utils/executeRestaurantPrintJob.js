@@ -10,6 +10,7 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
+import { ticketStamp } from './ticketLayout';
 
 function parsePayload(raw) {
   try {
@@ -67,19 +68,19 @@ function headerFor(order, t) {
     code: order?.tableCode || '—',
     defaultValue: `Стол ${order?.tableCode || '—'}`,
   }) || `TABLE ${order?.tableCode || '—'}`;
-  return `${table} #${order?.orderNo || ''}`;
+  return `${table} · №${order?.orderNo || ''}`;
 }
 
 function itemLines(item) {
   const qty = Number(item.quantity) || 0;
-  const portion = item.portionText ? ` · ${item.portionText}` : '';
-  const lines = [`${qty} x ${item.name || ''}${portion}`];
+  const portion = item.portionText ? ` (${item.portionText})` : '';
+  const lines = [`${qty}× ${item.name || ''}${portion}`];
   const mods = (item.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
     .filter(Boolean)
     .join(', ');
-  if (mods) lines.push(`+ ${mods}`);
-  if (item.note) lines.push(`* ${item.note}`);
+  if (mods) lines.push(`   + ${mods}`);
+  if (item.note) lines.push(`   * ${item.note}`);
   return lines;
 }
 
@@ -105,7 +106,7 @@ async function runCategorySlip(payload, t) {
       printerName: printer,
       lines: [
         payload.header || '',
-        new Date().toLocaleString(),
+        ticketStamp(),
         '---',
         ...itemLines({
           name: payload.itemName,
@@ -114,6 +115,7 @@ async function runCategorySlip(payload, t) {
           note: payload.note,
           modifiers: payload.modifiers || [],
         }),
+        '---',
       ].filter((line, idx) => idx > 0 || line),
     });
     return { mode: 'silent', ack: true };
@@ -129,9 +131,10 @@ async function runCategorySlip(payload, t) {
     printerName: printer,
     lines: [
       headerFor(order, t),
-      new Date().toLocaleString(),
+      ticketStamp(),
       '---',
       ...itemLines({ ...line, quantity: qty }),
+      '---',
     ],
   });
   return { mode: 'silent', ack: true };
@@ -150,9 +153,10 @@ async function runCategoryBatch(payload) {
     printerName: printer,
     lines: [
       payload.header || '',
-      new Date().toLocaleString(),
+      ticketStamp(),
       '---',
       ...dishLines,
+      '---',
     ].filter((line, idx) => idx > 0 || line),
   });
   return { mode: 'silent', ack: true };

@@ -1,11 +1,14 @@
 package com.pos.restaurant.settings.service.impl;
 
+import com.pos.restaurant.config.RestaurantCacheNames;
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.settings.dto.KitchenBoardSettingsResponse;
 import com.pos.restaurant.settings.entity.RestaurantStoreSetting;
 import com.pos.restaurant.settings.repository.RestaurantStoreSettingRepository;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +18,7 @@ public class KitchenBoardServiceImpl implements KitchenBoardService {
 
     private final RestaurantStoreSettingRepository repository;
     private final FloorTenantSupport tenantSupport;
+    private final RestaurantHotCache hotCache;
 
     @Override
     @Transactional(readOnly = true)
@@ -34,11 +38,13 @@ public class KitchenBoardServiceImpl implements KitchenBoardService {
                 .build());
         row.setKitchenBoardEnabled(enabled);
         repository.save(row);
+        hotCache.evictKitchenBoard(companyId, storeId);
         return new KitchenBoardSettingsResponse(storeId, enabled);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheNames = RestaurantCacheNames.KITCHEN_BOARD, key = "#companyId + ':' + #storeId")
     public boolean isEnabled(Integer companyId, Integer storeId) {
         return repository.findByCompanyIdAndStoreId(companyId, storeId)
             .map(RestaurantStoreSetting::isKitchenBoardEnabled)

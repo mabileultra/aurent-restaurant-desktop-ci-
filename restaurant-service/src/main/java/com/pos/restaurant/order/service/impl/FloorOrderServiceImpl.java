@@ -1,5 +1,6 @@
 package com.pos.restaurant.order.service.impl;
 
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.order.domain.DeliveryStatus;
 import com.pos.restaurant.order.domain.OrderChannel;
@@ -62,17 +63,25 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final OrderAssignWaiterHandler assignWaiterHandler;
     private final OrderTransferTableHandler transferTableHandler;
     private final OrderMergeTablesHandler mergeTablesHandler;
+    private final RestaurantHotCache hotCache;
+
+    private OrderResponse touchFloor(OrderResponse response) {
+        if (response != null) {
+            hotCache.evictFloor(response.storeId());
+        }
+        return response;
+    }
 
     @Override
     @Transactional
     public OrderResponse open(Integer tableId, OpenOrderRequest request) {
-        return openHandler.handle(tableId, request);
+        return touchFloor(openHandler.handle(tableId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse openCounter(Integer storeId, OrderChannel channel, OpenCounterOrderRequest request) {
-        return openCounterHandler.handle(storeId, channel, request);
+        return touchFloor(openCounterHandler.handle(storeId, channel, request));
     }
 
     @Override
@@ -149,66 +158,68 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Override
     @Transactional
     public OrderResponse updateGuests(UUID orderId, UpdateGuestsRequest request) {
-        return updateGuestsHandler.handle(orderId, request);
+        return touchFloor(updateGuestsHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse updateDeliveryDetails(UUID orderId, UpdateDeliveryDetailsRequest request) {
-        return updateDeliveryDetailsHandler.handle(orderId, request);
+        return touchFloor(updateDeliveryDetailsHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse updateDeliveryStatus(UUID orderId, UpdateDeliveryStatusRequest request) {
-        return updateDeliveryStatusHandler.handle(orderId, request);
+        return touchFloor(updateDeliveryStatusHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse updateDiscount(UUID orderId, UpdateOrderDiscountRequest request) {
-        return updateDiscountHandler.handle(orderId, request);
+        return touchFloor(updateDiscountHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse assignWaiter(UUID orderId, AssignWaiterRequest request) {
-        return assignWaiterHandler.handle(orderId, request);
+        return touchFloor(assignWaiterHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse transferTable(UUID orderId, TransferTableRequest request) {
-        return transferTableHandler.handle(orderId, request);
+        return touchFloor(transferTableHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse mergeTables(UUID orderId, MergeTablesRequest request) {
-        return mergeTablesHandler.handle(orderId, request);
+        return touchFloor(mergeTablesHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse addItem(UUID orderId, AddOrderItemRequest request) {
-        return addItemHandler.handle(orderId, request);
+        return touchFloor(addItemHandler.handle(orderId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse updateItem(UUID orderId, UUID itemId, UpdateOrderItemRequest request) {
-        return updateItemHandler.handle(orderId, itemId, request);
+        return touchFloor(updateItemHandler.handle(orderId, itemId, request));
     }
 
     @Override
     @Transactional
     public OrderResponse removeItem(UUID orderId, UUID itemId) {
-        return removeItemHandler.handle(orderId, itemId);
+        return touchFloor(removeItemHandler.handle(orderId, itemId));
     }
 
     @Override
     @Transactional
     public void cancel(UUID orderId) {
+        Integer storeId = orderLookup.require(orderId).getStoreId();
         cancelHandler.handle(orderId);
+        hotCache.evictFloor(storeId);
     }
 }

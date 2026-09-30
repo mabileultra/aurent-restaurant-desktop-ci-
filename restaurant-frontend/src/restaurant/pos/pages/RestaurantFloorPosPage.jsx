@@ -122,6 +122,7 @@ function FloorBody({ p, a, mobile }) {
     onStatusFilter: p.setStatusFilter,
     selectedTableId: p.openTable?.id ?? p.reservedTable?.id ?? a.inspectTable?.id,
     onTableClick: p.handleTableClick,
+    onPrefetchOrder: p.prefetchOrder,
     search: p.floorSearch,
     onSearchChange: p.setFloorSearch,
     sectionSwitch: <FloorSectionSwitch p={p} />,

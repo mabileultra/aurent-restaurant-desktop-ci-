@@ -1,5 +1,7 @@
 package com.pos.restaurant.menu.service.impl;
 
+import com.pos.restaurant.config.RestaurantCacheNames;
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.menu.dto.CreateMenuVariantRequest;
 import com.pos.restaurant.menu.dto.MenuItemResponse;
@@ -12,6 +14,7 @@ import com.pos.restaurant.menu.support.MenuItemResponseFactory;
 import com.pos.restaurant.modifier.entity.MenuItemModifierLink;
 import com.pos.restaurant.modifier.repository.MenuItemModifierLinkRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,8 +37,10 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final MenuItemDeactivateHandler deactivateHandler;
     private final MenuItemModifierLinkRepository linkRepository;
     private final MenuItemResponseFactory responseFactory;
+    private final RestaurantHotCache hotCache;
 
     @Override
+    @Cacheable(cacheNames = RestaurantCacheNames.MENU, key = "#storeId + ':' + #posOnly")
     public List<MenuItemResponse> list(Integer storeId, boolean posOnly) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<MenuItem> items = posOnly
@@ -65,13 +70,17 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Override
     @Transactional
     public MenuItemResponse create(Integer storeId, SaveMenuItemRequest request) {
-        return createHandler.handle(storeId, request);
+        MenuItemResponse created = createHandler.handle(storeId, request);
+        hotCache.evictMenu(storeId);
+        return created;
     }
 
     @Override
     @Transactional
     public MenuItemResponse update(UUID itemId, SaveMenuItemRequest request) {
-        return updateHandler.handle(itemId, request);
+        MenuItemResponse updated = updateHandler.handle(itemId, request);
+        hotCache.evictMenu(updated.storeId());
+        return updated;
     }
 
     @Override
@@ -81,12 +90,15 @@ public class MenuItemServiceImpl implements MenuItemService {
         List<UUID> groups = linkRepository.findByMenuItemId(created.id()).stream()
             .map(MenuItemModifierLink::getGroupId)
             .toList();
+        hotCache.evictMenu(created.storeId());
         return responseFactory.withGroups(created, groups);
     }
 
     @Override
     @Transactional
     public void deactivate(UUID itemId) {
+        Integer storeId = itemRepository.findById(itemId).map(MenuItem::getStoreId).orElse(null);
         deactivateHandler.handle(itemId);
+        hotCache.evictMenu(storeId);
     }
 }

@@ -28,6 +28,7 @@ function formatOpenedAt(iso) {
 export default function CashierOrderDock({
   order,
   loading,
+  linesPending = false,
   tableCode,
   waiterName = null,
   menuItems = [],
@@ -116,14 +117,18 @@ export default function CashierOrderDock({
       </div>
 
       <div className="rst-cashier-dock__lines">
-        <OrderLines
-          items={items}
-          categoryByMenuId={categoryByMenuId}
-          allowKitchenRefuse={allowKitchenRefuse}
-          onQty={onQty}
-          onRemove={onRemove}
-          t={t}
-        />
+        {linesPending && !items.length ? (
+          <div className="rst-cashier-dock__empty">{t('common.loading')}</div>
+        ) : (
+          <OrderLines
+            items={items}
+            categoryByMenuId={categoryByMenuId}
+            allowKitchenRefuse={allowKitchenRefuse}
+            onQty={onQty}
+            onRemove={onRemove}
+            t={t}
+          />
+        )}
       </div>
 
       <div className="rst-cashier-dock__total">

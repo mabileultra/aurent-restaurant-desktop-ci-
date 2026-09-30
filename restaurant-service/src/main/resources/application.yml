@@ -39,6 +39,18 @@ app:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:19092}
     send-timeout-ms: 10000
     retry-ms: 30000
+  restaurant:
+    redis:
+      enabled: ${RESTAURANT_REDIS_ENABLED:false}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${RESTAURANT_REDIS_DB:2}
+      connect-timeout-ms: ${RESTAURANT_REDIS_CONNECT_TIMEOUT_MS:100}
+      command-timeout-ms: ${RESTAURANT_REDIS_COMMAND_TIMEOUT_MS:100}
+      menu-ttl-seconds: ${RESTAURANT_REDIS_MENU_TTL_SECONDS:600}
+      floor-ttl-seconds: ${RESTAURANT_REDIS_FLOOR_TTL_SECONDS:3}
+      kitchen-board-ttl-seconds: ${RESTAURANT_REDIS_KITCHEN_BOARD_TTL_SECONDS:30}
 
 springdoc:
   api-docs:
@@ -54,6 +66,9 @@ management:
   endpoint:
     health:
       show-details: never
+  health:
+    redis:
+      enabled: false
 
 logging:
   level:

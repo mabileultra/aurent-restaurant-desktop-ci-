@@ -1,5 +1,6 @@
 package com.pos.restaurant.payment.service.impl;
 
+import com.pos.restaurant.config.RestaurantHotCache;
 import com.pos.restaurant.order.dto.OrderResponse;
 import com.pos.restaurant.payment.dto.OrderPaymentResponse;
 import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
@@ -22,25 +23,33 @@ public class PaymentServiceImpl implements PaymentService {
     private final PaidOrderPartialRefundHandler paidOrderPartialRefundHandler;
     private final ListRecentPaidOrdersHandler listRecentPaidOrdersHandler;
     private final GetOrderPaymentHandler getOrderPaymentHandler;
+    private final RestaurantHotCache hotCache;
+
+    private OrderResponse touchFloor(OrderResponse response) {
+        if (response != null) {
+            hotCache.evictFloor(response.storeId());
+        }
+        return response;
+    }
 
     @Override
     public OrderResponse requestBill(UUID orderId) {
-        return requestBillHandler.handle(orderId);
+        return touchFloor(requestBillHandler.handle(orderId));
     }
 
     @Override
     public OrderResponse pay(UUID orderId, PayOrderRequest request) {
-        return payOrderHandler.handle(orderId, request);
+        return touchFloor(payOrderHandler.handle(orderId, request));
     }
 
     @Override
     public OrderResponse refund(UUID orderId) {
-        return paidOrderRefundHandler.handle(orderId);
+        return touchFloor(paidOrderRefundHandler.handle(orderId));
     }
 
     @Override
     public OrderResponse refundItems(UUID orderId, PartialRefundRequest request) {
-        return paidOrderPartialRefundHandler.handle(orderId, request);
+        return touchFloor(paidOrderPartialRefundHandler.handle(orderId, request));
     }
 
     @Override

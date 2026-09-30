@@ -103,7 +103,7 @@ function WaiterRow({ name, emptyLabel }) {
   );
 }
 
-export default function FloorTableCard({ table, selected, onClick, t, now, waiterNameById }) {
+export default function FloorTableCard({ table, selected, onClick, onPrefetchOrder, t, now, waiterNameById }) {
   const status = tableStatusClass(table.status);
   const orders = tableActiveOrders(table);
   const order = orders[0] || table.activeOrder;
@@ -117,11 +117,20 @@ export default function FloorTableCard({ table, selected, onClick, t, now, waite
     ? (waiterNameById?.get(String(order.waiterUserId)) || t('rst.floor.waiterUnknown'))
     : null;
 
+  const warm = () => {
+    if (!onPrefetchOrder) return;
+    for (const row of orders) {
+      if (row?.id) onPrefetchOrder(row.id);
+    }
+  };
+
   return (
     <button
       type="button"
       className={`rst-table-card rst-table-card--${status}${selected ? ' is-selected' : ''}`}
       onClick={() => onClick(table)}
+      onPointerEnter={warm}
+      onFocus={warm}
     >
       <div className="rst-table-card__top">
         <span className="rst-table-card__badge">{table.code}</span>

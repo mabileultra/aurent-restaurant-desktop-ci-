@@ -44,8 +44,6 @@ export default function OrderWorkspace({
   sendingKitchen,
   billingPending,
   paying,
-  printReceiptEnabled = true,
-  onPrintReceiptChange,
   servicePreview,
   waiters = [],
   onAssignWaiter,
@@ -327,19 +325,6 @@ export default function OrderWorkspace({
               </button>
             ) : null}
           </div>
-          {canPay ? (
-            <div className="rst-order__pay-extra">
-              <label className="rst-order__print-toggle" title={t('pos.printReceiptAfterSale')}>
-                <input
-                  type="checkbox"
-                  checked={printReceiptEnabled}
-                  onChange={(e) => onPrintReceiptChange?.(e.target.checked)}
-                  disabled={paying}
-                />
-                <span>{t('pos.printReceiptShort')}</span>
-              </label>
-            </div>
-          ) : null}
         </div>
       </aside>
 

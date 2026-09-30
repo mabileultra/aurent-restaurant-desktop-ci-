@@ -82,7 +82,7 @@ export function useKitchenPosPage() {
 
   const staffQuery = useQuery({
     queryKey: ['rst-pos-staff', workspace.storeId],
-    queryFn: () => userApi.getAll().then((r) => r.data ?? []),
+    queryFn: () => userApi.getPosRoster(workspace.storeId).then((r) => r.data ?? []),
     enabled: workspace.storeId != null,
     staleTime: 60_000,
   });

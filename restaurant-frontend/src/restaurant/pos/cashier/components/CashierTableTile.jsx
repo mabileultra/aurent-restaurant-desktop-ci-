@@ -12,6 +12,7 @@ export default function CashierTableTile({
   selected,
   now,
   onClick,
+  onPrefetchOrder,
   t,
 }) {
   const status = tableStatusClass(table.status);
@@ -22,11 +23,20 @@ export default function CashierTableTile({
     ? orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0)
     : null;
 
+  const warm = () => {
+    if (!onPrefetchOrder) return;
+    for (const row of orders) {
+      if (row?.id) onPrefetchOrder(row.id);
+    }
+  };
+
   return (
     <button
       type="button"
       className={`rst-cashier-tile rst-cashier-tile--${status}${selected ? ' is-selected' : ''}`}
       onClick={() => onClick(table)}
+      onPointerEnter={warm}
+      onFocus={warm}
     >
       <span className="rst-cashier-tile__code">{table.code}</span>
       <span className="rst-cashier-tile__status">{t(`rst.status.${status}`)}</span>

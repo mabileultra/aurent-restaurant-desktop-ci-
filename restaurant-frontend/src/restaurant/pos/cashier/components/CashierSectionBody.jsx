@@ -41,12 +41,14 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
           selectedTableId={p.selectedTableId}
           activeOrderId={p.activeOrderId}
           onTableClick={p.selectTable}
+          onPrefetchOrder={p.prefetchOrder}
           t={p.t}
         />
         {!fullOrder ? (
           <CashierOrderDock
             order={p.order}
-            loading={!!p.activeOrderId && !p.order}
+            loading={false}
+            linesPending={!!p.orderPartial}
             tableCode={tableCode}
             waiterName={
               p.order?.waiterUserId

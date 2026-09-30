@@ -1,14 +1,9 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import toast from 'react-hot-toast';
 import { rstOrderApi } from '../../api/order.api';
 import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
-import {
-  isCashierEscposPrintAvailable,
-  printFiscalReceipt,
-  resolveEscposPrintErrorMessage,
-} from '../../../services/cashierEscpos';
-import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
 import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFiscal';
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
@@ -24,10 +19,6 @@ import {
   clearGuestBillPrintedLocally,
   markGuestBillPrintedLocally,
 } from '../utils/restaurantPrintFlush';
-import {
-  printOrdinarySaleReceipt,
-  saleNeedsFiscalPrint,
-} from '../utils/printOrdinarySaleReceipt';
 import { toastApiError } from '../../../utils/apiError';
 import { isDesktopPrinter } from '../utils/desktopPrinters';
 
@@ -35,13 +26,21 @@ export function useFloorPosMutations(deps) {
   const {
     t, storeId, storeName, channel, guestForm, openTable, counterForm,
     openingCash, closingCash, shift, activeOrderId, order, servicePreview,
-    waiterNameById, user, printReceiptEnabled,
+    waiterNameById, user,
     setOpenTable, setActiveOrderId, setCounterModalOpen, setCounterForm,
     setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote, setPaidReceipt,
     closePayModal,
   } = deps;
 
   const qc = useQueryClient();
+  /** Per dish(+mods+note): serialize double-taps; different dishes stay parallel. */
+  const addItemQueuesRef = useRef(new Map());
+  const enqueueAddItem = (key, run) => {
+    const prev = addItemQueuesRef.current.get(key) || Promise.resolve();
+    const queued = prev.then(run, run);
+    addItemQueuesRef.current.set(key, queued.then(() => undefined, () => undefined));
+    return queued;
+  };
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
   const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', storeId] });
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
@@ -156,12 +155,17 @@ export function useFloorPosMutations(deps) {
   });
 
   const addItemMutation = useMutation({
-    mutationFn: ({ menuItem, modifierOptionIds, note }) => rstOrderApi.addItem(activeOrderId, {
-      menuItemId: menuItem.id,
-      quantity: 1,
-      modifierOptionIds: modifierOptionIds ?? [],
-      note: note?.trim() || undefined,
-    }),
+    mutationFn: ({ menuItem, modifierOptionIds, note }) => {
+      const mods = (modifierOptionIds ?? []).map(String).sort().join(',');
+      const noteKey = note?.trim() || '';
+      const key = `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}`;
+      return enqueueAddItem(key, () => rstOrderApi.addItem(activeOrderId, {
+        menuItemId: menuItem.id,
+        quantity: 1,
+        modifierOptionIds: modifierOptionIds ?? [],
+        note: noteKey || undefined,
+      }));
+    },
     onMutate: async ({ menuItem, modifierOptionIds, note }) => {
       await qc.cancelQueries({ queryKey: orderKey });
       const prev = qc.getQueryData(orderKey);
@@ -351,7 +355,7 @@ export function useFloorPosMutations(deps) {
         waiterName, customerLabel, serviceLabel, t,
       });
     },
-    onSuccess: async ({ sale }) => {
+    onSuccess: async () => {
       setActiveOrderId(null);
       closePayModal?.();
       invalidateFloor();
@@ -359,31 +363,6 @@ export function useFloorPosMutations(deps) {
       invalidateShift();
       invalidateRecentPaid();
       toast.success(t('rst.order.paid'));
-      const shouldPrint = printReceiptEnabled;
-      let printed = false;
-      if (shouldPrint) {
-        try {
-          if (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()) {
-            await printFiscalReceipt({ sale, t, useModalShell: false });
-          } else {
-            await printOrdinarySaleReceipt({ sale, t });
-          }
-          toast.success(t('receipt.printSent'), {
-            id: CASHIER_ESCPOS_TOAST.toastId,
-            duration: CASHIER_ESCPOS_TOAST.successDurationMs,
-          });
-        } catch (err) {
-          toast.error(
-            (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
-              ? resolveEscposPrintErrorMessage(err, t)
-              : err?.message) ?? t('receipt.printFailed'),
-            {
-              id: CASHIER_ESCPOS_TOAST.toastId,
-              duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
-            },
-          );
-        }
-      }
     },
     onError: (err) => {
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,6 +40,14 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     public ResponseEntity<List<UserResponse>> list() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/pos-roster")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COOK')")
+    @Operation(summary = "POS roster: staff assigned to a store")
+    @ApiResponse(responseCode = "200", description = "Active store staff for POS labels / waiter assign")
+    public ResponseEntity<List<UserResponse>> posRoster(@RequestParam Integer storeId) {
+        return ResponseEntity.ok(userService.findPosRoster(storeId));
     }
 
     @GetMapping("/{id}")

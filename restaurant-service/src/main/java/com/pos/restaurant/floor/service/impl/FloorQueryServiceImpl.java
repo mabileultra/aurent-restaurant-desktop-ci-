@@ -1,5 +1,6 @@
 package com.pos.restaurant.floor.service.impl;
 
+import com.pos.restaurant.config.RestaurantCacheNames;
 import com.pos.restaurant.booking.entity.FloorReservation;
 import com.pos.restaurant.booking.repository.FloorReservationRepository;
 import com.pos.restaurant.booking.support.ReservationLookup;
@@ -22,6 +23,7 @@ import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.order.repository.FloorOrderTableLinkRepository;
 import com.pos.restaurant.order.support.OrderTotals;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,7 @@ public class FloorQueryServiceImpl implements FloorQueryService {
     private final OrderTotals orderTotals;
 
     @Override
+    @Cacheable(cacheNames = RestaurantCacheNames.FLOOR, key = "#storeId")
     public FloorSnapshotResponse getSnapshot(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<OrderStatus> activeStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);

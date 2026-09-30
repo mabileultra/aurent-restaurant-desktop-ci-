@@ -116,8 +116,6 @@ export default function RestaurantCashierPosPage() {
               guestsPending={p.updateGuestsMutation.isPending}
               billingPending={p.billMutation.isPending}
               paying={p.payMutation.isPending}
-              printReceiptEnabled={p.printReceiptEnabled}
-              onPrintReceiptChange={p.setPrintReceiptEnabled}
               onNewCheck={p.access?.canOpenOrder && p.order?.tableId && !p.openExtraCheckPending ? () => {
                 const table = (p.halls || []).flatMap((hall) => hall.tables || [])
                   .find((row) => row.id === p.order.tableId)

@@ -11,6 +11,9 @@ public interface UserService {
 
     List<UserResponse> findAll();
 
+    /** POS roster: active users assigned to a store (waiters/cashiers for assign + labels). */
+    List<UserResponse> findPosRoster(Integer storeId);
+
     UserResponse findById(UUID id);
 
     UserResponse create(CreateUserRequest request);

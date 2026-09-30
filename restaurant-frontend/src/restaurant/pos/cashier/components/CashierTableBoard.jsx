@@ -10,6 +10,7 @@ export default function CashierTableBoard({
   selectedTableId,
   activeOrderId,
   onTableClick,
+  onPrefetchOrder,
   t,
 }) {
   const now = useNowTick();
@@ -39,6 +40,7 @@ export default function CashierTableBoard({
               selected={table.id === selectedId}
               now={now}
               onClick={onTableClick}
+              onPrefetchOrder={onPrefetchOrder}
               t={t}
             />
           ))}

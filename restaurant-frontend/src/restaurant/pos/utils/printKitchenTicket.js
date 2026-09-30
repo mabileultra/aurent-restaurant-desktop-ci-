@@ -9,6 +9,7 @@ import {
   printTicketLines,
   readPrintedKitchenLines,
 } from './desktopPrinters';
+import { ticketStamp } from './ticketLayout';
 
 function headerFor(order, t) {
   const channel = order?.channel || 'DINE_IN';
@@ -18,19 +19,19 @@ function headerFor(order, t) {
     code: order?.tableCode || '—',
     defaultValue: `Стол ${order?.tableCode || '—'}`,
   }) || `TABLE ${order?.tableCode || '—'}`;
-  return `${table} #${order?.orderNo || ''}`;
+  return `${table} · №${order?.orderNo || ''}`;
 }
 
 function itemLines(item) {
   const qty = Number(item.quantity) || 0;
-  const portion = item.portionText ? ` · ${item.portionText}` : '';
-  const lines = [`${qty} x ${item.name || ''}${portion}`];
+  const portion = item.portionText ? ` (${item.portionText})` : '';
+  const lines = [`${qty}× ${item.name || ''}${portion}`];
   const mods = (item.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
     .filter(Boolean)
     .join(', ');
-  if (mods) lines.push(`+ ${mods}`);
-  if (item.note) lines.push(`* ${item.note}`);
+  if (mods) lines.push(`   + ${mods}`);
+  if (item.note) lines.push(`   * ${item.note}`);
   return lines;
 }
 
@@ -73,11 +74,12 @@ async function sendGroups(groups, settings) {
         printerName: printer,
         lines: [
           group.header,
-          [new Date().toLocaleString(), group.extra].filter(Boolean).join(' · '),
-          group.label,
+          ticketStamp(),
+          group.label ? `≫ ${group.label}` : '',
           '---',
           ...fresh.flatMap(itemLines),
-        ],
+          '---',
+        ].filter(Boolean),
       })
         .then(() => {
           markPrintedKitchenLines(fresh.map((item) => item.lineId));
@@ -115,9 +117,10 @@ export async function printCategoryTicketOnAdd({ order, line, quantity, category
     printerName: printer,
     lines: [
       headerFor(order, t),
-      new Date().toLocaleString(),
+      ticketStamp(),
       '---',
       ...itemLines({ ...line, quantity: qty }),
+      '---',
     ],
   });
   return { mode: 'silent' };
