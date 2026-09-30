@@ -80,8 +80,9 @@
 
 .rst-order__context-waiter {
   color: var(--rst-muted);
-  font-size: 0.84rem;
-  font-weight: 600;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .rst-order__live {
@@ -633,6 +634,28 @@
 
 .rst-order-line.is-kitchen {
   border-left-color: var(--rst-ok);
+}
+
+.rst-order-line.is-kitchen.is-open {
+  border-left-color: #f59e0b;
+  background: color-mix(in srgb, #f59e0b 8%, var(--rst-surface-2));
+}
+
+.rst-order-line__refuse {
+  min-height: 2.55rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid color-mix(in srgb, #f87171 55%, var(--rst-line));
+  border-radius: 8px;
+  background: color-mix(in srgb, #f87171 14%, transparent);
+  color: #fecaca;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+.rst-order-line__refuse:hover {
+  background: color-mix(in srgb, #f87171 28%, transparent);
 }
 
 .rst-order-line__title {

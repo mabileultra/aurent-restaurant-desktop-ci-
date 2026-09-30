@@ -14,16 +14,29 @@ export default function CashierTopBar({
   zoom,
   userLabel,
   canAdmin = false,
+  backToCashier = null,
   t,
 }) {
   return (
     <header className="rst-cashier-top">
       <div className="rst-cashier-top__brand">
-        <span className="rst-cashier-top__name">{t('rst.cashier.title')}</span>
-        <span className="rst-cashier-top__meta">
-          {storeName || t('rst.floor.hall')}
-          {userLabel ? ` · ${userLabel}` : ''}
-        </span>
+        {backToCashier ? (
+          <BaseButton
+            type="button"
+            className="rst-cashier-top__back"
+            onClick={backToCashier.onClick}
+          >
+            ← {backToCashier.label}
+          </BaseButton>
+        ) : (
+          <>
+            <span className="rst-cashier-top__name">{t('rst.cashier.title')}</span>
+            <span className="rst-cashier-top__meta">
+              {storeName || t('rst.floor.hall')}
+              {userLabel ? ` · ${userLabel}` : ''}
+            </span>
+          </>
+        )}
       </div>
 
       <div className={`rst-cashier-top__shift${shift ? ' is-open' : ''}`}>

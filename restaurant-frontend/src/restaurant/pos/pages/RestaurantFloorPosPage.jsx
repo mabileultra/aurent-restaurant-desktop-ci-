@@ -162,6 +162,7 @@ function buildOrderWorkspaceProps(p) {
       }
     },
     canCancel: p.canCancel,
+    allowKitchenRefuse: !!p.access?.canCancelOrder,
     canSendKitchen: p.canSendKitchen,
     sendingKitchen: p.sendKitchenMutation.isPending,
     onSendKitchen: () => p.sendKitchenMutation.mutate(),

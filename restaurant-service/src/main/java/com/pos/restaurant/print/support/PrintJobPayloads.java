@@ -17,6 +17,28 @@ public final class PrintJobPayloads {
         UUID orderItemId,
         BigDecimal quantity,
         String categoryName,
-        String printerName
+        String printerName,
+        String header,
+        String itemName,
+        String portionText,
+        String note,
+        List<String> modifiers
+    ) {}
+
+    /** Several category lines to one Windows printer (one physical cut). */
+    public record CategoryBatch(
+        UUID orderId,
+        String printerName,
+        String title,
+        String header,
+        List<CategoryBatchLine> lines
+    ) {}
+
+    public record CategoryBatchLine(
+        String name,
+        BigDecimal quantity,
+        String portionText,
+        String note,
+        List<String> modifiers
     ) {}
 }

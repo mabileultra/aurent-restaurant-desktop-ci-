@@ -20,6 +20,6 @@ export function resolveFloorAccess(role) {
     canCounterSales: isAdmin || isCashier,
     /** Take payment — cashier/admin. Waiter only requests bill / prints check. */
     canPay: isAdmin || isCashier,
-    canCancelOrder: isAdmin,
+    canCancelOrder: isAdmin || isCashier,
   };
 }

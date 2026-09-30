@@ -75,7 +75,9 @@ async function runEscposPrintJob(opts) {
 
   try {
     logStep(jobId, 'is_connected');
-    const connected = await checkConnected(printer);
+    // Kitchen/guest plain tickets: skip slow Windows probe — RAW path already has no probe.
+    const skipProbe = jobType === 'plain_ticket';
+    const connected = skipProbe ? true : await checkConnected(printer);
     if (!connected) {
       if (process.platform === 'win32') {
         logWarn(jobId, 'is_connected_false_win_try_anyway', { deviceName });

@@ -16,6 +16,8 @@ public interface KitchenStationRepository extends JpaRepository<KitchenStation, 
         Integer storeId
     );
 
+    List<KitchenStation> findByIdInAndCompanyId(java.util.Collection<UUID> ids, Integer companyId);
+
     Optional<KitchenStation> findByIdAndCompanyId(UUID id, Integer companyId);
 
     boolean existsByStoreIdAndCodeIgnoreCaseAndActiveTrue(Integer storeId, String code);

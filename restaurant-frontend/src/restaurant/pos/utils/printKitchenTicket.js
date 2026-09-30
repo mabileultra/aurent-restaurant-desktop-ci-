@@ -35,10 +35,17 @@ function itemLines(item) {
 }
 
 /** Prefer station binding; if unset / unmapped, use the only configured kitchen printer. */
-function resolveStationPrinter(map, stationId) {
-  const keyed = stationId ? String(map[String(stationId)] || '').trim() : '';
-  if (keyed) return keyed;
-  const values = Object.values(map || {})
+export function resolveStationPrinter(map, stationId) {
+  if (!map || typeof map !== 'object') return '';
+  if (stationId != null && String(stationId).trim()) {
+    const want = String(stationId).trim().toLowerCase();
+    for (const [key, value] of Object.entries(map)) {
+      if (String(key).trim().toLowerCase() !== want) continue;
+      const name = String(value || '').trim();
+      if (name) return name;
+    }
+  }
+  const values = Object.values(map)
     .map((name) => String(name || '').trim())
     .filter(Boolean);
   const unique = [...new Set(values)];
@@ -76,6 +83,10 @@ async function sendGroups(groups, settings) {
     } catch (err) {
       errors.push(`${group.label}: ${err?.message || 'печать не выполнена'}`);
     }
+  }
+  // Partial: some stations printed here, others still need a printer (this PC or another).
+  if (printed && missing.length) {
+    return { mode: 'partial', missing, configured, errors };
   }
   if (printed) return { mode: 'silent', missing, configured, errors };
   if (missing.length && !errors.length) return { mode: 'missing', missing, configured, errors };

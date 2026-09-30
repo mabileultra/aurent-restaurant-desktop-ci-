@@ -12,6 +12,7 @@ export default function OrderLines({
   onRemove,
   onEditNote,
   locked = false,
+  allowKitchenRefuse = false,
   t,
 }) {
   if (!items.length) {
@@ -22,12 +23,13 @@ export default function OrderLines({
     <div className="rst-order-lines">
       {items.map((line) => {
         const kitchen = isKitchenLocked(line.itemStatus);
-        const lineLocked = locked || kitchen;
         const isNew = line.itemStatus === 'NEW';
+        const canEditNew = !locked && isNew;
+        const canRefuseKitchen = allowKitchenRefuse && kitchen;
         return (
           <div
             key={line.id}
-            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}`}
+            className={`rst-order-line${isNew ? ' is-new' : ''}${kitchen ? ' is-kitchen' : ''}${canRefuseKitchen ? ' is-open' : ''}`}
           >
             <div className="rst-order-line__main">
               <div className="rst-order-line__title">
@@ -51,14 +53,7 @@ export default function OrderLines({
             </div>
 
             <div className="rst-order-line__actions">
-              {lineLocked ? (
-                <span className="rst-order-line__lock" title={t('rst.order.onKitchen')} aria-hidden>
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="5" y="11" width="14" height="10" rx="2" />
-                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
-                  </svg>
-                </span>
-              ) : (
+              {canEditNew ? (
                 <>
                   {onEditNote ? (
                     <button
@@ -98,7 +93,30 @@ export default function OrderLines({
                     ✕
                   </button>
                 </>
-              )}
+              ) : canRefuseKitchen ? (
+                <button
+                  type="button"
+                  className="rst-order-line__refuse"
+                  title={t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ (на принтер кухни)' })}
+                  onClick={() => {
+                    if (window.confirm(t('rst.order.confirmRefuseKitchenItem', {
+                      name: line.name,
+                      defaultValue: `Отказать «${line.name}» и отправить на принтер кухни?`,
+                    }))) {
+                      onRemove(line.id);
+                    }
+                  }}
+                >
+                  {t('rst.order.refuseShort', { defaultValue: 'Отказ' })}
+                </button>
+              ) : kitchen ? (
+                <span className="rst-order-line__lock" title={t('rst.order.onKitchen')} aria-hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="5" y="11" width="14" height="10" rx="2" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
+                </span>
+              ) : null}
             </div>
           </div>
         );

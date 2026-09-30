@@ -10,16 +10,19 @@ import com.pos.restaurant.kitchen.repository.KitchenTicketRepository;
 import com.pos.restaurant.order.domain.OrderItemStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
-import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.order.support.OrderLookup;
+import com.pos.restaurant.order.support.TableSeatSync;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -33,14 +36,17 @@ public class OrderCancelHandler {
     private final FloorTenantSupport tenantSupport;
     private final OrderLinkedTablesSupport linkedTables;
     private final TableSeatSync tableSeatSync;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public void handle(UUID orderId) {
         FloorOrder order = orderLookup.requireActive(orderId);
-        int lines = itemRepository.countByOrderId(orderId);
-        if (lines > 0 && !tenantSupport.isManager()) {
-            throw new ForbiddenException("Only a manager can cancel an order with items");
+        List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
+        if (!items.isEmpty() && !tenantSupport.canCancelOrdersWithItems()) {
+            throw new ForbiddenException("Only a manager or cashier can cancel an order with items");
         }
+        // Void slips before marking cancelled (publisher skips CANCELLED / NEW).
+        printJobPublisher.voidSlipsForItems(order, items);
         order.setStatus(OrderStatus.CANCELLED);
         order.setClosedAt(Instant.now());
         var seated = linkedTables.allTables(order);
@@ -53,6 +59,11 @@ public class OrderCancelHandler {
             ticket.setStatus(KitchenTicketStatus.CANCELLED);
             for (var line : ticketLineRepository.findByTicketId(ticket.getId())) {
                 line.getOrderItem().setItemStatus(OrderItemStatus.CANCELLED);
+            }
+        }
+        for (FloorOrderItem item : items) {
+            if (item.getItemStatus() != OrderItemStatus.CANCELLED) {
+                item.setItemStatus(OrderItemStatus.CANCELLED);
             }
         }
         LogUtil.info(OrderCancelHandler.class, "Order cancelled: id={}", orderId);

@@ -37,6 +37,7 @@ export default function OrderWorkspace({
   onGuestsChange,
   guestsPending,
   canCancel,
+  allowKitchenRefuse = false,
   canSendKitchen,
   canRequestBill,
   canPay,
@@ -222,6 +223,7 @@ export default function OrderWorkspace({
           onQty={onQty}
           onRemove={onRemove}
           onEditNote={onEditNote}
+          allowKitchenRefuse={allowKitchenRefuse}
           t={t}
         />
 

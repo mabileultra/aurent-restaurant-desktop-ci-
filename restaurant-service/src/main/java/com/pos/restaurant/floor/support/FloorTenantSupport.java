@@ -34,6 +34,12 @@ public class FloorTenantSupport {
         return "ADMIN".equals(role) || "MANAGER".equals(role);
     }
 
+    /** Cancel order with lines / refuse kitchen-sent dishes. */
+    public boolean canCancelOrdersWithItems() {
+        String role = role();
+        return "ADMIN".equals(role) || "MANAGER".equals(role) || "CASHIER".equals(role);
+    }
+
     public void assertCompany(Integer entityCompanyId) {
         Integer companyId = requireCompanyId();
         if (!companyId.equals(entityCompanyId)) {

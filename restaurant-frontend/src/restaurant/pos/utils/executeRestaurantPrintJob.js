@@ -6,7 +6,7 @@ import { printGuestBill } from './printGuestBill';
 import { printKitchenTicket } from './printKitchenTicket';
 import {
   isDesktopPrinter,
-  listDesktopPrinters,
+  listDesktopPrintersCached,
   printTicketLines,
 } from './desktopPrinters';
 
@@ -18,12 +18,16 @@ function parsePayload(raw) {
   }
 }
 
-function localHasPrinter(printerName) {
+async function localHasPrinter(printerName) {
   const name = String(printerName || '').trim();
   if (!name) return false;
   try {
-    const list = listDesktopPrinters();
-    return (list || []).some((p) => String(p?.name || p).trim() === name);
+    const list = await listDesktopPrintersCached();
+    const names = (Array.isArray(list) ? list : [])
+      .map((p) => String(p?.name || p).trim())
+      .filter(Boolean);
+    const lower = name.toLowerCase();
+    return names.some((n) => n === name || n.toLowerCase() === lower);
   } catch {
     return false;
   }
@@ -53,9 +57,42 @@ function itemLines(item) {
   return lines;
 }
 
+function batchItemLines(line) {
+  return itemLines({
+    name: line?.name,
+    quantity: line?.quantity,
+    portionText: line?.portionText,
+    note: line?.note,
+    modifiers: line?.modifiers || [],
+  });
+}
+
 async function runCategorySlip(payload, t) {
   const printer = String(payload.printerName || '').trim();
-  if (!localHasPrinter(printer)) return { mode: 'skip', ack: false };
+  if (!(await localHasPrinter(printer))) return { mode: 'skip', ack: false };
+
+  // Fast path: payload already has dish text (no second round-trip to order API).
+  if (payload.itemName || payload.header) {
+    const qty = Number(payload.quantity) || 1;
+    await printTicketLines({
+      title: payload.categoryName || '',
+      printerName: printer,
+      lines: [
+        payload.header || '',
+        new Date().toLocaleString(),
+        '---',
+        ...itemLines({
+          name: payload.itemName,
+          quantity: qty,
+          portionText: payload.portionText,
+          note: payload.note,
+          modifiers: payload.modifiers || [],
+        }),
+      ].filter((line, idx) => idx > 0 || line),
+    });
+    return { mode: 'silent', ack: true };
+  }
+
   const orderRes = await rstOrderApi.get(payload.orderId);
   const order = orderRes.data;
   const line = (order.items || []).find((item) => String(item.id) === String(payload.orderItemId));
@@ -70,6 +107,27 @@ async function runCategorySlip(payload, t) {
       '---',
       ...itemLines({ ...line, quantity: qty }),
     ],
+  });
+  return { mode: 'silent', ack: true };
+}
+
+async function runCategoryBatch(payload) {
+  const printer = String(payload.printerName || '').trim();
+  if (!(await localHasPrinter(printer))) return { mode: 'skip', ack: false };
+  const dishLines = (payload.lines || []).flatMap((line, index) => {
+    const block = batchItemLines(line);
+    return index === 0 ? block : ['', ...block];
+  });
+  if (!dishLines.length) return { mode: 'skip', ack: true };
+  await printTicketLines({
+    title: payload.title || '',
+    printerName: printer,
+    lines: [
+      payload.header || '',
+      new Date().toLocaleString(),
+      '---',
+      ...dishLines,
+    ].filter((line, idx) => idx > 0 || line),
   });
   return { mode: 'silent', ack: true };
 }
@@ -98,7 +156,6 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
       onlyItemIds: payload.itemIds || [],
     });
     if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
-    // Leave pending: another desktop may own the station printer.
     return {
       ack: false,
       mode: printed?.mode || 'skip',
@@ -106,6 +163,10 @@ export async function executeRestaurantPrintJob(job, { t } = {}) {
       configured: printed?.configured,
       errors: printed?.errors,
     };
+  }
+
+  if (job.kind === 'CATEGORY_BATCH') {
+    return runCategoryBatch(payload);
   }
 
   if (job.kind === 'CATEGORY_SLIP') {

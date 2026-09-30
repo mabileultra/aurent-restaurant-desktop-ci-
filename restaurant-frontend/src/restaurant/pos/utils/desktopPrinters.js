@@ -9,6 +9,29 @@ export function listDesktopPrinters() {
   return window.desktopCashier.listPrinters();
 }
 
+const PRINTER_LIST_TTL_MS = 15_000;
+let printerListCache = { at: 0, list: null, pending: null };
+
+/** Cached Windows printer list — avoids IPC on every kitchen/category slip. */
+export async function listDesktopPrintersCached() {
+  const now = Date.now();
+  if (printerListCache.list && now - printerListCache.at < PRINTER_LIST_TTL_MS) {
+    return printerListCache.list;
+  }
+  if (printerListCache.pending) return printerListCache.pending;
+  printerListCache.pending = Promise.resolve(listDesktopPrinters())
+    .then((list) => {
+      const next = Array.isArray(list) ? list : [];
+      printerListCache = { at: Date.now(), list: next, pending: null };
+      return next;
+    })
+    .catch((err) => {
+      printerListCache.pending = null;
+      throw err;
+    });
+  return printerListCache.pending;
+}
+
 export function getDesktopPrinterSettings() {
   return window.desktopCashier.getPrinterSettings();
 }

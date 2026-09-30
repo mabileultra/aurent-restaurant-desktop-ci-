@@ -19,5 +19,6 @@ public record OrderItemResponse(
     OrderItemStatus itemStatus,
     int sortOrder,
     UUID stationId,
+    String stationName,
     java.util.List<OrderItemModifierResponse> modifiers
 ) {}

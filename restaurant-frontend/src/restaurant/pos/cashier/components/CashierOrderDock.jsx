@@ -22,7 +22,10 @@ export default function CashierOrderDock({
   onSendKitchen,
   onRequestBill,
   onPay,
+  onRemove,
+  onQty,
   onClear,
+  allowKitchenRefuse = false,
   t,
 }) {
   if (loading) {
@@ -70,7 +73,13 @@ export default function CashierOrderDock({
       </div>
 
       <div className="rst-cashier-dock__lines">
-        <OrderLines items={items} locked t={t} />
+        <OrderLines
+          items={items}
+          allowKitchenRefuse={allowKitchenRefuse}
+          onQty={onQty}
+          onRemove={onRemove}
+          t={t}
+        />
       </div>
 
       <div className="rst-cashier-dock__total">

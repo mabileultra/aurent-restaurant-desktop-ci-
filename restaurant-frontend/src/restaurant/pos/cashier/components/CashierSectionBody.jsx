@@ -59,6 +59,9 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
             onSendKitchen={() => p.sendKitchenMutation.mutate()}
             onRequestBill={() => p.billMutation.mutate()}
             onPay={p.openPayModal}
+            onRemove={(itemId) => p.removeItemMutation.mutate(itemId)}
+            onQty={p.handleQty}
+            allowKitchenRefuse={!!p.access?.canCancelOrder}
             onClear={p.clearOrder}
             t={p.t}
           />

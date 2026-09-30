@@ -1,4 +1,3 @@
-import OpenTableModal from './OpenTableModal';
 import OccupiedTableModal from './OccupiedTableModal';
 import ReservedTableModal from './ReservedTableModal';
 import TransferTableModal from './TransferTableModal';
@@ -24,17 +23,7 @@ export default function FloorPosModals({ p, waiterMode = false }) {
 
   return (
     <>
-      <OpenTableModal
-        open={!!p.openTable}
-        table={p.openTable}
-        form={p.guestForm}
-        onChange={p.setGuestForm}
-        onClose={() => p.setOpenTable(null)}
-        onSubmit={() => p.openMutation.mutate()}
-        isPending={p.openMutation.isPending}
-        waiters={p.access?.canAssignWaiter ? p.waiters : []}
-        t={p.t}
-      />
+      {/* Guest count modal removed — open table goes straight to order (speed). */}
       <ReservedTableModal
         open={!!p.reservedTable}
         table={p.reservedTable}

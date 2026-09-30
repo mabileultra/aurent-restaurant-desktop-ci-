@@ -25,6 +25,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.print.service.PrintJobPublisher;
+import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -51,6 +52,7 @@ public class OrderAddItemHandler {
     private final FloorTenantSupport tenantSupport;
     private final OrderResponseAssembler assembler;
     private final PrintJobPublisher printJobPublisher;
+    private final KitchenBoardService kitchenBoardService;
 
     @Transactional
     public OrderResponse handle(UUID orderId, AddOrderItemRequest request) {
@@ -125,6 +127,10 @@ public class OrderAddItemHandler {
         BigDecimal quantity,
         MenuItem menuItem
     ) {
+        // Board off: category slips print on Send, not on add (avoid double tickets).
+        if (!kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId())) {
+            return;
+        }
         if (menuItem.getMenuCategoryId() == null) {
             return;
         }

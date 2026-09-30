@@ -26,34 +26,6 @@
   overflow: hidden;
 }
 
-.rst-cashier-full__bar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-shrink: 0;
-  min-height: 2.85rem;
-  padding: 0.35rem 0.55rem;
-  border: 1px solid var(--rst-line);
-  border-radius: 0.85rem;
-  background: var(--rst-surface);
-}
-
-.rst-cashier-full__bar .base-btn {
-  min-height: 2.45rem;
-  font-weight: 800;
-  flex-shrink: 0;
-}
-
-.rst-cashier-full__hint {
-  min-width: 0;
-  color: var(--rst-ink);
-  font-size: 0.92rem;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
 .rst-cashier-full .rst-order {
   flex: 1;
   min-height: 0;
@@ -407,7 +379,7 @@
   flex: 1;
   min-height: 0;
   display: grid;
-  grid-template-columns: 11.5rem minmax(0, 1fr) 22rem;
+  grid-template-columns: 11.5rem minmax(0, 1fr) 26rem;
   overflow: hidden;
 }
 
@@ -427,6 +399,17 @@
   flex-direction: column;
   gap: 0.1rem;
   min-width: 0;
+}
+
+.rst-cashier-top__brand:has(.rst-cashier-top__back) {
+  flex-direction: row;
+  align-items: center;
+}
+
+.rst-cashier-top__back {
+  min-height: 2.35rem;
+  font-weight: 800;
+  flex-shrink: 0;
 }
 
 .rst-cashier-top__name {
@@ -506,7 +489,7 @@ html.rst-theme--light .rst-cashier-top__shift.is-open {
 
 @media (max-width: 1100px) {
   .rst-cashier__stage {
-    grid-template-columns: 9.5rem minmax(0, 1fr) 18rem;
+    grid-template-columns: 9.5rem minmax(0, 1fr) 22rem;
   }
 }
 

@@ -1,9 +1,9 @@
 .rst-cashier-dock {
-  flex: 0 0 22rem;
+  flex: 0 0 26rem;
   display: flex;
   flex-direction: column;
-  width: 22rem;
-  min-width: 18rem;
+  width: 26rem;
+  min-width: 22rem;
   border-left: 1px solid var(--rst-line);
   background: var(--rst-surface);
   min-height: 0;

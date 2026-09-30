@@ -1,6 +1,8 @@
 package com.pos.restaurant.order.support;
 
 import com.pos.restaurant.floor.entity.FloorTable;
+import com.pos.restaurant.kitchen.entity.KitchenStation;
+import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.LinkedTableResponse;
@@ -21,6 +23,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -30,6 +33,7 @@ public class OrderResponseAssembler {
 
     private final FloorOrderItemModifierRepository modifierRepository;
     private final FloorOrderWaiterHistoryRepository waiterHistoryRepository;
+    private final KitchenStationRepository stationRepository;
     private final OrderTotals orderTotals;
 
     public OrderResponse toResponse(FloorOrder order, List<FloorOrderItem> items) {
@@ -83,8 +87,9 @@ public class OrderResponseAssembler {
             ? Map.of()
             : modifierRepository.findByOrderItemIdIn(items.stream().map(FloorOrderItem::getId).toList()).stream()
                 .collect(Collectors.groupingBy(mod -> mod.getOrderItem().getId()));
+        Map<UUID, String> stationNames = stationNamesFor(order.getCompanyId(), items);
         List<OrderItemResponse> itemResponses = items.stream()
-            .map(item -> toItem(item, modifiers.getOrDefault(item.getId(), List.of())))
+            .map(item -> toItem(item, modifiers.getOrDefault(item.getId(), List.of()), stationNames))
             .toList();
         OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
         Integer tableId = order.getTable() == null ? null : order.getTable().getId();
@@ -135,7 +140,17 @@ public class OrderResponseAssembler {
     }
 
     public OrderItemResponse toItem(FloorOrderItem item, List<FloorOrderItemModifier> modifiers) {
+        return toItem(item, modifiers, Map.of());
+    }
+
+    public OrderItemResponse toItem(
+        FloorOrderItem item,
+        List<FloorOrderItemModifier> modifiers,
+        Map<UUID, String> stationNames
+    ) {
         UUID menuItemId = item.getMenuItem() == null ? null : item.getMenuItem().getId();
+        UUID stationId = item.getStationId();
+        String stationName = stationId == null ? null : stationNames.get(stationId);
         return new OrderItemResponse(
             item.getId(),
             menuItemId,
@@ -149,11 +164,25 @@ public class OrderResponseAssembler {
             item.getNote(),
             item.getItemStatus(),
             item.getSortOrder(),
-            item.getStationId(),
+            stationId,
+            stationName,
             modifiers.stream()
                 .map(mod -> new OrderItemModifierResponse(mod.getId(), mod.getName(), mod.getPriceDelta()))
                 .toList()
         );
+    }
+
+    private Map<UUID, String> stationNamesFor(Integer companyId, List<FloorOrderItem> items) {
+        List<UUID> ids = items.stream()
+            .map(FloorOrderItem::getStationId)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
+        if (ids.isEmpty() || companyId == null) {
+            return Map.of();
+        }
+        return stationRepository.findByIdInAndCompanyId(ids, companyId).stream()
+            .collect(Collectors.toMap(KitchenStation::getId, KitchenStation::getName, (a, b) -> a));
     }
 
     private static BigDecimal taxRateOf(FloorOrderItem item) {

@@ -38,21 +38,30 @@ export function useFloorPosMutations(deps) {
   const errMsg = (err, key) => toastApiError(err, t(key));
 
   const openMutation = useMutation({
-    mutationFn: () => {
-      const guestCount = Math.max(1, Number(guestForm.guestCount) || 1);
-      const childrenCount = Math.min(Math.max(0, Number(guestForm.childrenCount) || 0), guestCount);
+    mutationFn: (opts = {}) => {
+      const table = opts.table ?? openTable;
+      if (!table?.id) {
+        return Promise.reject(new Error('table required'));
+      }
+      const guestCount = Math.max(1, Number(opts.guestCount ?? guestForm.guestCount) || 1);
+      const childrenCount = Math.min(
+        Math.max(0, Number(opts.childrenCount ?? guestForm.childrenCount) || 0),
+        guestCount,
+      );
       const payload = {
         guestCount,
         adultCount: guestCount - childrenCount,
         childrenCount,
       };
-      if (guestForm.waiterUserId) {
-        payload.waiterUserId = guestForm.waiterUserId;
+      const waiterUserId = opts.waiterUserId ?? guestForm.waiterUserId;
+      if (waiterUserId) {
+        payload.waiterUserId = waiterUserId;
       }
-      if (guestForm.comment?.trim()) {
-        payload.comment = guestForm.comment.trim();
+      const comment = opts.comment ?? guestForm.comment;
+      if (comment?.trim()) {
+        payload.comment = comment.trim();
       }
-      return rstOrderApi.open(openTable.id, payload).then((r) => r.data);
+      return rstOrderApi.open(table.id, payload).then((r) => r.data);
     },
     onSuccess: (created) => {
       setOpenTable(null);

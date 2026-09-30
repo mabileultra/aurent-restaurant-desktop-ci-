@@ -78,8 +78,13 @@ public class SendToKitchenHandler {
             }
         }
         LogUtil.info(SendToKitchenHandler.class, "Sent {} items to kitchen: orderId={}", newItems.size(), orderId);
-        // Station slips print on every send; kitchen board only creates KDS tickets above.
-        printJobPublisher.kitchenSend(order, sentItemIds);
+        if (kitchenBoard) {
+            // KDS on: station tickets on Send.
+            printJobPublisher.kitchenSend(order, sentItemIds);
+        } else {
+            // KDS off: no station printers — category auto-print slips on Send.
+            printJobPublisher.categorySlipsForItems(order, newItems);
+        }
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
     }
 

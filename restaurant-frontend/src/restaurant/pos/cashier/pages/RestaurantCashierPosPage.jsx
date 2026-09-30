@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useAuthStore } from '../../../../store/authStore';
 import RestaurantWorkspaceEmpty from '../../../shared/components/RestaurantWorkspaceEmpty';
 import { logoutAndResetSession } from '../../../../utils/authSession';
-import { BaseButton } from '../../../../components/ui';
 import FloorPosModals from '../../components/FloorPosModals';
 import OrderWorkspace from '../../components/OrderWorkspace';
 import PosHardwareBar from '../../components/PosHardwareBar';
@@ -71,22 +70,16 @@ export default function RestaurantCashierPosPage() {
         zoom={zoom}
         userLabel={user?.fullName || user?.username}
         canAdmin={p.canAdmin}
+        backToCashier={showFull ? {
+          label: p.t('rst.cashier.backToCashier'),
+          onClick: exitFullOrder,
+        } : null}
         t={p.t}
       />
 
       <div className="rst-cashier__body">
         {showFull ? (
           <div className="rst-cashier-full">
-            <div className="rst-cashier-full__bar">
-              <BaseButton type="button" onClick={exitFullOrder}>
-                ← {p.t('rst.cashier.backToCashier')}
-              </BaseButton>
-              <span className="rst-cashier-full__hint">
-                {p.t('rst.cashier.fullOrderHint', {
-                  code: p.order.tableCode || p.order.orderNo,
-                })}
-              </span>
-            </div>
             <OrderWorkspace
               order={p.order}
               menuItems={p.menuItems}
@@ -109,6 +102,7 @@ export default function RestaurantCashierPosPage() {
                 }
               }}
               canCancel={p.canCancel}
+              allowKitchenRefuse={!!p.access?.canCancelOrder}
               canSendKitchen={p.canSendKitchen}
               sendingKitchen={p.sendKitchenMutation.isPending}
               onSendKitchen={() => p.sendKitchenMutation.mutate()}

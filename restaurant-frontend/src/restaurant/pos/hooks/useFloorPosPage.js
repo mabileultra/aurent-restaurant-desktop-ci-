@@ -184,9 +184,10 @@ export function useFloorPosPage() {
       return;
     }
     if (!ensureShift()) return;
-    setGuestForm(emptyGuestForm());
-    setOpenTable(table);
+    if (!table?.id || m.openMutation.isPending) return;
     setReservedTable(null);
+    setOpenTable(null);
+    m.openMutation.mutate({ table, guestCount: 1, childrenCount: 0 });
   };
 
   const openExtraCheck = (table, seed = {}) => {

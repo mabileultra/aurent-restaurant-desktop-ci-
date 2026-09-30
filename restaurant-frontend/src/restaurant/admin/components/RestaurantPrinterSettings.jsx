@@ -44,7 +44,7 @@ export default function RestaurantPrinterSettings({
   stations,
   categories = [],
   storeId,
-  kitchenBoardEnabled: _kitchenBoardEnabled = true,
+  kitchenBoardEnabled = true,
   t,
 }) {
   const qc = useQueryClient();
@@ -295,7 +295,10 @@ export default function RestaurantPrinterSettings({
       </section>
       <section className="rst-printers__block">
         <h2 className="rst-printers__title">{t('rst.admin.printersKitchenTitle')}</h2>
-        <p className="rst-printers__note">{t('rst.admin.printersKitchenOn')}</p>
+        <p className="rst-printers__note">
+          {kitchenBoardEnabled ? t('rst.admin.printersKitchenOn') : t('rst.admin.printersKitchenOff')}
+        </p>
+        {kitchenBoardEnabled ? (
         <div className="rst-admin-form__grid rst-admin-form__grid--printers">
           {(stations || []).map((station) => {
             const value = stationPrinter(settings, station.id);
@@ -331,6 +334,7 @@ export default function RestaurantPrinterSettings({
             );
           })}
         </div>
+        ) : null}
       </section>
       {categoryBlock}
     </div>
