@@ -1,18 +1,49 @@
+import { resolveTableChecksTotal } from './restaurantPayAmount';
 import { tableStatusClass } from './tableStatus';
 
-/** Filter/sort cashier table list: all / bill issued / occupied. */
+/** Sort/filter cashier tables: all, by amount, or by status. */
 
 function byCode(a, b) {
   return String(a.code || '').localeCompare(String(b.code || ''), undefined, { numeric: true });
 }
 
-export function sortCashierTables(tables, filterKey = 'WAITING_PAYMENT') {
+function tableAmount(table, halls) {
+  const n = resolveTableChecksTotal(table, halls);
+  return n == null ? null : Number(n);
+}
+
+export function sortCashierTables(tables, sortKey = 'DEFAULT', halls = []) {
   const list = Array.isArray(tables) ? [...tables] : [];
-  let filtered = list;
-  if (filterKey === 'WAITING_PAYMENT') {
-    filtered = list.filter((table) => tableStatusClass(table.status) === 'WAITING_PAYMENT');
-  } else if (filterKey === 'OCCUPIED') {
-    filtered = list.filter((table) => tableStatusClass(table.status) === 'OCCUPIED');
+
+  if (sortKey === 'WAITING_PAYMENT') {
+    return list
+      .filter((table) => tableStatusClass(table.status) === 'WAITING_PAYMENT')
+      .sort(byCode);
   }
-  return filtered.sort(byCode);
+  if (sortKey === 'OCCUPIED') {
+    return list
+      .filter((table) => tableStatusClass(table.status) === 'OCCUPIED')
+      .sort(byCode);
+  }
+  if (sortKey === 'AMOUNT_DESC') {
+    return list.sort((a, b) => {
+      const aa = tableAmount(a, halls);
+      const bb = tableAmount(b, halls);
+      if (aa == null && bb == null) return byCode(a, b);
+      if (aa == null) return 1;
+      if (bb == null) return -1;
+      return (bb - aa) || byCode(a, b);
+    });
+  }
+  if (sortKey === 'AMOUNT_ASC') {
+    return list.sort((a, b) => {
+      const aa = tableAmount(a, halls);
+      const bb = tableAmount(b, halls);
+      if (aa == null && bb == null) return byCode(a, b);
+      if (aa == null) return 1;
+      if (bb == null) return -1;
+      return (aa - bb) || byCode(a, b);
+    });
+  }
+  return list.sort(byCode);
 }

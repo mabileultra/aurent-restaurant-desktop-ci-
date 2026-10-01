@@ -4,7 +4,10 @@ import { sortCashierTables } from '../../utils/sortCashierTables';
 import CashierTableTile from './CashierTableTile';
 import '../styles/cashier-table-board.css';
 
-const FILTER_KEYS = [
+const SORT_KEYS = [
+  { key: 'DEFAULT', labelKey: 'rst.cashier.sortDefault' },
+  { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc' },
+  { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc' },
   { key: 'WAITING_PAYMENT', labelKey: 'rst.cashier.filterBillIssued' },
   { key: 'OCCUPIED', labelKey: 'rst.cashier.filterOccupied' },
 ];
@@ -19,11 +22,11 @@ export default function CashierTableBoard({
   t,
 }) {
   const now = useNowTick();
-  const [filterKey, setFilterKey] = useState('WAITING_PAYMENT');
+  const [sortKey, setSortKey] = useState('DEFAULT');
 
   const visible = useMemo(
-    () => sortCashierTables(tables, filterKey),
-    [tables, filterKey],
+    () => sortCashierTables(tables, sortKey, halls),
+    [tables, sortKey, halls],
   );
 
   const selectedId = selectedTableId
@@ -38,12 +41,12 @@ export default function CashierTableBoard({
           <span>{visible.length}</span>
         </div>
         <div className="rst-cashier-tables__sort" role="group" aria-label={t('rst.cashier.sortLabel')}>
-          {FILTER_KEYS.map((row) => (
+          {SORT_KEYS.map((row) => (
             <button
               key={row.key}
               type="button"
-              className={`rst-cashier-tables__sort-btn${filterKey === row.key ? ' is-active' : ''}`}
-              onClick={() => setFilterKey((prev) => (prev === row.key ? 'ALL' : row.key))}
+              className={`rst-cashier-tables__sort-btn${sortKey === row.key ? ' is-active' : ''}`}
+              onClick={() => setSortKey(row.key)}
             >
               {t(row.labelKey)}
             </button>
