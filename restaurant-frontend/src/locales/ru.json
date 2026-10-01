@@ -834,8 +834,8 @@
       "sortDefault": "По порядку",
       "filterBillIssued": "Выданный счёт",
       "filterOccupied": "Занятый",
-      "sortSeatsDesc": "Крупные",
-      "sortSeatsAsc": "Мелкие"
+      "sortSeatsDesc": "Сумма по убыванию",
+      "sortSeatsAsc": "Сумма по возрастанию"
     },
     "commission": {
       "byWaiter": "По официантам",

@@ -834,8 +834,8 @@
       "sortDefault": "Ketma-ket",
       "filterBillIssued": "Hisob berilgan",
       "filterOccupied": "Band",
-      "sortSeatsDesc": "Katta summa",
-      "sortSeatsAsc": "Kichik summa"
+      "sortSeatsDesc": "Summa kamayish bo‘yicha",
+      "sortSeatsAsc": "Summa o‘sish bo‘yicha"
     },
     "commission": {
       "byWaiter": "Ofitsiantlar bo‘yicha",

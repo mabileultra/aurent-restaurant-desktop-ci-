@@ -6,10 +6,10 @@ import '../styles/cashier-table-board.css';
 
 const SORT_KEYS = [
   { key: 'DEFAULT', labelKey: 'rst.cashier.sortDefault' },
-  { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc' },
-  { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc' },
   { key: 'WAITING_PAYMENT', labelKey: 'rst.cashier.filterBillIssued' },
   { key: 'OCCUPIED', labelKey: 'rst.cashier.filterOccupied' },
+  { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc', symbol: '↓' },
+  { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc', symbol: '↑' },
 ];
 
 export default function CashierTableBoard({
@@ -45,10 +45,16 @@ export default function CashierTableBoard({
             <button
               key={row.key}
               type="button"
-              className={`rst-cashier-tables__sort-btn${sortKey === row.key ? ' is-active' : ''}`}
+              className={[
+                'rst-cashier-tables__sort-btn',
+                row.symbol ? 'rst-cashier-tables__sort-btn--icon' : '',
+                sortKey === row.key ? 'is-active' : '',
+              ].filter(Boolean).join(' ')}
+              aria-label={t(row.labelKey)}
+              title={t(row.labelKey)}
               onClick={() => setSortKey(row.key)}
             >
-              {t(row.labelKey)}
+              {row.symbol ?? t(row.labelKey)}
             </button>
           ))}
         </div>

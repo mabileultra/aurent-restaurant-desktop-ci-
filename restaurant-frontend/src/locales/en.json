@@ -834,8 +834,8 @@
       "sortDefault": "In order",
       "filterBillIssued": "Bill issued",
       "filterOccupied": "Occupied",
-      "sortSeatsDesc": "By amount ↓",
-      "sortSeatsAsc": "By amount ↑"
+      "sortSeatsDesc": "Amount high to low",
+      "sortSeatsAsc": "Amount low to high"
     },
     "commission": {
       "byWaiter": "By waiters",

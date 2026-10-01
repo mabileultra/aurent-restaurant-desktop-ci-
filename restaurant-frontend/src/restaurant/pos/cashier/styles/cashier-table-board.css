@@ -39,23 +39,37 @@
 }
 
 .rst-cashier-tables__sort {
-  display: inline-flex;
-  flex-wrap: wrap;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
   gap: 0.3rem;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .rst-cashier-tables__sort-btn {
+  flex: 0 0 auto;
   min-height: 2.75rem;
-  padding: 0.45rem 0.95rem;
+  padding: 0.45rem 0.75rem;
   border: 1px solid var(--rst-line);
   border-radius: 999px;
   background: color-mix(in srgb, var(--rst-ink) 5%, transparent);
   color: var(--rst-muted);
   font: inherit;
-  font-size: 1rem;
+  font-size: 0.92rem;
   font-weight: 800;
+  white-space: nowrap;
   cursor: pointer;
   touch-action: manipulation;
+}
+
+.rst-cashier-tables__sort-btn--icon {
+  min-width: 3.5rem;
+  min-height: 3.5rem;
+  padding: 0.55rem 0.85rem;
+  font-size: 1.55rem;
+  line-height: 1;
 }
 
 .rst-cashier-tables__sort-btn:hover {
