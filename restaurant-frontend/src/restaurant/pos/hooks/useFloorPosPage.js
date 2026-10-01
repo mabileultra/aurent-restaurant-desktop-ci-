@@ -23,7 +23,6 @@ import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
-import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
 const COUNTER_STALE_MS = 15_000;
@@ -143,7 +142,6 @@ export function useFloorPosPage() {
   );
   const waiters = useMemo(() => buildWaiters(staffQuery.data, storeId), [staffQuery.data, storeId]);
   const waiterNameById = useMemo(() => buildWaiterNameById(staffQuery.data), [staffQuery.data]);
-  useRestaurantPrintRelay(storeId, t, waiterNameById);
   const servicePreview = useMemo(
     () => resolveServicePreview(order, halls),
     [order, halls],

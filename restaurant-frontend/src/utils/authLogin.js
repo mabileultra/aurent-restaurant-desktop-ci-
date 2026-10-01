@@ -56,6 +56,19 @@ export function persistCompanyLoginCode(code) {
   return normalized;
 }
 
+/** Sync peek — start roster fetch without waiting for desktop IPC. */
+export function peekCashierCompanyCode(searchParams) {
+  const fromUrl = searchParams?.get?.('companyLoginCode');
+  if (fromUrl) return normalizeCompanyLoginCode(fromUrl);
+  try {
+    const stored = localStorage.getItem(COMPANY_CODE_STORAGE_KEY);
+    if (stored) return normalizeCompanyLoginCode(stored);
+  } catch {
+    /* ignore */
+  }
+  return '';
+}
+
 export async function resolveCashierCompanyCode(searchParams) {
   if (isDesktopCashier() && window.desktopCashier?.getCompanyLoginCode) {
     try {
@@ -67,17 +80,8 @@ export async function resolveCashierCompanyCode(searchParams) {
     }
   }
 
-  const fromUrl = searchParams?.get?.('companyLoginCode');
-  if (fromUrl) {
-    return persistCompanyLoginCode(fromUrl);
-  }
-
-  try {
-    const stored = localStorage.getItem(COMPANY_CODE_STORAGE_KEY);
-    if (stored) return normalizeCompanyLoginCode(stored);
-  } catch {
-    /* ignore */
-  }
+  const peeked = peekCashierCompanyCode(searchParams);
+  if (peeked) return persistCompanyLoginCode(peeked);
   return '';
 }
 

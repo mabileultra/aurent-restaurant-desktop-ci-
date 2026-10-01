@@ -53,8 +53,6 @@ export default function CashierPinLoginPage() {
     backspace,
     clear,
     submit,
-    clockLabel,
-    dateLabel,
     toggleFullscreen,
     quitApp,
     showQuit,
@@ -99,8 +97,6 @@ export default function CashierPinLoginPage() {
       <div className="cashier-pin-roster">
         <CashierPinLoginChrome
           t={t}
-          clockLabel={clockLabel}
-          dateLabel={dateLabel}
           onFullscreen={toggleFullscreen}
           onQuit={quitApp}
           showQuit={showQuit}

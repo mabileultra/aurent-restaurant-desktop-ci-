@@ -19,13 +19,13 @@ export default function CashierPinLoginRoster({
     <div className="cashier-pin-roster__body">
       <h1 className="cashier-pin-roster__title">{title}</h1>
 
-      {loading ? (
+      {loading && count === 0 ? (
         <p className="cashier-pin-roster__status">
           {t('common.loading', { defaultValue: 'Загрузка…' })}
         </p>
       ) : null}
 
-      {!loading && error ? (
+      {!loading && error && count === 0 ? (
         <div className="cashier-pin-roster__status cashier-pin-roster__status--error">
           <p>{error}</p>
           <button type="button" className="cashier-pin-roster__retry" onClick={onRetry}>
@@ -42,10 +42,11 @@ export default function CashierPinLoginRoster({
         </p>
       ) : null}
 
-      {!loading && !error ? (
-        <ul className="cashier-pin-roster__grid">
+      {/* Admin card always when not a hard empty-load failure; staff cards when present. */}
+      {count > 0 || (!loading && !error) ? (
+        <ul className={`cashier-pin-roster__grid${loading && count > 0 ? ' is-refreshing' : ''}`}>
           {roster.map((staff) => (
-            <li key={staff.id}>
+            <li key={staff.id || staff.userId || staff.displayName}>
               <button
                 type="button"
                 className="cashier-pin-roster__card"
@@ -61,7 +62,7 @@ export default function CashierPinLoginRoster({
               </button>
             </li>
           ))}
-          <li>
+          <li key="admin-login">
             <button
               type="button"
               className="cashier-pin-roster__card cashier-pin-roster__card--admin"

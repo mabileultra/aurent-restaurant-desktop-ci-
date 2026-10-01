@@ -233,6 +233,10 @@
   width: 100%;
 }
 
+.cashier-pin-roster__grid.is-refreshing {
+  opacity: 0.92;
+}
+
 .cashier-pin-roster__card {
   display: flex;
   flex-direction: column;

@@ -10,7 +10,6 @@ import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
-import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
@@ -123,7 +122,6 @@ export function useKitchenPosPage() {
     }
     return map;
   }, [staffQuery.data]);
-  useRestaurantPrintRelay(workspace.storeId, t, waiterNameById);
 
   useEffect(() => {
     const rows = ticketsQuery.data;

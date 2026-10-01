@@ -8,6 +8,7 @@ import { useCashierPosTouchLayout } from '../../../hooks/useCashierPosTouchLayou
 import {
   normalizeCompanyLoginCode,
   persistCompanyLoginCode,
+  peekCashierCompanyCode,
   cashierSessionMatchesCompany,
   resolveCashierCompanyCode,
   shouldShowCashierCompanyCodeField,
@@ -21,6 +22,32 @@ import { normalizePin, PIN_MAX } from '../utils/cashierPinUtils';
 
 const PIN_ROLES = new Set(['MANAGER', 'CASHIER', 'WAITER', 'COOK']);
 const ADMIN_PASSWORD_ROLES = new Set(['ADMIN', 'MANAGER', 'SUPER_ADMIN']);
+const ROSTER_CACHE_TTL_MS = 5 * 60 * 1000;
+
+function rosterCacheKey(loginCode) {
+  return `rst.pinRoster:${loginCode}`;
+}
+
+function readRosterCache(loginCode) {
+  try {
+    const raw = sessionStorage.getItem(rosterCacheKey(loginCode));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !Array.isArray(parsed.rows)) return null;
+    if (Date.now() - Number(parsed.at || 0) > ROSTER_CACHE_TTL_MS) return null;
+    return parsed.rows;
+  } catch {
+    return null;
+  }
+}
+
+function writeRosterCache(loginCode, rows) {
+  try {
+    sessionStorage.setItem(rosterCacheKey(loginCode), JSON.stringify({ at: Date.now(), rows }));
+  } catch {
+    /* ignore */
+  }
+}
 
 async function resolvePinHomePath(role) {
   const { access, businessPayload, fetchError } = await fetchRestaurantAppAccess(role);
@@ -29,15 +56,6 @@ async function resolvePinHomePath(role) {
     // Transport/403 on business-types: fail-open (same as RestaurantWorldGate).
     access: fetchError ? { ok: true } : access,
   };
-}
-
-function useClock() {
-  const [now, setNow] = useState(() => new Date());
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(new Date()), 1000);
-    return () => window.clearInterval(id);
-  }, []);
-  return now;
 }
 
 export function useCashierPinLoginPage() {
@@ -50,10 +68,14 @@ export function useCashierPinLoginPage() {
   const user = useAuthStore((s) => s.user);
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
 
+  const initialCompanyCode = peekCashierCompanyCode(searchParams);
+  const initialRosterCache = initialCompanyCode ? readRosterCache(initialCompanyCode) : null;
   const [step, setStep] = useState('roster');
   const [selectedStaff, setSelectedStaff] = useState(null);
-  const [roster, setRoster] = useState([]);
-  const [rosterLoading, setRosterLoading] = useState(false);
+  const [roster, setRoster] = useState(() => initialRosterCache ?? []);
+  const [rosterLoading, setRosterLoading] = useState(() => (
+    Boolean(initialCompanyCode) && initialRosterCache === null
+  ));
   const [rosterError, setRosterError] = useState('');
   const [adminUsername, setAdminUsername] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
@@ -61,12 +83,14 @@ export function useCashierPinLoginPage() {
   const [showAdminPass, setShowAdminPass] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState('');
-  const [companyCode, setCompanyCode] = useState('');
+  const [companyCode, setCompanyCode] = useState(initialCompanyCode);
   const [companyPopoverOpen, setCompanyPopoverOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const freshLoginRef = useRef(false);
+  const rosterReqRef = useRef(0);
+  const rosterRef = useRef(roster);
+  rosterRef.current = roster;
   const touchLayout = useCashierPosTouchLayout();
-  const now = useClock();
 
   useEffect(() => {
     if (!hasHydrated || !token) return;
@@ -111,7 +135,7 @@ export function useCashierPinLoginPage() {
     let cancelled = false;
     (async () => {
       const code = await resolveCashierCompanyCode(searchParams);
-      if (!cancelled && code) setCompanyCode(code);
+      if (!cancelled && code) setCompanyCode((prev) => (prev === code ? prev : code));
     })();
     return () => {
       cancelled = true;
@@ -123,29 +147,61 @@ export function useCashierPinLoginPage() {
     [companyCode]
   );
 
-  const loadRoster = useCallback(async (loginCode) => {
+  const loadRoster = useCallback(async (loginCode, { force = false } = {}) => {
     if (!loginCode) {
+      rosterReqRef.current += 1;
       setRoster([]);
       setRosterError('');
+      setRosterLoading(false);
       return;
     }
+    const reqId = ++rosterReqRef.current;
+    const cached = readRosterCache(loginCode);
+    if (!force) {
+      if (cached !== null) {
+        rosterRef.current = cached;
+        setRoster(cached);
+        setRosterError('');
+      } else {
+        // Avoid showing another company's cards while the new roster loads.
+        rosterRef.current = [];
+        setRoster([]);
+        setRosterError('');
+      }
+    }
     setRosterLoading(true);
-    setRosterError('');
     try {
       const res = await authApi.cashierPinRoster(loginCode);
-      setRoster(Array.isArray(res.data) ? res.data : []);
+      if (reqId !== rosterReqRef.current) return;
+      const rows = Array.isArray(res.data) ? res.data : [];
+      setRoster(rows);
+      writeRosterCache(loginCode, rows);
+      setRosterError('');
     } catch (err) {
-      setRoster([]);
-      setRosterError(resolveAuthErrorMessage(err, t) || t('cashierLogin.rosterFailed', {
+      if (reqId !== rosterReqRef.current) return;
+      const msg = resolveAuthErrorMessage(err, t) || t('cashierLogin.rosterFailed', {
         defaultValue: 'Не удалось загрузить сотрудников',
-      }));
+      });
+      if (rosterRef.current.length) {
+        // Keep stale cards; don't block the screen with a hard error.
+        setRosterError('');
+      } else {
+        setRoster([]);
+        setRosterError(msg);
+      }
     } finally {
-      setRosterLoading(false);
+      if (reqId === rosterReqRef.current) setRosterLoading(false);
     }
   }, [t]);
 
   useEffect(() => {
-    if (!normalizedCompanyCode) return;
+    if (!normalizedCompanyCode) {
+      rosterReqRef.current += 1;
+      setRoster([]);
+      setRosterError('');
+      setRosterLoading(false);
+      return;
+    }
     loadRoster(normalizedCompanyCode);
   }, [normalizedCompanyCode, loadRoster]);
 
@@ -376,20 +432,6 @@ export function useCashierPinLoginPage() {
   const dotCount = PIN_MAX;
   const pinFull = dots.length >= PIN_MAX;
 
-  const clockLabel = useMemo(() => {
-    const hh = String(now.getHours()).padStart(2, '0');
-    const mm = String(now.getMinutes()).padStart(2, '0');
-    const ss = String(now.getSeconds()).padStart(2, '0');
-    return `${hh}:${mm}:${ss}`;
-  }, [now]);
-
-  const dateLabel = useMemo(() => {
-    const dd = String(now.getDate()).padStart(2, '0');
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const yyyy = now.getFullYear();
-    return `${dd}.${mm}.${yyyy}`;
-  }, [now]);
-
   return {
     t,
     touchLayout,
@@ -401,7 +443,7 @@ export function useCashierPinLoginPage() {
     selectStaff,
     openAdminLogin,
     backToRoster,
-    reloadRoster: () => loadRoster(normalizedCompanyCode),
+    reloadRoster: () => loadRoster(normalizedCompanyCode, { force: true }),
     pin,
     dots,
     dotCount,
@@ -426,8 +468,6 @@ export function useCashierPinLoginPage() {
     backspace,
     clear,
     submit,
-    clockLabel,
-    dateLabel,
     toggleFullscreen,
     quitApp,
     showQuit: isDesktopCashier() && typeof window.desktopCashier?.quit === 'function',

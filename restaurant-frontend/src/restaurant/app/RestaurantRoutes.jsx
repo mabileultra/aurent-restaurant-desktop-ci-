@@ -4,6 +4,7 @@ import RestaurantAdminGuard from './RestaurantAdminGuard';
 import RestaurantPosGuard from './RestaurantPosGuard';
 import RestaurantKitchenGuard from './RestaurantKitchenGuard';
 import RestaurantAdminLayout from './RestaurantAdminLayout';
+import RestaurantDesktopPrintHost from './RestaurantDesktopPrintHost';
 import BillingAccessGuard from '../../router/guards/BillingAccessGuard';
 import ProtectedRoute from '../../router/guards/ProtectedRoute';
 import { TenantBillingPage } from '../../router/lazyPages';
@@ -51,7 +52,10 @@ export const restaurantRoutes = (
     path="/rst"
     element={(
       <RestaurantAuthGuard>
-        <Outlet />
+        <>
+          <RestaurantDesktopPrintHost />
+          <Outlet />
+        </>
       </RestaurantAuthGuard>
     )}
   >

@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { LogOut, Maximize2, Moon, Sun } from 'lucide-react';
 import BrandMark from '../../../../components/shared/BrandMark';
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
@@ -12,10 +12,27 @@ import {
 } from '../../../../store/themeStore';
 import '../../../../restaurant/shared/styles/rst-lang-switch.css';
 
+function useChromeClock() {
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(new Date()), 1000);
+    return () => window.clearInterval(id);
+  }, []);
+  return useMemo(() => {
+    const hh = String(now.getHours()).padStart(2, '0');
+    const mm = String(now.getMinutes()).padStart(2, '0');
+    const ss = String(now.getSeconds()).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mo = String(now.getMonth() + 1).padStart(2, '0');
+    return {
+      clockLabel: `${hh}:${mm}:${ss}`,
+      dateLabel: `${dd}.${mo}.${now.getFullYear()}`,
+    };
+  }, [now]);
+}
+
 export default function CashierPinLoginChrome({
   t,
-  clockLabel,
-  dateLabel,
   onFullscreen,
   onQuit,
   showQuit,
@@ -23,6 +40,7 @@ export default function CashierPinLoginChrome({
   const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
   const theme = useSyncExternalStore(subscribeRestaurantTheme, readRestaurantTheme, () => 'dark');
   const light = theme === 'light';
+  const { clockLabel, dateLabel } = useChromeClock();
 
   return (
     <header className="cashier-pin-roster__chrome">

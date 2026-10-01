@@ -10,6 +10,7 @@ export default function CashierPinLoginVisual() {
           src={PIN_LOGIN_HERO_FALLBACK_URL}
           alt=""
           decoding="async"
+          fetchPriority="high"
         />
       </picture>
       <div className="cashier-pin-login__visual-overlay" />
