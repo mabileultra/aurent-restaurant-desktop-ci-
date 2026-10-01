@@ -1,7 +1,7 @@
 import { resolveTableChecksTotal } from './restaurantPayAmount';
 import { tableStatusClass } from './tableStatus';
 
-/** Sort/filter cashier tables: all, by amount, or by status. */
+/** Filter/sort cashier tables: free/occupied/bill, or by amount. */
 
 function byCode(a, b) {
   return String(a.code || '').localeCompare(String(b.code || ''), undefined, { numeric: true });
@@ -12,17 +12,25 @@ function tableAmount(table, halls) {
   return n == null ? null : Number(n);
 }
 
-export function sortCashierTables(tables, sortKey = 'DEFAULT', halls = []) {
+export function sortCashierTables(tables, sortKey = 'FREE', halls = []) {
   const list = Array.isArray(tables) ? [...tables] : [];
 
-  if (sortKey === 'WAITING_PAYMENT') {
+  if (sortKey === 'FREE') {
     return list
-      .filter((table) => tableStatusClass(table.status) === 'WAITING_PAYMENT')
+      .filter((table) => {
+        const status = tableStatusClass(table.status);
+        return status === 'FREE' || status === 'CLEANING';
+      })
       .sort(byCode);
   }
   if (sortKey === 'OCCUPIED') {
     return list
       .filter((table) => tableStatusClass(table.status) === 'OCCUPIED')
+      .sort(byCode);
+  }
+  if (sortKey === 'WAITING_PAYMENT') {
+    return list
+      .filter((table) => tableStatusClass(table.status) === 'WAITING_PAYMENT')
       .sort(byCode);
   }
   if (sortKey === 'AMOUNT_DESC') {
