@@ -66,35 +66,82 @@ html.rst-theme--light .rst-floor-hall-rail__shift.is-open {
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 3.1rem;
-  padding: 0.7rem 1rem;
+  min-height: 4.65rem;
+  padding: 0.95rem 1.05rem;
   border: 1px solid var(--rst-line);
-  border-radius: 0.75rem;
+  border-left-width: 4px;
+  border-radius: 0.85rem;
   background: color-mix(in srgb, var(--rst-ink) 3%, transparent);
   color: var(--rst-ink);
   font: inherit;
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
 }
 
 .rst-floor-hall-rail__btn strong {
   display: block;
-  font-size: 1.2rem;
+  font-size: 1.28rem;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.2;
+}
+
+.rst-floor-hall-rail__btn--all {
+  border-left-color: color-mix(in srgb, var(--rst-ink) 35%, var(--rst-line));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--rst-ink) 10%, transparent), transparent 70%);
+}
+
+.rst-floor-hall-rail__btn--tone-0 {
+  border-left-color: #38bdf8;
+  background: linear-gradient(90deg, color-mix(in srgb, #38bdf8 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-1 {
+  border-left-color: #a78bfa;
+  background: linear-gradient(90deg, color-mix(in srgb, #a78bfa 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-2 {
+  border-left-color: #34d399;
+  background: linear-gradient(90deg, color-mix(in srgb, #34d399 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-3 {
+  border-left-color: #fbbf24;
+  background: linear-gradient(90deg, color-mix(in srgb, #fbbf24 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-4 {
+  border-left-color: #fb7185;
+  background: linear-gradient(90deg, color-mix(in srgb, #fb7185 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-5 {
+  border-left-color: #2dd4bf;
+  background: linear-gradient(90deg, color-mix(in srgb, #2dd4bf 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-6 {
+  border-left-color: #c084fc;
+  background: linear-gradient(90deg, color-mix(in srgb, #c084fc 18%, transparent), transparent 72%);
+}
+
+.rst-floor-hall-rail__btn--tone-7 {
+  border-left-color: #fdba74;
+  background: linear-gradient(90deg, color-mix(in srgb, #fdba74 18%, transparent), transparent 72%);
 }
 
 .rst-floor-hall-rail__btn:hover {
-  border-color: color-mix(in srgb, var(--rst-ink) 28%, var(--rst-line));
-  background: color-mix(in srgb, var(--rst-ink) 7%, transparent);
+  filter: brightness(1.06);
 }
 
 .rst-floor-hall-rail__btn.is-active {
-  border-color: rgb(255 122 26 / 0.55);
-  background: var(--rst-accent-soft);
-  color: var(--rst-ink);
-  box-shadow: inset 0 0 0 1px rgb(255 122 26 / 0.2);
+  border-top-color: rgb(255 122 26 / 0.55);
+  border-right-color: rgb(255 122 26 / 0.55);
+  border-bottom-color: rgb(255 122 26 / 0.55);
+  box-shadow: inset 0 0 0 1px rgb(255 122 26 / 0.22), 0 6px 16px rgb(0 0 0 / 0.18);
+  filter: none;
 }
 
 .rst-floor-grid__rail.rst-floor-hall-rail {
