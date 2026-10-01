@@ -194,7 +194,15 @@ public class PrintJobPublisher {
         String table = order.getTable() == null || order.getTable().getCode() == null
             ? "—"
             : order.getTable().getCode();
-        return "Стол " + table + " · №" + no;
+        String hall = order.getTable() == null || order.getTable().getHall() == null
+            || order.getTable().getHall().getName() == null
+            || order.getTable().getHall().getName().isBlank()
+            ? null
+            : order.getTable().getHall().getName().trim();
+        if (hall != null) {
+            return hall + " · Стол " + table;
+        }
+        return "Стол " + table;
     }
 
     private void enqueue(FloorOrder order, PrintJobKind kind, Object payload) {

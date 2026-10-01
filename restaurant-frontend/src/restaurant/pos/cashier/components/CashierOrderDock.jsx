@@ -4,6 +4,7 @@ import OrderLines from '../../components/OrderLines';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
+import { shortWaiterName } from '../../utils/floorPosDerivations';
 import '../styles/cashier-order-dock.css';
 
 function useLiveClock() {
@@ -87,6 +88,7 @@ export default function CashierOrderDock({
   const total = resolveRestaurantPayTotal(order, servicePreview);
   const openedClock = formatOpenedAt(order.openedAt);
   const openedTimer = formatDigitalTimer(order.openedAt, now);
+  const shortWaiter = shortWaiterName(waiterName);
 
   return (
     <aside className="rst-cashier-dock">
@@ -104,9 +106,9 @@ export default function CashierOrderDock({
                   ? t('rst.pos.delivery')
                   : t('rst.pos.takeaway'))}
           </p>
-          {waiterName ? (
+          {shortWaiter ? (
             <p className="rst-cashier-dock__waiter">
-              {t('rst.order.waiter')}: {waiterName}
+              {t('rst.order.waiter')}: {shortWaiter}
             </p>
           ) : null}
           {openedClock ? (

@@ -62,6 +62,49 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("batch") int batch
     );
 
+    /**
+     * Claim only jobs this desktop can print (by kind + category printer name).
+     */
+    @Query(value = """
+        UPDATE restaurant_print_jobs
+        SET status = 'CLAIMED',
+            claimed_at = :now
+        WHERE id IN (
+            SELECT id FROM (
+                SELECT id
+                FROM restaurant_print_jobs
+                WHERE company_id = :companyId
+                  AND store_id = :storeId
+                  AND status = 'PENDING'
+                  AND created_at > :since
+                  AND (
+                    (:guestBill = TRUE AND kind = 'GUEST_BILL')
+                    OR (:kitchenSend = TRUE AND kind = 'KITCHEN_SEND')
+                    OR (
+                      :hasPrinters = TRUE
+                      AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
+                      AND lower(coalesce(payload::json->>'printerName', '')) IN (:printers)
+                    )
+                  )
+                ORDER BY created_at ASC
+                LIMIT :batch
+                FOR UPDATE SKIP LOCKED
+            ) locked
+        )
+        RETURNING id
+        """, nativeQuery = true)
+    List<UUID> claimPendingFilteredIds(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("since") Instant since,
+        @Param("now") Instant now,
+        @Param("batch") int batch,
+        @Param("guestBill") boolean guestBill,
+        @Param("kitchenSend") boolean kitchenSend,
+        @Param("hasPrinters") boolean hasPrinters,
+        @Param("printers") Collection<String> printers
+    );
+
     @Query("""
         select j from RestaurantPrintJob j
         where j.id in :ids
@@ -86,5 +129,22 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("fromStatuses") Collection<PrintJobStatus> fromStatuses,
         @Param("done") PrintJobStatus done,
         @Param("now") Instant now
+    );
+
+    /** Wrong desktop / failed print — put back so another station can take it immediately. */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+        UPDATE restaurant_print_jobs
+        SET status = 'PENDING',
+            claimed_at = NULL
+        WHERE company_id = :companyId
+          AND store_id = :storeId
+          AND status = 'CLAIMED'
+          AND id IN (:ids)
+        """, nativeQuery = true)
+    int releaseClaims(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("ids") Collection<UUID> ids
     );
 }

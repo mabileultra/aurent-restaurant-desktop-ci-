@@ -1,6 +1,7 @@
 package com.pos.restaurant.print.controller;
 
 import com.pos.restaurant.print.dto.AckPrintJobsRequest;
+import com.pos.restaurant.print.dto.ClaimPrintJobsRequest;
 import com.pos.restaurant.print.dto.PrintJobResponse;
 import com.pos.restaurant.print.service.PrintJobService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,9 +28,22 @@ public class PrintJobController {
 
     @GetMapping("/stores/{storeId}/print-jobs/pending")
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
-    @Operation(summary = "Задания на печать для десктопа (poll)")
+    @Operation(summary = "Задания на печать для десктопа (poll, без фильтра — legacy)")
     public List<PrintJobResponse> pollPending(@PathVariable Integer storeId) {
         return printJobService.pollPending(storeId);
+    }
+
+    @PostMapping("/stores/{storeId}/print-jobs/claim")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
+    @Operation(summary = "Забрать задания под принтеры этой станции")
+    public List<PrintJobResponse> claimPending(
+        @PathVariable Integer storeId,
+        @RequestBody(required = false) ClaimPrintJobsRequest request
+    ) {
+        return printJobService.claimPending(
+            storeId,
+            request != null ? request : new ClaimPrintJobsRequest(List.of(), false, false)
+        );
     }
 
     @PostMapping("/stores/{storeId}/print-jobs/ack")
@@ -40,5 +54,15 @@ public class PrintJobController {
         @Valid @RequestBody AckPrintJobsRequest request
     ) {
         printJobService.acknowledge(storeId, request);
+    }
+
+    @PostMapping("/stores/{storeId}/print-jobs/release")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER', 'COOK')")
+    @Operation(summary = "Вернуть задание в очередь (не наш принтер / сбой)")
+    public void release(
+        @PathVariable Integer storeId,
+        @Valid @RequestBody AckPrintJobsRequest request
+    ) {
+        printJobService.release(storeId, request);
     }
 }

@@ -3,6 +3,7 @@ package com.pos.restaurant.print.service.impl;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
 import com.pos.restaurant.print.domain.PrintJobStatus;
 import com.pos.restaurant.print.dto.AckPrintJobsRequest;
+import com.pos.restaurant.print.dto.ClaimPrintJobsRequest;
 import com.pos.restaurant.print.dto.PrintJobResponse;
 import com.pos.restaurant.print.entity.RestaurantPrintJob;
 import com.pos.restaurant.print.repository.RestaurantPrintJobRepository;
@@ -15,6 +16,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 @Service
@@ -23,8 +25,8 @@ public class PrintJobServiceImpl implements PrintJobService {
 
     private static final int POLL_LOOKBACK_HOURS = 6;
     private static final int CLAIM_BATCH = 25;
-    /** If a desktop dies mid-print, job becomes claimable again. */
-    private static final int CLAIM_STALE_SECONDS = 90;
+    /** If a desktop dies mid-print, job becomes claimable again (release API is preferred). */
+    private static final int CLAIM_STALE_SECONDS = 45;
 
     private final RestaurantPrintJobRepository repository;
     private final FloorTenantSupport tenantSupport;
@@ -32,6 +34,56 @@ public class PrintJobServiceImpl implements PrintJobService {
     @Override
     @Transactional
     public List<PrintJobResponse> pollPending(Integer storeId) {
+        return claimUnfiltered(storeId);
+    }
+
+    @Override
+    @Transactional
+    public List<PrintJobResponse> claimPending(Integer storeId, ClaimPrintJobsRequest request) {
+        if (request == null) {
+            return List.of();
+        }
+        boolean guestBill = request.guestBill();
+        boolean kitchenSend = request.kitchenSend();
+        List<String> printers = request.printerNames() == null
+            ? List.of()
+            : request.printerNames().stream()
+                .filter(name -> name != null && !name.isBlank())
+                .map(name -> name.trim().toLowerCase(Locale.ROOT))
+                .distinct()
+                .toList();
+        if (!guestBill && !kitchenSend && printers.isEmpty()) {
+            return List.of();
+        }
+
+        Integer companyId = tenantSupport.requireCompanyId();
+        Instant now = Instant.now();
+        Instant since = now.minus(POLL_LOOKBACK_HOURS, ChronoUnit.HOURS);
+        Instant staleBefore = now.minus(CLAIM_STALE_SECONDS, ChronoUnit.SECONDS);
+
+        repository.reclaimStaleClaims(companyId, storeId, staleBefore);
+        // Native IN () needs at least one bind value when hasPrinters is false.
+        List<String> printerBind = printers.isEmpty() ? List.of("__none__") : printers;
+        List<UUID> claimedIds = repository.claimPendingFilteredIds(
+            companyId,
+            storeId,
+            since,
+            now,
+            CLAIM_BATCH,
+            guestBill,
+            kitchenSend,
+            !printers.isEmpty(),
+            printerBind
+        );
+        if (claimedIds == null || claimedIds.isEmpty()) {
+            return List.of();
+        }
+        return repository.findAllByIdOrdered(claimedIds).stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    private List<PrintJobResponse> claimUnfiltered(Integer storeId) {
         Integer companyId = tenantSupport.requireCompanyId();
         Instant now = Instant.now();
         Instant since = now.minus(POLL_LOOKBACK_HOURS, ChronoUnit.HOURS);
@@ -68,6 +120,16 @@ public class PrintJobServiceImpl implements PrintJobService {
             PrintJobStatus.DONE,
             Instant.now()
         );
+    }
+
+    @Override
+    @Transactional
+    public void release(Integer storeId, AckPrintJobsRequest request) {
+        if (request.jobIds() == null || request.jobIds().isEmpty()) {
+            return;
+        }
+        Integer companyId = tenantSupport.requireCompanyId();
+        repository.releaseClaims(companyId, storeId, request.jobIds());
     }
 
     private PrintJobResponse toResponse(RestaurantPrintJob job) {

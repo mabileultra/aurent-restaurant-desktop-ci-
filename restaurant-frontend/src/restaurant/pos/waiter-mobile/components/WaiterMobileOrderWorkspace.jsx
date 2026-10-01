@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
+import { shortWaiterName } from '../../utils/floorPosDerivations';
 import MenuPicker from '../../components/MenuPicker';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
 import OrderLines from '../../components/OrderLines';
@@ -84,9 +85,11 @@ export default function WaiterMobileOrderWorkspace({
   const payAmount = resolveRestaurantPayTotal(order, servicePreview);
   const canEditDiscount = order.status === 'OPEN' || order.status === 'BILLING';
   const digitalTimer = formatDigitalTimer(order.openedAt, now);
-  const resolvedWaiter = waiterName
+  const resolvedWaiter = shortWaiterName(
+    waiterName
     || waiters.find((row) => String(row.id) === String(order.waiterUserId))?.name
-    || null;
+    || null,
+  );
 
   const bumpGuests = (delta) => {
     if (!onGuestsChange || billing) return;

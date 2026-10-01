@@ -56,6 +56,20 @@ export function printTicketHtml(html, printerName) {
  * Station and guest tickets. Thermal printers get ESC/POS text.
  * HTML is only a fallback when this desktop build has no ESC/POS channel.
  */
+const PRINT_TIMEOUT_MS = 12_000;
+
+function withPrintTimeout(promise, label = 'печать') {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = window.setTimeout(() => {
+      reject(new Error(`Таймаут ${label} (${PRINT_TIMEOUT_MS / 1000}с)`));
+    }, PRINT_TIMEOUT_MS);
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timer != null) window.clearTimeout(timer);
+  });
+}
+
 export async function printTicketLines({ title, lines, printerName } = {}) {
   const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
   const name = String(printerName || '').trim();
@@ -69,7 +83,7 @@ export async function printTicketLines({ title, lines, printerName } = {}) {
   };
   if (typeof desk?.printPlainEscpos === 'function') {
     try {
-      return await desk.printPlainEscpos(payload);
+      return await withPrintTimeout(desk.printPlainEscpos(payload), 'ESC/POS');
     } catch (err) {
       const msg = String(err?.message || err || '');
       const canHtml = typeof desk.printTicketHtml === 'function';
@@ -84,7 +98,7 @@ export async function printTicketLines({ title, lines, printerName } = {}) {
     title ? `<p><strong>${escapeHtml(title)}</strong></p>` : '',
     ...payload.lines.map((line) => (line === '---' ? '<hr/>' : `<p>${escapeHtml(line)}</p>`)),
   ].join('');
-  return desk.printTicketHtml({ html, printerName: name });
+  return withPrintTimeout(desk.printTicketHtml({ html, printerName: name }), 'HTML-печати');
 }
 
 const PRINTED_KEY = 'rst-printed-kitchen-lines';

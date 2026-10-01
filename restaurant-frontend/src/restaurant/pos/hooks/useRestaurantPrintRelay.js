@@ -1,16 +1,42 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { rstPrintApi } from '../../api/print.api';
-import { isDesktopPrinter, listDesktopPrintersCached } from '../utils/desktopPrinters';
+import {
+  getDesktopPrinterSettings,
+  isDesktopPrinter,
+  listDesktopPrintersCached,
+} from '../utils/desktopPrinters';
 import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
 import { prefetchPrintWaiterRoster, seedPrintWaiterRoster } from '../utils/printWaiterNames';
+import { createPrintRelayLeader } from '../utils/printRelayLeader';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
-const POLL_MS = 500;
+const POLL_MS = 300;
+
+async function loadClaimCapabilities() {
+  const [list, settings] = await Promise.all([
+    listDesktopPrintersCached().catch(() => []),
+    getDesktopPrinterSettings().catch(() => null),
+  ]);
+  const fromOs = (Array.isArray(list) ? list : [])
+    .map((p) => String(p?.name || p).trim())
+    .filter(Boolean);
+  const fromSettings = [
+    settings?.billPrinterName,
+    ...Object.values(settings?.stationPrinters || {}),
+  ]
+    .map((name) => String(name || '').trim())
+    .filter(Boolean);
+  const printerNames = [...new Set([...fromOs, ...fromSettings])];
+  const guestBill = Boolean(String(settings?.billPrinterName || '').trim());
+  const kitchenSend = Object.values(settings?.stationPrinters || {})
+    .some((name) => String(name || '').trim());
+  return { printerNames, guestBill, kitchenSend };
+}
 
 /**
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).
- * Jobs for different printers run in parallel so one slow device does not block others.
+ * One leader window per machine; server only hands out jobs for this PC's printers.
  */
 export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const busyRef = useRef(false);
@@ -22,6 +48,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const storeIdRef = useRef(storeId);
   storeIdRef.current = storeId;
   const warnedMissingRef = useRef(new Set());
+  const capsRef = useRef({ printerNames: [], guestBill: false, kitchenSend: false });
 
   useEffect(() => {
     if (storeId == null) return;
@@ -32,11 +59,24 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
     if (storeId == null || !isDesktopPrinter()) return undefined;
 
     let cancelled = false;
-    listDesktopPrintersCached().catch(() => {});
+    const leader = createPrintRelayLeader();
+    leader.start();
+
+    const refreshCaps = () => {
+      loadClaimCapabilities()
+        .then((caps) => {
+          if (!cancelled) capsRef.current = caps;
+        })
+        .catch(() => {});
+    };
+    refreshCaps();
+    const capsTimer = window.setInterval(refreshCaps, 30_000);
+
     prefetchPrintWaiterRoster(storeId, waiterMapRef.current).catch(() => {});
 
     const tick = async () => {
       if (cancelled) return;
+      if (!leader.isLeader()) return;
       if (busyRef.current) {
         pendingFlushRef.current = true;
         return;
@@ -45,7 +85,12 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       try {
         do {
           pendingFlushRef.current = false;
-          const res = await rstPrintApi.pollPending(storeId);
+          if (!leader.isLeader()) break;
+          const caps = capsRef.current;
+          if (!caps.guestBill && !caps.kitchenSend && !caps.printerNames.length) {
+            continue;
+          }
+          const res = await rstPrintApi.claimPending(storeId, caps);
           if (cancelled) break;
           const jobs = res.data ?? [];
           if (!jobs.length) continue;
@@ -62,10 +107,16 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
           );
 
           const ackIds = [];
+          const releaseIds = [];
           for (const result of results) {
             if (result.status !== 'fulfilled') continue;
             const { job, outcome } = result.value;
-            if (outcome?.ack && job.id) ackIds.push(job.id);
+            if (!job?.id) continue;
+            if (outcome?.ack) {
+              ackIds.push(job.id);
+            } else if (outcome?.release !== false) {
+              releaseIds.push(job.id);
+            }
             if (
               !outcome?.ack
               && (outcome?.mode === 'missing' || outcome?.mode === 'partial')
@@ -86,8 +137,11 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
               }
             }
           }
-          if (ackIds.length && !cancelled) {
-            await rstPrintApi.acknowledge(storeId, ackIds);
+          if (!cancelled && ackIds.length) {
+            await rstPrintApi.acknowledge(storeId, ackIds).catch(() => {});
+          }
+          if (!cancelled && releaseIds.length) {
+            await rstPrintApi.release(storeId, releaseIds).catch(() => {});
           }
         } while (pendingFlushRef.current && !cancelled);
       } catch {
@@ -108,12 +162,15 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
     const offFlush = onRestaurantPrintFlush(() => {
       if (cancelled) return;
       pendingFlushRef.current = true;
+      refreshCaps();
       tick();
     });
     return () => {
       cancelled = true;
       window.clearInterval(id);
+      window.clearInterval(capsTimer);
       offFlush();
+      leader.stop();
     };
   }, [storeId]);
 }

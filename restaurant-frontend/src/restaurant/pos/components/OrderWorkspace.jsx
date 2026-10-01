@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
+import { shortWaiterName } from '../utils/floorPosDerivations';
 import MenuPicker from './MenuPicker';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
@@ -113,9 +114,11 @@ export default function OrderWorkspace({
   const payAmount = resolveRestaurantPayTotal(order, servicePreview);
   const [discountOpen, setDiscountOpen] = useState(false);
   const canEditDiscount = order.status === 'OPEN' || order.status === 'BILLING';
-  const resolvedWaiter = waiterName
+  const resolvedWaiter = shortWaiterName(
+    waiterName
     || waiters.find((row) => String(row.id) === String(order.waiterUserId))?.name
-    || null;
+    || null,
+  );
 
   const bumpGuests = (delta) => {
     if (!onGuestsChange || billing) return;
@@ -137,8 +140,8 @@ export default function OrderWorkspace({
           <div className="rst-order__context-main">
             {channel === 'DINE_IN' ? (
               <h2 className="rst-order__context-title">
+                {hallName ? <span>{hallName} / </span> : null}
                 <em>{t('rst.order.tableHeading', { code: order.tableCode })}</em>
-                {hallName ? <span> / {hallName}</span> : null}
               </h2>
             ) : (
               <h2 className="rst-order__context-title">

@@ -101,7 +101,9 @@ async function metaFromPayload(payload, order, t, waiterNameById, storeId) {
 
 async function runCategorySlip(payload, t, waiterNameById, storeId) {
   const printer = String(payload.printerName || '').trim();
-  if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
+  if (!(await localHasPrinterFast(printer))) {
+    return { mode: 'skip', ack: false, release: true };
+  }
 
   // Fast path: payload already has dish text (no second round-trip to order API).
   if (payload.itemName || payload.header) {
@@ -122,13 +124,13 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
         '---',
       ],
     });
-    return { mode: 'silent', ack: true };
+    return { mode: 'silent', ack: true, release: false };
   }
 
   const orderRes = await rstOrderApi.get(payload.orderId);
   const order = orderRes.data;
   const line = (order.items || []).find((item) => String(item.id) === String(payload.orderItemId));
-  if (!line) return { mode: 'skip', ack: false };
+  if (!line) return { mode: 'skip', ack: true, release: false };
   const qty = Number(payload.quantity) || Number(line.quantity) || 1;
   await printTicketLines({
     title: payload.categoryName || '',
@@ -140,17 +142,19 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
       '---',
     ],
   });
-  return { mode: 'silent', ack: true };
+  return { mode: 'silent', ack: true, release: false };
 }
 
 async function runCategoryBatch(payload, t, waiterNameById, storeId) {
   const printer = String(payload.printerName || '').trim();
-  if (!(await localHasPrinterFast(printer))) return { mode: 'skip', ack: false };
+  if (!(await localHasPrinterFast(printer))) {
+    return { mode: 'skip', ack: false, release: true };
+  }
   const dishLines = (payload.lines || []).flatMap((line, index) => {
     const block = batchItemLines(line);
     return index === 0 ? block : ['', ...block];
   });
-  if (!dishLines.length) return { mode: 'skip', ack: true };
+  if (!dishLines.length) return { mode: 'skip', ack: true, release: false };
   await printTicketLines({
     title: payload.title || '',
     printerName: printer,
@@ -161,70 +165,87 @@ async function runCategoryBatch(payload, t, waiterNameById, storeId) {
       '---',
     ],
   });
-  return { mode: 'silent', ack: true };
+  return { mode: 'silent', ack: true, release: false };
 }
 
 /**
- * @returns {Promise<{ ack: boolean, mode?: string }>}
+ * @returns {Promise<{ ack: boolean, release?: boolean, mode?: string }>}
  */
 export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeId } = {}) {
-  if (!job || !isDesktopPrinter()) return { ack: false };
+  if (!job || !isDesktopPrinter()) return { ack: false, release: true };
   const payload = parsePayload(job.payload);
-  if (!payload) return { ack: false };
+  if (!payload) return { ack: true, release: false };
 
-  if (job.kind === 'GUEST_BILL') {
-    if (wasGuestBillPrintedLocally(payload.orderId)) {
-      return { ack: true, mode: 'silent' };
+  try {
+    if (job.kind === 'GUEST_BILL') {
+      if (wasGuestBillPrintedLocally(payload.orderId)) {
+        return { ack: true, release: false, mode: 'silent' };
+      }
+      const orderRes = await rstOrderApi.get(payload.orderId);
+      const printed = await printGuestBill({
+        order: orderRes.data,
+        t,
+        waiterNameById,
+      });
+      if (printed?.mode === 'silent') return { ack: true, release: false, mode: 'silent' };
+      // No bill printer on this PC — free the job for the cashier desktop immediately.
+      return { ack: false, release: true, mode: printed?.mode || 'skip' };
     }
-    const orderRes = await rstOrderApi.get(payload.orderId);
-    const printed = await printGuestBill({
-      order: orderRes.data,
-      t,
-      waiterNameById,
-    });
-    if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
-    if (printed?.mode === 'missing') return { ack: true, mode: 'missing' };
-    return { ack: false, mode: printed?.mode || 'skip' };
-  }
 
-  if (job.kind === 'KITCHEN_SEND') {
-    const orderRes = await rstOrderApi.get(payload.orderId);
-    const order = orderRes.data;
-    const qtyByItemId = Object.fromEntries(
-      (payload.lines || [])
-        .filter((row) => row?.itemId != null)
-        .map((row) => [String(row.itemId), row.quantity]),
-    );
-    const waiterName = await resolvePrintWaiterName(
-      storeId ?? order?.storeId,
-      order?.waiterUserId,
-      waiterNameById,
-    );
-    const printed = await printKitchenTicket({
-      order,
-      t,
-      onlyItemIds: payload.itemIds || (payload.lines || []).map((row) => row.itemId),
-      qtyByItemId,
-      waiterName,
-      waiterNameById,
-    });
-    if (printed?.mode === 'silent') return { ack: true, mode: 'silent' };
-    return {
-      ack: false,
-      mode: printed?.mode || 'skip',
-      missing: printed?.missing,
-      configured: printed?.configured,
-      errors: printed?.errors,
-    };
-  }
+    if (job.kind === 'KITCHEN_SEND') {
+      const orderRes = await rstOrderApi.get(payload.orderId);
+      const order = orderRes.data;
+      const qtyByItemId = Object.fromEntries(
+        (payload.lines || [])
+          .filter((row) => row?.itemId != null)
+          .map((row) => [String(row.itemId), row.quantity]),
+      );
+      const waiterName = await resolvePrintWaiterName(
+        storeId ?? order?.storeId,
+        order?.waiterUserId,
+        waiterNameById,
+      );
+      const printed = await printKitchenTicket({
+        order,
+        t,
+        onlyItemIds: payload.itemIds || (payload.lines || []).map((row) => row.itemId),
+        qtyByItemId,
+        waiterName,
+        waiterNameById,
+      });
+      if (printed?.mode === 'silent' || printed?.mode === 'partial') {
+        // Ack even on partial — re-queue would reprint already-cut stations on another PC.
+        return {
+          ack: true,
+          release: false,
+          mode: printed.mode,
+          missing: printed?.missing,
+          configured: printed?.configured,
+          errors: printed?.errors,
+        };
+      }
+      // missing / skip — nothing printed here; free for a desktop that has the printers
+      return {
+        ack: false,
+        release: true,
+        mode: printed?.mode || 'skip',
+        missing: printed?.missing,
+        configured: printed?.configured,
+        errors: printed?.errors,
+      };
+    }
 
-  if (job.kind === 'CATEGORY_BATCH') {
-    return runCategoryBatch(payload, t, waiterNameById, storeId);
-  }
+    if (job.kind === 'CATEGORY_BATCH') {
+      return runCategoryBatch(payload, t, waiterNameById, storeId);
+    }
 
-  if (job.kind === 'CATEGORY_SLIP') {
-    return runCategorySlip(payload, t, waiterNameById, storeId);
-  }
+    if (job.kind === 'CATEGORY_SLIP') {
+      return runCategorySlip(payload, t, waiterNameById, storeId);
+    }
 
-  return { ack: false };
+    return { ack: true, release: false };
+  } catch {
+    // Timeout / spooler error — put back for an immediate retry (same or other PC).
+    return { ack: false, release: true, mode: 'error' };
+  }
 }

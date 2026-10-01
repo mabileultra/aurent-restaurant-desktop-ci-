@@ -29,7 +29,7 @@ export function ticketStamp(iso) {
   return d.toLocaleString();
 }
 
-/** Top of kitchen / auto-print slips: table (or channel), waiter, time. */
+/** Top of kitchen / auto-print slips: hall + table (or channel), waiter, time. */
 export function kitchenTicketMetaLines({
   order,
   header,
@@ -46,11 +46,17 @@ export function kitchenTicketMetaLines({
       tableLine = `DELIVERY #${order?.orderNo || ''}`;
     } else {
       const code = order?.tableCode || '—';
-      tableLine = t?.('rst.order.tableHeading', {
-        code,
-        defaultValue: `Стол ${code}`,
-      }) || `Стол ${code}`;
-      tableLine = `${tableLine} · №${order?.orderNo || ''}`;
+      const hall = order?.hallName || null;
+      tableLine = hall
+        ? (t?.('rst.order.ticketTitle', {
+          code,
+          hall,
+          defaultValue: `${hall} · Стол ${code}`,
+        }) || `${hall} · Стол ${code}`)
+        : (t?.('rst.order.tableHeading', {
+          code,
+          defaultValue: `Стол ${code}`,
+        }) || `Стол ${code}`);
     }
   }
   const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';

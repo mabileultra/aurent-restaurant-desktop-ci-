@@ -64,13 +64,13 @@ html.rst-theme--light .rst-floor-hall-rail__shift.is-open {
 .rst-floor-hall-rail__btn {
   box-sizing: border-box;
   display: flex;
-  align-items: stretch;
+  align-items: center;
   width: 100%;
-  min-height: 4.55rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid transparent;
+  min-height: 3.1rem;
+  padding: 0.7rem 1rem;
+  border: 1px solid var(--rst-line);
   border-radius: 0.75rem;
-  background: transparent;
+  background: color-mix(in srgb, var(--rst-ink) 3%, transparent);
   color: var(--rst-ink);
   font: inherit;
   text-align: left;
@@ -78,83 +78,23 @@ html.rst-theme--light .rst-floor-hall-rail__shift.is-open {
   touch-action: manipulation;
 }
 
-.rst-floor-hall-rail__btn-main {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
-  min-width: 0;
-  width: 100%;
-}
-
-.rst-floor-hall-rail__btn-main strong {
+.rst-floor-hall-rail__btn strong {
   display: block;
-  font-size: 1.35rem;
+  font-size: 1.2rem;
   font-weight: 800;
-  line-height: 1.2;
-}
-
-.rst-floor-hall-rail__btn-stats {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.25rem 0.4rem;
-  font-size: 1.08rem;
-  font-weight: 700;
-  line-height: 1.3;
-}
-
-.rst-floor-hall-rail__btn-sep {
-  color: var(--rst-muted);
-  font-weight: 700;
-}
-
-.rst-floor-hall-rail__stat {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.15rem 0.45rem;
-  border-radius: 0.4rem;
-  font-weight: 800;
-  white-space: nowrap;
-}
-
-.rst-floor-hall-rail__stat--occupied {
-  color: var(--rst-occupied);
-  background: var(--rst-occupied-bg);
-}
-
-.rst-floor-hall-rail__stat--free {
-  color: var(--rst-free);
-  background: var(--rst-free-bg);
-}
-
-.rst-floor-hall-rail__stat--waiting {
-  color: var(--rst-pay);
-  background: var(--rst-pay-bg);
-}
-
-.rst-floor-hall-rail__stat--reserved {
-  color: var(--rst-reserved);
-  background: var(--rst-reserved-bg);
-}
-
-.rst-floor-hall-rail__stat--total {
-  color: var(--rst-muted);
-  background: color-mix(in srgb, var(--rst-ink) 8%, transparent);
+  line-height: 1.25;
 }
 
 .rst-floor-hall-rail__btn:hover {
-  background: color-mix(in srgb, var(--rst-ink) 6%, transparent);
+  border-color: color-mix(in srgb, var(--rst-ink) 28%, var(--rst-line));
+  background: color-mix(in srgb, var(--rst-ink) 7%, transparent);
 }
 
 .rst-floor-hall-rail__btn.is-active {
-  border-color: rgb(255 122 26 / 0.45);
+  border-color: rgb(255 122 26 / 0.55);
   background: var(--rst-accent-soft);
   color: var(--rst-ink);
-}
-
-.rst-floor-hall-rail__btn.is-active .rst-floor-hall-rail__stat--total {
-  color: var(--rst-ink);
+  box-shadow: inset 0 0 0 1px rgb(255 122 26 / 0.2);
 }
 
 .rst-floor-grid__rail.rst-floor-hall-rail {

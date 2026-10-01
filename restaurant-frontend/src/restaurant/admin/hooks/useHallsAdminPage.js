@@ -135,26 +135,62 @@ export function useHallsAdminPage() {
     onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
+  const floorQueryKey = ['rst-floor', workspace.storeId];
+
   const moveTableMutation = useMutation({
+    // Serialize layout writes so a later drag cannot overwrite an earlier one
+    // with a stale selectedHall snapshot from before invalidate finished.
+    scope: { id: `rst-hall-table-layout-${workspace.storeId ?? 'none'}` },
     mutationFn: (moved) => {
-      const tables = selectedHall?.tables ?? [];
-      return rstFloorApi.updateLayout(selectedHall.id, {
-        tables: tables.map((table) => {
-          const isMoved = table.id === moved.id;
-          return {
-            id: table.id,
-            posX: isMoved ? Number(moved.posX) : Number(table.posX),
-            posY: isMoved ? Number(moved.posY) : Number(table.posY),
-            width: TABLE_DEFAULT_SIZE,
-            height: TABLE_DEFAULT_SIZE,
-          };
-        }),
+      const floor = qc.getQueryData(floorQueryKey);
+      const hall = floor?.halls?.find((row) =>
+        row.tables?.some((table) => table.id === moved.id),
+      );
+      if (!hall?.id) {
+        return Promise.reject(new Error('Hall not found for moved table'));
+      }
+      return rstFloorApi.updateLayout(hall.id, {
+        tables: (hall.tables ?? []).map((table) => ({
+          id: table.id,
+          posX: Number(table.posX),
+          posY: Number(table.posY),
+          width: TABLE_DEFAULT_SIZE,
+          height: TABLE_DEFAULT_SIZE,
+        })),
       });
     },
-    onSuccess: () => {
-      invalidate();
+    onMutate: async (moved) => {
+      await qc.cancelQueries({ queryKey: floorQueryKey });
+      const previous = qc.getQueryData(floorQueryKey);
+      qc.setQueryData(floorQueryKey, (old) => {
+        if (!old?.halls) return old;
+        return {
+          ...old,
+          halls: old.halls.map((hall) => {
+            if (!hall.tables?.some((table) => table.id === moved.id)) return hall;
+            return {
+              ...hall,
+              tables: hall.tables.map((table) =>
+                table.id === moved.id
+                  ? {
+                      ...table,
+                      posX: Number(moved.posX),
+                      posY: Number(moved.posY),
+                      width: TABLE_DEFAULT_SIZE,
+                      height: TABLE_DEFAULT_SIZE,
+                    }
+                  : table,
+              ),
+            };
+          }),
+        };
+      });
+      return { previous };
     },
-    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
+    onError: (err, _moved, ctx) => {
+      if (ctx?.previous) qc.setQueryData(floorQueryKey, ctx.previous);
+      toastApiError(err, t('rst.admin.saveFailed'));
+    },
   });
 
   return {

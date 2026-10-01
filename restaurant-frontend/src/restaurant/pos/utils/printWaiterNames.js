@@ -1,7 +1,7 @@
 /** Resolve waiter display name for thermal slips (kitchen / bill / category). */
 
 import { userApi } from '../../../api/user.api';
-import { displayUserName } from './floorPosDerivations';
+import { shortWaiterName } from './floorPosDerivations';
 
 let rosterCache = { storeId: null, at: 0, map: new Map() };
 
@@ -19,7 +19,8 @@ function seedFromHintMap(storeId, waiterNameById) {
   if (!entries.length) return;
   const map = new Map(rosterCache.storeId === storeId ? rosterCache.map : []);
   for (const [id, name] of entries) {
-    if (id != null && name) map.set(String(id), name);
+    const short = shortWaiterName(name);
+    if (id != null && short) map.set(String(id), short);
   }
   if (map.size) {
     rosterCache = { storeId, at: Date.now(), map };
@@ -40,7 +41,7 @@ async function loadRosterMap(storeId) {
     const res = await userApi.getPosRoster(storeId);
     const map = new Map();
     for (const row of res.data ?? []) {
-      map.set(String(row.id), displayUserName(row));
+      map.set(String(row.id), shortWaiterName(row) || String(row.id));
     }
     rosterCache = { storeId, at: now, map };
     return map;
@@ -66,14 +67,16 @@ export function seedPrintWaiterRoster(storeId, waiterNameById) {
  * empty roster), fetch /users/pos-roster once and cache.
  */
 export async function resolvePrintWaiterName(storeId, waiterUserId, waiterNameById) {
-  const hit = fromMap(waiterNameById, waiterUserId);
+  const hit = shortWaiterName(fromMap(waiterNameById, waiterUserId));
   if (hit) return hit;
   if (waiterUserId == null || storeId == null) return null;
   seedFromHintMap(storeId, waiterNameById);
-  const cached = rosterCache.storeId === storeId
-    ? rosterCache.map.get(String(waiterUserId))
-    : null;
+  const cached = shortWaiterName(
+    rosterCache.storeId === storeId
+      ? rosterCache.map.get(String(waiterUserId))
+      : null,
+  );
   if (cached) return cached;
   const map = await loadRosterMap(storeId);
-  return map.get(String(waiterUserId)) || null;
+  return shortWaiterName(map.get(String(waiterUserId))) || null;
 }

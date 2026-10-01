@@ -15,6 +15,21 @@ export function displayUserName(user) {
     || String(user.id);
 }
 
+/** Given name only for tickets / dock / kitchen (full FIO stays in staff pickers). */
+export function shortWaiterName(nameOrUser) {
+  if (nameOrUser == null) return null;
+  if (typeof nameOrUser === 'object') {
+    const first = String(nameOrUser.firstName || '').trim();
+    if (first) return first;
+    return shortWaiterName(displayUserName(nameOrUser));
+  }
+  const parts = String(nameOrUser).trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return null;
+  if (parts.length === 1) return parts[0];
+  // displayUserName order: lastName firstName patronymic → given name is 2nd token
+  return parts[1];
+}
+
 export function buildWaiters(staffRows, storeId) {
   if (storeId == null) return [];
   return (staffRows ?? [])
@@ -39,7 +54,7 @@ export function buildCouriers(staffRows, storeId) {
 export function buildWaiterNameById(staffRows) {
   const map = new Map();
   for (const row of staffRows ?? []) {
-    map.set(String(row.id), displayUserName(row));
+    map.set(String(row.id), shortWaiterName(row) || displayUserName(row));
   }
   return map;
 }

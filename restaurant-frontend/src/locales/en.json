@@ -1569,7 +1569,7 @@
         "TEA": "Kettle"
       },
       "ticketMeta": "{{guests}} guests (adults {{adults}}, children {{children}})",
-      "ticketTitle": "Table {{code}} · {{hall}}",
+      "ticketTitle": "{{hall}} · Table {{code}}",
       "ticketTitleNoHall": "Table {{code}}",
       "total": "Total",
       "totalDue": "Amount due",
