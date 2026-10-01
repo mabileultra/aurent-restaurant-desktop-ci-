@@ -42,7 +42,7 @@ public class PrintJobController {
     ) {
         return printJobService.claimPending(
             storeId,
-            request != null ? request : new ClaimPrintJobsRequest(List.of(), false, false)
+            request != null ? request : new ClaimPrintJobsRequest(List.of(), false, false, null, null, null)
         );
     }
 

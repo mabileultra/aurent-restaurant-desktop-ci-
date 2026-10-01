@@ -19,9 +19,13 @@ class TableOpenPolicyTest {
     }
 
     @Test
-    void rejectsOccupiedAndBlocked() {
-        assertThrows(BusinessException.class, () -> policy.assertCanOpen(TableStatus.OCCUPIED));
+    void allowsAnotherCheckOnBusyTable() {
+        assertDoesNotThrow(() -> policy.assertCanOpen(TableStatus.OCCUPIED));
+        assertDoesNotThrow(() -> policy.assertCanOpen(TableStatus.WAITING_PAYMENT));
+    }
+
+    @Test
+    void rejectsBlocked() {
         assertThrows(BusinessException.class, () -> policy.assertCanOpen(TableStatus.BLOCKED));
-        assertThrows(BusinessException.class, () -> policy.assertCanOpen(TableStatus.WAITING_PAYMENT));
     }
 }

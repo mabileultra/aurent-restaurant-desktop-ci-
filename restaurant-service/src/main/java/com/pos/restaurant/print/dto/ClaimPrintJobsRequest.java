@@ -9,5 +9,10 @@ import java.util.List;
 public record ClaimPrintJobsRequest(
     List<String> printerNames,
     boolean guestBill,
-    boolean kitchenSend
+    boolean kitchenSend,
+    Integer limit,
+    /** Category printers whose local lane is full or cooling down after an error — skip their slips. */
+    List<String> busyPrinters,
+    /** Max category slips per printer in one claim (fair share across stations). */
+    Integer perPrinterLimit
 ) {}

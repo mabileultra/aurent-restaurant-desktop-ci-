@@ -64,6 +64,9 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
 
     /**
      * Claim only jobs this desktop can print (by kind + category printer name).
+     * Category slips: the oldest {@code perLane} per printer (LATERAL), busy printers skipped,
+     * so one flooded / dead printer cannot take every slot from the other stations — however
+     * deep its backlog is. Printer names arrive lower-cased and distinct.
      */
     @Query(value = """
         UPDATE restaurant_print_jobs
@@ -71,25 +74,42 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
             claimed_at = :now
         WHERE id IN (
             SELECT id FROM (
-                SELECT id
-                FROM restaurant_print_jobs
-                WHERE company_id = :companyId
-                  AND store_id = :storeId
-                  AND status = 'PENDING'
-                  AND created_at > :since
-                  AND (
-                    (:guestBill = 1 AND kind = 'GUEST_BILL')
-                    OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
-                    OR (
-                      :hasPrinters = 1
+                SELECT slip.id, slip.created_at
+                FROM unnest(ARRAY[:printers]) AS printer(name)
+                CROSS JOIN LATERAL (
+                    SELECT id, created_at
+                    FROM restaurant_print_jobs
+                    WHERE company_id = :companyId
+                      AND store_id = :storeId
+                      AND status = 'PENDING'
+                      AND created_at > :since
                       AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
-                      AND lower(coalesce(payload::json->>'printerName', '')) IN (:printers)
-                    )
-                  )
-                ORDER BY created_at ASC
-                LIMIT :batch
-                FOR UPDATE SKIP LOCKED
-            ) locked
+                      AND lower(coalesce(payload::json->>'printerName', '')) = printer.name
+                    ORDER BY created_at ASC
+                    LIMIT :perLane
+                    FOR UPDATE SKIP LOCKED
+                ) slip
+                WHERE :hasPrinters = 1
+                  AND printer.name NOT IN (:busyPrinters)
+                UNION ALL
+                SELECT id, created_at FROM (
+                    SELECT id, created_at
+                    FROM restaurant_print_jobs
+                    WHERE company_id = :companyId
+                      AND store_id = :storeId
+                      AND status = 'PENDING'
+                      AND created_at > :since
+                      AND (
+                        (:guestBill = 1 AND kind = 'GUEST_BILL')
+                        OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
+                      )
+                    ORDER BY created_at ASC
+                    LIMIT :batch
+                    FOR UPDATE SKIP LOCKED
+                ) whole
+            ) candidates
+            ORDER BY created_at ASC
+            LIMIT :batch
         )
         RETURNING id
         """, nativeQuery = true)
@@ -99,10 +119,12 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("since") Instant since,
         @Param("now") Instant now,
         @Param("batch") int batch,
+        @Param("perLane") int perLane,
         @Param("guestBill") int guestBill,
         @Param("kitchenSend") int kitchenSend,
         @Param("hasPrinters") int hasPrinters,
-        @Param("printers") Collection<String> printers
+        @Param("printers") Collection<String> printers,
+        @Param("busyPrinters") Collection<String> busyPrinters
     );
 
     @Query("""

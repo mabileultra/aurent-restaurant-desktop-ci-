@@ -70,10 +70,32 @@ function withPrintTimeout(promise, label = 'печать') {
   });
 }
 
+/**
+ * One slip at a time per printer: parallel RAW jobs spawn a PowerShell each and
+ * starve the PC, so they hit the timeout and get re-queued. Different printers still run in parallel.
+ * The print timeout starts only when the slip leaves the lane.
+ */
+const printerLanes = new Map();
+
+function runOnPrinterLane(printerName, task) {
+  const key = printerName.toLowerCase();
+  const run = (printerLanes.get(key) || Promise.resolve()).then(task);
+  const tail = run.catch(() => {});
+  printerLanes.set(key, tail);
+  tail.then(() => {
+    if (printerLanes.get(key) === tail) printerLanes.delete(key);
+  });
+  return run;
+}
+
 export async function printTicketLines({ title, lines, printerName } = {}) {
-  const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
   const name = String(printerName || '').trim();
   if (!name) throw new Error('Принтер не выбран');
+  return runOnPrinterLane(name, () => printTicketLinesNow({ title, lines, name }));
+}
+
+async function printTicketLinesNow({ title, lines, name }) {
+  const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
   const payload = {
     printerName: name,
     title: title || '',

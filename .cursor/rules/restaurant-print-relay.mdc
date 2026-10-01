@@ -1,0 +1,14 @@
+---
+description: Restaurant print relay throughput invariants (desktop print queue under load)
+globs: restaurant-frontend/src/restaurant/pos/hooks/useRestaurantPrintRelay.js,restaurant-frontend/src/restaurant/pos/utils/desktopPrinters.js,desktop-electron/electron/printers/win-raw-print.cjs,restaurant-service/src/main/java/com/pos/restaurant/print/**
+alwaysApply: false
+---
+
+# Restaurant print relay — do not regress
+
+- **Pipeline, not batch barrier.** Each claimed job is acked/released as soon as it finishes (`runJob`); never `Promise.allSettled` the whole claim batch before acking or claiming more — one slow printer would stall every station.
+- **Cap in-flight** (`MAX_IN_FLIGHT`) and send `limit` in the claim request so local backlog stays under the server stale-claim window (`CLAIM_STALE_SECONDS`). Skip claimed ids already in flight (stale reclaim) to avoid double print.
+- **Fair share per printer, not FIFO across all.** Claim SQL takes the oldest `perLane` category slips **per printer** (`unnest(printers) CROSS JOIN LATERAL … LIMIT perLane FOR UPDATE SKIP LOCKED`) — no global scan window, which a deep backlog on one printer would fill — and skips `busyPrinters` (local lane ≥ `BUSY_AT` or in `PRINTER_COOLDOWN_MS` after an error). Never go back to plain `ORDER BY created_at LIMIT n` with one global cap — a flooded or dead printer would take every slot and the other stations wait. Keep `BUSY_AT - 1 + PER_PRINTER_CLAIM` × job timeout under `CLAIM_STALE_SECONDS`. Load tests: `restaurant-frontend/test/restaurant/pos/hooks/printRelayLoad.test.js` (relay sim, 10 printers) and `PrintJobClaimSqlLoadTest` (real SQL on Postgres) — keep them green.
+- **One slip at a time per printer** (`runOnPrinterLane` in `printTicketLines`); different printers stay parallel. The print timeout starts after the lane, not while waiting.
+- **Windows RAW goes through a long-lived PowerShell worker per printer** (`win-raw-print-worker.ps1`, one pre-warmed spare). Do not go back to spawning `powershell.exe` + `Add-Type` per slip (1.5–4 s each). The one-shot path is only a fallback when the worker cannot start (nothing sent yet), never after a job was written to the worker, because that would print twice.
+- **Windows RAW temp file must be unique per job** (`randomUUID`), never `Date.now()` — parallel jobs in the same ms overwrite/unlink each other.

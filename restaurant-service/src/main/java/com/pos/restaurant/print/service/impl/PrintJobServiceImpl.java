@@ -25,6 +25,8 @@ public class PrintJobServiceImpl implements PrintJobService {
 
     private static final int POLL_LOOKBACK_HOURS = 6;
     private static final int CLAIM_BATCH = 25;
+    /** Old desktops send no per-printer cap: keep their backlog per lane under CLAIM_STALE_SECONDS. */
+    private static final int DEFAULT_PER_PRINTER = 4;
     /** If a desktop dies mid-print, job becomes claimable again (release API is preferred). */
     private static final int CLAIM_STALE_SECONDS = 45;
 
@@ -45,13 +47,8 @@ public class PrintJobServiceImpl implements PrintJobService {
         }
         boolean guestBill = request.guestBill();
         boolean kitchenSend = request.kitchenSend();
-        List<String> printers = request.printerNames() == null
-            ? List.of()
-            : request.printerNames().stream()
-                .filter(name -> name != null && !name.isBlank())
-                .map(name -> name.trim().toLowerCase(Locale.ROOT))
-                .distinct()
-                .toList();
+        List<String> printers = normalizePrinters(request.printerNames());
+        List<String> busy = normalizePrinters(request.busyPrinters());
         if (!guestBill && !kitchenSend && printers.isEmpty()) {
             return List.of();
         }
@@ -69,11 +66,13 @@ public class PrintJobServiceImpl implements PrintJobService {
             storeId,
             since,
             now,
-            CLAIM_BATCH,
+            claimBatch(request.limit()),
+            perPrinterLimit(request.perPrinterLimit()),
             guestBill ? 1 : 0,
             kitchenSend ? 1 : 0,
             printers.isEmpty() ? 0 : 1,
-            printerBind
+            printerBind,
+            busy.isEmpty() ? List.of("__none__") : busy
         );
         if (claimedIds == null || claimedIds.isEmpty()) {
             return List.of();
@@ -130,6 +129,31 @@ public class PrintJobServiceImpl implements PrintJobService {
         }
         Integer companyId = tenantSupport.requireCompanyId();
         repository.releaseClaims(companyId, storeId, request.jobIds());
+    }
+
+    private static int claimBatch(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return CLAIM_BATCH;
+        }
+        return Math.min(limit, CLAIM_BATCH);
+    }
+
+    private static int perPrinterLimit(Integer limit) {
+        if (limit == null || limit <= 0) {
+            return DEFAULT_PER_PRINTER;
+        }
+        return Math.min(limit, CLAIM_BATCH);
+    }
+
+    private static List<String> normalizePrinters(List<String> names) {
+        if (names == null) {
+            return List.of();
+        }
+        return names.stream()
+            .filter(name -> name != null && !name.isBlank())
+            .map(name -> name.trim().toLowerCase(Locale.ROOT))
+            .distinct()
+            .toList();
     }
 
     private PrintJobResponse toResponse(RestaurantPrintJob job) {

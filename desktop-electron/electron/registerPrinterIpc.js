@@ -14,8 +14,10 @@ const {
 const { getMainWindow } = require('./printers/window-ref.cjs');
 const { printTicketHtml } = require('./printers/print-ticket.cjs');
 const { registerLabelPrintIpc } = require('./labelPrintIpc');
+const { warmRawPrintWorker } = require('./printers/win-raw-print.cjs');
 
 function registerPrinterIpc() {
+  warmRawPrintWorker();
   ipcMain.handle('desktop:list-printers', async () => listSystemPrinters());
   ipcMain.handle('desktop:get-printer-settings', () => readPrinterSettings());
   ipcMain.handle('desktop:set-printer-settings', (_e, settings) =>

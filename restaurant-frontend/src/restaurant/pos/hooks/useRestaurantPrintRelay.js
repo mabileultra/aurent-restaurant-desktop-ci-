@@ -13,6 +13,29 @@ import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
 const POLL_MS = 300;
 const CAPS_TIMEOUT_MS = 2500;
+/** Claimed-but-unprinted cap across all printers. */
+const MAX_IN_FLIGHT = 24;
+/**
+ * Per category printer: claim more only when fewer than BUSY_AT slips wait in its lane, at most
+ * PER_PRINTER_CLAIM per claim. Worst lane = BUSY_AT - 1 + PER_PRINTER_CLAIM = 4 slips × 10s
+ * timeout, under the server stale-claim window (45s) — otherwise a reclaim could print twice.
+ */
+const BUSY_AT = 2;
+const PER_PRINTER_CLAIM = 3;
+/** After a print error the printer is skipped in claims for a while (no instant retry storm). */
+const PRINTER_COOLDOWN_MS = 8_000;
+const SETTLE_FLUSH_MS = 40;
+
+function categoryPrinterKey(job) {
+  if (job?.kind !== 'CATEGORY_SLIP' && job?.kind !== 'CATEGORY_BATCH') return null;
+  try {
+    const payload = typeof job.payload === 'string' ? JSON.parse(job.payload) : job.payload;
+    const name = String(payload?.printerName || '').trim().toLowerCase();
+    return name || null;
+  } catch {
+    return null;
+  }
+}
 
 function withTimeout(promise, ms, fallback) {
   let timer;
@@ -51,9 +74,9 @@ function capsReady(caps) {
   return Boolean(caps?.guestBill || caps?.kitchenSend || caps?.printerNames?.length);
 }
 
-async function fetchJobs(storeId, caps) {
+async function fetchJobs(storeId, caps, limit) {
   try {
-    const res = await rstPrintApi.claimPending(storeId, caps);
+    const res = await rstPrintApi.claimPending(storeId, { ...caps, limit });
     return res.data ?? [];
   } catch {
     // Claim filter failed (old build / SQL) — fall back to legacy poll so printing never dies.
@@ -99,7 +122,98 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       }
     };
 
-    const tick = async () => {
+    const inFlight = new Set();
+    const perPrinter = new Map();
+    const cooldownUntil = new Map();
+    const ackQueue = [];
+    const releaseQueue = [];
+    let settleTimer = null;
+
+    const flushSettled = async () => {
+      settleTimer = null;
+      const ackIds = ackQueue.splice(0);
+      const releaseIds = releaseQueue.splice(0);
+      if (ackIds.length) {
+        await rstPrintApi.acknowledge(storeId, ackIds).catch(() => {});
+      }
+      if (releaseIds.length) {
+        await rstPrintApi.release(storeId, releaseIds).catch(() => {});
+      }
+    };
+
+    const scheduleSettle = () => {
+      if (settleTimer == null) settleTimer = window.setTimeout(flushSettled, SETTLE_FLUSH_MS);
+    };
+
+    const warnMissingStations = (job, outcome) => {
+      if (
+        outcome?.ack
+        || (outcome?.mode !== 'missing' && outcome?.mode !== 'partial')
+        || !outcome?.configured
+        || job.kind !== 'KITCHEN_SEND'
+        || !outcome?.missing?.length
+      ) return;
+      const stations = outcome.missing.filter(Boolean).join(', ');
+      const key = `${storeId}:kitchen-missing:${stations}`;
+      if (warnedMissingRef.current.has(key)) return;
+      warnedMissingRef.current.add(key);
+      toast.error(
+        tRef.current('rst.admin.kitchenPrinterMissing', {
+          stations,
+          defaultValue: `Нет принтера для станции: ${stations}`,
+        }),
+      );
+    };
+
+    const busyPrinters = () => {
+      const now = Date.now();
+      const busy = [];
+      for (const [key, count] of perPrinter) {
+        if (count >= BUSY_AT) busy.push(key);
+      }
+      for (const [key, until] of cooldownUntil) {
+        if (until <= now) cooldownUntil.delete(key);
+        else if (!busy.includes(key)) busy.push(key);
+      }
+      return busy;
+    };
+
+    let tick;
+
+    // Each job settles on its own: a slow printer no longer holds back the rest of the batch.
+    const runJob = async (job) => {
+      const printerKey = categoryPrinterKey(job);
+      if (printerKey) perPrinter.set(printerKey, (perPrinter.get(printerKey) || 0) + 1);
+      let outcome;
+      try {
+        outcome = await executeRestaurantPrintJob(job, {
+          t: tRef.current,
+          waiterNameById: waiterMapRef.current,
+          storeId: storeIdRef.current,
+        });
+      } catch {
+        outcome = { ack: false, release: true, mode: 'error' };
+      }
+      inFlight.delete(job.id);
+      if (printerKey) {
+        const left = (perPrinter.get(printerKey) || 1) - 1;
+        if (left > 0) perPrinter.set(printerKey, left);
+        else perPrinter.delete(printerKey);
+        if (outcome?.mode === 'error') {
+          cooldownUntil.set(printerKey, Date.now() + PRINTER_COOLDOWN_MS);
+        }
+      }
+      if (outcome?.ack) {
+        ackQueue.push(job.id);
+      } else if (outcome?.release !== false) {
+        releaseQueue.push(job.id);
+      }
+      warnMissingStations(job, outcome);
+      scheduleSettle();
+      if (!cancelled) tick();
+    };
+
+    tick = async () => {
       if (cancelled) return;
       if (!capsReady(capsRef.current)) {
         await refreshCaps();
@@ -115,72 +229,28 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       try {
         do {
           pendingFlushRef.current = false;
+          const room = MAX_IN_FLIGHT - inFlight.size;
+          if (room <= 0) break;
           if (!leader.isLeader()) break;
           const caps = capsRef.current;
           if (!capsReady(caps)) break;
-          const jobs = await fetchJobs(storeId, caps);
+          const jobs = await fetchJobs(storeId, {
+            ...caps,
+            busyPrinters: busyPrinters(),
+            perPrinterLimit: PER_PRINTER_CLAIM,
+          }, room);
           if (cancelled) break;
-          if (!jobs.length) continue;
-
-          const results = await Promise.allSettled(
-            jobs.map(async (job) => {
-              const outcome = await executeRestaurantPrintJob(job, {
-                t: tRef.current,
-                waiterNameById: waiterMapRef.current,
-                storeId: storeIdRef.current,
-              });
-              return { job, outcome };
-            }),
-          );
-
-          const ackIds = [];
-          const releaseIds = [];
-          for (const result of results) {
-            if (result.status !== 'fulfilled') continue;
-            const { job, outcome } = result.value;
-            if (!job?.id) continue;
-            if (outcome?.ack) {
-              ackIds.push(job.id);
-            } else if (outcome?.release !== false) {
-              releaseIds.push(job.id);
-            }
-            if (
-              !outcome?.ack
-              && (outcome?.mode === 'missing' || outcome?.mode === 'partial')
-              && outcome?.configured
-              && job.kind === 'KITCHEN_SEND'
-              && outcome?.missing?.length
-            ) {
-              const stations = outcome.missing.filter(Boolean).join(', ');
-              const key = `${storeId}:kitchen-missing:${stations}`;
-              if (!warnedMissingRef.current.has(key)) {
-                warnedMissingRef.current.add(key);
-                toast.error(
-                  tRef.current('rst.admin.kitchenPrinterMissing', {
-                    stations,
-                    defaultValue: `Нет принтера для станции: ${stations}`,
-                  }),
-                );
-              }
-            }
-          }
-          if (!cancelled && ackIds.length) {
-            await rstPrintApi.acknowledge(storeId, ackIds).catch(() => {});
-          }
-          if (!cancelled && releaseIds.length) {
-            await rstPrintApi.release(storeId, releaseIds).catch(() => {});
+          for (const job of jobs) {
+            // Stale-reclaimed job we are still printing — keep the original run.
+            if (!job?.id || inFlight.has(job.id)) continue;
+            inFlight.add(job.id);
+            runJob(job);
           }
         } while (pendingFlushRef.current && !cancelled);
       } catch {
         /* network blip — next poll */
       } finally {
         busyRef.current = false;
-        if (pendingFlushRef.current && !cancelled) {
-          pendingFlushRef.current = false;
-          window.setTimeout(() => {
-            if (!cancelled) tick();
-          }, 0);
-        }
       }
     };
 
@@ -209,6 +279,8 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       window.clearInterval(capsTimer);
       offFlush();
       leader.stop();
+      if (settleTimer != null) window.clearTimeout(settleTimer);
+      flushSettled();
     };
   }, [storeId]);
 }
