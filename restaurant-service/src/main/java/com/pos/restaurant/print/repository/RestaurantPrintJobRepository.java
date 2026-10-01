@@ -32,6 +32,31 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
     );
 
     /**
+     * Close pending jobs that are too old to be useful (guest left / kitchen already cooked) without
+     * printing them — otherwise a desktop that comes back after hours prints the whole backlog.
+     * {@code slipBefore} must be earlier than {@code billBefore}.
+     */
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query(value = """
+        UPDATE restaurant_print_jobs
+        SET status = 'DONE',
+            claimed_at = NULL,
+            completed_at = :now
+        WHERE company_id = :companyId
+          AND store_id = :storeId
+          AND status = 'PENDING'
+          AND created_at < :billBefore
+          AND (kind = 'GUEST_BILL' OR created_at < :slipBefore)
+        """, nativeQuery = true)
+    int expireStalePending(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("billBefore") Instant billBefore,
+        @Param("slipBefore") Instant slipBefore,
+        @Param("now") Instant now
+    );
+
+    /**
      * Atomically claim a batch of pending jobs (SKIP LOCKED — one desktop wins each row).
      * @return claimed job ids
      */

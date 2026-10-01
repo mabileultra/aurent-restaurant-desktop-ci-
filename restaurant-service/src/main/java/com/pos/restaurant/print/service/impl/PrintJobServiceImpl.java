@@ -30,8 +30,23 @@ public class PrintJobServiceImpl implements PrintJobService {
     /** If a desktop dies mid-print, job becomes claimable again (release API is preferred). */
     private static final int CLAIM_STALE_SECONDS = 45;
 
+    /** Older bills are never printed: the cashier already printed it locally or the guest is gone. */
+    private static final int GUEST_BILL_TTL_MINUTES = 5;
+    /** Older kitchen / station slips are never printed: a desktop back after hours must not dump its backlog. */
+    private static final int KITCHEN_SLIP_TTL_MINUTES = 20;
+
     private final RestaurantPrintJobRepository repository;
     private final FloorTenantSupport tenantSupport;
+
+    private void expireStale(Integer companyId, Integer storeId, Instant now) {
+        repository.expireStalePending(
+            companyId,
+            storeId,
+            now.minus(GUEST_BILL_TTL_MINUTES, ChronoUnit.MINUTES),
+            now.minus(KITCHEN_SLIP_TTL_MINUTES, ChronoUnit.MINUTES),
+            now
+        );
+    }
 
     @Override
     @Transactional
@@ -59,6 +74,7 @@ public class PrintJobServiceImpl implements PrintJobService {
         Instant staleBefore = now.minus(CLAIM_STALE_SECONDS, ChronoUnit.SECONDS);
 
         repository.reclaimStaleClaims(companyId, storeId, staleBefore);
+        expireStale(companyId, storeId, now);
         // Native IN () needs at least one bind value when hasPrinters is false.
         List<String> printerBind = printers.isEmpty() ? List.of("__none__") : printers;
         List<UUID> claimedIds = repository.claimPendingFilteredIds(
@@ -89,6 +105,7 @@ public class PrintJobServiceImpl implements PrintJobService {
         Instant staleBefore = now.minus(CLAIM_STALE_SECONDS, ChronoUnit.SECONDS);
 
         repository.reclaimStaleClaims(companyId, storeId, staleBefore);
+        expireStale(companyId, storeId, now);
         List<UUID> claimedIds = repository.claimPendingIds(
             companyId,
             storeId,
