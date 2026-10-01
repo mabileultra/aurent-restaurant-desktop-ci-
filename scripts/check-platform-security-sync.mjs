@@ -35,7 +35,7 @@ function mustNotContain(source, needle, label) {
 const identitySecurity = read('identity-service/src/main/java/com/pos/identity/config/SecurityConfig.java');
 mustContain(
   identitySecurity,
-  '.requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN")',
+  '.requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN", "MANAGER")',
   'identity /users allows PLATFORM_ADMIN'
 );
 mustContain(
