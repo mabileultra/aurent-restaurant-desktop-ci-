@@ -61,7 +61,9 @@ export default function OrderWorkspace({
     ? t('rst.pos.takeawayTicket', { no: order.orderNo })
     : channel === 'DELIVERY'
       ? t('rst.pos.deliveryTicket', { no: order.orderNo })
-      : t('rst.order.ticketTitle', { code: order.tableCode, no: order.orderNo });
+      : (hallName
+        ? t('rst.order.ticketTitle', { code: order.tableCode, hall: hallName })
+        : t('rst.order.ticketTitleNoHall', { code: order.tableCode }));
   const ticketMeta = channel === 'DELIVERY'
     ? [order.clientName, order.clientPhone, order.deliveryAddress].filter(Boolean).join(' · ')
     : channel === 'TAKEAWAY'

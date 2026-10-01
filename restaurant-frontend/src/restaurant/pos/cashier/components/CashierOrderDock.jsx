@@ -30,6 +30,7 @@ export default function CashierOrderDock({
   loading,
   linesPending = false,
   tableCode,
+  hallName = null,
   waiterName = null,
   menuItems = [],
   canRequestBill,
@@ -94,14 +95,14 @@ export default function CashierOrderDock({
           <h2>{t('rst.cashier.currentOrder')}</h2>
           <p>
             {tableCode
-              ? t('rst.floor.tableTitle', { code: tableCode })
+              ? (hallName
+                ? t('rst.order.ticketTitle', { code: tableCode, hall: hallName })
+                : t('rst.order.ticketTitleNoHall', { code: tableCode }))
               : (order.channel === 'DINE_IN'
                 ? t('rst.pos.floor')
                 : order.channel === 'DELIVERY'
                   ? t('rst.pos.delivery')
                   : t('rst.pos.takeaway'))}
-            {' · '}
-            №{order.orderNo}
           </p>
           {waiterName ? (
             <p className="rst-cashier-dock__waiter">

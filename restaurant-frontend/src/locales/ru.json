@@ -1573,7 +1573,8 @@
         "TEA": "Чайник"
       },
       "ticketMeta": "Гостей: {{guests}} (взр. {{adults}}, дет. {{children}})",
-      "ticketTitle": "Стол {{code}} · №{{no}}",
+      "ticketTitle": "Стол {{code}} · {{hall}}",
+      "ticketTitleNoHall": "Стол {{code}}",
       "total": "Итого",
       "totalDue": "Итого к оплате",
       "uncategorized": "Без категории",

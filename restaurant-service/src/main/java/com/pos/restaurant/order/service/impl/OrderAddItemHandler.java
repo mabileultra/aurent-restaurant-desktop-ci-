@@ -29,6 +29,7 @@ import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.order.support.TableSeatSync;
+import com.pos.restaurant.order.support.WeightSaleSupport;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
@@ -87,31 +88,42 @@ public class OrderAddItemHandler {
         BigDecimal quantity = (request.quantity() == null ? BigDecimal.ONE : request.quantity())
             .setScale(3, RoundingMode.HALF_UP);
         String note = blankToNull(request.note());
-        if (note == null && optionIds.isEmpty()) {
-            var existingNew = itemRepository.findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatus(
-                orderId,
-                menuItem.getId(),
-                OrderItemStatus.NEW
-            );
+        boolean weightSold = WeightSaleSupport.isWeightSold(menuItem);
+        if (optionIds.isEmpty() && (note == null || weightSold)) {
+            var existingNew = weightSold
+                ? itemRepository.findFirstByOrderIdAndMenuItemIdAndItemStatusOrderBySortOrderAscCreatedAtAsc(
+                    orderId, menuItem.getId(), OrderItemStatus.NEW)
+                : itemRepository.findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatus(
+                    orderId, menuItem.getId(), OrderItemStatus.NEW);
             if (existingNew.isPresent()
                 && itemModifierRepository.findByOrderItemIdIn(List.of(existingNew.get().getId())).isEmpty()) {
                 FloorOrderItem line = existingNew.get();
                 line.setQuantity(line.getQuantity().add(quantity));
+                if (weightSold) {
+                    line.setNote(WeightSaleSupport.noteForQuantity(menuItem, line.getQuantity()));
+                }
                 enqueueCategorySlip(order, line, quantity, menuItem);
                 LogUtil.info(OrderAddItemHandler.class, "Order item qty increased: id={}", line.getId());
                 return reload(order);
             }
             // Same dish already on kitchen — bump total qty; pending send = quantity − sentQuantity.
-            var existingKitchen = itemRepository
-                .findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
+            var existingKitchen = weightSold
+                ? itemRepository.findFirstByOrderIdAndMenuItemIdAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
                     orderId,
                     menuItem.getId(),
-                    List.of(OrderItemStatus.NEW, OrderItemStatus.CANCELLED)
-                );
+                    List.of(OrderItemStatus.NEW, OrderItemStatus.CANCELLED))
+                : itemRepository
+                    .findFirstByOrderIdAndMenuItemIdAndNoteIsNullAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
+                        orderId,
+                        menuItem.getId(),
+                        List.of(OrderItemStatus.NEW, OrderItemStatus.CANCELLED));
             if (existingKitchen.isPresent()
                 && itemModifierRepository.findByOrderItemIdIn(List.of(existingKitchen.get().getId())).isEmpty()) {
                 FloorOrderItem line = existingKitchen.get();
                 line.setQuantity(line.getQuantity().add(quantity));
+                if (weightSold) {
+                    line.setNote(WeightSaleSupport.noteForQuantity(menuItem, line.getQuantity()));
+                }
                 enqueueCategorySlip(order, line, quantity, menuItem);
                 LogUtil.info(OrderAddItemHandler.class, "Kitchen item qty increased (reorder): id={}", line.getId());
                 return reload(order);
@@ -121,6 +133,7 @@ public class OrderAddItemHandler {
             .map(ModifierOption::getPriceDelta)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
         int nextSort = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId).size();
+        String lineNote = weightSold ? WeightSaleSupport.noteForQuantity(menuItem, quantity) : note;
         FloorOrderItem saved = itemRepository.save(FloorOrderItem.builder()
             .order(order)
             .menuItem(menuItem)
@@ -129,7 +142,7 @@ public class OrderAddItemHandler {
             .unitPrice(menuItem.getPrice().add(extras).setScale(2, RoundingMode.HALF_UP))
             .taxRate(menuItem.getTaxRate() == null ? BigDecimal.ZERO : menuItem.getTaxRate())
             .stationId(menuItem.getStationId())
-            .note(note)
+            .note(lineNote)
             .sortOrder(nextSort)
             .build());
         itemModifierRepository.saveAll(selected.stream()
@@ -197,4 +210,5 @@ public class OrderAddItemHandler {
         }
         return value.trim();
     }
+
 }

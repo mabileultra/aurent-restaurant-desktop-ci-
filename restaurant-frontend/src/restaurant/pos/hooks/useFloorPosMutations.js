@@ -13,6 +13,7 @@ import {
   optimisticRemoveItem,
   optimisticUpdateQty,
 } from '../utils/optimisticOrderPatch';
+import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import {
   flushRestaurantPrintRelay,
 } from '../utils/restaurantPrintFlush';
@@ -156,7 +157,10 @@ export function useFloorPosMutations(deps) {
       const mods = (modifierOptionIds ?? []).map(String).sort().join(',');
       const noteKey = note?.trim() || '';
       const qty = Number(quantity) > 0 ? Number(quantity) : 1;
-      const key = `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
+      // Weight adds share one queue key (ignore grams note) so 200г+300г merge server-side.
+      const key = isWeightSoldMenuItem(menuItem) && !mods
+        ? `${activeOrderId}:${menuItem.id}:weight`
+        : `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
       return enqueueAddItem(key, () => rstOrderApi.addItem(activeOrderId, {
         menuItemId: menuItem.id,
         quantity: qty,

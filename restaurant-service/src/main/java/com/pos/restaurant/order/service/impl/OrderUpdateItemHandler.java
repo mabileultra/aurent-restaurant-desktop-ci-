@@ -12,6 +12,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.WeightSaleSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -56,7 +57,9 @@ public class OrderUpdateItemHandler {
         if (item.getSentQuantity() != null && item.getSentQuantity().compareTo(qty) > 0) {
             item.setSentQuantity(qty);
         }
-        if (request.note() != null && item.getItemStatus() == OrderItemStatus.NEW) {
+        if (WeightSaleSupport.isWeightSold(item.getMenuItem())) {
+            item.setNote(WeightSaleSupport.noteForQuantity(item.getMenuItem(), qty));
+        } else if (request.note() != null && item.getItemStatus() == OrderItemStatus.NEW) {
             item.setNote(request.note().isBlank() ? null : request.note().trim());
         }
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));

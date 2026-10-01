@@ -45,5 +45,18 @@ public interface FloorOrderItemRepository extends JpaRepository<FloorOrderItem, 
         Collection<OrderItemStatus> itemStatuses
     );
 
+    /** Weight-sold dishes: merge same menu item even when note holds «200 г» / «300 г». */
+    Optional<FloorOrderItem> findFirstByOrderIdAndMenuItemIdAndItemStatusOrderBySortOrderAscCreatedAtAsc(
+        UUID orderId,
+        UUID menuItemId,
+        OrderItemStatus itemStatus
+    );
+
+    Optional<FloorOrderItem> findFirstByOrderIdAndMenuItemIdAndItemStatusNotInOrderBySortOrderAscCreatedAtAsc(
+        UUID orderId,
+        UUID menuItemId,
+        Collection<OrderItemStatus> itemStatuses
+    );
+
     List<FloorOrderItem> findByOrderIdAndItemStatus(UUID orderId, OrderItemStatus itemStatus);
 }

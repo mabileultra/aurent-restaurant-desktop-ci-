@@ -1569,7 +1569,8 @@
         "TEA": "Kettle"
       },
       "ticketMeta": "{{guests}} guests (adults {{adults}}, children {{children}})",
-      "ticketTitle": "Table {{code}} · #{{no}}",
+      "ticketTitle": "Table {{code}} · {{hall}}",
+      "ticketTitleNoHall": "Table {{code}}",
       "total": "Total",
       "totalDue": "Amount due",
       "uncategorized": "Uncategorized",

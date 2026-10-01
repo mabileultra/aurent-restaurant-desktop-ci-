@@ -46,9 +46,10 @@ export function buildWaiterNameById(staffRows) {
 
 export function resolveOrderHallName(halls, order, selectedHallName) {
   if (!order?.tableId) return selectedHallName ?? null;
+  const tableId = String(order.tableId);
   for (const hall of halls) {
-    if ((hall.tables ?? []).some((table) => table.id === order.tableId)) {
-      return hall.name;
+    if ((hall.tables ?? []).some((table) => String(table.id) === tableId)) {
+      return hall.name || null;
     }
   }
   return selectedHallName ?? null;

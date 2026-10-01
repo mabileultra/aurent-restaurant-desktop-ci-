@@ -53,6 +53,7 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
             loading={false}
             linesPending={!!p.orderPartial}
             tableCode={tableCode}
+            hallName={p.orderHallName || null}
             waiterName={
               p.order?.waiterUserId
                 ? (p.waiterNameById.get(String(p.order.waiterUserId)) || null)

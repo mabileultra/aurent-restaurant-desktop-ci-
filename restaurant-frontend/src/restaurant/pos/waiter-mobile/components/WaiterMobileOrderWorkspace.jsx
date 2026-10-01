@@ -105,12 +105,15 @@ export default function WaiterMobileOrderWorkspace({
         <div className="rst-waiter-order__title">
           <strong>
             {channel === 'DINE_IN'
-              ? t('rst.order.tableHeading', { code: order.tableCode })
-              : t('rst.order.ticketTitle', { code: order.tableCode || '—', no: order.orderNo })}
+              ? (hallName
+                ? t('rst.order.ticketTitle', { code: order.tableCode || '—', hall: hallName })
+                : t('rst.order.ticketTitleNoHall', { code: order.tableCode || '—' }))
+              : channel === 'DELIVERY'
+                ? t('rst.pos.deliveryTicket', { no: order.orderNo })
+                : t('rst.pos.takeawayTicket', { no: order.orderNo })}
           </strong>
           <span>
             #{order.orderNo}
-            {hallName ? ` · ${hallName}` : ''}
             {digitalTimer ? ` · ${digitalTimer}` : ''}
           </span>
         </div>

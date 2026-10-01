@@ -1570,7 +1570,8 @@
         "TEA": "Choy"
       },
       "ticketMeta": "Mehmonlar: {{guests}} (katta {{adults}}, bola {{children}})",
-      "ticketTitle": "Stol {{code}} · №{{no}}",
+      "ticketTitle": "Stol {{code}} · {{hall}}",
+      "ticketTitleNoHall": "Stol {{code}}",
       "total": "Jami",
       "totalDue": "To‘lovga jami",
       "uncategorized": "Kategoriyasiz",
