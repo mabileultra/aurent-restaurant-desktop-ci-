@@ -35,9 +35,10 @@ export function createPrintRelayLeader() {
     return false;
   };
 
+  // Called again on every caps refresh: a second interval would outlive stop() and hold the lock forever.
   const start = () => {
     isLeader();
-    timer = window.setInterval(isLeader, HEARTBEAT_MS);
+    if (timer == null) timer = window.setInterval(isLeader, HEARTBEAT_MS);
   };
 
   const stop = () => {

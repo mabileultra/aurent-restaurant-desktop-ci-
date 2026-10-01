@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
+import { rstMenuApi } from '../../api/menu.api';
 import { rstPrintApi } from '../../api/print.api';
 import {
   getDesktopPrinterSettings,
@@ -13,8 +14,6 @@ import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
 const POLL_MS = 300;
 const CAPS_TIMEOUT_MS = 2500;
-/** Claimed-but-unprinted cap across all printers. */
-const MAX_IN_FLIGHT = 24;
 /**
  * Per category printer: claim more only when fewer than BUSY_AT slips wait in its lane, at most
  * PER_PRINTER_CLAIM per claim. Worst lane = BUSY_AT - 1 + PER_PRINTER_CLAIM = 4 slips × 10s
@@ -22,9 +21,53 @@ const MAX_IN_FLIGHT = 24;
  */
 const BUSY_AT = 2;
 const PER_PRINTER_CLAIM = 3;
+const MAX_LANE = BUSY_AT - 1 + PER_PRINTER_CLAIM;
+/**
+ * Claimed-but-unprinted cap across all printers. Scales with the printer count: a fixed 24 left
+ * 20 stations with ~1 slip each, so every printer idled for a claim round-trip between slips.
+ */
+const MIN_IN_FLIGHT = 24;
+/** Server caps one claim at 25 rows (PrintJobServiceImpl.CLAIM_BATCH). */
+const SERVER_CLAIM_BATCH = 25;
+
+function maxInFlight(caps) {
+  return Math.max(MIN_IN_FLIGHT, (caps?.printerNames?.length || 0) * MAX_LANE + 4);
+}
 /** After a print error the printer is skipped in claims for a while (no instant retry storm). */
 const PRINTER_COOLDOWN_MS = 8_000;
 const SETTLE_FLUSH_MS = 40;
+const SETTLE_RETRY_MS = 1_000;
+/** Matches the server slip TTL: after that the job is closed server-side anyway. */
+const PRINTED_MEMORY_MS = 20 * 60_000;
+const UNCERTAIN_WARN_MS = 30_000;
+const CATEGORY_CHECK_MS = 60_000;
+
+function printedStorageKey(storeId) {
+  return `rst-print-relay-printed:${storeId}`;
+}
+
+/** Survives an app restart: a lost ack must not reprint the slip after relaunch either. */
+function loadPrinted(storeId) {
+  const map = new Map();
+  try {
+    const rows = JSON.parse(localStorage.getItem(printedStorageKey(storeId)) || '[]');
+    const cutoff = Date.now() - PRINTED_MEMORY_MS;
+    for (const [jobId, at] of Array.isArray(rows) ? rows : []) {
+      if (jobId != null && at >= cutoff) map.set(jobId, at);
+    }
+  } catch {
+    /* corrupt / no storage — start empty */
+  }
+  return map;
+}
+
+function savePrinted(storeId, map) {
+  try {
+    localStorage.setItem(printedStorageKey(storeId), JSON.stringify([...map]));
+  } catch {
+    /* quota / no storage */
+  }
+}
 
 function categoryPrinterKey(job) {
   if (job?.kind !== 'CATEGORY_SLIP' && job?.kind !== 'CATEGORY_BATCH') return null;
@@ -127,17 +170,85 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
     const cooldownUntil = new Map();
     const ackQueue = [];
     const releaseQueue = [];
+    /** Printed here: if the ack is lost the server re-hands the job after 45 s — ack it, never reprint. */
+    const printedAt = loadPrinted(storeId);
+    const uncertainWarnedAt = new Map();
     let settleTimer = null;
 
+    const forgetOldPrinted = () => {
+      const cutoff = Date.now() - PRINTED_MEMORY_MS;
+      for (const [jobId, at] of printedAt) {
+        if (at < cutoff) printedAt.delete(jobId);
+      }
+    };
+
+    const warnUncertain = (job, printerKey) => {
+      const label = printerKey
+        || (job.kind === 'GUEST_BILL' ? 'счёт' : 'кухня');
+      const now = Date.now();
+      if (now - (uncertainWarnedAt.get(label) || 0) < UNCERTAIN_WARN_MS) return;
+      uncertainWarnedAt.set(label, now);
+      toast.error(
+        tRef.current('rst.admin.printUncertain', {
+          printer: label,
+          defaultValue: `Принтер «${label}» не ответил — проверьте, вышел ли чек. Повторно не печатаем.`,
+        }),
+        { duration: 10_000 },
+      );
+    };
+
+    // Autoprint category on a printer this PC does not have: its slips would wait unseen until expiry.
+    const checkCategoryPrinters = async () => {
+      try {
+        const [res, list] = await Promise.all([
+          rstMenuApi.listCategories(storeId, true),
+          listDesktopPrintersCached(),
+        ]);
+        if (cancelled) return;
+        const local = new Set((Array.isArray(list) ? list : [])
+          .map((p) => String(p?.name || p).trim().toLowerCase())
+          .filter(Boolean));
+        if (!local.size) return;
+        for (const category of res?.data || []) {
+          const printer = String(category?.printPrinterName || '').trim();
+          if (!category?.autoPrint || !printer || local.has(printer.toLowerCase())) continue;
+          const key = `${storeId}:category-printer-missing:${printer.toLowerCase()}`;
+          if (warnedMissingRef.current.has(key)) continue;
+          warnedMissingRef.current.add(key);
+          toast.error(
+            tRef.current('rst.admin.categoryPrinterMissing', {
+              printer,
+              category: category.name || '',
+              defaultValue: `Принтер «${printer}» (категория «${category.name || ''}») не найден на этом ПК — слипы не печатаются`,
+            }),
+            { duration: 15_000 },
+          );
+        }
+      } catch {
+        /* offline / old API — next check */
+      }
+    };
+
+    // A dropped ack/release is put back and retried; losing an ack means printing the slip twice.
     const flushSettled = async () => {
       settleTimer = null;
       const ackIds = ackQueue.splice(0);
       const releaseIds = releaseQueue.splice(0);
+      let failed = false;
       if (ackIds.length) {
-        await rstPrintApi.acknowledge(storeId, ackIds).catch(() => {});
+        await rstPrintApi.acknowledge(storeId, ackIds).catch(() => {
+          ackQueue.unshift(...ackIds);
+          failed = true;
+        });
       }
       if (releaseIds.length) {
-        await rstPrintApi.release(storeId, releaseIds).catch(() => {});
+        await rstPrintApi.release(storeId, releaseIds).catch(() => {
+          releaseQueue.unshift(...releaseIds);
+          failed = true;
+        });
+      }
+      if (failed && !cancelled && settleTimer == null) {
+        settleTimer = window.setTimeout(flushSettled, SETTLE_RETRY_MS);
       }
     };
 
@@ -199,11 +310,14 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
         const left = (perPrinter.get(printerKey) || 1) - 1;
         if (left > 0) perPrinter.set(printerKey, left);
         else perPrinter.delete(printerKey);
-        if (outcome?.mode === 'error') {
+        if (outcome?.mode === 'error' || outcome?.mode === 'uncertain') {
           cooldownUntil.set(printerKey, Date.now() + PRINTER_COOLDOWN_MS);
         }
       }
+      if (outcome?.mode === 'uncertain') warnUncertain(job, printerKey);
       if (outcome?.ack) {
+        printedAt.set(job.id, Date.now());
+        savePrinted(storeId, printedAt);
         ackQueue.push(job.id);
       } else if (outcome?.release !== false) {
         releaseQueue.push(job.id);
@@ -229,20 +343,29 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       try {
         do {
           pendingFlushRef.current = false;
-          const room = MAX_IN_FLIGHT - inFlight.size;
-          if (room <= 0) break;
-          if (!leader.isLeader()) break;
           const caps = capsRef.current;
           if (!capsReady(caps)) break;
+          const room = maxInFlight(caps) - inFlight.size;
+          if (room <= 0) break;
+          if (!leader.isLeader()) break;
+          const limit = Math.min(room, SERVER_CLAIM_BATCH);
           const jobs = await fetchJobs(storeId, {
             ...caps,
             busyPrinters: busyPrinters(),
             perPrinterLimit: PER_PRINTER_CLAIM,
-          }, room);
+          }, limit);
           if (cancelled) break;
+          // A full batch means more is waiting — claim again now instead of on the next 300 ms poll.
+          if (jobs.length >= limit) pendingFlushRef.current = true;
+          forgetOldPrinted();
           for (const job of jobs) {
             // Stale-reclaimed job we are still printing — keep the original run.
             if (!job?.id || inFlight.has(job.id)) continue;
+            if (printedAt.has(job.id)) {
+              ackQueue.push(job.id);
+              scheduleSettle();
+              continue;
+            }
             inFlight.add(job.id);
             runJob(job);
           }
@@ -260,6 +383,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       if (capsReady(capsRef.current)) leader.start();
       prefetchPrintWaiterRoster(storeId, waiterMapRef.current).catch(() => {});
       tick();
+      if (capsReady(capsRef.current)) checkCategoryPrinters();
     })();
 
     const id = window.setInterval(tick, POLL_MS);
@@ -268,6 +392,9 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
         if (!cancelled && capsReady(caps)) leader.start();
       });
     }, 15_000);
+    const categoryTimer = window.setInterval(() => {
+      if (leader.isLeader()) checkCategoryPrinters();
+    }, CATEGORY_CHECK_MS);
     const offFlush = onRestaurantPrintFlush(() => {
       if (cancelled) return;
       pendingFlushRef.current = true;
@@ -277,6 +404,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       cancelled = true;
       window.clearInterval(id);
       window.clearInterval(capsTimer);
+      window.clearInterval(categoryTimer);
       offFlush();
       leader.stop();
       if (settleTimer != null) window.clearTimeout(settleTimer);

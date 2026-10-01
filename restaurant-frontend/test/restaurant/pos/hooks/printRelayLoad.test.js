@@ -39,23 +39,38 @@ const PRINTERS = Array.from({ length: 10 }, (_, i) => `XP-80 Station ${String(i 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const lower = (s) => String(s || '').trim().toLowerCase();
 
-/** In-memory twin of RestaurantPrintJobRepository claim/ack/release. `fair: false` = old FIFO SQL. */
+/**
+ * In-memory twin of RestaurantPrintJobRepository claim/ack/release. `fair: false` = old FIFO SQL.
+ * Pending rows are indexed per printer (seq order) so a 10k+ slip flood stays cheap to simulate.
+ */
 function createServer({ rttMs = 20, fair = true } = {}) {
   const jobs = new Map();
+  const queues = new Map();
+  const claimed = new Set();
   let seq = 0;
   const stats = {
     claimCalls: 0,
+    ackCalls: 0,
     staleReclaims: 0,
     releases: 0,
     maxClaimedPerPrinter: 0,
     maxClaimToPrintMs: 0,
   };
 
+  const pendingOf = (queue, limit) => {
+    while (queue.head < queue.items.length && queue.items[queue.head].status === 'DONE') queue.head += 1;
+    const out = [];
+    for (let i = queue.head; i < queue.items.length && out.length < limit; i += 1) {
+      if (queue.items[i].status === 'PENDING') out.push(queue.items[i]);
+    }
+    return out;
+  };
+
   const claimedPerPrinter = () => {
     const counts = new Map();
-    for (const job of jobs.values()) {
+    for (const job of claimed) {
       // Printed-but-ack-in-transit rows are still CLAIMED on the server; they are not local backlog.
-      if (job.status === 'CLAIMED' && job.printedAt == null) counts.set(job.printer, (counts.get(job.printer) || 0) + 1);
+      if (job.printedAt == null) counts.set(job.printer, (counts.get(job.printer) || 0) + 1);
     }
     return counts;
   };
@@ -65,7 +80,7 @@ function createServer({ rttMs = 20, fair = true } = {}) {
     stats,
     add(printerName) {
       const id = `job-${++seq}`;
-      jobs.set(id, {
+      const job = {
         id,
         seq,
         printerName,
@@ -76,43 +91,43 @@ function createServer({ rttMs = 20, fair = true } = {}) {
         claims: 0,
         printedAt: null,
         prints: 0,
-      });
+      };
+      jobs.set(id, job);
+      if (!queues.has(job.printer)) queues.set(job.printer, { items: [], head: 0 });
+      queues.get(job.printer).items.push(job);
       return id;
     },
     async claim(body) {
       await sleep(rttMs / 2);
       stats.claimCalls += 1;
       const now = Date.now();
-      for (const job of jobs.values()) {
-        if (job.status === 'CLAIMED' && now - job.claimedAt > STALE_MS) {
+      for (const job of claimed) {
+        if (now - job.claimedAt > STALE_MS) {
           job.status = 'PENDING';
           job.claimedAt = null;
+          claimed.delete(job);
           stats.staleReclaims += 1;
         }
       }
       const printers = new Set((body?.printerNames || []).map(lower));
       const busy = new Set(fair ? (body?.busyPrinters || []).map(lower) : []);
-      const perLane = !fair
-        ? Infinity
-        : body?.perPrinterLimit > 0 ? Math.min(body.perPrinterLimit, CLAIM_BATCH) : DEFAULT_PER_PRINTER;
       const batch = body?.limit > 0 ? Math.min(body.limit, CLAIM_BATCH) : CLAIM_BATCH;
+      const perLane = !fair
+        ? batch
+        : body?.perPrinterLimit > 0 ? Math.min(body.perPrinterLimit, CLAIM_BATCH) : DEFAULT_PER_PRINTER;
 
       // LATERAL per printer: oldest perLane each, then oldest `batch` overall.
-      const pending = [...jobs.values()]
-        .filter((job) => job.status === 'PENDING' && printers.has(job.printer) && !busy.has(job.printer))
-        .sort((a, b) => a.seq - b.seq);
-      const rank = new Map();
-      const picked = [];
-      for (const job of pending) {
-        const n = (rank.get(job.printer) || 0) + 1;
-        rank.set(job.printer, n);
-        if (n <= perLane) picked.push(job);
-        if (picked.length >= batch) break;
+      const candidates = [];
+      for (const [printer, queue] of queues) {
+        if (!printers.has(printer) || busy.has(printer)) continue;
+        candidates.push(...pendingOf(queue, perLane));
       }
+      const picked = candidates.sort((a, b) => a.seq - b.seq).slice(0, batch);
       for (const job of picked) {
         job.status = 'CLAIMED';
         job.claimedAt = now;
         job.claims += 1;
+        claimed.add(job);
       }
       for (const count of claimedPerPrinter().values()) {
         stats.maxClaimedPerPrinter = Math.max(stats.maxClaimedPerPrinter, count);
@@ -133,9 +148,13 @@ function createServer({ rttMs = 20, fair = true } = {}) {
     },
     async ack(ids) {
       await sleep(rttMs / 2);
+      stats.ackCalls += 1;
       for (const id of ids) {
         const job = jobs.get(id);
-        if (job && (job.status === 'CLAIMED' || job.status === 'PENDING')) job.status = 'DONE';
+        if (job && (job.status === 'CLAIMED' || job.status === 'PENDING')) {
+          job.status = 'DONE';
+          claimed.delete(job);
+        }
       }
       return { data: null };
     },
@@ -146,6 +165,7 @@ function createServer({ rttMs = 20, fair = true } = {}) {
         if (job?.status === 'CLAIMED') {
           job.status = 'PENDING';
           job.claimedAt = null;
+          claimed.delete(job);
           stats.releases += 1;
         }
       }
@@ -155,7 +175,7 @@ function createServer({ rttMs = 20, fair = true } = {}) {
 }
 
 /** Fake Aurent desktop: Windows printers with a physical print time; `dead` printers hang the spooler call. */
-function createDesktop(server, { latencyMs = () => 400, dead = new Set() } = {}) {
+function createDesktop(server, { latencyMs = () => 400, dead = new Set(), printers = PRINTERS } = {}) {
   const active = new Map();
   const printOrder = new Map();
   const stats = { maxConcurrentPerPrinter: 0, slips: 0 };
@@ -165,7 +185,7 @@ function createDesktop(server, { latencyMs = () => 400, dead = new Set() } = {})
     dead,
     bridge: {
       isDesktop: true,
-      listPrinters: async () => PRINTERS.map((name) => ({ name })),
+      listPrinters: async () => printers.map((name) => ({ name })),
       getPrinterSettings: async () => ({ billPrinterName: '', stationPrinters: {} }),
       printPlainEscpos: async (payload) => {
         const key = lower(payload.printerName);
@@ -345,16 +365,21 @@ describe('restaurant print relay under load (10 printers)', () => {
     await runUntil(allPrinted(others), 60_000);
     expect(Math.max(...others.map(waitMs))).toBeLessThan(30 * 300 + 3_000);
 
-    // Keep the printer dead for two minutes: retries are throttled by the cooldown, no stale reclaim.
+    // Keep the printer dead for two minutes: a timed-out slip may already be in the Windows queue,
+    // so it is closed (cashier warned), never re-queued; the cooldown throttles new claims.
     await runUntil(() => false, 120_000);
     const dead = jobsOf(h.server, PRINTERS[0]);
     expect(dead.every((job) => job.printedAt == null)).toBe(true);
-    // 12 s print timeout + 8 s cooldown: a handful of retries, not one every 300 ms poll.
-    expect(h.server.stats.releases).toBeLessThan(40);
+    expect(h.server.stats.releases).toBe(0);
+    const uncertain = dead.filter((job) => job.status === 'DONE');
+    expect(uncertain.length).toBeGreaterThan(0);
+    expect(uncertain.length).toBeLessThan(40);
 
     desktop.dead.delete(deadKey);
-    await runUntil(allPrinted(dead), 120_000);
-    expect(dead.every((job) => job.printedAt != null)).toBe(true);
+    // Slips still unclaimed print after recovery; the one hung at that moment also closes as uncertain.
+    await runUntil(() => dead.every((job) => job.status === 'DONE'), 120_000);
+    expect(uncertain.every((job) => job.printedAt == null)).toBe(true);
+    expect(dead.filter((job) => job.printedAt != null).length).toBeGreaterThan(dead.length - uncertain.length - 4);
     expectHealthy(h.server, desktop);
   });
 
@@ -391,4 +416,159 @@ describe('restaurant print relay under load (10 printers)', () => {
     expectHealthy(h.server, desktop);
     expectFifoPerPrinter(desktop);
   });
+});
+
+/*
+ * One Aurent PC, 20 station printers, 2 000 slips per second hitting the server.
+ * A thermal printer physically does ~2.5 slips/s (400 ms), so 20 printers top out at ~50 slips/s:
+ * a 2 000/s burst can only be drained at that speed. What must hold: every printer stays busy
+ * back-to-back, nothing prints twice, no claim goes stale, FIFO per printer, other stations unaffected.
+ */
+const PRINTERS_20 = Array.from({ length: 20 }, (_, i) => `XP-80 Station ${String(i + 1).padStart(2, '0')}`);
+const SLIP_MS = 400;
+
+function seeded(seed) {
+  let state = seed;
+  return () => {
+    state = (state * 1_103_515_245 + 12_345) % 2 ** 31;
+    return state / 2 ** 31;
+  };
+}
+
+/** `perSecond` slips spread over `seconds`, pushed every 100 ms like a busy order API. */
+async function floodServer(server, { perSecond, seconds, pickPrinter }) {
+  const perTick = perSecond / 10;
+  for (let t = 0; t < seconds * 1_000; t += 100) {
+    for (let i = 0; i < perTick; i += 1) server.add(pickPrinter());
+    await vi.advanceTimersByTimeAsync(100);
+  }
+}
+
+function loadReport(label, server, desktop, startedAt) {
+  const jobs = [...server.jobs.values()];
+  const waits = jobs.filter((job) => job.printedAt != null).map(waitMs);
+  const lastPrint = Math.max(...jobs.map((job) => job.printedAt || 0));
+  const report = {
+    slips: jobs.length,
+    printed: desktop.stats.slips,
+    drainSec: Math.round((lastPrint - startedAt) / 100) / 10,
+    slipsPerSec: Math.round(desktop.stats.slips / ((lastPrint - startedAt) / 1_000)),
+    waitP50: percentile(waits, 50),
+    waitP95: percentile(waits, 95),
+    waitMax: Math.max(...waits),
+    claimCalls: server.stats.claimCalls,
+    ackCalls: server.stats.ackCalls,
+  };
+  console.info(`[print-relay 20p] ${label}`, report);
+  return report;
+}
+
+/** Each printer must finish at its own physical speed: count × slip time, with < 5% idle gaps. */
+function expectPrintersSaturated(server, printers, startedAt, slipMs) {
+  for (const printer of printers) {
+    const jobs = jobsOf(server, printer);
+    if (!jobs.length) continue;
+    const finished = Math.max(...jobs.map((job) => job.printedAt)) - startedAt;
+    expect(finished, `${printer}: ${jobs.length} slips`).toBeLessThan(jobs.length * slipMs * 1.05 + 2_000);
+  }
+}
+
+describe('restaurant print relay under load (1 PC, 20 printers, 2 000 slips/s)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ now: new Date('2026-10-02T12:00:00Z') });
+  });
+
+  afterEach(() => {
+    h.cleanups.splice(0).forEach((cleanup) => cleanup());
+    vi.clearAllTimers();
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it('2 000 slips/s for 5 s (10 000 slips): all 20 printers print back-to-back, once each, in order', async () => {
+    h.server = createServer({ rttMs: 60 });
+    const desktop = createDesktop(h.server, { latencyMs: () => SLIP_MS, printers: PRINTERS_20 });
+    await startRelay(desktop);
+    const startedAt = Date.now();
+    const rand = seeded(7);
+
+    await floodServer(h.server, {
+      perSecond: 2_000,
+      seconds: 5,
+      pickPrinter: () => PRINTERS_20[Math.floor(rand() * PRINTERS_20.length)],
+    });
+    const jobs = [...h.server.jobs.values()];
+    await runUntil(allPrinted(jobs), 600_000, 200);
+
+    expect(jobs).toHaveLength(10_000);
+    expect(jobs.every((job) => job.printedAt != null)).toBe(true);
+    const report = loadReport('burst 10k', h.server, desktop, startedAt);
+    // Physical ceiling: 20 printers × 2.5 slips/s = 50/s.
+    expect(report.slipsPerSec).toBeGreaterThanOrEqual(46);
+    expectPrintersSaturated(h.server, PRINTERS_20, startedAt, SLIP_MS);
+    expectHealthy(h.server, desktop);
+    expectFifoPerPrinter(desktop);
+  }, 120_000);
+
+  it('2 000 slips/s with 40% on the hot kitchen and one dead printer: the other 18 keep full speed', async () => {
+    h.server = createServer({ rttMs: 60 });
+    const hot = PRINTERS_20[0];
+    const deadKey = lower(PRINTERS_20[19]);
+    const desktop = createDesktop(h.server, {
+      latencyMs: () => SLIP_MS,
+      printers: PRINTERS_20,
+      dead: new Set([deadKey]),
+    });
+    await startRelay(desktop);
+    const startedAt = Date.now();
+    const rand = seeded(11);
+
+    await floodServer(h.server, {
+      perSecond: 2_000,
+      seconds: 3,
+      pickPrinter: () => (rand() < 0.4 ? hot : PRINTERS_20[Math.floor(rand() * PRINTERS_20.length)]),
+    });
+    const healthy = PRINTERS_20.slice(1, 19);
+    const healthyJobs = healthy.flatMap((p) => jobsOf(h.server, p));
+    await runUntil(allPrinted(healthyJobs), 600_000, 200);
+    expectPrintersSaturated(h.server, healthy, startedAt, SLIP_MS);
+
+    const hotJobs = jobsOf(h.server, hot);
+    await runUntil(allPrinted(hotJobs), 900_000, 200);
+    expectPrintersSaturated(h.server, [hot], startedAt, SLIP_MS);
+    expect(jobsOf(h.server, PRINTERS_20[19]).every((job) => job.printedAt == null)).toBe(true);
+
+    loadReport('hot kitchen + dead printer', h.server, desktop, startedAt);
+    const jobs = [...h.server.jobs.values()];
+    expect(jobs.filter((job) => job.prints > 1)).toEqual([]);
+    expect(h.server.stats.staleReclaims).toBe(0);
+    expect(desktop.stats.maxConcurrentPerPrinter).toBeLessThanOrEqual(1);
+    expectFifoPerPrinter(desktop);
+  }, 120_000);
+
+  it('rush hour: 3 minutes at 80% of capacity on 20 printers over a slow link (150 ms RTT) — near real time', async () => {
+    h.server = createServer({ rttMs: 150 });
+    const desktop = createDesktop(h.server, { latencyMs: () => SLIP_MS, printers: PRINTERS_20 });
+    await startRelay(desktop);
+    const startedAt = Date.now();
+    const rand = seeded(42);
+
+    // 80% of 50 slips/s, arriving in uneven clumps of whole orders.
+    for (let t = 0; t < 180_000; t += 200) {
+      const slips = Math.floor(rand() * 17);
+      for (let i = 0; i < slips; i += 1) h.server.add(PRINTERS_20[Math.floor(rand() * PRINTERS_20.length)]);
+      await vi.advanceTimersByTimeAsync(200);
+    }
+    const jobs = [...h.server.jobs.values()];
+    await runUntil(allPrinted(jobs), 120_000, 200);
+
+    const report = loadReport('rush 80%', h.server, desktop, startedAt);
+    expect(jobs.length).toBeGreaterThan(6_000);
+    // A perfect printer queue at 80% load with clumped arrivals already gives p95 ≈ 3 s (M/D/1).
+    expect(report.waitP50).toBeLessThan(1_500);
+    expect(report.waitP95).toBeLessThan(4_000);
+    expect(report.waitMax).toBeLessThan(10_000);
+    expectHealthy(h.server, desktop);
+    expectFifoPerPrinter(desktop);
+  }, 120_000);
 });

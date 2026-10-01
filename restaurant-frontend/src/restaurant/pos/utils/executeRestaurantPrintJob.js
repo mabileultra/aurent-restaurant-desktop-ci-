@@ -236,16 +236,22 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
     }
 
     if (job.kind === 'CATEGORY_BATCH') {
-      return runCategoryBatch(payload, t, waiterNameById, storeId);
+      return await runCategoryBatch(payload, t, waiterNameById, storeId);
     }
 
     if (job.kind === 'CATEGORY_SLIP') {
-      return runCategorySlip(payload, t, waiterNameById, storeId);
+      return await runCategorySlip(payload, t, waiterNameById, storeId);
     }
 
     return { ack: true, release: false };
-  } catch {
-    // Timeout / spooler error — put back for an immediate retry (same or other PC).
+  } catch (err) {
+    // Timeout / worker died mid-job: the slip may already be printing — never reprint automatically.
+    if (isUncertainPrintError(err)) return { ack: true, release: false, mode: 'uncertain' };
+    // Spooler refused before taking the data — put back for a retry (same or other PC).
     return { ack: false, release: true, mode: 'error' };
   }
+}
+
+export function isUncertainPrintError(err) {
+  return /таймаут|timeout|worker exited/i.test(String(err?.message || err || ''));
 }
