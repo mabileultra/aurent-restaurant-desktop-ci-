@@ -12,11 +12,24 @@ import { createPrintRelayLeader } from '../utils/printRelayLeader';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
 
 const POLL_MS = 300;
+const CAPS_TIMEOUT_MS = 2500;
+
+function withTimeout(promise, ms, fallback) {
+  let timer;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => {
+      if (timer != null) window.clearTimeout(timer);
+    }),
+    new Promise((resolve) => {
+      timer = window.setTimeout(() => resolve(fallback), ms);
+    }),
+  ]);
+}
 
 async function loadClaimCapabilities() {
   const [list, settings] = await Promise.all([
-    listDesktopPrintersCached().catch(() => []),
-    getDesktopPrinterSettings().catch(() => null),
+    withTimeout(listDesktopPrintersCached().catch(() => []), CAPS_TIMEOUT_MS, []),
+    withTimeout(getDesktopPrinterSettings().catch(() => null), CAPS_TIMEOUT_MS, null),
   ]);
   const fromOs = (Array.isArray(list) ? list : [])
     .map((p) => String(p?.name || p).trim())
@@ -34,9 +47,24 @@ async function loadClaimCapabilities() {
   return { printerNames, guestBill, kitchenSend };
 }
 
+function capsReady(caps) {
+  return Boolean(caps?.guestBill || caps?.kitchenSend || caps?.printerNames?.length);
+}
+
+async function fetchJobs(storeId, caps) {
+  try {
+    const res = await rstPrintApi.claimPending(storeId, caps);
+    return res.data ?? [];
+  } catch {
+    // Claim filter failed (old build / SQL) — fall back to legacy poll so printing never dies.
+    const res = await rstPrintApi.pollPending(storeId);
+    return res.data ?? [];
+  }
+}
+
 /**
  * Polls server print jobs and runs them on this desktop (bill / kitchen / category slips).
- * One leader window per machine; server only hands out jobs for this PC's printers.
+ * One capable leader window per machine; claim is filtered, with legacy poll fallback.
  */
 export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const busyRef = useRef(false);
@@ -60,22 +88,24 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
 
     let cancelled = false;
     const leader = createPrintRelayLeader();
-    leader.start();
 
-    const refreshCaps = () => {
-      loadClaimCapabilities()
-        .then((caps) => {
-          if (!cancelled) capsRef.current = caps;
-        })
-        .catch(() => {});
+    const refreshCaps = async () => {
+      try {
+        const caps = await loadClaimCapabilities();
+        if (!cancelled) capsRef.current = caps;
+        return caps;
+      } catch {
+        return capsRef.current;
+      }
     };
-    refreshCaps();
-    const capsTimer = window.setInterval(refreshCaps, 30_000);
-
-    prefetchPrintWaiterRoster(storeId, waiterMapRef.current).catch(() => {});
 
     const tick = async () => {
       if (cancelled) return;
+      if (!capsReady(capsRef.current)) {
+        await refreshCaps();
+      }
+      // Only a window that can actually print should hold the leader lock.
+      if (!capsReady(capsRef.current)) return;
       if (!leader.isLeader()) return;
       if (busyRef.current) {
         pendingFlushRef.current = true;
@@ -87,12 +117,9 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
           pendingFlushRef.current = false;
           if (!leader.isLeader()) break;
           const caps = capsRef.current;
-          if (!caps.guestBill && !caps.kitchenSend && !caps.printerNames.length) {
-            continue;
-          }
-          const res = await rstPrintApi.claimPending(storeId, caps);
+          if (!capsReady(caps)) break;
+          const jobs = await fetchJobs(storeId, caps);
           if (cancelled) break;
-          const jobs = res.data ?? [];
           if (!jobs.length) continue;
 
           const results = await Promise.allSettled(
@@ -157,13 +184,24 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       }
     };
 
-    tick();
+    (async () => {
+      await refreshCaps();
+      if (cancelled) return;
+      if (capsReady(capsRef.current)) leader.start();
+      prefetchPrintWaiterRoster(storeId, waiterMapRef.current).catch(() => {});
+      tick();
+    })();
+
     const id = window.setInterval(tick, POLL_MS);
+    const capsTimer = window.setInterval(() => {
+      refreshCaps().then((caps) => {
+        if (!cancelled && capsReady(caps)) leader.start();
+      });
+    }, 15_000);
     const offFlush = onRestaurantPrintFlush(() => {
       if (cancelled) return;
       pendingFlushRef.current = true;
-      refreshCaps();
-      tick();
+      refreshCaps().then(() => tick());
     });
     return () => {
       cancelled = true;

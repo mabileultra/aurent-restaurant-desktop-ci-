@@ -78,10 +78,10 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                   AND status = 'PENDING'
                   AND created_at > :since
                   AND (
-                    (:guestBill = TRUE AND kind = 'GUEST_BILL')
-                    OR (:kitchenSend = TRUE AND kind = 'KITCHEN_SEND')
+                    (:guestBill = 1 AND kind = 'GUEST_BILL')
+                    OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
                     OR (
-                      :hasPrinters = TRUE
+                      :hasPrinters = 1
                       AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
                       AND lower(coalesce(payload::json->>'printerName', '')) IN (:printers)
                     )
@@ -99,9 +99,9 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("since") Instant since,
         @Param("now") Instant now,
         @Param("batch") int batch,
-        @Param("guestBill") boolean guestBill,
-        @Param("kitchenSend") boolean kitchenSend,
-        @Param("hasPrinters") boolean hasPrinters,
+        @Param("guestBill") int guestBill,
+        @Param("kitchenSend") int kitchenSend,
+        @Param("hasPrinters") int hasPrinters,
         @Param("printers") Collection<String> printers
     );
 

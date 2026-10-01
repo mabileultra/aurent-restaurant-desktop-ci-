@@ -70,9 +70,9 @@ public class PrintJobServiceImpl implements PrintJobService {
             since,
             now,
             CLAIM_BATCH,
-            guestBill,
-            kitchenSend,
-            !printers.isEmpty(),
+            guestBill ? 1 : 0,
+            kitchenSend ? 1 : 0,
+            printers.isEmpty() ? 0 : 1,
             printerBind
         );
         if (claimedIds == null || claimedIds.isEmpty()) {
