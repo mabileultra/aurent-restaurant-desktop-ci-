@@ -4,10 +4,9 @@ import { sortCashierTables } from '../../utils/sortCashierTables';
 import CashierTableTile from './CashierTableTile';
 import '../styles/cashier-table-board.css';
 
-const SORT_KEYS = [
-  { key: 'DEFAULT', labelKey: 'rst.cashier.sortDefault' },
-  { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc' },
-  { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc' },
+const FILTER_KEYS = [
+  { key: 'WAITING_PAYMENT', labelKey: 'rst.cashier.filterBillIssued' },
+  { key: 'OCCUPIED', labelKey: 'rst.cashier.filterOccupied' },
 ];
 
 export default function CashierTableBoard({
@@ -20,11 +19,11 @@ export default function CashierTableBoard({
   t,
 }) {
   const now = useNowTick();
-  const [sortKey, setSortKey] = useState('DEFAULT');
+  const [filterKey, setFilterKey] = useState('WAITING_PAYMENT');
 
   const visible = useMemo(
-    () => sortCashierTables(tables, sortKey, halls),
-    [tables, sortKey, halls],
+    () => sortCashierTables(tables, filterKey),
+    [tables, filterKey],
   );
 
   const selectedId = selectedTableId
@@ -38,21 +37,15 @@ export default function CashierTableBoard({
           <h2>{t('rst.cashier.tables')}</h2>
           <span>{visible.length}</span>
         </div>
-        <div className="rst-cashier-tables__sort" role="group" aria-label={t('rst.cashier.sortLabel', { defaultValue: 'Сортировка' })}>
-          {SORT_KEYS.map((row) => (
+        <div className="rst-cashier-tables__sort" role="group" aria-label={t('rst.cashier.sortLabel')}>
+          {FILTER_KEYS.map((row) => (
             <button
               key={row.key}
               type="button"
-              className={`rst-cashier-tables__sort-btn${sortKey === row.key ? ' is-active' : ''}`}
-              onClick={() => setSortKey(row.key)}
+              className={`rst-cashier-tables__sort-btn${filterKey === row.key ? ' is-active' : ''}`}
+              onClick={() => setFilterKey((prev) => (prev === row.key ? 'ALL' : row.key))}
             >
-              {t(row.labelKey, {
-                defaultValue: row.key === 'AMOUNT_DESC'
-                  ? 'Крупные'
-                  : row.key === 'AMOUNT_ASC'
-                    ? 'Мелкие'
-                    : 'По порядку',
-              })}
+              {t(row.labelKey)}
             </button>
           ))}
         </div>

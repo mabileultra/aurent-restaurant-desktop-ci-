@@ -830,8 +830,10 @@
       "tabShift": "Smena",
       "tables": "Stollar",
       "title": "Aurent POS",
-      "sortLabel": "Stollar tartibi",
-      "sortDefault": "Ketma-ket",
+      "sortLabel": "Stollar filtri",
+      "sortDefault": "Hammasi",
+      "filterBillIssued": "Hisob berilgan",
+      "filterOccupied": "Band",
       "sortSeatsDesc": "Katta summa",
       "sortSeatsAsc": "Kichik summa"
     },

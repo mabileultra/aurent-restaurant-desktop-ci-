@@ -830,8 +830,10 @@
       "tabShift": "Shift",
       "tables": "Tables",
       "title": "Aurent POS",
-      "sortLabel": "Table sort",
-      "sortDefault": "In order",
+      "sortLabel": "Table filter",
+      "sortDefault": "All",
+      "filterBillIssued": "Bill issued",
+      "filterOccupied": "Occupied",
       "sortSeatsDesc": "By amount ↓",
       "sortSeatsAsc": "By amount ↑"
     },

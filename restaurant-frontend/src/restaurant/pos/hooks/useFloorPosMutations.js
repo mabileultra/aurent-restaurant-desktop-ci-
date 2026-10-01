@@ -43,13 +43,18 @@ export function useFloorPosMutations(deps) {
   const invalidateCounter = () => qc.invalidateQueries({ queryKey: ['rst-counter-orders', storeId] });
   const invalidateShift = () => qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
   const invalidateRecentPaid = () => qc.invalidateQueries({ queryKey: ['rst-recent-paid', storeId] });
-  const setOrderData = (res) => qc.setQueryData(['rst-order', activeOrderId], res.data);
-  const orderKey = ['rst-order', activeOrderId];
-  const patchOrder = (updater) => {
-    if (!activeOrderId) return undefined;
-    const prev = qc.getQueryData(orderKey);
+  const setOrderData = (res, orderId = activeOrderId) => {
+    if (orderId == null) return;
+    const data = res?.data !== undefined ? res.data : res;
+    qc.setQueryData(['rst-order', orderId], data);
+  };
+  const orderKeyFor = (orderId) => ['rst-order', orderId ?? activeOrderId];
+  const patchOrder = (updater, orderId = activeOrderId) => {
+    if (orderId == null) return undefined;
+    const key = orderKeyFor(orderId);
+    const prev = qc.getQueryData(key);
     if (!prev) return undefined;
-    qc.setQueryData(orderKey, updater(prev));
+    qc.setQueryData(key, updater(prev));
     return prev;
   };
   const errMsg = (err, key) => toastApiError(err, t(key));
@@ -83,6 +88,7 @@ export function useFloorPosMutations(deps) {
     onSuccess: (created) => {
       setOpenTable(null);
       setActiveOrderId(created.id);
+      if (created?.id != null) qc.setQueryData(['rst-order', created.id], created);
       invalidateFloor();
       invalidateShift();
     },
@@ -104,6 +110,7 @@ export function useFloorPosMutations(deps) {
     onSuccess: (created) => {
       setOpenTable(null);
       setActiveOrderId(created.id);
+      if (created?.id != null) qc.setQueryData(['rst-order', created.id], created);
       invalidateFloor();
       invalidateShift();
       toast.success(t('rst.order.newCheckOpened', { defaultValue: 'Новый счёт открыт' }));
@@ -153,29 +160,38 @@ export function useFloorPosMutations(deps) {
   });
 
   const addItemMutation = useMutation({
-    mutationFn: ({ menuItem, modifierOptionIds, note, quantity }) => {
+    mutationFn: ({ menuItem, modifierOptionIds, note, quantity, orderId: orderIdOverride }) => {
+      const oid = orderIdOverride ?? activeOrderId;
+      if (oid == null) {
+        return Promise.reject(new Error('order required'));
+      }
       const mods = (modifierOptionIds ?? []).map(String).sort().join(',');
       const noteKey = note?.trim() || '';
       const qty = Number(quantity) > 0 ? Number(quantity) : 1;
       // Weight adds share one queue key (ignore grams note) so 200г+300г merge server-side.
       const key = isWeightSoldMenuItem(menuItem) && !mods
-        ? `${activeOrderId}:${menuItem.id}:weight`
-        : `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
-      return enqueueAddItem(key, () => rstOrderApi.addItem(activeOrderId, {
+        ? `${oid}:${menuItem.id}:weight`
+        : `${oid}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
+      return enqueueAddItem(key, () => rstOrderApi.addItem(oid, {
         menuItemId: menuItem.id,
         quantity: qty,
         modifierOptionIds: modifierOptionIds ?? [],
         note: noteKey || undefined,
       }));
     },
-    onMutate: async ({ menuItem, modifierOptionIds, note, quantity }) => {
-      await qc.cancelQueries({ queryKey: orderKey });
-      const prev = qc.getQueryData(orderKey);
-      patchOrder((order) => optimisticAddItem(order, menuItem, { modifierOptionIds, note, quantity }));
-      return { wasBilling: prev?.status === 'BILLING' };
+    onMutate: async ({ menuItem, modifierOptionIds, note, quantity, orderId: orderIdOverride }) => {
+      const oid = orderIdOverride ?? activeOrderId;
+      const key = orderKeyFor(oid);
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData(key);
+      patchOrder(
+        (order) => optimisticAddItem(order, menuItem, { modifierOptionIds, note, quantity }),
+        oid,
+      );
+      return { wasBilling: prev?.status === 'BILLING', orderId: oid };
     },
     onSuccess: (res, _vars, ctx) => {
-      setOrderData(res);
+      setOrderData(res, ctx?.orderId);
       setPendingMenuItem(null);
       setPendingVariants?.(null);
       setSelectedModifierIds([]);
@@ -186,8 +202,8 @@ export function useFloorPosMutations(deps) {
       }
       flushRestaurantPrintRelay();
     },
-    onError: (err) => {
-      qc.invalidateQueries({ queryKey: orderKey });
+    onError: (err, vars) => {
+      qc.invalidateQueries({ queryKey: orderKeyFor(vars?.orderId) });
       errMsg(err, 'rst.order.saveFailed');
     },
   });
@@ -195,7 +211,7 @@ export function useFloorPosMutations(deps) {
   const updateItemMutation = useMutation({
     mutationFn: ({ itemId, quantity, note }) => {
       if (String(itemId).startsWith('tmp-')) {
-        return Promise.resolve({ data: qc.getQueryData(orderKey) });
+        return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
       }
       const body = {};
       if (quantity != null) body.quantity = quantity;
@@ -204,14 +220,14 @@ export function useFloorPosMutations(deps) {
     },
     onMutate: async ({ itemId, quantity }) => {
       if (quantity == null) return undefined;
-      await qc.cancelQueries({ queryKey: orderKey });
+      await qc.cancelQueries({ queryKey: orderKeyFor(activeOrderId) });
       patchOrder((order) => optimisticUpdateQty(order, itemId, quantity));
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
     },
     onError: (err) => {
-      qc.invalidateQueries({ queryKey: orderKey });
+      qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
       errMsg(err, 'rst.order.saveFailed');
     },
   });
@@ -219,19 +235,19 @@ export function useFloorPosMutations(deps) {
   const removeItemMutation = useMutation({
     mutationFn: (itemId) => {
       if (String(itemId).startsWith('tmp-')) {
-        return Promise.resolve({ data: qc.getQueryData(orderKey) });
+        return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
       }
       return rstOrderApi.removeItem(activeOrderId, itemId);
     },
     onMutate: async (itemId) => {
-      await qc.cancelQueries({ queryKey: orderKey });
+      await qc.cancelQueries({ queryKey: orderKeyFor(activeOrderId) });
       patchOrder((order) => optimisticRemoveItem(order, itemId));
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
     },
     onError: (err) => {
-      qc.invalidateQueries({ queryKey: orderKey });
+      qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
       errMsg(err, 'rst.order.saveFailed');
     },
   });

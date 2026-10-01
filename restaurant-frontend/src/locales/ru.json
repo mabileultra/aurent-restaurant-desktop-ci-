@@ -830,8 +830,10 @@
       "tabShift": "Смена",
       "tables": "Столы",
       "title": "Aurent POS",
-      "sortLabel": "Сортировка столов",
-      "sortDefault": "По порядку",
+      "sortLabel": "Фильтр столов",
+      "sortDefault": "Все",
+      "filterBillIssued": "Выданный счёт",
+      "filterOccupied": "Занятый",
       "sortSeatsDesc": "Крупные",
       "sortSeatsAsc": "Мелкие"
     },
