@@ -197,6 +197,25 @@
   min-width: 0;
 }
 
+.rst-waiter-tile__code-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.rst-waiter-tile__hall {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+  line-height: 1.15;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .rst-waiter-tile__code {
   font-size: 1.15rem;
   font-weight: 800;

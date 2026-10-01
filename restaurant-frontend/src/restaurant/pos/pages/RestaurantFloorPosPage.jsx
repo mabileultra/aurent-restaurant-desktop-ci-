@@ -112,11 +112,13 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     canCreate: p.access.canCreateBooking,
     canManage: p.access.canManageBooking,
   };
+  // Mobile: all tables on the board (no pick modal). Desktop waiter: my tables + schema modal.
+  const desktopMine = mineMode && !mobile;
 
   if (p.floorSection === 'bookings') {
     return mobile ? (
       <>
-        <FloorSectionSwitch p={p} mineMode={mineMode} />
+        <FloorSectionSwitch p={p} mineMode={false} />
         <WaiterMobileBookingBoard access={bookingAccess} />
       </>
     ) : (
@@ -124,10 +126,10 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     );
   }
 
-  const listTables = mineMode
+  const listTables = desktopMine
     ? filterTablesByWaiter(p.hallTables, user?.id)
     : p.hallTables;
-  const railHalls = mineMode
+  const railHalls = desktopMine
     ? filterHallsByWaiterTables(p.halls, user?.id).filter((hall) => (hall.tables || []).length > 0)
     : p.halls;
 
@@ -149,21 +151,20 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
       {mobile ? (
         <WaiterMobileFloorBoard
           {...boardProps}
-          mineMode={mineMode}
+          mineMode={false}
           search={p.floorSearch}
           onSearchChange={p.setFloorSearch}
-          sectionSwitch={<FloorSectionSwitch p={p} mineMode={mineMode} />}
+          sectionSwitch={<FloorSectionSwitch p={p} mineMode={false} />}
           statusFilter={p.statusFilter}
           onStatusFilter={p.setStatusFilter}
-          onAddTable={mineMode ? () => setPickOpen(true) : undefined}
         />
       ) : (
         <FloorTableGrid
           {...boardProps}
-          onAddTable={mineMode ? () => setPickOpen(true) : undefined}
+          onAddTable={desktopMine ? () => setPickOpen(true) : undefined}
         />
       )}
-      {mineMode ? (
+      {desktopMine ? (
         <WaiterHallPickModal
           open={pickOpen}
           halls={p.halls}

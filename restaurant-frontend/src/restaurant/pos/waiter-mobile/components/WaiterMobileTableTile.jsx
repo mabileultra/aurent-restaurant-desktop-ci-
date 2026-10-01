@@ -26,6 +26,10 @@ export default function WaiterMobileTableTile({
     ? (waiterNameById?.get(String(order.waiterUserId)) || null)
     : null;
   const guests = order?.guestCount ?? table.reservation?.guestCount ?? null;
+  const hallName = table.hallName
+    || (halls || []).find((hall) => hall.id === table.hallId)?.name
+    || (halls || []).find((hall) => (hall.tables || []).some((row) => row.id === table.id))?.name
+    || null;
 
   const warm = () => {
     if (!onPrefetchOrder) return;
@@ -43,7 +47,10 @@ export default function WaiterMobileTableTile({
       onFocus={warm}
     >
       <span className="rst-waiter-tile__top">
-        <span className="rst-waiter-tile__code">{table.code}</span>
+        <span className="rst-waiter-tile__code-wrap">
+          <span className="rst-waiter-tile__code">{table.code}</span>
+          {hallName ? <span className="rst-waiter-tile__hall">{hallName}</span> : null}
+        </span>
         <span className="rst-waiter-tile__status">{t(`rst.status.${status}`)}</span>
       </span>
 
