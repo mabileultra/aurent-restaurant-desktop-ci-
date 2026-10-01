@@ -8,7 +8,6 @@ import PosHardwareBar from '../../components/PosHardwareBar';
 import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
 import CashierTopBar from '../components/CashierTopBar';
-import CashierBottomNav from '../components/CashierBottomNav';
 import CashierSectionBody from '../components/CashierSectionBody';
 import '../../../shared/styles/restaurant-tokens.css';
 import '../../../shared/styles/rst-blocks.css';
@@ -65,11 +64,10 @@ export default function RestaurantCashierPosPage() {
     <div className="rst-app rst-cashier" style={zoom.rootStyle}>
       <CashierTopBar
         storeName={p.workspace.storeName}
-        shift={p.shift}
-        shiftOpenLabel={p.shiftOpenLabel}
-        zoom={zoom}
         userLabel={user?.fullName || user?.username}
         canAdmin={p.canAdmin}
+        activeTab={p.tab}
+        onSelectTab={handleTab}
         backToCashier={showFull ? {
           label: p.t('rst.cashier.backToCashier'),
           onClick: exitFullOrder,
@@ -142,7 +140,6 @@ export default function RestaurantCashierPosPage() {
         )}
       </div>
 
-      {showFull ? null : <CashierBottomNav tab={p.tab} onSelect={handleTab} t={p.t} />}
       {showFull ? null : <PosHardwareBar t={p.t} />}
       <FloorPosModals p={p} />
     </div>

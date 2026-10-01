@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useNowTick } from '../../components/FloorTableCard';
 import FloorStatusFilters from '../../components/FloorStatusFilters';
 import { ALL_HALLS_ID, filterTablesByStatus } from '../../utils/floorStatusFilters';
@@ -8,8 +8,7 @@ import WaiterMobileTableTile from './WaiterMobileTableTile';
 import '../styles/waiter-mobile-floor.css';
 
 /**
- * Phone floor board for waiter — hall chips, status chips, tall table list.
- * Same callbacks as FloorTableGrid; presentation only.
+ * Phone floor board for waiter — my tables + take table (same idea as desktop).
  */
 export default function WaiterMobileFloorBoard({
   hallTables,
@@ -25,17 +24,24 @@ export default function WaiterMobileFloorBoard({
   search,
   onSearchChange,
   waiterNameById,
+  mineMode = false,
+  onAddTable,
   t,
 }) {
   const now = useNowTick();
   const tables = hallTables ?? [];
+  const mineTotal = useMemo(() => {
+    if (!mineMode) return tables.length;
+    const fromHalls = (halls ?? []).reduce((n, hall) => n + (hall.tables?.length || 0), 0);
+    return fromHalls || tables.length;
+  }, [mineMode, halls, tables.length]);
   const visible = useMemo(
     () => filterTablesByStatus(tables, statusFilter)
       .filter((table) => matchTableQuery(table, search, waiterNameById)),
     [tables, statusFilter, search, waiterNameById],
   );
 
-  if (!halls?.length) {
+  if (!halls?.length && !mineMode) {
     return (
       <div className="rst-waiter-floor rst-waiter-floor--empty">
         <p>{t('rst.floor.selectHall')}</p>
@@ -44,32 +50,49 @@ export default function WaiterMobileFloorBoard({
   }
 
   return (
-    <div className="rst-waiter-floor">
+    <div className={`rst-waiter-floor${mineMode ? ' rst-waiter-floor--mine' : ''}`}>
       <div className="rst-waiter-floor__toolbar">
         {sectionSwitch}
-        <div className="rst-waiter-floor__halls" role="tablist" aria-label={t('rst.floor.allHalls')}>
+
+        {onAddTable ? (
           <button
             type="button"
-            role="tab"
-            aria-selected={selectedHallId === ALL_HALLS_ID}
-            className={`rst-waiter-floor__hall${selectedHallId === ALL_HALLS_ID ? ' is-active' : ''}`}
-            onClick={() => onSelectHall(ALL_HALLS_ID)}
+            className="rst-waiter-floor__take"
+            onClick={onAddTable}
           >
-            {t('rst.floor.allHalls')}
+            <Plus size={20} strokeWidth={2.4} aria-hidden />
+            {t('rst.floor.addMyTable')}
           </button>
-          {halls.map((item) => (
+        ) : null}
+
+        {(halls?.length > 0) ? (
+          <div className="rst-waiter-floor__halls" role="tablist" aria-label={t('rst.floor.allHalls')}>
             <button
-              key={item.id}
               type="button"
               role="tab"
-              aria-selected={selectedHallId === item.id}
-              className={`rst-waiter-floor__hall${selectedHallId === item.id ? ' is-active' : ''}`}
-              onClick={() => onSelectHall(item.id)}
+              aria-selected={selectedHallId === ALL_HALLS_ID}
+              className={`rst-waiter-floor__hall${selectedHallId === ALL_HALLS_ID ? ' is-active' : ''}`}
+              onClick={() => onSelectHall(ALL_HALLS_ID)}
             >
-              {item.name}
+              {t('rst.floor.allHalls')}
+              {mineMode ? (
+                <em>{t('rst.floor.myTablesCount', { count: mineTotal })}</em>
+              ) : null}
             </button>
-          ))}
-        </div>
+            {halls.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={selectedHallId === item.id}
+                className={`rst-waiter-floor__hall${selectedHallId === item.id ? ' is-active' : ''}`}
+                onClick={() => onSelectHall(item.id)}
+              >
+                {item.name}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         <label className="rst-waiter-floor__search">
           <span className="visually-hidden">{t('rst.floor.search')}</span>
@@ -90,7 +113,21 @@ export default function WaiterMobileFloorBoard({
 
       {visible.length === 0 ? (
         <div className="rst-waiter-floor__empty">
-          <p>{tables.length === 0 ? t('rst.floor.noTables') : t('rst.floor.searchEmpty')}</p>
+          <p>
+            {tables.length === 0
+              ? (onAddTable ? t('rst.floor.myTablesEmpty') : t('rst.floor.noTables'))
+              : t('rst.floor.searchEmpty')}
+          </p>
+          {onAddTable && tables.length === 0 ? (
+            <button
+              type="button"
+              className="rst-waiter-floor__take rst-waiter-floor__take--inline"
+              onClick={onAddTable}
+            >
+              <Plus size={20} strokeWidth={2.4} aria-hidden />
+              {t('rst.floor.addMyTable')}
+            </button>
+          ) : null}
         </div>
       ) : (
         <div className="rst-waiter-floor__list" role="list">

@@ -27,13 +27,14 @@ function reopenIfBilling(order) {
   };
 }
 
-export function optimisticAddItem(order, menuItem, { note, modifierOptionIds } = {}) {
+export function optimisticAddItem(order, menuItem, { note, modifierOptionIds, quantity: addQty } = {}) {
   if (!order || !menuItem) return order;
   const base = reopenIfBilling(order);
   const items = [...(base.items || [])];
   const cleanNote = note?.trim() || '';
+  const addQuantity = Number(addQty) > 0 ? Number(addQty) : 1;
   const noMods = !(modifierOptionIds?.length);
-  if (noMods && !cleanNote) {
+  if (noMods && !cleanNote && addQuantity === 1) {
     const idxNew = items.findIndex((row) => (
       row.menuItemId === menuItem.id
       && row.itemStatus === 'NEW'
@@ -75,11 +76,11 @@ export function optimisticAddItem(order, menuItem, { note, modifierOptionIds } =
     id: `tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     menuItemId: menuItem.id,
     name: menuItem.name,
-    portionText: menuItem.portionText || null,
-    quantity: 1,
+    portionText: cleanNote || menuItem.portionText || null,
+    quantity: addQuantity,
     returnedQuantity: 0,
     unitPrice,
-    lineTotal: unitPrice,
+    lineTotal: lineTotal(addQuantity, unitPrice),
     itemStatus: 'NEW',
     modifiers: [],
     note: cleanNote || null,

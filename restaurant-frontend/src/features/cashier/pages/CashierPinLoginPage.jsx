@@ -1,22 +1,49 @@
-import { useTenantDisplayStore } from '../../../store/tenantDisplayStore';
-import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
-import CashierPinLoginHeader from '../components/pin-login/CashierPinLoginHeader';
+import { useEffect, useSyncExternalStore } from 'react';
+import { ArrowLeft } from 'lucide-react';
 import CashierPinLoginCompanyPopover from '../components/pin-login/CashierPinLoginCompanyPopover';
+import CashierPinLoginChrome from '../components/pin-login/CashierPinLoginChrome';
+import CashierPinLoginRoster from '../components/pin-login/CashierPinLoginRoster';
 import CashierPinLoginKeypad from '../components/pin-login/CashierPinLoginKeypad';
+import CashierPinLoginAdminForm from '../components/pin-login/CashierPinLoginAdminForm';
+import CashierPinLoginVisual from '../components/pin-login/CashierPinLoginVisual';
 import { useCashierPinLoginPage } from '../hooks/useCashierPinLoginPage';
+import { pinRoleLabel, staffInitial } from '../utils/pinRosterRoles';
+import {
+  readRestaurantTheme,
+  subscribeRestaurantTheme,
+  syncRestaurantTheme,
+} from '../../../store/themeStore';
 import '../../../styles/cashier/pin-login.css';
+import '../../../styles/cashier/pin-login-roster.css';
 
 export default function CashierPinLoginPage() {
-  const displayAppName = useTenantDisplayStore((s) => s.displayAppName);
+  const theme = useSyncExternalStore(subscribeRestaurantTheme, readRestaurantTheme, () => 'dark');
   const {
     t,
     touchLayout,
+    step,
+    roster,
+    rosterLoading,
+    rosterError,
+    selectedStaff,
+    selectStaff,
+    openAdminLogin,
+    backToRoster,
+    reloadRoster,
     dots,
     dotCount,
     pinError,
     pinFull,
     loading,
     canSubmit,
+    adminUsername,
+    setAdminUsername,
+    adminPassword,
+    setAdminPassword,
+    adminError,
+    showAdminPass,
+    toggleAdminPass,
+    submitAdmin,
     companyCode,
     setCompanyCode,
     companyPopoverOpen,
@@ -26,12 +53,35 @@ export default function CashierPinLoginPage() {
     backspace,
     clear,
     submit,
+    clockLabel,
+    dateLabel,
+    toggleFullscreen,
+    quitApp,
+    showQuit,
   } = useCashierPinLoginPage();
 
-  const subtitle = t('cashierLogin.subtitle', { defaultValue: 'Введите PIN-код' });
+  useEffect(() => {
+    syncRestaurantTheme(theme);
+  }, [theme]);
+
+  const pinSubtitle = selectedStaff
+    ? t('cashierLogin.pinFor', {
+      name: selectedStaff.displayName,
+      defaultValue: 'PIN — {{name}}',
+    })
+    : t('cashierLogin.subtitle', { defaultValue: 'Введите PIN-код' });
 
   return (
-    <div className={`cashier-pin-login${touchLayout ? ' cashier-pin-login--touch' : ''}`}>
+    <div
+      className={[
+        'cashier-pin-login',
+        'cashier-pin-login--roster',
+        theme === 'light' ? 'cashier-pin-login--roster-light' : '',
+        touchLayout ? 'cashier-pin-login--touch' : '',
+      ].filter(Boolean).join(' ')}
+    >
+      <CashierPinLoginVisual />
+
       {showCompanyCodeField ? (
         <div className="cashier-pin-login__top-actions">
           <CashierPinLoginCompanyPopover
@@ -46,34 +96,89 @@ export default function CashierPinLoginPage() {
         </div>
       ) : null}
 
-      <div className="cashier-pin-login__layout">
-        <CashierPinLoginVisual />
+      <div className="cashier-pin-roster">
+        <CashierPinLoginChrome
+          t={t}
+          clockLabel={clockLabel}
+          dateLabel={dateLabel}
+          onFullscreen={toggleFullscreen}
+          onQuit={quitApp}
+          showQuit={showQuit}
+        />
 
-        <section className="cashier-pin-login__panel" aria-label={subtitle}>
-          <div className="cashier-pin-login__shell">
-            <CashierPinLoginHeader appName={displayAppName()} subtitle={subtitle} />
+        {step === 'roster' ? (
+          <CashierPinLoginRoster
+            t={t}
+            roster={roster}
+            loading={rosterLoading}
+            error={rosterError}
+            onSelect={selectStaff}
+            onRetry={reloadRoster}
+            onAdmin={openAdminLogin}
+          />
+        ) : null}
 
-            <CashierPinLoginKeypad
-              t={t}
-              dots={dots}
-              dotCount={dotCount}
-              pinError={pinError}
-              pinFull={pinFull}
-              loading={loading}
-              canSubmit={canSubmit}
-              onDigit={pressDigit}
-              onBackspace={backspace}
-              onClear={clear}
-              onSubmit={submit}
-            />
+        {step === 'admin' ? (
+          <CashierPinLoginAdminForm
+            t={t}
+            username={adminUsername}
+            password={adminPassword}
+            error={adminError}
+            loading={loading}
+            showPass={showAdminPass}
+            onUsername={setAdminUsername}
+            onPassword={setAdminPassword}
+            onTogglePass={toggleAdminPass}
+            onSubmit={submitAdmin}
+            onBack={backToRoster}
+          />
+        ) : null}
 
-            <footer className="cashier-pin-login__footer">
-              <p className="cashier-pin-login__copyright">
-                {t('login.footer', { year: new Date().getFullYear() })}
-              </p>
-            </footer>
+        {step === 'pin' ? (
+          <div className="cashier-pin-roster__pin-step">
+            <div className="cashier-pin-roster__pin-card">
+              <button
+                type="button"
+                className="cashier-pin-roster__back"
+                onClick={backToRoster}
+                disabled={loading}
+              >
+                <ArrowLeft size={20} strokeWidth={2.2} />
+                {t('common.back', { defaultValue: 'Назад' })}
+              </button>
+
+              {selectedStaff ? (
+                <div className="cashier-pin-roster__pin-user">
+                  <span className="cashier-pin-roster__avatar" aria-hidden="true">
+                    {staffInitial(selectedStaff.displayName)}
+                  </span>
+                  <div>
+                    <p className="cashier-pin-roster__pin-name">{selectedStaff.displayName}</p>
+                    <p className="cashier-pin-roster__pin-role">
+                      {pinRoleLabel(selectedStaff.role, t)}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
+
+              <p className="cashier-pin-roster__pin-hint">{pinSubtitle}</p>
+
+              <CashierPinLoginKeypad
+                t={t}
+                dots={dots}
+                dotCount={dotCount}
+                pinError={pinError}
+                pinFull={pinFull}
+                loading={loading}
+                canSubmit={canSubmit}
+                onDigit={pressDigit}
+                onBackspace={backspace}
+                onClear={clear}
+                onSubmit={submit}
+              />
+            </div>
           </div>
-        </section>
+        ) : null}
       </div>
     </div>
   );

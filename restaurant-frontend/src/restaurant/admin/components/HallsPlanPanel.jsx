@@ -2,7 +2,7 @@ import FloorCanvas from '../../pos/components/FloorCanvas';
 import FloorStatusLegend from '../../pos/components/FloorStatusLegend';
 import '../styles/halls-admin.css';
 
-export default function HallsPlanPanel({ hall, onTableClick, t }) {
+export default function HallsPlanPanel({ hall, onTableClick, onTableMove, t }) {
   return (
     <div className="rst-halls__pane rst-halls__pane--plan">
       <div className="rst-halls__pane-head">
@@ -14,6 +14,7 @@ export default function HallsPlanPanel({ hall, onTableClick, t }) {
           variant="admin"
           hall={hall}
           onTableClick={onTableClick}
+          onTableMove={onTableMove}
           t={t}
         />
         <div className="rst-halls__legend-wrap">

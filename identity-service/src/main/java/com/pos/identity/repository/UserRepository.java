@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -67,6 +68,20 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     List<User> findActiveByCompanyIdAndStoreId(
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId
+    );
+
+    @Query("""
+        SELECT DISTINCT u FROM User u
+        JOIN FETCH u.role
+        WHERE u.companyId = :companyId
+          AND u.isActive = true
+          AND u.pinDigest IS NOT NULL
+          AND u.role.name IN :roles
+        ORDER BY u.fullName
+        """)
+    List<User> findActivePinRoster(
+        @Param("companyId") Integer companyId,
+        @Param("roles") Collection<String> roles
     );
 
     long count();

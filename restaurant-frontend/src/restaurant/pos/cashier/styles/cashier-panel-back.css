@@ -1,0 +1,21 @@
+.rst-cashier-panel-back {
+  align-self: flex-start;
+  min-height: 2.75rem;
+  margin: 0 0 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.7rem;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  flex-shrink: 0;
+}
+
+.rst-cashier-panel-back:hover {
+  border-color: rgb(255 122 26 / 0.45);
+  background: color-mix(in srgb, var(--rst-accent, #f97316) 12%, var(--rst-surface-2));
+}

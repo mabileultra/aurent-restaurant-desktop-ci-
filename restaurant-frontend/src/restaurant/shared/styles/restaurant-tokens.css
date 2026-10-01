@@ -6,6 +6,7 @@
   --rst-ink: #f4f6fb;
   --rst-muted: #8b93a7;
   --rst-line: #2a3344;
+  --rst-border: #2a3344;
   --rst-accent: #ff7a1a;
   --rst-accent-hover: #ff8d38;
   --rst-accent-soft: rgb(255 122 26 / 0.18);
@@ -399,6 +400,7 @@ html.rst-theme.rst-theme--light .rst-app {
   --rst-ink: #12151c;
   --rst-muted: #5c6578;
   --rst-line: #e3e7ee;
+  --rst-border: #e3e7ee;
   --rst-shadow: 0 12px 32px rgb(15 23 42 / 0.08);
   --color-ink: #12151c;
   --color-text: #12151c;

@@ -37,6 +37,9 @@ public class MenuItemCreateHandler {
         MenuCategoryLookup.Resolved category = categoryLookup.resolveOptional(
             request.menuCategoryId(), companyId, storeId
         );
+        BigDecimal portionAmount = resolvePortionAmount(request);
+        MenuPortionUnit portionUnit = resolvePortionUnit(request);
+        MenuPortionFormat.requireWeightWithinLimit(portionAmount, portionUnit);
         MenuItem saved = itemRepository.save(MenuItem.builder()
             .companyId(companyId)
             .storeId(storeId)
@@ -53,9 +56,9 @@ public class MenuItemCreateHandler {
             .imageUrl(blankToNull(request.imageUrl()))
             .description(blankToNull(request.description()))
             .prepMinutes(normalizePrep(request.prepMinutes()))
-            .portionAmount(resolvePortionAmount(request))
-            .portionUnit(resolvePortionUnit(request))
-            .portionGrams(MenuPortionFormat.gramsFromAmount(resolvePortionAmount(request), resolvePortionUnit(request)))
+            .portionAmount(portionAmount)
+            .portionUnit(portionUnit)
+            .portionGrams(MenuPortionFormat.gramsFromAmount(portionAmount, portionUnit))
             .portionLabel(blankToNull(request.portionLabel()))
             .tags(normalizeTags(request.tags()))
             .active(true)

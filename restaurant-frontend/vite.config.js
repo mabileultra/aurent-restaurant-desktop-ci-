@@ -53,7 +53,8 @@ export default defineConfig({
         changeOrigin: true,
       },
       '/api': {
-        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8080',
+        // Local default 18080: host :8080 is often nginx; gateway compose maps 18080 when needed.
+        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:18080',
         changeOrigin: true,
       },
     },

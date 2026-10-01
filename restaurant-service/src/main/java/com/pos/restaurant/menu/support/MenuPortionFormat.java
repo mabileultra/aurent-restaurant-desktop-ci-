@@ -39,6 +39,7 @@ public final class MenuPortionFormat {
             MenuPortionUnit unit = portionUnit == null ? MenuPortionUnit.PORTION : portionUnit;
             return switch (unit) {
                 case G -> stripTrailingZeros(portionAmount) + " г";
+                case KG -> stripTrailingZeros(portionAmount) + " кг";
                 case PCS -> formatPieces(portionAmount);
                 case PORTION -> formatServing(portionAmount);
             };
@@ -74,13 +75,32 @@ public final class MenuPortionFormat {
     }
 
     public static Integer gramsFromAmount(BigDecimal amount, MenuPortionUnit unit) {
-        if (unit != MenuPortionUnit.G || amount == null || amount.signum() <= 0) {
+        if (amount == null || amount.signum() <= 0 || unit == null) {
             return null;
         }
-        BigDecimal rounded = amount.setScale(0, RoundingMode.HALF_UP);
+        BigDecimal grams = switch (unit) {
+            case G -> amount;
+            case KG -> amount.multiply(BigDecimal.valueOf(1000));
+            default -> null;
+        };
+        if (grams == null) {
+            return null;
+        }
+        BigDecimal rounded = grams.setScale(0, RoundingMode.HALF_UP);
         if (rounded.signum() <= 0) {
             return null;
         }
         return rounded.intValueExact();
+    }
+
+    /** Base weight for price: at most 10 kg. */
+    public static void requireWeightWithinLimit(BigDecimal amount, MenuPortionUnit unit) {
+        Integer grams = gramsFromAmount(amount, unit);
+        if (grams == null) {
+            return;
+        }
+        if (grams > 10_000) {
+            throw new IllegalArgumentException("Portion weight must be at most 10 kg");
+        }
     }
 }

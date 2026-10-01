@@ -1,6 +1,7 @@
 /**
- * Cashier POS bottom navigation.
+ * Cashier POS navigation (header hamburger lookup).
  * Default `hall` = 3-column floor (halls | tables | current order).
+ * Paid / returns stay as top-bar quick buttons.
  */
 
 export const CASHIER_TABS = [
@@ -9,8 +10,12 @@ export const CASHIER_TABS = [
   { key: 'orders', labelKey: 'rst.cashier.tabOrders' },
   { key: 'bookings', labelKey: 'rst.cashier.tabBookings' },
   { key: 'payment', labelKey: 'rst.cashier.tabPayment' },
-  { key: 'returns', labelKey: 'rst.cashier.tabReturns' },
   { key: 'shift', labelKey: 'rst.cashier.tabShift' },
+];
+
+export const CASHIER_HEADER_TABS = [
+  { key: 'paid', labelKey: 'rst.cashier.tabPaidReceipts' },
+  { key: 'returns', labelKey: 'rst.cashier.tabReturns' },
 ];
 
 export function usesCashierPos(role) {

@@ -73,6 +73,21 @@
   font-size: 0.78rem;
 }
 
+.rst-floor-section-tabs--header {
+  margin: 0;
+  padding: 0.3rem;
+  border-radius: 0.85rem;
+  flex: 0 0 auto;
+}
+
+.rst-floor-section-tabs--header .rst-floor-section-tabs__btn {
+  min-height: 3.1rem;
+  padding: 0.55rem 1.25rem;
+  border-radius: 0.7rem;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
 .rst-floor-section-tabs__btn.is-active:hover {
   color: #1b1208;
   background: linear-gradient(180deg, #ff9a4d, var(--rst-accent-hover));

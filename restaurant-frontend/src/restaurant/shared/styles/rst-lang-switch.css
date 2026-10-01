@@ -1,137 +1,292 @@
-/* Dark / Light — same pill as the language switch */
+/* Theme lookup — same pattern as language switch */
 .rst-theme-switch {
+  position: relative;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 0.1rem;
-  padding: 0.12rem;
+}
+
+.rst-theme-switch__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
   min-height: 2.15rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.65rem;
   border: 1px solid var(--rst-line, #2a3344);
   border-radius: 999px;
   background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 8%, transparent);
-}
-
-.rst-theme-switch__btn {
-  min-height: 1.9rem;
-  padding: 0.25rem 0.65rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
   font: inherit;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.03em;
-  color: var(--rst-muted, #8b93a7);
+  color: var(--rst-ink, #f4f6fb);
   cursor: pointer;
   touch-action: manipulation;
   line-height: 1;
   white-space: nowrap;
 }
 
-.rst-theme-switch__btn:hover:not(.is-active) {
-  color: var(--rst-ink, #f4f6fb);
+.rst-theme-switch__trigger:hover {
+  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 12%, transparent);
 }
 
-.rst-theme-switch__btn.is-active {
+.rst-theme-switch.is-open .rst-theme-switch__trigger {
+  border-color: color-mix(in srgb, var(--rst-accent, #ff7a1a) 55%, var(--rst-line, #2a3344));
+}
+
+.rst-theme-switch__chevron {
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: transform 0.15s ease;
+}
+
+.rst-theme-switch.is-open .rst-theme-switch__chevron {
+  transform: rotate(180deg);
+}
+
+.rst-theme-switch__menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 80;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  min-width: 8.5rem;
+  border: 1px solid var(--rst-line, #2a3344);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, #151a22 92%, #000);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+.rst-theme-switch__menu li {
+  margin: 0;
+}
+
+.rst-theme-switch__option {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: var(--rst-muted, #8b93a7);
+  cursor: pointer;
+  text-align: left;
+}
+
+.rst-theme-switch__option:hover {
+  color: var(--rst-ink, #f4f6fb);
+  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 10%, transparent);
+}
+
+.rst-theme-switch__option.is-active {
   background: var(--rst-accent, #ff7a1a);
   color: #1b1208;
 }
 
-.rst-theme-switch__btn:focus {
+.rst-theme-switch__trigger:focus,
+.rst-theme-switch__option:focus {
   outline: none;
 }
 
-.rst-theme-switch__btn:focus-visible {
+.rst-theme-switch__trigger:focus-visible,
+.rst-theme-switch__option:focus-visible {
   outline: 2px solid var(--rst-accent, #ff7a1a);
   outline-offset: 1px;
 }
 
-/* RU / UZ / EN — restaurant POS + admin headers (dark chrome, orange active) */
+html.rst-theme--light .rst-theme-switch__menu {
+  background: var(--rst-surface, #ffffff);
+  border-color: var(--rst-line, #cfd4dc);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.14);
+}
 
-.rst-lang-switch {
+html.rst-theme--light .rst-theme-switch__option {
+  color: var(--rst-muted, #5c6578);
+}
+
+html.rst-theme--light .rst-theme-switch__option:hover {
+  color: var(--rst-ink, #12151c);
+  background: var(--rst-surface-2, #f3f5f8);
+}
+
+/* Language lookup (RU ▾ → menu) — restaurant POS, admin, login, cashier */
+
+.rst-lang-switch,
+.cashier-lang-switch,
+.public-lang-switch {
+  position: relative;
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  gap: 0.1rem;
-  padding: 0.12rem;
+}
+
+.rst-lang-switch__trigger,
+.cashier-lang-switch__trigger,
+.public-lang-switch__trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 3.4rem;
   min-height: 2.15rem;
+  padding: 0.25rem 0.55rem 0.25rem 0.7rem;
   border: 1px solid var(--rst-line, #2a3344);
   border-radius: 999px;
   background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 8%, transparent);
-}
-
-.rst-lang-switch__btn {
-  min-width: 2rem;
-  min-height: 1.9rem;
-  padding: 0.25rem 0.55rem;
-  border: none;
-  border-radius: 999px;
-  background: transparent;
   font: inherit;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: var(--rst-muted, #8b93a7);
+  color: var(--rst-ink, #f4f6fb);
   cursor: pointer;
   touch-action: manipulation;
   line-height: 1;
 }
 
-.rst-lang-switch__btn:hover:not(.is-active) {
-  color: var(--rst-ink, #f4f6fb);
-  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 8%, transparent);
+.rst-lang-switch__trigger:hover,
+.cashier-lang-switch__trigger:hover,
+.public-lang-switch__trigger:hover {
+  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 12%, transparent);
 }
 
-.rst-lang-switch__btn.is-active {
+.rst-lang-switch.is-open .rst-lang-switch__trigger,
+.cashier-lang-switch.is-open .cashier-lang-switch__trigger,
+.public-lang-switch.is-open .public-lang-switch__trigger {
+  border-color: color-mix(in srgb, var(--rst-accent, #ff7a1a) 55%, var(--rst-line, #2a3344));
+}
+
+.rst-lang-switch__chevron,
+.cashier-lang-switch__chevron,
+.public-lang-switch__chevron {
+  flex-shrink: 0;
+  opacity: 0.85;
+  transition: transform 0.15s ease;
+}
+
+.rst-lang-switch.is-open .rst-lang-switch__chevron,
+.cashier-lang-switch.is-open .cashier-lang-switch__chevron,
+.public-lang-switch.is-open .public-lang-switch__chevron {
+  transform: rotate(180deg);
+}
+
+.rst-lang-switch__menu,
+.cashier-lang-switch__menu,
+.public-lang-switch__menu {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  right: 0;
+  z-index: 80;
+  margin: 0;
+  padding: 0.3rem;
+  list-style: none;
+  min-width: 100%;
+  border: 1px solid var(--rst-line, #2a3344);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, #151a22 92%, #000);
+  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
+}
+
+.rst-lang-switch__menu li,
+.cashier-lang-switch__menu li,
+.public-lang-switch__menu li {
+  margin: 0;
+}
+
+.rst-lang-switch__option,
+.cashier-lang-switch__option,
+.public-lang-switch__option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 2rem;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  border: none;
+  border-radius: 0.6rem;
+  background: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--rst-muted, #8b93a7);
+  cursor: pointer;
+  text-align: left;
+}
+
+.rst-lang-switch__option:hover,
+.cashier-lang-switch__option:hover,
+.public-lang-switch__option:hover {
+  color: var(--rst-ink, #f4f6fb);
+  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 10%, transparent);
+}
+
+.rst-lang-switch__option.is-active,
+.cashier-lang-switch__option.is-active,
+.public-lang-switch__option.is-active {
   background: var(--rst-accent, #ff7a1a);
   color: #1b1208;
 }
 
-.rst-lang-switch__btn:focus {
+.rst-lang-switch__trigger:focus,
+.rst-lang-switch__option:focus,
+.cashier-lang-switch__trigger:focus,
+.cashier-lang-switch__option:focus,
+.public-lang-switch__trigger:focus,
+.public-lang-switch__option:focus {
   outline: none;
 }
 
-.rst-lang-switch__btn:focus-visible {
+.rst-lang-switch__trigger:focus-visible,
+.rst-lang-switch__option:focus-visible,
+.cashier-lang-switch__trigger:focus-visible,
+.cashier-lang-switch__option:focus-visible,
+.public-lang-switch__trigger:focus-visible,
+.public-lang-switch__option:focus-visible {
   outline: 2px solid var(--rst-accent, #ff7a1a);
   outline-offset: 1px;
 }
 
-/* Admin shell top bar — same dark tokens as POS */
-.rst-shell .rst-lang-switch {
-  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 8%, transparent);
-  border-color: var(--rst-line, #2a3344);
+/* Light restaurant shell — solid light menu */
+html.rst-theme--light .rst-lang-switch__menu,
+html.rst-theme--light .cashier-lang-switch__menu,
+html.rst-theme--light .public-lang-switch__menu {
+  background: var(--rst-surface, #ffffff);
+  border-color: var(--rst-line, #cfd4dc);
+  box-shadow: 0 12px 28px rgb(15 23 42 / 0.14);
 }
 
-.rst-shell .rst-lang-switch__btn {
-  color: var(--rst-muted, #8b93a7);
+html.rst-theme--light .rst-lang-switch__option,
+html.rst-theme--light .cashier-lang-switch__option,
+html.rst-theme--light .public-lang-switch__option {
+  color: var(--rst-muted, #5c6578);
 }
 
-.rst-shell .rst-lang-switch__btn:hover:not(.is-active) {
-  color: var(--rst-ink, #f4f6fb);
-  background: color-mix(in srgb, var(--rst-ink, #f4f6fb) 8%, transparent);
+html.rst-theme--light .rst-lang-switch__option:hover,
+html.rst-theme--light .cashier-lang-switch__option:hover,
+html.rst-theme--light .public-lang-switch__option:hover {
+  color: var(--rst-ink, #12151c);
+  background: var(--rst-surface-2, #f3f5f8);
 }
 
-.rst-shell .rst-lang-switch__btn.is-active {
-  background: var(--rst-accent, #ff7a1a);
-  color: #1b1208;
-}
-
-/* Login */
-.rst-login-page .rst-lang-switch {
+/* Login page over photo */
+.rst-login-page .rst-lang-switch__trigger {
   background: rgb(0 0 0 / 0.28);
   border-color: rgb(255 255 255 / 0.16);
-}
-
-.rst-login-page .rst-lang-switch__btn {
-  color: #94a3b8;
-}
-
-.rst-login-page .rst-lang-switch__btn:hover:not(.is-active) {
   color: #f8fafc;
-  background: rgb(255 255 255 / 0.08);
 }
 
-.rst-login-page .rst-lang-switch__btn.is-active {
-  background: var(--rst-accent, #ff7a1a);
-  color: #1b1208;
+.rst-login-page .rst-lang-switch__menu {
+  background: rgb(15 23 42 / 0.96);
+  border-color: rgb(255 255 255 / 0.14);
 }

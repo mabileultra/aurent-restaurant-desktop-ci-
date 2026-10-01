@@ -17,5 +17,6 @@ public record UserResponse(
     String companyLoginCode,
     List<Integer> storeIds,
     List<String> storeNames,
-    boolean active
+    boolean active,
+    boolean hasPin
 ) {}

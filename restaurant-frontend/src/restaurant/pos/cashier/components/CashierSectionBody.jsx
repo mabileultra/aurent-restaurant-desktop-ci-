@@ -5,6 +5,7 @@ import CashierTableBoard from './CashierTableBoard';
 import CashierOrderDock from './CashierOrderDock';
 import CashierOrdersList from './CashierOrdersList';
 import CashierSalesPanel from './CashierSalesPanel';
+import CashierPaidPanel from './CashierPaidPanel';
 import CashierReturnsPanel from './CashierReturnsPanel';
 import { isCashierHallTab } from '../utils/cashierNav';
 
@@ -33,12 +34,13 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
           halls={p.halls}
           selectedHallId={p.selectedHallId}
           onSelectHall={p.setSelectedHallId}
+          shift={p.shift}
+          shiftOpenLabel={p.shiftOpenLabel}
           t={p.t}
         />
         <CashierTableBoard
           tables={p.hallTables}
           halls={p.halls}
-          statusFilter={p.statusFilter}
           selectedTableId={p.selectedTableId}
           activeOrderId={p.activeOrderId}
           onTableClick={p.selectTable}
@@ -83,10 +85,14 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
     return <CashierSalesPanel p={p} setFullOrder={setFullOrder} />;
   }
 
+  if (tab === 'paid') {
+    return <CashierPaidPanel p={p} />;
+  }
+
   if (tab === 'orders') {
     return (
       <div className="rst-cashier-panel">
-        <h2 className="rst-cashier-halls__title">{p.t('rst.cashier.tabOrders')}</h2>
+        <h2 className="rst-floor-hall-rail__title">{p.t('rst.cashier.tabOrders')}</h2>
         <CashierOrdersList
           tables={p.hallTables}
           waiterNameById={p.waiterNameById}
@@ -115,7 +121,7 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
   if (tab === 'payment') {
     return (
       <div className="rst-cashier-panel">
-        <h2 className="rst-cashier-halls__title">{p.t('rst.cashier.tabPayment')}</h2>
+        <h2 className="rst-floor-hall-rail__title">{p.t('rst.cashier.tabPayment')}</h2>
         <CashierOrdersList
           tables={p.hallTables}
           onlyWaitingPayment

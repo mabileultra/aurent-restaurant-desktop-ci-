@@ -64,6 +64,7 @@ public class MenuItemUpdateHandler {
         item.setPrepMinutes(normalizePrep(request.prepMinutes()));
         BigDecimal portionAmount = resolvePortionAmount(request);
         MenuPortionUnit portionUnit = resolvePortionUnit(request);
+        MenuPortionFormat.requireWeightWithinLimit(portionAmount, portionUnit);
         item.setPortionAmount(portionAmount);
         item.setPortionUnit(portionUnit);
         item.setPortionGrams(MenuPortionFormat.gramsFromAmount(portionAmount, portionUnit));

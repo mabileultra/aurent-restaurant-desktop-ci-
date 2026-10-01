@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Banknote, CreditCard, Split, X } from 'lucide-react';
+import { Banknote, CircleDollarSign, CreditCard, Split, Wallet, X } from 'lucide-react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { PAYMENT_CARD_PROVIDERS } from '../constants/paymentCardProviders';
@@ -15,6 +15,8 @@ const METHODS = [
   { id: 'CASH', icon: Banknote, labelKey: 'rst.order.payCash' },
   { id: 'CARD', icon: CreditCard, labelKey: 'rst.order.payCard' },
   { id: 'MIXED', icon: Split, labelKey: 'rst.order.payMixed' },
+  { id: 'CREDIT', icon: CircleDollarSign, labelKey: 'rst.order.payCredit' },
+  { id: 'ADVANCE', icon: Wallet, labelKey: 'rst.order.payAdvance' },
 ];
 
 /**
@@ -44,7 +46,7 @@ export default function RestaurantPayModal({
     setMethod(next);
     setTendered('');
     setCashPart('');
-    if (next === 'CASH') setCardType(null);
+    if (next !== 'CARD' && next !== 'MIXED') setCardType(null);
   };
 
   const submit = () => {
@@ -171,6 +173,10 @@ export default function RestaurantPayModal({
               disabled={paying}
               t={t}
             />
+          ) : null}
+
+          {derived.infoKey ? (
+            <p className="rst-pay-modal__info">{t(derived.infoKey)}</p>
           ) : null}
 
           {derived.hintKey ? (

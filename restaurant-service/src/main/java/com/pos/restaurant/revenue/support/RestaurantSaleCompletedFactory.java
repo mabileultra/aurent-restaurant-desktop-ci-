@@ -33,14 +33,20 @@ public class RestaurantSaleCompletedFactory {
             .toList();
         List<SaleLineSnapshot> lines = billable.stream().map(this::toLine).toList();
         BigDecimal total = orderTotals.billable(items);
-        BigDecimal cash = payment.getCashAmount() != null && payment.getCashAmount().signum() > 0
-            ? payment.getCashAmount()
-            : (payment.getMethod() == PaymentMethod.CARD || payment.getMethod() == PaymentMethod.MIXED
-                ? BigDecimal.ZERO
-                : payment.getAmount());
-        BigDecimal card = payment.getCardAmount() != null && payment.getCardAmount().signum() > 0
-            ? payment.getCardAmount()
-            : (payment.getMethod() == PaymentMethod.CARD ? payment.getAmount() : BigDecimal.ZERO);
+        PaymentMethod method = payment.getMethod();
+        boolean nonDrawer = method == PaymentMethod.CREDIT || method == PaymentMethod.ADVANCE;
+        BigDecimal cash = nonDrawer
+            ? BigDecimal.ZERO
+            : (payment.getCashAmount() != null && payment.getCashAmount().signum() > 0
+                ? payment.getCashAmount()
+                : (method == PaymentMethod.CARD || method == PaymentMethod.MIXED
+                    ? BigDecimal.ZERO
+                    : payment.getAmount()));
+        BigDecimal card = nonDrawer
+            ? BigDecimal.ZERO
+            : (payment.getCardAmount() != null && payment.getCardAmount().signum() > 0
+                ? payment.getCardAmount()
+                : (method == PaymentMethod.CARD ? payment.getAmount() : BigDecimal.ZERO));
         return new SaleCompletedEvent(
             order.getCompanyId(),
             order.getStoreId(),

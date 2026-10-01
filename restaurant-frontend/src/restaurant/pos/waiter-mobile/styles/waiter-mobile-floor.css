@@ -26,6 +26,43 @@
   flex-shrink: 0;
 }
 
+.rst-waiter-floor__take {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  width: 100%;
+  min-height: 2.85rem;
+  margin: 0;
+  padding: 0.55rem 1rem;
+  border: 1px solid rgb(255 122 26 / 0.55);
+  border-radius: 0.85rem;
+  background: linear-gradient(180deg, #ff9340, var(--rst-accent, #ff7a1a));
+  color: #1b1208;
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-waiter-floor__take--inline {
+  width: auto;
+  margin-top: 0.85rem;
+}
+
+.rst-waiter-floor__hall em {
+  margin-left: 0.35rem;
+  font-style: normal;
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+.rst-waiter-floor--mine .rst-waiter-floor__empty {
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 .rst-waiter-floor__halls {
   display: flex;
   gap: 0.4rem;
@@ -76,7 +113,7 @@
   min-width: 0;
   border: 0;
   background: transparent;
-  color: #f2f5f8;
+  color: var(--rst-ink, #f2f5f8);
   font: inherit;
   font-size: 1rem;
   outline: none;

@@ -49,6 +49,7 @@ public class MenuItemCreateVariantHandler {
         MenuPortionUnit portionUnit = portionAmount == null
             ? null
             : (request.portionUnit() == null ? MenuPortionUnit.PORTION : request.portionUnit());
+        MenuPortionFormat.requireWeightWithinLimit(portionAmount, portionUnit);
         String name = blankToNull(request.name());
         if (name == null) {
             name = source.getName();

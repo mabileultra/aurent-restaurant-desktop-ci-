@@ -68,11 +68,7 @@ export default function OrderWorkspace({
       ? (order.clientName
         ? order.clientName
         : t('rst.pos.takeawayMeta'))
-      : t('rst.order.ticketMeta', {
-        guests: order.guestCount,
-        adults: order.adultCount,
-        children: order.childrenCount,
-      });
+      : null;
 
   const digitalTimer = formatDigitalTimer(order.openedAt, now);
   const clockLabel = new Date(now).toLocaleTimeString([], {
@@ -179,7 +175,7 @@ export default function OrderWorkspace({
               {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
-            <p className="rst-order__meta">{ticketMeta}</p>
+            {ticketMeta ? <p className="rst-order__meta">{ticketMeta}</p> : null}
             {order.comment ? (
               <p className="rst-order__comment">{order.comment}</p>
             ) : null}

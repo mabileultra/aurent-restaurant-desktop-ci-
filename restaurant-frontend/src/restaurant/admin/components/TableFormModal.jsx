@@ -1,8 +1,41 @@
-import { BaseInput } from '../../../components/ui';
+import { BaseButton, BaseInput } from '../../../components/ui';
 import { MANUAL_TABLE_STATUSES } from '../../pos/utils/tableStatus';
 import RstModal from '../../shared/components/RstModal';
 
-export default function TableFormModal({ open, mode, form, onChange, onClose, onSubmit, isPending, t }) {
+export default function TableFormModal({
+  open,
+  mode,
+  form,
+  onChange,
+  onClose,
+  onSubmit,
+  onDeactivate,
+  isPending,
+  t,
+}) {
+  const footer = mode === 'edit' && onDeactivate ? (
+    <>
+      <BaseButton
+        type="button"
+        variant="ghost"
+        disabled={isPending}
+        onClick={() => {
+          if (window.confirm(t('rst.admin.confirmDeactivateTable'))) {
+            onDeactivate(form.id);
+          }
+        }}
+      >
+        {t('common.delete')}
+      </BaseButton>
+      <BaseButton type="button" variant="ghost" onClick={onClose} disabled={isPending}>
+        {t('common.cancel')}
+      </BaseButton>
+      <BaseButton type="submit" form="rst-modal-form" disabled={isPending}>
+        {t('common.save')}
+      </BaseButton>
+    </>
+  ) : undefined;
+
   return (
     <RstModal
       open={open}
@@ -13,6 +46,7 @@ export default function TableFormModal({ open, mode, form, onChange, onClose, on
       asForm
       cancelLabel={t('common.cancel')}
       submitLabel={t('common.save')}
+      footer={footer}
       size="md"
     >
       <div className="rst-modal-form__grid">

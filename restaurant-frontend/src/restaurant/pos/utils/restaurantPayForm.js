@@ -23,6 +23,20 @@ export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, card
       changeGiven: 0,
       canSubmit: due > 0 && cardOk,
       hintKey: cardOk ? null : 'pos.cardTypeRequired',
+      infoKey: null,
+    };
+  }
+
+  if (method === 'CREDIT' || method === 'ADVANCE') {
+    return {
+      due,
+      cashAmount: 0,
+      cardAmount: 0,
+      amountTendered: due,
+      changeGiven: 0,
+      canSubmit: due > 0,
+      hintKey: null,
+      infoKey: method === 'CREDIT' ? 'rst.order.payCreditHint' : 'rst.order.payAdvanceHint',
     };
   }
 
@@ -44,6 +58,7 @@ export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, card
           : cash >= due
             ? 'pos.mixedCashExceeds'
             : null,
+      infoKey: null,
     };
   }
 
@@ -57,6 +72,7 @@ export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, card
     changeGiven,
     canSubmit: due > 0 && amountTendered >= due,
     hintKey: tenderedNum > 0 && tenderedNum < due ? 'rst.order.cashShort' : null,
+    infoKey: null,
   };
 }
 
@@ -73,6 +89,11 @@ export function buildRestaurantPayPayload(derived, method, cardType = null) {
     payload.cardType = cardType;
   }
   return payload;
+}
+
+export function isNonFiscalPayMethod(method) {
+  const m = String(method || '').toUpperCase();
+  return m === 'CREDIT' || m === 'ADVANCE';
 }
 
 export { parseMoney };

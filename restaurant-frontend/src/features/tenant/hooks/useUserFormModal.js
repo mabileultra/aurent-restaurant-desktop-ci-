@@ -49,9 +49,12 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
   const roleAllowList = Array.isArray(allowedRoles) && allowedRoles.length > 0 ? allowedRoles : null;
   const defaultCreateRole = roleAllowList?.[0] ?? (isPlatform ? 'ADMIN' : 'MANAGER');
   const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
-  const isPinRole = isCashierRole || selectedRole === 'COOK';
+  const isPinRole = isCashierRole || selectedRole === 'COOK' || selectedRole === 'MANAGER';
   const fieldOn = useTenantDisplayStore((s) => s.isUserFormFieldOn);
-  const pinRequired = !isEdit || (isPinRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER' && user?.role !== 'COOK');
+  const hadPinRole = user?.role === 'CASHIER' || user?.role === 'WAITER'
+    || user?.role === 'COOK' || user?.role === 'MANAGER';
+  // Create / role→PIN / existing user without PIN yet → PIN required.
+  const pinRequired = !isEdit || (isPinRole && (!hadPinRole || user?.hasPin === false));
   const showPasswordField = !isPinRole && (isPlatform || fieldOn('password') || !isEdit);
 
   const { data: companiesRaw = [] } = useQuery({

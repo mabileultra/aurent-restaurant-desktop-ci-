@@ -7,6 +7,10 @@ export const rstOrderApi = {
   openTakeaway: (storeId, data = {}) => api.post(rst(`/stores/${storeId}/orders/takeaway`), data),
   openDelivery: (storeId, data) => api.post(rst(`/stores/${storeId}/orders/delivery`), data),
   listActive: (storeId, channel) => api.get(rst(`/stores/${storeId}/orders/active`), { params: { channel } }),
+  listRecentCancelled: (storeId, { limit } = {}) =>
+    api.get(rst(`/stores/${storeId}/orders/recent-cancelled`), {
+      params: limit != null ? { limit } : {},
+    }),
   search: (storeId, params) => api.get(rst(`/stores/${storeId}/orders`), { params }),
   get: (orderId) => api.get(rst(`/orders/${orderId}`)),
   updateGuests: (orderId, data) => api.patch(rst(`/orders/${orderId}/guests`), data),

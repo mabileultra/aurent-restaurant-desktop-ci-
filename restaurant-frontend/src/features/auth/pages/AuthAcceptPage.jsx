@@ -30,8 +30,8 @@ export default function AuthAcceptPage() {
       resetClientSessionState();
       setAuth(handoff.token, handoff.user || { role: 'ADMIN' });
 
-      const { access, businessPayload } = await fetchRestaurantAppAccess(handoff.user?.role);
-      if (!access.ok) {
+      const { access, businessPayload, fetchError } = await fetchRestaurantAppAccess(handoff.user?.role);
+      if (!fetchError && !access.ok) {
         logoutAndResetSession();
         setError('Нет такого аккаунта');
         return;

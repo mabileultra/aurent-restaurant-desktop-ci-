@@ -7,6 +7,7 @@ export function formatMenuPortion(item) {
   if (Number.isFinite(amount) && amount > 0) {
     const unit = String(item?.portionUnit || 'PORTION').toUpperCase();
     if (unit === 'G') return `${trimAmount(item.portionAmount)} г`;
+    if (unit === 'KG') return `${trimAmount(item.portionAmount)} кг`;
     if (unit === 'PCS') {
       return amount === 1 ? '1 шт' : `${trimAmount(item.portionAmount)} шт`;
     }

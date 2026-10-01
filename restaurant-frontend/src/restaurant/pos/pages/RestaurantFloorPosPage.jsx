@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutGrid, CalendarDays } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
@@ -8,11 +9,10 @@ import BookingWorkspace from '../../shared/components/BookingWorkspace';
 import FloorTableGrid from '../components/FloorTableGrid';
 import FloorPosModals from '../components/FloorPosModals';
 import OrderWorkspace from '../components/OrderWorkspace';
-import PosZoomControls from '../components/PosZoomControls';
+import WaiterHallPickModal from '../components/WaiterHallPickModal';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
-import { usePosUiScale } from '../hooks/usePosUiScale';
 import { useWaiterMobileLayout } from '../waiter-mobile/hooks/useWaiterMobileLayout';
 import WaiterMobileHeaderActions from '../waiter-mobile/components/WaiterMobileHeaderActions';
 import WaiterMobileFloorBoard from '../waiter-mobile/components/WaiterMobileFloorBoard';
@@ -20,6 +20,10 @@ import WaiterMobileOrderWorkspace from '../waiter-mobile/components/WaiterMobile
 import WaiterMobileBookingBoard from '../waiter-mobile/components/WaiterMobileBookingBoard';
 import WaiterEnterMobileButton from '../waiter-mobile/components/WaiterEnterMobileButton';
 import { usesCashierPos } from '../cashier/utils/cashierNav';
+import {
+  filterHallsByWaiterTables,
+  filterTablesByWaiter,
+} from '../utils/floorStatusFilters';
 import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/floor-pos.css';
@@ -66,10 +70,16 @@ function WaiterShiftHint({ p }) {
   );
 }
 
-function FloorSectionSwitch({ p }) {
-  if (!p.access.canViewBooking) return null;
+function FloorSectionSwitch({ p, variant = 'toolbar', mineMode = false }) {
+  if (!p.access.canViewBooking && !mineMode) return null;
+  const iconSize = variant === 'header' ? 20 : 15;
+  const tablesLabel = mineMode ? p.t('rst.floor.myTables') : p.t('rst.pos.tables');
   return (
-    <div className="rst-floor-section-tabs rst-floor-section-tabs--toolbar" role="tablist" aria-label={p.t('rst.pos.tables')}>
+    <div
+      className={`rst-floor-section-tabs rst-floor-section-tabs--${variant}`}
+      role="tablist"
+      aria-label={tablesLabel}
+    >
       <button
         type="button"
         role="tab"
@@ -77,55 +87,58 @@ function FloorSectionSwitch({ p }) {
         className={`rst-floor-section-tabs__btn${p.floorSection === 'tables' ? ' is-active' : ''}`}
         onClick={() => p.setFloorSection('tables')}
       >
-        <LayoutGrid size={15} aria-hidden />
-        {p.t('rst.pos.tables')}
+        <LayoutGrid size={iconSize} aria-hidden />
+        {tablesLabel}
       </button>
-      <button
-        type="button"
-        role="tab"
-        aria-selected={p.floorSection === 'bookings'}
-        className={`rst-floor-section-tabs__btn${p.floorSection === 'bookings' ? ' is-active' : ''}`}
-        onClick={() => p.setFloorSection('bookings')}
-      >
-        <CalendarDays size={15} aria-hidden />
-        {p.t('rst.pos.bookings')}
-      </button>
+      {p.access.canViewBooking ? (
+        <button
+          type="button"
+          role="tab"
+          aria-selected={p.floorSection === 'bookings'}
+          className={`rst-floor-section-tabs__btn${p.floorSection === 'bookings' ? ' is-active' : ''}`}
+          onClick={() => p.setFloorSection('bookings')}
+        >
+          <CalendarDays size={iconSize} aria-hidden />
+          {p.t('rst.pos.bookings')}
+        </button>
+      ) : null}
     </div>
   );
 }
 
-function FloorBody({ p, a, mobile }) {
+function FloorBody({ p, a, mobile, user, mineMode }) {
+  const [pickOpen, setPickOpen] = useState(false);
   const bookingAccess = {
     canCreate: p.access.canCreateBooking,
     canManage: p.access.canManageBooking,
   };
 
   if (p.floorSection === 'bookings') {
-    return (
+    return mobile ? (
       <>
-        <FloorSectionSwitch p={p} />
-        {mobile ? (
-          <WaiterMobileBookingBoard access={bookingAccess} />
-        ) : (
-          <BookingWorkspace compact access={bookingAccess} />
-        )}
+        <FloorSectionSwitch p={p} mineMode={mineMode} />
+        <WaiterMobileBookingBoard access={bookingAccess} />
       </>
+    ) : (
+      <BookingWorkspace compact access={bookingAccess} />
     );
   }
 
+  const listTables = mineMode
+    ? filterTablesByWaiter(p.hallTables, user?.id)
+    : p.hallTables;
+  const railHalls = mineMode
+    ? filterHallsByWaiterTables(p.halls, user?.id).filter((hall) => (hall.tables || []).length > 0)
+    : p.halls;
+
   const boardProps = {
-    hallTables: p.hallTables,
-    halls: p.halls,
+    hallTables: listTables,
+    halls: railHalls,
     selectedHallId: p.selectedHallId,
     onSelectHall: p.setSelectedHallId,
-    statusFilter: p.statusFilter,
-    onStatusFilter: p.setStatusFilter,
     selectedTableId: p.openTable?.id ?? p.reservedTable?.id ?? a.inspectTable?.id,
     onTableClick: p.handleTableClick,
     onPrefetchOrder: p.prefetchOrder,
-    search: p.floorSearch,
-    onSearchChange: p.setFloorSearch,
-    sectionSwitch: <FloorSectionSwitch p={p} />,
     waiterNameById: p.waiterNameById,
     t: p.t,
   };
@@ -134,10 +147,36 @@ function FloorBody({ p, a, mobile }) {
     <>
       {p.isError ? <div className="rst-notice">{p.t('rst.floor.loadFailed')}</div> : null}
       {mobile ? (
-        <WaiterMobileFloorBoard {...boardProps} />
+        <WaiterMobileFloorBoard
+          {...boardProps}
+          mineMode={mineMode}
+          search={p.floorSearch}
+          onSearchChange={p.setFloorSearch}
+          sectionSwitch={<FloorSectionSwitch p={p} mineMode={mineMode} />}
+          statusFilter={p.statusFilter}
+          onStatusFilter={p.setStatusFilter}
+          onAddTable={mineMode ? () => setPickOpen(true) : undefined}
+        />
       ) : (
-        <FloorTableGrid {...boardProps} />
+        <FloorTableGrid
+          {...boardProps}
+          onAddTable={mineMode ? () => setPickOpen(true) : undefined}
+        />
       )}
+      {mineMode ? (
+        <WaiterHallPickModal
+          open={pickOpen}
+          halls={p.halls}
+          selectedHallId={p.selectedHallId}
+          waiterNameById={p.waiterNameById}
+          onClose={() => setPickOpen(false)}
+          onPickFree={(table) => {
+            setPickOpen(false);
+            p.beginOpenTable(table);
+          }}
+          t={p.t}
+        />
+      ) : null}
     </>
   );
 }
@@ -205,14 +244,13 @@ function buildOrderWorkspaceProps(p) {
 export default function RestaurantFloorPosPage() {
   const user = useAuthStore((s) => s.user);
   const p = useFloorPosPage();
-  const zoom = usePosUiScale();
   const mobile = useWaiterMobileLayout();
   const a = p.tableActions;
 
   if (p.workspace.isLoading && p.workspace.storeId == null) {
     const loadingClass = mobile.enabled ? 'rst-app rst-pos rst-pos--waiter-mobile' : 'rst-app rst-pos';
     return (
-      <div className={loadingClass} style={mobile.enabled ? { '--rst-ui-scale': '1' } : zoom.rootStyle}>
+      <div className={loadingClass}>
         <div className="rst-notice">{p.t('common.loading')}</div>
       </div>
     );
@@ -223,7 +261,6 @@ export default function RestaurantFloorPosPage() {
       <RestaurantWorkspaceEmpty
         t={p.t}
         workspace={p.workspace}
-        zoomStyle={zoom.rootStyle}
         onLogout={() => logoutAndResetSession()}
       />
     );
@@ -235,10 +272,10 @@ export default function RestaurantFloorPosPage() {
     mobile.enabled && p.activeOrderId ? 'rst-pos--waiter-order-open' : '',
   ].filter(Boolean).join(' ');
   const orderProps = buildOrderWorkspaceProps(p);
-  const shellStyle = mobile.enabled ? { '--rst-ui-scale': '1' } : zoom.rootStyle;
+  const mineMode = String(user?.role || '').toUpperCase() === 'WAITER';
 
   return (
-    <div className={rootClass} style={shellStyle}>
+    <div className={rootClass}>
       <header className="rst-pos__top">
         <div className="rst-pos__brand">
           <span className="rst-pos__brand-name">{p.t('rst.waiter.title')}</span>
@@ -248,6 +285,9 @@ export default function RestaurantFloorPosPage() {
           </span>
         </div>
         <WaiterShiftHint p={p} />
+        {!mobile.enabled && !p.activeOrderId ? (
+          <FloorSectionSwitch p={p} variant="header" mineMode={mineMode} />
+        ) : null}
         {!mobile.enabled ? <div id="rst-pos-search-slot" className="rst-pos__search" /> : null}
         <div className="rst-pos__actions">
           {mobile.enabled ? (
@@ -268,7 +308,6 @@ export default function RestaurantFloorPosPage() {
                   <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
                 </Link>
               ) : null}
-              <PosZoomControls zoom={zoom} t={p.t} />
               <RestaurantThemeSwitch />
               <LanguageSwitcher variant="rst" />
               {mobile.showEnterMobile ? (
@@ -299,7 +338,7 @@ export default function RestaurantFloorPosPage() {
             <div className="rst-notice">{p.t('common.loading')}</div>
           )
         ) : (
-          <FloorBody p={p} a={a} mobile={mobile.enabled} />
+          <FloorBody p={p} a={a} mobile={mobile.enabled} user={user} mineMode={mineMode} />
         )}
       </div>
 

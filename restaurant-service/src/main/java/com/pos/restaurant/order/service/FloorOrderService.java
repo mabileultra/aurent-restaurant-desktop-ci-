@@ -15,6 +15,7 @@ import com.pos.restaurant.order.dto.UpdateDeliveryStatusRequest;
 import com.pos.restaurant.order.dto.UpdateGuestsRequest;
 import com.pos.restaurant.order.dto.UpdateOrderDiscountRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
+import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -29,6 +30,8 @@ public interface FloorOrderService {
     OrderResponse openCounter(Integer storeId, OrderChannel channel, OpenCounterOrderRequest request);
 
     List<OrderResponse> listActiveByChannel(Integer storeId, OrderChannel channel);
+
+    List<PaidOrderSummaryResponse> listRecentCancelled(Integer storeId, Integer limit);
 
     Page<OrderResponse> searchByChannel(
         Integer storeId,

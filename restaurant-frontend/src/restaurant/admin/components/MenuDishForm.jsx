@@ -82,10 +82,11 @@ export default function MenuDishForm({ p }) {
           label={p.t('rst.admin.portionAmount')}
           type="number"
           min={0.001}
+          max={p.form.portionUnit === 'KG' ? 10 : undefined}
           step="0.1"
           value={p.form.portionAmount}
           onChange={(e) => p.setForm({ ...p.form, portionAmount: e.target.value })}
-          placeholder="1 / 1.5 / 0.7"
+          placeholder={p.form.portionUnit === 'KG' ? '1' : '1 / 1.5 / 0.7'}
         />
         <BaseSelect
           size="sm"
@@ -95,10 +96,18 @@ export default function MenuDishForm({ p }) {
           onChange={(e) => p.setForm({ ...p.form, portionUnit: e.target.value })}
           options={[
             { value: 'PORTION', label: p.t('rst.admin.portionUnitPortion') },
+            { value: 'KG', label: p.t('rst.admin.portionUnitKg', { defaultValue: 'Килограммы (весовой)' }) },
             { value: 'G', label: p.t('rst.admin.portionUnitG') },
             { value: 'PCS', label: p.t('rst.admin.portionUnitPcs') },
           ]}
         />
+        {p.form.portionUnit === 'KG' ? (
+          <p className="rst-admin-field__hint rst-modal-form__full">
+            {p.t('rst.admin.portionKgHint', {
+              defaultValue: 'Весовой товар: цена за этот вес (макс. 10 кг). Официант выберет 100/200/300 г или 1 кг, либо введёт граммы/сумму.',
+            })}
+          </p>
+        ) : null}
         <BaseInput
           label={p.t('rst.admin.portionLabel')}
           value={p.form.portionLabel}

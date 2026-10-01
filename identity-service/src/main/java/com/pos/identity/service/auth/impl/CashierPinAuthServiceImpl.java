@@ -3,8 +3,10 @@ package com.pos.identity.service.auth.impl;
 import com.pos.identity.client.dto.CompanyDto;
 import com.pos.identity.dto.auth.AuthResponse;
 import com.pos.identity.dto.auth.CashierPinAuthRequest;
+import com.pos.identity.dto.auth.PinRosterEntryResponse;
 import com.pos.identity.entity.User;
 import com.pos.identity.exception.BadRequestException;
+import com.pos.identity.repository.UserRepository;
 import com.pos.identity.repository.spec.UserSpecifications;
 import com.pos.identity.security.CurrentUserProvider;
 import com.pos.identity.security.JwtService;
@@ -18,21 +20,22 @@ import com.pos.identity.service.support.UserLookupSupport;
 import com.pos.identity.service.support.UserSyncSupport;
 import com.pos.identity.util.CashierPinUtil;
 import com.pos.identity.util.CompanyLoginCodeUtil;
+import com.pos.identity.util.PinLoginRoles;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import java.util.Set;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class CashierPinAuthServiceImpl implements CashierPinAuthService {
 
-    private static final Set<String> PIN_LOGIN_ROLES = Set.of("CASHIER", "WAITER", "COOK");
-
     private final UserLookupSupport userLookup;
+    private final UserRepository userRepository;
     private final TenantAccessSupport tenantAccess;
     private final JwtService jwtService;
     private final PinSecret pinSecret;
@@ -57,15 +60,9 @@ public class CashierPinAuthServiceImpl implements CashierPinAuthService {
         }
 
         String digest = CashierPinUtil.digestHex(pin, pinSecret.value());
-        User user = userLookup.findOneWithDetails(
-                UserSpecifications.lookup()
-                    .companyId(company.id())
-                    .activeOnly()
-                    .pinDigest(digest)
-            )
-            .orElseThrow(() -> new BadRequestException("Invalid PIN"));
+        User user = resolveUser(company.id(), digest, request.userId());
         String roleName = user.getRole() != null ? user.getRole().getName() : "";
-        if (!PIN_LOGIN_ROLES.contains(roleName)) {
+        if (!PinLoginRoles.usesPin(roleName)) {
             throw new BadRequestException("Invalid PIN");
         }
         loginGuard.assertAllowed(user, company);
@@ -74,8 +71,24 @@ public class CashierPinAuthServiceImpl implements CashierPinAuthService {
 
         String token = jwtService.generateToken(user);
         loginAuditPublisher.publish(user, "LOGIN_PIN", null, null);
-        LogUtil.info(CashierPinAuthServiceImpl.class, "Cashier PIN authenticated: userId={}, companyId={}", user.getId(), company.id());
+        LogUtil.info(CashierPinAuthServiceImpl.class, "PIN authenticated: userId={}, companyId={}", user.getId(), company.id());
         return authResponseFactory.build(user, token, company.loginCode());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PinRosterEntryResponse> listPinRoster(String companyLoginCode) {
+        String companyCode = CompanyLoginCodeUtil.normalize(companyLoginCode);
+        if (!StringUtils.hasText(companyCode)) {
+            throw new BadRequestException("Company code is required");
+        }
+        CompanyDto company = tenantAccess.requireCompanyByLoginCode(companyCode);
+        if (!company.active()) {
+            throw new BadRequestException("Company is inactive");
+        }
+        return userRepository.findActivePinRoster(company.id(), PinLoginRoles.ALL).stream()
+            .map(u -> new PinRosterEntryResponse(u.getId(), resolveDisplayName(u), u.getRole().getName()))
+            .toList();
     }
 
     @Override
@@ -93,5 +106,37 @@ public class CashierPinAuthServiceImpl implements CashierPinAuthService {
         if (!digest.equalsIgnoreCase(user.getPinDigest())) {
             throw new BadRequestException("Invalid PIN");
         }
+    }
+
+    private User resolveUser(Integer companyId, String digest, UUID userId) {
+        if (userId != null) {
+            User user = userRepository.findByIdWithDetails(userId)
+                .orElseThrow(() -> new BadRequestException("Invalid PIN"));
+            if (!companyId.equals(user.getCompanyId()) || !user.isActive()) {
+                throw new BadRequestException("Invalid PIN");
+            }
+            if (!StringUtils.hasText(user.getPinDigest()) || !digest.equalsIgnoreCase(user.getPinDigest())) {
+                throw new BadRequestException("Invalid PIN");
+            }
+            return user;
+        }
+        return userLookup.findOneWithDetails(
+                UserSpecifications.lookup()
+                    .companyId(companyId)
+                    .activeOnly()
+                    .pinDigest(digest)
+            )
+            .orElseThrow(() -> new BadRequestException("Invalid PIN"));
+    }
+
+    private static String resolveDisplayName(User user) {
+        if (StringUtils.hasText(user.getFirstName())) {
+            return user.getFirstName().trim();
+        }
+        if (StringUtils.hasText(user.getFullName())) {
+            String[] parts = user.getFullName().trim().split("\\s+");
+            return parts[0];
+        }
+        return user.getUsername();
     }
 }

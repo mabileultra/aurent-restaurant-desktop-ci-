@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { authApi } from '../../../services/api';
@@ -20,7 +20,6 @@ async function resolvePostLoginPath(role, businessPayload) {
 export function useLoginPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
   const setAuth = useAuthStore((s) => s.setAuth);
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
@@ -29,21 +28,17 @@ export function useLoginPage() {
   const [loading, setLoading] = useState(false);
 
   const isDesktop = Boolean(window.desktopCashier?.isDesktop);
-  const isAdminLogin = searchParams.get('admin') === '1';
-  const isStandalonePwa = typeof window !== 'undefined' && (
-    window.matchMedia('(display-mode: standalone)').matches
-    || Boolean(window.navigator.standalone)
-  );
-  /** PWA / десктоп-касса — только PIN; пароль остаётся на /login?admin=1 */
-  const shouldRedirectToCashierLogin = !isAdminLogin && (isDesktopCashier() || isStandalonePwa);
+  /** Password admin is on PIN roster card — /login always goes to terminal roster. */
+  const shouldRedirectToCashierLogin = true;
 
   useEffect(() => {
     if (!hasHydrated || !token) return;
     let cancelled = false;
     (async () => {
-      const { access, businessPayload } = await fetchRestaurantAppAccess(user?.role);
+      const { access, businessPayload, fetchError } = await fetchRestaurantAppAccess(user?.role);
       if (cancelled) return;
-      if (!access.ok) {
+      // Transport/403 on business-types: fail-open (same as RestaurantWorldGate).
+      if (!fetchError && !access.ok) {
         logoutAndResetSession();
         return;
       }
@@ -83,8 +78,8 @@ export function useLoginPage() {
       resetClientSessionState();
       setAuth(accessToken, profile);
 
-      const { access, businessPayload } = await fetchRestaurantAppAccess(profile.role);
-      if (!access.ok) {
+      const { access, businessPayload, fetchError } = await fetchRestaurantAppAccess(profile.role);
+      if (!fetchError && !access.ok) {
         logoutAndResetSession();
         toast.error(t('login.wrongAppUnknown'));
         return;

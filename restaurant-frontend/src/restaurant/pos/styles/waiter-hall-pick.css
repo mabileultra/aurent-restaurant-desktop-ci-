@@ -1,0 +1,44 @@
+.rst-waiter-pick__hint {
+  margin: 0 0 0.75rem;
+  color: var(--rst-muted);
+  font-size: 0.95rem;
+  line-height: 1.35;
+}
+
+.rst-waiter-pick__halls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.rst-waiter-pick__hall {
+  min-height: 2.5rem;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.rst-waiter-pick__hall.is-active {
+  border-color: rgb(255 122 26 / 0.55);
+  background: var(--rst-accent-soft);
+}
+
+.rst-waiter-pick__canvas {
+  min-height: 420px;
+  max-height: min(62vh, 640px);
+  overflow: auto;
+  border: 1px solid var(--rst-line);
+  border-radius: 12px;
+}
+
+.rst-waiter-pick__canvas .rst-floor-canvas--pick {
+  min-height: 400px;
+  max-height: none;
+}

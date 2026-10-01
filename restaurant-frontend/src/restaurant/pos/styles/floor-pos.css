@@ -273,24 +273,28 @@
 }
 
 .rst-pos .rst-order__ticket-kicker {
-  font-size: 0.62rem;
+  font-size: 0.9rem;
   margin-bottom: 0;
+  line-height: 1;
 }
 
 .rst-pos .rst-order__title {
   margin: 0;
-  font-size: 0.95rem;
-  line-height: 1.15;
+  font-size: 1.45rem;
+  line-height: 1;
 }
 
 .rst-pos .rst-order__meta {
   margin: 0.08rem 0 0;
-  font-size: 0.7rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .rst-pos .rst-order__timer {
-  font-size: 0.82rem;
+  font-size: 1.1rem;
   padding: 0.15rem 0.4rem;
+  line-height: 1;
 }
 
 .rst-pos .rst-order__guest-row {
@@ -325,7 +329,7 @@
   width: 100%;
   min-height: 2.45rem;
   padding: 0.3rem 0.65rem;
-  font-size: 0.82rem;
+  font-size: 1.05rem;
   border-radius: 0.65rem;
 }
 
@@ -363,11 +367,15 @@
 }
 
 .rst-pos .rst-order-line__title strong {
-  font-size: 0.86rem;
+  font-size: 1.2rem;
+}
+
+.rst-pos .rst-order-line__pill {
+  font-size: 0.9rem;
 }
 
 .rst-pos .rst-order-line__meta {
-  font-size: 0.78rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--rst-ink);
 }

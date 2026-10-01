@@ -1,33 +1,36 @@
-import { ALL_HALLS_ID } from '../../utils/floorStatusFilters';
-import '../styles/cashier-hall-rail.css';
+import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import FloorHallRail from '../../components/FloorHallRail';
+import '../../styles/floor-hall-rail.css';
 
 export default function CashierHallRail({
   halls = [],
   selectedHallId,
   onSelectHall,
+  shift = null,
+  shiftOpenLabel = null,
   t,
 }) {
+  const shiftHeader = (
+    <div className={`rst-floor-hall-rail__shift${shift ? ' is-open' : ''}`}>
+      {shift ? (
+        <>
+          <strong>{t('rst.cashier.shiftOpen')}</strong>
+          {shiftOpenLabel ? <span>{shiftOpenLabel}</span> : null}
+          <span>{t('rst.shift.total')}: {fmtMoneyCompact(shift.totalAmount)}</span>
+        </>
+      ) : (
+        <strong>{t('rst.cashier.shiftClosed')}</strong>
+      )}
+    </div>
+  );
+
   return (
-    <aside className="rst-cashier-halls" aria-label={t('rst.cashier.halls')}>
-      <h2 className="rst-cashier-halls__title">{t('rst.cashier.halls')}</h2>
-      <button
-        type="button"
-        className={`rst-cashier-halls__btn${selectedHallId === ALL_HALLS_ID ? ' is-active' : ''}`}
-        onClick={() => onSelectHall(ALL_HALLS_ID)}
-      >
-        {t('rst.floor.allHalls')}
-      </button>
-      {halls.map((hall) => (
-        <button
-          key={hall.id}
-          type="button"
-          className={`rst-cashier-halls__btn${selectedHallId === hall.id ? ' is-active' : ''}`}
-          onClick={() => onSelectHall(hall.id)}
-        >
-          <strong>{hall.name}</strong>
-          <span>{(hall.tables ?? []).length}</span>
-        </button>
-      ))}
-    </aside>
+    <FloorHallRail
+      halls={halls}
+      selectedHallId={selectedHallId}
+      onSelectHall={onSelectHall}
+      header={shiftHeader}
+      t={t}
+    />
   );
 }

@@ -26,6 +26,7 @@ import com.pos.restaurant.order.service.FloorOrderService;
 import com.pos.restaurant.order.support.OrderLinkedTablesSupport;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -48,6 +49,7 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final FloorOrderRepository orderRepository;
     private final FloorTenantSupport tenantSupport;
     private final OrderLookup orderLookup;
+    private final ListRecentCancelledOrdersHandler listRecentCancelledOrdersHandler;
     private final OrderResponseAssembler assembler;
     private final OrderLinkedTablesSupport linkedTables;
     private final OrderOpenHandler openHandler;
@@ -105,6 +107,11 @@ public class FloorOrderServiceImpl implements FloorOrderService {
                 itemsByOrder.getOrDefault(order.getId(), Collections.emptyList())
             ))
             .toList();
+    }
+
+    @Override
+    public List<PaidOrderSummaryResponse> listRecentCancelled(Integer storeId, Integer limit) {
+        return listRecentCancelledOrdersHandler.handle(storeId, limit);
     }
 
     @Override

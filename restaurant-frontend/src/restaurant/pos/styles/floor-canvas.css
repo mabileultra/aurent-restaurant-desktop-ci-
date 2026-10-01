@@ -34,9 +34,14 @@
 }
 
 .rst-floor-canvas--admin {
-  flex: 0 1 auto;
-  max-height: min(62vh, 640px);
-  min-height: 320px;
+  flex: 1 1 auto;
+  max-height: none;
+  min-height: 420px;
+}
+
+.rst-floor-canvas--editable .rst-table.is-draggable {
+  cursor: grab;
+  user-select: none;
 }
 
 .rst-floor-canvas--admin .rst-floor-canvas__plane,
@@ -85,4 +90,48 @@
   width: 100%;
   height: 1px;
   pointer-events: none;
+}
+
+/* Waiter hall pick: free green, busy red + who serves */
+.rst-floor-canvas--pick .rst-table--FREE,
+.rst-floor-canvas--pick .rst-table--CLEANING,
+.rst-floor-canvas--pick .rst-table.is-pick-free {
+  background: rgb(34 197 94 / 0.22);
+  border-color: #22c55e;
+  color: #bbf7d0;
+}
+
+.rst-floor-canvas--pick .rst-table--OCCUPIED,
+.rst-floor-canvas--pick .rst-table--WAITING_PAYMENT,
+.rst-floor-canvas--pick .rst-table--RESERVED,
+.rst-floor-canvas--pick .rst-table.is-pick-busy {
+  background: rgb(239 68 68 / 0.22);
+  border-color: #ef4444;
+  color: #fecaca;
+}
+
+.rst-floor-canvas--pick .rst-table.is-pick-locked {
+  opacity: 0.55;
+}
+
+.rst-floor-canvas--pick .rst-table__meta {
+  max-width: 94%;
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html.rst-theme--light .rst-floor-canvas--pick .rst-table--FREE,
+html.rst-theme--light .rst-floor-canvas--pick .rst-table--CLEANING,
+html.rst-theme--light .rst-floor-canvas--pick .rst-table.is-pick-free {
+  color: #166534;
+}
+
+html.rst-theme--light .rst-floor-canvas--pick .rst-table--OCCUPIED,
+html.rst-theme--light .rst-floor-canvas--pick .rst-table--WAITING_PAYMENT,
+html.rst-theme--light .rst-floor-canvas--pick .rst-table--RESERVED,
+html.rst-theme--light .rst-floor-canvas--pick .rst-table.is-pick-busy {
+  color: #991b1b;
 }

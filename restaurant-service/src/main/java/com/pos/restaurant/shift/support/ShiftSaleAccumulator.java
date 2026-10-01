@@ -21,6 +21,9 @@ public class ShiftSaleAccumulator {
         }
         shift.setSaleCount(shift.getSaleCount() + 1);
         shift.setTotalAmount(shift.getTotalAmount().add(amount));
+        if (method == PaymentMethod.CREDIT || method == PaymentMethod.ADVANCE) {
+            return;
+        }
         if (method == PaymentMethod.MIXED) {
             BigDecimal cash = cashAmount == null ? BigDecimal.ZERO : cashAmount;
             BigDecimal card = cardAmount == null ? BigDecimal.ZERO : cardAmount;
@@ -34,7 +37,7 @@ public class ShiftSaleAccumulator {
         }
         if (method == PaymentMethod.CASH) {
             shift.setCashAmount(shift.getCashAmount().add(amount));
-        } else {
+        } else if (method == PaymentMethod.CARD) {
             shift.setCardAmount(shift.getCardAmount().add(amount));
         }
     }
@@ -51,6 +54,9 @@ public class ShiftSaleAccumulator {
         }
         BigDecimal nextTotal = shift.getTotalAmount().subtract(amount);
         shift.setTotalAmount(nextTotal.signum() < 0 ? BigDecimal.ZERO : nextTotal);
+        if (method == PaymentMethod.CREDIT || method == PaymentMethod.ADVANCE) {
+            return;
+        }
         if (method == PaymentMethod.MIXED) {
             BigDecimal cash = cashAmount == null ? BigDecimal.ZERO : cashAmount;
             BigDecimal card = cardAmount == null ? BigDecimal.ZERO : cardAmount;
@@ -67,7 +73,7 @@ public class ShiftSaleAccumulator {
         if (method == PaymentMethod.CASH) {
             BigDecimal nextCash = shift.getCashAmount().subtract(amount);
             shift.setCashAmount(nextCash.signum() < 0 ? BigDecimal.ZERO : nextCash);
-        } else {
+        } else if (method == PaymentMethod.CARD) {
             BigDecimal nextCard = shift.getCardAmount().subtract(amount);
             shift.setCardAmount(nextCard.signum() < 0 ? BigDecimal.ZERO : nextCard);
         }

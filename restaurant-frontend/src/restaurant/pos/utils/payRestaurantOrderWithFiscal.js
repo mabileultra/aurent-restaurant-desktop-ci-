@@ -12,6 +12,7 @@ import {
   restaurantPayTotal,
 } from './buildRestaurantFiscalSale';
 import { toPayAmountPayload } from './restaurantPayAmount';
+import { isNonFiscalPayMethod } from './restaurantPayForm';
 import { round2 } from '../../../utils/taxAmounts';
 
 function pendingFiscalFromError(err) {
@@ -76,7 +77,14 @@ export async function payRestaurantOrderWithFiscal({
     card = card != null ? card : round2(Math.max(0, payAmount - cash));
     tendered = tendered != null ? tendered : cash;
     change = change != null ? change : round2(Math.max(0, tendered - cash));
+  } else if (isNonFiscalPayMethod(payMethod)) {
+    cash = 0;
+    card = 0;
+    tendered = payAmount;
+    change = 0;
   }
+
+  const skipFiscal = isNonFiscalPayMethod(payMethod);
 
   const payment = {
     paymentMethod: payMethod,
@@ -88,7 +96,9 @@ export async function payRestaurantOrderWithFiscal({
   };
 
   const cartItems = orderToMultikassaCartItems(order, { serviceLabel });
-  const capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId);
+  const capabilities = skipFiscal
+    ? { enabled: false }
+    : await loadMultikassaCapabilities(storeId, cashRegisterId);
   const requireBeforeSale = Boolean(capabilities?.enabled && capabilities?.requireBeforeSale);
 
   const fiscalArgs = {

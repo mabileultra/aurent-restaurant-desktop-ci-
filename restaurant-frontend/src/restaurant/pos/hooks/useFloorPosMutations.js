@@ -24,7 +24,8 @@ export function useFloorPosMutations(deps) {
     openingCash, closingCash, shift, activeOrderId, order, servicePreview,
     waiterNameById, user,
     setOpenTable, setActiveOrderId, setCounterModalOpen, setCounterForm,
-    setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote, setPaidReceipt,
+    setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote,
+    setPendingWeightItem, setPaidReceipt,
     closePayModal,
   } = deps;
 
@@ -151,21 +152,22 @@ export function useFloorPosMutations(deps) {
   });
 
   const addItemMutation = useMutation({
-    mutationFn: ({ menuItem, modifierOptionIds, note }) => {
+    mutationFn: ({ menuItem, modifierOptionIds, note, quantity }) => {
       const mods = (modifierOptionIds ?? []).map(String).sort().join(',');
       const noteKey = note?.trim() || '';
-      const key = `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}`;
+      const qty = Number(quantity) > 0 ? Number(quantity) : 1;
+      const key = `${activeOrderId}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
       return enqueueAddItem(key, () => rstOrderApi.addItem(activeOrderId, {
         menuItemId: menuItem.id,
-        quantity: 1,
+        quantity: qty,
         modifierOptionIds: modifierOptionIds ?? [],
         note: noteKey || undefined,
       }));
     },
-    onMutate: async ({ menuItem, modifierOptionIds, note }) => {
+    onMutate: async ({ menuItem, modifierOptionIds, note, quantity }) => {
       await qc.cancelQueries({ queryKey: orderKey });
       const prev = qc.getQueryData(orderKey);
-      patchOrder((order) => optimisticAddItem(order, menuItem, { modifierOptionIds, note }));
+      patchOrder((order) => optimisticAddItem(order, menuItem, { modifierOptionIds, note, quantity }));
       return { wasBilling: prev?.status === 'BILLING' };
     },
     onSuccess: (res, _vars, ctx) => {
@@ -174,6 +176,7 @@ export function useFloorPosMutations(deps) {
       setPendingVariants?.(null);
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
+      setPendingWeightItem?.(null);
       if (ctx?.wasBilling) {
         invalidateFloor();
       }
@@ -273,6 +276,7 @@ export function useFloorPosMutations(deps) {
       invalidateFloor();
       invalidateCounter();
       invalidateShift();
+      qc.invalidateQueries({ queryKey: ['rst-recent-cancelled', storeId] });
       toast.success(t('rst.order.cancelled'));
     },
     onError: (err) => errMsg(err, 'rst.order.cancelFailed'),

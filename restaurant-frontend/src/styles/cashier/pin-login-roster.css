@@ -1,0 +1,550 @@
+/* Restaurant terminal: full-bleed roster → PIN (Biznex-style entry). */
+
+.cashier-pin-login--roster {
+  background: #0b1220;
+  background-color: #0b1220;
+}
+
+.cashier-pin-login--roster .cashier-pin-login__visual {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  flex: none;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.cashier-pin-login--roster .cashier-pin-login__visual-img {
+  object-position: center center;
+  filter: blur(2px) saturate(1.05);
+  transform: scale(1.04);
+}
+
+.cashier-pin-login--roster .cashier-pin-login__visual-overlay {
+  background:
+    linear-gradient(180deg, rgb(8 15 30 / 0.72) 0%, rgb(8 15 30 / 0.55) 45%, rgb(8 15 30 / 0.78) 100%);
+}
+
+.cashier-pin-login--roster .cashier-pin-login__top-actions {
+  z-index: 5;
+}
+
+.cashier-pin-roster {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  padding:
+    max(0.75rem, env(safe-area-inset-top, 0px))
+    max(1.25rem, env(safe-area-inset-right, 0px))
+    max(1.25rem, env(safe-area-inset-bottom, 0px))
+    max(1.25rem, env(safe-area-inset-left, 0px));
+  color: #fff;
+}
+
+.cashier-pin-roster__chrome {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.cashier-pin-roster__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.cashier-pin-roster__logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgb(0 0 0 / 0.28);
+}
+
+.cashier-pin-roster__logo .brand-logo {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: cover;
+  object-position: center;
+}
+
+.cashier-pin-roster__brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.cashier-pin-roster__brand-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.cashier-pin-roster__brand-sub {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cashier-pin-roster__chrome-right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.cashier-pin-roster__lang .rst-lang-switch__trigger {
+  background: rgb(255 255 255 / 0.1);
+  border-color: rgb(255 255 255 / 0.2);
+  color: #fff;
+}
+
+.cashier-pin-roster__lang .rst-lang-switch__menu {
+  background: rgb(15 23 42 / 0.96);
+  border-color: rgb(255 255 255 / 0.16);
+}
+
+.cashier-pin-roster__clock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.1;
+  margin-right: 0.25rem;
+}
+
+.cashier-pin-roster__clock-time {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.cashier-pin-roster__clock-date {
+  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  color: rgb(255 255 255 / 0.7);
+  font-variant-numeric: tabular-nums;
+}
+
+.cashier-pin-roster__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  margin: 0;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.12s ease;
+}
+
+.cashier-pin-roster__icon-btn:hover {
+  background: rgb(255 255 255 / 0.14);
+  border-color: rgb(255 255 255 / 0.28);
+}
+
+.cashier-pin-roster__icon-btn:active {
+  transform: scale(0.96);
+}
+
+.cashier-pin-roster__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 1.35rem;
+  min-height: 0;
+  padding-top: clamp(1.25rem, 4vh, 2.75rem);
+  width: 100%;
+}
+
+.cashier-pin-roster__title {
+  margin: 0;
+  text-align: center;
+  font-size: clamp(1.85rem, 3vw, 2.45rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 16px rgb(0 0 0 / 0.35);
+}
+
+.cashier-pin-roster__status {
+  margin: 0;
+  max-width: 36rem;
+  text-align: left;
+  color: rgb(255 255 255 / 0.82);
+  font-size: 1.1rem;
+  line-height: 1.45;
+}
+
+.cashier-pin-roster__status--error {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.cashier-pin-roster__retry {
+  border: 1px solid rgb(255 255 255 / 0.25);
+  border-radius: 0.75rem;
+  background: rgb(255 255 255 / 0.1);
+  color: #fff;
+  padding: 0.55rem 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cashier-pin-roster__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11.25rem, 12.5rem));
+  justify-content: start;
+  gap: 1.15rem;
+  width: 100%;
+}
+
+.cashier-pin-roster__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.95rem;
+  width: 100%;
+  min-height: 13rem;
+  margin: 0;
+  padding: 1.45rem 1rem 1.15rem;
+  border: 1px solid rgb(255 255 255 / 0.08);
+  border-radius: 1.25rem;
+  background: #1a2230;
+  color: #f8fafc;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+  transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.cashier-pin-roster__card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgb(0 0 0 / 0.34);
+}
+
+.cashier-pin-roster__card:active {
+  transform: scale(0.98);
+}
+
+.cashier-pin-roster__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 4.85rem;
+  height: 4.85rem;
+  border-radius: 9999px;
+  background: rgb(16 185 129 / 0.16);
+  color: #6ee7b7;
+  font-size: 1.9rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.cashier-pin-roster__name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cashier-pin-roster__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.75rem;
+  padding: 0.25rem 0.8rem;
+  border-radius: 9999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.cashier-pin-roster__badge.is-manager {
+  background: #d1fae5;
+  color: #047857;
+}
+
+.cashier-pin-roster__badge.is-cashier {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.cashier-pin-roster__badge.is-waiter {
+  background: #ede9fe;
+  color: #6d28d9;
+}
+
+.cashier-pin-roster__badge.is-cook {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.cashier-pin-roster__badge.is-default {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.cashier-pin-roster__badge.is-admin {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.cashier-pin-roster__avatar--admin {
+  background: rgb(249 115 22 / 0.18);
+  color: #fdba74;
+}
+
+.cashier-pin-roster__card--admin {
+  border-color: rgb(249 115 22 / 0.35);
+}
+
+.cashier-pin-roster__admin-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.cashier-pin-roster__admin-pass {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.cashier-pin-roster__admin-pass-toggle {
+  align-self: flex-end;
+  margin: 0;
+  padding: 0.25rem 0.4rem;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cashier-pin-roster__admin-card .cashier-pin-login__submit {
+  width: 100%;
+  margin-top: 0.35rem;
+}
+
+.cashier-pin-roster__pin-step {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  min-height: 0;
+  padding: 0.5rem;
+}
+
+.cashier-pin-roster__back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0 0 1rem;
+  padding: 0.55rem 0.95rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cashier-pin-roster__back:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.cashier-pin-roster__pin-card {
+  width: min(100%, 28rem);
+  padding: 1.65rem 1.75rem 1.85rem;
+  border-radius: 1.35rem;
+  background: rgb(248 250 252 / 0.96);
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.35);
+  color: #0f172a;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__card {
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  background: transparent;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__pin-display {
+  min-height: 4.25rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__dot {
+  font-size: 2rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__keypad {
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__key {
+  min-height: 4rem;
+  font-size: 1.55rem;
+  border-radius: 0.9rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__key--action {
+  font-size: 0.95rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-login__submit {
+  margin-top: 1.15rem;
+  min-height: 3.5rem;
+  font-size: 1.1rem;
+}
+
+.cashier-pin-roster__pin-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.cashier-pin-roster__pin-card .cashier-pin-roster__avatar {
+  width: 5.25rem;
+  height: 5.25rem;
+  font-size: 2.1rem;
+}
+
+.cashier-pin-roster__pin-name {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.cashier-pin-roster__pin-role {
+  margin: 0.2rem 0 0;
+  font-size: 1rem;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.cashier-pin-roster__pin-hint {
+  margin: 0 0 1rem;
+  font-size: 1.05rem;
+  color: #475569;
+}
+
+.cashier-pin-login--touch .cashier-pin-roster__card {
+  min-height: 14rem;
+}
+
+.cashier-pin-login--touch .cashier-pin-roster__icon-btn {
+  width: 2.85rem;
+  height: 2.85rem;
+}
+
+@media (max-width: 720px) {
+  .cashier-pin-roster__brand-sub {
+    display: none;
+  }
+
+  .cashier-pin-roster__clock-time {
+    font-size: 1.2rem;
+  }
+
+  .cashier-pin-roster__grid {
+    grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
+    width: 100%;
+  }
+
+}
+
+/* Theme toggle on login: keep photo/chrome; only staff + PIN cards change */
+.cashier-pin-login--roster-light .cashier-pin-roster__card {
+  border-color: transparent;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 0.28);
+}
+
+.cashier-pin-login--roster-light .cashier-pin-roster__avatar {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-roster__avatar--admin {
+  background: #ffedd5;
+  color: #c2410c;
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__admin-pass-toggle {
+  color: #94a3b8;
+}
+
+.cashier-pin-login--roster-light .cashier-pin-roster__pin-card {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 18px 48px rgb(0 0 0 / 0.28);
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__back {
+  border-color: rgb(255 255 255 / 0.18);
+  background: rgb(255 255 255 / 0.1);
+  color: #f8fafc;
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__pin-card {
+  background: #1a2230;
+  color: #f8fafc;
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__pin-name,
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__pin-hint {
+  color: #e2e8f0;
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-roster__pin-role {
+  color: #94a3b8;
+}
+
+.cashier-pin-login--roster:not(.cashier-pin-login--roster-light) .cashier-pin-login__card {
+  border-color: rgb(255 255 255 / 0.08);
+  background: transparent;
+  color: #f8fafc;
+}

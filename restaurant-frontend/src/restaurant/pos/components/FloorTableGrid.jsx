@@ -1,51 +1,32 @@
 import { useMemo } from 'react';
-import { Search, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import FloorHallRail from './FloorHallRail';
 import FloorTableCard, { useNowTick } from './FloorTableCard';
 import FloorStatusLegend from './FloorStatusLegend';
-import FloorStatusFilters from './FloorStatusFilters';
 import { TABLE_STATUSES } from '../utils/tableStatus';
-import { ALL_HALLS_ID, filterTablesByStatus } from '../utils/floorStatusFilters';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import '../styles/floor-table-grid.css';
+import '../styles/floor-hall-rail.css';
 import '../styles/floor-actions.css';
 import '../styles/floor-phase2.css';
 
-function matchesQuery(table, query, waiterNameById) {
-  if (!query) return true;
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  const waiter = table.activeOrder?.waiterUserId
-    ? (waiterNameById?.get(String(table.activeOrder.waiterUserId)) || '')
-    : '';
-  const guest = table.reservation?.clientName || '';
-  const hay = `${table.code || ''} ${table.label || ''} ${waiter} ${guest}`.toLowerCase();
-  return hay.includes(q);
-}
+const WAITER_LEGEND_STATUSES = ['OCCUPIED', 'WAITING_PAYMENT', 'RESERVED'];
 
 export default function FloorTableGrid({
   hallTables,
   halls,
   selectedHallId,
   onSelectHall,
-  statusFilter,
-  onStatusFilter,
   selectedTableId,
   onTableClick,
   onPrefetchOrder,
-  onNewOrder,
-  sectionSwitch,
-  search,
-  onSearchChange,
+  onAddTable,
   waiterNameById,
   t,
 }) {
   const now = useNowTick();
   const tables = hallTables ?? [];
-  const visible = useMemo(
-    () => filterTablesByStatus(tables, statusFilter)
-      .filter((table) => matchesQuery(table, search, waiterNameById)),
-    [tables, statusFilter, search, waiterNameById],
-  );
+  const mineMode = !!onAddTable;
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(TABLE_STATUSES.map((s) => [s, 0]));
@@ -77,101 +58,97 @@ export default function FloorTableGrid({
   }
 
   return (
-    <div className="rst-floor-grid">
-      <div className="rst-floor-grid__toolbar">
-        <div className="rst-floor-grid__toolbar-row">
-          <div className="rst-floor-grid__halls" role="tablist" aria-label={t('rst.floor.allHalls')}>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={selectedHallId === ALL_HALLS_ID}
-              className={`rst-floor-grid__hall${selectedHallId === ALL_HALLS_ID ? ' is-active' : ''}`}
-              onClick={() => onSelectHall(ALL_HALLS_ID)}
-            >
-              <span>{t('rst.floor.allHalls')}</span>
-              <em>{halls.reduce((n, h) => n + (h.tables?.length ?? 0), 0)}</em>
-            </button>
-            {halls.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={selectedHallId === item.id}
-                className={`rst-floor-grid__hall${selectedHallId === item.id ? ' is-active' : ''}`}
-                onClick={() => onSelectHall(item.id)}
-              >
-                <span>{item.name}</span>
-                <em>{item.tables?.length ?? 0}</em>
-              </button>
-            ))}
-          </div>
-          <div className="rst-floor-grid__tools">
-            <label className="rst-floor-grid__search">
-              <span className="visually-hidden">{t('rst.floor.search')}</span>
-              <Search className="rst-floor-grid__search-ico" size={16} strokeWidth={2.2} aria-hidden />
-              <input
-                type="search"
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                placeholder={t('rst.floor.searchPh')}
-              />
-            </label>
-            {sectionSwitch}
-            {onNewOrder ? (
-              <div className="rst-floor-actions">
-                <button
-                  type="button"
-                  className="rst-floor-actions__btn rst-floor-actions__btn--accent"
-                  onClick={onNewOrder}
-                >
-                  <Plus size={16} strokeWidth={2.4} aria-hidden />
-                  {t('rst.floor.newOrder')}
-                </button>
+    <div className="rst-floor-grid rst-floor-grid--rail">
+      <FloorHallRail
+        halls={halls}
+        selectedHallId={selectedHallId}
+        onSelectHall={onSelectHall}
+        className="rst-floor-grid__rail"
+        statsMode={mineMode ? 'mine' : 'hall'}
+        t={t}
+      />
+
+      <div className="rst-floor-grid__main">
+        {onAddTable ? (
+          <div className="rst-floor-grid__toolbar">
+            <div className="rst-floor-grid__toolbar-row">
+              <div className="rst-floor-grid__tools">
+                <div className="rst-floor-actions">
+                  <button
+                    type="button"
+                    className="rst-floor-actions__btn rst-floor-actions__btn--accent"
+                    onClick={onAddTable}
+                  >
+                    <Plus size={18} strokeWidth={2.4} aria-hidden />
+                    {t('rst.floor.addMyTable')}
+                  </button>
+                </div>
               </div>
-            ) : null}
-          </div>
-        </div>
-        <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
-          <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
-        </div>
-      </div>
-
-      {visible.length === 0 ? (
-        <div className="rst-floor-grid__empty-board">
-          <p>{tables.length === 0 ? t('rst.floor.noTables') : t('rst.floor.searchEmpty')}</p>
-        </div>
-      ) : (
-        <div className="rst-floor-grid__cards">
-          {visible.map((table) => (
-            <FloorTableCard
-              key={table.id}
-              table={table}
-              halls={halls}
-              selected={selectedTableId === table.id}
-              onClick={onTableClick}
-              onPrefetchOrder={onPrefetchOrder}
-              t={t}
-              now={now}
-              waiterNameById={waiterNameById}
-            />
-          ))}
-        </div>
-      )}
-
-      <footer className="rst-floor-grid__footer">
-        <FloorStatusLegend t={t} counts={counts} />
-        <div className="rst-floor-grid__stats">
-          <div className="rst-floor-grid__occupancy">
-            <span>{t('rst.floor.occupancy', { value: occupancy })}</span>
-            <div className="rst-floor-grid__bar" aria-hidden>
-              <i style={{ width: `${occupancy}%` }} />
             </div>
           </div>
-          <div className="rst-floor-grid__avg">
-            {t('rst.floor.avgCheck')}: <strong>{fmtMoneyCompact(avgCheck)}</strong>
+        ) : null}
+
+        {tables.length === 0 ? (
+          <div className="rst-floor-grid__empty-board">
+            <p>{onAddTable ? t('rst.floor.myTablesEmpty') : t('rst.floor.noTables')}</p>
+            {onAddTable ? (
+              <button
+                type="button"
+                className="rst-floor-actions__btn rst-floor-actions__btn--accent"
+                onClick={onAddTable}
+              >
+                <Plus size={18} strokeWidth={2.4} aria-hidden />
+                {t('rst.floor.addMyTable')}
+              </button>
+            ) : null}
           </div>
-        </div>
-      </footer>
+        ) : (
+          <div className="rst-floor-grid__cards">
+            {tables.map((table) => (
+              <FloorTableCard
+                key={table.id}
+                table={table}
+                halls={halls}
+                selected={selectedTableId === table.id}
+                onClick={onTableClick}
+                onPrefetchOrder={onPrefetchOrder}
+                t={t}
+                now={now}
+                waiterNameById={waiterNameById}
+              />
+            ))}
+          </div>
+        )}
+
+        <footer className="rst-floor-grid__footer">
+          <FloorStatusLegend
+            t={t}
+            counts={counts}
+            statuses={mineMode ? WAITER_LEGEND_STATUSES : undefined}
+          />
+          <div className="rst-floor-grid__stats">
+            {mineMode ? (
+              <div className="rst-floor-grid__avg">
+                {t('rst.floor.myTablesCount', { count: tables.length })}
+                {' · '}
+                {t('rst.floor.avgCheck')}: <strong>{fmtMoneyCompact(avgCheck)}</strong>
+              </div>
+            ) : (
+              <>
+                <div className="rst-floor-grid__occupancy">
+                  <span>{t('rst.floor.occupancy', { value: occupancy })}</span>
+                  <div className="rst-floor-grid__bar" aria-hidden>
+                    <i style={{ width: `${occupancy}%` }} />
+                  </div>
+                </div>
+                <div className="rst-floor-grid__avg">
+                  {t('rst.floor.avgCheck')}: <strong>{fmtMoneyCompact(avgCheck)}</strong>
+                </div>
+              </>
+            )}
+          </div>
+        </footer>
+      </div>
     </div>
   );
 }

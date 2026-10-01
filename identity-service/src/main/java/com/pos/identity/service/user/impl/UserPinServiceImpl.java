@@ -7,6 +7,7 @@ import com.pos.identity.service.support.UserLookupSupport;
 import com.pos.identity.security.PinSecret;
 import com.pos.identity.service.user.UserPinService;
 import com.pos.identity.util.CashierPinUtil;
+import com.pos.identity.util.PinLoginRoles;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -20,40 +21,42 @@ public class UserPinServiceImpl implements UserPinService {
 
     @Override
     public void applyForCreate(User user, String roleName, Integer companyId, String pin) {
-        if (!usesPin(roleName)) {
+        if (!PinLoginRoles.usesPin(roleName)) {
+            return;
+        }
+        if (!StringUtils.hasText(pin)) {
+            if (PinLoginRoles.requiresPinOnAssign(roleName)) {
+                throw IdentityExceptions.badRequest("PIN is required for this role");
+            }
             return;
         }
         if (companyId == null) {
-            throw IdentityExceptions.badRequest("Company is required for cashier");
+            throw IdentityExceptions.badRequest("Company is required for PIN users");
         }
         user.setPinDigest(digestUniquePin(companyId, pin, null));
     }
 
     @Override
     public void applyForUpdate(User user, Integer companyId, String pin) {
-        if (!usesPin(user.getRole().getName())) {
-            throw IdentityExceptions.badRequest("PIN can only be set for cashier");
+        if (!PinLoginRoles.usesPin(user.getRole().getName())) {
+            throw IdentityExceptions.badRequest("PIN can only be set for manager, cashier, waiter, or cook");
         }
         if (companyId == null) {
-            throw IdentityExceptions.badRequest("Company is required for cashier");
+            throw IdentityExceptions.badRequest("Company is required for PIN users");
         }
         user.setPinDigest(digestUniquePin(companyId, pin, user.getId()));
     }
 
     @Override
     public void clearOnRoleChange(User user, String oldRoleName, String newRoleName, String pinFromRequest) {
-        if (usesPin(oldRoleName) && !usesPin(newRoleName)) {
+        if (PinLoginRoles.usesPin(oldRoleName) && !PinLoginRoles.usesPin(newRoleName)) {
             user.setPinDigest(null);
         }
-        if (usesPin(newRoleName) && !usesPin(oldRoleName) && !StringUtils.hasText(pinFromRequest)) {
+        if (PinLoginRoles.requiresPinOnAssign(newRoleName)
+            && !PinLoginRoles.usesPin(oldRoleName)
+            && !StringUtils.hasText(pinFromRequest)) {
             throw IdentityExceptions.badRequest("PIN is required when assigning cashier, waiter, or cook");
         }
-    }
-
-    private static boolean usesPin(String roleName) {
-        return "CASHIER".equalsIgnoreCase(roleName)
-            || "WAITER".equalsIgnoreCase(roleName)
-            || "COOK".equalsIgnoreCase(roleName);
     }
 
     private String digestUniquePin(Integer companyId, String pin, java.util.UUID excludeUserId) {

@@ -45,6 +45,7 @@ export default function MenuVariantFormModal({ p }) {
           onChange={(e) => p.setVariantForm({ ...f, portionUnit: e.target.value })}
           options={[
             { value: 'PORTION', label: p.t('rst.admin.portionUnitPortion') },
+            { value: 'KG', label: p.t('rst.admin.portionUnitKg', { defaultValue: 'Килограммы (весовой)' }) },
             { value: 'G', label: p.t('rst.admin.portionUnitG') },
             { value: 'PCS', label: p.t('rst.admin.portionUnitPcs') },
           ]}

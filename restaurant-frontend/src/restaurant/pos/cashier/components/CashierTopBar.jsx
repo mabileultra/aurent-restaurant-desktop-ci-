@@ -1,24 +1,27 @@
 import { Link } from 'react-router-dom';
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwitch';
-import PosZoomControls from '../../components/PosZoomControls';
 import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
-import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import { CASHIER_HEADER_TABS } from '../utils/cashierNav';
+import CashierNavLookup from './CashierNavLookup';
 import '../styles/cashier-shell.css';
 
 export default function CashierTopBar({
   storeName,
-  shift,
-  shiftOpenLabel,
-  zoom,
   userLabel,
   canAdmin = false,
   backToCashier = null,
+  activeTab = null,
+  onSelectTab,
   t,
 }) {
   return (
     <header className="rst-cashier-top">
+      {onSelectTab && !backToCashier ? (
+        <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} t={t} />
+      ) : null}
+
       <div className="rst-cashier-top__brand">
         {backToCashier ? (
           <BaseButton
@@ -39,17 +42,22 @@ export default function CashierTopBar({
         )}
       </div>
 
-      <div className={`rst-cashier-top__shift${shift ? ' is-open' : ''}`}>
-        {shift ? (
-          <>
-            <strong>{t('rst.cashier.shiftOpen')}</strong>
-            {shiftOpenLabel ? <span>{shiftOpenLabel}</span> : null}
-            <span>{t('rst.shift.total')}: {fmtMoneyCompact(shift.totalAmount)}</span>
-          </>
-        ) : (
-          <strong>{t('rst.cashier.shiftClosed')}</strong>
-        )}
-      </div>
+      {onSelectTab && !backToCashier ? (
+        <div className="rst-cashier-top__quick" role="tablist" aria-label={t('rst.cashier.navLabel')}>
+          {CASHIER_HEADER_TABS.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === item.key}
+              className={`rst-cashier-top__quick-btn${activeTab === item.key ? ' is-active' : ''}`}
+              onClick={() => onSelectTab(activeTab === item.key ? 'hall' : item.key)}
+            >
+              {t(item.labelKey)}
+            </button>
+          ))}
+        </div>
+      ) : null}
 
       <div className="rst-cashier-top__actions">
         {canAdmin ? (
@@ -57,7 +65,6 @@ export default function CashierTopBar({
             <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
           </Link>
         ) : null}
-        <PosZoomControls zoom={zoom} t={t} />
         <RestaurantThemeSwitch />
         <LanguageSwitcher variant="rst" />
         <BaseButton

@@ -79,6 +79,10 @@ export default function CashierOrderDock({
   }
 
   const items = (order.items ?? []).filter((row) => row.itemStatus !== 'CANCELLED');
+  const subtotal = Number(order.subtotal) || 0;
+  const servicePercent = Number(servicePreview?.percent) || 0;
+  const serviceAmount = Number(servicePreview?.amount) || 0;
+  const withService = subtotal + serviceAmount;
   const total = resolveRestaurantPayTotal(order, servicePreview);
   const openedClock = formatOpenedAt(order.openedAt);
   const openedTimer = formatDigitalTimer(order.openedAt, now);
@@ -131,9 +135,23 @@ export default function CashierOrderDock({
         )}
       </div>
 
-      <div className="rst-cashier-dock__total">
-        <span>{t('rst.order.total')}</span>
-        <strong>{fmtMoneyCompact(total)}</strong>
+      <div className="rst-cashier-dock__total" role="group" aria-label={t('rst.order.total')}>
+        <div className="rst-cashier-dock__total-col">
+          <span>{t('rst.order.withoutService')}</span>
+          <strong>{fmtMoneyCompact(subtotal)}</strong>
+        </div>
+        <div className="rst-cashier-dock__total-col">
+          <span>
+            {servicePercent > 0
+              ? t('rst.cashier.dockWithServicePercent', { percent: servicePercent })
+              : t('rst.cashier.dockWithService')}
+          </span>
+          <strong>{fmtMoneyCompact(withService)}</strong>
+        </div>
+        <div className="rst-cashier-dock__total-col rst-cashier-dock__total-col--grand">
+          <span>{t('rst.order.total')}</span>
+          <strong>{fmtMoneyCompact(total)}</strong>
+        </div>
       </div>
 
       <div className="rst-cashier-dock__actions">

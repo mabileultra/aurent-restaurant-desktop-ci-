@@ -20,6 +20,7 @@ import { resolveServicePreview } from '../utils/restaurantPayAmount';
 import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
 import { orderPlaceholderFromFloor } from '../utils/orderFloorPlaceholder';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
+import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useRestaurantPrintRelay } from './useRestaurantPrintRelay';
@@ -51,6 +52,7 @@ export function useFloorPosPage() {
   const [activeOrderId, setActiveOrderId] = useState(null);
   const [pendingMenuItem, setPendingMenuItem] = useState(null);
   const [pendingVariants, setPendingVariants] = useState(null);
+  const [pendingWeightItem, setPendingWeightItem] = useState(null);
   const [selectedModifierIds, setSelectedModifierIds] = useState([]);
   const [pendingItemNote, setPendingItemNote] = useState('');
   const [lineNoteEdit, setLineNoteEdit] = useState(null);
@@ -180,6 +182,7 @@ export function useFloorPosPage() {
     openingCash, closingCash, shift, activeOrderId, order, servicePreview, waiterNameById,
     user, setOpenTable, setActiveOrderId, setCounterModalOpen,
     setCounterForm, setShiftModal, setPendingMenuItem, setPendingVariants, setSelectedModifierIds, setPendingItemNote,
+    setPendingWeightItem,
     setPaidReceipt, closePayModal: () => setPayModalOpen(false),
   });
 
@@ -282,22 +285,36 @@ export function useFloorPosPage() {
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
 
-  const addItemNow = (menuItem) => {
+  const addItemNow = (menuItem, extras = {}) => {
     if (!menuItem) return;
     if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
     m.addItemMutation.mutate({
       menuItem,
-      modifierOptionIds: [],
-      note: '',
+      modifierOptionIds: extras.modifierOptionIds ?? [],
+      note: extras.note ?? '',
+      quantity: extras.quantity,
     });
   };
 
   const handleAddItem = (menuItem) => {
+    if (isWeightSoldMenuItem(menuItem)) {
+      setPendingWeightItem(menuItem);
+      return;
+    }
     addItemNow(menuItem);
   };
 
   const handleComposeFamily = (family) => {
-    addItemNow(family?.primary ?? family?.variants?.[0]);
+    const item = family?.primary ?? family?.variants?.[0];
+    if (isWeightSoldMenuItem(item)) {
+      setPendingWeightItem(item);
+      return;
+    }
+    addItemNow(item);
+  };
+
+  const confirmWeightItem = ({ menuItem, quantity, note }) => {
+    addItemNow(menuItem, { quantity, note });
   };
 
   const selectComposeVariant = (variant) => {
@@ -364,6 +381,7 @@ export function useFloorPosPage() {
     payModalOpen, openPayModal: () => setPayModalOpen(true),
     closePayModal: () => setPayModalOpen(false),
     refundMutation: m.refundMutation, pendingMenuItem, pendingVariants,
+    pendingWeightItem,
     pendingItemNote, setPendingItemNote,
     modifierGroups: modifierQuery.data ?? [], selectedModifierIds, toggleModifier,
     selectComposeVariant,
@@ -372,6 +390,8 @@ export function useFloorPosPage() {
       modifierOptionIds: selectedModifierIds,
       note: pendingItemNote,
     }),
+    confirmWeightItem,
+    closeWeightPick: () => setPendingWeightItem(null),
     closeModifiers: () => {
       setPendingMenuItem(null);
       setPendingVariants(null);

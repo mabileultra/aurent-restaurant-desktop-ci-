@@ -2,6 +2,9 @@ import { api } from './client';
 
 export const authApi = {
   login: (data) => api.post('/auth/login', data),
+  cashierPinRoster: (companyLoginCode) => api.get('/auth/cashier-pin/roster', {
+    params: { companyLoginCode },
+  }),
   cashierPinLogin: (data) => api.post('/auth/cashier-pin/login', data),
   register: (data) => api.post('/auth/register', data),
   refresh: () => api.post('/auth/refresh'),

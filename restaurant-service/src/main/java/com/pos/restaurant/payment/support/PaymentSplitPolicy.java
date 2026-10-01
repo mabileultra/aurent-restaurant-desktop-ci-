@@ -62,6 +62,10 @@ public class PaymentSplitPolicy {
                 tendered.subtract(cash).max(BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
             );
         }
+        if (method == PaymentMethod.CREDIT || method == PaymentMethod.ADVANCE) {
+            BigDecimal zero = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+            return new Split(zero, zero, dueScaled, zero);
+        }
         throw new ValidationException("Unsupported payment method");
     }
 

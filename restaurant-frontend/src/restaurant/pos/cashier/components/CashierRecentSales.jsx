@@ -29,50 +29,57 @@ export default function CashierRecentSales({
   rows = [],
   loading = false,
   refunded = false,
+  cancelled = false,
   selectedId = null,
   onOpenReceipt,
   openingId = null,
   emptyText,
   pageSize = DEFAULT_PAGE_SIZE,
+  paginate = true,
+  hideHead = false,
   t,
 }) {
+  const usePager = paginate;
   const [page, setPage] = useState(0);
   const total = rows.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
 
   useEffect(() => {
     setPage(0);
-  }, [total, pageSize, refunded]);
+  }, [total, pageSize, refunded, cancelled]);
 
   const safePage = Math.min(page, totalPages - 1);
 
   const pageRows = useMemo(() => {
+    if (!usePager) return rows;
     const start = safePage * pageSize;
     return rows.slice(start, start + pageSize);
-  }, [rows, safePage, pageSize]);
+  }, [rows, safePage, pageSize, usePager]);
 
   useEffect(() => {
-    if (selectedId == null) return;
+    if (!usePager || selectedId == null) return;
     const idx = rows.findIndex((r) => r.id === selectedId);
     if (idx < 0) return;
     const nextPage = Math.floor(idx / pageSize);
     setPage((prev) => (prev === nextPage ? prev : nextPage));
-  }, [selectedId, rows, pageSize]);
+  }, [selectedId, rows, pageSize, usePager]);
 
   return (
-    <section className="rst-cashier-recent">
-      <div className="rst-cashier-recent__head">
-        <h3>
-          {refunded
-            ? t('rst.cashier.recentRefundsTitle')
-            : t('rst.cashier.recentSalesTitle')}
-        </h3>
-        <p>
-          {refunded
-            ? t('rst.cashier.recentRefundsHint')
-            : t('rst.cashier.recentSalesHint')}
-        </p>
-      </div>
+    <section className={`rst-cashier-recent${cancelled ? ' rst-cashier-recent--cancelled' : ''}`}>
+      {hideHead || cancelled ? null : (
+        <div className="rst-cashier-recent__head">
+          <h3>
+            {refunded
+              ? t('rst.cashier.recentRefundsTitle')
+              : t('rst.cashier.recentSalesTitle')}
+          </h3>
+          <p>
+            {refunded
+              ? t('rst.cashier.recentRefundsHint')
+              : t('rst.cashier.recentSalesHint')}
+          </p>
+        </div>
+      )}
 
       {loading ? (
         <div className="rst-notice">{t('common.loading')}</div>
@@ -103,11 +110,13 @@ export default function CashierRecentSales({
                     <div className="rst-cashier-recent__meta">
                       <span>{formatTime(row.closedAt)}</span>
                       <span className="rst-cashier-recent__pay">
-                        {row.paymentMethod === 'CARD'
-                          ? t('rst.order.payCard')
-                          : row.paymentMethod === 'MIXED'
-                            ? t('rst.order.payMixed')
-                            : t('rst.order.payCash')}
+                        {cancelled
+                          ? t('rst.order.refuseShort')
+                          : row.paymentMethod === 'CARD'
+                            ? t('rst.order.payCard')
+                            : row.paymentMethod === 'MIXED'
+                              ? t('rst.order.payMixed')
+                              : t('rst.order.payCash')}
                       </span>
                       <strong>{fmtMoneyCompact(row.totalAmount ?? row.paidAmount)}</strong>
                     </div>
@@ -117,7 +126,7 @@ export default function CashierRecentSales({
             })}
           </ul>
 
-          {total > pageSize ? (
+          {usePager && total > pageSize ? (
             <div className="rst-cashier-recent__pager">
               <button
                 type="button"

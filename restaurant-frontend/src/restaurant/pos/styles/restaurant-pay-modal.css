@@ -67,23 +67,32 @@
 
 .rst-pay-modal__methods {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 0.4rem;
   padding: 0.75rem 1rem 0;
+}
+
+@media (max-width: 720px) {
+  .rst-pay-modal__methods {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
 .rst-pay-modal__method {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.65rem 0.4rem;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 0.55rem 0.25rem;
   border-radius: 10px;
   border: 1px solid var(--rst-border, #2a2a2a);
   background: transparent;
   color: inherit;
-  font-size: 0.8rem;
+  font-size: 0.72rem;
   font-weight: 600;
+  line-height: 1.15;
+  text-align: center;
   cursor: pointer;
 }
 
@@ -226,6 +235,13 @@
 .rst-pay-modal__provider--uzcard.is-active { border-color: #22c55e; box-shadow: 0 0 0 1px rgb(34 197 94 / 0.35); }
 .rst-pay-modal__provider--payme.is-active { border-color: #14b8a6; box-shadow: 0 0 0 1px rgb(20 184 166 / 0.35); }
 .rst-pay-modal__provider--click.is-active { border-color: #a855f7; box-shadow: 0 0 0 1px rgb(168 85 247 / 0.35); }
+
+.rst-pay-modal__info {
+  margin: 0;
+  color: var(--rst-muted);
+  font-size: 0.85rem;
+  line-height: 1.35;
+}
 
 .rst-pay-modal__error {
   margin: 0;

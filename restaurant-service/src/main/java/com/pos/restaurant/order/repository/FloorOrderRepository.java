@@ -59,6 +59,18 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
     );
 
     @Query("""
+        select o from FloorOrder o left join fetch o.table
+        where o.companyId = :companyId and o.storeId = :storeId
+          and o.status = com.pos.restaurant.order.domain.OrderStatus.CANCELLED
+        order by o.closedAt desc, o.openedAt desc
+        """)
+    List<FloorOrder> findRecentCancelledByCompanyIdAndStoreId(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        Pageable pageable
+    );
+
+    @Query("""
         select o from FloorOrder o
         where o.companyId = :companyId and o.storeId = :storeId
           and (

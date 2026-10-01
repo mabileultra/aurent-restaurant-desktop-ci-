@@ -10,7 +10,9 @@ function buildCredentialsText(cred, t) {
     lines.push(`${t('users.platformCompanyCode')}: ${cred.companyLoginCode}`);
   }
   lines.push(`${t('users.credentialsLogin')}: ${cred.username}`);
-  if ((cred.role === 'CASHIER' || cred.role === 'WAITER' || cred.role === 'COOK') && cred.pin) {
+  const pinRole = cred.role === 'CASHIER' || cred.role === 'WAITER'
+    || cred.role === 'COOK' || cred.role === 'MANAGER';
+  if (pinRole && cred.pin) {
     lines.push(`${t('users.pin')}: ${cred.pin}`);
   } else if (cred.password) {
     lines.push(`${t('users.password')}: ${cred.password}`);
@@ -62,7 +64,8 @@ export default function UserCredentialsCreatedModal({ credentials, t, onClose })
           <span className="user-form-modal__muted">{t('users.credentialsLogin')}:</span>{' '}
           <span className="user-form-modal__mono">{credentials.username}</span>
         </p>
-        {credentials.role === 'CASHIER' || credentials.role === 'WAITER' || credentials.role === 'COOK' ? (
+        {credentials.role === 'CASHIER' || credentials.role === 'WAITER'
+          || credentials.role === 'COOK' || credentials.role === 'MANAGER' ? (
           <p>
             <span className="user-form-modal__muted">{t('users.pin')}:</span>{' '}
             <span className="user-form-modal__mono">{credentials.pin}</span>

@@ -31,7 +31,10 @@ public class SecurityConfig {
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/internal/pos/**").permitAll()
-                .requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN")
+                // Store POS roles need roster for waiter names / assign; CRUD stays admin/manager.
+                .requestMatchers("/users/pos-roster").hasAnyRole(
+                    "ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN", "MANAGER", "CASHIER", "WAITER", "COOK")
+                .requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN", "MANAGER")
                 .requestMatchers("/platform/account/**").hasRole("PLATFORM_ADMIN")
                 .requestMatchers("/platform/module-access/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/platform/security/super-admins/**").hasRole("SUPER_ADMIN")

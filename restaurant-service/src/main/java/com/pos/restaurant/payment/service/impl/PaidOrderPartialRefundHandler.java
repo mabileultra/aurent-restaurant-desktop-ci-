@@ -189,7 +189,9 @@ public class PaidOrderPartialRefundHandler {
             BigDecimal card = totalRefund.subtract(cash).max(BigDecimal.ZERO);
             return new CashCardSplit(cash, card);
         }
-        if (method == PaymentMethod.CARD) {
+        if (method == PaymentMethod.CARD
+            || method == PaymentMethod.CREDIT
+            || method == PaymentMethod.ADVANCE) {
             return new CashCardSplit(BigDecimal.ZERO, totalRefund);
         }
         return new CashCardSplit(totalRefund, BigDecimal.ZERO);

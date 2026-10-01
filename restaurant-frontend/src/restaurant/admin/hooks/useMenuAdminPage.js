@@ -124,6 +124,13 @@ export function useMenuAdminPage() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
+      const portionAmount = form.portionAmount === '' ? null : Number(form.portionAmount);
+      const portionUnit = portionAmount == null ? null : (form.portionUnit || 'PORTION');
+      if (portionUnit === 'KG' && (!(portionAmount > 0) || portionAmount > 10)) {
+        throw new Error(t('rst.admin.portionKgMaxError', {
+          defaultValue: 'Для весового блюда укажите вес от 0.001 до 10 кг',
+        }));
+      }
       const body = {
         name: form.name,
         sku: form.sku || null,
@@ -137,8 +144,8 @@ export function useMenuAdminPage() {
         imageUrl: form.imageUrl || null,
         description: form.description.trim() || null,
         prepMinutes: form.prepMinutes === '' ? null : Number(form.prepMinutes),
-        portionAmount: form.portionAmount === '' ? null : Number(form.portionAmount),
-        portionUnit: form.portionAmount === '' ? null : (form.portionUnit || 'PORTION'),
+        portionAmount,
+        portionUnit,
         portionLabel: form.portionLabel.trim() || null,
         tags: form.tags.trim() || null,
         modifierGroupIds: form.modifierGroupIds,

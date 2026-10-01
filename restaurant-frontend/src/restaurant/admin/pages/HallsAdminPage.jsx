@@ -3,7 +3,6 @@ import FloorHallTabs from '../../pos/components/FloorHallTabs';
 import HallFormModal from '../components/HallFormModal';
 import TableFormModal from '../components/TableFormModal';
 import HallsPlanPanel from '../components/HallsPlanPanel';
-import HallsTablesPanel from '../components/HallsTablesPanel';
 import { useHallsAdminPage } from '../hooks/useHallsAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
@@ -100,15 +99,7 @@ export default function HallsAdminPage() {
           <HallsPlanPanel
             hall={p.selectedHall}
             onTableClick={(table) => openTableEdit(p, table)}
-            t={p.t}
-          />
-          <HallsTablesPanel
-            tables={tables}
-            hallId={p.selectedHall.id}
-            hallServicePercent={p.selectedHall.servicePercent}
-            onAddTable={() => p.setTableModal({ mode: 'create', form: p.nextTableForm(tables) })}
-            onEditTable={(table) => openTableEdit(p, table)}
-            onDeactivateTable={(id) => p.deactivateTableMutation.mutate(id)}
+            onTableMove={(moved) => p.moveTableMutation.mutate(moved)}
             t={p.t}
           />
         </div>
@@ -130,6 +121,11 @@ export default function HallsAdminPage() {
         form={p.tableModal?.form ?? p.nextTableForm()}
         onChange={(form) => p.setTableModal((prev) => ({ ...prev, form }))}
         onClose={() => p.setTableModal(null)}
+        onDeactivate={(id) => {
+          p.deactivateTableMutation.mutate(id, {
+            onSuccess: () => p.setTableModal(null),
+          });
+        }}
         onSubmit={() => {
           const form = p.tableModal.form;
           const hallPercent = Number(p.selectedHall?.servicePercent) || 0;
@@ -144,7 +140,7 @@ export default function HallsAdminPage() {
           }
           p.saveTableMutation.mutate(form);
         }}
-        isPending={p.saveTableMutation.isPending}
+        isPending={p.saveTableMutation.isPending || p.deactivateTableMutation.isPending}
         t={p.t}
       />
     </section>

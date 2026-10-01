@@ -16,6 +16,7 @@ import com.pos.restaurant.order.dto.UpdateGuestsRequest;
 import com.pos.restaurant.order.dto.UpdateOrderDiscountRequest;
 import com.pos.restaurant.order.dto.UpdateOrderItemRequest;
 import com.pos.restaurant.order.service.FloorOrderService;
+import com.pos.restaurant.payment.dto.PaidOrderSummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -97,6 +98,16 @@ public class FloorOrderController {
         @RequestParam OrderChannel channel
     ) {
         return orderService.listActiveByChannel(storeId, channel);
+    }
+
+    @GetMapping("/stores/{storeId}/orders/recent-cancelled")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Недавние отказы столов / отменённые заказы")
+    public List<PaidOrderSummaryResponse> listRecentCancelled(
+        @PathVariable Integer storeId,
+        @RequestParam(required = false) Integer limit
+    ) {
+        return orderService.listRecentCancelled(storeId, limit);
     }
 
     @GetMapping("/stores/{storeId}/orders")

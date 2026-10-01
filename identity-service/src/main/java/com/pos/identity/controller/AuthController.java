@@ -3,6 +3,7 @@ package com.pos.identity.controller;
 import com.pos.identity.dto.auth.AuthRequest;
 import com.pos.identity.dto.auth.AuthResponse;
 import com.pos.identity.dto.auth.CashierPinAuthRequest;
+import com.pos.identity.dto.auth.PinRosterEntryResponse;
 import com.pos.identity.dto.auth.RegisterRequest;
 import com.pos.identity.dto.auth.VerifyPasswordRequest;
 import com.pos.identity.dto.auth.VerifyPinRequest;
@@ -19,11 +20,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -53,10 +58,22 @@ public class AuthController {
         ));
     }
 
-    @PostMapping("/cashier-pin/login")
-    @Operation(summary = "Вход кассира по PIN")
+    @GetMapping("/cashier-pin/roster")
+    @Operation(summary = "Список сотрудников с PIN для терминала")
     @SecurityRequirements()
-    @ApiResponse(responseCode = "200", description = "Успешная аутентификация кассира")
+    @ApiResponse(responseCode = "200", description = "Активные пользователи с PIN")
+    public ResponseEntity<List<PinRosterEntryResponse>> cashierPinRoster(
+        @RequestParam String companyLoginCode,
+        HttpServletRequest httpRequest
+    ) {
+        loginRateLimiter.check(ClientIpResolver.resolve(httpRequest), "cashier-pin-roster");
+        return ResponseEntity.ok(cashierPinAuthService.listPinRoster(companyLoginCode));
+    }
+
+    @PostMapping("/cashier-pin/login")
+    @Operation(summary = "Вход по PIN (терминал)")
+    @SecurityRequirements()
+    @ApiResponse(responseCode = "200", description = "Успешная аутентификация")
     public ResponseEntity<AuthResponse> cashierPinLogin(
         @Valid @RequestBody CashierPinAuthRequest request,
         HttpServletRequest httpRequest

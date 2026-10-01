@@ -18,6 +18,7 @@ public interface UserMapper {
     @Mapping(target = "companyName", ignore = true)
     @Mapping(target = "companyLoginCode", ignore = true)
     @Mapping(target = "active", source = "user.active")
+    @Mapping(target = "hasPin", source = "user.pinDigest", qualifiedByName = "hasPinDigest")
     @Mapping(target = "storeIds", source = "user.storeIds", qualifiedByName = "sortedStoreIds")
     @Mapping(target = "storeNames", source = "storeNames")
     UserResponse toResponse(User user, List<String> storeNames);
@@ -32,6 +33,11 @@ public interface UserMapper {
             return List.of();
         }
         return storeIds.stream().sorted().toList();
+    }
+
+    @Named("hasPinDigest")
+    default boolean hasPinDigest(String pinDigest) {
+        return pinDigest != null && !pinDigest.isBlank();
     }
 
     default List<UserResponse> toResponseList(List<User> users) {

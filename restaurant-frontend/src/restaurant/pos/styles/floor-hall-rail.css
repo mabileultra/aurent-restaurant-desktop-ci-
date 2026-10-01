@@ -1,0 +1,164 @@
+/* Shared left hall rail — waiter desktop + cashier */
+.rst-floor-hall-rail {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  width: 100%;
+  padding: 0.85rem 0.75rem;
+  border-right: 1px solid var(--rst-line);
+  background: var(--rst-surface);
+  overflow: auto;
+}
+
+.rst-floor-hall-rail__shift {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(248 113 113 / 0.35);
+  background: rgb(248 113 113 / 0.1);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: #fecaca;
+}
+
+.rst-floor-hall-rail__shift.is-open {
+  border-color: rgb(34 197 94 / 0.35);
+  background: rgb(34 197 94 / 0.1);
+  color: #86efac;
+}
+
+html.rst-theme--light .rst-floor-hall-rail__shift {
+  color: #b91c1c;
+  background: rgb(248 113 113 / 0.14);
+}
+
+html.rst-theme--light .rst-floor-hall-rail__shift.is-open {
+  color: #15803d;
+  background: rgb(34 197 94 / 0.16);
+}
+
+.rst-floor-hall-rail__shift strong {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.rst-floor-hall-rail__title {
+  display: block;
+  margin: 0.35rem 0 0.2rem;
+  padding: 0 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rst-muted);
+}
+
+.rst-floor-hall-rail__btn {
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: 4.55rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--rst-ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-floor-hall-rail__btn-main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.rst-floor-hall-rail__btn-main strong {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.rst-floor-hall-rail__btn-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.4rem;
+  font-size: 1.08rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.rst-floor-hall-rail__btn-sep {
+  color: var(--rst-muted);
+  font-weight: 700;
+}
+
+.rst-floor-hall-rail__stat {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.4rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.rst-floor-hall-rail__stat--occupied {
+  color: var(--rst-occupied);
+  background: var(--rst-occupied-bg);
+}
+
+.rst-floor-hall-rail__stat--free {
+  color: var(--rst-free);
+  background: var(--rst-free-bg);
+}
+
+.rst-floor-hall-rail__stat--waiting {
+  color: var(--rst-pay);
+  background: var(--rst-pay-bg);
+}
+
+.rst-floor-hall-rail__stat--reserved {
+  color: var(--rst-reserved);
+  background: var(--rst-reserved-bg);
+}
+
+.rst-floor-hall-rail__stat--total {
+  color: var(--rst-muted);
+  background: color-mix(in srgb, var(--rst-ink) 8%, transparent);
+}
+
+.rst-floor-hall-rail__btn:hover {
+  background: color-mix(in srgb, var(--rst-ink) 6%, transparent);
+}
+
+.rst-floor-hall-rail__btn.is-active {
+  border-color: rgb(255 122 26 / 0.45);
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
+}
+
+.rst-floor-hall-rail__btn.is-active .rst-floor-hall-rail__stat--total {
+  color: var(--rst-ink);
+}
+
+.rst-floor-grid__rail.rst-floor-hall-rail {
+  flex: 0 0 min(22rem, 34%);
+  max-width: 22rem;
+  border-radius: 0;
+}

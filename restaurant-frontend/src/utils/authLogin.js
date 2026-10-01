@@ -1,4 +1,4 @@
-/** Единые URL входа: касса = PIN, админка = /login?admin=1 */
+/** Единый вход: PIN-ростер (+ карточка «Админка» с логином/паролем). */
 
 export const CASHIER_LOGIN_PATH = '/cashier/login';
 export const ADMIN_LOGIN_QUERY = 'admin=1';
@@ -94,14 +94,9 @@ export function cashierLoginPath() {
   return CASHIER_LOGIN_PATH;
 }
 
-/** Куда вести без сессии: POS/официант → PIN, админка ресторана → login?admin=1. */
-export function unauthenticatedLoginPath(pathname = '') {
-  const p = pathname || (typeof window !== 'undefined' ? window.location.pathname : '');
-  if (isDesktopCashier()) return cashierLoginPath();
-  if (p.startsWith(CASHIER_LOGIN_PATH)) return cashierLoginPath();
-  if (p.startsWith('/rst') && !p.startsWith('/rst/admin')) return cashierLoginPath();
-  if (p.startsWith('/cashier')) return cashierLoginPath();
-  return adminLoginPath();
+/** Без сессии всегда на PIN-ростер (админка — карточка логин/пароль). */
+export function unauthenticatedLoginPath() {
+  return cashierLoginPath();
 }
 
 /** Куда отправлять при logout / 401 в контексте кассы или десктопа. */

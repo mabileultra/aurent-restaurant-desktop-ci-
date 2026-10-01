@@ -1,24 +1,29 @@
 .rst-cashier-tables {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
   min-height: 0;
-  padding: 0.85rem 1rem;
-  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0.75rem 0.85rem;
+  overflow: hidden;
   background: var(--rst-bg-deep);
 }
 
 .rst-cashier-tables__head {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin-bottom: 0.65rem;
   flex-shrink: 0;
 }
 
-.rst-cashier-tables__head h2 {
+.rst-cashier-tables__title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rst-cashier-tables__title-row h2 {
   margin: 0;
   font-size: 0.78rem;
   font-weight: 800;
@@ -27,15 +32,83 @@
   color: var(--rst-muted);
 }
 
-.rst-cashier-tables__head span {
+.rst-cashier-tables__title-row span {
   font-size: 0.85rem;
   font-weight: 700;
   color: var(--rst-ink);
 }
 
-.rst-cashier-tables__grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
-  gap: 0.7rem;
-  align-content: start;
+.rst-cashier-tables__sort {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.rst-cashier-tables__sort-btn {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rst-ink) 5%, transparent);
+  color: var(--rst-muted);
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-cashier-tables__sort-btn:hover {
+  color: var(--rst-ink);
+}
+
+.rst-cashier-tables__sort-btn.is-active {
+  border-color: rgb(255 122 26 / 0.45);
+  background: var(--rst-accent-soft);
+  color: var(--rst-ink);
+}
+
+.rst-cashier-tables__list {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  overflow: auto;
+  padding-right: 0.15rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile {
+  width: 100%;
+  min-height: 5.25rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5rem 0.95rem;
+  padding: 0.9rem 1.05rem;
+  text-align: left;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__code {
+  font-size: 1.45rem;
+  min-width: 2.75rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__status {
+  margin-left: 0;
+  font-size: 0.95rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__amount,
+.rst-cashier-tables__list .rst-cashier-tile__seats {
+  margin-left: auto;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__time {
+  width: 100%;
+  margin-top: -0.1rem;
+  font-size: 0.95rem;
 }

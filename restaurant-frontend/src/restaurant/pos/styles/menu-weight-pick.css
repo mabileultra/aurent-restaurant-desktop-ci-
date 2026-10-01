@@ -1,0 +1,24 @@
+.rst-weight-pick__presets {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.rst-weight-pick__fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0.85rem 0 0.5rem;
+}
+
+.rst-weight-pick__total {
+  margin: 0.35rem 0 0.85rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--rst-ink);
+}
+
+.rst-item-compose__option--size.is-selected {
+  border-color: rgb(255 122 26 / 0.55);
+  background: var(--rst-accent-soft);
+}

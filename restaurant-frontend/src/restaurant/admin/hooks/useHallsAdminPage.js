@@ -135,6 +135,28 @@ export function useHallsAdminPage() {
     onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
+  const moveTableMutation = useMutation({
+    mutationFn: (moved) => {
+      const tables = selectedHall?.tables ?? [];
+      return rstFloorApi.updateLayout(selectedHall.id, {
+        tables: tables.map((table) => {
+          const isMoved = table.id === moved.id;
+          return {
+            id: table.id,
+            posX: isMoved ? Number(moved.posX) : Number(table.posX),
+            posY: isMoved ? Number(moved.posY) : Number(table.posY),
+            width: TABLE_DEFAULT_SIZE,
+            height: TABLE_DEFAULT_SIZE,
+          };
+        }),
+      });
+    },
+    onSuccess: () => {
+      invalidate();
+    },
+    onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
+  });
+
   return {
     t,
     workspace,
@@ -152,6 +174,7 @@ export function useHallsAdminPage() {
     deactivateHallMutation,
     deactivateTableMutation,
     arrangeMutation,
+    moveTableMutation,
     isLoading: (workspace.storeId == null && workspace.isLoading) || floorQuery.isLoading,
   };
 }

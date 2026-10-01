@@ -5,6 +5,7 @@ import MergeTablesModal from './MergeTablesModal';
 import AssignWaiterModal from './AssignWaiterModal';
 import OpenCounterOrderModal from './OpenCounterOrderModal';
 import ModifierPickModal from './ModifierPickModal';
+import MenuWeightPickModal from './MenuWeightPickModal';
 import LineNoteModal from './LineNoteModal';
 import RestaurantShiftModal from './shift/RestaurantShiftModal';
 import RestaurantReceiptModal from './RestaurantReceiptModal';
@@ -126,6 +127,13 @@ export default function FloorPosModals({ p, waiterMode = false }) {
         onNoteChange={p.setPendingItemNote}
         onClose={p.closeModifiers}
         onConfirm={p.confirmModifiers}
+        isPending={p.addItemMutation.isPending}
+        t={p.t}
+      />
+      <MenuWeightPickModal
+        item={p.pendingWeightItem}
+        onClose={p.closeWeightPick}
+        onConfirm={p.confirmWeightItem}
         isPending={p.addItemMutation.isPending}
         t={p.t}
       />
