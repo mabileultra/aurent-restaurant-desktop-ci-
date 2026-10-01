@@ -32,6 +32,11 @@
   right: 0;
   z-index: 40;
   width: min(18.5rem, calc(100vw - 1.5rem));
+  max-height: min(70vh, 22rem);
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding: 0.75rem 0.85rem;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);

@@ -47,7 +47,10 @@
   flex-direction: column;
   min-height: 0;
   flex: 1;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 .rst-pos.rst-pos--waiter-mobile .rst-floor-section-tabs--toolbar {

@@ -129,8 +129,9 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
   const listTables = desktopMine
     ? filterTablesByWaiter(p.hallTables, user?.id)
     : p.hallTables;
+  // Keep every hall in the rail (even 0 mine) so waiters always see categories + «Take table».
   const railHalls = desktopMine
-    ? filterHallsByWaiterTables(p.halls, user?.id).filter((hall) => (hall.tables || []).length > 0)
+    ? filterHallsByWaiterTables(p.halls, user?.id)
     : p.halls;
 
   const boardProps = {

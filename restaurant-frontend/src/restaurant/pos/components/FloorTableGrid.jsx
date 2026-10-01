@@ -50,6 +50,21 @@ export default function FloorTableGrid({
   }, [tables]);
 
   if (!halls?.length) {
+    if (onAddTable) {
+      return (
+        <div className="rst-floor-grid rst-floor-grid--empty">
+          <p>{t('rst.floor.myTablesEmpty')}</p>
+          <button
+            type="button"
+            className="rst-floor-actions__btn rst-floor-actions__btn--accent"
+            onClick={onAddTable}
+          >
+            <Plus size={18} strokeWidth={2.4} aria-hidden />
+            {t('rst.floor.addMyTable')}
+          </button>
+        </div>
+      );
+    }
     return (
       <div className="rst-floor-grid rst-floor-grid--empty">
         <p>{t('rst.floor.selectHall')}</p>

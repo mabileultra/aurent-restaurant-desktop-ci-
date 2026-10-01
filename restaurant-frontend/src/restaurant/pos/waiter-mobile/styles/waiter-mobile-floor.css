@@ -4,8 +4,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  min-height: 0;
-  flex: 1;
+  flex: 0 0 auto;
+  width: 100%;
   padding: 0.55rem 0.65rem calc(1rem + env(safe-area-inset-bottom, 0px));
 }
 
@@ -143,16 +143,14 @@
 }
 
 .rst-waiter-floor__list {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.5rem;
   align-content: start;
   align-items: start;
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
+  /* Scroll happens on .rst-pos__body — nested overflow traps touch on iOS/Android. */
+  overflow: visible;
   padding-bottom: 0.5rem;
 }
 

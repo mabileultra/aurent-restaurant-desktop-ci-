@@ -31,12 +31,11 @@ export default function RestaurantMobileInstallCorner() {
     const onKey = (event) => {
       if (event.key === 'Escape') setOpen(false);
     };
-    document.addEventListener('mousedown', onDoc);
-    document.addEventListener('touchstart', onDoc);
+    // pointerdown (not touchstart) — touchstart on document can fight page scroll on phones.
+    document.addEventListener('pointerdown', onDoc);
     document.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', onDoc);
-      document.removeEventListener('touchstart', onDoc);
+      document.removeEventListener('pointerdown', onDoc);
       document.removeEventListener('keydown', onKey);
     };
   }, [open]);

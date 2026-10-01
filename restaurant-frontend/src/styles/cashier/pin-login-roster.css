@@ -3,6 +3,11 @@
 .cashier-pin-login--roster {
   background: #0b1220;
   background-color: #0b1220;
+  /* Fixed shell otherwise clips roster on phones — allow the page to scroll. */
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 .cashier-pin-login--roster .cashier-pin-login__visual {
