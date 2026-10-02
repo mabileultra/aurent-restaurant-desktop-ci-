@@ -7,14 +7,16 @@ import { resolveOrderHallName } from '../../utils/floorPosDerivations';
 import '../styles/cashier-table-tile.css';
 
 /**
- * Compact table tile for cashier 3-column board — number, status, amount only.
+ * Compact table tile for cashier board — hall, number, status, amount, open checks.
  */
 export default function CashierTableTile({
   table,
   halls = [],
   selected,
+  activeOrderId,
   now,
   onClick,
+  onSelectCheck,
   onPrefetchOrder,
   t,
 }) {
@@ -32,11 +34,20 @@ export default function CashierTableTile({
     }
   };
 
+  const openTable = () => onClick?.(table);
+
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       className={`rst-cashier-tile rst-cashier-tile--${status}${selected ? ' is-selected' : ''}`}
-      onClick={() => onClick(table)}
+      onClick={openTable}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openTable();
+        }
+      }}
       onPointerEnter={warm}
       onFocus={warm}
     >
@@ -52,9 +63,42 @@ export default function CashierTableTile({
           {t('rst.floor.seats', { count: table.seatCount ?? 0 })}
         </span>
       )}
-      {orders.length > 1 ? (
-        <span className="rst-cashier-tile__time">{t('rst.order.checksCount', { count: orders.length })}</span>
-      ) : elapsed ? <span className="rst-cashier-tile__time">{elapsed}</span> : null}
-    </button>
+      {orders.length > 0 ? (
+        <ul className="rst-cashier-tile__checks" onClick={(e) => e.stopPropagation()}>
+          {orders.map((check) => {
+            const billing = String(check.status || '').toUpperCase() === 'BILLING';
+            const isActive = check.id != null && String(check.id) === String(activeOrderId);
+            return (
+              <li key={check.id}>
+                <button
+                  type="button"
+                  className={[
+                    'rst-cashier-tile__check',
+                    billing ? 'is-billing' : '',
+                    isActive ? 'is-active' : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => {
+                    if (onSelectCheck) onSelectCheck(table, check.id);
+                    else onClick?.(table);
+                  }}
+                >
+                  <span className="rst-cashier-tile__check-no">
+                    {t('rst.floor.checkNo', { no: check.orderNo })}
+                    {billing ? (
+                      <em className="rst-cashier-tile__check-bill">
+                        {t('rst.status.WAITING_PAYMENT')}
+                      </em>
+                    ) : null}
+                  </span>
+                  <strong>{fmtMoneyCompact(check.subtotal || 0)}</strong>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : elapsed ? (
+        <span className="rst-cashier-tile__time">{elapsed}</span>
+      ) : null}
+    </div>
   );
 }

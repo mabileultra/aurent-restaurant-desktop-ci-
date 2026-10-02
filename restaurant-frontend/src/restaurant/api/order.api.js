@@ -11,6 +11,10 @@ export const rstOrderApi = {
     api.get(rst(`/stores/${storeId}/orders/recent-cancelled`), {
       params: limit != null ? { limit } : {},
     }),
+  listRecentCancelledItems: (storeId, { limit } = {}) =>
+    api.get(rst(`/stores/${storeId}/orders/recent-cancelled-items`), {
+      params: limit != null ? { limit } : {},
+    }),
   search: (storeId, params) => api.get(rst(`/stores/${storeId}/orders`), { params }),
   get: (orderId) => api.get(rst(`/orders/${orderId}`)),
   updateGuests: (orderId, data) => api.patch(rst(`/orders/${orderId}/guests`), data),

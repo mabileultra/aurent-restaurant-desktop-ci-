@@ -15,6 +15,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.WeightSaleSupport;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.print.support.PrintJobPayloads;
 import com.pos.restaurant.settings.service.KitchenBoardService;
@@ -56,7 +57,11 @@ public class SendToKitchenHandler {
             throw new BusinessException("There are no new items to send to the kitchen");
         }
         List<PrintJobPayloads.KitchenSendLine> sendLines = pending.stream()
-            .map(row -> new PrintJobPayloads.KitchenSendLine(row.item().getId(), row.qty()))
+            .map(row -> new PrintJobPayloads.KitchenSendLine(
+                row.item().getId(),
+                row.qty(),
+                WeightSaleSupport.kitchenNote(row.item().getMenuItem(), row.item().getNote(), row.qty())
+            ))
             .toList();
         if (kitchenBoard) {
             Map<UUID, List<PendingFire>> byStation = new LinkedHashMap<>();

@@ -101,10 +101,25 @@ export function useCashierPosPage() {
     if (floor.posMode !== 'floor') floor.changePosMode('floor');
   };
 
+  const openTableOrder = (table, orderId) => {
+    if (!orderId) return;
+    clearDraft();
+    setSelectedTableId(table?.id ?? null);
+    floor.setActiveOrderId(orderId);
+    setTabState('hall');
+    floor.setFloorSection('tables');
+    if (floor.posMode !== 'floor') floor.changePosMode('floor');
+  };
+
+  const selectTableCheck = (table, orderId) => {
+    openTableOrder(table, orderId);
+  };
+
   const selectTable = (table) => {
     setSelectedTableId(table?.id ?? null);
     const orders = tableActiveOrders(table);
     if (orders.length > 1) {
+      // Tile shows checks; body click still opens the occupied modal (continue / new check / etc.).
       clearDraft();
       setFullOrder(false);
       floor.handleTableClick(table);
@@ -112,11 +127,7 @@ export function useCashierPosPage() {
     }
     const openOrderId = orders[0]?.id ?? table?.activeOrder?.id ?? table?.activeOrderId;
     if (openOrderId) {
-      clearDraft();
-      floor.setActiveOrderId(openOrderId);
-      setTabState('hall');
-      floor.setFloorSection('tables');
-      if (floor.posMode !== 'floor') floor.changePosMode('floor');
+      openTableOrder(table, openOrderId);
       return;
     }
     const status = tableStatusClass(table?.status);
@@ -239,6 +250,7 @@ export function useCashierPosPage() {
     selectedTableId,
     setSelectedTableId,
     selectTable,
+    selectTableCheck,
     clearOrder,
     draftTable,
     fullOrder,

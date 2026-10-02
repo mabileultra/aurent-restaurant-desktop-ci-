@@ -8,7 +8,10 @@ import { rstCommissionApi } from '../../api/commission.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { toastApiError } from '../../../utils/apiError';
 
+/** Roles created from this page (company ADMIN is platform-created). */
 export const RST_STAFF_ROLES = ['WAITER', 'COOK', 'CASHIER', 'MANAGER'];
+/** Listed on the page — includes company ADMIN so they can edit login/password. */
+export const RST_STAFF_LIST_ROLES = [...RST_STAFF_ROLES, 'ADMIN'];
 export const STAFF_PAGE_SIZE_OPTIONS = [10, 14, 20];
 const DEFAULT_PAGE_SIZE = 14;
 
@@ -59,8 +62,10 @@ export function useStaffAdminPage() {
     if (storeId == null) return [];
     const q = search.trim().toLowerCase();
     return (usersQuery.data ?? [])
-      .filter((user) => RST_STAFF_ROLES.includes(user.role))
+      .filter((user) => RST_STAFF_LIST_ROLES.includes(user.role))
       .filter((user) => {
+        // Company ADMIN is company-wide (often no storeIds).
+        if (user.role === 'ADMIN') return true;
         const ids = userStoreIds(user);
         return ids.includes(Number(storeId));
       })
@@ -115,12 +120,15 @@ export function useStaffAdminPage() {
     cooks: staff.filter((u) => u.role === 'COOK').length,
     cashiers: staff.filter((u) => u.role === 'CASHIER').length,
     managers: staff.filter((u) => u.role === 'MANAGER').length,
+    admins: staff.filter((u) => u.role === 'ADMIN').length,
     active: staff.filter((u) => u.active !== false).length,
   }), [staff]);
 
   const invalidateCommission = () => {
     qc.invalidateQueries({ queryKey: ['rst-waiter-commission', workspace.storeId] });
   };
+
+  const authUserId = useAuthStore((s) => s.user?.id);
 
   const toggleMutation = useMutation({
     mutationFn: (id) => userApi.toggle(id),
@@ -130,6 +138,17 @@ export function useStaffAdminPage() {
       qc.invalidateQueries({ queryKey: ['users'] });
     },
     onError: (err) => toastApiError(err, t('rst.staff.toggleFailed')),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => userApi.delete(id),
+    onSuccess: () => {
+      toast.success(t('rst.staff.deleted'));
+      qc.invalidateQueries({ queryKey: ['rst-staff-users'] });
+      qc.invalidateQueries({ queryKey: ['users'] });
+      qc.invalidateQueries({ queryKey: ['rst-waiter-commission', workspace.storeId] });
+    },
+    onError: (err) => toastApiError(err, t('rst.staff.deleteFailed')),
   });
 
   const saveDefaultMutation = useMutation({
@@ -267,6 +286,34 @@ export function useStaffAdminPage() {
       qc.invalidateQueries({ queryKey: ['rst-staff-users'] });
     },
     toggleMutation,
+    deleteMutation,
+    canDeleteStaff: (user) => {
+      if (!canManage || !user?.id) return false;
+      if (user.role === 'ADMIN') return false;
+      if (authUserId != null && String(user.id) === String(authUserId)) return false;
+      return true;
+    },
+    deleteStaff: (user) => {
+      if (!canManage) {
+        toast.error(t('rst.staff.adminOnly'));
+        return;
+      }
+      if (!user?.id) return;
+      if (user.role === 'ADMIN') {
+        toast.error(t('rst.staff.deleteAdminForbidden'));
+        return;
+      }
+      if (authUserId != null && String(user.id) === String(authUserId)) {
+        toast.error(t('rst.staff.deleteSelfForbidden'));
+        return;
+      }
+      const name = displayName(user);
+      if (!window.confirm(t('rst.staff.deleteConfirm', { name }))) return;
+      deleteMutation.mutate(user.id);
+    },
+    formAllowedRoles: formMode === 'edit' && editingUser?.role === 'ADMIN'
+      ? ['ADMIN']
+      : RST_STAFF_ROLES,
     saveDefault: () => {
       const percent = parsePercent(draftDefault);
       if (percent == null) return;

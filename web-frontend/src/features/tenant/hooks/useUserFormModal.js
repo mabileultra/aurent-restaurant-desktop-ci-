@@ -109,7 +109,8 @@ export function useUserFormModal({
   const isCashierRole = selectedRole === 'CASHIER' || selectedRole === 'WAITER';
   const isPinRole = isCashierRole || selectedRole === 'COOK';
   const pinRequired = !isEdit || (isPinRole && user?.role !== 'CASHIER' && user?.role !== 'WAITER' && user?.role !== 'COOK');
-  const showPasswordField = !isPinRole && (isPlatform || fieldOn('password') || !isEdit);
+  // Non-PIN roles (company ADMIN): username + password editable on create and edit.
+  const showPasswordField = !isPinRole;
 
   const companyLoginCode =
     (isEdit ? user?.companyLoginCode : selectedCompany?.loginCode) || null;

@@ -5,6 +5,7 @@ import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.CancelledItemSummaryResponse;
 import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
@@ -108,6 +109,16 @@ public class FloorOrderController {
         @RequestParam(required = false) Integer limit
     ) {
         return orderService.listRecentCancelled(storeId, limit);
+    }
+
+    @GetMapping("/stores/{storeId}/orders/recent-cancelled-items")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @Operation(summary = "Недавние отказы блюд (кухня / касса / отмена заказа)")
+    public List<CancelledItemSummaryResponse> listRecentCancelledItems(
+        @PathVariable Integer storeId,
+        @RequestParam(required = false) Integer limit
+    ) {
+        return orderService.listRecentCancelledItems(storeId, limit);
     }
 
     @GetMapping("/stores/{storeId}/orders")

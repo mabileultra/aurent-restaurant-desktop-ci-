@@ -11,6 +11,7 @@ import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.entity.FloorOrderItemModifier;
 import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
+import com.pos.restaurant.order.support.WeightSaleSupport;
 import com.pos.restaurant.print.domain.PrintJobKind;
 import com.pos.restaurant.print.entity.RestaurantPrintJob;
 import com.pos.restaurant.print.repository.RestaurantPrintJobRepository;
@@ -113,7 +114,7 @@ public class PrintJobPublisher {
                 item.getName(),
                 qty,
                 MenuPortionFormat.display(menuItem),
-                item.getNote(),
+                WeightSaleSupport.kitchenNote(menuItem, item.getNote(), qty),
                 modifierNames(modifiers.getOrDefault(item.getId(), List.of()))
             ));
             String baseTitle = category.getName() == null ? "" : category.getName();
@@ -158,7 +159,7 @@ public class PrintJobPublisher {
             order.getWaiterUserId(),
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
-            item.getNote(),
+            WeightSaleSupport.kitchenNote(item.getMenuItem(), item.getNote(), quantity),
             modifierNames(mods)
         ));
     }

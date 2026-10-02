@@ -139,7 +139,7 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     halls: railHalls,
     selectedHallId: p.selectedHallId,
     onSelectHall: p.setSelectedHallId,
-    selectedTableId: p.openTable?.id ?? p.reservedTable?.id ?? a.inspectTable?.id,
+    selectedTableId: p.draftTable?.id ?? p.openTable?.id ?? p.reservedTable?.id ?? a.inspectTable?.id,
     onTableClick: p.handleTableClick,
     onPrefetchOrder: p.prefetchOrder,
     waiterNameById: p.waiterNameById,
@@ -174,7 +174,7 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
           onClose={() => setPickOpen(false)}
           onPickFree={(table) => {
             setPickOpen(false);
-            p.beginOpenTable(table);
+            p.beginDraftTable(table);
           }}
           t={p.t}
         />
@@ -184,52 +184,57 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
 }
 
 function buildOrderWorkspaceProps(p) {
-  if (!p.order) return null;
+  const order = p.orderForUi ?? p.order;
+  if (!order) return null;
+  const draft = !!p.isDraftOrder;
   return {
-    order: p.order,
+    order,
     menuItems: p.menuItems,
-    onBack: () => p.setActiveOrderId(null),
+    onBack: () => {
+      if (draft) p.clearDraft();
+      else p.setActiveOrderId(null);
+    },
     backLabel: p.t('rst.order.backToFloor'),
-    hallName: p.orderHallName,
-    waiterName: p.order.waiterUserId
-      ? p.waiterNameById.get(String(p.order.waiterUserId))
+    hallName: draft ? p.draftHallName : p.orderHallName,
+    waiterName: order.waiterUserId
+      ? p.waiterNameById.get(String(order.waiterUserId))
       : null,
     onAddItem: p.handleAddItem,
     onComposeFamily: p.handleComposeFamily,
-    onQty: p.handleQty,
-    onRemove: (itemId) => p.removeItemMutation.mutate(itemId),
-    onCancel: () => {
+    onQty: draft ? undefined : p.handleQty,
+    onRemove: draft ? undefined : p.handleRemoveItem,
+    onCancel: draft ? undefined : () => {
       if (window.confirm(p.t('rst.order.confirmCancel'))) {
         p.cancelMutation.mutate();
       }
     },
-    canCancel: p.canCancel,
-    allowKitchenRefuse: !!p.access?.canCancelOrder,
-    canSendKitchen: p.canSendKitchen,
+    canCancel: !draft && p.canCancel,
+    allowKitchenRefuse: !draft && !!p.access?.canCancelOrder,
+    canSendKitchen: !draft && p.canSendKitchen,
     sendingKitchen: p.sendKitchenMutation.isPending,
-    onSendKitchen: () => p.sendKitchenMutation.mutate(),
-    canRequestBill: p.canRequestBill,
+    onSendKitchen: draft ? undefined : () => p.sendKitchenMutation.mutate(),
+    canRequestBill: !draft && p.canRequestBill,
     canPay: false,
-    onRequestBill: () => p.billMutation.mutate(),
+    onRequestBill: draft ? undefined : () => p.billMutation.mutate(),
     onPay: undefined,
-    onGuestsChange: (payload) => p.updateGuestsMutation.mutate(payload),
+    onGuestsChange: draft ? undefined : (payload) => p.updateGuestsMutation.mutate(payload),
     guestsPending: p.updateGuestsMutation.isPending,
     billingPending: p.billMutation.isPending,
     paying: false,
-    servicePreview: p.servicePreview,
-    waiters: p.access.canAssignWaiter ? p.waiters : [],
-    onAssignWaiter: p.access.canAssignWaiter
+    servicePreview: draft ? null : p.servicePreview,
+    waiters: !draft && p.access.canAssignWaiter ? p.waiters : [],
+    onAssignWaiter: !draft && p.access.canAssignWaiter
       ? (waiterUserId) => p.assignWaiterMutation.mutate(waiterUserId)
       : undefined,
     assigningWaiter: p.assignWaiterMutation.isPending,
-    onEditNote: p.openLineNote,
-    onNewCheck: p.access?.canOpenOrder && p.order?.tableId && !p.openExtraCheckPending ? () => {
+    onEditNote: draft ? undefined : p.openLineNote,
+    onNewCheck: !draft && p.access?.canOpenOrder && order?.tableId && !p.openExtraCheckPending ? () => {
       const table = (p.halls || []).flatMap((hall) => hall.tables || [])
-        .find((row) => row.id === p.order.tableId)
-        || { id: p.order.tableId };
+        .find((row) => row.id === order.tableId)
+        || { id: order.tableId };
       p.openExtraCheck(table, {
-        guestCount: p.order.guestCount,
-        waiterUserId: p.order.waiterUserId,
+        guestCount: order.guestCount,
+        waiterUserId: order.waiterUserId,
       });
     } : undefined,
     footerVariant: 'waiter',
@@ -266,10 +271,11 @@ export default function RestaurantFloorPosPage() {
     );
   }
 
+  const orderOpen = Boolean(p.activeOrderId || p.isDraftOrder);
   const rootClass = [
     'rst-app rst-pos',
     mobile.enabled ? 'rst-pos--waiter-mobile' : '',
-    mobile.enabled && p.activeOrderId ? 'rst-pos--waiter-order-open' : '',
+    mobile.enabled && orderOpen ? 'rst-pos--waiter-order-open' : '',
   ].filter(Boolean).join(' ');
   const orderProps = buildOrderWorkspaceProps(p);
   const mineMode = String(user?.role || '').toUpperCase() === 'WAITER';
@@ -285,7 +291,7 @@ export default function RestaurantFloorPosPage() {
           </span>
         </div>
         <WaiterShiftHint p={p} />
-        {!mobile.enabled && !p.activeOrderId ? (
+        {!mobile.enabled && !orderOpen ? (
           <FloorSectionSwitch p={p} variant="header" mineMode={mineMode} />
         ) : null}
         {!mobile.enabled ? <div id="rst-pos-search-slot" className="rst-pos__search" /> : null}
@@ -327,7 +333,7 @@ export default function RestaurantFloorPosPage() {
       </header>
 
       <div className="rst-pos__body">
-        {p.activeOrderId ? (
+        {orderOpen ? (
           orderProps ? (
             mobile.enabled ? (
               <WaiterMobileOrderWorkspace {...orderProps} />

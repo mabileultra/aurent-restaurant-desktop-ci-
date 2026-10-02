@@ -107,6 +107,18 @@ class UserAccessPolicyTest {
     }
 
     @Test
+    void companyAdminCanDeleteStaffIncludingManager() {
+        UUID actorId = UUID.randomUUID();
+        when(tenantAccess.currentUser()).thenReturn(IdentityUsers.user(actorId, "ADMIN", 2));
+        when(tenantAccess.isPlatformOperator()).thenReturn(false);
+        assertDoesNotThrow(() -> policy.assertDeletable(IdentityUsers.user("WAITER", 2)));
+        assertDoesNotThrow(() -> policy.assertDeletable(IdentityUsers.user("COOK", 2)));
+        assertDoesNotThrow(() -> policy.assertDeletable(IdentityUsers.user("CASHIER", 2)));
+        assertDoesNotThrow(() -> policy.assertDeletable(IdentityUsers.user("MANAGER", 2)));
+        assertThrows(BadRequestException.class, () -> policy.assertDeletable(IdentityUsers.user("ADMIN", 2)));
+    }
+
+    @Test
     void platformOperatorMustSupplyCompanyWhenCreatingTenantUser() {
         when(tenantAccess.isPlatformOperator()).thenReturn(true);
         assertThrows(BadRequestException.class, () -> policy.resolveCompanyIdForCreate(null, "CASHIER"));

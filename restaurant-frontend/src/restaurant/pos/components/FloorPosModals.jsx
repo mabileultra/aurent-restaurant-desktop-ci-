@@ -24,7 +24,7 @@ export default function FloorPosModals({ p, waiterMode = false }) {
 
   return (
     <>
-      {/* Guest count modal removed — open table goes straight to order (speed). */}
+      {/* Free table: draft until first dish. Reserved seat still opens the order. */}
       <ReservedTableModal
         open={!!p.reservedTable}
         table={p.reservedTable}

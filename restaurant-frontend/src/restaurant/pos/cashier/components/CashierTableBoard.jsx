@@ -18,6 +18,7 @@ export default function CashierTableBoard({
   selectedTableId,
   activeOrderId,
   onTableClick,
+  onSelectCheck,
   onPrefetchOrder,
   t,
 }) {
@@ -69,8 +70,10 @@ export default function CashierTableBoard({
               table={table}
               halls={halls}
               selected={table.id === selectedId}
+              activeOrderId={activeOrderId}
               now={now}
               onClick={onTableClick}
+              onSelectCheck={onSelectCheck}
               onPrefetchOrder={onPrefetchOrder}
               t={t}
             />

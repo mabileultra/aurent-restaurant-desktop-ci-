@@ -127,7 +127,7 @@ export async function printCategoryTicketOnAdd({
 }
 
 export async function printKitchenTicket({
-  order, t, onlyItemIds, qtyByItemId, waiterName, waiterNameById,
+  order, t, onlyItemIds, qtyByItemId, noteByItemId, waiterName, waiterNameById,
 } = {}) {
   if (!order || !isDesktopPrinter() || !onlyItemIds?.length) {
     return { mode: 'skip', missing: [], configured: false };
@@ -137,6 +137,9 @@ export async function printKitchenTicket({
   const qtyMap = qtyByItemId instanceof Map
     ? qtyByItemId
     : new Map(Object.entries(qtyByItemId || {}).map(([id, qty]) => [String(id), qty]));
+  const noteMap = noteByItemId instanceof Map
+    ? noteByItemId
+    : new Map(Object.entries(noteByItemId || {}).map(([id, note]) => [String(id), note]));
   const lines = (order.items || []).filter((item) => {
     const status = String(item.itemStatus || '').toUpperCase();
     if (status === 'CANCELLED') return false;
@@ -156,11 +159,12 @@ export async function printKitchenTicket({
       });
     }
     const qty = qtyMap.has(String(line.id)) ? qtyMap.get(String(line.id)) : line.quantity;
+    const note = noteMap.has(String(line.id)) ? noteMap.get(String(line.id)) : line.note;
     byStation.get(key).items.push({
       lineId: `${line.id}:${qty}`,
       name: line.name,
       quantity: qty,
-      note: line.note,
+      note,
       modifiers: line.modifiers,
       portionText: line.portionText,
     });

@@ -16,5 +16,10 @@ export function resetClientSessionState() {
 export function logoutAndResetSession() {
   resetConnectivityStabilizer();
   resetClientSessionState();
+  try {
+    sessionStorage.removeItem('pos.auth.lastActivity');
+  } catch {
+    /* ignore */
+  }
   useAuthStore.getState().logout();
 }

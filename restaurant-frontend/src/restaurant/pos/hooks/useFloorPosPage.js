@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -34,6 +34,27 @@ const ORDER_STALE_MS = 3_000;
 const FLOOR_POLL_MS = 20_000;
 const ORDER_POLL_MS = 12_000;
 
+function draftOrderFromTable(table) {
+  if (!table) return null;
+  return {
+    id: null,
+    orderNo: '—',
+    status: 'OPEN',
+    channel: 'DINE_IN',
+    tableId: table.id,
+    tableCode: table.code,
+    guestCount: 1,
+    adultCount: 1,
+    childrenCount: 0,
+    subtotal: 0,
+    discountAmount: 0,
+    waiterUserId: null,
+    openedAt: null,
+    items: [],
+    _draft: true,
+  };
+}
+
 export function useFloorPosPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
@@ -61,6 +82,9 @@ export function useFloorPosPage() {
   const [floorSearch, setFloorSearch] = useState('');
   const [paidReceipt, setPaidReceipt] = useState(null);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [draftTable, setDraftTable] = useState(null);
+  const draftTableRef = useRef(null);
+  const openingRef = useRef(false);
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
   const storeId = workspace.storeId;
@@ -200,9 +224,15 @@ export function useFloorPosPage() {
     return false;
   };
 
+  const clearDraft = () => {
+    draftTableRef.current = null;
+    setDraftTable(null);
+  };
+
   const changePosMode = (mode) => {
     if (!access.canCounterSales && mode !== 'floor') return;
     if (activeOrderId) setActiveOrderId(null);
+    clearDraft();
     setPosMode(mode);
     setCounterModalOpen(false);
     setOpenTable(null);
@@ -211,6 +241,23 @@ export function useFloorPosPage() {
     if (mode === 'floor') setFloorSection('tables');
   };
 
+  /** Free table: select + menu only; order opens on first dish (like cashier). */
+  const beginDraftTable = (table) => {
+    if (!access.canOpenOrder) {
+      toast.error(t('rst.floor.noOpenPermission'));
+      return;
+    }
+    if (!ensureShift()) return;
+    if (!table?.id) return;
+    setReservedTable(null);
+    setOpenTable(null);
+    tableActions.closeInspect();
+    draftTableRef.current = table;
+    setDraftTable(table);
+    setActiveOrderId(null);
+  };
+
+  /** Reserved seat / explicit open — creates the order immediately. */
   const beginOpenTable = (table) => {
     if (!access.canOpenOrder) {
       toast.error(t('rst.floor.noOpenPermission'));
@@ -218,6 +265,7 @@ export function useFloorPosPage() {
     }
     if (!ensureShift()) return;
     if (!table?.id || m.openMutation.isPending) return;
+    clearDraft();
     setReservedTable(null);
     setOpenTable(null);
     m.openMutation.mutate({ table, guestCount: 1, childrenCount: 0 });
@@ -231,6 +279,7 @@ export function useFloorPosPage() {
     }
     if (!ensureShift()) return;
     if (m.openExtraCheckMutation.isPending) return;
+    clearDraft();
     tableActions.closeInspect();
     setReservedTable(null);
     setOpenTable(null);
@@ -244,6 +293,7 @@ export function useFloorPosPage() {
   const handleTableClick = (table) => {
     const openOrderId = table.activeOrder?.id ?? table.activeOrderId;
     if (openOrderId) {
+      clearDraft();
       tableActions.openOccupied(table);
       return;
     }
@@ -262,7 +312,7 @@ export function useFloorPosPage() {
       setReservedTable(table);
       return;
     }
-    beginOpenTable(table);
+    beginDraftTable(table);
   };
 
   const handleOpenCounter = () => {
@@ -272,21 +322,81 @@ export function useFloorPosPage() {
     setCounterModalOpen(true);
   };
 
+  const confirmKitchenRefuse = (line) => {
+    const kitchen = line?.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
+    if (!kitchen) return true;
+    return window.confirm(t('rst.order.confirmRefuseKitchenItem', {
+      name: line.name || '',
+      defaultValue: `Отказать «${line.name || ''}»?`,
+    }));
+  };
+
   const handleQty = (line, nextQty) => {
     const isNew = line.itemStatus === 'NEW';
     const kitchen = line.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
     const sent = Number(line.sentQuantity) || 0;
+    const currentQty = Number(line.quantity) || 0;
     const waiterPendingOk = kitchen && nextQty >= sent;
     if (!isNew && !(access.canCancelOrder && kitchen) && !waiterPendingOk) return;
     if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
+    if (kitchen && nextQty < currentQty && !confirmKitchenRefuse(line)) return;
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
 
+  const handleRemoveItem = (itemId) => {
+    const line = (order?.items || []).find((row) => String(row.id) === String(itemId));
+    if (line && !confirmKitchenRefuse(line)) return;
+    m.removeItemMutation.mutate(itemId);
+  };
+
+  const ensureOrderId = async () => {
+    if (activeOrderId) return activeOrderId;
+    const table = draftTableRef.current;
+    if (!table?.id) throw new Error('table required');
+    if (openingRef.current || m.openMutation.isPending) throw new Error('open pending');
+    if (!access.canOpenOrder) {
+      toast.error(t('rst.floor.noOpenPermission'));
+      throw new Error('no permission');
+    }
+    if (!ensureShift()) throw new Error('shift required');
+    openingRef.current = true;
+    try {
+      const created = await m.openMutation.mutateAsync({
+        table,
+        guestCount: 1,
+        childrenCount: 0,
+      });
+      clearDraft();
+      return created.id;
+    } finally {
+      openingRef.current = false;
+    }
+  };
+
+  const addToOrder = async (payload) => {
+    try {
+      const orderId = await ensureOrderId();
+      m.addItemMutation.mutate({ ...payload, orderId });
+    } catch {
+      /* toast already shown */
+    }
+  };
+
   const addItemNow = (menuItem, extras = {}) => {
     if (!menuItem) return;
-    if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
-    m.addItemMutation.mutate({
+    if (activeOrderId) {
+      if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
+      m.addItemMutation.mutate({
+        menuItem,
+        modifierOptionIds: extras.modifierOptionIds ?? [],
+        note: extras.note ?? '',
+        quantity: extras.quantity,
+      });
+      return;
+    }
+    if (!draftTableRef.current) return;
+    addToOrder({
       menuItem,
       modifierOptionIds: extras.modifierOptionIds ?? [],
       note: extras.note ?? '',
@@ -295,6 +405,8 @@ export function useFloorPosPage() {
   };
 
   const handleAddItem = (menuItem) => {
+    if (!menuItem) return;
+    if (!activeOrderId && !draftTableRef.current) return;
     if (isWeightSoldMenuItem(menuItem)) {
       setPendingWeightItem(menuItem);
       return;
@@ -304,11 +416,7 @@ export function useFloorPosPage() {
 
   const handleComposeFamily = (family) => {
     const item = family?.primary ?? family?.variants?.[0];
-    if (isWeightSoldMenuItem(item)) {
-      setPendingWeightItem(item);
-      return;
-    }
-    addItemNow(item);
+    handleAddItem(item);
   };
 
   const confirmWeightItem = ({ menuItem, quantity, note }) => {
@@ -371,6 +479,7 @@ export function useFloorPosPage() {
     isError: onFloor ? floorQuery.isError : counterQuery.isError,
     handleTableClick, handleAddItem, handleComposeFamily,
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
+    handleRemoveItem,
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
     sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
     discountMutation: m.discountMutation,
@@ -383,12 +492,22 @@ export function useFloorPosPage() {
     pendingItemNote, setPendingItemNote,
     modifierGroups: modifierQuery.data ?? [], selectedModifierIds, toggleModifier,
     selectComposeVariant,
-    confirmModifiers: () => m.addItemMutation.mutate({
-      menuItem: pendingMenuItem,
-      modifierOptionIds: selectedModifierIds,
-      note: pendingItemNote,
-    }),
+    confirmModifiers: () => {
+      if (!pendingMenuItem) return;
+      addItemNow(pendingMenuItem, {
+        modifierOptionIds: selectedModifierIds,
+        note: pendingItemNote,
+      });
+    },
     confirmWeightItem,
+    beginDraftTable,
+    clearDraft,
+    draftTable,
+    isDraftOrder: Boolean(draftTable && !activeOrderId),
+    orderForUi: activeOrderId ? order : draftOrderFromTable(draftTable),
+    draftHallName: draftTable
+      ? resolveOrderHallName(halls, { tableId: draftTable.id }, selectedHall?.name)
+      : null,
     closeWeightPick: () => setPendingWeightItem(null),
     closeModifiers: () => {
       setPendingMenuItem(null);

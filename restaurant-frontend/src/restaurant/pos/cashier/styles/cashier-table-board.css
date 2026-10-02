@@ -126,3 +126,21 @@
   margin-top: -0.1rem;
   font-size: 0.95rem;
 }
+
+.rst-cashier-tables__list .rst-cashier-tile__checks {
+  width: 100%;
+  margin-top: 0.1rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__check {
+  min-height: 2.35rem;
+  padding: 0.4rem 0.7rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__check-no {
+  font-size: 0.98rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__check strong {
+  font-size: 1.05rem;
+}

@@ -10,7 +10,12 @@ public final class PrintJobPayloads {
 
     public record GuestBill(UUID orderId) {}
 
-    public record KitchenSendLine(UUID itemId, BigDecimal quantity) {}
+    /** note = kitchen text for this fire (weight delta); null → print relay falls back to order line note. */
+    public record KitchenSendLine(UUID itemId, BigDecimal quantity, String note) {
+        public KitchenSendLine(UUID itemId, BigDecimal quantity) {
+            this(itemId, quantity, null);
+        }
+    }
 
     /** itemIds kept for older print relays; prefer lines when present (reorder delta qty). */
     public record KitchenSend(UUID orderId, List<UUID> itemIds, List<KitchenSendLine> lines) {

@@ -225,6 +225,7 @@ export function useFloorPosMutations(deps) {
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
+      qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
     },
     onError: (err) => {
       qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
@@ -245,6 +246,7 @@ export function useFloorPosMutations(deps) {
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
+      qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
     },
     onError: (err) => {
       qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
@@ -297,6 +299,7 @@ export function useFloorPosMutations(deps) {
       invalidateCounter();
       invalidateShift();
       qc.invalidateQueries({ queryKey: ['rst-recent-cancelled', storeId] });
+      qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
       toast.success(t('rst.order.cancelled'));
     },
     onError: (err) => errMsg(err, 'rst.order.cancelFailed'),

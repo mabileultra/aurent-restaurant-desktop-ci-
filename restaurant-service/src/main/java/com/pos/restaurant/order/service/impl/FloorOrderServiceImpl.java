@@ -7,6 +7,7 @@ import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.CancelledItemSummaryResponse;
 import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
@@ -50,6 +51,7 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     private final FloorTenantSupport tenantSupport;
     private final OrderLookup orderLookup;
     private final ListRecentCancelledOrdersHandler listRecentCancelledOrdersHandler;
+    private final ListRecentCancelledItemsHandler listRecentCancelledItemsHandler;
     private final OrderResponseAssembler assembler;
     private final OrderLinkedTablesSupport linkedTables;
     private final OrderOpenHandler openHandler;
@@ -112,6 +114,11 @@ public class FloorOrderServiceImpl implements FloorOrderService {
     @Override
     public List<PaidOrderSummaryResponse> listRecentCancelled(Integer storeId, Integer limit) {
         return listRecentCancelledOrdersHandler.handle(storeId, limit);
+    }
+
+    @Override
+    public List<CancelledItemSummaryResponse> listRecentCancelledItems(Integer storeId, Integer limit) {
+        return listRecentCancelledItemsHandler.handle(storeId, limit);
     }
 
     @Override

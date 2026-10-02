@@ -1,0 +1,122 @@
+.rst-cashier-cancelled {
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.rst-cashier-cancelled__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow: auto;
+}
+
+.rst-cashier-cancelled__row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--rst-ink) 4%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-cashier-cancelled__row:hover {
+  border-color: color-mix(in srgb, rgb(248 113 113) 45%, transparent);
+  background: color-mix(in srgb, rgb(248 113 113) 10%, transparent);
+}
+
+.rst-cashier-cancelled__row.is-busy {
+  opacity: 0.65;
+}
+
+.rst-cashier-cancelled__top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.rst-cashier-cancelled__when {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+}
+
+.rst-cashier-cancelled__amount {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fecaca;
+}
+
+.rst-cashier-cancelled__place {
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.rst-cashier-cancelled__dish {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.65rem;
+  font-size: 0.95rem;
+}
+
+.rst-cashier-cancelled__dish em {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fca5a5;
+}
+
+.rst-cashier-cancelled__empty {
+  padding: 1.25rem 0.5rem;
+  color: var(--rst-muted);
+  font-weight: 600;
+}
+
+.rst-cashier-cancelled__pager {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.rst-cashier-cancelled__pager button {
+  min-height: 2.4rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--rst-ink) 5%, transparent);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-cashier-cancelled__pager button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+html.rst-theme--light .rst-cashier-cancelled__amount {
+  color: #b91c1c;
+}
+
+html.rst-theme--light .rst-cashier-cancelled__dish em {
+  color: #b91c1c;
+}

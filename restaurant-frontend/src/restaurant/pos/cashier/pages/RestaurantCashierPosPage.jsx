@@ -116,7 +116,7 @@ export default function RestaurantCashierPosPage() {
               onAddItem={p.handleAddItem}
               onComposeFamily={p.handleComposeFamily}
               onQty={p.isDraftOrder ? undefined : p.handleQty}
-              onRemove={p.isDraftOrder ? undefined : (itemId) => p.removeItemMutation.mutate(itemId)}
+              onRemove={p.isDraftOrder ? undefined : p.handleRemoveItem}
               onCancel={p.isDraftOrder ? undefined : () => {
                 if (window.confirm(p.t('rst.order.confirmCancel'))) {
                   p.cancelMutation.mutate();

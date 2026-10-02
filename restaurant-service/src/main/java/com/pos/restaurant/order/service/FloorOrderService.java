@@ -5,6 +5,7 @@ import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.dto.AddOrderItemRequest;
 import com.pos.restaurant.order.dto.AssignWaiterRequest;
+import com.pos.restaurant.order.dto.CancelledItemSummaryResponse;
 import com.pos.restaurant.order.dto.MergeTablesRequest;
 import com.pos.restaurant.order.dto.OpenCounterOrderRequest;
 import com.pos.restaurant.order.dto.OpenOrderRequest;
@@ -32,6 +33,8 @@ public interface FloorOrderService {
     List<OrderResponse> listActiveByChannel(Integer storeId, OrderChannel channel);
 
     List<PaidOrderSummaryResponse> listRecentCancelled(Integer storeId, Integer limit);
+
+    List<CancelledItemSummaryResponse> listRecentCancelledItems(Integer storeId, Integer limit);
 
     Page<OrderResponse> searchByChannel(
         Integer storeId,

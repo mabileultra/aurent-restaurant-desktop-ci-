@@ -39,6 +39,7 @@ public class OrderUpdateItemHandler {
 
         var qty = request.quantity().setScale(3, RoundingMode.HALF_UP);
         BigDecimal sent = item.getSentQuantity() == null ? BigDecimal.ZERO : item.getSentQuantity();
+        BigDecimal previousQty = item.getQuantity() == null ? BigDecimal.ZERO : item.getQuantity();
 
         if (item.getItemStatus() == OrderItemStatus.NEW) {
             mutabilityPolicy.assertMutable(item);
@@ -49,8 +50,12 @@ public class OrderUpdateItemHandler {
             if (qty.compareTo(sent) < 0) {
                 throw new ForbiddenException("Only a manager or cashier can change a kitchen item");
             }
-        } else if (qty.compareTo(sent) < 0) {
-            item.setSentQuantity(qty);
+        } else if (qty.compareTo(previousQty) < 0) {
+            // Cashier/manager kitchen cut: keep a CANCELLED sibling so refusals stay in the journal.
+            recordKitchenRefuse(order, item, previousQty.subtract(qty));
+            if (qty.compareTo(sent) < 0) {
+                item.setSentQuantity(qty);
+            }
         }
 
         item.setQuantity(qty);
@@ -63,5 +68,27 @@ public class OrderUpdateItemHandler {
             item.setNote(request.note().isBlank() ? null : request.note().trim());
         }
         return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
+    }
+
+    private void recordKitchenRefuse(FloorOrder order, FloorOrderItem source, BigDecimal refusedQty) {
+        if (refusedQty == null || refusedQty.signum() <= 0) {
+            return;
+        }
+        String note = WeightSaleSupport.isWeightSold(source.getMenuItem())
+            ? WeightSaleSupport.noteForQuantity(source.getMenuItem(), refusedQty)
+            : source.getNote();
+        itemRepository.save(FloorOrderItem.builder()
+            .order(order)
+            .menuItem(source.getMenuItem())
+            .name(source.getName())
+            .quantity(refusedQty)
+            .sentQuantity(refusedQty)
+            .unitPrice(source.getUnitPrice() == null ? BigDecimal.ZERO : source.getUnitPrice())
+            .taxRate(source.getTaxRate() == null ? BigDecimal.ZERO : source.getTaxRate())
+            .stationId(source.getStationId())
+            .note(note)
+            .itemStatus(OrderItemStatus.CANCELLED)
+            .sortOrder(source.getSortOrder())
+            .build());
     }
 }

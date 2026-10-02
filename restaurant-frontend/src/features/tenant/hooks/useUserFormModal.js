@@ -55,7 +55,8 @@ export function useUserFormModal({ open, onClose, isPlatform, mode, editingUser,
     || user?.role === 'COOK' || user?.role === 'MANAGER';
   // Create / role→PIN / existing user without PIN yet → PIN required.
   const pinRequired = !isEdit || (isPinRole && (!hadPinRole || user?.hasPin === false));
-  const showPasswordField = !isPinRole && (isPlatform || fieldOn('password') || !isEdit);
+  // Non-PIN roles (company ADMIN): username + password editable on create and edit.
+  const showPasswordField = !isPinRole;
 
   const { data: companiesRaw = [] } = useQuery({
     queryKey: ['companies-all'],

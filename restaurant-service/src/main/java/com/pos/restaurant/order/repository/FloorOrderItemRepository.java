@@ -2,6 +2,7 @@ package com.pos.restaurant.order.repository;
 
 import com.pos.restaurant.order.domain.OrderItemStatus;
 import com.pos.restaurant.order.entity.FloorOrderItem;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -59,4 +60,20 @@ public interface FloorOrderItemRepository extends JpaRepository<FloorOrderItem, 
     );
 
     List<FloorOrderItem> findByOrderIdAndItemStatus(UUID orderId, OrderItemStatus itemStatus);
+
+    @Query("""
+        select i from FloorOrderItem i
+        join fetch i.order o
+        left join fetch o.table t
+        left join fetch t.hall
+        where o.companyId = :companyId
+          and o.storeId = :storeId
+          and i.itemStatus = com.pos.restaurant.order.domain.OrderItemStatus.CANCELLED
+        order by i.updatedAt desc
+        """)
+    List<FloorOrderItem> findRecentCancelledByCompanyIdAndStoreId(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        Pageable pageable
+    );
 }

@@ -144,11 +144,11 @@ public class UserAccessPolicy {
             }
             throw IdentityExceptions.badRequest("Cannot delete this user");
         }
-        if ("CASHIER".equals(targetRole) || "WAITER".equals(targetRole) || "COURIER".equals(targetRole)
-            || "COOK".equals(targetRole)) {
+        // Company admin may remove floor/office staff; company ADMIN itself is platform-only.
+        if (List.of("CASHIER", "WAITER", "COURIER", "COOK", "MANAGER", "ACCOUNTANT").contains(targetRole)) {
             return;
         }
-        throw IdentityExceptions.badRequest("Only cashiers can be deleted by company admin");
+        throw IdentityExceptions.badRequest("Company admin cannot delete this user role");
     }
 
     public User loadForResponse(UUID id, User fallback) {

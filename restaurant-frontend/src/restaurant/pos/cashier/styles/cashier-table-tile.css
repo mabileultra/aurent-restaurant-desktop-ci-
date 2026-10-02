@@ -76,6 +76,82 @@
   color: var(--rst-muted);
 }
 
+.rst-cashier-tile__checks {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.rst-cashier-tile__check {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 2.1rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid color-mix(in srgb, var(--rst-ink) 12%, transparent);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--rst-ink) 6%, transparent);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.rst-cashier-tile__check:hover {
+  border-color: color-mix(in srgb, var(--rst-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--rst-accent) 12%, transparent);
+}
+
+.rst-cashier-tile__check.is-active {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent-soft);
+}
+
+.rst-cashier-tile__check.is-billing {
+  border-color: rgb(250 204 21 / 0.4);
+}
+
+.rst-cashier-tile__check-no {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  min-width: 0;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.rst-cashier-tile__check-bill {
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fde68a;
+}
+
+.rst-cashier-tile__check strong {
+  flex-shrink: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #ffd7b0;
+}
+
+html.rst-theme--light .rst-cashier-tile__check strong {
+  color: var(--rst-ink);
+}
+
+html.rst-theme--light .rst-cashier-tile__check-bill {
+  color: #a16207;
+}
+
 .rst-cashier-tile--FREE {
   border-color: rgb(34 197 94 / 0.35);
   background: linear-gradient(180deg, rgb(34 197 94 / 0.12), var(--rst-surface) 55%);

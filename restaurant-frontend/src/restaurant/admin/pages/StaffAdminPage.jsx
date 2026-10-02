@@ -3,7 +3,7 @@ import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import UserFormModal from '../../../features/tenant/components/users/UserFormModal';
 import RstRowActions from '../../shared/components/RstRowActions';
-import { useStaffAdminPage, RST_STAFF_ROLES } from '../hooks/useStaffAdminPage';
+import { useStaffAdminPage, RST_STAFF_LIST_ROLES } from '../hooks/useStaffAdminPage';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -78,7 +78,7 @@ export default function StaffAdminPage() {
               onChange={(e) => p.setRoleFilter(e.target.value)}
               options={[
                 { value: '', label: p.t('rst.staff.allRoles') },
-                ...RST_STAFF_ROLES.map((role) => ({
+                ...RST_STAFF_LIST_ROLES.map((role) => ({
                   value: role,
                   label: p.t(`roles.${role}`, { defaultValue: role }),
                 })),
@@ -147,6 +147,12 @@ export default function StaffAdminPage() {
                                     : p.t('rst.staff.activate'),
                                   onClick: () => p.toggleMutation.mutate(user.id),
                                 },
+                                p.canDeleteStaff(user) ? {
+                                  key: 'delete',
+                                  label: p.t('common.delete'),
+                                  danger: true,
+                                  onClick: () => p.deleteStaff(user),
+                                } : null,
                               ]}
                             />
                           ) : null}
@@ -179,7 +185,7 @@ export default function StaffAdminPage() {
         editingUser={p.editingUser}
         onClose={p.closeForm}
         isPlatform={false}
-        allowedRoles={RST_STAFF_ROLES}
+        allowedRoles={p.formAllowedRoles}
         defaultStoreIds={p.workspace.storeId != null ? [p.workspace.storeId] : []}
       />
     </section>

@@ -37,4 +37,15 @@ public final class WeightSaleSupport {
         }
         return grams + " г";
     }
+
+    /**
+     * Kitchen slip / KDS note for the printed qty (delta), not the order line total.
+     * Weight-sold lines keep total weight on the guest ticket; kitchen must see only this fire.
+     */
+    public static String kitchenNote(MenuItem item, String orderNote, BigDecimal printedQty) {
+        if (isWeightSold(item)) {
+            return noteForQuantity(item, printedQty);
+        }
+        return orderNote;
+    }
 }

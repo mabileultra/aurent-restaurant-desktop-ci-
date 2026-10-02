@@ -200,6 +200,11 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
           .filter((row) => row?.itemId != null)
           .map((row) => [String(row.itemId), row.quantity]),
       );
+      const noteByItemId = Object.fromEntries(
+        (payload.lines || [])
+          .filter((row) => row?.itemId != null && row.note != null && String(row.note).trim() !== '')
+          .map((row) => [String(row.itemId), row.note]),
+      );
       const waiterName = await resolvePrintWaiterName(
         storeId ?? order?.storeId,
         order?.waiterUserId,
@@ -210,6 +215,7 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
         t,
         onlyItemIds: payload.itemIds || (payload.lines || []).map((row) => row.itemId),
         qtyByItemId,
+        noteByItemId,
         waiterName,
         waiterNameById,
       });

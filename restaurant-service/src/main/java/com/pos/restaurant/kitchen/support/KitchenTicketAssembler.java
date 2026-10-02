@@ -10,6 +10,7 @@ import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.entity.FloorOrderItemModifier;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.order.support.WeightSaleSupport;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -69,7 +70,7 @@ public class KitchenTicketAssembler {
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
             qty,
-            item.getNote(),
+            WeightSaleSupport.kitchenNote(item.getMenuItem(), item.getNote(), qty),
             modifiers
         );
     }

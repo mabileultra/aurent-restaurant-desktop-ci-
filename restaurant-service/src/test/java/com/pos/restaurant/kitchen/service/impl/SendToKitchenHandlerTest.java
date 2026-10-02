@@ -98,6 +98,8 @@ class SendToKitchenHandlerTest {
         assertEquals(1, sendCap.getValue().size());
         assertEquals(0, sendCap.getValue().get(0).quantity().compareTo(BigDecimal.ONE));
         assertEquals(item.getId(), sendCap.getValue().get(0).itemId());
+        // Non-weight dish: kitchen note stays the order line note (may be null).
+        assertEquals(item.getNote(), sendCap.getValue().get(0).note());
     }
 
     @Test
