@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import {
   mapDesktopUpdateEvent,
   mergeDesktopUpdateState,
-} from '../../services/desktop/desktopUpdateNotifications';
+} from '../../../../services/desktop/desktopUpdateNotifications';
 
 function isDesktop() {
   return typeof window !== 'undefined' && window.desktopCashier?.isDesktop === true;
