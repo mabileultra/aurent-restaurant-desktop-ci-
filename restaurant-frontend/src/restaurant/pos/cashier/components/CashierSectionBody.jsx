@@ -97,8 +97,9 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
         <h2 className="rst-floor-hall-rail__title">{p.t('rst.cashier.tabOrders')}</h2>
         <CashierOrdersList
           tables={p.hallTables}
+          halls={p.halls}
           waiterNameById={p.waiterNameById}
-          onSelect={p.selectTable}
+          onSelect={p.selectTableCheck}
           emptyText={p.t('rst.cashier.ordersEmpty')}
           t={p.t}
         />
@@ -126,9 +127,10 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
         <h2 className="rst-floor-hall-rail__title">{p.t('rst.cashier.tabPayment')}</h2>
         <CashierOrdersList
           tables={p.hallTables}
+          halls={p.halls}
           onlyWaitingPayment
           waiterNameById={p.waiterNameById}
-          onSelect={p.selectTable}
+          onSelect={p.selectTableCheck}
           emptyText={p.t('rst.cashier.paymentEmpty')}
           t={p.t}
         />

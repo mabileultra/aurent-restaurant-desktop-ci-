@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
+import { tableActiveOrders } from '../../utils/floorStatusFilters';
+import { resolveOrderHallName } from '../../utils/floorPosDerivations';
 import '../styles/cashier-orders-list.css';
 
-/** Flat list of open dine-in orders for cashier. */
+/** Flat list of open dine-in checks for cashier (one row per check). */
 export default function CashierOrdersList({
   tables = [],
+  halls = [],
   onlyWaitingPayment = false,
   waiterNameById,
   onSelect,
@@ -12,11 +15,19 @@ export default function CashierOrdersList({
   t,
 }) {
   const rows = useMemo(() => {
-    return tables.filter((table) => {
-      if (!table.activeOrder && table.status !== 'WAITING_PAYMENT') return false;
-      if (onlyWaitingPayment) return table.status === 'WAITING_PAYMENT';
-      return true;
-    });
+    const out = [];
+    for (const table of tables) {
+      const orders = tableActiveOrders(table);
+      if (!orders.length && table.status !== 'WAITING_PAYMENT') continue;
+      for (const check of (orders.length ? orders : [null])) {
+        const billing = String(check?.status || '').toUpperCase() === 'BILLING'
+          || table.status === 'WAITING_PAYMENT';
+        if (onlyWaitingPayment && !billing) continue;
+        if (!check && !onlyWaitingPayment) continue;
+        out.push({ table, check });
+      }
+    }
+    return out;
   }, [tables, onlyWaitingPayment]);
 
   if (!rows.length) {
@@ -25,18 +36,34 @@ export default function CashierOrdersList({
 
   return (
     <ul className="rst-cashier-orders">
-      {rows.map((table) => {
-        const order = table.activeOrder;
-        const waiter = order?.waiterUserId
-          ? (waiterNameById?.get(String(order.waiterUserId)) || '—')
+      {rows.map(({ table, check }) => {
+        const waiter = check?.waiterUserId
+          ? (waiterNameById?.get(String(check.waiterUserId)) || '—')
           : '—';
+        const hallName = resolveOrderHallName(halls, { tableId: table.id }, table.hallName);
+        const billing = String(check?.status || '').toUpperCase() === 'BILLING';
+        const statusKey = billing ? 'WAITING_PAYMENT' : (table.status || 'OCCUPIED');
+        const key = check?.id != null ? `c-${check.id}` : `t-${table.id}`;
         return (
-          <li key={table.id}>
-            <button type="button" className="rst-cashier-orders__card" onClick={() => onSelect(table)}>
-              <strong>{t('rst.floor.tableTitle', { code: table.code })}</strong>
-              <span>{waiter}</span>
-              <span>{t(`rst.status.${table.status || 'OCCUPIED'}`)}</span>
-              <em>{fmtMoneyCompact(order?.subtotal ?? 0)}</em>
+          <li key={key}>
+            <button
+              type="button"
+              className="rst-cashier-orders__card"
+              onClick={() => onSelect(table, check?.id)}
+            >
+              <strong>
+                {hallName ? `${hallName} · ` : ''}
+                {t('rst.floor.tableTitle', { code: table.code })}
+              </strong>
+              <span>
+                {check?.orderNo != null
+                  ? t('rst.floor.checkNo', { no: check.orderNo })
+                  : '—'}
+                {' · '}
+                {waiter}
+              </span>
+              <span>{t(`rst.status.${statusKey}`)}</span>
+              <em>{fmtMoneyCompact(check?.subtotal ?? 0)}</em>
             </button>
           </li>
         );

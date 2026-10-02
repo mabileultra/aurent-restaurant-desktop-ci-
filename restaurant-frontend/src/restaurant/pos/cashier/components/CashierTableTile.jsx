@@ -7,16 +7,14 @@ import { resolveOrderHallName } from '../../utils/floorPosDerivations';
 import '../styles/cashier-table-tile.css';
 
 /**
- * Compact table tile for cashier board — hall, number, status, amount, open checks.
+ * Compact table tile for cashier board — hall, number, status (no nested checks).
  */
 export default function CashierTableTile({
   table,
   halls = [],
   selected,
-  activeOrderId,
   now,
   onClick,
-  onSelectCheck,
   onPrefetchOrder,
   t,
 }) {
@@ -63,42 +61,7 @@ export default function CashierTableTile({
           {t('rst.floor.seats', { count: table.seatCount ?? 0 })}
         </span>
       )}
-      {orders.length > 0 ? (
-        <ul className="rst-cashier-tile__checks" onClick={(e) => e.stopPropagation()}>
-          {orders.map((check) => {
-            const billing = String(check.status || '').toUpperCase() === 'BILLING';
-            const isActive = check.id != null && String(check.id) === String(activeOrderId);
-            return (
-              <li key={check.id}>
-                <button
-                  type="button"
-                  className={[
-                    'rst-cashier-tile__check',
-                    billing ? 'is-billing' : '',
-                    isActive ? 'is-active' : '',
-                  ].filter(Boolean).join(' ')}
-                  onClick={() => {
-                    if (onSelectCheck) onSelectCheck(table, check.id);
-                    else onClick?.(table);
-                  }}
-                >
-                  <span className="rst-cashier-tile__check-no">
-                    {t('rst.floor.checkNo', { no: check.orderNo })}
-                    {billing ? (
-                      <em className="rst-cashier-tile__check-bill">
-                        {t('rst.status.WAITING_PAYMENT')}
-                      </em>
-                    ) : null}
-                  </span>
-                  <strong>{fmtMoneyCompact(check.subtotal || 0)}</strong>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      ) : elapsed ? (
-        <span className="rst-cashier-tile__time">{elapsed}</span>
-      ) : null}
+      {elapsed ? <span className="rst-cashier-tile__time">{elapsed}</span> : null}
     </div>
   );
 }

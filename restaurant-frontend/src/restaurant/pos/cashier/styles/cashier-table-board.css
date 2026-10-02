@@ -94,14 +94,18 @@
 
 .rst-cashier-tables__list .rst-cashier-tile {
   width: 100%;
-  min-height: 5.25rem;
+  min-height: 4.75rem;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 0.5rem 0.95rem;
-  padding: 0.9rem 1.05rem;
+  gap: 0.5rem 0.85rem;
+  padding: 0.85rem 1.05rem;
   text-align: left;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile--check {
+  min-height: 4.35rem;
 }
 
 .rst-cashier-tables__list .rst-cashier-tile__code {
@@ -111,7 +115,13 @@
 
 .rst-cashier-tables__list .rst-cashier-tile__status {
   margin-left: 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
+}
+
+.rst-cashier-tables__list .rst-cashier-tile__check-no {
+  font-size: 0.98rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .rst-cashier-tables__list .rst-cashier-tile__amount,
@@ -122,25 +132,5 @@
 }
 
 .rst-cashier-tables__list .rst-cashier-tile__time {
-  width: 100%;
-  margin-top: -0.1rem;
-  font-size: 0.95rem;
-}
-
-.rst-cashier-tables__list .rst-cashier-tile__checks {
-  width: 100%;
-  margin-top: 0.1rem;
-}
-
-.rst-cashier-tables__list .rst-cashier-tile__check {
-  min-height: 2.35rem;
-  padding: 0.4rem 0.7rem;
-}
-
-.rst-cashier-tables__list .rst-cashier-tile__check-no {
-  font-size: 0.98rem;
-}
-
-.rst-cashier-tables__list .rst-cashier-tile__check strong {
-  font-size: 1.05rem;
+  display: none;
 }

@@ -119,7 +119,7 @@ export function useCashierPosPage() {
     setSelectedTableId(table?.id ?? null);
     const orders = tableActiveOrders(table);
     if (orders.length > 1) {
-      // Tile shows checks; body click still opens the occupied modal (continue / new check / etc.).
+      // Multi-check table tile: open occupied modal (continue / new check). Checks open via selectTableCheck.
       clearDraft();
       setFullOrder(false);
       floor.handleTableClick(table);
