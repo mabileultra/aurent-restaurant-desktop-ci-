@@ -6,7 +6,7 @@ import MenuDishFilters from '../components/MenuDishFilters';
 import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
 import RecipeWizardModal from '../components/RecipeWizardModal';
 import { useRecipesAdminPage } from '../hooks/useRecipesAdminPage';
-import { formatFoodCostPercent, lineIngredientCost } from '../utils/recipeFoodCost';
+import { formatFoodCostPercent, formatUnitCost, lineIngredientCost } from '../utils/recipeFoodCost';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/stations-admin.css';
@@ -124,9 +124,10 @@ export default function RecipesAdminPage() {
                     <tr>
                       <th>{p.t('rst.admin.ingredient')}</th>
                       <th>{p.t('rst.admin.qtyGross')}</th>
+                      <th>{p.t('rst.admin.unit')}</th>
                       <th>{p.t('rst.admin.wastePercent')}</th>
                       <th>{p.t('rst.admin.qtyNet')}</th>
-                      <th>{p.t('rst.admin.unit')}</th>
+                      <th>{p.t('rst.admin.unitCost')}</th>
                       <th>{p.t('rst.admin.lineCost')}</th>
                       <th />
                     </tr>
@@ -190,6 +191,7 @@ export default function RecipesAdminPage() {
                               )))}
                             />
                           </td>
+                          <td className="rst-tech__unit">{line.unit || '—'}</td>
                           <td>
                             <BaseInput
                               type="number"
@@ -202,7 +204,7 @@ export default function RecipesAdminPage() {
                             />
                           </td>
                           <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
-                          <td className="rst-tech__unit">{line.unit || '—'}</td>
+                          <td className="rst-tech__net">{formatUnitCost(unitCost, line.unit)}</td>
                           <td className="rst-tech__net">
                             {lineCost != null ? fmtMoneyCompact(lineCost) : '—'}
                           </td>

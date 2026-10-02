@@ -53,6 +53,7 @@ export default function RestaurantShiftModal({
   const qc = useQueryClient();
   const [openingCash, setOpeningCash] = useState('0');
   const [closingCash, setClosingCash] = useState('0');
+  const [openingConfirmed, setOpeningConfirmed] = useState(false);
   const [printReport, setPrintReport] = useState(null);
   const [printToken, setPrintToken] = useState(0);
   const closeAfterPrintRef = useRef(false);
@@ -64,14 +65,10 @@ export default function RestaurantShiftModal({
   };
 
   const shiftOpen = Boolean(shift?.id);
-  const expectedCash = (Number(shift?.openingCash) || 0) + (Number(shift?.cashAmount) || 0);
-
-  const itemsQuery = useQuery({
-    queryKey: ['rst-shift-items', shift?.id, shift?.saleCount],
-    queryFn: () => rstShiftApi.xReport(shift.id).then((r) => r.data),
-    enabled: open && shiftOpen,
-    staleTime: 0,
-  });
+  const expectedCash = shift?.expectedCash != null
+    ? Number(shift.expectedCash)
+    : (Number(shift?.openingCash) || 0) + (Number(shift?.cashAmount) || 0)
+      + (Number(shift?.cashIn) || 0) - (Number(shift?.cashOut) || 0) - (Number(shift?.collection) || 0);
 
   const lastClosedQuery = useQuery({
     queryKey: ['rst-shift-last-closed', storeId],
@@ -91,6 +88,7 @@ export default function RestaurantShiftModal({
     }
     setOpeningCash(carryCash != null ? String(carryCash) : '0');
     setClosingCash(String(expectedCash));
+    setOpeningConfirmed(false);
   }, [open, shift?.id, expectedCash, carryCash]);
 
   const queuePrint = (report) => {
@@ -102,7 +100,10 @@ export default function RestaurantShiftModal({
 
   const openMutation = useMutation({
     mutationFn: () =>
-      rstShiftApi.open(storeId, { openingCash: Number(openingCash) || 0 }).then((r) => r.data),
+      rstShiftApi.open(storeId, {
+        openingCash: Number(openingCash) || 0,
+        confirmOpening: carryCash == null ? undefined : openingConfirmed,
+      }).then((r) => r.data),
     onSuccess: () => {
       invalidate();
       toast.success(t('rst.shift.opened'));
@@ -152,9 +153,6 @@ export default function RestaurantShiftModal({
   if (!open || typeof document === 'undefined') return null;
 
   const isOpen = shiftOpen;
-  const items = itemsQuery.data?.items ?? [];
-  const itemsQty = items.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
-  const itemsAmount = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
   const openingDiffers = carryCash != null && Number(openingCash) !== carryCash;
   const openOrders = Number(shift?.openOrderCount) || 0;
   const hasOpenOrders = openOrders > 0;
@@ -246,32 +244,6 @@ export default function RestaurantShiftModal({
             ) : null}
 
             {isOpen ? (
-              <div className="rst-shift-modal__items">
-                <div className="rst-shift-modal__items-head">
-                  <span>{t('rst.shift.itemsTitle')}</span>
-                  <span>
-                    {t('rst.shift.itemsQty', { count: itemsQty })} · {fmtMoneyCompact(itemsAmount)}
-                  </span>
-                </div>
-                {itemsQuery.isPending ? (
-                  <div className="rst-shift-modal__items-empty">{t('common.loading')}</div>
-                ) : items.length === 0 ? (
-                  <div className="rst-shift-modal__items-empty">{t('rst.shift.itemsEmpty')}</div>
-                ) : (
-                  <div className="rst-shift-modal__items-list">
-                    {items.map((row) => (
-                      <div key={row.name} className="rst-shift-modal__item">
-                        <span title={row.name}>{row.name}</span>
-                        <span>× {Number(row.quantity)}</span>
-                        <span>{fmtMoneyCompact(row.amount)}</span>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : null}
-
-            {isOpen ? (
               <div className="rst-shift-modal__carry">
                 <span>{t('rst.shift.expectedCash')}</span>
                 <strong>{fmtMoneyCompact(expectedCash)}</strong>
@@ -309,6 +281,18 @@ export default function RestaurantShiftModal({
                 disabled={busy}
               />
             </label>
+
+            {!isOpen && carryCash != null ? (
+              <label className="rst-shift-modal__confirm">
+                <input
+                  type="checkbox"
+                  checked={openingConfirmed}
+                  onChange={(e) => setOpeningConfirmed(e.target.checked)}
+                  disabled={busy}
+                />
+                <span>{t('rst.shift.confirmOpening')}</span>
+              </label>
+            ) : null}
 
             <div className="rst-shift-modal__actions">
               {isOpen ? (
@@ -350,7 +334,7 @@ export default function RestaurantShiftModal({
                 <button
                   type="button"
                   className="rst-shift-modal__btn rst-shift-modal__btn--primary"
-                  disabled={!storeId || busy}
+                  disabled={!storeId || busy || (carryCash != null && !openingConfirmed)}
                   onClick={() => openMutation.mutate()}
                 >
                   {openMutation.isPending ? <Loader size={16} className="spin" /> : <DoorOpen size={16} />}

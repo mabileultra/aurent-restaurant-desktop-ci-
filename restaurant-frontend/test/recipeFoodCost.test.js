@@ -2,10 +2,17 @@ import { describe, expect, it } from 'vitest';
 import {
   computeRecipeFoodCost,
   formatFoodCostPercent,
+  formatUnitCost,
   lineIngredientCost,
 } from '../src/restaurant/admin/utils/recipeFoodCost.js';
 
 describe('recipeFoodCost', () => {
+  it('shows purchase price per the product unit', () => {
+    expect(formatUnitCost(150000, 'kg')).toMatch(/150/);
+    expect(formatUnitCost(150000, 'kg')).toContain('/ kg');
+    expect(formatUnitCost(null, 'kg')).toBe('—');
+  });
+
   it('lineIngredientCost multiplies gross × unit cost', () => {
     expect(lineIngredientCost({ qtyGross: '0.5' }, 10000)).toBe(5000);
     expect(lineIngredientCost({ qtyGross: 0 }, 100)).toBeNull();

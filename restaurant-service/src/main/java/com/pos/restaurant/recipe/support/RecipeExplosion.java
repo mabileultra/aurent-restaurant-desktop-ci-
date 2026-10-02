@@ -13,6 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Theoretical stock write-off. Waste stays on the line as net yield;
+ * the warehouse loses the gross quantity that was physically taken.
+ */
 @Component
 public class RecipeExplosion {
 
@@ -32,7 +36,8 @@ public class RecipeExplosion {
             }
             BigDecimal portions = item.getQuantity().divide(recipe.getOutputQty(), 6, RoundingMode.HALF_UP);
             for (RecipeLine line : linesByRecipe.getOrDefault(recipe.getId(), List.of())) {
-                BigDecimal qty = line.getQtyNet().multiply(portions).setScale(3, RoundingMode.HALF_UP);
+                BigDecimal gross = line.getQtyGross() == null ? BigDecimal.ZERO : line.getQtyGross();
+                BigDecimal qty = gross.multiply(portions).setScale(3, RoundingMode.HALF_UP);
                 consumed.merge(line.getProductId(), qty, BigDecimal::add);
             }
         }

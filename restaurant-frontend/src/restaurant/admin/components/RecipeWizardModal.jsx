@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import RstModal from '../../shared/components/RstModal';
-import { lineIngredientCost } from '../utils/recipeFoodCost';
+import { formatUnitCost, lineIngredientCost } from '../utils/recipeFoodCost';
 import RecipeFoodCostSummary from './RecipeFoodCostSummary';
 
 export default function RecipeWizardModal({ p }) {
@@ -111,9 +111,10 @@ export default function RecipeWizardModal({ p }) {
               <tr>
                 <th>{p.t('rst.admin.ingredient')}</th>
                 <th>{p.t('rst.admin.qtyGross')}</th>
+                <th>{p.t('rst.admin.unit')}</th>
                 <th>{p.t('rst.admin.wastePercent')}</th>
                 <th>{p.t('rst.admin.qtyNet')}</th>
-                <th>{p.t('rst.admin.unit')}</th>
+                <th>{p.t('rst.admin.unitCost')}</th>
                 <th>{p.t('rst.admin.lineCost')}</th>
                 <th />
               </tr>
@@ -183,6 +184,7 @@ export default function RecipeWizardModal({ p }) {
                         )))}
                       />
                     </td>
+                    <td className="rst-tech__unit">{line.unit || '—'}</td>
                     <td>
                       <BaseInput
                         type="number"
@@ -195,7 +197,7 @@ export default function RecipeWizardModal({ p }) {
                       />
                     </td>
                     <td className="rst-tech__net">{p.qtyNetOf(line).toFixed(3)}</td>
-                    <td className="rst-tech__unit">{line.unit || '—'}</td>
+                    <td className="rst-tech__net">{formatUnitCost(unitCost, line.unit)}</td>
                     <td className="rst-tech__net">
                       {lineCost != null ? fmtMoneyCompact(lineCost) : '—'}
                     </td>

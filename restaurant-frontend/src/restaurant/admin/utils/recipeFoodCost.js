@@ -1,6 +1,9 @@
+import { fmtMoneyCompact } from '../../../utils/formatMoney';
+
 /**
- * Food cost for a recipe: sum(gross qty × unit cost) / output → per portion vs sell price.
- * Uses gross qty so waste raises food-cost % (what you actually buy).
+ * Food cost for a recipe: sum(gross qty × price per base unit) / output → per portion vs sell price.
+ * Unit cost is the warehouse purchase price of 1 base unit (kg, l, pcs).
+ * Gross is what leaves stock; net is only the yield after waste.
  */
 
 export function lineIngredientCost(line, unitCost) {
@@ -64,6 +67,12 @@ export function computeRecipeFoodCost({
     missingCost,
     high: percent != null && percent >= 35,
   };
+}
+
+export function formatUnitCost(amount, unit) {
+  if (amount == null || !Number.isFinite(Number(amount))) return '—';
+  const money = fmtMoneyCompact(amount);
+  return unit ? `${money} / ${unit}` : money;
 }
 
 export function formatFoodCostPercent(percent) {

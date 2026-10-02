@@ -35,7 +35,7 @@
 }
 
 .rst-cashier-tile__hall {
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--rst-muted);
   white-space: nowrap;

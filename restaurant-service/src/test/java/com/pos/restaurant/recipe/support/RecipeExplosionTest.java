@@ -19,16 +19,21 @@ class RecipeExplosionTest {
     private final RecipeExplosion explosion = new RecipeExplosion();
 
     @Test
-    void multipliesNetQtyByPortions() {
+    void writesOffGrossNotNet() {
         UUID menuId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         UUID recipeId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         UUID productId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
         MenuItem menuItem = MenuItem.builder().id(menuId).name("Lagman").build();
         Recipe recipe = Recipe.builder().id(recipeId).menuItem(menuItem).outputQty(BigDecimal.ONE).build();
-        RecipeLine line = RecipeLine.builder().recipe(recipe).productId(productId).qtyNet(new BigDecimal("0.150")).build();
+        RecipeLine line = RecipeLine.builder()
+            .recipe(recipe)
+            .productId(productId)
+            .qtyGross(new BigDecimal("0.300"))
+            .qtyNet(new BigDecimal("0.240"))
+            .build();
         FloorOrderItem item = FloorOrderItem.builder()
             .menuItem(menuItem)
-            .quantity(new BigDecimal("2"))
+            .quantity(new BigDecimal("1"))
             .itemStatus(OrderItemStatus.SERVED)
             .build();
 
@@ -38,6 +43,6 @@ class RecipeExplosionTest {
             Map.of(recipeId, List.of(line))
         );
 
-        assertEquals(new BigDecimal("0.300"), consumed.get(productId));
+        assertEquals(0, new BigDecimal("0.300").compareTo(consumed.get(productId)));
     }
 }
