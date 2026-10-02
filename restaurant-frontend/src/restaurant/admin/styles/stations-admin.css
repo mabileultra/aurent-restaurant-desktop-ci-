@@ -353,6 +353,17 @@
   color: var(--rst-ink);
 }
 
+.rst-data-table td.rst-data-table__nested {
+  overflow: visible;
+  white-space: normal;
+  padding: 0.5rem 0.75rem 0.75rem;
+  vertical-align: top;
+}
+
+.rst-data-table--nested {
+  table-layout: auto;
+}
+
 .rst-data-table tbody tr {
   transition: background 0.12s ease;
 }

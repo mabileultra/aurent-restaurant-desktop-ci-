@@ -1,6 +1,7 @@
 package com.pos.restaurant.commission.controller;
 
 import com.pos.restaurant.commission.dto.WaiterCommissionPercentRequest;
+import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionSettingsResponse;
 import com.pos.restaurant.commission.service.WaiterCommissionService;
@@ -88,5 +89,19 @@ public class WaiterCommissionController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to
     ) {
         return commissionService.report(storeId, from, to);
+    }
+
+    @GetMapping("/stores/{storeId}/reports/waiter-commission/waiters/{waiterUserId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Заказы официанта в отчёте комиссии (страница)")
+    public WaiterCommissionOrdersResponse waiterOrders(
+        @PathVariable Integer storeId,
+        @PathVariable UUID waiterUserId,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant to,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "14") int size
+    ) {
+        return commissionService.waiterOrders(storeId, waiterUserId, from, to, page, size);
     }
 }

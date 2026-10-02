@@ -2,9 +2,6 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Receipt,
-  ClipboardList,
-  Package,
-  AlertTriangle,
   Percent,
 } from 'lucide-react';
 import '../../shared/styles/rst-blocks.css';
@@ -23,27 +20,6 @@ const SALES_LINKS = [
     titleKey: 'reportsCommissionCard',
     hintKey: 'reportsCommissionHint',
     icon: Percent,
-  },
-];
-
-const STOCK_LINKS = [
-  {
-    to: '/rst/admin/stock/inventories',
-    titleKey: 'reportsInventoriesCard',
-    hintKey: 'reportsInventoriesHint',
-    icon: ClipboardList,
-  },
-  {
-    to: '/rst/admin/stock/balances',
-    titleKey: 'reportsBalancesCard',
-    hintKey: 'reportsBalancesHint',
-    icon: Package,
-  },
-  {
-    to: '/rst/admin/reports/low',
-    titleKey: 'reportsLowCard',
-    hintKey: 'reportsLowHint',
-    icon: AlertTriangle,
   },
 ];
 
@@ -89,13 +65,6 @@ export default function ReportsHubAdminPage() {
         title={t('reportsHub.salesSection')}
         subtitle={t('reportsHub.salesSectionHint')}
         links={SALES_LINKS}
-        t={t}
-      />
-
-      <ReportsHubSection
-        title={t('reportsHub.stockSection')}
-        subtitle={t('reportsHub.stockSectionHint')}
-        links={STOCK_LINKS}
         t={t}
       />
     </section>

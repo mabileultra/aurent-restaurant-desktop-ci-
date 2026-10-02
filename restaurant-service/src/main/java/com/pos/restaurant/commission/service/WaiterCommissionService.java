@@ -1,5 +1,6 @@
 package com.pos.restaurant.commission.service;
 
+import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionSettingsResponse;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -24,4 +25,13 @@ public interface WaiterCommissionService {
     void applyOnPayment(FloorOrder order, BigDecimal subtotal);
 
     WaiterCommissionReportResponse report(Integer storeId, Instant from, Instant to);
+
+    WaiterCommissionOrdersResponse waiterOrders(
+        Integer storeId,
+        UUID waiterUserId,
+        Instant from,
+        Instant to,
+        int page,
+        int size
+    );
 }

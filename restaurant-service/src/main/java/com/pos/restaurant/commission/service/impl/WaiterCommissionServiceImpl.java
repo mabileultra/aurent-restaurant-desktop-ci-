@@ -1,6 +1,7 @@
 package com.pos.restaurant.commission.service.impl;
 
 import com.pos.restaurant.commission.dto.WaiterCommissionOverrideResponse;
+import com.pos.restaurant.commission.dto.WaiterCommissionOrdersResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionReportResponse;
 import com.pos.restaurant.commission.dto.WaiterCommissionSettingsResponse;
 import com.pos.restaurant.commission.entity.WaiterCommissionSetting;
@@ -130,6 +131,21 @@ public class WaiterCommissionServiceImpl implements WaiterCommissionService {
         Integer companyId = tenantSupport.requireCompanyId();
         var period = periodResolver.resolve(from, to);
         return reportAssembler.build(companyId, storeId, period.from(), period.to());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public WaiterCommissionOrdersResponse waiterOrders(
+        Integer storeId,
+        UUID waiterUserId,
+        Instant from,
+        Instant to,
+        int page,
+        int size
+    ) {
+        Integer companyId = tenantSupport.requireCompanyId();
+        var period = periodResolver.resolve(from, to);
+        return reportAssembler.orders(companyId, storeId, waiterUserId, period.from(), period.to(), page, size);
     }
 
     private WaiterCommissionSettingsResponse toResponse(Integer companyId, Integer storeId) {

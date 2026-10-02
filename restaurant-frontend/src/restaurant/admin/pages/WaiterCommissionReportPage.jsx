@@ -1,7 +1,8 @@
 import { useMemo, useState, Fragment } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput } from '../../../components/ui';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { userApi } from '../../../api';
 import { rstCommissionApi } from '../../api/commission.api';
@@ -25,12 +26,90 @@ function displayName(user) {
     || null;
 }
 
+function WaiterOrdersTable({ storeId, waiterUserId, params, t }) {
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(14);
+
+  const ordersQuery = useQuery({
+    queryKey: ['rst-waiter-commission-orders', storeId, waiterUserId, params, page, pageSize],
+    queryFn: () => rstCommissionApi.waiterOrders(storeId, waiterUserId, {
+      ...params,
+      page,
+      size: pageSize,
+    }).then((r) => r.data),
+    enabled: storeId != null && Boolean(waiterUserId),
+    placeholderData: keepPreviousData,
+  });
+
+  const rows = ordersQuery.data?.rows ?? [];
+  const total = ordersQuery.data?.totalElements ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
+
+  return (
+    <>
+      <table className="rst-data-table rst-data-table--nested">
+        <thead>
+          <tr>
+            <th>{t('rst.commission.orderNo')}</th>
+            <th>{t('rst.commission.table')}</th>
+            <th>{t('rst.commission.closedAt')}</th>
+            <th>{t('rst.commission.sales')}</th>
+            <th>%</th>
+            <th>{t('rst.commission.total')}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {ordersQuery.isPending && !rows.length ? (
+            <tr>
+              <td colSpan={6} className="rst-data-table__empty">{t('common.loading')}</td>
+            </tr>
+          ) : rows.length === 0 ? (
+            <tr>
+              <td colSpan={6} className="rst-data-table__empty">{t('rst.commission.empty')}</td>
+            </tr>
+          ) : rows.map((order) => (
+            <tr key={order.orderId}>
+              <td>#{order.orderNo}</td>
+              <td>{order.tableCode || '—'}</td>
+              <td>
+                {order.closedAt
+                  ? new Date(order.closedAt).toLocaleString()
+                  : '—'}
+              </td>
+              <td>{fmtMoneyCompact(order.subtotal)}</td>
+              <td>{Number(order.commissionPercent ?? 0)}%</td>
+              <td>{fmtMoneyCompact(order.commissionAmount)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {total > 0 ? (
+        <TablePagination
+          className="rst-data-card__pagination"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          totalPages={totalPages}
+          pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
+          onPageChange={setPage}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(0);
+          }}
+        />
+      ) : null}
+    </>
+  );
+}
+
 export default function WaiterCommissionReportPage() {
   const { t } = useTranslation();
   const workspace = useRestaurantWorkspaceStore();
   const [fromDate, setFromDate] = useState(() => toDateInput(new Date()));
   const [toDate, setToDate] = useState(() => toDateInput(new Date()));
-  const [expanded, setExpanded] = useState({});
+  const [expanded, setExpanded] = useState(null);
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(14);
 
   const params = useMemo(() => {
     const from = new Date(`${fromDate}T00:00:00`);
@@ -49,6 +128,7 @@ export default function WaiterCommissionReportPage() {
     queryKey: ['rst-staff-users', workspace.storeId],
     queryFn: () => userApi.getAll().then((r) => r.data ?? []),
     enabled: workspace.storeId != null,
+    staleTime: 5 * 60_000,
   });
 
   const nameById = useMemo(() => {
@@ -60,7 +140,11 @@ export default function WaiterCommissionReportPage() {
   }, [usersQuery.data]);
 
   const report = reportQuery.data;
-  const rows = report?.rows ?? [];
+  const allRows = report?.rows ?? [];
+  const total = allRows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
+  const safePage = Math.min(page, totalPages - 1);
+  const rows = allRows.slice(safePage * pageSize, safePage * pageSize + pageSize);
 
   if (workspace.noAssignment) {
     return <div className="rst-notice">{t('rst.floor.noStore')}</div>;
@@ -78,11 +162,31 @@ export default function WaiterCommissionReportPage() {
       <div className="rst-admin-filters">
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.reports.from')}</span>
-          <BaseInput type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} />
+          <BaseInput
+            type="date"
+            value={fromDate}
+            max={toDate}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              setFromDate(e.target.value);
+              setPage(0);
+              setExpanded(null);
+            }}
+          />
         </label>
         <label className="rst-admin-field">
           <span className="rst-admin-field__label">{t('rst.reports.to')}</span>
-          <BaseInput type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} />
+          <BaseInput
+            type="date"
+            value={toDate}
+            min={fromDate}
+            onChange={(e) => {
+              if (!e.target.value) return;
+              setToDate(e.target.value);
+              setPage(0);
+              setExpanded(null);
+            }}
+          />
         </label>
       </div>
 
@@ -108,7 +212,7 @@ export default function WaiterCommissionReportPage() {
       <div className="rst-data-card">
         <div className="rst-data-card__head">
           <strong>{t('rst.commission.byWaiter')}</strong>
-          <span>{rows.length}</span>
+          <span>{total}</span>
         </div>
         <div className="rst-data-card__table-wrap">
           <table className="rst-data-table">
@@ -133,7 +237,7 @@ export default function WaiterCommissionReportPage() {
               ) : (
                 rows.map((row) => {
                   const id = String(row.waiterUserId);
-                  const open = !!expanded[id];
+                  const open = expanded === id;
                   return (
                     <Fragment key={id}>
                       <tr>
@@ -148,7 +252,7 @@ export default function WaiterCommissionReportPage() {
                             type="button"
                             size="sm"
                             variant="ghost"
-                            onClick={() => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }))}
+                            onClick={() => setExpanded((prev) => (prev === id ? null : id))}
                           >
                             {open ? t('rst.commission.hideOrders') : t('rst.commission.showOrders')}
                           </BaseButton>
@@ -156,35 +260,13 @@ export default function WaiterCommissionReportPage() {
                       </tr>
                       {open ? (
                         <tr>
-                          <td colSpan={5}>
-                            <table className="rst-data-table">
-                              <thead>
-                                <tr>
-                                  <th>{t('rst.commission.orderNo')}</th>
-                                  <th>{t('rst.commission.table')}</th>
-                                  <th>{t('rst.commission.closedAt')}</th>
-                                  <th>{t('rst.commission.sales')}</th>
-                                  <th>%</th>
-                                  <th>{t('rst.commission.total')}</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {(row.orders ?? []).map((order) => (
-                                  <tr key={order.orderId}>
-                                    <td>#{order.orderNo}</td>
-                                    <td>{order.tableCode || '—'}</td>
-                                    <td>
-                                      {order.closedAt
-                                        ? new Date(order.closedAt).toLocaleString()
-                                        : '—'}
-                                    </td>
-                                    <td>{fmtMoneyCompact(order.subtotal)}</td>
-                                    <td>{Number(order.commissionPercent ?? 0)}%</td>
-                                    <td>{fmtMoneyCompact(order.commissionAmount)}</td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
+                          <td colSpan={5} className="rst-data-table__nested">
+                            <WaiterOrdersTable
+                              storeId={workspace.storeId}
+                              waiterUserId={id}
+                              params={params}
+                              t={t}
+                            />
                           </td>
                         </tr>
                       ) : null}
@@ -195,6 +277,25 @@ export default function WaiterCommissionReportPage() {
             </tbody>
           </table>
         </div>
+        {total > 0 ? (
+          <TablePagination
+            className="rst-data-card__pagination"
+            page={safePage}
+            pageSize={pageSize}
+            total={total}
+            totalPages={totalPages}
+            pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS}
+            onPageChange={(next) => {
+              setPage(next);
+              setExpanded(null);
+            }}
+            onPageSizeChange={(size) => {
+              setPageSize(size);
+              setPage(0);
+              setExpanded(null);
+            }}
+          />
+        ) : null}
       </div>
     </section>
   );

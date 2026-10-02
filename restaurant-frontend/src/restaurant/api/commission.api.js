@@ -12,4 +12,6 @@ export const rstCommissionApi = {
   clearWaiter: (storeId, userId) => api.delete(rst(`/stores/${storeId}/waiter-commission/waiters/${userId}`)),
   applyAll: (storeId, percent) => api.post(rst(`/stores/${storeId}/waiter-commission/apply-all`), { percent }),
   report: (storeId, params = {}) => api.get(rst(`/stores/${storeId}/reports/waiter-commission`), { params }),
+  waiterOrders: (storeId, waiterUserId, params = {}) =>
+    api.get(rst(`/stores/${storeId}/reports/waiter-commission/waiters/${waiterUserId}`), { params }),
 };
