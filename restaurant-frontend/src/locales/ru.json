@@ -844,6 +844,7 @@
       "updateAvailableBody": "Касса скачивает обновление сама. Когда будет готово — «Перезапустить».",
       "updateDownloadingTitle": "Загрузка обновления",
       "updateDownloadingBody": "Скачано {{percent}}%",
+      "updateDownloadStarting": "Загрузка начинается…",
       "updateReadyTitle": "Обновление {{version}} готово",
       "updateReadyBody": "Перезапустите кассу, чтобы применить новую версию.",
       "updateRestartNow": "Перезапустить",

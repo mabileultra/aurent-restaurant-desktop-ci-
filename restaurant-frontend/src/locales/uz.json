@@ -844,6 +844,7 @@
       "updateAvailableBody": "Ilova o‘zi yuklaydi. Tayyor bo‘lgach «Qayta ishga tushirish».",
       "updateDownloadingTitle": "Yangilanish yuklanmoqda",
       "updateDownloadingBody": "Yuklandi {{percent}}%",
+      "updateDownloadStarting": "Yuklash boshlanmoqda…",
       "updateReadyTitle": "Yangilanish {{version}} tayyor",
       "updateReadyBody": "Yangi versiyani qo‘llash uchun kassani qayta ishga tushiring.",
       "updateRestartNow": "Qayta ishga tushirish",

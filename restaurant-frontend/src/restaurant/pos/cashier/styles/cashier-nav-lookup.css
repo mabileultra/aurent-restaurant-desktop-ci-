@@ -12,6 +12,12 @@
   box-shadow: 0 0 0 2px rgb(34 197 94 / 0.25);
 }
 
+.rst-cashier-nav-lookup__toggle.is-busy,
+.rst-cashier-nav-lookup__toggle.is-downloading {
+  border-color: rgb(255 122 26 / 0.75);
+  background: var(--rst-accent-soft);
+}
+
 .rst-cashier-nav-lookup__badge {
   position: absolute;
   top: 0.35rem;
@@ -25,6 +31,62 @@
 
 .rst-cashier-nav-lookup__toggle.has-update-urgent .rst-cashier-nav-lookup__badge {
   background: #22c55e;
+}
+
+.rst-cashier-nav-lookup__pct {
+  position: absolute;
+  right: -0.15rem;
+  bottom: -0.2rem;
+  min-width: 1.7rem;
+  padding: 0.1rem 0.28rem;
+  border-radius: 999px;
+  background: #f97316;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.15;
+  text-align: center;
+  box-shadow: 0 0 0 2px var(--rst-surface-2);
+}
+
+.rst-cashier-nav-lookup__spin {
+  animation: rst-cashier-nav-spin 0.9s linear infinite;
+}
+
+@keyframes rst-cashier-nav-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rst-cashier-nav-lookup__float {
+  position: absolute;
+  top: calc(100% + 0.4rem);
+  left: 0;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 12.5rem;
+  max-width: min(18rem, 70vw);
+  padding: 0.55rem 0.7rem;
+  border: 1px solid rgb(255 122 26 / 0.45);
+  border-radius: 0.7rem;
+  background: var(--rst-surface);
+  box-shadow: 0 10px 24px rgb(0 0 0 / 0.28);
+  pointer-events: none;
+}
+
+.rst-cashier-nav-lookup__float strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--rst-ink);
+}
+
+.rst-cashier-nav-lookup__float > span {
+  font-size: 0.8rem;
+  line-height: 1.3;
+  color: color-mix(in srgb, var(--rst-ink) 72%, transparent);
 }
 
 .rst-cashier-nav-lookup__toggle {
@@ -60,16 +122,35 @@
   background: var(--rst-accent-soft);
 }
 
+.rst-cashier-nav-lookup__update.is-downloading {
+  border-color: rgb(255 122 26 / 0.55);
+}
+
 .rst-cashier-nav-lookup__update strong {
   font-size: 0.95rem;
   font-weight: 800;
   color: var(--rst-ink);
 }
 
-.rst-cashier-nav-lookup__update span {
+.rst-cashier-nav-lookup__update > span {
   font-size: 0.85rem;
   line-height: 1.35;
   color: color-mix(in srgb, var(--rst-ink) 75%, transparent);
+}
+
+.rst-cashier-nav-lookup__progress-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--rst-ink);
+}
+
+.rst-cashier-nav-lookup__progress-meta b {
+  font-variant-numeric: tabular-nums;
+  color: #f97316;
 }
 
 .rst-cashier-nav-lookup__progress {
@@ -80,10 +161,15 @@
   background: color-mix(in srgb, var(--rst-ink) 12%, transparent);
 }
 
+.rst-cashier-nav-lookup__progress--lg {
+  height: 0.55rem;
+}
+
 .rst-cashier-nav-lookup__progress > i {
   display: block;
   height: 100%;
   background: #f97316;
+  transition: width 0.2s ease-out;
 }
 
 .rst-cashier-nav-lookup__update-action {

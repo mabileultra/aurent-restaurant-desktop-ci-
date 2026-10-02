@@ -41,19 +41,66 @@ export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [
     ? t(update.bodyKey, update.bodyParams || {})
     : null;
 
+  const downloading = update?.updateState === 'progress' || update?.updateState === 'available';
+  const downloadPercent = Math.max(0, Math.min(100, Number(update?.percent) || 0));
+  const showBusy = checking || downloading;
+  const toggleLabel = downloading
+    ? t('rst.cashier.updateDownloadingTitle')
+    : checking
+      ? t('rst.cashier.checkUpdatesChecking')
+      : t('rst.cashier.navLabel');
+
   return (
     <div className="rst-cashier-nav-lookup" ref={rootRef}>
       <button
         type="button"
-        className={`rst-cashier-nav-lookup__toggle${open ? ' is-open' : ''}${hasBadge ? ' has-update' : ''}${badgeUrgent ? ' has-update-urgent' : ''}`}
+        className={[
+          'rst-cashier-nav-lookup__toggle',
+          open ? 'is-open' : '',
+          hasBadge ? 'has-update' : '',
+          badgeUrgent ? 'has-update-urgent' : '',
+          showBusy ? 'is-busy' : '',
+          downloading ? 'is-downloading' : '',
+        ].filter(Boolean).join(' ')}
         aria-expanded={open}
         aria-haspopup="menu"
-        aria-label={t('rst.cashier.navLabel')}
+        aria-label={toggleLabel}
+        aria-busy={showBusy || undefined}
         onClick={() => setOpen((prev) => !prev)}
       >
-        <Menu size={22} strokeWidth={2.4} aria-hidden />
-        {hasBadge ? <span className="rst-cashier-nav-lookup__badge" aria-hidden /> : null}
+        {showBusy ? (
+          <RefreshCw size={22} strokeWidth={2.4} className="rst-cashier-nav-lookup__spin" aria-hidden />
+        ) : (
+          <Menu size={22} strokeWidth={2.4} aria-hidden />
+        )}
+        {downloading ? (
+          <span className="rst-cashier-nav-lookup__pct" aria-live="polite">
+            {update?.updateState === 'progress' ? `${downloadPercent}%` : '…'}
+          </span>
+        ) : hasBadge ? (
+          <span className="rst-cashier-nav-lookup__badge" aria-hidden />
+        ) : null}
       </button>
+
+      {!open && downloading ? (
+        <div className="rst-cashier-nav-lookup__float" role="status" aria-live="polite">
+          <strong>{t('rst.cashier.updateDownloadingTitle')}</strong>
+          <span>
+            {update?.updateState === 'progress'
+              ? t('rst.cashier.updateDownloadingBody', { percent: downloadPercent })
+              : t('rst.cashier.updateDownloadStarting', { defaultValue: 'Загрузка начинается…' })}
+          </span>
+          <div
+            className="rst-cashier-nav-lookup__progress"
+            role="progressbar"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={update?.updateState === 'progress' ? downloadPercent : undefined}
+          >
+            <i style={{ width: `${update?.updateState === 'progress' ? downloadPercent : 8}%` }} />
+          </div>
+        </div>
+      ) : null}
 
       {open ? (
         <div className="rst-cashier-nav-lookup__panel" role="menu">
@@ -82,13 +129,31 @@ export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [
             <>
               <div className="rst-cashier-nav-lookup__sep" role="separator" />
               {update ? (
-                <div className="rst-cashier-nav-lookup__update">
+                <div className={`rst-cashier-nav-lookup__update${downloading ? ' is-downloading' : ''}`}>
                   <strong>{updateTitle}</strong>
                   <span>{updateBody}</span>
-                  {update.updateState === 'progress' ? (
-                    <div className="rst-cashier-nav-lookup__progress" aria-hidden>
-                      <i style={{ width: `${Math.max(0, Math.min(100, update.percent || 0))}%` }} />
-                    </div>
+                  {downloading ? (
+                    <>
+                      <div className="rst-cashier-nav-lookup__progress-meta">
+                        <span>
+                          {update.updateState === 'progress'
+                            ? t('rst.cashier.updateDownloadingBody', { percent: downloadPercent })
+                            : t('rst.cashier.updateDownloadStarting', { defaultValue: 'Загрузка начинается…' })}
+                        </span>
+                        {update.updateState === 'progress' ? (
+                          <b>{downloadPercent}%</b>
+                        ) : null}
+                      </div>
+                      <div
+                        className="rst-cashier-nav-lookup__progress rst-cashier-nav-lookup__progress--lg"
+                        role="progressbar"
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-valuenow={update.updateState === 'progress' ? downloadPercent : undefined}
+                      >
+                        <i style={{ width: `${update.updateState === 'progress' ? downloadPercent : 8}%` }} />
+                      </div>
+                    </>
                   ) : null}
                   {update.actionKey ? (
                     <button
@@ -113,7 +178,7 @@ export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [
                 type="button"
                 role="menuitem"
                 className="rst-cashier-nav-lookup__item"
-                disabled={checking}
+                disabled={checking || downloading}
                 onClick={() => {
                   void checkAppUpdates();
                 }}
@@ -122,7 +187,9 @@ export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [
                 <span>
                   {checking
                     ? t('rst.cashier.checkUpdatesChecking')
-                    : t('rst.cashier.checkUpdates')}
+                    : downloading
+                      ? t('rst.cashier.updateDownloadingTitle')
+                      : t('rst.cashier.checkUpdates')}
                 </span>
               </button>
             </>

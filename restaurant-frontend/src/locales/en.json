@@ -844,6 +844,7 @@
       "updateAvailableBody": "The app downloads the update itself. When ready, tap Restart.",
       "updateDownloadingTitle": "Downloading update",
       "updateDownloadingBody": "Downloaded {{percent}}%",
+      "updateDownloadStarting": "Download starting…",
       "updateReadyTitle": "Update {{version}} ready",
       "updateReadyBody": "Restart the cashier to apply the new version.",
       "updateRestartNow": "Restart now",

@@ -101,5 +101,13 @@ export function mergeDesktopUpdateState(prev, mapped) {
   ) {
     return prev;
   }
+  // Keep version from available while progress events usually omit it.
+  if (
+    mapped.updateState === 'progress'
+    && prev?.version
+    && !mapped.version
+  ) {
+    return { ...mapped, version: prev.version };
+  }
   return mapped;
 }
