@@ -143,7 +143,6 @@ export function useFloorTableActions({
 
   const handleCancelOrder = () => {
     if (!orderId) return;
-    if (!window.confirm(t('rst.order.confirmCancel'))) return;
     cancelInspectMutation.mutate();
   };
 

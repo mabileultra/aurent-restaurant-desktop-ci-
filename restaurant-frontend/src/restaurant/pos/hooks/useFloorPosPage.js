@@ -322,24 +322,14 @@ export function useFloorPosPage() {
     setCounterModalOpen(true);
   };
 
-  const confirmKitchenRefuse = (line) => {
-    const kitchen = line?.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
-    if (!kitchen) return true;
-    return window.confirm(t('rst.order.confirmRefuseKitchenItem', {
-      name: line.name || '',
-      defaultValue: `Вы действительно хотите отменить «${line.name || ''}»?`,
-    }));
-  };
-
   const handleQty = (line, nextQty) => {
     const isNew = line.itemStatus === 'NEW';
     const kitchen = line.itemStatus && line.itemStatus !== 'NEW' && line.itemStatus !== 'CANCELLED';
     const sent = Number(line.sentQuantity) || 0;
-    const currentQty = Number(line.quantity) || 0;
     const waiterPendingOk = kitchen && nextQty >= sent;
     if (!isNew && !(access.canCancelOrder && kitchen) && !waiterPendingOk) return;
     if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
-    if (kitchen && nextQty < currentQty && !confirmKitchenRefuse(line)) return;
+    // Kitchen refuse confirm lives in OrderLines (in-app modal — window.confirm is flaky on POS tablets).
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
@@ -348,7 +338,6 @@ export function useFloorPosPage() {
     const line = itemIdOrLine && typeof itemIdOrLine === 'object'
       ? itemIdOrLine
       : (order?.items || []).find((row) => String(row.id) === String(itemIdOrLine));
-    if (line && !confirmKitchenRefuse(line)) return;
     const itemId = line?.id ?? itemIdOrLine;
     if (itemId == null) return;
     m.removeItemMutation.mutate(itemId);

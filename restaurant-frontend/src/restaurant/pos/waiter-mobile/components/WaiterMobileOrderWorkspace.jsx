@@ -6,6 +6,7 @@ import { shortWaiterName } from '../../utils/floorPosDerivations';
 import MenuPicker from '../../components/MenuPicker';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
 import OrderLines from '../../components/OrderLines';
+import RstConfirmDialog from '../../components/RstConfirmDialog';
 import '../styles/waiter-mobile-order.css';
 
 function useLiveClock() {
@@ -55,6 +56,7 @@ export default function WaiterMobileOrderWorkspace({
   const now = useLiveClock();
   const [tab, setTab] = useState('menu');
   const [discountOpen, setDiscountOpen] = useState(false);
+  const [cancelAsk, setCancelAsk] = useState(false);
 
   useEffect(() => {
     setTab('menu');
@@ -285,7 +287,7 @@ export default function WaiterMobileOrderWorkspace({
               <button
                 type="button"
                 className="rst-waiter-order__btn rst-waiter-order__btn--ghost"
-                onClick={onCancel}
+                onClick={() => setCancelAsk(true)}
               >
                 {t('rst.order.cancel')}
               </button>
@@ -305,6 +307,17 @@ export default function WaiterMobileOrderWorkspace({
           setDiscountOpen(false);
         }}
         t={t}
+      />
+
+      <RstConfirmDialog
+        open={cancelAsk}
+        title={t('rst.order.cancel')}
+        message={t('rst.order.confirmCancel')}
+        confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
+        cancelLabel={t('common.cancel')}
+        danger
+        onClose={() => setCancelAsk(false)}
+        onConfirm={() => onCancel?.()}
       />
     </div>
   );

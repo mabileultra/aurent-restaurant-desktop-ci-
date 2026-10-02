@@ -203,11 +203,7 @@ function buildOrderWorkspaceProps(p) {
     onComposeFamily: p.handleComposeFamily,
     onQty: draft ? undefined : p.handleQty,
     onRemove: draft ? undefined : p.handleRemoveItem,
-    onCancel: draft ? undefined : () => {
-      if (window.confirm(p.t('rst.order.confirmCancel'))) {
-        p.cancelMutation.mutate();
-      }
-    },
+    onCancel: draft ? undefined : () => p.cancelMutation.mutate(),
     canCancel: !draft && p.canCancel,
     allowKitchenRefuse: !draft && !!p.access?.canCancelOrder,
     canSendKitchen: !draft && p.canSendKitchen,

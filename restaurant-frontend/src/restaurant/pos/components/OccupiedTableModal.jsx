@@ -1,7 +1,9 @@
+import { useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatElapsed } from '../utils/formatElapsed';
 import RstOverlay from '../../shared/components/RstOverlay';
+import RstConfirmDialog from './RstConfirmDialog';
 import '../../shared/styles/rst-modal.css';
 import '../styles/floor-phase2.css';
 
@@ -34,6 +36,7 @@ export default function OccupiedTableModal({
   canOpenOrder,
   t,
 }) {
+  const [cancelAsk, setCancelAsk] = useState(false);
   if (!open || !table) return null;
   const summary = table.activeOrder;
   const linked = summary?.linkedTableCodes?.length
@@ -142,7 +145,7 @@ export default function OccupiedTableModal({
                 </>
               ) : null}
               {canCancel ? (
-                <BaseButton type="button" variant="ghost" onClick={onCancel}>
+                <BaseButton type="button" variant="ghost" onClick={() => setCancelAsk(true)}>
                   {t('rst.floor.closeOrder')}
                 </BaseButton>
               ) : null}
@@ -153,6 +156,16 @@ export default function OccupiedTableModal({
           </>
         )}
       </div>
+      <RstConfirmDialog
+        open={cancelAsk}
+        title={t('rst.floor.closeOrder')}
+        message={t('rst.order.confirmCancel')}
+        confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
+        cancelLabel={t('common.cancel')}
+        danger
+        onClose={() => setCancelAsk(false)}
+        onConfirm={() => onCancel?.()}
+      />
     </RstOverlay>
   );
 }

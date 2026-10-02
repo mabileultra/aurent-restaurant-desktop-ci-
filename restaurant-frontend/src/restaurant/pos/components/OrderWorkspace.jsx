@@ -6,6 +6,7 @@ import { shortWaiterName } from '../utils/floorPosDerivations';
 import MenuPicker from './MenuPicker';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
+import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
 
 function useLiveClock() {
@@ -56,6 +57,7 @@ export default function OrderWorkspace({
   t,
 }) {
   const now = useLiveClock();
+  const [cancelAsk, setCancelAsk] = useState(false);
   const billing = order.status === 'BILLING';
   const channel = order.channel || 'DINE_IN';
   const ticketTitle = channel === 'TAKEAWAY'
@@ -325,7 +327,7 @@ export default function OrderWorkspace({
               <button
                 type="button"
                 className="rst-order__action rst-order__action--cancel"
-                onClick={onCancel}
+                onClick={() => setCancelAsk(true)}
               >
                 {t('rst.order.cancel')}
               </button>
@@ -345,6 +347,17 @@ export default function OrderWorkspace({
           setDiscountOpen(false);
         }}
         t={t}
+      />
+
+      <RstConfirmDialog
+        open={cancelAsk}
+        title={t('rst.order.cancel')}
+        message={t('rst.order.confirmCancel')}
+        confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
+        cancelLabel={t('common.cancel')}
+        danger
+        onClose={() => setCancelAsk(false)}
+        onConfirm={() => onCancel?.()}
       />
     </div>
   );

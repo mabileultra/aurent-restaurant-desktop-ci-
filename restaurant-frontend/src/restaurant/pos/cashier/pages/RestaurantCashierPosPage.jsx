@@ -117,11 +117,7 @@ export default function RestaurantCashierPosPage() {
               onComposeFamily={p.handleComposeFamily}
               onQty={p.isDraftOrder ? undefined : p.handleQty}
               onRemove={p.isDraftOrder ? undefined : p.handleRemoveItem}
-              onCancel={p.isDraftOrder ? undefined : () => {
-                if (window.confirm(p.t('rst.order.confirmCancel'))) {
-                  p.cancelMutation.mutate();
-                }
-              }}
+              onCancel={p.isDraftOrder ? undefined : () => p.cancelMutation.mutate()}
               canCancel={!p.isDraftOrder && p.canCancel}
               allowKitchenRefuse={!p.isDraftOrder && !!p.access?.canCancelOrder}
               canSendKitchen={!p.isDraftOrder && p.canSendKitchen}
