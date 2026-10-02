@@ -10,6 +10,8 @@ const { autoUpdater } = require('electron-updater');
 const { resolveFeedUrl } = require('./autoUpdaterFeed.cjs');
 
 let feedUrl = null;
+/** True after update-available until downloaded or hard error — do not swallow mid-cycle errors. */
+let downloadCycle = false;
 
 function broadcastUpdate(payload) {
   BrowserWindow.getAllWindows().forEach((win) => {
@@ -30,6 +32,8 @@ function classifyUpdaterError(message) {
     || text.includes('econn')
     || text.includes('timed out')
     || text.includes('offline')
+    || text.includes('404')
+    || text.includes('403')
   ) {
     return 'network';
   }
@@ -38,6 +42,10 @@ function classifyUpdaterError(message) {
 
 function isBenignUpdaterError(message) {
   return classifyUpdaterError(message) === 'signature';
+}
+
+function isAlreadyDownloadingError(message) {
+  return /already.*(download|downloaded)|download.*(in progress|progress)/i.test(String(message || ''));
 }
 
 function isUpdaterEnabled() {
@@ -53,14 +61,32 @@ function configureUpdaterForUnsignedBuilds() {
   autoUpdater.verifyUpdateCodeSignature = false;
 }
 
+function startDownload(version) {
+  // Immediately move UI off «начинается…» even before first byte.
+  broadcastUpdate({ type: 'progress', percent: 0, version: version || null });
+  return autoUpdater.downloadUpdate().catch((error) => {
+    const message = error?.message || String(error);
+    if (isAlreadyDownloadingError(message)) {
+      return;
+    }
+    console.error('[autoUpdater] downloadUpdate', message);
+    downloadCycle = false;
+    broadcastUpdate({ type: 'error', code: classifyUpdaterError(message) });
+  });
+}
+
 function registerAutoUpdaterHandlers() {
   configureUpdaterForUnsignedBuilds();
 
   autoUpdater.on('update-available', (info) => {
-    broadcastUpdate({ type: 'available', version: info.version });
+    downloadCycle = true;
+    const version = info?.version || null;
+    broadcastUpdate({ type: 'available', version });
+    startDownload(version);
   });
 
   autoUpdater.on('download-progress', (progress) => {
+    downloadCycle = true;
     broadcastUpdate({
       type: 'progress',
       percent: Math.round(progress.percent || 0),
@@ -68,15 +94,19 @@ function registerAutoUpdaterHandlers() {
   });
 
   autoUpdater.on('update-downloaded', (info) => {
+    downloadCycle = false;
     broadcastUpdate({ type: 'downloaded', version: info.version });
   });
 
   autoUpdater.on('error', (error) => {
     const message = error?.message || String(error);
     console.error('[autoUpdater]', message);
-    if (isBenignUpdaterError(message)) {
+    // Idle signature noise (unsigned builds) — ignore.
+    // Mid-download / mid-cycle — always surface, otherwise UI freezes on «Загрузка начинается…».
+    if (!downloadCycle && isBenignUpdaterError(message)) {
       return;
     }
+    downloadCycle = false;
     broadcastUpdate({ type: 'error', code: classifyUpdaterError(message) });
   });
 }
@@ -115,7 +145,7 @@ function checkForUpdatesNow() {
     })
     .catch((error) => {
       const message = error?.message || String(error);
-      if (isBenignUpdaterError(message)) {
+      if (!downloadCycle && isBenignUpdaterError(message)) {
         return { ok: true, updateAvailable: false, reason: 'signature' };
       }
       return { ok: false, error: classifyUpdaterError(message) };

@@ -27,7 +27,14 @@ describe('restaurant desktopUpdateNotifications', () => {
     expect(merged.actionKey).toBe('rst.cashier.updateRestartNow');
   });
 
-  it('does not replace ready update with available', () => {
+  it('maps available to progress@0 so UI leaves «начинается» idle state', () => {
+    const mapped = mapDesktopUpdateEvent({ type: 'available', version: '1.2.18' });
+    expect(mapped.updateState).toBe('progress');
+    expect(mapped.percent).toBe(0);
+    expect(mapped.bodyKey).toBe('rst.cashier.updateDownloadStarting');
+  });
+
+  it('does not replace ready update with available/progress@0', () => {
     const ready = mergeDesktopUpdateState(
       null,
       mapDesktopUpdateEvent({ type: 'downloaded', version: '1.2.8' }),

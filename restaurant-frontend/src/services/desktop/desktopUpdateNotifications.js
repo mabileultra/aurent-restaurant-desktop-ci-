@@ -41,22 +41,27 @@ export function mapDesktopUpdateEvent(event) {
   if (event?.type === 'available') {
     return {
       id: 'desktop-update',
-      updateState: 'available',
+      updateState: 'progress',
+      percent: 0,
       version: event.version || null,
-      titleKey: 'rst.cashier.updateAvailableTitle',
-      bodyKey: 'rst.cashier.updateAvailableBody',
+      titleKey: 'rst.cashier.updateDownloadingTitle',
+      bodyKey: 'rst.cashier.updateDownloadStarting',
       titleParams: { version: event.version || '' },
     };
   }
   if (event?.type === 'progress') {
+    const percent = Math.max(0, Math.min(100, Number(event.percent) || 0));
     return {
       id: 'desktop-update',
       updateState: 'progress',
-      percent: event.percent || 0,
+      percent,
       version: event.version || null,
       titleKey: 'rst.cashier.updateDownloadingTitle',
-      bodyKey: 'rst.cashier.updateDownloadingBody',
-      bodyParams: { percent: event.percent || 0 },
+      bodyKey: percent > 0
+        ? 'rst.cashier.updateDownloadingBody'
+        : 'rst.cashier.updateDownloadStarting',
+      bodyParams: { percent },
+      titleParams: event.version ? { version: event.version } : undefined,
     };
   }
   if (event?.type === 'downloaded') {
@@ -95,19 +100,35 @@ export function mergeDesktopUpdateState(prev, mapped) {
   ) {
     return prev;
   }
+  // «available» is mapped to progress@0 — never regress a ready update.
+  if (
+    prev?.updateState === 'downloaded'
+    && mapped.updateState === 'progress'
+    && Number(mapped.percent || 0) < 1
+  ) {
+    return prev;
+  }
   if (
     mapped.updateState === 'available'
     && (prev?.updateState === 'downloaded' || prev?.updateState === 'progress')
   ) {
     return prev;
   }
-  // Keep version from available while progress events usually omit it.
+  // Keep version from earlier events while progress often omits it.
   if (
     mapped.updateState === 'progress'
     && prev?.version
     && !mapped.version
   ) {
     return { ...mapped, version: prev.version };
+  }
+  // Never let a 0% progress regress a higher percent.
+  if (
+    mapped.updateState === 'progress'
+    && prev?.updateState === 'progress'
+    && Number(mapped.percent || 0) < Number(prev.percent || 0)
+  ) {
+    return prev;
   }
   return mapped;
 }

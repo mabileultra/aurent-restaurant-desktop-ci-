@@ -26,6 +26,28 @@ export function useRestaurantDesktopUpdate(t) {
     });
   }, []);
 
+  // If download never leaves 0% / «начинается», surface a retryable error (do not freeze forever).
+  useEffect(() => {
+    const stuck = update?.updateState === 'progress' && Number(update?.percent || 0) < 1;
+    if (!stuck) return undefined;
+    const timer = window.setTimeout(() => {
+      setUpdate((prev) => {
+        if (!prev || prev.updateState !== 'progress' || Number(prev.percent || 0) >= 1) {
+          return prev;
+        }
+        return {
+          id: 'desktop-update',
+          updateState: 'error',
+          errorCode: 'network',
+          titleKey: 'rst.cashier.updateErrorTitle',
+          bodyKey: 'rst.cashier.updateErrorNetwork',
+          actionKey: 'rst.cashier.updateRetry',
+        };
+      });
+    }, 90_000);
+    return () => window.clearTimeout(timer);
+  }, [update?.updateState, update?.percent]);
+
   useEffect(() => {
     if (!isDesktop() || typeof window.desktopCashier?.checkForUpdates !== 'function') {
       return undefined;
