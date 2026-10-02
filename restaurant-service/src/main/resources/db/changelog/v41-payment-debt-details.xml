@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-045-payment-debt-details" author="pos">
+        <addColumn tableName="floor_order_payments">
+            <column name="debt_phone" type="VARCHAR(32)"/>
+            <column name="debt_comment" type="VARCHAR(500)"/>
+            <column name="advance_paid" type="NUMERIC(18,2)"/>
+            <column name="debt_remaining" type="NUMERIC(18,2)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

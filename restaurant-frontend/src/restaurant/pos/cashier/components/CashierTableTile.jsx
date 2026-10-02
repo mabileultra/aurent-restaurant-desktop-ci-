@@ -3,6 +3,7 @@ import { tableStatusClass } from '../../utils/tableStatus';
 import { formatElapsed } from '../../utils/formatElapsed';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { resolveTableChecksTotal } from '../../utils/restaurantPayAmount';
+import { resolveOrderHallName } from '../../utils/floorPosDerivations';
 import '../styles/cashier-table-tile.css';
 
 /**
@@ -22,6 +23,7 @@ export default function CashierTableTile({
   const order = orders[0] || null;
   const elapsed = order?.openedAt ? formatElapsed(order.openedAt, now) : null;
   const amount = resolveTableChecksTotal(table, halls);
+  const hallName = resolveOrderHallName(halls, { tableId: table.id }, table.hallName);
 
   const warm = () => {
     if (!onPrefetchOrder) return;
@@ -38,7 +40,10 @@ export default function CashierTableTile({
       onPointerEnter={warm}
       onFocus={warm}
     >
-      <span className="rst-cashier-tile__code">{table.code}</span>
+      <span className="rst-cashier-tile__head">
+        {hallName ? <span className="rst-cashier-tile__hall">{hallName}</span> : null}
+        <span className="rst-cashier-tile__code">{table.code}</span>
+      </span>
       <span className="rst-cashier-tile__status">{t(`rst.status.${status}`)}</span>
       {amount != null ? (
         <strong className="rst-cashier-tile__amount">{fmtMoneyCompact(amount)}</strong>

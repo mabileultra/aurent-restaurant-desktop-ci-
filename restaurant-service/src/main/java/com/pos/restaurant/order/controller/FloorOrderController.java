@@ -166,7 +166,7 @@ public class FloorOrderController {
     }
 
     @PatchMapping("/orders/{orderId}/discount")
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'WAITER', 'CASHIER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
     @Operation(summary = "Установить скидку на заказ")
     public OrderResponse updateDiscount(
         @PathVariable UUID orderId,

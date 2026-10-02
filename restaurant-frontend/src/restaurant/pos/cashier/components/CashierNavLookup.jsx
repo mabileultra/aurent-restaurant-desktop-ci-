@@ -4,7 +4,7 @@ import { CASHIER_TAB_ICONS } from '../config/cashierNavIcons';
 import { CASHIER_TABS } from '../utils/cashierNav';
 import '../styles/cashier-nav-lookup.css';
 
-export default function CashierNavLookup({ activeTab, onSelect, t }) {
+export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [], t }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
 
@@ -48,6 +48,7 @@ export default function CashierNavLookup({ activeTab, onSelect, t }) {
                 type="button"
                 role="menuitem"
                 className={`rst-cashier-nav-lookup__item${active ? ' is-active' : ''}`}
+                disabled={disabledKeys.includes(item.key)}
                 onClick={() => {
                   onSelect?.(item.key);
                   setOpen(false);

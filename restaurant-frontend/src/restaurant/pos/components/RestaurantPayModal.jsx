@@ -34,10 +34,12 @@ export default function RestaurantPayModal({
   const [cardType, setCardType] = useState(null);
   const [tendered, setTendered] = useState('');
   const [cashPart, setCashPart] = useState('');
+  const [debtPhone, setDebtPhone] = useState('');
+  const [debtComment, setDebtComment] = useState('');
 
   const derived = useMemo(
-    () => deriveRestaurantPay(totalDue, { method, tendered, cashPart, cardType }),
-    [totalDue, method, tendered, cashPart, cardType],
+    () => deriveRestaurantPay(totalDue, { method, tendered, cashPart, cardType, debtPhone }),
+    [totalDue, method, tendered, cashPart, cardType, debtPhone],
   );
 
   if (!open || typeof document === 'undefined') return null;
@@ -51,11 +53,15 @@ export default function RestaurantPayModal({
 
   const submit = () => {
     if (!derived.canSubmit || paying) return;
-    onConfirm?.(buildRestaurantPayPayload(derived, method, cardType));
+    onConfirm?.(buildRestaurantPayPayload(derived, method, cardType, {
+      phone: debtPhone,
+      comment: debtComment,
+    }));
   };
 
   const showCardRails = method === 'CARD' || method === 'MIXED';
-  const showKeypad = method === 'CASH' || method === 'MIXED';
+  const showDebtFields = method === 'CREDIT' || method === 'ADVANCE';
+  const showKeypad = method === 'CASH' || method === 'MIXED' || method === 'ADVANCE';
   const keypadValue = method === 'MIXED' ? cashPart : tendered;
   const setKeypadValue = method === 'MIXED' ? setCashPart : setTendered;
   const keypadExact = method === 'MIXED'
@@ -163,6 +169,55 @@ export default function RestaurantPayModal({
                 </div>
               </div>
             </>
+          ) : null}
+
+          {showDebtFields ? (
+            <div className="rst-pay-modal__debt">
+              <label className="rst-pay-modal__field">
+                <span>{t('rst.order.debtPhone')}</span>
+                <input
+                  type="tel"
+                  value={debtPhone}
+                  onChange={(e) => setDebtPhone(e.target.value)}
+                  placeholder="+998 __ ___ __ __"
+                  maxLength={32}
+                  autoComplete="off"
+                  disabled={paying}
+                />
+              </label>
+              <label className="rst-pay-modal__field">
+                <span>{t('rst.order.debtComment')}</span>
+                <input
+                  type="text"
+                  value={debtComment}
+                  onChange={(e) => setDebtComment(e.target.value)}
+                  placeholder={t('rst.order.debtCommentPh')}
+                  maxLength={500}
+                  autoComplete="off"
+                  disabled={paying}
+                />
+              </label>
+            </div>
+          ) : null}
+
+          {method === 'CREDIT' ? (
+            <div className="rst-pay-modal__amount-box">
+              <span>{t('rst.order.creditAmount')}</span>
+              <strong>{fmtMoneyCompact(derived.due)}</strong>
+            </div>
+          ) : null}
+
+          {method === 'ADVANCE' ? (
+            <div className="rst-pay-modal__split">
+              <div>
+                <span>{t('rst.order.advancePaid')}</span>
+                <strong>{keypadValue ? fmtMoneyCompact(Number(keypadValue)) : '—'}</strong>
+              </div>
+              <div>
+                <span>{t('rst.order.debtRemaining')}</span>
+                <strong>{fmtMoneyCompact(derived.debtRemaining)}</strong>
+              </div>
+            </div>
           ) : null}
 
           {showKeypad ? (

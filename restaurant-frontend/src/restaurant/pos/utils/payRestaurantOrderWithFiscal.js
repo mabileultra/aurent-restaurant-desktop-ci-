@@ -43,6 +43,9 @@ export async function payRestaurantOrderWithFiscal({
   amountTendered,
   changeGiven,
   cardType = null,
+  debtPhone = null,
+  debtComment = null,
+  advancePaid = null,
   storeId,
   storeName,
   shiftId = null,
@@ -135,6 +138,7 @@ export async function payRestaurantOrderWithFiscal({
       amountTendered: tendered,
       changeGiven: change,
       ...(cardType ? { cardType } : {}),
+      ...(skipFiscal ? { debtPhone, debtComment, advancePaid } : {}),
     });
     paidOrder = res.data;
   } catch (payErr) {

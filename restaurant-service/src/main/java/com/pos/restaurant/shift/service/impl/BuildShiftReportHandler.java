@@ -6,6 +6,7 @@ import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.shift.domain.RestaurantShiftStatus;
 import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.entity.RestaurantShift;
+import com.pos.restaurant.shift.support.ShiftItemSalesLoader;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import com.pos.restaurant.shift.support.ShiftReportAssembler;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ public class BuildShiftReportHandler {
     private final ShiftLookup shiftLookup;
     private final FloorOrderRepository orderRepository;
     private final ShiftReportAssembler reportAssembler;
+    private final ShiftItemSalesLoader itemSalesLoader;
 
     @Transactional(readOnly = true)
     public ShiftReportResponse xReport(UUID shiftId, String storeName, String cashierName) {
@@ -30,14 +32,7 @@ public class BuildShiftReportHandler {
         if (shift.getStatus() != RestaurantShiftStatus.OPEN) {
             throw new BusinessException("X-отчёт доступен только для открытой смены");
         }
-        return reportAssembler.toReport(
-            "X",
-            shift,
-            storeName,
-            cashierName,
-            Instant.now(),
-            returnsCount(shift.getId())
-        );
+        return build("X", shift, storeName, cashierName, Instant.now());
     }
 
     @Transactional(readOnly = true)
@@ -46,24 +41,28 @@ public class BuildShiftReportHandler {
         if (shift.getStatus() != RestaurantShiftStatus.OPEN) {
             throw new BusinessException("Z-отчёт доступен только для открытой смены");
         }
-        return reportAssembler.toReport(
-            "Z",
-            shift,
-            storeName,
-            cashierName,
-            Instant.now(),
-            returnsCount(shift.getId())
-        );
+        return build("Z", shift, storeName, cashierName, Instant.now());
     }
 
     public ShiftReportResponse zReportOf(RestaurantShift shift, String storeName, String cashierName, Instant reportAt) {
+        return build("Z", shift, storeName, cashierName, reportAt);
+    }
+
+    private ShiftReportResponse build(
+        String type,
+        RestaurantShift shift,
+        String storeName,
+        String cashierName,
+        Instant reportAt
+    ) {
         return reportAssembler.toReport(
-            "Z",
+            type,
             shift,
             storeName,
             cashierName,
             reportAt,
-            returnsCount(shift.getId())
+            returnsCount(shift.getId()),
+            itemSalesLoader.load(shift, reportAt)
         );
     }
 

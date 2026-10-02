@@ -45,5 +45,6 @@
     <include file="db/changelog/v38-active-order-index.xml"/>
     <include file="db/changelog/v39-order-item-sent-qty.xml"/>
     <include file="db/changelog/v40-print-job-pending-printer-index.xml"/>
+    <include file="db/changelog/v41-payment-debt-details.xml"/>
 
 </databaseChangeLog>

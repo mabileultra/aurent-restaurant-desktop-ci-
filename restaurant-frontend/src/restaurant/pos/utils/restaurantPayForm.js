@@ -7,7 +7,13 @@ function parseMoney(raw) {
 }
 
 /** Derive cash/card/change amounts for restaurant pay dialog. */
-export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, cardType }) {
+export function deriveRestaurantPay(totalDue, {
+  method,
+  tendered,
+  cashPart,
+  cardType,
+  debtPhone = '',
+}) {
   const due = round2(totalDue);
   const tenderedNum = parseMoney(tendered);
   const cashPartNum = parseMoney(cashPart);
@@ -28,14 +34,25 @@ export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, card
   }
 
   if (method === 'CREDIT' || method === 'ADVANCE') {
+    const phoneOk = String(debtPhone || '').trim().length > 0;
+    const advancePaid = method === 'ADVANCE' ? tenderedNum : null;
+    const advanceOk = method !== 'ADVANCE' || (tenderedNum > 0 && tenderedNum <= due);
     return {
       due,
       cashAmount: 0,
       cardAmount: 0,
       amountTendered: due,
       changeGiven: 0,
-      canSubmit: due > 0,
-      hintKey: null,
+      advancePaid,
+      debtRemaining: method === 'ADVANCE' ? round2(Math.max(0, due - tenderedNum)) : due,
+      canSubmit: due > 0 && phoneOk && advanceOk,
+      hintKey: !phoneOk
+        ? 'rst.order.debtPhoneRequired'
+        : method === 'ADVANCE' && tenderedNum <= 0
+          ? 'rst.order.advanceRequired'
+          : method === 'ADVANCE' && tenderedNum > due
+            ? 'rst.order.advanceExceeds'
+            : null,
       infoKey: method === 'CREDIT' ? 'rst.order.payCreditHint' : 'rst.order.payAdvanceHint',
     };
   }
@@ -76,7 +93,7 @@ export function deriveRestaurantPay(totalDue, { method, tendered, cashPart, card
   };
 }
 
-export function buildRestaurantPayPayload(derived, method, cardType = null) {
+export function buildRestaurantPayPayload(derived, method, cardType = null, debt = null) {
   const payload = {
     method,
     amount: derived.due,
@@ -87,6 +104,11 @@ export function buildRestaurantPayPayload(derived, method, cardType = null) {
   };
   if ((method === 'CARD' || method === 'MIXED') && cardType) {
     payload.cardType = cardType;
+  }
+  if (isNonFiscalPayMethod(method)) {
+    payload.debtPhone = String(debt?.phone || '').trim();
+    payload.debtComment = String(debt?.comment || '').trim() || null;
+    if (method === 'ADVANCE') payload.advancePaid = derived.advancePaid;
   }
   return payload;
 }

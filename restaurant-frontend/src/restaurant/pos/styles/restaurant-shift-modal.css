@@ -26,6 +26,74 @@
   color: var(--rst-ink, #f4f6fb);
   padding: 16px 18px 18px;
   box-shadow: 0 24px 48px rgb(0 0 0 / 0.45);
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.rst-shift-modal__items {
+  margin-top: 12px;
+  border-radius: 10px;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  overflow: hidden;
+}
+
+.rst-shift-modal__items-head {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: var(--rst-surface-2);
+}
+
+.rst-shift-modal__items-list {
+  max-height: 14rem;
+  overflow-y: auto;
+}
+
+.rst-shift-modal__item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 10px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  border-top: 1px solid var(--rst-border, #2a2a2a);
+}
+
+.rst-shift-modal__item span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rst-shift-modal__item span:not(:first-child) {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-shift-modal__items-empty {
+  padding: 10px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.rst-shift-modal__carry {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, #4ade80 12%, transparent);
+  font-size: 0.85rem;
+}
+
+.rst-shift-modal__carry strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.rst-shift-modal__carry.is-warn {
+  background: color-mix(in srgb, #fbbf24 14%, transparent);
 }
 
 .rst-shift-modal__head {

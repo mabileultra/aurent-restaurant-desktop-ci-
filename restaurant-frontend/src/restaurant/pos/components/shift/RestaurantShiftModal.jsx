@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createPortal } from 'react-dom';
 import {
   DoorClosed,
@@ -14,6 +14,7 @@ import { BaseInput } from '../../../../components/ui';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { toastApiError } from '../../../../utils/apiError';
 import { rstShiftApi } from '../../../api/shift.api';
+import { printShiftItemsReceipt } from '../../utils/printShiftItemsReceipt';
 import ShiftReportPrintBody from './ShiftReportPrintBody';
 import ShiftReportPrintPortal from './ShiftReportPrintPortal';
 import '../../styles/restaurant-shift-modal.css';
@@ -55,20 +56,42 @@ export default function RestaurantShiftModal({
   const [printReport, setPrintReport] = useState(null);
   const [printToken, setPrintToken] = useState(0);
   const closeAfterPrintRef = useRef(false);
+  const itemsAfterPrintRef = useRef(null);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-shift-current', storeId] });
+    qc.invalidateQueries({ queryKey: ['rst-shift-last-closed', storeId] });
   };
+
+  const shiftOpen = Boolean(shift?.id);
+  const expectedCash = (Number(shift?.openingCash) || 0) + (Number(shift?.cashAmount) || 0);
+
+  const itemsQuery = useQuery({
+    queryKey: ['rst-shift-items', shift?.id, shift?.saleCount],
+    queryFn: () => rstShiftApi.xReport(shift.id).then((r) => r.data),
+    enabled: open && shiftOpen,
+    staleTime: 0,
+  });
+
+  const lastClosedQuery = useQuery({
+    queryKey: ['rst-shift-last-closed', storeId],
+    queryFn: () => rstShiftApi.list(storeId).then((r) => (r.data ?? [])
+      .find((row) => row.status === 'CLOSED') ?? null),
+    enabled: open && !shiftOpen && storeId != null,
+  });
+  const lastClosed = lastClosedQuery.data ?? null;
+  const carryCash = lastClosed?.closingCash != null ? Number(lastClosed.closingCash) : null;
 
   useEffect(() => {
     if (!open) {
       setPrintReport(null);
       closeAfterPrintRef.current = false;
+      itemsAfterPrintRef.current = null;
       return;
     }
-    setOpeningCash('0');
-    setClosingCash(String(shift?.openingCash ?? shift?.cashAmount ?? 0));
-  }, [open, shift?.id, shift?.openingCash, shift?.cashAmount]);
+    setOpeningCash(carryCash != null ? String(carryCash) : '0');
+    setClosingCash(String(expectedCash));
+  }, [open, shift?.id, expectedCash, carryCash]);
 
   const queuePrint = (report) => {
     const next = enrichReport(report, { storeName, cashierName });
@@ -99,6 +122,7 @@ export default function RestaurantShiftModal({
       const zReport = data?.zReport || data?.report;
       if (zReport) {
         closeAfterPrintRef.current = true;
+        itemsAfterPrintRef.current = zReport;
         queuePrint(zReport);
       } else {
         onClose?.();
@@ -127,7 +151,11 @@ export default function RestaurantShiftModal({
 
   if (!open || typeof document === 'undefined') return null;
 
-  const isOpen = Boolean(shift?.id);
+  const isOpen = shiftOpen;
+  const items = itemsQuery.data?.items ?? [];
+  const itemsQty = items.reduce((sum, row) => sum + (Number(row.quantity) || 0), 0);
+  const itemsAmount = items.reduce((sum, row) => sum + (Number(row.amount) || 0), 0);
+  const openingDiffers = carryCash != null && Number(openingCash) !== carryCash;
   const openOrders = Number(shift?.openOrderCount) || 0;
   const hasOpenOrders = openOrders > 0;
   const printBusy = Boolean(printReport);
@@ -218,6 +246,47 @@ export default function RestaurantShiftModal({
             ) : null}
 
             {isOpen ? (
+              <div className="rst-shift-modal__items">
+                <div className="rst-shift-modal__items-head">
+                  <span>{t('rst.shift.itemsTitle')}</span>
+                  <span>
+                    {t('rst.shift.itemsQty', { count: itemsQty })} · {fmtMoneyCompact(itemsAmount)}
+                  </span>
+                </div>
+                {itemsQuery.isPending ? (
+                  <div className="rst-shift-modal__items-empty">{t('common.loading')}</div>
+                ) : items.length === 0 ? (
+                  <div className="rst-shift-modal__items-empty">{t('rst.shift.itemsEmpty')}</div>
+                ) : (
+                  <div className="rst-shift-modal__items-list">
+                    {items.map((row) => (
+                      <div key={row.name} className="rst-shift-modal__item">
+                        <span title={row.name}>{row.name}</span>
+                        <span>× {Number(row.quantity)}</span>
+                        <span>{fmtMoneyCompact(row.amount)}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : null}
+
+            {isOpen ? (
+              <div className="rst-shift-modal__carry">
+                <span>{t('rst.shift.expectedCash')}</span>
+                <strong>{fmtMoneyCompact(expectedCash)}</strong>
+              </div>
+            ) : carryCash != null ? (
+              <div className={`rst-shift-modal__carry${openingDiffers ? ' is-warn' : ''}`}>
+                <span>
+                  {t('rst.shift.carryFromLast')}
+                  {lastClosed?.closedAt ? ` (${fmtAt(lastClosed.closedAt)})` : ''}
+                </span>
+                <strong>{fmtMoneyCompact(carryCash)}</strong>
+              </div>
+            ) : null}
+
+            {isOpen ? (
               <p className="rst-shift-modal__hint">
                 {hasOpenOrders
                   ? t('rst.shift.closeBlockedHint', { count: openOrders })
@@ -228,7 +297,7 @@ export default function RestaurantShiftModal({
             )}
 
             <label className="rst-shift-modal__cash">
-              <span>{isOpen ? t('rst.shift.closingCash') : t('rst.shift.openingCash')}</span>
+              <span>{isOpen ? t('rst.shift.closingCashLeft') : t('rst.shift.openingCash')}</span>
               <BaseInput
                 type="number"
                 min="0"
@@ -301,8 +370,17 @@ export default function RestaurantShiftModal({
         t={t}
         onPrinted={() => toast.success(t('receipt.printSent'))}
         onError={(err) => toast.error(err?.message || t('receipt.printFailed'))}
-        onClose={() => {
+        onClose={async () => {
           setPrintReport(null);
+          const itemsReport = itemsAfterPrintRef.current;
+          itemsAfterPrintRef.current = null;
+          if (itemsReport) {
+            try {
+              await printShiftItemsReceipt({ report: itemsReport, storeName, cashierName, t });
+            } catch (err) {
+              toast.error(err?.message || t('receipt.printFailed'));
+            }
+          }
           if (closeAfterPrintRef.current) {
             closeAfterPrintRef.current = false;
             onClose?.();

@@ -127,6 +127,35 @@
   font-size: 0.9rem;
 }
 
+.rst-pay-modal__debt {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.rst-pay-modal__field {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  color: var(--rst-muted);
+}
+
+.rst-pay-modal__field input {
+  width: 100%;
+  min-height: 2.6rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rst-border, #2a2a2a);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--rst-ink, inherit);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.rst-pay-modal__field input:focus {
+  outline: none;
+  border-color: var(--rst-accent, #3b82f6);
+}
+
 .rst-pay-modal__amount-box strong {
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;

@@ -26,7 +26,25 @@
   box-shadow: 0 0 0 1px rgb(255 122 26 / 0.45), 0 10px 22px rgb(0 0 0 / 0.35);
 }
 
+.rst-cashier-tile__head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.rst-cashier-tile__hall {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--rst-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .rst-cashier-tile__code {
+  flex-shrink: 0;
   font-size: 1.45rem;
   font-weight: 800;
   line-height: 1;

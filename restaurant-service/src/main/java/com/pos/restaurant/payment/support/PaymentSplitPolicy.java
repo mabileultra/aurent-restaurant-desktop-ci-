@@ -69,6 +69,41 @@ public class PaymentSplitPolicy {
         throw new ValidationException("Unsupported payment method");
     }
 
+    public record Debt(String phone, String comment, BigDecimal advancePaid, BigDecimal remaining) {}
+
+    /** CREDIT / ADVANCE debtor details; null for drawer methods. */
+    public Debt resolveDebt(PayOrderRequest request, BigDecimal due) {
+        PaymentMethod method = request.method();
+        if (method != PaymentMethod.CREDIT && method != PaymentMethod.ADVANCE) {
+            return null;
+        }
+        String phone = trimToNull(request.debtPhone());
+        if (phone == null) {
+            throw new ValidationException("Phone is required for credit / advance");
+        }
+        String comment = trimToNull(request.debtComment());
+        BigDecimal dueScaled = due.setScale(2, RoundingMode.HALF_UP);
+        if (method == PaymentMethod.CREDIT) {
+            return new Debt(phone, comment, null, dueScaled);
+        }
+        BigDecimal paid = nz(request.advancePaid(), BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+        if (paid.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValidationException("Advance amount is required");
+        }
+        if (paid.compareTo(dueScaled) > 0) {
+            throw new ValidationException("Advance cannot exceed the bill total");
+        }
+        return new Debt(phone, comment, paid, dueScaled.subtract(paid));
+    }
+
+    private static String trimToNull(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
     private static BigDecimal nz(BigDecimal value, BigDecimal fallback) {
         return value == null ? fallback : value;
     }

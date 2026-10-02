@@ -2,6 +2,7 @@ package com.pos.restaurant.shift.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 public record ShiftReportResponse(
@@ -31,5 +32,7 @@ public record ShiftReportResponse(
     BigDecimal returnsHumo,
     BigDecimal returnsUzcard,
     BigDecimal returnsCashless,
-    BigDecimal returnsVat
+    BigDecimal returnsVat,
+    BigDecimal expectedCash,
+    List<ShiftItemRow> items
 ) {}

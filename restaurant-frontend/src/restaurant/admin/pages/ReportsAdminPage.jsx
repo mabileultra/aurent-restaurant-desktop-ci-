@@ -85,11 +85,23 @@ export default function ReportsAdminPage() {
     });
   }, [checksQuery.data, params.fromMs, params.toMs]);
 
+  const debtsInRange = useMemo(
+    () => checksInRange.filter((row) => {
+      const method = String(row.paymentMethod || '').toUpperCase();
+      return method === 'CREDIT' || method === 'ADVANCE';
+    }),
+    [checksInRange],
+  );
+
   const sourceRows = tab === 'dish'
     ? (report?.byDish ?? [])
     : tab === 'hour'
       ? (report?.byHour ?? [])
-      : checksInRange;
+      : tab === 'debts'
+        ? debtsInRange
+        : checksInRange;
+  const usesChecks = tab === 'checks' || tab === 'debts';
+  const colSpan = tab === 'debts' ? 10 : tab === 'checks' ? 6 : 4;
   const total = sourceRows.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
   const rows = sourceRows.slice(page * pageSize, page * pageSize + pageSize);
@@ -112,7 +124,9 @@ export default function ReportsAdminPage() {
     ? t('rst.reports.byDish')
     : tab === 'hour'
       ? t('rst.reports.byHour')
-      : t('rst.reports.byChecks');
+      : tab === 'debts'
+        ? t('rst.reports.byDebts')
+        : t('rst.reports.byChecks');
 
   return (
     <section>
@@ -178,6 +192,9 @@ export default function ReportsAdminPage() {
             <button type="button" className={`rst-report__tab${tab === 'hour' ? ' is-active' : ''}`} onClick={() => changeTab('hour')}>
               {t('rst.reports.byHour')}
             </button>
+            <button type="button" className={`rst-report__tab${tab === 'debts' ? ' is-active' : ''}`} onClick={() => changeTab('debts')}>
+              {t('rst.reports.byDebts')}
+            </button>
           </div>
 
           <div className="rst-data-card">
@@ -197,6 +214,19 @@ export default function ReportsAdminPage() {
                       <th>{t('rst.reports.checkMethod')}</th>
                       <th>{t('rst.reports.amount')}</th>
                     </tr>
+                  ) : tab === 'debts' ? (
+                    <tr>
+                      <th className="rst-data-table__num">#</th>
+                      <th>{t('rst.reports.checkNo')}</th>
+                      <th>{t('rst.reports.checkTable')}</th>
+                      <th>{t('rst.reports.checkClosed')}</th>
+                      <th>{t('rst.reports.checkMethod')}</th>
+                      <th>{t('rst.reports.debtPhone')}</th>
+                      <th>{t('rst.reports.debtComment')}</th>
+                      <th>{t('rst.reports.amount')}</th>
+                      <th>{t('rst.reports.advancePaid')}</th>
+                      <th>{t('rst.reports.debtRemaining')}</th>
+                    </tr>
                   ) : tab === 'dish' ? (
                     <tr>
                       <th className="rst-data-table__num">#</th>
@@ -214,14 +244,29 @@ export default function ReportsAdminPage() {
                   )}
                 </thead>
                 <tbody>
-                  {(tab === 'checks' ? checksQuery.isPending : reportQuery.isPending) && !rows.length ? (
+                  {(usesChecks ? checksQuery.isPending : reportQuery.isPending) && !rows.length ? (
                     <tr>
-                      <td colSpan={tab === 'checks' ? 6 : 4} className="rst-data-table__empty">{t('common.loading')}</td>
+                      <td colSpan={colSpan} className="rst-data-table__empty">{t('common.loading')}</td>
                     </tr>
                   ) : rows.length === 0 ? (
                     <tr>
-                      <td colSpan={tab === 'checks' ? 6 : 4} className="rst-data-table__empty">{t('rst.reports.empty')}</td>
+                      <td colSpan={colSpan} className="rst-data-table__empty">{t('rst.reports.empty')}</td>
                     </tr>
+                  ) : tab === 'debts' ? (
+                    rows.map((row, index) => (
+                      <tr key={row.id}>
+                        <td className="rst-data-table__num">{page * pageSize + index + 1}</td>
+                        <td>№{row.orderNo}</td>
+                        <td>{row.tableCode || '—'}</td>
+                        <td>{formatClosedAt(row.closedAt)}</td>
+                        <td>{methodLabel(row.paymentMethod, t)}</td>
+                        <td>{row.debtPhone || '—'}</td>
+                        <td>{row.debtComment || '—'}</td>
+                        <td>{fmtMoneyCompact(row.paidAmount ?? row.totalAmount)}</td>
+                        <td>{row.advancePaid != null ? fmtMoneyCompact(row.advancePaid) : '—'}</td>
+                        <td>{fmtMoneyCompact(row.debtRemaining ?? row.paidAmount ?? row.totalAmount)}</td>
+                      </tr>
+                    ))
                   ) : tab === 'checks' ? (
                     rows.map((row, index) => (
                       <tr key={row.id}>

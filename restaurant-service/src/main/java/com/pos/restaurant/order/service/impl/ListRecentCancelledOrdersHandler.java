@@ -80,7 +80,11 @@ public class ListRecentCancelledOrdersHandler {
             order.getCommissionAmount(),
             total,
             null,
-            total
+            total,
+            null,
+            null,
+            null,
+            null
         );
     }
 }

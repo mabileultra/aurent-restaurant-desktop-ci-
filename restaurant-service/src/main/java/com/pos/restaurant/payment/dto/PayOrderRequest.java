@@ -4,6 +4,7 @@ import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -14,7 +15,10 @@ public record PayOrderRequest(
     BigDecimal cardAmount,
     BigDecimal amountTendered,
     BigDecimal changeGiven,
-    PaymentCardType cardType
+    PaymentCardType cardType,
+    @Size(max = 32) String debtPhone,
+    @Size(max = 500) String debtComment,
+    BigDecimal advancePaid
 ) {
     public PayOrderRequest {
         if (cashAmount == null) {

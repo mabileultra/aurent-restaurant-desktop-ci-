@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useAuthStore } from '../../../../store/authStore';
 import RestaurantWorkspaceEmpty from '../../../shared/components/RestaurantWorkspaceEmpty';
 import { logoutAndResetSession } from '../../../../utils/authSession';
 import FloorPosModals from '../../components/FloorPosModals';
 import OrderWorkspace from '../../components/OrderWorkspace';
+import OrderDiscountModal from '../../components/OrderDiscountModal';
 import PosHardwareBar from '../../components/PosHardwareBar';
 import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
@@ -30,9 +32,19 @@ export default function RestaurantCashierPosPage() {
     p.setFullOrder(false);
   };
 
+  const [discountOpen, setDiscountOpen] = useState(false);
+  const discountOrder = !p.isDraftOrder ? p.orderForUi : null;
+  const canDiscount = Boolean(
+    discountOrder && (discountOrder.status === 'OPEN' || discountOrder.status === 'BILLING'),
+  );
+
   const handleTab = (next) => {
     if (next === 'shift') {
       p.setShiftModal(true);
+      return;
+    }
+    if (next === 'discount') {
+      if (canDiscount) setDiscountOpen(true);
       return;
     }
     p.setTab(next);
@@ -69,6 +81,7 @@ export default function RestaurantCashierPosPage() {
         canAdmin={p.canAdmin}
         activeTab={p.tab}
         onSelectTab={handleTab}
+        disabledTabs={canDiscount ? [] : ['discount']}
         backToCashier={showFull ? {
           label: p.t('rst.cashier.backToCashier'),
           onClick: exitFullOrder,
@@ -147,6 +160,18 @@ export default function RestaurantCashierPosPage() {
 
       {showFull ? null : <PosHardwareBar t={p.t} />}
       <FloorPosModals p={p} />
+      <OrderDiscountModal
+        open={discountOpen && canDiscount}
+        subtotal={discountOrder?.subtotal}
+        currentDiscount={Number(discountOrder?.discountAmount) || 0}
+        saving={p.discountMutation.isPending}
+        onClose={() => setDiscountOpen(false)}
+        onSubmit={(amount) => {
+          p.discountMutation.mutate(amount);
+          setDiscountOpen(false);
+        }}
+        t={p.t}
+      />
     </div>
   );
 }

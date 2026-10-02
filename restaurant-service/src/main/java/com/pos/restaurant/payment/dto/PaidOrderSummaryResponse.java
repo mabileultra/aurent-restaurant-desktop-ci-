@@ -22,5 +22,9 @@ public record PaidOrderSummaryResponse(
     BigDecimal commissionAmount,
     BigDecimal totalAmount,
     PaymentMethod paymentMethod,
-    BigDecimal paidAmount
+    BigDecimal paidAmount,
+    String debtPhone,
+    String debtComment,
+    BigDecimal advancePaid,
+    BigDecimal debtRemaining
 ) {}

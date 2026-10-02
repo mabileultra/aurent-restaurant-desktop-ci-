@@ -212,8 +212,6 @@ function buildOrderWorkspaceProps(p) {
     canPay: false,
     onRequestBill: () => p.billMutation.mutate(),
     onPay: undefined,
-    onDiscount: (amount) => p.discountMutation.mutate(amount),
-    discountPending: p.discountMutation.isPending,
     onGuestsChange: (payload) => p.updateGuestsMutation.mutate(payload),
     guestsPending: p.updateGuestsMutation.isPending,
     billingPending: p.billMutation.isPending,

@@ -115,7 +115,7 @@ export function saleNeedsFiscalPrint(sale) {
   return isFiscalizedSale(sale);
 }
 
-function printViaIframe(bodyHtml) {
+export function printViaIframe(bodyHtml) {
   return new Promise((resolve) => {
     const iframe = document.createElement('iframe');
     iframe.setAttribute('aria-hidden', 'true');
@@ -165,7 +165,7 @@ function printViaIframe(bodyHtml) {
   });
 }
 
-function escapeHtml(value) {
+export function escapeHtml(value) {
   return String(value ?? '')
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

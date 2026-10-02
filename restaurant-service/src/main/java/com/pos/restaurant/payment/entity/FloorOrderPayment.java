@@ -70,6 +70,20 @@ public class FloorOrderPayment {
     @Column(name = "card_type", length = 16)
     private PaymentCardType cardType;
 
+    /** CREDIT / ADVANCE: debtor phone and cashier note. */
+    @Column(name = "debt_phone", length = 32)
+    private String debtPhone;
+
+    @Column(name = "debt_comment", length = 500)
+    private String debtComment;
+
+    /** ADVANCE: amount the guest handed over now; remainder stays as debt. */
+    @Column(name = "advance_paid", precision = 18, scale = 2)
+    private BigDecimal advancePaid;
+
+    @Column(name = "debt_remaining", precision = 18, scale = 2)
+    private BigDecimal debtRemaining;
+
     @Column(name = "paid_by_user_id", nullable = false)
     private UUID paidByUserId;
 

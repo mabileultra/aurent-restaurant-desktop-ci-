@@ -112,7 +112,11 @@ public class ListRecentPaidOrdersHandler {
             order.getCommissionAmount(),
             paidAmount,
             method,
-            paidAmount
+            paidAmount,
+            payment == null ? null : payment.getDebtPhone(),
+            payment == null ? null : payment.getDebtComment(),
+            payment == null ? null : payment.getAdvancePaid(),
+            payment == null ? null : payment.getDebtRemaining()
         );
     }
 }

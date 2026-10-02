@@ -70,6 +70,7 @@ public class PayOrderHandler {
         }
         eligibilityPolicy.assertCanPay(order, due, request.amount());
         PaymentSplitPolicy.Split split = paymentSplitPolicy.resolve(request, due);
+        PaymentSplitPolicy.Debt debt = paymentSplitPolicy.resolveDebt(request, due);
         FloorOrderPayment payment = paymentRepository.save(FloorOrderPayment.builder()
             .order(order)
             .method(request.method())
@@ -79,6 +80,10 @@ public class PayOrderHandler {
             .amountTendered(split.amountTendered())
             .changeGiven(split.changeGiven())
             .cardType(resolveCardType(request))
+            .debtPhone(debt == null ? null : debt.phone())
+            .debtComment(debt == null ? null : debt.comment())
+            .advancePaid(debt == null ? null : debt.advancePaid())
+            .debtRemaining(debt == null ? null : debt.remaining())
             .paidByUserId(tenantSupport.requireUserId())
             .build());
         order.setStatus(OrderStatus.CLOSED);

@@ -14,12 +14,13 @@ export default function CashierTopBar({
   backToCashier = null,
   activeTab = null,
   onSelectTab,
+  disabledTabs = [],
   t,
 }) {
   return (
     <header className="rst-cashier-top">
       {onSelectTab && !backToCashier ? (
-        <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} t={t} />
+        <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} disabledKeys={disabledTabs} t={t} />
       ) : null}
 
       <div className="rst-cashier-top__brand">
