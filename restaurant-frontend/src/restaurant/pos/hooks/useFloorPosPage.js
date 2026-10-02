@@ -327,7 +327,7 @@ export function useFloorPosPage() {
     if (!kitchen) return true;
     return window.confirm(t('rst.order.confirmRefuseKitchenItem', {
       name: line.name || '',
-      defaultValue: `Отказать «${line.name || ''}»?`,
+      defaultValue: `Вы действительно хотите отменить «${line.name || ''}»?`,
     }));
   };
 
@@ -344,9 +344,13 @@ export function useFloorPosPage() {
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
   };
 
-  const handleRemoveItem = (itemId) => {
-    const line = (order?.items || []).find((row) => String(row.id) === String(itemId));
+  const handleRemoveItem = (itemIdOrLine) => {
+    const line = itemIdOrLine && typeof itemIdOrLine === 'object'
+      ? itemIdOrLine
+      : (order?.items || []).find((row) => String(row.id) === String(itemIdOrLine));
     if (line && !confirmKitchenRefuse(line)) return;
+    const itemId = line?.id ?? itemIdOrLine;
+    if (itemId == null) return;
     m.removeItemMutation.mutate(itemId);
   };
 

@@ -1505,7 +1505,7 @@
       "onKitchen": "На кухне",
       "refuseShort": "Отказ",
       "refuseKitchenItem": "Отказ позиции",
-      "confirmRefuseKitchenItem": "Отказать «{{name}}»?",
+      "confirmRefuseKitchenItem": "Вы действительно хотите отменить «{{name}}»?",
       "openFailed": "Не удалось открыть заказ",
       "orderComment": "Комментарий к заказу",
       "orderCommentPh": "День рождения, у окна…",

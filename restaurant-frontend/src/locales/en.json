@@ -1480,7 +1480,7 @@
       "cancelled": "Order Cancelled",
       "childrenCount": "Children",
       "confirmCancel": "Cancel your order and free the table?",
-      "confirmRefuseKitchenItem": "Refuse «{{name}}»?",
+      "confirmRefuseKitchenItem": "Are you sure you want to cancel «{{name}}»?",
       "refuseKitchenItem": "Refuse item",
       "refuseShort": "Refused",
       "confirmPayShort": "Charge",

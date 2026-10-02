@@ -127,7 +127,7 @@ export default function OrderLines({
                       title={canEditKitchen
                         ? t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ позиции' })
                         : undefined}
-                      onClick={() => onRemove(line.id)}
+                      onClick={() => onRemove(line)}
                     >
                       ✕
                     </button>

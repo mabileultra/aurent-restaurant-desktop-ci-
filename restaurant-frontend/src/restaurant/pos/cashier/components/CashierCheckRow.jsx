@@ -34,9 +34,6 @@ export default function CashierCheckRow({
         {hallName ? <span className="rst-cashier-tile__hall">{hallName}</span> : null}
         <span className="rst-cashier-tile__code">{table.code}</span>
       </span>
-      <span className="rst-cashier-tile__check-no">
-        {t('rst.floor.checkNo', { no: check?.orderNo })}
-      </span>
       <span className="rst-cashier-tile__status">{t(`rst.status.${statusKey}`)}</span>
       <strong className="rst-cashier-tile__amount">{fmtMoneyCompact(check?.subtotal || 0)}</strong>
     </button>

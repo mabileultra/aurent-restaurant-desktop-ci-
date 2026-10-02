@@ -1502,7 +1502,7 @@
       "onKitchen": "Oshxonada",
       "refuseShort": "Rad etish",
       "refuseKitchenItem": "Pozitsiyani rad etish",
-      "confirmRefuseKitchenItem": "«{{name}}» rad etilsinmi?",
+      "confirmRefuseKitchenItem": "«{{name}}» ni rostdan ham bekor qilasizmi?",
       "openFailed": "Buyurtmani ochib bo‘lmadi",
       "orderComment": "Buyurtma izohi",
       "orderCommentPh": "Tug‘ilgan kun, deraza yonida…",
