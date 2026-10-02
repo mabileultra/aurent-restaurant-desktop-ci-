@@ -47,5 +47,6 @@
     <include file="db/changelog/v40-print-job-pending-printer-index.xml"/>
     <include file="db/changelog/v41-payment-debt-details.xml"/>
     <include file="db/changelog/v42-cash-ops.xml"/>
+    <include file="db/changelog/v43-local-first-events.xml"/>
 
 </databaseChangeLog>

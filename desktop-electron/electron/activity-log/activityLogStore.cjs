@@ -14,6 +14,7 @@ const CATEGORIES = new Set([
   'shift',
   'api',
   'error',
+  'local_first',
 ]);
 
 function logsRootDir() {

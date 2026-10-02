@@ -19,15 +19,21 @@ Identity is source of truth for users/PIN. POS core must accept sync so cashiers
 
 ## Restaurant desktop PIN roles
 
-One PIN pad on `r-aurent` `/cashier/login`. After login, home is already `resolveAppHomePath`: `CASHIER` → `/rst/cashier`, `WAITER` → `/rst/pos`, `COOK` → `/rst/kitchen`.
+Terminal entry on `r-aurent` `/cashier/login`: roster («who is working») → PIN for selected user.
 
-Allow those three roles in `CashierPinAuthServiceImpl` and `UserPinServiceImpl.usesPin`. Uniqueness stays one digest per company across all three.
+PIN roles (`PinLoginRoles`): `MANAGER`, `CASHIER`, `WAITER`, `COOK`.
+Home via `resolveAppHomePath`: `MANAGER` → `/rst/admin/dashboard`, `CASHIER` → `/rst/cashier`, `WAITER` → `/rst/pos`, `COOK` → `/rst/kitchen`.
+
+`ADMIN` stays password login in Chrome (`/login`) — not in terminal roster.
+Pharmacy / `web-frontend` PIN page stays cashier-only (no MANAGER roster UI there).
+Uniqueness stays one digest per company across all PIN roles.
+`MANAGER` PIN is optional at API (pharmacy managers keep password); restaurant staff form requires PIN for `MANAGER`.
 
 Do not:
 
-- Change `IdentityUserSyncServiceImpl` pin reconcile / delete-skip / legacy rename. A cook PIN is just another unique digest; shift open stays on the cashier row.
-- Add `COOK` to `assertCashierStoreAssignment` or to the form flag that forces exactly one store. That rule stays `CASHIER` and `WAITER`. A cook edit must still save without a new store.
-- Put `COOK` on the main `web-frontend` cashier PIN page. `aurent.uz` already rejects `WAITER` and `COOK` in `mainAppAccess` (`restaurant_role`). Pharmacy cashier login stays a cashier lookup.
+- Change `IdentityUserSyncServiceImpl` pin reconcile / delete-skip / legacy rename. A cook/manager PIN is just another unique digest; shift open stays on the cashier row.
+- Add `COOK` or `MANAGER` to `assertCashierStoreAssignment` or to the form flag that forces exactly one store. That rule stays `CASHIER` and `WAITER`.
+- Put `COOK` / `MANAGER` / `WAITER` on the main `web-frontend` cashier PIN page. `aurent.uz` already rejects restaurant roles in `mainAppAccess`. Pharmacy cashier login stays a cashier lookup.
 
 ## Symptom if broken
 

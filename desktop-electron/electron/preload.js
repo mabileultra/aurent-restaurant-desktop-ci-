@@ -10,13 +10,23 @@ function readOfflineFirstFlag() {
   }
 }
 
+function readRestaurantLocalFirstFlag() {
+  try {
+    return Boolean(ipcRenderer.sendSync('desktop:get-restaurant-local-first-sync'));
+  } catch {
+    return false;
+  }
+}
+
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
   offlineFirst: readOfflineFirstFlag(),
+  restaurantLocalFirst: readRestaurantLocalFirstFlag(),
 
   getApiBaseUrl: () => invoke('desktop:getApiBaseUrl'),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),
   openServerSetup: () => invoke('desktop:open-server-setup'),
+  setRestaurantLocalFirst: (enabled) => invoke('desktop:set-restaurant-local-first', Boolean(enabled)),
   getTerminalIdentity: () => invoke('desktop:get-terminal-identity'),
   reload: () => invoke('desktop:reload'),
   toggleFullscreen: () => invoke('desktop:toggleFullscreen'),
@@ -40,6 +50,21 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   labelTsplGetSettings: () => invoke('desktop:label-tspl-get-settings'),
   labelTsplSetSettings: (patch) => invoke('desktop:label-tspl-set-settings', patch),
   labelTsplAutoDetect: (opts) => invoke('desktop:label-tspl-auto-detect', opts || {}),
+
+  rstOfflineGetStatus: () => invoke('rst-offline:get-status'),
+  rstOfflineSetSession: (patch) => invoke('rst-offline:set-session', patch || {}),
+  rstOfflineImportBootstrap: (payload) => invoke('rst-offline:import-bootstrap', payload || {}),
+  rstOfflineSendToKitchen: (payload) => invoke('rst-offline:send-to-kitchen', payload || {}),
+  rstOfflineOpenOrder: (payload) => invoke('rst-offline:open-order', payload || {}),
+  rstOfflineAddItem: (payload) => invoke('rst-offline:add-item', payload || {}),
+  rstOfflineUpdateItem: (payload) => invoke('rst-offline:update-item', payload || {}),
+  rstOfflineCancelItem: (payload) => invoke('rst-offline:cancel-item', payload || {}),
+  rstOfflineCancelOrder: (payload) => invoke('rst-offline:cancel-order', payload || {}),
+  rstOfflinePayOrder: (payload) => invoke('rst-offline:pay-order', payload || {}),
+  rstOfflineResolvePrintJob: (payload) => invoke('rst-offline:resolve-print-job', payload || {}),
+  rstOfflineGetOrder: (orderId) => invoke('rst-offline:get-order', orderId),
+  rstOfflineStartRuntime: () => invoke('rst-offline:start-runtime'),
+  rstOfflineStopRuntime: () => invoke('rst-offline:stop-runtime'),
 
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),

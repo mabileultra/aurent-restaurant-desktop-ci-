@@ -24,6 +24,12 @@ import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
+import { useRestaurantOfflineBootstrap } from './useRestaurantOfflineBootstrap';
+import {
+  isRestaurantLocalFirstDesktop,
+  isRestaurantOfflineBridge,
+  rstOfflineGetOrder,
+} from '../../../services/offline/restaurantOfflineBridge';
 
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 8_000;
@@ -92,6 +98,7 @@ export function useFloorPosPage() {
   const onFloor = posMode === 'floor';
 
   useStoreFloorSync(storeId, { activeOrderId });
+  useRestaurantOfflineBootstrap(storeId);
 
   const floorQuery = useQuery({
     queryKey: ['rst-floor', storeId],
@@ -133,7 +140,17 @@ export function useFloorPosPage() {
   );
   const orderQuery = useQuery({
     queryKey: ['rst-order', activeOrderId],
-    queryFn: () => rstOrderApi.get(activeOrderId).then((r) => r.data),
+    queryFn: async () => {
+      try {
+        return await rstOrderApi.get(activeOrderId).then((r) => r.data);
+      } catch (err) {
+        if (isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge()) {
+          const local = await rstOfflineGetOrder(activeOrderId);
+          if (local) return local;
+        }
+        throw err;
+      }
+    },
     enabled: !!activeOrderId,
     staleTime: ORDER_STALE_MS,
     refetchInterval: activeOrderId ? ORDER_POLL_MS : false,

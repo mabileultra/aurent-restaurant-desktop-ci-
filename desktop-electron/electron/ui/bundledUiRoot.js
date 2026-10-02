@@ -13,19 +13,29 @@ function isBundledUiRoot(dir) {
   }
 }
 
+/**
+ * Pharmacy/main → `ui`. Restaurant world → `ui-restaurant` (falls back to `ui` only if missing).
+ */
 function resolveBundledUiRoot({
   isPackaged = false,
   resourcesPath = '',
   appPath = '',
+  appWorld = '',
 } = {}) {
+  const restaurant = String(appWorld || '').toLowerCase() === 'restaurant'
+    || String(appWorld || '').toLowerCase() === 'rst';
+  const folderNames = restaurant ? ['ui-restaurant', 'ui'] : ['ui'];
+
   const candidates = [];
-  if (isPackaged && resourcesPath) {
-    candidates.push(path.join(resourcesPath, 'ui'));
+  for (const name of folderNames) {
+    if (isPackaged && resourcesPath) {
+      candidates.push(path.join(resourcesPath, name));
+    }
+    if (appPath) {
+      candidates.push(path.join(appPath, name));
+    }
+    candidates.push(path.join(__dirname, '..', '..', name));
   }
-  if (appPath) {
-    candidates.push(path.join(appPath, 'ui'));
-  }
-  candidates.push(path.join(__dirname, '..', '..', 'ui'));
 
   for (const dir of candidates) {
     if (isBundledUiRoot(dir)) return dir;

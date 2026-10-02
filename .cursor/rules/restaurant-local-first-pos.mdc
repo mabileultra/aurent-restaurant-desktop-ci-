@@ -1,0 +1,138 @@
+---
+description: Restaurant local-first POS — SLA, SOLID layout, micro-phases (print ≠ sync, idempotent outbox)
+globs: desktop-electron/electron/restaurant-offline/**/*,restaurant-frontend/src/restaurant/**/*,restaurant-service/src/main/java/com/pos/restaurant/**/*
+alwaysApply: false
+---
+
+# Restaurant local-first POS — do not regress
+
+## Four SLAs (non-negotiable)
+
+1. **No user action depends on WAN.** Network is transport only, never a gate for order/print mutations.
+2. **Confirmed local ops must not be lost** across process crash, Windows reboot, API 500/timeout, or flaky link.
+3. **At-least-once delivery, at-most-once business effect.** Outbox retries + server `(device_id, client_event_id)` → `OK | ALREADY_PROCESSED`. Never invent a second order/item/payment from a duplicate event.
+4. **Do not auto-reprint when print outcome is uncertain.** `UNKNOWN` / crash mid-`PRINTING` → no automatic retry; only explicit user «перепечатать».
+
+## Core flow (always)
+
+```
+UI → LocalCommand (IPC) → SQLite TX (order + print_job snapshot + outbox) → COMMIT
+  → PrintWorker (local)
+  → SyncWorker (outbox → API) when reachable
+```
+
+Forbidden: `if (online) API else SQLite` — online can flip after the check.
+
+## B0 — state machines & TX boundary (lock before schema)
+
+### orders
+`OPEN → ACTIVE → PAID | CANCELLED`  
+(OPEN = table opened / empty; ACTIVE = has items or sent; terminal = PAID/CANCELLED)
+
+### print_jobs
+```
+PENDING → PRINTING → PRINTED | FAILED | UNKNOWN
+```
+- Restart: stale `PRINTING` → `UNKNOWN` (never silent `→ PENDING`)
+- `UNKNOWN` / explicit reprint only — no auto-retry
+- `payload` = immutable snapshot at job creation
+
+### outbox
+```
+PENDING → SENDING → SYNCED | RETRY
+```
+- `RETRY` → later back to `SENDING` (backoff)
+- Delete / mark done only after durable server ack of `(device_id, client_event_id)`
+
+### One SQLite TX (commands only)
+`order mutation + print_job(snapshot) + outbox` → COMMIT → then workers.  
+**Workers never mutate orders** — PrintWorker only `print_jobs`; SyncWorker only `outbox` (+ sync_state).
+
+### Vertical slice order (do not boil the ocean)
+`B0 → B1 → B2 → C3 → C4 → C5 → D1/D2 → E`  
+First end-to-end: open table → add item → send kitchen → TX → PrintWorker → kill Electron → state intact.  
+C1/C2 only as needed for that slice; B3/A* can parallel later.
+
+## Print ≠ sync
+
+- Print lifecycle ≠ outbox lifecycle (separate columns/tables)
+- Restart with `PRINTING` older than N seconds → promote to `UNKNOWN` (never silent requeue to `PENDING`)
+- `print_jobs.payload` = **immutable snapshot** of lines at job creation — never re-read live order for that job
+
+## SOLID module map (desktop)
+
+Keep pharmacy offline (`electron/offline/**`) separate. Restaurant lives under:
+
+```
+desktop-electron/electron/restaurant-offline/
+  domain/          # entities, statuses, clientEventId — no I/O
+  db/              # schema, migrations, repositories (SQLite only)
+  commands/        # one use-case = one class/module; opens TX; writes order+print+outbox
+  print/           # PrintWorker, lane, status transitions — no sync
+  sync/            # OutboxSender, pull/bootstrap — no print
+  ipc/             # thin bridge to renderer
+  bootstrap/       # wire dependencies (composition root)
+```
+
+- **S**: command does one mutation; worker prints; syncer syncs
+- **O**: new job kinds via new command/payload mapper, not giant switches in worker
+- **L/I**: repositories behind small interfaces (`OrderRepo`, `PrintJobRepo`, `OutboxRepo`)
+- **D**: commands depend on repos + clock/id generators, not on `fetch` or Electron BrowserWindow
+
+## Server
+
+- Accept outbox events with idempotency key `(device_id, client_event_id)`
+- Server print queue / claim-relay is **secondary** (audit / other online devices), not the source of truth for this terminal’s kitchen slips
+
+## Micro-phases checklist (ship in order; tick in PR)
+
+### B0 domain (before schema)
+- [x] B0a order / print / outbox status + transitions
+- [x] B0b TX boundary — workers never write `orders`
+- [x] B0c `clientEventId` + idempotency key
+- [x] B0d immutable `print_job.payload` snapshot builder
+- [x] B0e tests green for all of the above
+
+### Vertical slice (next)
+- [x] B1 SQLite schema
+- [x] B2 repos + TX helper + rollback tests
+- [x] C3 send-to-kitchen (one TX: order mutation + print_job + outbox)
+- [x] C4 PrintWorker
+- [x] C5 PRINTING→UNKNOWN, no auto-retry
+- [x] D1 outbox sender + backoff
+- [x] D2 server idempotent ingest
+- [x] E failure matrix gate
+
+### Parallel / later
+- [x] A1 bundled UI restaurant (`ui-restaurant` + resolveCashierStartUrl)
+- [x] A2 `restaurantLocalFirst` flag (dark default false)
+- [x] B3 bootstrap snapshot (import API + status; live pull UI still TODO)
+- [x] C1/C2 open table / add item (as needed for slice)
+- [x] D3 pull deltas (ORDER_SEND_KITCHEN + ORDER_OPEN + ORDER_ADD_ITEM apply on ingest)
+- [ ] F* multi-terminal hub — **only after E**
+
+### Electron wiring (after E)
+- [x] W1 restaurant-offline.db connection + bootstrap import
+- [x] W2 IPC send-to-kitchen / status / session
+- [x] W3 PrintWorker → ESC/POS; OutboxSender → `/local-events`
+- [x] W4 main start when `restaurantLocalFirst`
+- [x] UI floor path uses `rstOfflineSendToKitchen` when local-first
+- [x] Full menu/tables bootstrap from live API when online
+- [x] Activity journal (`local_first`) + Принтеры → статус/журнал
+- [x] Server apply OPEN/ADD/UPDATE/CANCEL/PAY
+- [x] Offline update/cancel/pay commands + UI hybrid
+- [x] UNKNOWN print manual resolve (Принтеры)
+- [x] Enable local-first from Принтеры + menu
+
+### Phase E matrix (minimum)
+
+Offline before/during op; flap during sync; kill Electron mid-order / mid-print; Windows reboot; printer off/USB loss; API 500/timeout/lost response; double sync; double job submit → no business duplicate; UNKNOWN → no auto second slip.
+
+## Do not
+
+- Gate mutations on `navigator.onLine`
+- Delete outbox rows before durable server ack of that `client_event_id`
+- Rebuild print lines from current order for an existing job
+- Auto-retry `UNKNOWN` print jobs
+- Mix pharmacy `electron/offline` checkout schema with restaurant floor domain
+- Start Phase F hub before A–E green on one terminal

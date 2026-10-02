@@ -1,19 +1,20 @@
 {
   "name": "aurent-cashier-desktop",
-  "version": "1.2.16",
+  "version": "1.2.17",
   "private": true,
   "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
   "scripts": {
     "sync-icons": "node scripts/sync-icons.js",
     "bundle-ui": "node scripts/bundle-ui.js",
+    "bundle-restaurant-ui": "node scripts/bundle-restaurant-ui.js",
     "start": "electron .",
     "start:test": "bash scripts/start-cashier-desktop-test.sh",
     "serve-ui": "AURENT_KEEP_UI_SERVER=1 node scripts/serve-bundled-ui.cjs",
-    "pack": "npm run sync-icons && npm run bundle-ui && electron-builder --dir",
-    "dist": "npm run sync-icons && npm run bundle-ui && electron-builder",
-    "dist:win": "npm run sync-icons && npm run bundle-ui && electron-builder --win",
-    "dist:mac": "npm run sync-icons && npm run bundle-ui && electron-builder --mac",
+    "pack": "npm run sync-icons && npm run bundle-ui && npm run bundle-restaurant-ui && electron-builder --dir",
+    "dist": "npm run sync-icons && npm run bundle-ui && npm run bundle-restaurant-ui && electron-builder",
+    "dist:win": "npm run sync-icons && npm run bundle-ui && npm run bundle-restaurant-ui && electron-builder --win",
+    "dist:mac": "npm run sync-icons && npm run bundle-ui && npm run bundle-restaurant-ui && electron-builder --mac",
     "manifest": "node scripts/generate-manifest.js",
     "test": "node --test test/*.test.cjs"
   },
@@ -45,6 +46,10 @@
       {
         "from": "ui",
         "to": "ui"
+      },
+      {
+        "from": "ui-restaurant",
+        "to": "ui-restaurant"
       }
     ],
     "mac": {

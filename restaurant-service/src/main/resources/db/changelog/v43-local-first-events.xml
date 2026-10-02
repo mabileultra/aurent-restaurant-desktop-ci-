@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-043-local-first-events" author="pos">
+        <createTable tableName="rst_device_client_events">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="device_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="client_event_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="event_type" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="payload" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="received_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint
+            tableName="rst_device_client_events"
+            columnNames="company_id, device_id, client_event_id"
+            constraintName="uk_rst_device_client_event"/>
+        <createIndex indexName="idx_rst_device_client_events_store" tableName="rst_device_client_events">
+            <column name="company_id"/>
+            <column name="store_id"/>
+            <column name="received_at"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

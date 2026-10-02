@@ -12,6 +12,7 @@ const CATEGORIES = new Set([
   'shift',
   'api',
   'error',
+  'local_first',
 ]);
 
 function canLog() {
@@ -73,6 +74,10 @@ export function logApi(message, meta, level = 'info') {
 
 export function logError(message, meta) {
   logActivity({ category: 'error', level: 'error', message, meta });
+}
+
+export function logLocalFirst(message, meta, level = 'info') {
+  logActivity({ category: 'local_first', level, message, meta });
 }
 
 export async function openActivityLogViewer() {

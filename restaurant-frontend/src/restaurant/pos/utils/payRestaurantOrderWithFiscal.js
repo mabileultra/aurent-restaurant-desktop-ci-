@@ -14,6 +14,12 @@ import {
 import { toPayAmountPayload } from './restaurantPayAmount';
 import { isNonFiscalPayMethod } from './restaurantPayForm';
 import { round2 } from '../../../utils/taxAmounts';
+import {
+  isRestaurantLocalFirstDesktop,
+  isRestaurantOfflineBridge,
+  rstOfflinePayOrder,
+} from '../../../services/offline/restaurantOfflineBridge';
+import { logLocalFirst } from '../../../services/desktop/activityLog';
 
 function pendingFiscalFromError(err) {
   return {
@@ -142,16 +148,48 @@ export async function payRestaurantOrderWithFiscal({
     });
     paidOrder = res.data;
   } catch (payErr) {
-    if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
-      payErr.fiscalOrphan = fiscalPayload;
-      payErr.message = [
-        payErr.message || 'Оплата не прошла',
-        t?.('rst.order.fiscalOrphanHint', {
-          defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
-        }),
-      ].filter(Boolean).join('. ');
+    const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+    if (localFirst) {
+      try {
+        const local = await rstOfflinePayOrder({
+          orderId: String(order.id),
+          method: payMethod,
+          amount: payAmount,
+          cashAmount: cash,
+          cardAmount: card,
+          amountTendered: tendered,
+          changeGiven: change,
+          cardType,
+          debtPhone,
+          debtComment,
+          advancePaid,
+        });
+        paidOrder = local.order || { ...order, status: 'CLOSED', _localPaid: true };
+        logLocalFirst('Оплата (local fallback)', { orderId: order.id, method: payMethod, amount: payAmount }, 'warn');
+      } catch {
+        if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
+          payErr.fiscalOrphan = fiscalPayload;
+          payErr.message = [
+            payErr.message || 'Оплата не прошла',
+            t?.('rst.order.fiscalOrphanHint', {
+              defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
+            }),
+          ].filter(Boolean).join('. ');
+        }
+        throw payErr;
+      }
+    } else {
+      if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
+        payErr.fiscalOrphan = fiscalPayload;
+        payErr.message = [
+          payErr.message || 'Оплата не прошла',
+          t?.('rst.order.fiscalOrphanHint', {
+            defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
+          }),
+        ].filter(Boolean).join('. ');
+      }
+      throw payErr;
     }
-    throw payErr;
   }
 
   if (!requireBeforeSale && capabilities?.enabled) {

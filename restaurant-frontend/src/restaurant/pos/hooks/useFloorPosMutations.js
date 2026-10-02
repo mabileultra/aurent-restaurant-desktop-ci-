@@ -18,6 +18,18 @@ import {
   flushRestaurantPrintRelay,
 } from '../utils/restaurantPrintFlush';
 import { toastApiError } from '../../../utils/apiError';
+import { sendKitchenLocalFirst } from '../utils/sendKitchenLocalFirst';
+import {
+  isRestaurantLocalFirstDesktop,
+  isRestaurantOfflineBridge,
+  rstOfflineOpenOrder,
+  rstOfflineAddItem,
+  rstOfflineUpdateItem,
+  rstOfflineCancelItem,
+  rstOfflineCancelOrder,
+} from '../../../services/offline/restaurantOfflineBridge';
+import { rstMenuApi } from '../../api/menu.api';
+import { logLocalFirst } from '../../../services/desktop/activityLog';
 
 export function useFloorPosMutations(deps) {
   const {
@@ -60,7 +72,7 @@ export function useFloorPosMutations(deps) {
   const errMsg = (err, key) => toastApiError(err, t(key));
 
   const openMutation = useMutation({
-    mutationFn: (opts = {}) => {
+    mutationFn: async (opts = {}) => {
       const table = opts.table ?? openTable;
       if (!table?.id) {
         return Promise.reject(new Error('table required'));
@@ -82,6 +94,46 @@ export function useFloorPosMutations(deps) {
       const comment = opts.comment ?? guestForm.comment;
       if (comment?.trim()) {
         payload.comment = comment.trim();
+      }
+
+      const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+      if (localFirst) {
+        try {
+          const created = await rstOrderApi.open(table.id, payload).then((r) => r.data);
+          await rstOfflineOpenOrder({
+            storeId,
+            tableId: table.id,
+            tableLabel: table.code || table.name,
+            orderId: String(created.id),
+            serverId: String(created.id),
+            guestCount,
+            adultCount: payload.adultCount,
+            childrenCount: payload.childrenCount,
+            waiterId: waiterUserId || null,
+            comment: payload.comment || null,
+          }).catch(() => null);
+          logLocalFirst('Открытие стола (online + local mirror)', {
+            orderId: created.id,
+            tableId: table.id,
+          });
+          return created;
+        } catch {
+          const local = await rstOfflineOpenOrder({
+            storeId,
+            tableId: table.id,
+            tableLabel: table.code || table.name,
+            guestCount,
+            adultCount: payload.adultCount,
+            childrenCount: payload.childrenCount,
+            waiterId: waiterUserId || null,
+            comment: payload.comment || null,
+          });
+          logLocalFirst('Открытие стола (local fallback)', {
+            orderId: local.orderId || local.order?.id,
+            tableId: table.id,
+          }, 'warn');
+          return local.order;
+        }
       }
       return rstOrderApi.open(table.id, payload).then((r) => r.data);
     },
@@ -172,12 +224,44 @@ export function useFloorPosMutations(deps) {
       const key = isWeightSoldMenuItem(menuItem) && !mods
         ? `${oid}:${menuItem.id}:weight`
         : `${oid}:${menuItem.id}:${mods}:${noteKey}:${qty}`;
-      return enqueueAddItem(key, () => rstOrderApi.addItem(oid, {
-        menuItemId: menuItem.id,
-        quantity: qty,
-        modifierOptionIds: modifierOptionIds ?? [],
-        note: noteKey || undefined,
-      }));
+      return enqueueAddItem(key, async () => {
+        const body = {
+          menuItemId: menuItem.id,
+          quantity: qty,
+          modifierOptionIds: modifierOptionIds ?? [],
+          note: noteKey || undefined,
+        };
+        const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+        if (localFirst) {
+          try {
+            const res = await rstOrderApi.addItem(oid, body);
+            const data = res?.data !== undefined ? res.data : res;
+            await rstOfflineAddItem({
+              orderId: String(oid),
+              menuItemId: menuItem.id,
+              name: menuItem.name,
+              quantity: qty,
+              unitPrice: menuItem.price ?? menuItem.sellingPrice,
+              note: noteKey || null,
+              modifiers: (modifierOptionIds ?? []).map(String),
+            }).catch(() => null);
+            return data;
+          } catch {
+            const local = await rstOfflineAddItem({
+              orderId: String(oid),
+              menuItemId: menuItem.id,
+              name: menuItem.name,
+              quantity: qty,
+              unitPrice: menuItem.price ?? menuItem.sellingPrice,
+              note: noteKey || null,
+              modifiers: (modifierOptionIds ?? []).map(String),
+            });
+            return local.order;
+          }
+        }
+        const res = await rstOrderApi.addItem(oid, body);
+        return res?.data !== undefined ? res.data : res;
+      });
     },
     onMutate: async ({ menuItem, modifierOptionIds, note, quantity, orderId: orderIdOverride }) => {
       const oid = orderIdOverride ?? activeOrderId;
@@ -209,13 +293,34 @@ export function useFloorPosMutations(deps) {
   });
 
   const updateItemMutation = useMutation({
-    mutationFn: ({ itemId, quantity, note }) => {
+    mutationFn: async ({ itemId, quantity, note }) => {
       if (String(itemId).startsWith('tmp-')) {
         return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
       }
       const body = {};
       if (quantity != null) body.quantity = quantity;
       if (note !== undefined) body.note = note;
+      const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+      if (localFirst) {
+        try {
+          const res = await rstOrderApi.updateItem(activeOrderId, itemId, body);
+          await rstOfflineUpdateItem({
+            orderId: String(activeOrderId),
+            itemId: String(itemId),
+            quantity,
+            note,
+          }).catch(() => null);
+          return res;
+        } catch {
+          const local = await rstOfflineUpdateItem({
+            orderId: String(activeOrderId),
+            itemId: String(itemId),
+            quantity,
+            note,
+          });
+          return { data: local.order };
+        }
+      }
       return rstOrderApi.updateItem(activeOrderId, itemId, body);
     },
     onMutate: async ({ itemId, quantity }) => {
@@ -234,9 +339,26 @@ export function useFloorPosMutations(deps) {
   });
 
   const removeItemMutation = useMutation({
-    mutationFn: (itemId) => {
+    mutationFn: async (itemId) => {
       if (String(itemId).startsWith('tmp-')) {
         return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
+      }
+      const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+      if (localFirst) {
+        try {
+          const res = await rstOrderApi.removeItem(activeOrderId, itemId);
+          await rstOfflineCancelItem({
+            orderId: String(activeOrderId),
+            itemId: String(itemId),
+          }).catch(() => null);
+          return res;
+        } catch {
+          const local = await rstOfflineCancelItem({
+            orderId: String(activeOrderId),
+            itemId: String(itemId),
+          });
+          return { data: local.order };
+        }
       }
       return rstOrderApi.removeItem(activeOrderId, itemId);
     },
@@ -282,17 +404,85 @@ export function useFloorPosMutations(deps) {
   });
 
   const sendKitchenMutation = useMutation({
-    mutationFn: () => rstOrderApi.sendToKitchen(activeOrderId),
+    mutationFn: async () => {
+      const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+      if (localFirst) {
+        let categories = [];
+        try {
+          categories = (await rstMenuApi.listCategories(storeId, true))?.data || [];
+        } catch {
+          /* use empty — station printers still resolve */
+        }
+        await sendKitchenLocalFirst({
+          order,
+          storeId,
+          categories,
+          tableLabel: openTable?.code || order?.tableCode,
+        });
+        try {
+          const res = await rstOrderApi.sendToKitchen(activeOrderId);
+          const data = res?.data !== undefined ? res.data : res;
+          logLocalFirst('Кухня: local print + server sync', { orderId: activeOrderId });
+          return { ...data, _localPrinted: true };
+        } catch {
+          // WAN down after local print — keep UI optimistic; outbox will sync later.
+          logLocalFirst('Кухня: local print, server sync later', { orderId: activeOrderId }, 'warn');
+          const items = (order?.items || []).map((item) => ({
+            ...item,
+            sentQuantity: item.quantity,
+            itemStatus: item.itemStatus === 'NEW' ? 'SENT_TO_KITCHEN' : item.itemStatus,
+          }));
+          return {
+            ...order,
+            items,
+            _localPrinted: true,
+            _localOnly: true,
+          };
+        }
+      }
+      const res = await rstOrderApi.sendToKitchen(activeOrderId);
+      return res?.data !== undefined ? res.data : res;
+    },
     onSuccess: (res) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
-      flushRestaurantPrintRelay();
+      // Local-first already printed on this PC — do not claim server kitchen slips again.
+      if (!res?._localPrinted) {
+        flushRestaurantPrintRelay();
+      }
     },
-    onError: (err) => errMsg(err, 'rst.order.sendFailed'),
+    onError: (err) => {
+      const msg = String(err?.message || '');
+      if (msg === 'no_pending_items') {
+        toast.error(t('rst.order.nothingToSend', { defaultValue: 'Нет новых позиций для кухни' }));
+        return;
+      }
+      if (msg === 'no_printer_for_kitchen') {
+        toast.error(t('rst.admin.kitchenPrinterMissing', {
+          stations: '—',
+          defaultValue: 'Нет принтера для станции',
+        }));
+        return;
+      }
+      errMsg(err, 'rst.order.sendFailed');
+    },
   });
 
   const cancelMutation = useMutation({
-    mutationFn: () => rstOrderApi.cancel(activeOrderId),
+    mutationFn: async () => {
+      const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+      if (localFirst) {
+        try {
+          await rstOrderApi.cancel(activeOrderId);
+          await rstOfflineCancelOrder({ orderId: String(activeOrderId) }).catch(() => null);
+          return true;
+        } catch {
+          await rstOfflineCancelOrder({ orderId: String(activeOrderId) });
+          return true;
+        }
+      }
+      return rstOrderApi.cancel(activeOrderId);
+    },
     onSuccess: () => {
       setActiveOrderId(null);
       invalidateFloor();

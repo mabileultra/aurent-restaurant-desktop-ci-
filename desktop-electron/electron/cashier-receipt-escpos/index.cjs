@@ -236,6 +236,7 @@ module.exports = {
   printZReportEscpos,
   printShiftReportEscpos,
   printLabelsEscpos,
+  printPlainTicketEscpos,
   registerEscposIpcHandlers,
   EscposPrintError,
   ESCPOS_ERROR_CODES,

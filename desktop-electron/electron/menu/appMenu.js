@@ -10,54 +10,92 @@ function buildAppMenu({
   allowBundledUi = false,
   offlineFirst = false,
   setOfflineFirst,
+  restaurantLocalFirst = false,
+  setRestaurantLocalFirst,
+  appWorld = 'main',
   openActivityLogs,
   openActivityLogFolder,
   openAdminLogin,
 }) {
-  const showUiModeMenu = allowBundledUi || uiMode === UI_MODE_BUNDLED || offlineFirst;
+  const isRestaurant = String(appWorld || '').toLowerCase() === 'restaurant'
+    || String(appWorld || '').toLowerCase() === 'rst';
+  const showUiModeMenu = allowBundledUi
+    || uiMode === UI_MODE_BUNDLED
+    || offlineFirst
+    || restaurantLocalFirst;
   const uiModeItems = showUiModeMenu
     ? [
         {
           label: 'Интерфейс с сайта (как сейчас)',
           type: 'radio',
-          checked: uiMode !== UI_MODE_BUNDLED,
+          checked: uiMode !== UI_MODE_BUNDLED && !restaurantLocalFirst,
           click: () => {
+            if (isRestaurant && typeof setRestaurantLocalFirst === 'function') {
+              Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
+            }
             if (typeof setUiMode === 'function') {
               Promise.resolve(setUiMode(UI_MODE_REMOTE)).catch(() => {});
             }
           },
         },
         {
-          label: 'Локальный интерфейс (тест)',
+          label: isRestaurant ? 'Локальный UI ресторана (тест)' : 'Локальный интерфейс (тест)',
           type: 'radio',
-          checked: uiMode === UI_MODE_BUNDLED,
+          checked: uiMode === UI_MODE_BUNDLED || Boolean(restaurantLocalFirst),
           click: () => {
-            if (typeof setUiMode === 'function') {
+            if (isRestaurant && typeof setRestaurantLocalFirst === 'function') {
+              Promise.resolve(setRestaurantLocalFirst(true)).catch(() => {});
+            } else if (typeof setUiMode === 'function') {
               Promise.resolve(setUiMode(UI_MODE_BUNDLED)).catch(() => {});
             }
           },
         },
         { type: 'separator' },
-        {
-          label: 'Ждать сайт (как сейчас)',
-          type: 'radio',
-          checked: !offlineFirst,
-          click: () => {
-            if (typeof setOfflineFirst === 'function') {
-              Promise.resolve(setOfflineFirst(false)).catch(() => {});
-            }
-          },
-        },
-        {
-          label: 'Касса без ожидания сайта (тест)',
-          type: 'radio',
-          checked: Boolean(offlineFirst),
-          click: () => {
-            if (typeof setOfflineFirst === 'function') {
-              Promise.resolve(setOfflineFirst(true)).catch(() => {});
-            }
-          },
-        },
+        ...(isRestaurant
+          ? [
+              {
+                label: 'Ресторан: ждать сайт (как сейчас)',
+                type: 'radio',
+                checked: !restaurantLocalFirst,
+                click: () => {
+                  if (typeof setRestaurantLocalFirst === 'function') {
+                    Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
+                  }
+                },
+              },
+              {
+                label: 'Ресторан local-first (тест)',
+                type: 'radio',
+                checked: Boolean(restaurantLocalFirst),
+                click: () => {
+                  if (typeof setRestaurantLocalFirst === 'function') {
+                    Promise.resolve(setRestaurantLocalFirst(true)).catch(() => {});
+                  }
+                },
+              },
+            ]
+          : [
+              {
+                label: 'Ждать сайт (как сейчас)',
+                type: 'radio',
+                checked: !offlineFirst,
+                click: () => {
+                  if (typeof setOfflineFirst === 'function') {
+                    Promise.resolve(setOfflineFirst(false)).catch(() => {});
+                  }
+                },
+              },
+              {
+                label: 'Касса без ожидания сайта (тест)',
+                type: 'radio',
+                checked: Boolean(offlineFirst),
+                click: () => {
+                  if (typeof setOfflineFirst === 'function') {
+                    Promise.resolve(setOfflineFirst(true)).catch(() => {});
+                  }
+                },
+              },
+            ]),
         { type: 'separator' },
       ]
     : [];

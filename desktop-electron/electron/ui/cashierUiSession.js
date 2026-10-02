@@ -38,6 +38,7 @@ function createCashierUiSession({
       isPackaged,
       resourcesPath,
       appPath,
+      appWorld: cfg?.appWorld,
     });
     const result = await resolveCashierStartUrl({
       cfg,

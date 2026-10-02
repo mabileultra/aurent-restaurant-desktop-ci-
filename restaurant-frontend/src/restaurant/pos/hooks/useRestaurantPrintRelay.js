@@ -106,10 +106,21 @@ async function loadClaimCapabilities() {
   ]
     .map((name) => String(name || '').trim())
     .filter(Boolean);
-  const printerNames = [...new Set([...fromOs, ...fromSettings])];
   const guestBill = Boolean(String(settings?.billPrinterName || '').trim());
-  const kitchenSend = Object.values(settings?.stationPrinters || {})
-    .some((name) => String(name || '').trim());
+  // Local-first prints kitchen/category on this PC via SQLite PrintWorker — do not claim those jobs again.
+  const localFirst = Boolean(
+    typeof window !== 'undefined' && window.desktopCashier?.restaurantLocalFirst === true,
+  );
+  const kitchenSend = localFirst
+    ? false
+    : Object.values(settings?.stationPrinters || {}).some((name) => String(name || '').trim());
+  const printerNames = localFirst
+    ? [...new Set([
+      ...(String(settings?.billPrinterName || '').trim()
+        ? [String(settings.billPrinterName).trim()]
+        : []),
+    ])]
+    : [...new Set([...fromOs, ...fromSettings])];
   return { printerNames, guestBill, kitchenSend };
 }
 
