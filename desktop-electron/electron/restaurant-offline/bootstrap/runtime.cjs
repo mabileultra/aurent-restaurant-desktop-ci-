@@ -195,6 +195,8 @@ async function restaurantSendToKitchen(input = {}) {
       printJobId: result.printJobId,
       outboxId: result.outboxId,
       printer: input.printerName,
+      printOk: result.printOk !== false,
+      printError: result.printError || null,
       online: Boolean(session.authToken),
     });
     return result;

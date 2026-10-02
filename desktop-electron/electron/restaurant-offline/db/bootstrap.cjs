@@ -118,6 +118,7 @@ function getRestaurantBootstrapStatus(db) {
   const tableCount = db.prepare(`SELECT COUNT(*) AS c FROM floor_tables`).get()?.c || 0;
   const pendingPrint = db.prepare(`SELECT COUNT(*) AS c FROM print_jobs WHERE status = ?`).get('PENDING')?.c || 0;
   const unknownPrint = db.prepare(`SELECT COUNT(*) AS c FROM print_jobs WHERE status = ?`).get('UNKNOWN')?.c || 0;
+  const failedPrint = db.prepare(`SELECT COUNT(*) AS c FROM print_jobs WHERE status = ?`).get('FAILED')?.c || 0;
   const pendingOutbox = db.prepare(
     `SELECT COUNT(*) AS c FROM outbox WHERE status IN (?, ?)`,
   ).get('PENDING', 'RETRY')?.c || 0;
@@ -130,6 +131,7 @@ function getRestaurantBootstrapStatus(db) {
     tableCount: Number(tableCount),
     pendingPrintJobs: Number(pendingPrint),
     unknownPrintJobs: Number(unknownPrint),
+    failedPrintJobs: Number(failedPrint),
     pendingOutbox: Number(pendingOutbox),
   };
 }

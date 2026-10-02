@@ -36,7 +36,7 @@ function buildPrintJobPayload(input) {
     throw new Error(`invalid_print_job_kind:${kind}`);
   }
   if (!orderId) throw new Error('print_payload_order_id_required');
-  if (!printerName) throw new Error('print_payload_printer_required');
+  // Empty printerName is allowed: soft-fail path inserts FAILED job (order+outbox still commit).
 
   const items = (Array.isArray(input.items) ? input.items : []).map((row) => {
     const name = String(row?.name || '').trim();

@@ -29,6 +29,30 @@ function createPrintJobRepo(db, { idFactory = randomUUID, clock = () => new Date
       return { id, status: PRINT_JOB_STATUS.PENDING, payload };
     },
 
+    /** Soft-fail at commit: order/outbox stay; print never goes PENDING. */
+    insertFailed(input, error) {
+      const payload = buildPrintJobPayload({
+        ...input,
+        createdAt: input.createdAt || clock(),
+      });
+      const id = idFactory();
+      const err = error != null ? String(error) : 'print_failed';
+      db.prepare(
+        `INSERT INTO print_jobs(id, order_id, kind, printer_name, status, payload_json, last_error, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      ).run(
+        id,
+        payload.orderId,
+        payload.kind,
+        payload.printerName || '',
+        PRINT_JOB_STATUS.FAILED,
+        JSON.stringify(payload),
+        err,
+        payload.createdAt,
+      );
+      return { id, status: PRINT_JOB_STATUS.FAILED, payload, lastError: err };
+    },
+
     getById(id) {
       return db.prepare(`SELECT * FROM print_jobs WHERE id = ?`).get(id) || null;
     },

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BaseButton } from '../../../../components/ui';
 import OrderLines from '../../components/OrderLines';
+import LocalFirstLaneStatus from '../../components/LocalFirstLaneStatus';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
@@ -137,6 +138,8 @@ export default function CashierOrderDock({
           />
         )}
       </div>
+
+      <LocalFirstLaneStatus order={order} t={t} />
 
       <div className="rst-cashier-dock__total" role="group" aria-label={t('rst.order.total')}>
         <div className="rst-cashier-dock__total-col">

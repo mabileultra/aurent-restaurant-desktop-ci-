@@ -35,7 +35,6 @@ function sendToKitchenCommand(db, input, deps = {}) {
   const printerName = String(input?.printerName || '').trim();
   const items = Array.isArray(input?.items) ? input.items : [];
   if (!deviceId) throw new Error('device_id_required');
-  if (!printerName) throw new Error('printer_name_required');
   if (!items.length) throw new Error('items_required');
   if (input?.storeId == null) throw new Error('store_id_required');
 
@@ -92,21 +91,27 @@ function sendToKitchenCommand(db, input, deps = {}) {
       status: 'SENT',
     }));
 
-    const job = prints.insertPending({
+    const snapItems = items.map((row) => ({
+      name: row.name,
+      qty: Number(row.qty ?? row.quantity),
+      portionText: row.portionText,
+      note: row.note,
+      modifiers: row.modifiers,
+    }));
+    const jobInput = {
       kind: input.kind || PRINT_JOB_KIND.KITCHEN_SEND,
       orderId,
       printerName,
       station: input.station,
       categoryName: input.categoryName,
       tableLabel: input.tableLabel,
-      items: items.map((row) => ({
-        name: row.name,
-        qty: Number(row.qty ?? row.quantity),
-        portionText: row.portionText,
-        note: row.note,
-        modifiers: row.modifiers,
-      })),
-    });
+      items: snapItems,
+    };
+    // Soft-fail: missing printer still commits order + outbox; print_job = FAILED.
+    const printOk = Boolean(printerName);
+    const job = printOk
+      ? prints.insertPending(jobInput)
+      : prints.insertFailed(jobInput, 'kitchen_printer_not_configured');
 
     const event = outbox.enqueue({
       deviceId,
@@ -126,6 +131,8 @@ function sendToKitchenCommand(db, input, deps = {}) {
       printJobId: job.id,
       outboxId: event.id,
       clientEventId: event.clientEventId,
+      printOk,
+      printError: printOk ? null : 'kitchen_printer_not_configured',
     };
   });
 }

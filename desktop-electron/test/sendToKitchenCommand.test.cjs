@@ -63,17 +63,35 @@ test('C3 send-to-kitchen writes order+items+print+outbox in one TX', async () =>
   db.close();
 });
 
-test('C3 rolls back when printer missing', async () => {
+test('C3 soft-fail: missing printer still commits order+outbox, print FAILED', async () => {
   const db = await readyDb();
-  assert.throws(() => sendToKitchenCommand(db, {
-    deviceId: 'POS-01',
-    storeId: 1,
-    tableId: 'tbl-1',
-    printerName: '',
-    items: [{ name: 'Кола', qty: 1 }],
-  }));
-  assert.equal(db.prepare(`SELECT COUNT(*) AS c FROM orders`).get().c, 0);
-  assert.equal(db.prepare(`SELECT COUNT(*) AS c FROM print_jobs`).get().c, 0);
-  assert.equal(db.prepare(`SELECT COUNT(*) AS c FROM outbox`).get().c, 0);
+  let n = 0;
+  const result = sendToKitchenCommand(
+    db,
+    {
+      deviceId: 'POS-01',
+      storeId: 1,
+      tableId: 'tbl-1',
+      printerName: '',
+      items: [{ name: 'Кола', qty: 1, unitPrice: 10000 }],
+    },
+    {
+      idFactory: () => `c3-soft-${++n}`,
+      clock: () => '2026-10-03T02:00:00.000Z',
+      uuid: () => 'evt-c3-soft',
+    },
+  );
+
+  assert.equal(result.printOk, false);
+  assert.equal(result.printError, 'kitchen_printer_not_configured');
+  assert.equal(db.prepare(`SELECT status FROM orders WHERE id = ?`).get(result.orderId).status, ORDER_STATUS.ACTIVE);
+  assert.equal(db.prepare(`SELECT COUNT(*) AS c FROM order_items`).get().c, 1);
+  const printRow = db.prepare(`SELECT status, last_error FROM print_jobs WHERE id = ?`).get(result.printJobId);
+  assert.equal(printRow.status, PRINT_JOB_STATUS.FAILED);
+  assert.equal(printRow.last_error, 'kitchen_printer_not_configured');
+  assert.equal(
+    db.prepare(`SELECT status FROM outbox WHERE id = ?`).get(result.outboxId).status,
+    OUTBOX_STATUS.PENDING,
+  );
   db.close();
 });

@@ -413,7 +413,7 @@ export function useFloorPosMutations(deps) {
         } catch {
           /* use empty — station printers still resolve */
         }
-        await sendKitchenLocalFirst({
+        const local = await sendKitchenLocalFirst({
           order,
           storeId,
           categories,
@@ -422,11 +422,21 @@ export function useFloorPosMutations(deps) {
         try {
           const res = await rstOrderApi.sendToKitchen(activeOrderId);
           const data = res?.data !== undefined ? res.data : res;
-          logLocalFirst('Кухня: local print + server sync', { orderId: activeOrderId });
-          return { ...data, _localPrinted: true };
+          logLocalFirst('Кухня: local print + server sync', {
+            orderId: activeOrderId,
+            printFailed: Boolean(local?.printFailed),
+          });
+          return {
+            ...data,
+            _localPrinted: true,
+            _printFailed: Boolean(local?.printFailed),
+          };
         } catch {
           // WAN down after local print — keep UI optimistic; outbox will sync later.
-          logLocalFirst('Кухня: local print, server sync later', { orderId: activeOrderId }, 'warn');
+          logLocalFirst('Кухня: local print, server sync later', {
+            orderId: activeOrderId,
+            printFailed: Boolean(local?.printFailed),
+          }, 'warn');
           const items = (order?.items || []).map((item) => ({
             ...item,
             sentQuantity: item.quantity,
@@ -437,6 +447,7 @@ export function useFloorPosMutations(deps) {
             items,
             _localPrinted: true,
             _localOnly: true,
+            _printFailed: Boolean(local?.printFailed),
           };
         }
       }
@@ -446,6 +457,11 @@ export function useFloorPosMutations(deps) {
     onSuccess: (res) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
+      if (res?._printFailed) {
+        toast.error(t('rst.order.savedNotPrinted', {
+          defaultValue: 'Заказ сохранён, но не напечатан: принтер кухни не настроен',
+        }));
+      }
       // Local-first already printed on this PC — do not claim server kitchen slips again.
       if (!res?._localPrinted) {
         flushRestaurantPrintRelay();
@@ -455,13 +471,6 @@ export function useFloorPosMutations(deps) {
       const msg = String(err?.message || '');
       if (msg === 'no_pending_items') {
         toast.error(t('rst.order.nothingToSend', { defaultValue: 'Нет новых позиций для кухни' }));
-        return;
-      }
-      if (msg === 'no_printer_for_kitchen') {
-        toast.error(t('rst.admin.kitchenPrinterMissing', {
-          stations: '—',
-          defaultValue: 'Нет принтера для станции',
-        }));
         return;
       }
       errMsg(err, 'rst.order.sendFailed');

@@ -1,0 +1,40 @@
+.rst-local-lanes {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.5rem 0 0;
+  padding: 0.45rem 0.55rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--rst-surface, #1a1a1a) 88%, #3a5a40);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+.rst-local-lanes__row {
+  display: grid;
+  grid-template-columns: 1rem 4.2rem 1fr;
+  gap: 0.35rem;
+  align-items: baseline;
+  color: color-mix(in srgb, currentColor 72%, transparent);
+}
+
+.rst-local-lanes__row.is-ok {
+  color: color-mix(in srgb, #6bcf7f 80%, currentColor);
+}
+
+.rst-local-lanes__row.is-warn {
+  color: color-mix(in srgb, #e6b84d 85%, currentColor);
+}
+
+.rst-local-lanes__mark {
+  font-weight: 600;
+  text-align: center;
+}
+
+.rst-local-lanes__label {
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.rst-local-lanes__value {
+  opacity: 0.95;
+}

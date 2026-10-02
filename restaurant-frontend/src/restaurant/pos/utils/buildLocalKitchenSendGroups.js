@@ -47,6 +47,8 @@ export async function buildLocalKitchenSendGroups(order, categories = []) {
 
   /** @type {Map<string, { printerName: string, station?: string, categoryName?: string, items: object[] }>} */
   const byPrinter = new Map();
+  /** @type {{ item: object, qty: number }[]} */
+  const unassigned = [];
 
   const pending = (order?.items || [])
     .map((item) => ({ item, qty: pendingQty(item) }))
@@ -74,7 +76,10 @@ export async function buildLocalKitchenSendGroups(order, categories = []) {
       // Fallback: single configured kitchen printer
       printerName = resolveStationPrinter(stationMap, null);
     }
-    if (!printerName) continue;
+    if (!printerName) {
+      unassigned.push({ item, qty });
+      continue;
+    }
 
     const key = printerName.toLowerCase();
     if (!byPrinter.has(key)) {
@@ -86,6 +91,14 @@ export async function buildLocalKitchenSendGroups(order, categories = []) {
       });
     }
     byPrinter.get(key).items.push(itemSnapshot(item, qty));
+  }
+
+  // Soft-fail group: empty printerName → local TX still COMMITs, print_job FAILED.
+  if (unassigned.length) {
+    byPrinter.set('\0unassigned', {
+      printerName: '',
+      items: unassigned.map(({ item, qty }) => itemSnapshot(item, qty)),
+    });
   }
 
   return { groups: [...byPrinter.values()] };

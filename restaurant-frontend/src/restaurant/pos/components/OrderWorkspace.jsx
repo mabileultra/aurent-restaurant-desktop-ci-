@@ -6,6 +6,7 @@ import { shortWaiterName } from '../utils/floorPosDerivations';
 import MenuPicker from './MenuPicker';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
+import LocalFirstLaneStatus from './LocalFirstLaneStatus';
 import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
 
@@ -246,6 +247,8 @@ export default function OrderWorkspace({
           categoryByMenuId={categoryByMenuId}
           t={t}
         />
+
+        <LocalFirstLaneStatus order={order} t={t} />
 
         <div className="rst-order__totals">
           <div className="rst-order__total-row">
