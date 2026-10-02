@@ -5,6 +5,7 @@ import com.pos.restaurant.report.dto.ReceiptExportRequest;
 import com.pos.restaurant.report.dto.ReceiptJournalFilter;
 import com.pos.restaurant.report.dto.ReceiptJournalResponse;
 import com.pos.restaurant.report.dto.SalesSummaryResponse;
+import com.pos.restaurant.report.dto.ShiftCashReportResponse;
 
 public interface RestaurantReportService {
 
@@ -17,4 +18,8 @@ public interface RestaurantReportService {
     DishSalesReportResponse dishSales(Integer storeId, ReceiptJournalFilter filter);
 
     byte[] exportDishSales(Integer storeId, ReceiptExportRequest request);
+
+    ShiftCashReportResponse shiftCash(Integer storeId, ReceiptJournalFilter filter);
+
+    byte[] exportShiftCash(Integer storeId, ReceiptExportRequest request);
 }

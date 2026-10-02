@@ -7,7 +7,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class ShiftResponseAssembler {
 
-    public ShiftResponse toResponse(RestaurantShift shift, int openOrderCount) {
+    public ShiftResponse toResponse(RestaurantShift shift, int openOrderCount, ShiftCashMath.Drawer drawer) {
+        ShiftCashMath.Drawer safe = drawer == null ? ShiftCashMath.Drawer.zero() : drawer;
         return new ShiftResponse(
             shift.getId(),
             shift.getStoreId(),
@@ -16,14 +17,24 @@ public class ShiftResponseAssembler {
             shift.getClosedByUserId(),
             shift.getOpenedAt(),
             shift.getClosedAt(),
-            shift.getOpeningCash(),
-            shift.getClosingCash(),
+            ShiftCashMath.money(shift.getOpeningCash()),
+            shift.getClosingCash() == null ? null : ShiftCashMath.money(shift.getClosingCash()),
             shift.getSaleCount(),
-            shift.getTotalAmount(),
-            shift.getCashAmount(),
-            shift.getCardAmount(),
+            ShiftCashMath.money(shift.getTotalAmount()),
+            ShiftCashMath.money(shift.getCashAmount()),
+            ShiftCashMath.money(shift.getCardAmount()),
             shift.getComment(),
-            openOrderCount
+            openOrderCount,
+            safe.cashIn(),
+            safe.cashOut(),
+            safe.collection(),
+            ShiftCashMath.expected(shift.getOpeningCash(), shift.getCashAmount(), safe),
+            shift.getHandoverExpected() == null ? null : ShiftCashMath.money(shift.getHandoverExpected()),
+            shift.getHandoverDiff() == null ? null : ShiftCashMath.money(shift.getHandoverDiff())
         );
+    }
+
+    public ShiftResponse toResponse(RestaurantShift shift, int openOrderCount) {
+        return toResponse(shift, openOrderCount, ShiftCashMath.Drawer.zero());
     }
 }

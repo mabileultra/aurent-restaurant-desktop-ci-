@@ -19,6 +19,9 @@ import com.pos.restaurant.report.dto.SalesBreakdownRow;
 import com.pos.restaurant.report.dto.SalesSummaryResponse;
 import com.pos.restaurant.report.support.DishSalesExcelWriter;
 import com.pos.restaurant.report.support.SalesReportLoader;
+import com.pos.restaurant.report.support.ShiftCashExcelWriter;
+import com.pos.restaurant.report.support.ShiftCashReportLoader;
+import com.pos.restaurant.shift.support.ShiftCashOpTotalsLoader;
 import com.pos.restaurant.report.dto.ReceiptJournalFilter;
 import com.pos.restaurant.report.dto.ReceiptJournalResponse;
 import com.pos.restaurant.report.dto.ReceiptJournalRow;
@@ -64,7 +67,10 @@ import static org.mockito.Mockito.when;
     ReceiptJournalLoader.class,
     ReceiptJournalExcelWriter.class,
     SalesReportLoader.class,
-    DishSalesExcelWriter.class
+    DishSalesExcelWriter.class,
+    ShiftCashReportLoader.class,
+    ShiftCashExcelWriter.class,
+    ShiftCashOpTotalsLoader.class
 })
 class ReceiptJournalSqlTest {
 

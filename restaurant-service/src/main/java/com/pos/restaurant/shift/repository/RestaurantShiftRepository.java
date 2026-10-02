@@ -15,4 +15,10 @@ public interface RestaurantShiftRepository extends JpaRepository<RestaurantShift
     List<RestaurantShift> findByCompanyIdAndStoreIdOrderByOpenedAtDesc(Integer companyId, Integer storeId);
 
     boolean existsByStoreIdAndStatus(Integer storeId, RestaurantShiftStatus status);
+
+    Optional<RestaurantShift> findFirstByCompanyIdAndStoreIdAndStatusOrderByClosedAtDesc(
+        Integer companyId,
+        Integer storeId,
+        RestaurantShiftStatus status
+    );
 }

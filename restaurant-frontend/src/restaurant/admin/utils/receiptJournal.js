@@ -189,6 +189,48 @@ export function filterDishRows(rows, query) {
     || String(row.category ?? '').toLowerCase().includes(q));
 }
 
+const SHIFT_EXPORT_COLUMNS = {
+  openedAt: 'rst.reports.shifts.openedAt',
+  closedAt: 'rst.reports.shifts.closedAt',
+  status: 'rst.reports.journal.colStatus',
+  cashier: 'rst.reports.journal.colCashier',
+  opening: 'rst.shift.openingCash',
+  cashSales: 'rst.reports.shifts.cashSales',
+  cashIn: 'rst.shift.cashOp.typeIN',
+  cashOut: 'rst.shift.cashOp.typeOUT',
+  collection: 'rst.shift.cashOp.typeCOLLECTION',
+  expected: 'rst.shift.expectedCash',
+  closing: 'rst.reports.shifts.actual',
+  difference: 'rst.reports.shifts.difference',
+  handoverExpected: 'rst.shift.carryFromLast',
+  handoverDiff: 'rst.reports.shifts.handoverDiff',
+};
+
+export function buildShiftExportBody(filter, { userNameById, t, timeZone }) {
+  const labels = {
+    title: t('rst.reports.shifts.title'),
+    sheet: t('rst.reports.shifts.sheet'),
+    period: t('rst.reports.journal.period'),
+    totals: t('rst.reports.journal.totals'),
+  };
+  for (const [key, i18n] of Object.entries(SHIFT_EXPORT_COLUMNS)) labels[`col.${key}`] = t(i18n);
+  labels['total.shiftCount'] = t('rst.reports.shifts.count');
+  labels['total.cashSales'] = t('rst.reports.shifts.cashSales');
+  labels['total.expected'] = t('rst.shift.expectedCash');
+  labels['total.closing'] = t('rst.reports.shifts.actual');
+  labels['total.difference'] = t('rst.reports.shifts.difference');
+  const userNames = {};
+  if (userNameById) {
+    for (const [id, name] of userNameById) userNames[String(id)] = name;
+  }
+  return {
+    filter,
+    userNames,
+    labels,
+    timeZone: timeZone || Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+}
+
 export function staffNameById(users) {
   const map = new Map();
   for (const u of users ?? []) {

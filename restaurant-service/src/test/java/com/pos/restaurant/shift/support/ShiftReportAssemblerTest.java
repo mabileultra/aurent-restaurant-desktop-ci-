@@ -64,6 +64,21 @@ class ShiftReportAssemblerTest {
     }
 
     @Test
+    void expectedCashIncludesCashOps() {
+        RestaurantShift shift = shift("50000.00");
+        accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("10000.00"), null, null);
+        ShiftCashMath.Drawer drawer = ShiftCashMath.Drawer.zero()
+            .plus(com.pos.restaurant.shift.domain.CashOpType.IN, new BigDecimal("4000"))
+            .plus(com.pos.restaurant.shift.domain.CashOpType.OUT, new BigDecimal("1000"));
+
+        ShiftReportResponse report = assembler.toReport(
+            "X", shift, null, null, Instant.now(), 0, List.of(), drawer
+        );
+
+        assertEquals(new BigDecimal("63000.00"), report.expectedCash());
+    }
+
+    @Test
     void passesItemsThroughAndKeepsClosingCash() {
         RestaurantShift shift = shift("0.00");
         shift.setClosingCash(new BigDecimal("50000.00"));

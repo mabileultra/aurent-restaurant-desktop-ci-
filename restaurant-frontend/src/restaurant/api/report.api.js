@@ -10,4 +10,7 @@ export const rstReportApi = {
   dishes: (storeId, params = {}) => api.get(rst(`/stores/${storeId}/reports/dishes`), { params }),
   exportDishes: (storeId, body) =>
     api.post(rst(`/stores/${storeId}/reports/dishes/export`), body, { responseType: 'blob' }),
+  shifts: (storeId, params = {}) => api.get(rst(`/stores/${storeId}/reports/shifts`), { params }),
+  exportShifts: (storeId, body) =>
+    api.post(rst(`/stores/${storeId}/reports/shifts/export`), body, { responseType: 'blob' }),
 };

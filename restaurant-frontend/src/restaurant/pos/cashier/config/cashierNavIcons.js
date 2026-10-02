@@ -1,4 +1,5 @@
 import {
+  ArrowLeftRight,
   Banknote,
   CalendarDays,
   ClipboardList,
@@ -15,5 +16,6 @@ export const CASHIER_TAB_ICONS = {
   bookings: CalendarDays,
   payment: Banknote,
   discount: Percent,
+  cash: ArrowLeftRight,
   shift: TimerReset,
 };

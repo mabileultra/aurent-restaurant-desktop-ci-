@@ -7,6 +7,7 @@ import java.math.BigDecimal;
 
 public record OpenShiftRequest(
     @NotNull @DecimalMin("0.0") BigDecimal openingCash,
-    String comment
+    String comment,
+    Boolean confirmOpening
 ) {
 }

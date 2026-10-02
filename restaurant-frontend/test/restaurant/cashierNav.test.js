@@ -17,6 +17,13 @@ describe('cashierNav', () => {
     expect(isCashierHallTab('sales')).toBe(false);
   });
 
+  it('menu offers cash drawer ops with an icon', () => {
+    const cash = CASHIER_TABS.find((row) => row.key === 'cash');
+    expect(cash).toBeTruthy();
+    expect(cash.labelKey).toBe('rst.shift.cashOp.title');
+    expect(CASHIER_TAB_ICONS.cash).toBeTruthy();
+  });
+
   it('menu offers discount with an icon and the shared discount label', () => {
     const discount = CASHIER_TABS.find((row) => row.key === 'discount');
     expect(discount).toBeTruthy();

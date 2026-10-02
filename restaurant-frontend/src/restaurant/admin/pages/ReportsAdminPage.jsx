@@ -5,6 +5,7 @@ import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWor
 import DishSalesPanel from '../components/reports/DishSalesPanel';
 import ReceiptJournalPanel from '../components/reports/ReceiptJournalPanel';
 import SalesSummaryPanel from '../components/reports/SalesSummaryPanel';
+import ShiftCashPanel from '../components/reports/ShiftCashPanel';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
 import '../styles/analytics-admin.css';
@@ -20,6 +21,7 @@ const TABS = [
   ['summary', 'rst.reports.summary.title'],
   ['checks', 'rst.reports.byChecks'],
   ['dish', 'rst.reports.byDish'],
+  ['shifts', 'rst.reports.shifts.title'],
   ['debts', 'rst.reports.byDebts'],
 ];
 
@@ -85,6 +87,7 @@ export default function ReportsAdminPage() {
 
           {tab === 'summary' ? <SalesSummaryPanel {...panelProps} /> : null}
           {tab === 'dish' ? <DishSalesPanel {...panelProps} /> : null}
+          {tab === 'shifts' ? <ShiftCashPanel {...panelProps} /> : null}
           {tab === 'checks' || tab === 'debts' ? (
             <ReceiptJournalPanel
               key={tab}

@@ -21,6 +21,19 @@ public class ShiftReportAssembler {
         int returnsCount,
         List<ShiftItemRow> items
     ) {
+        return toReport(reportType, shift, storeName, cashierName, reportAt, returnsCount, items, ShiftCashMath.Drawer.zero());
+    }
+
+    public ShiftReportResponse toReport(
+        String reportType,
+        RestaurantShift shift,
+        String storeName,
+        String cashierName,
+        Instant reportAt,
+        int returnsCount,
+        List<ShiftItemRow> items,
+        ShiftCashMath.Drawer drawer
+    ) {
         BigDecimal zero = BigDecimal.ZERO.setScale(2);
         return new ShiftReportResponse(
             reportType,
@@ -50,7 +63,7 @@ public class ShiftReportAssembler {
             zero,
             zero,
             zero,
-            nz(shift.getOpeningCash()).add(nz(shift.getCashAmount())),
+            ShiftCashMath.expected(shift.getOpeningCash(), shift.getCashAmount(), drawer),
             items == null ? List.of() : items
         );
     }

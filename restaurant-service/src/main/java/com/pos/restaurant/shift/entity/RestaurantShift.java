@@ -63,6 +63,14 @@ public class RestaurantShift {
     @Column(name = "closing_cash", precision = 18, scale = 2)
     private BigDecimal closingCash;
 
+    /** Last closed shift's counted cash; null when this is the first shift. */
+    @Column(name = "handover_expected", precision = 18, scale = 2)
+    private BigDecimal handoverExpected;
+
+    /** openingCash − handoverExpected; null when there was nothing to confirm. */
+    @Column(name = "handover_diff", precision = 18, scale = 2)
+    private BigDecimal handoverDiff;
+
     @Column(name = "sale_count", nullable = false)
     @Builder.Default
     private int saleCount = 0;

@@ -6,6 +6,7 @@ import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.shift.domain.RestaurantShiftStatus;
 import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.entity.RestaurantShift;
+import com.pos.restaurant.shift.support.ShiftCashOpTotalsLoader;
 import com.pos.restaurant.shift.support.ShiftItemSalesLoader;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import com.pos.restaurant.shift.support.ShiftReportAssembler;
@@ -25,6 +26,7 @@ public class BuildShiftReportHandler {
     private final FloorOrderRepository orderRepository;
     private final ShiftReportAssembler reportAssembler;
     private final ShiftItemSalesLoader itemSalesLoader;
+    private final ShiftCashOpTotalsLoader cashOpTotalsLoader;
 
     @Transactional(readOnly = true)
     public ShiftReportResponse xReport(UUID shiftId, String storeName, String cashierName) {
@@ -62,7 +64,8 @@ public class BuildShiftReportHandler {
             cashierName,
             reportAt,
             returnsCount(shift.getId()),
-            itemSalesLoader.load(shift, reportAt)
+            itemSalesLoader.load(shift, reportAt),
+            cashOpTotalsLoader.totals(shift.getId())
         );
     }
 

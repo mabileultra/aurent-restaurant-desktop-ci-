@@ -6,6 +6,7 @@ import com.pos.restaurant.shift.dto.CloseShiftRequest;
 import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.ShiftReportResponse;
 import com.pos.restaurant.shift.entity.RestaurantShift;
+import com.pos.restaurant.shift.support.ShiftCashOpTotalsLoader;
 import com.pos.restaurant.shift.support.ShiftClosePolicy;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import com.pos.restaurant.shift.support.ShiftResponseAssembler;
@@ -26,6 +27,7 @@ public class ShiftCloseHandler {
     private final ShiftClosePolicy closePolicy;
     private final ShiftResponseAssembler assembler;
     private final BuildShiftReportHandler reportHandler;
+    private final ShiftCashOpTotalsLoader cashOpTotalsLoader;
 
     @Transactional
     public CloseShiftResult handle(UUID shiftId, CloseShiftRequest request) {
@@ -41,6 +43,9 @@ public class ShiftCloseHandler {
         }
         ShiftReportResponse zReport = reportHandler.zReportOf(shift, null, null, closedAt);
         LogUtil.info(ShiftCloseHandler.class, "Shift closed: id={}, storeId={}", shift.getId(), shift.getStoreId());
-        return new CloseShiftResult(assembler.toResponse(shift, 0), zReport);
+        return new CloseShiftResult(
+            assembler.toResponse(shift, 0, cashOpTotalsLoader.totals(shift.getId())),
+            zReport
+        );
     }
 }

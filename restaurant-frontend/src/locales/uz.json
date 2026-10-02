@@ -1726,6 +1726,17 @@
         "netQty": "Jami dona",
         "share": "Ulush",
         "positions": "Pozitsiyalar"
+      },
+      "shifts": {
+        "title": "Kassa va smenalar",
+        "sheet": "Kassa",
+        "openedAt": "Ochilgan",
+        "closedAt": "Yopilgan",
+        "cashSales": "Naqd savdo",
+        "actual": "Fakt",
+        "difference": "Farq",
+        "handoverDiff": "Qabul ±",
+        "count": "Smenalar"
       }
     },
     "shift": {
@@ -1753,7 +1764,22 @@
       "reportsHint": "X — oraliq hisobot. Z — yakuniy (faqat chop etish). «Smenani yopish» Z chop etadi va smenani yopadi.",
       "required": "Avval smenani oching",
       "sales": "Cheklar",
-      "total": "Tushum"
+      "total": "Tushum",
+      "cashOp": {
+        "title": "Kirim / chiqim",
+        "typeIN": "Kirim",
+        "typeOUT": "Chiqim",
+        "typeCOLLECTION": "Inkassatsiya",
+        "amount": "Summa",
+        "comment": "Sabab",
+        "commentPh": "Nega olindi yoki inkassatsiya qilindi",
+        "submit": "O‘tkazish",
+        "saved": "Amal yozildi",
+        "failed": "Amalni o‘tkazib bo‘lmadi",
+        "history": "Shu smena",
+        "empty": "Hali amallar yo‘q"
+      },
+      "confirmOpening": "Kassadagi summani tasdiqlayman"
     },
     "staff": {
       "activate": "Yoqish",

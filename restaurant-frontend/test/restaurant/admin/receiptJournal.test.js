@@ -7,6 +7,7 @@ import {
   RECEIPT_STATUSES,
   breakdownLabel,
   buildDishExportBody,
+  buildShiftExportBody,
   buildReceiptExportBody,
   filterDishRows,
   buildReceiptExportLabels,
@@ -134,6 +135,20 @@ describe('buildDishExportBody', () => {
     const body = buildDishExportBody({ from: 'a', to: 'b' }, { t, timeZone: 'UTC' });
     expect(body.labels.title).toBe(ru.rst.reports.dishes.title);
     expect(body.labels['col.name']).toBe(ru.rst.reports.dish);
+    const untranslated = Object.values(body.labels).filter((v) => String(v).startsWith('rst.'));
+    expect(untranslated).toEqual([]);
+  });
+});
+
+describe('buildShiftExportBody', () => {
+  it('sends translated shift columns and staff names', () => {
+    const body = buildShiftExportBody({ from: 'a', to: 'b' }, {
+      userNameById: new Map([['u1', 'Азиз']]),
+      t,
+      timeZone: 'Asia/Tashkent',
+    });
+    expect(body.userNames).toEqual({ u1: 'Азиз' });
+    expect(body.labels.title).toBe(ru.rst.reports.shifts.title);
     const untranslated = Object.values(body.labels).filter((v) => String(v).startsWith('rst.'));
     expect(untranslated).toEqual([]);
   });

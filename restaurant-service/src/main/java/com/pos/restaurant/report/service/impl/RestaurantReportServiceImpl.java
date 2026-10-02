@@ -7,6 +7,15 @@ import com.pos.restaurant.report.dto.DishSalesReportResponse;
 import com.pos.restaurant.report.dto.DishSalesReportRow;
 import com.pos.restaurant.report.dto.ReceiptExportRequest;
 import com.pos.restaurant.report.dto.SalesSummaryResponse;
+import com.pos.restaurant.report.dto.ShiftCashReportResponse;
+import com.pos.restaurant.report.dto.ShiftCashReportRow;
+import com.pos.restaurant.report.support.ReportPeriod;
+import com.pos.restaurant.report.support.ShiftCashExcelWriter;
+import com.pos.restaurant.report.support.ShiftCashReportAssembler;
+import com.pos.restaurant.report.support.ShiftCashReportLoader;
+import com.pos.restaurant.shift.entity.RestaurantShift;
+import com.pos.restaurant.shift.support.ShiftCashMath;
+import com.pos.restaurant.shift.support.ShiftCashOpTotalsLoader;
 import com.pos.restaurant.report.support.DishSalesExcelWriter;
 import com.pos.restaurant.report.support.SalesReportLoader;
 import com.pos.restaurant.report.support.SalesTimeBuckets;
@@ -44,6 +53,9 @@ public class RestaurantReportServiceImpl implements RestaurantReportService {
     private final ReceiptJournalExcelWriter excelWriter;
     private final SalesReportLoader salesLoader;
     private final DishSalesExcelWriter dishExcelWriter;
+    private final ShiftCashReportLoader shiftCashLoader;
+    private final ShiftCashOpTotalsLoader cashOpTotalsLoader;
+    private final ShiftCashExcelWriter shiftCashExcelWriter;
 
     @Override
     @Transactional(readOnly = true)
@@ -127,6 +139,42 @@ public class RestaurantReportServiceImpl implements RestaurantReportService {
             report,
             request.filter().from(),
             request.filter().to(),
+            request.labels(),
+            zone(request.timeZone())
+        );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ShiftCashReportResponse shiftCash(Integer storeId, ReceiptJournalFilter filter) {
+        if (filter == null) {
+            throw new ValidationException("Укажите период отчёта");
+        }
+        ReportPeriod.assertValid(filter.from(), filter.to());
+        List<RestaurantShift> shifts = shiftCashLoader.shifts(
+            tenantSupport.requireCompanyId(), storeId, filter.from(), filter.to()
+        );
+        Map<UUID, ShiftCashMath.Drawer> drawers = cashOpTotalsLoader.totals(
+            shifts.stream().map(RestaurantShift::getId).toList()
+        );
+        List<ShiftCashReportRow> rows = shifts.stream()
+            .map(shift -> ShiftCashReportAssembler.toRow(
+                shift, drawers.getOrDefault(shift.getId(), ShiftCashMath.Drawer.zero())
+            ))
+            .toList();
+        return new ShiftCashReportResponse(rows, ShiftCashReportAssembler.totals(rows));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] exportShiftCash(Integer storeId, ReceiptExportRequest request) {
+        ShiftCashReportResponse report = shiftCash(storeId, request.filter());
+        return shiftCashExcelWriter.write(
+            report.rows(),
+            report.totals(),
+            request.filter().from(),
+            request.filter().to(),
+            request.userNames(),
             request.labels(),
             zone(request.timeZone())
         );

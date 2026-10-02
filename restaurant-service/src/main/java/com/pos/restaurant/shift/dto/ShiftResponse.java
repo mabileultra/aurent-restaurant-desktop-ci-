@@ -21,6 +21,12 @@ public record ShiftResponse(
     BigDecimal cashAmount,
     BigDecimal cardAmount,
     String comment,
-    int openOrderCount
+    int openOrderCount,
+    BigDecimal cashIn,
+    BigDecimal cashOut,
+    BigDecimal collection,
+    BigDecimal expectedCash,
+    BigDecimal handoverExpected,
+    BigDecimal handoverDiff
 ) {
 }

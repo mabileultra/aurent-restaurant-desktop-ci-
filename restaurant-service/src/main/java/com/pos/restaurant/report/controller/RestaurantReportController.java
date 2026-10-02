@@ -3,6 +3,7 @@ package com.pos.restaurant.report.controller;
 import com.pos.restaurant.report.dto.DishSalesReportResponse;
 import com.pos.restaurant.report.dto.ReceiptExportRequest;
 import com.pos.restaurant.report.dto.SalesSummaryResponse;
+import com.pos.restaurant.report.dto.ShiftCashReportResponse;
 import com.pos.restaurant.report.dto.ReceiptJournalFilter;
 import com.pos.restaurant.report.dto.ReceiptJournalResponse;
 import com.pos.restaurant.report.service.RestaurantReportService;
@@ -86,6 +87,26 @@ public class RestaurantReportController {
         @Valid @RequestBody ReceiptExportRequest request
     ) {
         return xlsx(reportService.exportDishSales(storeId, request), "dishes.xlsx");
+    }
+
+    @GetMapping("/shifts")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Касса и смены: расчёт, факт и разница")
+    public ShiftCashReportResponse shiftCash(
+        @PathVariable Integer storeId,
+        @ModelAttribute ReceiptJournalFilter filter
+    ) {
+        return reportService.shiftCash(storeId, filter);
+    }
+
+    @PostMapping("/shifts/export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Касса и смены в Excel (xlsx)")
+    public ResponseEntity<byte[]> exportShiftCash(
+        @PathVariable Integer storeId,
+        @Valid @RequestBody ReceiptExportRequest request
+    ) {
+        return xlsx(reportService.exportShiftCash(storeId, request), "shifts.xlsx");
     }
 
     private static ResponseEntity<byte[]> xlsx(byte[] body, String filename) {

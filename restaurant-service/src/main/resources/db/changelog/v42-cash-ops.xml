@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-046-cash-ops" author="pos">
+        <createTable tableName="restaurant_cash_ops">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="shift_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="VARCHAR(16)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="NUMERIC(18, 2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comment" type="VARCHAR(500)"/>
+            <column name="created_by_user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="restaurant_cash_ops"
+            baseColumnNames="shift_id"
+            constraintName="fk_restaurant_cash_ops_shift"
+            referencedTableName="restaurant_shifts"
+            referencedColumnNames="id"
+            onDelete="RESTRICT"/>
+        <createIndex indexName="idx_restaurant_cash_ops_shift" tableName="restaurant_cash_ops">
+            <column name="shift_id"/>
+            <column name="created_at"/>
+        </createIndex>
+        <addColumn tableName="restaurant_shifts">
+            <column name="handover_expected" type="NUMERIC(18, 2)"/>
+            <column name="handover_diff" type="NUMERIC(18, 2)"/>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

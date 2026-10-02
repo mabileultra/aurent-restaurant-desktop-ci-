@@ -1,5 +1,7 @@
 package com.pos.restaurant.shift.service;
 
+import com.pos.restaurant.shift.dto.CashOpRequest;
+import com.pos.restaurant.shift.dto.CashOpResponse;
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
 import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.OpenShiftRequest;
@@ -23,4 +25,8 @@ public interface RestaurantShiftService {
     ShiftReportResponse xReport(UUID shiftId);
 
     ShiftReportResponse zReportPreview(UUID shiftId);
+
+    List<CashOpResponse> listCashOps(UUID shiftId);
+
+    CashOpResponse postCashOp(UUID shiftId, CashOpRequest request);
 }

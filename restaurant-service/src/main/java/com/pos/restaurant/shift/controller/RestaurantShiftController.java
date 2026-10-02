@@ -1,5 +1,7 @@
 package com.pos.restaurant.shift.controller;
 
+import com.pos.restaurant.shift.dto.CashOpRequest;
+import com.pos.restaurant.shift.dto.CashOpResponse;
 import com.pos.restaurant.shift.dto.CloseShiftRequest;
 import com.pos.restaurant.shift.dto.CloseShiftResult;
 import com.pos.restaurant.shift.dto.OpenShiftRequest;
@@ -81,5 +83,22 @@ public class RestaurantShiftController {
     @Operation(summary = "Превью Z-отчёта открытой смены (без закрытия)")
     public ShiftReportResponse zReportPreview(@PathVariable UUID shiftId) {
         return shiftService.zReportPreview(shiftId);
+    }
+
+    @GetMapping("/shifts/{shiftId}/cash-ops")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
+    @Operation(summary = "Кассовые операции смены")
+    public List<CashOpResponse> listCashOps(@PathVariable UUID shiftId) {
+        return shiftService.listCashOps(shiftId);
+    }
+
+    @PostMapping("/shifts/{shiftId}/cash-ops")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'CASHIER')")
+    @Operation(summary = "Внесение, изъятие или инкассация")
+    public ResponseEntity<CashOpResponse> postCashOp(
+        @PathVariable UUID shiftId,
+        @Valid @RequestBody CashOpRequest request
+    ) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(shiftService.postCashOp(shiftId, request));
     }
 }

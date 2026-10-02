@@ -1725,6 +1725,17 @@
         "netQty": "Net qty",
         "share": "Share",
         "positions": "Items"
+      },
+      "shifts": {
+        "title": "Cash and shifts",
+        "sheet": "Cash",
+        "openedAt": "Opened",
+        "closedAt": "Closed",
+        "cashSales": "Cash sales",
+        "actual": "Counted",
+        "difference": "Difference",
+        "handoverDiff": "Handover ±",
+        "count": "Shifts"
       }
     },
     "shift": {
@@ -1752,7 +1763,22 @@
       "reportsHint": "X is an interim report. Z is the final report (print only). “Close shift” prints Z and closes the shift.",
       "required": "Open a shift first",
       "sales": "Checks",
-      "total": "Revenue"
+      "total": "Revenue",
+      "cashOp": {
+        "title": "Cash in / out",
+        "typeIN": "Cash in",
+        "typeOUT": "Cash out",
+        "typeCOLLECTION": "Collection",
+        "amount": "Amount",
+        "comment": "Reason",
+        "commentPh": "Why the cash left the drawer",
+        "submit": "Post",
+        "saved": "Posted",
+        "failed": "Could not post the operation",
+        "history": "This shift",
+        "empty": "No operations yet"
+      },
+      "confirmOpening": "I confirm the cash in the drawer"
     },
     "staff": {
       "activate": "Enable",

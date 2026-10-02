@@ -11,6 +11,7 @@ export const CASHIER_TABS = [
   { key: 'bookings', labelKey: 'rst.cashier.tabBookings' },
   { key: 'payment', labelKey: 'rst.cashier.tabPayment' },
   { key: 'discount', labelKey: 'rst.order.discount' },
+  { key: 'cash', labelKey: 'rst.shift.cashOp.title' },
   { key: 'shift', labelKey: 'rst.cashier.tabShift' },
 ];
 

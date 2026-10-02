@@ -5,6 +5,7 @@ import { logoutAndResetSession } from '../../../../utils/authSession';
 import FloorPosModals from '../../components/FloorPosModals';
 import OrderWorkspace from '../../components/OrderWorkspace';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
+import CashDrawerModal from '../../components/shift/CashDrawerModal';
 import PosHardwareBar from '../../components/PosHardwareBar';
 import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
@@ -33,6 +34,7 @@ export default function RestaurantCashierPosPage() {
   };
 
   const [discountOpen, setDiscountOpen] = useState(false);
+  const [cashOpen, setCashOpen] = useState(false);
   const discountOrder = !p.isDraftOrder ? p.orderForUi : null;
   const canDiscount = Boolean(
     discountOrder && (discountOrder.status === 'OPEN' || discountOrder.status === 'BILLING'),
@@ -45,6 +47,10 @@ export default function RestaurantCashierPosPage() {
     }
     if (next === 'discount') {
       if (canDiscount) setDiscountOpen(true);
+      return;
+    }
+    if (next === 'cash') {
+      if (p.shift?.id) setCashOpen(true);
       return;
     }
     p.setTab(next);
@@ -81,7 +87,10 @@ export default function RestaurantCashierPosPage() {
         canAdmin={p.canAdmin}
         activeTab={p.tab}
         onSelectTab={handleTab}
-        disabledTabs={canDiscount ? [] : ['discount']}
+        disabledTabs={[
+          ...(canDiscount ? [] : ['discount']),
+          ...(p.shift?.id ? [] : ['cash']),
+        ]}
         backToCashier={showFull ? {
           label: p.t('rst.cashier.backToCashier'),
           onClick: exitFullOrder,
@@ -170,6 +179,12 @@ export default function RestaurantCashierPosPage() {
           p.discountMutation.mutate(amount);
           setDiscountOpen(false);
         }}
+        t={p.t}
+      />
+      <CashDrawerModal
+        open={cashOpen && Boolean(p.shift?.id)}
+        onClose={() => setCashOpen(false)}
+        shift={p.shift}
         t={p.t}
       />
     </div>

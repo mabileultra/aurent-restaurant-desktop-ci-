@@ -9,4 +9,6 @@ export const rstShiftApi = {
   close: (shiftId, data) => api.post(rst(`/shifts/${shiftId}/close`), data),
   xReport: (shiftId) => api.get(rst(`/shifts/${shiftId}/x-report`)),
   zReportPreview: (shiftId) => api.get(rst(`/shifts/${shiftId}/z-report`)),
+  listCashOps: (shiftId) => api.get(rst(`/shifts/${shiftId}/cash-ops`)),
+  postCashOp: (shiftId, data) => api.post(rst(`/shifts/${shiftId}/cash-ops`), data),
 };
