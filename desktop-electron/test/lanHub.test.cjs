@@ -57,6 +57,61 @@ test('hub applies ORDER_OPEN + ADD + SEND', async () => {
   assert.equal(again.outcome, 'ALREADY_PROCESSED');
 });
 
+test('waiter hub punch paints OCCUPIED on cashier floor snapshot', async () => {
+  const { importRestaurantBootstrap } = require('../electron/restaurant-offline/db/bootstrap.cjs');
+  const { listLocalFloorSnapshot } = require('../electron/restaurant-offline/commands/listLocalCatalog.cjs');
+  const { buildHubSnapshot } = require('../electron/restaurant-offline/hub/hubSnapshot.cjs');
+
+  const db = await openSqlJsMemoryDb();
+  applyRestaurantOfflineSchema(db);
+  db.prepare('INSERT INTO devices(device_id, label, created_at) VALUES (?,?,?)')
+    .run('phone-2', 'w', '2026-01-01T00:00:00.000Z');
+  importRestaurantBootstrap(db, {
+    storeId: 1,
+    categories: [],
+    menuItems: [],
+    tables: [{
+      id: 6,
+      name: 'СТОЛ 6',
+      code: 'СТОЛ 6',
+      hallId: 1,
+      hallName: 'Зал',
+    }],
+  });
+
+  const orderId = '22222222-2222-2222-2222-222222222222';
+  assert.equal(applyHubEvent(db, {
+    eventType: 'ORDER_OPEN',
+    deviceId: 'phone-2',
+    clientEventId: 'w-open',
+    storeId: 1,
+    payload: { orderId, storeId: 1, tableId: '6', guestCount: 1, waiterId: '77' },
+  }).outcome, 'ACCEPTED');
+  assert.equal(applyHubEvent(db, {
+    eventType: 'ORDER_ADD_ITEM',
+    deviceId: 'phone-2',
+    clientEventId: 'w-add',
+    storeId: 1,
+    payload: {
+      orderId, storeId: 1, name: 'Плов', quantity: 2, unitPrice: 30000, menuItemId: 'm-plov',
+    },
+  }).outcome, 'ACCEPTED');
+
+  const floor = listLocalFloorSnapshot(db, 1);
+  const table = floor.halls[0].tables.find((t) => String(t.id) === '6' || t.code === 'СТОЛ 6');
+  assert.ok(table, 'table 6 present');
+  assert.equal(table.status, 'OCCUPIED');
+  assert.equal(table.activeOrder.id, orderId);
+  assert.equal(String(table.activeOrder.waiterUserId), '77');
+
+  const snap = buildHubSnapshot(db, 1);
+  const hubOrder = snap.orders.find((o) => o.id === orderId);
+  assert.ok(hubOrder);
+  assert.equal(hubOrder.items.length, 1);
+  assert.equal(hubOrder.items[0].name, 'Плов');
+  assert.equal(hubOrder.items[0].quantity, 2);
+});
+
 test('lan hub health + snapshot respond', async () => {
   const hub = createLanHubServer({
     port: 18787,

@@ -53,7 +53,7 @@ function acceptedOutcome(raw) {
  * Prefer LAN hub (cashier station), then cloud.
  * Hub apply writes SQLite + station outbox; cloud-only left the cashier empty.
  */
-async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
+export async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
   let hubOutcome = null;
   let hubErr = null;
   if (hubUrl) {
