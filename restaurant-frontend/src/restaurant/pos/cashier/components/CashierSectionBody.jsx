@@ -50,31 +50,31 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
         />
         {!fullOrder ? (
           <CashierOrderDock
-            order={p.order}
+            order={p.orderForUi}
             loading={false}
             linesPending={!!p.orderPartial}
-            tableCode={tableCode}
-            hallName={p.orderHallName || null}
+            tableCode={tableCode || p.orderForUi?.tableCode}
+            hallName={(p.isDraftOrder ? p.draftHallName : p.orderHallName) || null}
             waiterName={
-              p.order?.waiterUserId
-                ? (p.waiterNameById.get(String(p.order.waiterUserId)) || null)
+              p.orderForUi?.waiterUserId
+                ? (p.waiterNameById.get(String(p.orderForUi.waiterUserId)) || null)
                 : null
             }
             menuItems={p.menuItems ?? []}
-            canRequestBill={p.canRequestBill}
-            canPay={p.canPay}
-            canSendKitchen={p.canSendKitchen}
+            canRequestBill={!p.isDraftOrder && p.canRequestBill}
+            canPay={!p.isDraftOrder && p.canPay}
+            canSendKitchen={!p.isDraftOrder && p.canSendKitchen}
             billingPending={p.billMutation.isPending}
             paying={p.payMutation.isPending}
             sendingKitchen={p.sendKitchenMutation.isPending}
-            servicePreview={p.servicePreview}
+            servicePreview={p.isDraftOrder ? null : p.servicePreview}
             onOpenFull={() => setFullOrder(true)}
-            onSendKitchen={() => p.sendKitchenMutation.mutate()}
-            onRequestBill={() => p.billMutation.mutate()}
-            onPay={p.openPayModal}
-            onRemove={p.handleRemoveItem}
-            onQty={p.handleQty}
-            allowKitchenRefuse={!!p.access?.canCancelOrder}
+            onSendKitchen={p.isDraftOrder ? undefined : () => p.sendKitchenMutation.mutate()}
+            onRequestBill={p.isDraftOrder ? undefined : () => p.billMutation.mutate()}
+            onPay={p.isDraftOrder ? undefined : p.openPayModal}
+            onRemove={p.isDraftOrder ? undefined : p.handleRemoveItem}
+            onQty={p.isDraftOrder ? undefined : p.handleQty}
+            allowKitchenRefuse={!p.isDraftOrder && !!p.access?.canCancelOrder}
             onClear={p.clearOrder}
             t={p.t}
           />

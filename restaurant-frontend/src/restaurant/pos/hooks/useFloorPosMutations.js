@@ -8,6 +8,7 @@ import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFis
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
+import { requireOrderId, isUsableOrderId } from '../utils/requireOrderId';
 import {
   optimisticAddItem,
   optimisticRemoveItem,
@@ -213,9 +214,11 @@ export function useFloorPosMutations(deps) {
 
   const addItemMutation = useMutation({
     mutationFn: ({ menuItem, modifierOptionIds, note, quantity, orderId: orderIdOverride }) => {
-      const oid = orderIdOverride ?? activeOrderId;
-      if (oid == null) {
-        return Promise.reject(new Error('order required'));
+      let oid;
+      try {
+        oid = requireOrderId(orderIdOverride, activeOrderId, order?.id);
+      } catch {
+        return Promise.reject(new Error('order_required'));
       }
       const mods = (modifierOptionIds ?? []).map(String).sort().join(',');
       const noteKey = note?.trim() || '';
@@ -264,7 +267,10 @@ export function useFloorPosMutations(deps) {
       });
     },
     onMutate: async ({ menuItem, modifierOptionIds, note, quantity, orderId: orderIdOverride }) => {
-      const oid = orderIdOverride ?? activeOrderId;
+      const oid = isUsableOrderId(orderIdOverride)
+        ? orderIdOverride
+        : (isUsableOrderId(activeOrderId) ? activeOrderId : order?.id);
+      if (!isUsableOrderId(oid)) return undefined;
       const key = orderKeyFor(oid);
       await qc.cancelQueries({ queryKey: key });
       const prev = qc.getQueryData(key);
@@ -288,6 +294,13 @@ export function useFloorPosMutations(deps) {
     },
     onError: (err, vars) => {
       qc.invalidateQueries({ queryKey: orderKeyFor(vars?.orderId) });
+      const msg = String(err?.message || '');
+      if (msg === 'order_required' || msg === 'order required') {
+        toast.error(t('rst.order.orderRequired', {
+          defaultValue: 'Сначала откройте стол и добавьте блюдо',
+        }));
+        return;
+      }
       errMsg(err, 'rst.order.saveFailed');
     },
   });
@@ -405,6 +418,7 @@ export function useFloorPosMutations(deps) {
 
   const sendKitchenMutation = useMutation({
     mutationFn: async () => {
+      const orderId = requireOrderId(activeOrderId, order?.id);
       const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
       if (localFirst) {
         let categories = [];
@@ -414,16 +428,16 @@ export function useFloorPosMutations(deps) {
           /* use empty — station printers still resolve */
         }
         const local = await sendKitchenLocalFirst({
-          order,
+          order: { ...order, id: order?.id ?? orderId },
           storeId,
           categories,
           tableLabel: openTable?.code || order?.tableCode,
         });
         try {
-          const res = await rstOrderApi.sendToKitchen(activeOrderId);
+          const res = await rstOrderApi.sendToKitchen(orderId);
           const data = res?.data !== undefined ? res.data : res;
           logLocalFirst('Кухня: local print + server sync', {
-            orderId: activeOrderId,
+            orderId,
             printFailed: Boolean(local?.printFailed),
           });
           return {
@@ -434,7 +448,7 @@ export function useFloorPosMutations(deps) {
         } catch {
           // WAN down after local print — keep UI optimistic; outbox will sync later.
           logLocalFirst('Кухня: local print, server sync later', {
-            orderId: activeOrderId,
+            orderId,
             printFailed: Boolean(local?.printFailed),
           }, 'warn');
           const items = (order?.items || []).map((item) => ({
@@ -444,6 +458,7 @@ export function useFloorPosMutations(deps) {
           }));
           return {
             ...order,
+            id: order?.id ?? orderId,
             items,
             _localPrinted: true,
             _localOnly: true,
@@ -451,7 +466,7 @@ export function useFloorPosMutations(deps) {
           };
         }
       }
-      const res = await rstOrderApi.sendToKitchen(activeOrderId);
+      const res = await rstOrderApi.sendToKitchen(orderId);
       return res?.data !== undefined ? res.data : res;
     },
     onSuccess: (res) => {
@@ -471,6 +486,12 @@ export function useFloorPosMutations(deps) {
       const msg = String(err?.message || '');
       if (msg === 'no_pending_items') {
         toast.error(t('rst.order.nothingToSend', { defaultValue: 'Нет новых позиций для кухни' }));
+        return;
+      }
+      if (msg === 'order_required' || msg === 'order required') {
+        toast.error(t('rst.order.orderRequired', {
+          defaultValue: 'Сначала откройте стол и добавьте блюдо',
+        }));
         return;
       }
       errMsg(err, 'rst.order.sendFailed');
