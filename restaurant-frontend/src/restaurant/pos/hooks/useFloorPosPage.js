@@ -178,26 +178,25 @@ export function useFloorPosPage() {
     queryKey: ['rst-menu-pos', storeId],
     queryFn: async () => {
       const localFirst = isRestaurantLocalFirstOn();
+      // Prefer live API when online — local/hub snapshot lags admin "add size" and hides new variants.
+      try {
+        const remote = await rstMenuApi.list(storeId, true).then((r) => r.data);
+        if (Array.isArray(remote)) return remote;
+      } catch (err) {
+        if (!localFirst) throw err;
+      }
       if (localFirst) {
         const local = await rstOfflineListMenu(storeId).catch(() => []);
         if (Array.isArray(local) && local.length) return local;
         const hub = await fetchHubSnapshot().catch(() => null);
         if (Array.isArray(hub?.menuItems) && hub.menuItems.length) return hub.menuItems;
       }
-      try {
-        return await rstMenuApi.list(storeId, true).then((r) => r.data);
-      } catch (err) {
-        if (localFirst) {
-          const local = await rstOfflineListMenu(storeId).catch(() => []);
-          if (Array.isArray(local) && local.length) return local;
-          const hub = await fetchHubSnapshot().catch(() => null);
-          if (Array.isArray(hub?.menuItems) && hub.menuItems.length) return hub.menuItems;
-        }
-        throw err;
-      }
+      return [];
     },
     enabled: storeId != null,
     staleTime: MENU_STALE_MS,
+    refetchInterval: 60_000,
+    refetchOnWindowFocus: true,
   });
   const floorHalls = floorQuery.data?.halls;
   const orderFloorSeed = useMemo(

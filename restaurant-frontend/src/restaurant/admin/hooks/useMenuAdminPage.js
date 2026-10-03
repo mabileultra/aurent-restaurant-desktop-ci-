@@ -8,6 +8,7 @@ import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { readImageDataUrl } from '../../../utils/readImageDataUrl';
 import { toastApiError } from '../../../utils/apiError';
+import { requestRestaurantBootstrapRefresh } from '../../../services/offline/peerHubSettings';
 
 const emptyForm = () => ({
   name: '',
@@ -120,6 +121,7 @@ export function useMenuAdminPage() {
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });
     qc.invalidateQueries({ queryKey: ['rst-menu-pos', workspace.storeId] });
+    requestRestaurantBootstrapRefresh();
   };
 
   const saveMutation = useMutation({

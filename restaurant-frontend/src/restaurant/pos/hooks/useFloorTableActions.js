@@ -7,6 +7,11 @@ import {
   occupiedTablesForMerge,
 } from '../utils/floorStatusFilters';
 import { toastApiError } from '../../../utils/apiError';
+import {
+  isRestaurantLocalFirstOn,
+  rstOfflineGetOrder,
+  rstOfflineCancelOrder,
+} from '../../../services/offline/restaurantOfflineBridge';
 
 /**
  * Floor Phase-2 actions: inspect occupied table, transfer, merge, reassign waiter.
@@ -38,9 +43,21 @@ export function useFloorTableActions({
 
   const inspectOrderQuery = useQuery({
     queryKey: ['rst-order', orderId],
-    queryFn: () => rstOrderApi.get(orderId).then((r) => r.data),
+    queryFn: async () => {
+      // Waiter local-first: overlay shows L-* ids that are not on the server yet.
+      if (isRestaurantLocalFirstOn()) {
+        const local = await rstOfflineGetOrder(orderId);
+        if (local) return local;
+      }
+      return rstOrderApi.get(orderId).then((r) => r.data);
+    },
     enabled: !!orderId,
     staleTime: 4_000,
+    retry: (count, err) => {
+      const status = err?.response?.status;
+      if (status === 404 && isRestaurantLocalFirstOn()) return false;
+      return count < 1;
+    },
   });
 
   const invalidateFloor = () => qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
@@ -90,11 +107,21 @@ export function useFloorTableActions({
   });
 
   const cancelInspectMutation = useMutation({
-    mutationFn: () => rstOrderApi.cancel(orderId),
+    mutationFn: async () => {
+      if (isRestaurantLocalFirstOn()) {
+        const local = await rstOfflineGetOrder(orderId).catch(() => null);
+        if (local) {
+          await rstOfflineCancelOrder({ orderId: String(orderId) });
+          return { _local: true };
+        }
+      }
+      return rstOrderApi.cancel(orderId);
+    },
     onSuccess: () => {
       toast.success(t('rst.order.cancelled'));
       closeInspect();
       invalidateFloor();
+      qc.removeQueries({ queryKey: ['rst-order', orderId] });
     },
     onError: (err) => toastApiError(err, t('rst.order.cancelFailed')),
   });
@@ -103,7 +130,17 @@ export function useFloorTableActions({
     const rows = Array.isArray(table?.activeOrders) && table.activeOrders.length
       ? table.activeOrders
       : (table?.activeOrder ? [table.activeOrder] : []);
-    setSelectedOrderId(rows[0]?.id ?? null);
+    const firstId = rows[0]?.id ?? null;
+    setSelectedOrderId(firstId);
+    // Local-only check: skip empty modal (server 404) — open ticket immediately.
+    if (rows[0]?._local && rows.length === 1 && firstId) {
+      setActiveOrderId(firstId);
+      setInspectTable(null);
+      setTransferOpen(false);
+      setMergeOpen(false);
+      setAssignOpen(false);
+      return;
+    }
     setInspectTable(table);
     setTransferOpen(false);
     setMergeOpen(false);
