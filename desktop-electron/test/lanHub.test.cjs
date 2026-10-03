@@ -57,6 +57,57 @@ test('hub applies ORDER_OPEN + ADD + SEND', async () => {
   assert.equal(again.outcome, 'ALREADY_PROCESSED');
 });
 
+test('waiter SEND via hub queues local print when category printer set', async () => {
+  const { importRestaurantBootstrap } = require('../electron/restaurant-offline/db/bootstrap.cjs');
+
+  const db = await openSqlJsMemoryDb();
+  applyRestaurantOfflineSchema(db);
+  db.prepare('INSERT INTO devices(device_id, label, created_at) VALUES (?,?,?)')
+    .run('phone-3', 'w', '2026-01-01T00:00:00.000Z');
+  importRestaurantBootstrap(db, {
+    storeId: 1,
+    categories: [{
+      id: 10,
+      name: 'Кухня',
+      sortOrder: 1,
+      autoPrint: true,
+      printPrinterName: 'KitchenPOS',
+    }],
+    menuItems: [],
+    tables: [{ id: 1, name: '1', code: '1', hallId: 1, hallName: 'Z' }],
+  });
+
+  const orderId = '33333333-3333-3333-3333-333333333333';
+  applyHubEvent(db, {
+    eventType: 'ORDER_OPEN',
+    deviceId: 'phone-3',
+    clientEventId: 'p-open',
+    storeId: 1,
+    payload: { orderId, storeId: 1, tableId: '1' },
+  });
+  const send = applyHubEvent(db, {
+    eventType: 'ORDER_SEND_KITCHEN',
+    deviceId: 'phone-3',
+    clientEventId: 'p-send',
+    storeId: 1,
+    payload: {
+      orderId,
+      storeId: 1,
+      tableId: '1',
+      printOnServer: true,
+      printerName: '',
+      items: [{ name: 'Плов', qty: 1, unitPrice: 30000 }],
+    },
+  });
+  assert.equal(send.outcome, 'ACCEPTED');
+  const job = db.prepare(
+    `SELECT printer_name, status FROM print_jobs WHERE order_id = ? ORDER BY created_at DESC LIMIT 1`,
+  ).get(orderId);
+  assert.ok(job, 'print job created on station');
+  assert.equal(job.printer_name, 'KitchenPOS');
+  assert.equal(job.status, 'PENDING');
+});
+
 test('waiter hub punch paints OCCUPIED on cashier floor snapshot', async () => {
   const { importRestaurantBootstrap } = require('../electron/restaurant-offline/db/bootstrap.cjs');
   const { listLocalFloorSnapshot } = require('../electron/restaurant-offline/commands/listLocalCatalog.cjs');

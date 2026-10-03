@@ -21,6 +21,25 @@ function alreadyProcessed(db, deviceId, clientEventId) {
   return Boolean(row);
 }
 
+/** Waiter phone sends empty printerName + printOnServer — resolve category printer on station. */
+function resolveHubKitchenPrinter(db, storeId, payload = {}) {
+  const fromPayload = String(payload.printerName || '').trim();
+  if (fromPayload) return fromPayload;
+  const sid = Number(storeId);
+  if (!Number.isFinite(sid)) return '';
+  try {
+    const row = db.prepare(
+      `SELECT print_printer_name AS n FROM menu_categories
+       WHERE store_id = ? AND active = 1
+         AND print_printer_name IS NOT NULL AND TRIM(print_printer_name) != ''
+       ORDER BY sort_order ASC LIMIT 1`,
+    ).get(sid);
+    return String(row?.n || '').trim();
+  } catch {
+    return '';
+  }
+}
+
 function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, storeId, billPrinterName }) {
   const type = String(eventType || '').trim();
   const dev = String(deviceId || 'hub').trim();
@@ -89,18 +108,27 @@ function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, s
       if (!items.length) {
         return { outcome: 'IGNORED', reason: 'no_items' };
       }
+      const sid = payload.storeId ?? storeId;
+      // Waiter phone: printOnServer → cloud creates classic jobs, cashier relay prints
+      // (do not invent a FAILED empty-name job on hub). If no printOnServer flag,
+      // resolve category printer and print on this station.
+      const printOnServer = payload.printOnServer === true;
+      const printerName = printOnServer
+        ? String(payload.printerName || '').trim()
+        : resolveHubKitchenPrinter(db, sid, payload);
       sendToKitchenCommand(db, {
         deviceId: dev,
-        storeId: payload.storeId ?? storeId,
+        storeId: sid,
         tableId: payload.tableId,
         tableLabel: payload.tableLabel,
         orderId: payload.orderId,
-        printerName: payload.printerName || '',
+        printerName,
         station: payload.station,
         categoryName: payload.categoryName,
         items,
         waiterId: payload.waiterId,
         clientEventId: clientEventId || null,
+        printOnServer,
       });
       break;
     }
