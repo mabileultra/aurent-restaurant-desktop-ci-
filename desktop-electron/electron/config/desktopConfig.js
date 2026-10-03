@@ -84,6 +84,11 @@ function loadDesktopConfig({ isPackaged }) {
     process.env.AURENT_APP_WORLD || user.appWorld || APP_WORLD_MAIN
   );
 
+  const stationPrinters = (user.stationPrinters && typeof user.stationPrinters === 'object'
+    && !Array.isArray(user.stationPrinters))
+    ? user.stationPrinters
+    : {};
+
   return {
     cashierUrl,
     restaurantUrl,
@@ -98,6 +103,11 @@ function loadDesktopConfig({ isPackaged }) {
     offlineFirst: resolveOfflineFirst({ userConfig: user }),
     restaurantLocalFirst: resolveRestaurantLocalFirst({ userConfig: user }),
     allowBundledUi: user.allowBundledUi === true || process.env.AURENT_UI_DEV === '1',
+    // Kitchen/hub print — were omitted, so waiter SEND never saw Windows printer names.
+    receiptPrinterName: String(user.receiptPrinterName || '').trim(),
+    labelPrinterName: String(user.labelPrinterName || '').trim(),
+    billPrinterName: String(user.billPrinterName || '').trim(),
+    stationPrinters,
   };
 }
 

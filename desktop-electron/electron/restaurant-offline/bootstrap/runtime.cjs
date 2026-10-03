@@ -193,12 +193,20 @@ async function startRestaurantOfflineRuntime({ loadConfig } = {}) {
         if (evt.eventType === 'ORDER_SEND_KITCHEN' && !payload.printerName) {
           payload.printerName = String(kitchenPrinter || '').trim();
         }
-        return applyHubEvent(database, {
+        const result = applyHubEvent(database, {
           ...evt,
           payload,
           storeId: session.storeId,
+          kitchenPrinterName: kitchenPrinter,
           billPrinterName: cfg.billPrinterName || cfg.receiptPrinterName || '',
         });
+        // Spool waiter kitchen tickets immediately (don't wait for the 300ms tick).
+        if (evt.eventType === 'ORDER_SEND_KITCHEN') {
+          void printWorker.tick().catch((err) => {
+            logError('print tick after hub SEND', { error: err?.message || String(err) });
+          });
+        }
+        return result;
       },
     });
     const hubInfo = await hubServer.start();

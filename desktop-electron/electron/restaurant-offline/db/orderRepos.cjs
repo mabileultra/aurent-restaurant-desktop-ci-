@@ -57,8 +57,9 @@ function createOrderItemRepo(db, { idFactory = randomUUID, clock = () => new Dat
       note = null,
       modifiers = null,
       status = 'OPEN',
+      id: idOverride = null,
     }) {
-      const id = idFactory();
+      const id = idOverride ? String(idOverride) : idFactory();
       const at = nowIso(clock);
       db.prepare(
         `INSERT INTO order_items(
@@ -80,6 +81,18 @@ function createOrderItemRepo(db, { idFactory = randomUUID, clock = () => new Dat
         at,
       );
       return { id, orderId, name, quantity, status };
+    },
+
+    markSent(itemId) {
+      const row = this.getById(itemId);
+      if (!row) throw new Error(`item_not_found:${itemId}`);
+      if (row.status === 'SENT') return row;
+      if (row.status === 'CANCELLED') return row;
+      const at = nowIso(clock);
+      db.prepare(
+        `UPDATE order_items SET status = ?, updated_at = ? WHERE id = ?`,
+      ).run('SENT', at, itemId);
+      return this.getById(itemId);
     },
 
     listByOrder(orderId) {

@@ -387,6 +387,7 @@ export async function waiterSendToKitchen(input = {}) {
     if (isOpen && left > 0) {
       pendingIds.push(i.id);
       pendingSnap.push({
+        id: i.id,
         name: i.name,
         qty: left,
         unitPrice: Number(i.unitPrice) || 0,

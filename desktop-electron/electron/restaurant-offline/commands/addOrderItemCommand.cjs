@@ -119,6 +119,8 @@ function addOrderItemCommand(db, input, deps = {}) {
       note,
       modifiers,
       status: 'OPEN',
+      // Waiter phone item id — keep stable so SEND can mark SENT without duplicating.
+      id: input.itemId || null,
     });
 
     const event = outbox.enqueue({

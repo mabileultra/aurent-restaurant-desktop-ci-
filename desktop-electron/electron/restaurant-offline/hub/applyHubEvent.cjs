@@ -21,26 +21,45 @@ function alreadyProcessed(db, deviceId, clientEventId) {
   return Boolean(row);
 }
 
-/** Waiter phone sends empty printerName + printOnServer — resolve category printer on station. */
-function resolveHubKitchenPrinter(db, storeId, payload = {}) {
+/**
+ * Waiter phone sends empty printerName + printOnServer.
+ * On the cashier hub we must resolve a real Windows printer and print locally.
+ */
+function resolveHubKitchenPrinter(db, storeId, payload = {}, fallbacks = {}) {
   const fromPayload = String(payload.printerName || '').trim();
   if (fromPayload) return fromPayload;
+  const fromKitchen = String(fallbacks.kitchenPrinterName || '').trim();
+  if (fromKitchen) return fromKitchen;
+  const fromBill = String(fallbacks.billPrinterName || '').trim();
+  if (fromBill) return fromBill;
   const sid = Number(storeId);
   if (!Number.isFinite(sid)) return '';
   try {
-    const row = db.prepare(
-      `SELECT print_printer_name AS n FROM menu_categories
+    const rows = db.prepare(
+      `SELECT print_printer_name FROM menu_categories
        WHERE store_id = ? AND active = 1
-         AND print_printer_name IS NOT NULL AND TRIM(print_printer_name) != ''
-       ORDER BY sort_order ASC LIMIT 1`,
-    ).get(sid);
-    return String(row?.n || '').trim();
+       ORDER BY sort_order ASC`,
+    ).all(sid);
+    for (const row of rows) {
+      // sql.js may ignore aliases — read the physical column name.
+      const name = String(row?.print_printer_name || row?.n || '').trim();
+      if (name) return name;
+    }
+    return '';
   } catch {
     return '';
   }
 }
 
-function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, storeId, billPrinterName }) {
+function applyHubEvent(db, {
+  eventType,
+  payload = {},
+  deviceId,
+  clientEventId,
+  storeId,
+  billPrinterName,
+  kitchenPrinterName,
+}) {
   const type = String(eventType || '').trim();
   const dev = String(deviceId || 'hub').trim();
   if (clientEventId && alreadyProcessed(db, dev, clientEventId)) {
@@ -69,6 +88,7 @@ function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, s
         deviceId: dev,
         orderId: payload.orderId,
         storeId: payload.storeId ?? storeId,
+        itemId: payload.itemId,
         menuItemId: payload.menuItemId,
         name: payload.name,
         quantity: payload.quantity,
@@ -109,13 +129,13 @@ function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, s
         return { outcome: 'IGNORED', reason: 'no_items' };
       }
       const sid = payload.storeId ?? storeId;
-      // Waiter phone: printOnServer → cloud creates classic jobs, cashier relay prints
-      // (do not invent a FAILED empty-name job on hub). If no printOnServer flag,
-      // resolve category printer and print on this station.
-      const printOnServer = payload.printOnServer === true;
-      const printerName = printOnServer
-        ? String(payload.printerName || '').trim()
-        : resolveHubKitchenPrinter(db, sid, payload);
+      // Hub runs on the monoblock that owns kitchen printers — print locally.
+      // printOnServer only if we still have no Windows name (cloud relay fallback).
+      const printerName = resolveHubKitchenPrinter(db, sid, payload, {
+        kitchenPrinterName,
+        billPrinterName,
+      });
+      const printOnServer = !printerName && payload.printOnServer === true;
       sendToKitchenCommand(db, {
         deviceId: dev,
         storeId: sid,
@@ -126,6 +146,7 @@ function applyHubEvent(db, { eventType, payload = {}, deviceId, clientEventId, s
         station: payload.station,
         categoryName: payload.categoryName,
         items,
+        itemIds: Array.isArray(payload.itemIds) ? payload.itemIds : [],
         waiterId: payload.waiterId,
         clientEventId: clientEventId || null,
         printOnServer,

@@ -83,8 +83,13 @@ export default function LocalFirstLaneStatus({ order, t }) {
 
   const kitchenOk = lanes.kitchen === 'printed' || lanes.kitchen === 'print_pending';
   const kitchenBad = lanes.kitchen === 'print_failed' || lanes.kitchen === 'print_unknown';
-  const syncOk = lanes.sync === 'synced';
-  const syncBad = lanes.sync === 'waiting';
+  // Hub up = station LAN ok; "waiting" is cloud outbox only — don't scare as offline.
+  const hubUp = Boolean(hubUrl);
+  const syncOk = lanes.sync === 'synced' || (hubUp && lanes.sync === 'waiting');
+  const syncBad = lanes.sync === 'waiting' && !hubUp;
+  const syncText = lanes.sync === 'waiting' && hubUp
+    ? t('rst.order.laneSyncHubOk', { defaultValue: 'Hub OK (облако ждёт)' })
+    : syncLabel(t, lanes.sync);
 
   return (
     <div className="rst-local-lanes" role="status" aria-live="polite">
@@ -96,7 +101,7 @@ export default function LocalFirstLaneStatus({ order, t }) {
       <div className={`rst-local-lanes__row${syncBad ? ' is-warn' : ''}${syncOk ? ' is-ok' : ''}`}>
         <span className="rst-local-lanes__mark">{mark(syncBad ? false : syncOk ? true : null)}</span>
         <span className="rst-local-lanes__label">{t('rst.order.laneSync', { defaultValue: 'Синк' })}</span>
-        <span className="rst-local-lanes__value">{syncLabel(t, lanes.sync)}</span>
+        <span className="rst-local-lanes__value">{syncText}</span>
       </div>
       {hubUrl ? (
         <div className="rst-local-lanes__row">

@@ -57,6 +57,112 @@ test('hub applies ORDER_OPEN + ADD + SEND', async () => {
   assert.equal(again.outcome, 'ALREADY_PROCESSED');
 });
 
+test('waiter ADD then SEND does not duplicate lines on cashier', async () => {
+  const { importRestaurantBootstrap } = require('../electron/restaurant-offline/db/bootstrap.cjs');
+
+  const db = await openSqlJsMemoryDb();
+  applyRestaurantOfflineSchema(db);
+  db.prepare('INSERT INTO devices(device_id, label, created_at) VALUES (?,?,?)')
+    .run('phone-dup', 'w', '2026-01-01T00:00:00.000Z');
+  importRestaurantBootstrap(db, {
+    storeId: 1,
+    categories: [],
+    menuItems: [],
+    tables: [{ id: 9, name: '9', code: '9', hallId: 1, hallName: 'Z' }],
+  });
+
+  const orderId = '44444444-4444-4444-4444-444444444444';
+  const itemId = '55555555-5555-5555-5555-555555555555';
+  applyHubEvent(db, {
+    eventType: 'ORDER_OPEN',
+    deviceId: 'phone-dup',
+    clientEventId: 'd-open',
+    storeId: 1,
+    payload: { orderId, storeId: 1, tableId: '9' },
+  });
+  applyHubEvent(db, {
+    eventType: 'ORDER_ADD_ITEM',
+    deviceId: 'phone-dup',
+    clientEventId: 'd-add',
+    storeId: 1,
+    payload: {
+      orderId, itemId, storeId: 1, name: 'BEHAMAD', quantity: 1, unitPrice: 18000, menuItemId: 'm1',
+    },
+  });
+  applyHubEvent(db, {
+    eventType: 'ORDER_SEND_KITCHEN',
+    deviceId: 'phone-dup',
+    clientEventId: 'd-send',
+    storeId: 1,
+    payload: {
+      orderId,
+      storeId: 1,
+      tableId: '9',
+      itemIds: [itemId],
+      printOnServer: true,
+      items: [{ id: itemId, name: 'BEHAMAD', qty: 1, unitPrice: 18000, menuItemId: 'm1' }],
+    },
+  });
+  // Re-delivery with new client id must still not clone the line.
+  applyHubEvent(db, {
+    eventType: 'ORDER_SEND_KITCHEN',
+    deviceId: 'phone-dup',
+    clientEventId: 'd-send-2',
+    storeId: 1,
+    payload: {
+      orderId,
+      storeId: 1,
+      itemIds: [itemId],
+      printOnServer: true,
+      items: [{ id: itemId, name: 'BEHAMAD', qty: 1, unitPrice: 18000, menuItemId: 'm1' }],
+    },
+  });
+
+  const count = db.prepare(`SELECT COUNT(*) AS c FROM order_items WHERE order_id = ?`).get(orderId).c;
+  assert.equal(count, 1);
+  assert.equal(
+    db.prepare(`SELECT status FROM order_items WHERE id = ?`).get(itemId).status,
+    'SENT',
+  );
+});
+
+test('waiter SEND uses kitchenPrinterName fallback from monoblock config', async () => {
+  const db = await openSqlJsMemoryDb();
+  applyRestaurantOfflineSchema(db);
+  db.prepare('INSERT INTO devices(device_id, label, created_at) VALUES (?,?,?)')
+    .run('phone-cfg', 'w', '2026-01-01T00:00:00.000Z');
+
+  const orderId = '66666666-6666-6666-6666-666666666666';
+  applyHubEvent(db, {
+    eventType: 'ORDER_OPEN',
+    deviceId: 'phone-cfg',
+    clientEventId: 'cfg-open',
+    storeId: 1,
+    payload: { orderId, storeId: 1, tableId: '2' },
+  });
+  const send = applyHubEvent(db, {
+    eventType: 'ORDER_SEND_KITCHEN',
+    deviceId: 'phone-cfg',
+    clientEventId: 'cfg-send',
+    storeId: 1,
+    kitchenPrinterName: 'Oshxona-Win',
+    payload: {
+      orderId,
+      storeId: 1,
+      tableId: '2',
+      printOnServer: true,
+      printerName: '',
+      items: [{ name: 'NON', qty: 1, unitPrice: 3000 }],
+    },
+  });
+  assert.equal(send.outcome, 'ACCEPTED');
+  const job = db.prepare(
+    `SELECT printer_name, status FROM print_jobs WHERE order_id = ?`,
+  ).get(orderId);
+  assert.equal(job.printer_name, 'Oshxona-Win');
+  assert.equal(job.status, 'PENDING');
+});
+
 test('waiter SEND via hub queues local print when category printer set', async () => {
   const { importRestaurantBootstrap } = require('../electron/restaurant-offline/db/bootstrap.cjs');
 
