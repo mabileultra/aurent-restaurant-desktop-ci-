@@ -1,6 +1,6 @@
 /**
- * Derive separate Kitchen (print) vs Sync lanes for local-first UI.
- * Classic mode callers should not use this — return null when not local-first.
+ * Derive Kitchen (print) vs Sync lanes for local-first UI.
+ * Banner is only for problems / in-flight work — not a permanent Hub status strip.
  */
 
 /**
@@ -39,14 +39,21 @@ export function deriveLocalFirstLaneStatus({
 
   /** @type {'idle'|'waiting'|'synced'} */
   let sync = 'idle';
-  // Only real outbox backlog = waiting. `_localOnly` alone used to flash "Ожидает подключения"
-  // forever on waiter/cashier even when events already synced (or print went via relay).
   if (pendingOutbox > 0) {
     sync = 'waiting';
   } else if (localPrinted || localOnly) {
     sync = 'synced';
   }
 
-  const visible = kitchen !== 'idle' || sync !== 'idle' || pendingPrint > 0 || pendingOutbox > 0;
+  // Hide "Кухня — / Синк OK / Hub …" forever strip — only show real issues or queue.
+  const visible = kitchen === 'print_failed'
+    || kitchen === 'print_unknown'
+    || kitchen === 'print_pending'
+    || sync === 'waiting'
+    || pendingPrint > 0
+    || pendingOutbox > 0
+    || failedPrint > 0
+    || unknownPrint > 0;
+
   return { kitchen, sync, visible, pendingPrint, pendingOutbox, unknownPrint, failedPrint };
 }

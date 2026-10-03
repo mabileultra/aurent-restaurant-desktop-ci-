@@ -19,11 +19,19 @@ function modsKey(mods) {
   return mods.map((m) => String(typeof m === 'string' ? m : (m?.id ?? m?.name ?? ''))).sort().join(',');
 }
 
-function isMergeableOpenLine(item) {
+/** Same dish can bump qty even after kitchen send (extra unsent portion on that line). */
+function isMergeableLine(item) {
   if (!item) return false;
-  if (item.status === 'SENT' || item.status === 'CANCELLED') return false;
-  if (item.itemStatus === 'SENT_TO_KITCHEN' || item.itemStatus === 'CANCELLED') return false;
+  if (item.status === 'CANCELLED' || item.itemStatus === 'CANCELLED') return false;
   return true;
+}
+
+function sentBaseline(item) {
+  const qty = Number(item?.quantity) || 0;
+  const stored = Number(item?.sentQuantity);
+  if (Number.isFinite(stored) && stored >= 0) return Math.min(stored, qty);
+  if (item?.status === 'SENT' || item?.itemStatus === 'SENT_TO_KITCHEN') return qty;
+  return 0;
 }
 
 function toUiOrder(row) {
@@ -51,18 +59,19 @@ function toUiOrder(row) {
     items: items.map((i) => {
       const qty = Number(i.quantity) || 0;
       const unitPrice = Number(i.unitPrice) || 0;
+      const sent = sentBaseline(i);
       return {
         id: i.id,
         menuItemId: i.menuItemId,
         name: i.name,
         quantity: qty,
-        sentQuantity: i.status === 'SENT' ? qty : (Number(i.sentQuantity) || 0),
+        sentQuantity: sent,
         unitPrice,
         lineTotal: lineTotalOf(qty, unitPrice),
         itemStatus:
           i.status === 'CANCELLED' || i.itemStatus === 'CANCELLED'
             ? 'CANCELLED'
-            : i.status === 'SENT' || i.itemStatus === 'SENT_TO_KITCHEN'
+            : sent > 0
               ? 'SENT_TO_KITCHEN'
               : 'NEW',
         portionText: i.portionText || null,
@@ -184,9 +193,9 @@ export async function waiterAddItem(input = {}) {
   const unitPrice = Number(input.unitPrice) || 0;
   const wantMods = modsKey(modifiers);
 
-  // Same dish + note + mods on an unsent line → bump qty (not a new "page"/row).
+  // Same dish + note + mods → bump qty on that line (incl. after kitchen send).
   const mergeIdx = (order.items || []).findIndex((i) => (
-    isMergeableOpenLine(i)
+    isMergeableLine(i)
     && String(i.menuItemId || '') === String(menuItemId || '')
     && String(i.note || '') === String(note || '')
     && modsKey(i.modifiers) === wantMods
@@ -195,8 +204,17 @@ export async function waiterAddItem(input = {}) {
   if (mergeIdx >= 0) {
     const prev = order.items[mergeIdx];
     const nextQty = (Number(prev.quantity) || 0) + qty;
+    const sent = sentBaseline(prev);
     const items = order.items.map((i, idx) => (
-      idx === mergeIdx ? { ...i, quantity: nextQty } : i
+      idx === mergeIdx
+        ? {
+          ...i,
+          quantity: nextQty,
+          sentQuantity: sent,
+          // Keep SENT marker when anything already went to kitchen; extra qty is unsent.
+          status: sent > 0 ? 'SENT' : (i.status === 'SENT' ? 'SENT' : 'OPEN'),
+        }
+        : i
     ));
     const next = {
       ...order,
@@ -380,11 +398,11 @@ export async function waiterSendToKitchen(input = {}) {
   const pendingSnap = [];
   const pendingIds = [];
   let items = (order.items || []).map((i) => {
+    if (i.status === 'CANCELLED' || i.itemStatus === 'CANCELLED') return i;
     const qty = Number(i.quantity) || 0;
-    const sent = Number(i.sentQuantity) || 0;
-    const isOpen = i.status !== 'SENT' && i.status !== 'CANCELLED' && i.itemStatus !== 'CANCELLED';
+    const sent = sentBaseline(i);
     const left = qty - sent;
-    if (isOpen && left > 0) {
+    if (left > 0) {
       pendingIds.push(i.id);
       pendingSnap.push({
         id: i.id,

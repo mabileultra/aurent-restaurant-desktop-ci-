@@ -20,7 +20,7 @@ describe('deriveLocalFirstLaneStatus', () => {
     expect(lanes.sync).toBe('waiting');
   });
 
-  it('shows printed + synced when flags and queues clear', () => {
+  it('hides quiet printed+synced state (no permanent Hub strip)', () => {
     const lanes = deriveLocalFirstLaneStatus({
       localFirst: true,
       order: { _localPrinted: true },
@@ -28,6 +28,7 @@ describe('deriveLocalFirstLaneStatus', () => {
     });
     expect(lanes.kitchen).toBe('printed');
     expect(lanes.sync).toBe('synced');
+    expect(lanes.visible).toBe(false);
   });
 
   it('print pending while sync waiting', () => {
@@ -40,7 +41,7 @@ describe('deriveLocalFirstLaneStatus', () => {
     expect(lanes.sync).toBe('waiting');
   });
 
-  it('localOnly without pending outbox is synced (not false "waiting")', () => {
+  it('localOnly without pending outbox stays hidden', () => {
     const lanes = deriveLocalFirstLaneStatus({
       localFirst: true,
       order: { _localOnly: true, _localPrinted: false },
@@ -48,5 +49,6 @@ describe('deriveLocalFirstLaneStatus', () => {
     });
     expect(lanes.sync).toBe('synced');
     expect(lanes.kitchen).toBe('idle');
+    expect(lanes.visible).toBe(false);
   });
 });

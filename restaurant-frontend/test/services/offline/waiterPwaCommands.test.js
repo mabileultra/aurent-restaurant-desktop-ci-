@@ -157,6 +157,42 @@ describe('waiter PWA local commands', () => {
     expect(second.order.items[0].lineTotal).toBe(36000);
   });
 
+  it('merges same dish onto kitchen line instead of a new row at the bottom', async () => {
+    const opened = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 11,
+      tableLabel: 'T11',
+      guestCount: 1,
+    });
+    await waiterAddItem({
+      orderId: opened.orderId,
+      storeId: 1,
+      name: 'CHORTOQ 0.5 L',
+      quantity: 1,
+      unitPrice: 14000,
+      menuItemId: 'm-ch05',
+    });
+    await waiterSendToKitchen({
+      orderId: opened.orderId,
+      storeId: 1,
+      tableId: 11,
+      items: [{ name: 'CHORTOQ 0.5 L', qty: 1 }],
+    });
+    const again = await waiterAddItem({
+      orderId: opened.orderId,
+      storeId: 1,
+      name: 'CHORTOQ 0.5 L',
+      quantity: 1,
+      unitPrice: 14000,
+      menuItemId: 'm-ch05',
+    });
+    expect(again.merged).toBe(true);
+    expect(again.order.items).toHaveLength(1);
+    expect(again.order.items[0].quantity).toBe(2);
+    expect(again.order.items[0].sentQuantity).toBe(1);
+    expect(again.order.items[0].itemStatus).toBe('SENT_TO_KITCHEN');
+  });
+
   it('reuses open order on same table instead of stacking empties', async () => {
     const first = await waiterOpenOrder({
       storeId: 1,

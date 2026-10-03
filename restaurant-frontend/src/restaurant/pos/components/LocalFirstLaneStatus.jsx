@@ -43,12 +43,12 @@ function mark(ok) {
 }
 
 /**
- * Compact Kitchen vs Sync lanes — only when restaurant local-first is on.
+ * Local-first warning strip — only when print/sync needs attention.
+ * Hub URL lives in waiter profile / admin, not on every order.
  */
 export default function LocalFirstLaneStatus({ order, t }) {
   const localFirst = isRestaurantLocalFirstOn();
   const [queues, setQueues] = useState(null);
-  const [hubUrl, setHubUrl] = useState('');
 
   useEffect(() => {
     if (!localFirst) return undefined;
@@ -63,7 +63,6 @@ export default function LocalFirstLaneStatus({ order, t }) {
           failedPrintJobs: status?.failedPrintJobs ?? 0,
           pendingOutbox: status?.pendingOutbox ?? 0,
         });
-        setHubUrl(status?.hub?.url || '');
       } catch {
         if (!cancelled) setQueues(null);
       }
@@ -83,31 +82,23 @@ export default function LocalFirstLaneStatus({ order, t }) {
 
   const kitchenOk = lanes.kitchen === 'printed' || lanes.kitchen === 'print_pending';
   const kitchenBad = lanes.kitchen === 'print_failed' || lanes.kitchen === 'print_unknown';
-  // Hub up = station LAN ok; "waiting" is cloud outbox only — don't scare as offline.
-  const hubUp = Boolean(hubUrl);
-  const syncOk = lanes.sync === 'synced' || (hubUp && lanes.sync === 'waiting');
-  const syncBad = lanes.sync === 'waiting' && !hubUp;
-  const syncText = lanes.sync === 'waiting' && hubUp
-    ? t('rst.order.laneSyncHubOk', { defaultValue: 'Hub OK (облако ждёт)' })
-    : syncLabel(t, lanes.sync);
+  const syncOk = lanes.sync === 'synced';
+  const syncBad = lanes.sync === 'waiting';
 
   return (
-    <div className="rst-local-lanes" role="status" aria-live="polite">
-      <div className={`rst-local-lanes__row${kitchenBad ? ' is-warn' : ''}${kitchenOk ? ' is-ok' : ''}`}>
-        <span className="rst-local-lanes__mark">{mark(kitchenBad ? false : kitchenOk ? true : null)}</span>
-        <span className="rst-local-lanes__label">{t('rst.order.laneKitchen', { defaultValue: 'Кухня' })}</span>
-        <span className="rst-local-lanes__value">{kitchenLabel(t, lanes.kitchen)}</span>
-      </div>
-      <div className={`rst-local-lanes__row${syncBad ? ' is-warn' : ''}${syncOk ? ' is-ok' : ''}`}>
-        <span className="rst-local-lanes__mark">{mark(syncBad ? false : syncOk ? true : null)}</span>
-        <span className="rst-local-lanes__label">{t('rst.order.laneSync', { defaultValue: 'Синк' })}</span>
-        <span className="rst-local-lanes__value">{syncText}</span>
-      </div>
-      {hubUrl ? (
-        <div className="rst-local-lanes__row">
-          <span className="rst-local-lanes__mark">·</span>
-          <span className="rst-local-lanes__label">Hub</span>
-          <span className="rst-local-lanes__value" title={hubUrl}>{hubUrl}</span>
+    <div className="rst-local-lanes" role="status">
+      {lanes.kitchen !== 'idle' ? (
+        <div className={`rst-local-lanes__row${kitchenBad ? ' is-warn' : ''}${kitchenOk ? ' is-ok' : ''}`}>
+          <span className="rst-local-lanes__mark">{mark(kitchenBad ? false : kitchenOk ? true : null)}</span>
+          <span className="rst-local-lanes__label">{t('rst.order.laneKitchen', { defaultValue: 'Кухня' })}</span>
+          <span className="rst-local-lanes__value">{kitchenLabel(t, lanes.kitchen)}</span>
+        </div>
+      ) : null}
+      {lanes.sync === 'waiting' ? (
+        <div className={`rst-local-lanes__row${syncBad ? ' is-warn' : ''}${syncOk ? ' is-ok' : ''}`}>
+          <span className="rst-local-lanes__mark">{mark(syncBad ? false : syncOk ? true : null)}</span>
+          <span className="rst-local-lanes__label">{t('rst.order.laneSync', { defaultValue: 'Синк' })}</span>
+          <span className="rst-local-lanes__value">{syncLabel(t, lanes.sync)}</span>
         </div>
       ) : null}
     </div>
