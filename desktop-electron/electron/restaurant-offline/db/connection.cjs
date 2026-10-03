@@ -9,9 +9,9 @@ const { applyRestaurantOfflineSchema } = require('./migrate.cjs');
 const {
   resolveSqlWasmFile,
   openSqlJsDatabase,
-  persistSqlJsDatabase,
 } = require('../../offline/engine/sqlJsDatabase.cjs');
 const { resolveOfflineEngine, ENGINE_NATIVE } = require('../../offline/engine/offlineEngine');
+const { wrapSqlJsAsBetterApi } = require('./sqlJsBetterApi.cjs');
 
 let db = null;
 let dbPath = null;
@@ -33,61 +33,6 @@ function readUserOfflineConfig() {
     /* ignore */
   }
   return {};
-}
-
-function wrapSqlJsAsBetterApi(sqlDb, filePath) {
-  const persist = () => {
-    try {
-      persistSqlJsDatabase(sqlDb, filePath);
-    } catch (err) {
-      console.error('[rst-offline-db] persist failed:', err?.message || err);
-    }
-  };
-  return {
-    __engine: 'sqljs',
-    exec(sql) {
-      sqlDb.exec(sql);
-      persist();
-    },
-    prepare(sql) {
-      return {
-        run(...params) {
-          sqlDb.run(sql, params);
-          persist();
-          return { changes: sqlDb.getRowsModified() };
-        },
-        get(...params) {
-          const stmt = sqlDb.prepare(sql);
-          try {
-            stmt.bind(params);
-            if (stmt.step()) return stmt.getAsObject();
-            return undefined;
-          } finally {
-            stmt.free();
-          }
-        },
-        all(...params) {
-          const stmt = sqlDb.prepare(sql);
-          const rows = [];
-          try {
-            stmt.bind(params);
-            while (stmt.step()) rows.push(stmt.getAsObject());
-            return rows;
-          } finally {
-            stmt.free();
-          }
-        },
-      };
-    },
-    close() {
-      try {
-        persist();
-        sqlDb.close();
-      } catch {
-        /* ignore */
-      }
-    },
-  };
 }
 
 function tryOpenNative(file) {
