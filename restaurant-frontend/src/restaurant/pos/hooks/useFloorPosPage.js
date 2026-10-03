@@ -31,6 +31,7 @@ import {
   rstOfflineGetOrder,
   rstOfflineListMenu,
   rstOfflineGetFloor,
+  rstOfflineOverlayFloor,
   rstOfflineSaveShift,
   rstOfflineGetShift,
   rstOfflineListRoster,
@@ -113,20 +114,25 @@ export function useFloorPosPage() {
     queryKey: ['rst-floor', storeId],
     queryFn: async () => {
       const localFirst = isRestaurantLocalFirstOn();
+      const withLocalOrders = async (snap) => {
+        if (!snap?.halls?.length) return snap;
+        return rstOfflineOverlayFloor(storeId, snap).catch(() => snap);
+      };
       if (localFirst) {
         const local = await rstOfflineGetFloor(storeId).catch(() => null);
-        if (local?.halls?.length) return local;
+        if (local?.halls?.length) return withLocalOrders(local);
         const hub = await fetchHubSnapshot().catch(() => null);
-        if (hub?.floor?.halls?.length) return hub.floor;
+        if (hub?.floor?.halls?.length) return withLocalOrders(hub.floor);
       }
       try {
-        return await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
+        const server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
+        return withLocalOrders(server);
       } catch (err) {
         if (localFirst) {
           const local = await rstOfflineGetFloor(storeId).catch(() => null);
-          if (local?.halls?.length) return local;
+          if (local?.halls?.length) return withLocalOrders(local);
           const hub = await fetchHubSnapshot().catch(() => null);
-          if (hub?.floor?.halls?.length) return hub.floor;
+          if (hub?.floor?.halls?.length) return withLocalOrders(hub.floor);
         }
         throw err;
       }

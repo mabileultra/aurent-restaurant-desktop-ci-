@@ -3,6 +3,7 @@ import {
   rstOfflineSendToKitchen,
 } from '../../../services/offline/restaurantOfflineBridge';
 import { buildLocalKitchenSendGroups } from './buildLocalKitchenSendGroups';
+import { listDesktopPrintersCached } from './desktopPrinters';
 
 function pendingItemsFromOrder(order) {
   return (order?.items || [])
@@ -29,8 +30,17 @@ function pendingItemsFromOrder(order) {
     .filter(Boolean);
 }
 
+function localPrinterSet(list) {
+  return new Set(
+    (Array.isArray(list) ? list : [])
+      .map((p) => String(p?.name || p).trim().toLowerCase())
+      .filter(Boolean),
+  );
+}
+
 /**
- * Local-first kitchen send: desktop → SQLite+print; waiter PWA → IDB+server print on sync.
+ * Local-first kitchen send: print on this PC only when Windows has the printer;
+ * otherwise printOnServer so the cashier/hub station claims classic relay jobs.
  */
 export async function sendKitchenLocalFirst({
   order,
@@ -67,7 +77,8 @@ export async function sendKitchenLocalFirst({
     return {
       results: [res],
       printers: [],
-      printFailed: true,
+      printFailed: false,
+      needsRelay: true,
       order: res?.order,
     };
   }
@@ -76,25 +87,41 @@ export async function sendKitchenLocalFirst({
     throw new Error('no_pending_items');
   }
 
+  let windowsPrinters = [];
+  try {
+    windowsPrinters = await listDesktopPrintersCached();
+  } catch {
+    windowsPrinters = [];
+  }
+  const localNames = localPrinterSet(windowsPrinters);
+
   const results = [];
+  let needsRelay = false;
   for (const group of groups) {
+    const name = String(group.printerName || '').trim();
+    const onThisPc = name && localNames.has(name.toLowerCase());
+    const printOnServer = !onThisPc;
+    if (printOnServer) needsRelay = true;
     const res = await rstOfflineSendToKitchen({
       storeId,
       tableId: order.tableId != null ? String(order.tableId) : null,
       tableLabel: tableLabel || order.tableCode || order.tableName || '',
       orderId: String(order.id),
-      printerName: group.printerName || '',
+      printerName: name,
       station: group.station,
       categoryName: group.categoryName,
       items: group.items,
       waiterId: order.waiterUserId != null ? String(order.waiterUserId) : null,
+      printOnServer,
     });
     results.push(res);
   }
-  const printFailed = results.some((r) => r?.printOk === false);
+  // Only real local spool failures — missing printer on a satellite is relay, not failure.
+  const printFailed = results.some((r) => r?.printOk === false && r?.printOnServer !== true);
   return {
     results,
     printers: groups.map((g) => g.printerName).filter(Boolean),
     printFailed,
+    needsRelay,
   };
 }

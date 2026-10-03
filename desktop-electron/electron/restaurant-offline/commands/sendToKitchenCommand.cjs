@@ -107,32 +107,51 @@ function sendToKitchenCommand(db, input, deps = {}) {
       tableLabel: input.tableLabel,
       items: snapItems,
     };
-    // Soft-fail: missing printer still commits order + outbox; print_job = FAILED.
-    const printOk = Boolean(printerName);
-    const job = printOk
-      ? prints.insertPending(jobInput)
-      : prints.insertFailed(jobInput, 'kitchen_printer_not_configured');
+
+    // Satellite POS (no Windows printer here): mark sent + outbox; server/hub creates
+    // classic print jobs for the PC that actually has Shashlik/Oshxona/…
+    const printOnServer = input.printOnServer === true;
+    let job = null;
+    let printOk = true;
+    let printError = null;
+    if (printOnServer) {
+      printOk = true;
+    } else if (printerName) {
+      job = prints.insertPending(jobInput);
+    } else {
+      // Soft-fail: missing printer still commits order + outbox; print_job = FAILED.
+      job = prints.insertFailed(jobInput, 'kitchen_printer_not_configured');
+      printOk = false;
+      printError = 'kitchen_printer_not_configured';
+    }
 
     const event = outbox.enqueue({
       deviceId,
       eventType: 'ORDER_SEND_KITCHEN',
       payload: {
         orderId,
-        printJobId: job.id,
+        printJobId: job?.id || null,
         itemIds: savedItems.map((i) => i.id),
         storeId: input.storeId,
         tableId: input.tableId || null,
+        tableLabel: input.tableLabel || null,
+        printerName: printerName || null,
+        station: input.station || null,
+        categoryName: input.categoryName || null,
+        items: snapItems,
+        printOnServer: printOnServer || undefined,
       },
     });
 
     return {
       orderId,
       itemIds: savedItems.map((i) => i.id),
-      printJobId: job.id,
+      printJobId: job?.id || null,
       outboxId: event.id,
       clientEventId: event.clientEventId,
       printOk,
-      printError: printOk ? null : 'kitchen_printer_not_configured',
+      printError,
+      printOnServer,
     };
   });
 }

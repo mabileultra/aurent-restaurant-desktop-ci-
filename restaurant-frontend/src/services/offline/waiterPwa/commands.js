@@ -10,6 +10,22 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function lineTotalOf(qty, unitPrice) {
+  return Math.round((Number(qty) || 0) * (Number(unitPrice) || 0) * 100) / 100;
+}
+
+function modsKey(mods) {
+  if (!Array.isArray(mods) || !mods.length) return '';
+  return mods.map((m) => String(typeof m === 'string' ? m : (m?.id ?? m?.name ?? ''))).sort().join(',');
+}
+
+function isMergeableOpenLine(item) {
+  if (!item) return false;
+  if (item.status === 'SENT' || item.status === 'CANCELLED') return false;
+  if (item.itemStatus === 'SENT_TO_KITCHEN' || item.itemStatus === 'CANCELLED') return false;
+  return true;
+}
+
 function toUiOrder(row) {
   if (!row) return null;
   const items = Array.isArray(row.items) ? row.items : [];
@@ -24,7 +40,7 @@ function toUiOrder(row) {
     adultCount: row.adultCount ?? row.guestCount ?? 1,
     childrenCount: row.childrenCount ?? 0,
     subtotal: items.reduce(
-      (s, i) => s + (Number(i.unitPrice) || 0) * (Number(i.quantity) || 0),
+      (s, i) => s + lineTotalOf(i.quantity, i.unitPrice),
       0,
     ),
     discountAmount: row.discountAmount || 0,
@@ -32,25 +48,30 @@ function toUiOrder(row) {
     openedAt: row.openedAt,
     _local: true,
     _waiterPwa: true,
-    items: items.map((i) => ({
-      id: i.id,
-      menuItemId: i.menuItemId,
-      name: i.name,
-      quantity: i.quantity,
-      sentQuantity: i.status === 'SENT' ? i.quantity : (Number(i.sentQuantity) || 0),
-      unitPrice: i.unitPrice,
-      itemStatus:
-        i.status === 'CANCELLED' || i.itemStatus === 'CANCELLED'
-          ? 'CANCELLED'
-          : i.status === 'SENT' || i.itemStatus === 'SENT_TO_KITCHEN'
-            ? 'SENT_TO_KITCHEN'
-            : 'NEW',
-      portionText: i.portionText || null,
-      note: i.note || null,
-      modifiers: i.modifiers || [],
-      stationId: i.stationId,
-      categoryId: i.categoryId,
-    })),
+    items: items.map((i) => {
+      const qty = Number(i.quantity) || 0;
+      const unitPrice = Number(i.unitPrice) || 0;
+      return {
+        id: i.id,
+        menuItemId: i.menuItemId,
+        name: i.name,
+        quantity: qty,
+        sentQuantity: i.status === 'SENT' ? qty : (Number(i.sentQuantity) || 0),
+        unitPrice,
+        lineTotal: lineTotalOf(qty, unitPrice),
+        itemStatus:
+          i.status === 'CANCELLED' || i.itemStatus === 'CANCELLED'
+            ? 'CANCELLED'
+            : i.status === 'SENT' || i.itemStatus === 'SENT_TO_KITCHEN'
+              ? 'SENT_TO_KITCHEN'
+              : 'NEW',
+        portionText: i.portionText || null,
+        note: i.note || null,
+        modifiers: i.modifiers || [],
+        stationId: i.stationId,
+        categoryId: i.categoryId,
+      };
+    }),
   };
 }
 
@@ -156,15 +177,54 @@ export async function waiterAddItem(input = {}) {
   const name = String(input.name || '').trim();
   if (!name) throw new Error('item_name_required');
 
+  const menuItemId = input.menuItemId != null ? String(input.menuItemId) : null;
+  const note = input.note || null;
+  const modifiers = input.modifiers || [];
+  const unitPrice = Number(input.unitPrice) || 0;
+  const wantMods = modsKey(modifiers);
+
+  // Same dish + note + mods on an unsent line → bump qty (not a new "page"/row).
+  const mergeIdx = (order.items || []).findIndex((i) => (
+    isMergeableOpenLine(i)
+    && String(i.menuItemId || '') === String(menuItemId || '')
+    && String(i.note || '') === String(note || '')
+    && modsKey(i.modifiers) === wantMods
+    && String(i.name || '') === name
+  ));
+  if (mergeIdx >= 0) {
+    const prev = order.items[mergeIdx];
+    const nextQty = (Number(prev.quantity) || 0) + qty;
+    const items = order.items.map((i, idx) => (
+      idx === mergeIdx ? { ...i, quantity: nextQty } : i
+    ));
+    const next = {
+      ...order,
+      status: order.status === 'OPEN' ? 'ACTIVE' : order.status,
+      updatedAt: nowIso(),
+      items,
+    };
+    const event = enqueueOutbox(deviceId, 'ORDER_UPDATE_ITEM', {
+      orderId,
+      itemId: prev.id,
+      quantity: nextQty,
+      note,
+    });
+    await idbWriteAll([
+      { type: 'put', store: 'orders', value: next },
+      { type: 'put', store: 'outbox', value: event },
+    ]);
+    return { orderId, itemId: prev.id, order: toUiOrder(next), outboxId: event.id, merged: true };
+  }
+
   const itemId = newId();
   const item = {
     id: itemId,
-    menuItemId: input.menuItemId != null ? String(input.menuItemId) : null,
+    menuItemId,
     name,
     quantity: qty,
-    unitPrice: Number(input.unitPrice) || 0,
-    note: input.note || null,
-    modifiers: input.modifiers || [],
+    unitPrice,
+    note,
+    modifiers,
     status: 'OPEN',
     sentQuantity: 0,
     stationId: input.stationId,
@@ -382,8 +442,9 @@ export async function waiterSendToKitchen(input = {}) {
     orderId,
     order: toUiOrder(next),
     outboxId: event.id,
-    printOk: false,
-    printError: 'waiter_pwa_server_print',
+    printOk: true,
+    printOnServer: true,
+    printError: null,
   };
 }
 
@@ -391,4 +452,15 @@ export async function waiterGetOrder(orderId) {
   if (!orderId) return null;
   const row = await idbGet('orders', String(orderId));
   return toUiOrder(row);
+}
+
+/** Open/active/billing local checks for floor overlay (waiter PWA). */
+export async function waiterListOpenOrders(storeId) {
+  const sid = storeId == null ? null : Number(storeId);
+  const all = await idbGetAll('orders');
+  return all.filter((row) => {
+    if (sid != null && Number(row.storeId) !== sid) return false;
+    const st = String(row.status || '');
+    return st === 'OPEN' || st === 'ACTIVE' || st === 'BILLING';
+  });
 }

@@ -95,3 +95,35 @@ test('C3 soft-fail: missing printer still commits order+outbox, print FAILED', a
   );
   db.close();
 });
+
+test('C3 printOnServer skips local print_job (satellite → cashier relay)', async () => {
+  const db = await readyDb();
+  let n = 0;
+  const result = sendToKitchenCommand(
+    db,
+    {
+      deviceId: 'POS-MONO',
+      storeId: 1,
+      tableId: 'tbl-1',
+      printerName: 'Shashlik',
+      printOnServer: true,
+      items: [{ name: 'Shashlik', qty: 1, unitPrice: 25000 }],
+    },
+    {
+      idFactory: () => `c3-relay-${++n}`,
+      clock: () => '2026-10-03T02:00:00.000Z',
+      uuid: () => 'evt-c3-relay',
+    },
+  );
+
+  assert.equal(result.printOk, true);
+  assert.equal(result.printOnServer, true);
+  assert.equal(result.printJobId, null);
+  assert.equal(db.prepare(`SELECT COUNT(*) AS c FROM print_jobs`).get().c, 0);
+  const payload = JSON.parse(
+    db.prepare(`SELECT payload_json FROM outbox WHERE id = ?`).get(result.outboxId).payload_json,
+  );
+  assert.equal(payload.printOnServer, true);
+  assert.equal(payload.printerName, 'Shashlik');
+  db.close();
+});

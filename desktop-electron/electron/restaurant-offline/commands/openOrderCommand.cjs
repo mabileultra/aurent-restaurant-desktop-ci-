@@ -131,6 +131,9 @@ function toUiOrder(db, orderId) {
         quantity: i.quantity,
         sentQuantity: i.status === 'SENT' ? i.quantity : 0,
         unitPrice: i.unit_price,
+        lineTotal: Math.round(
+          (Number(i.quantity) || 0) * (Number(i.unit_price) || 0) * 100,
+        ) / 100,
         itemStatus:
           i.status === 'CANCELLED'
             ? 'CANCELLED'

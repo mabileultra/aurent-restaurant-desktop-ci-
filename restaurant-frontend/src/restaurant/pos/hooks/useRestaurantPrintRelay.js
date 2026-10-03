@@ -220,7 +220,14 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
           .map((p) => String(p?.name || p).trim().toLowerCase())
           .filter(Boolean));
         if (!local.size) return;
-        for (const category of res?.data || []) {
+        const categories = res?.data || [];
+        // Satellite POS (no station printers on this Windows) — cashier/hub prints via relay.
+        const ownsAny = categories.some((category) => {
+          const printer = String(category?.printPrinterName || '').trim();
+          return Boolean(category?.autoPrint && printer && local.has(printer.toLowerCase()));
+        });
+        if (!ownsAny) return;
+        for (const category of categories) {
           const printer = String(category?.printPrinterName || '').trim();
           if (!category?.autoPrint || !printer || local.has(printer.toLowerCase())) continue;
           const key = `${storeId}:category-printer-missing:${printer.toLowerCase()}`;

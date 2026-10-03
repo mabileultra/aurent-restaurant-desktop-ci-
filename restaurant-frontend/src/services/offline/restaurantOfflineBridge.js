@@ -4,6 +4,7 @@ import {
   isWaiterPwaLocalFirstEligible,
   waiterPwaBridge,
 } from './waiterPwa/bridge';
+import { mergeLocalOrdersIntoFloor } from '../../restaurant/pos/utils/mergeLocalOrdersIntoFloor';
 
 function desk() {
   return typeof window !== 'undefined' ? window.desktopCashier : null;
@@ -131,6 +132,13 @@ export async function rstOfflineGetModifiers(menuItemId) {
 export async function rstOfflineGetFloor(storeId) {
   if (isElectronOfflineBridge()) return desk().rstOfflineGetFloor(storeId);
   return { storeId: null, halls: [] };
+}
+
+/** Merge waiter IDB open checks onto server/hub floor (satellite phone). */
+export async function rstOfflineOverlayFloor(storeId, snapshot) {
+  if (!usePwa() || !snapshot?.halls?.length) return snapshot;
+  const locals = await waiterPwaBridge.listOpenOrders(storeId).catch(() => []);
+  return mergeLocalOrdersIntoFloor(snapshot, locals);
 }
 
 export async function rstOfflinePatchOrderMeta(payload) {

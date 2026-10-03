@@ -325,9 +325,8 @@ export function useFloorPosMutations(deps) {
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
       setPendingWeightItem?.(null);
-      if (ctx?.wasBilling) {
-        invalidateFloor();
-      }
+      // Always refresh floor: waiter local orders must paint OCCUPIED before WAN sync.
+      invalidateFloor();
       flushRestaurantPrintRelay();
     },
     onError: (err, vars) => {
@@ -478,11 +477,16 @@ export function useFloorPosMutations(deps) {
           categories,
           tableLabel: openTable?.code || order?.tableCode,
         });
-        // Do not await WAN — outbox SyncWorker mirrors; UI must unblock immediately.
-        void rstOrderApi.sendToKitchen(orderId).catch(() => null);
+        const needsRelay = Boolean(local?.needsRelay);
+        // Satellite / missing Windows printers: outbox printOnServer creates relay jobs.
+        // Do not also call classic send — that would double-print on the cashier.
+        if (!needsRelay) {
+          void rstOrderApi.sendToKitchen(orderId).catch(() => null);
+        }
         logLocalFirst('Кухня: local print + outbox', {
           orderId,
           printFailed: Boolean(local?.printFailed),
+          needsRelay,
         });
         const items = (order?.items || []).map((item) => ({
           ...item,
@@ -493,9 +497,11 @@ export function useFloorPosMutations(deps) {
           ...(local?.order || order),
           id: order?.id ?? orderId,
           items,
-          _localPrinted: true,
+          // Only skip relay flush when this PC fully printed every station slip.
+          _localPrinted: !needsRelay && !local?.printFailed,
           _localOnly: true,
           _printFailed: Boolean(local?.printFailed),
+          _needsRelay: needsRelay,
         };
       }
       const res = await rstOrderApi.sendToKitchen(orderId);
@@ -504,15 +510,18 @@ export function useFloorPosMutations(deps) {
     onSuccess: (res) => {
       setOrderData(res);
       toast.success(t('rst.order.sentKitchen'));
-      if (res?._printFailed) {
+      if (res?._printFailed && !res?._needsRelay) {
         toast.error(t('rst.order.savedNotPrinted', {
           defaultValue: 'Заказ сохранён, но не напечатан: принтер кухни не настроен',
         }));
       }
       // Local-first already printed on this PC — do not claim server kitchen slips again.
+      // Satellite needsRelay: kick relay so cashier/hub can claim as soon as jobs land.
       if (!res?._localPrinted) {
         flushRestaurantPrintRelay();
       }
+      // Waiter phone: keep table OCCUPIED on floor after send (local overlay).
+      invalidateFloor();
     },
     onError: (err) => {
       const msg = String(err?.message || '');

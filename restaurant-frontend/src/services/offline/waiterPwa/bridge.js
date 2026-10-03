@@ -12,6 +12,7 @@ import {
   waiterPayOrder,
   waiterSendToKitchen,
   waiterGetOrder,
+  waiterListOpenOrders,
 } from './commands';
 import { tickWaiterOutbox, countPendingOutbox } from './outboxSync';
 import { idbPut } from './idb';
@@ -94,6 +95,7 @@ export const waiterPwaBridge = {
   payOrder: waiterPayOrder,
   sendToKitchen: waiterSendToKitchen,
   getOrder: waiterGetOrder,
+  listOpenOrders: waiterListOpenOrders,
   getStatus: waiterPwaGetStatus,
   setSession: waiterPwaSetSession,
   importBootstrap: waiterPwaImportBootstrap,

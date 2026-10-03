@@ -71,15 +71,53 @@ function addOrderItemCommand(db, input, deps = {}) {
       throw new Error(`order_not_active:${existing.status}`);
     }
 
+    const menuItemId = input.menuItemId != null ? String(input.menuItemId) : null;
+    const note = input.note || null;
+    const modifiers = input.modifiers || null;
+    const modsJson = modifiers != null ? JSON.stringify(modifiers) : null;
+    const unitPrice = Number(input.unitPrice) || 0;
+
+    const openRows = items.listByOrder(orderId).filter((row) => row.status === 'OPEN');
+    const mergeRow = openRows.find((row) => (
+      String(row.menu_item_id || '') === String(menuItemId || '')
+      && String(row.name || '') === name
+      && String(row.note || '') === String(note || '')
+      && String(row.modifiers_json || '') === String(modsJson || '')
+    ));
+
+    if (mergeRow) {
+      const nextQty = (Number(mergeRow.quantity) || 0) + quantity;
+      items.updateQuantity(mergeRow.id, nextQty, note);
+      const event = outbox.enqueue({
+        deviceId,
+        eventType: 'ORDER_UPDATE_ITEM',
+        clientEventId: input.clientEventId || null,
+        payload: {
+          orderId,
+          itemId: mergeRow.id,
+          quantity: nextQty,
+          note,
+        },
+      });
+      return {
+        orderId,
+        itemId: mergeRow.id,
+        outboxId: event.id,
+        clientEventId: event.clientEventId,
+        merged: true,
+        order: toUiOrder(db, orderId),
+      };
+    }
+
     const item = items.insert({
       orderId,
       name,
       quantity,
-      unitPrice: Number(input.unitPrice) || 0,
-      menuItemId: input.menuItemId != null ? String(input.menuItemId) : null,
+      unitPrice,
+      menuItemId,
       portionText: input.portionText || null,
-      note: input.note || null,
-      modifiers: input.modifiers || null,
+      note,
+      modifiers,
       status: 'OPEN',
     });
 
@@ -93,9 +131,9 @@ function addOrderItemCommand(db, input, deps = {}) {
         menuItemId: item.menuItemId,
         name,
         quantity,
-        unitPrice: Number(input.unitPrice) || 0,
-        note: input.note || null,
-        modifiers: input.modifiers || [],
+        unitPrice,
+        note,
+        modifiers: modifiers || [],
       },
     });
 
