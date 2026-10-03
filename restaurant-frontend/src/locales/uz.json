@@ -848,6 +848,7 @@
       "updateReadyTitle": "Yangilanish {{version}} tayyor",
       "updateReadyBody": "Yangi versiyani qo‘llash uchun kassani qayta ishga tushiring.",
       "updateRestartNow": "Qayta ishga tushirish",
+      "updateRestartFailed": "Qayta ishga tushirilmadi. Dasturni qo‘lda yoping (⌘Q) va qayta oching.",
       "updateRetry": "Qayta urinish",
       "updateErrorTitle": "Kassani yangilab bo‘lmadi",
       "updateErrorGeneric": "Yana urinib ko‘ring. Takrorlansa — qo‘lda o‘rnating.",

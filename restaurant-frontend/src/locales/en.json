@@ -848,6 +848,7 @@
       "updateReadyTitle": "Update {{version}} ready",
       "updateReadyBody": "Restart the cashier to apply the new version.",
       "updateRestartNow": "Restart now",
+      "updateRestartFailed": "Could not restart. Quit the app manually and open it again.",
       "updateRetry": "Retry",
       "updateErrorTitle": "Could not update the cashier",
       "updateErrorGeneric": "Try again. If it keeps failing, install manually.",
