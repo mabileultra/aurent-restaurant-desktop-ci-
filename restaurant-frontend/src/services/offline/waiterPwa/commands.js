@@ -3,7 +3,7 @@
  * Kitchen print happens on server when outbox ORDER_SEND_KITCHEN has printOnServer.
  */
 
-import { idbGet, idbWriteAll, newId } from './idb';
+import { idbGet, idbGetAll, idbWriteAll, newId } from './idb';
 import { getWaiterDeviceId } from './deviceId';
 
 function nowIso() {
@@ -73,6 +73,17 @@ function enqueueOutbox(deviceId, eventType, payload, clientEventId = null) {
 
 export async function waiterOpenOrder(input = {}) {
   const deviceId = await getWaiterDeviceId();
+  const tableKey = input.tableId != null ? String(input.tableId) : null;
+  if (tableKey) {
+    const all = await idbGetAll('orders');
+    const openOnTable = all.find((row) => (
+      String(row.tableId || '') === tableKey
+      && (row.status === 'OPEN' || row.status === 'ACTIVE' || row.status === 'BILLING')
+    ));
+    if (openOnTable) {
+      return { orderId: openOnTable.id, order: toUiOrder(openOnTable), outboxId: null, reused: true };
+    }
+  }
   const orderId = input.orderId ? String(input.orderId) : newId();
   const existing = await idbGet('orders', orderId);
   if (existing) {

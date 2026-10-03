@@ -109,7 +109,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                       AND status = 'PENDING'
                       AND created_at > :since
                       AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
-                      AND lower(coalesce(payload::json->>'printerName', '')) = printer.name
+                      AND lower(coalesce(CAST(payload AS json)->>'printerName', '')) = printer.name
                     ORDER BY created_at ASC
                     LIMIT :perLane
                     FOR UPDATE SKIP LOCKED

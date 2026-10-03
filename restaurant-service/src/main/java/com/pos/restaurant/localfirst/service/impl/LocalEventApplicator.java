@@ -95,6 +95,14 @@ public class LocalEventApplicator {
             if (table != null && !storeId.equals(table.getStoreId())) {
                 table = null;
             }
+            // Phone outbox can spam ORDER_OPEN with new UUIDs; do not stack empty checks on one table.
+            if (table != null && orderRepository.existsByTableIdAndStatusIn(
+                tableId,
+                List.of(OrderStatus.OPEN, OrderStatus.BILLING)
+            )) {
+                log.info("local-first ORDER_OPEN skipped — table {} already has open order", tableId);
+                return;
+            }
         }
 
         int guestCount = Math.max(1, intOr(payload, "guestCount", 1));
