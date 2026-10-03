@@ -20,8 +20,11 @@ function readRestaurantLocalFirstFlag() {
 
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
+  // Snapshot at load (compat). Prefer *Flag() after LF toggle — booleans freeze at expose.
   offlineFirst: readOfflineFirstFlag(),
   restaurantLocalFirst: readRestaurantLocalFirstFlag(),
+  offlineFirstFlag: () => readOfflineFirstFlag(),
+  restaurantLocalFirstFlag: () => readRestaurantLocalFirstFlag(),
 
   getApiBaseUrl: () => invoke('desktop:getApiBaseUrl'),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),

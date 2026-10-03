@@ -62,23 +62,30 @@ function upsertOrder(db, order, storeId, at) {
   const ins = db.prepare(
     `INSERT INTO order_items(
        id, order_id, menu_item_id, name, quantity, unit_price, status,
-       portion_text, note, modifiers_json, created_at, updated_at
-     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       portion_text, note, modifiers_json, sent_quantity, created_at, updated_at
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   );
   for (const it of items) {
     const itemId = String(it.id || '').trim();
     if (!itemId) continue;
+    const qty = Number(it.quantity) || 1;
+    const status = String(it.status || 'OPEN');
+    const storedSent = Number(it.sentQuantity ?? it.sent_quantity);
+    const sentQuantity = Number.isFinite(storedSent) && storedSent >= 0
+      ? Math.min(storedSent, qty)
+      : (status === 'SENT' ? qty : 0);
     ins.run(
       itemId,
       id,
       it.menuItemId != null ? String(it.menuItemId) : null,
       String(it.name || ''),
-      Number(it.quantity) || 1,
+      qty,
       Number(it.unitPrice) || 0,
-      String(it.status || 'OPEN'),
+      status,
       it.portionText || null,
       it.note || null,
       it.modifiers != null ? JSON.stringify(it.modifiers) : null,
+      sentQuantity,
       it.createdAt || at,
       it.updatedAt || at,
     );

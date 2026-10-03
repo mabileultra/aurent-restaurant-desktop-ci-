@@ -157,6 +157,33 @@ describe('waiter PWA local commands', () => {
     expect(second.order.items[0].lineTotal).toBe(36000);
   });
 
+  it('ADD outbox carries tableId+storeId so server can materialize if OPEN was skipped', async () => {
+    const opened = await waiterOpenOrder({
+      storeId: 55,
+      tableId: 13,
+      tableLabel: 'T13',
+      guestCount: 1,
+      forceNew: true,
+    });
+    const added = await waiterAddItem({
+      orderId: opened.orderId,
+      storeId: 55,
+      name: 'CHORTOQ 0.5 L',
+      quantity: 1,
+      unitPrice: 14000,
+      menuItemId: 'm-ch05',
+    });
+    const { idbGetAll } = await import('../../../src/services/offline/waiterPwa/idb');
+    const outbox = await idbGetAll('outbox');
+    const add = outbox.find((e) => (
+      e.eventType === 'ORDER_ADD_ITEM' && String(e.payload?.orderId) === String(opened.orderId)
+    ));
+    expect(added.itemId).toBeTruthy();
+    expect(add).toBeTruthy();
+    expect(String(add.payload.tableId)).toBe('13');
+    expect(Number(add.payload.storeId)).toBe(55);
+  });
+
   it('merges same dish onto kitchen line instead of a new row at the bottom', async () => {
     const opened = await waiterOpenOrder({
       storeId: 1,

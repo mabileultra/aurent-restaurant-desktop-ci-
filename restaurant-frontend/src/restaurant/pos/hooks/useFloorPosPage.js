@@ -224,14 +224,14 @@ export function useFloorPosPage() {
     queryFn: async () => {
       const localFirst = isRestaurantLocalFirstOn();
       if (localFirst) {
-        const local = await rstOfflineGetOrder(activeOrderId);
+        const local = await rstOfflineGetOrder(activeOrderId, { storeId });
         if (local) return local;
       }
       try {
         return await rstOrderApi.get(activeOrderId).then((r) => r.data);
       } catch (err) {
         if (localFirst) {
-          const local = await rstOfflineGetOrder(activeOrderId);
+          const local = await rstOfflineGetOrder(activeOrderId, { storeId });
           if (local) return local;
         }
         throw err;

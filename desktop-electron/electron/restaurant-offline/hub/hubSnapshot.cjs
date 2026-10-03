@@ -27,19 +27,30 @@ function listOpenOrdersWithItems(db, storeId) {
   );
   return orders.map((o) => {
     const meta = parseJson(o.payload_json);
-    const items = itemStmt.all(o.id).map((it) => ({
-      id: it.id,
-      menuItemId: it.menu_item_id,
-      name: it.name,
-      quantity: it.quantity,
-      unitPrice: it.unit_price,
-      status: it.status,
-      note: it.note,
-      modifiers: it.modifiers_json ? parseJson(it.modifiers_json) : null,
-      portionText: it.portion_text,
-      createdAt: it.created_at,
-      updatedAt: it.updated_at,
-    }));
+    const items = itemStmt.all(o.id).map((it) => {
+      const qty = Number(it.quantity) || 0;
+      const storedSent = Number(it.sent_quantity);
+      const sentQuantity = Number.isFinite(storedSent) && storedSent >= 0
+        ? Math.min(storedSent, qty)
+        : (it.status === 'SENT' ? qty : 0);
+      return {
+        id: it.id,
+        menuItemId: it.menu_item_id,
+        name: it.name,
+        quantity: qty,
+        unitPrice: it.unit_price,
+        status: it.status,
+        sentQuantity,
+        note: it.note,
+        modifiers: it.modifiers_json ? parseJson(it.modifiers_json) : null,
+        portionText: it.portion_text,
+        createdAt: it.created_at,
+        updatedAt: it.updated_at,
+      };
+    });
+    const subtotal = items.reduce((s, it) => (
+      it.status === 'CANCELLED' ? s : s + (Number(it.quantity) || 0) * (Number(it.unitPrice) || 0)
+    ), 0);
     return {
       id: o.id,
       storeId: o.store_id,
@@ -50,6 +61,7 @@ function listOpenOrdersWithItems(db, storeId) {
       waiterName: o.waiter_name,
       openedAt: o.opened_at,
       updatedAt: o.updated_at,
+      subtotal,
       payload: meta,
       items,
     };

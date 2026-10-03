@@ -84,8 +84,24 @@ public class LocalEventApplicator {
     private void applyOrderOpen(Integer companyId, Integer storeId, JsonNode payload) {
         UUID orderId = parseUuid(text(payload, "orderId"));
         if (orderId == null) return;
-        if (orderRepository.findById(orderId).isPresent()) {
-            return;
+        ensureOrder(companyId, storeId, orderId, payload, true);
+    }
+
+    /**
+     * Create server order for a client UUID. Never skip because the table already has another
+     * open check — that caused ACCEPTED outbox + silent "order missing" on every ADD, so
+     * desktop/cloud floor never saw monoblock punches.
+     */
+    private FloorOrder ensureOrder(
+        Integer companyId,
+        Integer storeId,
+        UUID orderId,
+        JsonNode payload,
+        boolean logOpen
+    ) {
+        Optional<FloorOrder> existing = orderRepository.findById(orderId);
+        if (existing.isPresent()) {
+            return existing.get();
         }
 
         Integer tableId = parseInt(text(payload, "tableId"));
@@ -94,14 +110,6 @@ public class LocalEventApplicator {
             table = tableRepository.findByIdAndCompanyId(tableId, companyId).orElse(null);
             if (table != null && !storeId.equals(table.getStoreId())) {
                 table = null;
-            }
-            // Phone outbox can spam ORDER_OPEN with new UUIDs; do not stack empty checks on one table.
-            if (table != null && orderRepository.existsByTableIdAndStatusIn(
-                tableId,
-                List.of(OrderStatus.OPEN, OrderStatus.BILLING)
-            )) {
-                log.info("local-first ORDER_OPEN skipped — table {} already has open order", tableId);
-                return;
             }
         }
 
@@ -113,7 +121,12 @@ public class LocalEventApplicator {
         }
 
         UUID waiterUserId = parseUuid(text(payload, "waiterId"));
-        UUID openedBy = waiterUserId != null ? waiterUserId : tenantSupport.requireUserId();
+        UUID openedBy;
+        try {
+            openedBy = waiterUserId != null ? waiterUserId : tenantSupport.requireUserId();
+        } catch (RuntimeException ex) {
+            openedBy = waiterUserId;
+        }
         RestaurantShift shift = shiftLookup.findOpen(storeId).orElse(null);
         OrderChannel channel = parseChannel(text(payload, "channel"));
 
@@ -138,7 +151,12 @@ public class LocalEventApplicator {
         if (table != null && table.getStatus() == TableStatus.FREE) {
             table.setStatus(TableStatus.OCCUPIED);
         }
-        log.info("local-first ORDER_OPEN applied id={} storeId={}", orderId, storeId);
+        if (logOpen) {
+            log.info("local-first ORDER_OPEN applied id={} storeId={}", orderId, storeId);
+        } else {
+            log.info("local-first order materialized from ADD id={} storeId={}", orderId, storeId);
+        }
+        return order;
     }
 
     private void applyOrderAddItem(Integer companyId, Integer storeId, JsonNode payload) {
@@ -150,12 +168,8 @@ public class LocalEventApplicator {
             return;
         }
 
-        Optional<FloorOrder> orderOpt = orderRepository.findById(orderId);
-        if (orderOpt.isEmpty()) {
-            log.warn("local-first ORDER_ADD_ITEM skipped — order missing {}", orderId);
-            return;
-        }
-        FloorOrder order = orderOpt.get();
+        // OPEN may have been skipped historically, or ADD raced ahead — never drop lines.
+        FloorOrder order = ensureOrder(companyId, storeId, orderId, payload, false);
         if (!companyId.equals(order.getCompanyId()) || !storeId.equals(order.getStoreId())) {
             return;
         }

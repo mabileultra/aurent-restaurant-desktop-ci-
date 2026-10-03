@@ -15,18 +15,12 @@ const { createOrderRepo, createOrderItemRepo } = require('../db/orderRepos.cjs')
 const { createPrintJobRepo } = require('../db/printJobRepo.cjs');
 const { createOutboxRepo } = require('../db/outboxRepo.cjs');
 
-function snapKey(row) {
+function dishKey(row) {
   const name = String(row?.name || '').trim();
-  const menu = row?.menuItemId != null ? String(row.menuItemId) : String(row?.menu_item_id || '');
-  const qty = Number(row?.qty ?? row?.quantity) || 0;
-  return `${menu}|${name}|${qty}`;
-}
-
-function rowKey(row) {
-  const name = String(row?.name || '').trim();
-  const menu = String(row?.menu_item_id || row?.menuItemId || '');
-  const qty = Number(row?.quantity) || 0;
-  return `${menu}|${name}|${qty}`;
+  const menu = row?.menuItemId != null
+    ? String(row.menuItemId)
+    : String(row?.menu_item_id || '');
+  return `${menu}|${name}`;
 }
 
 /**
@@ -108,10 +102,8 @@ function sendToKitchenCommand(db, input, deps = {}) {
     const take = (row) => {
       if (!row || used.has(row.id)) return null;
       used.add(row.id);
-      if (row.status === 'OPEN') {
-        return orderItems.markSent(row.id);
-      }
-      return row;
+      // Marks OPEN→SENT and advances sent_quantity when line already has kitchen qty + reorder.
+      return orderItems.markSent(row.id);
     };
 
     for (const id of itemIds) {
@@ -133,9 +125,10 @@ function sendToKitchenCommand(db, input, deps = {}) {
         }
       }
 
-      const key = snapKey(snap);
+      const key = dishKey(snap);
+      // Qty on snap is pending-only after merge; match by dish, not full line qty.
       const openMatch = existingRows.find(
-        (r) => !used.has(r.id) && r.status === 'OPEN' && rowKey(r) === key,
+        (r) => !used.has(r.id) && r.status === 'OPEN' && dishKey(r) === key,
       );
       if (openMatch) {
         savedItems.push(take(openMatch));
@@ -143,7 +136,7 @@ function sendToKitchenCommand(db, input, deps = {}) {
       }
 
       const sentMatch = existingRows.find(
-        (r) => !used.has(r.id) && r.status === 'SENT' && rowKey(r) === key,
+        (r) => !used.has(r.id) && r.status === 'SENT' && dishKey(r) === key,
       );
       if (sentMatch) {
         savedItems.push(take(sentMatch));

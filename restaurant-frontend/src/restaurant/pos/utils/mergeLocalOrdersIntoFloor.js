@@ -130,6 +130,27 @@ export function mergeLocalOrdersIntoFloor(snapshot, localOrders = []) {
   return { ...snapshot, halls };
 }
 
+function orderRichness(o) {
+  const sub = Number(o?.subtotal);
+  if (Number.isFinite(sub) && sub > 0) return sub;
+  return 0;
+}
+
+/** Prefer the check with money/lines over an empty cloud shell (0 ₽). */
+function pickPrimaryOrder(orders) {
+  if (!orders?.length) return null;
+  let best = orders[0];
+  let bestScore = orderRichness(best);
+  for (let i = 1; i < orders.length; i += 1) {
+    const score = orderRichness(orders[i]);
+    if (score > bestScore) {
+      best = orders[i];
+      bestScore = score;
+    }
+  }
+  return best;
+}
+
 /**
  * Paint cashier/monoblock hub occupancy onto a server floor.
  * Phone used to take hub-only OR server-only; cloud lag then showed all FREE
@@ -166,14 +187,18 @@ export function mergeHubFloorOccupancy(base, hubFloor) {
         : (table.activeOrder ? [table.activeOrder] : []);
       const seen = new Set(serverOrders.map((o) => String(o?.id)));
       const extra = hubOrders.filter((o) => o?.id != null && !seen.has(String(o.id)));
-      const activeOrders = extra.length ? [...serverOrders, ...extra] : serverOrders;
-      if (!activeOrders.length) return table;
+      const merged = extra.length ? [...serverOrders, ...extra] : serverOrders;
+      if (!merged.length) return table;
 
-      const primary = activeOrders[0];
+      const primary = pickPrimaryOrder(merged);
+      const activeOrders = primary
+        ? [primary, ...merged.filter((o) => String(o?.id) !== String(primary.id))]
+        : merged;
       const hubBusy = hubTable.status === 'BILLING' || hubTable.status === 'WAITING_PAYMENT'
         ? hubTable.status
         : 'OCCUPIED';
       const status = table.status === 'FREE' || table.status === 'CLEANING' || !serverOrders.length
+        || orderRichness(primary) > orderRichness(serverOrders[0])
         ? hubBusy
         : table.status;
 

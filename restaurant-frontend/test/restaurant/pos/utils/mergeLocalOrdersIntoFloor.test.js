@@ -139,7 +139,7 @@ describe('mergeHubFloorOccupancy (cashier ↔ waiter / phone ↔ hub)', () => {
     expect(merged.halls[0].tables[1].activeOrder.id).toBe('cash-1');
   });
 
-  it('appends hub extra checks without dropping server primary', () => {
+  it('prefers hub check with money over empty server shell', () => {
     const base = {
       storeId: 1,
       halls: [{
@@ -147,8 +147,8 @@ describe('mergeHubFloorOccupancy (cashier ↔ waiter / phone ↔ hub)', () => {
         tables: [{
           id: 8,
           status: 'OCCUPIED',
-          activeOrder: { id: 's1', status: 'OPEN' },
-          activeOrders: [{ id: 's1', status: 'OPEN' }],
+          activeOrder: { id: 's1', status: 'OPEN', subtotal: 0 },
+          activeOrders: [{ id: 's1', status: 'OPEN', subtotal: 0 }],
         }],
       }],
     };
@@ -159,15 +159,15 @@ describe('mergeHubFloorOccupancy (cashier ↔ waiter / phone ↔ hub)', () => {
           id: 8,
           status: 'OCCUPIED',
           activeOrders: [
-            { id: 's1', status: 'OPEN' },
-            { id: 'hub-extra', status: 'OPEN', subtotal: 1000 },
+            { id: 's1', status: 'OPEN', subtotal: 0 },
+            { id: 'hub-extra', status: 'OPEN', subtotal: 42000 },
           ],
         }],
       }],
     };
     const merged = mergeHubFloorOccupancy(base, hub);
-    expect(merged.halls[0].tables[0].activeOrders.map((o) => o.id)).toEqual(['s1', 'hub-extra']);
-    expect(merged.halls[0].tables[0].activeOrder.id).toBe('s1');
+    expect(merged.halls[0].tables[0].activeOrder.id).toBe('hub-extra');
+    expect(merged.halls[0].tables[0].activeOrders.map((o) => o.id)).toEqual(['hub-extra', 's1']);
   });
 
   it('full phone path: server free + hub busy + rich local dish ticket', () => {

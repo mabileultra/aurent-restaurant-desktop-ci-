@@ -77,7 +77,6 @@ class LocalEventApplicatorTest {
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
         when(tableRepository.findByIdAndCompanyId(5, 10)).thenReturn(Optional.of(table));
-        when(orderRepository.existsByTableIdAndStatusIn(eq(5), any())).thenReturn(false);
         when(shiftLookup.findOpen(1)).thenReturn(Optional.empty());
         when(tenantSupport.requireUserId()).thenReturn(userId);
         when(orderRepository.findMaxOrderNo(1)).thenReturn(41);
@@ -104,13 +103,17 @@ class LocalEventApplicatorTest {
     }
 
     @Test
-    void orderOpenSkippedWhenTableAlreadyHasOpenOrder() {
+    void orderOpenCreatesSecondCheckWhenTableAlreadyBusy() {
         UUID orderId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         FloorTable table = FloorTable.builder().id(5).companyId(10).storeId(1).status(TableStatus.OCCUPIED).build();
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
         when(tableRepository.findByIdAndCompanyId(5, 10)).thenReturn(Optional.of(table));
-        when(orderRepository.existsByTableIdAndStatusIn(eq(5), any())).thenReturn(true);
+        when(shiftLookup.findOpen(1)).thenReturn(Optional.empty());
+        when(tenantSupport.requireUserId()).thenReturn(userId);
+        when(orderRepository.findMaxOrderNo(1)).thenReturn(7);
+        when(orderRepository.save(any(FloorOrder.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ObjectNode payload = objectMapper.createObjectNode()
             .put("orderId", orderId.toString())
@@ -119,8 +122,39 @@ class LocalEventApplicatorTest {
 
         applicator.apply(10, 1, "ORDER_OPEN", payload.toString());
 
-        verify(orderRepository, never()).save(any());
-        verify(orderRepository, never()).findMaxOrderNo(any());
+        verify(orderRepository).save(any(FloorOrder.class));
+    }
+
+    @Test
+    void orderAddItemMaterializesMissingOrder() {
+        UUID orderId = UUID.fromString("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        UUID itemId = UUID.fromString("cccccccc-cccc-cccc-cccc-cccccccccccc");
+        UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        FloorTable table = FloorTable.builder().id(13).companyId(10).storeId(1).status(TableStatus.FREE).build();
+
+        when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+        when(tableRepository.findByIdAndCompanyId(13, 10)).thenReturn(Optional.of(table));
+        when(shiftLookup.findOpen(1)).thenReturn(Optional.empty());
+        when(tenantSupport.requireUserId()).thenReturn(userId);
+        when(orderRepository.findMaxOrderNo(1)).thenReturn(1);
+        when(orderRepository.save(any(FloorOrder.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId)).thenReturn(List.of());
+        when(itemRepository.save(any(FloorOrderItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ObjectNode payload = objectMapper.createObjectNode()
+            .put("orderId", orderId.toString())
+            .put("itemId", itemId.toString())
+            .put("tableId", "13")
+            .put("name", "CHORTOQ 0.5 L")
+            .put("quantity", 1)
+            .put("unitPrice", 14000);
+
+        applicator.apply(10, 1, "ORDER_ADD_ITEM", payload.toString());
+
+        verify(orderRepository).save(any(FloorOrder.class));
+        verify(itemRepository).save(any(FloorOrderItem.class));
+        assertEquals(TableStatus.OCCUPIED, table.getStatus());
     }
 
     @Test
@@ -314,6 +348,76 @@ class LocalEventApplicatorTest {
         applicator.apply(10, 1, "ORDER_PAY", payload.toString());
 
         verify(payOrderHandler, never()).handle(any(), any());
+    }
+
+    @Test
+    void monoblockChaos_openOnBusyTableThenAddThenSend_allApply() {
+        // Mirrors production logs: table already OCCUPIED, new client UUID, ADD must not be lost.
+        UUID orderId = UUID.fromString("370e07ff-2534-4cf5-bb66-4d030a500440");
+        UUID itemId = UUID.fromString("a66e8bd9-213f-45a8-8a9a-18ac7278cac9");
+        UUID userId = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        FloorTable table = FloorTable.builder()
+            .id(13).companyId(10).storeId(55).status(TableStatus.OCCUPIED).build();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty())
+            .thenAnswer(inv -> Optional.of(FloorOrder.builder()
+                .id(orderId).companyId(10).storeId(55).status(OrderStatus.OPEN).table(table).build()));
+        when(tableRepository.findByIdAndCompanyId(13, 10)).thenReturn(Optional.of(table));
+        when(shiftLookup.findOpen(55)).thenReturn(Optional.empty());
+        when(tenantSupport.requireUserId()).thenReturn(userId);
+        when(orderRepository.findMaxOrderNo(55)).thenReturn(100);
+        when(orderRepository.save(any(FloorOrder.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(itemRepository.findById(itemId)).thenReturn(Optional.empty());
+        when(itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId))
+            .thenReturn(List.of())
+            .thenAnswer(inv -> {
+                FloorOrder ord = FloorOrder.builder()
+                    .id(orderId).companyId(10).storeId(55).status(OrderStatus.OPEN).build();
+                return List.of(FloorOrderItem.builder()
+                    .id(itemId)
+                    .order(ord)
+                    .quantity(new BigDecimal("1"))
+                    .sentQuantity(BigDecimal.ZERO)
+                    .itemStatus(com.pos.restaurant.order.domain.OrderItemStatus.NEW)
+                    .build());
+            });
+        when(itemRepository.save(any(FloorOrderItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ObjectNode open = objectMapper.createObjectNode()
+            .put("orderId", orderId.toString())
+            .put("tableId", "13")
+            .put("guestCount", 1);
+        applicator.apply(10, 55, "ORDER_OPEN", open.toString());
+        verify(orderRepository).save(any(FloorOrder.class));
+
+        // Reset findById for ADD path after OPEN saved — second stub returns present order.
+        FloorOrder saved = FloorOrder.builder()
+            .id(orderId).companyId(10).storeId(55).status(OrderStatus.OPEN).table(table).build();
+        when(orderRepository.findById(orderId)).thenReturn(Optional.of(saved));
+
+        ObjectNode add = objectMapper.createObjectNode()
+            .put("orderId", orderId.toString())
+            .put("itemId", itemId.toString())
+            .put("tableId", "13")
+            .put("name", "CHORTOQ 0.5 L")
+            .put("quantity", 1)
+            .put("unitPrice", 14000);
+        applicator.apply(10, 55, "ORDER_ADD_ITEM", add.toString());
+        verify(itemRepository).save(any(FloorOrderItem.class));
+
+        FloorOrderItem line = FloorOrderItem.builder()
+            .id(itemId)
+            .order(saved)
+            .quantity(new BigDecimal("1"))
+            .sentQuantity(BigDecimal.ZERO)
+            .itemStatus(com.pos.restaurant.order.domain.OrderItemStatus.NEW)
+            .build();
+        when(itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId)).thenReturn(List.of(line));
+
+        ObjectNode send = objectMapper.createObjectNode().put("orderId", orderId.toString());
+        applicator.apply(10, 55, "ORDER_SEND_KITCHEN", send.toString());
+        assertEquals(com.pos.restaurant.order.domain.OrderItemStatus.SENT_TO_KITCHEN, line.getItemStatus());
+        assertEquals(0, new BigDecimal("1").compareTo(line.getSentQuantity()));
     }
 
     @Test

@@ -61,11 +61,12 @@ function createOrderItemRepo(db, { idFactory = randomUUID, clock = () => new Dat
     }) {
       const id = idOverride ? String(idOverride) : idFactory();
       const at = nowIso(clock);
+      const sentQuantity = status === 'SENT' ? (Number(quantity) || 0) : 0;
       db.prepare(
         `INSERT INTO order_items(
            id, order_id, menu_item_id, name, quantity, unit_price, status,
-           portion_text, note, modifiers_json, created_at, updated_at
-         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           portion_text, note, modifiers_json, sent_quantity, created_at, updated_at
+         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       ).run(
         id,
         orderId,
@@ -77,21 +78,23 @@ function createOrderItemRepo(db, { idFactory = randomUUID, clock = () => new Dat
         portionText,
         note,
         modifiers != null ? JSON.stringify(modifiers) : null,
+        sentQuantity,
         at,
         at,
       );
-      return { id, orderId, name, quantity, status };
+      return { id, orderId, name, quantity, status, sentQuantity };
     },
 
     markSent(itemId) {
       const row = this.getById(itemId);
       if (!row) throw new Error(`item_not_found:${itemId}`);
-      if (row.status === 'SENT') return row;
       if (row.status === 'CANCELLED') return row;
       const at = nowIso(clock);
+      const qty = Number(row.quantity) || 0;
+      // OPEN→SENT, or SENT with extra unsent qty after merge — lock baseline to full qty.
       db.prepare(
-        `UPDATE order_items SET status = ?, updated_at = ? WHERE id = ?`,
-      ).run('SENT', at, itemId);
+        `UPDATE order_items SET status = ?, sent_quantity = ?, sent_at = COALESCE(sent_at, ?), updated_at = ? WHERE id = ?`,
+      ).run('SENT', qty, at, at, itemId);
       return this.getById(itemId);
     },
 

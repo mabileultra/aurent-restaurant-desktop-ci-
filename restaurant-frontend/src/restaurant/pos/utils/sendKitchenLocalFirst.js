@@ -16,6 +16,7 @@ function pendingItemsFromOrder(order) {
       const left = qty - sent;
       if (left <= 0) return null;
       return {
+        id: item.id != null ? String(item.id) : undefined,
         name: item.name || '',
         qty: left,
         unitPrice: Number(item.unitPrice ?? item.price) || 0,
@@ -71,6 +72,7 @@ export async function sendKitchenLocalFirst({
       orderId: String(order.id),
       printerName: '',
       items,
+      itemIds: items.map((i) => i.id).filter(Boolean),
       waiterId: order.waiterUserId != null ? String(order.waiterUserId) : null,
       printOnServer: true,
     });
@@ -114,6 +116,7 @@ export async function sendKitchenLocalFirst({
       station: group.station,
       categoryName: group.categoryName,
       items: group.items,
+      itemIds: group.items.map((i) => i.id).filter(Boolean),
       waiterId: order.waiterUserId != null ? String(order.waiterUserId) : null,
       printOnServer,
     });

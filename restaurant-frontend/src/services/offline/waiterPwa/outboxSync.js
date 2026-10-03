@@ -105,7 +105,16 @@ export async function tickWaiterOutbox({ storeId, limit = 20 } = {}) {
   if (storeId == null) return { busy: false, results: [] };
   ticking = true;
   const results = [];
-  const hubUrl = getConfiguredHubUrl();
+  // Auto-discover monoblock hub so punches land in cashier SQLite without manual URL.
+  let hubUrl = getConfiguredHubUrl();
+  if (!hubUrl) {
+    try {
+      const { ensureWaiterHubUrl } = await import('./hubOrderImport');
+      hubUrl = await ensureWaiterHubUrl();
+    } catch {
+      hubUrl = '';
+    }
+  }
   try {
     const rows = (await idbGetAll('outbox'))
       .filter((r) => r.status === 'PENDING' || r.status === 'RETRY')

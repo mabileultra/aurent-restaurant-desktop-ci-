@@ -3,7 +3,7 @@
  * Status enums come from domain/ (B0). Ids are client TEXT (UUID); server_* nullable for sync.
  */
 
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 
 const REQUIRED_TABLES = Object.freeze([
   'meta',
@@ -117,6 +117,7 @@ CREATE TABLE IF NOT EXISTS order_items (
   portion_text TEXT,
   note TEXT,
   modifiers_json TEXT,
+  sent_quantity REAL NOT NULL DEFAULT 0,
   sent_at TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL,

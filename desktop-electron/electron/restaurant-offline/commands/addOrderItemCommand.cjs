@@ -77,9 +77,10 @@ function addOrderItemCommand(db, input, deps = {}) {
     const modsJson = modifiers != null ? JSON.stringify(modifiers) : null;
     const unitPrice = Number(input.unitPrice) || 0;
 
-    const openRows = items.listByOrder(orderId).filter((row) => row.status === 'OPEN');
-    const mergeRow = openRows.find((row) => (
-      String(row.menu_item_id || '') === String(menuItemId || '')
+    // Same dish+note+mods → bump qty (incl. after kitchen send; extra stays unsent).
+    const mergeRow = items.listByOrder(orderId).find((row) => (
+      (row.status === 'OPEN' || row.status === 'SENT')
+      && String(row.menu_item_id || '') === String(menuItemId || '')
       && String(row.name || '') === name
       && String(row.note || '') === String(note || '')
       && String(row.modifiers_json || '') === String(modsJson || '')
@@ -130,6 +131,8 @@ function addOrderItemCommand(db, input, deps = {}) {
       payload: {
         orderId,
         itemId: item.id,
+        storeId: existing.store_id ?? input.storeId,
+        tableId: existing.table_id || input.tableId || null,
         menuItemId: item.menuItemId,
         name,
         quantity,

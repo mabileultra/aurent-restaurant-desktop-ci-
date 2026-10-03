@@ -124,20 +124,23 @@ function toUiOrder(db, orderId) {
       } catch {
         modifiers = [];
       }
+      const qty = Number(i.quantity) || 0;
+      const storedSent = Number(i.sent_quantity);
+      const sentQuantity = Number.isFinite(storedSent) && storedSent >= 0
+        ? Math.min(storedSent, qty)
+        : (i.status === 'SENT' ? qty : 0);
       return {
         id: i.id,
         menuItemId: i.menu_item_id,
         name: i.name,
-        quantity: i.quantity,
-        sentQuantity: i.status === 'SENT' ? i.quantity : 0,
+        quantity: qty,
+        sentQuantity,
         unitPrice: i.unit_price,
-        lineTotal: Math.round(
-          (Number(i.quantity) || 0) * (Number(i.unit_price) || 0) * 100,
-        ) / 100,
+        lineTotal: Math.round(qty * (Number(i.unit_price) || 0) * 100) / 100,
         itemStatus:
           i.status === 'CANCELLED'
             ? 'CANCELLED'
-            : i.status === 'SENT'
+            : (i.status === 'SENT' || sentQuantity > 0)
               ? 'SENT_TO_KITCHEN'
               : 'NEW',
         portionText: i.portion_text,

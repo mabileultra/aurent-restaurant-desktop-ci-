@@ -15,15 +15,22 @@ import {
   waiterListOpenOrders,
 } from './commands';
 import { tickWaiterOutbox, countPendingOutbox } from './outboxSync';
+import { pullHubOrdersForWaiter } from './hubOrderImport';
 import { idbPut } from './idb';
 
 /** @type {{ storeId: number|null, authToken: string|null }} */
 const session = { storeId: null, authToken: null };
 let syncTimer = null;
+let lastHubPullAt = 0;
+const HUB_PULL_MS = 5_000;
 
 export function isWaiterPwaLocalFirstEligible() {
   if (typeof window === 'undefined') return false;
-  if (window.desktopCashier?.isDesktop && window.desktopCashier?.restaurantLocalFirst === true) {
+  const desk = window.desktopCashier;
+  const deskLf = typeof desk?.restaurantLocalFirstFlag === 'function'
+    ? desk.restaurantLocalFirstFlag()
+    : desk?.restaurantLocalFirst;
+  if (desk?.isDesktop && deskLf === true) {
     return false;
   }
   if (typeof indexedDB === 'undefined') return false;
@@ -38,6 +45,12 @@ export function startWaiterPwaSyncLoop() {
     const storeId = session.storeId;
     if (storeId == null) return;
     void tickWaiterOutbox({ storeId }).catch(() => null);
+    // Pull cashier SQLite tickets into phone IDB (and auto-discover hub URL).
+    const now = Date.now();
+    if (now - lastHubPullAt >= HUB_PULL_MS) {
+      lastHubPullAt = now;
+      void pullHubOrdersForWaiter({ storeId }).catch(() => null);
+    }
   };
   syncTimer = setInterval(tick, 4_000);
   if (typeof window !== 'undefined') {
@@ -86,6 +99,19 @@ export async function waiterPwaImportBootstrap(payload = {}) {
   return { ok: true };
 }
 
+export async function waiterGetOrderWithHub(orderId, storeId) {
+  const local = await waiterGetOrder(orderId);
+  if (local) return local;
+  try {
+    const { importHubOrderById } = await import('./hubOrderImport');
+    const row = await importHubOrderById(orderId, storeId ?? session.storeId);
+    if (!row) return null;
+    return waiterGetOrder(orderId);
+  } catch {
+    return null;
+  }
+}
+
 export const waiterPwaBridge = {
   openOrder: waiterOpenOrder,
   addItem: waiterAddItem,
@@ -95,10 +121,12 @@ export const waiterPwaBridge = {
   payOrder: waiterPayOrder,
   sendToKitchen: waiterSendToKitchen,
   getOrder: waiterGetOrder,
+  getOrderWithHub: waiterGetOrderWithHub,
   listOpenOrders: waiterListOpenOrders,
   getStatus: waiterPwaGetStatus,
   setSession: waiterPwaSetSession,
   importBootstrap: waiterPwaImportBootstrap,
+  pullHubOrders: pullHubOrdersForWaiter,
   startRuntime: async () => {
     startWaiterPwaSyncLoop();
     return { ok: true };

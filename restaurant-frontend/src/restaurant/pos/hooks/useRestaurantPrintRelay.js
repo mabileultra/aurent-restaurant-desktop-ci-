@@ -109,7 +109,11 @@ async function loadClaimCapabilities() {
   const guestBill = Boolean(String(settings?.billPrinterName || '').trim());
   // Local-first prints kitchen/category on this PC via SQLite PrintWorker — do not claim those jobs again.
   const localFirst = Boolean(
-    typeof window !== 'undefined' && window.desktopCashier?.restaurantLocalFirst === true,
+    typeof window !== 'undefined' && (
+      typeof window.desktopCashier?.restaurantLocalFirstFlag === 'function'
+        ? window.desktopCashier.restaurantLocalFirstFlag() === true
+        : window.desktopCashier?.restaurantLocalFirst === true
+    ),
   );
   const kitchenSend = localFirst
     ? false

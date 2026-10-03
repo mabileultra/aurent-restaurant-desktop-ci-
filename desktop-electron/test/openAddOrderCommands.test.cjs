@@ -50,6 +50,54 @@ test('C1 open order writes OPEN + outbox', async () => {
   db.close();
 });
 
+test('C2 add after kitchen send merges onto SENT line (reorder qty)', async () => {
+  const db = await readyDb();
+  let n = 0;
+  const deps = {
+    idFactory: () => `merge-${++n}`,
+    clock: () => '2026-10-03T07:00:00.000Z',
+    uuid: () => `evt-merge-${n}`,
+  };
+  const { sendToKitchenCommand } = require('../electron/restaurant-offline/commands/index.cjs');
+  const opened = openOrderCommand(db, {
+    deviceId: 'POS-01',
+    storeId: 1,
+    tableId: 'tbl-1',
+    guestCount: 1,
+  }, deps);
+  const first = addOrderItemCommand(db, {
+    deviceId: 'POS-01',
+    orderId: opened.orderId,
+    name: 'CHORTOQ 0.5 L',
+    quantity: 1,
+    unitPrice: 14000,
+    menuItemId: 'm-ch05',
+  }, deps);
+  sendToKitchenCommand(db, {
+    deviceId: 'POS-01',
+    storeId: 1,
+    tableId: 'tbl-1',
+    orderId: opened.orderId,
+    printerName: 'Bar',
+    items: [{ id: first.itemId, name: 'CHORTOQ 0.5 L', qty: 1, unitPrice: 14000, menuItemId: 'm-ch05' }],
+    itemIds: [first.itemId],
+  }, deps);
+  const again = addOrderItemCommand(db, {
+    deviceId: 'POS-01',
+    orderId: opened.orderId,
+    name: 'CHORTOQ 0.5 L',
+    quantity: 5,
+    unitPrice: 14000,
+    menuItemId: 'm-ch05',
+  }, deps);
+  assert.equal(again.merged, true);
+  assert.equal(again.order.items.length, 1);
+  assert.equal(again.order.items[0].quantity, 6);
+  assert.equal(again.order.items[0].sentQuantity, 1);
+  assert.equal(again.order.items[0].itemStatus, 'SENT_TO_KITCHEN');
+  db.close();
+});
+
 test('C2 add item activates order and enqueues outbox', async () => {
   const db = await readyDb();
   let n = 0;

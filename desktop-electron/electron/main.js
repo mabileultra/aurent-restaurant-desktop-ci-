@@ -186,17 +186,16 @@ async function handleSetRestaurantLocalFirst(enabled) {
     stopRestaurantOfflineRuntime();
   }
   const start = await reloadActiveUi({ navigateToStart: true });
+  // Do NOT turn LF off when bundled UI is missing. Remote r-aurent + SQLite/hub
+  // is a valid monoblock mode; reverting left hub dead and floor/cashier out of sync.
   if (enabled && start?.source !== 'bundled') {
-    saveRestaurantLocalFirst(false);
-    stopRestaurantOfflineRuntime();
-    refreshDesktopConfig();
-    rebuildAppMenu();
     dialog.showMessageBox({
       type: 'warning',
       title: 'Aurent Cashier',
-      message: 'Локальный UI ресторана недоступен',
+      message: 'Локальный UI не собран — сайт оставлен',
       detail:
-        'Соберите restaurant UI: npm run bundle-restaurant-ui (папка ui-restaurant). Пока оставлен сайт r-aurent.',
+        'Offline local-first (SQLite + LAN hub :8787) всё равно включён. '
+        + 'Для полного локального UI: npm run bundle-restaurant-ui (папка ui-restaurant).',
       buttons: ['OK'],
     }).catch(() => {});
   }

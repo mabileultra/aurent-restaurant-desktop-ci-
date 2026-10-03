@@ -70,12 +70,17 @@ function listLocalFloorSnapshot(db, storeId) {
   const openOrders = db.prepare(
     `SELECT * FROM orders WHERE store_id = ? AND status IN ('OPEN', 'ACTIVE', 'BILLING')`,
   ).all(sid);
+  const itemSumStmt = db.prepare(
+    `SELECT COALESCE(SUM(quantity * unit_price), 0) AS subtotal
+     FROM order_items WHERE order_id = ? AND status != 'CANCELLED'`,
+  );
   const byTable = new Map();
   for (const order of openOrders) {
     if (order.table_id == null) continue;
     const key = String(order.table_id);
     const list = byTable.get(key) || [];
-    list.push(order);
+    const subtotal = Number(itemSumStmt.get(order.id)?.subtotal) || 0;
+    list.push({ ...order, _subtotal: subtotal });
     byTable.set(key, list);
   }
 
@@ -117,6 +122,7 @@ function listLocalFloorSnapshot(db, storeId) {
       guestCount: o.guest_count,
       openedAt: o.opened_at,
       waiterUserId: o.waiter_id,
+      subtotal: Number(o._subtotal) || 0,
     }));
 
     hallsMap.get(hallKey).tables.push({

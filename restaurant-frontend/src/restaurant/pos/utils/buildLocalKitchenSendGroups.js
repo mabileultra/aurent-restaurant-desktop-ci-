@@ -17,6 +17,7 @@ function pendingQty(item) {
 
 function itemSnapshot(item, qty) {
   return {
+    id: item.id != null ? String(item.id) : undefined,
     name: item.name || '',
     qty,
     unitPrice: Number(item.unitPrice ?? item.price) || 0,

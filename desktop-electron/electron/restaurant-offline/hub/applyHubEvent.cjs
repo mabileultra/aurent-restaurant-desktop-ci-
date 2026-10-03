@@ -88,6 +88,11 @@ function applyHubEvent(db, {
         deviceId: dev,
         orderId: payload.orderId,
         storeId: payload.storeId ?? storeId,
+        // Needed to materialize order shell + paint floor when OPEN was skipped/lost.
+        tableId: payload.tableId != null ? String(payload.tableId) : null,
+        tableLabel: payload.tableLabel || null,
+        guestCount: payload.guestCount,
+        waiterId: payload.waiterId || null,
         itemId: payload.itemId,
         menuItemId: payload.menuItemId,
         name: payload.name,

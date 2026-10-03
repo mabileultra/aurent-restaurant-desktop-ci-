@@ -4,11 +4,25 @@ const { SCHEMA, SCHEMA_VERSION, REQUIRED_TABLES } = require('./schema.cjs');
  * Apply restaurant offline schema. Accepts better-sqlite3 Database (has .exec).
  * @param {{ exec: (sql: string) => unknown }} db
  */
+/** Existing DBs keep CREATE IF NOT EXISTS — add columns for reorder-on-kitchen-line. */
+function ensureRestaurantOfflineColumns(db) {
+  const cols = db.prepare(`PRAGMA table_info(order_items)`).all().map((r) => String(r.name));
+  if (!cols.includes('sent_quantity')) {
+    db.exec(`ALTER TABLE order_items ADD COLUMN sent_quantity REAL NOT NULL DEFAULT 0`);
+    // Rows already on kitchen were fully sent under the old model.
+    db.exec(
+      `UPDATE order_items SET sent_quantity = quantity
+       WHERE status = 'SENT' AND sent_quantity = 0`,
+    );
+  }
+}
+
 function applyRestaurantOfflineSchema(db) {
   if (!db || typeof db.exec !== 'function') {
     throw new Error('restaurant_offline_db_required');
   }
   db.exec(SCHEMA);
+  ensureRestaurantOfflineColumns(db);
   db.exec(
     `INSERT INTO meta(key, value) VALUES('schema_version', '${SCHEMA_VERSION}')
      ON CONFLICT(key) DO UPDATE SET value=excluded.value`,

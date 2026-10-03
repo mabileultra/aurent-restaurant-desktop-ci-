@@ -22,6 +22,9 @@ function isElectronOfflineBridge() {
 
 export function isRestaurantLocalFirstDesktop() {
   const d = desk();
+  if (typeof d?.restaurantLocalFirstFlag === 'function') {
+    return Boolean(d.restaurantLocalFirstFlag());
+  }
   return Boolean(d?.restaurantLocalFirst === true);
 }
 
@@ -186,9 +189,15 @@ export async function rstOfflineResolvePrintJob(payload) {
   throw new Error('rst_offline_bridge_unavailable');
 }
 
-export async function rstOfflineGetOrder(orderId) {
+export async function rstOfflineGetOrder(orderId, opts = {}) {
   if (isElectronOfflineBridge()) return desk().rstOfflineGetOrder(orderId);
-  if (usePwa()) return waiterPwaBridge.getOrder(orderId);
+  if (usePwa()) {
+    // Fall back to LAN hub (касса SQLite) when the ticket was opened on monoblock.
+    if (typeof waiterPwaBridge.getOrderWithHub === 'function') {
+      return waiterPwaBridge.getOrderWithHub(orderId, opts.storeId);
+    }
+    return waiterPwaBridge.getOrder(orderId);
+  }
   return null;
 }
 

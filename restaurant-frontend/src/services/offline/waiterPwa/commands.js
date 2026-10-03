@@ -258,6 +258,8 @@ export async function waiterAddItem(input = {}) {
   const event = enqueueOutbox(deviceId, 'ORDER_ADD_ITEM', {
     orderId,
     itemId,
+    storeId: order.storeId ?? input.storeId,
+    tableId: order.tableId ?? input.tableId ?? null,
     menuItemId: item.menuItemId,
     name,
     quantity: qty,
