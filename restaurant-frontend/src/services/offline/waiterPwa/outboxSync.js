@@ -68,8 +68,15 @@ export async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
 
   let cloudOutcome = null;
   let cloudErr = null;
+  // Hub already printed on the monoblock — don't let cloud create a second kitchen job.
+  const cloudBody = hubOutcome && body?.eventType === 'ORDER_SEND_KITCHEN'
+    ? {
+      ...body,
+      payload: { ...(body.payload || {}), printOnServer: false },
+    }
+    : body;
   try {
-    const res = await api.post(`/rst/stores/${storeId}/local-events`, body);
+    const res = await api.post(`/rst/stores/${storeId}/local-events`, cloudBody);
     cloudOutcome = acceptedOutcome(res?.data?.outcome || res?.data?.status);
     if (!cloudOutcome) cloudErr = new Error(`unexpected_ingest_outcome:${res?.data?.outcome}`);
   } catch (err) {

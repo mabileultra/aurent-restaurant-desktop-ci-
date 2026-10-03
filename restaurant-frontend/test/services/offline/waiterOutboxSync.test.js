@@ -67,6 +67,34 @@ describe('waiter outbox hub-first deliver', () => {
     );
   });
 
+  it('strips printOnServer on cloud after hub already accepted kitchen SEND', async () => {
+    globalThis.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ outcome: 'ACCEPTED' }),
+      text: async () => '',
+    });
+    api.post.mockResolvedValue({ data: { outcome: 'ACCEPTED' } });
+
+    await deliverWaiterOutboxEvent({
+      storeId: 1,
+      hubUrl: 'http://hub:8787',
+      body: {
+        deviceId: 'w',
+        clientEventId: 'send-1',
+        eventType: 'ORDER_SEND_KITCHEN',
+        payload: { orderId: 'L-1', printOnServer: true, items: [{ name: 'Plov', qty: 1 }] },
+      },
+    });
+
+    expect(api.post).toHaveBeenCalledWith(
+      '/rst/stores/1/local-events',
+      expect.objectContaining({
+        eventType: 'ORDER_SEND_KITCHEN',
+        payload: expect.objectContaining({ printOnServer: false }),
+      }),
+    );
+  });
+
   it('succeeds via hub when cloud is down', async () => {
     globalThis.fetch.mockResolvedValue({
       ok: true,

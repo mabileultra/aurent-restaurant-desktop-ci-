@@ -193,6 +193,12 @@ async function startRestaurantOfflineRuntime({ loadConfig } = {}) {
         if (evt.eventType === 'ORDER_SEND_KITCHEN' && !payload.printerName) {
           payload.printerName = String(kitchenPrinter || '').trim();
         }
+        if (evt.eventType === 'ORDER_SEND_KITCHEN' && !payload.printerName) {
+          logWarn('Hub SEND without kitchen printer — configure station printers on monoblock', {
+            storeId: session.storeId,
+            orderId: payload.orderId,
+          });
+        }
         const result = applyHubEvent(database, {
           ...evt,
           payload,

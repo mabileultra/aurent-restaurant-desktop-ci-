@@ -84,10 +84,13 @@ function loadDesktopConfig({ isPackaged }) {
     process.env.AURENT_APP_WORLD || user.appWorld || APP_WORLD_MAIN
   );
 
-  const stationPrinters = (user.stationPrinters && typeof user.stationPrinters === 'object'
-    && !Array.isArray(user.stationPrinters))
-    ? user.stationPrinters
-    : {};
+  const stationPrinters = {};
+  if (user.stationPrinters && typeof user.stationPrinters === 'object' && !Array.isArray(user.stationPrinters)) {
+    for (const [key, value] of Object.entries(user.stationPrinters)) {
+      const name = typeof value === 'string' ? value.trim() : '';
+      if (key && name) stationPrinters[String(key)] = name;
+    }
+  }
 
   return {
     cashierUrl,
