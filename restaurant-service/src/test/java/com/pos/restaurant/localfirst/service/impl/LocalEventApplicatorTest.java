@@ -77,6 +77,7 @@ class LocalEventApplicatorTest {
 
         when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
         when(tableRepository.findByIdAndCompanyId(5, 10)).thenReturn(Optional.of(table));
+        when(orderRepository.existsByTableIdAndStatusIn(eq(5), any())).thenReturn(false);
         when(shiftLookup.findOpen(1)).thenReturn(Optional.empty());
         when(tenantSupport.requireUserId()).thenReturn(userId);
         when(orderRepository.findMaxOrderNo(1)).thenReturn(41);
@@ -100,6 +101,26 @@ class LocalEventApplicatorTest {
         assertEquals(3, saved.getGuestCount());
         assertSame(table, saved.getTable());
         assertEquals(TableStatus.OCCUPIED, table.getStatus());
+    }
+
+    @Test
+    void orderOpenSkippedWhenTableAlreadyHasOpenOrder() {
+        UUID orderId = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        FloorTable table = FloorTable.builder().id(5).companyId(10).storeId(1).status(TableStatus.OCCUPIED).build();
+
+        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+        when(tableRepository.findByIdAndCompanyId(5, 10)).thenReturn(Optional.of(table));
+        when(orderRepository.existsByTableIdAndStatusIn(eq(5), any())).thenReturn(true);
+
+        ObjectNode payload = objectMapper.createObjectNode()
+            .put("orderId", orderId.toString())
+            .put("tableId", "5")
+            .put("guestCount", 1);
+
+        applicator.apply(10, 1, "ORDER_OPEN", payload.toString());
+
+        verify(orderRepository, never()).save(any());
+        verify(orderRepository, never()).findMaxOrderNo(any());
     }
 
     @Test

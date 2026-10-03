@@ -119,6 +119,13 @@ class PrintJobClaimSqlLoadTest {
     }
 
     @Test
+    void claimSqlUsesCastSoHibernateCannotEatPostgresColonCast() {
+        assertThat(claimSql).containsIgnoringCase("CAST(payload AS json)");
+        assertThat(claimSql).doesNotContain("payload::json");
+        assertThat(claimSql).doesNotContain("payload:json");
+    }
+
+    @Test
     void deepBacklogOnOnePrinterDoesNotHideTheOtherNine() {
         insertSlips(PRINTERS.get(0), 2_000);
         for (int round = 0; round < 20; round++) {

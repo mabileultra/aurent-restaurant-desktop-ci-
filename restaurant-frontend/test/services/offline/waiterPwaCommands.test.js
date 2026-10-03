@@ -119,4 +119,22 @@ describe('waiter PWA local commands', () => {
     const again = await waiterGetOrder(opened.orderId);
     expect(again.items[0].itemStatus).toBe('SENT_TO_KITCHEN');
   });
+
+  it('reuses open order on same table instead of stacking empties', async () => {
+    const first = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 12,
+      tableLabel: 'T12',
+      guestCount: 1,
+    });
+    const second = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 12,
+      tableLabel: 'T12',
+      guestCount: 1,
+    });
+    expect(second.orderId).toBe(first.orderId);
+    expect(second.reused).toBe(true);
+    expect(second.outboxId).toBeNull();
+  });
 });
