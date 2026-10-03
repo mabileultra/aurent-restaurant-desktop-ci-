@@ -130,10 +130,14 @@ export function useFloorTableActions({
     const rows = Array.isArray(table?.activeOrders) && table.activeOrders.length
       ? table.activeOrders
       : (table?.activeOrder ? [table.activeOrder] : []);
-    const firstId = rows[0]?.id ?? null;
+    // Prefer the local ticket with money/dishes — not an empty server shell.
+    const preferred = rows.find((r) => r?._local && (Number(r.subtotal) || 0) > 0)
+      || rows.find((r) => r?._local)
+      || rows[0]
+      || null;
+    const firstId = preferred?.id ?? null;
     setSelectedOrderId(firstId);
-    // Local-only check: skip empty modal (server 404) — open ticket immediately.
-    if (rows[0]?._local && rows.length === 1 && firstId) {
+    if (preferred?._local && rows.filter((r) => r?._local).length <= 1 && firstId) {
       setActiveOrderId(firstId);
       setInspectTable(null);
       setTransferOpen(false);

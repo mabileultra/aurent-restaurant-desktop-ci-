@@ -42,7 +42,7 @@ describe('mergeLocalOrdersIntoFloor', () => {
     expect(merged.halls[0].tables[0].status).toBe('FREE');
   });
 
-  it('keeps server check primary over local ghost', () => {
+  it('prefers local check with dishes over empty server shell (0 ₽)', () => {
     const snap = {
       storeId: 1,
       halls: [{
@@ -50,18 +50,19 @@ describe('mergeLocalOrdersIntoFloor', () => {
         tables: [{
           id: 6,
           status: 'OCCUPIED',
-          activeOrder: { id: 'server-1', status: 'OPEN' },
-          activeOrders: [{ id: 'server-1', status: 'OPEN' }],
+          activeOrder: { id: 'server-1', status: 'OPEN', subtotal: 0 },
+          activeOrders: [{ id: 'server-1', status: 'OPEN', subtotal: 0 }],
         }],
       }],
     };
     const merged = mergeLocalOrdersIntoFloor(snap, [{
-      id: 'L-ghost',
+      id: 'L-real',
       tableId: 6,
       status: 'ACTIVE',
-      items: [{ id: 'i1', name: 'X', quantity: 1 }],
+      items: [{ id: 'i1', name: 'Salat', quantity: 1, unitPrice: 25000 }],
     }]);
-    expect(merged.halls[0].tables[0].activeOrder.id).toBe('server-1');
-    expect(merged.halls[0].tables[0].activeOrders.map((o) => o.id)).toEqual(['server-1', 'L-ghost']);
+    expect(merged.halls[0].tables[0].activeOrder.id).toBe('L-real');
+    expect(merged.halls[0].tables[0].activeOrder.subtotal).toBe(25000);
+    expect(merged.halls[0].tables[0].activeOrders.map((o) => o.id)).toEqual(['L-real', 'server-1']);
   });
 });

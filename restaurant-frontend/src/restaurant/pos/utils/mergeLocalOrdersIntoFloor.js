@@ -1,10 +1,8 @@
 /**
  * Paint local-first orders (waiter IDB) onto a server/hub floor snapshot.
  *
- * Rules:
- * - Never hide a server check behind a local ghost (server activeOrders stay primary).
- * - Empty local OPEN shells do not mark a free table occupied.
- * - Local-only checks append / fill FREE tables so the waiter can reopen before WAN sync.
+ * Waiter phone: local check WITH lines is primary. Otherwise the floor shows the
+ * empty server shell (0 ₽) and opens the wrong ticket after punch+send.
  */
 
 function uiStatus(status) {
@@ -34,7 +32,7 @@ function lineMoney(item) {
 }
 
 /** IDB rows have items[] but often no precomputed subtotal — floor cards showed 0. */
-function orderSubtotal(o) {
+export function orderSubtotal(o) {
   const direct = Number(o?.subtotal);
   if (Number.isFinite(direct) && direct > 0) return direct;
   return (Array.isArray(o?.items) ? o.items : []).reduce((sum, item) => sum + lineMoney(item), 0);
@@ -62,7 +60,6 @@ export function mergeLocalOrdersIntoFloor(snapshot, localOrders = []) {
   const open = (Array.isArray(localOrders) ? localOrders : []).filter((o) => {
     const st = String(o?.status || '');
     if (st !== 'OPEN' && st !== 'ACTIVE' && st !== 'BILLING') return false;
-    // Empty OPEN shell (opened then left) must not paint the whole floor red.
     if (st === 'OPEN' && !hasLines(o)) return false;
     return true;
   });
@@ -91,30 +88,38 @@ export function mergeLocalOrdersIntoFloor(snapshot, localOrders = []) {
         ? table.activeOrders
         : (table.activeOrder ? [table.activeOrder] : []);
       const serverIds = new Set(serverChecks.map((ao) => String(ao?.id)));
-      const localExtras = locals
-        .filter((o) => !serverIds.has(String(o.id)))
+
+      const richLocals = locals
+        .filter((o) => !serverIds.has(String(o.id)) && hasLines(o))
+        .map(toActiveRow)
+        .sort((a, b) => (Number(b.subtotal) || 0) - (Number(a.subtotal) || 0));
+      const thinLocals = locals
+        .filter((o) => !serverIds.has(String(o.id)) && !hasLines(o))
         .map(toActiveRow);
 
-      // Server already owns the table — keep its primary check; only append unsynced locals.
-      if (serverChecks.length) {
-        const activeOrders = [...serverChecks, ...localExtras];
-        return {
-          ...table,
-          activeOrder: activeOrders[0] || table.activeOrder || null,
-          activeOrderId: activeOrders[0]?.id ?? table.activeOrderId ?? null,
-          activeOrders,
-        };
-      }
+      // Local dish ticket first — avoids opening empty server check (0 ₽ / «чужой» счёт).
+      const activeOrders = [];
+      const seen = new Set();
+      const push = (row) => {
+        const id = String(row?.id || '');
+        if (!id || seen.has(id)) return;
+        seen.add(id);
+        activeOrders.push(row);
+      };
+      richLocals.forEach(push);
+      serverChecks.forEach(push);
+      thinLocals.forEach(push);
 
-      // FREE on server: local unsynced check makes it OCCUPIED for this waiter device.
-      const activeOrders = localExtras.length
-        ? localExtras
-        : locals.map(toActiveRow);
       const primary = activeOrders[0];
       if (!primary) return table;
+
+      const occupied = table.status === 'FREE' || richLocals.length > 0
+        ? (primary.status === 'BILLING' ? 'BILLING' : 'OCCUPIED')
+        : table.status;
+
       return {
         ...table,
-        status: primary.status === 'BILLING' ? 'BILLING' : 'OCCUPIED',
+        status: occupied,
         activeOrder: primary,
         activeOrderId: primary.id,
         activeOrders,
