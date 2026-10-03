@@ -8,7 +8,16 @@ const { app, BrowserWindow, ipcMain, shell, dialog, net, session } = require('el
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
 const { initAutoUpdater, checkForUpdatesNow, isQuittingForUpdate } = require('./autoUpdaterBridge');
-const { loadDesktopConfig, saveUiMode, saveOfflineFirst, saveRestaurantLocalFirst } = require('./config/desktopConfig');
+const {
+  loadDesktopConfig,
+  saveUiMode,
+  saveOfflineFirst,
+  saveRestaurantLocalFirst,
+  readUserConfig,
+} = require('./config/desktopConfig');
+const {
+  isRestaurantLocalFirstKillSwitchOn,
+} = require('./config/restaurantLocalFirst');
 const { buildAdminLoginUrl, APP_WORLD_RESTAURANT, normalizeAppWorld } = require('./config/loginUrl');
 const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./config/uiMode');
 const { buildAppMenu } = require('./menu/appMenu');
@@ -173,6 +182,20 @@ async function handleSetOfflineFirst(enabled) {
 }
 
 async function handleSetRestaurantLocalFirst(enabled) {
+  if (enabled && isRestaurantLocalFirstKillSwitchOn()) {
+    saveRestaurantLocalFirst(false);
+    stopRestaurantOfflineRuntime();
+    refreshDesktopConfig();
+    rebuildAppMenu();
+    dialog.showMessageBox({
+      type: 'info',
+      title: 'Aurent Cashier',
+      message: 'Offline / local-first временно выключен',
+      detail: 'Для клиентов оставлен обычный online-режим. Включим снова после стабилизации.',
+      buttons: ['OK'],
+    }).catch(() => {});
+    return refreshDesktopConfig();
+  }
   saveRestaurantLocalFirst(enabled);
   refreshDesktopConfig();
   rebuildAppMenu();
@@ -186,8 +209,6 @@ async function handleSetRestaurantLocalFirst(enabled) {
     stopRestaurantOfflineRuntime();
   }
   const start = await reloadActiveUi({ navigateToStart: true });
-  // Do NOT turn LF off when bundled UI is missing. Remote r-aurent + SQLite/hub
-  // is a valid monoblock mode; reverting left hub dead and floor/cashier out of sync.
   if (enabled && start?.source !== 'bundled') {
     dialog.showMessageBox({
       type: 'warning',
@@ -200,6 +221,21 @@ async function handleSetRestaurantLocalFirst(enabled) {
     }).catch(() => {});
   }
   return start;
+}
+
+/** Wipe sticky LF flag so already-enabled monoblocks fall back to online. */
+function enforceRestaurantLocalFirstKillSwitch() {
+  if (!isRestaurantLocalFirstKillSwitchOn()) return;
+  try {
+    const user = readUserConfig() || {};
+    if (user.restaurantLocalFirst === true) {
+      saveRestaurantLocalFirst(false);
+    }
+  } catch {
+    try { saveRestaurantLocalFirst(false); } catch { /* ignore */ }
+  }
+  stopRestaurantOfflineRuntime();
+  refreshDesktopConfig();
 }
 
 async function handleBundledLoadFallback() {
@@ -320,6 +356,7 @@ app.whenReady().then(async () => {
     return;
   }
 
+  enforceRestaurantLocalFirstKillSwitch();
   refreshDesktopConfig();
   rebuildAppMenu();
 
@@ -336,6 +373,7 @@ app.whenReady().then(async () => {
     meta: {
       offlineFirst: Boolean(refreshDesktopConfig().offlineFirst),
       restaurantLocalFirst: Boolean(refreshDesktopConfig().restaurantLocalFirst),
+      restaurantLocalFirstKilled: isRestaurantLocalFirstKillSwitchOn(),
       uiMode: refreshDesktopConfig().uiMode,
       appWorld: refreshDesktopConfig().appWorld,
     },

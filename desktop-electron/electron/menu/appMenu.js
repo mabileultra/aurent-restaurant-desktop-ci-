@@ -64,12 +64,14 @@ function buildAppMenu({
                 },
               },
               {
-                label: 'Ресторан local-first (тест)',
+                // Kill switch in restaurantLocalFirst.js — keep online-only for clients.
+                label: 'Ресторан local-first (временно выкл.)',
                 type: 'radio',
                 checked: Boolean(restaurantLocalFirst),
+                enabled: false,
                 click: () => {
                   if (typeof setRestaurantLocalFirst === 'function') {
-                    Promise.resolve(setRestaurantLocalFirst(true)).catch(() => {});
+                    Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
                   }
                 },
               },

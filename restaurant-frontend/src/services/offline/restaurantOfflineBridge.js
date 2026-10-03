@@ -5,12 +5,14 @@ import {
   waiterPwaBridge,
 } from './waiterPwa/bridge';
 import { mergeLocalOrdersIntoFloor } from '../../restaurant/pos/utils/mergeLocalOrdersIntoFloor';
+import { isRestaurantLocalFirstKilled } from './restaurantLocalFirstKillSwitch';
 
 function desk() {
   return typeof window !== 'undefined' ? window.desktopCashier : null;
 }
 
 export function isRestaurantOfflineBridge() {
+  if (isRestaurantLocalFirstKilled()) return false;
   if (isElectronOfflineBridge()) return true;
   return isWaiterPwaLocalFirstEligible();
 }
@@ -21,6 +23,7 @@ function isElectronOfflineBridge() {
 }
 
 export function isRestaurantLocalFirstDesktop() {
+  if (isRestaurantLocalFirstKilled()) return false;
   const d = desk();
   if (typeof d?.restaurantLocalFirstFlag === 'function') {
     return Boolean(d.restaurantLocalFirstFlag());
@@ -30,6 +33,7 @@ export function isRestaurantLocalFirstDesktop() {
 
 /** Active local-first path (desktop flag OR waiter PWA). */
 export function isRestaurantLocalFirstOn() {
+  if (isRestaurantLocalFirstKilled()) return false;
   if (isRestaurantLocalFirstDesktop() && isElectronOfflineBridge()) return true;
   return isWaiterPwaLocalFirstEligible();
 }

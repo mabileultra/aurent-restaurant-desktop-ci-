@@ -17,6 +17,7 @@ import {
 import { tickWaiterOutbox, countPendingOutbox } from './outboxSync';
 import { pullHubOrdersForWaiter } from './hubOrderImport';
 import { idbPut } from './idb';
+import { isRestaurantLocalFirstKilled } from '../restaurantLocalFirstKillSwitch';
 
 /** @type {{ storeId: number|null, authToken: string|null }} */
 const session = { storeId: null, authToken: null };
@@ -25,6 +26,8 @@ let lastHubPullAt = 0;
 const HUB_PULL_MS = 5_000;
 
 export function isWaiterPwaLocalFirstEligible() {
+  // Production kill switch — waiters stay on classic online API.
+  if (isRestaurantLocalFirstKilled()) return false;
   if (typeof window === 'undefined') return false;
   const desk = window.desktopCashier;
   const deskLf = typeof desk?.restaurantLocalFirstFlag === 'function'

@@ -1,27 +1,20 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { resolveRestaurantLocalFirst } = require('../electron/config/restaurantLocalFirst');
+const {
+  resolveRestaurantLocalFirst,
+  isRestaurantLocalFirstKillSwitchOn,
+} = require('../electron/config/restaurantLocalFirst');
 
-test('restaurantLocalFirst defaults false (dark)', () => {
-  assert.equal(resolveRestaurantLocalFirst({ userConfig: {}, env: {} }), false);
-  assert.equal(resolveRestaurantLocalFirst({ userConfig: null, env: {} }), false);
-});
-
-test('restaurantLocalFirst from user config', () => {
+test('kill switch is on — config true is ignored', () => {
+  assert.equal(isRestaurantLocalFirstKillSwitchOn(), true);
   assert.equal(
     resolveRestaurantLocalFirst({ userConfig: { restaurantLocalFirst: true }, env: {} }),
-    true,
-  );
-});
-
-test('env overrides user config', () => {
-  assert.equal(
-    resolveRestaurantLocalFirst({
-      userConfig: { restaurantLocalFirst: true },
-      env: { AURENT_RESTAURANT_LOCAL_FIRST: '0' },
-    }),
     false,
   );
+  assert.equal(resolveRestaurantLocalFirst({ userConfig: {}, env: {} }), false);
+});
+
+test('kill switch still allows explicit env lab opt-in', () => {
   assert.equal(
     resolveRestaurantLocalFirst({
       userConfig: { restaurantLocalFirst: false },
