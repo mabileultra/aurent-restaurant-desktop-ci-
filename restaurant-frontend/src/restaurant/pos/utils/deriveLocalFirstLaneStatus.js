@@ -39,9 +39,11 @@ export function deriveLocalFirstLaneStatus({
 
   /** @type {'idle'|'waiting'|'synced'} */
   let sync = 'idle';
-  if (pendingOutbox > 0 || localOnly) {
+  // Only real outbox backlog = waiting. `_localOnly` alone used to flash "Ожидает подключения"
+  // forever on waiter/cashier even when events already synced (or print went via relay).
+  if (pendingOutbox > 0) {
     sync = 'waiting';
-  } else if (localPrinted && !localOnly) {
+  } else if (localPrinted || localOnly) {
     sync = 'synced';
   }
 

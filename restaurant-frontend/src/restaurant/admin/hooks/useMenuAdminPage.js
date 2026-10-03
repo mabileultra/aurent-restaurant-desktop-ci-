@@ -110,13 +110,39 @@ export function useMenuAdminPage() {
     });
   }, [items, filters]);
 
-  const total = filteredItems.length;
+  // One admin card per size family (not a separate card per 0.5 / 1 / 1.5 SKU).
+  const familyRows = useMemo(() => {
+    const map = new Map();
+    for (const item of filteredItems) {
+      const key = item.variantGroupId || item.id;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(item);
+    }
+    return [...map.values()].map((variants) => {
+      const sorted = [...variants].sort((a, b) => {
+        const pa = Number(a.portionAmount) || Number(a.portionGrams) || 0;
+        const pb = Number(b.portionAmount) || Number(b.portionGrams) || 0;
+        if (pa !== pb) return pa - pb;
+        return (Number(a.price) || 0) - (Number(b.price) || 0);
+      });
+      const prices = sorted.map((v) => Number(v.price) || 0);
+      const primary = sorted[0];
+      return {
+        ...primary,
+        _familySizeCount: sorted.length,
+        _familyMinPrice: Math.min(...prices),
+        _familyVariants: sorted,
+      };
+    });
+  }, [filteredItems]);
+
+  const total = familyRows.length;
   const totalPages = pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
   const safePage = Math.min(page, Math.max(0, totalPages - 1));
   const rows = useMemo(() => {
     const start = safePage * pageSize;
-    return filteredItems.slice(start, start + pageSize);
-  }, [filteredItems, safePage, pageSize]);
+    return familyRows.slice(start, start + pageSize);
+  }, [familyRows, safePage, pageSize]);
 
   const invalidate = () => {
     qc.invalidateQueries({ queryKey: ['rst-menu-admin', workspace.storeId] });

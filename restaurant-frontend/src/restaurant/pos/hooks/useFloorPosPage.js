@@ -529,8 +529,26 @@ export function useFloorPosPage() {
   };
 
   const handleComposeFamily = (family) => {
-    const item = family?.primary ?? family?.variants?.[0];
-    handleAddItem(item);
+    if (!family) return;
+    if (!activeOrderId && !draftTableRef.current) return;
+    const variants = Array.isArray(family.variants) && family.variants.length
+      ? family.variants
+      : [family.primary].filter(Boolean);
+    const primary = variants[0];
+    if (!primary) return;
+    // Multi size SKU: open compose modal (portion pick), do not silent-add the cheapest.
+    if (family.multi && variants.length > 1) {
+      if (isWeightSoldMenuItem(primary)) {
+        setPendingWeightItem(primary);
+        return;
+      }
+      setPendingVariants(variants);
+      setPendingMenuItem(primary);
+      setSelectedModifierIds([]);
+      setPendingItemNote('');
+      return;
+    }
+    handleAddItem(primary);
   };
 
   const confirmWeightItem = ({ menuItem, quantity, note }) => {

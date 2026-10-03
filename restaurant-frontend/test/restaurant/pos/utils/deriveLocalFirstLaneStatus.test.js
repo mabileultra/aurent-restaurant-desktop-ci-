@@ -39,4 +39,14 @@ describe('deriveLocalFirstLaneStatus', () => {
     expect(lanes.kitchen).toBe('print_pending');
     expect(lanes.sync).toBe('waiting');
   });
+
+  it('localOnly without pending outbox is synced (not false "waiting")', () => {
+    const lanes = deriveLocalFirstLaneStatus({
+      localFirst: true,
+      order: { _localOnly: true, _localPrinted: false },
+      queues: { pendingOutbox: 0 },
+    });
+    expect(lanes.sync).toBe('synced');
+    expect(lanes.kitchen).toBe('idle');
+  });
 });

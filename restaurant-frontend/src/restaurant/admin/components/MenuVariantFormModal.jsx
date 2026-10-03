@@ -30,12 +30,11 @@ export default function MenuVariantFormModal({ p }) {
         />
         <BaseInput
           label={p.t('rst.admin.portionAmount')}
-          type="number"
-          min={0.001}
-          step="0.1"
+          type="text"
+          inputMode="decimal"
           value={f.portionAmount}
-          onChange={(e) => p.setVariantForm({ ...f, portionAmount: e.target.value })}
-          placeholder="0.5 / 1 / 1.5"
+          onChange={(e) => p.setVariantForm({ ...f, portionAmount: e.target.value.replace(',', '.') })}
+          placeholder="1 или 1.5"
         />
         <BaseSelect
           size="sm"

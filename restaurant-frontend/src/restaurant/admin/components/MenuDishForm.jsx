@@ -80,13 +80,11 @@ export default function MenuDishForm({ p }) {
         />
         <BaseInput
           label={p.t('rst.admin.portionAmount')}
-          type="number"
-          min={0.001}
-          max={p.form.portionUnit === 'KG' ? 10 : undefined}
-          step="0.1"
+          type="text"
+          inputMode="decimal"
           value={p.form.portionAmount}
-          onChange={(e) => p.setForm({ ...p.form, portionAmount: e.target.value })}
-          placeholder={p.form.portionUnit === 'KG' ? '1' : '1 / 1.5 / 0.7'}
+          onChange={(e) => p.setForm({ ...p.form, portionAmount: e.target.value.replace(',', '.') })}
+          placeholder={p.form.portionUnit === 'KG' ? '1' : '1 или 1.5'}
         />
         <BaseSelect
           size="sm"

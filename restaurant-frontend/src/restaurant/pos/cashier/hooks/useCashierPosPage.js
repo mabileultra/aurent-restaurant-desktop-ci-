@@ -208,8 +208,8 @@ export function useCashierPosPage() {
   };
 
   const handleComposeFamily = (family) => {
-    const item = family?.primary ?? family?.variants?.[0];
-    handleAddItem(item);
+    // Same size-pick path as floor POS (opens ModifierPickModal with variants).
+    floor.handleComposeFamily(family);
   };
 
   const confirmWeightItem = async ({ menuItem, quantity, note }) => {

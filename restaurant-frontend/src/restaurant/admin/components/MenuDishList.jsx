@@ -83,15 +83,19 @@ export default function MenuDishList({ p, onOpenMenu }) {
                     </div>
                   ) : null}
                   <h3 className="rst-menu-card__title">{item.name}</h3>
-                  {item.variantGroupId ? (
-                    <p className="rst-menu-card__meta">{p.t('rst.admin.variantBadge')}</p>
-                  ) : null}
                   {item.description ? (
                     <p className="rst-menu-card__desc">{item.description}</p>
                   ) : null}
                   <p className="rst-menu-card__meta">
                     {metaParts.length ? metaParts.join(' · ') : p.t('rst.admin.noStation')}
                   </p>
+                  {item._familySizeCount > 1 ? (
+                    <p className="rst-menu-card__meta">
+                      {p.t('rst.order.variantSizes', { count: item._familySizeCount })}
+                      {' · '}
+                      {p.t('rst.order.priceFrom', { price: fmtMoneyCompact(item._familyMinPrice) })}
+                    </p>
+                  ) : null}
                   <p className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</p>
                 </div>
               </article>
