@@ -33,6 +33,7 @@ import {
   rstOfflineOpenShift,
   rstOfflineCloseShift,
 } from '../../../services/offline/restaurantOfflineBridge';
+import { tickWaiterOutbox } from '../../../services/offline/waiterPwa/outboxSync';
 import { getDesktopPrinterSettings } from '../utils/desktopPrinters';
 import { rstMenuApi } from '../../api/menu.api';
 import { logLocalFirst } from '../../../services/desktop/activityLog';
@@ -153,6 +154,7 @@ export function useFloorPosMutations(deps) {
           adultCount: guests,
           childrenCount: 0,
           waiterId: waiterUserId || null,
+          forceNew: true,
         });
         logLocalFirst('Доп. счёт (local-first)', { orderId: local.orderId, tableId });
         return local.order;
@@ -290,7 +292,7 @@ export function useFloorPosMutations(deps) {
             menuItemId: menuItem.id,
             name: menuItem.name,
             quantity: qty,
-            unitPrice: menuItem.price ?? menuItem.sellingPrice,
+            unitPrice: Number(menuItem.price ?? menuItem.sellingPrice) || 0,
             note: noteKey || null,
             modifiers: (modifierOptionIds ?? []).map(String),
           });
@@ -482,6 +484,9 @@ export function useFloorPosMutations(deps) {
         // Do not also call classic send — that would double-print on the cashier.
         if (!needsRelay) {
           void rstOrderApi.sendToKitchen(orderId).catch(() => null);
+        } else {
+          // Flush phone outbox now so cashier relay can claim slips without waiting for poll.
+          void tickWaiterOutbox({ storeId }).catch(() => null);
         }
         logLocalFirst('Кухня: local print + outbox', {
           orderId,

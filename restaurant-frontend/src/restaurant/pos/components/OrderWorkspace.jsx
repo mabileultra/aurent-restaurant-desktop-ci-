@@ -100,7 +100,9 @@ export default function OrderWorkspace({
     return map;
   }, [menuItems]);
 
-  const activeLines = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED');
+  const activeLines = (order.items ?? []).filter((line) => (
+    line.itemStatus !== 'CANCELLED' && (Number(line.quantity) || 0) > 0
+  ));
   const linesCount = activeLines.length;
   const newCount = activeLines.filter((line) => (
     line.itemStatus === 'NEW'

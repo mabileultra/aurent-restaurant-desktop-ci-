@@ -95,7 +95,8 @@ function enqueueOutbox(deviceId, eventType, payload, clientEventId = null) {
 export async function waiterOpenOrder(input = {}) {
   const deviceId = await getWaiterDeviceId();
   const tableKey = input.tableId != null ? String(input.tableId) : null;
-  if (tableKey) {
+  // forceNew = «Новый счёт» — never reuse the open check on this table.
+  if (tableKey && !input.forceNew) {
     const all = await idbGetAll('orders');
     const openOnTable = all.find((row) => (
       String(row.tableId || '') === tableKey
@@ -289,16 +290,29 @@ export async function waiterCancelItem(input = {}) {
   const itemId = String(input.itemId || '').trim();
   const order = await idbGet('orders', orderId);
   if (!order) throw new Error(`order_not_found:${orderId}`);
-  const items = (order.items || []).map((i) => (
-    String(i.id) === itemId ? { ...i, status: 'CANCELLED', itemStatus: 'CANCELLED' } : i
-  ));
+  const prev = (order.items || []).find((i) => String(i.id) === itemId);
+  if (!prev) throw new Error(`item_not_found:${itemId}`);
+  // Unsent lines: drop from ticket (same as desktop). Sent lines: keep as CANCELLED.
+  const unsent = prev.status !== 'SENT'
+    && prev.itemStatus !== 'SENT_TO_KITCHEN'
+    && prev.status !== 'CANCELLED'
+    && prev.itemStatus !== 'CANCELLED';
+  const items = unsent
+    ? (order.items || []).filter((i) => String(i.id) !== itemId)
+    : (order.items || []).map((i) => (
+      String(i.id) === itemId ? { ...i, status: 'CANCELLED', itemStatus: 'CANCELLED' } : i
+    ));
   const next = { ...order, items, updatedAt: nowIso() };
-  const event = enqueueOutbox(deviceId, 'ORDER_CANCEL_ITEM', { orderId, itemId });
+  const event = enqueueOutbox(deviceId, 'ORDER_CANCEL_ITEM', {
+    orderId,
+    itemId,
+    deleted: unsent,
+  });
   await idbWriteAll([
     { type: 'put', store: 'orders', value: next },
     { type: 'put', store: 'outbox', value: event },
   ]);
-  return { orderId, itemId, order: toUiOrder(next) };
+  return { orderId, itemId, order: toUiOrder(next), deleted: unsent };
 }
 
 export async function waiterCancelOrder(input = {}) {

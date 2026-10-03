@@ -74,7 +74,9 @@ export default function WaiterMobileOrderWorkspace({
     return map;
   }, [order.items]);
 
-  const activeLines = (order.items ?? []).filter((line) => line.itemStatus !== 'CANCELLED');
+  const activeLines = (order.items ?? []).filter((line) => (
+    line.itemStatus !== 'CANCELLED' && (Number(line.quantity) || 0) > 0
+  ));
   const linesCount = activeLines.length;
   const newCount = activeLines.filter((line) => (
     line.itemStatus === 'NEW'

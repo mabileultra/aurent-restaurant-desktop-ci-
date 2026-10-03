@@ -17,11 +17,12 @@ describe('mergeLocalOrdersIntoFloor', () => {
       status: 'ACTIVE',
       guestCount: 1,
       openedAt: '2026-10-03T10:00:00.000Z',
-      items: [{ id: 'i1', name: 'Plov', quantity: 1, status: 'OPEN' }],
+      items: [{ id: 'i1', name: 'Plov', quantity: 1, unitPrice: 30000, status: 'OPEN' }],
     }]);
     expect(merged.halls[0].tables[0].status).toBe('OCCUPIED');
     expect(merged.halls[0].tables[0].activeOrder.id).toBe('L-1');
     expect(merged.halls[0].tables[0].activeOrder._local).toBe(true);
+    expect(merged.halls[0].tables[0].activeOrder.subtotal).toBe(30000);
   });
 
   it('does not paint empty OPEN shells as occupied', () => {

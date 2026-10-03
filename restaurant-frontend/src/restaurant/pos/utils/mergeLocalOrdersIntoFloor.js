@@ -24,6 +24,22 @@ function hasLines(order) {
   });
 }
 
+function lineMoney(item) {
+  if (!item) return 0;
+  const st = String(item.status || item.itemStatus || '');
+  if (st === 'CANCELLED') return 0;
+  const stored = Number(item.lineTotal);
+  if (Number.isFinite(stored) && stored > 0) return stored;
+  return (Number(item.unitPrice) || 0) * (Number(item.quantity) || 0);
+}
+
+/** IDB rows have items[] but often no precomputed subtotal — floor cards showed 0. */
+function orderSubtotal(o) {
+  const direct = Number(o?.subtotal);
+  if (Number.isFinite(direct) && direct > 0) return direct;
+  return (Array.isArray(o?.items) ? o.items : []).reduce((sum, item) => sum + lineMoney(item), 0);
+}
+
 function toActiveRow(o) {
   return {
     id: o.id,
@@ -31,7 +47,7 @@ function toActiveRow(o) {
     guestCount: o.guestCount || 1,
     openedAt: o.openedAt || null,
     waiterUserId: o.waiterId || o.waiterUserId || null,
-    subtotal: o.subtotal,
+    subtotal: orderSubtotal(o),
     orderNo: o.orderNo || (o.id ? `L-${String(o.id).slice(0, 8)}` : null),
     _local: true,
   };

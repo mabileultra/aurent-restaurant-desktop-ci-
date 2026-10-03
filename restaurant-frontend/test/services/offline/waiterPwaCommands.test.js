@@ -10,7 +10,13 @@ vi.mock('../../../src/api/client', () => ({
   api: { post: vi.fn() },
 }));
 
-import { waiterOpenOrder, waiterAddItem, waiterGetOrder, waiterSendToKitchen } from '../../../src/services/offline/waiterPwa/commands';
+import {
+  waiterOpenOrder,
+  waiterAddItem,
+  waiterGetOrder,
+  waiterSendToKitchen,
+  waiterCancelItem,
+} from '../../../src/services/offline/waiterPwa/commands';
 
 /** Minimal in-memory IDB stub for node tests. */
 function installMemoryIdb() {
@@ -167,5 +173,45 @@ describe('waiter PWA local commands', () => {
     expect(second.orderId).toBe(first.orderId);
     expect(second.reused).toBe(true);
     expect(second.outboxId).toBeNull();
+  });
+
+  it('forceNew opens a second check on the same table', async () => {
+    const first = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 15,
+      tableLabel: 'T15',
+      guestCount: 1,
+    });
+    const second = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 15,
+      tableLabel: 'T15',
+      guestCount: 1,
+      forceNew: true,
+    });
+    expect(second.orderId).not.toBe(first.orderId);
+    expect(second.reused).toBeFalsy();
+  });
+
+  it('removes unsent line from ticket instead of leaving a ghost name', async () => {
+    const opened = await waiterOpenOrder({
+      storeId: 1,
+      tableId: 16,
+      guestCount: 1,
+    });
+    const added = await waiterAddItem({
+      orderId: opened.orderId,
+      storeId: 1,
+      name: 'лагмон',
+      quantity: 1,
+      unitPrice: 12000,
+      menuItemId: 'm-lag',
+    });
+    const cancelled = await waiterCancelItem({
+      orderId: opened.orderId,
+      itemId: added.itemId,
+    });
+    expect(cancelled.deleted).toBe(true);
+    expect(cancelled.order.items).toHaveLength(0);
   });
 });
