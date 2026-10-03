@@ -417,7 +417,16 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
-  if (isQuittingForUpdate()) return;
+  // While installing an update, never recreate UI — but do finish quit on Win/Linux
+  // if electron-updater already closed windows and stalled.
+  if (isQuittingForUpdate()) {
+    if (process.platform !== 'darwin') {
+      setTimeout(() => {
+        if (isQuittingForUpdate()) app.exit(0);
+      }, 2_000);
+    }
+    return;
+  }
   if (process.platform !== 'darwin') app.quit();
 });
 

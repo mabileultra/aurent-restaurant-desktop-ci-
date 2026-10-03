@@ -164,22 +164,36 @@ function registerAutoUpdaterIpc() {
   ipcMain.handle('desktop:quitAndInstallUpdate', () => {
     if (!isUpdaterEnabled()) return { ok: false, reason: 'disabled' };
     // Do not call quitAndInstall synchronously inside invoke — macOS often no-ops
-    // while the IPC reply is still in flight. Defer and block activate recreate.
+    // while the IPC reply is still in flight. Close windows, defer install, then
+    // force relaunch if the process is still alive (unsigned builds / stalled updater).
     quittingForUpdate = true;
     setTimeout(() => {
+      try {
+        for (const win of BrowserWindow.getAllWindows()) {
+          if (!win.isDestroyed()) {
+            try { win.removeAllListeners('close'); } catch { /* ignore */ }
+            win.close();
+          }
+        }
+      } catch {
+        /* ignore */
+      }
       try {
         autoUpdater.quitAndInstall(false, true);
       } catch (error) {
         console.error('[autoUpdater] quitAndInstall', error?.message || error);
-        quittingForUpdate = false;
         broadcastUpdate({ type: 'error', code: classifyUpdaterError(error?.message || String(error)) });
+      }
+      setTimeout(() => {
+        if (!quittingForUpdate) return;
+        console.warn('[autoUpdater] quitAndInstall did not exit — force relaunch');
         try {
           app.relaunch();
-          app.exit(0);
         } catch {
-          app.quit();
+          /* ignore */
         }
-      }
+        app.exit(0);
+      }, 4_000);
     }, 250);
     return { ok: true };
   });

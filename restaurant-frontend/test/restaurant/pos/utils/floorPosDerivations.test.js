@@ -3,6 +3,7 @@ import {
   buildWaiters,
   computeCommissionPreview,
   displayUserName,
+  isOrderOpenLike,
   lineHasPendingSend,
   resolveOrderFlags,
   userStoreIds,
@@ -79,6 +80,15 @@ describe('floorPosDerivations', () => {
     }, true);
     expect(afterSend.canSendKitchen).toBe(false);
     expect(afterSend.canRequestBill).toBe(true);
+  });
+
+  it('treats ACTIVE and missing status as open-like for local-first', () => {
+    expect(isOrderOpenLike({ status: 'ACTIVE' })).toBe(true);
+    expect(isOrderOpenLike({ status: 'OPEN' })).toBe(true);
+    expect(isOrderOpenLike({ status: 'BILLING' })).toBe(true);
+    expect(isOrderOpenLike(undefined)).toBe(true);
+    expect(isOrderOpenLike({ status: 'PAID' })).toBe(false);
+    expect(isOrderOpenLike({ status: 'CANCELLED' })).toBe(false);
   });
 });
 

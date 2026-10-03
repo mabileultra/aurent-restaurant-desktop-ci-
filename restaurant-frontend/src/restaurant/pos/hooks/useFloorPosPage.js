@@ -14,7 +14,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
 import {
   emptyGuestForm, emptyCounterForm, buildWaiters, buildWaiterNameById,
-  resolveOrderHallName, resolveBackLabelKey, resolveOrderFlags,
+  resolveOrderHallName, resolveBackLabelKey, resolveOrderFlags, isOrderOpenLike,
 } from '../utils/floorPosDerivations';
 import { resolveServicePreview } from '../utils/restaurantPayAmount';
 import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
@@ -444,7 +444,7 @@ export function useFloorPosPage() {
     const sent = Number(line.sentQuantity) || 0;
     const waiterPendingOk = kitchen && nextQty >= sent;
     if (!isNew && !(access.canCancelOrder && kitchen) && !waiterPendingOk) return;
-    if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
+    if (!isOrderOpenLike(order)) return;
     // Kitchen refuse confirm lives in OrderLines (in-app modal — window.confirm is flaky on POS tablets).
     if (nextQty < 1) { m.removeItemMutation.mutate(line.id); return; }
     m.updateItemMutation.mutate({ itemId: line.id, quantity: nextQty });
@@ -495,7 +495,7 @@ export function useFloorPosPage() {
   const addItemNow = (menuItem, extras = {}) => {
     if (!menuItem) return;
     if (activeOrderId) {
-      if (order?.status !== 'OPEN' && order?.status !== 'BILLING') return;
+      if (!isOrderOpenLike(order)) return;
       m.addItemMutation.mutate({
         menuItem,
         modifierOptionIds: extras.modifierOptionIds ?? [],

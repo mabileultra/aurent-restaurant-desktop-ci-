@@ -122,15 +122,20 @@ export function lineHasPendingSend(line) {
   return qty > sent;
 }
 
+export function isOrderOpenLike(order) {
+  if (!order) return true;
+  const status = order.status;
+  if (status == null || status === '') return true;
+  return status === 'OPEN' || status === 'ACTIVE' || status === 'BILLING';
+}
+
 export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const items = order?.items ?? [];
   const hasBillable = items.some((item) => item.itemStatus !== 'CANCELLED');
   const hasNew = items.some((item) => lineHasPendingSend(item));
   const boardOn = kitchenBoardEnabled !== false;
   // Local-first SQLite uses ACTIVE; classic API / toUiOrder maps it to OPEN.
-  const openLike = order?.status === 'OPEN'
-    || order?.status === 'ACTIVE'
-    || order?.status === 'BILLING';
+  const openLike = isOrderOpenLike(order);
   return {
     canCancel: items.length === 0,
     // Always allow send while there is pending kitchen qty (incl. after bill). Board only gates KDS + bill-before-send.
