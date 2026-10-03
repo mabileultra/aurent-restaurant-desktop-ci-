@@ -3,14 +3,28 @@
 const ORDER_STATUS = Object.freeze({
   OPEN: 'OPEN',
   ACTIVE: 'ACTIVE',
+  BILLING: 'BILLING',
   PAID: 'PAID',
   CANCELLED: 'CANCELLED',
 });
 
 /** @type {Readonly<Record<string, ReadonlySet<string>>>} */
 const ORDER_TRANSITIONS = Object.freeze({
-  [ORDER_STATUS.OPEN]: Object.freeze(new Set([ORDER_STATUS.ACTIVE, ORDER_STATUS.CANCELLED])),
-  [ORDER_STATUS.ACTIVE]: Object.freeze(new Set([ORDER_STATUS.PAID, ORDER_STATUS.CANCELLED])),
+  [ORDER_STATUS.OPEN]: Object.freeze(new Set([
+    ORDER_STATUS.ACTIVE,
+    ORDER_STATUS.BILLING,
+    ORDER_STATUS.CANCELLED,
+  ])),
+  [ORDER_STATUS.ACTIVE]: Object.freeze(new Set([
+    ORDER_STATUS.BILLING,
+    ORDER_STATUS.PAID,
+    ORDER_STATUS.CANCELLED,
+  ])),
+  [ORDER_STATUS.BILLING]: Object.freeze(new Set([
+    ORDER_STATUS.ACTIVE,
+    ORDER_STATUS.PAID,
+    ORDER_STATUS.CANCELLED,
+  ])),
   [ORDER_STATUS.PAID]: Object.freeze(new Set()),
   [ORDER_STATUS.CANCELLED]: Object.freeze(new Set()),
 });

@@ -11,9 +11,25 @@ const { updateOrderItemCommand } = require('../commands/updateOrderItemCommand.c
 const { cancelOrderItemCommand } = require('../commands/cancelOrderItemCommand.cjs');
 const { cancelOrderCommand } = require('../commands/cancelOrderCommand.cjs');
 const { payOrderCommand } = require('../commands/payOrderCommand.cjs');
+const { requestBillCommand } = require('../commands/requestBillCommand.cjs');
+const { patchOrderMetaCommand } = require('../commands/patchOrderMetaCommand.cjs');
+const { openShiftCommand, closeShiftCommand } = require('../commands/shiftCommands.cjs');
+const { saveLocalShift, getLocalShift } = require('../commands/localShiftCache.cjs');
+const { saveLocalModifiers, getLocalModifiers } = require('../commands/localModifiersCache.cjs');
+const { createLanHubServer } = require('../hub/lanHubServer.cjs');
+const { applyHubEvent } = require('../hub/applyHubEvent.cjs');
+const { buildHubSnapshot } = require('../hub/hubSnapshot.cjs');
+const { mergeHubSnapshot } = require('../hub/mergeHubSnapshot.cjs');
+const { createLocalMenuItemCommand } = require('../commands/createLocalMenuItemCommand.cjs');
+const {
+  listLocalMenuItems,
+  listLocalMenuCategories,
+  listLocalFloorSnapshot,
+} = require('../commands/listLocalCatalog.cjs');
 const {
   importRestaurantBootstrap,
   getRestaurantBootstrapStatus,
+  getLocalRoster,
 } = require('../db/bootstrap.cjs');
 const {
   resolvePrintJobCommand,
@@ -28,6 +44,7 @@ const OUTBOX_TICK_MS = 2_000;
 let started = false;
 let printTimer = null;
 let outboxTimer = null;
+let hubServer = null;
 let session = {
   authToken: null,
   storeId: null,
@@ -152,6 +169,45 @@ async function startRestaurantOfflineRuntime({ loadConfig } = {}) {
   }, OUTBOX_TICK_MS);
   if (typeof outboxTimer.unref === 'function') outboxTimer.unref();
 
+  // LAN hub for waiter phones when cloud is unreachable.
+  try {
+    hubServer = createLanHubServer({
+      port: Number(getConfig()?.restaurantHubPort) || undefined,
+      getMeta: () => ({
+        storeId: session.storeId,
+        deviceId: getOrCreateDeviceId(),
+      }),
+      getSnapshot: async () => {
+        const database = await getRestaurantOfflineDb();
+        return buildHubSnapshot(database, session.storeId);
+      },
+      applyEvent: async (evt) => {
+        const database = await getRestaurantOfflineDb();
+        const cfg = getConfig() || {};
+        const stationMap = cfg.stationPrinters || {};
+        const kitchenPrinter = Object.values(stationMap).find((n) => String(n || '').trim())
+          || cfg.billPrinterName
+          || cfg.receiptPrinterName
+          || '';
+        const payload = { ...(evt.payload || {}) };
+        if (evt.eventType === 'ORDER_SEND_KITCHEN' && !payload.printerName) {
+          payload.printerName = String(kitchenPrinter || '').trim();
+        }
+        return applyHubEvent(database, {
+          ...evt,
+          payload,
+          storeId: session.storeId,
+          billPrinterName: cfg.billPrinterName || cfg.receiptPrinterName || '',
+        });
+      },
+    });
+    const hubInfo = await hubServer.start();
+    logInfo('LAN hub started', hubInfo);
+  } catch (err) {
+    logWarn('LAN hub not started', { error: err?.message || String(err) });
+    hubServer = null;
+  }
+
   started = true;
   logInfo('Runtime started', {
     deviceId: getOrCreateDeviceId(),
@@ -165,6 +221,10 @@ function stopRestaurantOfflineRuntime() {
   if (outboxTimer) clearInterval(outboxTimer);
   printTimer = null;
   outboxTimer = null;
+  if (hubServer) {
+    void hubServer.stop().catch(() => null);
+    hubServer = null;
+  }
   if (started) logInfo('Runtime stopped');
   started = false;
 }
@@ -320,6 +380,133 @@ async function restaurantGetOrder(orderId) {
   return toUiOrder(db, String(orderId || ''));
 }
 
+async function restaurantRequestBill(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
+  try {
+    const result = requestBillCommand(db, { ...input, deviceId });
+    logInfo('Request bill (local)', {
+      orderId: result.orderId,
+      status: result.status,
+      outboxId: result.outboxId,
+      online: Boolean(session.authToken),
+    });
+    return result;
+  } catch (err) {
+    logError('Request bill failed', { error: err?.message || String(err) });
+    throw err;
+  }
+}
+
+async function restaurantListMenu(storeId) {
+  const db = await getRestaurantOfflineDb();
+  return listLocalMenuItems(db, storeId ?? session.storeId);
+}
+
+async function restaurantListCategories(storeId) {
+  const db = await getRestaurantOfflineDb();
+  return listLocalMenuCategories(db, storeId ?? session.storeId);
+}
+
+async function restaurantGetFloor(storeId) {
+  const db = await getRestaurantOfflineDb();
+  return listLocalFloorSnapshot(db, storeId ?? session.storeId);
+}
+
+async function restaurantPatchOrderMeta(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
+  try {
+    const result = patchOrderMetaCommand(db, { ...input, deviceId });
+    logInfo('Patch order meta (local)', {
+      orderId: result.orderId,
+      patch: result.patch,
+      outboxId: result.outboxId,
+    });
+    return result;
+  } catch (err) {
+    logError('Patch order meta failed', { error: err?.message || String(err) });
+    throw err;
+  }
+}
+
+async function restaurantSaveShift(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  return saveLocalShift(db, input.storeId ?? session.storeId, input.shift ?? null);
+}
+
+async function restaurantGetShift(storeId) {
+  const db = await getRestaurantOfflineDb();
+  return getLocalShift(db, storeId ?? session.storeId);
+}
+
+async function restaurantOpenShift(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
+  const result = openShiftCommand(db, {
+    ...input,
+    deviceId,
+    storeId: input.storeId ?? session.storeId,
+  });
+  logInfo('Open shift (local)', { shiftId: result.shift?.id, already: result.already });
+  return result;
+}
+
+async function restaurantCloseShift(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
+  const result = closeShiftCommand(db, {
+    ...input,
+    deviceId,
+    storeId: input.storeId ?? session.storeId,
+  });
+  logInfo('Close shift (local)', { shiftId: result.shift?.id });
+  return result;
+}
+
+async function restaurantListRoster(storeId) {
+  const db = await getRestaurantOfflineDb();
+  return getLocalRoster(db, storeId ?? session.storeId);
+}
+
+async function restaurantSaveModifiers(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  return saveLocalModifiers(db, input.menuItemId, input.groups || []);
+}
+
+async function restaurantGetModifiers(menuItemId) {
+  const db = await getRestaurantOfflineDb();
+  return getLocalModifiers(db, menuItemId);
+}
+
+function restaurantGetHubInfo() {
+  return hubServer ? hubServer.getInfo() : { listening: false, url: null };
+}
+
+async function restaurantCreateMenuItem(input = {}) {
+  const db = await getRestaurantOfflineDb();
+  const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
+  const result = createLocalMenuItemCommand(db, {
+    ...input,
+    deviceId,
+    storeId: input.storeId ?? session.storeId,
+  });
+  logInfo('Local menu item created', { id: result.id, name: result.name });
+  return result;
+}
+
+async function restaurantPullHubSnapshot(hubUrl) {
+  const base = String(hubUrl || '').replace(/\/$/, '');
+  if (!base) throw new Error('hub_url_required');
+  const res = await fetch(`${base}/hub/snapshot`);
+  if (!res.ok) throw new Error(`hub_snapshot_http_${res.status}`);
+  const snapshot = await res.json();
+  const db = await getRestaurantOfflineDb();
+  const result = mergeHubSnapshot(db, snapshot);
+  logInfo('Hub snapshot merged', result);
+  return { ...result, storeId: snapshot.storeId ?? null };
+}
+
 async function restaurantImportBootstrap(payload) {
   const db = await getRestaurantOfflineDb();
   try {
@@ -347,6 +534,7 @@ async function restaurantGetStatus() {
     hasAuthSession: Boolean(session.authToken && session.storeId != null),
     deviceId: getOrCreateDeviceId(),
     unresolvedPrintJobs,
+    hub: restaurantGetHubInfo(),
   };
 }
 
@@ -383,6 +571,21 @@ module.exports = {
   restaurantCancelOrder,
   restaurantPayOrder,
   restaurantGetOrder,
+  restaurantRequestBill,
+  restaurantListMenu,
+  restaurantListCategories,
+  restaurantGetFloor,
+  restaurantListRoster,
+  restaurantSaveModifiers,
+  restaurantGetModifiers,
+  restaurantPatchOrderMeta,
+  restaurantSaveShift,
+  restaurantGetShift,
+  restaurantOpenShift,
+  restaurantCloseShift,
+  restaurantGetHubInfo,
+  restaurantCreateMenuItem,
+  restaurantPullHubSnapshot,
   restaurantImportBootstrap,
   restaurantGetStatus,
   restaurantResolvePrintJob,

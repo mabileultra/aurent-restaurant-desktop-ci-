@@ -1,5 +1,6 @@
 /**
  * C2 — add item to local order. TX: order_items + orders ACTIVE + outbox.
+ * Missing shell (server order after WAN drop): materialize then add.
  */
 const { randomUUID } = require('node:crypto');
 const { ORDER_STATUS } = require('../domain/orderStatus.cjs');
@@ -7,6 +8,37 @@ const { runInTransaction } = require('../db/tx.cjs');
 const { createOrderRepo, createOrderItemRepo } = require('../db/orderRepos.cjs');
 const { createOutboxRepo } = require('../db/outboxRepo.cjs');
 const { toUiOrder } = require('./openOrderCommand.cjs');
+
+function materializeOrderShell(db, input, clock) {
+  const orderId = String(input.orderId || '').trim();
+  const existing = db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+  if (existing) return existing;
+  if (input.storeId == null) throw new Error(`order_not_found:${orderId}`);
+  const at = clock();
+  db.prepare(
+    `INSERT INTO orders(
+       id, server_id, store_id, table_id, status, guest_count,
+       waiter_id, waiter_name, opened_at, updated_at, payload_json
+     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  ).run(
+    orderId,
+    input.serverId != null ? String(input.serverId) : orderId,
+    input.storeId,
+    input.tableId != null ? String(input.tableId) : null,
+    ORDER_STATUS.OPEN,
+    Math.max(1, Number(input.guestCount) || 1),
+    input.waiterId || null,
+    input.waiterName || null,
+    at,
+    at,
+    JSON.stringify({
+      channel: input.channel || 'DINE_IN',
+      tableCode: input.tableLabel || null,
+      mirrored: true,
+    }),
+  );
+  return db.prepare('SELECT * FROM orders WHERE id = ?').get(orderId);
+}
 
 function addOrderItemCommand(db, input, deps = {}) {
   const {
@@ -29,8 +61,10 @@ function addOrderItemCommand(db, input, deps = {}) {
     const items = createOrderItemRepo(db, { idFactory, clock });
     const outbox = createOutboxRepo(db, { idFactory, clock, uuid });
 
-    const existing = orders.getById(orderId);
-    if (!existing) throw new Error(`order_not_found:${orderId}`);
+    let existing = orders.getById(orderId);
+    if (!existing) {
+      existing = materializeOrderShell(db, input, clock);
+    }
     if (existing.status === ORDER_STATUS.OPEN) {
       orders.transitionStatus(orderId, ORDER_STATUS.ACTIVE);
     } else if (existing.status !== ORDER_STATUS.ACTIVE) {

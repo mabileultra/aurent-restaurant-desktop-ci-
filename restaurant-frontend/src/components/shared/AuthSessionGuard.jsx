@@ -3,11 +3,11 @@ import { useAuthStore } from '../../store/authStore';
 import { redirectIfStoredTokenExpired } from '../../utils/authSessionExpiry';
 import { startAuthIdleWatch } from '../../utils/authIdleTimeout';
 import {
-  isRestaurantLocalFirstDesktop,
-  isRestaurantOfflineBridge,
+  isRestaurantLocalFirstOn,
   rstOfflineSetSession,
   rstOfflineStartRuntime,
 } from '../../services/offline/restaurantOfflineBridge';
+import { startPendingFiscalFlushLoop } from '../../restaurant/pos/utils/pendingFiscalQueue';
 
 function resolveStoreId(user) {
   const ids = Array.isArray(user?.storeIds) ? user.storeIds.map(Number).filter(Number.isFinite) : [];
@@ -32,9 +32,9 @@ export default function AuthSessionGuard({ children }) {
     return startAuthIdleWatch();
   }, [hydrated, token]);
 
-  // Push JWT + store into Electron outbox sender when restaurant local-first is on.
+  // Push JWT + store into local-first outbox (Electron or waiter PWA).
   useEffect(() => {
-    if (!hydrated || !isRestaurantOfflineBridge() || !isRestaurantLocalFirstDesktop()) return undefined;
+    if (!hydrated || !isRestaurantLocalFirstOn()) return undefined;
     if (!token) {
       void rstOfflineSetSession({ authToken: null, storeId: null });
       return undefined;
@@ -46,6 +46,11 @@ export default function AuthSessionGuard({ children }) {
     })();
     return undefined;
   }, [hydrated, token, user]);
+
+  useEffect(() => {
+    if (!hydrated || !token) return undefined;
+    return startPendingFiscalFlushLoop();
+  }, [hydrated, token]);
 
   return children;
 }

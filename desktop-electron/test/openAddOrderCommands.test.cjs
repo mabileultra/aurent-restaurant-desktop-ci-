@@ -71,7 +71,7 @@ test('C2 add item activates order and enqueues outbox', async () => {
     quantity: 2,
     unitPrice: 10000,
   }, deps);
-  assert.equal(added.order.status, ORDER_STATUS.ACTIVE);
+  assert.equal(added.order.status, 'OPEN'); // UI maps ACTIVE → OPEN
   assert.equal(added.order.items.length, 1);
   assert.equal(added.order.items[0].quantity, 2);
   assert.equal(

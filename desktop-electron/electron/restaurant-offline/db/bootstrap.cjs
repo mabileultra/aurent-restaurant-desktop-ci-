@@ -89,6 +89,13 @@ function importRestaurantBootstrap(db, payload = {}) {
        ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
     ).run('bootstrap:storeId', String(storeId), now);
 
+    if (Array.isArray(payload.roster)) {
+      db.prepare(
+        `INSERT INTO sync_state(key, value, updated_at) VALUES (?, ?, ?)
+         ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      ).run(`roster:store:${storeId}`, JSON.stringify(payload.roster), now);
+    }
+
     db.exec('COMMIT');
   } catch (err) {
     try {
@@ -136,7 +143,21 @@ function getRestaurantBootstrapStatus(db) {
   };
 }
 
+function getLocalRoster(db, storeId) {
+  const sid = Number(storeId);
+  if (!Number.isFinite(sid)) return [];
+  const row = db.prepare(`SELECT value FROM sync_state WHERE key = ?`).get(`roster:store:${sid}`);
+  if (!row?.value) return [];
+  try {
+    const parsed = JSON.parse(row.value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 module.exports = {
   importRestaurantBootstrap,
   getRestaurantBootstrapStatus,
+  getLocalRoster,
 };

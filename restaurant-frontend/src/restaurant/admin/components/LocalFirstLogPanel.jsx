@@ -6,9 +6,20 @@ import {
   isRestaurantOfflineBridge,
   rstOfflineGetStatus,
   rstOfflineResolvePrintJob,
+  rstOfflineCreateMenuItem,
+  rstOfflinePullHubSnapshot,
 } from '../../../services/offline/restaurantOfflineBridge';
 import { openActivityLogFolder, openActivityLogViewer } from '../../../services/desktop/activityLog';
 import { validateLocalFirstPrinterSetup } from '../../pos/utils/validateLocalFirstPrinterSetup';
+import { getConfiguredHubUrl } from '../../../services/offline/waiterPwa/outboxSync';
+import { discoverLanHubs } from '../../../services/offline/discoverLanHubs';
+import {
+  getPeerHubUrl,
+  setPeerHubUrl,
+  isPeerHubAutoSync,
+  setPeerHubAutoSync,
+  requestRestaurantBootstrapRefresh,
+} from '../../../services/offline/peerHubSettings';
 
 /**
  * Local-first status, printer startup check, UNKNOWN resolve, activity journal.
@@ -19,6 +30,10 @@ export default function LocalFirstLogPanel({ t, stations = [], settings = null, 
   const bridge = isRestaurantOfflineBridge();
   const [status, setStatus] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [draftName, setDraftName] = useState('');
+  const [draftPrice, setDraftPrice] = useState('');
+  const [peerHubUrl, setPeerHubUrlState] = useState(() => getPeerHubUrl() || getConfiguredHubUrl());
+  const [peerAuto, setPeerAuto] = useState(() => isPeerHubAutoSync());
 
   const printerCheck = validateLocalFirstPrinterSetup({
     stations,
@@ -166,6 +181,21 @@ export default function LocalFirstLogPanel({ t, stations = [], settings = null, 
                     })
                   : t('rst.admin.localFirstBootstrapWait')}
               </span>
+              <BaseButton
+                type="button"
+                variant="ghost"
+                style={{ marginTop: 6 }}
+                disabled={busy}
+                onClick={() => {
+                  requestRestaurantBootstrapRefresh();
+                  toast.success(t('rst.admin.localFirstBootstrapPull', {
+                    defaultValue: 'Тянем меню/столы с сервера…',
+                  }));
+                  window.setTimeout(() => void refresh(), 2500);
+                }}
+              >
+                {t('rst.admin.localFirstBootstrapNow', { defaultValue: 'Обновить с сервера' })}
+              </BaseButton>
             </div>
             <div className="rst-admin-field">
               <span className="rst-admin-field__label">{t('rst.admin.localFirstQueues')}</span>
@@ -185,6 +215,158 @@ export default function LocalFirstLogPanel({ t, stations = [], settings = null, 
                   : t('rst.admin.localFirstSessionOff')}
                 {status?.deviceId ? ` · ${status.deviceId}` : ''}
               </span>
+            </div>
+            {status?.hub?.url ? (
+              <div className="rst-admin-field">
+                <span className="rst-admin-field__label">
+                  {t('rst.admin.localFirstHub', { defaultValue: 'LAN Hub (официанты)' })}
+                </span>
+                <span className="rst-admin-field__hint">{status.hub.url}</span>
+                <BaseButton
+                  type="button"
+                  variant="ghost"
+                  style={{ marginTop: 6 }}
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(status.hub.url);
+                      toast.success(t('rst.admin.localFirstHubCopied', {
+                        defaultValue: 'Hub URL скопирован — вставьте на телефоне официанта',
+                      }));
+                    } catch {
+                      toast.error(status.hub.url);
+                    }
+                  }}
+                >
+                  {t('rst.admin.localFirstHubCopy', { defaultValue: 'Копировать Hub URL' })}
+                </BaseButton>
+              </div>
+            ) : null}
+            <div className="rst-admin-field">
+              <span className="rst-admin-field__label">
+                {t('rst.admin.localFirstPeerHub', { defaultValue: 'Peer Hub (другая касса)' })}
+              </span>
+              <input
+                type="url"
+                value={peerHubUrl}
+                onChange={(e) => setPeerHubUrlState(e.target.value)}
+                placeholder="http://192.168.x.x:8787"
+                style={{ width: '100%', marginTop: 4, padding: '6px 8px' }}
+              />
+              <label className="rst-admin-field__hint" style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 6 }}>
+                <input
+                  type="checkbox"
+                  checked={peerAuto}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setPeerAuto(on);
+                    setPeerHubAutoSync(on);
+                    if (on && String(peerHubUrl || '').trim()) {
+                      setPeerHubUrl(String(peerHubUrl).replace(/\/$/, ''));
+                    }
+                  }}
+                />
+                {t('rst.admin.localFirstPeerAuto', { defaultValue: 'Авто-синк каждые ~12с' })}
+              </label>
+              <div className="rst-printers__row" style={{ marginTop: 6, gap: 8, flexWrap: 'wrap' }}>
+                <BaseButton
+                  type="button"
+                  variant="ghost"
+                  disabled={busy}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      const hits = await discoverLanHubs({ preferUrl: peerHubUrl });
+                      if (!hits.length) {
+                        toast.error(t('rst.admin.localFirstPeerEmpty', {
+                          defaultValue: 'Hub в LAN не найден',
+                        }));
+                        return;
+                      }
+                      setPeerHubUrlState(hits[0].url);
+                      setPeerHubUrl(hits[0].url);
+                      toast.success(hits[0].url);
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  {t('rst.admin.localFirstPeerDiscover', { defaultValue: 'Найти' })}
+                </BaseButton>
+                <BaseButton
+                  type="button"
+                  disabled={busy || !String(peerHubUrl || '').trim()}
+                  onClick={async () => {
+                    setBusy(true);
+                    try {
+                      const url = String(peerHubUrl).replace(/\/$/, '');
+                      setPeerHubUrl(url);
+                      const res = await rstOfflinePullHubSnapshot(url);
+                      toast.success(t('rst.admin.localFirstPeerPulled', {
+                        defaultValue: `Стянуто заказов: ${res?.mergedOrders ?? 0}`,
+                        count: res?.mergedOrders ?? 0,
+                      }));
+                      setStatus(await rstOfflineGetStatus());
+                    } catch {
+                      toast.error(t('rst.admin.localFirstPeerFail', {
+                        defaultValue: 'Не удалось стянуть snapshot с Hub',
+                      }));
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  {t('rst.admin.localFirstPeerPull', { defaultValue: 'Стянуть заказы/меню' })}
+                </BaseButton>
+              </div>
+            </div>
+            <div className="rst-admin-field">
+              <span className="rst-admin-field__label">
+                {t('rst.admin.localFirstDraftDish', { defaultValue: 'Блюдо offline' })}
+              </span>
+              <input
+                type="text"
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                placeholder={t('rst.admin.localFirstDraftName', { defaultValue: 'Название' })}
+                style={{ width: '100%', marginTop: 4, padding: '6px 8px' }}
+              />
+              <input
+                type="number"
+                min="0"
+                step="100"
+                value={draftPrice}
+                onChange={(e) => setDraftPrice(e.target.value)}
+                placeholder={t('rst.admin.localFirstDraftPrice', { defaultValue: 'Цена' })}
+                style={{ width: '100%', marginTop: 4, padding: '6px 8px' }}
+              />
+              <BaseButton
+                type="button"
+                style={{ marginTop: 6 }}
+                disabled={busy || !String(draftName || '').trim()}
+                onClick={async () => {
+                  setBusy(true);
+                  try {
+                    await rstOfflineCreateMenuItem({
+                      name: String(draftName).trim(),
+                      price: Number(draftPrice) || 0,
+                    });
+                    setDraftName('');
+                    setDraftPrice('');
+                    toast.success(t('rst.admin.localFirstDraftOk', {
+                      defaultValue: 'Блюдо добавлено локально',
+                    }));
+                    setStatus(await rstOfflineGetStatus());
+                  } catch {
+                    toast.error(t('rst.admin.localFirstDraftFail', {
+                      defaultValue: 'Не удалось создать блюдо',
+                    }));
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                {t('rst.admin.localFirstDraftAdd', { defaultValue: 'Добавить блюдо' })}
+              </BaseButton>
             </div>
           </div>
           {(status?.unresolvedPrintJobs || []).length > 0 ? (

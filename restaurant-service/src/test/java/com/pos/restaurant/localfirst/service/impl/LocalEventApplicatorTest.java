@@ -13,7 +13,9 @@ import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
+import com.pos.restaurant.kitchen.service.impl.SendToKitchenHandler;
 import com.pos.restaurant.payment.service.impl.PayOrderHandler;
+import com.pos.restaurant.payment.service.impl.RequestBillHandler;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,6 +47,8 @@ class LocalEventApplicatorTest {
     @Mock private ShiftLookup shiftLookup;
     @Mock private FloorTenantSupport tenantSupport;
     @Mock private PayOrderHandler payOrderHandler;
+    @Mock private SendToKitchenHandler sendToKitchenHandler;
+    @Mock private RequestBillHandler requestBillHandler;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private LocalEventApplicator applicator;
@@ -59,6 +63,8 @@ class LocalEventApplicatorTest {
             shiftLookup,
             tenantSupport,
             payOrderHandler,
+            sendToKitchenHandler,
+            requestBillHandler,
             objectMapper
         );
     }
@@ -311,6 +317,45 @@ class LocalEventApplicatorTest {
 
         assertEquals(com.pos.restaurant.order.domain.OrderItemStatus.SENT_TO_KITCHEN, item.getItemStatus());
         assertEquals(0, new BigDecimal("2").compareTo(item.getSentQuantity()));
+    }
+
+    @Test
+    void menuItemUpsertCreatesWhenMissing() {
+        UUID id = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        when(menuItemRepository.findByIdAndCompanyId(id, 10)).thenReturn(Optional.empty());
+        when(menuItemRepository.save(any(MenuItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ObjectNode payload = objectMapper.createObjectNode()
+            .put("id", id.toString())
+            .put("name", "Плов")
+            .put("price", 25000);
+
+        applicator.apply(10, 1, "MENU_ITEM_UPSERT", payload.toString());
+
+        ArgumentCaptor<MenuItem> cap = ArgumentCaptor.forClass(MenuItem.class);
+        verify(menuItemRepository).save(cap.capture());
+        assertEquals(id, cap.getValue().getId());
+        assertEquals("Плов", cap.getValue().getName());
+        assertEquals(0, new BigDecimal("25000.00").compareTo(cap.getValue().getPrice()));
+    }
+
+    @Test
+    void menuItemUpsertUpdatesExisting() {
+        UUID id = UUID.fromString("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        MenuItem item = MenuItem.builder()
+            .id(id).companyId(10).storeId(1).name("Old").price(new BigDecimal("1000.00")).build();
+        when(menuItemRepository.findByIdAndCompanyId(id, 10)).thenReturn(Optional.of(item));
+        when(menuItemRepository.save(any(MenuItem.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        ObjectNode payload = objectMapper.createObjectNode()
+            .put("id", id.toString())
+            .put("name", "New")
+            .put("price", 5000);
+
+        applicator.apply(10, 1, "MENU_ITEM_UPSERT", payload.toString());
+
+        assertEquals("New", item.getName());
+        assertEquals(0, new BigDecimal("5000.00").compareTo(item.getPrice()));
     }
 
     @Test

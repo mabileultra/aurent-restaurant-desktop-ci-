@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  isRestaurantLocalFirstDesktop,
-  isRestaurantOfflineBridge,
+  isRestaurantLocalFirstOn,
   rstOfflineGetStatus,
 } from '../../../services/offline/restaurantOfflineBridge';
 import { deriveLocalFirstLaneStatus } from '../utils/deriveLocalFirstLaneStatus';
@@ -47,8 +46,9 @@ function mark(ok) {
  * Compact Kitchen vs Sync lanes — only when restaurant local-first is on.
  */
 export default function LocalFirstLaneStatus({ order, t }) {
-  const localFirst = isRestaurantLocalFirstDesktop() && isRestaurantOfflineBridge();
+  const localFirst = isRestaurantLocalFirstOn();
   const [queues, setQueues] = useState(null);
+  const [hubUrl, setHubUrl] = useState('');
 
   useEffect(() => {
     if (!localFirst) return undefined;
@@ -63,6 +63,7 @@ export default function LocalFirstLaneStatus({ order, t }) {
           failedPrintJobs: status?.failedPrintJobs ?? 0,
           pendingOutbox: status?.pendingOutbox ?? 0,
         });
+        setHubUrl(status?.hub?.url || '');
       } catch {
         if (!cancelled) setQueues(null);
       }
@@ -97,6 +98,13 @@ export default function LocalFirstLaneStatus({ order, t }) {
         <span className="rst-local-lanes__label">{t('rst.order.laneSync', { defaultValue: 'Синк' })}</span>
         <span className="rst-local-lanes__value">{syncLabel(t, lanes.sync)}</span>
       </div>
+      {hubUrl ? (
+        <div className="rst-local-lanes__row">
+          <span className="rst-local-lanes__mark">·</span>
+          <span className="rst-local-lanes__label">Hub</span>
+          <span className="rst-local-lanes__value" title={hubUrl}>{hubUrl}</span>
+        </div>
+      ) : null}
     </div>
   );
 }

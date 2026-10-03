@@ -7,4 +7,9 @@ module.exports = {
   cancelOrderItemCommand: require('./cancelOrderItemCommand.cjs').cancelOrderItemCommand,
   cancelOrderCommand: require('./cancelOrderCommand.cjs').cancelOrderCommand,
   payOrderCommand: require('./payOrderCommand.cjs').payOrderCommand,
+  requestBillCommand: require('./requestBillCommand.cjs').requestBillCommand,
+  patchOrderMetaCommand: require('./patchOrderMetaCommand.cjs').patchOrderMetaCommand,
+  listLocalMenuItems: require('./listLocalCatalog.cjs').listLocalMenuItems,
+  listLocalFloorSnapshot: require('./listLocalCatalog.cjs').listLocalFloorSnapshot,
+  createLocalMenuItemCommand: require('./createLocalMenuItemCommand.cjs').createLocalMenuItemCommand,
 };

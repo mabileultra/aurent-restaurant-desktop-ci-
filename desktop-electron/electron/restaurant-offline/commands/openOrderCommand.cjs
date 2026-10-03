@@ -51,6 +51,9 @@ function openOrderCommand(db, input, deps = {}) {
           comment: input.comment || null,
           tableCode: input.tableLabel || null,
           channel: input.channel || 'DINE_IN',
+          clientName: input.clientName || null,
+          clientPhone: input.clientPhone || null,
+          deliveryAddress: input.deliveryAddress || null,
         }),
       );
     }
@@ -101,7 +104,8 @@ function toUiOrder(db, orderId) {
   return {
     id: order.id,
     orderNo: order.server_id || `L-${String(order.id).slice(0, 8)}`,
-    status: order.status,
+    // POS flags expect OPEN/BILLING; local lifecycle ACTIVE ≡ open check with items.
+    status: order.status === 'ACTIVE' ? 'OPEN' : order.status,
     channel: meta.channel || 'DINE_IN',
     tableId: order.table_id,
     tableCode: meta.tableCode || null,
@@ -109,7 +113,7 @@ function toUiOrder(db, orderId) {
     adultCount: meta.adultCount ?? order.guest_count,
     childrenCount: meta.childrenCount ?? 0,
     subtotal: items.reduce((s, i) => s + (Number(i.unit_price) || 0) * (Number(i.quantity) || 0), 0),
-    discountAmount: 0,
+    discountAmount: Number(meta.discountAmount) || 0,
     waiterUserId: order.waiter_id,
     openedAt: order.opened_at,
     _local: true,

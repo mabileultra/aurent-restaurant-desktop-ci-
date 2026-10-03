@@ -11,6 +11,21 @@ const {
   restaurantCancelOrder,
   restaurantPayOrder,
   restaurantGetOrder,
+  restaurantRequestBill,
+  restaurantListMenu,
+  restaurantListCategories,
+  restaurantGetFloor,
+  restaurantListRoster,
+  restaurantSaveModifiers,
+  restaurantGetModifiers,
+  restaurantPatchOrderMeta,
+  restaurantSaveShift,
+  restaurantGetShift,
+  restaurantOpenShift,
+  restaurantCloseShift,
+  restaurantGetHubInfo,
+  restaurantCreateMenuItem,
+  restaurantPullHubSnapshot,
   restaurantImportBootstrap,
   restaurantGetStatus,
   restaurantResolvePrintJob,
@@ -77,6 +92,66 @@ function registerRestaurantOfflineIpc({ loadConfig } = {}) {
 
   ipcMain.handle('rst-offline:pay-order', async (_e, payload) =>
     safe(() => restaurantPayOrder(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:request-bill', async (_e, payload) =>
+    safe(() => restaurantRequestBill(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:list-menu', async (_e, storeId) =>
+    safe(() => restaurantListMenu(storeId), []),
+  );
+
+  ipcMain.handle('rst-offline:list-categories', async (_e, storeId) =>
+    safe(() => restaurantListCategories(storeId), []),
+  );
+
+  ipcMain.handle('rst-offline:list-roster', async (_e, storeId) =>
+    safe(() => restaurantListRoster(storeId), []),
+  );
+
+  ipcMain.handle('rst-offline:save-modifiers', async (_e, payload) =>
+    safe(() => restaurantSaveModifiers(payload || {}), { ok: false }),
+  );
+
+  ipcMain.handle('rst-offline:get-modifiers', async (_e, menuItemId) =>
+    safe(() => restaurantGetModifiers(menuItemId), []),
+  );
+
+  ipcMain.handle('rst-offline:get-floor', async (_e, storeId) =>
+    safe(() => restaurantGetFloor(storeId), { storeId: null, halls: [] }),
+  );
+
+  ipcMain.handle('rst-offline:patch-order-meta', async (_e, payload) =>
+    safe(() => restaurantPatchOrderMeta(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:save-shift', async (_e, payload) =>
+    safe(() => restaurantSaveShift(payload || {}), { ok: false }),
+  );
+
+  ipcMain.handle('rst-offline:get-shift', async (_e, storeId) =>
+    safe(() => restaurantGetShift(storeId), null),
+  );
+
+  ipcMain.handle('rst-offline:open-shift', async (_e, payload) =>
+    safe(() => restaurantOpenShift(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:close-shift', async (_e, payload) =>
+    safe(() => restaurantCloseShift(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:hub-info', async () =>
+    restaurantGetHubInfo(),
+  );
+
+  ipcMain.handle('rst-offline:create-menu-item', async (_e, payload) =>
+    safe(() => restaurantCreateMenuItem(payload || {}), undefined),
+  );
+
+  ipcMain.handle('rst-offline:pull-hub-snapshot', async (_e, hubUrl) =>
+    safe(() => restaurantPullHubSnapshot(hubUrl), undefined),
   );
 
   ipcMain.handle('rst-offline:resolve-print-job', async (_e, payload) =>

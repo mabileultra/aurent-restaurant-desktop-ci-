@@ -2,10 +2,13 @@ package com.pos.restaurant.localfirst.service.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pos.restaurant.exception.BusinessException;
+import com.pos.restaurant.kitchen.service.impl.SendToKitchenHandler;
 import com.pos.restaurant.floor.domain.TableStatus;
 import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.menu.domain.MenuItemType;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.order.domain.OrderChannel;
@@ -19,6 +22,7 @@ import com.pos.restaurant.payment.domain.PaymentCardType;
 import com.pos.restaurant.payment.domain.PaymentMethod;
 import com.pos.restaurant.payment.dto.PayOrderRequest;
 import com.pos.restaurant.payment.service.impl.PayOrderHandler;
+import com.pos.restaurant.payment.service.impl.RequestBillHandler;
 import com.pos.restaurant.shift.entity.RestaurantShift;
 import com.pos.restaurant.shift.support.ShiftLookup;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +52,8 @@ public class LocalEventApplicator {
     private final ShiftLookup shiftLookup;
     private final FloorTenantSupport tenantSupport;
     private final PayOrderHandler payOrderHandler;
+    private final SendToKitchenHandler sendToKitchenHandler;
+    private final RequestBillHandler requestBillHandler;
     private final ObjectMapper objectMapper;
 
     @Transactional
@@ -63,6 +69,11 @@ public class LocalEventApplicator {
                 case "ORDER_CANCEL" -> applyOrderCancel(companyId, storeId, payload);
                 case "ORDER_PAY" -> applyOrderPay(companyId, storeId, payload);
                 case "ORDER_SEND_KITCHEN" -> applySendKitchen(companyId, storeId, payload);
+                case "ORDER_REQUEST_BILL" -> applyRequestBill(payload);
+                case "ORDER_UPDATE_GUESTS" -> applyUpdateGuests(companyId, storeId, payload);
+                case "ORDER_UPDATE_DISCOUNT" -> applyUpdateDiscount(companyId, storeId, payload);
+                case "ORDER_ASSIGN_WAITER" -> applyAssignWaiter(companyId, storeId, payload);
+                case "MENU_ITEM_UPSERT" -> applyMenuItemUpsert(companyId, storeId, payload);
                 default -> log.debug("local-first apply ignored type={}", eventType);
             }
         } catch (Exception ex) {
@@ -334,6 +345,106 @@ public class LocalEventApplicator {
         }
     }
 
+    private void applyRequestBill(JsonNode payload) {
+        UUID orderId = parseUuid(text(payload, "orderId"));
+        if (orderId == null) return;
+        try {
+            requestBillHandler.handle(orderId);
+        } catch (BusinessException ex) {
+            log.debug("local-first ORDER_REQUEST_BILL skipped orderId={}: {}", orderId, ex.toString());
+        }
+    }
+
+    private void applyUpdateGuests(Integer companyId, Integer storeId, JsonNode payload) {
+        UUID orderId = parseUuid(text(payload, "orderId"));
+        if (orderId == null) return;
+        Optional<FloorOrder> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) return;
+        FloorOrder order = orderOpt.get();
+        if (!companyId.equals(order.getCompanyId()) || !storeId.equals(order.getStoreId())) return;
+        int guestCount = Math.max(1, intOr(payload, "guestCount", order.getGuestCount() > 0 ? order.getGuestCount() : 1));
+        int childrenCount = Math.max(0, intOr(payload, "childrenCount", 0));
+        int adultCount = Math.max(1, intOr(payload, "adultCount", guestCount - childrenCount));
+        order.setGuestCount(guestCount);
+        order.setAdultCount(adultCount);
+        order.setChildrenCount(childrenCount);
+        orderRepository.save(order);
+        log.info("local-first ORDER_UPDATE_GUESTS applied orderId={}", orderId);
+    }
+
+    private void applyUpdateDiscount(Integer companyId, Integer storeId, JsonNode payload) {
+        UUID orderId = parseUuid(text(payload, "orderId"));
+        if (orderId == null) return;
+        Optional<FloorOrder> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) return;
+        FloorOrder order = orderOpt.get();
+        if (!companyId.equals(order.getCompanyId()) || !storeId.equals(order.getStoreId())) return;
+        BigDecimal discount = decimalOr(payload, "discountAmount", BigDecimal.ZERO)
+            .setScale(2, RoundingMode.HALF_UP);
+        if (discount.compareTo(BigDecimal.ZERO) < 0) discount = BigDecimal.ZERO;
+        order.setDiscountAmount(discount);
+        orderRepository.save(order);
+        log.info("local-first ORDER_UPDATE_DISCOUNT applied orderId={}", orderId);
+    }
+
+    private void applyAssignWaiter(Integer companyId, Integer storeId, JsonNode payload) {
+        UUID orderId = parseUuid(text(payload, "orderId"));
+        if (orderId == null) return;
+        Optional<FloorOrder> orderOpt = orderRepository.findById(orderId);
+        if (orderOpt.isEmpty()) return;
+        FloorOrder order = orderOpt.get();
+        if (!companyId.equals(order.getCompanyId()) || !storeId.equals(order.getStoreId())) return;
+        UUID waiterId = parseUuid(text(payload, "waiterId"));
+        order.setWaiterUserId(waiterId);
+        orderRepository.save(order);
+        log.info("local-first ORDER_ASSIGN_WAITER applied orderId={}", orderId);
+    }
+
+    private void applyMenuItemUpsert(Integer companyId, Integer storeId, JsonNode payload) {
+        String name = blankToNull(text(payload, "name"));
+        if (name == null) return;
+        BigDecimal price = decimalOr(payload, "price", BigDecimal.ZERO)
+            .setScale(2, RoundingMode.HALF_UP);
+        if (price.compareTo(BigDecimal.ZERO) < 0) {
+            price = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+        UUID id = parseUuid(text(payload, "id"));
+        UUID categoryId = parseUuid(text(payload, "categoryId"));
+
+        if (id != null) {
+            Optional<MenuItem> existing = menuItemRepository.findByIdAndCompanyId(id, companyId);
+            if (existing.isPresent()) {
+                MenuItem item = existing.get();
+                if (!storeId.equals(item.getStoreId())) return;
+                item.setName(name);
+                item.setPrice(price);
+                if (categoryId != null) {
+                    item.setMenuCategoryId(categoryId);
+                }
+                menuItemRepository.save(item);
+                log.info("local-first MENU_ITEM_UPSERT updated id={}", id);
+                return;
+            }
+        }
+
+        UUID newId = id != null ? id : UUID.randomUUID();
+        MenuItem created = MenuItem.builder()
+            .id(newId)
+            .companyId(companyId)
+            .storeId(storeId)
+            .itemType(MenuItemType.DISH)
+            .name(name)
+            .price(price)
+            .taxRate(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP))
+            .menuCategoryId(categoryId)
+            .active(true)
+            .available(true)
+            .sortOrder(100)
+            .build();
+        menuItemRepository.save(created);
+        log.info("local-first MENU_ITEM_UPSERT created id={}", newId);
+    }
+
     private void applySendKitchen(Integer companyId, Integer storeId, JsonNode payload) {
         UUID orderId = parseUuid(text(payload, "orderId"));
         if (orderId == null) return;
@@ -341,6 +452,15 @@ public class LocalEventApplicator {
         if (orderOpt.isEmpty()) return;
         FloorOrder order = orderOpt.get();
         if (!companyId.equals(order.getCompanyId()) || !storeId.equals(order.getStoreId())) {
+            return;
+        }
+        // Waiter PWA: no local printer — fire classic send (print jobs + mark sent).
+        if (payload != null && payload.path("printOnServer").asBoolean(false)) {
+            try {
+                sendToKitchenHandler.handle(orderId);
+            } catch (BusinessException ex) {
+                log.debug("local-first printOnServer skipped orderId={}: {}", orderId, ex.toString());
+            }
             return;
         }
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);

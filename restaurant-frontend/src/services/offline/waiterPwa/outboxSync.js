@@ -1,0 +1,117 @@
+/** Flush waiter PWA outbox → cloud local-events, else LAN hub on station. */
+
+import { api } from '../../../api/client';
+import { idbGetAll, idbPut } from './idb';
+
+const BACKOFF_MS = [2_000, 5_000, 15_000, 30_000, 60_000];
+const HUB_URL_KEY = 'rst-lan-hub-url';
+
+let ticking = false;
+
+function nextRetryIso(attemptCount) {
+  const ms = BACKOFF_MS[Math.min(Math.max(attemptCount, 1), BACKOFF_MS.length) - 1];
+  return new Date(Date.now() + ms).toISOString();
+}
+
+export function getConfiguredHubUrl() {
+  try {
+    return String(localStorage.getItem(HUB_URL_KEY) || '').replace(/\/$/, '');
+  } catch {
+    return '';
+  }
+}
+
+export function setConfiguredHubUrl(url) {
+  try {
+    if (!url) localStorage.removeItem(HUB_URL_KEY);
+    else localStorage.setItem(HUB_URL_KEY, String(url).replace(/\/$/, ''));
+  } catch {
+    /* ignore */
+  }
+}
+
+async function postToHub(hubBase, body) {
+  const res = await fetch(`${hubBase}/hub/events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`hub_http_${res.status}:${text.slice(0, 120)}`);
+  }
+  return res.json().catch(() => ({ outcome: 'ACCEPTED' }));
+}
+
+/** Pull floor/menu/orders from station hub (peer / waiter offline read). */
+export async function fetchHubSnapshot(hubBase = getConfiguredHubUrl()) {
+  const base = String(hubBase || '').replace(/\/$/, '');
+  if (!base) return null;
+  const res = await fetch(`${base}/hub/snapshot`);
+  if (!res.ok) throw new Error(`hub_snapshot_http_${res.status}`);
+  return res.json();
+}
+
+export async function tickWaiterOutbox({ storeId, limit = 20 } = {}) {
+  if (ticking) return { busy: true, results: [] };
+  if (storeId == null) return { busy: false, results: [] };
+  ticking = true;
+  const results = [];
+  const hubUrl = getConfiguredHubUrl();
+  try {
+    const rows = (await idbGetAll('outbox'))
+      .filter((r) => r.status === 'PENDING' || r.status === 'RETRY')
+      .filter((r) => !r.nextRetryAt || Date.parse(r.nextRetryAt) <= Date.now())
+      .sort((a, b) => String(a.createdAt).localeCompare(String(b.createdAt)))
+      .slice(0, limit);
+
+    for (const row of rows) {
+      const sending = {
+        ...row,
+        status: 'SENDING',
+        sentAt: new Date().toISOString(),
+      };
+      await idbPut('outbox', sending);
+      const body = {
+        deviceId: row.deviceId,
+        clientEventId: row.clientEventId,
+        eventType: row.eventType,
+        payload: row.payload || {},
+      };
+      try {
+        let outcome = '';
+        try {
+          const res = await api.post(`/rst/stores/${storeId}/local-events`, body);
+          outcome = String(res?.data?.outcome || res?.data?.status || 'ACCEPTED').toUpperCase();
+        } catch (cloudErr) {
+          if (!hubUrl) throw cloudErr;
+          const hubRes = await postToHub(hubUrl, body);
+          outcome = String(hubRes?.outcome || 'ACCEPTED').toUpperCase();
+        }
+        if (outcome !== 'ACCEPTED' && outcome !== 'ALREADY_PROCESSED' && outcome !== 'OK') {
+          throw new Error(`unexpected_ingest_outcome:${outcome}`);
+        }
+        await idbPut('outbox', { ...sending, status: 'SYNCED', error: null, nextRetryAt: null });
+        results.push({ id: row.id, status: 'SYNCED', outcome });
+      } catch (err) {
+        const attemptCount = (row.attemptCount || 0) + 1;
+        await idbPut('outbox', {
+          ...sending,
+          status: 'RETRY',
+          attemptCount,
+          error: String(err?.message || err),
+          nextRetryAt: nextRetryIso(attemptCount),
+        });
+        results.push({ id: row.id, status: 'RETRY', error: String(err?.message || err) });
+      }
+    }
+    return { busy: false, results };
+  } finally {
+    ticking = false;
+  }
+}
+
+export async function countPendingOutbox() {
+  const rows = await idbGetAll('outbox');
+  return rows.filter((r) => r.status === 'PENDING' || r.status === 'RETRY' || r.status === 'SENDING').length;
+}

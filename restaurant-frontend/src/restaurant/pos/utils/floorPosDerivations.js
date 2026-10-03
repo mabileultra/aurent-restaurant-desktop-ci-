@@ -127,12 +127,16 @@ export function resolveOrderFlags(order, kitchenBoardEnabled = true) {
   const hasBillable = items.some((item) => item.itemStatus !== 'CANCELLED');
   const hasNew = items.some((item) => lineHasPendingSend(item));
   const boardOn = kitchenBoardEnabled !== false;
+  // Local-first SQLite uses ACTIVE; classic API / toUiOrder maps it to OPEN.
+  const openLike = order?.status === 'OPEN'
+    || order?.status === 'ACTIVE'
+    || order?.status === 'BILLING';
   return {
     canCancel: items.length === 0,
     // Always allow send while there is pending kitchen qty (incl. after bill). Board only gates KDS + bill-before-send.
-    canSendKitchen: (order?.status === 'OPEN' || order?.status === 'BILLING') && hasNew,
+    canSendKitchen: openLike && hasNew,
     // Board off: bill without sending NEW first. Board on: must send before bill.
-    canRequestBill: (order?.status === 'OPEN' || order?.status === 'BILLING')
+    canRequestBill: openLike
       && hasBillable
       && (boardOn ? !hasNew : true),
     canPay: order?.status === 'BILLING',

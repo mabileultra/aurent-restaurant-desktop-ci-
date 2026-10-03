@@ -106,10 +106,10 @@ desktop-electron/electron/restaurant-offline/
 ### Parallel / later
 - [x] A1 bundled UI restaurant (`ui-restaurant` + resolveCashierStartUrl)
 - [x] A2 `restaurantLocalFirst` flag (dark default false)
-- [x] B3 bootstrap snapshot (import API + status; live pull UI still TODO)
+- [x] B3 bootstrap snapshot (import API + status; live pull UI — «Обновить с сервера»)
 - [x] C1/C2 open table / add item (as needed for slice)
 - [x] D3 pull deltas (ORDER_SEND_KITCHEN + ORDER_OPEN + ORDER_ADD_ITEM apply on ingest)
-- [ ] F* multi-terminal hub — **only after E**
+- [x] F* multi-terminal hub — snapshot + peer pull + LAN discover (MVP)
 
 ### Electron wiring (after E)
 - [x] W1 restaurant-offline.db connection + bootstrap import
@@ -117,12 +117,26 @@ desktop-electron/electron/restaurant-offline/
 - [x] W3 PrintWorker → ESC/POS; OutboxSender → `/local-events`
 - [x] W4 main start when `restaurantLocalFirst`
 - [x] UI floor path uses `rstOfflineSendToKitchen` when local-first
+- [x] Waiter PWA: IndexedDB outbox + `printOnServer` on ORDER_SEND_KITCHEN (role WAITER, no Electron)
+- [x] A: floor/menu UI from SQLite bootstrap (local-first queries)
+- [x] B: local `ORDER_REQUEST_BILL` → BILLING + outbox + server apply
+- [x] C: discount / guests / waiter / extra+counter open local-first
+- [x] D: shift snapshot cache for offline-lite
+- [x] E: fiscal soft-fail when local-first / offline (sale not blocked)
+- [x] Local shift open/close + guest bill print_job
+- [x] Roster in bootstrap + FE fallback
+- [x] LAN hub MVP (`:8787/hub`) + waiter outbox fallback to hub URL
+- [x] Modifiers cache offline; Hub copy on desktop + waiter profile connect; pending fiscal flush
 - [x] Full menu/tables bootstrap from live API when online
 - [x] Activity journal (`local_first`) + Принтеры → статус/журнал
 - [x] Server apply OPEN/ADD/UPDATE/CANCEL/PAY
 - [x] Offline update/cancel/pay commands + UI hybrid
 - [x] UNKNOWN print manual resolve (Принтеры)
 - [x] Enable local-first from Принтеры + menu
+- [x] F1 hub `/hub/snapshot` + peer pull merge (multi-terminal read/sync)
+- [x] F2 LAN discover (`/24` probe) on waiter + admin
+- [x] F3 offline menu draft (`MENU_ITEM_UPSERT`, local sell)
+- [x] Server apply `MENU_ITEM_UPSERT`; peer auto-sync (~12s); bootstrap force UI
 
 ### Phase E matrix (minimum)
 

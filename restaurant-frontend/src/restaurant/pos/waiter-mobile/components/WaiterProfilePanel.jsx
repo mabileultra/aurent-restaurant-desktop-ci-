@@ -1,9 +1,16 @@
 import { createPortal } from 'react-dom';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { LogOut, Monitor, Smartphone, Store, X } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { LogOut, Monitor, Smartphone, Store, Wifi, X } from 'lucide-react';
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwitch';
+import {
+  getConfiguredHubUrl,
+  setConfiguredHubUrl,
+} from '../../../../services/offline/waiterPwa/outboxSync';
+import { discoverLanHubs } from '../../../../services/offline/discoverLanHubs';
 import '../styles/waiter-profile-panel.css';
 
 function initialsFromName(name) {
@@ -42,6 +49,13 @@ export default function WaiterProfilePanel({
   onLogout,
 }) {
   const { t } = useTranslation();
+  const [hubUrl, setHubUrl] = useState(() => getConfiguredHubUrl());
+  const [hubBusy, setHubBusy] = useState(false);
+
+  useEffect(() => {
+    if (open) setHubUrl(getConfiguredHubUrl());
+  }, [open]);
+
   if (!open || typeof document === 'undefined') return null;
 
   const name = displayName || t('rst.waiter.profile.title');
@@ -108,6 +122,99 @@ export default function WaiterProfilePanel({
               </span>
             </button>
           ) : null}
+        </section>
+
+        <section className="rst-waiter-profile__card" aria-label="LAN Hub">
+          <label className="rst-waiter-profile__item" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 8 }}>
+            <span className="rst-waiter-profile__item-text">
+              <span className="rst-waiter-profile__item-icon" aria-hidden><Wifi size={16} /></span>
+              {t('rst.waiter.profile.hubUrl', { defaultValue: 'LAN Hub кассы' })}
+            </span>
+            <input
+              type="url"
+              className="rst-waiter-profile__hub-input"
+              placeholder="http://192.168.x.x:8787"
+              value={hubUrl}
+              onChange={(e) => setHubUrl(e.target.value)}
+              style={{
+                width: '100%',
+                padding: '8px 10px',
+                borderRadius: 8,
+                border: '1px solid var(--rst-border, #333)',
+                background: 'transparent',
+                color: 'inherit',
+              }}
+            />
+            <button
+              type="button"
+              className="rst-waiter-profile__item rst-waiter-profile__item--action"
+              disabled={hubBusy}
+              onClick={async () => {
+                setHubBusy(true);
+                try {
+                  const hits = await discoverLanHubs({ preferUrl: hubUrl || getConfiguredHubUrl() });
+                  if (!hits.length) {
+                    toast.error(t('rst.waiter.profile.hubDiscoverEmpty', {
+                      defaultValue: 'Hub не найден в Wi‑Fi. Введите URL с кассы вручную',
+                    }));
+                    return;
+                  }
+                  const best = hits[0];
+                  setConfiguredHubUrl(best.url);
+                  setHubUrl(best.url);
+                  toast.success(t('rst.waiter.profile.hubDiscoverOk', {
+                    defaultValue: `Найден Hub: ${best.url}`,
+                    url: best.url,
+                  }));
+                } catch {
+                  toast.error(t('rst.waiter.profile.hubDiscoverFail', {
+                    defaultValue: 'Поиск Hub не удался',
+                  }));
+                } finally {
+                  setHubBusy(false);
+                }
+              }}
+            >
+              <span className="rst-waiter-profile__item-text">
+                {t('rst.waiter.profile.hubDiscover', { defaultValue: 'Найти Hub в Wi‑Fi' })}
+              </span>
+            </button>
+            <button
+              type="button"
+              className="rst-waiter-profile__item rst-waiter-profile__item--action"
+              disabled={hubBusy}
+              onClick={async () => {
+                const next = String(hubUrl || '').trim().replace(/\/$/, '');
+                setHubBusy(true);
+                try {
+                  if (!next) {
+                    setConfiguredHubUrl('');
+                    toast.success(t('rst.waiter.profile.hubCleared', { defaultValue: 'Hub сброшен' }));
+                    return;
+                  }
+                  const res = await fetch(`${next}/hub/health`);
+                  if (!res.ok) throw new Error('bad_health');
+                  const json = await res.json();
+                  if (!json?.ok) throw new Error('not_ok');
+                  setConfiguredHubUrl(next);
+                  setHubUrl(next);
+                  toast.success(t('rst.waiter.profile.hubOk', {
+                    defaultValue: 'Hub подключён — заказы уйдут на кассу без интернета',
+                  }));
+                } catch {
+                  toast.error(t('rst.waiter.profile.hubFail', {
+                    defaultValue: 'Hub недоступен. Проверьте Wi‑Fi и URL с кассы',
+                  }));
+                } finally {
+                  setHubBusy(false);
+                }
+              }}
+            >
+              <span className="rst-waiter-profile__item-text">
+                {t('rst.waiter.profile.hubSave', { defaultValue: 'Сохранить / проверить Hub' })}
+              </span>
+            </button>
+          </label>
         </section>
 
         {showInstall ? (

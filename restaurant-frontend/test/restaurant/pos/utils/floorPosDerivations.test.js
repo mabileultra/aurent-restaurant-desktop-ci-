@@ -39,6 +39,8 @@ describe('floorPosDerivations', () => {
   it('resolves order action flags', () => {
     expect(resolveOrderFlags({ status: 'BILLING', items: [{ itemStatus: 'READY' }] }).canPay).toBe(true);
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }).canSendKitchen).toBe(true);
+    // Local-first SQLite ACTIVE must still allow kitchen send.
+    expect(resolveOrderFlags({ status: 'ACTIVE', items: [{ itemStatus: 'NEW' }] }).canSendKitchen).toBe(true);
     // Send stays available with board off and after bill when NEW lines exist.
     expect(resolveOrderFlags({ status: 'OPEN', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(true);
     expect(resolveOrderFlags({ status: 'BILLING', items: [{ itemStatus: 'NEW' }] }, false).canSendKitchen).toBe(true);
