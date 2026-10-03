@@ -24,22 +24,6 @@ import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
-import { useRestaurantOfflineBootstrap } from './useRestaurantOfflineBootstrap';
-import { usePeerHubAutoSync } from './usePeerHubAutoSync';
-import {
-  isRestaurantLocalFirstOn,
-  rstOfflineGetOrder,
-  rstOfflineListMenu,
-  rstOfflineGetFloor,
-  rstOfflineOverlayFloor,
-  rstOfflineSaveShift,
-  rstOfflineGetShift,
-  rstOfflineListRoster,
-  rstOfflineSaveModifiers,
-  rstOfflineGetModifiers,
-} from '../../../services/offline/restaurantOfflineBridge';
-import { fetchHubSnapshot } from '../../../services/offline/waiterPwa/outboxSync';
-import { mergeHubFloorOccupancy } from '../utils/mergeLocalOrdersIntoFloor';
 
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 8_000;
@@ -108,50 +92,11 @@ export function useFloorPosPage() {
   const onFloor = posMode === 'floor';
 
   useStoreFloorSync(storeId, { activeOrderId });
-  useRestaurantOfflineBootstrap(storeId);
-  usePeerHubAutoSync(storeId != null);
 
   const floorQuery = useQuery({
     queryKey: ['rst-floor', storeId],
     queryFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      const withLocalOrders = async (snap) => {
-        if (!snap?.halls?.length) return snap;
-        return rstOfflineOverlayFloor(storeId, snap).catch(() => snap);
-      };
-      // Monoblock/cashier: SQLite first, then paint cloud opens (waiter → cloud).
-      if (localFirst) {
-        const local = await rstOfflineGetFloor(storeId).catch(() => null);
-        if (local?.halls?.length) {
-          try {
-            const server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
-            if (server?.halls?.length) {
-              return withLocalOrders(mergeHubFloorOccupancy(local, server));
-            }
-          } catch {
-            /* keep local */
-          }
-          return withLocalOrders(local);
-        }
-      }
-      // Phone: server occupancy + hub opens (cashier local-first not yet in cloud).
-      let server = null;
-      try {
-        server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
-      } catch (err) {
-        if (!localFirst) throw err;
-      }
-      const hub = localFirst ? await fetchHubSnapshot().catch(() => null) : null;
-      let snap = server?.halls?.length
-        ? server
-        : (hub?.floor?.halls?.length ? hub.floor : null);
-      if (snap?.halls?.length && hub?.floor?.halls?.length && snap !== hub.floor) {
-        snap = mergeHubFloorOccupancy(snap, hub.floor);
-      }
-      if (snap?.halls?.length) return withLocalOrders(snap);
-      if (server != null) return withLocalOrders(server);
-      if (!localFirst) throw new Error('floor_unavailable');
-      return { storeId, halls: [] };
+      return rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
     },
     enabled: storeId != null && (onFloor || !!activeOrderId),
     staleTime: FLOOR_STALE_MS,
@@ -170,21 +115,8 @@ export function useFloorPosPage() {
   const shiftQuery = useQuery({
     queryKey: ['rst-shift-current', storeId],
     queryFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      try {
-        const res = await rstShiftApi.current(storeId);
-        const data = res.status === 204 ? null : res.data;
-        if (localFirst) {
-          void rstOfflineSaveShift({ storeId, shift: data }).catch(() => null);
-        }
-        return data;
-      } catch (err) {
-        if (localFirst) {
-          const cached = await rstOfflineGetShift(storeId).catch(() => null);
-          if (cached) return cached;
-        }
-        throw err;
-      }
+      const res = await rstShiftApi.current(storeId);
+      return res.status === 204 ? null : res.data;
     },
     enabled: storeId != null,
     staleTime: SHIFT_STALE_MS,
@@ -193,21 +125,7 @@ export function useFloorPosPage() {
   const menuQuery = useQuery({
     queryKey: ['rst-menu-pos', storeId],
     queryFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      // Prefer live API when online — local/hub snapshot lags admin "add size" and hides new variants.
-      try {
-        const remote = await rstMenuApi.list(storeId, true).then((r) => r.data);
-        if (Array.isArray(remote)) return remote;
-      } catch (err) {
-        if (!localFirst) throw err;
-      }
-      if (localFirst) {
-        const local = await rstOfflineListMenu(storeId).catch(() => []);
-        if (Array.isArray(local) && local.length) return local;
-        const hub = await fetchHubSnapshot().catch(() => null);
-        if (Array.isArray(hub?.menuItems) && hub.menuItems.length) return hub.menuItems;
-      }
-      return [];
+      return rstMenuApi.list(storeId, true).then((r) => r.data);
     },
     enabled: storeId != null,
     staleTime: MENU_STALE_MS,
@@ -222,20 +140,7 @@ export function useFloorPosPage() {
   const orderQuery = useQuery({
     queryKey: ['rst-order', activeOrderId],
     queryFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineGetOrder(activeOrderId, { storeId });
-        if (local) return local;
-      }
-      try {
-        return await rstOrderApi.get(activeOrderId).then((r) => r.data);
-      } catch (err) {
-        if (localFirst) {
-          const local = await rstOfflineGetOrder(activeOrderId, { storeId });
-          if (local) return local;
-        }
-        throw err;
-      }
+      return rstOrderApi.get(activeOrderId).then((r) => r.data);
     },
     enabled: !!activeOrderId,
     staleTime: ORDER_STALE_MS,
@@ -246,16 +151,7 @@ export function useFloorPosPage() {
   const staffQuery = useQuery({
     queryKey: ['rst-pos-staff', storeId],
     queryFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      try {
-        return await userApi.getPosRoster(storeId).then((r) => r.data ?? []);
-      } catch (err) {
-        if (localFirst) {
-          const local = await rstOfflineListRoster(storeId).catch(() => []);
-          if (Array.isArray(local) && local.length) return local;
-        }
-        throw err;
-      }
+      return userApi.getPosRoster(storeId).then((r) => r.data ?? []);
     },
     enabled: storeId != null,
     staleTime: 60_000,
@@ -264,20 +160,7 @@ export function useFloorPosPage() {
     queryKey: ['rst-menu-modifiers', pendingMenuItem?.id],
     queryFn: async () => {
       const menuItemId = pendingMenuItem.id;
-      const localFirst = isRestaurantLocalFirstOn();
-      try {
-        const data = await rstModifierApi.listForMenuItem(menuItemId).then((r) => r.data);
-        if (localFirst && Array.isArray(data)) {
-          void rstOfflineSaveModifiers({ menuItemId, groups: data }).catch(() => null);
-        }
-        return data;
-      } catch (err) {
-        if (localFirst) {
-          const local = await rstOfflineGetModifiers(menuItemId).catch(() => []);
-          if (Array.isArray(local) && local.length) return local;
-        }
-        throw err;
-      }
+      return rstModifierApi.listForMenuItem(menuItemId).then((r) => r.data);
     },
     enabled: !!pendingMenuItem?.id,
   });
@@ -325,11 +208,6 @@ export function useFloorPosPage() {
     qc.prefetchQuery({
       queryKey: ['rst-order', orderId],
       queryFn: async () => {
-        const localFirst = isRestaurantLocalFirstOn();
-        if (localFirst) {
-          const local = await rstOfflineGetOrder(orderId);
-          if (local) return local;
-        }
         return rstOrderApi.get(orderId).then((r) => r.data);
       },
       staleTime: ORDER_STALE_MS,

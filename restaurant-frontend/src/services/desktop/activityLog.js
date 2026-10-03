@@ -1,4 +1,4 @@
-/** Desktop activity journal — restaurant shell (online + local-first). */
+/** Desktop activity journal — restaurant shell. */
 
 const CATEGORIES = new Set([
   'system',
@@ -42,10 +42,6 @@ export function logActivity({ category = 'system', level = 'info', message, meta
       at: new Date().toISOString(),
     }),
   ).catch(() => {});
-}
-
-export function logLocalFirst(message, meta, level = 'info') {
-  logActivity({ category: 'local_first', level, message, meta });
 }
 
 export function logPrint(message, meta, level = 'info') {

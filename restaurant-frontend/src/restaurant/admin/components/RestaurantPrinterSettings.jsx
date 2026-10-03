@@ -10,7 +10,6 @@ import {
   printTicketLines,
   saveDesktopPrinterSettings,
 } from '../../pos/utils/desktopPrinters';
-import LocalFirstLogPanel from './LocalFirstLogPanel';
 
 function printerOptions(printers, current) {
   const names = printers.map((item) => item?.name).filter(Boolean);
@@ -229,7 +228,6 @@ export default function RestaurantPrinterSettings({
     return (
       <div className="rst-admin-form">
         {categoryBlock}
-        <LocalFirstLogPanel t={t} stations={stations} settings={settings} printers={printers} />
         {!desktop ? (
           <div className="rst-printers-desktop-only">
             <p className="rst-coming__text">{t('rst.admin.printersDesktopOnly')}</p>
@@ -339,7 +337,6 @@ export default function RestaurantPrinterSettings({
         ) : null}
       </section>
       {categoryBlock}
-      <LocalFirstLogPanel t={t} stations={stations} settings={settings} printers={printers} />
     </div>
   );
 }

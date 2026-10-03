@@ -7,11 +7,6 @@ import {
   occupiedTablesForMerge,
 } from '../utils/floorStatusFilters';
 import { toastApiError } from '../../../utils/apiError';
-import {
-  isRestaurantLocalFirstOn,
-  rstOfflineGetOrder,
-  rstOfflineCancelOrder,
-} from '../../../services/offline/restaurantOfflineBridge';
 
 /**
  * Floor Phase-2 actions: inspect occupied table, transfer, merge, reassign waiter.
@@ -44,18 +39,12 @@ export function useFloorTableActions({
   const inspectOrderQuery = useQuery({
     queryKey: ['rst-order', orderId],
     queryFn: async () => {
-      // Waiter local-first: overlay shows L-* ids that are not on the server yet.
-      if (isRestaurantLocalFirstOn()) {
-        const local = await rstOfflineGetOrder(orderId);
-        if (local) return local;
-      }
       return rstOrderApi.get(orderId).then((r) => r.data);
     },
     enabled: !!orderId,
     staleTime: 4_000,
     retry: (count, err) => {
       const status = err?.response?.status;
-      if (status === 404 && isRestaurantLocalFirstOn()) return false;
       return count < 1;
     },
   });
@@ -108,13 +97,6 @@ export function useFloorTableActions({
 
   const cancelInspectMutation = useMutation({
     mutationFn: async () => {
-      if (isRestaurantLocalFirstOn()) {
-        const local = await rstOfflineGetOrder(orderId).catch(() => null);
-        if (local) {
-          await rstOfflineCancelOrder({ orderId: String(orderId) });
-          return { _local: true };
-        }
-      }
       return rstOrderApi.cancel(orderId);
     },
     onSuccess: () => {

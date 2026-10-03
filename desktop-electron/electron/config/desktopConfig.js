@@ -5,7 +5,6 @@ const { buildOrigin, buildHealthUrl, parseServerUrl } = require('../core/serverU
 const { resolveDesktopUrls, PRODUCTION_RESTAURANT_ORIGIN } = require('../../config/desktopUrls');
 const { resolveUiMode, UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./uiMode');
 const { resolveOfflineFirst } = require('./offlineFirst');
-const { resolveRestaurantLocalFirst } = require('./restaurantLocalFirst');
 const {
   buildLoginUrl,
   normalizeCompanyLoginCode,
@@ -104,7 +103,6 @@ function loadDesktopConfig({ isPackaged }) {
     companyLoginCode: String(user.companyLoginCode || process.env.AURENT_COMPANY_CODE || '').trim(),
     uiMode,
     offlineFirst: resolveOfflineFirst({ userConfig: user }),
-    restaurantLocalFirst: resolveRestaurantLocalFirst({ userConfig: user }),
     allowBundledUi: user.allowBundledUi === true || process.env.AURENT_UI_DEV === '1',
     // Kitchen/hub print — were omitted, so waiter SEND never saw Windows printer names.
     receiptPrinterName: String(user.receiptPrinterName || '').trim(),
@@ -120,14 +118,6 @@ function saveOfflineFirst(enabled) {
   });
 }
 
-function saveRestaurantLocalFirst(enabled) {
-  const on = Boolean(enabled);
-  return writeUserConfig({
-    restaurantLocalFirst: on,
-    // Local-first restaurant needs bundled UI files on disk.
-    ...(on ? { uiMode: UI_MODE_BUNDLED, useRemoteUi: false } : {}),
-  });
-}
 
 function saveUiMode(mode) {
   const uiMode = resolveUiMode({ userConfig: { uiMode: mode }, env: {} }) || UI_MODE_REMOTE;
@@ -191,7 +181,6 @@ module.exports = {
   saveServerConfig,
   saveUiMode,
   saveOfflineFirst,
-  saveRestaurantLocalFirst,
   normalizeCompanyLoginCode,
   normalizeAppWorld,
   configFromUserFile,

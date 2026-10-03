@@ -10,8 +10,6 @@ function buildAppMenu({
   allowBundledUi = false,
   offlineFirst = false,
   setOfflineFirst,
-  restaurantLocalFirst = false,
-  setRestaurantLocalFirst,
   appWorld = 'main',
   openActivityLogs,
   openActivityLogFolder,
@@ -21,18 +19,14 @@ function buildAppMenu({
     || String(appWorld || '').toLowerCase() === 'rst';
   const showUiModeMenu = allowBundledUi
     || uiMode === UI_MODE_BUNDLED
-    || offlineFirst
-    || restaurantLocalFirst;
+    || offlineFirst;
   const uiModeItems = showUiModeMenu
     ? [
         {
           label: 'Интерфейс с сайта (как сейчас)',
           type: 'radio',
-          checked: uiMode !== UI_MODE_BUNDLED && !restaurantLocalFirst,
+          checked: uiMode !== UI_MODE_BUNDLED,
           click: () => {
-            if (isRestaurant && typeof setRestaurantLocalFirst === 'function') {
-              Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
-            }
             if (typeof setUiMode === 'function') {
               Promise.resolve(setUiMode(UI_MODE_REMOTE)).catch(() => {});
             }
@@ -41,42 +35,16 @@ function buildAppMenu({
         {
           label: isRestaurant ? 'Локальный UI ресторана (тест)' : 'Локальный интерфейс (тест)',
           type: 'radio',
-          checked: uiMode === UI_MODE_BUNDLED || Boolean(restaurantLocalFirst),
+          checked: uiMode === UI_MODE_BUNDLED,
           click: () => {
-            if (isRestaurant && typeof setRestaurantLocalFirst === 'function') {
-              Promise.resolve(setRestaurantLocalFirst(true)).catch(() => {});
-            } else if (typeof setUiMode === 'function') {
+            if (typeof setUiMode === 'function') {
               Promise.resolve(setUiMode(UI_MODE_BUNDLED)).catch(() => {});
             }
           },
         },
         { type: 'separator' },
-        ...(isRestaurant
+        ...(!isRestaurant
           ? [
-              {
-                label: 'Ресторан: ждать сайт (как сейчас)',
-                type: 'radio',
-                checked: !restaurantLocalFirst,
-                click: () => {
-                  if (typeof setRestaurantLocalFirst === 'function') {
-                    Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
-                  }
-                },
-              },
-              {
-                // Kill switch in restaurantLocalFirst.js — keep online-only for clients.
-                label: 'Ресторан local-first (временно выкл.)',
-                type: 'radio',
-                checked: Boolean(restaurantLocalFirst),
-                enabled: false,
-                click: () => {
-                  if (typeof setRestaurantLocalFirst === 'function') {
-                    Promise.resolve(setRestaurantLocalFirst(false)).catch(() => {});
-                  }
-                },
-              },
-            ]
-          : [
               {
                 label: 'Ждать сайт (как сейчас)',
                 type: 'radio',
@@ -97,7 +65,8 @@ function buildAppMenu({
                   }
                 },
               },
-            ]),
+            ]
+          : []),
         { type: 'separator' },
       ]
     : [];

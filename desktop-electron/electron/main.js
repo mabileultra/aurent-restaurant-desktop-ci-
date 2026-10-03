@@ -12,13 +12,8 @@ const {
   loadDesktopConfig,
   saveUiMode,
   saveOfflineFirst,
-  saveRestaurantLocalFirst,
-  readUserConfig,
 } = require('./config/desktopConfig');
-const {
-  isRestaurantLocalFirstKillSwitchOn,
-} = require('./config/restaurantLocalFirst');
-const { buildAdminLoginUrl, APP_WORLD_RESTAURANT, normalizeAppWorld } = require('./config/loginUrl');
+const { buildAdminLoginUrl } = require('./config/loginUrl');
 const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./config/uiMode');
 const { buildAppMenu } = require('./menu/appMenu');
 const {
@@ -29,11 +24,6 @@ const {
 const { attachDesktopNavigationGuard } = require('./navigation/desktopNavigationGuard');
 const { createCashierUiSession } = require('./ui/cashierUiSession');
 const { attachLoadFailureFallback } = require('./ui/loadFailureFallback');
-const {
-  registerRestaurantOfflineIpc,
-  startRestaurantOfflineRuntime,
-  stopRestaurantOfflineRuntime,
-} = require('./restaurant-offline/ipc/registerRestaurantOfflineIpc.cjs');
 
 let mainWindow = null;
 let desktopConfig = null;
@@ -60,8 +50,6 @@ function rebuildAppMenu() {
     setUiMode: handleSetUiMode,
     offlineFirst: cfg.offlineFirst,
     setOfflineFirst: handleSetOfflineFirst,
-    restaurantLocalFirst: cfg.restaurantLocalFirst,
-    setRestaurantLocalFirst: handleSetRestaurantLocalFirst,
     appWorld: cfg.appWorld,
     openActivityLogs: () => {
       const { openActivityLogViewer, appendActivityLog } = require('./activity-log/activityLogIpc.cjs');
@@ -181,62 +169,6 @@ async function handleSetOfflineFirst(enabled) {
   return reloadActiveUi({ navigateToStart: true });
 }
 
-async function handleSetRestaurantLocalFirst(enabled) {
-  if (enabled && isRestaurantLocalFirstKillSwitchOn()) {
-    saveRestaurantLocalFirst(false);
-    stopRestaurantOfflineRuntime();
-    refreshDesktopConfig();
-    rebuildAppMenu();
-    dialog.showMessageBox({
-      type: 'info',
-      title: 'Aurent Cashier',
-      message: 'Offline / local-first временно выключен',
-      detail: 'Для клиентов оставлен обычный online-режим. Включим снова после стабилизации.',
-      buttons: ['OK'],
-    }).catch(() => {});
-    return refreshDesktopConfig();
-  }
-  saveRestaurantLocalFirst(enabled);
-  refreshDesktopConfig();
-  rebuildAppMenu();
-  if (enabled) {
-    try {
-      await startRestaurantOfflineRuntime({ loadConfig: () => refreshDesktopConfig() });
-    } catch (err) {
-      console.error('[rst-offline] runtime start failed:', err?.message || err);
-    }
-  } else {
-    stopRestaurantOfflineRuntime();
-  }
-  const start = await reloadActiveUi({ navigateToStart: true });
-  if (enabled && start?.source !== 'bundled') {
-    dialog.showMessageBox({
-      type: 'warning',
-      title: 'Aurent Cashier',
-      message: 'Локальный UI не собран — сайт оставлен',
-      detail:
-        'Offline local-first (SQLite + LAN hub :8787) всё равно включён. '
-        + 'Для полного локального UI: npm run bundle-restaurant-ui (папка ui-restaurant).',
-      buttons: ['OK'],
-    }).catch(() => {});
-  }
-  return start;
-}
-
-/** Wipe sticky LF flag so already-enabled monoblocks fall back to online. */
-function enforceRestaurantLocalFirstKillSwitch() {
-  if (!isRestaurantLocalFirstKillSwitchOn()) return;
-  try {
-    const user = readUserConfig() || {};
-    if (user.restaurantLocalFirst === true) {
-      saveRestaurantLocalFirst(false);
-    }
-  } catch {
-    try { saveRestaurantLocalFirst(false); } catch { /* ignore */ }
-  }
-  stopRestaurantOfflineRuntime();
-  refreshDesktopConfig();
-}
 
 async function handleBundledLoadFallback() {
   saveUiMode(UI_MODE_REMOTE);
@@ -356,24 +288,17 @@ app.whenReady().then(async () => {
     return;
   }
 
-  enforceRestaurantLocalFirstKillSwitch();
-  refreshDesktopConfig();
   rebuildAppMenu();
 
   const { registerOfflineIpc } = require('./offline/ipc.cjs');
   const { registerActivityLogIpc, appendActivityLog } = require('./activity-log/activityLogIpc.cjs');
   registerActivityLogIpc();
-  registerRestaurantOfflineIpc({
-    loadConfig: () => refreshDesktopConfig(),
-  });
   appendActivityLog({
     category: 'system',
     level: 'info',
     message: 'Касса запущена',
     meta: {
       offlineFirst: Boolean(refreshDesktopConfig().offlineFirst),
-      restaurantLocalFirst: Boolean(refreshDesktopConfig().restaurantLocalFirst),
-      restaurantLocalFirstKilled: isRestaurantLocalFirstKillSwitchOn(),
       uiMode: refreshDesktopConfig().uiMode,
       appWorld: refreshDesktopConfig().appWorld,
     },
@@ -382,11 +307,8 @@ app.whenReady().then(async () => {
   registerOfflineIpc(
     () => refreshDesktopConfig(),
     async (cfg, { timeoutMs } = {}) => {
-      const localFirst = Boolean(
-        cfg?.offlineFirst
-        || (normalizeAppWorld(cfg?.appWorld) === APP_WORLD_RESTAURANT && cfg?.restaurantLocalFirst),
-      );
-      const ms = timeoutMs ?? (localFirst ? 800 : 2000);
+      const offlineFirst = Boolean(cfg?.offlineFirst);
+      const ms = timeoutMs ?? (offlineFirst ? 800 : 2000);
       const url = cfg?.apiHealthUrl
         || (cfg?.backendOrigin ? `${cfg.backendOrigin}/api/v1/actuator/health` : '');
       if (!url) return false;
@@ -415,20 +337,6 @@ app.whenReady().then(async () => {
     }
   })();
 
-  // Restaurant local-first: SQLite + print/outbox workers (dark flag).
-  void (async () => {
-    try {
-      const cfg = refreshDesktopConfig();
-      if (
-        normalizeAppWorld(cfg.appWorld) === APP_WORLD_RESTAURANT
-        && cfg.restaurantLocalFirst
-      ) {
-        await startRestaurantOfflineRuntime({ loadConfig: () => refreshDesktopConfig() });
-      }
-    } catch (err) {
-      console.error('[rst-offline] runtime start failed:', err?.message || err);
-    }
-  })();
 
   const start = await uiSession.ensureStartUrl();
   try {
@@ -468,7 +376,6 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
-  stopRestaurantOfflineRuntime();
   if (uiSession) {
     uiSession.stopLocal().catch(() => {});
   }
@@ -477,18 +384,7 @@ app.on('before-quit', () => {
 ipcMain.handle('desktop:getApiBaseUrl', () => refreshDesktopConfig().apiUrl);
 ipcMain.on('desktop:get-offline-first-sync', (event) => {
   try {
-    const cfg = refreshDesktopConfig();
-    const restaurantLf =
-      normalizeAppWorld(cfg.appWorld) === APP_WORLD_RESTAURANT
-      && Boolean(cfg.restaurantLocalFirst);
-    event.returnValue = Boolean(cfg.offlineFirst || restaurantLf);
-  } catch {
-    event.returnValue = false;
-  }
-});
-ipcMain.on('desktop:get-restaurant-local-first-sync', (event) => {
-  try {
-    event.returnValue = Boolean(refreshDesktopConfig().restaurantLocalFirst);
+    event.returnValue = Boolean(refreshDesktopConfig().offlineFirst);
   } catch {
     event.returnValue = false;
   }
@@ -500,9 +396,6 @@ ipcMain.handle('desktop:get-terminal-identity', () => {
   return getTerminalIdentity();
 });
 ipcMain.handle('desktop:open-server-setup', () => handleOpenServerSettings());
-ipcMain.handle('desktop:set-restaurant-local-first', (_event, enabled) =>
-  handleSetRestaurantLocalFirst(Boolean(enabled)),
-);
 ipcMain.handle('desktop:toggleFullscreen', () => {
   if (!mainWindow) return false;
   mainWindow.setFullScreen(!mainWindow.isFullScreen());

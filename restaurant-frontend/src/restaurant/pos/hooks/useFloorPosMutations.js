@@ -19,24 +19,6 @@ import {
   flushRestaurantPrintRelay,
 } from '../utils/restaurantPrintFlush';
 import { toastApiError } from '../../../utils/apiError';
-import { sendKitchenLocalFirst } from '../utils/sendKitchenLocalFirst';
-import {
-  isRestaurantLocalFirstOn,
-  rstOfflineOpenOrder,
-  rstOfflineAddItem,
-  rstOfflineUpdateItem,
-  rstOfflineCancelItem,
-  rstOfflineCancelOrder,
-  rstOfflineRequestBill,
-  rstOfflinePatchOrderMeta,
-  rstOfflineListCategories,
-  rstOfflineOpenShift,
-  rstOfflineCloseShift,
-} from '../../../services/offline/restaurantOfflineBridge';
-import { tickWaiterOutbox } from '../../../services/offline/waiterPwa/outboxSync';
-import { getDesktopPrinterSettings } from '../utils/desktopPrinters';
-import { rstMenuApi } from '../../api/menu.api';
-import { logLocalFirst } from '../../../services/desktop/activityLog';
 
 export function useFloorPosMutations(deps) {
   const {
@@ -103,25 +85,6 @@ export function useFloorPosMutations(deps) {
         payload.comment = comment.trim();
       }
 
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        // Local TX + outbox first — never block UI on WAN (15s axios hang).
-        const local = await rstOfflineOpenOrder({
-          storeId,
-          tableId: table.id,
-          tableLabel: table.code || table.name,
-          guestCount,
-          adultCount: payload.adultCount,
-          childrenCount: payload.childrenCount,
-          waiterId: waiterUserId || null,
-          comment: payload.comment || null,
-        });
-        logLocalFirst('Открытие стола (local-first)', {
-          orderId: local.orderId || local.order?.id,
-          tableId: table.id,
-        });
-        return local.order;
-      }
       return rstOrderApi.open(table.id, payload).then((r) => r.data);
     },
     onSuccess: (created) => {
@@ -144,21 +107,6 @@ export function useFloorPosMutations(deps) {
         childrenCount: 0,
       };
       if (waiterUserId) payload.waiterUserId = waiterUserId;
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineOpenOrder({
-          storeId,
-          tableId,
-          tableLabel: null,
-          guestCount: guests,
-          adultCount: guests,
-          childrenCount: 0,
-          waiterId: waiterUserId || null,
-          forceNew: true,
-        });
-        logLocalFirst('Доп. счёт (local-first)', { orderId: local.orderId, tableId });
-        return local.order;
-      }
       return rstOrderApi.open(tableId, payload).then((r) => r.data);
     },
     onSuccess: (created) => {
@@ -180,22 +128,6 @@ export function useFloorPosMutations(deps) {
         deliveryAddress: counterForm.deliveryAddress.trim() || undefined,
         comment: counterForm.comment.trim() || undefined,
       };
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineOpenOrder({
-          storeId,
-          allowNoTable: true,
-          tableId: null,
-          guestCount: 1,
-          channel: channel || 'TAKEAWAY',
-          comment: payload.comment || null,
-          clientName: payload.clientName || null,
-          clientPhone: payload.clientPhone || null,
-          deliveryAddress: payload.deliveryAddress || null,
-        });
-        logLocalFirst('Счётчик (local-first)', { orderId: local.orderId, channel });
-        return local.order;
-      }
       const openFn = channel === 'DELIVERY' ? rstOrderApi.openDelivery : rstOrderApi.openTakeaway;
       return openFn(storeId, payload).then((r) => r.data);
     },
@@ -212,19 +144,6 @@ export function useFloorPosMutations(deps) {
   const openShiftMutation = useMutation({
     mutationFn: async () => {
       const opening = Number(openingCash) || 0;
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineOpenShift({ storeId, openingCash: opening });
-        logLocalFirst('Смена открыта (local-first)', { shiftId: local.shift?.id });
-        void rstShiftApi.open(storeId, { openingCash: opening }).then((r) => {
-          if (r?.data) {
-            void import('../../../services/offline/restaurantOfflineBridge')
-              .then((m) => m.rstOfflineSaveShift({ storeId, shift: r.data }))
-              .catch(() => null);
-          }
-        }).catch(() => null);
-        return local.shift;
-      }
       return rstShiftApi.open(storeId, { openingCash: opening }).then((r) => r.data);
     },
     onSuccess: () => {
@@ -238,15 +157,6 @@ export function useFloorPosMutations(deps) {
   const closeShiftMutation = useMutation({
     mutationFn: async () => {
       const closing = Number(closingCash) || 0;
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineCloseShift({ storeId, closingCash: closing });
-        logLocalFirst('Смена закрыта (local-first)', { shiftId: local.shift?.id });
-        if (shift?.id) {
-          void rstShiftApi.close(shift.id, { closingCash: closing }).catch(() => null);
-        }
-        return local.shift;
-      }
       return rstShiftApi.close(shift.id, { closingCash: closing }).then((r) => r.data);
     },
     onSuccess: () => {
@@ -279,30 +189,6 @@ export function useFloorPosMutations(deps) {
           modifierOptionIds: modifierOptionIds ?? [],
           note: noteKey || undefined,
         };
-        const localFirst = isRestaurantLocalFirstOn();
-        if (localFirst) {
-          const local = await rstOfflineAddItem({
-            orderId: String(oid),
-            storeId,
-            tableId: order?.tableId != null ? String(order.tableId) : null,
-            tableLabel: order?.tableCode || openTable?.code || null,
-            guestCount: order?.guestCount,
-            waiterId: order?.waiterUserId != null ? String(order.waiterUserId) : null,
-            serverId: order?.id != null ? String(order.id) : null,
-            menuItemId: menuItem.id,
-            name: menuItem.name,
-            quantity: qty,
-            unitPrice: Number(menuItem.price ?? menuItem.sellingPrice) || 0,
-            note: noteKey || null,
-            modifiers: (modifierOptionIds ?? []).map(String),
-          });
-          logLocalFirst('Добавление блюда (local-first)', {
-            orderId: oid,
-            menuItemId: menuItem.id,
-          });
-          void tickWaiterOutbox({ storeId }).catch(() => null);
-          return local.order;
-        }
         const res = await rstOrderApi.addItem(oid, body);
         return res?.data !== undefined ? res.data : res;
       });
@@ -353,17 +239,6 @@ export function useFloorPosMutations(deps) {
       const body = {};
       if (quantity != null) body.quantity = quantity;
       if (note !== undefined) body.note = note;
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineUpdateItem({
-          orderId: String(activeOrderId),
-          itemId: String(itemId),
-          quantity,
-          note,
-        });
-        logLocalFirst('Изменение позиции (local-first)', { orderId: activeOrderId, itemId });
-        return { data: local.order };
-      }
       return rstOrderApi.updateItem(activeOrderId, itemId, body);
     },
     onMutate: async ({ itemId, quantity }) => {
@@ -386,15 +261,6 @@ export function useFloorPosMutations(deps) {
       if (String(itemId).startsWith('tmp-')) {
         return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
       }
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflineCancelItem({
-          orderId: String(activeOrderId),
-          itemId: String(itemId),
-        });
-        logLocalFirst('Удаление позиции (local-first)', { orderId: activeOrderId, itemId });
-        return { data: local.order };
-      }
       return rstOrderApi.removeItem(activeOrderId, itemId);
     },
     onMutate: async (itemId) => {
@@ -413,17 +279,6 @@ export function useFloorPosMutations(deps) {
 
   const assignWaiterMutation = useMutation({
     mutationFn: async (waiterUserId) => {
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflinePatchOrderMeta({
-          orderId: String(activeOrderId),
-          patch: 'WAITER',
-          waiterId: waiterUserId,
-        });
-        logLocalFirst('Официант (local-first)', { orderId: activeOrderId, waiterUserId });
-        void rstOrderApi.assignWaiter(activeOrderId, { waiterUserId }).catch(() => null);
-        return local.order;
-      }
       return rstOrderApi.assignWaiter(activeOrderId, { waiterUserId }).then((r) => r?.data ?? r);
     },
     onSuccess: (res) => {
@@ -446,17 +301,6 @@ export function useFloorPosMutations(deps) {
         adultCount: guestCount - childrenCount,
         childrenCount,
       };
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflinePatchOrderMeta({
-          orderId: String(activeOrderId),
-          patch: 'GUESTS',
-          ...body,
-        });
-        logLocalFirst('Гости (local-first)', { orderId: activeOrderId, guestCount });
-        void rstOrderApi.updateGuests(activeOrderId, body).catch(() => null);
-        return local.order;
-      }
       return rstOrderApi.updateGuests(activeOrderId, body).then((r) => r?.data ?? r);
     },
     onSuccess: (res) => { setOrderData(res); invalidateFloor(); },
@@ -466,50 +310,6 @@ export function useFloorPosMutations(deps) {
   const sendKitchenMutation = useMutation({
     mutationFn: async () => {
       const orderId = requireOrderId(activeOrderId, order?.id);
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        let categories = [];
-        try {
-          categories = (await rstMenuApi.listCategories(storeId, true))?.data || [];
-        } catch {
-          categories = await rstOfflineListCategories(storeId).catch(() => []) || [];
-        }
-        const local = await sendKitchenLocalFirst({
-          order: { ...order, id: order?.id ?? orderId },
-          storeId,
-          categories,
-          tableLabel: openTable?.code || order?.tableCode,
-        });
-        const needsRelay = Boolean(local?.needsRelay);
-        // Satellite / missing Windows printers: outbox printOnServer creates relay jobs.
-        // Do not also call classic send — that would double-print on the cashier.
-        if (!needsRelay) {
-          void rstOrderApi.sendToKitchen(orderId).catch(() => null);
-        } else {
-          // Flush phone outbox now so cashier relay can claim slips without waiting for poll.
-          void tickWaiterOutbox({ storeId }).catch(() => null);
-        }
-        logLocalFirst('Кухня: local print + outbox', {
-          orderId,
-          printFailed: Boolean(local?.printFailed),
-          needsRelay,
-        });
-        const items = (order?.items || []).map((item) => ({
-          ...item,
-          sentQuantity: item.quantity,
-          itemStatus: item.itemStatus === 'NEW' ? 'SENT_TO_KITCHEN' : item.itemStatus,
-        }));
-        return {
-          ...(local?.order || order),
-          id: order?.id ?? orderId,
-          items,
-          // Only skip relay flush when this PC fully printed every station slip.
-          _localPrinted: !needsRelay && !local?.printFailed,
-          _localOnly: true,
-          _printFailed: Boolean(local?.printFailed),
-          _needsRelay: needsRelay,
-        };
-      }
       const res = await rstOrderApi.sendToKitchen(orderId);
       return res?.data !== undefined ? res.data : res;
     },
@@ -521,12 +321,7 @@ export function useFloorPosMutations(deps) {
           defaultValue: 'Заказ сохранён, но не напечатан: принтер кухни не настроен',
         }));
       }
-      // Local-first already printed on this PC — do not claim server kitchen slips again.
-      // Satellite needsRelay: kick relay so cashier/hub can claim as soon as jobs land.
-      if (!res?._localPrinted) {
-        flushRestaurantPrintRelay();
-      }
-      // Waiter phone: keep table OCCUPIED on floor after send (local overlay).
+      flushRestaurantPrintRelay();
       invalidateFloor();
     },
     onError: (err) => {
@@ -547,12 +342,6 @@ export function useFloorPosMutations(deps) {
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        await rstOfflineCancelOrder({ orderId: String(activeOrderId) });
-        logLocalFirst('Отмена заказа (local-first)', { orderId: activeOrderId });
-        return true;
-      }
       return rstOrderApi.cancel(activeOrderId);
     },
     onSuccess: () => {
@@ -569,27 +358,6 @@ export function useFloorPosMutations(deps) {
 
   const billMutation = useMutation({
     mutationFn: async () => {
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        let printerName = '';
-        try {
-          const settings = await getDesktopPrinterSettings();
-          printerName = String(settings?.billPrinterName || settings?.receiptPrinterName || '').trim();
-        } catch {
-          printerName = '';
-        }
-        const local = await rstOfflineRequestBill({
-          orderId: String(activeOrderId),
-          printerName,
-          tableLabel: order?.tableCode || openTable?.code || null,
-        });
-        logLocalFirst('Счёт (local-first)', {
-          orderId: activeOrderId,
-          printOk: local.printOk !== false,
-        });
-        void rstOrderApi.requestBill(activeOrderId).catch(() => null);
-        return { ...local.order, _local: true, _printFailed: local.printOk === false };
-      }
       return rstOrderApi.requestBill(activeOrderId).then((r) => (r?.data !== undefined ? r.data : r));
     },
     onSuccess: (res) => {
@@ -597,27 +365,13 @@ export function useFloorPosMutations(deps) {
       invalidateFloor();
       invalidateCounter();
       toast.success(t('rst.order.billRequested'));
-      // Local-first: skip server guest-bill claim when offline; online mirror may still enqueue.
-      if (!res?._local) {
-        flushRestaurantPrintRelay();
-      }
+      flushRestaurantPrintRelay();
     },
     onError: (err) => errMsg(err, 'rst.order.billFailed'),
   });
 
   const discountMutation = useMutation({
     mutationFn: async (discountAmount) => {
-      const localFirst = isRestaurantLocalFirstOn();
-      if (localFirst) {
-        const local = await rstOfflinePatchOrderMeta({
-          orderId: String(activeOrderId),
-          patch: 'DISCOUNT',
-          discountAmount,
-        });
-        logLocalFirst('Скидка (local-first)', { orderId: activeOrderId, discountAmount });
-        void rstOrderApi.updateDiscount(activeOrderId, { discountAmount }).catch(() => null);
-        return local.order;
-      }
       return rstOrderApi.updateDiscount(activeOrderId, { discountAmount }).then((r) => r?.data ?? r);
     },
     onSuccess: (res) => {

@@ -76,10 +76,6 @@ export function logError(message, meta) {
   logActivity({ category: 'error', level: 'error', message, meta });
 }
 
-export function logLocalFirst(message, meta, level = 'info') {
-  logActivity({ category: 'local_first', level, message, meta });
-}
-
 export async function openActivityLogViewer() {
   if (!canLog() || typeof window.desktopCashier.openActivityLogViewer !== 'function') {
     return { ok: false };

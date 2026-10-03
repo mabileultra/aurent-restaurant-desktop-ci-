@@ -14,11 +14,6 @@ import {
 import { toPayAmountPayload } from './restaurantPayAmount';
 import { isNonFiscalPayMethod } from './restaurantPayForm';
 import { round2 } from '../../../utils/taxAmounts';
-import {
-  isRestaurantLocalFirstOn,
-  rstOfflinePayOrder,
-} from '../../../services/offline/restaurantOfflineBridge';
-import { logLocalFirst } from '../../../services/desktop/activityLog';
 import { enqueuePendingFiscal } from './pendingFiscalQueue';
 
 function pendingFiscalFromError(err) {
@@ -108,7 +103,6 @@ export async function payRestaurantOrderWithFiscal({
   const capabilities = skipFiscal
     ? { enabled: false }
     : await loadMultikassaCapabilities(storeId, cashRegisterId);
-  const localFirst = isRestaurantLocalFirstOn();
   const networkOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
   const requireBeforeSale = Boolean(capabilities?.enabled && capabilities?.requireBeforeSale);
 
@@ -120,8 +114,7 @@ export async function payRestaurantOrderWithFiscal({
     shiftId,
     cashierName: cashierName || 'CASHIER',
     contractorName: storeName,
-    // Local-first autonomy: never hard-block sale on OFD when offline / LF.
-    offline: networkOffline || localFirst,
+    offline: networkOffline,
     clientSaleId: order?.id ? `rst-${order.id}` : null,
   };
 
@@ -131,16 +124,12 @@ export async function payRestaurantOrderWithFiscal({
     try {
       fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
     } catch (err) {
-      if (localFirst || networkOffline) {
+      if (networkOffline) {
         fiscalPayload = pendingFiscalFromError({
           message: resolveMultikassaFiscalErrorMessage(err, t)
             || err?.message
             || 'Фискал отложен — оплата сохранена локально',
         });
-        logLocalFirst('Фискал soft-fail (offline/local-first)', {
-          orderId: order?.id,
-          error: err?.message,
-        }, 'warn');
       } else {
         const wrapped = wrapMultikassaFiscalError(err);
         wrapped.message = resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message;
@@ -150,24 +139,8 @@ export async function payRestaurantOrderWithFiscal({
   }
 
   let paidOrder;
-  if (localFirst) {
-    // Local TX + outbox first — never block cashier on WAN hang.
-    const local = await rstOfflinePayOrder({
-      orderId: String(order.id),
-      method: payMethod,
-      amount: payAmount,
-      cashAmount: cash,
-      cardAmount: card,
-      amountTendered: tendered,
-      changeGiven: change,
-      cardType,
-      debtPhone,
-      debtComment,
-      advancePaid,
-    });
-    paidOrder = local.order || { ...order, status: 'CLOSED', _localPaid: true };
-    logLocalFirst('Оплата (local-first)', { orderId: order.id, method: payMethod, amount: payAmount });
-    void rstOrderApi.pay(order.id, {
+  try {
+    const res = await rstOrderApi.pay(order.id, {
       method: payMethod,
       amount: payAmount,
       cashAmount: cash,
@@ -176,32 +149,19 @@ export async function payRestaurantOrderWithFiscal({
       changeGiven: change,
       ...(cardType ? { cardType } : {}),
       ...(skipFiscal ? { debtPhone, debtComment, advancePaid } : {}),
-    }).catch(() => null);
-  } else {
-    try {
-      const res = await rstOrderApi.pay(order.id, {
-        method: payMethod,
-        amount: payAmount,
-        cashAmount: cash,
-        cardAmount: card,
-        amountTendered: tendered,
-        changeGiven: change,
-        ...(cardType ? { cardType } : {}),
-        ...(skipFiscal ? { debtPhone, debtComment, advancePaid } : {}),
-      });
-      paidOrder = res.data;
-    } catch (payErr) {
-      if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
-        payErr.fiscalOrphan = fiscalPayload;
-        payErr.message = [
-          payErr.message || 'Оплата не прошла',
-          t?.('rst.order.fiscalOrphanHint', {
-            defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
-          }),
-        ].filter(Boolean).join('. ');
-      }
-      throw payErr;
+    });
+    paidOrder = res.data;
+  } catch (payErr) {
+    if (fiscalPayload && fiscalPayload.fiscalStatus === FISCAL_STATUS.FISCALIZED) {
+      payErr.fiscalOrphan = fiscalPayload;
+      payErr.message = [
+        payErr.message || 'Оплата не прошла',
+        t?.('rst.order.fiscalOrphanHint', {
+          defaultValue: 'Фискальный чек уже пробит — сверьте с OFD и повторите оплату или оформите возврат.',
+        }),
+      ].filter(Boolean).join('. ');
     }
+    throw payErr;
   }
 
   if (!requireBeforeSale && capabilities?.enabled) {

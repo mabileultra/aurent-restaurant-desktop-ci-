@@ -62,7 +62,6 @@ test('restaurant world default stays remote even if uiMode bundled', async () =>
       appWorld: 'restaurant',
       restaurantUrl: 'https://r-aurent.uz',
       uiMode: UI_MODE_BUNDLED,
-      restaurantLocalFirst: false,
     },
     bundledRoot: '/ui',
     startServer: async () => {
@@ -76,48 +75,4 @@ test('restaurant world default stays remote even if uiMode bundled', async () =>
   assert.equal(result.source, 'remote');
   assert.equal(result.reason, 'restaurant_world');
   assert.equal(result.url, 'https://r-aurent.uz/cashier/login?companyLoginCode=10001');
-});
-
-test('restaurant local-first uses bundled UI when files exist', async () => {
-  let startedRoot = null;
-  const result = await resolveCashierStartUrl({
-    cfg: {
-      ...cfg,
-      appWorld: 'restaurant',
-      restaurantUrl: 'https://r-aurent.uz',
-      restaurantLocalFirst: true,
-      uiMode: UI_MODE_BUNDLED,
-    },
-    bundledRoot: '/ui-restaurant',
-    startServer: async ({ uiRoot, backendOrigin }) => {
-      startedRoot = uiRoot;
-      return { origin: 'http://127.0.0.1:47822', uiRoot, backendOrigin };
-    },
-    stopServer: async () => {},
-    env: {},
-  });
-  assert.equal(startedRoot, '/ui-restaurant');
-  assert.equal(result.source, 'bundled');
-  assert.equal(result.reason, 'restaurant_local_first');
-  assert.equal(result.url, 'http://127.0.0.1:47822/cashier/login?companyLoginCode=10001');
-});
-
-test('restaurant local-first without files falls back to remote', async () => {
-  const result = await resolveCashierStartUrl({
-    cfg: {
-      ...cfg,
-      appWorld: 'restaurant',
-      restaurantUrl: 'https://r-aurent.uz',
-      restaurantLocalFirst: true,
-    },
-    bundledRoot: null,
-    startServer: async () => {
-      throw new Error('should not start');
-    },
-    stopServer: async () => {},
-    env: {},
-  });
-  assert.equal(result.source, 'remote-fallback');
-  assert.equal(result.reason, 'ui_missing');
-  assert.match(result.url, /r-aurent\.uz\/cashier\/login/);
 });

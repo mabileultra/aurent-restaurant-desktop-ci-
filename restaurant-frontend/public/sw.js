@@ -1,4 +1,4 @@
-/* Cache app shell for waiter PWA; API stays network-only (local-first outbox handles POS). */
+/* Cache app shell for waiter PWA; API stays network-only. */
 const SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

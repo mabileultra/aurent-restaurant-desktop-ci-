@@ -1,11 +1,11 @@
 const { buildLoginUrl, normalizeAppWorld, APP_WORLD_RESTAURANT, loginUiOrigin } = require('../config/loginUrl');
 const { resolveUiMode, UI_MODE_BUNDLED } = require('../config/uiMode');
-const { resolveRestaurantLocalFirst } = require('../config/restaurantLocalFirst');
 
 function wantsBundledRestaurantUi(cfg, env) {
   if (normalizeAppWorld(cfg?.appWorld) !== APP_WORLD_RESTAURANT) return false;
-  // Dark default: remote r-aurent. Only restaurantLocalFirst (config/env) opts into bundled UI.
-  return resolveRestaurantLocalFirst({ userConfig: cfg, env });
+  // Restaurant stays on remote r-aurent unless explicitly uiMode=bundled (dev).
+  const mode = cfg?.uiMode || resolveUiMode({ userConfig: cfg, env });
+  return mode === UI_MODE_BUNDLED && (cfg?.allowBundledUi === true || String(env?.AURENT_UI_DEV || '') === '1');
 }
 
 async function resolveCashierStartUrl({
@@ -18,7 +18,7 @@ async function resolveCashierStartUrl({
 } = {}) {
   const isRestaurant = normalizeAppWorld(cfg?.appWorld) === APP_WORLD_RESTAURANT;
 
-  // Restaurant default stays remote (r-aurent). Bundled only when local-first or uiMode=bundled.
+  // Restaurant default stays remote (r-aurent).
   if (isRestaurant && !wantsBundledRestaurantUi(cfg, env)) {
     if (typeof stopServer === 'function') await stopServer();
     const remoteOrigin = loginUiOrigin(cfg);
@@ -79,7 +79,7 @@ async function resolveCashierStartUrl({
     return {
       url: buildLoginUrl(loginCfg),
       source: 'bundled',
-      reason: isRestaurant ? 'restaurant_local_first' : 'ok',
+      reason: isRestaurant ? 'restaurant_bundled' : 'ok',
       uiOrigin,
       localServer: server,
     };

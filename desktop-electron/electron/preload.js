@@ -10,26 +10,16 @@ function readOfflineFirstFlag() {
   }
 }
 
-function readRestaurantLocalFirstFlag() {
-  try {
-    return Boolean(ipcRenderer.sendSync('desktop:get-restaurant-local-first-sync'));
-  } catch {
-    return false;
-  }
-}
 
 contextBridge.exposeInMainWorld('desktopCashier', {
   isDesktop: true,
   // Snapshot at load (compat). Prefer *Flag() after LF toggle — booleans freeze at expose.
   offlineFirst: readOfflineFirstFlag(),
-  restaurantLocalFirst: readRestaurantLocalFirstFlag(),
   offlineFirstFlag: () => readOfflineFirstFlag(),
-  restaurantLocalFirstFlag: () => readRestaurantLocalFirstFlag(),
 
   getApiBaseUrl: () => invoke('desktop:getApiBaseUrl'),
   getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),
   openServerSetup: () => invoke('desktop:open-server-setup'),
-  setRestaurantLocalFirst: (enabled) => invoke('desktop:set-restaurant-local-first', Boolean(enabled)),
   getTerminalIdentity: () => invoke('desktop:get-terminal-identity'),
   reload: () => invoke('desktop:reload'),
   toggleFullscreen: () => invoke('desktop:toggleFullscreen'),
@@ -54,41 +44,6 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   labelTsplSetSettings: (patch) => invoke('desktop:label-tspl-set-settings', patch),
   labelTsplAutoDetect: (opts) => invoke('desktop:label-tspl-auto-detect', opts || {}),
 
-  rstOfflineGetStatus: () => invoke('rst-offline:get-status'),
-  rstOfflineSetSession: (patch) => invoke('rst-offline:set-session', patch || {}),
-  rstOfflineImportBootstrap: (payload) => invoke('rst-offline:import-bootstrap', payload || {}),
-  rstOfflineSendToKitchen: (payload) => invoke('rst-offline:send-to-kitchen', payload || {}),
-  rstOfflineOpenOrder: (payload) => invoke('rst-offline:open-order', payload || {}),
-  rstOfflineAddItem: (payload) => invoke('rst-offline:add-item', payload || {}),
-  rstOfflineUpdateItem: (payload) => invoke('rst-offline:update-item', payload || {}),
-  rstOfflineCancelItem: (payload) => invoke('rst-offline:cancel-item', payload || {}),
-  rstOfflineCancelOrder: (payload) => invoke('rst-offline:cancel-order', payload || {}),
-  rstOfflinePayOrder: (payload) => invoke('rst-offline:pay-order', payload || {}),
-  rstOfflineRequestBill: (payload) => invoke('rst-offline:request-bill', payload || {}),
-  rstOfflineListMenu: (storeId) => invoke('rst-offline:list-menu', storeId),
-  rstOfflineListCategories: (storeId) => invoke('rst-offline:list-categories', storeId),
-  rstOfflineListRoster: (storeId) => invoke('rst-offline:list-roster', storeId),
-  rstOfflineSaveModifiers: (payload) => invoke('rst-offline:save-modifiers', payload || {}),
-  rstOfflineGetModifiers: (menuItemId) => invoke('rst-offline:get-modifiers', menuItemId),
-  rstOfflineGetFloor: (storeId) => invoke('rst-offline:get-floor', storeId),
-  rstOfflinePatchOrderMeta: (payload) => invoke('rst-offline:patch-order-meta', payload || {}),
-  rstOfflineSaveShift: (payload) => invoke('rst-offline:save-shift', payload || {}),
-  rstOfflineGetShift: (storeId) => invoke('rst-offline:get-shift', storeId),
-  rstOfflineOpenShift: (payload) => invoke('rst-offline:open-shift', payload || {}),
-  rstOfflineCloseShift: (payload) => invoke('rst-offline:close-shift', payload || {}),
-  rstOfflineGetHubInfo: () => invoke('rst-offline:hub-info'),
-  rstOfflineCreateMenuItem: (payload) => invoke('rst-offline:create-menu-item', payload || {}),
-  rstOfflinePullHubSnapshot: (hubUrl) => invoke('rst-offline:pull-hub-snapshot', hubUrl),
-  rstOfflineResolvePrintJob: (payload) => invoke('rst-offline:resolve-print-job', payload || {}),
-  rstOfflineGetOrder: (orderId) => invoke('rst-offline:get-order', orderId),
-  rstOfflineStartRuntime: () => invoke('rst-offline:start-runtime'),
-  rstOfflineStopRuntime: () => invoke('rst-offline:stop-runtime'),
-  onRstOfflineHubDirty: (callback) => {
-    if (typeof callback !== 'function') return () => {};
-    const handler = (_event, payload) => callback(payload);
-    ipcRenderer.on('rst-offline:hub-dirty', handler);
-    return () => ipcRenderer.removeListener('rst-offline:hub-dirty', handler);
-  },
 
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),
