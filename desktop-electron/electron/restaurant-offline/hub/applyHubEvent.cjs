@@ -136,7 +136,7 @@ function applyHubEvent(db, {
         billPrinterName,
       });
       const printOnServer = !printerName && payload.printOnServer === true;
-      sendToKitchenCommand(db, {
+      const sendRes = sendToKitchenCommand(db, {
         deviceId: dev,
         storeId: sid,
         tableId: payload.tableId,
@@ -151,7 +151,14 @@ function applyHubEvent(db, {
         clientEventId: clientEventId || null,
         printOnServer,
       });
-      break;
+      return {
+        outcome: 'ACCEPTED',
+        eventType: type,
+        printJobId: sendRes?.printJobId || null,
+        printOnServer: sendRes?.printOnServer === true,
+        printOk: sendRes?.printOk !== false,
+        printerName: printerName || null,
+      };
     }
     case 'ORDER_REQUEST_BILL':
       requestBillCommand(db, {

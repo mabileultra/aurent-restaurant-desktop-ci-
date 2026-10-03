@@ -56,9 +56,10 @@ function acceptedOutcome(raw) {
 export async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
   let hubOutcome = null;
   let hubErr = null;
+  let hubRes = null;
   if (hubUrl) {
     try {
-      const hubRes = await postToHub(hubUrl, body);
+      hubRes = await postToHub(hubUrl, body);
       hubOutcome = acceptedOutcome(hubRes?.outcome);
       if (!hubOutcome) hubErr = new Error(`unexpected_hub_outcome:${hubRes?.outcome}`);
     } catch (err) {
@@ -68,8 +69,11 @@ export async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
 
   let cloudOutcome = null;
   let cloudErr = null;
-  // Hub already printed on the monoblock — don't let cloud create a second kitchen job.
-  const cloudBody = hubOutcome && body?.eventType === 'ORDER_SEND_KITCHEN'
+  // Only suppress cloud print when hub actually queued a local print_job.
+  // Old path: hub OK + printOnServer stripped + no local job → nothing printed.
+  const hubPrintedLocally = Boolean(hubRes?.printJobId)
+    || (hubRes?.printOnServer === false && hubRes?.printOk !== false && hubRes?.printerName);
+  const cloudBody = hubOutcome && body?.eventType === 'ORDER_SEND_KITCHEN' && hubPrintedLocally
     ? {
       ...body,
       payload: { ...(body.payload || {}), printOnServer: false },

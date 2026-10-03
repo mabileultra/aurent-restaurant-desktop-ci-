@@ -61,6 +61,8 @@ let started = false;
 let printTimer = null;
 let outboxTimer = null;
 let hubServer = null;
+/** @type {{ tick: Function }|null} */
+let printWorkerRef = null;
 let session = {
   authToken: null,
   storeId: null,
@@ -140,6 +142,7 @@ async function startRestaurantOfflineRuntime({ loadConfig } = {}) {
       }
     },
   });
+  printWorkerRef = printWorker;
   const outboxSender = createOutboxSender(db, {
     sendEvent: async (body) => {
       try {
@@ -256,6 +259,7 @@ function stopRestaurantOfflineRuntime() {
   if (outboxTimer) clearInterval(outboxTimer);
   printTimer = null;
   outboxTimer = null;
+  printWorkerRef = null;
   if (hubServer) {
     void hubServer.stop().catch(() => null);
     hubServer = null;
@@ -284,16 +288,30 @@ async function restaurantSendToKitchen(input = {}) {
   const db = await getRestaurantOfflineDb();
   const deviceId = String(input.deviceId || getOrCreateDeviceId()).trim();
   try {
-    const result = sendToKitchenCommand(db, { ...input, deviceId });
+    // Desktop monoblock: never skip local spool when a printer name is set.
+    const printerName = String(input.printerName || '').trim();
+    const printOnServer = printerName ? false : input.printOnServer === true;
+    const result = sendToKitchenCommand(db, {
+      ...input,
+      deviceId,
+      printerName,
+      printOnServer,
+    });
     logInfo('Send to kitchen (local)', {
       orderId: result.orderId,
       printJobId: result.printJobId,
       outboxId: result.outboxId,
-      printer: input.printerName,
+      printer: printerName || null,
+      printOnServer: result.printOnServer === true,
       printOk: result.printOk !== false,
       printError: result.printError || null,
       online: Boolean(session.authToken),
     });
+    if (result.printJobId && printWorkerRef) {
+      void printWorkerRef.tick().catch((err) => {
+        logError('print tick after local SEND', { error: err?.message || String(err) });
+      });
+    }
     return result;
   } catch (err) {
     logError('Send to kitchen failed', { error: err?.message || String(err) });

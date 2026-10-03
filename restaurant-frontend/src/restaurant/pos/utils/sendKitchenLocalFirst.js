@@ -99,9 +99,12 @@ export async function sendKitchenLocalFirst({
   let needsRelay = false;
   for (const group of groups) {
     const name = String(group.printerName || '').trim();
-    const onThisPc = name && localNames.has(name.toLowerCase());
-    const printOnServer = !onThisPc;
-    if (printOnServer) needsRelay = true;
+    // Monoblock: always spool locally when a kitchen printer is configured.
+    // Exact Windows-name match is done later by ESC/POS matchPrinterName —
+    // requiring it here skipped jobs entirely (printOnServer + no local slip).
+    const knownLocal = Boolean(name && localNames.has(name.toLowerCase()));
+    const printOnServer = !name;
+    if (printOnServer || !knownLocal) needsRelay = Boolean(printOnServer);
     const res = await rstOfflineSendToKitchen({
       storeId,
       tableId: order.tableId != null ? String(order.tableId) : null,
