@@ -80,6 +80,12 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   rstOfflineGetOrder: (orderId) => invoke('rst-offline:get-order', orderId),
   rstOfflineStartRuntime: () => invoke('rst-offline:start-runtime'),
   rstOfflineStopRuntime: () => invoke('rst-offline:stop-runtime'),
+  onRstOfflineHubDirty: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, payload) => callback(payload);
+    ipcRenderer.on('rst-offline:hub-dirty', handler);
+    return () => ipcRenderer.removeListener('rst-offline:hub-dirty', handler);
+  },
 
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),

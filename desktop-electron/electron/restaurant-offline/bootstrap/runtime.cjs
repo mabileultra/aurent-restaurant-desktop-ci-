@@ -41,6 +41,22 @@ const { logInfo, logWarn, logError } = require('../log.cjs');
 const PRINT_TICK_MS = 300;
 const OUTBOX_TICK_MS = 2_000;
 
+/** Tell all restaurant windows to refetch floor/orders after hub ingest. */
+function notifyRendererHubDirty(payload = {}) {
+  try {
+    const { BrowserWindow } = require('electron');
+    for (const win of BrowserWindow.getAllWindows()) {
+      try {
+        win.webContents.send('rst-offline:hub-dirty', payload);
+      } catch {
+        /* ignore closed window */
+      }
+    }
+  } catch {
+    /* non-electron test env */
+  }
+}
+
 let started = false;
 let printTimer = null;
 let outboxTimer = null;
@@ -205,6 +221,11 @@ async function startRestaurantOfflineRuntime({ loadConfig } = {}) {
           storeId: session.storeId,
           kitchenPrinterName: kitchenPrinter,
           billPrinterName: cfg.billPrinterName || cfg.receiptPrinterName || '',
+        });
+        notifyRendererHubDirty({
+          eventType: evt.eventType,
+          orderId: payload.orderId || null,
+          outcome: result?.outcome || 'ACCEPTED',
         });
         // Spool waiter kitchen tickets immediately (don't wait for the 300ms tick).
         if (evt.eventType === 'ORDER_SEND_KITCHEN') {
