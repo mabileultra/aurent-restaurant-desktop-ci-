@@ -43,6 +43,43 @@ async function postToHub(hubBase, body) {
   return res.json().catch(() => ({ outcome: 'ACCEPTED' }));
 }
 
+function acceptedOutcome(raw) {
+  const outcome = String(raw || 'ACCEPTED').toUpperCase();
+  if (outcome === 'ACCEPTED' || outcome === 'ALREADY_PROCESSED' || outcome === 'OK') return outcome;
+  return null;
+}
+
+/**
+ * Prefer LAN hub (cashier station), then cloud.
+ * Hub apply writes SQLite + station outbox; cloud-only left the cashier empty.
+ */
+async function deliverWaiterOutboxEvent({ storeId, hubUrl, body }) {
+  let hubOutcome = null;
+  let hubErr = null;
+  if (hubUrl) {
+    try {
+      const hubRes = await postToHub(hubUrl, body);
+      hubOutcome = acceptedOutcome(hubRes?.outcome);
+      if (!hubOutcome) hubErr = new Error(`unexpected_hub_outcome:${hubRes?.outcome}`);
+    } catch (err) {
+      hubErr = err;
+    }
+  }
+
+  let cloudOutcome = null;
+  let cloudErr = null;
+  try {
+    const res = await api.post(`/rst/stores/${storeId}/local-events`, body);
+    cloudOutcome = acceptedOutcome(res?.data?.outcome || res?.data?.status);
+    if (!cloudOutcome) cloudErr = new Error(`unexpected_ingest_outcome:${res?.data?.outcome}`);
+  } catch (err) {
+    cloudErr = err;
+  }
+
+  if (hubOutcome || cloudOutcome) return hubOutcome || cloudOutcome;
+  throw hubErr || cloudErr || new Error('outbox_deliver_failed');
+}
+
 /** Pull floor/menu/orders from station hub (peer / waiter offline read). */
 export async function fetchHubSnapshot(hubBase = getConfiguredHubUrl()) {
   const base = String(hubBase || '').replace(/\/$/, '');
@@ -79,18 +116,9 @@ export async function tickWaiterOutbox({ storeId, limit = 20 } = {}) {
         payload: row.payload || {},
       };
       try {
-        let outcome = '';
-        try {
-          const res = await api.post(`/rst/stores/${storeId}/local-events`, body);
-          outcome = String(res?.data?.outcome || res?.data?.status || 'ACCEPTED').toUpperCase();
-        } catch (cloudErr) {
-          if (!hubUrl) throw cloudErr;
-          const hubRes = await postToHub(hubUrl, body);
-          outcome = String(hubRes?.outcome || 'ACCEPTED').toUpperCase();
-        }
-        if (outcome !== 'ACCEPTED' && outcome !== 'ALREADY_PROCESSED' && outcome !== 'OK') {
-          throw new Error(`unexpected_ingest_outcome:${outcome}`);
-        }
+        // Hub first when set — cashier SQLite + printers see punches immediately.
+        // Cloud alone left the station blind while the phone looked "synced".
+        const outcome = await deliverWaiterOutboxEvent({ storeId, hubUrl, body });
         await idbPut('outbox', { ...sending, status: 'SYNCED', error: null, nextRetryAt: null });
         results.push({ id: row.id, status: 'SYNCED', outcome });
       } catch (err) {

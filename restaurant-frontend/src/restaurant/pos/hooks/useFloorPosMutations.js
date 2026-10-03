@@ -300,6 +300,7 @@ export function useFloorPosMutations(deps) {
             orderId: oid,
             menuItemId: menuItem.id,
           });
+          void tickWaiterOutbox({ storeId }).catch(() => null);
           return local.order;
         }
         const res = await rstOrderApi.addItem(oid, body);

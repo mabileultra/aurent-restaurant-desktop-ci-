@@ -119,10 +119,20 @@ export function useFloorPosPage() {
         if (!snap?.halls?.length) return snap;
         return rstOfflineOverlayFloor(storeId, snap).catch(() => snap);
       };
-      // Monoblock/cashier: SQLite floor is live. Phone has no local floor.
+      // Monoblock/cashier: SQLite first, then paint cloud opens (waiter → cloud).
       if (localFirst) {
         const local = await rstOfflineGetFloor(storeId).catch(() => null);
-        if (local?.halls?.length) return withLocalOrders(local);
+        if (local?.halls?.length) {
+          try {
+            const server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
+            if (server?.halls?.length) {
+              return withLocalOrders(mergeHubFloorOccupancy(local, server));
+            }
+          } catch {
+            /* keep local */
+          }
+          return withLocalOrders(local);
+        }
       }
       // Phone: server occupancy + hub opens (cashier local-first not yet in cloud).
       let server = null;
