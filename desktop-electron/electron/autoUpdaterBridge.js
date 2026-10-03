@@ -12,6 +12,12 @@ const { resolveFeedUrl } = require('./autoUpdaterFeed.cjs');
 let feedUrl = null;
 /** True after update-available until downloaded or hard error — do not swallow mid-cycle errors. */
 let downloadCycle = false;
+/** Prevents macOS activate from recreating a window while quitAndInstall runs. */
+let quittingForUpdate = false;
+
+function isQuittingForUpdate() {
+  return quittingForUpdate;
+}
 
 function broadcastUpdate(payload) {
   BrowserWindow.getAllWindows().forEach((win) => {
@@ -156,15 +162,26 @@ function registerAutoUpdaterIpc() {
   ipcMain.handle('desktop:checkForUpdates', () => checkForUpdatesNow());
 
   ipcMain.handle('desktop:quitAndInstallUpdate', () => {
-    if (!isUpdaterEnabled()) return false;
-    try {
-      // isSilent=false → показать UI установщика при необходимости прав
-      autoUpdater.quitAndInstall(false, true);
-      return true;
-    } catch (error) {
-      broadcastUpdate({ type: 'error', code: classifyUpdaterError(error?.message || String(error)) });
-      return false;
-    }
+    if (!isUpdaterEnabled()) return { ok: false, reason: 'disabled' };
+    // Do not call quitAndInstall synchronously inside invoke — macOS often no-ops
+    // while the IPC reply is still in flight. Defer and block activate recreate.
+    quittingForUpdate = true;
+    setTimeout(() => {
+      try {
+        autoUpdater.quitAndInstall(false, true);
+      } catch (error) {
+        console.error('[autoUpdater] quitAndInstall', error?.message || error);
+        quittingForUpdate = false;
+        broadcastUpdate({ type: 'error', code: classifyUpdaterError(error?.message || String(error)) });
+        try {
+          app.relaunch();
+          app.exit(0);
+        } catch {
+          app.quit();
+        }
+      }
+    }, 250);
+    return { ok: true };
   });
 }
 
@@ -186,4 +203,4 @@ function initAutoUpdater({ webUrl }) {
   scheduleBackgroundChecks();
 }
 
-module.exports = { initAutoUpdater, isUpdaterEnabled, checkForUpdatesNow };
+module.exports = { initAutoUpdater, isUpdaterEnabled, checkForUpdatesNow, isQuittingForUpdate };

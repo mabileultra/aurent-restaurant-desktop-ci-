@@ -7,7 +7,7 @@ const fs = require('fs');
 const { app, BrowserWindow, ipcMain, shell, dialog, net, session } = require('electron');
 const ICON_PNG = path.join(__dirname, '..', 'build', 'icon.png');
 const { showOnScreenKeyboard } = require('./onScreenKeyboard');
-const { initAutoUpdater, checkForUpdatesNow } = require('./autoUpdaterBridge');
+const { initAutoUpdater, checkForUpdatesNow, isQuittingForUpdate } = require('./autoUpdaterBridge');
 const { loadDesktopConfig, saveUiMode, saveOfflineFirst, saveRestaurantLocalFirst } = require('./config/desktopConfig');
 const { buildAdminLoginUrl, APP_WORLD_RESTAURANT, normalizeAppWorld } = require('./config/loginUrl');
 const { UI_MODE_REMOTE, UI_MODE_BUNDLED } = require('./config/uiMode');
@@ -407,6 +407,7 @@ app.whenReady().then(async () => {
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
 
   app.on('activate', async () => {
+    if (isQuittingForUpdate()) return;
     if (BrowserWindow.getAllWindows().length === 0) {
       const next = await uiSession.ensureStartUrl();
       createWindow(next);
@@ -416,6 +417,7 @@ app.whenReady().then(async () => {
 });
 
 app.on('window-all-closed', () => {
+  if (isQuittingForUpdate()) return;
   if (process.platform !== 'darwin') app.quit();
 });
 

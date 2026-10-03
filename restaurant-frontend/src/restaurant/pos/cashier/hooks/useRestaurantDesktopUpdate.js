@@ -85,15 +85,30 @@ export function useRestaurantDesktopUpdate(t) {
   const runUpdateAction = useCallback(async () => {
     if (!update) return;
     if (update.updateState === 'downloaded') {
-      if (typeof window.desktopCashier?.quitAndInstallUpdate === 'function') {
-        await window.desktopCashier.quitAndInstallUpdate();
+      if (typeof window.desktopCashier?.quitAndInstallUpdate !== 'function') {
+        toast.error(t('rst.cashier.updateRestartFailed', {
+          defaultValue: 'Не удалось перезапустить. Закройте кассу вручную и откройте снова.',
+        }));
+        return;
+      }
+      try {
+        const res = await window.desktopCashier.quitAndInstallUpdate();
+        if (res === false || res?.ok === false) {
+          toast.error(t('rst.cashier.updateRestartFailed', {
+            defaultValue: 'Не удалось перезапустить. Закройте кассу вручную и откройте снова.',
+          }));
+        }
+      } catch {
+        toast.error(t('rst.cashier.updateRestartFailed', {
+          defaultValue: 'Не удалось перезапустить. Закройте кассу вручную и откройте снова.',
+        }));
       }
       return;
     }
     if (update.updateState === 'error') {
       await checkAppUpdates();
     }
-  }, [update, checkAppUpdates]);
+  }, [update, checkAppUpdates, t]);
 
   const hasBadge = Boolean(
     update

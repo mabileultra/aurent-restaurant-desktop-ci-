@@ -142,7 +142,14 @@ export function useCashierNotifications() {
 
   const runAction = useCallback(async (item) => {
     if (item.updateState === 'downloaded' && typeof window.desktopCashier?.quitAndInstallUpdate === 'function') {
-      await window.desktopCashier.quitAndInstallUpdate();
+      try {
+        const res = await window.desktopCashier.quitAndInstallUpdate();
+        if (res === false || res?.ok === false) {
+          console.warn('[cashier-notifications] quitAndInstall refused', res);
+        }
+      } catch (err) {
+        console.warn('[cashier-notifications] quitAndInstall failed', err?.message || err);
+      }
       return;
     }
     if (item.updateState === 'error' && typeof window.desktopCashier?.checkForUpdates === 'function') {
