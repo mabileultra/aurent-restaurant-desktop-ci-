@@ -39,6 +39,7 @@ import {
   rstOfflineGetModifiers,
 } from '../../../services/offline/restaurantOfflineBridge';
 import { fetchHubSnapshot } from '../../../services/offline/waiterPwa/outboxSync';
+import { mergeHubFloorOccupancy } from '../utils/mergeLocalOrdersIntoFloor';
 
 const COUNTER_STALE_MS = 15_000;
 const FLOOR_STALE_MS = 8_000;
@@ -118,24 +119,29 @@ export function useFloorPosPage() {
         if (!snap?.halls?.length) return snap;
         return rstOfflineOverlayFloor(storeId, snap).catch(() => snap);
       };
+      // Monoblock/cashier: SQLite floor is live. Phone has no local floor.
       if (localFirst) {
         const local = await rstOfflineGetFloor(storeId).catch(() => null);
         if (local?.halls?.length) return withLocalOrders(local);
-        const hub = await fetchHubSnapshot().catch(() => null);
-        if (hub?.floor?.halls?.length) return withLocalOrders(hub.floor);
       }
+      // Phone: server occupancy + hub opens (cashier local-first not yet in cloud).
+      let server = null;
       try {
-        const server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
-        return withLocalOrders(server);
+        server = await rstFloorApi.getFloorSnapshot(storeId).then((r) => r.data);
       } catch (err) {
-        if (localFirst) {
-          const local = await rstOfflineGetFloor(storeId).catch(() => null);
-          if (local?.halls?.length) return withLocalOrders(local);
-          const hub = await fetchHubSnapshot().catch(() => null);
-          if (hub?.floor?.halls?.length) return withLocalOrders(hub.floor);
-        }
-        throw err;
+        if (!localFirst) throw err;
       }
+      const hub = localFirst ? await fetchHubSnapshot().catch(() => null) : null;
+      let snap = server?.halls?.length
+        ? server
+        : (hub?.floor?.halls?.length ? hub.floor : null);
+      if (snap?.halls?.length && hub?.floor?.halls?.length && snap !== hub.floor) {
+        snap = mergeHubFloorOccupancy(snap, hub.floor);
+      }
+      if (snap?.halls?.length) return withLocalOrders(snap);
+      if (server != null) return withLocalOrders(server);
+      if (!localFirst) throw new Error('floor_unavailable');
+      return { storeId, halls: [] };
     },
     enabled: storeId != null && (onFloor || !!activeOrderId),
     staleTime: FLOOR_STALE_MS,

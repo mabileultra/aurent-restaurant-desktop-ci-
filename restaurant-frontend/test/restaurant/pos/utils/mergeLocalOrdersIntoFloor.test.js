@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { mergeLocalOrdersIntoFloor } from '../../../../src/restaurant/pos/utils/mergeLocalOrdersIntoFloor';
+import {
+  mergeHubFloorOccupancy,
+  mergeLocalOrdersIntoFloor,
+} from '../../../../src/restaurant/pos/utils/mergeLocalOrdersIntoFloor';
 
 describe('mergeLocalOrdersIntoFloor', () => {
   it('marks free table occupied from local waiter order with lines', () => {
@@ -64,5 +67,30 @@ describe('mergeLocalOrdersIntoFloor', () => {
     expect(merged.halls[0].tables[0].activeOrder.id).toBe('L-real');
     expect(merged.halls[0].tables[0].activeOrder.subtotal).toBe(25000);
     expect(merged.halls[0].tables[0].activeOrders.map((o) => o.id)).toEqual(['L-real', 'server-1']);
+  });
+
+  it('paints hub occupied tables onto free server floor', () => {
+    const server = {
+      storeId: 1,
+      halls: [{
+        id: 1,
+        tables: [{ id: 6, code: 'STOL 6', status: 'FREE', activeOrders: [] }],
+      }],
+    };
+    const hub = {
+      storeId: 1,
+      halls: [{
+        id: 1,
+        tables: [{
+          id: 6,
+          status: 'OCCUPIED',
+          activeOrder: { id: 'local-c1', status: 'OPEN', guestCount: 2 },
+          activeOrders: [{ id: 'local-c1', status: 'OPEN', guestCount: 2 }],
+        }],
+      }],
+    };
+    const merged = mergeHubFloorOccupancy(server, hub);
+    expect(merged.halls[0].tables[0].status).toBe('OCCUPIED');
+    expect(merged.halls[0].tables[0].activeOrder.id).toBe('local-c1');
   });
 });

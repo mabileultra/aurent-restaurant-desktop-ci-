@@ -129,3 +129,63 @@ export function mergeLocalOrdersIntoFloor(snapshot, localOrders = []) {
 
   return { ...snapshot, halls };
 }
+
+/**
+ * Paint cashier/monoblock hub occupancy onto a server floor.
+ * Phone used to take hub-only OR server-only; cloud lag then showed all FREE
+ * while the station already had OCCUPIED tables.
+ */
+export function mergeHubFloorOccupancy(base, hubFloor) {
+  if (!base?.halls?.length) return hubFloor || base;
+  if (!hubFloor?.halls?.length) return base;
+
+  /** @type {Map<string, object>} */
+  const hubByTable = new Map();
+  for (const hall of hubFloor.halls) {
+    for (const table of hall.tables || []) {
+      if (table?.id != null) hubByTable.set(String(table.id), table);
+      if (table?.serverId != null) hubByTable.set(String(table.serverId), table);
+    }
+  }
+  if (!hubByTable.size) return base;
+
+  const halls = base.halls.map((hall) => ({
+    ...hall,
+    tables: (hall.tables || []).map((table) => {
+      const hubTable = hubByTable.get(tableKey(table.id))
+        || hubByTable.get(tableKey(table.serverId));
+      if (!hubTable) return table;
+
+      const hubOrders = Array.isArray(hubTable.activeOrders) && hubTable.activeOrders.length
+        ? hubTable.activeOrders
+        : (hubTable.activeOrder ? [hubTable.activeOrder] : []);
+      if (!hubOrders.length) return table;
+
+      const serverOrders = Array.isArray(table.activeOrders) && table.activeOrders.length
+        ? table.activeOrders
+        : (table.activeOrder ? [table.activeOrder] : []);
+      const seen = new Set(serverOrders.map((o) => String(o?.id)));
+      const extra = hubOrders.filter((o) => o?.id != null && !seen.has(String(o.id)));
+      const activeOrders = extra.length ? [...serverOrders, ...extra] : serverOrders;
+      if (!activeOrders.length) return table;
+
+      const primary = activeOrders[0];
+      const hubBusy = hubTable.status === 'BILLING' || hubTable.status === 'WAITING_PAYMENT'
+        ? hubTable.status
+        : 'OCCUPIED';
+      const status = table.status === 'FREE' || table.status === 'CLEANING' || !serverOrders.length
+        ? hubBusy
+        : table.status;
+
+      return {
+        ...table,
+        status,
+        activeOrder: primary,
+        activeOrderId: primary.id,
+        activeOrders,
+      };
+    }),
+  }));
+
+  return { ...base, halls };
+}
