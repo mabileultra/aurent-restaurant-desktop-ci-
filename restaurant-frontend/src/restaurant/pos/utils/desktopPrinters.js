@@ -118,7 +118,11 @@ async function printTicketLinesNow({ title, lines, name }) {
   }
   const html = [
     title ? `<p><strong>${escapeHtml(title)}</strong></p>` : '',
-    ...payload.lines.map((line) => (line === '---' ? '<hr/>' : `<p>${escapeHtml(line)}</p>`)),
+    ...payload.lines.map((line) => (
+      line === '---'
+        ? '<hr/>'
+        : `<p style="white-space:pre;margin:0;font-family:monospace">${escapeHtml(line)}</p>`
+    )),
   ].join('');
   return withPrintTimeout(desk.printTicketHtml({ html, printerName: name }), 'HTML-печати');
 }

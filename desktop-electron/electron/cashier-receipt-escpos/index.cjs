@@ -163,6 +163,12 @@ async function printPlainTicketEscpos(payload) {
           if (rest) out.push(rest);
           return out;
         };
+        // Frontend padRow ("Name····×2") — do not collapse spaces; leftRight pins qty to the edge.
+        const splitPaddedRow = (text) => {
+          const m = String(text || '').match(/^(\S.*?)\s{2,}(\S.*)$/);
+          if (!m) return null;
+          return { left: m[1].trimEnd(), right: m[2].trim() };
+        };
         if (p.title) {
           printer.alignCenter();
           printer.bold(true);
@@ -185,6 +191,11 @@ async function printPlainTicketEscpos(payload) {
             printer.bold(true);
             wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
             printer.bold(false);
+            continue;
+          }
+          const padded = splitPaddedRow(text);
+          if (padded && typeof printer.leftRight === 'function') {
+            printer.leftRight(padded.left, padded.right);
             continue;
           }
           wrap(text).forEach((line) => printer.println(line));

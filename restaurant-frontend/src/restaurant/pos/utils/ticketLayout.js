@@ -18,8 +18,8 @@ export function moneyRow(label, amount, width = TICKET_WIDTH) {
   return padRow(label, fmtMoneyCompact(amount), width);
 }
 
-/** 80mm Font A ≈ 48 cols; leave a small margin from the right edge. */
-const KITCHEN_QTY_WIDTH = 44;
+/** Match Electron 80mm receipt width (42); padRow → leftRight on print. */
+const KITCHEN_QTY_WIDTH = 42;
 
 /** Kitchen / category slip line: name left, qty right. */
 export function qtyNameRow(qty, name, width = KITCHEN_QTY_WIDTH) {
