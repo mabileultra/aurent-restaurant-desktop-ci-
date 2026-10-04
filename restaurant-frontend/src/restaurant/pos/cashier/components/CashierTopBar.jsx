@@ -6,6 +6,7 @@ import { logoutAndResetSession } from '../../../../utils/authSession';
 import { CASHIER_HEADER_TABS } from '../utils/cashierNav';
 import CashierNavLookup from './CashierNavLookup';
 import PosEnterMobileButton from '../../pos-mobile/components/PosEnterMobileButton';
+import WaiterMobileHeaderActions from '../../waiter-mobile/components/WaiterMobileHeaderActions';
 import '../styles/cashier-shell.css';
 
 export default function CashierTopBar({
@@ -21,6 +22,7 @@ export default function CashierTopBar({
   showExitMobile = false,
   onExitMobile,
   compactActions = false,
+  roleLabel = '',
   t,
 }) {
   return (
@@ -43,7 +45,7 @@ export default function CashierTopBar({
             <span className="rst-cashier-top__name">{t('rst.cashier.title')}</span>
             <span className="rst-cashier-top__meta">
               {storeName || t('rst.floor.hall')}
-              {userLabel ? ` · ${userLabel}` : ''}
+              {!compactActions && userLabel ? ` · ${userLabel}` : ''}
             </span>
           </>
         )}
@@ -67,32 +69,47 @@ export default function CashierTopBar({
       ) : null}
 
       <div className="rst-cashier-top__actions">
-        {!compactActions && canAdmin ? (
-          <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
-            <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
-          </Link>
-        ) : null}
-        {compactActions ? null : <RestaurantThemeSwitch />}
-        <LanguageSwitcher variant="rst" />
-        {showEnterMobile ? <PosEnterMobileButton onEnter={onEnterMobile} /> : null}
-        {showExitMobile ? (
-          <BaseButton
-            type="button"
-            variant="ghost"
-            className="rst-cashier-top__exit-mobile"
-            onClick={onExitMobile}
-          >
-            {t('rst.mobile.exitShort', { defaultValue: 'ПК' })}
-          </BaseButton>
-        ) : null}
-        <BaseButton
-          type="button"
-          variant="ghost"
-          className="rst-exit-btn"
-          onClick={() => logoutAndResetSession()}
-        >
-          {compactActions ? t('nav.logoutShort', { defaultValue: 'Выход' }) : t('nav.logout')}
-        </BaseButton>
+        {compactActions ? (
+          <WaiterMobileHeaderActions
+            enabled
+            displayName={userLabel || ''}
+            storeName={storeName || ''}
+            roleLabel={roleLabel || t('roles.CASHIER', { defaultValue: 'Кассир' })}
+            canAdmin={canAdmin}
+            canCashier={false}
+            showExitMobile={showExitMobile}
+            onExitMobile={onExitMobile}
+          />
+        ) : (
+          <>
+            {canAdmin ? (
+              <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
+                <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
+              </Link>
+            ) : null}
+            <RestaurantThemeSwitch />
+            <LanguageSwitcher variant="rst" />
+            {showEnterMobile ? <PosEnterMobileButton onEnter={onEnterMobile} /> : null}
+            {showExitMobile ? (
+              <BaseButton
+                type="button"
+                variant="ghost"
+                className="rst-cashier-top__exit-mobile"
+                onClick={onExitMobile}
+              >
+                {t('rst.mobile.exitShort', { defaultValue: 'ПК' })}
+              </BaseButton>
+            ) : null}
+            <BaseButton
+              type="button"
+              variant="ghost"
+              className="rst-exit-btn"
+              onClick={() => logoutAndResetSession()}
+            >
+              {t('nav.logout')}
+            </BaseButton>
+          </>
+        )}
       </div>
     </header>
   );

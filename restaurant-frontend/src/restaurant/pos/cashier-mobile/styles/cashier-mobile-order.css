@@ -2,6 +2,26 @@
 
 .rst-cashier-order {
   height: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+  box-sizing: border-box;
+  padding-left: max(0.45rem, env(safe-area-inset-left, 0px));
+  padding-right: max(0.45rem, env(safe-area-inset-right, 0px));
+}
+
+.rst-cashier-order .rst-waiter-order__body .rst-menu-cat {
+  min-height: 1.55rem;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.7rem;
+}
+
+.rst-cashier-order .rst-waiter-order__body .rst-menu-cats {
+  gap: 0.25rem;
+}
+
+.rst-cashier-order .rst-waiter-order__body .rst-menu__search input {
+  min-height: 1.9rem;
+  font-size: 0.9rem;
 }
 
 .rst-cashier-order__btn--pay {

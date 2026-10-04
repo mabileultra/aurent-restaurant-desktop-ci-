@@ -75,6 +75,7 @@ export function useCashierPosPage() {
     setTabState('hall');
     floor.setFloorSection('tables');
     if (floor.posMode !== 'floor') floor.changePosMode('floor');
+    setFullOrder(true);
   };
 
   const selectTableCheck = (table, orderId) => {

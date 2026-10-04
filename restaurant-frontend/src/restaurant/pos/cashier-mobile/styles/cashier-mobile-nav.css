@@ -1,0 +1,150 @@
+/* Collapsible cashier phone nav sheet */
+
+.rst-cashier-more-bar {
+  flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0.35rem 0.65rem max(0.4rem, env(safe-area-inset-bottom, 0px));
+  background: var(--rst-bg);
+  border-top: 1px solid var(--rst-line);
+}
+
+.rst-cashier-more-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  min-height: 2.55rem;
+  min-width: min(100%, 16rem);
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 999px;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  touch-action: manipulation;
+}
+
+.rst-cashier-more-trigger span {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rst-cashier-more {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.rst-cashier-more__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgb(0 0 0 / 0.48);
+  animation: rst-cashier-more-fade 0.18s ease-out;
+}
+
+.rst-cashier-more__sheet {
+  position: relative;
+  z-index: 1;
+  max-height: min(78dvh, 36rem);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0.35rem 0.75rem max(0.85rem, env(safe-area-inset-bottom, 0px));
+  border-radius: 1.1rem 1.1rem 0 0;
+  background: var(--rst-surface, #121820);
+  border: 1px solid var(--rst-line);
+  border-bottom: 0;
+  animation: rst-cashier-more-up 0.22s ease-out;
+}
+
+.rst-cashier-more__grab {
+  width: 2.4rem;
+  height: 0.28rem;
+  margin: 0.2rem auto 0.55rem;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.18);
+}
+
+.rst-cashier-more__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+}
+
+.rst-cashier-more__head h2 {
+  margin: 0;
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.rst-cashier-more__close {
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 0.55rem;
+  background: rgb(255 255 255 / 0.06);
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.rst-cashier-more__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.rst-cashier-more__item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  min-height: 4.4rem;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.85rem;
+  background: var(--rst-surface-2, #1a222c);
+  color: inherit;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 750;
+  text-align: left;
+  touch-action: manipulation;
+  transition: transform 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+.rst-cashier-more__item.is-active {
+  border-color: var(--rst-accent);
+  background: color-mix(in srgb, var(--rst-accent) 22%, var(--rst-surface-2));
+  color: #1b1208;
+}
+
+.rst-cashier-more__item:disabled {
+  opacity: 0.4;
+}
+
+.rst-cashier-more__item:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+@keyframes rst-cashier-more-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes rst-cashier-more-up {
+  from { transform: translateY(12%); opacity: 0.85; }
+  to { transform: translateY(0); opacity: 1; }
+}

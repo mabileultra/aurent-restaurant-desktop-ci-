@@ -11,9 +11,9 @@ import { usePosUiScale } from '../../hooks/usePosUiScale';
 import { useCashierPosPage } from '../hooks/useCashierPosPage';
 import CashierTopBar from '../components/CashierTopBar';
 import CashierSectionBody from '../components/CashierSectionBody';
-import CashierBottomNav from '../components/CashierBottomNav';
 import { useCashierMobileLayout } from '../../cashier-mobile/hooks/useCashierMobileLayout';
 import CashierMobileOrderWorkspace from '../../cashier-mobile/components/CashierMobileOrderWorkspace';
+import CashierMobileNavSheet from '../../cashier-mobile/components/CashierMobileNavSheet';
 import '../../../shared/styles/restaurant-tokens.css';
 import '../../../shared/styles/rst-blocks.css';
 import '../../styles/floor-pos.css';
@@ -166,6 +166,7 @@ export default function RestaurantCashierPosPage() {
           showExitMobile={mobile.showExitMobile}
           onExitMobile={mobile.exitMobile}
           compactActions={mobile.enabled}
+          roleLabel={p.t(`roles.${user?.role || 'CASHIER'}`, { defaultValue: p.t('roles.CASHIER') })}
           t={p.t}
         />
       )}
@@ -191,7 +192,15 @@ export default function RestaurantCashierPosPage() {
 
       {showFull || mobile.enabled ? null : <PosHardwareBar t={p.t} />}
       {mobile.enabled && !showFull ? (
-        <CashierBottomNav tab={p.tab} onSelect={handleTab} t={p.t} />
+        <CashierMobileNavSheet
+          tab={p.tab}
+          onSelect={handleTab}
+          disabledKeys={[
+            ...(canDiscount ? [] : ['discount']),
+            ...(p.shift?.id ? [] : ['cash']),
+          ]}
+          t={p.t}
+        />
       ) : null}
       <FloorPosModals p={p} />
       <OrderDiscountModal
