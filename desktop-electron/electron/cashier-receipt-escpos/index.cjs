@@ -148,10 +148,10 @@ async function printPlainTicketEscpos(payload) {
       buildOnPrinter: (printer, p) => {
         preparePrinterEncoding(printer, p.locale);
         const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
-        // Kitchen / category / cancel slips: one large font for every line (not title-only bold).
+        // Kitchen / category / cancel: one normal Font A size for every line (no double-height).
         if (typeof printer.setTypeFontA === 'function') printer.setTypeFontA();
-        if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
-        printer.bold(true);
+        if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
+        printer.bold(false);
         const wrap = (text) => {
           const src = String(text || '').replace(/\s+/g, ' ').trim();
           if (!src) return [];
@@ -202,8 +202,6 @@ async function printPlainTicketEscpos(payload) {
           wrap(text).forEach((line) => printer.println(line));
         }
         printer.newLine();
-        if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
-        printer.bold(false);
         printer.cut();
       },
       noPrinterHint: 'Принтер станции не выбран.',

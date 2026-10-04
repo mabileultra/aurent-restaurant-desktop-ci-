@@ -117,8 +117,8 @@ async function printTicketLinesNow({ title, lines, name }) {
     throw new Error('Печать станции недоступна. Закройте Aurent и откройте заново после обновления.');
   }
   const html = [
-    '<div style="font-family:monospace;font-size:18px;font-weight:700;line-height:1.35">',
-    title ? `<p style="margin:0 0 8px;text-align:center">${escapeHtml(title)}</p>` : '',
+    '<div style="font-family:monospace;font-size:13px;font-weight:400;line-height:1.35">',
+    title ? `<p style="margin:0 0 8px;text-align:center;font-weight:700">${escapeHtml(title)}</p>` : '',
     ...payload.lines.map((line) => (
       line === '---'
         ? '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>'
