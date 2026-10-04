@@ -186,6 +186,7 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
         order: orderRes.data,
         t,
         waiterNameById,
+        header: payload.header || null,
       });
       if (printed?.mode === 'silent') return { ack: true, release: false, mode: 'silent' };
       // No bill printer on this PC — free the job for the cashier desktop immediately.

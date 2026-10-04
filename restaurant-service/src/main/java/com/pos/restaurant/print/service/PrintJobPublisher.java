@@ -39,7 +39,10 @@ public class PrintJobPublisher {
     private final ObjectMapper objectMapper;
 
     public void guestBill(FloorOrder order) {
-        enqueue(order, PrintJobKind.GUEST_BILL, new PrintJobPayloads.GuestBill(order.getId()));
+        enqueue(order, PrintJobKind.GUEST_BILL, new PrintJobPayloads.GuestBill(
+            order.getId(),
+            ticketHeader(order)
+        ));
     }
 
     public void kitchenSend(FloorOrder order, List<PrintJobPayloads.KitchenSendLine> lines) {

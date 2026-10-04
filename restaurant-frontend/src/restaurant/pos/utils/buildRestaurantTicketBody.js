@@ -1,11 +1,18 @@
 /**
  * Shared guest bill / ordinary receipt text lines for thermal printers.
- * Items: "Name  qty×price = total" (wrap if too long). VAT only in footer.
+ * Items: name left, "qty×price = total" right (one row). VAT only in footer.
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { extractVatFromInclusive, round2 } from '../../../utils/taxAmounts';
 import { resolveRestaurantPayTotal, resolveServicePreview } from './restaurantPayAmount';
-import { moneyRow, padRow, TICKET_WIDTH, ticketStamp } from './ticketLayout';
+import {
+  emphPadRow,
+  moneyRow,
+  padRow,
+  RECEIPT_WIDTH,
+  TICKET_WIDTH,
+  ticketStamp,
+} from './ticketLayout';
 
 function fmtQty(qty) {
   const n = Number(qty) || 0;
@@ -13,25 +20,19 @@ function fmtQty(qty) {
   return String(Math.round(n * 1000) / 1000);
 }
 
-/** One item → 1–2 body lines (no per-line VAT). */
-export function formatTicketItemLines(item, width = TICKET_WIDTH) {
-  const name = String(item?.name || item?.productName || '').trim() || '—';
+/** One item → one padded row (mods folded into name); note on extra line. */
+export function formatTicketItemLines(item, width = RECEIPT_WIDTH) {
+  const base = String(item?.name || item?.productName || '').trim() || '—';
+  const mods = (item?.modifiers || [])
+    .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
+    .map((name) => String(name || '').trim())
+    .filter(Boolean);
+  const name = mods.length ? `${base} ${mods.join(' ')}` : base;
   const qty = fmtQty(item?.quantity);
   const unit = fmtMoneyCompact(item?.unitPrice ?? item?.price ?? 0);
   const total = fmtMoneyCompact(item?.lineTotal ?? item?.total ?? 0);
   const money = `${qty}×${unit} = ${total}`;
-  const single = `${name}  ${money}`;
-  const out = [];
-  if (single.length <= width) {
-    out.push(single);
-  } else {
-    out.push(name.slice(0, width));
-    out.push(money.length <= width ? money : money.slice(0, width));
-  }
-  const mods = (item?.modifiers || [])
-    .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
-    .filter(Boolean);
-  if (mods.length) out.push(`  + ${mods.join(', ')}`.slice(0, width));
+  const out = [padRow(name, money, width)];
   if (item?.note) out.push(`  * ${item.note}`.slice(0, width));
   return out;
 }
@@ -54,8 +55,26 @@ function paymentMethodLabel(method, t) {
   return t?.('sales.paymentCash', { defaultValue: 'Наличные' }) || 'Наличные';
 }
 
+function resolvePlaceLine(order, t, header) {
+  if (header) return String(header).trim();
+  if (!order?.tableCode) return order?.clientName || '';
+  const hall = order?.hallName ? String(order.hallName).trim() : '';
+  if (hall) {
+    return t?.('rst.order.ticketTitle', {
+      code: order.tableCode,
+      hall,
+      defaultValue: `${hall} · Стол ${order.tableCode}`,
+    }) || `${hall} · Стол ${order.tableCode}`;
+  }
+  return t?.('rst.order.tableHeading', {
+    code: order.tableCode,
+    defaultValue: `Стол ${order.tableCode}`,
+  }) || `Стол ${order.tableCode}`;
+}
+
 /**
  * @param {'bill'|'sale'} kind
+ * @param {string|null} [header] prebuilt place line (e.g. "Зал · Стол 2" from print job)
  */
 export function buildRestaurantTicketBody({
   kind = 'bill',
@@ -66,6 +85,7 @@ export function buildRestaurantTicketBody({
   waiterName = null,
   paymentMethod = null,
   qrValue = '',
+  header = null,
 } = {}) {
   const isSale = kind === 'sale' && sale;
   const items = isSale
@@ -81,7 +101,6 @@ export function buildRestaurantTicketBody({
   const discount = isSale
     ? round2(Number(sale.discountTotal ?? sale.orderDiscountAmount) || 0)
     : round2(Math.max(0, Number(order?.discountAmount) || 0));
-  const withoutService = round2(Math.max(0, subtotal - discount));
   const grand = isSale
     ? round2(Number(sale.totalAmount) || 0)
     : resolveRestaurantPayTotal(order, service);
@@ -100,10 +119,7 @@ export function buildRestaurantTicketBody({
       lines.push(`${label}: ${sale.cashierName || sale.employeeName}`);
     }
   } else {
-    const place = order?.tableCode
-      ? (t?.('rst.order.tableHeading', { code: order.tableCode, defaultValue: `Стол ${order.tableCode}` })
-        || `Стол ${order.tableCode}`)
-      : (order?.clientName || '');
+    const place = resolvePlaceLine(order, t, header);
     if (place || order?.orderNo != null) {
       lines.push(`${place}${order?.orderNo != null ? ` · №${order.orderNo}` : ''}`.trim());
     }
@@ -130,16 +146,21 @@ export function buildRestaurantTicketBody({
   lines.push(moneyRow(
     t?.('rst.order.subtotalShort', { defaultValue: 'Подытог' }) || 'Подытог',
     subtotal,
+    RECEIPT_WIDTH,
   ));
   if (service.amount > 0) {
     const svcLabel = service.percent > 0
       ? (t?.('rst.order.serviceLine', { percent: service.percent, defaultValue: `Обслуживание ${service.percent}%` })
         || `Обслуживание ${service.percent}%`)
       : (t?.('rst.order.serviceShort', { defaultValue: 'Обслуживание' }) || 'Обслуживание');
-    lines.push(moneyRow(svcLabel, service.amount));
+    lines.push(moneyRow(svcLabel, service.amount, RECEIPT_WIDTH));
   }
   if (discount > 0) {
-    lines.push(moneyRow(t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка', -discount));
+    lines.push(moneyRow(
+      t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка',
+      -discount,
+      RECEIPT_WIDTH,
+    ));
   }
 
   if (isSale || paymentMethod) {
@@ -152,24 +173,22 @@ export function buildRestaurantTicketBody({
   }
 
   if (vat > 0) {
-    lines.push(moneyRow(t?.('rst.order.vatShort', { defaultValue: 'НДС' }) || 'НДС', vat));
-  }
-
-  if (service.amount > 0) {
     lines.push(moneyRow(
-      t?.('rst.order.withoutService', { defaultValue: 'Без обслуживания' }) || 'Без обслуживания',
-      withoutService,
+      t?.('rst.order.vatShort', { defaultValue: 'НДС' }) || 'НДС',
+      vat,
+      RECEIPT_WIDTH,
     ));
   }
 
   lines.push('---');
   const totalLabel = t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО';
-  lines.push(padRow(totalLabel.toUpperCase(), fmtMoneyCompact(grand)));
+  lines.push(emphPadRow(totalLabel.toUpperCase(), fmtMoneyCompact(grand), RECEIPT_WIDTH));
 
   if (isSale && Number(sale.changeGiven) > 0) {
     lines.push(moneyRow(
       t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача',
       sale.changeGiven,
+      RECEIPT_WIDTH,
     ));
   }
 

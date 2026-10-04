@@ -8,7 +8,12 @@ public final class PrintJobPayloads {
 
     private PrintJobPayloads() {}
 
-    public record GuestBill(UUID orderId) {}
+    /** header = "Hall · Стол N" when known (print relay uses it for the place line). */
+    public record GuestBill(UUID orderId, String header) {
+        public GuestBill(UUID orderId) {
+            this(orderId, null);
+        }
+    }
 
     /** note = kitchen text for this fire (weight delta); null → print relay falls back to order line note. */
     public record KitchenSendLine(UUID itemId, BigDecimal quantity, String note) {

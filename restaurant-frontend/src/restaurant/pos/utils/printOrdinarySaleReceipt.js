@@ -69,8 +69,6 @@ export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
     : method === 'MIXED'
       ? (t?.('salesLedger.filters.mixed', { defaultValue: 'Смешанная' }) || 'Смешанная')
       : (t?.('sales.paymentCash', { defaultValue: 'Наличные' }) || 'Наличные');
-  const withoutService = Math.max(0, subtotal - discount);
-
   document.getElementById(HOST_ID)?.remove();
   const host = document.createElement('div');
   host.id = HOST_ID;
@@ -92,7 +90,6 @@ export async function printOrdinarySaleReceipt({ sale, t, shift = null } = {}) {
       ${discount > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.discount', { defaultValue: 'Скидка' }) || 'Скидка')}</span><strong>−${fmtMoneyCompact(discount)}</strong></div>` : ''}
       <div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.paymentFormLine', { method: methodLabel, defaultValue: `Форма оплаты: ${methodLabel}` }) || `Форма оплаты: ${methodLabel}`)}</span></div>
       ${vat > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.vatShort', { defaultValue: 'НДС' }) || 'НДС')}</span><strong>${fmtMoneyCompact(vat)}</strong></div>` : ''}
-      ${service > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('rst.order.withoutService', { defaultValue: 'Без обслуживания' }) || 'Без обслуживания')}</span><strong>${fmtMoneyCompact(withoutService)}</strong></div>` : ''}
       <div class="rst-ord-print__row rst-ord-print__row--grand"><span>${escapeHtml(t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО')}</span><strong>${fmtMoneyCompact(totalAmount)}</strong></div>
       ${Number(sale.changeGiven) > 0 ? `<div class="rst-ord-print__row"><span>${escapeHtml(t?.('fiscalReceipt.change', { defaultValue: 'Сдача' }) || 'Сдача')}</span><strong>${fmtMoneyCompact(sale.changeGiven)}</strong></div>` : ''}
       ${qrValue ? `<p class="rst-ord-print__meta">${escapeHtml(t?.('rst.order.ofdQrHint', { defaultValue: 'ОФД / QR' }) || 'ОФД / QR')}</p><p class="rst-ord-print__meta">${escapeHtml(qrValue)}</p>` : ''}

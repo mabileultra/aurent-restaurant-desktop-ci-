@@ -193,13 +193,24 @@ async function printPlainTicketEscpos(payload) {
             wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
             continue;
           }
-          const padded = splitPaddedRow(text);
+          // §E§ — emphasize (guest-bill total): bold + double-height, then restore.
+          const emph = text.startsWith('§E§');
+          const body = emph ? text.slice(3) : text;
+          if (emph) {
+            printer.bold(true);
+            if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
+          }
+          const padded = splitPaddedRow(body);
           if (padded && typeof printer.leftRight === 'function'
             && padded.left.length + padded.right.length < width) {
             printer.leftRight(padded.left, padded.right);
-            continue;
+          } else {
+            wrap(body).forEach((line) => printer.println(line));
           }
-          wrap(text).forEach((line) => printer.println(line));
+          if (emph) {
+            if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
+            printer.bold(false);
+          }
         }
         printer.newLine();
         printer.cut();

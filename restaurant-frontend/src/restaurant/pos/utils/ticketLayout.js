@@ -3,6 +3,16 @@ import { fmtMoneyCompact } from '../../../utils/formatMoney';
 /** Approximate ESC/POS width for 80mm; content still wraps on device. */
 export const TICKET_WIDTH = 32;
 
+/** 80mm Font A column count — guest bill / kitchen pad rows. */
+export const RECEIPT_WIDTH = 42;
+
+/** Prefix: ESC/POS prints this line bold + slightly taller (strip before output). */
+export const EMPH_LINE_PREFIX = '§E§';
+
+export function emphPadRow(left, right, width = RECEIPT_WIDTH) {
+  return `${EMPH_LINE_PREFIX}${padRow(left, right, width)}`;
+}
+
 export function padRow(left, right, width = TICKET_WIDTH) {
   const L = String(left ?? '').trimEnd();
   const R = String(right ?? '').trim();

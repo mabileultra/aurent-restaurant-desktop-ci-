@@ -20,7 +20,9 @@ async function loadCurrentShift(storeId) {
   }
 }
 
-export async function printGuestBill({ order, t, waiterNameById, shift = null } = {}) {
+export async function printGuestBill({
+  order, t, waiterNameById, shift = null, header = null,
+} = {}) {
   if (!order || !isDesktopPrinter()) return { mode: 'skip' };
   const settings = await getDesktopPrinterSettings();
   const printer = settings?.billPrinterName || '';
@@ -40,6 +42,7 @@ export async function printGuestBill({ order, t, waiterNameById, shift = null } 
     t,
     shift: resolvedShift,
     waiterName,
+    header,
     // Pre-check: no payment / no OFD QR
     paymentMethod: null,
     qrValue: '',

@@ -119,11 +119,17 @@ async function printTicketLinesNow({ title, lines, name }) {
   const html = [
     '<div style="font-family:monospace;font-size:13px;font-weight:400;line-height:1.35">',
     title ? `<p style="margin:0 0 8px;text-align:center;font-weight:700">${escapeHtml(title)}</p>` : '',
-    ...payload.lines.map((line) => (
-      line === '---'
-        ? '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>'
-        : `<p style="white-space:pre;margin:0">${escapeHtml(line)}</p>`
-    )),
+    ...payload.lines.map((line) => {
+      if (line === '---') {
+        return '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>';
+      }
+      const emph = String(line).startsWith('§E§');
+      const text = emph ? String(line).slice(3) : String(line);
+      const style = emph
+        ? 'white-space:pre;margin:0;font-weight:700;font-size:16px'
+        : 'white-space:pre;margin:0';
+      return `<p style="${style}">${escapeHtml(text)}</p>`;
+    }),
     '</div>',
   ].join('');
   return withPrintTimeout(desk.printTicketHtml({ html, printerName: name }), 'HTML-печати');
