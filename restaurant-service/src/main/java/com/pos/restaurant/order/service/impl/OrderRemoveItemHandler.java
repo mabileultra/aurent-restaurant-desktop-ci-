@@ -15,10 +15,12 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Component
@@ -32,6 +34,7 @@ public class OrderRemoveItemHandler {
     private final OrderItemMutabilityPolicy mutabilityPolicy;
     private final OrderResponseAssembler assembler;
     private final FloorTenantSupport tenantSupport;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public OrderResponse handle(UUID orderId, UUID itemId) {
@@ -49,10 +52,11 @@ public class OrderRemoveItemHandler {
             return assembler.toResponse(order, itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId));
         }
 
-        // Kitchen refuse / qty cancel: cashier/manager only, no void print.
+        // Kitchen refuse: cashier/manager only — void slip on that category's printer.
         if (!tenantSupport.canCancelOrdersWithItems()) {
             throw new ForbiddenException("Only a manager or cashier can refuse a kitchen item");
         }
+        printJobPublisher.voidSlipsForItems(order, List.of(item));
         item.setItemStatus(OrderItemStatus.CANCELLED);
         for (KitchenTicketLine ticketLine : ticketLineRepository.findByOrderItemId(itemId)) {
             var ticket = ticketLine.getTicket();

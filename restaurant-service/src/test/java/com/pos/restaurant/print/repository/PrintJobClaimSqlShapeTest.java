@@ -23,9 +23,10 @@ class PrintJobClaimSqlShapeTest {
             java.time.Instant.class,
             int.class,
             int.class,
-            int.class,
-            int.class,
-            int.class,
+            int.class, // guestBill
+            int.class, // orderCancel
+            int.class, // kitchenSend
+            int.class, // hasPrinters
             java.util.Collection.class,
             java.util.Collection.class
         );

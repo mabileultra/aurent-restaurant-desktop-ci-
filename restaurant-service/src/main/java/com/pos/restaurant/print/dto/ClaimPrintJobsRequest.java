@@ -10,9 +10,23 @@ public record ClaimPrintJobsRequest(
     List<String> printerNames,
     boolean guestBill,
     boolean kitchenSend,
+    /** Cashier receipt printer — claims ORDER_CANCEL slips. */
+    boolean orderCancel,
     Integer limit,
     /** Category printers whose local lane is full or cooling down after an error — skip their slips. */
     List<String> busyPrinters,
     /** Max category slips per printer in one claim (fair share across stations). */
     Integer perPrinterLimit
-) {}
+) {
+    /** Backward-compatible ctor for older desktop clients. */
+    public ClaimPrintJobsRequest(
+        List<String> printerNames,
+        boolean guestBill,
+        boolean kitchenSend,
+        Integer limit,
+        List<String> busyPrinters,
+        Integer perPrinterLimit
+    ) {
+        this(printerNames, guestBill, kitchenSend, false, limit, busyPrinters, perPrinterLimit);
+    }
+}

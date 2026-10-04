@@ -185,6 +185,8 @@ function createServer() {
       for (const job of pending) {
         if (job.kind === 'GUEST_BILL') {
           if (body?.guestBill) picked.push(job);
+        } else if (job.kind === 'ORDER_CANCEL') {
+          if (body?.orderCancel) picked.push(job);
         } else if (job.kind === 'KITCHEN_SEND') {
           if (body?.kitchenSend) picked.push(job);
         } else if (printers.has(job.printer) && !busy.has(job.printer)) {

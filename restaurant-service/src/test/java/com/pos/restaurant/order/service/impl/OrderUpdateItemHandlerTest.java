@@ -12,6 +12,7 @@ import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,6 +42,7 @@ class OrderUpdateItemHandlerTest {
     @Mock private OrderItemMutabilityPolicy mutabilityPolicy;
     @Mock private OrderResponseAssembler assembler;
     @Mock private FloorTenantSupport tenantSupport;
+    @Mock private PrintJobPublisher printJobPublisher;
 
     @InjectMocks
     private OrderUpdateItemHandler handler;
@@ -76,6 +79,12 @@ class OrderUpdateItemHandlerTest {
 
         assertEquals(0, item.getQuantity().compareTo(BigDecimal.ONE));
         assertEquals(0, item.getSentQuantity().compareTo(BigDecimal.ONE));
+
+        verify(printJobPublisher).voidSlipsForItems(
+            eq(order),
+            eq(List.of(item)),
+            eq(Map.of(itemId, new BigDecimal("1.000")))
+        );
 
         ArgumentCaptor<FloorOrderItem> refuseCap = ArgumentCaptor.forClass(FloorOrderItem.class);
         verify(itemRepository).save(refuseCap.capture());

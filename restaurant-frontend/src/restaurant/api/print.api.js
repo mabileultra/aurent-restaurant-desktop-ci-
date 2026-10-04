@@ -9,6 +9,7 @@ export const rstPrintApi = {
     api.post(rst(`/stores/${storeId}/print-jobs/claim`), capabilities || {
       printerNames: [],
       guestBill: false,
+      orderCancel: false,
       kitchenSend: false,
     }),
   acknowledge: (storeId, jobIds) => api.post(rst(`/stores/${storeId}/print-jobs/ack`), { jobIds }),

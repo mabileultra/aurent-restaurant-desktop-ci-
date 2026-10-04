@@ -16,6 +16,7 @@ import com.pos.restaurant.print.domain.PrintJobKind;
 import com.pos.restaurant.print.entity.RestaurantPrintJob;
 import com.pos.restaurant.print.repository.RestaurantPrintJobRepository;
 import com.pos.restaurant.print.support.PrintJobPayloads;
+import com.pos.restaurant.settings.service.KitchenBoardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +35,7 @@ public class PrintJobPublisher {
     private final RestaurantPrintJobRepository repository;
     private final MenuCategoryRepository menuCategoryRepository;
     private final FloorOrderItemModifierRepository itemModifierRepository;
+    private final KitchenBoardService kitchenBoardService;
     private final ObjectMapper objectMapper;
 
     public void guestBill(FloorOrder order) {
@@ -60,9 +62,99 @@ public class PrintJobPublisher {
         enqueueCategoryBatches(order, items, qtyByItemId, false);
     }
 
-    /** Cancel / refuse: void slip to the same section printers that received the dishes. */
+    /**
+     * Cancel / refuse: same printers that got the dish on send.
+     * Board off → category auto-print printers. Board on → station (kitchen) printers.
+     */
     public void voidSlipsForItems(FloorOrder order, List<FloorOrderItem> items) {
-        enqueueCategoryBatches(order, items, null, true);
+        voidSlipsForItems(order, items, null);
+    }
+
+    /** Qty cut refuse: void only the refused delta. */
+    public void voidSlipsForItems(FloorOrder order, List<FloorOrderItem> items, Map<UUID, BigDecimal> qtyByItemId) {
+        if (order == null || items == null || items.isEmpty()) {
+            return;
+        }
+        if (kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId())) {
+            enqueueKitchenVoid(order, items, qtyByItemId);
+        } else {
+            enqueueCategoryBatches(order, items, qtyByItemId, true);
+        }
+    }
+
+    private void enqueueKitchenVoid(
+        FloorOrder order,
+        List<FloorOrderItem> items,
+        Map<UUID, BigDecimal> qtyOverride
+    ) {
+        List<PrintJobPayloads.KitchenSendLine> lines = new ArrayList<>();
+        for (FloorOrderItem item : items) {
+            if (item.getItemStatus() == com.pos.restaurant.order.domain.OrderItemStatus.CANCELLED) {
+                continue;
+            }
+            if (item.getItemStatus() == com.pos.restaurant.order.domain.OrderItemStatus.NEW) {
+                continue;
+            }
+            BigDecimal qty = qtyOverride != null && qtyOverride.containsKey(item.getId())
+                ? qtyOverride.get(item.getId())
+                : (item.getQuantity() == null ? BigDecimal.ONE : item.getQuantity());
+            if (qty == null || qty.signum() <= 0) {
+                continue;
+            }
+            lines.add(new PrintJobPayloads.KitchenSendLine(
+                item.getId(),
+                qty,
+                WeightSaleSupport.kitchenNote(item.getMenuItem(), item.getNote(), qty)
+            ));
+        }
+        if (lines.isEmpty()) {
+            return;
+        }
+        List<UUID> itemIds = lines.stream().map(PrintJobPayloads.KitchenSendLine::itemId).toList();
+        enqueue(order, PrintJobKind.KITCHEN_SEND, new PrintJobPayloads.KitchenSend(
+            order.getId(),
+            itemIds,
+            lines,
+            true
+        ));
+    }
+
+    /**
+     * Full order cancel from cashier — one slip on the cashier receipt printer
+     * (not kitchen / category stations).
+     */
+    public void orderCancelSlip(FloorOrder order, List<FloorOrderItem> items) {
+        if (order == null || items == null || items.isEmpty()) {
+            return;
+        }
+        Map<UUID, List<FloorOrderItemModifier>> modifiers = loadModifiers(items);
+        List<PrintJobPayloads.CategoryBatchLine> lines = new ArrayList<>();
+        for (FloorOrderItem item : items) {
+            if (item.getItemStatus() == com.pos.restaurant.order.domain.OrderItemStatus.CANCELLED) {
+                continue;
+            }
+            BigDecimal qty = item.getQuantity() == null ? BigDecimal.ONE : item.getQuantity();
+            if (qty.signum() <= 0) {
+                continue;
+            }
+            MenuItem menuItem = item.getMenuItem();
+            lines.add(new PrintJobPayloads.CategoryBatchLine(
+                item.getName(),
+                qty,
+                MenuPortionFormat.display(menuItem),
+                WeightSaleSupport.kitchenNote(menuItem, item.getNote(), qty),
+                modifierNames(modifiers.getOrDefault(item.getId(), List.of()))
+            ));
+        }
+        if (lines.isEmpty()) {
+            return;
+        }
+        enqueue(order, PrintJobKind.ORDER_CANCEL, new PrintJobPayloads.OrderCancel(
+            order.getId(),
+            ticketHeader(order),
+            order.getWaiterUserId(),
+            lines
+        ));
     }
 
     private void enqueueCategoryBatches(

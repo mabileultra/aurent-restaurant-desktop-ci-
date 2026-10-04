@@ -46,7 +46,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
           AND store_id = :storeId
           AND status = 'PENDING'
           AND created_at < :billBefore
-          AND (kind = 'GUEST_BILL' OR created_at < :slipBefore)
+          AND (kind IN ('GUEST_BILL', 'ORDER_CANCEL') OR created_at < :slipBefore)
         """, nativeQuery = true)
     int expireStalePending(
         @Param("companyId") Integer companyId,
@@ -126,6 +126,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                       AND created_at > :since
                       AND (
                         (:guestBill = 1 AND kind = 'GUEST_BILL')
+                        OR (:orderCancel = 1 AND kind = 'ORDER_CANCEL')
                         OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
                       )
                     ORDER BY created_at ASC
@@ -146,6 +147,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("batch") int batch,
         @Param("perLane") int perLane,
         @Param("guestBill") int guestBill,
+        @Param("orderCancel") int orderCancel,
         @Param("kitchenSend") int kitchenSend,
         @Param("hasPrinters") int hasPrinters,
         @Param("printers") Collection<String> printers,

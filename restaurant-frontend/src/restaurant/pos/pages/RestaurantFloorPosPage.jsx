@@ -21,7 +21,6 @@ import WaiterEnterMobileButton from '../waiter-mobile/components/WaiterEnterMobi
 import { usesCashierPos } from '../cashier/utils/cashierNav';
 import {
   ALL_HALLS_ID,
-  filterHallsByWaiterTables,
   filterTablesByStatus,
   filterTablesByWaiter,
   tableActiveOrders,
@@ -30,6 +29,7 @@ import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/floor-pos.css';
 import '../styles/floor-section-tabs.css';
+import '../styles/floor-table-grid.css';
 import '../styles/floor-pos-touch.css';
 import '../styles/floor-pos-controls.css';
 import '../styles/shift-bar.css';
@@ -75,7 +75,8 @@ function WaiterShiftHint({ p }) {
 function FloorSectionSwitch({ p, variant = 'toolbar', mineMode = false }) {
   if (!p.access.canViewBooking && !mineMode) return null;
   const iconSize = variant === 'header' ? 20 : 15;
-  const tablesLabel = mineMode ? p.t('rst.floor.myTables') : p.t('rst.pos.tables');
+  // Schema toolbar already has «Мои столы» status chip — section tab stays «Столы».
+  const tablesLabel = p.t('rst.pos.tables');
   return (
     <div
       className={`rst-floor-section-tabs rst-floor-section-tabs--${variant}`}
@@ -134,14 +135,16 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     const source = realHalls.find((hall) => hall.id === hallId) ?? realHalls[0];
     const raw = source.tables ?? [];
     let tables;
-    if (p.statusFilter === 'ALL') {
+    if (p.statusFilter === 'MINE') {
       tables = filterTablesByWaiter(raw, user?.id);
     } else if (p.statusFilter === 'FREE') {
-      // Free + cleaning — take / mark-ready on the schema (same as old pick modal).
+      // Free + cleaning — take / mark-ready on the schema.
       tables = raw.filter((table) => {
         const status = String(table?.status || '').toUpperCase();
         return status === 'FREE' || status === 'CLEANING';
       });
+    } else if (p.statusFilter === 'ALL' || !p.statusFilter) {
+      tables = raw;
     } else {
       tables = filterTablesByStatus(raw, p.statusFilter);
     }
@@ -155,17 +158,24 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
         <WaiterMobileBookingBoard access={bookingAccess} />
       </>
     ) : (
-      <BookingWorkspace compact access={bookingAccess} />
+      <>
+        {desktopMine ? (
+          <div className="rst-floor-grid__toolbar rst-floor-grid__toolbar--compact">
+            <div className="rst-floor-grid__toolbar-row">
+              <FloorSectionSwitch p={p} variant="toolbar" mineMode />
+            </div>
+          </div>
+        ) : null}
+        <BookingWorkspace compact access={bookingAccess} />
+      </>
     );
   }
 
   const listTables = desktopMine
     ? filterTablesByWaiter(p.hallTables, user?.id)
     : p.hallTables;
-  // Keep every hall in the rail (even 0 mine) so waiters can switch halls on the schema.
-  const railHalls = desktopMine
-    ? filterHallsByWaiterTables(p.halls, user?.id)
-    : p.halls;
+  // Full halls on schema so free/green tables are always available per hall.
+  const railHalls = p.halls;
 
   const handleSchemaTableClick = (table) => {
     const status = String(table?.status || '').toUpperCase();
@@ -213,6 +223,9 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
           {...boardProps}
           mineMode={desktopMine}
           schemaHall={desktopMine ? schemaHall : undefined}
+          sectionSwitch={desktopMine
+            ? <FloorSectionSwitch p={p} variant="toolbar" mineMode />
+            : null}
           isSchemaTableSelectable={desktopMine
             ? (table) => {
               const status = String(table?.status || '').toUpperCase();
@@ -227,6 +240,7 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
             : undefined}
           statusFilter={p.statusFilter}
           onStatusFilter={desktopMine ? p.setStatusFilter : undefined}
+          schemaFilters
         />
       )}
     </>
@@ -337,8 +351,8 @@ export default function RestaurantFloorPosPage() {
           </span>
         </div>
         <WaiterShiftHint p={p} />
-        {!mobile.enabled && !orderOpen ? (
-          <FloorSectionSwitch p={p} variant="header" mineMode={mineMode} />
+        {!mobile.enabled && !orderOpen && !mineMode ? (
+          <FloorSectionSwitch p={p} variant="header" mineMode={false} />
         ) : null}
         {!mobile.enabled ? <div id="rst-pos-search-slot" className="rst-pos__search" /> : null}
         <div className="rst-pos__actions">

@@ -17,10 +17,17 @@ public final class PrintJobPayloads {
         }
     }
 
-    /** itemIds kept for older print relays; prefer lines when present (reorder delta qty). */
-    public record KitchenSend(UUID orderId, List<UUID> itemIds, List<KitchenSendLine> lines) {
+    /**
+     * itemIds kept for older print relays; prefer lines when present (reorder delta qty).
+     * voidSlip → station printers print «ОТКАЗ» (kitchen board path).
+     */
+    public record KitchenSend(UUID orderId, List<UUID> itemIds, List<KitchenSendLine> lines, boolean voidSlip) {
+        public KitchenSend(UUID orderId, List<UUID> itemIds, List<KitchenSendLine> lines) {
+            this(orderId, itemIds, lines, false);
+        }
+
         public KitchenSend(UUID orderId, List<UUID> itemIds) {
-            this(orderId, itemIds, null);
+            this(orderId, itemIds, null, false);
         }
     }
 
@@ -54,5 +61,13 @@ public final class PrintJobPayloads {
         String portionText,
         String note,
         List<String> modifiers
+    ) {}
+
+    /** Full table/order cancel — printed on the cashier receipt printer. */
+    public record OrderCancel(
+        UUID orderId,
+        String header,
+        UUID waiterUserId,
+        List<CategoryBatchLine> lines
     ) {}
 }

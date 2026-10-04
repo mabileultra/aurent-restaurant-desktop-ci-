@@ -10,7 +10,7 @@ import '../styles/floor-table-grid.css';
 import '../styles/floor-hall-rail.css';
 import '../styles/floor-actions.css';
 import '../styles/floor-phase2.css';
-import '../styles/waiter-hall-pick.css';
+import '../styles/floor-section-tabs.css';
 
 const WAITER_LEGEND_STATUSES = ['OCCUPIED', 'WAITING_PAYMENT', 'RESERVED'];
 
@@ -27,6 +27,8 @@ export default function FloorTableGrid({
   isSchemaTableSelectable,
   statusFilter,
   onStatusFilter,
+  sectionSwitch = null,
+  schemaFilters = false,
   mineMode = false,
   waiterNameById,
   t,
@@ -79,17 +81,18 @@ export default function FloorTableGrid({
 
       <div className="rst-floor-grid__main">
         {schemaMode ? (
-          <div className="rst-floor-grid__toolbar">
-            <div className="rst-floor-grid__toolbar-row">
-              <p className="rst-waiter-pick__hint rst-floor-grid__schema-hint">
-                {t('rst.floor.pickTableHint')}
-              </p>
+          <div className="rst-floor-grid__toolbar rst-floor-grid__toolbar--compact">
+            <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
+              {sectionSwitch}
+              {onStatusFilter ? (
+                <FloorStatusFilters
+                  value={statusFilter}
+                  onChange={onStatusFilter}
+                  schemaMode={schemaFilters}
+                  t={t}
+                />
+              ) : null}
             </div>
-            {onStatusFilter ? (
-              <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
-                <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
-              </div>
-            ) : null}
           </div>
         ) : null}
 

@@ -127,7 +127,7 @@ export async function printCategoryTicketOnAdd({
 }
 
 export async function printKitchenTicket({
-  order, t, onlyItemIds, qtyByItemId, noteByItemId, waiterName, waiterNameById,
+  order, t, onlyItemIds, qtyByItemId, noteByItemId, waiterName, waiterNameById, voidSlip = false,
 } = {}) {
   if (!order || !isDesktopPrinter() || !onlyItemIds?.length) {
     return { mode: 'skip', missing: [], configured: false };
@@ -170,7 +170,9 @@ export async function printKitchenTicket({
     });
   }
 
-  const title = t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек';
+  const title = voidSlip
+    ? (t?.('rst.order.refuseKitchenItem', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ')
+    : (t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек');
   const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
   const meta = kitchenTicketMetaLines({
     order,

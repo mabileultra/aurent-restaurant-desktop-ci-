@@ -1509,6 +1509,7 @@
       "blocked": "Stol bloklangan",
       "cancel": "Buyurtmani bekor qilish",
       "billFailed": "Hisob qo‘yib bo‘lmadi",
+      "cancelPrintTitle": "BUYURTMA BEKOR",
       "cancelFailed": "Bekor qilib bo‘lmadi",
       "cancelled": "Buyurtma bekor qilindi",
       "childrenCount": "Bolalar",

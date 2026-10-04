@@ -102,18 +102,25 @@ async function loadClaimCapabilities() {
     .filter(Boolean);
   const fromSettings = [
     settings?.billPrinterName,
+    settings?.receiptPrinterName,
     ...Object.values(settings?.stationPrinters || {}),
   ]
     .map((name) => String(name || '').trim())
     .filter(Boolean);
   const guestBill = Boolean(String(settings?.billPrinterName || '').trim());
+  const orderCancel = Boolean(String(settings?.receiptPrinterName || '').trim());
   const kitchenSend = Object.values(settings?.stationPrinters || {}).some((name) => String(name || '').trim());
   const printerNames = [...new Set([...fromOs, ...fromSettings])];
-  return { printerNames, guestBill, kitchenSend };
+  return { printerNames, guestBill, orderCancel, kitchenSend };
 }
 
 function capsReady(caps) {
-  return Boolean(caps?.guestBill || caps?.kitchenSend || caps?.printerNames?.length);
+  return Boolean(
+    caps?.guestBill
+    || caps?.orderCancel
+    || caps?.kitchenSend
+    || caps?.printerNames?.length,
+  );
 }
 
 async function fetchJobs(storeId, caps, limit) {
@@ -141,7 +148,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const storeIdRef = useRef(storeId);
   storeIdRef.current = storeId;
   const warnedMissingRef = useRef(new Set());
-  const capsRef = useRef({ printerNames: [], guestBill: false, kitchenSend: false });
+  const capsRef = useRef({ printerNames: [], guestBill: false, orderCancel: false, kitchenSend: false });
 
   useEffect(() => {
     if (storeId == null) return;
@@ -183,7 +190,9 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
 
     const warnUncertain = (job, printerKey) => {
       const label = printerKey
-        || (job.kind === 'GUEST_BILL' ? 'счёт' : 'кухня');
+        || (job.kind === 'GUEST_BILL' ? 'счёт'
+          : job.kind === 'ORDER_CANCEL' ? 'отмена'
+            : 'кухня');
       const now = Date.now();
       if (now - (uncertainWarnedAt.get(label) || 0) < UNCERTAIN_WARN_MS) return;
       uncertainWarnedAt.set(label, now);

@@ -135,7 +135,7 @@ class PrintPeakScenarioSqlTest {
                     .addValue("since", Timestamp.from(now.minus(Duration.ofHours(6))))
                     .addValue("now", Timestamp.from(now))
                     .addValue("batch", 24).addValue("perLane", 3)
-                    .addValue("guestBill", 1).addValue("kitchenSend", 0).addValue("hasPrinters", 1)
+                    .addValue("guestBill", 1).addValue("orderCancel", 0).addValue("kitchenSend", 0).addValue("hasPrinters", 1)
                     .addValue("printers", STATIONS)
                     .addValue("busyPrinters", List.of("__none__")), UUID.class);
                 claimUs.add((System.nanoTime() - t0) / 1_000);

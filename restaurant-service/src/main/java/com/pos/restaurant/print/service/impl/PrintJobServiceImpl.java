@@ -61,10 +61,11 @@ public class PrintJobServiceImpl implements PrintJobService {
             return List.of();
         }
         boolean guestBill = request.guestBill();
+        boolean orderCancel = request.orderCancel();
         boolean kitchenSend = request.kitchenSend();
         List<String> printers = normalizePrinters(request.printerNames());
         List<String> busy = normalizePrinters(request.busyPrinters());
-        if (!guestBill && !kitchenSend && printers.isEmpty()) {
+        if (!guestBill && !orderCancel && !kitchenSend && printers.isEmpty()) {
             return List.of();
         }
 
@@ -85,6 +86,7 @@ public class PrintJobServiceImpl implements PrintJobService {
             claimBatch(request.limit()),
             perPrinterLimit(request.perPrinterLimit()),
             guestBill ? 1 : 0,
+            orderCancel ? 1 : 0,
             kitchenSend ? 1 : 0,
             printers.isEmpty() ? 0 : 1,
             printerBind,

@@ -13,12 +13,15 @@ import com.pos.restaurant.order.support.OrderItemMutabilityPolicy;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
 import com.pos.restaurant.order.support.WeightSaleSupport;
+import com.pos.restaurant.print.service.PrintJobPublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @Component
@@ -30,6 +33,7 @@ public class OrderUpdateItemHandler {
     private final OrderItemMutabilityPolicy mutabilityPolicy;
     private final OrderResponseAssembler assembler;
     private final FloorTenantSupport tenantSupport;
+    private final PrintJobPublisher printJobPublisher;
 
     @Transactional
     public OrderResponse handle(UUID orderId, UUID itemId, UpdateOrderItemRequest request) {
@@ -51,8 +55,10 @@ public class OrderUpdateItemHandler {
                 throw new ForbiddenException("Only a manager or cashier can change a kitchen item");
             }
         } else if (qty.compareTo(previousQty) < 0) {
-            // Cashier/manager kitchen cut: keep a CANCELLED sibling so refusals stay in the journal.
-            recordKitchenRefuse(order, item, previousQty.subtract(qty));
+            // Cashier/manager kitchen cut: void delta on category printer + journal sibling.
+            BigDecimal refused = previousQty.subtract(qty);
+            printJobPublisher.voidSlipsForItems(order, List.of(item), Map.of(item.getId(), refused));
+            recordKitchenRefuse(order, item, refused);
             if (qty.compareTo(sent) < 0) {
                 item.setSentQuantity(qty);
             }

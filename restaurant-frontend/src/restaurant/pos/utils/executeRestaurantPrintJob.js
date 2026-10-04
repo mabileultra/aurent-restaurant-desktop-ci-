@@ -5,6 +5,7 @@ import { rstOrderApi } from '../../api/order.api';
 import { printGuestBill } from './printGuestBill';
 import { printKitchenTicket } from './printKitchenTicket';
 import {
+  getDesktopPrinterSettings,
   isDesktopPrinter,
   listDesktopPrintersCached,
   printTicketLines,
@@ -192,6 +193,31 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
       return { ack: false, release: true, mode: printed?.mode || 'skip' };
     }
 
+    if (job.kind === 'ORDER_CANCEL') {
+      const settings = await getDesktopPrinterSettings();
+      const printer = String(settings?.receiptPrinterName || '').trim();
+      if (!printer || !(await localHasPrinterFast(printer))) {
+        return { ack: false, release: true, mode: 'missing' };
+      }
+      const dishLines = (payload.lines || []).flatMap((line, index) => {
+        const block = batchItemLines(line);
+        return index === 0 ? block : ['', ...block];
+      });
+      if (!dishLines.length) return { ack: true, release: false, mode: 'skip' };
+      const title = t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ ЗАКАЗА' }) || 'ОТКАЗ ЗАКАЗА';
+      await printTicketLines({
+        title,
+        printerName: printer,
+        lines: [
+          ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
+          '---',
+          ...dishLines,
+          '---',
+        ],
+      });
+      return { ack: true, release: false, mode: 'silent' };
+    }
+
     if (job.kind === 'KITCHEN_SEND') {
       const orderRes = await rstOrderApi.get(payload.orderId);
       const order = orderRes.data;
@@ -218,6 +244,7 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
         noteByItemId,
         waiterName,
         waiterNameById,
+        voidSlip: Boolean(payload.voidSlip),
       });
       if (printed?.mode === 'silent' || printed?.mode === 'partial') {
         // Ack even on partial — re-queue would reprint already-cut stations on another PC.

@@ -41,3 +41,18 @@
     0 0 0 1px rgb(255 122 26 / 0.28),
     0 6px 14px rgb(255 122 26 / 0.2);
 }
+
+/* Waiter schema toolbar — larger, squarer chips */
+.rst-floor-filters--schema {
+  flex: 1 1 auto;
+  gap: 0.4rem;
+}
+
+.rst-floor-filters--schema .rst-floor-filters__chip {
+  min-width: 5.5rem;
+  height: 2.65rem;
+  padding: 0 0.85rem;
+  border-radius: 0.55rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}

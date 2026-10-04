@@ -378,6 +378,7 @@ class PrintJobClaimSqlLoadTest {
             .addValue("batch", batch)
             .addValue("perLane", perLane)
             .addValue("guestBill", guestBill ? 1 : 0)
+            .addValue("orderCancel", 0)
             .addValue("kitchenSend", kitchenSend ? 1 : 0)
             .addValue("hasPrinters", printers.isEmpty() ? 0 : 1)
             .addValue("printers", printers.isEmpty() ? List.of("__none__") : printers)
