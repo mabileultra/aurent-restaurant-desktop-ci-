@@ -13,7 +13,7 @@ import CashierTopBar from '../components/CashierTopBar';
 import CashierSectionBody from '../components/CashierSectionBody';
 import CashierBottomNav from '../components/CashierBottomNav';
 import { useCashierMobileLayout } from '../../cashier-mobile/hooks/useCashierMobileLayout';
-import PosEnterMobileButton from '../../pos-mobile/components/PosEnterMobileButton';
+import CashierMobileOrderWorkspace from '../../cashier-mobile/components/CashierMobileOrderWorkspace';
 import '../../../shared/styles/restaurant-tokens.css';
 import '../../../shared/styles/rst-blocks.css';
 import '../../styles/floor-pos.css';
@@ -96,6 +96,58 @@ export default function RestaurantCashierPosPage() {
 
   const mobileOrderOpen = mobile.enabled && showFull;
 
+  const orderCommon = order ? {
+    order,
+    menuItems: p.menuItems,
+    onBack: exitFullOrder,
+    hallName,
+    waiterName: order.waiterUserId
+      ? p.waiterNameById.get(String(order.waiterUserId))
+      : null,
+    onAddItem: p.handleAddItem,
+    onComposeFamily: p.handleComposeFamily,
+    onQty: p.isDraftOrder ? undefined : p.handleQty,
+    onRemove: p.isDraftOrder ? undefined : p.handleRemoveItem,
+    onCancel: p.isDraftOrder ? undefined : () => p.cancelMutation.mutate(),
+    canCancel: !p.isDraftOrder && p.canCancel,
+    canSendKitchen: !p.isDraftOrder && p.canSendKitchen,
+    sendingKitchen: p.sendKitchenMutation.isPending,
+    onSendKitchen: p.isDraftOrder ? undefined : () => p.sendKitchenMutation.mutate(),
+    canRequestBill: !p.isDraftOrder && p.canRequestBill,
+    canPay: !p.isDraftOrder && p.canPay,
+    onRequestBill: p.isDraftOrder ? undefined : () => p.billMutation.mutate(),
+    onPay: p.isDraftOrder ? undefined : p.openPayModal,
+    onDiscount: p.isDraftOrder ? undefined : (amount) => p.discountMutation.mutate(amount),
+    discountPending: p.discountMutation.isPending,
+    onGuestsChange: p.isDraftOrder ? undefined : (payload) => p.updateGuestsMutation.mutate(payload),
+    guestsPending: p.updateGuestsMutation.isPending,
+    billingPending: p.billMutation.isPending,
+    paying: p.payMutation.isPending,
+    onNewCheck: (
+      !p.isDraftOrder && p.access?.canOpenOrder && p.order?.tableId && !p.openExtraCheckPending
+        ? () => {
+          const table = (p.halls || []).flatMap((hall) => hall.tables || [])
+            .find((row) => row.id === p.order.tableId)
+            || { id: p.order.tableId };
+          p.openExtraCheck(table, {
+            guestCount: p.order.guestCount,
+            waiterUserId: p.order.waiterUserId,
+          });
+        }
+        : undefined
+    ),
+    servicePreview: p.isDraftOrder ? null : p.servicePreview,
+    waiters: !p.isDraftOrder && p.access.canAssignWaiter ? p.waiters : [],
+    onAssignWaiter: (
+      !p.isDraftOrder && p.access.canAssignWaiter
+        ? (waiterUserId) => p.assignWaiterMutation.mutate(waiterUserId)
+        : undefined
+    ),
+    assigningWaiter: p.assignWaiterMutation.isPending,
+    onEditNote: p.isDraftOrder ? undefined : p.openLineNote,
+    t: p.t,
+  } : null;
+
   return (
     <div className={rootClass} style={zoom.rootStyle}>
       {mobileOrderOpen ? null : (
@@ -109,10 +161,6 @@ export default function RestaurantCashierPosPage() {
             ...(canDiscount ? [] : ['discount']),
             ...(p.shift?.id ? [] : ['cash']),
           ]}
-          backToCashier={showFull ? {
-            label: p.t('rst.cashier.backToCashier'),
-            onClick: exitFullOrder,
-          } : null}
           showEnterMobile={mobile.showEnterMobile}
           onEnterMobile={mobile.enterMobile}
           showExitMobile={mobile.showExitMobile}
@@ -123,64 +171,18 @@ export default function RestaurantCashierPosPage() {
       )}
 
       <div className="rst-cashier__body">
-        {showFull && order ? (
+        {showFull && orderCommon ? (
           <div className="rst-cashier-full">
-            <OrderWorkspace
-              order={order}
-              menuItems={p.menuItems}
-              onBack={exitFullOrder}
-              backLabel={p.t('rst.cashier.backToCashier')}
-              hideBack={!mobileOrderOpen && showFull}
-              hallName={hallName}
-              waiterName={
-                order.waiterUserId
-                  ? p.waiterNameById.get(String(order.waiterUserId))
-                  : null
-              }
-              onAddItem={p.handleAddItem}
-              onComposeFamily={p.handleComposeFamily}
-              onQty={p.isDraftOrder ? undefined : p.handleQty}
-              onRemove={p.isDraftOrder ? undefined : p.handleRemoveItem}
-              onCancel={p.isDraftOrder ? undefined : () => p.cancelMutation.mutate()}
-              canCancel={!p.isDraftOrder && p.canCancel}
-              allowKitchenRefuse={!p.isDraftOrder && !!p.access?.canCancelOrder}
-              canSendKitchen={!p.isDraftOrder && p.canSendKitchen}
-              sendingKitchen={p.sendKitchenMutation.isPending}
-              onSendKitchen={p.isDraftOrder ? undefined : () => p.sendKitchenMutation.mutate()}
-              canRequestBill={!p.isDraftOrder && p.canRequestBill}
-              canPay={!p.isDraftOrder && p.canPay}
-              onRequestBill={p.isDraftOrder ? undefined : () => p.billMutation.mutate()}
-              onPay={p.isDraftOrder ? undefined : p.openPayModal}
-              onDiscount={p.isDraftOrder ? undefined : (amount) => p.discountMutation.mutate(amount)}
-              discountPending={p.discountMutation.isPending}
-              onGuestsChange={p.isDraftOrder ? undefined : (payload) => p.updateGuestsMutation.mutate(payload)}
-              guestsPending={p.updateGuestsMutation.isPending}
-              billingPending={p.billMutation.isPending}
-              paying={p.payMutation.isPending}
-              onNewCheck={
-                !p.isDraftOrder && p.access?.canOpenOrder && p.order?.tableId && !p.openExtraCheckPending
-                  ? () => {
-                    const table = (p.halls || []).flatMap((hall) => hall.tables || [])
-                      .find((row) => row.id === p.order.tableId)
-                      || { id: p.order.tableId };
-                    p.openExtraCheck(table, {
-                      guestCount: p.order.guestCount,
-                      waiterUserId: p.order.waiterUserId,
-                    });
-                  }
-                  : undefined
-              }
-              servicePreview={p.isDraftOrder ? null : p.servicePreview}
-              waiters={!p.isDraftOrder && p.access.canAssignWaiter ? p.waiters : []}
-              onAssignWaiter={
-                !p.isDraftOrder && p.access.canAssignWaiter
-                  ? (waiterUserId) => p.assignWaiterMutation.mutate(waiterUserId)
-                  : undefined
-              }
-              assigningWaiter={p.assignWaiterMutation.isPending}
-              onEditNote={p.isDraftOrder ? undefined : p.openLineNote}
-              t={p.t}
-            />
+            {mobileOrderOpen ? (
+              <CashierMobileOrderWorkspace {...orderCommon} />
+            ) : (
+              <OrderWorkspace
+                {...orderCommon}
+                backLabel={p.t('rst.cashier.backToCashier')}
+                hideBack
+                allowKitchenRefuse={!p.isDraftOrder && !!p.access?.canCancelOrder}
+              />
+            )}
           </div>
         ) : (
           <CashierSectionBody p={p} fullOrder={p.fullOrder} setFullOrder={p.setFullOrder} />

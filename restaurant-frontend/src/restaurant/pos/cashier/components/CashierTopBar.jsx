@@ -25,7 +25,7 @@ export default function CashierTopBar({
 }) {
   return (
     <header className={`rst-cashier-top${compactActions ? ' rst-cashier-top--compact' : ''}`}>
-      {onSelectTab && !backToCashier ? (
+      {onSelectTab && !backToCashier && !compactActions ? (
         <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} disabledKeys={disabledTabs} t={t} />
       ) : null}
 
@@ -49,7 +49,7 @@ export default function CashierTopBar({
         )}
       </div>
 
-      {onSelectTab && !backToCashier ? (
+      {onSelectTab && !backToCashier && !compactActions ? (
         <div className="rst-cashier-top__quick" role="tablist" aria-label={t('rst.cashier.navLabel')}>
           {CASHIER_HEADER_TABS.map((item) => (
             <button

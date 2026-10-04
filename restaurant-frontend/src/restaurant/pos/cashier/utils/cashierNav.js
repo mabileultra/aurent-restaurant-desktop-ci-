@@ -20,6 +20,20 @@ export const CASHIER_HEADER_TABS = [
   { key: 'returns', labelKey: 'rst.cashier.tabReturns' },
 ];
 
+/** Phone bottom nav — hall tools + paid/returns (desktop keeps header quick tabs). */
+export const CASHIER_MOBILE_TABS = [
+  { key: 'hall', labelKey: 'rst.cashier.tabHall' },
+  { key: 'paid', labelKey: 'rst.cashier.tabPaidReceipts' },
+  { key: 'returns', labelKey: 'rst.cashier.tabReturns' },
+  { key: 'sales', labelKey: 'rst.cashier.tabSales' },
+  { key: 'orders', labelKey: 'rst.cashier.tabOrders' },
+  { key: 'bookings', labelKey: 'rst.cashier.tabBookings' },
+  { key: 'payment', labelKey: 'rst.cashier.tabPayment' },
+  { key: 'discount', labelKey: 'rst.order.discount' },
+  { key: 'cash', labelKey: 'rst.shift.cashOp.title' },
+  { key: 'shift', labelKey: 'rst.cashier.tabShift' },
+];
+
 export function usesCashierPos(role) {
   const r = String(role || '').toUpperCase();
   return r === 'CASHIER' || r === 'ADMIN' || r === 'MANAGER';

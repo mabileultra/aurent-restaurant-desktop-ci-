@@ -1,11 +1,11 @@
 import { CASHIER_TAB_ICONS } from '../config/cashierNavIcons';
-import { CASHIER_TABS } from '../utils/cashierNav';
+import { CASHIER_MOBILE_TABS } from '../utils/cashierNav';
 import '../styles/cashier-bottom-nav.css';
 
 export default function CashierBottomNav({ tab, onSelect, t }) {
   return (
     <nav className="rst-cashier-nav" aria-label={t('rst.cashier.navLabel')}>
-      {CASHIER_TABS.map((item) => {
+      {CASHIER_MOBILE_TABS.map((item) => {
         const Icon = CASHIER_TAB_ICONS[item.key];
         const active = tab === item.key;
         return (

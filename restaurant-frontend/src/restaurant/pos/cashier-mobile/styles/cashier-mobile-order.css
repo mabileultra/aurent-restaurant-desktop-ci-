@@ -1,0 +1,12 @@
+/* Cashier phone order — extends waiter Menu|Check shell with Pay. */
+
+.rst-cashier-order {
+  height: 100%;
+}
+
+.rst-cashier-order__btn--pay {
+  background: #22c55e;
+  color: #052e16;
+  flex: 1.25 1 0;
+  font-weight: 800;
+}
