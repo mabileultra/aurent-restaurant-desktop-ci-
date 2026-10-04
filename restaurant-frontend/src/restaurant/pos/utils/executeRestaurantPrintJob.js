@@ -194,7 +194,9 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
 
     if (job.kind === 'ORDER_CANCEL') {
       const settings = await getDesktopPrinterSettings();
-      const printer = String(settings?.receiptPrinterName || '').trim();
+      const printer = String(
+        settings?.receiptPrinterName || settings?.billPrinterName || '',
+      ).trim();
       if (!printer || !(await localHasPrinterFast(printer))) {
         return { ack: false, release: true, mode: 'missing' };
       }

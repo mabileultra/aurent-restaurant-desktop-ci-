@@ -148,6 +148,10 @@ async function printPlainTicketEscpos(payload) {
       buildOnPrinter: (printer, p) => {
         preparePrinterEncoding(printer, p.locale);
         const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
+        // Kitchen / category / cancel slips: one large font for every line (not title-only bold).
+        if (typeof printer.setTypeFontA === 'function') printer.setTypeFontA();
+        if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
+        printer.bold(true);
         const wrap = (text) => {
           const src = String(text || '').replace(/\s+/g, ' ').trim();
           if (!src) return [];
@@ -163,7 +167,7 @@ async function printPlainTicketEscpos(payload) {
           if (rest) out.push(rest);
           return out;
         };
-        // Frontend padRow ("Name····×2") — do not collapse spaces; leftRight pins qty to the edge.
+        // Frontend padRow ("Name····×2") — leftRight pins qty to the edge.
         const splitPaddedRow = (text) => {
           const m = String(text || '').match(/^(\S.*?)\s{2,}(\S.*)$/);
           if (!m) return null;
@@ -171,9 +175,7 @@ async function printPlainTicketEscpos(payload) {
         };
         if (p.title) {
           printer.alignCenter();
-          printer.bold(true);
           wrap(p.title).forEach((line) => printer.println(line));
-          printer.bold(false);
           printer.newLine();
           printer.alignLeft();
         }
@@ -188,19 +190,20 @@ async function printPlainTicketEscpos(payload) {
             continue;
           }
           if (text.startsWith('≫ ') || text.startsWith('>> ')) {
-            printer.bold(true);
             wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
-            printer.bold(false);
             continue;
           }
           const padded = splitPaddedRow(text);
-          if (padded && typeof printer.leftRight === 'function') {
+          if (padded && typeof printer.leftRight === 'function'
+            && padded.left.length + padded.right.length < width) {
             printer.leftRight(padded.left, padded.right);
             continue;
           }
           wrap(text).forEach((line) => printer.println(line));
         }
         printer.newLine();
+        if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
+        printer.bold(false);
         printer.cut();
       },
       noPrinterHint: 'Принтер станции не выбран.',

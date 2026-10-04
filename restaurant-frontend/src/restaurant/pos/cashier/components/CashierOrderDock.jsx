@@ -133,6 +133,7 @@ export default function CashierOrderDock({
             allowKitchenRefuse={allowKitchenRefuse}
             onQty={onQty}
             onRemove={onRemove}
+            priceMode="total"
             t={t}
           />
         )}

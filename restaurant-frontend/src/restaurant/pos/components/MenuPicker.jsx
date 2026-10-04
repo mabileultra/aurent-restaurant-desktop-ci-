@@ -34,7 +34,15 @@ function hasHitTag(item) {
   return parseTags(item?.tags).includes('HIT');
 }
 
-export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenuId = {} }) {
+export default function MenuPicker({
+  items,
+  onAdd,
+  onComposeFamily,
+  t,
+  qtyByMenuId = {},
+  /** Desktop: frequent dishes first. Phone keeps catalog order. */
+  rankByPunch = true,
+}) {
   const workspace = useRestaurantWorkspaceStore();
   const storeId = workspace.storeId;
   const [category, setCategory] = useState('');
@@ -44,8 +52,8 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
   const searchRef = useRef(null);
 
   const punchMap = useMemo(
-    () => readMenuPunchMap(storeId),
-    [storeId, punchTick],
+    () => (rankByPunch ? readMenuPunchMap(storeId) : {}),
+    [storeId, punchTick, rankByPunch],
   );
 
   const visible = useMemo(() => {
@@ -60,6 +68,7 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
 
   const families = useMemo(() => {
     const rows = groupMenuFamilies(visible);
+    if (!rankByPunch) return rows;
     return rows.sort((a, b) => {
       const scoreDiff = familyPunchScore(b, punchMap) - familyPunchScore(a, punchMap);
       if (scoreDiff !== 0) return scoreDiff;
@@ -69,7 +78,7 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
         sensitivity: 'base',
       });
     });
-  }, [visible, punchMap]);
+  }, [visible, punchMap, rankByPunch]);
 
   const categories = useMemo(() => {
     const map = new Map();

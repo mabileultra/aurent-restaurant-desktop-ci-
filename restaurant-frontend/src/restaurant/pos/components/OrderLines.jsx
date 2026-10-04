@@ -33,6 +33,8 @@ export default function OrderLines({
   locked = false,
   allowKitchenRefuse = false,
   categoryByMenuId = null,
+  /** `detail` = price×qty=sum; `total` = only line sum (cashier). */
+  priceMode = 'detail',
   t,
 }) {
   const [pendingRefuse, setPendingRefuse] = useState(null);
@@ -97,7 +99,7 @@ export default function OrderLines({
               title={category || undefined}
             >
               <div className="rst-order-line__main">
-                <div className="rst-order-line__title">
+                <div className={`rst-order-line__title${priceMode === 'total' ? ' rst-order-line__title--total' : ''}`}>
                   <strong>{line.name}</strong>
                   {isNew ? <span className="rst-order-line__pill rst-order-line__pill--new">{t('rst.order.badgeNew')}</span> : null}
                   {reorderPending ? (
@@ -106,10 +108,15 @@ export default function OrderLines({
                     </span>
                   ) : null}
                   {kitchen ? <span className="rst-order-line__pill rst-order-line__pill--kitchen">{t('rst.order.onKitchen')}</span> : null}
+                  {priceMode === 'total' ? (
+                    <span className="rst-order-line__sum">{fmtMoneyCompact(line.lineTotal)}</span>
+                  ) : null}
                 </div>
-                <div className="rst-order-line__meta">
-                  {fmtMoneyCompact(line.unitPrice)} × {line.quantity} = {fmtMoneyCompact(line.lineTotal)}
-                </div>
+                {priceMode === 'detail' ? (
+                  <div className="rst-order-line__meta">
+                    {fmtMoneyCompact(line.unitPrice)} × {line.quantity} = {fmtMoneyCompact(line.lineTotal)}
+                  </div>
+                ) : null}
                 {(line.modifiers ?? []).length ? (
                   <div className="rst-order-line__mods">
                     {(line.modifiers ?? []).map((mod) => (

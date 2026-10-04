@@ -22,8 +22,8 @@ export default function FloorTableGrid({
   selectedTableId,
   onTableClick,
   onPrefetchOrder,
-  /** Desktop waiter: schema board instead of cards / pick modal. */
-  schemaHall = null,
+  /** Desktop waiter: schema board. `undefined` = cards; omit default so parent `undefined` is not coerced to `null`. */
+  schemaHall,
   isSchemaTableSelectable,
   statusFilter,
   onStatusFilter,
@@ -35,7 +35,8 @@ export default function FloorTableGrid({
 }) {
   const now = useNowTick();
   const tables = hallTables ?? [];
-  const schemaMode = mineMode && schemaHall !== undefined;
+  // Only a real hall object opens the schema. undefined/null → cards (e.g. «Все залы»).
+  const schemaMode = mineMode && schemaHall != null;
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(TABLE_STATUSES.map((s) => [s, 0]));

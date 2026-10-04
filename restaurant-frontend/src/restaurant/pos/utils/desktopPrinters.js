@@ -117,12 +117,14 @@ async function printTicketLinesNow({ title, lines, name }) {
     throw new Error('Печать станции недоступна. Закройте Aurent и откройте заново после обновления.');
   }
   const html = [
-    title ? `<p><strong>${escapeHtml(title)}</strong></p>` : '',
+    '<div style="font-family:monospace;font-size:18px;font-weight:700;line-height:1.35">',
+    title ? `<p style="margin:0 0 8px;text-align:center">${escapeHtml(title)}</p>` : '',
     ...payload.lines.map((line) => (
       line === '---'
-        ? '<hr/>'
-        : `<p style="white-space:pre;margin:0;font-family:monospace">${escapeHtml(line)}</p>`
+        ? '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>'
+        : `<p style="white-space:pre;margin:0">${escapeHtml(line)}</p>`
     )),
+    '</div>',
   ].join('');
   return withPrintTimeout(desk.printTicketHtml({ html, printerName: name }), 'HTML-печати');
 }

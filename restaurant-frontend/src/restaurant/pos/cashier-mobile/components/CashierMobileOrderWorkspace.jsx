@@ -204,6 +204,7 @@ export default function CashierMobileOrderWorkspace({
             onComposeFamily={onComposeFamily}
             t={t}
             qtyByMenuId={qtyByMenuId}
+            rankByPunch={false}
           />
         ) : (
           <>
@@ -212,6 +213,7 @@ export default function CashierMobileOrderWorkspace({
               onQty={onQty}
               onRemove={onRemove}
               onEditNote={onEditNote}
+              priceMode="total"
               t={t}
             />
             <div className="rst-waiter-order__totals">

@@ -55,6 +55,8 @@ export default function OrderWorkspace({
   onNewCheck,
   /** Waiter floor: compact action row (Send inline). Cashier keeps separate KDS block. */
   footerVariant = 'default',
+  /** Cashier: show only line total next to the name. */
+  linePriceMode = 'detail',
   t,
 }) {
   const now = useLiveClock();
@@ -247,6 +249,7 @@ export default function OrderWorkspace({
           onEditNote={onEditNote}
           allowKitchenRefuse={allowKitchenRefuse}
           categoryByMenuId={categoryByMenuId}
+          priceMode={linePriceMode}
           t={t}
         />
 

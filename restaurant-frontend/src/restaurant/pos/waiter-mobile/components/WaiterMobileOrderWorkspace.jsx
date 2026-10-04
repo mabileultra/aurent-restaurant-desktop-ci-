@@ -202,6 +202,7 @@ export default function WaiterMobileOrderWorkspace({
             onComposeFamily={onComposeFamily}
             t={t}
             qtyByMenuId={qtyByMenuId}
+            rankByPunch={false}
           />
         ) : (
           <>

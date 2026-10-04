@@ -145,12 +145,14 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     return filterTablesByStatus(tables, p.statusFilter);
   };
 
-  // Schema layout is per-hall. «Все залы» → cards across halls (coords would overlap).
+  // Schema layout is per-hall. «Все залы» → cards (undefined, not null — null would look like «no hall»).
   const schemaHall = useMemo(() => {
     if (!desktopMine || allHallsSelected) return undefined;
     const realHalls = (p.halls ?? []).filter((hall) => hall?.id != null);
-    if (!realHalls.length) return null;
-    const source = realHalls.find((hall) => hall.id === p.selectedHallId) ?? realHalls[0];
+    if (!realHalls.length) return undefined;
+    const source = realHalls.find((hall) => hall.id === p.selectedHallId)
+      || realHalls.find((hall) => String(hall.id) === String(p.selectedHallId))
+      || realHalls[0];
     return { ...source, tables: applyWaiterBoardFilter(source.tables ?? []) };
   }, [desktopMine, allHallsSelected, p.halls, p.selectedHallId, p.statusFilter, user?.id]);
 
@@ -165,9 +167,24 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     );
   }
 
-  const listTables = desktopMine
-    ? applyWaiterBoardFilter(p.hallTables)
-    : p.hallTables;
+  const listTables = useMemo(() => {
+    // Phone: never apply desktop schema filters (MINE etc.) — keep classic hall list.
+    const raw = desktopMine ? applyWaiterBoardFilter(p.hallTables) : p.hallTables;
+    if (!desktopMine || !allHallsSelected) return raw;
+    // «Все залы» cards: stable hall → code order so tiles never look shuffled.
+    const hallOf = new Map();
+    for (const hall of p.halls ?? []) {
+      for (const table of hall.tables ?? []) {
+        hallOf.set(table.id, hall.name || '');
+      }
+    }
+    return [...raw].sort((a, b) => {
+      const ha = hallOf.get(a.id) || '';
+      const hb = hallOf.get(b.id) || '';
+      if (ha !== hb) return ha.localeCompare(hb, undefined, { sensitivity: 'base' });
+      return String(a.code || '').localeCompare(String(b.code || ''), undefined, { numeric: true });
+    });
+  }, [desktopMine, allHallsSelected, p.hallTables, p.halls, p.statusFilter, user?.id]);
   // Full halls on schema so free/green tables are always available per hall.
   const railHalls = p.halls;
 
@@ -209,14 +226,14 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
           search={p.floorSearch}
           onSearchChange={p.setFloorSearch}
           sectionSwitch={<FloorSectionSwitch p={p} mineMode={false} />}
-          statusFilter={p.statusFilter}
-          onStatusFilter={p.setStatusFilter}
+          statusFilter={p.statusFilter === 'MINE' ? 'ALL' : p.statusFilter}
+          onStatusFilter={(key) => p.setStatusFilter(key === 'MINE' ? 'ALL' : key)}
         />
       ) : (
         <FloorTableGrid
           {...boardProps}
           mineMode={desktopMine}
-          schemaHall={desktopMine ? schemaHall : undefined}
+          schemaHall={desktopMine && !allHallsSelected ? schemaHall : undefined}
           isSchemaTableSelectable={desktopMine
             ? (table) => {
               const status = String(table?.status || '').toUpperCase();

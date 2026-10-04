@@ -186,6 +186,7 @@ export default function RestaurantCashierPosPage() {
                 backLabel={p.t('rst.cashier.backToCashier')}
                 hideBack
                 allowKitchenRefuse={!p.isDraftOrder && !!p.access?.canCancelOrder}
+                linePriceMode="total"
               />
             )}
           </div>

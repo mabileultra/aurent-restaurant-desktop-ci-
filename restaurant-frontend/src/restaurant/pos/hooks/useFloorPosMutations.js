@@ -361,6 +361,7 @@ export function useFloorPosMutations(deps) {
       qc.invalidateQueries({ queryKey: ['rst-recent-cancelled', storeId] });
       qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
       toast.success(t('rst.order.cancelled'));
+      flushRestaurantPrintRelay();
     },
     onError: (err) => errMsg(err, 'rst.order.cancelFailed'),
   });

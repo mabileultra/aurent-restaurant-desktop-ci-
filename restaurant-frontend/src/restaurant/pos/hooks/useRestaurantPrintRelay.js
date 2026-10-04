@@ -108,7 +108,11 @@ async function loadClaimCapabilities() {
     .map((name) => String(name || '').trim())
     .filter(Boolean);
   const guestBill = Boolean(String(settings?.billPrinterName || '').trim());
-  const orderCancel = Boolean(String(settings?.receiptPrinterName || '').trim());
+  // Full cancel slip → receipt printer, or bill printer when receipt is unset (same cashier PC).
+  const orderCancel = Boolean(
+    String(settings?.receiptPrinterName || '').trim()
+    || String(settings?.billPrinterName || '').trim(),
+  );
   const kitchenSend = Object.values(settings?.stationPrinters || {}).some((name) => String(name || '').trim());
   const printerNames = [...new Set([...fromOs, ...fromSettings])];
   return { printerNames, guestBill, orderCancel, kitchenSend };
