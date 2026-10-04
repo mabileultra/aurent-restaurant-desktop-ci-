@@ -1333,6 +1333,11 @@
       "taxTitle": "Tax integration (Multikassa / OFD)",
       "title": "Settings & integrations"
     },
+    "mobile": {
+      "enter": "Mobile view",
+      "exit": "Desktop view",
+      "exitShort": "PC"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Start cooking",
@@ -1341,6 +1346,7 @@
         "READY": "Given to waiter"
       },
       "allStations": "All stations",
+      "columns": "Kitchen columns",
       "cookingProgress": "Cooking: {{value}}%",
       "hintAdvance": "next status",
       "hintColumns": "columns",

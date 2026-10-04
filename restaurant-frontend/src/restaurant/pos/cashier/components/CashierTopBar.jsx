@@ -5,6 +5,7 @@ import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
 import { CASHIER_HEADER_TABS } from '../utils/cashierNav';
 import CashierNavLookup from './CashierNavLookup';
+import PosEnterMobileButton from '../../pos-mobile/components/PosEnterMobileButton';
 import '../styles/cashier-shell.css';
 
 export default function CashierTopBar({
@@ -15,10 +16,15 @@ export default function CashierTopBar({
   activeTab = null,
   onSelectTab,
   disabledTabs = [],
+  showEnterMobile = false,
+  onEnterMobile,
+  showExitMobile = false,
+  onExitMobile,
+  compactActions = false,
   t,
 }) {
   return (
-    <header className="rst-cashier-top">
+    <header className={`rst-cashier-top${compactActions ? ' rst-cashier-top--compact' : ''}`}>
       {onSelectTab && !backToCashier ? (
         <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} disabledKeys={disabledTabs} t={t} />
       ) : null}
@@ -61,20 +67,31 @@ export default function CashierTopBar({
       ) : null}
 
       <div className="rst-cashier-top__actions">
-        {canAdmin ? (
+        {!compactActions && canAdmin ? (
           <Link to="/rst/admin/dashboard" className="rst-cashier-top__admin">
             <BaseButton type="button" variant="ghost">{t('rst.pos.backToAdmin')}</BaseButton>
           </Link>
         ) : null}
-        <RestaurantThemeSwitch />
+        {compactActions ? null : <RestaurantThemeSwitch />}
         <LanguageSwitcher variant="rst" />
+        {showEnterMobile ? <PosEnterMobileButton onEnter={onEnterMobile} /> : null}
+        {showExitMobile ? (
+          <BaseButton
+            type="button"
+            variant="ghost"
+            className="rst-cashier-top__exit-mobile"
+            onClick={onExitMobile}
+          >
+            {t('rst.mobile.exitShort', { defaultValue: 'ПК' })}
+          </BaseButton>
+        ) : null}
         <BaseButton
           type="button"
           variant="ghost"
           className="rst-exit-btn"
           onClick={() => logoutAndResetSession()}
         >
-          {t('nav.logout')}
+          {compactActions ? t('nav.logoutShort', { defaultValue: 'Выход' }) : t('nav.logout')}
         </BaseButton>
       </div>
     </header>

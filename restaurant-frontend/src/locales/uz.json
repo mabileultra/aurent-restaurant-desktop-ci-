@@ -1330,6 +1330,11 @@
       "taxTitle": "Soliq integratsiyasi (Multikassa / OFD)",
       "title": "Sozlamalar va integratsiyalar"
     },
+    "mobile": {
+      "enter": "Mobil ko‘rinish",
+      "exit": "Oddiy ko‘rinish (PK)",
+      "exitShort": "PK"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Tayyorlashni boshlash",
@@ -1338,6 +1343,7 @@
         "READY": "Ofitsiantga berildi"
       },
       "allStations": "Barcha stansiyalar",
+      "columns": "Oshxona ustunlari",
       "cookingProgress": "Tayyorlash: {{value}}%",
       "hintAdvance": "keyingi holat",
       "hintColumns": "ustunlar",

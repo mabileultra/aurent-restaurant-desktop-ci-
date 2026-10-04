@@ -10,6 +10,8 @@ import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
+import { useKitchenMobileLayout } from '../kitchen-mobile/hooks/useKitchenMobileLayout';
+import PosEnterMobileButton from '../pos-mobile/components/PosEnterMobileButton';
 import { KDS_COLUMNS } from '../utils/kitchenBoard';
 import { isTicketOverdue } from '../utils/kitchenTicketMeta';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
@@ -17,6 +19,7 @@ import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/floor-pos.css';
 import '../styles/kitchen-kds.css';
+import '../kitchen-mobile/styles/kitchen-mobile-shell.css';
 
 function useNowTick(ms = 1000) {
   const [now, setNow] = useState(() => Date.now());
@@ -31,7 +34,9 @@ export default function RestaurantKitchenPage() {
   const user = useAuthStore((s) => s.user);
   const p = useKitchenPosPage();
   const zoom = usePosUiScale();
+  const mobile = useKitchenMobileLayout();
   const now = useNowTick();
+  const [mobileStatus, setMobileStatus] = useState(KDS_COLUMNS[0]);
 
   const stats = useMemo(() => {
     const all = KDS_COLUMNS.flatMap((status) => p.columns[status] || []);
@@ -40,6 +45,14 @@ export default function RestaurantKitchenPage() {
     const ready = (p.columns.READY || []).length;
     return { inWork, overdue, ready };
   }, [p.columns, now]);
+
+  useEffect(() => {
+    if (!mobile.enabled) return;
+    const firstWithTickets = KDS_COLUMNS.find((status) => (p.columns[status] || []).length > 0);
+    if (firstWithTickets && !(p.columns[mobileStatus] || []).length) {
+      setMobileStatus(firstWithTickets);
+    }
+  }, [mobile.enabled, p.columns, mobileStatus]);
 
   useEffect(() => {
     const onKey = (event) => {
@@ -58,9 +71,14 @@ export default function RestaurantKitchenPage() {
     return () => window.removeEventListener('keydown', onKey);
   }, [p]);
 
+  const rootClass = [
+    'rst-app rst-pos',
+    mobile.enabled ? 'rst-pos--kitchen-mobile' : '',
+  ].filter(Boolean).join(' ');
+
   if (p.workspace.isLoading && p.workspace.storeId == null) {
     return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
+      <div className={rootClass} style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('common.loading')}</div>
       </div>
     );
@@ -68,7 +86,7 @@ export default function RestaurantKitchenPage() {
 
   if (!p.kitchenBoardLoading && !p.kitchenBoardEnabled) {
     return (
-      <div className="rst-app rst-pos" style={zoom.rootStyle}>
+      <div className={rootClass} style={zoom.rootStyle}>
         <div className="rst-notice">{p.t('rst.kitchen.boardOff')}</div>
       </div>
     );
@@ -89,8 +107,10 @@ export default function RestaurantKitchenPage() {
     ? `${p.t('rst.kitchen.shiftOpen')}${p.shift.openedAt ? ` · ${formatShiftOpenDuration(p.shift.openedAt, now)}` : ''}`
     : p.t('rst.kitchen.shiftClosed');
 
+  const visibleColumns = mobile.enabled ? [mobileStatus] : KDS_COLUMNS;
+
   return (
-    <div className="rst-app rst-pos" style={zoom.rootStyle}>
+    <div className={rootClass} style={zoom.rootStyle}>
       <header className="rst-pos__top">
         <div className="rst-pos__brand">
           <span className="rst-pos__brand-name">{p.t('rst.kitchen.osTitle')}</span>
@@ -105,13 +125,21 @@ export default function RestaurantKitchenPage() {
               <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
             </Link>
           ) : null}
-          <PosZoomControls zoom={zoom} t={p.t} />
+          {mobile.enabled ? null : <PosZoomControls zoom={zoom} t={p.t} />}
           <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />
-          <span className="rst-pos__online">
-            <span className="rst-pos__online-dot" aria-hidden />
-            LIVE
-          </span>
+          {mobile.showEnterMobile ? <PosEnterMobileButton onEnter={mobile.enterMobile} /> : null}
+          {mobile.showExitMobile ? (
+            <BaseButton type="button" variant="ghost" onClick={mobile.exitMobile}>
+              {p.t('rst.mobile.exit')}
+            </BaseButton>
+          ) : null}
+          {mobile.enabled ? null : (
+            <span className="rst-pos__online">
+              <span className="rst-pos__online-dot" aria-hidden />
+              LIVE
+            </span>
+          )}
           <BaseButton type="button" variant="ghost" className="rst-exit-btn" onClick={() => logoutAndResetSession()}>
             {p.t('nav.logout')}
           </BaseButton>
@@ -176,17 +204,37 @@ export default function RestaurantKitchenPage() {
           </div>
         ) : null}
 
+        {mobile.enabled ? (
+          <div className="rst-kitchen-mobile-tabs" role="tablist" aria-label={p.t('rst.kitchen.columns')}>
+            {KDS_COLUMNS.map((status) => (
+              <button
+                key={status}
+                type="button"
+                role="tab"
+                aria-selected={mobileStatus === status}
+                className={`rst-kitchen-mobile-tabs__btn${mobileStatus === status ? ' is-active' : ''}`}
+                onClick={() => setMobileStatus(status)}
+              >
+                <span>{p.t(`rst.kitchen.status.${status}`)}</span>
+                <em>{(p.columns[status] || []).length}</em>
+              </button>
+            ))}
+          </div>
+        ) : null}
+
         <div className="rst-kds">
-          {KDS_COLUMNS.map((status, index) => (
+          {visibleColumns.map((status, index) => (
             <section key={status} className={`rst-kds__col rst-kds__col--${status}`}>
               <h2 className="rst-kds__col-title">
                 <span className="rst-kds__col-dot" aria-hidden />
                 {p.t(`rst.kitchen.status.${status}`)}
                 <span className="rst-kds__col-count">{p.columns[status].length}</span>
-                <span className="rst-kds__col-hotkey">[{index + 1}]</span>
+                {mobile.enabled ? null : (
+                  <span className="rst-kds__col-hotkey">[{index + 1}]</span>
+                )}
               </h2>
               <div className="rst-kds__cards">
-                {p.columns[status].map((ticket) => (
+                {(p.columns[status] || []).map((ticket) => (
                   <KitchenTicketCard
                     key={ticket.id}
                     ticket={ticket}

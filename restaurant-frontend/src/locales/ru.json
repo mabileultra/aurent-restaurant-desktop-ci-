@@ -1333,6 +1333,11 @@
       "taxTitle": "Налоговая интеграция (Multikassa / ОФД)",
       "title": "Настройки и интеграции"
     },
+    "mobile": {
+      "enter": "Мобильный вид",
+      "exit": "Обычный вид (ПК)",
+      "exitShort": "ПК"
+    },
     "kitchen": {
       "action": {
         "ACCEPTED": "Начать готовку",
@@ -1341,6 +1346,7 @@
         "READY": "Выдан официанту"
       },
       "allStations": "Все станции",
+      "columns": "Колонки кухни",
       "cookingProgress": "Готовка: {{value}}%",
       "hintAdvance": "следующий статус",
       "hintColumns": "колонки",
