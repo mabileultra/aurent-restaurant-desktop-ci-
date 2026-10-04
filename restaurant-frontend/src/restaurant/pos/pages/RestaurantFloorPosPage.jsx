@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { LayoutGrid, CalendarDays } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
@@ -9,7 +9,6 @@ import BookingWorkspace from '../../shared/components/BookingWorkspace';
 import FloorTableGrid from '../components/FloorTableGrid';
 import FloorPosModals from '../components/FloorPosModals';
 import OrderWorkspace from '../components/OrderWorkspace';
-import WaiterHallPickModal from '../components/WaiterHallPickModal';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
@@ -21,8 +20,11 @@ import WaiterMobileBookingBoard from '../waiter-mobile/components/WaiterMobileBo
 import WaiterEnterMobileButton from '../waiter-mobile/components/WaiterEnterMobileButton';
 import { usesCashierPos } from '../cashier/utils/cashierNav';
 import {
+  ALL_HALLS_ID,
   filterHallsByWaiterTables,
+  filterTablesByStatus,
   filterTablesByWaiter,
+  tableActiveOrders,
 } from '../utils/floorStatusFilters';
 import '../../shared/styles/restaurant-tokens.css';
 import '../../shared/styles/rst-blocks.css';
@@ -106,14 +108,45 @@ function FloorSectionSwitch({ p, variant = 'toolbar', mineMode = false }) {
   );
 }
 
+function isWaiterTable(table, waiterUserId) {
+  if (waiterUserId == null || waiterUserId === '') return false;
+  const mine = String(waiterUserId);
+  return tableActiveOrders(table).some(
+    (order) => order?.waiterUserId != null && String(order.waiterUserId) === mine,
+  );
+}
+
 function FloorBody({ p, a, mobile, user, mineMode }) {
-  const [pickOpen, setPickOpen] = useState(false);
   const bookingAccess = {
     canCreate: p.access.canCreateBooking,
     canManage: p.access.canManageBooking,
   };
-  // Mobile: all tables on the board (no pick modal). Desktop waiter: my tables + schema modal.
+  // Mobile: all tables on the board. Desktop waiter: hall schema in the main panel.
   const desktopMine = mineMode && !mobile;
+
+  const schemaHall = useMemo(() => {
+    if (!desktopMine) return undefined;
+    const realHalls = (p.halls ?? []).filter((hall) => hall?.id != null);
+    if (!realHalls.length) return null;
+    const hallId = p.selectedHallId !== ALL_HALLS_ID && p.selectedHallId != null
+      ? p.selectedHallId
+      : realHalls[0].id;
+    const source = realHalls.find((hall) => hall.id === hallId) ?? realHalls[0];
+    const raw = source.tables ?? [];
+    let tables;
+    if (p.statusFilter === 'ALL') {
+      tables = filterTablesByWaiter(raw, user?.id);
+    } else if (p.statusFilter === 'FREE') {
+      // Free + cleaning — take / mark-ready on the schema (same as old pick modal).
+      tables = raw.filter((table) => {
+        const status = String(table?.status || '').toUpperCase();
+        return status === 'FREE' || status === 'CLEANING';
+      });
+    } else {
+      tables = filterTablesByStatus(raw, p.statusFilter);
+    }
+    return { ...source, tables };
+  }, [desktopMine, p.halls, p.selectedHallId, p.statusFilter, user?.id]);
 
   if (p.floorSection === 'bookings') {
     return mobile ? (
@@ -129,10 +162,26 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
   const listTables = desktopMine
     ? filterTablesByWaiter(p.hallTables, user?.id)
     : p.hallTables;
-  // Keep every hall in the rail (even 0 mine) so waiters always see categories + «Take table».
+  // Keep every hall in the rail (even 0 mine) so waiters can switch halls on the schema.
   const railHalls = desktopMine
     ? filterHallsByWaiterTables(p.halls, user?.id)
     : p.halls;
+
+  const handleSchemaTableClick = (table) => {
+    const status = String(table?.status || '').toUpperCase();
+    if (status === 'FREE') {
+      p.beginDraftTable(table);
+      return;
+    }
+    if (status === 'OCCUPIED' || status === 'WAITING_PAYMENT') {
+      // Red table → modal: continue (add) or «Новый счёт».
+      a.openOccupied(table, { forceInspect: true });
+      return;
+    }
+    if (status === 'CLEANING' || status === 'RESERVED' || isWaiterTable(table, user?.id)) {
+      p.handleTableClick(table);
+    }
+  };
 
   const boardProps = {
     hallTables: listTables,
@@ -140,7 +189,7 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
     selectedHallId: p.selectedHallId,
     onSelectHall: p.setSelectedHallId,
     selectedTableId: p.draftTable?.id ?? p.openTable?.id ?? p.reservedTable?.id ?? a.inspectTable?.id,
-    onTableClick: p.handleTableClick,
+    onTableClick: desktopMine ? handleSchemaTableClick : p.handleTableClick,
     onPrefetchOrder: p.prefetchOrder,
     waiterNameById: p.waiterNameById,
     t: p.t,
@@ -162,23 +211,24 @@ function FloorBody({ p, a, mobile, user, mineMode }) {
       ) : (
         <FloorTableGrid
           {...boardProps}
-          onAddTable={desktopMine ? () => setPickOpen(true) : undefined}
+          mineMode={desktopMine}
+          schemaHall={desktopMine ? schemaHall : undefined}
+          isSchemaTableSelectable={desktopMine
+            ? (table) => {
+              const status = String(table?.status || '').toUpperCase();
+              if (status === 'BLOCKED') return false;
+              return status === 'FREE'
+                || status === 'CLEANING'
+                || status === 'RESERVED'
+                || status === 'OCCUPIED'
+                || status === 'WAITING_PAYMENT'
+                || isWaiterTable(table, user?.id);
+            }
+            : undefined}
+          statusFilter={p.statusFilter}
+          onStatusFilter={desktopMine ? p.setStatusFilter : undefined}
         />
       )}
-      {desktopMine ? (
-        <WaiterHallPickModal
-          open={pickOpen}
-          halls={p.halls}
-          selectedHallId={p.selectedHallId}
-          waiterNameById={p.waiterNameById}
-          onClose={() => setPickOpen(false)}
-          onPickFree={(table) => {
-            setPickOpen(false);
-            p.beginDraftTable(table);
-          }}
-          t={p.t}
-        />
-      ) : null}
     </>
   );
 }

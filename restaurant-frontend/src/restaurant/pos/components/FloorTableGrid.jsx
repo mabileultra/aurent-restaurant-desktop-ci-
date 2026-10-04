@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
-import { Plus } from 'lucide-react';
 import FloorHallRail from './FloorHallRail';
 import FloorTableCard, { useNowTick } from './FloorTableCard';
+import FloorCanvas from './FloorCanvas';
+import FloorStatusFilters from './FloorStatusFilters';
 import FloorStatusLegend from './FloorStatusLegend';
 import { TABLE_STATUSES } from '../utils/tableStatus';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
@@ -9,6 +10,7 @@ import '../styles/floor-table-grid.css';
 import '../styles/floor-hall-rail.css';
 import '../styles/floor-actions.css';
 import '../styles/floor-phase2.css';
+import '../styles/waiter-hall-pick.css';
 
 const WAITER_LEGEND_STATUSES = ['OCCUPIED', 'WAITING_PAYMENT', 'RESERVED'];
 
@@ -20,22 +22,28 @@ export default function FloorTableGrid({
   selectedTableId,
   onTableClick,
   onPrefetchOrder,
-  onAddTable,
+  /** Desktop waiter: schema board instead of cards / pick modal. */
+  schemaHall = null,
+  isSchemaTableSelectable,
+  statusFilter,
+  onStatusFilter,
+  mineMode = false,
   waiterNameById,
   t,
 }) {
   const now = useNowTick();
   const tables = hallTables ?? [];
-  const mineMode = !!onAddTable;
+  const schemaMode = mineMode && schemaHall !== undefined;
 
   const counts = useMemo(() => {
     const map = Object.fromEntries(TABLE_STATUSES.map((s) => [s, 0]));
-    for (const table of tables) {
+    const source = schemaMode ? (schemaHall?.tables ?? []) : tables;
+    for (const table of source) {
       const key = TABLE_STATUSES.includes(table.status) ? table.status : 'FREE';
       map[key] += 1;
     }
     return map;
-  }, [tables]);
+  }, [tables, schemaMode, schemaHall]);
 
   const occupied = (counts.OCCUPIED || 0) + (counts.WAITING_PAYMENT || 0);
   const occupancy = tables.length
@@ -43,31 +51,17 @@ export default function FloorTableGrid({
     : 0;
 
   const avgCheck = useMemo(() => {
-    const open = tables.filter((table) => table.activeOrder);
+    const source = schemaMode ? (schemaHall?.tables ?? []) : tables;
+    const open = source.filter((table) => table.activeOrder);
     if (!open.length) return 0;
     const sum = open.reduce((acc, table) => acc + Number(table.activeOrder.subtotal || 0), 0);
     return sum / open.length;
-  }, [tables]);
+  }, [tables, schemaMode, schemaHall]);
 
   if (!halls?.length) {
-    if (onAddTable) {
-      return (
-        <div className="rst-floor-grid rst-floor-grid--empty">
-          <p>{t('rst.floor.myTablesEmpty')}</p>
-          <button
-            type="button"
-            className="rst-floor-actions__btn rst-floor-actions__btn--accent"
-            onClick={onAddTable}
-          >
-            <Plus size={18} strokeWidth={2.4} aria-hidden />
-            {t('rst.floor.addMyTable')}
-          </button>
-        </div>
-      );
-    }
     return (
       <div className="rst-floor-grid rst-floor-grid--empty">
-        <p>{t('rst.floor.selectHall')}</p>
+        <p>{mineMode ? t('rst.floor.myTablesEmpty') : t('rst.floor.selectHall')}</p>
       </div>
     );
   }
@@ -84,38 +78,36 @@ export default function FloorTableGrid({
       />
 
       <div className="rst-floor-grid__main">
-        {onAddTable ? (
+        {schemaMode ? (
           <div className="rst-floor-grid__toolbar">
             <div className="rst-floor-grid__toolbar-row">
-              <div className="rst-floor-grid__tools">
-                <div className="rst-floor-actions">
-                  <button
-                    type="button"
-                    className="rst-floor-actions__btn rst-floor-actions__btn--accent"
-                    onClick={onAddTable}
-                  >
-                    <Plus size={18} strokeWidth={2.4} aria-hidden />
-                    {t('rst.floor.addMyTable')}
-                  </button>
-                </div>
-              </div>
+              <p className="rst-waiter-pick__hint rst-floor-grid__schema-hint">
+                {t('rst.floor.pickTableHint')}
+              </p>
             </div>
+            {onStatusFilter ? (
+              <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
+                <FloorStatusFilters value={statusFilter} onChange={onStatusFilter} t={t} />
+              </div>
+            ) : null}
           </div>
         ) : null}
 
-        {tables.length === 0 ? (
+        {schemaMode ? (
+          <div className="rst-floor-grid__schema-board">
+            <FloorCanvas
+              variant="pick"
+              hall={schemaHall}
+              selectedTableId={selectedTableId}
+              waiterNameById={waiterNameById}
+              isTableSelectable={isSchemaTableSelectable}
+              onTableClick={onTableClick}
+              t={t}
+            />
+          </div>
+        ) : tables.length === 0 ? (
           <div className="rst-floor-grid__empty-board">
-            <p>{onAddTable ? t('rst.floor.myTablesEmpty') : t('rst.floor.noTables')}</p>
-            {onAddTable ? (
-              <button
-                type="button"
-                className="rst-floor-actions__btn rst-floor-actions__btn--accent"
-                onClick={onAddTable}
-              >
-                <Plus size={18} strokeWidth={2.4} aria-hidden />
-                {t('rst.floor.addMyTable')}
-              </button>
-            ) : null}
+            <p>{t('rst.floor.noTables')}</p>
           </div>
         ) : (
           <div className="rst-floor-grid__cards">
@@ -144,7 +136,9 @@ export default function FloorTableGrid({
           <div className="rst-floor-grid__stats">
             {mineMode ? (
               <div className="rst-floor-grid__avg">
-                {t('rst.floor.myTablesCount', { count: tables.length })}
+                {t('rst.floor.myTablesCount', {
+                  count: schemaMode ? (schemaHall?.tables?.length ?? 0) : tables.length,
+                })}
                 {' · '}
                 {t('rst.floor.avgCheck')}: <strong>{fmtMoneyCompact(avgCheck)}</strong>
               </div>

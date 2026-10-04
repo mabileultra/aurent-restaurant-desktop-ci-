@@ -88,31 +88,35 @@
   font-size: 0.72rem;
 }
 
+.rst-pos .rst-occupied-modal__title {
+  font-size: 1.65rem;
+  font-weight: 800;
+}
+
+.rst-pos .rst-occupied-modal__meta dt {
+  font-size: 0.9rem;
+}
+
 .rst-pos .rst-occupied-modal__meta dd {
-  font-size: 1.02rem;
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .rst-pos .rst-occupied-modal__actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.65rem;
+  gap: 0.7rem;
 }
 
 .rst-pos .rst-occupied-modal__actions .rst-btn,
 .rst-pos .rst-occupied-modal__actions .base-btn,
 .rst-pos .rst-occupied-modal__actions button {
-  min-height: 3.35rem !important;
-  padding: 0.7rem 0.85rem !important;
-  font-size: 0.95rem !important;
-  font-weight: 700;
+  min-height: 3.55rem !important;
+  padding: 0.75rem 0.9rem !important;
+  font-size: 1.05rem !important;
+  font-weight: 750;
   border-radius: 12px;
   touch-action: manipulation;
-}
-
-.rst-pos .rst-occupied-modal__actions > :first-child {
-  grid-column: 1 / -1;
-  min-height: 3.55rem !important;
-  font-size: 1.05rem !important;
 }
 
 .rst-pos .rst-table-pick__item {
@@ -220,11 +224,7 @@
   }
 
   .rst-pos .rst-occupied-modal__actions {
-    grid-template-columns: 1fr;
-  }
-
-  .rst-pos .rst-occupied-modal__actions > :first-child {
-    grid-column: auto;
+    grid-template-columns: 1fr 1fr;
   }
 
   .rst-pos .rst-booking--compact .rst-admin-filters {

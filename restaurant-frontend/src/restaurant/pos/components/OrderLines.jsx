@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { lineHasPendingSend } from '../utils/floorPosDerivations';
+import CancelReceiptPreview from './CancelReceiptPreview';
 import RstConfirmDialog from './RstConfirmDialog';
 import '../styles/order-workspace.css';
 import '../styles/item-compose-modal.css';
@@ -40,16 +41,23 @@ export default function OrderLines({
     return <div className="rst-order-empty">{t('rst.order.emptyLines')}</div>;
   }
 
-  const askKitchenRefuse = (line, run) => {
+  const askKitchenRefuse = (line, run, refuseQty) => {
+    const qty = Math.max(1, Number(refuseQty) || Number(line?.quantity) || 1);
+    const unit = Number(line?.unitPrice) || 0;
     setPendingRefuse({
-      name: line?.name || '',
+      line: {
+        ...line,
+        quantity: qty,
+        lineTotal: unit * qty,
+      },
       run,
     });
   };
 
   const runQty = (line, nextQty, kitchen) => {
     if (kitchen && nextQty < Number(line.quantity)) {
-      askKitchenRefuse(line, () => onQty?.(line, nextQty));
+      const cut = Number(line.quantity) - Number(nextQty);
+      askKitchenRefuse(line, () => onQty?.(line, nextQty), cut);
       return;
     }
     onQty?.(line, nextQty);
@@ -57,7 +65,7 @@ export default function OrderLines({
 
   const runRemove = (line, kitchen) => {
     if (kitchen) {
-      askKitchenRefuse(line, () => onRemove?.(line));
+      askKitchenRefuse(line, () => onRemove?.(line), line.quantity);
       return;
     }
     onRemove?.(line);
@@ -178,16 +186,22 @@ export default function OrderLines({
       <RstConfirmDialog
         open={!!pendingRefuse}
         title={t('rst.order.refuseKitchenItem', { defaultValue: 'Отказ позиции' })}
-        message={t('rst.order.confirmRefuseKitchenItem', {
-          name: pendingRefuse?.name || '',
-          defaultValue: `Вы действительно хотите отменить «${pendingRefuse?.name || ''}»?`,
-        })}
+        size="md"
         confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
         cancelLabel={t('common.cancel')}
         danger
         onClose={() => setPendingRefuse(null)}
         onConfirm={() => pendingRefuse?.run?.()}
-      />
+      >
+        <CancelReceiptPreview
+          lines={pendingRefuse?.line ? [pendingRefuse.line] : []}
+          hint={t('rst.order.confirmRefuseKitchenItem', {
+            name: pendingRefuse?.line?.name || '',
+            defaultValue: `Вы действительно хотите отменить «${pendingRefuse?.line?.name || ''}»?`,
+          })}
+          t={t}
+        />
+      </RstConfirmDialog>
     </>
   );
 }

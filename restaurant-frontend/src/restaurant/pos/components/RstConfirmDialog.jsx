@@ -6,11 +6,13 @@ export default function RstConfirmDialog({
   open,
   title,
   message,
+  children = null,
   confirmLabel,
   cancelLabel,
   onConfirm,
   onClose,
   danger = false,
+  size = 'sm',
 }) {
   if (!open) return null;
   return (
@@ -18,7 +20,7 @@ export default function RstConfirmDialog({
       open={open}
       title={title}
       onClose={onClose}
-      size="sm"
+      size={size}
       footer={(
         <>
           <BaseButton type="button" variant="ghost" onClick={onClose}>
@@ -37,7 +39,9 @@ export default function RstConfirmDialog({
         </>
       )}
     >
-      <p className="rst-modal__text" style={{ margin: 0 }}>{message}</p>
+      {children || (
+        <p className="rst-modal__text" style={{ margin: 0 }}>{message}</p>
+      )}
     </RstModal>
   );
 }

@@ -108,7 +108,7 @@ export function useFloorTableActions({
     onError: (err) => toastApiError(err, t('rst.order.cancelFailed')),
   });
 
-  const openOccupied = (table) => {
+  const openOccupied = (table, { forceInspect = false } = {}) => {
     const rows = Array.isArray(table?.activeOrders) && table.activeOrders.length
       ? table.activeOrders
       : (table?.activeOrder ? [table.activeOrder] : []);
@@ -119,7 +119,8 @@ export function useFloorTableActions({
       || null;
     const firstId = preferred?.id ?? null;
     setSelectedOrderId(firstId);
-    if (preferred?._local && rows.filter((r) => r?._local).length <= 1 && firstId) {
+    // Schema / explicit inspect: always show Continue vs «Новый счёт».
+    if (!forceInspect && preferred?._local && rows.filter((r) => r?._local).length <= 1 && firstId) {
       setActiveOrderId(firstId);
       setInspectTable(null);
       setTransferOpen(false);

@@ -1,9 +1,7 @@
-import { useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { formatElapsed } from '../utils/formatElapsed';
 import RstOverlay from '../../shared/components/RstOverlay';
-import RstConfirmDialog from './RstConfirmDialog';
 import '../../shared/styles/rst-modal.css';
 import '../styles/floor-phase2.css';
 
@@ -25,8 +23,6 @@ export default function OccupiedTableModal({
   onTransfer,
   onMerge,
   onAssignWaiter,
-  onCancel,
-  canCancel,
   canTransferMerge,
   canAssignWaiter,
   checks = [],
@@ -36,19 +32,17 @@ export default function OccupiedTableModal({
   canOpenOrder,
   t,
 }) {
-  const [cancelAsk, setCancelAsk] = useState(false);
   if (!open || !table) return null;
   const summary = table.activeOrder;
   const linked = summary?.linkedTableCodes?.length
     ? ` + ${summary.linkedTableCodes.join(' + ')}`
     : '';
-  const items = order?.items ?? [];
   const history = order?.waiterHistory ?? [];
 
   return (
     <RstOverlay onClose={onClose}>
-      <div className="rst-modal__card rst-modal__card--wide">
-        <h2 className="rst-modal__title">
+      <div className="rst-modal__card rst-modal__card--wide rst-occupied-modal">
+        <h2 className="rst-modal__title rst-occupied-modal__title">
           {t('rst.floor.tableTitle', { code: table.code })}{linked}
         </h2>
 
@@ -94,19 +88,6 @@ export default function OccupiedTableModal({
               </div>
             </dl>
 
-            {items.length ? (
-              <ul className="rst-occupied-modal__lines">
-                {items.map((line) => (
-                  <li key={line.id}>
-                    <span>{line.name}</span>
-                    <strong>× {line.quantity}</strong>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="rst-modal__text">{t('rst.floor.noLinesYet')}</p>
-            )}
-
             {history.length > 0 ? (
               <ul className="rst-occupied-modal__history">
                 {history.map((row) => (
@@ -121,51 +102,36 @@ export default function OccupiedTableModal({
             ) : null}
 
             <div className="rst-occupied-modal__actions">
-              <BaseButton type="button" onClick={onContinue}>
+              <BaseButton type="button" size="lg" onClick={onContinue}>
                 {t('rst.floor.continueOrder')}
               </BaseButton>
               {canOpenOrder ? (
-                <BaseButton type="button" variant="ghost" onClick={onNewCheck}>
+                <BaseButton type="button" size="lg" variant="secondary" onClick={onNewCheck}>
                   {t('rst.order.newCheck')}
                 </BaseButton>
               ) : null}
               {canAssignWaiter ? (
-                <BaseButton type="button" variant="ghost" onClick={onAssignWaiter}>
+                <BaseButton type="button" size="lg" variant="secondary" onClick={onAssignWaiter}>
                   {t('rst.floor.assignWaiter')}
                 </BaseButton>
               ) : null}
               {canTransferMerge ? (
                 <>
-                  <BaseButton type="button" variant="ghost" onClick={onTransfer}>
+                  <BaseButton type="button" size="lg" variant="secondary" onClick={onTransfer}>
                     {t('rst.floor.transferTable')}
                   </BaseButton>
-                  <BaseButton type="button" variant="ghost" onClick={onMerge}>
+                  <BaseButton type="button" size="lg" variant="secondary" onClick={onMerge}>
                     {t('rst.floor.mergeTables')}
                   </BaseButton>
                 </>
               ) : null}
-              {canCancel ? (
-                <BaseButton type="button" variant="ghost" onClick={() => setCancelAsk(true)}>
-                  {t('rst.floor.closeOrder')}
-                </BaseButton>
-              ) : null}
-              <BaseButton type="button" variant="ghost" onClick={onClose}>
+              <BaseButton type="button" size="lg" variant="secondary" onClick={onClose}>
                 {t('common.close')}
               </BaseButton>
             </div>
           </>
         )}
       </div>
-      <RstConfirmDialog
-        open={cancelAsk}
-        title={t('rst.floor.closeOrder')}
-        message={t('rst.order.confirmCancel')}
-        confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
-        cancelLabel={t('common.cancel')}
-        danger
-        onClose={() => setCancelAsk(false)}
-        onConfirm={() => onCancel?.()}
-      />
     </RstOverlay>
   );
 }

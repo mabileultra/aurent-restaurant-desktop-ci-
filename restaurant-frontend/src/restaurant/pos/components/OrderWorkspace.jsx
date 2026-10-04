@@ -4,6 +4,7 @@ import { formatDigitalTimer } from '../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../utils/restaurantPayAmount';
 import { shortWaiterName } from '../utils/floorPosDerivations';
 import MenuPicker from './MenuPicker';
+import CancelReceiptPreview from './CancelReceiptPreview';
 import OrderDiscountModal from './OrderDiscountModal';
 import OrderLines from './OrderLines';
 import RstConfirmDialog from './RstConfirmDialog';
@@ -354,13 +355,20 @@ export default function OrderWorkspace({
       <RstConfirmDialog
         open={cancelAsk}
         title={t('rst.order.cancel')}
-        message={t('rst.order.confirmCancel')}
+        size="md"
         confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
         cancelLabel={t('common.cancel')}
         danger
         onClose={() => setCancelAsk(false)}
         onConfirm={() => onCancel?.()}
-      />
+      >
+        <CancelReceiptPreview
+          lines={activeLines}
+          total={payAmount}
+          hint={t('rst.order.confirmCancel')}
+          t={t}
+        />
+      </RstConfirmDialog>
     </div>
   );
 }

@@ -10,6 +10,8 @@ export default function FloorTableNode({
   onPointerDown,
   draggable = false,
   pickMode = false,
+  /** When set in pickMode, overrides FREE/CLEANING-only select rules. */
+  pickSelectable: pickSelectableOverride = null,
   waiterLabel = null,
   t,
 }) {
@@ -18,11 +20,23 @@ export default function FloorTableNode({
   const order = orders[0] || null;
   const checksSum = orders.reduce((sum, row) => sum + Number(row.subtotal || 0), 0);
   const busy = status === 'OCCUPIED' || status === 'WAITING_PAYMENT' || status === 'RESERVED';
-  const pickSelectable = pickMode && (status === 'FREE' || status === 'CLEANING');
+  const pickSelectable = pickMode
+    && (pickSelectableOverride != null
+      ? !!pickSelectableOverride
+      : (status === 'FREE' || status === 'CLEANING'));
 
   let meta;
   if (pickMode) {
-    if (busy) {
+    if (pickSelectable && order) {
+      meta = (
+        <>
+          {fmtMoneyCompact(orders.length > 1 ? checksSum : order.subtotal)}
+          {orders.length > 1
+            ? ` · ${t('rst.order.checksCount', { count: orders.length })}`
+            : ` · ${t('rst.order.guestsShort', { count: order.guestCount })}`}
+        </>
+      );
+    } else if (busy) {
       meta = waiterLabel || t(`rst.status.${status}`);
     } else {
       meta = t(`rst.status.${status}`);
@@ -49,8 +63,8 @@ export default function FloorTableNode({
         selected ? 'is-selected' : '',
         draggable ? 'is-draggable' : '',
         pickMode && busy ? 'is-pick-busy' : '',
-        pickMode && pickSelectable ? 'is-pick-free' : '',
-        pickMode && !pickSelectable && !busy ? 'is-pick-locked' : '',
+        pickMode && pickSelectable && !busy ? 'is-pick-free' : '',
+        pickMode && !pickSelectable ? 'is-pick-locked' : '',
       ].filter(Boolean).join(' ')}
       style={{
         left: table.posX,

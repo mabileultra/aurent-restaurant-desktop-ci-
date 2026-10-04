@@ -3,6 +3,7 @@ import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { formatDigitalTimer } from '../../utils/formatElapsed';
 import { resolveRestaurantPayTotal } from '../../utils/restaurantPayAmount';
 import { shortWaiterName } from '../../utils/floorPosDerivations';
+import CancelReceiptPreview from '../../components/CancelReceiptPreview';
 import MenuPicker from '../../components/MenuPicker';
 import OrderDiscountModal from '../../components/OrderDiscountModal';
 import OrderLines from '../../components/OrderLines';
@@ -314,13 +315,20 @@ export default function WaiterMobileOrderWorkspace({
       <RstConfirmDialog
         open={cancelAsk}
         title={t('rst.order.cancel')}
-        message={t('rst.order.confirmCancel')}
+        size="md"
         confirmLabel={t('common.confirm', { defaultValue: 'Подтвердить' })}
         cancelLabel={t('common.cancel')}
         danger
         onClose={() => setCancelAsk(false)}
         onConfirm={() => onCancel?.()}
-      />
+      >
+        <CancelReceiptPreview
+          lines={activeLines}
+          total={payAmount}
+          hint={t('rst.order.confirmCancel')}
+          t={t}
+        />
+      </RstConfirmDialog>
     </div>
   );
 }

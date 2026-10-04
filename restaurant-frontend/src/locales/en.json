@@ -1075,7 +1075,7 @@
       "seats": "{{count}} seats",
       "selectHall": "Create a hall in the admin panel",
       "myTables": "My tables",
-      "myTablesEmpty": "No tables assigned to you. Tap “Take table” to open a free table.",
+      "myTablesEmpty": "No tables assigned to you. Use the Free filter to take a table on the floor plan.",
       "myTablesCount": "{{count}} mine",
       "myHallStatsEmpty": "No tables of yours",
       "myHallStatsOpen": "{{count}} open",

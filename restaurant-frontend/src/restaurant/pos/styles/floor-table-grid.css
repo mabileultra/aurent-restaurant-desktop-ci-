@@ -35,6 +35,31 @@
   min-height: 280px;
 }
 
+.rst-floor-grid__schema-board {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--rst-line);
+  border-radius: var(--rst-radius-lg);
+  background: var(--rst-surface);
+}
+
+.rst-floor-grid__schema-board .rst-floor-canvas {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+}
+
+.rst-floor-grid__schema-hint {
+  margin: 0;
+  flex: 1;
+  min-width: 0;
+}
+
 .rst-floor-grid__toolbar {
   display: flex;
   flex-direction: column;

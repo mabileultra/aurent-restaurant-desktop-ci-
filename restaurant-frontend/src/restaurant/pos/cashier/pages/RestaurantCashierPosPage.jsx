@@ -155,6 +155,10 @@ export default function RestaurantCashierPosPage() {
           storeName={p.workspace.storeName}
           userLabel={user?.fullName || user?.username}
           canAdmin={p.canAdmin}
+          backToCashier={showFull ? {
+            label: p.t('rst.cashier.backToCashier'),
+            onClick: exitFullOrder,
+          } : null}
           activeTab={p.tab}
           onSelectTab={handleTab}
           disabledTabs={[

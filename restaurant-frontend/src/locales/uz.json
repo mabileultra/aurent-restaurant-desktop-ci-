@@ -1075,7 +1075,7 @@
       "seats": "{{count}} o‘rin",
       "selectHall": "Adminkada zal yarating",
       "myTables": "Mening stollarim",
-      "myTablesEmpty": "Sizda stol yo‘q. «Stol olish» bosib bo‘sh stol oching.",
+      "myTablesEmpty": "Sizda stol yo‘q. Bo‘sh filtr orqali sxemadan stol oling.",
       "myTablesCount": "{{count}} mening",
       "myHallStatsEmpty": "Sizda stol yo‘q",
       "myHallStatsOpen": "{{count}} ochiq",

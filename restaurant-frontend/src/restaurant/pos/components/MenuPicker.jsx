@@ -1,7 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
+import {
+  familyPunchScore,
+  readMenuPunchMap,
+  recordMenuPunch,
+} from '../utils/menuPunchFrequency';
 import { groupMenuFamilies } from './MenuVariantPickModal';
 import '../styles/order-workspace.css';
 
@@ -24,11 +30,23 @@ function familyInCheck(family, qtyByMenuId) {
   return family.variants.reduce((sum, item) => sum + (qtyByMenuId[item.id] || 0), 0);
 }
 
+function hasHitTag(item) {
+  return parseTags(item?.tags).includes('HIT');
+}
+
 export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenuId = {} }) {
+  const workspace = useRestaurantWorkspaceStore();
+  const storeId = workspace.storeId;
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
+  const [punchTick, setPunchTick] = useState(0);
   const searchRef = useRef(null);
+
+  const punchMap = useMemo(
+    () => readMenuPunchMap(storeId),
+    [storeId, punchTick],
+  );
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -40,7 +58,18 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
     });
   }, [items, category, query, t]);
 
-  const families = useMemo(() => groupMenuFamilies(visible), [visible]);
+  const families = useMemo(() => {
+    const rows = groupMenuFamilies(visible);
+    return rows.sort((a, b) => {
+      const scoreDiff = familyPunchScore(b, punchMap) - familyPunchScore(a, punchMap);
+      if (scoreDiff !== 0) return scoreDiff;
+      const hitDiff = Number(hasHitTag(b.primary)) - Number(hasHitTag(a.primary));
+      if (hitDiff !== 0) return hitDiff;
+      return String(a.primary?.name || '').localeCompare(String(b.primary?.name || ''), undefined, {
+        sensitivity: 'base',
+      });
+    });
+  }, [visible, punchMap]);
 
   const categories = useMemo(() => {
     const map = new Map();
@@ -154,6 +183,8 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
               className={className}
               onClick={() => {
                 setFocusedId(family.key);
+                recordMenuPunch(storeId, family.key);
+                setPunchTick((n) => n + 1);
                 if (onComposeFamily) onComposeFamily(family);
                 else if (family.multi) onAdd(family.variants[0]);
                 else onAdd(item);

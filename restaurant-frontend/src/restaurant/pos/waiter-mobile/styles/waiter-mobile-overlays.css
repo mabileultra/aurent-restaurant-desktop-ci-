@@ -140,23 +140,13 @@
 .rst-pos.rst-pos--waiter-mobile .rst-occupied-modal__actions .base-btn,
 .rst-pos.rst-pos--waiter-mobile .rst-occupied-modal__actions button {
   width: 100%;
-  min-height: 2.85rem !important;
-  padding: 0.55rem 0.65rem !important;
-  font-size: 0.86rem !important;
-  font-weight: 700 !important;
+  min-height: 3.2rem !important;
+  padding: 0.65rem 0.7rem !important;
+  font-size: 0.95rem !important;
+  font-weight: 750 !important;
   line-height: 1.2;
   border-radius: 0.85rem !important;
   white-space: normal;
-}
-
-.rst-pos.rst-pos--waiter-mobile .rst-occupied-modal__actions > :first-child {
-  grid-column: 1 / -1;
-  min-height: 3.15rem !important;
-  font-size: 1rem !important;
-}
-
-.rst-pos.rst-pos--waiter-mobile .rst-occupied-modal__actions > :last-child {
-  grid-column: 1 / -1;
 }
 
 .rst-pos.rst-pos--waiter-mobile .rst-modal__actions,

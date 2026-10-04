@@ -45,6 +45,8 @@ export default function FloorCanvas({
   onTableClick,
   onTableMove,
   waiterNameById,
+  /** Optional: (table) => boolean — pickMode only. */
+  isTableSelectable,
   t,
   variant = 'pos',
 }) {
@@ -196,6 +198,9 @@ export default function FloorCanvas({
           const waiterLabel = order?.waiterUserId != null
             ? (waiterNameById?.get(String(order.waiterUserId)) || t('rst.floor.waiterUnknown'))
             : null;
+          const pickSelectable = isPick && typeof isTableSelectable === 'function'
+            ? isTableSelectable(source)
+            : null;
           return (
             <FloorTableNode
               key={node.id}
@@ -203,6 +208,7 @@ export default function FloorCanvas({
               selected={selectedTableId === node.id}
               draggable={isAdmin && !!onTableMove}
               pickMode={isPick}
+              pickSelectable={pickSelectable}
               waiterLabel={isPick ? waiterLabel : null}
               onPointerDown={(event) => startDrag(event, source, node)}
               onClick={isAdmin && onTableMove ? undefined : onTableClick}
