@@ -3,6 +3,8 @@ import {
   EMPH_LINE_PREFIX,
   RECEIPT_WIDTH,
   emphPadRow,
+  emphQtyNameRow,
+  isRefuseTicketTitle,
   kitchenTicketMetaLines,
   padRow,
   qtyNameRow,
@@ -31,6 +33,13 @@ describe('qtyNameRow', () => {
     expect(row).toHaveLength(RECEIPT_WIDTH);
     expect(row.startsWith('BEFSHTEKIS')).toBe(true);
     expect(row.trimEnd().endsWith('×2')).toBe(true);
+  });
+
+  it('emphQtyNameRow marks refuse dish lines for ESC/POS', () => {
+    const row = emphQtyNameRow(1, 'Айс капучино');
+    expect(row.startsWith(EMPH_LINE_PREFIX)).toBe(true);
+    expect(isRefuseTicketTitle('ОТКАЗ')).toBe(true);
+    expect(isRefuseTicketTitle('Кухонный чек')).toBe(false);
   });
 });
 

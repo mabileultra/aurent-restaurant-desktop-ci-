@@ -133,6 +133,7 @@ export function printViaIframe(bodyHtml) {
         body { margin: 0; font-family: ui-monospace, Menlo, Consolas, monospace; color: #000; font-size: 12px; line-height: 1.35; }
         .rst-ord-print__title { margin: 0 0 6px; font-size: 16px; font-weight: 800; text-align: center; letter-spacing: 0.04em; }
         .rst-ord-print__store { margin: 0 0 4px; text-align: center; font-weight: 700; }
+        .rst-ord-print__cat { margin: 8px 0 4px; font-weight: 800; }
         .rst-ord-print__meta { margin: 2px 0; font-size: 11px; }
         .rst-ord-print__line { margin: 6px 0; }
         .rst-ord-print__row { display: flex; justify-content: space-between; gap: 8px; margin: 3px 0; }

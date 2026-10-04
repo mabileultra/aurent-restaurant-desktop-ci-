@@ -90,13 +90,36 @@ export default function MenuDishList({ p, onOpenMenu }) {
                     {metaParts.length ? metaParts.join(' · ') : p.t('rst.admin.noStation')}
                   </p>
                   {item._familySizeCount > 1 ? (
-                    <p className="rst-menu-card__meta">
-                      {p.t('rst.order.variantSizes', { count: item._familySizeCount })}
-                      {' · '}
-                      {p.t('rst.order.priceFrom', { price: fmtMoneyCompact(item._familyMinPrice) })}
-                    </p>
-                  ) : null}
-                  <p className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</p>
+                    <>
+                      <p className="rst-menu-card__meta">
+                        {p.t('rst.order.variantSizes', { count: item._familySizeCount })}
+                        {' · '}
+                        {p.t('rst.order.priceFrom', { price: fmtMoneyCompact(item._familyMinPrice) })}
+                      </p>
+                      <ul className="rst-menu-card__sizes">
+                        {(item._familyVariants || []).map((size) => {
+                          const portion = formatMenuPortion(size) || '—';
+                          return (
+                            <li key={size.id}>
+                              <button
+                                type="button"
+                                className="rst-menu-card__size-btn"
+                                onClick={() => p.openVariantForm(item, size)}
+                              >
+                                <span className="rst-menu-card__size-portion">{portion}</span>
+                                <span className="rst-menu-card__size-price">{fmtMoneyCompact(size.price)}</span>
+                                {size.sku ? (
+                                  <span className="rst-menu-card__size-sku">{size.sku}</span>
+                                ) : null}
+                              </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="rst-menu-card__price">{fmtMoneyCompact(item.price)}</p>
+                  )}
                 </div>
               </article>
             );

@@ -1,0 +1,98 @@
+.rst-print-profile {
+  margin-top: 1rem;
+}
+
+.rst-print-profile__logo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.rst-print-profile__logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  border: 1px dashed var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+}
+
+.rst-print-profile__file {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.2rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-print-profile__file input {
+  display: none;
+}
+
+.rst-print-profile__slip-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 1rem 0 0.75rem;
+}
+
+.rst-print-profile__tab {
+  min-height: 2.35rem;
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 0.65rem;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-print-profile__tab.is-active {
+  border-color: color-mix(in srgb, var(--rst-accent) 55%, var(--rst-line));
+  background: var(--rst-accent-soft);
+}
+
+.rst-print-profile__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.rst-print-profile__field {
+  display: grid;
+  grid-template-columns: minmax(7rem, 1.2fr) auto minmax(6rem, 0.7fr) minmax(7rem, 1fr);
+  gap: 0.45rem;
+  align-items: center;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface);
+}
+
+.rst-print-profile__on {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  font-weight: 650;
+}
+
+.rst-print-profile__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .rst-print-profile__field {
+    grid-template-columns: 1fr 1fr;
+  }
+}

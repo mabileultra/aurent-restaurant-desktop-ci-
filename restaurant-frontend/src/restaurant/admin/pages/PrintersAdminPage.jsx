@@ -4,8 +4,10 @@ import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import RestaurantPrinterSettings from '../components/RestaurantPrinterSettings';
+import RestaurantPrintProfilePanel from '../components/RestaurantPrintProfilePanel';
 import '../../shared/styles/rst-blocks.css';
 import '../styles/halls-admin.css';
+import '../styles/print-profile.css';
 
 export default function PrintersAdminPage() {
   const { t } = useTranslation();
@@ -47,13 +49,19 @@ export default function PrintersAdminPage() {
       {workspace.isLoading && workspace.storeId == null ? null : !workspace.storeId ? (
         <div className="rst-notice">{t('rst.admin.selectStore')}</div>
       ) : (
-        <RestaurantPrinterSettings
-          stations={stations}
-          categories={autoPrintCategories}
-          storeId={workspace.storeId}
-          kitchenBoardEnabled={kitchenBoardEnabled}
-          t={t}
-        />
+        <>
+          <RestaurantPrinterSettings
+            stations={stations}
+            categories={autoPrintCategories}
+            storeId={workspace.storeId}
+            kitchenBoardEnabled={kitchenBoardEnabled}
+            t={t}
+          />
+          <RestaurantPrintProfilePanel
+            storeId={workspace.storeId}
+            t={t}
+          />
+        </>
       )}
     </section>
   );

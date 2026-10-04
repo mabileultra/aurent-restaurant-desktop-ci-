@@ -27,15 +27,23 @@ public class ShiftItemSalesLoader {
     public List<ShiftItemRow> load(RestaurantShift shift, Instant until) {
         Instant to = shift.getClosedAt() != null ? shift.getClosedAt() : until;
         List<Object[]> raw = em.createQuery("""
-            select i.name, coalesce(sum(i.quantity), 0), coalesce(sum(i.quantity * i.unitPrice), 0)
+            select coalesce(c.name, m.category, ''),
+                   i.name,
+                   coalesce(sum(i.quantity), 0),
+                   coalesce(sum(i.quantity * i.unitPrice), 0)
             from FloorOrderItem i
             join i.order o
+            left join i.menuItem m
+            left join MenuCategory c on c.id = m.menuCategoryId
             where o.companyId = :companyId and o.storeId = :storeId
               and o.status = :closed
               and o.closedAt >= :from and o.closedAt <= :to
               and i.itemStatus <> :cancelled
-            group by i.name
-            order by coalesce(sum(i.quantity), 0) desc, i.name
+            group by coalesce(c.name, m.category, ''), i.name
+            order by min(coalesce(c.sortOrder, 9999)),
+                     coalesce(c.name, m.category, ''),
+                     coalesce(sum(i.quantity), 0) desc,
+                     i.name
             """)
             .setParameter("companyId", shift.getCompanyId())
             .setParameter("storeId", shift.getStoreId())
@@ -46,11 +54,19 @@ public class ShiftItemSalesLoader {
             .getResultList();
         return raw.stream()
             .map(row -> new ShiftItemRow(
-                (String) row[0],
-                scale(row[1]),
-                scale(row[2])
+                categoryName(row[0]),
+                (String) row[1],
+                scale(row[2]),
+                scale(row[3])
             ))
             .toList();
+    }
+
+    private static String categoryName(Object value) {
+        if (!(value instanceof String s)) {
+            return "";
+        }
+        return s.trim();
     }
 
     private static BigDecimal scale(Object value) {

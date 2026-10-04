@@ -22,6 +22,8 @@ export default function CashierTopBar({
   showExitMobile = false,
   onExitMobile,
   compactActions = false,
+  /** Full-order desktop: MenuPicker portals search here. */
+  showMenuSearch = false,
   roleLabel = '',
   t,
 }) {
@@ -50,6 +52,10 @@ export default function CashierTopBar({
           </>
         )}
       </div>
+
+      {showMenuSearch ? (
+        <div id="rst-pos-search-slot" className="rst-cashier-top__search" />
+      ) : null}
 
       {onSelectTab && !backToCashier && !compactActions ? (
         <div className="rst-cashier-top__quick" role="tablist" aria-label={t('rst.cashier.navLabel')}>

@@ -40,6 +40,10 @@ public class RestaurantStoreSetting {
     @Builder.Default
     private boolean kitchenBoardEnabled = true;
 
+    /** JSON print profile (logo, fonts, per-slip field styles). Null = factory defaults. */
+    @Column(name = "print_profile_json", columnDefinition = "TEXT")
+    private String printProfileJson;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 

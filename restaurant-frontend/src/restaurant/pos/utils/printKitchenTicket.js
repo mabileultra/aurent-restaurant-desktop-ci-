@@ -9,12 +9,21 @@ import {
   printTicketLines,
   readPrintedKitchenLines,
 } from './desktopPrinters';
+import {
+  brandingLines,
+  filterMetaLines,
+  resolveTicketTitle,
+  styleDishLine,
+  ticketPrintOptions,
+} from '../../shared/printProfile/applyPrintProfile';
+import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import { kitchenTicketMetaLines, qtyNameRow } from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
 
 function itemLines(item) {
   const portion = item.portionText ? ` (${item.portionText})` : '';
-  const lines = [qtyNameRow(item.quantity, `${item.name || ''}${portion}`)];
+  const name = `${item.name || ''}${portion}`;
+  const lines = [qtyNameRow(item.quantity, name)];
   const mods = (item.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
     .filter(Boolean)
@@ -22,6 +31,13 @@ function itemLines(item) {
   if (mods) lines.push(`   + ${mods}`);
   if (item.note) lines.push(`   * ${item.note}`);
   return lines;
+}
+
+function styleKitchenBlock(items, profile, slipType) {
+  return items.flatMap((item) => itemLines(item).map((row) => {
+    if (!row || String(row).startsWith('   ')) return row;
+    return styleDishLine(row, profile, slipType);
+  }).filter((row) => row != null));
 }
 
 async function resolveWaiterName(order, waiterName, waiterNameById) {
@@ -62,17 +78,23 @@ async function sendGroups(groups, settings) {
     }
     const fresh = group.items.filter((item) => !readPrintedKitchenLines().has(String(item.lineId)));
     if (!fresh.length) continue;
+    const slipType = /отказ|void|bekor/i.test(String(group.title || '')) ? 'CANCEL' : 'KITCHEN';
+    const profile = group.profile || null;
+    const title = resolveTicketTitle(group.title, profile, slipType);
+    const meta = filterMetaLines(group.meta, profile, slipType);
     tasks.push(
       printTicketLines({
-        title: group.title,
+        title,
         printerName: printer,
         lines: [
-          ...group.meta,
+          ...brandingLines(profile, slipType),
+          ...meta,
           group.label ? `≫ ${group.label}` : '',
           '---',
-          ...fresh.flatMap(itemLines),
+          ...styleKitchenBlock(fresh, profile, slipType),
           '---',
         ].filter(Boolean),
+        ...ticketPrintOptions(profile, slipType),
       })
         .then(() => {
           markPrintedKitchenLines(fresh.map((item) => item.lineId));
@@ -170,7 +192,7 @@ export async function printKitchenTicket({
   }
 
   const title = voidSlip
-    ? (t?.('rst.order.refuseKitchenItem', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ')
+    ? (t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ')
     : (t?.('rst.order.kitchenTicketTitle', { defaultValue: 'Кухонный чек' }) || 'Кухонный чек');
   const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
   const meta = kitchenTicketMetaLines({
@@ -179,10 +201,12 @@ export async function printKitchenTicket({
     t,
   });
   const settings = await getDesktopPrinterSettings();
+  const profile = await loadStorePrintProfile(order?.storeId);
   const groups = [...byStation.values()].map((group) => ({
     ...group,
     title,
     meta,
+    profile,
     extra: order.clientName || '',
   }));
   return sendGroups(groups, settings);

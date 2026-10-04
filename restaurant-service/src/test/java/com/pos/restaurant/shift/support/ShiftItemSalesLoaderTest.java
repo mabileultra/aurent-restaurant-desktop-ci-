@@ -83,16 +83,16 @@ class ShiftItemSalesLoaderTest {
     @Test
     void mapsRowsAndScalesNumbers() {
         List<Object[]> raw = List.of(
-            new Object[] {"Лагман", new BigDecimal("12"), new BigDecimal("360000")},
-            new Object[] {"Чай", 30L, 90000.5d}
+            new Object[] {"Горячее", "Лагман", new BigDecimal("12"), new BigDecimal("360000")},
+            new Object[] {"Напитки", "Чай", 30L, 90000.5d}
         );
         when(query.getResultList()).thenReturn(raw);
 
         List<ShiftItemRow> rows = loader.load(shift(CLOSED), CLOSED);
 
         assertEquals(2, rows.size());
-        assertEquals(new ShiftItemRow("Лагман", new BigDecimal("12.00"), new BigDecimal("360000.00")), rows.get(0));
-        assertEquals(new ShiftItemRow("Чай", new BigDecimal("30.00"), new BigDecimal("90000.50")), rows.get(1));
+        assertEquals(new ShiftItemRow("Горячее", "Лагман", new BigDecimal("12.00"), new BigDecimal("360000.00")), rows.get(0));
+        assertEquals(new ShiftItemRow("Напитки", "Чай", new BigDecimal("30.00"), new BigDecimal("90000.50")), rows.get(1));
     }
 
     @Test
@@ -100,5 +100,32 @@ class ShiftItemSalesLoaderTest {
         when(query.getResultList()).thenReturn(List.of());
 
         assertTrue(loader.load(shift(null), Instant.now()).isEmpty());
+    }
+
+    @Test
+    void queryJoinsMenuCategoryForGrouping() {
+        when(query.getResultList()).thenReturn(List.of());
+
+        loader.load(shift(CLOSED), CLOSED);
+
+        org.mockito.ArgumentCaptor<String> jpql = org.mockito.ArgumentCaptor.forClass(String.class);
+        verify(em).createQuery(jpql.capture());
+        String sql = jpql.getValue();
+        assertTrue(sql.contains("MenuCategory"));
+        assertTrue(sql.contains("group by coalesce(c.name, m.category, ''), i.name"));
+        assertTrue(sql.contains("order by min(coalesce(c.sortOrder, 9999))"));
+    }
+
+    @Test
+    void blankCategoryNameIsNormalizedToEmpty() {
+        List<Object[]> raw = new java.util.ArrayList<>();
+        raw.add(new Object[] {"  ", "Самса", new BigDecimal("1"), new BigDecimal("8000")});
+        when(query.getResultList()).thenReturn(raw);
+
+        List<ShiftItemRow> rows = loader.load(shift(CLOSED), CLOSED);
+
+        assertEquals(1, rows.size());
+        assertEquals("", rows.get(0).categoryName());
+        assertEquals("Самса", rows.get(0).name());
     }
 }

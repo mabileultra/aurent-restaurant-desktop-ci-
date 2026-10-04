@@ -63,6 +63,7 @@ export function useMenuAdminPage() {
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [variantSource, setVariantSource] = useState(null);
   const [variantForm, setVariantForm] = useState(emptyVariantForm);
+  const [editingVariantId, setEditingVariantId] = useState(null);
 
   const itemsQuery = useQuery({
     queryKey: ['rst-menu-admin', workspace.storeId],
@@ -207,7 +208,41 @@ export function useMenuAdminPage() {
     onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
   });
 
-  const createVariantMutation = useMutation({
+  const sortVariants = (list) => [...list].sort((a, b) => {
+    const pa = Number(a.portionAmount) || Number(a.portionGrams) || 0;
+    const pb = Number(b.portionAmount) || Number(b.portionGrams) || 0;
+    if (pa !== pb) return pa - pb;
+    return (Number(a.price) || 0) - (Number(b.price) || 0);
+  });
+
+  const variantFamily = useMemo(() => {
+    if (!variantSource) return [];
+    const groupId = variantSource.variantGroupId;
+    if (groupId) {
+      return sortVariants(items.filter((row) => row.variantGroupId === groupId));
+    }
+    return sortVariants(items.filter((row) => row.id === variantSource.id));
+  }, [items, variantSource]);
+
+  const fillVariantForm = (item) => ({
+    price: String(item?.price ?? ''),
+    portionAmount: item?.portionAmount != null
+      ? formatPortionAmountDisplay(item.portionAmount)
+      : '',
+    portionUnit: item?.portionUnit || 'PORTION',
+    portionLabel: item?.portionLabel ?? '',
+    sku: item?.sku ?? '',
+  });
+
+  const resetVariantEditor = () => {
+    setEditingVariantId(null);
+    setVariantForm({
+      ...emptyVariantForm(),
+      price: String(variantSource?.price ?? ''),
+    });
+  };
+
+  const saveVariantMutation = useMutation({
     mutationFn: () => {
       const portionAmount = variantForm.portionAmount === ''
         ? null
@@ -215,25 +250,119 @@ export function useMenuAdminPage() {
       if (variantForm.portionAmount !== '' && portionAmount == null) {
         throw new Error(t('rst.admin.portionAmountInvalid'));
       }
+      const portionUnit = portionAmount == null ? null : (variantForm.portionUnit || 'PORTION');
+      const sku = variantForm.sku.trim() || null;
+      const portionLabel = variantForm.portionLabel.trim() || null;
+      const price = Number(variantForm.price);
+
+      if (editingVariantId) {
+        const current = items.find((row) => row.id === editingVariantId) || variantSource;
+        return rstMenuApi.update(editingVariantId, {
+          name: current.name,
+          sku,
+          price,
+          taxRate: Number(current.taxRate) || 0,
+          available: current.available !== false,
+          sortOrder: Number(current.sortOrder) || 100,
+          itemType: current.itemType || 'DISH',
+          stationId: current.stationId || null,
+          menuCategoryId: current.menuCategoryId || null,
+          imageUrl: current.imageUrl || null,
+          description: current.description || null,
+          prepMinutes: current.prepMinutes ?? null,
+          portionAmount,
+          portionUnit,
+          portionLabel,
+          tags: current.tags || null,
+          modifierGroupIds: current.modifierGroupIds ?? [],
+        });
+      }
+
       return rstMenuApi.createVariant(variantSource.id, {
-        price: Number(variantForm.price),
+        price,
         portionAmount,
-        portionUnit: portionAmount == null ? null : (variantForm.portionUnit || 'PORTION'),
-        portionLabel: variantForm.portionLabel.trim() || null,
-        sku: variantForm.sku.trim() || null,
+        portionUnit,
+        portionLabel,
+        sku,
       });
     },
-    onSuccess: () => {
-      toast.success(t('rst.admin.variantCreated'));
-      setVariantSource(null);
+    onSuccess: (res) => {
+      const saved = res?.data;
+      const wasEdit = Boolean(editingVariantId);
+      toast.success(
+        wasEdit
+          ? t('rst.admin.variantUpdated', { defaultValue: 'Размер обновлён' })
+          : t('rst.admin.variantCreated'),
+      );
+      if (saved?.variantGroupId && variantSource) {
+        setVariantSource((prev) => (prev
+          ? { ...prev, variantGroupId: saved.variantGroupId || prev.variantGroupId }
+          : prev));
+      }
+      if (saved && workspace.storeId != null) {
+        qc.setQueryData(['rst-menu-admin', workspace.storeId], (old) => {
+          if (!Array.isArray(old)) return old;
+          const groupId = saved.variantGroupId;
+          const next = old.map((row) => {
+            if (row.id === saved.id) return { ...row, ...saved };
+            if (groupId && (row.id === variantSource?.id || row.variantGroupId === groupId)) {
+              return { ...row, variantGroupId: groupId };
+            }
+            return row;
+          });
+          if (!next.some((row) => row.id === saved.id)) next.push(saved);
+          return next;
+        });
+      }
+      resetVariantEditor();
       invalidate();
     },
     onError: (err) => toastApiError(err, t('rst.admin.saveFailed')),
   });
 
-  const openVariantForm = (item) => {
+  const deleteVariantMutation = useMutation({
+    mutationFn: (itemId) => rstMenuApi.deactivate(itemId),
+    onSuccess: (_, itemId) => {
+      toast.success(t('rst.admin.variantRemoved', { defaultValue: 'Размер скрыт' }));
+      if (editingVariantId === itemId) {
+        setEditingVariantId(null);
+        setVariantForm({
+          ...emptyVariantForm(),
+          price: String(variantSource?.price ?? ''),
+        });
+      }
+      const remaining = variantFamily.filter((row) => row.id !== itemId);
+      if (remaining.length === 0) {
+        setVariantSource(null);
+        setEditingVariantId(null);
+      } else if (variantSource?.id === itemId) {
+        setVariantSource(remaining[0]);
+      }
+      invalidate();
+    },
+    onError: (err) => toastApiError(err, t('rst.admin.deleteFailed')),
+  });
+
+  const openVariantForm = (item, editItem = null) => {
     setVariantSource(item);
+    if (editItem) {
+      setEditingVariantId(editItem.id);
+      setVariantForm(fillVariantForm(editItem));
+      return;
+    }
+    setEditingVariantId(null);
     setVariantForm({ ...emptyVariantForm(), price: String(item.price ?? '') });
+  };
+
+  const startEditVariant = (item) => {
+    setEditingVariantId(item.id);
+    setVariantForm(fillVariantForm(item));
+  };
+
+  const closeVariantForm = () => {
+    setVariantSource(null);
+    setEditingVariantId(null);
+    setVariantForm(emptyVariantForm());
   };
 
   const closeComposer = () => {
@@ -336,12 +465,17 @@ export function useMenuAdminPage() {
     closeComposer,
     saveMutation,
     deactivateMutation,
-    createVariantMutation,
+    saveVariantMutation,
+    deleteVariantMutation,
     variantSource,
+    variantFamily,
     variantForm,
     setVariantForm,
+    editingVariantId,
     openVariantForm,
-    closeVariantForm: () => setVariantSource(null),
+    closeVariantForm,
+    startEditVariant,
+    resetVariantEditor,
     startEdit,
     toggleGroup,
     onImageFile,

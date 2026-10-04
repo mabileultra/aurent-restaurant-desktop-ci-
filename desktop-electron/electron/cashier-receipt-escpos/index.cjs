@@ -19,6 +19,9 @@ const {
 } = require('./escpos-encoding.cjs');
 const { listSystemPrinters } = require('../printers/resolve.cjs');
 const { matchPrinterName } = require('../printers/printer-match.cjs');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
 
 function wrapEscposError(err) {
   if (err instanceof EscposPrintError) {
@@ -145,7 +148,7 @@ async function printPlainTicketEscpos(payload) {
           paperWmm: paperMmForPrinter(deviceName, p.paperWmm),
           payloadHasCyrillic: hasCyrillic && locale !== 'uz',
         }),
-      buildOnPrinter: (printer, p) => {
+      buildOnPrinter: async (printer, p) => {
         preparePrinterEncoding(printer, p.locale);
         const width = typeof printer.getWidth === 'function' ? Number(printer.getWidth()) || 32 : 32;
         // Kitchen / category / cancel: one normal Font A size for every line (no double-height).
@@ -173,9 +176,37 @@ async function printPlainTicketEscpos(payload) {
           if (!m) return null;
           return { left: m[1].trimEnd(), right: m[2].trim() };
         };
+        if (p.logoDataUrl && typeof printer.printImage === 'function') {
+          try {
+            const m = String(p.logoDataUrl).match(/^data:image\/\w+;base64,(.+)$/);
+            if (m) {
+              const imgPath = path.join(os.tmpdir(), `aurent-rst-logo-${Date.now()}.png`);
+              fs.writeFileSync(imgPath, Buffer.from(m[1], 'base64'));
+              printer.alignCenter();
+              await printer.printImage(imgPath);
+              printer.newLine();
+              printer.alignLeft();
+              try { fs.unlinkSync(imgPath); } catch { /* ignore */ }
+            }
+          } catch {
+            // logo optional — never fail the slip
+          }
+        }
         if (p.title) {
           printer.alignCenter();
+          // Refuse / cancel banner: large + bold so kitchen sees ОТКАЗ immediately.
+          const refuseTitle = Boolean(p.titleEmph)
+            || /отказ|void|bekor/i.test(String(p.title || ''));
+          if (refuseTitle) {
+            printer.bold(true);
+            if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
+            if (typeof printer.setTextDoubleWidth === 'function') printer.setTextDoubleWidth();
+          }
           wrap(p.title).forEach((line) => printer.println(line));
+          if (refuseTitle) {
+            if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
+            printer.bold(false);
+          }
           printer.newLine();
           printer.alignLeft();
         }
@@ -193,12 +224,16 @@ async function printPlainTicketEscpos(payload) {
             wrap(text.replace(/^≫ |^>> /, '')).forEach((line) => printer.println(line));
             continue;
           }
-          // §E§ — emphasize (guest-bill total): bold + double-height, then restore.
+          // §E§ — emphasize: bold + double-height, then restore.
+          // §B§ — bold only.
           const emph = text.startsWith('§E§');
-          const body = emph ? text.slice(3) : text;
+          const boldOnly = !emph && text.startsWith('§B§');
+          const body = emph || boldOnly ? text.slice(3) : text;
           if (emph) {
             printer.bold(true);
             if (typeof printer.setTextDoubleHeight === 'function') printer.setTextDoubleHeight();
+          } else if (boldOnly) {
+            printer.bold(true);
           }
           const padded = splitPaddedRow(body);
           if (padded && typeof printer.leftRight === 'function'
@@ -207,7 +242,7 @@ async function printPlainTicketEscpos(payload) {
           } else {
             wrap(body).forEach((line) => printer.println(line));
           }
-          if (emph) {
+          if (emph || boldOnly) {
             if (typeof printer.setTextNormal === 'function') printer.setTextNormal();
             printer.bold(false);
           }

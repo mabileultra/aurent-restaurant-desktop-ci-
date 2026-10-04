@@ -1,6 +1,6 @@
 .rst-order {
   display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.95fr);
+  grid-template-columns: minmax(0, 1.3fr) minmax(400px, 1.1fr);
   gap: 0.9rem;
   min-height: 0;
   flex: 1;

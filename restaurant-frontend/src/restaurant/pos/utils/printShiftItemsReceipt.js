@@ -7,6 +7,25 @@ import {
 import { escapeHtml, printViaIframe } from './printOrdinarySaleReceipt';
 import { moneyRow, padRow, ticketStamp, TICKET_WIDTH } from './ticketLayout';
 
+/** Preserve API order; bucket rows under category headers. */
+export function groupShiftItemsByCategory(items, uncategorizedLabel) {
+  const groups = [];
+  const indexByKey = new Map();
+  for (const row of items) {
+    const key = String(row?.categoryName || '').trim() || uncategorizedLabel;
+    let group = indexByKey.get(key);
+    if (!group) {
+      group = { label: key, items: [], quantity: 0, amount: 0 };
+      indexByKey.set(key, group);
+      groups.push(group);
+    }
+    group.items.push(row);
+    group.quantity += Number(row.quantity) || 0;
+    group.amount += Number(row.amount) || 0;
+  }
+  return groups;
+}
+
 /**
  * Non-fiscal slip printed on shift close: every dish sold during the shift.
  * @param {{ report: object, storeName?: string, cashierName?: string, t?: Function }} opts
@@ -24,7 +43,25 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
   const totalLabel = t?.('rst.order.totalDue', { defaultValue: 'ИТОГО' }) || 'ИТОГО';
   const qtyLabel = t?.('rst.shift.itemsQty', { count: totalQty, defaultValue: `${totalQty} шт.` }) || `${totalQty} шт.`;
   const emptyLabel = t?.('rst.shift.itemsEmpty', { defaultValue: 'Продаж нет' }) || 'Продаж нет';
+  const uncategorized = t?.('rst.shift.itemsUncategorized', { defaultValue: 'Без категории' }) || 'Без категории';
   const divider = '-'.repeat(TICKET_WIDTH);
+  const groups = groupShiftItemsByCategory(items, uncategorized);
+
+  const itemLines = items.length
+    ? groups.flatMap((group, index) => {
+      const catQty = t?.('rst.shift.itemsQty', {
+        count: group.quantity,
+        defaultValue: `${group.quantity} шт.`,
+      }) || `${group.quantity} шт.`;
+      const block = [
+        `≫ ${group.label}`,
+        ...group.items.map((row) => padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount))),
+        padRow(group.label, catQty),
+        moneyRow('', group.amount),
+      ];
+      return index < groups.length - 1 ? [...block, divider] : block;
+    })
+    : [emptyLabel];
 
   const lines = [
     title.toUpperCase(),
@@ -32,9 +69,7 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
     ...(cashier ? [cashier] : []),
     period,
     divider,
-    ...(items.length
-      ? items.map((row) => padRow(`${Number(row.quantity)} x ${row.name}`, fmtMoneyCompact(row.amount)))
-      : [emptyLabel]),
+    ...itemLines,
     divider,
     padRow(totalLabel, qtyLabel),
     moneyRow('', totalAmount),
@@ -50,9 +85,20 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
   }
 
   const rowsHtml = items.length
-    ? items.map((row) => (
-      `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span><strong>${fmtMoneyCompact(row.amount)}</strong></div>`
-    )).join('')
+    ? groups.map((group) => {
+      const catQty = t?.('rst.shift.itemsQty', {
+        count: group.quantity,
+        defaultValue: `${group.quantity} шт.`,
+      }) || `${group.quantity} шт.`;
+      const dishRows = group.items.map((row) => (
+        `<div class="rst-ord-print__row"><span>${escapeHtml(`${Number(row.quantity)} × ${row.name}`)}</span><strong>${fmtMoneyCompact(row.amount)}</strong></div>`
+      )).join('');
+      return `
+        <p class="rst-ord-print__cat">${escapeHtml(`≫ ${group.label}`)}</p>
+        ${dishRows}
+        <div class="rst-ord-print__row"><span>${escapeHtml(group.label)} · ${escapeHtml(catQty)}</span><strong>${fmtMoneyCompact(group.amount)}</strong></div>
+      `;
+    }).join('<hr />')
     : `<p>${escapeHtml(emptyLabel)}</p>`;
 
   await printViaIframe(`

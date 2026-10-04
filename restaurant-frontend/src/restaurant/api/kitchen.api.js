@@ -5,6 +5,8 @@ const rst = (path) => `/rst${path}`;
 export const rstKitchenApi = {
   getKitchenBoard: (storeId) => api.get(rst(`/stores/${storeId}/kitchen-board`)),
   setKitchenBoard: (storeId, enabled) => api.put(rst(`/stores/${storeId}/kitchen-board`), { enabled }),
+  getPrintProfile: (storeId) => api.get(rst(`/stores/${storeId}/print-profile`)),
+  savePrintProfile: (storeId, profile) => api.put(rst(`/stores/${storeId}/print-profile`), { profile }),
   listStations: (storeId, activeOnly = false) =>
     api.get(rst(`/stores/${storeId}/kitchen-stations`), { params: { activeOnly } }),
   createStation: (storeId, data) => api.post(rst(`/stores/${storeId}/kitchen-stations`), data),

@@ -11,7 +11,19 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
-import { kitchenTicketMetaLines, qtyNameRow } from './ticketLayout';
+import {
+  brandingLines,
+  filterMetaLines,
+  resolveTicketTitle,
+  styleDishLine,
+  ticketPrintOptions,
+} from '../../shared/printProfile/applyPrintProfile';
+import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
+import {
+  isRefuseTicketTitle,
+  kitchenTicketMetaLines,
+  qtyNameRow,
+} from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
 
 function parsePayload(raw) {
@@ -64,7 +76,8 @@ async function localHasPrinterFast(printerName) {
 
 function itemLines(item) {
   const portion = item.portionText ? ` (${item.portionText})` : '';
-  const lines = [qtyNameRow(item.quantity, `${item.name || ''}${portion}`)];
+  const name = `${item.name || ''}${portion}`;
+  const lines = [qtyNameRow(item.quantity, name)];
   const mods = (item.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
     .filter(Boolean)
@@ -82,6 +95,16 @@ function batchItemLines(line) {
     note: line?.note,
     modifiers: line?.modifiers || [],
   });
+}
+
+function styleBlockLines(block, profile, slipType) {
+  return block
+    .map((row) => {
+      if (!row) return row;
+      if (String(row).startsWith('   ')) return row;
+      return styleDishLine(row, profile, slipType);
+    })
+    .filter((row) => row != null);
 }
 
 async function metaFromPayload(payload, order, t, waiterNameById, storeId) {
@@ -150,20 +173,30 @@ async function runCategoryBatch(payload, t, waiterNameById, storeId) {
   if (!(await localHasPrinterFast(printer))) {
     return { mode: 'skip', ack: false, release: true };
   }
+  const refuse = isRefuseTicketTitle(payload.title);
+  const slipType = refuse ? 'CANCEL' : 'KITCHEN';
+  const profile = await loadStorePrintProfile(storeId);
   const dishLines = (payload.lines || []).flatMap((line, index) => {
-    const block = batchItemLines(line);
+    const block = styleBlockLines(batchItemLines(line), profile, slipType);
     return index === 0 ? block : ['', ...block];
   });
   if (!dishLines.length) return { mode: 'skip', ack: true, release: false };
+  const meta = filterMetaLines(
+    await metaFromPayload(payload, null, t, waiterNameById, storeId),
+    profile,
+    slipType,
+  );
   await printTicketLines({
-    title: payload.title || '',
+    title: resolveTicketTitle(payload.title || '', profile, slipType),
     printerName: printer,
     lines: [
-      ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
+      ...brandingLines(profile, slipType),
+      ...meta,
       '---',
       ...dishLines,
       '---',
     ],
+    ...ticketPrintOptions(profile, slipType),
   });
   return { mode: 'silent', ack: true, release: false };
 }
@@ -201,21 +234,33 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
       if (!printer || !(await localHasPrinterFast(printer))) {
         return { ack: false, release: true, mode: 'missing' };
       }
+      const profile = await loadStorePrintProfile(storeId);
       const dishLines = (payload.lines || []).flatMap((line, index) => {
-        const block = batchItemLines(line);
+        const block = styleBlockLines(batchItemLines(line), profile, 'CANCEL');
         return index === 0 ? block : ['', ...block];
       });
       if (!dishLines.length) return { ack: true, release: false, mode: 'skip' };
-      const title = t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ ЗАКАЗА' }) || 'ОТКАЗ ЗАКАЗА';
+      const title = resolveTicketTitle(
+        t?.('rst.order.cancelPrintTitle', { defaultValue: 'ОТКАЗ' }) || 'ОТКАЗ',
+        profile,
+        'CANCEL',
+      );
+      const meta = filterMetaLines(
+        await metaFromPayload(payload, null, t, waiterNameById, storeId),
+        profile,
+        'CANCEL',
+      );
       await printTicketLines({
         title,
         printerName: printer,
         lines: [
-          ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
+          ...brandingLines(profile, 'CANCEL'),
+          ...meta,
           '---',
           ...dishLines,
           '---',
         ],
+        ...ticketPrintOptions(profile, 'CANCEL'),
       });
       return { ack: true, release: false, mode: 'silent' };
     }

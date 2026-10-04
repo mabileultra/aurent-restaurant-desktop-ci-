@@ -83,8 +83,8 @@ class ShiftReportAssemblerTest {
         RestaurantShift shift = shift("0.00");
         shift.setClosingCash(new BigDecimal("50000.00"));
         List<ShiftItemRow> items = List.of(
-            new ShiftItemRow("Лагман", new BigDecimal("12.00"), new BigDecimal("360000.00")),
-            new ShiftItemRow("Чай", new BigDecimal("30.00"), new BigDecimal("90000.00"))
+            new ShiftItemRow("Горячее", "Лагман", new BigDecimal("12.00"), new BigDecimal("360000.00")),
+            new ShiftItemRow("Напитки", "Чай", new BigDecimal("30.00"), new BigDecimal("90000.00"))
         );
 
         ShiftReportResponse report = assembler.toReport("Z", shift, null, null, Instant.now(), 0, items);

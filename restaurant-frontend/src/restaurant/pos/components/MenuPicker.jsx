@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
 import {
   familyPunchScore,
+  localDayKey,
   readMenuPunchMap,
   recordMenuPunch,
 } from '../utils/menuPunchFrequency';
@@ -48,12 +49,18 @@ export default function MenuPicker({
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
-  const [punchTick, setPunchTick] = useState(0);
+  const [searchSlot, setSearchSlot] = useState(null);
   const searchRef = useRef(null);
+  /** Ranking day key — order stays fixed all day; flips only after local midnight. */
+  const rankingDay = localDayKey();
+
+  useLayoutEffect(() => {
+    setSearchSlot(document.getElementById('rst-pos-search-slot'));
+  }, [storeId, rankByPunch]);
 
   const punchMap = useMemo(
     () => (rankByPunch ? readMenuPunchMap(storeId) : {}),
-    [storeId, punchTick, rankByPunch],
+    [storeId, rankByPunch, rankingDay],
   );
 
   const visible = useMemo(() => {
@@ -115,6 +122,10 @@ export default function MenuPicker({
     return <div className="rst-empty">{t('rst.order.emptyMenu')}</div>;
   }
 
+  const searchPh = searchSlot
+    ? (t('rst.order.searchMenuShortPh', { defaultValue: 'Поиск…' }) || 'Поиск…')
+    : t('rst.order.searchMenuPh');
+
   const search = (
       <label className="rst-menu__search">
         <span className="rst-menu__search-ico" aria-hidden>
@@ -128,17 +139,16 @@ export default function MenuPicker({
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder={t('rst.order.searchMenuPh')}
+          placeholder={searchPh}
         />
-        <span className="rst-menu__search-hint">
-          <kbd>/</kbd>
-          <em>{t('rst.order.searchEsc')}</em>
-        </span>
+        {searchSlot ? null : (
+          <span className="rst-menu__search-hint">
+            <kbd>/</kbd>
+            <em>{t('rst.order.searchEsc')}</em>
+          </span>
+        )}
       </label>
   );
-  const searchSlot = typeof document !== 'undefined'
-    ? document.getElementById('rst-pos-search-slot')
-    : null;
 
   return (
     <div className="rst-menu rst-menu--pos">
@@ -193,7 +203,6 @@ export default function MenuPicker({
               onClick={() => {
                 setFocusedId(family.key);
                 recordMenuPunch(storeId, family.key);
-                setPunchTick((n) => n + 1);
                 if (onComposeFamily) onComposeFamily(family);
                 else if (family.multi) onAdd(family.variants[0]);
                 else onAdd(item);

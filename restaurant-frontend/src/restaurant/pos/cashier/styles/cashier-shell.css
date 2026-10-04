@@ -31,7 +31,7 @@
   min-height: 0;
   height: 100%;
   gap: 0.65rem;
-  grid-template-columns: minmax(0, 1.65fr) minmax(320px, 0.9fr);
+  grid-template-columns: minmax(0, 1.35fr) minmax(400px, 1.1fr);
   grid-template-rows: minmax(0, 1fr);
 }
 
@@ -64,11 +64,6 @@
 
 .rst-cashier-full .rst-menu {
   gap: 0.45rem;
-}
-
-.rst-cashier-full .rst-menu__search input {
-  min-height: 2.35rem;
-  font-size: 0.92rem;
 }
 
 .rst-cashier-full .rst-menu-cats {
@@ -421,6 +416,30 @@
 .rst-cashier-top__brand:has(.rst-cashier-top__back) {
   flex-direction: row;
   align-items: center;
+}
+
+.rst-cashier-top__search {
+  flex: 1 1 12rem;
+  min-width: 9rem;
+  max-width: 18rem;
+}
+
+.rst-cashier-top__search .rst-menu__search input {
+  height: 2.15rem;
+  min-height: 2.15rem;
+  padding: 0 2.4rem 0 2.1rem;
+  font-size: 0.8rem;
+  border-radius: 0.65rem;
+}
+
+.rst-cashier-top__search .rst-menu__search-ico {
+  left: 0.55rem;
+  width: 0.85rem;
+  height: 0.85rem;
+}
+
+.rst-cashier-top__search .rst-menu__search-hint {
+  display: none;
 }
 
 .rst-cashier-top__back {

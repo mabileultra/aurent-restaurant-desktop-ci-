@@ -170,6 +170,7 @@ export default function RestaurantCashierPosPage() {
           showExitMobile={mobile.showExitMobile}
           onExitMobile={mobile.exitMobile}
           compactActions={mobile.enabled}
+          showMenuSearch={showFull && !mobile.enabled}
           roleLabel={p.t(`roles.${user?.role || 'CASHIER'}`, { defaultValue: p.t('roles.CASHIER') })}
           t={p.t}
         />

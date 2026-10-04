@@ -9,8 +9,19 @@ export const RECEIPT_WIDTH = 42;
 /** Prefix: ESC/POS prints this line bold + slightly taller (strip before output). */
 export const EMPH_LINE_PREFIX = '§E§';
 
+/** Prefix: bold only (cancel/refuse dish lines — a bit stronger than body). */
+export const BOLD_LINE_PREFIX = '§B§';
+
 export function emphPadRow(left, right, width = RECEIPT_WIDTH) {
   return `${EMPH_LINE_PREFIX}${padRow(left, right, width)}`;
+}
+
+export function boldPadRow(left, right, width = RECEIPT_WIDTH) {
+  return `${BOLD_LINE_PREFIX}${padRow(left, right, width)}`;
+}
+
+export function isRefuseTicketTitle(title) {
+  return /отказ/i.test(String(title || ''));
 }
 
 export function padRow(left, right, width = TICKET_WIDTH) {
@@ -38,6 +49,11 @@ export function qtyNameRow(qty, name, width = KITCHEN_QTY_WIDTH) {
     ? `×${Math.round(q)}`
     : `×${q}`;
   return padRow(String(name || '').trim(), qtyLabel, width);
+}
+
+/** Refuse / cancel dish line: bold + slightly taller on ESC/POS. */
+export function emphQtyNameRow(qty, name, width = KITCHEN_QTY_WIDTH) {
+  return `${EMPH_LINE_PREFIX}${qtyNameRow(qty, name, width)}`;
 }
 
 export function ticketStamp(iso) {

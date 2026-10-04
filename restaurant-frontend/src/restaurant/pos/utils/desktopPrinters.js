@@ -88,13 +88,37 @@ function runOnPrinterLane(printerName, task) {
   return run;
 }
 
-export async function printTicketLines({ title, lines, printerName } = {}) {
+export async function printTicketLines({
+  title,
+  lines,
+  printerName,
+  fontFamily,
+  logoDataUrl,
+  logoMaxHeightMm,
+  titleEmph,
+} = {}) {
   const name = String(printerName || '').trim();
   if (!name) throw new Error('Принтер не выбран');
-  return runOnPrinterLane(name, () => printTicketLinesNow({ title, lines, name }));
+  return runOnPrinterLane(name, () => printTicketLinesNow({
+    title,
+    lines,
+    name,
+    fontFamily,
+    logoDataUrl,
+    logoMaxHeightMm,
+    titleEmph,
+  }));
 }
 
-async function printTicketLinesNow({ title, lines, name }) {
+async function printTicketLinesNow({
+  title,
+  lines,
+  name,
+  fontFamily,
+  logoDataUrl,
+  logoMaxHeightMm,
+  titleEmph,
+}) {
   const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
   const payload = {
     printerName: name,
@@ -102,6 +126,9 @@ async function printTicketLinesNow({ title, lines, name }) {
     lines: (lines || []).map((line) => String(line ?? '')),
     paperWmm: /58/.test(name) ? 58 : 80,
     locale: (typeof document !== 'undefined' && document.documentElement.lang) || 'ru',
+    logoDataUrl: logoDataUrl || '',
+    logoMaxHeightMm: Number(logoMaxHeightMm) || 12,
+    titleEmph: Boolean(titleEmph) || /отказ|void|bekor/i.test(String(title || '')),
   };
   if (typeof desk?.printPlainEscpos === 'function') {
     try {
@@ -116,18 +143,31 @@ async function printTicketLinesNow({ title, lines, name }) {
   if (typeof desk?.printTicketHtml !== 'function') {
     throw new Error('Печать станции недоступна. Закройте Aurent и откройте заново после обновления.');
   }
+  const refuseTitle = payload.titleEmph;
+  const titleStyle = refuseTitle
+    ? 'margin:0 0 10px;text-align:center;font-weight:900;font-size:22px;letter-spacing:0.08em'
+    : 'margin:0 0 8px;text-align:center;font-weight:700';
+  const family = fontFamily || 'ui-monospace, Menlo, Consolas, monospace';
+  const logoHtml = payload.logoDataUrl
+    ? `<div style="text-align:center;margin:0 0 8px"><img src="${payload.logoDataUrl.replace(/"/g, '')}" alt="" style="max-height:${payload.logoMaxHeightMm}mm;max-width:100%;object-fit:contain"/></div>`
+    : '';
   const html = [
-    '<div style="font-family:monospace;font-size:13px;font-weight:400;line-height:1.35">',
-    title ? `<p style="margin:0 0 8px;text-align:center;font-weight:700">${escapeHtml(title)}</p>` : '',
+    `<div style="font-family:${family};font-size:13px;font-weight:400;line-height:1.35">`,
+    logoHtml,
+    title ? `<p style="${titleStyle}">${escapeHtml(title)}</p>` : '',
     ...payload.lines.map((line) => {
       if (line === '---') {
         return '<hr style="border:none;border-top:1px dashed #000;margin:6px 0"/>';
       }
-      const emph = String(line).startsWith('§E§');
-      const text = emph ? String(line).slice(3) : String(line);
+      const raw = String(line);
+      const emph = raw.startsWith('§E§');
+      const boldOnly = !emph && raw.startsWith('§B§');
+      const text = emph || boldOnly ? raw.slice(3) : raw;
       const style = emph
-        ? 'white-space:pre;margin:0;font-weight:700;font-size:16px'
-        : 'white-space:pre;margin:0';
+        ? 'white-space:pre;margin:0;font-weight:800;font-size:17px'
+        : boldOnly
+          ? 'white-space:pre;margin:0;font-weight:700;font-size:14px'
+          : 'white-space:pre;margin:0';
       return `<p style="${style}">${escapeHtml(text)}</p>`;
     }),
     '</div>',
