@@ -23,6 +23,10 @@ public class ShiftReportRepositoryImpl implements ShiftReportRepository {
     private static final String AGGREGATE_RETURNS_BY_SHIFT_ID_SQL = "sql/sales/aggregate-returns-by-shift-id.sql";
     private static final String AGGREGATE_RETURNS_BY_CASHIER_TIME_SQL =
         "sql/sales/aggregate-returns-by-cashier-time.sql";
+    private static final String AGGREGATE_SOLD_ITEMS_BY_SHIFT_ID_SQL =
+        "sql/sales/aggregate-shift-sold-items-by-shift-id.sql";
+    private static final String AGGREGATE_SOLD_ITEMS_BY_CASHIER_TIME_SQL =
+        "sql/sales/aggregate-shift-sold-items-by-cashier-time.sql";
 
     private static final String FIND_COMPLETED_FOR_Z_REPORT_JPQL = """
         SELECT DISTINCT s FROM Sale s
@@ -101,6 +105,30 @@ public class ShiftReportRepositoryImpl implements ShiftReportRepository {
             query.setParameter("storeId", storeId);
             query.setParameter("periodFrom", periodFrom);
             query.setParameter("reportAt", reportAt);
+        });
+    }
+
+    @Override
+    public List<Object[]> aggregateSoldItemsByShiftId(UUID shiftId, Instant periodFrom, Instant reportAt) {
+        return reportQueryExecutor.fetchList(AGGREGATE_SOLD_ITEMS_BY_SHIFT_ID_SQL, query -> {
+            query.setParameter("shiftId", shiftId);
+            query.setParameter("periodFrom", periodFrom);
+            query.setParameter("reportAt", reportAt);
+        });
+    }
+
+    @Override
+    public List<Object[]> aggregateSoldItemsByCashierAndTime(
+        UUID cashierId,
+        Integer storeId,
+        Instant from,
+        Instant to
+    ) {
+        return reportQueryExecutor.fetchList(AGGREGATE_SOLD_ITEMS_BY_CASHIER_TIME_SQL, query -> {
+            query.setParameter("cashierId", cashierId);
+            query.setParameter("storeId", storeId);
+            query.setParameter("from", from);
+            query.setParameter("to", to);
         });
     }
 

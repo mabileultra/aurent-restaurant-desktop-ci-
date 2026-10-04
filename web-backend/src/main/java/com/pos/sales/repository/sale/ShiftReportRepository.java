@@ -31,4 +31,13 @@ public interface ShiftReportRepository {
     );
 
     List<Sale> findCompletedForZReport(Long zReportId, Sale.SaleStatus status);
+
+    List<Object[]> aggregateSoldItemsByShiftId(UUID shiftId, Instant periodFrom, Instant reportAt);
+
+    List<Object[]> aggregateSoldItemsByCashierAndTime(
+        UUID cashierId,
+        Integer storeId,
+        Instant from,
+        Instant to
+    );
 }

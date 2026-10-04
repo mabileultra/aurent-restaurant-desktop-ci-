@@ -19,5 +19,6 @@ public record CashierShiftResponse(
     BigDecimal cashAmount,
     BigDecimal cardAmount,
     BigDecimal vatAmount,
-    Long zReportId
+    Long zReportId,
+    ShiftSoldItemsReport soldItems
 ) {}

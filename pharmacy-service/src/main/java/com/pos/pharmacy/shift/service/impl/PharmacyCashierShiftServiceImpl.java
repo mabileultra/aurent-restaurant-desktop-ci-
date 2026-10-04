@@ -8,11 +8,13 @@ import com.pos.pharmacy.shift.domain.PharmacyShiftStatus;
 import com.pos.pharmacy.shift.dto.ClosePharmacyShiftRequest;
 import com.pos.pharmacy.shift.dto.OpenPharmacyShiftRequest;
 import com.pos.pharmacy.shift.dto.PharmacyShiftResponse;
+import com.pos.pharmacy.shift.dto.ShiftSoldItemsReport;
 import com.pos.pharmacy.shift.entity.PharmacyCashierShift;
 import com.pos.pharmacy.shift.repository.PharmacyCashierShiftRepository;
 import com.pos.pharmacy.shift.service.PharmacyCashierShiftService;
 import com.pos.pharmacy.shift.support.PharmacyShiftLookup;
 import com.pos.pharmacy.shift.support.PharmacyShiftResponseAssembler;
+import com.pos.pharmacy.shift.support.PharmacyShiftSoldItemsLoader;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
     private final PharmacyCashierShiftRepository shiftRepository;
     private final PharmacyShiftLookup shiftLookup;
     private final PharmacyShiftResponseAssembler assembler;
+    private final PharmacyShiftSoldItemsLoader soldItemsLoader;
 
     @Override
     @Transactional(readOnly = true)
@@ -135,13 +138,15 @@ public class PharmacyCashierShiftServiceImpl implements PharmacyCashierShiftServ
             shift.setComment(body.comment().trim());
         }
 
+        ShiftSoldItemsReport soldItems = soldItemsLoader.load(shift);
         LogUtil.info(
             PharmacyCashierShiftServiceImpl.class,
-            "Pharmacy shift closed: id={}, storeId={}",
+            "Pharmacy shift closed: id={}, storeId={}, items={}",
             shift.getId(),
-            shift.getStoreId()
+            shift.getStoreId(),
+            soldItems.items().size()
         );
-        return assembler.toResponse(shift);
+        return assembler.toResponse(shift, soldItems);
     }
 
     private static String blankToNull(String value) {

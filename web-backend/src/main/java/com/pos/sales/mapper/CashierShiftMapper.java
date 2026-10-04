@@ -2,6 +2,7 @@ package com.pos.sales.mapper;
 
 import com.pos.sales.dto.cashier.CashierShiftResponse;
 import com.pos.sales.dto.cashier.ShiftReportResponse;
+import com.pos.sales.dto.cashier.ShiftSoldItemsReport;
 import com.pos.sales.entity.CashierShift;
 import com.pos.sales.service.cashier.support.ShiftBannerAggregate;
 import com.pos.sales.service.cashier.support.ShiftReturnsAggregate;
@@ -129,6 +130,15 @@ public interface CashierShiftMapper {
     }
 
     default CashierShiftResponse toResponse(CashierShift shift, String storeName, ShiftBannerAggregate liveAggregate) {
+        return toResponse(shift, storeName, liveAggregate, null);
+    }
+
+    default CashierShiftResponse toResponse(
+        CashierShift shift,
+        String storeName,
+        ShiftBannerAggregate liveAggregate,
+        ShiftSoldItemsReport soldItems
+    ) {
         int saleCount = shift.getSaleCount();
         BigDecimal totalAmount = shift.getTotalAmount();
         BigDecimal cashAmount = shift.getCashAmount();
@@ -158,7 +168,8 @@ public interface CashierShiftMapper {
             cashAmount,
             cardAmount,
             vatAmount,
-            shift.getZReport() != null ? shift.getZReport().getId() : null
+            shift.getZReport() != null ? shift.getZReport().getId() : null,
+            soldItems
         );
     }
 }

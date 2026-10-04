@@ -3,6 +3,7 @@ package com.pos.sales.service.cashier.impl;
 import com.pos.sales.dto.cashier.CashierShiftResponse;
 import com.pos.sales.dto.cashier.FinalizeZReportResponse;
 import com.pos.sales.dto.cashier.ShiftReportResponse;
+import com.pos.sales.dto.cashier.ShiftSoldItemsReport;
 import com.pos.sales.dto.cashregister.RegisterTerminalRequest;
 import com.pos.sales.entity.CashRegister;
 import com.pos.sales.entity.CashierShift;
@@ -17,6 +18,7 @@ import com.pos.security.CurrentUserProvider;
 import com.pos.sales.service.cashier.CashierShiftService;
 import com.pos.sales.service.cashier.support.CashierShiftAccessPolicy;
 import com.pos.sales.service.cashier.support.CashierShiftAggregateLoader;
+import com.pos.sales.service.cashier.support.ShiftSoldItemsLoader;
 import com.pos.sales.service.cashier.support.ShiftBannerAggregate;
 import com.pos.sales.service.cashier.support.ShiftReturnsAggregate;
 import com.pos.service.support.CashierSaleSupport;
@@ -41,6 +43,7 @@ public class CashierShiftServiceImpl implements CashierShiftService {
     private final ZReportFromShiftService zReportFromShiftService;
     private final CashierShiftMapper cashierShiftMapper;
     private final CashierShiftAggregateLoader aggregateLoader;
+    private final ShiftSoldItemsLoader soldItemsLoader;
     private final CashierShiftAccessPolicy accessPolicy;
     private final CashRegisterTerminalService cashRegisterTerminalService;
 
@@ -143,19 +146,22 @@ public class CashierShiftServiceImpl implements CashierShiftService {
         if (shift.getStatus() == CashierShift.ShiftStatus.CLOSED) {
             throw new BadRequestException("Смена уже закрыта");
         }
-        ShiftReportResponse report = buildReport("Z", shift, Instant.now());
+        Instant reportAt = Instant.now();
+        ShiftReportResponse report = buildReport("Z", shift, reportAt);
         applyCloseTotals(shift, report);
         zReportFromShiftService.createForClosedShift(shift, report);
         CashierShift saved = cashierShiftRepository.save(shift);
+        ShiftSoldItemsReport soldItems = soldItemsLoader.load(shift, periodStart(shift), reportAt);
         LogUtil.info(
             CashierShiftServiceImpl.class,
-            "Shift closed: id={}, storeId={}, sales={}, total={}",
+            "Shift closed: id={}, storeId={}, sales={}, total={}, items={}",
             saved.getId(),
             saved.getStore().getId(),
             report.saleCount(),
-            report.totalAmount()
+            report.totalAmount(),
+            soldItems.items().size()
         );
-        return cashierShiftMapper.toResponse(saved, saved.getStore().getName(), null);
+        return cashierShiftMapper.toResponse(saved, saved.getStore().getName(), null, soldItems);
     }
 
     private ShiftReportResponse buildReport(String type, CashierShift shift, Instant reportAt) {

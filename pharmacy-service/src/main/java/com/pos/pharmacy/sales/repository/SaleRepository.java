@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -165,4 +166,10 @@ public interface SaleRepository extends JpaRepository<Sale, UUID> {
         ORDER BY s.createdAt ASC
         """)
     Page<Sale> findByStatusIn(@Param("statuses") Collection<com.pos.pharmacy.sales.domain.SaleEnums.SaleStatus> statuses, Pageable pageable);
+
+    @Query(value = PharmacyShiftSoldItemsSql.QUERY, nativeQuery = true)
+    List<Object[]> aggregateNetSoldByShift(
+        @Param("companyId") Integer companyId,
+        @Param("shiftId") UUID shiftId
+    );
 }

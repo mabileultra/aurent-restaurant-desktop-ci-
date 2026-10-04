@@ -24,6 +24,7 @@ import {
   resolveActiveShiftForModalAction,
   resolveShiftModalSession,
 } from '../utils/shiftModalSession';
+import { printSoldItemsOnShiftClose } from '../utils/shiftCloseItemsReport';
 
 export default function CashierShiftModal({
   open,
@@ -47,6 +48,7 @@ export default function CashierShiftModal({
   const [sessionShift, setSessionShift] = useState(null);
   const printAfterLoadRef = useRef(null);
   const openSeqRef = useRef(0);
+  const [itemsPrintBusy, setItemsPrintBusy] = useState(false);
 
   const queuePrint = (data) => {
     setPrintToken((n) => n + 1);
@@ -92,11 +94,19 @@ export default function CashierShiftModal({
     closeMutation.mutate(
       { shiftId: active.id, shift: active },
       {
-        onSuccess: (closedShift) => {
+        onSuccess: async (closedShift) => {
           setSessionOpen(false);
           setSessionShift(null);
           toast.success(t('pos.shiftClosedWithZReport'));
           onShiftUpdated?.(closedShift);
+          setItemsPrintBusy(true);
+          try {
+            await printSoldItemsOnShiftClose(closedShift, { storeName, cashierName, t });
+          } catch (err) {
+            toast.error(err?.message || t('receipt.printFailed'));
+          } finally {
+            setItemsPrintBusy(false);
+          }
           onClose();
         },
         onError: (e) =>
@@ -159,6 +169,7 @@ export default function CashierShiftModal({
     zMutation.isPending ||
     closeMutation.isPending ||
     openMutation.isPending ||
+    itemsPrintBusy ||
     Boolean(printReport);
 
   const handleXReport = () => {
