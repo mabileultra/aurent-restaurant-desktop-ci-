@@ -14,9 +14,10 @@ export function useRstReturnQtyState(sale, open) {
       setQtyByItemId({});
       return;
     }
+    // Default = full returnable qty so Confirm works immediately (cashiers expect one-tap return).
     const next = {};
     getReturnableLines(sale).forEach((line) => {
-      if (line.id) next[line.id] = 0;
+      if (line.id) next[line.id] = returnableQty(line);
     });
     setQtyByItemId(next);
   }, [open, sale?.id]);

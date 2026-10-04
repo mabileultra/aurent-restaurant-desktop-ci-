@@ -23,23 +23,27 @@ export default function StationsAdminPage() {
       </div>
 
       <form
-        className="rst-admin-form"
+        className="rst-admin-form rst-admin-board-card"
         onSubmit={(e) => {
           e.preventDefault();
           p.setKitchenBoard(!p.kitchenBoardEnabled);
         }}
       >
-        <div>
+        <div className="rst-admin-board-card__head">
           <h2 className="rst-coming__title">{p.t('rst.admin.kitchenBoardTitle')}</h2>
-          <p className="rst-coming__text mb-0">{p.t('rst.admin.kitchenBoardHint')}</p>
+          <p className="rst-coming__text">{p.t('rst.admin.kitchenBoardHint')}</p>
         </div>
-        <div className="rst-admin-form__actions">
-          <BaseButton type="submit" disabled={p.kitchenBoardSaving}>
-            {p.kitchenBoardEnabled ? p.t('rst.admin.kitchenBoardTurnOff') : p.t('rst.admin.kitchenBoardTurnOn')}
-          </BaseButton>
-          <span className="rst-admin-field__label">
+        <div className="rst-admin-board-card__row">
+          <span
+            className={`rst-admin-board-card__status${p.kitchenBoardEnabled ? ' is-on' : ' is-off'}`}
+          >
             {p.kitchenBoardEnabled ? p.t('rst.admin.kitchenBoardOn') : p.t('rst.admin.kitchenBoardOff')}
           </span>
+          <BaseButton type="submit" disabled={p.kitchenBoardSaving}>
+            {p.kitchenBoardEnabled
+              ? p.t('rst.admin.kitchenBoardTurnOff')
+              : p.t('rst.admin.kitchenBoardTurnOn')}
+          </BaseButton>
         </div>
       </form>
 

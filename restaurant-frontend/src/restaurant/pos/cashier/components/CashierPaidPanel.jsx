@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import CashierPaidReceiptsWorkspace from './CashierPaidReceiptsWorkspace';
 import CashierPaidReturnModal from './CashierPaidReturnModal';
 import CashierPanelBack from './CashierPanelBack';
 import { useCashierRecentSales } from '../hooks/useCashierRecentSales';
+import { getReturnableLines } from '../utils/rstReturnLines';
 import '../styles/cashier-sales-panel.css';
 
 /**
@@ -54,7 +56,13 @@ export default function CashierPaidPanel({ p }) {
           storeName={p.workspace.storeName}
           waiterNameById={p.waiterNameById}
           returnDisabled={!!returnSale}
-          onReturn={(sale) => setReturnSale(sale)}
+          onReturn={(sale) => {
+            if (!getReturnableLines(sale).length) {
+              toast.error(p.t('pos.returnNoItems'));
+              return;
+            }
+            setReturnSale(sale);
+          }}
           emptyText={p.t('rst.cashier.recentSalesEmpty')}
           t={p.t}
         />

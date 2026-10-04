@@ -96,6 +96,138 @@
   accent-color: var(--rst-accent, #ff7a1a);
 }
 
+/* Square toggle card — auto-print / kitchen board status */
+.rst-admin-toggle-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.5rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  border: 1.5px solid var(--rst-line);
+  border-radius: 10px;
+  background: var(--rst-surface-2);
+  cursor: pointer;
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.rst-admin-toggle-card:hover {
+  border-color: rgb(255 122 26 / 0.4);
+}
+
+.rst-admin-toggle-card.is-on {
+  border-color: var(--rst-accent);
+  background: linear-gradient(180deg, rgb(255 122 26 / 0.1), var(--rst-surface-2));
+  box-shadow: 0 0 0 1px rgb(255 122 26 / 0.2);
+}
+
+.rst-admin-toggle-card__input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.rst-admin-toggle-card__box {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-top: 0.05rem;
+  border: 2px solid var(--rst-line);
+  border-radius: 4px;
+  background: var(--rst-surface);
+  box-sizing: border-box;
+  transition: border-color 0.12s ease, background 0.12s ease;
+}
+
+.rst-admin-toggle-card.is-on .rst-admin-toggle-card__box {
+  border-color: var(--rst-accent);
+  background: var(--rst-accent);
+  box-shadow: inset 0 0 0 2px var(--rst-surface-2);
+}
+
+.rst-admin-toggle-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.rst-admin-toggle-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--rst-ink);
+  line-height: 1.25;
+}
+
+.rst-admin-toggle-card__hint {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--rst-muted);
+}
+
+.rst-admin-board-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.rst-admin-board-card__head {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.rst-admin-board-card__head .rst-coming__title {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.rst-admin-board-card__head .rst-coming__text {
+  margin: 0;
+  max-width: 42rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.rst-admin-board-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 0.85rem;
+}
+
+.rst-admin-board-card__status {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0.35rem 0.7rem;
+  border: 1.5px solid var(--rst-line);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--rst-muted);
+  background: var(--rst-surface-2);
+}
+
+.rst-admin-board-card__status.is-on {
+  border-color: rgb(34 197 94 / 0.55);
+  color: #86efac;
+  background: rgb(34 197 94 / 0.12);
+}
+
+.rst-admin-board-card__status.is-off {
+  border-color: rgb(248 113 113 / 0.45);
+  color: #fca5a5;
+  background: rgb(248 113 113 / 0.1);
+}
+
 .rst-admin-field .form-select,
 .rst-admin-field input,
 .rst-admin-filters .form-select,

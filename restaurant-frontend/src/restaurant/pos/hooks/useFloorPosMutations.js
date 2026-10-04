@@ -214,9 +214,8 @@ export function useFloorPosMutations(deps) {
       setSelectedModifierIds([]);
       setPendingItemNote?.('');
       setPendingWeightItem?.(null);
-      // Always refresh floor: waiter local orders must paint OCCUPIED before WAN sync.
-      invalidateFloor();
-      flushRestaurantPrintRelay();
+      // Floor board can wait a tick — don't hitch the check UI on every add.
+      window.setTimeout(() => invalidateFloor(), 0);
     },
     onError: (err, vars) => {
       qc.invalidateQueries({ queryKey: orderKeyFor(vars?.orderId) });

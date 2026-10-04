@@ -40,21 +40,27 @@ export default function MenuCategoriesAdminPage() {
               required
             />
           </label>
-          <div className="rst-admin-field rst-admin-field--check">
-            <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryAutoPrint')}</span>
-            <label className="rst-admin-check">
-              <input
-                type="checkbox"
-                checked={Boolean(p.form.autoPrint)}
-                onChange={(e) => p.setForm({
-                  ...p.form,
-                  autoPrint: e.target.checked,
-                  printPrinterName: e.target.checked ? p.form.printPrinterName : '',
-                })}
-              />
-              <span>{p.t('rst.admin.menuCategoryAutoPrintHint')}</span>
-            </label>
-          </div>
+          <label className={`rst-admin-toggle-card${p.form.autoPrint ? ' is-on' : ''}`}>
+            <input
+              type="checkbox"
+              className="rst-admin-toggle-card__input"
+              checked={Boolean(p.form.autoPrint)}
+              onChange={(e) => p.setForm({
+                ...p.form,
+                autoPrint: e.target.checked,
+                printPrinterName: e.target.checked ? p.form.printPrinterName : '',
+              })}
+            />
+            <span className="rst-admin-toggle-card__box" aria-hidden />
+            <span className="rst-admin-toggle-card__body">
+              <span className="rst-admin-toggle-card__title">
+                {p.t('rst.admin.menuCategoryAutoPrint')}
+              </span>
+              <span className="rst-admin-toggle-card__hint">
+                {p.t('rst.admin.menuCategoryAutoPrintHint')}
+              </span>
+            </span>
+          </label>
           {p.form.autoPrint ? (
             <label className="rst-admin-field">
               <span className="rst-admin-field__label">{p.t('rst.admin.menuCategoryPrinter')}</span>

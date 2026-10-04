@@ -106,7 +106,8 @@ export function buildRestaurantFiscalSale({
       taxRatePercent,
       ikpu: null,
       productSku: null,
-      isServiceLine: String(line.productId || '').startsWith('rst-service-'),
+      // Service + discount cart rows are not FloorOrderItem rows — never refundable.
+      isServiceLine: String(line.productId || '').startsWith('rst-'),
     };
   });
 

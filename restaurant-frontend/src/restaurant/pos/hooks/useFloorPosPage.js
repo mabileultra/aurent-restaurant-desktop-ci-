@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -21,6 +21,7 @@ import { ALL_HALLS_ID, collectHallTables } from '../utils/floorStatusFilters';
 import { orderPlaceholderFromFloor } from '../utils/orderFloorPlaceholder';
 import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
+import { optimisticAddItem } from '../utils/optimisticOrderPatch';
 import { useFloorPosMutations } from './useFloorPosMutations';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
@@ -83,8 +84,13 @@ export function useFloorPosPage() {
   const [paidReceipt, setPaidReceipt] = useState(null);
   const [payModalOpen, setPayModalOpen] = useState(false);
   const [draftTable, setDraftTable] = useState(null);
+  /** Instant check lines while first open+add still in flight (classic online). */
+  const [draftUiOrder, setDraftUiOrder] = useState(null);
+  const draftUiOrderRef = useRef(null);
   const draftTableRef = useRef(null);
   const openingRef = useRef(false);
+  /** Share one open() across rapid first taps on a free table. */
+  const openDraftPromiseRef = useRef(null);
 
   const channel = posMode === 'takeaway' ? 'TAKEAWAY' : posMode === 'delivery' ? 'DELIVERY' : null;
   const storeId = workspace.storeId;
@@ -239,7 +245,19 @@ export function useFloorPosPage() {
     return false;
   };
 
+  const paintDraftUi = (next) => {
+    draftUiOrderRef.current = next;
+    setDraftUiOrder(next);
+  };
+
   const clearDraft = () => {
+    draftTableRef.current = null;
+    setDraftTable(null);
+    paintDraftUi(null);
+  };
+
+  /** Keep table draft cleared after open, but leave painted lines until server order has items. */
+  const clearDraftTableOnly = () => {
     draftTableRef.current = null;
     setDraftTable(null);
   };
@@ -260,16 +278,18 @@ export function useFloorPosPage() {
   const beginDraftTable = (table) => {
     if (!access.canOpenOrder) {
       toast.error(t('rst.floor.noOpenPermission'));
-      return;
+      return false;
     }
-    if (!ensureShift()) return;
-    if (!table?.id) return;
+    if (!ensureShift()) return false;
+    if (!table?.id) return false;
     setReservedTable(null);
     setOpenTable(null);
     tableActions.closeInspect();
     draftTableRef.current = table;
     setDraftTable(table);
+    paintDraftUi(draftOrderFromTable(table));
     setActiveOrderId(null);
+    return true;
   };
 
   /** Reserved seat / explicit open — creates the order immediately. */
@@ -360,41 +380,59 @@ export function useFloorPosPage() {
 
   const ensureOrderId = async () => {
     if (activeOrderId) return activeOrderId;
+    if (openDraftPromiseRef.current) return openDraftPromiseRef.current;
     const table = draftTableRef.current;
     if (!table?.id) throw new Error('table required');
-    if (openingRef.current || m.openMutation.isPending) throw new Error('open pending');
     if (!access.canOpenOrder) {
       toast.error(t('rst.floor.noOpenPermission'));
       throw new Error('no permission');
     }
     if (!ensureShift()) throw new Error('shift required');
     openingRef.current = true;
-    try {
-      const created = await m.openMutation.mutateAsync({
-        table,
-        guestCount: 1,
-        childrenCount: 0,
-      });
-      clearDraft();
-      return created.id;
-    } finally {
-      openingRef.current = false;
-    }
+    openDraftPromiseRef.current = (async () => {
+      try {
+        const created = await m.openMutation.mutateAsync({
+          table,
+          guestCount: 1,
+          childrenCount: 0,
+        });
+        clearDraftTableOnly();
+        return created.id;
+      } finally {
+        openingRef.current = false;
+        openDraftPromiseRef.current = null;
+      }
+    })();
+    return openDraftPromiseRef.current;
   };
 
   const addToOrder = async (payload) => {
     try {
       const orderId = await ensureOrderId();
+      const painted = draftUiOrderRef.current;
+      if (painted?.items?.length) {
+        qc.setQueryData(['rst-order', orderId], {
+          ...painted,
+          id: orderId,
+          _draft: false,
+        });
+      }
       m.addItemMutation.mutate({ ...payload, orderId });
     } catch {
-      /* toast already shown */
+      /* toast already shown — reset draft paint to empty table check */
+      paintDraftUi(draftOrderFromTable(draftTableRef.current));
     }
   };
 
   const addItemNow = (menuItem, extras = {}) => {
     if (!menuItem) return;
     if (activeOrderId) {
-      if (!isOrderOpenLike(order)) return;
+      if (!isOrderOpenLike(order)) {
+        toast.error(t('rst.order.notOpen', {
+          defaultValue: 'Нельзя добавить блюдо в этот заказ',
+        }));
+        return;
+      }
       m.addItemMutation.mutate({
         menuItem,
         modifierOptionIds: extras.modifierOptionIds ?? [],
@@ -404,13 +442,41 @@ export function useFloorPosPage() {
       return;
     }
     if (!draftTableRef.current) return;
-    addToOrder({
-      menuItem,
+    const patch = {
       modifierOptionIds: extras.modifierOptionIds ?? [],
       note: extras.note ?? '',
       quantity: extras.quantity,
-    });
+    };
+    // Paint the check immediately; open+add continue in the background.
+    paintDraftUi(optimisticAddItem(
+      draftUiOrderRef.current || draftOrderFromTable(draftTableRef.current),
+      menuItem,
+      patch,
+    ));
+    void addToOrder({ menuItem, ...patch });
   };
+
+  useEffect(() => {
+    if (activeOrderId && (order?.items?.length || 0) > 0) {
+      paintDraftUi(null);
+    }
+  }, [activeOrderId, order?.items?.length]);
+
+  const orderForUi = useMemo(() => {
+    if (activeOrderId) {
+      if (order?.items?.length) return order;
+      if (draftUiOrder?.items?.length) {
+        return {
+          ...draftUiOrder,
+          id: activeOrderId,
+          orderNo: order?.orderNo ?? draftUiOrder.orderNo,
+          _draft: false,
+        };
+      }
+      return order;
+    }
+    return draftUiOrder || draftOrderFromTable(draftTable);
+  }, [activeOrderId, order, draftUiOrder, draftTable]);
 
   const handleAddItem = (menuItem) => {
     if (!menuItem) return;
@@ -530,9 +596,13 @@ export function useFloorPosPage() {
     clearDraft,
     draftTable,
     isDraftOrder: Boolean(draftTable && !activeOrderId),
-    orderForUi: activeOrderId ? order : draftOrderFromTable(draftTable),
-    draftHallName: draftTable
-      ? resolveOrderHallName(halls, { tableId: draftTable.id }, selectedHall?.name)
+    orderForUi,
+    draftHallName: (draftTable || draftUiOrder)
+      ? resolveOrderHallName(
+        halls,
+        { tableId: draftTable?.id ?? draftUiOrder?.tableId },
+        selectedHall?.name,
+      )
       : null,
     closeWeightPick: () => setPendingWeightItem(null),
     closeModifiers: () => {

@@ -157,6 +157,10 @@ export default function MenuPicker({ items, onAdd, onComposeFamily, t, qtyByMenu
                 if (onComposeFamily) onComposeFamily(family);
                 else if (family.multi) onAdd(family.variants[0]);
                 else onAdd(item);
+                // Brief flash, then settle on in-check — avoid sticky "burning" highlight.
+                window.setTimeout(() => {
+                  setFocusedId((cur) => (cur === family.key ? null : cur));
+                }, 180);
               }}
             >
               <div className="rst-menu-card__media">
