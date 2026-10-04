@@ -2,9 +2,12 @@ package com.pos.restaurant.print.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pos.restaurant.floor.entity.FloorHall;
+import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.menu.entity.MenuCategory;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.repository.MenuCategoryRepository;
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderItemStatus;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
@@ -137,6 +140,29 @@ class PrintJobPublisherTest {
         publisher.voidSlipsForItems(order, List.of(item));
 
         verify(repository, never()).save(any());
+    }
+
+    @Test
+    void guestBill_includesHallTableHeader() throws Exception {
+        FloorHall hall = FloorHall.builder().id(1).companyId(1).storeId(2).name("Asosiy zal").build();
+        FloorTable table = FloorTable.builder().id(10).companyId(1).storeId(2).code("2").hall(hall).build();
+        FloorOrder order = FloorOrder.builder()
+            .id(UUID.randomUUID())
+            .companyId(1)
+            .storeId(2)
+            .orderNo(729)
+            .channel(OrderChannel.DINE_IN)
+            .status(OrderStatus.OPEN)
+            .table(table)
+            .build();
+
+        publisher.guestBill(order);
+
+        RestaurantPrintJob job = captureJob();
+        assertThat(job.getKind()).isEqualTo(PrintJobKind.GUEST_BILL);
+        JsonNode payload = objectMapper.readTree(job.getPayload());
+        assertThat(payload.get("orderId").asText()).isEqualTo(order.getId().toString());
+        assertThat(payload.get("header").asText()).isEqualTo("Asosiy zal · Стол 2");
     }
 
     @Test
