@@ -80,7 +80,7 @@ export default function FloorTableGrid({
       />
 
       <div className="rst-floor-grid__main">
-        {schemaMode ? (
+        {mineMode && (schemaMode || onStatusFilter) ? (
           <div className="rst-floor-grid__toolbar rst-floor-grid__toolbar--compact">
             <div className="rst-floor-grid__toolbar-row rst-floor-grid__toolbar-row--filters">
               {sectionSwitch}

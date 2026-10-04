@@ -5,7 +5,13 @@ import { CASHIER_TABS } from '../utils/cashierNav';
 import { useRestaurantDesktopUpdate } from '../hooks/useRestaurantDesktopUpdate';
 import '../styles/cashier-nav-lookup.css';
 
-export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [], t }) {
+export default function CashierNavLookup({
+  activeTab,
+  onSelect,
+  disabledKeys = [],
+  tabs = CASHIER_TABS,
+  t,
+}) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
   const {
@@ -104,9 +110,11 @@ export default function CashierNavLookup({ activeTab, onSelect, disabledKeys = [
 
       {open ? (
         <div className="rst-cashier-nav-lookup__panel" role="menu">
-          {CASHIER_TABS.map((item) => {
+          {(tabs || CASHIER_TABS).map((item) => {
             const Icon = CASHIER_TAB_ICONS[item.key];
-            const active = activeTab === item.key || (item.key === 'hall' && !activeTab);
+            const active = activeTab === item.key
+              || (item.key === 'hall' && !activeTab)
+              || (item.key === 'tables' && (activeTab === 'tables' || !activeTab));
             return (
               <button
                 key={item.key}

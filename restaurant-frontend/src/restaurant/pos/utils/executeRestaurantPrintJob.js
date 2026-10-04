@@ -11,7 +11,7 @@ import {
   printTicketLines,
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
-import { kitchenTicketMetaLines } from './ticketLayout';
+import { kitchenTicketMetaLines, qtyNameRow } from './ticketLayout';
 import { resolvePrintWaiterName } from './printWaiterNames';
 
 function parsePayload(raw) {
@@ -63,9 +63,8 @@ async function localHasPrinterFast(printerName) {
 }
 
 function itemLines(item) {
-  const qty = Number(item.quantity) || 0;
   const portion = item.portionText ? ` (${item.portionText})` : '';
-  const lines = [`${qty}× ${item.name || ''}${portion}`];
+  const lines = [qtyNameRow(item.quantity, `${item.name || ''}${portion}`)];
   const mods = (item.modifiers || [])
     .map((m) => (typeof m === 'string' ? m : (m.name || m.optionName || '')))
     .filter(Boolean)

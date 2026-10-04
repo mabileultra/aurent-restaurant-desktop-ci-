@@ -13,6 +13,7 @@ import {
 
 export const CASHIER_TAB_ICONS = {
   hall: LayoutGrid,
+  tables: LayoutGrid,
   paid: Receipt,
   returns: Undo2,
   sales: ShoppingBag,

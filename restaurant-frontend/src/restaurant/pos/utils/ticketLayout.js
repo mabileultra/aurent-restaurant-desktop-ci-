@@ -18,9 +18,13 @@ export function moneyRow(label, amount, width = TICKET_WIDTH) {
   return padRow(label, fmtMoneyCompact(amount), width);
 }
 
+/** Kitchen / category slip line: name left, qty right (like guest bill rows). */
 export function qtyNameRow(qty, name, width = TICKET_WIDTH) {
   const q = Number(qty) || 0;
-  return `${q} x ${String(name || '').trim()}`.slice(0, width);
+  const qtyLabel = Number.isInteger(q) || Math.abs(q - Math.round(q)) < 0.0005
+    ? `×${Math.round(q)}`
+    : `×${q}`;
+  return padRow(String(name || '').trim(), qtyLabel, width);
 }
 
 export function ticketStamp(iso) {
