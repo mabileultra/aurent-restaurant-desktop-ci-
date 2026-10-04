@@ -18,11 +18,13 @@ public final class CashRegisterSpecifications {
     }
 
     /**
+     * @param storeId точный филиал (если задан)
      * @param storeSearch поиск по названию магазина (верхняя строка)
      * @param equipmentModel / equipmentSerial / fiscalCardId — из панели фильтров
      */
     public static Specification<CashRegister> filter(
         Integer companyId,
+        Integer storeId,
         String storeSearch,
         String equipmentModel,
         String equipmentSerial,
@@ -35,6 +37,10 @@ public final class CashRegisterSpecifications {
             parts.add(cb.isTrue(store.get("active")));
             parts.add(cb.isNotNull(store.get("company")));
             parts.add(TenantSpecifications.storeCompanyEqualsPredicate(store, cb, companyId));
+
+            if (storeId != null) {
+                parts.add(cb.equal(store.get("id"), storeId));
+            }
 
             String s = storeSearch != null ? storeSearch.trim() : "";
             if (StringUtils.hasText(s)) {

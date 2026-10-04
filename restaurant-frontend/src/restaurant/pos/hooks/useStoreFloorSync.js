@@ -32,10 +32,16 @@ export function useStoreFloorSync(storeId, { activeOrderId = null, syncKitchen =
 
     qc.invalidateQueries({ queryKey: ['rst-floor', storeId] });
     qc.invalidateQueries({ queryKey: ['rst-counter-orders', storeId] });
-    if (activeOrderId) {
-      qc.invalidateQueries({ queryKey: ['rst-order', activeOrderId] });
-    } else {
-      qc.invalidateQueries({ queryKey: ['rst-order'] });
+    // Skip order refetch while qty/remove mutations are in flight — otherwise a
+    // stale GET can put deleted lines back on the waiter ticket for a beat.
+    const lineMutating = activeOrderId != null
+      && qc.isMutating({ mutationKey: ['rst-order-line', activeOrderId] }) > 0;
+    if (!lineMutating) {
+      if (activeOrderId) {
+        qc.invalidateQueries({ queryKey: ['rst-order', activeOrderId] });
+      } else {
+        qc.invalidateQueries({ queryKey: ['rst-order'] });
+      }
     }
     if (syncKitchen) {
       qc.invalidateQueries({ queryKey: ['rst-kitchen-tickets', storeId] });

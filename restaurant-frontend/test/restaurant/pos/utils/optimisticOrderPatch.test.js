@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { optimisticAddItem } from '../../../../src/restaurant/pos/utils/optimisticOrderPatch';
+import {
+  optimisticAddItem,
+  optimisticRemoveItem,
+  optimisticUpdateQty,
+} from '../../../../src/restaurant/pos/utils/optimisticOrderPatch';
 
 const dish = { id: 'm1', name: 'BEHAMAD', price: 18000 };
 
@@ -127,5 +131,68 @@ describe('optimisticAddItem reorder merge', () => {
     expect(next.items).toHaveLength(2);
     expect(next.items[1].itemStatus).toBe('NEW');
     expect(next.items[1].quantity).toBe(1);
+  });
+});
+
+describe('optimisticRemoveItem / qty', () => {
+  it('drops NEW line from ticket immediately', () => {
+    const order = {
+      status: 'OPEN',
+      items: [
+        {
+          id: 'a',
+          menuItemId: 'm1',
+          quantity: 1,
+          unitPrice: 10000,
+          lineTotal: 10000,
+          itemStatus: 'NEW',
+        },
+        {
+          id: 'b',
+          menuItemId: 'm2',
+          quantity: 1,
+          unitPrice: 10000,
+          lineTotal: 10000,
+          itemStatus: 'NEW',
+        },
+      ],
+    };
+    const next = optimisticRemoveItem(order, 'a');
+    expect(next.items.map((r) => r.id)).toEqual(['b']);
+    expect(next.subtotal).toBe(10000);
+  });
+
+  it('drops kitchen line from ticket immediately (no CANCELLED ghost)', () => {
+    const order = {
+      status: 'OPEN',
+      items: [{
+        id: 'k1',
+        menuItemId: 'm1',
+        quantity: 1,
+        sentQuantity: 1,
+        unitPrice: 10000,
+        lineTotal: 10000,
+        itemStatus: 'SENT_TO_KITCHEN',
+      }],
+    };
+    const next = optimisticRemoveItem(order, 'k1');
+    expect(next.items).toHaveLength(0);
+    expect(next.subtotal).toBe(0);
+  });
+
+  it('qty to zero removes the line', () => {
+    const order = {
+      status: 'OPEN',
+      items: [{
+        id: 'i1',
+        menuItemId: 'm1',
+        quantity: 1,
+        unitPrice: 10000,
+        lineTotal: 10000,
+        itemStatus: 'NEW',
+      }],
+    };
+    const next = optimisticUpdateQty(order, 'i1', 0);
+    expect(next.items).toHaveLength(0);
   });
 });

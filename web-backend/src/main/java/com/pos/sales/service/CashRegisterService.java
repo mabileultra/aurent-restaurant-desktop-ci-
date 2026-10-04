@@ -11,6 +11,7 @@ import java.util.List;
 public interface CashRegisterService {
 
     PageResponse<CashRegisterRowResponse> list(
+        Integer storeId,
         String storeSearch,
         String equipmentModel,
         String equipmentSerial,

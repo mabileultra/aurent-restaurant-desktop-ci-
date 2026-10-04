@@ -240,7 +240,7 @@ export default function OrderWorkspace({
         </div>
 
         <OrderLines
-          items={order.items ?? []}
+          items={activeLines}
           onQty={onQty}
           onRemove={onRemove}
           onEditNote={onEditNote}

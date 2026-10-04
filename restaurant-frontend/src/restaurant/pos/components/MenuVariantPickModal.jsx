@@ -1,5 +1,5 @@
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
+import { formatVariantPortionLabel } from '../../shared/utils/formatMenuPortion';
 import { BaseButton } from '../../../components/ui';
 import RstOverlay from '../../shared/components/RstOverlay';
 import '../../shared/styles/rst-modal.css';
@@ -19,8 +19,12 @@ export default function MenuVariantPickModal({ variants, onClose, onPick, t }) {
         <p className="rst-modal__text">{t('rst.order.pickVariantHint')}</p>
         <div className="rst-item-compose__group rst-item-compose__group--size">
           <div className="rst-item-compose__options">
-            {list.map((item) => {
-              const portion = formatMenuPortion(item);
+            {list.map((item, index) => {
+              const portion = formatVariantPortionLabel(item, {
+                index,
+                count: list.length,
+                t,
+              });
               return (
                 <button
                   key={item.id}
@@ -28,8 +32,8 @@ export default function MenuVariantPickModal({ variants, onClose, onPick, t }) {
                   className="rst-item-compose__option rst-item-compose__option--size"
                   onClick={() => onPick(item)}
                 >
-                  <span>{portion || t('rst.admin.portionUnitPortion')}</span>
-                  <em>{fmtMoneyCompact(item.price)}</em>
+                  <span className="rst-item-compose__portion-label">{portion}</span>
+                  <em className="rst-item-compose__price">{fmtMoneyCompact(item.price)}</em>
                 </button>
               );
             })}

@@ -74,6 +74,14 @@ public final class MenuPortionFormat {
         return value.stripTrailingZeros().toPlainString();
     }
 
+    /** Persist up to 3 decimals without trailing zeros (1 → 1, not 1.000). */
+    public static BigDecimal normalizeAmount(BigDecimal value) {
+        if (value == null || value.signum() <= 0) {
+            return null;
+        }
+        return value.setScale(3, RoundingMode.HALF_UP).stripTrailingZeros();
+    }
+
     public static Integer gramsFromAmount(BigDecimal amount, MenuPortionUnit unit) {
         if (amount == null || amount.signum() <= 0 || unit == null) {
             return null;

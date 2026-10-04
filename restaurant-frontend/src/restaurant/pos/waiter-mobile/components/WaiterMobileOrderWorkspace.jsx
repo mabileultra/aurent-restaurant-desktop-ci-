@@ -205,7 +205,7 @@ export default function WaiterMobileOrderWorkspace({
         ) : (
           <>
             <OrderLines
-              items={order.items ?? []}
+              items={activeLines}
               onQty={onQty}
               onRemove={onRemove}
               onEditNote={onEditNote}

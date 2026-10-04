@@ -96,10 +96,7 @@ public class MenuItemCreateVariantHandler {
     }
 
     private static BigDecimal normalizeAmount(BigDecimal value) {
-        if (value == null || value.signum() <= 0) {
-            return null;
-        }
-        return value.setScale(3, RoundingMode.HALF_UP);
+        return MenuPortionFormat.normalizeAmount(value);
     }
 
     private static String blankToNull(String value) {

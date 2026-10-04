@@ -7,7 +7,10 @@ export default function RestaurantTaxSettingsPanel({
   cashRegisterId,
   registers,
   registersLoading,
+  registersError,
   onSelectRegister,
+  onCreateRegister,
+  creatingRegister,
   t,
 }) {
   const p = useRestaurantMultikassaSettings({
@@ -30,7 +33,7 @@ export default function RestaurantTaxSettingsPanel({
           className="form-select"
           value={cashRegisterId ?? ''}
           onChange={(e) => onSelectRegister(e.target.value)}
-          disabled={registersLoading}
+          disabled={registersLoading || registers.length === 0}
         >
           <option value="">{t('rst.integrations.selectRegister')}</option>
           {registers.map((row) => (
@@ -48,9 +51,26 @@ export default function RestaurantTaxSettingsPanel({
         <div className="rst-notice">
           {registersLoading
             ? t('common.loading')
-            : registers.length === 0
-              ? t('rst.integrations.noRegisters')
-              : t('rst.integrations.selectRegister')}
+            : registersError
+              ? t('rst.integrations.registersLoadFailed')
+              : registers.length === 0
+                ? (
+                  <>
+                    <p className="mb-2">{t('rst.integrations.noRegisters')}</p>
+                    {typeof onCreateRegister === 'function' ? (
+                      <BaseButton
+                        type="button"
+                        onClick={onCreateRegister}
+                        disabled={creatingRegister}
+                      >
+                        {creatingRegister
+                          ? t('common.saving')
+                          : t('rst.integrations.createRegister')}
+                      </BaseButton>
+                    ) : null}
+                  </>
+                  )
+                : t('rst.integrations.selectRegister')}
         </div>
       ) : p.isLoading ? (
         <div className="rst-empty">{t('common.loading')}</div>

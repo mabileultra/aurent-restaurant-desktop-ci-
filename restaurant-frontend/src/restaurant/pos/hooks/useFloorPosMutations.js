@@ -231,6 +231,7 @@ export function useFloorPosMutations(deps) {
   });
 
   const updateItemMutation = useMutation({
+    mutationKey: ['rst-order-line', activeOrderId],
     mutationFn: async ({ itemId, quantity, note }) => {
       if (String(itemId).startsWith('tmp-')) {
         return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
@@ -242,20 +243,25 @@ export function useFloorPosMutations(deps) {
     },
     onMutate: async ({ itemId, quantity }) => {
       if (quantity == null) return undefined;
-      await qc.cancelQueries({ queryKey: orderKeyFor(activeOrderId) });
+      const key = orderKeyFor(activeOrderId);
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData(key);
       patchOrder((order) => optimisticUpdateQty(order, itemId, quantity));
+      return { prev, key };
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
       qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
     },
-    onError: (err) => {
-      qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
+    onError: (err, _vars, ctx) => {
+      if (ctx?.prev && ctx?.key) qc.setQueryData(ctx.key, ctx.prev);
+      else qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
       errMsg(err, 'rst.order.saveFailed');
     },
   });
 
   const removeItemMutation = useMutation({
+    mutationKey: ['rst-order-line', activeOrderId],
     mutationFn: async (itemId) => {
       if (String(itemId).startsWith('tmp-')) {
         return Promise.resolve({ data: qc.getQueryData(orderKeyFor(activeOrderId)) });
@@ -263,15 +269,19 @@ export function useFloorPosMutations(deps) {
       return rstOrderApi.removeItem(activeOrderId, itemId);
     },
     onMutate: async (itemId) => {
-      await qc.cancelQueries({ queryKey: orderKeyFor(activeOrderId) });
+      const key = orderKeyFor(activeOrderId);
+      await qc.cancelQueries({ queryKey: key });
+      const prev = qc.getQueryData(key);
       patchOrder((order) => optimisticRemoveItem(order, itemId));
+      return { prev, key };
     },
     onSuccess: (res) => {
       if (res?.data) setOrderData(res);
       qc.invalidateQueries({ queryKey: ['rst-recent-cancelled-items'] });
     },
-    onError: (err) => {
-      qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
+    onError: (err, _itemId, ctx) => {
+      if (ctx?.prev && ctx?.key) qc.setQueryData(ctx.key, ctx.prev);
+      else qc.invalidateQueries({ queryKey: orderKeyFor(activeOrderId) });
       errMsg(err, 'rst.order.saveFailed');
     },
   });

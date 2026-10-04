@@ -52,6 +52,42 @@
   line-height: 1.35;
 }
 
+.rst-portion-amount {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  min-width: 0;
+}
+
+.rst-portion-amount__presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.rst-portion-amount__chip {
+  min-height: 2rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rst-line);
+  border-radius: 8px;
+  background: var(--rst-surface-2);
+  color: var(--rst-ink);
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.rst-portion-amount__chip:hover {
+  border-color: rgb(255 122 26 / 0.45);
+}
+
+.rst-portion-amount__chip.is-active {
+  border-color: var(--rst-accent);
+  background: rgb(255 122 26 / 0.16);
+  color: #fff;
+}
+
 .rst-admin-chip.is-locked {
   cursor: default;
   opacity: 0.95;

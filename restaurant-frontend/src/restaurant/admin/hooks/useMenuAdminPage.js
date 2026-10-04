@@ -8,6 +8,10 @@ import { rstModifierApi } from '../../api/modifier.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { readImageDataUrl } from '../../../utils/readImageDataUrl';
 import { toastApiError } from '../../../utils/apiError';
+import {
+  formatPortionAmountDisplay,
+  parsePortionAmountInput,
+} from '../../shared/utils/portionAmountInput';
 
 const emptyForm = () => ({
   name: '',
@@ -150,7 +154,12 @@ export function useMenuAdminPage() {
 
   const saveMutation = useMutation({
     mutationFn: () => {
-      const portionAmount = form.portionAmount === '' ? null : Number(form.portionAmount);
+      const portionAmount = form.portionAmount === ''
+        ? null
+        : parsePortionAmountInput(form.portionAmount);
+      if (form.portionAmount !== '' && portionAmount == null) {
+        throw new Error(t('rst.admin.portionAmountInvalid'));
+      }
       const portionUnit = portionAmount == null ? null : (form.portionUnit || 'PORTION');
       if (portionUnit === 'KG' && (!(portionAmount > 0) || portionAmount > 10)) {
         throw new Error(t('rst.admin.portionKgMaxError', {
@@ -199,13 +208,21 @@ export function useMenuAdminPage() {
   });
 
   const createVariantMutation = useMutation({
-    mutationFn: () => rstMenuApi.createVariant(variantSource.id, {
-      price: Number(variantForm.price),
-      portionAmount: variantForm.portionAmount === '' ? null : Number(variantForm.portionAmount),
-      portionUnit: variantForm.portionAmount === '' ? null : (variantForm.portionUnit || 'PORTION'),
-      portionLabel: variantForm.portionLabel.trim() || null,
-      sku: variantForm.sku.trim() || null,
-    }),
+    mutationFn: () => {
+      const portionAmount = variantForm.portionAmount === ''
+        ? null
+        : parsePortionAmountInput(variantForm.portionAmount);
+      if (variantForm.portionAmount !== '' && portionAmount == null) {
+        throw new Error(t('rst.admin.portionAmountInvalid'));
+      }
+      return rstMenuApi.createVariant(variantSource.id, {
+        price: Number(variantForm.price),
+        portionAmount,
+        portionUnit: portionAmount == null ? null : (variantForm.portionUnit || 'PORTION'),
+        portionLabel: variantForm.portionLabel.trim() || null,
+        sku: variantForm.sku.trim() || null,
+      });
+    },
     onSuccess: () => {
       toast.success(t('rst.admin.variantCreated'));
       setVariantSource(null);
@@ -248,10 +265,12 @@ export function useMenuAdminPage() {
       description: item.description ?? '',
       prepMinutes: item.prepMinutes == null ? '' : String(item.prepMinutes),
       portionAmount: item.portionAmount != null
-        ? String(item.portionAmount)
-        : (item.portionGrams != null ? String(item.portionGrams) : ''),
+        ? formatPortionAmountDisplay(item.portionAmount)
+        : (item.portionGrams != null && !item.portionUnit
+          ? String(Math.round(Number(item.portionGrams)))
+          : ''),
       portionUnit: item.portionUnit
-        || (item.portionGrams != null ? 'G' : 'PORTION'),
+        || (item.portionGrams != null && item.portionAmount == null ? 'G' : 'PORTION'),
       portionLabel: item.portionLabel ?? '',
       tags: item.tags ?? '',
       modifierGroupIds: item.modifierGroupIds ?? [],

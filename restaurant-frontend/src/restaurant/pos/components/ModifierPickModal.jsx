@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
-import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
+import { formatVariantPortionLabel } from '../../shared/utils/formatMenuPortion';
 import {
   canToggleModifierOption,
   validateModifierSelection,
@@ -86,11 +86,14 @@ export default function ModifierPickModal({
             <div className="rst-item-compose__addons-head">
               <strong>{t('rst.order.portionSection')}</strong>
             </div>
-            <p className="rst-modal__text mb-1">{t('rst.order.portionPickHint')}</p>
             <div className="rst-item-compose__options rst-item-compose__options--portion">
-              {variantList.map((variant) => {
+              {variantList.map((variant, index) => {
                 const active = variant.id === item.id;
-                const portion = formatMenuPortion(variant);
+                const portion = formatVariantPortionLabel(variant, {
+                  index,
+                  count: variantList.length,
+                  t,
+                });
                 return (
                   <button
                     key={variant.id}
@@ -103,10 +106,8 @@ export default function ModifierPickModal({
                       }
                     }}
                   >
-                    <span className="rst-item-compose__portion-label">
-                      {portion || t('rst.admin.portionUnitPortion')}
-                    </span>
-                    <em>{fmtMoneyCompact(variant.price)}</em>
+                    <span className="rst-item-compose__portion-label">{portion}</span>
+                    <em className="rst-item-compose__price">{fmtMoneyCompact(variant.price)}</em>
                   </button>
                 );
               })}

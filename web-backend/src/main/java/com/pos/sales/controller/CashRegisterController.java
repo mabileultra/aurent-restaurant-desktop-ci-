@@ -127,6 +127,7 @@ public class CashRegisterController {
     @Operation(summary = "Список касс", description = "Постраничный список кассовых аппаратов")
     @ApiResponse(responseCode = "200", description = "Список касс")
     public ResponseEntity<PageResponse<CashRegisterRowResponse>> list(
+        @RequestParam(required = false) Integer storeId,
         @RequestParam(required = false) String search,
         @RequestParam(required = false) String equipmentModel,
         @RequestParam(required = false) String equipmentSerial,
@@ -134,7 +135,7 @@ public class CashRegisterController {
         @PageableDefault(size = 14) Pageable pageable
     ) {
         return ResponseEntity.ok(
-            cashRegisterService.list(search, equipmentModel, equipmentSerial, fiscalCardId, pageable)
+            cashRegisterService.list(storeId, search, equipmentModel, equipmentSerial, fiscalCardId, pageable)
         );
     }
 }

@@ -42,6 +42,7 @@ public class CashRegisterServiceImpl implements CashRegisterService {
 
     @Override
     public PageResponse<CashRegisterRowResponse> list(
+        Integer storeId,
         String storeSearch,
         String equipmentModel,
         String equipmentSerial,
@@ -49,8 +50,11 @@ public class CashRegisterServiceImpl implements CashRegisterService {
         Pageable pageable
     ) {
         Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        if (storeId != null) {
+            requireAccessibleStore(storeId);
+        }
         var spec = CashRegisterSpecifications.filter(
-            companyId, storeSearch, equipmentModel, equipmentSerial, fiscalCardId
+            companyId, storeId, storeSearch, equipmentModel, equipmentSerial, fiscalCardId
         );
         Pageable sorted = pageable.getSort().isSorted()
             ? pageable

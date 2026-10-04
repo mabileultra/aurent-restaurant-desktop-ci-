@@ -1,5 +1,6 @@
 import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
 import RstModal from '../../shared/components/RstModal';
+import PortionAmountField from './PortionAmountField';
 
 export default function MenuVariantFormModal({ p }) {
   if (!p.variantSource) return null;
@@ -28,13 +29,12 @@ export default function MenuVariantFormModal({ p }) {
           value={f.price}
           onChange={(e) => p.setVariantForm({ ...f, price: e.target.value })}
         />
-        <BaseInput
+        <PortionAmountField
           label={p.t('rst.admin.portionAmount')}
-          type="text"
-          inputMode="decimal"
           value={f.portionAmount}
-          onChange={(e) => p.setVariantForm({ ...f, portionAmount: e.target.value.replace(',', '.') })}
-          placeholder="1 или 1.5"
+          unit={f.portionUnit}
+          onChange={(portionAmount) => p.setVariantForm({ ...f, portionAmount })}
+          t={p.t}
         />
         <BaseSelect
           size="sm"

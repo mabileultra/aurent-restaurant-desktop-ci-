@@ -143,12 +143,8 @@ export function optimisticUpdateQty(order, itemId, quantity) {
 
 export function optimisticRemoveItem(order, itemId) {
   if (!order || itemId == null) return order;
-  const items = (order.items || []).map((row) => {
-    if (String(row.id) !== String(itemId)) return row;
-    if (row.itemStatus === 'NEW' || String(row.id).startsWith('tmp-')) {
-      return null;
-    }
-    return { ...row, itemStatus: 'CANCELLED', lineTotal: 0, quantity: 0 };
-  }).filter(Boolean);
+  // Drop from the ticket immediately (NEW delete + kitchen refuse). Server truth
+  // arrives on mutation success; do not leave CANCELLED ghosts in the list UI.
+  const items = (order.items || []).filter((row) => String(row.id) !== String(itemId));
   return withSubtotal(order, items);
 }

@@ -39,7 +39,10 @@ export default function IntegrationsAdminPage() {
             cashRegisterId={p.cashRegisterId}
             registers={p.registers}
             registersLoading={p.registersLoading}
+            registersError={p.registersError}
             onSelectRegister={p.setCashRegisterId}
+            onCreateRegister={p.createRegister}
+            creatingRegister={p.creatingRegister}
             t={p.t}
           />
         </div>

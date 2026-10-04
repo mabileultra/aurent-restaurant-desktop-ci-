@@ -49,4 +49,14 @@ class MenuPortionFormatTest {
     void emptyWhenMissing() {
         assertNull(MenuPortionFormat.display(null, null, null, null));
     }
+
+    @Test
+    void normalizeAmountStripsTrailingZeros() {
+        assertEquals("1", MenuPortionFormat.normalizeAmount(new BigDecimal("1.000")).toPlainString());
+        assertEquals("1.5", MenuPortionFormat.normalizeAmount(new BigDecimal("1.500")).toPlainString());
+        assertEquals("0.7", MenuPortionFormat.normalizeAmount(new BigDecimal("0.700")).toPlainString());
+        assertEquals("1.001", MenuPortionFormat.normalizeAmount(new BigDecimal("1.001")).toPlainString());
+        assertNull(MenuPortionFormat.normalizeAmount(null));
+        assertNull(MenuPortionFormat.normalizeAmount(BigDecimal.ZERO));
+    }
 }
