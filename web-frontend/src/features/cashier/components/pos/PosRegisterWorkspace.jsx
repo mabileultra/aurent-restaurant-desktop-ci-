@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import PosCatalogPanel from '../PosCatalogPanel';
 import PosOrderPanel from '../PosOrderPanel';
 import PosCustomerCardModal from '../pos-order-panel/PosCustomerCardModal';
 import CashierRegisterShell from '../shell/CashierRegisterShell';
 import { ALL_CATEGORY_ID } from '../../hooks/usePosCatalogPanel';
 import { useCartStore } from '../../../../store/cartStore';
+import { nextRegisterScanBurst } from './registerScanBurst';
 
 export default function PosRegisterWorkspace({
   posPane,
@@ -72,7 +73,9 @@ export default function PosRegisterWorkspace({
   const { checkoutMutation, handleConfirmPayment } = checkout;
   const ensureCheckNo = useCartStore((s) => s.ensureCheckNo);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [hidePickerForScan, setHidePickerForScan] = useState(false);
   const [customerCardOpen, setCustomerCardOpen] = useState(false);
+  const scanBurstRef = useRef({ at: 0, len: 0, burst: false });
 
   useEffect(() => {
     if (!checkNo) ensureCheckNo();
@@ -93,11 +96,24 @@ export default function PosRegisterWorkspace({
 
   const handleSearchChange = useCallback(
     (value) => {
+      const next = nextRegisterScanBurst(scanBurstRef.current, value);
+      scanBurstRef.current = next;
       setSearch(value);
+      if (next.burst) {
+        setHidePickerForScan(true);
+        setPickerOpen(false);
+        return;
+      }
+      setHidePickerForScan(false);
       if (String(value).trim()) openPicker();
     },
     [openPicker, setSearch]
   );
+
+  useEffect(() => {
+    if (String(search).trim()) return;
+    setHidePickerForScan(false);
+  }, [search]);
 
   const handleQuickFilter = useCallback(
     (categoryId) => {
@@ -130,7 +146,7 @@ export default function PosRegisterWorkspace({
   );
 
   const showRegisterFinder = posPane === 'register';
-  const pickerVisible = pickerOpen || searchActive;
+  const pickerVisible = !hidePickerForScan && (pickerOpen || searchActive);
 
   return (
     <CashierRegisterShell
