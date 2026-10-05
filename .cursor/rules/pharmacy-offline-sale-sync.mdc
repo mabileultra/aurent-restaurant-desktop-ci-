@@ -1,0 +1,22 @@
+---
+description: Pharmacy offline sale batch must not fail the whole HTTP request
+globs:
+  - pharmacy-service/**/sync/**
+alwaysApply: false
+---
+
+# Pharmacy offline sale sync
+
+`POST /pharmacy/sync/sales/batch` returns one result per sale. A bad sale must not turn the request into HTTP 500.
+
+## Invariants
+
+1. `PharmacyCashierSyncService.syncSalesBatch` is not `@Transactional`. The loop must not share one database transaction.
+2. Each sale is saved by `PharmacyOfflineSaleSync.sync` in `REQUIRES_NEW`. That method does not catch exceptions.
+3. The batch catches outside that transaction and returns `FAILED` for that `clientSaleId`, then continues with the next sale.
+
+## Do not
+
+- Wrap the batch loop in `@Transactional` and catch inside it. Spring marks the transaction rollback-only and the commit becomes HTTP 500, so the cash register retries the same queue forever.
+- Catch inside `PharmacyOfflineSaleSync.sync`.
+---

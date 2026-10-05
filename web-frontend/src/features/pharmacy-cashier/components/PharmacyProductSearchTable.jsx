@@ -13,7 +13,6 @@ import {
   productRequiresPrescription,
   productSellByUnitHint,
   productShelfLifeDays,
-  productStorageLocation,
 } from '../utils/pharmacyProductMeta';
 import {
   formatMarkedLabel,
@@ -25,7 +24,6 @@ import {
 import {
   pharmacyCellToneClass,
   pharmacyExpiryTone,
-  pharmacyShelfTone,
   pharmacyStockTone,
 } from '../utils/pharmacyCellTone';
 import '../styles/pharmacy-search-table.css';
@@ -121,7 +119,6 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 <th>{t('pharmacyCashier.colName')}</th>
                 <th>{t('pharmacyCashier.colForm')}</th>
                 <th>{t('pharmacyCashier.colCountry')}</th>
-                <th>{t('pharmacyCashier.colShelf')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPrice')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colStock')}</th>
                 <th className="pharmacy-search__num">{t('pharmacyCashier.colPack')}</th>
@@ -141,12 +138,10 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const disabled = outOfStock || inactive || productsStale;
                 const form = productDosageForm(product) || '—';
                 const country = productCountry(product) || '—';
-                const shelf = productStorageLocation(product) || '—';
                 const batch = productBatch(product) || '—';
                 const expiryDate = formatExpiryDisplay(productExpiry(product));
                 const sellByUnit = productSellByUnitHint(product);
                 const stockTone = disabled ? null : pharmacyStockTone(product);
-                const shelfTone = disabled ? null : pharmacyShelfTone(product);
                 const expiryTone = disabled ? null : pharmacyExpiryTone(product);
                 const needsRx = productRequiresPrescription(product);
                 const daysLeft = daysUntilExpiry(productExpiry(product));
@@ -155,7 +150,7 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                 const mxik = productIkpu(product) || '—';
                 const ikpu = productPackageCode(product) || productIkpu(product) || '—';
                 const packCode = productPackageCode(product);
-                const pack = formatUnitsInPackCell(product) || '—';
+                const unitsInPack = formatUnitsInPackCell(product) || '—';
                 const marked = productIsMarked(product);
                 const marking = formatMarkedLabel(
                   product,
@@ -200,14 +195,6 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                     <td className="pharmacy-search__mono pharmacy-search__clip" title={country}>
                       <span className="pharmacy-search__cell-text">{country}</span>
                     </td>
-                    <td
-                      className={[
-                        'pharmacy-search__mono',
-                        pharmacyCellToneClass(shelfTone, 'pharmacy-search__cell'),
-                      ].filter(Boolean).join(' ')}
-                    >
-                      <span className="pharmacy-search__badge">{shelf}</span>
-                    </td>
                     <td className="pharmacy-search__num">
                       {fmt(resolveProductUnitPrice(product, storeId))}
                     </td>
@@ -221,8 +208,8 @@ const PharmacyProductSearchTable = forwardRef(function PharmacyProductSearchTabl
                         {formatQty(product.stockQuantity ?? 0, product.saleType, product.unitCode)}
                       </span>
                     </td>
-                    <td className="pharmacy-search__num pharmacy-search__mono" title={pack}>
-                      <span className="pharmacy-search__cell-text">{pack}</span>
+                    <td className="pharmacy-search__num pharmacy-search__mono" title={unitsInPack}>
+                      <span className="pharmacy-search__cell-text">{unitsInPack}</span>
                     </td>
                     <td
                       className={[

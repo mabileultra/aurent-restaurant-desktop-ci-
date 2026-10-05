@@ -31,6 +31,7 @@ import {
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
+import { buildPharmacyShiftPrintReport } from '../../features/cashier/utils/buildPharmacyShiftPrintReport';
 
 function connectivityState() {
   return useConnectivityStore.getState();
@@ -379,19 +380,12 @@ export async function posXReport(shiftId, storeId, user, shiftHint = null, { cat
   }
   if (catalogKind === 'pharmacy') {
     // Pharmacy owns shifts; X print uses Multikassa fiscal + shift aggregates (no PosCore x-report).
-    return {
-      shiftId,
-      storeId,
+    return buildPharmacyShiftPrintReport(shiftHint || { storeId }, {
+      reportType: 'X',
       storeName: shiftHint?.storeName || '',
       cashierName: user?.fullName || user?.username || shiftHint?.cashierName || '',
-      saleCount: shiftHint?.saleCount ?? 0,
-      totalAmount: shiftHint?.totalAmount ?? 0,
-      cashAmount: shiftHint?.cashAmount ?? 0,
-      cardAmount: shiftHint?.cardAmount ?? 0,
-      vatAmount: shiftHint?.vatAmount ?? 0,
-      openedAt: shiftHint?.openedAt || null,
-      kind: 'X',
-    };
+      reportAt: new Date().toISOString(),
+    });
   }
   return cashierShiftApi.xReport(shiftId).then((r) => r.data);
 }

@@ -5,13 +5,10 @@ import com.pos.pharmacy.catalog.service.ProductCatalogService;
 import com.pos.pharmacy.common.PageResponse;
 import com.pos.pharmacy.exception.PharmacyErrors;
 import com.pos.pharmacy.exception.errorcode.PharmacyCommonErrors;
-import com.pos.pharmacy.sales.dto.SaleResponse;
-import com.pos.pharmacy.sales.repository.SaleRepository;
-import com.pos.pharmacy.sales.service.PharmacySaleCheckoutService;
-import com.pos.pharmacy.sales.support.OfflineSaleContext;
 import com.pos.pharmacy.security.PharmacyTenantContext;
 import com.pos.pharmacy.shift.support.PharmacyShiftLookup;
 import com.pos.pharmacy.sync.dto.*;
+import com.pos.pharmacy.sync.support.PharmacyOfflineSaleSync;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -32,9 +29,8 @@ public class PharmacyCashierSyncService {
     private static final int BOOTSTRAP_PAGE_SIZE = 500;
 
     private final ProductCatalogService productCatalogService;
-    private final PharmacySaleCheckoutService checkoutService;
-    private final SaleRepository saleRepository;
     private final PharmacyShiftLookup shiftLookup;
+    private final PharmacyOfflineSaleSync offlineSaleSync;
 
     @Transactional(readOnly = true)
     public PharmacySyncBootstrapResponse bootstrap(Integer storeId) {
@@ -96,7 +92,6 @@ public class PharmacyCashierSyncService {
         );
     }
 
-    @Transactional
     public OfflineSalesBatchResponse syncSalesBatch(OfflineSalesBatchRequest request, UUID cashierId) {
         if (cashierId == null) {
             throw PharmacyErrors.of(PharmacyCommonErrors.PHARM_CASHIER_REQUIRED);
@@ -110,15 +105,7 @@ public class PharmacyCashierSyncService {
 
     private OfflineSaleSyncResult syncOneSale(OfflineSaleSyncItem item, UUID cashierId) {
         try {
-            return saleRepository.findByClientSaleId(item.clientSaleId())
-                .map(existing -> new OfflineSaleSyncResult(
-                    item.clientSaleId(),
-                    existing.getId(),
-                    existing.getReceiptNumber(),
-                    "ALREADY_EXISTS",
-                    null
-                ))
-                .orElseGet(() -> createOfflineSale(item, cashierId));
+            return offlineSaleSync.sync(item, cashierId);
         } catch (Exception ex) {
             LogUtil.warn(
                 PharmacyCashierSyncService.class,
@@ -134,21 +121,5 @@ public class PharmacyCashierSyncService {
                 ex.getMessage()
             );
         }
-    }
-
-    private OfflineSaleSyncResult createOfflineSale(OfflineSaleSyncItem item, UUID cashierId) {
-        OfflineSaleContext offline = new OfflineSaleContext(
-            item.clientSaleId(),
-            item.offlineDeviceId(),
-            item.createdAt()
-        );
-        SaleResponse created = checkoutService.processSale(item.sale(), cashierId, offline);
-        return new OfflineSaleSyncResult(
-            item.clientSaleId(),
-            created.id(),
-            created.receiptNumber(),
-            "CREATED",
-            null
-        );
     }
 }

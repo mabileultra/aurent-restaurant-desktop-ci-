@@ -4,14 +4,28 @@ vi.mock('./printShiftItemsReceipt', () => ({
   printShiftItemsReceipt: vi.fn(),
 }));
 
+vi.mock('../../../services/cashierEscpos', () => ({
+  isCashierEscposReportPrintAvailable: vi.fn(() => true),
+  printReportEscpos: vi.fn(),
+}));
+
 const { printShiftItemsReceipt } = await import('./printShiftItemsReceipt');
-const { printSoldItemsOnShiftClose, shiftCloseItemsReport } = await import('./shiftCloseItemsReport');
+const { isCashierEscposReportPrintAvailable, printReportEscpos } = await import('../../../services/cashierEscpos');
+const {
+  printSoldItemsOnShiftClose,
+  printPharmacyCloseReports,
+  shiftCloseItemsReport,
+} = await import('./shiftCloseItemsReport');
 
 const items = [{ name: 'Молоко', quantity: 2, amount: 14000 }];
 
 beforeEach(() => {
   printShiftItemsReceipt.mockReset();
   printShiftItemsReceipt.mockResolvedValue({ mode: 'silent' });
+  printReportEscpos.mockReset();
+  printReportEscpos.mockResolvedValue({ ok: true });
+  isCashierEscposReportPrintAvailable.mockReset();
+  isCashierEscposReportPrintAvailable.mockReturnValue(true);
 });
 
 describe('shiftCloseItemsReport', () => {
@@ -83,5 +97,52 @@ describe('printSoldItemsOnShiftClose', () => {
     await expect(printSoldItemsOnShiftClose({
       soldItems: { items, from: 'a', to: 'b' },
     }, {})).rejects.toThrow('принтер занят');
+  });
+});
+
+describe('printPharmacyCloseReports', () => {
+  it('prints Z first then the sold-items slip', async () => {
+    const closed = {
+      id: 'shift-1',
+      storeName: 'Аптека',
+      cashierName: 'Азиза',
+      openedAt: '2026-10-05T05:00:00Z',
+      closedAt: '2026-10-05T13:00:00Z',
+      saleCount: 2,
+      totalAmount: 20000,
+      cashAmount: 10000,
+      cardAmount: 10000,
+      vatAmount: 2000,
+      soldItems: { from: 'a', to: 'b', items },
+    };
+
+    const order = [];
+    printReportEscpos.mockImplementation(async () => {
+      order.push('z');
+      return { ok: true };
+    });
+    printShiftItemsReceipt.mockImplementation(async () => {
+      order.push('items');
+      return { mode: 'silent' };
+    });
+
+    const res = await printPharmacyCloseReports(closed, { t: (k) => k });
+
+    expect(order).toEqual(['z', 'items']);
+    expect(res.zPrinted).toBe(true);
+    expect(res.items).toEqual({ printed: true, mode: 'silent' });
+    expect(printReportEscpos.mock.calls[0][0].shiftReport.reportType).toBe('Z');
+  });
+
+  it('still prints sold items when ESC/POS reports are unavailable', async () => {
+    isCashierEscposReportPrintAvailable.mockReturnValue(false);
+    const res = await printPharmacyCloseReports({
+      soldItems: { from: 'a', to: 'b', items },
+      saleCount: 1,
+    }, { t: (k) => k });
+
+    expect(res.zPrinted).toBe(false);
+    expect(printReportEscpos).not.toHaveBeenCalled();
+    expect(res.items.printed).toBe(true);
   });
 });
