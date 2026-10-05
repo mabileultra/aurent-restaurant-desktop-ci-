@@ -24,7 +24,7 @@ import {
   resolveActiveShiftForModalAction,
   resolveShiftModalSession,
 } from '../utils/shiftModalSession';
-import { printSoldItemsOnShiftClose, printPharmacyCloseReports } from '../utils/shiftCloseItemsReport';
+import { printCloseShiftReports } from '../utils/shiftCloseItemsReport';
 
 export default function CashierShiftModal({
   open,
@@ -101,11 +101,7 @@ export default function CashierShiftModal({
           onShiftUpdated?.(closedShift);
           setItemsPrintBusy(true);
           try {
-            if (isPharmacy) {
-              await printPharmacyCloseReports(closedShift, { storeName, cashierName, t });
-            } else {
-              await printSoldItemsOnShiftClose(closedShift, { storeName, cashierName, t });
-            }
+            await printCloseShiftReports(closedShift, { storeName, cashierName, t });
           } catch (err) {
             toast.error(err?.message || t('receipt.printFailed'));
           } finally {

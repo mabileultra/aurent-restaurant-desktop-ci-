@@ -13,7 +13,7 @@ const { printShiftItemsReceipt } = await import('./printShiftItemsReceipt');
 const { isCashierEscposReportPrintAvailable, printReportEscpos } = await import('../../../services/cashierEscpos');
 const {
   printSoldItemsOnShiftClose,
-  printPharmacyCloseReports,
+  printCloseShiftReports,
   shiftCloseItemsReport,
 } = await import('./shiftCloseItemsReport');
 
@@ -100,11 +100,11 @@ describe('printSoldItemsOnShiftClose', () => {
   });
 });
 
-describe('printPharmacyCloseReports', () => {
-  it('prints Z first then the sold-items slip', async () => {
+describe('printCloseShiftReports', () => {
+  it('prints Z first then the sold-items slip for pharmacy and grocery', async () => {
     const closed = {
       id: 'shift-1',
-      storeName: 'Аптека',
+      storeName: 'Магазин',
       cashierName: 'Азиза',
       openedAt: '2026-10-05T05:00:00Z',
       closedAt: '2026-10-05T13:00:00Z',
@@ -126,7 +126,7 @@ describe('printPharmacyCloseReports', () => {
       return { mode: 'silent' };
     });
 
-    const res = await printPharmacyCloseReports(closed, { t: (k) => k });
+    const res = await printCloseShiftReports(closed, { t: (k) => k });
 
     expect(order).toEqual(['z', 'items']);
     expect(res.zPrinted).toBe(true);
@@ -136,7 +136,7 @@ describe('printPharmacyCloseReports', () => {
 
   it('still prints sold items when ESC/POS reports are unavailable', async () => {
     isCashierEscposReportPrintAvailable.mockReturnValue(false);
-    const res = await printPharmacyCloseReports({
+    const res = await printCloseShiftReports({
       soldItems: { from: 'a', to: 'b', items },
       saleCount: 1,
     }, { t: (k) => k });

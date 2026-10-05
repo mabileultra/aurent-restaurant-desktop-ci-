@@ -21,7 +21,7 @@ After pharmacy cutover, shifts live in **pharmacy-service**; Multikassa settings
 4. **Cashier Multikassa UI** may open settings using `shift.cashRegisterId ?? caps.cashRegisterId` (and terminal register as last resort). Never require only grocery `CashierShift`.
 5. **Guard** (`MultikassaCashierRegisterGuard`): cashiers without grocery open shift may still configure Multikassa for a store they can sell at (pharmacy path). Do not restore “grocery shift only”.
 6. **Fiscal open already open** (`posOpenShift`): if Multikassa says the fiscal shift is already open, keep the POS shift. Do not `close` it as rollback — that loop shows «откройте смену», then «смена открыта», and the row is CLOSED ~1s later. A register without Multikassa must still open normally.
-7. **Pharmacy X/Z print**: payload must use `reportType` (`X`/`Z`), never `kind`. On pharmacy close print Z totals first, then the sold-items slip (`printPharmacyCloseReports`).
+7. **Shift close print (pharmacy + grocery)**: X/Z payload must use `reportType` (`X`/`Z`), never `kind`. On close print Z totals first, then the sold-items slip (`printCloseShiftReports`).
 
 ## Do not
 

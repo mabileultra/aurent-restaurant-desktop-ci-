@@ -1,8 +1,8 @@
 /**
- * Pharmacy X/Z print payload for ESC/POS / ShiftReportPrintBody.
+ * X/Z print payload for ESC/POS / ShiftReportPrintBody (pharmacy + grocery).
  * Must use `reportType` (not `kind`) — desktop validateShiftReportPayload requires it.
  */
-export function buildPharmacyShiftPrintReport(shift, {
+export function buildShiftPrintReport(shift, {
   reportType,
   storeName,
   cashierName,
@@ -38,3 +38,6 @@ export function buildPharmacyShiftPrintReport(shift, {
     returnsVat: shift.returnsVat ?? 0,
   };
 }
+
+/** @deprecated use buildShiftPrintReport */
+export const buildPharmacyShiftPrintReport = buildShiftPrintReport;

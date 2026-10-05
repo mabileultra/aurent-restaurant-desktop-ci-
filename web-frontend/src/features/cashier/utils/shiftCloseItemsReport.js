@@ -2,7 +2,7 @@ import {
   isCashierEscposReportPrintAvailable,
   printReportEscpos,
 } from '../../../services/cashierEscpos';
-import { buildPharmacyShiftPrintReport } from './buildPharmacyShiftPrintReport';
+import { buildShiftPrintReport } from './buildShiftPrintReport';
 import { printShiftItemsReceipt } from './printShiftItemsReceipt';
 
 /**
@@ -29,11 +29,10 @@ export async function printSoldItemsOnShiftClose(closedShift, { storeName, cashi
 }
 
 /**
- * Pharmacy close: Z totals first, then sold-items slip.
- * Z uses shift aggregates (pharmacy has no grocery finalizeZReport button).
+ * Close shift print for pharmacy and grocery: Z totals first, then sold-items slip.
  */
-export async function printPharmacyCloseReports(closedShift, { storeName, cashierName, t } = {}) {
-  const zReport = buildPharmacyShiftPrintReport(closedShift, {
+export async function printCloseShiftReports(closedShift, { storeName, cashierName, t } = {}) {
+  const zReport = buildShiftPrintReport(closedShift, {
     reportType: 'Z',
     storeName,
     cashierName,
@@ -46,3 +45,6 @@ export async function printPharmacyCloseReports(closedShift, { storeName, cashie
   const items = await printSoldItemsOnShiftClose(closedShift, { storeName, cashierName, t });
   return { zPrinted, items };
 }
+
+/** @deprecated use printCloseShiftReports */
+export const printPharmacyCloseReports = printCloseShiftReports;

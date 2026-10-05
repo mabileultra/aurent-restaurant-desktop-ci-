@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { buildPharmacyShiftPrintReport } from './buildPharmacyShiftPrintReport';
+import { buildShiftPrintReport } from './buildShiftPrintReport';
 
-describe('buildPharmacyShiftPrintReport', () => {
+describe('buildShiftPrintReport', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-10-05T12:00:00.000Z'));
   });
 
   it('maps shift totals with reportType X', () => {
-    const report = buildPharmacyShiftPrintReport({
+    const report = buildShiftPrintReport({
       id: 's1',
       storeId: 30,
       storeName: 'Аптека',
@@ -36,7 +36,7 @@ describe('buildPharmacyShiftPrintReport', () => {
   });
 
   it('uses closedAt as Z reportAt and modal name fallbacks', () => {
-    const report = buildPharmacyShiftPrintReport({
+    const report = buildShiftPrintReport({
       id: 's2',
       closedAt: '2026-10-05T11:00:00Z',
       saleCount: 1,
@@ -56,7 +56,7 @@ describe('buildPharmacyShiftPrintReport', () => {
   });
 
   it('rejects missing shift or invalid reportType', () => {
-    expect(buildPharmacyShiftPrintReport(null, { reportType: 'Z' })).toBeNull();
-    expect(buildPharmacyShiftPrintReport({ id: 1 }, { reportType: 'kind' })).toBeNull();
+    expect(buildShiftPrintReport(null, { reportType: 'Z' })).toBeNull();
+    expect(buildShiftPrintReport({ id: 1 }, { reportType: 'kind' })).toBeNull();
   });
 });
