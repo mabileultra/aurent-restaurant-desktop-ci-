@@ -38,12 +38,17 @@ export async function printCloseShiftReports(closedShift, { storeName, cashierNa
     cashierName,
   });
   let zPrinted = false;
+  let zError = null;
   if (zReport && isCashierEscposReportPrintAvailable()) {
-    await printReportEscpos({ shiftReport: zReport, t });
-    zPrinted = true;
+    try {
+      await printReportEscpos({ shiftReport: zReport, t });
+      zPrinted = true;
+    } catch (err) {
+      zError = err;
+    }
   }
   const items = await printSoldItemsOnShiftClose(closedShift, { storeName, cashierName, t });
-  return { zPrinted, items };
+  return { zPrinted, zError, items };
 }
 
 /** @deprecated use printCloseShiftReports */

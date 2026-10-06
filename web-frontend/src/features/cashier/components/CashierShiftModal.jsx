@@ -101,7 +101,8 @@ export default function CashierShiftModal({
           onShiftUpdated?.(closedShift);
           setItemsPrintBusy(true);
           try {
-            await printCloseShiftReports(closedShift, { storeName, cashierName, t });
+            const printed = await printCloseShiftReports(closedShift, { storeName, cashierName, t });
+            if (printed.zError) toast.error(printed.zError.message || t('receipt.printFailed'));
           } catch (err) {
             toast.error(err?.message || t('receipt.printFailed'));
           } finally {

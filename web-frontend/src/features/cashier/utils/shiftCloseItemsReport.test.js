@@ -145,4 +145,17 @@ describe('printCloseShiftReports', () => {
     expect(printReportEscpos).not.toHaveBeenCalled();
     expect(res.items.printed).toBe(true);
   });
+
+  it('prints sold items even when Z print fails', async () => {
+    printReportEscpos.mockRejectedValue(new Error('принтер занят'));
+    const res = await printCloseShiftReports({
+      soldItems: { from: 'a', to: 'b', items },
+      saleCount: 1,
+    }, { t: (k) => k });
+
+    expect(res.zPrinted).toBe(false);
+    expect(res.zError.message).toBe('принтер занят');
+    expect(res.items.printed).toBe(true);
+    expect(printShiftItemsReceipt).toHaveBeenCalledTimes(1);
+  });
 });

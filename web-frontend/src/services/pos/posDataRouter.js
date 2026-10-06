@@ -19,6 +19,7 @@ import {
   offlineListMySales,
 } from '../offline/desktopOfflineBridge';
 import { processOfflineCheckout } from './offlineCheckout';
+import { buildOfflineShiftSoldItems } from '../offline/buildOfflineShiftSoldItems';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
 import {
@@ -331,8 +332,21 @@ export async function posOpenShift(storeId, user, storeName = '', { catalogKind 
 export async function posCloseShift(shiftId, storeId, user, shiftHint = null, { catalogKind } = {}) {
   const { route } = routeFor(storeId);
   if (route === 'local' && user?.id) {
+    const local = await offlineGetCurrentShift({ storeId, cashierId: user.id });
+    const localShiftId = local?.clientShiftId || local?.id || shiftId;
+    const sales = localShiftId
+      ? await offlineListMySales({ shiftId: localShiftId, limit: 10000 })
+      : [];
     await offlineCloseShift({ storeId, cashierId: user.id });
-    return { id: shiftId, status: 'CLOSED' };
+    const closedAt = new Date().toISOString();
+    return {
+      id: shiftId,
+      status: 'CLOSED',
+      closedAt,
+      storeName: local?.storeName,
+      cashierName: local?.cashierName,
+      soldItems: buildOfflineShiftSoldItems(sales, { from: local?.openedAt ?? null, to: closedAt }),
+    };
   }
 
   const apiClient = shiftApi(catalogKind);

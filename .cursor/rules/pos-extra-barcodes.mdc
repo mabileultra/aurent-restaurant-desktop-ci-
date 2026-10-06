@@ -1,0 +1,12 @@
+---
+description: POS — дополнительные штрихкоды товара (не регрессировать)
+globs: web-frontend/src/features/cashier/**,desktop-electron/electron/offline/**
+---
+# Доп. штрихкоды на кассе
+
+Доп. коды хранятся в `product_barcodes`, в ответе товара — `barcodes` (основной + доп.).
+
+1. Строка корзины и чек берут **отсканированный** код (`withScannedBarcode`), а не всегда `product.barcode`.
+2. Поиск по Enter в загруженном списке сверяет весь `barcodes` (`findProductBarcode`).
+3. Офлайн-поиск SQLite (`searchProducts`) ищет и по `product_barcodes`.
+4. Весовую этикетку (код не из `barcodes`) не подставлять как штрихкод товара.

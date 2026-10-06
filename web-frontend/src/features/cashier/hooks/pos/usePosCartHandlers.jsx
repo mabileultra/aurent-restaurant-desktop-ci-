@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { posFetchProductByBarcode } from '../../../../services/pos/posDataRouter';
+import { findProductBarcode, withScannedBarcode } from '../../utils/productBarcodeMatch';
 import { scalesApi } from '../../../../api/scales.api';
 import { decodeWeightBarcode } from '../../../scales/utils/weightBarcode';
 import { useBarcodeScanner } from '../../../../hooks/useBarcodeScanner';
@@ -325,7 +326,7 @@ export function usePosCartHandlers({
         for (const code of barcodeCandidates) {
           const product = await posFetchProductByBarcode(storeId, code);
           if (product) {
-            addProductToCart(product);
+            addProductToCart(withScannedBarcode(product, code));
             setSearch('');
             return true;
           }
@@ -374,8 +375,9 @@ export function usePosCartHandlers({
       return;
     }
     const lower = q.toLowerCase();
+    const byBarcode = products.find((p) => findProductBarcode(p, q));
     const exact =
-      products.find((p) => p.barcode?.toLowerCase() === lower) ||
+      (byBarcode && withScannedBarcode(byBarcode, q)) ||
       products.find((p) => p.sku?.toLowerCase() === lower) ||
       products.find((p) => p.name?.toLowerCase() === lower);
     addProductToCart(exact ?? products[0]);

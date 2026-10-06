@@ -110,9 +110,10 @@ async function searchProducts({ search = '', categoryId, limit = 200, offset = 0
     params.push(Number(categoryId));
   }
   if (q) {
-    sql += ' AND (LOWER(name) LIKE ? OR LOWER(sku) LIKE ? OR LOWER(barcode) LIKE ?)';
+    sql += ` AND (LOWER(name) LIKE ? OR LOWER(sku) LIKE ? OR LOWER(barcode) LIKE ?
+      OR EXISTS (SELECT 1 FROM product_barcodes b WHERE b.product_id = products.id AND LOWER(b.barcode) LIKE ?))`;
     const like = `%${q}%`;
-    params.push(like, like, like);
+    params.push(like, like, like, like);
   }
   sql += ' ORDER BY name LIMIT ? OFFSET ?';
   params.push(Number(limit), Number(offset));
