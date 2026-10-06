@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v9-001-ledger-payment-method" author="platform">
+        <addColumn tableName="billing_ledger">
+            <column name="payment_method" type="VARCHAR(32)"/>
+        </addColumn>
+    </changeSet>
+
+    <changeSet id="v9-002-ledger-payment-method-backfill" author="platform">
+        <sql>
+            UPDATE billing_ledger SET payment_method = 'CLICK'
+             WHERE entry_type = 'TOP_UP' AND payment_method IS NULL AND description = 'Пополнение через Click';
+            UPDATE billing_ledger SET payment_method = 'PAYME'
+             WHERE entry_type = 'TOP_UP' AND payment_method IS NULL AND description = 'Пополнение через Payme';
+            UPDATE billing_ledger SET payment_method = 'BANK_TRANSFER'
+             WHERE entry_type = 'TOP_UP' AND payment_method IS NULL AND description LIKE 'Пополнение по заявке %';
+            UPDATE billing_ledger SET payment_method = 'OTHER'
+             WHERE entry_type = 'TOP_UP' AND payment_method IS NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="v9-003-ledger-type-created-idx" author="platform">
+        <createIndex tableName="billing_ledger" indexName="idx_billing_ledger_type_created">
+            <column name="entry_type"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

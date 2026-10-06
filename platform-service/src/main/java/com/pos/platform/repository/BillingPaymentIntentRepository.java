@@ -20,7 +20,6 @@ public interface BillingPaymentIntentRepository extends JpaRepository<BillingPay
     Optional<BillingPaymentIntent> findByProviderAndProviderTransId(BillingPaymentProvider provider, String providerTransId);
 
     Optional<BillingPaymentIntent> findByIdAndCompanyId(UUID id, Integer companyId);
-
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select i from BillingPaymentIntent i where i.id = :id")
     Optional<BillingPaymentIntent> findByIdForUpdate(@Param("id") UUID id);

@@ -1,6 +1,7 @@
 package com.pos.platform.service;
 
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.dto.billing.BillingLedgerResponse;
 import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.entity.CompanyBilling;
@@ -17,6 +18,9 @@ public interface BillingLedgerService {
     BillingLedgerResponse get(Integer companyId, UUID entryId);
 
     void record(CompanyBilling billing, BigDecimal delta, BillingLedgerType type, String description);
+
+    /** Входящий платёж (TOP_UP) с указанием способа — для отчётов и колонки «Способ оплаты». */
+    void recordPayment(CompanyBilling billing, BigDecimal amount, BillingPaymentMethod method, String description);
 
     void delete(Integer companyId, UUID entryId);
 

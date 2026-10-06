@@ -1,6 +1,6 @@
 package com.pos.platform.service.impl;
 
-import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.domain.BillingPaymentProvider;
 import com.pos.platform.domain.BillingPaymentStatus;
 import com.pos.platform.entity.BillingPaymentIntent;
@@ -72,7 +72,7 @@ class BillingPaymentCreditServiceImplTest {
 
         service.markPaid(intent, "tx-1", "Пополнение через Click");
 
-        verify(ledgerService, never()).record(any(), any(), any(), anyString());
+        verify(ledgerService, never()).recordPayment(any(), any(), any(), anyString());
         verify(accessCache, never()).evict(any());
     }
 
@@ -87,7 +87,8 @@ class BillingPaymentCreditServiceImplTest {
 
         service.markPaid(intent, "tx-1", "Пополнение через Click");
 
-        verify(ledgerService).record(eq(billing), eq(new BigDecimal("100000.00")), eq(BillingLedgerType.TOP_UP), anyString());
+        verify(ledgerService).recordPayment(
+            eq(billing), eq(new BigDecimal("100000.00")), eq(BillingPaymentMethod.valueOf(intent.getProvider().name())), anyString());
         assertThat(intent.getStatus()).isEqualTo(BillingPaymentStatus.PAID);
         verify(accessCache).evict(7);
     }
@@ -116,7 +117,7 @@ class BillingPaymentCreditServiceImplTest {
                 credits.incrementAndGet();
             }
             return null;
-        }).when(ledgerService).record(any(), any(), any(), anyString());
+        }).when(ledgerService).recordPayment(any(), any(), any(), anyString());
 
         // Simulate DB row lock: whole markPaid critical path under one lock via mock answers
         // is not enough alone — wrap service call in same lock order as production (billing then intent).
@@ -144,7 +145,7 @@ class BillingPaymentCreditServiceImplTest {
 
         assertThat(credits.get()).isEqualTo(1);
         assertThat(shared.getStatus()).isEqualTo(BillingPaymentStatus.PAID);
-        verify(ledgerService, times(1)).record(any(), any(), any(), anyString());
+        verify(ledgerService, times(1)).recordPayment(any(), any(), any(), anyString());
     }
 
     private static BillingPaymentIntent intent(BillingPaymentStatus status) {

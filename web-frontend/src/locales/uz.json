@@ -2590,9 +2590,9 @@
       }
     },
     "billing": {
-      "nav": "Kompaniyalar to‘lovi",
-      "title": "To‘lov va obunalar",
-      "subtitle": "Tariflar, kompaniya balanslari va to‘ldirishlarni tekshirish",
+      "nav": "To‘lovlar va qarzdorlar",
+      "title": "To‘lovlar va qarzdorlar",
+      "subtitle": "Kompaniyalar to‘lov holati, qarzdorlik va yaqin to‘lovlar",
       "search": "Kompaniyani qidirish…",
       "filterAll": "Hammasi",
       "kpiActive": "Faol",
@@ -2659,6 +2659,173 @@
         "GRACE": "Imtiyozli muddat",
         "BLOCKED": "Bloklangan",
         "TRIAL": "Sinov"
+      },
+      "collections": {
+        "addPayment": "To‘lov qo‘shish",
+        "kpi": {
+          "ALL": "Jami kompaniyalar",
+          "ACTIVE": "Faol to‘lovchilar",
+          "OVERDUE": "Qarzdorlar",
+          "DUE_SOON": "Tez kunda muddat",
+          "SUSPENDED": "To‘xtatilgan"
+        },
+        "kpiNewHint_one": "{{days}} kunda +{{count}} yangi",
+        "kpiNewHint_other": "{{days}} kunda +{{count}} yangi",
+        "kpiMrrHint": "MRR {{amount}} {{currency}}",
+        "kpiDebtHint": "Qarz {{amount}} {{currency}}",
+        "kpiExpectedHint": "Kutilmoqda {{amount}} {{currency}}",
+        "kpiNotBilledHint": "Tarifsiz: {{count}}",
+        "tabs": {
+          "ALL": "Hammasi",
+          "OVERDUE": "Qarzdorlar",
+          "DUE_SOON": "Tez kunda muddat",
+          "ACTIVE": "To‘lovchilar",
+          "NEW": "Yangi foydalanuvchilar",
+          "SUSPENDED": "To‘xtatilgan"
+        },
+        "states": {
+          "ACTIVE": "Faol",
+          "DUE_SOON": "Tez kunda",
+          "OVERDUE": "Qarzdor",
+          "SUSPENDED": "To‘xtatilgan",
+          "NOT_BILLED": "Tarifsiz"
+        },
+        "methods": {
+          "CLICK": "Click",
+          "PAYME": "Payme",
+          "BANK_TRANSFER": "Bank o‘tkazmasi",
+          "CASH": "Naqd pul",
+          "OTHER": "Boshqa"
+        },
+        "dateFieldLabel": "Sana turi",
+        "dateFields": {
+          "NEXT_CHARGE": "Keyingi to‘lov sanasi",
+          "LAST_PAYMENT": "Oxirgi to‘lov sanasi",
+          "CREATED": "Ro‘yxatdan o‘tgan sana"
+        },
+        "dateFrom": "Dan",
+        "dateTo": "Gacha",
+        "allPlans": "Barcha tariflar",
+        "allMethods": "Barcha to‘lov turlari",
+        "searchPlaceholder": "Kompaniya, ID, telefon, STIR…",
+        "resetFilters": "Tozalash",
+        "tableTotal_one": "Jami {{count}} ta kompaniya",
+        "tableTotal_other": "Jami {{count}} ta kompaniya",
+        "export": "CSV eksport",
+        "colCompany": "Kompaniya",
+        "colPlan": "Tarif",
+        "colMonthly": "Oylik to‘lov",
+        "colBalance": "Balans",
+        "colNext": "Keyingi to‘lov",
+        "colStatus": "Status",
+        "colMethod": "To‘lov turi",
+        "colActions": "Amallar",
+        "daysOverdueShort": "Kechikkan kunlar",
+        "customPlan": "Individual",
+        "newBadge": "Yangi",
+        "dueToday": "Bugun",
+        "dueTomorrow": "Ertaga",
+        "dueInDays_one": "{{count}} kun qoldi",
+        "dueInDays_other": "{{count}} kun qoldi",
+        "overdueDays_one": "Muddati {{count}} kun o‘tgan",
+        "overdueDays_other": "Muddati {{count}} kun o‘tgan",
+        "drawerTabs": {
+          "overview": "Umumiy",
+          "payments": "To‘lovlar",
+          "manage": "Boshqaruv"
+        },
+        "currentBalance": "Joriy balans",
+        "registeredAt": "Qo‘shilgan sana",
+        "lastPayment": "Oxirgi to‘lov",
+        "phone": "Telefon",
+        "tin": "STIR",
+        "historyTitle": "Operatsiyalar tarixi",
+        "historyEmpty": "Hozircha operatsiyalar yo‘q",
+        "seeAll": "Barchasini ko‘rish",
+        "onlinePayments": "Onlayn to‘lovlar",
+        "acceptPayment": "To‘lov qabul qilish",
+        "upcomingTitle": "Tez kunda to‘lanishi kerak",
+        "upcomingEmpty": "Yaqin kunlarda to‘lovlar kutilmaydi",
+        "addPaymentTitle": "To‘lov qo‘shish",
+        "pickCompany": "Kompaniyani tanlang",
+        "amount": "Summa, so‘m",
+        "transactionId": "Transaction ID",
+        "savePayment": "Saqlash",
+        "addPaymentHint": "Summa kompaniya balansiga tushadi; to‘lov turi, Transaction ID va izoh operatsiya tavsifiga yoziladi.",
+        "paymentAdded": "To‘lov qo‘shildi",
+        "views": {
+          "overview": "Umumiy",
+          "reports": "Hisobotlar",
+          "calendar": "To‘lovlar kalendari"
+        },
+        "reminder": {
+          "telegram": "Telegramda yozish",
+          "copy": "Eslatma matnini nusxalash",
+          "noPhone": "Kompaniya telefoni ko‘rsatilmagan",
+          "copiedOpen": "Eslatma matni nusxalandi — uni Telegram chatiga joylang",
+          "openedOnly": "Telegram ochildi, lekin matnni nusxalab bo‘lmadi",
+          "copied": "Eslatma matni nusxalandi",
+          "bulkCopied_one": "{{count}} ta eslatma nusxalandi",
+          "bulkCopied_other": "{{count}} ta eslatma nusxalandi",
+          "greeting": "Assalomu alaykum, {{name}}!",
+          "debt": "Aurent xizmati bo‘yicha qarzdorligingiz bor: {{amount}} {{currency}}.",
+          "dueOn": "Keyingi to‘lov sanasi: {{date}} — {{amount}} {{currency}}.",
+          "overdueSince": "To‘lov muddati {{date}} da o‘tgan. To‘lov summasi: {{amount}} {{currency}}.",
+          "footer": "Iltimos, shaxsiy kabinetda balansni to‘ldiring (Click, Payme yoki bank o‘tkazmasi). Rahmat!"
+        },
+        "bulk": {
+          "selected": "Tanlandi: {{count}}",
+          "selectPage": "Sahifadagi barchasini tanlash",
+          "reminders": "Eslatmalar",
+          "changePlan": "Tarifni o‘zgartirish",
+          "changeDate": "To‘lov sanasini o‘zgartirish",
+          "clear": "Tanlovni bekor qilish",
+          "confirm": "{{count}} taga qo‘llash",
+          "planWarning": "Tanlangan barcha kompaniyalarda tarif almashadi. Agar yechish muddati kelgan bo‘lsa, yangi summa darhol yechiladi.",
+          "dateWarning": "Tanlangan barcha kompaniyalarda davr boshlanish sanasi almashadi. Keyingi yechish shu sanada bo‘ladi.",
+          "skipped": "O‘tkazib yuborildi (to‘xtatilgan yoki tarifsiz): {{count}}",
+          "done": "Yangilangan kompaniyalar: {{count}}",
+          "failed": "Yangilab bo‘lmadi: {{count}}"
+        },
+        "reports": {
+          "revenue": "Tushum",
+          "expected": "Kutilayotgan to‘lovlar",
+          "debt": "Qarzdorlik",
+          "methods": "To‘lov turlari bo‘yicha",
+          "periods": {
+            "DAY": "Kunlik",
+            "WEEK": "Haftalik",
+            "MONTH": "Oylik",
+            "YEAR": "Yillik"
+          },
+          "expectedToday": "Bugun",
+          "expected7": "7 kun",
+          "expected30": "30 kun",
+          "paymentsCount_one": "{{count}} ta to‘lov",
+          "paymentsCount_other": "{{count}} ta to‘lov",
+          "debtTotal": "Umumiy qarzdorlik",
+          "debtCount": "Qarzdorlar soni",
+          "debtAverage": "O‘rtacha qarz"
+        },
+        "calendar": {
+          "monthTotal": "Oy bo‘yicha: {{count}} ta to‘lov · {{amount}} {{currency}}",
+          "expectedCount": "Kutilayotgan to‘lovlar: {{count}}",
+          "noPayments": "Bu kunda yechish kutilmaydi"
+        },
+        "deferral": {
+          "title": "To‘lovni kechiktirish",
+          "until": "{{date}} gacha kechiktirilgan",
+          "activeUntil": "{{date}} kuni oxirigacha kechiktirilgan",
+          "hint": "Shu sanagacha balans yetmasa ham kompaniya bloklanmaydi. Qarz va yechishlar saqlanadi.",
+          "plusDays_one": "+{{count}} kun",
+          "plusDays_other": "+{{count}} kun",
+          "reasonLabel": "Sabab",
+          "reasonPlaceholder": "Sabab (masalan: bank o‘tkazmasi orqali to‘lashga va’da berdi)",
+          "grant": "{{date}} gacha kechiktirish",
+          "cancel": "Kechiktirishni bekor qilish",
+          "granted": "Kechiktirish berildi",
+          "cancelled": "Kechiktirish bekor qilindi"
+        }
       }
     },
     "moduleGroups": {
@@ -5048,7 +5215,8 @@
     "footerDocsTitle": "Elektron hujjatlar",
     "footerDocsText": "Hisob-faktura va aktlarni Didox / Soliq uchun qo‘llab-quvvatlashdan so‘rang.",
     "footerSupportTitle": "Qo‘llab-quvvatlash",
-    "footerSupportText": "To‘lov bo‘yicha savollar: Telegram @aurent_support"
+    "footerSupportText": "To‘lov bo‘yicha savollar: Telegram @aurent_support",
+    "deferralBanner": "Sizga {{date}} kuni oxirigacha to‘lovni kechiktirish berildi. Kirish cheklanmasligi uchun shu sanagacha balansni to‘ldiring."
   },
   "pharmacyStock": {
     "title": "Dorixona kirimi",
@@ -5416,4 +5584,3 @@
     "importSavedWithMarks": "Import qilingan qatorlar: {{count}}. Fayldagi KM qo‘yildi — o‘tkazishdan oldin tekshiring"
   }
 }
-

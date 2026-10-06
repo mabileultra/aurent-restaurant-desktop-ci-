@@ -1,6 +1,7 @@
 package com.pos.platform.dto.billing;
 
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -14,5 +15,6 @@ public record BillingLedgerResponse(
     BigDecimal balanceAfter,
     String description,
     String actorRole,
-    Instant createdAt
+    Instant createdAt,
+    BillingPaymentMethod paymentMethod
 ) {}

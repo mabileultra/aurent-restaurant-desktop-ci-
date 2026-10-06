@@ -1,6 +1,6 @@
 package com.pos.platform.service.impl;
 
-import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.domain.BillingTopUpStatus;
 import com.pos.platform.dto.billing.BillingTopUpResponse;
 import com.pos.platform.dto.billing.ReviewTopUpRequest;
@@ -92,10 +92,10 @@ public class BillingTopUpServiceImpl implements BillingTopUpService {
     public BillingTopUpResponse approve(UUID requestId, ReviewTopUpRequest request) {
         BillingTopUpRequest req = requirePending(requestId);
         CompanyBilling billing = accountService.requireOrCreateBilling(req.getCompanyId());
-        ledgerService.record(
+        ledgerService.recordPayment(
             billing,
             req.getAmount(),
-            BillingLedgerType.TOP_UP,
+            BillingPaymentMethod.BANK_TRANSFER,
             "Пополнение по заявке " + req.getId()
         );
         accountService.refreshAccessStatus(billing, Instant.now());

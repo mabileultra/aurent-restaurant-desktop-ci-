@@ -1,6 +1,7 @@
 package com.pos.platform.service.impl;
 
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.dto.billing.BillingLedgerResponse;
 import com.pos.platform.dto.shared.PageResponse;
 import com.pos.platform.entity.BillingLedgerEntry;
@@ -46,6 +47,22 @@ public class BillingLedgerServiceImpl implements BillingLedgerService {
     @Override
     @Transactional
     public void record(CompanyBilling billing, BigDecimal delta, BillingLedgerType type, String description) {
+        write(billing, delta, type, null, description);
+    }
+
+    @Override
+    @Transactional
+    public void recordPayment(CompanyBilling billing, BigDecimal amount, BillingPaymentMethod method, String description) {
+        write(billing, amount, BillingLedgerType.TOP_UP, method, description);
+    }
+
+    private void write(
+        CompanyBilling billing,
+        BigDecimal delta,
+        BillingLedgerType type,
+        BillingPaymentMethod method,
+        String description
+    ) {
         Integer companyId = billing.getCompanyId();
         if (companyId == null && billing.getCompany() != null) {
             companyId = billing.getCompany().getId();
@@ -59,6 +76,7 @@ public class BillingLedgerServiceImpl implements BillingLedgerService {
         ledgerRepository.save(BillingLedgerEntry.builder()
             .companyId(companyId)
             .entryType(type)
+            .paymentMethod(method)
             .amount(BillingMoney.of(delta))
             .balanceAfter(next)
             .description(description)

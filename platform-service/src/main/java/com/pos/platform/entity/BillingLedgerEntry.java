@@ -1,6 +1,7 @@
 package com.pos.platform.entity;
 
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -39,6 +40,10 @@ public class BillingLedgerEntry {
     @Enumerated(EnumType.STRING)
     @Column(name = "entry_type", nullable = false, length = 32)
     private BillingLedgerType entryType;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method", length = 32)
+    private BillingPaymentMethod paymentMethod;
 
     @Column(nullable = false, precision = 18, scale = 2)
     private BigDecimal amount;

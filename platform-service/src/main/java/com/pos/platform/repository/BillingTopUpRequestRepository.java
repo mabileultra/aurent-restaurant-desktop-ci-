@@ -16,5 +16,4 @@ public interface BillingTopUpRequestRepository extends JpaRepository<BillingTopU
 
     Page<BillingTopUpRequest> findByCompanyIdOrderByCreatedAtDesc(Integer companyId, Pageable pageable);
 
-    long countByStatus(BillingTopUpStatus status);
-}
+    long countByStatus(BillingTopUpStatus status);}

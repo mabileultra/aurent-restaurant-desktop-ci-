@@ -110,6 +110,12 @@
   color: #991b1b;
 }
 
+.billing-alert--deferral {
+  border-color: #fed7aa;
+  background: #fff7ed;
+  color: #9a3412;
+}
+
 .billing-note {
   margin: 0.65rem 0 0.85rem;
   font-size: 0.75rem;

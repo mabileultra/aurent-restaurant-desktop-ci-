@@ -2,6 +2,15 @@ import { api } from '../client';
 
 export const platformBillingApi = {
   overview: () => api.get('/platform/billing/overview'),
+  collectionsOverview: () => api.get('/platform/billing/collections/overview'),
+  collectionsCompanies: (params) => api.get('/platform/billing/collections/companies', { params }),
+  collectionsExport: (params) =>
+    api.get('/platform/billing/collections/companies/export', { params, responseType: 'blob' }),
+  collectionsReports: (params) => api.get('/platform/billing/collections/reports', { params }),
+  collectionsCalendar: (params) => api.get('/platform/billing/collections/calendar', { params }),
+  grantDeferral: (companyId, payload) =>
+    api.post(`/platform/billing/collections/companies/${companyId}/deferral`, payload),
+  cancelDeferral: (companyId) => api.delete(`/platform/billing/collections/companies/${companyId}/deferral`),
   plans: (params) => api.get('/platform/billing/plans', { params }),
   createPlan: (payload) => api.post('/platform/billing/plans', payload),
   updatePlan: (planId, payload) => api.put(`/platform/billing/plans/${planId}`, payload),

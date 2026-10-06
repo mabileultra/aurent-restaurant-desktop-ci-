@@ -1,6 +1,8 @@
 package com.pos.platform.service.impl;
 
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
+import com.pos.platform.domain.BillingPaymentProvider;
 import com.pos.platform.domain.BillingPaymentStatus;
 import com.pos.platform.entity.BillingPaymentIntent;
 import com.pos.platform.entity.CompanyBilling;
@@ -41,7 +43,7 @@ public class BillingPaymentCreditServiceImpl implements BillingPaymentCreditServ
             return;
         }
 
-        ledgerService.record(billing, locked.getAmount(), BillingLedgerType.TOP_UP, description);
+        ledgerService.recordPayment(billing, locked.getAmount(), methodOf(locked.getProvider()), description);
         accountService.refreshAccessStatus(billing, Instant.now());
         companyBillingRepository.save(billing);
 
@@ -80,5 +82,9 @@ public class BillingPaymentCreditServiceImpl implements BillingPaymentCreditServ
         locked.setErrorNote(description);
         intentRepository.save(locked);
         accessCache.evict(companyId);
+    }
+
+    private static BillingPaymentMethod methodOf(BillingPaymentProvider provider) {
+        return provider != null ? BillingPaymentMethod.valueOf(provider.name()) : BillingPaymentMethod.OTHER;
     }
 }

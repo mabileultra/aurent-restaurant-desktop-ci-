@@ -94,6 +94,32 @@ class CompanyBillingAccountServiceImplApplyDueChargesTest {
     }
 
     @Test
+    void applyDueCharges_deferral_keepsGraceUntilDeferredDateThenBlocks() {
+        Instant due = Instant.parse("2026-10-01T00:00:00Z");
+        Instant deferredUntil = Instant.parse("2026-10-15T00:00:00Z");
+        CompanyBilling billing = CompanyBilling.builder()
+            .companyId(1)
+            .balance(BigDecimal.ZERO)
+            .addonMonthlyAmount(new BigDecimal("100000.00"))
+            .billingEnabled(true)
+            .autoChargeEnabled(true)
+            .status(BillingAccountStatus.ACTIVE)
+            .nextChargeAt(due)
+            .deferredUntil(deferredUntil)
+            .build();
+
+        service.applyDueCharges(billing, due.plus(1, ChronoUnit.HOURS));
+        assertThat(billing.getStatus()).isEqualTo(BillingAccountStatus.GRACE);
+        assertThat(billing.getGraceUntil()).isEqualTo(deferredUntil);
+
+        service.applyDueCharges(billing, due.plus(10, ChronoUnit.DAYS));
+        assertThat(billing.getStatus()).isEqualTo(BillingAccountStatus.GRACE);
+
+        service.applyDueCharges(billing, deferredUntil.plus(1, ChronoUnit.HOURS));
+        assertThat(billing.getStatus()).isEqualTo(BillingAccountStatus.BLOCKED);
+    }
+
+    @Test
     void applyDueCharges_zeroTariff_advancesWithoutDebit() {
         Instant start = Instant.now().minus(1, ChronoUnit.DAYS);
         CompanyBilling billing = CompanyBilling.builder()

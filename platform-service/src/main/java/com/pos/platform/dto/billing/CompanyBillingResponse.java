@@ -26,5 +26,7 @@ public record CompanyBillingResponse(
     Instant graceUntil,
     Integer maxRegisters,
     Integer maxStores,
-    String currency
+    String currency,
+    Instant deferredUntil,
+    String deferralReason
 ) {}

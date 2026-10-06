@@ -54,6 +54,11 @@ export default function TenantBillingPage() {
             {p.t('billing.blockedBanner')}
           </div>
         ) : null}
+        {me?.deferredUntil && new Date(me.deferredUntil) > new Date() ? (
+          <div className="billing-alert billing-alert--deferral">
+            {p.t('billing.deferralBanner', { date: formatDate(new Date(new Date(me.deferredUntil).getTime() - 1)) })}
+          </div>
+        ) : null}
 
         <section className="billing-hero">
           <div>

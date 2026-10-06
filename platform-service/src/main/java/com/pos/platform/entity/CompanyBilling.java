@@ -77,6 +77,13 @@ public class CompanyBilling {
     @Column(name = "grace_until")
     private Instant graceUntil;
 
+    /** Индивидуальная отсрочка: до этого момента нехватка баланса не блокирует доступ. */
+    @Column(name = "deferred_until")
+    private Instant deferredUntil;
+
+    @Column(name = "deferral_reason", length = 255)
+    private String deferralReason;
+
     @Column(name = "billing_enabled", nullable = false)
     @Builder.Default
     private boolean billingEnabled = true;

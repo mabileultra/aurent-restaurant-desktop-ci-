@@ -1,0 +1,14 @@
+---
+description: Супер-админ «Платежи и должники» — статусы оплаты, отсрочка, способ оплаты
+globs: platform-service/src/main/java/com/pos/platform/**/*Billing*.java,web-frontend/src/features/platform/**/billing/**,web-frontend/src/features/platform/hooks/*Billing*.js
+alwaysApply: false
+---
+
+# Platform billing collections (by design)
+
+- `paymentState` (ACTIVE / DUE_SOON / OVERDUE / SUSPENDED / NOT_BILLED) считает только `BillingPaymentStateResolver`. Фронт не вычисляет долг/просрочку — только показывает.
+- DUE_SOON = до списания ≤ `app.billing.due-soon-days` **и** баланса не хватает на месяц. Предоплаченные компании не «скоро срок» — это правило, не баг.
+- Отсрочка (`company_billing.deferred_until`): до этой даты `enterGraceOrBlock` не блокирует; долг и списания не прощаются. Блокировка = позже из `graceUntil` и `deferredUntil`.
+- Способ оплаты хранится в `billing_ledger.payment_method` у каждого TOP_UP (`BillingLedgerService.recordPayment`). Любое новое зачисление денег — через `recordPayment`, не `record(..., TOP_UP, ...)`.
+- Массовая смена тарифа/даты пропускает SUSPENDED и NOT_BILLED (иначе `assignPlan` разблокирует); дата — только ≥ сегодня (иначе списание за пропущенные месяцы).
+- Telegram: только `t.me/+номер` + копирование текста; автоотправки по номеру нет (Bot API не умеет писать по телефону).

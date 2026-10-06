@@ -2,12 +2,14 @@ package com.pos.platform.service.impl;
 
 import com.pos.platform.domain.BillingAccountStatus;
 import com.pos.platform.domain.BillingLedgerType;
+import com.pos.platform.domain.BillingPaymentMethod;
 import com.pos.platform.domain.BillingTopUpStatus;
 import com.pos.platform.dto.billing.AdjustBalanceRequest;
 import com.pos.platform.dto.billing.AssignCompanyPlanRequest;
 import com.pos.platform.dto.billing.BillingAccessResponse;
 import com.pos.platform.dto.billing.BillingOverviewResponse;
 import com.pos.platform.dto.billing.CompanyBillingResponse;
+import com.pos.platform.dto.billing.GrantDeferralRequest;
 import com.pos.platform.entity.Company;
 import com.pos.platform.entity.CompanyBilling;
 import com.pos.platform.exception.BadRequestException;
@@ -15,6 +17,7 @@ import com.pos.platform.exception.ResourceNotFoundException;
 import com.pos.platform.repository.BillingTopUpRequestRepository;
 import com.pos.platform.repository.CompanyBillingRepository;
 import com.pos.platform.repository.CompanyRepository;
+import com.pos.platform.service.BillingDeferralService;
 import com.pos.platform.service.BillingLedgerService;
 import com.pos.platform.service.BillingPlanService;
 import com.pos.platform.service.CompanyBillingAccountService;
@@ -42,7 +45,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountService {
+public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountService, BillingDeferralService {
 
     private final CompanyBillingRepository companyBillingRepository;
     private final CompanyRepository companyRepository;
@@ -150,14 +153,15 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         if (!credit) {
             delta = delta.negate();
         }
-        ledgerService.record(
-            billing,
-            delta,
-            credit ? BillingLedgerType.TOP_UP : BillingLedgerType.ADJUST,
-            request.description() != null && !request.description().isBlank()
-                ? request.description()
-                : (credit ? "Ручное пополнение супер-админом" : "Корректировка / списание супер-админом")
-        );
+        String description = request.description() != null && !request.description().isBlank()
+            ? request.description()
+            : (credit ? "Ручное пополнение супер-админом" : "Корректировка / списание супер-админом");
+        if (credit) {
+            BillingPaymentMethod method = request.method() != null ? request.method() : BillingPaymentMethod.OTHER;
+            ledgerService.recordPayment(billing, delta, method, description);
+        } else {
+            ledgerService.record(billing, delta, BillingLedgerType.ADJUST, description);
+        }
         refreshAccessStatus(billing, Instant.now());
         CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
         accessCache.evict(companyId);
@@ -341,12 +345,53 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
         if (billing.getStatus() != BillingAccountStatus.GRACE
             && billing.getStatus() != BillingAccountStatus.BLOCKED) {
             billing.setStatus(BillingAccountStatus.GRACE);
-            billing.setGraceUntil(now.plus(Math.max(graceDays, 0), ChronoUnit.DAYS));
+            billing.setGraceUntil(later(now.plus(Math.max(graceDays, 0), ChronoUnit.DAYS), billing.getDeferredUntil()));
             return;
         }
-        if (billing.getGraceUntil() != null && now.isAfter(billing.getGraceUntil())) {
+        Instant blockAfter = later(billing.getGraceUntil(), billing.getDeferredUntil());
+        if (blockAfter != null && now.isAfter(blockAfter)) {
             billing.setStatus(BillingAccountStatus.BLOCKED);
         }
+    }
+
+    private static Instant later(Instant a, Instant b) {
+        if (a == null) return b;
+        if (b == null) return a;
+        return a.isAfter(b) ? a : b;
+    }
+
+    @Override
+    @Transactional
+    public CompanyBillingResponse grantDeferral(Integer companyId, GrantDeferralRequest request) {
+        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
+            .orElseGet(() -> requireOrCreateBilling(companyId));
+        Instant until = BillingTime.startOfDay(request.until().plusDays(1));
+        billing.setDeferredUntil(until);
+        billing.setDeferralReason(request.reason() != null && !request.reason().isBlank() ? request.reason().trim() : null);
+        if (billing.getStatus() == BillingAccountStatus.BLOCKED || billing.getStatus() == BillingAccountStatus.GRACE) {
+            billing.setStatus(BillingAccountStatus.GRACE);
+            billing.setGraceUntil(until);
+        }
+        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
+        accessCache.evict(companyId);
+        return saved;
+    }
+
+    @Override
+    @Transactional
+    public CompanyBillingResponse cancelDeferral(Integer companyId) {
+        CompanyBilling billing = companyBillingRepository.findDetailedByCompanyIdForUpdate(companyId)
+            .orElseThrow(() -> new ResourceNotFoundException("Биллинг для компании не настроен"));
+        Instant now = Instant.now();
+        billing.setDeferredUntil(null);
+        billing.setDeferralReason(null);
+        if (billing.getStatus() == BillingAccountStatus.GRACE
+            && billing.getGraceUntil() != null && billing.getGraceUntil().isAfter(now)) {
+            billing.setGraceUntil(now);
+        }
+        CompanyBillingResponse saved = BillingMapper.toCompany(companyBillingRepository.save(billing));
+        accessCache.evict(companyId);
+        return saved;
     }
 
     private Company requireCompany(Integer companyId) {
@@ -378,7 +423,9 @@ public class CompanyBillingAccountServiceImpl implements CompanyBillingAccountSe
             null,
             null,
             null,
-            "UZS"
+            "UZS",
+            null,
+            null
         );
     }
 }

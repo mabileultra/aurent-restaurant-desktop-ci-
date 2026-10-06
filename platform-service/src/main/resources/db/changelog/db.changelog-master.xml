@@ -13,5 +13,7 @@
     <include file="db/changelog/v6-billing-period-start.xml"/>
     <include file="db/changelog/v7-billing-payment-idempotency.xml"/>
     <include file="db/changelog/v8-payme-cancel-meta.xml"/>
+    <include file="db/changelog/v9-billing-ledger-payment-method.xml"/>
+    <include file="db/changelog/v10-billing-deferral.xml"/>
 
 </databaseChangeLog>

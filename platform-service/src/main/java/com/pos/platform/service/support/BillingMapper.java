@@ -68,7 +68,9 @@ public final class BillingMapper {
             billing.getGraceUntil(),
             plan != null ? plan.getMaxRegisters() : null,
             plan != null ? plan.getMaxStores() : null,
-            plan != null ? plan.getCurrency() : "UZS"
+            plan != null ? plan.getCurrency() : "UZS",
+            billing.getDeferredUntil(),
+            billing.getDeferralReason()
         );
     }
 
@@ -81,7 +83,8 @@ public final class BillingMapper {
             entry.getBalanceAfter(),
             entry.getDescription(),
             entry.getActorRole(),
-            entry.getCreatedAt()
+            entry.getCreatedAt(),
+            entry.getPaymentMethod()
         );
     }
 
