@@ -33,7 +33,11 @@ public class TenantDisplaySettingsServiceImpl implements TenantDisplaySettingsSe
      */
     @Override
     public TenantDisplaySettingsPayload getForCurrentCompany() {
-        Integer companyId = tenantAccess.requireEffectiveCompanyId();
+        // Read-only bootstrap: SA/PLATFORM without company context → empty defaults, not 400.
+        Integer companyId = tenantAccess.effectiveCompanyIdOrNull();
+        if (companyId == null) {
+            return emptyPayload();
+        }
         try {
             List<String> rows = jdbcTemplate.query(
                 """

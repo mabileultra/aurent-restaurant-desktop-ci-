@@ -40,8 +40,17 @@ class TenantDisplaySettingsServiceImplTest {
     }
 
     @Test
+    void getReturnsEmptyWhenNoCompanyContext() {
+        when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(null);
+
+        TenantDisplaySettingsPayload payload = service.getForCurrentCompany();
+
+        assertThat(payload.systemAppName()).isNull();
+    }
+
+    @Test
     void getReturnsEmptyWhenNoRow() {
-        when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
+        when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(7);
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7))).thenReturn(List.of());
 
         TenantDisplaySettingsPayload payload = service.getForCurrentCompany();
@@ -52,7 +61,7 @@ class TenantDisplaySettingsServiceImplTest {
 
     @Test
     void getMapsValidJson() {
-        when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
+        when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(7);
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
             .thenReturn(List.of("{\"systemAppName\":\"Aurent Shop\",\"systemLogoSizePx\":40}"));
 
@@ -64,7 +73,7 @@ class TenantDisplaySettingsServiceImplTest {
 
     @Test
     void getReturnsEmptyOnCorruptJson() {
-        when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
+        when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(7);
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
             .thenReturn(List.of("[1,2,3]"));
 
@@ -75,7 +84,7 @@ class TenantDisplaySettingsServiceImplTest {
 
     @Test
     void getReturnsEmptyWhenTableMissing() {
-        when(tenantAccess.requireEffectiveCompanyId()).thenReturn(7);
+        when(tenantAccess.effectiveCompanyIdOrNull()).thenReturn(7);
         when(jdbcTemplate.query(anyString(), any(RowMapper.class), eq(7)))
             .thenThrow(new InvalidDataAccessResourceUsageException("relation does not exist"));
 
