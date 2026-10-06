@@ -1,5 +1,9 @@
 import { MODULE_ACCESS_NEW_USER_MAX_AGE_MS, MODULE_ACCESS_PLATFORM_FILTER } from '../constants';
-import { isPlatformAdminRole } from '../../../utils/platformRoles';
+import { isPlatformAdminRole, isPlatformAnalyticsRole } from '../../../utils/platformRoles';
+
+function isPlatformStaffUser(user) {
+  return (isPlatformAdminRole(user?.role) || isPlatformAnalyticsRole(user?.role)) && user?.companyId == null;
+}
 
 function parseCreatedAt(value) {
   if (value == null || value === '') return NaN;
@@ -28,7 +32,7 @@ export function withCompanyNames(users = [], companies = []) {
     ...user,
     companyName: user.companyName
       || names[String(user.companyId)]
-      || (isPlatformAdminRole(user.role) ? '' : ''),
+      || (isPlatformStaffUser(user) ? '' : ''),
   }));
 }
 
@@ -63,7 +67,7 @@ export function filterModuleAccessUsers(users, { companyId, search, filter } = {
 
   return users
     .filter((user) => {
-      if (platformOnly) return isPlatformAdminRole(user.role) && user.companyId == null;
+      if (platformOnly) return isPlatformStaffUser(user);
       if (!companyKey) return true;
       return String(user.companyId) === companyKey;
     })

@@ -47,7 +47,7 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
         SELECT DISTINCT u FROM User u
         JOIN FETCH u.role
         LEFT JOIN FETCH u.storeIds
-        WHERE u.role.name = 'PLATFORM_ADMIN'
+        WHERE u.role.name IN ('PLATFORM_ADMIN', 'PLATFORM_ANALYTICS')
           AND u.companyId IS NULL
         """)
     List<User> findPlatformOperatorsForModuleAccess();

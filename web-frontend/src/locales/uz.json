@@ -2912,9 +2912,161 @@
       "platformReferenceBooks": "Ma’lumotnomalar",
       "platformLeads": "Arizalar",
       "platformBilling": "Billing",
+      "platformAnalytics": "Analitika",
       "platformMonitoring": "Monitoring",
       "platformEmail": "Pochta",
       "platformDesktopNotifications": "Desktop bildirishnomalar"
+    },
+    "analytics": {
+      "nav": "Analitika",
+      "title": "Analitika",
+      "subtitle": "Barcha do‘konlar, savdolar, mahsulotlar va fiskal ma’lumotlar bo‘yicha to‘liq analitika",
+      "period": "Davr",
+      "export": "Eksport",
+      "exportSoon": "Eksport keyingi bosqichda",
+      "seeAll": "Hammasini ko‘rish",
+      "comingSoon": "Bo‘lim ishlanmoqda — avval overview, keyin real ma’lumotlar.",
+      "demoBanner": "Hozircha maket uchun demo raqamlar. Keyingi qadam — savdo va tannarx API.",
+      "demoFallback": "Jonli ma’lumot yuklanmadi — demo ko‘rsatilmoqda. reporting-service ni tekshiring.",
+      "live": "Jonli ma’lumot",
+      "units": {
+        "billion": "mlrd",
+        "million": "mln"
+      },
+      "periods": {
+        "today": "Bugun",
+        "d7": "7 kun",
+        "d30": "30 kun",
+        "month": "Oy",
+        "year": "Yil"
+      },
+      "tabs": {
+        "overview": "Umumiy",
+        "stores": "Do‘konlar",
+        "products": "Mahsulotlar",
+        "sales": "Savdolar",
+        "fiscal": "Fiskal analitika",
+        "payments": "To‘lovlar",
+        "customers": "Mijozlar",
+        "geography": "Geografiya",
+        "anomalies": "Anomaliyalar"
+      },
+      "kpi": {
+        "turnover": "Aylanma",
+        "profit": "Foyda",
+        "salesQty": "Savdo soni",
+        "receipts": "Cheklar soni",
+        "avgCheck": "O‘rtacha chek",
+        "returns": "Qaytarishlar"
+      },
+      "overview": {
+        "dailyTitle": "Kunlik aylanma va foyda",
+        "bestDay": "Eng yaxshi kun",
+        "bestDayHint": "Eng yaxshi kun — {{day}}: {{sum}}",
+        "heatmapTitle": "Savdo faolligi",
+        "heatmapLegend": "Yashil — past, qizil — pik",
+        "hourlyTitle": "Soatlar bo‘yicha savdo",
+        "peak": "Pik vaqt: {{range}} · {{sum}} ({{pct}}%)",
+        "topStores": "Aylanma bo‘yicha top do‘konlar",
+        "topProductsQty": "Miqdor bo‘yicha top mahsulotlar",
+        "topProductsProfit": "Foyda bo‘yicha top mahsulotlar",
+        "regions": "Hududlar bo‘yicha aylanma",
+        "weekdays": "Hafta kunlari",
+        "weekdayPeak": "{{day}} haftalik aylanmaning {{pct}}%",
+        "payments": "To‘lov usullari",
+        "fiscal": "Fiskal analitika",
+        "anomalies": "Anomaliyalar"
+      },
+      "payments": {
+        "cash": "Naqd",
+        "click": "Click",
+        "payme": "Payme",
+        "card": "Bank kartalari",
+        "other": "Boshqa",
+        "transfer": "O‘tkazma",
+        "mixed": "Aralash",
+        "totalAmount": "To‘lovlar summasi",
+        "methodsTitle": "Usullar bo‘yicha",
+        "dailyTitle": "Naqd / karta / boshqa kunlik",
+        "colMethod": "Usul",
+        "empty": "Davr uchun ma’lumot yo‘q",
+        "loadFailed": "To‘lov analitikasini yuklab bo‘lmadi"
+      },
+      "fiscal": {
+        "fiscalTurnover": "Fiskal aylanma",
+        "fiscalReceipts": "Fiskal cheklar",
+        "taxBase": "Soliq bazasi",
+        "vat": "QQS",
+        "fiscalReturns": "Fiskal qaytarishlar",
+        "cancelled": "Bekor qilingan cheklar",
+        "byStoreTitle": "Do‘konlar bo‘yicha",
+        "approximateHint": "sale_facts asosida (alohida OFD qatlami yo‘q) — taxminiy fiskal KPI.",
+        "vatUnavailable": "QQS reportingda hozircha yo‘q — soliq bazasi va QQS hisoblanmaydi.",
+        "empty": "Davr uchun ma’lumot yo‘q",
+        "loadFailed": "Fiskal analitikasini yuklab bo‘lmadi"
+      },
+      "anomalies": {
+        "turnoverDown": "Aylanma ↓ {{value}}%",
+        "returnsUp": "Qaytarishlar ↑ {{value}}%",
+        "salesUp": "Savdo o‘sishi ↑ {{value}}%",
+        "productUp": "Mahsulot o‘sishi ↑ {{value}}%"
+      },
+      "stores": {
+        "tableTitle": "Barcha do‘konlar",
+        "topTurnover": "Aylanma bo‘yicha top",
+        "topProfit": "Foyda bo‘yicha top",
+        "search": "Do‘kon qidirish…",
+        "sort": "Saralash",
+        "empty": "Davr uchun ma’lumot yo‘q",
+        "loadFailed": "Do‘konlar analitikasini yuklab bo‘lmadi",
+        "colStore": "Do‘kon",
+        "colGrowth": "O‘sish",
+        "sorts": {
+          "turnover": "Aylanma",
+          "profit": "Foyda",
+          "receipts": "Cheklar",
+          "avgCheck": "O‘rtacha chek",
+          "growth": "O‘sish",
+          "drop": "Pasayish"
+        }
+      },
+      "products": {
+        "tableTitle": "Mahsulotlar",
+        "topQty": "Eng ko‘p sotilganlar",
+        "topProfit": "Eng foydali",
+        "rising": "O‘sayotganlar",
+        "falling": "Pasayayotganlar",
+        "categories": "Kategoriyalar",
+        "search": "Mahsulot qidirish…",
+        "sort": "Saralash",
+        "empty": "Davr uchun ma’lumot yo‘q",
+        "loadFailed": "Mahsulotlar analitikasini yuklab bo‘lmadi",
+        "colProduct": "Mahsulot",
+        "colGrowth": "O‘sish",
+        "kpi": {
+          "soldQty": "Sotilgan",
+          "revenue": "Tushum",
+          "cost": "Tannarx",
+          "profit": "Yalpi foyda",
+          "margin": "Marja"
+        },
+        "sorts": {
+          "revenue": "Tushum",
+          "profit": "Foyda",
+          "qty": "Miqdor",
+          "margin": "Marja",
+          "growth": "O‘sish",
+          "drop": "Pasayish"
+        }
+      },
+      "sales": {
+        "dailyTitle": "Kunlik aylanma va foyda",
+        "hourlyTitle": "Soatlar bo‘yicha savdo",
+        "hourlyHint": "Soatlar taxminiy: chek sanasi bor, vaqt reportingga tushgan paytdan olinadi.",
+        "peakDay": "Eng yaxshi kun — {{day}}: {{sum}} ({{pct}}%)",
+        "peakHour": "Pik soat — {{hour}}: {{sum}} ({{pct}}%)",
+        "loadFailed": "Savdo analitikasini yuklab bo‘lmadi"
+      }
     },
     "monitoring": {
       "nav": "Monitoring",
@@ -3042,11 +3194,11 @@
       "passwordMismatch": "Parollar mos emas",
       "passwordUpdatedAt": "Yangilangan: {{date}}",
       "staffTitle": "Platforma administratorlari",
-      "staffHint": "Super-admin hammasini ko‘radi. Operatorga bo‘limlar «Kirish huquqlari»da beriladi.",
+      "staffHint": "Super-admin hamma narsani ko‘radi. Operatorga bo‘limlar «Доступлар»da beriladi. Platforma analitigi darhol faqat analitikanigina oladi.",
       "addStaff": "Qo‘shish",
       "editStaff": "Tahrirlash",
       "colRole": "Rol",
-      "operatorCreated": "Operator yaratildi. Bo‘limlarni «Kirish huquqlari»da bering.",
+      "operatorCreated": "Operator yaratildi. Bo‘limlarni «Доступлар»da bering.",
       "superAdminsTitle": "Super-administratorlar",
       "superAdminsHint": "Platformaga to‘liq kirish. Ism va parolni o‘zgartirish mumkin.",
       "addSuperAdmin": "Super-admin qo‘shish",
@@ -3062,7 +3214,8 @@
       "colLastName": "Familiya",
       "colUsername": "Login",
       "colPassword": "Parol",
-      "newPasswordOptional": "Yangi parol (ixtiyoriy)"
+      "newPasswordOptional": "Yangi parol (ixtiyoriy)",
+      "analyticsCreated": "Analitik yaratildi — o‘z loginidan kirib analitika ko‘ra oladi."
     },
     "account": {
       "nav": "Mening kirishim",
@@ -5072,7 +5225,8 @@
     "WAITER": "Ofitsiant",
     "ACCOUNTANT": "Buxgalter",
     "SUPER_ADMIN": "Super-admin",
-    "PLATFORM_ADMIN": "Platforma operatori"
+    "PLATFORM_ADMIN": "Platforma operatori",
+    "PLATFORM_ANALYTICS": "Platforma analitigi"
   },
   "billing": {
     "title": "To‘lov va obuna",

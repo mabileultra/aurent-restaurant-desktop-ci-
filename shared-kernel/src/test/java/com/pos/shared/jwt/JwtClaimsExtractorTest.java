@@ -61,6 +61,7 @@ class JwtClaimsExtractorTest {
     void isPlatformScopeRole_matchesBothPlatformRoles() {
         assertTrue(JwtClaimsExtractor.isPlatformScopeRole("SUPER_ADMIN"));
         assertTrue(JwtClaimsExtractor.isPlatformScopeRole("PLATFORM_ADMIN"));
+        assertTrue(JwtClaimsExtractor.isPlatformScopeRole("PLATFORM_ANALYTICS"));
         assertTrue(JwtClaimsExtractor.isPlatformScopeRole(" platform_admin "));
         assertFalse(JwtClaimsExtractor.isPlatformScopeRole("ADMIN"));
         assertFalse(JwtClaimsExtractor.isPlatformScopeRole(null));

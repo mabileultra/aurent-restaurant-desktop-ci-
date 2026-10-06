@@ -12,6 +12,7 @@ import java.util.Arrays;
 public enum RoleName {
     SUPER_ADMIN("SUPER_ADMIN"),
     PLATFORM_ADMIN("PLATFORM_ADMIN"),
+    PLATFORM_ANALYTICS("PLATFORM_ANALYTICS"),
     TENANT_ADMIN("ADMIN"),
     MANAGER("MANAGER"),
     CASHIER("CASHIER"),
@@ -50,6 +51,10 @@ public enum RoleName {
     }
 
     public static boolean isPlatformScope(User user) {
+        return SUPER_ADMIN.matches(user) || PLATFORM_ADMIN.matches(user) || PLATFORM_ANALYTICS.matches(user);
+    }
+
+    public static boolean isPlatformOperator(User user) {
         return SUPER_ADMIN.matches(user) || PLATFORM_ADMIN.matches(user);
     }
 }

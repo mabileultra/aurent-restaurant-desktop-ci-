@@ -37,6 +37,6 @@ public class CurrentUserProvider {
     }
 
     public boolean isPlatformOperator(User user) {
-        return RoleName.isPlatformScope(user);
+        return RoleName.isPlatformOperator(user);
     }
 }

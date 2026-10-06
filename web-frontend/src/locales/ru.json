@@ -3203,9 +3203,161 @@
       "platformReferenceBooks": "Справочники",
       "platformLeads": "Заявки",
       "platformBilling": "Биллинг",
+      "platformAnalytics": "Аналитика",
       "platformMonitoring": "Мониторинг",
       "platformEmail": "Почта",
       "platformDesktopNotifications": "Уведомления desktop"
+    },
+    "analytics": {
+      "nav": "Аналитика",
+      "title": "Аналитика",
+      "subtitle": "Полная аналитика по всем магазинам, продажам, товарам и фискальным данным",
+      "period": "Период",
+      "export": "Экспорт",
+      "exportSoon": "Экспорт подключим на следующем шаге",
+      "seeAll": "Смотреть все",
+      "comingSoon": "Раздел в работе — сначала обзор, затем подключим реальные данные.",
+      "demoBanner": "Пока демо-цифры для макета обзора. Следующий шаг — API по продажам и себестоимости.",
+      "demoFallback": "Не удалось загрузить живые данные — показан демо-макет. Проверьте reporting-service.",
+      "live": "Живые данные",
+      "units": {
+        "billion": "млрд",
+        "million": "млн"
+      },
+      "periods": {
+        "today": "Сегодня",
+        "d7": "7 дней",
+        "d30": "30 дней",
+        "month": "Месяц",
+        "year": "Год"
+      },
+      "tabs": {
+        "overview": "Обзор",
+        "stores": "Магазины",
+        "products": "Товары",
+        "sales": "Продажи",
+        "fiscal": "Фискальная аналитика",
+        "payments": "Оплаты",
+        "customers": "Клиенты",
+        "geography": "География",
+        "anomalies": "Аномалии"
+      },
+      "kpi": {
+        "turnover": "Оборот",
+        "profit": "Прибыль",
+        "salesQty": "Количество продаж",
+        "receipts": "Количество чеков",
+        "avgCheck": "Средний чек",
+        "returns": "Возвраты"
+      },
+      "overview": {
+        "dailyTitle": "Оборот и прибыль по дням",
+        "bestDay": "Лучший день",
+        "bestDayHint": "Лучший день — {{day}}: {{sum}}",
+        "heatmapTitle": "Активность продаж",
+        "heatmapLegend": "Зелёный — спокойно, красный — пик",
+        "hourlyTitle": "Продажи по часам",
+        "peak": "Пиковое время: {{range}} · {{sum}} ({{pct}}%)",
+        "topStores": "Топ магазинов по обороту",
+        "topProductsQty": "Топ товаров по количеству",
+        "topProductsProfit": "Топ товаров по прибыли",
+        "regions": "Оборот по регионам",
+        "weekdays": "Дни недели",
+        "weekdayPeak": "{{day}} даёт {{pct}}% оборота недели",
+        "payments": "Способы оплаты",
+        "fiscal": "Фискальная аналитика",
+        "anomalies": "Аномалии"
+      },
+      "payments": {
+        "cash": "Наличные",
+        "click": "Click",
+        "payme": "Payme",
+        "card": "Банковские карты",
+        "other": "Другие",
+        "transfer": "Перевод",
+        "mixed": "Смешанная",
+        "totalAmount": "Сумма оплат",
+        "methodsTitle": "Разбивка по способам",
+        "dailyTitle": "Наличные / карта / прочее по дням",
+        "colMethod": "Способ",
+        "empty": "Нет данных за период",
+        "loadFailed": "Не удалось загрузить аналитику оплат"
+      },
+      "fiscal": {
+        "fiscalTurnover": "Фискальный оборот",
+        "fiscalReceipts": "Фискальные чеки",
+        "taxBase": "Налоговая база",
+        "vat": "НДС",
+        "fiscalReturns": "Фискальные возвраты",
+        "cancelled": "Отменённые чеки",
+        "byStoreTitle": "По магазинам",
+        "approximateHint": "По sale_facts (без отдельного ОФД-слоя) — приближённые фискальные KPI.",
+        "vatUnavailable": "НДС в reporting пока недоступен — налоговая база и НДС не считаются.",
+        "empty": "Нет данных за период",
+        "loadFailed": "Не удалось загрузить фискальную аналитику"
+      },
+      "anomalies": {
+        "turnoverDown": "Оборот ↓ {{value}}%",
+        "returnsUp": "Возвраты ↑ {{value}}%",
+        "salesUp": "Рост продаж ↑ {{value}}%",
+        "productUp": "Рост товара ↑ {{value}}%"
+      },
+      "stores": {
+        "tableTitle": "Все магазины",
+        "topTurnover": "Топ по обороту",
+        "topProfit": "Топ по прибыли",
+        "search": "Поиск магазина…",
+        "sort": "Сортировка",
+        "empty": "Нет данных за период",
+        "loadFailed": "Не удалось загрузить аналитику магазинов",
+        "colStore": "Магазин",
+        "colGrowth": "Рост",
+        "sorts": {
+          "turnover": "По обороту",
+          "profit": "По прибыли",
+          "receipts": "По чекам",
+          "avgCheck": "По среднему чеку",
+          "growth": "По росту",
+          "drop": "По падению"
+        }
+      },
+      "products": {
+        "tableTitle": "Товары",
+        "topQty": "Самые продаваемые",
+        "topProfit": "Самые прибыльные",
+        "rising": "Растущие",
+        "falling": "Падающие",
+        "categories": "Категории",
+        "search": "Поиск товара…",
+        "sort": "Сортировка",
+        "empty": "Нет данных за период",
+        "loadFailed": "Не удалось загрузить аналитику товаров",
+        "colProduct": "Товар",
+        "colGrowth": "Рост",
+        "kpi": {
+          "soldQty": "Продано товаров",
+          "revenue": "Выручка",
+          "cost": "Себестоимость",
+          "profit": "Валовая прибыль",
+          "margin": "Маржа"
+        },
+        "sorts": {
+          "revenue": "По выручке",
+          "profit": "По прибыли",
+          "qty": "По количеству",
+          "margin": "По марже",
+          "growth": "По росту",
+          "drop": "По падению"
+        }
+      },
+      "sales": {
+        "dailyTitle": "Оборот и прибыль по дням",
+        "hourlyTitle": "Продажи по часам",
+        "hourlyHint": "Часы приблизительные: в данных есть дата чека, время берём из момента попадания в reporting.",
+        "peakDay": "Лучший день — {{day}}: {{sum}} ({{pct}}%)",
+        "peakHour": "Пиковый час — {{hour}}: {{sum}} ({{pct}}%)",
+        "loadFailed": "Не удалось загрузить аналитику продаж"
+      }
     },
     "monitoring": {
       "nav": "Мониторинг",
@@ -3333,7 +3485,7 @@
       "passwordMismatch": "Пароли не совпадают",
       "passwordUpdatedAt": "Обновлён: {{date}}",
       "staffTitle": "Администраторы платформы",
-      "staffHint": "Супер-админ видит всё. Оператору разделы выдаются в «Доступах».",
+      "staffHint": "Супер-админ видит всё. Оператору разделы выдаются в «Доступах». Аналитик платформы сразу получает только аналитику.",
       "addStaff": "Добавить",
       "editStaff": "Изменить",
       "colRole": "Роль",
@@ -3353,7 +3505,8 @@
       "colLastName": "Фамилия",
       "colUsername": "Логин",
       "colPassword": "Пароль",
-      "newPasswordOptional": "Новый пароль (необязательно)"
+      "newPasswordOptional": "Новый пароль (необязательно)",
+      "analyticsCreated": "Аналитик создан — может войти своим логином и смотреть аналитику."
     },
     "account": {
       "nav": "Мой доступ",
@@ -5093,7 +5246,8 @@
     "COOK": "Повар",
     "ACCOUNTANT": "Бухгалтер",
     "SUPER_ADMIN": "Супер-админ",
-    "PLATFORM_ADMIN": "Оператор платформы"
+    "PLATFORM_ADMIN": "Оператор платформы",
+    "PLATFORM_ANALYTICS": "Аналитик платформы"
   },
   "finance": {
     "dashboard": {

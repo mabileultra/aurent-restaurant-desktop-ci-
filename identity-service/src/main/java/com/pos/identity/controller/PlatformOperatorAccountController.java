@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/platform/account")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('PLATFORM_ADMIN')")
-@Tag(name = "Platform Operator Account", description = "Свой логин и пароль PLATFORM_ADMIN")
+@PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'PLATFORM_ANALYTICS')")
+@Tag(name = "Platform Operator Account", description = "Свой логин PLATFORM_ADMIN / PLATFORM_ANALYTICS")
 public class PlatformOperatorAccountController {
 
     private final PlatformOperatorAccountService platformOperatorAccountService;

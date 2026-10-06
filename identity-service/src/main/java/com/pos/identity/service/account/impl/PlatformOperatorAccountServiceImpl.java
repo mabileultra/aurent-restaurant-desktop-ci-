@@ -65,7 +65,8 @@ public class PlatformOperatorAccountServiceImpl implements PlatformOperatorAccou
 
     private User requireSelf() {
         User user = tenantAccess.currentUser();
-        if (!RoleName.PLATFORM_ADMIN.matches(user) || user.getCompanyId() != null) {
+        boolean allowed = RoleName.PLATFORM_ADMIN.matches(user) || RoleName.PLATFORM_ANALYTICS.matches(user);
+        if (!allowed || user.getCompanyId() != null) {
             throw new BadRequestException("Access denied");
         }
         return user;

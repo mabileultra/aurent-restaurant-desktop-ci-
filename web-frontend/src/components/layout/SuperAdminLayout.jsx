@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen, Inbox, Wallet, CircleUser } from 'lucide-react';
+import { Building2, Store, Users, LogOut, Menu, KeyRound, Activity, Mail, ShieldCheck, Layers, Bell, BookOpen, Inbox, Wallet, CircleUser, BarChart3 } from 'lucide-react';
 import BrandMark from '../shared/BrandMark';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
@@ -19,6 +19,7 @@ const NAV_ICONS = {
   '/platform/reference-books': BookOpen,
   '/platform/leads': Inbox,
   '/platform/billing': Wallet,
+  '/platform/analytics': BarChart3,
   '/platform/monitoring': Activity,
   '/platform/email': Mail,
   '/platform/desktop-notifications': Bell,
@@ -74,13 +75,32 @@ export default function SuperAdminLayout() {
           </div>
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-          {links.map(({ to, key }) => {
+          {links.map(({ to, key, children }) => {
             const Icon = NAV_ICONS[to];
+            const sectionOpen = Boolean(children)
+              && (location.pathname === to || location.pathname.startsWith(`${to}/`));
             return (
-              <NavLink key={to} to={to} className={linkClass}>
-                {Icon ? <Icon size={18} className="shrink-0" /> : null}
-                {t(key)}
-              </NavLink>
+              <div key={to} className={sectionOpen ? 'admin-nav-group is-open' : 'admin-nav-group'}>
+                <NavLink to={to} className={linkClass}>
+                  {Icon ? <Icon size={18} className="shrink-0" /> : null}
+                  {t(key)}
+                </NavLink>
+                {children && sectionOpen ? (
+                  <div className="admin-nav-group-rail" role="group" aria-label={t(key)}>
+                    {children.map((child) => (
+                      <NavLink
+                        key={child.to}
+                        to={child.to}
+                        end={Boolean(child.end)}
+                        className={({ isActive }) =>
+                          `admin-nav-sublink${isActive ? ' admin-nav-sublink--active' : ''}`}
+                      >
+                        {t(child.key)}
+                      </NavLink>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
             );
           })}
         </nav>

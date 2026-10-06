@@ -23,7 +23,7 @@ public class UserAccessPolicy {
     private final TenantAccessSupport tenantAccess;
 
     public boolean canView(User user) {
-        if (RoleName.PLATFORM_ADMIN.matches(user)) {
+        if (RoleName.PLATFORM_ADMIN.matches(user) || RoleName.PLATFORM_ANALYTICS.matches(user)) {
             return false;
         }
         if (RoleName.SUPER_ADMIN.matches(user) && !tenantAccess.isSuperAdmin()) {

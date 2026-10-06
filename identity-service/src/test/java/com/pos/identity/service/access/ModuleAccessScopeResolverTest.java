@@ -16,6 +16,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+
 @ExtendWith(MockitoExtension.class)
 class ModuleAccessScopeResolverTest {
 
@@ -37,6 +39,15 @@ class ModuleAccessScopeResolverTest {
         assertTrue(resolver.keysFor(operator).contains("platformAccess"));
         assertFalse(resolver.keysFor(operator).contains("platformSecurity"));
         assertFalse(resolver.keysFor(operator).contains("dashboard"));
+    }
+
+    @Test
+    void platformAnalyticsGetsOnlyAnalyticsWithDefaultOn() {
+        User analyst = IdentityUsers.user("PLATFORM_ANALYTICS", null);
+        assertFalse(resolver.isPlatformAdmin(analyst));
+        assertEquals(List.of("platformAnalytics"), resolver.keysFor(analyst));
+        assertTrue(resolver.roleDefault(analyst, "platformAnalytics"));
+        assertFalse(resolver.roleDefault(analyst, "platformCompanies"));
     }
 
     @Test

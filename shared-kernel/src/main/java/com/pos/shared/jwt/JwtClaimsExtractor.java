@@ -99,7 +99,9 @@ public final class JwtClaimsExtractor {
             return false;
         }
         String normalized = role.trim().toUpperCase();
-        return "SUPER_ADMIN".equals(normalized) || "PLATFORM_ADMIN".equals(normalized);
+        return "SUPER_ADMIN".equals(normalized)
+            || "PLATFORM_ADMIN".equals(normalized)
+            || "PLATFORM_ANALYTICS".equals(normalized);
     }
 
     private static Integer parseHeaderCompanyId(String headerValue) {

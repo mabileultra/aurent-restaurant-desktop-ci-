@@ -35,10 +35,28 @@ describe('platformNav', () => {
     expect(new Set(modules).size).toBe(modules.length);
     expect(modules.every(Boolean)).toBe(true);
     expect(modules).toContain('platformAccess');
+    expect(modules).toContain('platformAnalytics');
     expect(modules).not.toContain('platformSecurity');
     expect(PLATFORM_NAV.filter((item) => item.superAdminOnly).map((item) => item.to)).toEqual([
       '/platform/security',
     ]);
+  });
+
+  it('shows analytics with nested tabs to SUPER_ADMIN', () => {
+    const links = visiblePlatformNav('SUPER_ADMIN', () => false);
+    const analytics = links.find((item) => item.to === '/platform/analytics');
+    expect(analytics?.children?.length).toBeGreaterThan(3);
+    expect(canOpenPlatformPath('SUPER_ADMIN', () => false, '/platform/analytics/products')).toBe(true);
+  });
+
+  it('shows only analytics and account to PLATFORM_ANALYTICS', () => {
+    const hasModule = (id) => id === 'platformAnalytics';
+    const links = visiblePlatformNav('PLATFORM_ANALYTICS', hasModule);
+    expect(links.map((item) => item.to)).toEqual(['/platform/analytics', '/platform/account']);
+    expect(canOpenPlatformPath('PLATFORM_ANALYTICS', hasModule, '/platform/analytics/sales')).toBe(true);
+    expect(canOpenPlatformPath('PLATFORM_ANALYTICS', hasModule, '/platform/billing')).toBe(false);
+    expect(canOpenPlatformPath('PLATFORM_ANALYTICS', hasModule, '/platform/security')).toBe(false);
+    expect(firstPlatformPath('PLATFORM_ANALYTICS', hasModule)).toBe('/platform/analytics');
   });
 
   it('blocks nested paths of ungranted sections', () => {

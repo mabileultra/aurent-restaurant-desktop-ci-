@@ -27,6 +27,7 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/reports/platform/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN", "PLATFORM_ANALYTICS")
                 .requestMatchers("/reports/**").hasAnyRole("ADMIN", "MANAGER", "SUPER_ADMIN")
                 .requestMatchers("/admin/reporting-sync/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
                 .anyRequest().denyAll()

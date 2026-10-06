@@ -18,7 +18,8 @@ class PlatformStaffRoleTest {
     }
 
     @Test
-    void acceptsExplicitSuperAdmin() {
+    void acceptsExplicitAnalyticsAndSuperAdmin() {
+        assertEquals("PLATFORM_ANALYTICS", PlatformStaffRole.resolveCreateRole("PLATFORM_ANALYTICS"));
         assertEquals("SUPER_ADMIN", PlatformStaffRole.resolveCreateRole("SUPER_ADMIN"));
     }
 

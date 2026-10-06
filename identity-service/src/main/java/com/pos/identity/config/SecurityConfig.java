@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .requestMatchers("/users/pos-roster").hasAnyRole(
                     "ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN", "MANAGER", "CASHIER", "WAITER", "COOK")
                 .requestMatchers("/users/**").hasAnyRole("ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN", "MANAGER")
-                .requestMatchers("/platform/account/**").hasRole("PLATFORM_ADMIN")
+                .requestMatchers("/platform/account/**").hasAnyRole("PLATFORM_ADMIN", "PLATFORM_ANALYTICS")
                 .requestMatchers("/platform/module-access/**").hasAnyRole("SUPER_ADMIN", "PLATFORM_ADMIN")
                 .requestMatchers("/platform/security/super-admins/**").hasRole("SUPER_ADMIN")
                 .anyRequest().denyAll()

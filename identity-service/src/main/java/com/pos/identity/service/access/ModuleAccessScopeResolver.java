@@ -24,6 +24,9 @@ public class ModuleAccessScopeResolver {
     }
 
     public List<String> keysFor(User user) {
+        if (RoleName.PLATFORM_ANALYTICS.matches(user)) {
+            return List.of(PlatformAdminModule.ANALYTICS.key());
+        }
         if (isPlatformAdmin(user)) {
             return PlatformAdminModule.grantable().stream().map(PlatformAdminModule::key).toList();
         }
@@ -44,6 +47,9 @@ public class ModuleAccessScopeResolver {
     }
 
     public boolean roleDefault(User user, String moduleKey) {
+        if (RoleName.PLATFORM_ANALYTICS.matches(user)) {
+            return PlatformAdminModule.ANALYTICS.key().equals(moduleKey);
+        }
         if (isPlatformAdmin(user)) {
             return false;
         }

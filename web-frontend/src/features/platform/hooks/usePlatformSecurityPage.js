@@ -45,10 +45,13 @@ export function usePlatformSecurityPage() {
   const createAdminMutation = useMutation({
     mutationFn: (payload) => platformSecurityApi.createSuperAdmin(payload).then((r) => r.data),
     onSuccess: (_data, payload) => {
+      const role = payload?.role;
       toast.success(
-        payload?.role === 'SUPER_ADMIN'
+        role === 'SUPER_ADMIN'
           ? t('platform.security.adminCreated')
-          : t('platform.security.operatorCreated')
+          : role === 'PLATFORM_ANALYTICS'
+            ? t('platform.security.analyticsCreated')
+            : t('platform.security.operatorCreated')
       );
       setAdminForm(null);
       qc.invalidateQueries({ queryKey: ['platform-security-super-admins'] });

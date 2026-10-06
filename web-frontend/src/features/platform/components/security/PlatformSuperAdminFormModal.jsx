@@ -40,6 +40,7 @@ export default function PlatformSuperAdminFormModal({
               onChange={(e) => onFieldChange('role', e.target.value)}
               options={[
                 { value: 'PLATFORM_ADMIN', label: t('roles.PLATFORM_ADMIN') },
+                { value: 'PLATFORM_ANALYTICS', label: t('roles.PLATFORM_ANALYTICS') },
                 { value: 'SUPER_ADMIN', label: t('roles.SUPER_ADMIN') },
               ]}
               required

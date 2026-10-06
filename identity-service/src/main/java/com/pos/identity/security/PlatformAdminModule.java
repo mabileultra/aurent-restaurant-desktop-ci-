@@ -18,6 +18,7 @@ public enum PlatformAdminModule {
     REFERENCE_BOOKS("platformReferenceBooks", "platform"),
     LEADS("platformLeads", "platform"),
     BILLING("platformBilling", "platform"),
+    ANALYTICS("platformAnalytics", "platform"),
     MONITORING("platformMonitoring", "platform"),
     EMAIL("platformEmail", "platform"),
     DESKTOP_NOTIFICATIONS("platformDesktopNotifications", "platform");

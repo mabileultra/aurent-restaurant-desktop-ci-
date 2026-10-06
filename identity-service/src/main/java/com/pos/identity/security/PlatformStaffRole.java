@@ -12,6 +12,9 @@ public final class PlatformStaffRole {
         if (value.isEmpty() || RoleName.PLATFORM_ADMIN.matches(value)) {
             return RoleName.PLATFORM_ADMIN.key();
         }
+        if (RoleName.PLATFORM_ANALYTICS.matches(value)) {
+            return RoleName.PLATFORM_ANALYTICS.key();
+        }
         if (RoleName.SUPER_ADMIN.matches(value)) {
             return RoleName.SUPER_ADMIN.key();
         }

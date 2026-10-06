@@ -24,7 +24,7 @@ public class ModuleAccessUserGate {
         if (user.getRole() == null || RoleName.SUPER_ADMIN.matches(user)) {
             throw new BadRequestException("Module access is not configurable for this user");
         }
-        if (RoleName.PLATFORM_ADMIN.matches(user)) {
+        if (RoleName.PLATFORM_ADMIN.matches(user) || RoleName.PLATFORM_ANALYTICS.matches(user)) {
             if (user.getCompanyId() != null) {
                 throw new BadRequestException("Platform operator must not belong to a company");
             }

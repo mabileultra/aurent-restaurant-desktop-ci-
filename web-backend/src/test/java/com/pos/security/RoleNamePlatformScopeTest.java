@@ -10,9 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RoleNamePlatformScopeTest {
 
     @Test
-    void platformScopeMatchesSuperAdminAndOperator() {
+    void platformScopeMatchesSuperAdminOperatorAndAnalytics() {
         assertTrue(RoleName.isPlatformScope(user("SUPER_ADMIN")));
         assertTrue(RoleName.isPlatformScope(user("PLATFORM_ADMIN")));
+        assertTrue(RoleName.isPlatformScope(user("PLATFORM_ANALYTICS")));
+        assertFalse(RoleName.isPlatformOperator(user("PLATFORM_ANALYTICS")));
+        assertTrue(RoleName.isPlatformOperator(user("PLATFORM_ADMIN")));
         assertFalse(RoleName.isPlatformScope(user("ADMIN")));
         assertFalse(RoleName.isPlatformScope(user("CASHIER")));
         assertFalse(RoleName.isPlatformScope(null));

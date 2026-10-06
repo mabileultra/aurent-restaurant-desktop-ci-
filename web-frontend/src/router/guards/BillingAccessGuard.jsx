@@ -30,6 +30,7 @@ export default function BillingAccessGuard({ children }) {
     && user
     && user.role !== 'SUPER_ADMIN'
     && user.role !== 'PLATFORM_ADMIN'
+    && user.role !== 'PLATFORM_ANALYTICS'
     && !skipOnline,
   );
 

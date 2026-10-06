@@ -1,5 +1,5 @@
 import { isNewModuleAccessUser } from '../../../utils/moduleAccessUserFilters';
-import { isPlatformAdminRole } from '../../../../../utils/platformRoles';
+import { isPlatformAdminRole, isPlatformAnalyticsRole } from '../../../../../utils/platformRoles';
 import '../../../../../styles/platform/module-access-users.css';
 
 export default function PlatformModuleAccessUserRow({
@@ -9,6 +9,7 @@ export default function PlatformModuleAccessUserRow({
   onSelect,
 }) {
   const isNew = isNewModuleAccessUser(user);
+  const isPlatformStaff = isPlatformAdminRole(user.role) || isPlatformAnalyticsRole(user.role);
 
   return (
     <button
@@ -34,7 +35,7 @@ export default function PlatformModuleAccessUserRow({
       </span>
       {user.companyName ? (
         <span className="module-access-user-row__company">{user.companyName}</span>
-      ) : isPlatformAdminRole(user.role) ? (
+      ) : isPlatformStaff ? (
         <span className="module-access-user-row__company">{t('platform.moduleAccess.platformStaff')}</span>
       ) : null}
     </button>

@@ -40,8 +40,8 @@ mustContain(
 );
 mustContain(
   identitySecurity,
-  '.requestMatchers("/platform/account/**").hasRole("PLATFORM_ADMIN")',
-  'identity /platform/account is PLATFORM_ADMIN self-service'
+  '.requestMatchers("/platform/account/**").hasAnyRole("PLATFORM_ADMIN", "PLATFORM_ANALYTICS")',
+  'identity /platform/account is PLATFORM_ADMIN/PLATFORM_ANALYTICS self-service'
 );
 mustContain(
   identitySecurity,
@@ -141,6 +141,11 @@ mustContain(
   'identity liquibase grants platformAccess to PLATFORM_ADMIN'
 );
 mustContain(
+  read('identity-service/src/main/resources/db/changelog/db.changelog-master.xml'),
+  'v7-identity-platform-analytics-role.xml',
+  'identity liquibase includes PLATFORM_ANALYTICS role'
+);
+mustContain(
   read('web-backend/src/main/resources/db/changelog/db.changelog-master.xml'),
   'v39-platform-admin-role.xml',
   'web-backend liquibase includes PLATFORM_ADMIN role'
@@ -156,6 +161,11 @@ mustContain(
   'web-backend liquibase grants platformAccess to PLATFORM_ADMIN'
 );
 mustContain(
+  read('web-backend/src/main/resources/db/changelog/db.changelog-master.xml'),
+  'v45-platform-analytics-role.xml',
+  'web-backend liquibase includes PLATFORM_ANALYTICS role'
+);
+mustContain(
   read('identity-service/src/main/resources/db/changelog/v4-identity-platform-admin-role.xml'),
   "value=\"PLATFORM_ADMIN\"",
   'identity role insert'
@@ -164,6 +174,26 @@ mustContain(
   read('web-backend/src/main/resources/db/changelog/v39-platform-admin-role.xml'),
   'PLATFORM_ADMIN',
   'web-backend role insert'
+);
+mustContain(
+  read('identity-service/src/main/resources/db/changelog/v7-identity-platform-analytics-role.xml'),
+  "value=\"PLATFORM_ANALYTICS\"",
+  'identity PLATFORM_ANALYTICS role insert'
+);
+mustContain(
+  read('web-backend/src/main/resources/db/changelog/v45-platform-analytics-role.xml'),
+  'PLATFORM_ANALYTICS',
+  'web-backend PLATFORM_ANALYTICS role insert'
+);
+mustContain(
+  read('reporting-service/src/main/java/com/pos/reporting/config/SecurityConfig.java'),
+  'PLATFORM_ANALYTICS',
+  'reporting platform analytics allows PLATFORM_ANALYTICS'
+);
+mustContain(
+  read('web-frontend/src/features/platform/components/security/PlatformSuperAdminFormModal.jsx'),
+  'PLATFORM_ANALYTICS',
+  'security form can create PLATFORM_ANALYTICS'
 );
 mustContain(
   read('identity-service/src/main/resources/db/changelog/v5-identity-platform-admin-user.xml'),

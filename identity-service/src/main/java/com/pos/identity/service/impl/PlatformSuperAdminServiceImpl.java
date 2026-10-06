@@ -43,7 +43,11 @@ public class PlatformSuperAdminServiceImpl implements PlatformSuperAdminService 
     public List<PlatformSuperAdminResponse> listSuperAdmins() {
         assertSuperAdminActor();
         return userRepository.findAll(
-            UserSpecifications.listPlatformStaff(RoleName.SUPER_ADMIN.key(), RoleName.PLATFORM_ADMIN.key())
+            UserSpecifications.listPlatformStaff(
+                RoleName.SUPER_ADMIN.key(),
+                RoleName.PLATFORM_ADMIN.key(),
+                RoleName.PLATFORM_ANALYTICS.key()
+            )
         ).stream()
             .map(this::toSuperAdminResponse)
             .toList();

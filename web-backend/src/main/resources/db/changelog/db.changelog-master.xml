@@ -49,5 +49,6 @@
     <include file="v42-asl-request-log.xml" relativeToChangelogFile="true"/>
     <include file="v43-stock-expense-production.xml" relativeToChangelogFile="true"/>
     <include file="v44-fractional-g-ml-units.xml" relativeToChangelogFile="true"/>
+    <include file="v45-platform-analytics-role.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
