@@ -7,4 +7,5 @@ export const platformAnalyticsApi = {
   sales: (params) => api.get('/reports/platform/analytics/sales', { params }),
   payments: (params) => api.get('/reports/platform/analytics/payments', { params }),
   fiscal: (params) => api.get('/reports/platform/analytics/fiscal', { params }),
+  export: (params) => api.get('/reports/platform/analytics/export', { params, responseType: 'blob' }),
 };

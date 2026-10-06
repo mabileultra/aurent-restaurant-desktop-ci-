@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS_EXTENDED } from '../../../../components/shared/TablePagination';
 import {
   formatAnalyticsCount,
   formatAnalyticsDelta,
   formatAnalyticsMoney,
 } from '../../utils/formatAnalyticsMoney';
+import { useAnalyticsTablePage } from '../../hooks/useAnalyticsTablePage';
 
 const SORTS = [
   { id: 'turnover', key: 'turnover' },
@@ -74,6 +76,8 @@ export default function AnalyticsStoresPanel({ t, data }) {
     return sortStores(filtered, sort);
   }, [data?.stores, q, sort]);
 
+  const { page, setPage, pageSize, setPageSize, total, pageRows } = useAnalyticsTablePage(rows, 20);
+
   return (
     <div className="pa-stores">
       <div className="pa-grid pa-grid--stores-tops">
@@ -128,11 +132,11 @@ export default function AnalyticsStoresPanel({ t, data }) {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 ? (
+              {pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="pa-muted">{t('platform.analytics.stores.empty')}</td>
                 </tr>
-              ) : rows.map((row) => (
+              ) : pageRows.map((row) => (
                 <tr key={row.storeId ?? row.name}>
                   <td className="pa-table__name">{row.name}</td>
                   <td>{formatAnalyticsMoney(row.turnover, t)}</td>
@@ -145,6 +149,15 @@ export default function AnalyticsStoresPanel({ t, data }) {
             </tbody>
           </table>
         </div>
+        <TablePagination
+          className="pa-pagination"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS_EXTENDED}
+        />
       </section>
     </div>
   );

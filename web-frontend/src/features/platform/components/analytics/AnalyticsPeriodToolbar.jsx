@@ -14,6 +14,8 @@ export default function AnalyticsPeriodToolbar({
   onPeriod,
   periodLabel,
   isLive,
+  onExport,
+  exporting = false,
 }) {
   return (
     <div className="pa-toolbar">
@@ -33,9 +35,14 @@ export default function AnalyticsPeriodToolbar({
         {periodLabel ? <span className="pa-periods__range">{periodLabel}</span> : null}
         {isLive ? <span className="pa-live">{t('platform.analytics.live')}</span> : null}
       </div>
-      <button type="button" className="pa-btn pa-btn--outline" disabled title={t('platform.analytics.exportSoon')}>
+      <button
+        type="button"
+        className="pa-btn pa-btn--outline"
+        disabled={!onExport || exporting}
+        onClick={onExport}
+      >
         <Download size={16} aria-hidden />
-        {t('platform.analytics.export')}
+        {exporting ? t('platform.analytics.exporting') : t('platform.analytics.export')}
       </button>
     </div>
   );

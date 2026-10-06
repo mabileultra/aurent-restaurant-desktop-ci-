@@ -16,6 +16,22 @@ import { usePlatformAnalyticsProducts } from '../hooks/usePlatformAnalyticsProdu
 import { usePlatformAnalyticsSales } from '../hooks/usePlatformAnalyticsSales';
 import { usePlatformAnalyticsPayments } from '../hooks/usePlatformAnalyticsPayments';
 import { usePlatformAnalyticsFiscal } from '../hooks/usePlatformAnalyticsFiscal';
+import { usePlatformAnalyticsExport } from '../hooks/usePlatformAnalyticsExport';
+
+function Toolbar({ t, period, setPeriod, periodLabel, isLive, view }) {
+  const { exporting, exportExcel } = usePlatformAnalyticsExport(view, period);
+  return (
+    <AnalyticsPeriodToolbar
+      t={t}
+      period={period}
+      onPeriod={setPeriod}
+      periodLabel={periodLabel}
+      isLive={isLive}
+      onExport={exportExcel}
+      exporting={exporting}
+    />
+  );
+}
 
 function OverviewPane() {
   const { t } = useTranslation();
@@ -23,13 +39,7 @@ function OverviewPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="overview" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error && data?.demo ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.demoFallback')}</p>
@@ -45,13 +55,7 @@ function StoresPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="stores" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.stores.loadFailed')}</p>
@@ -67,13 +71,7 @@ function ProductsPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="products" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.products.loadFailed')}</p>
@@ -89,13 +87,7 @@ function SalesPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="sales" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.sales.loadFailed')}</p>
@@ -111,13 +103,7 @@ function PaymentsPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="payments" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.payments.loadFailed')}</p>
@@ -133,13 +119,7 @@ function FiscalPane() {
 
   return (
     <>
-      <AnalyticsPeriodToolbar
-        t={t}
-        period={period}
-        onPeriod={setPeriod}
-        periodLabel={data?.periodLabel}
-        isLive={isLive}
-      />
+      <Toolbar t={t} period={period} setPeriod={setPeriod} periodLabel={data?.periodLabel} isLive={isLive} view="fiscal" />
       {loading ? <p className="pa-muted">{t('common.loading')}</p> : null}
       {error ? (
         <p className="pa-demo-banner" role="status">{t('platform.analytics.fiscal.loadFailed')}</p>

@@ -1,11 +1,14 @@
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS_EXTENDED } from '../../../../components/shared/TablePagination';
 import {
   formatAnalyticsCount,
   formatAnalyticsMoney,
 } from '../../utils/formatAnalyticsMoney';
+import { useAnalyticsTablePage } from '../../hooks/useAnalyticsTablePage';
 
 export default function AnalyticsFiscalPanel({ t, data }) {
   const kpi = data?.kpi || {};
   const stores = data?.byStore || [];
+  const { page, setPage, pageSize, setPageSize, total, pageRows } = useAnalyticsTablePage(stores, 20);
 
   return (
     <div className="pa-fiscal-page">
@@ -62,11 +65,11 @@ export default function AnalyticsFiscalPanel({ t, data }) {
               </tr>
             </thead>
             <tbody>
-              {stores.length === 0 ? (
+              {pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="pa-muted">{t('platform.analytics.fiscal.empty')}</td>
                 </tr>
-              ) : stores.map((s) => (
+              ) : pageRows.map((s) => (
                 <tr key={s.storeId ?? s.name}>
                   <td>{s.name}</td>
                   <td>{formatAnalyticsMoney(s.turnover, t)}</td>
@@ -78,6 +81,15 @@ export default function AnalyticsFiscalPanel({ t, data }) {
             </tbody>
           </table>
         </div>
+        <TablePagination
+          className="pa-pagination"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS_EXTENDED}
+        />
       </section>
     </div>
   );

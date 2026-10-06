@@ -1,9 +1,11 @@
 import { useMemo, useState } from 'react';
+import TablePagination, { TABLE_PAGE_SIZE_OPTIONS_EXTENDED } from '../../../../components/shared/TablePagination';
 import {
   formatAnalyticsCount,
   formatAnalyticsDelta,
   formatAnalyticsMoney,
 } from '../../utils/formatAnalyticsMoney';
+import { useAnalyticsTablePage } from '../../hooks/useAnalyticsTablePage';
 
 const SORTS = [
   { id: 'revenue', key: 'revenue' },
@@ -73,6 +75,8 @@ export default function AnalyticsProductsPanel({ t, data }) {
     });
     return sortProducts(filtered, sort);
   }, [data?.products, q, sort]);
+
+  const { page, setPage, pageSize, setPageSize, total, pageRows } = useAnalyticsTablePage(rows, 20);
 
   const kpi = data?.kpi || {};
 
@@ -184,11 +188,11 @@ export default function AnalyticsProductsPanel({ t, data }) {
               </tr>
             </thead>
             <tbody>
-              {rows.length === 0 ? (
+              {pageRows.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="pa-muted">{t('platform.analytics.products.empty')}</td>
                 </tr>
-                  ) : rows.map((row) => (
+              ) : pageRows.map((row) => (
                 <tr key={row.name} className={Number(row.marginPct) < 5 && Number(row.revenue) > 0 ? 'pa-table__row--low-margin' : undefined}>
                   <td className="pa-table__name">{row.name}</td>
                   <td>{formatAnalyticsCount(row.qty)}</td>
@@ -202,6 +206,15 @@ export default function AnalyticsProductsPanel({ t, data }) {
             </tbody>
           </table>
         </div>
+        <TablePagination
+          className="pa-pagination"
+          page={page}
+          pageSize={pageSize}
+          total={total}
+          onPageChange={setPage}
+          onPageSizeChange={setPageSize}
+          pageSizeOptions={TABLE_PAGE_SIZE_OPTIONS_EXTENDED}
+        />
       </section>
     </div>
   );

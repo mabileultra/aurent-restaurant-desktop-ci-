@@ -6,6 +6,8 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsPaymentsResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsProductsResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsSalesResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsStoresResponse;
+import com.pos.reporting.export.SpreadsheetDownloadSupport;
+import com.pos.reporting.service.PlatformAnalyticsExportService;
 import com.pos.reporting.service.PlatformAnalyticsFiscalService;
 import com.pos.reporting.service.PlatformAnalyticsOverviewService;
 import com.pos.reporting.service.PlatformAnalyticsPaymentsService;
@@ -13,6 +15,7 @@ import com.pos.reporting.service.PlatformAnalyticsProductsService;
 import com.pos.reporting.service.PlatformAnalyticsSalesService;
 import com.pos.reporting.service.PlatformAnalyticsStoresService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -38,6 +41,7 @@ public class PlatformAnalyticsController {
     private final PlatformAnalyticsSalesService salesService;
     private final PlatformAnalyticsPaymentsService paymentsService;
     private final PlatformAnalyticsFiscalService fiscalService;
+    private final PlatformAnalyticsExportService exportService;
 
     @GetMapping("/overview")
     @Operation(summary = "Обзор платформы")
@@ -97,5 +101,21 @@ public class PlatformAnalyticsController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
     ) {
         return ResponseEntity.ok(fiscalService.fiscal(period, from, to));
+    }
+
+    @GetMapping("/export")
+    @Operation(summary = "Excel-выгрузка вкладки аналитики")
+    @ApiResponse(responseCode = "200", description = "Файл Excel")
+    public ResponseEntity<byte[]> export(
+        @RequestParam(defaultValue = "overview") String view,
+        @RequestParam(defaultValue = "7d") String period,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to
+    ) {
+        String safeView = view == null || view.isBlank() ? "overview" : view.trim().toLowerCase();
+        return SpreadsheetDownloadSupport.attachment(
+            exportService.export(safeView, period, from, to),
+            "platform_analytics_" + safeView + "_export.xlsx"
+        );
     }
 }

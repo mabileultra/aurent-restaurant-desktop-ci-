@@ -2922,7 +2922,7 @@
       "title": "Analitika",
       "subtitle": "Barcha do‘konlar, savdolar, mahsulotlar va fiskal ma’lumotlar bo‘yicha to‘liq analitika",
       "period": "Davr",
-      "export": "Eksport",
+      "export": "Excel eksport",
       "exportSoon": "Eksport keyingi bosqichda",
       "seeAll": "Hammasini ko‘rish",
       "comingSoon": "Bo‘lim ishlanmoqda — avval overview, keyin real ma’lumotlar.",
@@ -3066,7 +3066,10 @@
         "peakDay": "Eng yaxshi kun — {{day}}: {{sum}} ({{pct}}%)",
         "peakHour": "Pik soat — {{hour}}: {{sum}} ({{pct}}%)",
         "loadFailed": "Savdo analitikasini yuklab bo‘lmadi"
-      }
+      },
+      "exporting": "Tayyorlanmoqda…",
+      "exportDone": "Excel fayl saqlandi",
+      "exportFailed": "Excel yuklab bo‘lmadi"
     },
     "monitoring": {
       "nav": "Monitoring",
