@@ -18,10 +18,10 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
     @Query(value = """
         SELECT
           COALESCE(SUM(s.total_amount), 0),
-          COUNT(*)::bigint,
+          CAST(COUNT(*) AS bigint),
           COALESCE(SUM(s.returned_amount), 0),
           COALESCE(SUM(s.items_sold), 0),
-          COUNT(DISTINCT s.store_id)::bigint,
+          CAST(COUNT(DISTINCT s.store_id) AS bigint),
           COALESCE(SUM(s.cash_amount), 0),
           COALESCE(SUM(s.card_amount), 0)
         FROM sale_facts s
@@ -43,7 +43,7 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
     @Query(value = """
         SELECT s.transaction_date,
                COALESCE(SUM(s.total_amount), 0),
-               COUNT(*)::bigint,
+               CAST(COUNT(*) AS bigint),
                COALESCE(SUM(s.returned_amount), 0)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
@@ -115,7 +115,7 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
     List<Object[]> topProductsByProfit(@Param("from") LocalDate from, @Param("to") LocalDate to, @Param("limit") int limit);
 
     @Query(value = """
-        SELECT EXTRACT(ISODOW FROM s.transaction_date)::int,
+        SELECT CAST(EXTRACT(ISODOW FROM s.transaction_date) AS int),
                COALESCE(SUM(s.total_amount), 0)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
@@ -154,7 +154,7 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
         SELECT s.store_id,
                COALESCE(MAX(s.store_name), CONCAT('Store #', s.store_id)),
                COALESCE(SUM(s.total_amount), 0),
-               COUNT(*)::bigint
+               CAST(COUNT(*) AS bigint)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
           AND s.sale_status IN ('COMPLETED', 'REFUNDED')
@@ -252,9 +252,9 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
 
     /** Час по ingested_at — приближение (в sale_facts нет времени продажи). */
     @Query(value = """
-        SELECT EXTRACT(HOUR FROM s.ingested_at)::int,
+        SELECT CAST(EXTRACT(HOUR FROM s.ingested_at) AS int),
                COALESCE(SUM(s.total_amount), 0),
-               COUNT(*)::bigint
+               CAST(COUNT(*) AS bigint)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
           AND s.sale_status IN ('COMPLETED', 'REFUNDED')
@@ -267,7 +267,7 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
     @Query(value = """
         SELECT LOWER(COALESCE(NULLIF(TRIM(s.payment_method), ''), 'unknown')),
                COALESCE(SUM(s.total_amount), 0),
-               COUNT(*)::bigint
+               CAST(COUNT(*) AS bigint)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
           AND s.sale_status IN ('COMPLETED', 'REFUNDED')
@@ -292,10 +292,10 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
     @Query(value = """
         SELECT
           COALESCE(SUM(CASE WHEN s.sale_status IN ('COMPLETED', 'REFUNDED') THEN s.total_amount ELSE 0 END), 0),
-          COUNT(*) FILTER (WHERE s.sale_status IN ('COMPLETED', 'REFUNDED'))::bigint,
+          CAST(COUNT(*) FILTER (WHERE s.sale_status IN ('COMPLETED', 'REFUNDED')) AS bigint),
           COALESCE(SUM(s.returned_amount), 0),
-          COUNT(*) FILTER (WHERE s.returned_amount > 0)::bigint,
-          COUNT(*) FILTER (WHERE UPPER(COALESCE(s.sale_status, '')) IN ('CANCELLED', 'CANCELED', 'VOID'))::bigint
+          CAST(COUNT(*) FILTER (WHERE s.returned_amount > 0) AS bigint),
+          CAST(COUNT(*) FILTER (WHERE UPPER(COALESCE(s.sale_status, '')) IN ('CANCELLED', 'CANCELED', 'VOID')) AS bigint)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
         """, nativeQuery = true)
@@ -305,9 +305,9 @@ public interface PlatformAnalyticsOverviewRepository extends JpaRepository<SaleF
         SELECT s.store_id,
                COALESCE(MAX(s.store_name), CONCAT('Store #', s.store_id)),
                COALESCE(SUM(CASE WHEN s.sale_status IN ('COMPLETED', 'REFUNDED') THEN s.total_amount ELSE 0 END), 0),
-               COUNT(*) FILTER (WHERE s.sale_status IN ('COMPLETED', 'REFUNDED'))::bigint,
+               CAST(COUNT(*) FILTER (WHERE s.sale_status IN ('COMPLETED', 'REFUNDED')) AS bigint),
                COALESCE(SUM(s.returned_amount), 0),
-               COUNT(*) FILTER (WHERE UPPER(COALESCE(s.sale_status, '')) IN ('CANCELLED', 'CANCELED', 'VOID'))::bigint
+               CAST(COUNT(*) FILTER (WHERE UPPER(COALESCE(s.sale_status, '')) IN ('CANCELLED', 'CANCELED', 'VOID')) AS bigint)
         FROM sale_facts s
         WHERE s.transaction_date BETWEEN :from AND :to
           AND s.store_id IS NOT NULL
