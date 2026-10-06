@@ -4,6 +4,7 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsStoresResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsStoresResponse.PlatformStoreRank;
 import com.pos.reporting.dto.platform.PlatformAnalyticsStoresResponse.PlatformStoreRow;
 import com.pos.reporting.repository.PlatformAnalyticsOverviewRepository;
+import com.pos.reporting.util.NativeAggregateRowSupport;
 import com.pos.reporting.service.PlatformAnalyticsPeriod;
 import com.pos.reporting.service.PlatformAnalyticsStoresService;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,10 @@ public class PlatformAnalyticsStoresServiceImpl implements PlatformAnalyticsStor
 
         List<PlatformStoreRow> stores = new ArrayList<>();
         for (Object[] row : repository.storeSalesRows(range.from(), range.to(), STORE_LIMIT)) {
-            Integer storeId = intAt(row, 0);
+            Integer storeId = NativeAggregateRowSupport.toInteger(row, 0);
             String name = str(row[1]);
-            BigDecimal turnover = moneyAt(row, 2);
-            long receipts = longAt(row, 3);
+            BigDecimal turnover = NativeAggregateRowSupport.toBigDecimal(row, 2);
+            long receipts = NativeAggregateRowSupport.toLong(row, 3);
             BigDecimal profit = profitByStore.getOrDefault(storeId, BigDecimal.ZERO);
             BigDecimal avgCheck = receipts > 0
                 ? turnover.divide(BigDecimal.valueOf(receipts), 2, RoundingMode.HALF_UP)
@@ -79,38 +80,16 @@ public class PlatformAnalyticsStoresServiceImpl implements PlatformAnalyticsStor
     private static Map<Integer, BigDecimal> toMoneyMap(List<Object[]> rows) {
         Map<Integer, BigDecimal> map = new HashMap<>();
         for (Object[] row : rows) {
-            Integer id = intAt(row, 0);
+            Integer id = NativeAggregateRowSupport.toInteger(row, 0);
             if (id != null) {
-                map.put(id, moneyAt(row, 1));
+                map.put(id, NativeAggregateRowSupport.toBigDecimal(row, 1));
             }
         }
         return map;
     }
 
-    private static Integer intAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return null;
-        }
-        return ((Number) row[idx]).intValue();
-    }
 
-    private static long longAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return 0L;
-        }
-        return ((Number) row[idx]).longValue();
-    }
 
-    private static BigDecimal moneyAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        Object value = row[idx];
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
-    }
 
     private static String str(Object value) {
         return value == null ? "" : value.toString();

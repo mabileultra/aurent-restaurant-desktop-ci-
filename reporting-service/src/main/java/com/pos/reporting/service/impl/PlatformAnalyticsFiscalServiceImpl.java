@@ -4,6 +4,7 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsFiscalResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsFiscalResponse.PlatformFiscalKpi;
 import com.pos.reporting.dto.platform.PlatformAnalyticsFiscalResponse.PlatformFiscalStoreRow;
 import com.pos.reporting.repository.PlatformAnalyticsOverviewRepository;
+import com.pos.reporting.util.NativeAggregateRowSupport;
 import com.pos.reporting.service.PlatformAnalyticsFiscalService;
 import com.pos.reporting.service.PlatformAnalyticsPeriod;
 import lombok.RequiredArgsConstructor;
@@ -27,25 +28,25 @@ public class PlatformAnalyticsFiscalServiceImpl implements PlatformAnalyticsFisc
     @Override
     public PlatformAnalyticsFiscalResponse fiscal(String period, LocalDate from, LocalDate to) {
         PlatformAnalyticsPeriod range = PlatformAnalyticsPeriod.resolve(period, from, to, LocalDate.now());
-        Object[] totals = asRow(repository.fiscalTotals(range.from(), range.to()));
+        Object[] totals = NativeAggregateRowSupport.normalize(repository.fiscalTotals(range.from(), range.to()));
 
-        BigDecimal turnover = moneyAt(totals, 0);
-        long receipts = longAt(totals, 1);
-        BigDecimal returnsAmount = moneyAt(totals, 2);
-        long returnsReceipts = longAt(totals, 3);
-        long cancelled = longAt(totals, 4);
+        BigDecimal turnover = NativeAggregateRowSupport.toBigDecimal(totals, 0);
+        long receipts = NativeAggregateRowSupport.toLong(totals, 1);
+        BigDecimal returnsAmount = NativeAggregateRowSupport.toBigDecimal(totals, 2);
+        long returnsReceipts = NativeAggregateRowSupport.toLong(totals, 3);
+        long cancelled = NativeAggregateRowSupport.toLong(totals, 4);
         BigDecimal avgCheck = receipts > 0
             ? turnover.divide(BigDecimal.valueOf(receipts), 2, RoundingMode.HALF_UP)
             : BigDecimal.ZERO;
 
         List<PlatformFiscalStoreRow> byStore = repository.fiscalByStore(range.from(), range.to(), STORE_LIMIT).stream()
             .map(row -> new PlatformFiscalStoreRow(
-                intAt(row, 0),
+                NativeAggregateRowSupport.toInteger(row, 0),
                 str(row[1]),
-                moneyAt(row, 2),
-                longAt(row, 3),
-                moneyAt(row, 4),
-                longAt(row, 5)
+                NativeAggregateRowSupport.toBigDecimal(row, 2),
+                NativeAggregateRowSupport.toLong(row, 3),
+                NativeAggregateRowSupport.toBigDecimal(row, 4),
+                NativeAggregateRowSupport.toLong(row, 5)
             ))
             .toList();
 
@@ -68,41 +69,6 @@ public class PlatformAnalyticsFiscalServiceImpl implements PlatformAnalyticsFisc
             ),
             byStore
         );
-    }
-
-    private static Object[] asRow(Object raw) {
-        if (raw == null) {
-            return new Object[0];
-        }
-        if (raw instanceof Object[] arr) {
-            return arr;
-        }
-        return new Object[]{raw};
-    }
-
-    private static Integer intAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return null;
-        }
-        return ((Number) row[idx]).intValue();
-    }
-
-    private static long longAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return 0L;
-        }
-        return ((Number) row[idx]).longValue();
-    }
-
-    private static BigDecimal moneyAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        Object value = row[idx];
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 
     private static String str(Object value) {

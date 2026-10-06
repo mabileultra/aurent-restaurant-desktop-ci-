@@ -4,6 +4,7 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsPaymentsResponse;
 import com.pos.reporting.dto.platform.PlatformAnalyticsPaymentsResponse.PlatformPaymentDailyRow;
 import com.pos.reporting.dto.platform.PlatformAnalyticsPaymentsResponse.PlatformPaymentMethodRow;
 import com.pos.reporting.repository.PlatformAnalyticsOverviewRepository;
+import com.pos.reporting.util.NativeAggregateRowSupport;
 import com.pos.reporting.service.PlatformAnalyticsPaymentsService;
 import com.pos.reporting.service.PlatformAnalyticsPeriod;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +41,8 @@ public class PlatformAnalyticsPaymentsServiceImpl implements PlatformAnalyticsPa
         for (Object[] row : repository.paymentsByMethod(range.from(), range.to())) {
             String raw = str(row[0]);
             String id = normalizeMethodId(raw);
-            BigDecimal amount = moneyAt(row, 1);
-            long receipts = longAt(row, 2);
+            BigDecimal amount = NativeAggregateRowSupport.toBigDecimal(row, 1);
+            long receipts = NativeAggregateRowSupport.toLong(row, 2);
             totalAmount = totalAmount.add(amount);
             totalReceipts += receipts;
             methods.merge(id, new PlatformPaymentMethodRow(id, id, amount, receipts, BigDecimal.ZERO), (a, b) ->
@@ -76,9 +77,9 @@ public class PlatformAnalyticsPaymentsServiceImpl implements PlatformAnalyticsPa
             daily.add(new PlatformPaymentDailyRow(
                 day.toString(),
                 day.format(DAY_LABEL),
-                row != null ? moneyAt(row, 1) : BigDecimal.ZERO,
-                row != null ? moneyAt(row, 2) : BigDecimal.ZERO,
-                row != null ? moneyAt(row, 3) : BigDecimal.ZERO
+                row != null ? NativeAggregateRowSupport.toBigDecimal(row, 1) : BigDecimal.ZERO,
+                row != null ? NativeAggregateRowSupport.toBigDecimal(row, 2) : BigDecimal.ZERO,
+                row != null ? NativeAggregateRowSupport.toBigDecimal(row, 3) : BigDecimal.ZERO
             ));
         }
 
@@ -125,24 +126,6 @@ public class PlatformAnalyticsPaymentsServiceImpl implements PlatformAnalyticsPa
             return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
         }
         return part.multiply(BigDecimal.valueOf(100)).divide(total, 1, RoundingMode.HALF_UP);
-    }
-
-    private static long longAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return 0L;
-        }
-        return ((Number) row[idx]).longValue();
-    }
-
-    private static BigDecimal moneyAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        Object value = row[idx];
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 
     private static String str(Object value) {

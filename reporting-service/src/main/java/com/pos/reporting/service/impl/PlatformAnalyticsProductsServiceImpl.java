@@ -6,6 +6,7 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsProductsResponse.Platform
 import com.pos.reporting.dto.platform.PlatformAnalyticsProductsResponse.PlatformProductRank;
 import com.pos.reporting.dto.platform.PlatformAnalyticsProductsResponse.PlatformProductRow;
 import com.pos.reporting.repository.PlatformAnalyticsOverviewRepository;
+import com.pos.reporting.util.NativeAggregateRowSupport;
 import com.pos.reporting.service.PlatformAnalyticsPeriod;
 import com.pos.reporting.service.PlatformAnalyticsProductsService;
 import lombok.RequiredArgsConstructor;
@@ -36,11 +37,11 @@ public class PlatformAnalyticsProductsServiceImpl implements PlatformAnalyticsPr
     public PlatformAnalyticsProductsResponse products(String period, LocalDate from, LocalDate to) {
         PlatformAnalyticsPeriod range = PlatformAnalyticsPeriod.resolve(period, from, to, LocalDate.now());
 
-        Object[] totals = asRow(repository.productKpiTotals(range.from(), range.to()));
-        long soldQty = longAt(totals, 0);
-        BigDecimal revenue = moneyAt(totals, 1);
-        BigDecimal cost = moneyAt(totals, 2);
-        BigDecimal profit = moneyAt(totals, 3);
+        Object[] totals = NativeAggregateRowSupport.normalize(repository.productKpiTotals(range.from(), range.to()));
+        long soldQty = NativeAggregateRowSupport.toLong(totals, 0);
+        BigDecimal revenue = NativeAggregateRowSupport.toBigDecimal(totals, 1);
+        BigDecimal cost = NativeAggregateRowSupport.toBigDecimal(totals, 2);
+        BigDecimal profit = NativeAggregateRowSupport.toBigDecimal(totals, 3);
         BigDecimal marginPct = margin(profit, revenue);
 
         Map<String, BigDecimal> prevQty = toQtyMap(repository.productQtyByName(range.prevFrom(), range.prevTo()));
@@ -48,10 +49,10 @@ public class PlatformAnalyticsProductsServiceImpl implements PlatformAnalyticsPr
         List<PlatformProductRow> products = new ArrayList<>();
         for (Object[] row : repository.productSalesRows(range.from(), range.to(), PRODUCT_LIMIT)) {
             String name = str(row[0]);
-            long qty = longAt(row, 1);
-            BigDecimal rowRevenue = moneyAt(row, 2);
-            BigDecimal rowCost = moneyAt(row, 3);
-            BigDecimal rowProfit = moneyAt(row, 4);
+            long qty = NativeAggregateRowSupport.toLong(row, 1);
+            BigDecimal rowRevenue = NativeAggregateRowSupport.toBigDecimal(row, 2);
+            BigDecimal rowCost = NativeAggregateRowSupport.toBigDecimal(row, 3);
+            BigDecimal rowProfit = NativeAggregateRowSupport.toBigDecimal(row, 4);
             BigDecimal growth = PlatformAnalyticsOverviewServiceImpl.deltaPct(
                 BigDecimal.valueOf(qty),
                 prevQty.getOrDefault(name, BigDecimal.ZERO)
@@ -95,7 +96,7 @@ public class PlatformAnalyticsProductsServiceImpl implements PlatformAnalyticsPr
 
         List<PlatformCategoryRow> categories = repository.categorySalesRows(range.from(), range.to(), CATEGORY_LIMIT)
             .stream()
-            .map(row -> new PlatformCategoryRow(str(row[0]), longAt(row, 1), moneyAt(row, 2), moneyAt(row, 3)))
+            .map(row -> new PlatformCategoryRow(str(row[0]), NativeAggregateRowSupport.toLong(row, 1), NativeAggregateRowSupport.toBigDecimal(row, 2), NativeAggregateRowSupport.toBigDecimal(row, 3)))
             .toList();
 
         return new PlatformAnalyticsProductsResponse(
@@ -123,37 +124,9 @@ public class PlatformAnalyticsProductsServiceImpl implements PlatformAnalyticsPr
     private static Map<String, BigDecimal> toQtyMap(List<Object[]> rows) {
         Map<String, BigDecimal> map = new HashMap<>();
         for (Object[] row : rows) {
-            map.put(str(row[0]), BigDecimal.valueOf(longAt(row, 1)));
+            map.put(str(row[0]), BigDecimal.valueOf(NativeAggregateRowSupport.toLong(row, 1)));
         }
         return map;
-    }
-
-    private static Object[] asRow(Object raw) {
-        if (raw == null) {
-            return new Object[0];
-        }
-        if (raw instanceof Object[] arr) {
-            return arr;
-        }
-        return new Object[]{raw};
-    }
-
-    private static long longAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return 0L;
-        }
-        return ((Number) row[idx]).longValue();
-    }
-
-    private static BigDecimal moneyAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        Object value = row[idx];
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 
     private static String str(Object value) {

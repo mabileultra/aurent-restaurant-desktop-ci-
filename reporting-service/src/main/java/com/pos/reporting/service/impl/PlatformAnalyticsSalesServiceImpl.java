@@ -7,6 +7,7 @@ import com.pos.reporting.dto.platform.PlatformAnalyticsSalesResponse.PlatformSal
 import com.pos.reporting.dto.platform.PlatformAnalyticsSalesResponse.PlatformSalesPeak;
 import com.pos.reporting.dto.platform.PlatformAnalyticsSalesResponse.PlatformSalesWeekday;
 import com.pos.reporting.repository.PlatformAnalyticsOverviewRepository;
+import com.pos.reporting.util.NativeAggregateRowSupport;
 import com.pos.reporting.service.PlatformAnalyticsPeriod;
 import com.pos.reporting.service.PlatformAnalyticsSalesService;
 import lombok.RequiredArgsConstructor;
@@ -36,17 +37,17 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
     public PlatformAnalyticsSalesResponse sales(String period, LocalDate from, LocalDate to) {
         PlatformAnalyticsPeriod range = PlatformAnalyticsPeriod.resolve(period, from, to, LocalDate.now());
 
-        Object[] curSales = asRow(repository.saleTotals(range.from(), range.to()));
-        Object[] prevSales = asRow(repository.saleTotals(range.prevFrom(), range.prevTo()));
-        Object[] curItems = asRow(repository.itemTotals(range.from(), range.to()));
-        Object[] prevItems = asRow(repository.itemTotals(range.prevFrom(), range.prevTo()));
+        Object[] curSales = NativeAggregateRowSupport.normalize(repository.saleTotals(range.from(), range.to()));
+        Object[] prevSales = NativeAggregateRowSupport.normalize(repository.saleTotals(range.prevFrom(), range.prevTo()));
+        Object[] curItems = NativeAggregateRowSupport.normalize(repository.itemTotals(range.from(), range.to()));
+        Object[] prevItems = NativeAggregateRowSupport.normalize(repository.itemTotals(range.prevFrom(), range.prevTo()));
 
-        BigDecimal turnover = moneyAt(curSales, 0);
-        BigDecimal prevTurnover = moneyAt(prevSales, 0);
-        long receipts = longAt(curSales, 1);
-        long prevReceipts = longAt(prevSales, 1);
-        BigDecimal profit = moneyAt(curItems, 0).subtract(moneyAt(curItems, 1));
-        BigDecimal prevProfit = moneyAt(prevItems, 0).subtract(moneyAt(prevItems, 1));
+        BigDecimal turnover = NativeAggregateRowSupport.toBigDecimal(curSales, 0);
+        BigDecimal prevTurnover = NativeAggregateRowSupport.toBigDecimal(prevSales, 0);
+        long receipts = NativeAggregateRowSupport.toLong(curSales, 1);
+        long prevReceipts = NativeAggregateRowSupport.toLong(prevSales, 1);
+        BigDecimal profit = NativeAggregateRowSupport.toBigDecimal(curItems, 0).subtract(NativeAggregateRowSupport.toBigDecimal(curItems, 1));
+        BigDecimal prevProfit = NativeAggregateRowSupport.toBigDecimal(prevItems, 0).subtract(NativeAggregateRowSupport.toBigDecimal(prevItems, 1));
         BigDecimal avgCheck = avg(turnover, receipts);
         BigDecimal prevAvg = avg(prevTurnover, prevReceipts);
 
@@ -103,7 +104,7 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
         }
         Map<LocalDate, BigDecimal> profitByDay = new HashMap<>();
         for (Object[] row : repository.dailyProfit(from, to)) {
-            profitByDay.put(toDate(row[0]), moneyAt(row, 1));
+            profitByDay.put(toDate(row[0]), NativeAggregateRowSupport.toBigDecimal(row, 1));
         }
 
         List<PlatformSalesDailyPoint> points = new ArrayList<>();
@@ -111,8 +112,8 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
         LocalDate bestDay = null;
         for (LocalDate day = from; !day.isAfter(to); day = day.plusDays(1)) {
             Object[] sales = salesByDay.get(day);
-            BigDecimal turnover = sales != null ? moneyAt(sales, 1) : BigDecimal.ZERO;
-            long receipts = sales != null ? longAt(sales, 2) : 0L;
+            BigDecimal turnover = sales != null ? NativeAggregateRowSupport.toBigDecimal(sales, 1) : BigDecimal.ZERO;
+            long receipts = sales != null ? NativeAggregateRowSupport.toLong(sales, 2) : 0L;
             BigDecimal profit = profitByDay.getOrDefault(day, BigDecimal.ZERO);
             points.add(new PlatformSalesDailyPoint(
                 day.toString(),
@@ -142,7 +143,7 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
     private List<PlatformSalesWeekday> buildWeekdays(LocalDate from, LocalDate to, BigDecimal total) {
         Map<Integer, BigDecimal> byDow = new HashMap<>();
         for (Object[] row : repository.weekdaySales(from, to)) {
-            byDow.put(((Number) row[0]).intValue(), moneyAt(row, 1));
+            byDow.put(((Number) row[0]).intValue(), NativeAggregateRowSupport.toBigDecimal(row, 1));
         }
         BigDecimal peak = BigDecimal.valueOf(-1);
         int peakDow = 6;
@@ -175,8 +176,8 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
         List<PlatformSalesHour> hours = new ArrayList<>();
         for (int h = 0; h < 24; h++) {
             Object[] row = byHour.get(h);
-            BigDecimal turnover = row != null ? moneyAt(row, 1) : BigDecimal.ZERO;
-            long receipts = row != null ? longAt(row, 2) : 0L;
+            BigDecimal turnover = row != null ? NativeAggregateRowSupport.toBigDecimal(row, 1) : BigDecimal.ZERO;
+            long receipts = row != null ? NativeAggregateRowSupport.toLong(row, 2) : 0L;
             hours.add(new PlatformSalesHour(
                 String.format("%02d", h),
                 turnover,
@@ -199,34 +200,6 @@ public class PlatformAnalyticsSalesServiceImpl implements PlatformAnalyticsSales
             return BigDecimal.ZERO.setScale(1, RoundingMode.HALF_UP);
         }
         return part.multiply(BigDecimal.valueOf(100)).divide(total, 1, RoundingMode.HALF_UP);
-    }
-
-    private static Object[] asRow(Object raw) {
-        if (raw == null) {
-            return new Object[0];
-        }
-        if (raw instanceof Object[] arr) {
-            return arr;
-        }
-        return new Object[]{raw};
-    }
-
-    private static long longAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return 0L;
-        }
-        return ((Number) row[idx]).longValue();
-    }
-
-    private static BigDecimal moneyAt(Object[] row, int idx) {
-        if (row == null || idx >= row.length || row[idx] == null) {
-            return BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-        Object value = row[idx];
-        if (value instanceof BigDecimal bd) {
-            return bd.setScale(2, RoundingMode.HALF_UP);
-        }
-        return new BigDecimal(value.toString()).setScale(2, RoundingMode.HALF_UP);
     }
 
     private static LocalDate toDate(Object value) {
