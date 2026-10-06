@@ -1,0 +1,22 @@
+---
+description: POS register — scanner must not open product picker over receipt
+globs:
+  - web-frontend/**/registerScanBurst*
+  - web-frontend/**/PosRegisterWorkspace*
+alwaysApply: false
+---
+
+# POS register scan vs product picker (do not regress)
+
+On the register check search field, a barcode/КМ scan must **not** open the product list over the receipt. Slow POS-monitor scanners often exceed the 80 ms wedge gap.
+
+## Invariants
+
+1. `nextRegisterScanBurst` / `looksLikeRegisterScanInput`: digit-only codes and marking/GS1-shaped input hide the picker even when inter-char gap > 80 ms.
+2. Once a burst/scan-shaped session started, keep `burst` while the value keeps growing (sticky), until the field is cleared.
+3. When `search` is cleared after a successful scan (bypassing `handleSearchChange`), reset the burst ref so the next manual name search can open the picker.
+
+## Do not
+
+- Rely only on `REGISTER_SCAN_GAP_MS` for POS Bluetooth scanners.
+- Open the register picker for digit-only / КМ input that is still growing.

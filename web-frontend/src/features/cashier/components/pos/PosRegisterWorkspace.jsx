@@ -113,6 +113,8 @@ export default function PosRegisterWorkspace({
   useEffect(() => {
     if (String(search).trim()) return;
     setHidePickerForScan(false);
+    // setSearch('') после скана обходит handleSearchChange — сбрасываем burst-state
+    scanBurstRef.current = { at: 0, len: 0, burst: false };
   }, [search]);
 
   const handleQuickFilter = useCallback(

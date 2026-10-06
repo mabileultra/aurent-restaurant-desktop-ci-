@@ -3,7 +3,7 @@ export const inputCls = `product-catalog-field__control w-full rounded-lg border
                   dark:border-slate-700 dark:bg-slate-800 dark:text-white dark:placeholder-slate-500`;
 
 export const OWNER_TYPES = ['OWN', 'COMMISSION', 'AGENT'];
-export const VAT_OPTIONS = [0, 12, 15, 16];
+export const VAT_OPTIONS = [0, 1, 4, 6, 12, 15, 16, 20];
 
 export function ProductCatalogField({ label, required, error, hint, children, className = '' }) {
   return (
