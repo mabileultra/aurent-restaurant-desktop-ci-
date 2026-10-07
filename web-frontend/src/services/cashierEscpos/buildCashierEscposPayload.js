@@ -48,10 +48,13 @@ function readBranding() {
 
 /**
  * Подписи строк чека (переводы с фронта — main без i18n).
+ * Ставку НДС не подставляем здесь: electron подставляет {{rate}} из sale.items.
  * @param {Function} t — react-i18next t
  * @returns {Record<string, string>}
  */
 export function buildEscposLabels(t) {
+  // Keep {{rate}} literal so escpos-sale-builder can interpolate per line / total.
+  const vatRateToken = '{{rate}}';
   return {
     phoneLabel: t('fiscalReceipt.phoneLabel'),
     stir: t('fiscalReceipt.stir'),
@@ -64,13 +67,13 @@ export function buildEscposLabels(t) {
     qtyShort: t('receipt.qtyShort'),
     lineTotalShort: t('receipt.lineTotalShort'),
     ikpuLine: t('receipt.ikpuLine'),
-    vatLineShort: t('fiscalReceipt.vatLineShort', { rate: '12' }),
+    vatLineShort: t('fiscalReceipt.vatLineShort', { rate: vatRateToken }),
     currency: t('fiscalReceipt.currency'),
     lineDiscountsSum: t('fiscalReceipt.lineDiscountsSum'),
     orderDiscountSum: t('fiscalReceipt.orderDiscountSum'),
     discountsSum: t('fiscalReceipt.discountsSum'),
     grandTotal: t('fiscalReceipt.grandTotal'),
-    vatTotalLine: t('fiscalReceipt.vatTotalLine', { rate: '12' }),
+    vatTotalLine: t('fiscalReceipt.vatTotalLine', { rate: vatRateToken }),
     paymentForm: t('fiscalReceipt.paymentForm'),
     cash: t('fiscalReceipt.cash'),
     plastic: t('fiscalReceipt.plastic'),

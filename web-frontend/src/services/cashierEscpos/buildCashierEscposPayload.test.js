@@ -23,9 +23,20 @@ vi.mock('../../store/printSettingsStore', () => ({
   },
 }));
 
-import { buildCashierEscposPayload } from './buildCashierEscposPayload';
+import { buildCashierEscposPayload, buildEscposLabels } from './buildCashierEscposPayload';
 
-const t = (key) => key;
+/** Mimic i18next: substitute {{key}} from opts. */
+const t = (key, opts = {}) => {
+  const templates = {
+    'fiscalReceipt.vatLineShort': 'НДС {{rate}}%',
+    'fiscalReceipt.vatTotalLine': 'НДС {{rate}}%',
+  };
+  let s = templates[key] || key;
+  for (const [k, v] of Object.entries(opts)) {
+    s = s.replaceAll(`{{${k}}}`, String(v));
+  }
+  return s;
+};
 
 const FISCAL_SALE = {
   id: 'sale-1',
@@ -128,5 +139,14 @@ describe('buildCashierEscposPayload plastic label', () => {
 
     const corporate = buildCashierEscposPayload({ ...FISCAL_SALE, cardType: 'CORPORATE' }, t);
     expect(corporate.labels.plastic).toBe('fiscalReceipt.plastic · pos.cardCorporate');
+  });
+});
+
+describe('buildEscposLabels VAT rate', () => {
+  it('keeps {{rate}} placeholder for electron per-line interpolation', () => {
+    const labels = buildEscposLabels(t);
+    expect(labels.vatLineShort).toBe('НДС {{rate}}%');
+    expect(labels.vatTotalLine).toBe('НДС {{rate}}%');
+    expect(labels.vatLineShort).not.toContain('12');
   });
 });
