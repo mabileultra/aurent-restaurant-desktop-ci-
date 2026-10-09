@@ -2,7 +2,7 @@
  * X / Z отчёт смены (касса) — ESC/POS.
  */
 const { fmtMoney, fmtAt } = require('./escpos-format.cjs');
-const { appendRow, appendDivider, appendCenterHeader } = require('./escpos-layout.cjs');
+const { appendRow, appendDivider, appendCenterHeader, beepAndCut } = require('./escpos-layout.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
 
 function isOn(fields, key) {
@@ -120,7 +120,7 @@ function buildShiftReportOnPrinter(printer, payload) {
   }
 
   printer.newLine();
-  printer.cut();
+  beepAndCut(printer);
 }
 
 module.exports = {

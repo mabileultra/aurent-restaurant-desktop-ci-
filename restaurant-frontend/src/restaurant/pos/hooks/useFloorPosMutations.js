@@ -435,7 +435,7 @@ export function useFloorPosMutations(deps) {
         waiterName, customerLabel, serviceLabel, t,
       });
     },
-    onSuccess: async () => {
+    onSuccess: async (result) => {
       setActiveOrderId(null);
       closePayModal?.();
       invalidateFloor();
@@ -443,6 +443,9 @@ export function useFloorPosMutations(deps) {
       invalidateShift();
       invalidateRecentPaid();
       toast.success(t('rst.order.paid'));
+      if (result?.sale) {
+        setPaidReceipt({ sale: result.sale, autoPrint: true });
+      }
     },
     onError: (err) => {
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {

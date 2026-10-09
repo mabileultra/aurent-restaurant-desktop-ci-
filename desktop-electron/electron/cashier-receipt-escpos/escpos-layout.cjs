@@ -35,8 +35,21 @@ function appendCenterHeader(printer, lines) {
   printer.alignLeft();
 }
 
+/**
+ * Один короткий сигнал зуммера, затем отрез.
+ * ESC B — команда Epson, её же понимают типичные чековые принтеры.
+ * @param {import('node-thermal-printer').printer} printer
+ */
+function beepAndCut(printer) {
+  if (typeof printer.beep === 'function') {
+    printer.beep(1, 2);
+  }
+  printer.cut();
+}
+
 module.exports = {
   appendRow,
   appendDivider,
   appendCenterHeader,
+  beepAndCut,
 };

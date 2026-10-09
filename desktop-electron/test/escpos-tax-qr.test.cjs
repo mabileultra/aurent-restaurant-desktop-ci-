@@ -97,4 +97,9 @@ test('full receipt still prints fiscal rows and tax QR', async () => {
   assert.ok(rows.some((row) => row.includes('SIGN99')));
   assert.equal(callsOf(printer, 'printQR')[0].args[0], TAX_QR);
   assert.equal(callsOf(printer, 'cut').length, 1);
+  const methods = printer.calls.map((call) => call.method);
+  const beepAt = methods.lastIndexOf('beep');
+  const cutAt = methods.lastIndexOf('cut');
+  assert.ok(beepAt >= 0 && beepAt < cutAt);
+  assert.deepEqual(callsOf(printer, 'beep')[0].args, [1, 2]);
 });

@@ -16,6 +16,7 @@ const {
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
+const { beepAndCut } = require('./escpos-layout.cjs');
 
 /** @param {Record<string, boolean>|undefined} fields */
 function isOn(fields, key) {
@@ -483,7 +484,7 @@ async function buildReceiptOnPrinter(printer, payload, jobId) {
   await appendQrAndFooter(printer, safePayload, jobId);
   printer.newLine();
   printer.newLine();
-  printer.cut();
+  beepAndCut(printer);
 }
 
 /**

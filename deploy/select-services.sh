@@ -98,7 +98,7 @@ classify() {
     telegram-web-support-bot|telegram-web-support-bot/*)
       mark telegram-web-support-bot
       ;;
-    deploy/*|scripts/*|.github/*|docs/*|downloads/*|*.md|.env.example|.gitignore|.gitattributes|LICENSE)
+    deploy/*|scripts/*|.github/*|docs/*|downloads/*|desktop-electron|desktop-electron/*|*.md|.env.example|.gitignore|.gitattributes|LICENSE)
       ;;
     *)
       FULL=1

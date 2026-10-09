@@ -34,7 +34,8 @@ export default function RestaurantReceiptModal({
 }) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [printing, setPrinting] = useState(false);
-  const autoPrintedRef = useRef(false);
+  const tRef = useRef(t);
+  tRef.current = t;
 
   const handlePrint = async () => {
     if (!sale || printing) return;
@@ -61,37 +62,39 @@ export default function RestaurantReceiptModal({
   };
 
   useEffect(() => {
-    if (!sale || !autoPrint || autoPrintedRef.current) return undefined;
-    autoPrintedRef.current = true;
-    let cancelled = false;
+    if (!sale || !autoPrint) return undefined;
+    let active = true;
     const timer = window.setTimeout(async () => {
-      if (cancelled) return;
+      if (!active) return;
+      const translate = tRef.current;
       setPrinting(true);
       try {
-        await printSaleReceipt(sale, t);
-        toast.success(t('receipt.printSent'), {
+        await printSaleReceipt(sale, translate);
+        if (!active) return;
+        toast.success(translate('receipt.printSent'), {
           id: CASHIER_ESCPOS_TOAST.toastId,
           duration: CASHIER_ESCPOS_TOAST.successDurationMs,
         });
       } catch (e) {
+        if (!active) return;
         toast.error(
           (saleNeedsFiscalPrint(sale) && isCashierEscposPrintAvailable()
-            ? resolveEscposPrintErrorMessage(e, t)
-            : e?.message) ?? t('receipt.printFailed'),
+            ? resolveEscposPrintErrorMessage(e, translate)
+            : e?.message) ?? translate('receipt.printFailed'),
           {
             id: CASHIER_ESCPOS_TOAST.toastId,
             duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
           },
         );
       } finally {
-        if (!cancelled) setPrinting(false);
+        if (active) setPrinting(false);
       }
     }, 350);
     return () => {
-      cancelled = true;
+      active = false;
       window.clearTimeout(timer);
     };
-  }, [sale, autoPrint, t]);
+  }, [sale, autoPrint]);
 
   if (!sale || typeof document === 'undefined') return null;
 

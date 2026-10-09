@@ -2,7 +2,7 @@
  * Z-отчёт (закрытый) — ESC/POS.
  */
 const { fmtMoney, fmtAt } = require('./escpos-format.cjs');
-const { appendRow, appendDivider, appendCenterHeader } = require('./escpos-layout.cjs');
+const { appendRow, appendDivider, appendCenterHeader, beepAndCut } = require('./escpos-layout.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
 
 function isOn(fields, key) {
@@ -123,7 +123,7 @@ function buildZReportOnPrinter(printer, payload) {
   appendRow(printer, L.grandTotal || 'TOTAL', `${fmtMoney(z.totalAmount)} ${cur}`, true);
 
   printer.newLine();
-  printer.cut();
+  beepAndCut(printer);
 }
 
 module.exports = {
