@@ -5,6 +5,7 @@ import { rstOrderApi } from '../../api/order.api';
 import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
 import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFiscal';
+import { saleNeedsFiscalPrint } from '../utils/printOrdinarySaleReceipt';
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
@@ -443,7 +444,7 @@ export function useFloorPosMutations(deps) {
       invalidateShift();
       invalidateRecentPaid();
       toast.success(t('rst.order.paid'));
-      if (result?.sale) {
+      if (result?.sale && saleNeedsFiscalPrint(result.sale)) {
         setPaidReceipt({ sale: result.sale, autoPrint: true });
       }
     },

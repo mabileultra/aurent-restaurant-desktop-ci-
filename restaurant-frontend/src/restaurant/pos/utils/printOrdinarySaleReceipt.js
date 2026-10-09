@@ -1,7 +1,6 @@
 /**
- * Ordinary (non-fiscal) guest receipt for cashier when Multikassa is off.
- * Browser print only — no OFD / Multikassa / ESC/POS fiscal path.
- * Pay opens the receipt modal, which prints this when the sale is not fiscal.
+ * Ordinary (non-fiscal) guest receipt. Manual reprint only.
+ * Pay does not open this when Multikassa is off or the tax receipt was not punched.
  */
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { resolveReceiptQrValue } from '../../../utils/fiscalReceiptFormat';
