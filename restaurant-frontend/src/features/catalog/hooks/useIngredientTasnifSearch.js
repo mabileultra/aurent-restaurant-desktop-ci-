@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tasnifApi } from '../../../api';
-import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
 import {
   buildTasnifExternalId,
   buildTasnifSku,
