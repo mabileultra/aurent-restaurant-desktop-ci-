@@ -14,6 +14,10 @@ import { BaseInput } from '../../../../components/ui';
 import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { toastApiError } from '../../../../utils/apiError';
 import { rstShiftApi } from '../../../api/shift.api';
+import {
+  isCashierEscposReportPrintAvailable,
+  printReportEscpos,
+} from '../../../../services/cashierEscpos';
 import { printShiftItemsReceipt } from '../../utils/printShiftItemsReceipt';
 import ShiftReportPrintBody from './ShiftReportPrintBody';
 import ShiftReportPrintPortal from './ShiftReportPrintPortal';
@@ -56,6 +60,7 @@ export default function RestaurantShiftModal({
   const [openingConfirmed, setOpeningConfirmed] = useState(false);
   const [printReport, setPrintReport] = useState(null);
   const [printToken, setPrintToken] = useState(0);
+  const [closePrintBusy, setClosePrintBusy] = useState(false);
   const closeAfterPrintRef = useRef(false);
   const itemsAfterPrintRef = useRef(null);
 
@@ -117,17 +122,34 @@ export default function RestaurantShiftModal({
       rstShiftApi
         .close(shift.id, { closingCash: Number(closingCash) || 0 })
         .then((r) => r.data),
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       invalidate();
       toast.success(t('pos.shiftClosedWithZReport'));
-      const zReport = data?.zReport || data?.report;
-      if (zReport) {
-        closeAfterPrintRef.current = true;
-        itemsAfterPrintRef.current = zReport;
-        queuePrint(zReport);
-      } else {
+      const zReport = enrichReport(data?.zReport || data?.report, { storeName, cashierName });
+      if (!zReport) {
         onClose?.();
+        return;
       }
+      if (isCashierEscposReportPrintAvailable()) {
+        setClosePrintBusy(true);
+        try {
+          await printReportEscpos({ shiftReport: zReport, t });
+        } catch (err) {
+          toast.error(err?.message || t('receipt.printFailed'));
+        }
+        try {
+          await printShiftItemsReceipt({ report: zReport, storeName, cashierName, t });
+        } catch (err) {
+          toast.error(err?.message || t('receipt.printFailed'));
+        } finally {
+          setClosePrintBusy(false);
+          onClose?.();
+        }
+        return;
+      }
+      closeAfterPrintRef.current = true;
+      itemsAfterPrintRef.current = zReport;
+      queuePrint(zReport);
     },
     onError: (err) => toastApiError(err, t('rst.shift.closeFailed')),
   });
@@ -162,7 +184,8 @@ export default function RestaurantShiftModal({
     closeMutation.isPending ||
     xMutation.isPending ||
     zMutation.isPending ||
-    printBusy;
+    printBusy ||
+    closePrintBusy;
 
   const handleCloseShift = () => {
     if (hasOpenOrders) {

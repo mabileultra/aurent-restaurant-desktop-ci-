@@ -30,9 +30,11 @@ export default function ShiftReportPrintPortal({
   const onPrintedRef = useRef(onPrinted);
   const onCloseRef = useRef(onClose);
   const onErrorRef = useRef(onError);
+  const tRef = useRef(t);
   onPrintedRef.current = onPrinted;
   onCloseRef.current = onClose;
   onErrorRef.current = onError;
+  tRef.current = t;
 
   useLayoutEffect(() => {
     if (!open || printToken == null || !shiftReport) {
@@ -47,8 +49,9 @@ export default function ShiftReportPrintPortal({
       try {
         await waitForReceiptDomReady({ useModalShell: true });
         await waitForReceiptPaintSettled();
+        const translate = tRef.current;
         if (isCashierEscposReportPrintAvailable()) {
-          await printThermalDocument({ shiftReport, t, useModalShell: true });
+          await printThermalDocument({ shiftReport, t: translate, useModalShell: true });
         } else {
           await printThermalReceiptDialog({ useModalShell: true });
         }
@@ -58,8 +61,9 @@ export default function ShiftReportPrintPortal({
         }
       } catch (err) {
         if (!cancelled) {
+          const translate = tRef.current;
           onErrorRef.current?.(
-            new Error(resolveEscposPrintErrorMessage(err, t) || err?.message || t('receipt.printFailed')),
+            new Error(resolveEscposPrintErrorMessage(err, translate) || err?.message || translate('receipt.printFailed')),
           );
           onCloseRef.current?.();
         }
@@ -73,7 +77,7 @@ export default function ShiftReportPrintPortal({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [open, printToken, shiftReport, t]);
+  }, [open, printToken, shiftReport]);
 
   if (typeof document === 'undefined') return null;
 
