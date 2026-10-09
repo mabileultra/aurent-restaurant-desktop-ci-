@@ -8,6 +8,7 @@ import {
 import { FISCAL_STATUS } from '../../../services/multikassa/multikassaConstants';
 import {
   buildRestaurantFiscalSale,
+  fiscalPaymentWithoutService,
   orderToMultikassaCartItems,
   restaurantPayTotal,
 } from './buildRestaurantFiscalSale';
@@ -54,7 +55,6 @@ export async function payRestaurantOrderWithFiscal({
   cashierName,
   waiterName,
   customerLabel,
-  serviceLabel,
   t,
 }) {
   const total = restaurantPayTotal(order);
@@ -99,7 +99,8 @@ export async function payRestaurantOrderWithFiscal({
     changeGiven: change,
   };
 
-  const cartItems = orderToMultikassaCartItems(order, { serviceLabel });
+  const cartItems = orderToMultikassaCartItems(order);
+  const fiscalPay = fiscalPaymentWithoutService(order, payAmount, payment);
   const capabilities = skipFiscal
     ? { enabled: false }
     : await loadMultikassaCapabilities(storeId, cashRegisterId);
@@ -109,8 +110,8 @@ export async function payRestaurantOrderWithFiscal({
   const fiscalArgs = {
     capabilities,
     cartItems,
-    payment,
-    total: payAmount,
+    payment: fiscalPay.payment,
+    total: fiscalPay.total,
     shiftId,
     cashierName: cashierName || 'CASHIER',
     contractorName: storeName,
@@ -178,6 +179,8 @@ export async function payRestaurantOrderWithFiscal({
   const sale = buildRestaurantFiscalSale({
     order: {
       ...paidOrder,
+      serviceAmount: paidOrder.serviceAmount ?? order.serviceAmount,
+      servicePercent: paidOrder.servicePercent ?? order.servicePercent,
       commissionAmount: paidOrder.commissionAmount ?? order.commissionAmount,
       commissionPercent: paidOrder.commissionPercent ?? order.commissionPercent,
       items: paidOrder.items?.length ? paidOrder.items : order.items,
@@ -194,7 +197,6 @@ export async function payRestaurantOrderWithFiscal({
     waiterName,
     storeName,
     storeId,
-    serviceLabel,
     customerLabel,
   });
 

@@ -11,13 +11,6 @@ function channelCustomerLabel(order, t) {
   return order?.clientName || null;
 }
 
-function serviceLabelOf(order, t) {
-  if (order?.channel !== 'DINE_IN') return null;
-  const amount = Number(order.serviceAmount ?? order.commissionAmount);
-  if (!(amount > 0)) return null;
-  return t('rst.order.serviceLine', { percent: Number(order.servicePercent ?? order.commissionPercent ?? 0) });
-}
-
 /**
  * Load closed order + payment and build FiscalReceiptBody-compatible sale.
  */
@@ -52,6 +45,5 @@ export async function loadRestaurantReceiptSale({
     cashierName,
     waiterName,
     customerLabel: channelCustomerLabel(order, t),
-    serviceLabel: serviceLabelOf(order, t),
   });
 }

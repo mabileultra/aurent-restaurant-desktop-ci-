@@ -17,8 +17,8 @@ function lineTotalOf(item) {
   return round2((Number(item.unitPrice) || 0) * (Number(item.quantity) || 0));
 }
 
-/** Строки заказа → cart-like для Multikassa. */
-export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
+/** Строки заказа → cart-like для Multikassa. Процент обслуживания в налог не входит. */
+export function orderToMultikassaCartItems(order) {
   const lines = (order?.items ?? []).filter(isBillable).map((item) => ({
     productId: item.menuItemId || item.id,
     name: item.name || 'Блюдо',
@@ -33,24 +33,6 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
     sku: item.sku || '',
     markedProduct: Boolean(item.markedProduct),
   }));
-
-  const serviceAmount = round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
-  if (serviceAmount > 0) {
-    const percent = Number(order?.servicePercent ?? order?.commissionPercent);
-    const label =
-      serviceLabel ||
-      (Number.isFinite(percent) && percent > 0
-        ? `Обслуживание ${percent}%`
-        : 'Обслуживание');
-    lines.push({
-      productId: `rst-service-${order?.id || 'x'}`,
-      name: label,
-      quantity: 1,
-      unitPrice: serviceAmount,
-      taxRate: 0,
-      unitOfMeasure: 'шт',
-    });
-  }
 
   const discount = round2(Math.max(0, Number(order?.discountAmount) || 0));
   if (discount > 0) {
@@ -71,6 +53,44 @@ export function restaurantPayTotal(order, commissionPreview = null) {
   return resolveRestaurantPayTotal(order, commissionPreview);
 }
 
+function serviceAmountOf(order) {
+  return round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
+}
+
+/** Сумма и оплата для ОФД: блюда и скидка, без процента обслуживания. */
+export function fiscalPaymentWithoutService(order, payAmount, payment) {
+  const service = serviceAmountOf(order);
+  const paid = round2(Number(payAmount) || 0);
+  const fiscalTotal = round2(Math.max(0, paid - service));
+  if (!(service > 0)) return { total: paid, payment };
+  const method = String(payment?.paymentMethod || 'CASH').toUpperCase();
+  let cash = round2(Number(payment?.cashAmount) || 0);
+  let card = round2(Number(payment?.cardAmount) || 0);
+  if (method === 'CARD' || method === 'CASHLESS') {
+    cash = 0;
+    card = fiscalTotal;
+  } else if (method === 'MIXED') {
+    let left = service;
+    const fromCash = Math.min(Math.max(cash, 0), left);
+    cash = round2(cash - fromCash);
+    left = round2(left - fromCash);
+    card = round2(Math.max(0, card - left));
+  } else {
+    cash = fiscalTotal;
+    card = 0;
+  }
+  return {
+    total: fiscalTotal,
+    payment: {
+      ...payment,
+      cashAmount: cash,
+      cardAmount: card,
+      amountTendered: fiscalTotal,
+      changeGiven: 0,
+    },
+  };
+}
+
 /**
  * OrderResponse + оплата + fiscal → объект как SaleResponse для FiscalReceiptBody / ESC/POS.
  */
@@ -88,10 +108,9 @@ export function buildRestaurantFiscalSale({
   waiterName,
   storeName,
   storeId,
-  serviceLabel,
   customerLabel,
 }) {
-  const cartLines = orderToMultikassaCartItems(order, { serviceLabel });
+  const cartLines = orderToMultikassaCartItems(order);
   const items = cartLines.map((line, idx) => {
     const orderItem = (order?.items ?? []).filter(isBillable)[idx];
     const lineTotal = round2(line.unitPrice * line.quantity);
@@ -121,9 +140,9 @@ export function buildRestaurantFiscalSale({
   const dishesSubtotal = round2(
     (order?.items ?? []).filter(isBillable).reduce((acc, item) => acc + lineTotalOf(item), 0),
   );
-  const serviceAmount = round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
+  const serviceAmount = serviceAmountOf(order);
   const discountTotal = round2(Math.max(0, Number(order?.discountAmount) || 0));
-  const totalAmount = restaurantPayTotal(order);
+  const totalAmount = round2(Math.max(0, dishesSubtotal - discountTotal));
   const taxTotal = round2(
     items.reduce((acc, item) => acc + (Number(item.taxAmount) || 0), 0),
   );
@@ -155,6 +174,19 @@ export function buildRestaurantFiscalSale({
   }
   if (tendered == null) tendered = method === 'CASH' ? paid : (cash ?? paid);
   if (change == null) change = method === 'CASH' ? round2(Math.max(0, tendered - paid)) : 0;
+  if (serviceAmount > 0) {
+    const fiscalPay = fiscalPaymentWithoutService(order, paid, {
+      paymentMethod: method,
+      cashAmount: cash,
+      cardAmount: card,
+      amountTendered: tendered,
+      changeGiven: change,
+    });
+    cash = fiscalPay.payment.cashAmount;
+    card = fiscalPay.payment.cardAmount;
+    tendered = fiscalPay.payment.amountTendered;
+    change = fiscalPay.payment.changeGiven;
+  }
 
   return {
     id: order?.id,

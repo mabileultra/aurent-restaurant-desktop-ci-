@@ -414,9 +414,6 @@ export function useFloorPosMutations(deps) {
       const customerLabel = channel === 'DINE_IN'
         ? (orderForPay.tableCode ? t('rst.order.receiptTable', { code: orderForPay.tableCode }) : null)
         : (orderForPay.clientName || null);
-      const serviceLabel = channel === 'DINE_IN' && Number(orderForPay.serviceAmount) > 0
-        ? t('rst.order.serviceLine', { percent: Number(orderForPay.servicePercent ?? 0) })
-        : null;
       return payRestaurantOrderWithFiscal({
         order: orderForPay,
         method,
@@ -433,7 +430,7 @@ export function useFloorPosMutations(deps) {
         shiftId: shift?.id ?? null,
         cashRegisterId: shift?.cashRegisterId ?? null,
         cashierName: user?.fullName || user?.username || undefined,
-        waiterName, customerLabel, serviceLabel, t,
+        waiterName, customerLabel, t,
       });
     },
     onSuccess: async (result) => {
