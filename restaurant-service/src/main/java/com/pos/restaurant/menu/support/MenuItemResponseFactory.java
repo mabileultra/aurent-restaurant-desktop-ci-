@@ -33,7 +33,13 @@ public class MenuItemResponseFactory {
             base.portionLabel(),
             base.variantGroupId(),
             base.tags(),
-            groupIds == null ? List.of() : List.copyOf(groupIds)
+            groupIds == null ? List.of() : List.copyOf(groupIds),
+            base.ikpu(),
+            base.packageCode(),
+            base.unitOfMeasure(),
+            base.unitMeasureCode(),
+            base.barcode(),
+            base.markedProduct()
         );
     }
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { tasnifApi } from '../../../api';
-import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
 import {
   buildTasnifExternalId,
   buildTasnifSku,
@@ -13,9 +13,9 @@ import {
 
 /**
  * Tasnif search for IngredientModal (plain form state, not react-hook-form).
- * @param {{ form: object, patchForm: (patch: object) => void, isEdit: boolean }} args
+ * @param {{ form: object, patchForm: (patch: object) => void, isEdit: boolean, fillName?: 'always' | 'ifEmpty' }} args
  */
-export function useIngredientTasnifSearch({ form, patchForm, isEdit }) {
+export function useIngredientTasnifSearch({ form, patchForm, isEdit, fillName = 'always' }) {
   const { t, i18n } = useTranslation();
   const lang = i18n.language?.startsWith('ru') ? 'ru' : 'uz';
 
@@ -29,10 +29,12 @@ export function useIngredientTasnifSearch({ form, patchForm, isEdit }) {
   const applyToForm = (item, pkg, searchQuery = '') => {
     if (!item?.name) return;
     const patch = {
-      name: item.name,
       ikpu: item.mxik ? String(item.mxik) : form.ikpu,
       markedProduct: !!item.markedProduct,
     };
+    if (fillName === 'always' || (fillName === 'ifEmpty' && !String(form.name || '').trim())) {
+      patch.name = item.name;
+    }
 
     const barcode = resolveCatalogBarcodeFromTasnif(item, searchQuery, pkg);
     if (barcode) patch.barcode = barcode;

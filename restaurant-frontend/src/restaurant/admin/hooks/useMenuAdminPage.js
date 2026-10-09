@@ -31,6 +31,12 @@ const emptyForm = () => ({
   portionLabel: '',
   tags: '',
   modifierGroupIds: [],
+  ikpu: '',
+  packageCode: '',
+  unitOfMeasure: '',
+  unitMeasureCode: '',
+  barcode: '',
+  markedProduct: false,
 });
 
 const emptyFilters = () => ({
@@ -185,6 +191,12 @@ export function useMenuAdminPage() {
         portionLabel: form.portionLabel.trim() || null,
         tags: form.tags.trim() || null,
         modifierGroupIds: form.modifierGroupIds,
+        ikpu: form.ikpu.trim() || null,
+        packageCode: form.packageCode.trim() || null,
+        unitOfMeasure: form.unitOfMeasure.trim() || null,
+        unitMeasureCode: form.unitMeasureCode.trim() || null,
+        barcode: form.barcode.trim() || null,
+        markedProduct: Boolean(form.markedProduct),
       };
       if (editingId) return rstMenuApi.update(editingId, body);
       return rstMenuApi.create(workspace.storeId, body);
@@ -403,6 +415,12 @@ export function useMenuAdminPage() {
       portionLabel: item.portionLabel ?? '',
       tags: item.tags ?? '',
       modifierGroupIds: item.modifierGroupIds ?? [],
+      ikpu: item.ikpu ?? '',
+      packageCode: item.packageCode ?? '',
+      unitOfMeasure: item.unitOfMeasure ?? '',
+      unitMeasureCode: item.unitMeasureCode ?? '',
+      barcode: item.barcode ?? '',
+      markedProduct: Boolean(item.markedProduct),
     });
   };
 

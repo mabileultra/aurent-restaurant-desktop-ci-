@@ -21,5 +21,11 @@ public record OrderItemResponse(
     int sortOrder,
     UUID stationId,
     String stationName,
-    java.util.List<OrderItemModifierResponse> modifiers
+    java.util.List<OrderItemModifierResponse> modifiers,
+    String ikpu,
+    String packageCode,
+    String unitOfMeasure,
+    String unitMeasureCode,
+    String barcode,
+    boolean markedProduct
 ) {}

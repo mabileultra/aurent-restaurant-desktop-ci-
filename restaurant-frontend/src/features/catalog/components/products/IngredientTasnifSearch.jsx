@@ -15,8 +15,9 @@ export default function IngredientTasnifSearch({
   lang,
   onPackageSelect,
   onPackageClose,
+  initialOpen = false,
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(initialOpen);
 
   return (
     <section className="rst-ing-tasnif">

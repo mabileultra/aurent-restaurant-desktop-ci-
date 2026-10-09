@@ -322,9 +322,13 @@
   "productCatalog": {
     "ikpu": "IKPU",
     "ikpuHint": "Yuqoridagi tasnif qidiruvidan to'ldiriladi",
+    "marked": "Markirovkalangan mahsulot",
     "mxikApplied": "tasnif ma'lumotlari kiritildi",
     "mxikNotFound": "tasnif.soliq.uz da topilmadi",
     "mxikQueryTooShort": "Kamida 2 belgi kiriting",
+    "packageCode": "Qadoq kodi",
+    "packageCodeHint": "Tasnifdagi tur — IKPU bilan birga kerak",
+    "packageUnit": "Qadoq",
     "salePiece": "Donalik",
     "saleType": "Sotish turi",
     "saleWeight": "Og‘irlik / o‘lchov",

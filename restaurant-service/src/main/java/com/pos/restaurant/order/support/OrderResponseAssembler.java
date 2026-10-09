@@ -3,6 +3,7 @@ package com.pos.restaurant.order.support;
 import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.kitchen.entity.KitchenStation;
 import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
+import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.dto.LinkedTableResponse;
@@ -148,7 +149,8 @@ public class OrderResponseAssembler {
         List<FloorOrderItemModifier> modifiers,
         Map<UUID, String> stationNames
     ) {
-        UUID menuItemId = item.getMenuItem() == null ? null : item.getMenuItem().getId();
+        MenuItem menu = item.getMenuItem();
+        UUID menuItemId = menu == null ? null : menu.getId();
         UUID stationId = item.getStationId();
         String stationName = stationId == null ? null : stationNames.get(stationId);
         return new OrderItemResponse(
@@ -169,7 +171,13 @@ public class OrderResponseAssembler {
             stationName,
             modifiers.stream()
                 .map(mod -> new OrderItemModifierResponse(mod.getId(), mod.getName(), mod.getPriceDelta()))
-                .toList()
+                .toList(),
+            menu == null ? null : menu.getIkpu(),
+            menu == null ? null : menu.getPackageCode(),
+            menu == null ? null : menu.getUnitOfMeasure(),
+            menu == null ? null : menu.getUnitMeasureCode(),
+            menu == null ? null : menu.getBarcode(),
+            menu != null && menu.isMarkedProduct()
         );
     }
 

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v45-menu-item-fiscal" author="aurent">
+        <addColumn tableName="menu_items">
+            <column name="ikpu" type="VARCHAR(32)"/>
+            <column name="package_code" type="VARCHAR(32)"/>
+            <column name="unit_of_measure" type="VARCHAR(80)"/>
+            <column name="unit_measure_code" type="VARCHAR(16)"/>
+            <column name="barcode" type="VARCHAR(64)"/>
+            <column name="marked_product" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

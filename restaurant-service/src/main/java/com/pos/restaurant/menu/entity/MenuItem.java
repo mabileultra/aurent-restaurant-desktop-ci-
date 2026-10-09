@@ -115,6 +115,26 @@ public class MenuItem {
     @Column(length = 120)
     private String tags;
 
+    /** MXIK / ИКПУ for the fiscal line of this dish. */
+    @Column(length = 32)
+    private String ikpu;
+
+    @Column(name = "package_code", length = 32)
+    private String packageCode;
+
+    @Column(name = "unit_of_measure", length = 80)
+    private String unitOfMeasure;
+
+    @Column(name = "unit_measure_code", length = 16)
+    private String unitMeasureCode;
+
+    @Column(length = 64)
+    private String barcode;
+
+    @Column(name = "marked_product", nullable = false)
+    @Builder.Default
+    private boolean markedProduct = false;
+
     @Column(name = "sort_order", nullable = false)
     @Builder.Default
     private int sortOrder = 100;

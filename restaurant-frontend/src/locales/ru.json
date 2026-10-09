@@ -322,9 +322,13 @@
   "productCatalog": {
     "ikpu": "ИКПУ",
     "ikpuHint": "Заполняется из поиска tasnif выше",
+    "marked": "Маркированный товар",
     "mxikApplied": "Данные из tasnif подставлены",
     "mxikNotFound": "Не найдено в tasnif.soliq.uz",
     "mxikQueryTooShort": "Введите минимум 2 символа",
+    "packageCode": "Код упаковки",
+    "packageCodeHint": "Тип из tasnif — нужен вместе с ИКПУ",
+    "packageUnit": "Упаковка",
     "salePiece": "Штучный",
     "saleType": "Тип продажи",
     "saleWeight": "Весовой / мерный",

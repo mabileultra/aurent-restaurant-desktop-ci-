@@ -12,6 +12,7 @@ import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.menu.support.MenuCategoryLookup;
+import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ public class MenuItemUpdateHandler {
     private final KitchenStationLookup stationLookup;
     private final MenuCategoryLookup categoryLookup;
     private final MenuItemModifierBinder modifierBinder;
+    private final MenuItemFiscalApplier fiscalApplier;
 
     @Transactional
     public MenuItemResponse handle(UUID itemId, SaveMenuItemRequest request) {
@@ -70,6 +72,7 @@ public class MenuItemUpdateHandler {
         item.setPortionGrams(MenuPortionFormat.gramsFromAmount(portionAmount, portionUnit));
         item.setPortionLabel(blankToNull(request.portionLabel()));
         item.setTags(normalizeTags(request.tags()));
+        fiscalApplier.apply(item, request);
         modifierBinder.replace(itemId, companyId, item.getStoreId(), request.modifierGroupIds());
         LogUtil.info(MenuItemUpdateHandler.class, "Menu item updated: id={}", itemId);
         return itemMapper.toResponse(item);

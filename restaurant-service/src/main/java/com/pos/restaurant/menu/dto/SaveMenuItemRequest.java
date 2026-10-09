@@ -32,5 +32,11 @@ public record SaveMenuItemRequest(
     MenuPortionUnit portionUnit,
     @Size(max = 40) String portionLabel,
     @Size(max = 120) String tags,
-    List<UUID> modifierGroupIds
+    List<UUID> modifierGroupIds,
+    @Size(max = 32) String ikpu,
+    @Size(max = 32) String packageCode,
+    @Size(max = 80) String unitOfMeasure,
+    @Size(max = 16) String unitMeasureCode,
+    @Size(max = 64) String barcode,
+    Boolean markedProduct
 ) {}

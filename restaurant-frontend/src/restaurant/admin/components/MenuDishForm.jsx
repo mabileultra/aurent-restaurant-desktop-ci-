@@ -1,8 +1,18 @@
 import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
+import IngredientTasnifSearch from '../../../features/catalog/components/products/IngredientTasnifSearch';
+import { useIngredientTasnifSearch } from '../../../features/catalog/hooks/useIngredientTasnifSearch';
+import '../../../features/catalog/styles/ingredient-tasnif-search.css';
 import RstModal from '../../shared/components/RstModal';
 import PortionAmountField from './PortionAmountField';
 
 export default function MenuDishForm({ p }) {
+  const tasnif = useIngredientTasnifSearch({
+    form: p.form,
+    patchForm: (patch) => p.setForm((prev) => ({ ...prev, ...patch })),
+    isEdit: Boolean(p.editingId),
+    fillName: 'ifEmpty',
+  });
+
   return (
     <RstModal
       open={p.composerOpen}
@@ -18,6 +28,55 @@ export default function MenuDishForm({ p }) {
       submitLabel={p.editingId ? p.t('common.save') : p.t('rst.admin.addDish')}
     >
       <div className="rst-modal-form__grid rst-menu-modal__grid">
+        <div className="rst-modal-form__full">
+          <IngredientTasnifSearch
+            t={tasnif.t}
+            query={tasnif.query}
+            onQueryChange={tasnif.setQuery}
+            onSearch={tasnif.runSearch}
+            loading={tasnif.loading}
+            results={tasnif.results}
+            error={tasnif.error}
+            onPick={tasnif.pickItem}
+            packageItem={tasnif.packageItem}
+            lang={tasnif.lang}
+            onPackageSelect={tasnif.handlePackageSelect}
+            onPackageClose={tasnif.handlePackageClose}
+            initialOpen
+          />
+        </div>
+        <BaseInput
+          label={p.t('productCatalog.ikpu')}
+          value={p.form.ikpu}
+          onChange={(e) => p.setForm({ ...p.form, ikpu: e.target.value })}
+          placeholder={p.t('productCatalog.ikpuHint')}
+        />
+        <BaseInput
+          label={p.t('productCatalog.packageCode')}
+          value={p.form.packageCode}
+          onChange={(e) => p.setForm({ ...p.form, packageCode: e.target.value })}
+          placeholder={p.t('productCatalog.packageCodeHint')}
+        />
+        <BaseInput
+          label={p.t('productCatalog.packageUnit')}
+          value={p.form.unitOfMeasure}
+          onChange={(e) => p.setForm({ ...p.form, unitOfMeasure: e.target.value })}
+        />
+        <BaseInput
+          label={p.t('productModal.barcode')}
+          value={p.form.barcode}
+          onChange={(e) => p.setForm({ ...p.form, barcode: e.target.value })}
+        />
+        <label className="rst-admin-field rst-admin-field--check rst-modal-form__full">
+          <span className="rst-admin-check">
+            <input
+              type="checkbox"
+              checked={Boolean(p.form.markedProduct)}
+              onChange={(e) => p.setForm({ ...p.form, markedProduct: e.target.checked })}
+            />
+            {p.t('productCatalog.marked')}
+          </span>
+        </label>
         <BaseInput
           label={p.t('rst.admin.dishName')}
           required

@@ -8,6 +8,7 @@ import com.pos.restaurant.menu.dto.MenuItemResponse;
 import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.mapper.MenuItemMapper;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
+import com.pos.restaurant.menu.support.MenuItemFiscalApplier;
 import com.pos.restaurant.menu.support.MenuPortionFormat;
 import com.pos.restaurant.modifier.entity.MenuItemModifierLink;
 import com.pos.restaurant.modifier.repository.MenuItemModifierLinkRepository;
@@ -31,6 +32,7 @@ public class MenuItemCreateVariantHandler {
     private final FloorTenantSupport tenantSupport;
     private final MenuItemModifierLinkRepository linkRepository;
     private final MenuItemModifierBinder modifierBinder;
+    private final MenuItemFiscalApplier fiscalApplier;
 
     @Transactional
     public MenuItemResponse handle(UUID sourceItemId, CreateMenuVariantRequest request) {
@@ -79,6 +81,8 @@ public class MenuItemCreateVariantHandler {
             .tags(source.getTags())
             .sortOrder(source.getSortOrder())
             .build());
+        fiscalApplier.copyFrom(saved, source);
+        saved = itemRepository.save(saved);
 
         List<UUID> groupIds = linkRepository.findByMenuItemId(source.getId()).stream()
             .map(MenuItemModifierLink::getGroupId)

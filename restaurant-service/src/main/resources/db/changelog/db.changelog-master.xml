@@ -49,5 +49,6 @@
     <include file="db/changelog/v42-cash-ops.xml"/>
     <include file="db/changelog/v43-local-first-events.xml"/>
     <include file="db/changelog/v44-store-print-profile.xml"/>
+    <include file="db/changelog/v45-menu-item-fiscal.xml"/>
 
 </databaseChangeLog>

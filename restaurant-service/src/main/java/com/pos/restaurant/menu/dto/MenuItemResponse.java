@@ -30,5 +30,11 @@ public record MenuItemResponse(
     String portionLabel,
     UUID variantGroupId,
     String tags,
-    List<UUID> modifierGroupIds
+    List<UUID> modifierGroupIds,
+    String ikpu,
+    String packageCode,
+    String unitOfMeasure,
+    String unitMeasureCode,
+    String barcode,
+    boolean markedProduct
 ) {}

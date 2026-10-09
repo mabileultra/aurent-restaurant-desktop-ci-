@@ -25,7 +25,13 @@ export function orderToMultikassaCartItems(order, { serviceLabel } = {}) {
     quantity: Number(item.quantity) || 0,
     unitPrice: Number(item.unitPrice) || 0,
     taxRate: vatPercent(item),
-    unitOfMeasure: 'шт',
+    unitOfMeasure: item.unitOfMeasure || 'шт',
+    ikpu: item.ikpu || '',
+    packageCode: item.packageCode || '',
+    unitMeasureCode: item.unitMeasureCode || '',
+    barcode: item.barcode || '',
+    sku: item.sku || '',
+    markedProduct: Boolean(item.markedProduct),
   }));
 
   const serviceAmount = round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
@@ -104,8 +110,9 @@ export function buildRestaurantFiscalSale({
       taxAmount: extractVatFromInclusive(lineTotal, taxRatePercent),
       lineDiscount: 0,
       taxRatePercent,
-      ikpu: null,
-      productSku: null,
+      ikpu: line.ikpu || null,
+      packageCode: line.packageCode || null,
+      productSku: line.sku || null,
       // Service + discount cart rows are not FloorOrderItem rows — never refundable.
       isServiceLine: String(line.productId || '').startsWith('rst-'),
     };
