@@ -4,6 +4,7 @@ import com.pos.restaurant.menu.dto.SaveMenuItemRequest;
 import com.pos.restaurant.menu.entity.MenuItem;
 import org.springframework.stereotype.Component;
 
+/** Writes Tasnif fields from the dish form onto the menu item. */
 @Component
 public class MenuItemFiscalApplier {
 
