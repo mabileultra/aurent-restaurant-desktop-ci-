@@ -6,6 +6,12 @@ import { rstFloorApi } from '../../api/floor.api';
 import { rstShiftApi } from '../../api/shift.api';
 import { payRestaurantOrderWithFiscal } from '../utils/payRestaurantOrderWithFiscal';
 import { saleNeedsFiscalPrint } from '../utils/printOrdinarySaleReceipt';
+import {
+  isCashierEscposPrintAvailable,
+  printFiscalReceipt,
+  resolveEscposPrintErrorMessage,
+} from '../../../services/cashierEscpos';
+import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
 import { restaurantPayTotal } from '../utils/buildRestaurantFiscalSale';
 import { toPayAmountPayload } from '../utils/restaurantPayAmount';
 import { emptyCounterForm } from '../utils/floorPosDerivations';
@@ -442,7 +448,25 @@ export function useFloorPosMutations(deps) {
       invalidateRecentPaid();
       toast.success(t('rst.order.paid'));
       if (result?.sale && saleNeedsFiscalPrint(result.sale)) {
-        setPaidReceipt({ sale: result.sale, autoPrint: true });
+        if (isCashierEscposPrintAvailable()) {
+          try {
+            await printFiscalReceipt({ sale: result.sale, t, useModalShell: false });
+            toast.success(t('receipt.printSent'), {
+              id: CASHIER_ESCPOS_TOAST.toastId,
+              duration: CASHIER_ESCPOS_TOAST.successDurationMs,
+            });
+          } catch (e) {
+            toast.error(
+              resolveEscposPrintErrorMessage(e, t) ?? t('receipt.printFailed'),
+              {
+                id: CASHIER_ESCPOS_TOAST.toastId,
+                duration: CASHIER_ESCPOS_TOAST.errorDurationMs,
+              },
+            );
+          }
+        } else {
+          setPaidReceipt({ sale: result.sale, autoPrint: true });
+        }
       }
     },
     onError: (err) => {
