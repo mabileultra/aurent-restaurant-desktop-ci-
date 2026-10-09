@@ -8,7 +8,7 @@ import {
 import { FISCAL_STATUS } from '../../../services/multikassa/multikassaConstants';
 import {
   buildRestaurantFiscalSale,
-  fiscalPaymentWithoutService,
+  fiscalPaymentForCart,
   orderToMultikassaCartItems,
   restaurantPayTotal,
 } from './buildRestaurantFiscalSale';
@@ -100,12 +100,14 @@ export async function payRestaurantOrderWithFiscal({
   };
 
   const cartItems = orderToMultikassaCartItems(order);
-  const fiscalPay = fiscalPaymentWithoutService(order, payAmount, payment);
+  const fiscalPay = fiscalPaymentForCart(cartItems, payment);
   const capabilities = skipFiscal
     ? { enabled: false }
     : await loadMultikassaCapabilities(storeId, cashRegisterId);
   const networkOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
-  const requireBeforeSale = Boolean(capabilities?.enabled && capabilities?.requireBeforeSale);
+  // Налог только если Мультикасса сохранена и есть хотя бы одно блюдо с ИКПУ.
+  const fiscalEnabled = Boolean(capabilities?.enabled && cartItems.length > 0);
+  const requireBeforeSale = Boolean(fiscalEnabled && capabilities?.requireBeforeSale);
 
   const fiscalArgs = {
     capabilities,
@@ -165,7 +167,7 @@ export async function payRestaurantOrderWithFiscal({
     throw payErr;
   }
 
-  if (!requireBeforeSale && capabilities?.enabled) {
+  if (!requireBeforeSale && fiscalEnabled) {
     try {
       fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
     } catch (err) {

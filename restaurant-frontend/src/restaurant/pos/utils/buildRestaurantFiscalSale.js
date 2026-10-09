@@ -17,36 +17,29 @@ function lineTotalOf(item) {
   return round2((Number(item.unitPrice) || 0) * (Number(item.quantity) || 0));
 }
 
-/** Строки заказа → cart-like для Multikassa. Процент обслуживания в налог не входит. */
+function hasIkpu(item) {
+  return String(item?.ikpu || '').trim() !== '';
+}
+
+/** Только блюда с ИКПУ → Multikassa. Без ИКПУ, % и скидка в ОФД не уходят. */
 export function orderToMultikassaCartItems(order) {
-  const lines = (order?.items ?? []).filter(isBillable).map((item) => ({
-    productId: item.menuItemId || item.id,
-    name: item.name || 'Блюдо',
-    quantity: Number(item.quantity) || 0,
-    unitPrice: Number(item.unitPrice) || 0,
-    taxRate: vatPercent(item),
-    unitOfMeasure: item.unitOfMeasure || 'шт',
-    ikpu: item.ikpu || '',
-    packageCode: item.packageCode || '',
-    unitMeasureCode: item.unitMeasureCode || '',
-    barcode: item.barcode || '',
-    sku: item.sku || '',
-    markedProduct: Boolean(item.markedProduct),
-  }));
-
-  const discount = round2(Math.max(0, Number(order?.discountAmount) || 0));
-  if (discount > 0) {
-    lines.push({
-      productId: `rst-discount-${order?.id || 'x'}`,
-      name: 'Скидка',
-      quantity: 1,
-      unitPrice: -discount,
-      taxRate: 0,
-      unitOfMeasure: 'шт',
-    });
-  }
-
-  return lines;
+  return (order?.items ?? [])
+    .filter(isBillable)
+    .filter(hasIkpu)
+    .map((item) => ({
+      productId: item.menuItemId || item.id,
+      name: item.name || 'Блюдо',
+      quantity: Number(item.quantity) || 0,
+      unitPrice: Number(item.unitPrice) || 0,
+      taxRate: vatPercent(item),
+      unitOfMeasure: item.unitOfMeasure || 'шт',
+      ikpu: String(item.ikpu).trim(),
+      packageCode: item.packageCode || '',
+      unitMeasureCode: item.unitMeasureCode || '',
+      barcode: item.barcode || '',
+      sku: item.sku || '',
+      markedProduct: Boolean(item.markedProduct),
+    }));
 }
 
 export function restaurantPayTotal(order, commissionPreview = null) {
@@ -57,27 +50,35 @@ function serviceAmountOf(order) {
   return round2(Number(order?.serviceAmount ?? order?.commissionAmount) || 0);
 }
 
-/** Сумма и оплата для ОФД: блюда и скидка, без процента обслуживания. */
-export function fiscalPaymentWithoutService(order, payAmount, payment) {
-  const service = serviceAmountOf(order);
-  const paid = round2(Number(payAmount) || 0);
-  const fiscalTotal = round2(Math.max(0, paid - service));
-  if (!(service > 0)) return { total: paid, payment };
+export function fiscalCartTotal(cartItems) {
+  return round2(
+    (cartItems || []).reduce(
+      (sum, line) => sum + round2((Number(line.unitPrice) || 0) * (Number(line.quantity) || 0)),
+      0,
+    ),
+  );
+}
+
+/** Оплата в ОФД = сумма строк с ИКПУ (не весь чек зала). */
+export function fiscalPaymentForCart(cartItems, payment) {
+  const fiscalTotal = Math.max(0, fiscalCartTotal(cartItems));
   const method = String(payment?.paymentMethod || 'CASH').toUpperCase();
-  let cash = round2(Number(payment?.cashAmount) || 0);
-  let card = round2(Number(payment?.cardAmount) || 0);
+  let cash = 0;
+  let card = 0;
   if (method === 'CARD' || method === 'CASHLESS') {
-    cash = 0;
     card = fiscalTotal;
   } else if (method === 'MIXED') {
-    let left = service;
-    const fromCash = Math.min(Math.max(cash, 0), left);
-    cash = round2(cash - fromCash);
-    left = round2(left - fromCash);
-    card = round2(Math.max(0, card - left));
+    const payCash = round2(Number(payment?.cashAmount) || 0);
+    const payCard = round2(Number(payment?.cardAmount) || 0);
+    const paySum = round2(payCash + payCard);
+    if (paySum > 0 && fiscalTotal > 0) {
+      cash = round2(Math.min(fiscalTotal, (payCash / paySum) * fiscalTotal));
+      card = round2(Math.max(0, fiscalTotal - cash));
+    } else {
+      card = fiscalTotal;
+    }
   } else {
     cash = fiscalTotal;
-    card = 0;
   }
   return {
     total: fiscalTotal,
@@ -89,6 +90,11 @@ export function fiscalPaymentWithoutService(order, payAmount, payment) {
       changeGiven: 0,
     },
   };
+}
+
+/** @deprecated use fiscalPaymentForCart */
+export function fiscalPaymentWithoutService(order, payAmount, payment) {
+  return fiscalPaymentForCart(orderToMultikassaCartItems(order), payment);
 }
 
 /**
@@ -110,9 +116,34 @@ export function buildRestaurantFiscalSale({
   storeId,
   customerLabel,
 }) {
-  const cartLines = orderToMultikassaCartItems(order);
-  const items = cartLines.map((line, idx) => {
-    const orderItem = (order?.items ?? []).filter(isBillable)[idx];
+  const billable = (order?.items ?? []).filter(isBillable);
+  const fiscalCart = orderToMultikassaCartItems(order);
+  const fiscalized = Boolean(
+    fiscal?.fiscalStatus === 'FISCALIZED'
+      || fiscal?.fiscalSign
+      || fiscal?.fiscalQrUrl
+      || fiscal?.multikassaSaleId,
+  );
+  // Налоговый чек — только строки с ИКПУ; обычный просмотр — все блюда.
+  const sourceLines = fiscalized
+    ? fiscalCart
+    : billable.map((item) => ({
+      productId: item.menuItemId || item.id,
+      name: item.name || 'Блюдо',
+      quantity: Number(item.quantity) || 0,
+      unitPrice: Number(item.unitPrice) || 0,
+      taxRate: vatPercent(item),
+      unitOfMeasure: item.unitOfMeasure || 'шт',
+      ikpu: item.ikpu || '',
+      packageCode: item.packageCode || '',
+      sku: item.sku || '',
+    }));
+
+  const items = sourceLines.map((line, idx) => {
+    const orderItem = billable.find(
+      (item) => String(item.menuItemId || item.id) === String(line.productId)
+        || String(item.id) === String(line.productId),
+    );
     const lineTotal = round2(line.unitPrice * line.quantity);
     const taxRatePercent = line.taxRate ?? 0;
     const returnedQuantity = Number(orderItem?.returnedQuantity) || 0;
@@ -132,17 +163,17 @@ export function buildRestaurantFiscalSale({
       ikpu: line.ikpu || null,
       packageCode: line.packageCode || null,
       productSku: line.sku || null,
-      // Service + discount cart rows are not FloorOrderItem rows — never refundable.
       isServiceLine: String(line.productId || '').startsWith('rst-'),
     };
   });
 
-  const dishesSubtotal = round2(
-    (order?.items ?? []).filter(isBillable).reduce((acc, item) => acc + lineTotalOf(item), 0),
-  );
+  const dishesSubtotal = round2(billable.reduce((acc, item) => acc + lineTotalOf(item), 0));
   const serviceAmount = serviceAmountOf(order);
   const discountTotal = round2(Math.max(0, Number(order?.discountAmount) || 0));
-  const totalAmount = round2(Math.max(0, dishesSubtotal - discountTotal));
+  const fiscalTotal = fiscalCartTotal(fiscalCart);
+  const totalAmount = fiscalized
+    ? fiscalTotal
+    : round2(Math.max(0, dishesSubtotal - discountTotal));
   const taxTotal = round2(
     items.reduce((acc, item) => acc + (Number(item.taxAmount) || 0), 0),
   );
@@ -174,8 +205,8 @@ export function buildRestaurantFiscalSale({
   }
   if (tendered == null) tendered = method === 'CASH' ? paid : (cash ?? paid);
   if (change == null) change = method === 'CASH' ? round2(Math.max(0, tendered - paid)) : 0;
-  if (serviceAmount > 0) {
-    const fiscalPay = fiscalPaymentWithoutService(order, paid, {
+  if (fiscalized && fiscalCart.length > 0) {
+    const fiscalPay = fiscalPaymentForCart(fiscalCart, {
       paymentMethod: method,
       cashAmount: cash,
       cardAmount: card,
