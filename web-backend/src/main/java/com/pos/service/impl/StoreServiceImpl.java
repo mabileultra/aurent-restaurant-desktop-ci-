@@ -79,6 +79,8 @@ public class StoreServiceImpl implements StoreService {
         String search,
         Integer companyId,
         String businessType,
+        String regionCode,
+        String districtCode,
         Pageable pageable
     ) {
         Integer scopedCompanyId = tenantAccess.resolveScopedCompanyId(companyId);
@@ -88,7 +90,7 @@ public class StoreServiceImpl implements StoreService {
             pageable.getSort().isSorted() ? pageable.getSort() : Sort.by("name").ascending()
         );
         Page<Store> page = storeRepository.findAll(
-            StoreSpecifications.filter(search, scopedCompanyId, businessType),
+            StoreSpecifications.filter(search, scopedCompanyId, businessType, regionCode, districtCode),
             sorted
         );
         return PageResponse.from(page.map(storeMapper::toResponse));

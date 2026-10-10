@@ -13,6 +13,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     companyIdFilter != null && companyIdFilter !== '' ? String(companyIdFilter) : ''
   );
   const [businessType, setBusinessType] = useState('');
+  const [regionCode, setRegionCode] = useState('');
+  const [districtCode, setDistrictCode] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [modalOpen, setModalOpen] = useState(false);
@@ -31,8 +33,10 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
       search: search.trim() || undefined,
       companyId: resolvedCompanyId,
       businessType: businessType || undefined,
+      regionCode: regionCode || undefined,
+      districtCode: districtCode || undefined,
     }),
-    [search, page, pageSize, resolvedCompanyId, businessType]
+    [search, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
   const { data, isPending, isError, error } = useQuery({
@@ -131,6 +135,12 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     setPage(0);
   };
 
+  const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
+    setRegionCode(nextRegion || '');
+    setDistrictCode(nextDistrict || '');
+    setPage(0);
+  };
+
   const handlePageSizeChange = (nextSize) => {
     setPageSize(nextSize);
     setPage(0);
@@ -158,6 +168,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     search,
     companyId,
     businessType,
+    regionCode,
+    districtCode,
     page,
     pageSize,
     setPage,
@@ -182,6 +194,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     handleSearchChange,
     handleCompanyChange,
     handleBusinessTypeChange,
+    handleGeoChange,
     toggleMutation,
     tryDelete,
     pharmacyIntegrationStore,

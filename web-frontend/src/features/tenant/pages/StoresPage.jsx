@@ -30,6 +30,9 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
           businessTypes={p.businessTypes}
           businessType={p.businessType}
           onBusinessTypeChange={p.handleBusinessTypeChange}
+          regionCode={p.regionCode}
+          districtCode={p.districtCode}
+          onGeoChange={p.handleGeoChange}
         />
       )}
     >

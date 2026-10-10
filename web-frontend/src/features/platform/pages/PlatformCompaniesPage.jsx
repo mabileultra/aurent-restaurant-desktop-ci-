@@ -5,6 +5,7 @@ import { buildBusinessTypeFilterOptions } from '../utils/businessTypeFilterOptio
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
 import PlatformCompaniesTable from '../components/PlatformCompaniesTable';
 import { usePlatformCompaniesPage } from '../hooks/usePlatformCompaniesPage';
+import GeoFilterSelects from '../../shared/geo/GeoFilterSelects';
 
 export default function PlatformCompaniesPage() {
   const p = usePlatformCompaniesPage();
@@ -28,6 +29,13 @@ export default function PlatformCompaniesPage() {
           filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
           filterValue={p.businessType}
           onFilterChange={p.handleBusinessTypeChange}
+          extra={(
+            <GeoFilterSelects
+              regionCode={p.regionCode}
+              districtCode={p.districtCode}
+              onChange={p.handleGeoChange}
+            />
+          )}
         />
       )}
     >

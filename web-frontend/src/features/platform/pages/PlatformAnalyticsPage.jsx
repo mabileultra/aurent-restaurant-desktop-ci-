@@ -1,5 +1,17 @@
+import {
+  AlertTriangle,
+  Building2,
+  Coins,
+  LayoutGrid,
+  MapPinned,
+  PlugZap,
+  ShieldX,
+  Table2,
+  UserPlus,
+} from 'lucide-react';
 import '../../../styles/platform/tax-analytics.css';
 import { PageLayout } from '../../../components/ui';
+import TaxAnalyticsFiltersPanel from '../components/analytics/TaxAnalyticsFiltersPanel';
 import { useTaxAnalyticsPage } from '../hooks/useTaxAnalyticsPage';
 
 function fmtNum(n) {
@@ -27,6 +39,21 @@ function Delta({ value }) {
 function ShareBadge({ value, tone = 'green' }) {
   if (value == null) return <span className="ta-muted">—</span>;
   return <span className={`ta-badge ta-badge-${tone}`}>{Number(value).toLocaleString('ru-RU')}%</span>;
+}
+
+function KpiCard({ icon: Icon, tone, label, value, children }) {
+  return (
+    <div className={`ta-kpi ta-kpi--${tone}`}>
+      <div className="ta-kpi__top">
+        <span className={`ta-kpi__icon ta-kpi__icon--${tone}`} aria-hidden>
+          <Icon size={18} strokeWidth={2.2} />
+        </span>
+        <p className="ta-kpi__label">{label}</p>
+      </div>
+      <p className="ta-kpi__value">{value}</p>
+      {children ? <div className="ta-kpi__meta">{children}</div> : null}
+    </div>
+  );
 }
 
 export default function PlatformAnalyticsPage() {
@@ -71,52 +98,68 @@ export default function PlatformAnalyticsPage() {
       {p.overviewError ? <p className="ta-error">{t('platform.analytics.loadFailed')}</p> : null}
 
       <div className="ta-kpi-grid">
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.totalEnterprises')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtNum(kpi?.totalEnterprises)}</p>
-        </div>
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.connected')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtNum(kpi?.connected)}</p>
-          <div className="ta-kpi__meta">
-            <ShareBadge value={kpi?.connectedSharePct} tone="green" />
-          </div>
-        </div>
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.notConnected')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtNum(kpi?.notConnected)}</p>
-          <div className="ta-kpi__meta">
-            <ShareBadge value={kpi?.notConnectedSharePct} tone="red" />
-          </div>
-        </div>
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.totalTurnover')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtMoney(kpi?.totalTurnover)}</p>
-          <div className="ta-kpi__meta"><Delta value={kpi?.totalTurnoverDeltaPct} /></div>
-        </div>
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.newConnections')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtNum(kpi?.newConnections)}</p>
-          <div className="ta-kpi__meta"><Delta value={kpi?.newConnectionsDeltaPct} /></div>
-        </div>
-        <div className="ta-kpi">
-          <p className="ta-kpi__label">{t('platform.analytics.kpi.connectionErrors')}</p>
-          <p className="ta-kpi__value">{p.overviewLoading ? '…' : fmtNum(kpi?.connectionErrors)}</p>
-          <div className="ta-kpi__meta">
-            <span className="ta-muted">{t('platform.analytics.kpi.needsAttention')}</span>
-            <Delta value={kpi?.connectionErrorsDeltaPct} />
-          </div>
-        </div>
+        <KpiCard
+          icon={Building2}
+          tone="blue"
+          label={t('platform.analytics.kpi.totalEnterprises')}
+          value={p.overviewLoading ? '…' : fmtNum(kpi?.totalEnterprises)}
+        />
+        <KpiCard
+          icon={PlugZap}
+          tone="green"
+          label={t('platform.analytics.kpi.connected')}
+          value={p.overviewLoading ? '…' : fmtNum(kpi?.connected)}
+        >
+          <ShareBadge value={kpi?.connectedSharePct} tone="green" />
+        </KpiCard>
+        <KpiCard
+          icon={ShieldX}
+          tone="red"
+          label={t('platform.analytics.kpi.notConnected')}
+          value={p.overviewLoading ? '…' : fmtNum(kpi?.notConnected)}
+        >
+          <ShareBadge value={kpi?.notConnectedSharePct} tone="red" />
+        </KpiCard>
+        <KpiCard
+          icon={Coins}
+          tone="amber"
+          label={t('platform.analytics.kpi.totalTurnover')}
+          value={p.overviewLoading ? '…' : fmtMoney(kpi?.totalTurnover)}
+        >
+          <Delta value={kpi?.totalTurnoverDeltaPct} />
+        </KpiCard>
+        <KpiCard
+          icon={UserPlus}
+          tone="blue"
+          label={t('platform.analytics.kpi.newConnections')}
+          value={p.overviewLoading ? '…' : fmtNum(kpi?.newConnections)}
+        >
+          <Delta value={kpi?.newConnectionsDeltaPct} />
+        </KpiCard>
+        <KpiCard
+          icon={AlertTriangle}
+          tone="red"
+          label={t('platform.analytics.kpi.connectionErrors')}
+          value={p.overviewLoading ? '…' : fmtNum(kpi?.connectionErrors)}
+        >
+          <span className="ta-muted">{t('platform.analytics.kpi.needsAttention')}</span>
+          <Delta value={kpi?.connectionErrorsDeltaPct} />
+        </KpiCard>
       </div>
 
       <section className="ta-section">
         <div className="ta-section__head">
-          <h2 className="ta-section__title">{t('platform.analytics.regionsTitle')}</h2>
+          <h2 className="ta-section__title">
+            <MapPinned size={16} strokeWidth={2.2} aria-hidden className="ta-inline-icon" />
+            {t('platform.analytics.regionsTitle')}
+          </h2>
           <div className="ta-period">
             <button type="button" className={`ta-chip${p.regionView === 'cards' ? ' is-active' : ''}`} onClick={() => p.setRegionView('cards')}>
+              <LayoutGrid size={14} aria-hidden />
               {t('platform.analytics.viewRegions')}
             </button>
             <button type="button" className={`ta-chip${p.regionView === 'table' ? ' is-active' : ''}`} onClick={() => p.setRegionView('table')}>
+              <Table2 size={14} aria-hidden />
               {t('platform.analytics.viewTable')}
             </button>
           </div>
@@ -130,6 +173,7 @@ export default function PlatformAnalyticsPage() {
                 className={`ta-region${p.applied.regionCode === r.regionCode ? ' is-selected' : ''}`}
                 onClick={() => p.selectRegion(r.regionCode)}
               >
+                <div className="ta-region__icon" aria-hidden><MapPinned size={16} /></div>
                 <div className="ta-region__name">{p.labelGeo(r)}</div>
                 <div className="ta-region__count">{fmtNum(r.enterprises)}</div>
                 <div className="ta-muted"><Delta value={r.turnoverDeltaPct} /></div>
@@ -160,65 +204,19 @@ export default function PlatformAnalyticsPage() {
         )}
       </section>
 
-      <section className="ta-section">
-        <div className="ta-section__head">
-          <h2 className="ta-section__title">{t('platform.analytics.filtersTitle')}</h2>
-        </div>
-        <div className="ta-filters">
-          <label>
-            {t('geo.region')}
-            <select
-              value={p.draft.regionCode}
-              onChange={(e) => p.setDraft((d) => ({ ...d, regionCode: e.target.value, districtCode: '' }))}
-            >
-              <option value="">{t('platform.analytics.allRegions')}</option>
-              {(overview?.regions ?? []).map((r) => (
-                <option key={r.regionCode} value={r.regionCode}>{p.labelGeo(r)}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('geo.district')}
-            <select
-              value={p.draft.districtCode}
-              disabled={!p.draft.regionCode}
-              onChange={(e) => p.setDraft((d) => ({ ...d, districtCode: e.target.value }))}
-            >
-              <option value="">{t('platform.analytics.allDistricts')}</option>
-              {p.districts.map((d) => (
-                <option key={d.code} value={d.code}>{p.labelGeo(d)}</option>
-              ))}
-            </select>
-          </label>
-          <label>
-            {t('platform.analytics.connectionStatus')}
-            <select
-              value={p.draft.connectionStatus}
-              onChange={(e) => p.setDraft((d) => ({ ...d, connectionStatus: e.target.value }))}
-            >
-              <option value="">{t('platform.analytics.allStatuses')}</option>
-              <option value="CONNECTED">{t('platform.analytics.statusConnected')}</option>
-              <option value="NOT_CONNECTED">{t('platform.analytics.statusNotConnected')}</option>
-            </select>
-          </label>
-          <label>
-            {t('platform.analytics.search')}
-            <input
-              value={p.draft.search}
-              onChange={(e) => p.setDraft((d) => ({ ...d, search: e.target.value }))}
-              placeholder={t('platform.analytics.searchPh')}
-            />
-          </label>
-        </div>
-        <div className="ta-filter-actions">
-          <div className="ta-period">
-            <button type="button" className="ta-btn ta-btn-primary" onClick={p.applyFilters}>{t('platform.analytics.apply')}</button>
-            <button type="button" className="ta-btn" onClick={p.resetFilters}>{t('platform.analytics.reset')}</button>
-            <button type="button" className="ta-btn" onClick={p.saveFilters}>{t('platform.analytics.saveFilter')}</button>
-            <button type="button" className="ta-btn" onClick={p.loadSavedFilters}>{t('platform.analytics.loadFilter')}</button>
-          </div>
-        </div>
-      </section>
+      <TaxAnalyticsFiltersPanel
+        t={t}
+        draft={p.draft}
+        setDraft={p.setDraft}
+        regions={overview?.regions ?? []}
+        districts={p.districts}
+        labelGeo={p.labelGeo}
+        onApply={p.applyFilters}
+        onReset={p.resetFilters}
+        onSave={p.saveFilters}
+        onLoad={p.loadSavedFilters}
+        onExport={p.exportExcel}
+      />
 
       <section className="ta-section">
         <div className="ta-section__head">

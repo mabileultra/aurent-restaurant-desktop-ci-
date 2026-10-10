@@ -2,6 +2,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { USER_ROLE_BADGE } from '../../constants';
 import { canDeleteUser } from '../../utils/userDeletePolicy';
 
@@ -24,7 +25,9 @@ export default function UsersTable({
   actorRole,
   companyById,
 }) {
-  const colSpan = isPlatform ? 12 : 8;
+  const colSpan = isPlatform ? 14 : 10;
+  const regionCodes = pageRows.map((u) => u.regionCode).filter(Boolean);
+  const { regionName, districtName } = useGeoNameLookup(regionCodes);
 
   const businessTypeLabel = (user) => {
     const company = companyById?.get?.(String(user.companyId ?? ''));
@@ -44,6 +47,8 @@ export default function UsersTable({
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCompanyCode')}</th>}
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCredentials')}</th>}
             {isPlatform && <th className="px-4 py-3 font-medium">{t('users.colCompany')}</th>}
+            <th className="px-4 py-3 font-medium">{t('geo.region')}</th>
+            <th className="px-4 py-3 font-medium">{t('geo.district')}</th>
             {isPlatform && <th className="px-4 py-3 font-medium">{t('platform.colBusinessType')}</th>}
             <th className="px-4 py-3 font-medium">{t('users.colStores')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colRole')}</th>
@@ -98,6 +103,8 @@ export default function UsersTable({
                       || '—'}
                   </td>
                 )}
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{regionName(user.regionCode)}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{districtName(user.districtCode)}</td>
                 {isPlatform && (
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                     {businessTypeLabel(user)}

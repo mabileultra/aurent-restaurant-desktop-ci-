@@ -10,7 +10,13 @@ import java.util.List;
 
 public interface CompanyService {
 
-    PageResponse<CompanyResponse> list(String search, String businessType, Pageable pageable);
+    PageResponse<CompanyResponse> list(
+        String search,
+        String businessType,
+        String regionCode,
+        String districtCode,
+        Pageable pageable
+    );
 
     List<CompanyResponse> listAll();
 

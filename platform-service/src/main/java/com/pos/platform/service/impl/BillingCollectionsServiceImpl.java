@@ -94,6 +94,10 @@ public class BillingCollectionsServiceImpl implements BillingCollectionsService 
             .filter(r -> filter.method() == null || filter.method() == r.lastPaymentMethod())
             .filter(r -> q.isEmpty() || matches(r, q))
             .filter(r -> inRange(r, filter))
+            .filter(r -> filter.regionCode() == null || filter.regionCode().isBlank()
+                || filter.regionCode().equals(r.regionCode()))
+            .filter(r -> filter.districtCode() == null || filter.districtCode().isBlank()
+                || filter.districtCode().equals(r.districtCode()))
             .toList();
     }
 
@@ -141,6 +145,8 @@ public class BillingCollectionsServiceImpl implements BillingCollectionsService 
             createdAt,
             company != null ? company.getPhone() : null,
             company != null ? company.getTin() : null,
+            company != null ? company.getRegionCode() : null,
+            company != null ? company.getDistrictCode() : null,
             last != null ? last.method() : null,
             last != null ? last.at() : null
         );

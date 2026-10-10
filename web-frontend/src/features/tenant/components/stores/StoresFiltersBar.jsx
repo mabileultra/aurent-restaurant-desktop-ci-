@@ -1,5 +1,6 @@
 import PlatformCompactFilterBar from '../../../platform/components/PlatformCompactFilterBar';
 import { buildBusinessTypeFilterOptions } from '../../../platform/utils/businessTypeFilterOptions';
+import GeoFilterSelects from '../../../shared/geo/GeoFilterSelects';
 import StoresCompanyFilter from './StoresCompanyFilter';
 
 export default function StoresFiltersBar({
@@ -13,6 +14,9 @@ export default function StoresFiltersBar({
   businessTypes,
   businessType,
   onBusinessTypeChange,
+  regionCode,
+  districtCode,
+  onGeoChange,
 }) {
   return (
     <PlatformCompactFilterBar
@@ -25,14 +29,23 @@ export default function StoresFiltersBar({
       filterOptions={showCompanySelect ? buildBusinessTypeFilterOptions(t, businessTypes) : undefined}
       filterValue={businessType}
       onFilterChange={onBusinessTypeChange}
-      extra={showCompanySelect ? (
-        <StoresCompanyFilter
-          t={t}
-          companies={companies}
-          companyId={companyId}
-          onChange={onCompanyChange}
-        />
-      ) : null}
+      extra={(
+        <>
+          <GeoFilterSelects
+            regionCode={regionCode}
+            districtCode={districtCode}
+            onChange={onGeoChange}
+          />
+          {showCompanySelect ? (
+            <StoresCompanyFilter
+              t={t}
+              companies={companies}
+              companyId={companyId}
+              onChange={onCompanyChange}
+            />
+          ) : null}
+        </>
+      )}
     />
   );
 }

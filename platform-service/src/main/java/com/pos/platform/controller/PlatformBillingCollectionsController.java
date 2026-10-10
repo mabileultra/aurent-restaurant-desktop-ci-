@@ -69,10 +69,12 @@ public class PlatformBillingCollectionsController {
         @RequestParam(required = false) BillingCollectionsService.DateField dateField,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
-        @RequestParam(required = false) List<Integer> ids
+        @RequestParam(required = false) List<Integer> ids,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode
     ) {
         return ResponseEntity.ok(collectionsService.list(
-            filter(state, newOnly, planId, method, search, dateField, from, to, ids)
+            filter(state, newOnly, planId, method, search, dateField, from, to, ids, regionCode, districtCode)
         ));
     }
 
@@ -88,10 +90,12 @@ public class PlatformBillingCollectionsController {
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
         @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
         @RequestParam(required = false) List<Integer> ids,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
         @RequestParam(defaultValue = "ru") String lang
     ) {
         List<CompanyPaymentRowResponse> rows = collectionsService.list(
-            filter(state, newOnly, planId, method, search, dateField, from, to, ids)
+            filter(state, newOnly, planId, method, search, dateField, from, to, ids, regionCode, districtCode)
         );
         String fileName = "billing_" + LocalDate.now() + ".xlsx";
         return ResponseEntity.ok()
@@ -140,11 +144,15 @@ public class PlatformBillingCollectionsController {
         BillingCollectionsService.DateField dateField,
         LocalDate from,
         LocalDate to,
-        List<Integer> ids
+        List<Integer> ids,
+        String regionCode,
+        String districtCode
     ) {
         return new BillingCollectionsService.Filter(
             state, newOnly, planId, method, search, dateField, from, to,
-            ids != null ? new HashSet<>(ids) : null
+            ids != null ? new HashSet<>(ids) : null,
+            regionCode,
+            districtCode
         );
     }
 }

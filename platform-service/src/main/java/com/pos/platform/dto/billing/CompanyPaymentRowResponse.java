@@ -14,6 +14,8 @@ public record CompanyPaymentRowResponse(
     Instant companyCreatedAt,
     String companyPhone,
     String companyTin,
+    String regionCode,
+    String districtCode,
     BillingPaymentMethod lastPaymentMethod,
     Instant lastPaymentAt
 ) {}

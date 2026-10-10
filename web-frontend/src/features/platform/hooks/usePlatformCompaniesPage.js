@@ -28,6 +28,8 @@ export function usePlatformCompaniesPage() {
   const qc = useQueryClient();
   const [search, setSearch] = useState('');
   const [businessType, setBusinessType] = useState('');
+  const [regionCode, setRegionCode] = useState('');
+  const [districtCode, setDistrictCode] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PLATFORM_COMPANY_PAGE_SIZE);
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,8 +43,10 @@ export function usePlatformCompaniesPage() {
       size: pageSize,
       search: search.trim() || undefined,
       businessType: businessType || undefined,
+      regionCode: regionCode || undefined,
+      districtCode: districtCode || undefined,
     }),
-    [page, pageSize, search, businessType]
+    [page, pageSize, search, businessType, regionCode, districtCode]
   );
 
   const { data, isPending, isError, error } = useQuery({
@@ -243,6 +247,12 @@ export function usePlatformCompaniesPage() {
     setPage(0);
   };
 
+  const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
+    setRegionCode(nextRegion || '');
+    setDistrictCode(nextDistrict || '');
+    setPage(0);
+  };
+
   const handlePageSizeChange = (nextSize) => {
     setPageSize(nextSize);
     setPage(0);
@@ -263,6 +273,8 @@ export function usePlatformCompaniesPage() {
     t,
     search,
     businessType,
+    regionCode,
+    districtCode,
     page,
     pageSize,
     setPage,
@@ -290,6 +302,7 @@ export function usePlatformCompaniesPage() {
     setDefaultBusinessType,
     handleSearchChange,
     handleBusinessTypeChange,
+    handleGeoChange,
     tryDelete,
   };
 }

@@ -26,10 +26,12 @@ public interface BillingCollectionsService {
         DateField dateField,
         LocalDate from,
         LocalDate to,
-        Set<Integer> companyIds
+        Set<Integer> companyIds,
+        String regionCode,
+        String districtCode
     ) {
         public static Filter all() {
-            return new Filter(null, false, null, null, null, null, null, null, null);
+            return new Filter(null, false, null, null, null, null, null, null, null, null, null);
         }
     }
 

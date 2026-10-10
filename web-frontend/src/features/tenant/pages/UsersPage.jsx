@@ -2,6 +2,7 @@ import { Plus } from 'lucide-react';
 import { BaseButton, PageLayout, PageSearchField } from '../../../components/ui';
 import PlatformCompactFilterBar from '../../platform/components/PlatformCompactFilterBar';
 import { buildBusinessTypeFilterOptions } from '../../platform/utils/businessTypeFilterOptions';
+import GeoFilterSelects from '../../shared/geo/GeoFilterSelects';
 import UserFormModal from '../components/users/UserFormModal';
 import UserDeleteConfirmModal from '../components/users/UserDeleteConfirmModal';
 import UsersTable from '../components/users/UsersTable';
@@ -31,14 +32,28 @@ export default function UsersPage({ mode = 'tenant' }) {
           filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
           filterValue={p.businessType}
           onFilterChange={p.handleBusinessTypeChange}
+          extra={(
+            <GeoFilterSelects
+              regionCode={p.regionCode}
+              districtCode={p.districtCode}
+              onChange={p.handleGeoChange}
+            />
+          )}
         />
       ) : (
-        <PageSearchField
-          className="max-w-md"
-          value={p.search}
-          onChange={p.handleSearchChange}
-          placeholder={p.t('platform.userSearch')}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <PageSearchField
+            className="max-w-md"
+            value={p.search}
+            onChange={p.handleSearchChange}
+            placeholder={p.t('platform.userSearch')}
+          />
+          <GeoFilterSelects
+            regionCode={p.regionCode}
+            districtCode={p.districtCode}
+            onChange={p.handleGeoChange}
+          />
+        </div>
       )}
     >
       <UsersTable

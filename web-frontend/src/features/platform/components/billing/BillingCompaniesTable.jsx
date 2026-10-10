@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CalendarClock, ChevronDown, ChevronRight, Copy, Download, Layers, X } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
+import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { STATE_TONE, activeDeferralDay, balanceTone, dueHint, initials } from './billingCollectionsUi';
 
 function ExportMenu({ k, disabled, busy, onExcel, onCsv }) {
@@ -65,6 +66,8 @@ export default function BillingCompaniesTable({ p }) {
   const { t, money, formatDate, collections: c, actions: a } = p;
   const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
   const currency = t('billing.currency');
+  const regionCodes = c.pagedRows.map((r) => r.regionCode).filter(Boolean);
+  const { regionName, districtName } = useGeoNameLookup(regionCodes);
 
   return (
     <section className="bc-card bc-table-card">
@@ -92,6 +95,8 @@ export default function BillingCompaniesTable({ p }) {
                 />
               </th>
               <th>{k('colCompany')}</th>
+              <th>{t('geo.region')}</th>
+              <th>{t('geo.district')}</th>
               <th>{k('colPlan')}</th>
               <th className="bc-num">{k('colMonthly')}</th>
               <th className="bc-num">{k('colBalance')}</th>
@@ -103,9 +108,9 @@ export default function BillingCompaniesTable({ p }) {
           </thead>
           <tbody>
             {c.loading ? (
-              <tr><td colSpan={9} className="bc-table__empty">{t('common.loading')}</td></tr>
+              <tr><td colSpan={11} className="bc-table__empty">{t('common.loading')}</td></tr>
             ) : c.pagedRows.length === 0 ? (
-              <tr><td colSpan={9} className="bc-table__empty">{t('platform.billing.emptyCompanies')}</td></tr>
+              <tr><td colSpan={11} className="bc-table__empty">{t('platform.billing.emptyCompanies')}</td></tr>
             ) : (
               c.pagedRows.map((row) => {
                 const b = row.billing;
@@ -139,6 +144,8 @@ export default function BillingCompaniesTable({ p }) {
                         </span>
                       </div>
                     </td>
+                    <td className="bc-muted">{regionName(row.regionCode)}</td>
+                    <td className="bc-muted">{districtName(row.districtCode)}</td>
                     <td>
                       {b.planName
                         ? <span className="bc-pill bc-pill--plan">{b.planName}</span>

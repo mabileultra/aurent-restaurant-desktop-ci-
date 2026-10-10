@@ -334,11 +334,13 @@ public class TaxAnalyticsQueryRepository {
                    COALESCE(t.non_fiscal_turnover, 0) AS non_fiscal_turnover,
                    COALESCE(pt.total_turnover, 0) AS prev_turnover
             FROM agg
-            """).append(nameJoin).append("""
-            LEFT JOIN turnover t ON t.geo_code = agg.geo_code
-            LEFT JOIN prev_turnover pt ON pt.geo_code = agg.geo_code
-            ORDER BY g.sort_order NULLS LAST, agg.geo_code
             """);
+        // Text blocks drop the trailing newline — keep a separator before the dynamic JOIN.
+        sql.append(' ').append(nameJoin).append("""
+             LEFT JOIN turnover t ON t.geo_code = agg.geo_code
+             LEFT JOIN prev_turnover pt ON pt.geo_code = agg.geo_code
+             ORDER BY g.sort_order NULLS LAST, agg.geo_code
+             """);
         return jdbc.queryForList(sql.toString(), args.toArray());
     }
 

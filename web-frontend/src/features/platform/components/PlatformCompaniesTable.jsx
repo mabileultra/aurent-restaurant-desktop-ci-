@@ -1,6 +1,7 @@
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
+import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
 
 export default function PlatformCompaniesTable({
   t,
@@ -22,6 +23,8 @@ export default function PlatformCompaniesTable({
     totalPages || 0,
     pageSize > 0 && total > 0 ? Math.ceil(total / pageSize) : 1
   );
+  const regionCodes = rows.map((r) => r.regionCode).filter(Boolean);
+  const { regionName, districtName } = useGeoNameLookup(regionCodes);
 
   return (
     <div className="admin-table-shell">
@@ -31,6 +34,8 @@ export default function PlatformCompaniesTable({
             <tr className="border-b border-slate-200 bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-500 dark:border-slate-800 dark:bg-slate-800/50">
               <AdminTableNoIdHeaders />
               <th className="px-4 py-3 font-medium">{t('platform.colName')}</th>
+              <th className="px-4 py-3 font-medium">{t('geo.region')}</th>
+              <th className="px-4 py-3 font-medium">{t('geo.district')}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colLoginCode')}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colStores')}</th>
               <th className="px-4 py-3 font-medium">{t('platform.colBusinessType')}</th>
@@ -41,13 +46,13 @@ export default function PlatformCompaniesTable({
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {isPending ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
                   {t('common.loading')}
                 </td>
               </tr>
             ) : isError || rows.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
                   {isError ? t('common.loadError') : t('common.noData')}
                 </td>
               </tr>
@@ -56,6 +61,8 @@ export default function PlatformCompaniesTable({
                 <tr key={row.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
                   <AdminTableNoIdCells page={page} pageSize={pageSize} index={index} id={row.id} />
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{regionName(row.regionCode)}</td>
+                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{districtName(row.districtCode)}</td>
                   <td className="px-4 py-3 font-mono text-xs tracking-wide text-slate-600 dark:text-slate-400">
                     {row.loginCode || '—'}
                   </td>

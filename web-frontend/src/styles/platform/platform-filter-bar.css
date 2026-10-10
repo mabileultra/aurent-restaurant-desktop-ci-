@@ -1,8 +1,39 @@
 .platform-filter-bar {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.55rem;
   min-width: 0;
+}
+
+.platform-filter-bar__geo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.platform-filter-bar__select {
+  height: 2.15rem;
+  min-width: 9.5rem;
+  max-width: 14rem;
+  padding: 0 0.55rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  background: #fff;
+  color: #334155;
+  font-size: 0.8rem;
+}
+
+.platform-filter-bar__select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.dark .platform-filter-bar__select {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
 }
 
 .platform-filter-bar__menu {

@@ -21,6 +21,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [search, setSearch] = useState('');
   const [businessType, setBusinessType] = useState('');
+  const [regionCode, setRegionCode] = useState('');
+  const [districtCode, setDistrictCode] = useState('');
 
   const modalOpen = formMode !== null;
 
@@ -91,6 +93,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
       ...user,
       companyName: user.companyName || company?.name || '',
       companyLoginCode: user.companyLoginCode || company?.loginCode || '',
+      regionCode: company?.regionCode || '',
+      districtCode: company?.districtCode || '',
       storeNames,
     };
   }), [users, companyById, storeById]);
@@ -125,6 +129,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
         if (!companyHasBusinessType(company, businessType)) return false;
         if (!isRoleAllowedForBusinessType(user.role, businessType)) return false;
       }
+      if (regionCode && String(user.regionCode || '') !== regionCode) return false;
+      if (districtCode && String(user.districtCode || '') !== districtCode) return false;
       if (!q) return true;
       return [
         user.fullName,
@@ -138,7 +144,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [displayUsers, search, businessType, companyById]);
+  }, [displayUsers, search, businessType, companyById, regionCode, districtCode]);
 
   const total = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
@@ -180,13 +186,19 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     setPage(0);
   };
 
+  const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
+    setRegionCode(nextRegion || '');
+    setDistrictCode(nextDistrict || '');
+    setPage(0);
+  };
+
   const handlePageSizeChange = (nextSize) => {
     setPageSize(nextSize);
     setPage(0);
   };
 
   const subtitle = t('common.systemUsers', { count: users.length });
-  const searchSuffix = search.trim() || businessType
+  const searchSuffix = search.trim() || businessType || regionCode || districtCode
     ? ` · ${t('platform.searchResults', { count: filteredUsers.length })}`
     : '';
 
@@ -204,6 +216,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     search,
     businessType,
     businessTypes,
+    regionCode,
+    districtCode,
     isLoading,
     pageRows,
     total,
@@ -213,6 +227,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     closeModal,
     handleSearchChange,
     handleBusinessTypeChange,
+    handleGeoChange,
     companyById,
     toggleUser,
     deleteTarget,

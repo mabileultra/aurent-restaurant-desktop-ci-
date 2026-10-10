@@ -2,6 +2,7 @@ import { CheckCircle2, Circle } from 'lucide-react';
 import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
+import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
 import { storeSupportsAslMarking } from '../../utils/storeAslMarkingSupport';
 
 export default function StoresTable({
@@ -22,7 +23,9 @@ export default function StoresTable({
   onDelete,
   onPharmacyIntegration,
 }) {
-  const colSpan = showCompany ? 9 : 8;
+  const colSpan = showCompany ? 11 : 10;
+  const regionCodes = rows.map((r) => r.regionCode).filter(Boolean);
+  const { regionName, districtName } = useGeoNameLookup(regionCodes);
 
   return (
     <div className="admin-table-shell">
@@ -34,6 +37,8 @@ export default function StoresTable({
             {showCompany && (
               <th className="px-4 py-3 font-medium">{t('stores.colCompany')}</th>
             )}
+            <th className="px-4 py-3 font-medium">{t('geo.region')}</th>
+            <th className="px-4 py-3 font-medium">{t('geo.district')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colBusinessType')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colAddress')}</th>
             <th className="px-4 py-3 font-medium">{t('stores.colPhone')}</th>
@@ -64,6 +69,8 @@ export default function StoresTable({
                     {row.companyName || '—'}
                   </td>
                 )}
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{regionName(row.regionCode)}</td>
+                <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{districtName(row.districtCode)}</td>
                 <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
                   {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`)}
                 </td>

@@ -34,9 +34,11 @@ public class CompanyController {
     public ResponseEntity<PageResponse<CompanyResponse>> list(
         @RequestParam(required = false) String search,
         @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
         @PageableDefault(size = 14) Pageable pageable
     ) {
-        return ResponseEntity.ok(companyService.list(search, businessType, pageable));
+        return ResponseEntity.ok(companyService.list(search, businessType, regionCode, districtCode, pageable));
     }
 
     @GetMapping("/all")

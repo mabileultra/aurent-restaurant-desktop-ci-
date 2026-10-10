@@ -31,6 +31,8 @@ export function useBillingCollections() {
   const [from, setFromState] = useState('');
   const [to, setToState] = useState('');
   const [search, setSearchState] = useState('');
+  const [regionCode, setRegionCodeState] = useState('');
+  const [districtCode, setDistrictCodeState] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [selectedIds, setSelectedIds] = useState(() => new Set());
@@ -50,7 +52,9 @@ export function useBillingCollections() {
     dateField: from || to ? dateField : undefined,
     from: from || undefined,
     to: to || undefined,
-  }), [tab, planId, method, debouncedSearch, dateField, from, to]);
+    regionCode: regionCode || undefined,
+    districtCode: districtCode || undefined,
+  }), [tab, planId, method, debouncedSearch, dateField, from, to, regionCode, districtCode]);
 
   const overviewQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'overview'],
@@ -115,12 +119,22 @@ export function useBillingCollections() {
     setTo: resetPage(setToState),
     search,
     setSearch: resetPage(setSearchState),
+    regionCode,
+    districtCode,
+    setGeo: ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
+      setRegionCodeState(nextRegion || '');
+      setDistrictCodeState(nextDistrict || '');
+      setPage(0);
+      setSelectedIds(new Set());
+    },
     resetFilters: () => {
       setPlanIdState('');
       setMethodState('');
       setFromState('');
       setToState('');
       setSearchState('');
+      setRegionCodeState('');
+      setDistrictCodeState('');
       setPage(0);
       setSelectedIds(new Set());
     },

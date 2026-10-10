@@ -1,9 +1,10 @@
 import { RotateCcw, Search } from 'lucide-react';
+import GeoFilterSelects from '../../../shared/geo/GeoFilterSelects';
 import { DATE_FIELDS, PAYMENT_METHODS } from '../../hooks/useBillingCollections';
 
 export default function BillingFiltersBar({ t, c, plans }) {
   const k = (key) => t(`platform.billing.collections.${key}`);
-  const hasFilters = c.planId || c.method || c.from || c.to || c.search;
+  const hasFilters = c.planId || c.method || c.from || c.to || c.search || c.regionCode || c.districtCode;
   return (
     <div className="bc-filters">
       <div className="bc-filters__date">
@@ -33,6 +34,13 @@ export default function BillingFiltersBar({ t, c, plans }) {
           aria-label={k('dateTo')}
         />
       </div>
+      <GeoFilterSelects
+        className="bc-filters__geo"
+        selectClassName="bc-control"
+        regionCode={c.regionCode}
+        districtCode={c.districtCode}
+        onChange={c.setGeo}
+      />
       <select className="bc-control" value={c.planId} onChange={(e) => c.setPlanId(e.target.value)}>
         <option value="">{k('allPlans')}</option>
         {plans.map((plan) => <option key={plan.id} value={plan.id}>{plan.name}</option>)}

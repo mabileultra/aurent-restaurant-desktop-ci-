@@ -44,6 +44,6 @@ class BillingChargeProjectionTest {
             new BigDecimal("500000"), BigDecimal.ZERO, BillingAccountStatus.ACTIVE,
             true, true, null, BillingTime.startOfDay(due), null, null, null, null, "UZS", null, null
         );
-        return new CompanyPaymentRowResponse(billing, state, 0L, 0L, false, null, null, null, null, null);
+        return new CompanyPaymentRowResponse(billing, state, 0L, 0L, false, null, null, null, null, null, null, null);
     }
 }

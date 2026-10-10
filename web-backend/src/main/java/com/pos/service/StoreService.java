@@ -12,7 +12,14 @@ public interface StoreService {
 
     List<StoreResponse> listStores();
 
-    PageResponse<StoreResponse> listManaged(String search, Integer companyId, String businessType, Pageable pageable);
+    PageResponse<StoreResponse> listManaged(
+        String search,
+        Integer companyId,
+        String businessType,
+        String regionCode,
+        String districtCode,
+        Pageable pageable
+    );
 
     StoreResponse getById(Integer id);
 

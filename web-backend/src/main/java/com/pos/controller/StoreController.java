@@ -44,9 +44,13 @@ public class StoreController {
         @RequestParam(required = false) String search,
         @RequestParam(required = false) Integer companyId,
         @RequestParam(required = false) String businessType,
+        @RequestParam(required = false) String regionCode,
+        @RequestParam(required = false) String districtCode,
         @PageableDefault(size = 14) Pageable pageable
     ) {
-        return ResponseEntity.ok(storeService.listManaged(search, companyId, businessType, pageable));
+        return ResponseEntity.ok(storeService.listManaged(
+            search, companyId, businessType, regionCode, districtCode, pageable
+        ));
     }
 
     @GetMapping("/{id}")

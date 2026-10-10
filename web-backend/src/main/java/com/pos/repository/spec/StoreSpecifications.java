@@ -13,7 +13,13 @@ public final class StoreSpecifications {
 
     private StoreSpecifications() {}
 
-    public static Specification<Store> filter(String search, Integer companyId, String businessType) {
+    public static Specification<Store> filter(
+        String search,
+        Integer companyId,
+        String businessType,
+        String regionCode,
+        String districtCode
+    ) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -39,6 +45,14 @@ public final class StoreSpecifications {
 
             if (StringUtils.hasText(businessType)) {
                 predicates.add(cb.equal(cb.upper(root.get("businessType")), businessType.trim().toUpperCase()));
+            }
+
+            if (StringUtils.hasText(regionCode)) {
+                predicates.add(cb.equal(root.get("regionCode"), regionCode.trim()));
+            }
+
+            if (StringUtils.hasText(districtCode)) {
+                predicates.add(cb.equal(root.get("districtCode"), districtCode.trim()));
             }
 
             if (predicates.isEmpty()) {
