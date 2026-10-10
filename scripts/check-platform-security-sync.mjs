@@ -186,9 +186,14 @@ mustContain(
   'web-backend PLATFORM_ANALYTICS role insert'
 );
 mustContain(
-  read('reporting-service/src/main/java/com/pos/reporting/config/SecurityConfig.java'),
+  read('web-backend/src/main/java/com/pos/taxanalytics/controller/TaxAnalyticsController.java'),
   'PLATFORM_ANALYTICS',
-  'reporting platform analytics allows PLATFORM_ANALYTICS'
+  'web-backend tax-analytics allows PLATFORM_ANALYTICS'
+);
+mustContain(
+  read('web-backend/src/main/java/com/pos/controller/GeoCatalogController.java'),
+  'PLATFORM_ANALYTICS',
+  'web-backend geo catalog allows PLATFORM_ANALYTICS'
 );
 mustContain(
   read('web-frontend/src/features/platform/components/security/PlatformSuperAdminFormModal.jsx'),
