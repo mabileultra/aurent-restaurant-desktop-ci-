@@ -33,6 +33,12 @@ public class Company {
     @Column(columnDefinition = "TEXT")
     private String address;
 
+    @Column(name = "region_code", length = 8)
+    private String regionCode;
+
+    @Column(name = "district_code", length = 16)
+    private String districtCode;
+
     @Column(length = 50)
     private String phone;
 

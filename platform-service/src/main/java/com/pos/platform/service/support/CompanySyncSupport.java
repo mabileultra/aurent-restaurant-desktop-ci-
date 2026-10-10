@@ -33,6 +33,8 @@ public class CompanySyncSupport {
             company.getLegalName(),
             company.getTin(),
             company.getAddress(),
+            company.getRegionCode(),
+            company.getDistrictCode(),
             company.getPhone(),
             company.getBusinessType(),
             company.isActive()

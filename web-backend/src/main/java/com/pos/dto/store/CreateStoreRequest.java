@@ -6,6 +6,8 @@ public record CreateStoreRequest(
     @NotBlank String name,
     String code,
     String address,
+    @NotBlank String regionCode,
+    @NotBlank String districtCode,
     String phone,
     Integer companyId,
     String businessType,

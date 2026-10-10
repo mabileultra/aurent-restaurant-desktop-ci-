@@ -22,6 +22,7 @@ import com.pos.inventory.repository.StockTransferRepository;
 import com.pos.repository.StoreRepository;
 import com.pos.repository.spec.StoreSpecifications;
 import com.pos.service.StoreService;
+import com.pos.service.support.GeoLocationSupport;
 import com.pos.service.businessconfig.support.StoreBusinessTypeResolver;
 import com.pos.service.support.TenantAccessSupport;
 import com.pos.shared.log.LogUtil;
@@ -54,6 +55,7 @@ public class StoreServiceImpl implements StoreService {
     private final StockTransferRepository stockTransferRepository;
     private final CrmOutboundClient crmOutboundClient;
     private final StoreBusinessTypeResolver storeBusinessTypeResolver;
+    private final GeoLocationSupport geoLocationSupport;
 
     @Override
     @Cacheable(value = "stores", key = "@tenantCacheKeyResolver.stores()")
@@ -112,11 +114,15 @@ public class StoreServiceImpl implements StoreService {
             request.businessTypeId(),
             request.businessType()
         );
+        String regionCode = geoLocationSupport.requireRegionCode(request.regionCode());
+        String districtCode = geoLocationSupport.requireDistrictCode(regionCode, request.districtCode());
 
         Store store = Store.builder()
             .name(request.name().trim())
             .code(TextUtil.trimOrNull(request.code()))
             .address(TextUtil.trimOrNull(request.address()))
+            .regionCode(regionCode)
+            .districtCode(districtCode)
             .phone(TextUtil.trimOrNull(request.phone()))
             .company(company)
             .businessTypeDefinition(businessTypeDefinition)
@@ -140,6 +146,14 @@ public class StoreServiceImpl implements StoreService {
         if (request.address() != null) store.setAddress(TextUtil.trimOrNull(request.address()));
         if (request.phone() != null) store.setPhone(TextUtil.trimOrNull(request.phone()));
         if (request.active() != null) store.setActive(request.active());
+        GeoLocationSupport.GeoCodes geo = geoLocationSupport.resolveForUpdate(
+            store.getRegionCode(),
+            store.getDistrictCode(),
+            request.regionCode(),
+            request.districtCode()
+        );
+        store.setRegionCode(geo.regionCode());
+        store.setDistrictCode(geo.districtCode());
         BusinessTypeDefinition businessTypeDefinition = storeBusinessTypeResolver.resolveForUpdate(
             store.getCompany().getId(),
             request.businessTypeId(),

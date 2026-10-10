@@ -43,6 +43,8 @@ public class PlatformCompanySyncServiceImpl implements PlatformCompanySyncServic
         company.setLegalName(request.legalName());
         company.setTin(request.tin());
         company.setAddress(request.address());
+        company.setRegionCode(request.regionCode());
+        company.setDistrictCode(request.districtCode());
         company.setPhone(request.phone());
         company.setBusinessType(businessType);
         company.setActive(request.active());

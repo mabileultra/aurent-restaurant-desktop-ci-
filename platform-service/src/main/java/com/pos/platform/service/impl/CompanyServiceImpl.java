@@ -14,6 +14,7 @@ import com.pos.platform.repository.CompanyRepository;
 import com.pos.platform.repository.spec.CompanySpecifications;
 import com.pos.platform.service.CompanyService;
 import com.pos.platform.service.support.CompanySyncSupport;
+import com.pos.platform.service.support.GeoLocationSupport;
 import com.pos.platform.util.BusinessTypeParser;
 import com.pos.platform.util.CompanyLoginCodeUtil;
 import com.pos.shared.log.LogUtil;
@@ -39,6 +40,7 @@ public class CompanyServiceImpl implements CompanyService {
     private final CompanyRepository companyRepository;
     private final CompanyMapper companyMapper;
     private final CompanySyncSupport companySyncSupport;
+    private final GeoLocationSupport geoLocationSupport;
     private final PosCoreClient posCoreClient;
 
     @Override
@@ -80,12 +82,16 @@ public class CompanyServiceImpl implements CompanyService {
             throw new BadRequestException("Company name already exists");
         }
         String loginCode = allocateNextLoginCode(null);
+        String regionCode = geoLocationSupport.requireRegionCode(request.regionCode());
+        String districtCode = geoLocationSupport.requireDistrictCode(regionCode, request.districtCode());
         Company company = Company.builder()
             .name(name)
             .loginCode(loginCode)
             .legalName(TextUtil.trimOrNull(request.legalName()))
             .tin(TextUtil.trimOrNull(request.tin()))
             .address(TextUtil.trimOrNull(request.address()))
+            .regionCode(regionCode)
+            .districtCode(districtCode)
             .phone(TextUtil.trimOrNull(request.phone()))
             .businessType(BusinessTypeParser.parseOrDefault(request.businessType(), BusinessTypeCodes.UNIVERSAL))
             .active(request.active() == null || request.active())
@@ -115,6 +121,14 @@ public class CompanyServiceImpl implements CompanyService {
             company.setBusinessType(BusinessTypeParser.parseRequired(request.businessType()));
         }
         if (request.active() != null) company.setActive(request.active());
+        GeoLocationSupport.GeoCodes geo = geoLocationSupport.resolveForUpdate(
+            company.getRegionCode(),
+            company.getDistrictCode(),
+            request.regionCode(),
+            request.districtCode()
+        );
+        company.setRegionCode(geo.regionCode());
+        company.setDistrictCode(geo.districtCode());
         Company saved = companyRepository.save(company);
         companySyncSupport.syncUpdate(saved);
         LogUtil.info(CompanyServiceImpl.class, "Company updated: id={}", id);

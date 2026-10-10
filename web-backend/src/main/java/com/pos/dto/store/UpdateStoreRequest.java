@@ -4,6 +4,8 @@ public record UpdateStoreRequest(
     String name,
     String code,
     String address,
+    String regionCode,
+    String districtCode,
     String phone,
     Integer companyId,
     String businessType,

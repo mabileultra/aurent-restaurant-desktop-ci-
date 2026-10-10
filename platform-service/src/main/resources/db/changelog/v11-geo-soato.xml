@@ -1,0 +1,1744 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="geo-001-regions" author="geo">
+        <createTable tableName="geo_regions">
+            <column name="code" type="VARCHAR(8)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="name_ru" type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="name_uz" type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"><constraints nullable="false"/></column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="geo-002-districts" author="geo">
+        <createTable tableName="geo_districts">
+            <column name="code" type="VARCHAR(16)"><constraints primaryKey="true" nullable="false"/></column>
+            <column name="region_code" type="VARCHAR(8)"><constraints nullable="false"/></column>
+            <column name="name_ru" type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="name_uz" type="VARCHAR(200)"><constraints nullable="false"/></column>
+            <column name="sort_order" type="INT" defaultValueNumeric="0"><constraints nullable="false"/></column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true"><constraints nullable="false"/></column>
+        </createTable>
+        <addForeignKeyConstraint baseTableName="geo_districts" baseColumnNames="region_code"
+            referencedTableName="geo_regions" referencedColumnNames="code" constraintName="fk_geo_districts_region"/>
+        <createIndex tableName="geo_districts" indexName="idx_geo_districts_region">
+            <column name="region_code"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="geo-003-seed-regions" author="geo">
+        <insert tableName="geo_regions">
+            <column name="code" value="35"/>
+            <column name="name_ru" value="Республика Каракалпакстан"/>
+            <column name="name_uz" value="Qoraqalpog''iston Respublikasi"/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="03"/>
+            <column name="name_ru" value="Андижанская область"/>
+            <column name="name_uz" value="Andijon viloyati"/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="06"/>
+            <column name="name_ru" value="Бухарская область"/>
+            <column name="name_uz" value="Buxoro viloyati"/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="08"/>
+            <column name="name_ru" value="Джизакская область"/>
+            <column name="name_uz" value="Jizzax viloyati"/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="10"/>
+            <column name="name_ru" value="Кашкадарьинская область"/>
+            <column name="name_uz" value="Qashqadaryo viloyati"/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="12"/>
+            <column name="name_ru" value="Навоийская область"/>
+            <column name="name_uz" value="Navoiy viloyati"/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="14"/>
+            <column name="name_ru" value="Наманганская область"/>
+            <column name="name_uz" value="Namangan viloyati"/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="18"/>
+            <column name="name_ru" value="Самаркандская область"/>
+            <column name="name_uz" value="Samarqand viloyati"/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="22"/>
+            <column name="name_ru" value="Сурхандарьинская область"/>
+            <column name="name_uz" value="Surxondaryo viloyati"/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="24"/>
+            <column name="name_ru" value="Сырдарьинская область"/>
+            <column name="name_uz" value="Sirdaryo viloyati"/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="27"/>
+            <column name="name_ru" value="Ташкентская область"/>
+            <column name="name_uz" value="Toshkent viloyati"/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="30"/>
+            <column name="name_ru" value="Ферганская область"/>
+            <column name="name_uz" value="Farg''ona viloyati"/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="33"/>
+            <column name="name_ru" value="Хорезмская область"/>
+            <column name="name_uz" value="Xorazm viloyati"/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_regions">
+            <column name="code" value="26"/>
+            <column name="name_ru" value="город Ташкент"/>
+            <column name="name_uz" value="Toshkent shahri"/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="geo-004-seed-districts" author="geo">
+        <insert tableName="geo_districts">
+            <column name="code" value="3501"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="г. Нукус"/>
+            <column name="name_uz" value="Nukus sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3502"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Амударьинский район"/>
+            <column name="name_uz" value="Amudaryo t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3503"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Берунийский район"/>
+            <column name="name_uz" value="Beruniy t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3504"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Кегейлийский район"/>
+            <column name="name_uz" value="Kegeyli t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3505"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Канлыкульский район"/>
+            <column name="name_uz" value="Qanliko''l t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3506"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Караузякский район"/>
+            <column name="name_uz" value="Qorao''zak t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3507"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Кунградский район"/>
+            <column name="name_uz" value="Qo''ng''irot t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3508"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Муйнакский район"/>
+            <column name="name_uz" value="Mo''ynoq t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3509"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Нукусский район"/>
+            <column name="name_uz" value="Nukus t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3510"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Тахиаташский район"/>
+            <column name="name_uz" value="Taxiatosh t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3511"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Тахтакупырский район"/>
+            <column name="name_uz" value="Taxtako''pir t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3512"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Турткульский район"/>
+            <column name="name_uz" value="To''rtko''l t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3513"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Ходжейлийский район"/>
+            <column name="name_uz" value="Xo''jayli t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3514"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Чимбайский район"/>
+            <column name="name_uz" value="Chimboy t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3515"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Шуманайский район"/>
+            <column name="name_uz" value="Shumanay t."/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3516"/>
+            <column name="region_code" value="35"/>
+            <column name="name_ru" value="Элликкалинский район"/>
+            <column name="name_uz" value="Ellikqala t."/>
+            <column name="sort_order" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0301"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="г. Андижан"/>
+            <column name="name_uz" value="Andijon sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0302"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Андижанский район"/>
+            <column name="name_uz" value="Andijon t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0303"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Асакинский район"/>
+            <column name="name_uz" value="Asaka t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0304"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Балыкчинский район"/>
+            <column name="name_uz" value="Baliqchi t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0305"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Бустанский район"/>
+            <column name="name_uz" value="Bo''ston t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0306"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Булакбашинский район"/>
+            <column name="name_uz" value="Buloxboshi t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0307"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Джалакудукский район"/>
+            <column name="name_uz" value="Jalaquduq t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0308"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Избасканский район"/>
+            <column name="name_uz" value="Izboskan t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0309"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Улугнорский район"/>
+            <column name="name_uz" value="Ulug''nor t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0310"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Кургантепинский район"/>
+            <column name="name_uz" value="Qo''rg''ontepa t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0311"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Мархаматский район"/>
+            <column name="name_uz" value="Marhamat t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0312"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Пахтаабадский район"/>
+            <column name="name_uz" value="Paxtaobod t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0313"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Ходжаабадский район"/>
+            <column name="name_uz" value="Xo''jaobod t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0314"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="Шахриханский район"/>
+            <column name="name_uz" value="Shahrixon t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0315"/>
+            <column name="region_code" value="03"/>
+            <column name="name_ru" value="г. Ханабад"/>
+            <column name="name_uz" value="Xonobod sh."/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0601"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="г. Бухара"/>
+            <column name="name_uz" value="Buxoro sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0602"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Алатский район"/>
+            <column name="name_uz" value="Olot t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0603"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Бухарский район"/>
+            <column name="name_uz" value="Buxoro t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0604"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Вабкентский район"/>
+            <column name="name_uz" value="Vobkent t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0605"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Гиждуванский район"/>
+            <column name="name_uz" value="G''ijduvon t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0606"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Жондорский район"/>
+            <column name="name_uz" value="Jondor t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0607"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Каганский район"/>
+            <column name="name_uz" value="Kogon t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0608"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Каракульский район"/>
+            <column name="name_uz" value="Qorako''l t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0609"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Караулбазарский район"/>
+            <column name="name_uz" value="Qorovulbozor t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0610"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Пешкунский район"/>
+            <column name="name_uz" value="Peshku t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0611"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Ромитанский район"/>
+            <column name="name_uz" value="Romitan t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0612"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="Шафирканский район"/>
+            <column name="name_uz" value="Shofirkon t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0613"/>
+            <column name="region_code" value="06"/>
+            <column name="name_ru" value="г. Каган"/>
+            <column name="name_uz" value="Kogon sh."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0801"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="г. Джизак"/>
+            <column name="name_uz" value="Jizzax sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0802"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Арнасайский район"/>
+            <column name="name_uz" value="Arnasoy t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0803"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Бахмальский район"/>
+            <column name="name_uz" value="Baxmal t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0804"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Галляаральский район"/>
+            <column name="name_uz" value="G''allaorol t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0805"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Дустликский район"/>
+            <column name="name_uz" value="Do''stlik t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0806"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Зааминский район"/>
+            <column name="name_uz" value="Zomin t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0807"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Зарбдарский район"/>
+            <column name="name_uz" value="Zarbdor t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0808"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Мирзачульский район"/>
+            <column name="name_uz" value="Mirzacho''l t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0809"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Пахтакорский район"/>
+            <column name="name_uz" value="Paxtakor t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0810"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Фаришский район"/>
+            <column name="name_uz" value="Forish t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0811"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Янгиабадский район"/>
+            <column name="name_uz" value="Yangiobod t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="0812"/>
+            <column name="region_code" value="08"/>
+            <column name="name_ru" value="Шароф-Рашидовский район"/>
+            <column name="name_uz" value="Sharof Rashidov t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1001"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="г. Карши"/>
+            <column name="name_uz" value="Qarshi sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1002"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="г. Шахрисабз"/>
+            <column name="name_uz" value="Shahrisabz sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1003"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Камашинский район"/>
+            <column name="name_uz" value="Qamashi t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1004"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Каршинский район"/>
+            <column name="name_uz" value="Qarshi t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1005"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Касанский район"/>
+            <column name="name_uz" value="Koson t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1006"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Китабский район"/>
+            <column name="name_uz" value="Kitob t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1007"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Миришкорский район"/>
+            <column name="name_uz" value="Mirishkor t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1008"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Мубарекский район"/>
+            <column name="name_uz" value="Muborak t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1009"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Нишанский район"/>
+            <column name="name_uz" value="Nishon t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1010"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Чиракчинский район"/>
+            <column name="name_uz" value="Chiroqchi t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1011"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Шахрисабзский район"/>
+            <column name="name_uz" value="Shahrisabz t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1012"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Яккабагский район"/>
+            <column name="name_uz" value="Yakkabog'' t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1013"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Гузарский район"/>
+            <column name="name_uz" value="G''uzor t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1014"/>
+            <column name="region_code" value="10"/>
+            <column name="name_ru" value="Дехканабадский район"/>
+            <column name="name_uz" value="Dehqonobod t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1201"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="г. Навои"/>
+            <column name="name_uz" value="Navoiy sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1202"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="г. Зарафшан"/>
+            <column name="name_uz" value="Zarafshon sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1203"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Канимехский район"/>
+            <column name="name_uz" value="Konimex t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1204"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Карманинский район"/>
+            <column name="name_uz" value="Karmana t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1205"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Кызылтепинский район"/>
+            <column name="name_uz" value="Qiziltepa t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1206"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Навбахорский район"/>
+            <column name="name_uz" value="Navbahor t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1207"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Нуратинский район"/>
+            <column name="name_uz" value="Nurota t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1208"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Тамдынский район"/>
+            <column name="name_uz" value="Tomdi t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1209"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Учкудукский район"/>
+            <column name="name_uz" value="Uchquduq t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1210"/>
+            <column name="region_code" value="12"/>
+            <column name="name_ru" value="Хатырчинский район"/>
+            <column name="name_uz" value="Xatirchi t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1401"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="г. Наманган"/>
+            <column name="name_uz" value="Namangan sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1402"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Касансайский район"/>
+            <column name="name_uz" value="Kosonsoy t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1403"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Мингбулакский район"/>
+            <column name="name_uz" value="Mingbuloq t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1404"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Наманганский район"/>
+            <column name="name_uz" value="Namangan t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1405"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Нарынский район"/>
+            <column name="name_uz" value="Norin t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1406"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Папский район"/>
+            <column name="name_uz" value="Pop t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1407"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Туракурганский район"/>
+            <column name="name_uz" value="To''raqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1408"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Уйчинский район"/>
+            <column name="name_uz" value="Uychi t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1409"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Учкурганский район"/>
+            <column name="name_uz" value="Uchqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1410"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Чартакский район"/>
+            <column name="name_uz" value="Chortoq t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1411"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Чустский район"/>
+            <column name="name_uz" value="Chust t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1412"/>
+            <column name="region_code" value="14"/>
+            <column name="name_ru" value="Янгикурганский район"/>
+            <column name="name_uz" value="Yangiqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1801"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="г. Самарканд"/>
+            <column name="name_uz" value="Samarqand sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1802"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Акдарьинский район"/>
+            <column name="name_uz" value="Oqdaryo t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1803"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Булунгурский район"/>
+            <column name="name_uz" value="Bulung''ur t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1804"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Джамбайский район"/>
+            <column name="name_uz" value="Jomboy t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1805"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Иштыханский район"/>
+            <column name="name_uz" value="Ishtixon t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1806"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Каттакурганский район"/>
+            <column name="name_uz" value="Kattaqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1807"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Кошрабадский район"/>
+            <column name="name_uz" value="Qo''shrabot t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1808"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Нарпайский район"/>
+            <column name="name_uz" value="Narpay t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1809"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Нурабадский район"/>
+            <column name="name_uz" value="Nurobod t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1810"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Пайарыкский район"/>
+            <column name="name_uz" value="Payariq t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1811"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Пастдаргомский район"/>
+            <column name="name_uz" value="Pastdarg''om t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1812"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Пахтачийский район"/>
+            <column name="name_uz" value="Paxtachi t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1813"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Самаркандский район"/>
+            <column name="name_uz" value="Samarqand t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1814"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Тайлакский район"/>
+            <column name="name_uz" value="Toyloq t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1815"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="Ургутский район"/>
+            <column name="name_uz" value="Urgut t."/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="1816"/>
+            <column name="region_code" value="18"/>
+            <column name="name_ru" value="г. Каттакурган"/>
+            <column name="name_uz" value="Kattaqo''rg''on sh."/>
+            <column name="sort_order" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2201"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="г. Термез"/>
+            <column name="name_uz" value="Termiz sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2202"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Ангорский район"/>
+            <column name="name_uz" value="Angor t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2203"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Байсунский район"/>
+            <column name="name_uz" value="Boysun t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2204"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Денауский район"/>
+            <column name="name_uz" value="Denov t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2205"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Джаркурганский район"/>
+            <column name="name_uz" value="Jarqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2206"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Кызырыкский район"/>
+            <column name="name_uz" value="Qiziriq t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2207"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Кумкурганский район"/>
+            <column name="name_uz" value="Qumqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2208"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Музрабадский район"/>
+            <column name="name_uz" value="Muzrabot t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2209"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Алтынсайский район"/>
+            <column name="name_uz" value="Oltinsoy t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2210"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Сариасийский район"/>
+            <column name="name_uz" value="Sariosiyo t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2211"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Термезский район"/>
+            <column name="name_uz" value="Termiz t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2212"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Узунский район"/>
+            <column name="name_uz" value="Uzun t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2213"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Шерабадский район"/>
+            <column name="name_uz" value="Sherobod t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2214"/>
+            <column name="region_code" value="22"/>
+            <column name="name_ru" value="Шурчинский район"/>
+            <column name="name_uz" value="Sho''rchi t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2401"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="г. Гулистан"/>
+            <column name="name_uz" value="Guliston sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2402"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="г. Янгиер"/>
+            <column name="name_uz" value="Yangiyer sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2403"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="г. Ширин"/>
+            <column name="name_uz" value="Shirin sh."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2404"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Акалтынский район"/>
+            <column name="name_uz" value="Oqoltin t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2405"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Баяутский район"/>
+            <column name="name_uz" value="Boyovut t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2406"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Гулистанский район"/>
+            <column name="name_uz" value="Guliston t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2407"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Мирзаабадский район"/>
+            <column name="name_uz" value="Mirzaobod t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2408"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Сайхунабадский район"/>
+            <column name="name_uz" value="Sayxunobod t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2409"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Сардобинский район"/>
+            <column name="name_uz" value="Sardoba t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2410"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Сирдарьинский район"/>
+            <column name="name_uz" value="Sirdaryo t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2411"/>
+            <column name="region_code" value="24"/>
+            <column name="name_ru" value="Хавастский район"/>
+            <column name="name_uz" value="Xovos t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2701"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Ангрен"/>
+            <column name="name_uz" value="Angren sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2702"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Алмалык"/>
+            <column name="name_uz" value="Olmaliq sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2703"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Ахангаран"/>
+            <column name="name_uz" value="Ohangaron sh."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2704"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Бекабад"/>
+            <column name="name_uz" value="Bekobod sh."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2705"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Чирчик"/>
+            <column name="name_uz" value="Chirchiq sh."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2706"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Янгиюль"/>
+            <column name="name_uz" value="Yangiyo''l sh."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2707"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="г. Нурафшан"/>
+            <column name="name_uz" value="Nurafshon sh."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2708"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Аккурганский район"/>
+            <column name="name_uz" value="Oqqo''rg''on t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2709"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Ахангаранский район"/>
+            <column name="name_uz" value="Ohangaron t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2710"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Бекабадский район"/>
+            <column name="name_uz" value="Bekobod t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2711"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Бостанлыкский район"/>
+            <column name="name_uz" value="Bo''stonliq t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2712"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Букинский район"/>
+            <column name="name_uz" value="Bo''ka t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2713"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Зангиатинский район"/>
+            <column name="name_uz" value="Zangiota t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2714"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Кибрайский район"/>
+            <column name="name_uz" value="Qibray t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2715"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Куйичирчикский район"/>
+            <column name="name_uz" value="Quyichirchiq t."/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2716"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Паркентский район"/>
+            <column name="name_uz" value="Parkent t."/>
+            <column name="sort_order" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2717"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Пскентский район"/>
+            <column name="name_uz" value="Piskent t."/>
+            <column name="sort_order" valueNumeric="17"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2718"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Уртачирчикский район"/>
+            <column name="name_uz" value="O''rtachirchiq t."/>
+            <column name="sort_order" valueNumeric="18"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2719"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Чиназский район"/>
+            <column name="name_uz" value="Chinoz t."/>
+            <column name="sort_order" valueNumeric="19"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2720"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Юкоричирчикский район"/>
+            <column name="name_uz" value="Yuqorichirchiq t."/>
+            <column name="sort_order" valueNumeric="20"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2721"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Янгиюльский район"/>
+            <column name="name_uz" value="Yangiyo''l t."/>
+            <column name="sort_order" valueNumeric="21"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2722"/>
+            <column name="region_code" value="27"/>
+            <column name="name_ru" value="Ташкентский район"/>
+            <column name="name_uz" value="Toshkent t."/>
+            <column name="sort_order" valueNumeric="22"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3001"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="г. Фергана"/>
+            <column name="name_uz" value="Farg''ona sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3002"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="г. Коканд"/>
+            <column name="name_uz" value="Qo''qon sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3003"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="г. Маргилан"/>
+            <column name="name_uz" value="Marg''ilon sh."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3004"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="г. Кувасай"/>
+            <column name="name_uz" value="Quvasoy sh."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3005"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Бешарыкский район"/>
+            <column name="name_uz" value="Beshariq t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3006"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Багдадский район"/>
+            <column name="name_uz" value="Bag''dod t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3007"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Бувайдинский район"/>
+            <column name="name_uz" value="Buvayda t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3008"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Дангаринский район"/>
+            <column name="name_uz" value="Dang''ara t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3009"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Язъяванский район"/>
+            <column name="name_uz" value="Yozyovon t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3010"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Кувинский район"/>
+            <column name="name_uz" value="Quva t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3011"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Алтыарыкский район"/>
+            <column name="name_uz" value="Oltiariq t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3012"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Куштепинский район"/>
+            <column name="name_uz" value="Qo''shtepa t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3013"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Риштанский район"/>
+            <column name="name_uz" value="Rishton t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3014"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Сохский район"/>
+            <column name="name_uz" value="So''x t."/>
+            <column name="sort_order" valueNumeric="14"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3015"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Тошлокский район"/>
+            <column name="name_uz" value="Toshloq t."/>
+            <column name="sort_order" valueNumeric="15"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3016"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Узбекистанский район"/>
+            <column name="name_uz" value="O''zbekiston t."/>
+            <column name="sort_order" valueNumeric="16"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3017"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Учкуприкский район"/>
+            <column name="name_uz" value="Uchko''prik t."/>
+            <column name="sort_order" valueNumeric="17"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3018"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Ферганский район"/>
+            <column name="name_uz" value="Farg''ona t."/>
+            <column name="sort_order" valueNumeric="18"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3019"/>
+            <column name="region_code" value="30"/>
+            <column name="name_ru" value="Фуркатский район"/>
+            <column name="name_uz" value="Furqat t."/>
+            <column name="sort_order" valueNumeric="19"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3301"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="г. Ургенч"/>
+            <column name="name_uz" value="Urganch sh."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3302"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="г. Хива"/>
+            <column name="name_uz" value="Xiva sh."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3303"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Багатский район"/>
+            <column name="name_uz" value="Bog''ot t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3304"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Гурленский район"/>
+            <column name="name_uz" value="Gurlan t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3305"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Кушкупырский район"/>
+            <column name="name_uz" value="Qo''shko''pir t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3306"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Ургенчский район"/>
+            <column name="name_uz" value="Urganch t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3307"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Хазараспский район"/>
+            <column name="name_uz" value="Xazorasp t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3308"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Ханкинский район"/>
+            <column name="name_uz" value="Xonqa t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3309"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Хивинский район"/>
+            <column name="name_uz" value="Xiva t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3310"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Шаватский район"/>
+            <column name="name_uz" value="Shovot t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3311"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Янгиарыкский район"/>
+            <column name="name_uz" value="Yangiariq t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3312"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Янгибазарский район"/>
+            <column name="name_uz" value="Yangibozor t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="3313"/>
+            <column name="region_code" value="33"/>
+            <column name="name_ru" value="Тупроккалинский район"/>
+            <column name="name_uz" value="Tuproqqal''a t."/>
+            <column name="sort_order" valueNumeric="13"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2601"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Бектемирский район"/>
+            <column name="name_uz" value="Bektemir t."/>
+            <column name="sort_order" valueNumeric="1"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2602"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Мирабадский район"/>
+            <column name="name_uz" value="Mirobod t."/>
+            <column name="sort_order" valueNumeric="2"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2603"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Мирзо-Улугбекский район"/>
+            <column name="name_uz" value="Mirzo Ulug''bek t."/>
+            <column name="sort_order" valueNumeric="3"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2604"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Сергелийский район"/>
+            <column name="name_uz" value="Sergeli t."/>
+            <column name="sort_order" valueNumeric="4"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2605"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Алмазарский район"/>
+            <column name="name_uz" value="Olmazor t."/>
+            <column name="sort_order" valueNumeric="5"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2606"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Учтепинский район"/>
+            <column name="name_uz" value="Uchtepa t."/>
+            <column name="sort_order" valueNumeric="6"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2607"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Шайхантахурский район"/>
+            <column name="name_uz" value="Shayxontohur t."/>
+            <column name="sort_order" valueNumeric="7"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2608"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Яшнабадский район"/>
+            <column name="name_uz" value="Yashnobod t."/>
+            <column name="sort_order" valueNumeric="8"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2609"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Чиланзарский район"/>
+            <column name="name_uz" value="Chilonzor t."/>
+            <column name="sort_order" valueNumeric="9"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2610"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Юнусабадский район"/>
+            <column name="name_uz" value="Yunusobod t."/>
+            <column name="sort_order" valueNumeric="10"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2611"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Яккасарайский район"/>
+            <column name="name_uz" value="Yakkasaroy t."/>
+            <column name="sort_order" valueNumeric="11"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+        <insert tableName="geo_districts">
+            <column name="code" value="2612"/>
+            <column name="region_code" value="26"/>
+            <column name="name_ru" value="Янгихаётский район"/>
+            <column name="name_uz" value="Yangihayot t."/>
+            <column name="sort_order" valueNumeric="12"/>
+            <column name="active" valueBoolean="true"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="geo-005-company-region" author="geo">
+        <addColumn tableName="companies">
+            <column name="region_code" type="VARCHAR(8)"/>
+            <column name="district_code" type="VARCHAR(16)"/>
+        </addColumn>
+        <addForeignKeyConstraint baseTableName="companies" baseColumnNames="region_code"
+            referencedTableName="geo_regions" referencedColumnNames="code" constraintName="fk_companies_region"/>
+        <addForeignKeyConstraint baseTableName="companies" baseColumnNames="district_code"
+            referencedTableName="geo_districts" referencedColumnNames="code" constraintName="fk_companies_district"/>
+        <createIndex tableName="companies" indexName="idx_companies_region_code">
+            <column name="region_code"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

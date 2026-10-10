@@ -1,17 +1,5 @@
 import { isPlatformAdminRole, isPlatformAnalyticsRole, isSuperAdminRole } from '../../../utils/platformRoles';
 
-export const PLATFORM_ANALYTICS_TABS = [
-  { to: '/platform/analytics', key: 'platform.analytics.tabs.overview', end: true },
-  { to: '/platform/analytics/stores', key: 'platform.analytics.tabs.stores' },
-  { to: '/platform/analytics/products', key: 'platform.analytics.tabs.products' },
-  { to: '/platform/analytics/sales', key: 'platform.analytics.tabs.sales' },
-  { to: '/platform/analytics/fiscal', key: 'platform.analytics.tabs.fiscal' },
-  { to: '/platform/analytics/payments', key: 'platform.analytics.tabs.payments' },
-  { to: '/platform/analytics/customers', key: 'platform.analytics.tabs.customers' },
-  { to: '/platform/analytics/geography', key: 'platform.analytics.tabs.geography' },
-  { to: '/platform/analytics/anomalies', key: 'platform.analytics.tabs.anomalies' },
-];
-
 export const PLATFORM_NAV = [
   { to: '/platform/companies', key: 'platform.companies', module: 'platformCompanies' },
   { to: '/platform/stores', key: 'platform.stores', module: 'platformStores' },
@@ -21,12 +9,7 @@ export const PLATFORM_NAV = [
   { to: '/platform/reference-books', key: 'platform.referenceBooks.nav', module: 'platformReferenceBooks' },
   { to: '/platform/leads', key: 'platform.leads.nav', module: 'platformLeads' },
   { to: '/platform/billing', key: 'platform.billing.nav', module: 'platformBilling' },
-  {
-    to: '/platform/analytics',
-    key: 'platform.analytics.nav',
-    module: 'platformAnalytics',
-    children: PLATFORM_ANALYTICS_TABS,
-  },
+  { to: '/platform/analytics', key: 'platform.analytics.nav', module: 'platformAnalytics' },
   { to: '/platform/monitoring', key: 'platform.monitoring.nav', module: 'platformMonitoring' },
   { to: '/platform/email', key: 'platform.email.nav', module: 'platformEmail' },
   { to: '/platform/desktop-notifications', key: 'platform.desktopNotifications.nav', module: 'platformDesktopNotifications' },

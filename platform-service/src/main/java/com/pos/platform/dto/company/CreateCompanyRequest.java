@@ -8,6 +8,8 @@ public record CreateCompanyRequest(
     String legalName,
     String tin,
     String address,
+    @NotBlank String regionCode,
+    @NotBlank String districtCode,
     String phone,
     String businessType,
     Boolean active

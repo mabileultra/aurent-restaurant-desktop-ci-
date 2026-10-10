@@ -5,6 +5,8 @@ public record UpdateCompanyRequest(
     String legalName,
     String tin,
     String address,
+    String regionCode,
+    String districtCode,
     String phone,
     String businessType,
     Boolean active

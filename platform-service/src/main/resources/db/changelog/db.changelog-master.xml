@@ -15,5 +15,6 @@
     <include file="db/changelog/v8-payme-cancel-meta.xml"/>
     <include file="db/changelog/v9-billing-ledger-payment-method.xml"/>
     <include file="db/changelog/v10-billing-deferral.xml"/>
+    <include file="db/changelog/v11-geo-soato.xml"/>
 
 </databaseChangeLog>

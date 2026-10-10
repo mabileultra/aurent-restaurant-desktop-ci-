@@ -5,6 +5,8 @@ public record StoreResponse(
     String name,
     String code,
     String address,
+    String regionCode,
+    String districtCode,
     String phone,
     Integer companyId,
     String companyName,

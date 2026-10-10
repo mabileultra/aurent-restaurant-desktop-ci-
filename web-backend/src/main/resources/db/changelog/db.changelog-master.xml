@@ -50,5 +50,6 @@
     <include file="v43-stock-expense-production.xml" relativeToChangelogFile="true"/>
     <include file="v44-fractional-g-ml-units.xml" relativeToChangelogFile="true"/>
     <include file="v45-platform-analytics-role.xml" relativeToChangelogFile="true"/>
+    <include file="v46-geo-soato.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

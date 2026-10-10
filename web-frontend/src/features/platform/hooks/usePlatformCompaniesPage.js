@@ -14,6 +14,8 @@ const emptyForm = () => ({
   legalName: '',
   tin: '',
   address: '',
+  regionCode: '',
+  districtCode: '',
   phone: '',
   active: true,
   businessType: 'UNIVERSAL',
@@ -61,6 +63,8 @@ export function usePlatformCompaniesPage() {
         legalName,
         tin,
         address,
+        regionCode,
+        districtCode,
         phone,
         active,
         businessType,
@@ -81,6 +85,14 @@ export function usePlatformCompaniesPage() {
         active,
         businessType: defaultType?.code ?? businessType,
       };
+      // New companies must send geo; legacy edits may omit until filled.
+      if (regionCode?.trim() && districtCode?.trim()) {
+        payload.regionCode = regionCode.trim();
+        payload.districtCode = districtCode.trim();
+      } else if (!editing) {
+        payload.regionCode = regionCode;
+        payload.districtCode = districtCode;
+      }
 
       let companyId = editing?.id ?? null;
       if (!companyId) {
@@ -166,6 +178,8 @@ export function usePlatformCompaniesPage() {
       legalName: row.legalName ?? '',
       tin: row.tin ?? '',
       address: row.address ?? '',
+      regionCode: row.regionCode ?? '',
+      districtCode: row.districtCode ?? '',
       phone: row.phone ?? '',
       active: row.active,
       businessType: row.businessType ?? 'UNIVERSAL',

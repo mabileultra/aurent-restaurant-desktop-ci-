@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { BaseButton, BaseInput, BaseModal } from '../../../components/ui';
+import RegionDistrictFields from '../../shared/geo/RegionDistrictFields';
 
 export default function PlatformCompanyFormModal({
   open,
@@ -16,6 +17,13 @@ export default function PlatformCompanyFormModal({
   const { t } = useTranslation();
   if (!open) return null;
 
+  // Create: both required. Edit: legacy may stay empty; if one is set, both must be set.
+  const hasRegion = Boolean(form.regionCode?.trim());
+  const hasDistrict = Boolean(form.districtCode?.trim());
+  const geoReady = editing
+    ? (!hasRegion && !hasDistrict) || (hasRegion && hasDistrict)
+    : (hasRegion && hasDistrict);
+
   return (
     <BaseModal
       title={editing ? t('platform.editCompany') : t('platform.addCompany')}
@@ -27,7 +35,7 @@ export default function PlatformCompanyFormModal({
             {t('common.cancel')}
           </BaseButton>
           <BaseButton
-            disabled={!form.name.trim() || isSaving || form.businessTypeIds.length === 0}
+            disabled={!form.name.trim() || isSaving || form.businessTypeIds.length === 0 || !geoReady}
             onClick={onSave}
             className="admin-btn-primary"
           >
@@ -59,6 +67,16 @@ export default function PlatformCompanyFormModal({
           onChange={(e) => onFieldChange(field, e.target.value)}
         />
       ))}
+
+      <RegionDistrictFields
+        regionCode={form.regionCode}
+        districtCode={form.districtCode}
+        required={!editing}
+        onChange={({ regionCode, districtCode }) => {
+          onFieldChange('regionCode', regionCode);
+          onFieldChange('districtCode', districtCode);
+        }}
+      />
 
       <BaseInput
         as="textarea"

@@ -6,6 +6,7 @@ import { X, Loader } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../../components/ui';
 import { useStoreFormBusinessTypes } from '../../../../hooks/useStoreFormBusinessTypes';
+import RegionDistrictFields from '../../../shared/geo/RegionDistrictFields';
 import { buildCompanySelectOptions } from '../../utils/companySelectOptions';
 
 const inputCls = `w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900
@@ -24,9 +25,16 @@ export default function StoreFormModal({
 }) {
   const { t } = useTranslation();
 
+  const isCreate = !initial;
   const schema = useMemo(() => z.object({
     name: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colName') })),
     address: z.string().optional(),
+    regionCode: isCreate
+      ? z.string().min(1, t('validation.fieldRequired', { field: t('geo.region') }))
+      : z.string().optional(),
+    districtCode: isCreate
+      ? z.string().min(1, t('validation.fieldRequired', { field: t('geo.district') }))
+      : z.string().optional(),
     phone: z.string().optional(),
     code: z.string().optional(),
     companyId: showCompanySelect
@@ -35,7 +43,17 @@ export default function StoreFormModal({
     businessType: z.string().min(1, t('validation.fieldRequired', { field: t('stores.colBusinessType') })),
     businessTypeId: z.string().optional(),
     active: z.boolean().optional(),
-  }), [showCompanySelect, t]);
+  }).superRefine((data, ctx) => {
+    const hasRegion = Boolean(data.regionCode?.trim());
+    const hasDistrict = Boolean(data.districtCode?.trim());
+    if (hasRegion !== hasDistrict) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: hasRegion ? ['districtCode'] : ['regionCode'],
+        message: t('validation.fieldRequired', { field: hasRegion ? t('geo.district') : t('geo.region') }),
+      });
+    }
+  }), [showCompanySelect, t, isCreate]);
 
   const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -44,6 +62,8 @@ export default function StoreFormModal({
 
   const watchedCompanyId = watch('companyId');
   const watchedBusinessType = watch('businessType');
+  const watchedRegionCode = watch('regionCode');
+  const watchedDistrictCode = watch('districtCode');
   const {
     types: companyTypes,
     defaultTypeCode,
@@ -116,6 +136,8 @@ export default function StoreFormModal({
     reset({
       name: initial?.name ?? '',
       address: initial?.address ?? '',
+      regionCode: initial?.regionCode ?? '',
+      districtCode: initial?.districtCode ?? '',
       phone: initial?.phone ?? '',
       code: initial?.code ?? '',
       companyId: initial?.companyId ? String(initial.companyId) : '',
@@ -128,7 +150,9 @@ export default function StoreFormModal({
   if (!open) return null;
 
   const handleFormSubmit = (data) => {
-    onSubmit({
+    const regionCode = data.regionCode?.trim() || '';
+    const districtCode = data.districtCode?.trim() || '';
+    const payload = {
       name: data.name.trim(),
       address: data.address?.trim() || null,
       phone: data.phone?.trim() || null,
@@ -137,7 +161,15 @@ export default function StoreFormModal({
       businessType: data.businessType,
       businessTypeId: data.businessTypeId ? Number(data.businessTypeId) : undefined,
       active: data.active,
-    });
+    };
+    if (regionCode && districtCode) {
+      payload.regionCode = regionCode;
+      payload.districtCode = districtCode;
+    } else if (isCreate) {
+      payload.regionCode = regionCode;
+      payload.districtCode = districtCode;
+    }
+    onSubmit(payload);
   };
 
   const modalTitle = title ?? (initial ? t('stores.editTitle') : t('stores.addTitle'));
@@ -197,6 +229,19 @@ export default function StoreFormModal({
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('stores.businessTypeHint')}</p>
           </div>
+          <input type="hidden" {...register('regionCode')} />
+          <input type="hidden" {...register('districtCode')} />
+          <RegionDistrictFields
+            regionCode={watchedRegionCode}
+            districtCode={watchedDistrictCode}
+            required={isCreate}
+            regionError={errors.regionCode?.message}
+            districtError={errors.districtCode?.message}
+            onChange={({ regionCode, districtCode }) => {
+              setValue('regionCode', regionCode, { shouldValidate: true });
+              setValue('districtCode', districtCode, { shouldValidate: true });
+            }}
+          />
           <div>
             <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">{t('stores.colAddress')}</label>
             <textarea {...register('address')} rows={2} className={inputCls} />
