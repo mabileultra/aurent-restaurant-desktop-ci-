@@ -57,14 +57,26 @@ export default function ProductCatalogAccountingSection({
         <div className={stockGridClass}>
           <FieldSlot hidden={hideLowStock}>
             <ProductCatalogField label={t('productModal.lowStock')} error={errors.lowStockAlert?.message}>
-              <input {...register('lowStockAlert', { valueAsNumber: true })} type="number" className={inputCls} />
+              <input
+                {...register('lowStockAlert', { valueAsNumber: true })}
+                type="number"
+                className={inputCls}
+                onFocus={(e) => e.currentTarget.select()}
+              />
             </ProductCatalogField>
           </FieldSlot>
           {hideLowStock ? <input type="hidden" {...register('lowStockAlert', { valueAsNumber: true })} /> : null}
 
           <FieldSlot hidden={hideStock}>
             <ProductCatalogField label={stockLabel} error={errors.initialStock?.message}>
-              <input {...register('initialStock', { valueAsNumber: true })} type="number" min="0" step="any" className={inputCls} />
+              <input
+                {...register('initialStock', { valueAsNumber: true })}
+                type="number"
+                min="0"
+                step="any"
+                className={inputCls}
+                onFocus={(e) => e.currentTarget.select()}
+              />
             </ProductCatalogField>
           </FieldSlot>
 
