@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Layers, Search } from 'lucide-react';
-import '../../../styles/platform/platform-filter-bar.css';
+import '../../../../styles/platform/platform-filter-bar.css';
 
 export default function PlatformBusinessTypesList({ t, types, isLoading, activeTypeId, onSelect }) {
   const [search, setSearch] = useState('');
