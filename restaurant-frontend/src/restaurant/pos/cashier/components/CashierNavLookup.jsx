@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Download, Menu, RefreshCw, RotateCcw } from 'lucide-react';
+import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { CASHIER_TAB_ICONS } from '../config/cashierNavIcons';
 import { CASHIER_TABS } from '../utils/cashierNav';
 import { useRestaurantDesktopUpdate } from '../hooks/useRestaurantDesktopUpdate';
@@ -10,6 +11,8 @@ export default function CashierNavLookup({
   onSelect,
   disabledKeys = [],
   tabs = CASHIER_TABS,
+  shift = null,
+  shiftOpenLabel = null,
   t,
 }) {
   const [open, setOpen] = useState(false);
@@ -110,6 +113,17 @@ export default function CashierNavLookup({
 
       {open ? (
         <div className="rst-cashier-nav-lookup__panel" role="menu">
+          <div className={`rst-floor-hall-rail__shift rst-cashier-nav-lookup__shift${shift ? ' is-open' : ''}`}>
+            {shift ? (
+              <>
+                <strong>{t('rst.cashier.shiftOpen')}</strong>
+                {shiftOpenLabel ? <span>{shiftOpenLabel}</span> : null}
+                <span>{t('rst.shift.total')}: {fmtMoneyCompact(shift.totalAmount)}</span>
+              </>
+            ) : (
+              <strong>{t('rst.cashier.shiftClosed')}</strong>
+            )}
+          </div>
           {(tabs || CASHIER_TABS).map((item) => {
             const Icon = CASHIER_TAB_ICONS[item.key];
             const active = activeTab === item.key

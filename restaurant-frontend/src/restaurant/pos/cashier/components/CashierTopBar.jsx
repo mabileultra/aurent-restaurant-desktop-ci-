@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom';
-import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../../shared/components/RestaurantThemeSwitch';
 import { BaseButton } from '../../../../components/ui';
@@ -33,21 +32,14 @@ export default function CashierTopBar({
   return (
     <header className={`rst-cashier-top${compactActions ? ' rst-cashier-top--compact' : ''}`}>
       {onSelectTab && !backToCashier && !compactActions ? (
-        <CashierNavLookup activeTab={activeTab} onSelect={onSelectTab} disabledKeys={disabledTabs} t={t} />
-      ) : null}
-
-      {!compactActions ? (
-        <div className={`rst-floor-hall-rail__shift rst-cashier-top__shift${shift ? ' is-open' : ''}`}>
-          {shift ? (
-            <>
-              <strong>{t('rst.cashier.shiftOpen')}</strong>
-              {shiftOpenLabel ? <span>{shiftOpenLabel}</span> : null}
-              <span>{t('rst.shift.total')}: {fmtMoneyCompact(shift.totalAmount)}</span>
-            </>
-          ) : (
-            <strong>{t('rst.cashier.shiftClosed')}</strong>
-          )}
-        </div>
+        <CashierNavLookup
+          activeTab={activeTab}
+          onSelect={onSelectTab}
+          disabledKeys={disabledTabs}
+          shift={shift}
+          shiftOpenLabel={shiftOpenLabel}
+          t={t}
+        />
       ) : null}
 
       <div className="rst-cashier-top__brand">

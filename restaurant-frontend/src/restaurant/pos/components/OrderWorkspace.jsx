@@ -180,15 +180,13 @@ export default function OrderWorkspace({
         <div className="rst-order__ticket-head">
           <div>
             <div className="rst-order__ticket-kicker">
-              <span>
-                TICKET #{order.orderNo}
-                {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
-              </span>
-              <span className="rst-order__ticket-waiter">
-                {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
-              </span>
+              TICKET #{order.orderNo}
+              {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
+            <p className="rst-order__ticket-waiter">
+              {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
+            </p>
             {ticketMeta ? <p className="rst-order__meta">{ticketMeta}</p> : null}
             {order.comment ? (
               <p className="rst-order__comment">{order.comment}</p>

@@ -79,11 +79,12 @@
 }
 
 .rst-order__ticket-waiter {
+  margin: 0.35rem 0 0;
   color: var(--rst-ink);
-  font-size: 0.84rem;
-  font-weight: 700;
+  font-size: 1.2rem;
+  font-weight: 800;
   letter-spacing: 0;
-  line-height: 1.35;
+  line-height: 1.2;
   text-transform: none;
 }
 
@@ -109,10 +110,6 @@
 }
 
 .rst-order__ticket-kicker {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0.15rem 0.75rem;
   font-size: 0.72rem;
   letter-spacing: 0.08em;
   color: var(--rst-muted);

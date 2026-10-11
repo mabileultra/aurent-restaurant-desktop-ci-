@@ -213,6 +213,13 @@
   box-shadow: 0 14px 32px rgb(0 0 0 / 0.35);
 }
 
+.rst-cashier-nav-lookup__shift {
+  width: 100%;
+  margin-bottom: 0.2rem;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.88rem;
+}
+
 .rst-cashier-nav-lookup__item {
   display: flex;
   align-items: center;
