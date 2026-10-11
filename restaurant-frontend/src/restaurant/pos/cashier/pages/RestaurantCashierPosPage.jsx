@@ -172,6 +172,8 @@ export default function RestaurantCashierPosPage() {
           compactActions={mobile.enabled}
           showMenuSearch={showFull && !mobile.enabled}
           roleLabel={p.t(`roles.${user?.role || 'CASHIER'}`, { defaultValue: p.t('roles.CASHIER') })}
+          shift={p.shift}
+          shiftOpenLabel={p.shiftOpenLabel}
           t={p.t}
         />
       )}

@@ -284,6 +284,10 @@
   line-height: 1;
 }
 
+.rst-pos .rst-order__ticket-waiter {
+  font-size: 0.9rem;
+}
+
 .rst-pos .rst-order__title {
   margin: 0;
   font-size: 1.45rem;

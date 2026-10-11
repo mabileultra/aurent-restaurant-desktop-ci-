@@ -155,9 +155,6 @@ export default function OrderWorkspace({
                 <em>{t('rst.order.menu')}</em>
               </h2>
             )}
-            <span className="rst-order__context-waiter">
-              {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
-            </span>
           </div>
           <div className="rst-order__live">
             <strong>{clockLabel}</strong>
@@ -183,8 +180,13 @@ export default function OrderWorkspace({
         <div className="rst-order__ticket-head">
           <div>
             <div className="rst-order__ticket-kicker">
-              TICKET #{order.orderNo}
-              {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
+              <span>
+                TICKET #{order.orderNo}
+                {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
+              </span>
+              <span className="rst-order__ticket-waiter">
+                {t('rst.floor.waiter')}: {resolvedWaiter || t('rst.floor.waiterNone')}
+              </span>
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
             {ticketMeta ? <p className="rst-order__meta">{ticketMeta}</p> : null}

@@ -7,9 +7,9 @@ import CashierTableTile from './CashierTableTile';
 import '../styles/cashier-table-board.css';
 
 const SORT_KEYS = [
-  { key: 'FREE', labelKey: 'rst.cashier.filterFree' },
   { key: 'OCCUPIED', labelKey: 'rst.cashier.filterOccupied' },
   { key: 'WAITING_PAYMENT', labelKey: 'rst.cashier.filterBillIssued' },
+  { key: 'FREE', labelKey: 'rst.cashier.filterFree' },
   { key: 'AMOUNT_DESC', labelKey: 'rst.cashier.sortSeatsDesc', symbol: '↓' },
   { key: 'AMOUNT_ASC', labelKey: 'rst.cashier.sortSeatsAsc', symbol: '↑' },
 ];

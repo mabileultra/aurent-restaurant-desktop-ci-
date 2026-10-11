@@ -31,7 +31,7 @@
   min-height: 0;
   height: 100%;
   gap: 0.65rem;
-  grid-template-columns: minmax(0, 1.35fr) minmax(400px, 1.1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px);
   grid-template-rows: minmax(0, 1fr);
 }
 
@@ -50,8 +50,8 @@
   font-size: 0.95rem;
 }
 
-.rst-cashier-full .rst-order__context-waiter {
-  font-size: 0.78rem;
+.rst-cashier-full .rst-order__ticket-waiter {
+  font-size: 0.9rem;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -67,14 +67,24 @@
 }
 
 .rst-cashier-full .rst-menu-cats {
-  gap: 0.45rem;
+  justify-content: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .rst-cashier-full .rst-menu-cat {
-  min-height: 2.65rem;
-  padding: 0.45rem 0.9rem;
-  font-size: 0.95rem;
+  flex: 0 0 auto;
+  min-height: 2.15rem;
+  padding: 0.28rem 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .rst-cashier-full .rst-menu-grid {
@@ -401,6 +411,24 @@
   padding: 0.55rem 0.85rem;
   border-bottom: 1px solid var(--rst-line);
   background: var(--rst-bg);
+}
+
+.rst-cashier-top .rst-cashier-top__shift {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.55rem;
+  width: auto;
+  max-width: min(28rem, 42vw);
+  min-height: 3.1rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.rst-cashier-top .rst-cashier-top__shift strong {
+  font-size: 0.82rem;
 }
 
 .rst-cashier-top__brand {

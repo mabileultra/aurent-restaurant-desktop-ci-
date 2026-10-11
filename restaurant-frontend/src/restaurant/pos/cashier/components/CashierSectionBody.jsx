@@ -34,8 +34,6 @@ export default function CashierSectionBody({ p, fullOrder, setFullOrder }) {
           halls={p.halls}
           selectedHallId={p.selectedHallId}
           onSelectHall={p.setSelectedHallId}
-          shift={p.shift}
-          shiftOpenLabel={p.shiftOpenLabel}
           t={p.t}
         />
         <CashierTableBoard
