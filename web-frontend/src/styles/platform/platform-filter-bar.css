@@ -2,8 +2,13 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.55rem;
+  gap: 0.5rem;
   min-width: 0;
+  width: 100%;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #e6ebf1;
+  border-radius: 0.85rem;
+  background: #fff;
 }
 
 .platform-filter-bar__geo {
@@ -14,12 +19,12 @@
 }
 
 .platform-filter-bar__select {
-  height: 2.15rem;
+  height: 1.9rem;
   min-width: 9.5rem;
   max-width: 14rem;
-  padding: 0 0.55rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.45rem;
+  padding: 0 0.65rem;
+  border: 1px solid #e6ebf1;
+  border-radius: 0.55rem;
   background: #fff;
   color: #334155;
   font-size: 0.8rem;
@@ -30,6 +35,7 @@
   cursor: not-allowed;
 }
 
+.dark .platform-filter-bar,
 .dark .platform-filter-bar__select {
   background: #0f172a;
   border-color: #334155;
@@ -60,6 +66,11 @@
 .platform-filter-bar__filter.is-active {
   background: #f8fafc;
   border-color: #cbd5e1;
+}
+
+.platform-filter-bar .platform-filter-bar__filter {
+  height: 1.9rem;
+  border-radius: 0.55rem;
 }
 
 .dark .platform-filter-bar__filter {
@@ -139,12 +150,12 @@
   display: flex;
   align-items: center;
   gap: 0.4rem;
-  flex: 1 1 auto;
-  min-width: 12rem;
-  height: 2.15rem;
+  flex: 1 1 14rem;
+  min-width: 11rem;
+  height: 1.9rem;
   padding: 0 0.7rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 0.45rem;
+  border: 1px solid #e6ebf1;
+  border-radius: 0.55rem;
   background: #fff;
   color: #94a3b8;
 }
@@ -180,10 +191,58 @@
 }
 
 .platform-filter-bar__extra {
-  flex: 0 1 14rem;
-  width: 14rem;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.platform-filter-bar__extra .stores-filters__company,
+.platform-filter-bar__extra .base-select {
+  flex: 0 1 12.5rem;
+  width: 12.5rem;
   min-width: 10rem;
-  max-width: 18rem;
+}
+
+.platform-filter-bar .base-select__label {
+  display: none;
+}
+
+.platform-filter-bar .base-select__trigger {
+  min-height: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.65rem;
+  border-radius: 0.55rem;
+  border-color: #e6ebf1;
+  font-size: 0.8rem;
+}
+
+.platform-filter-bar__reset {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 1.9rem;
+  height: 1.9rem;
+  margin-left: auto;
+  border: 1px solid #e6ebf1;
+  border-radius: 0.55rem;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.platform-filter-bar__reset:hover {
+  border-color: #cbd5e1;
+  color: #0f172a;
+}
+
+.dark .platform-filter-bar__reset {
+  background: #0f172a;
+  border-color: #334155;
+  color: #cbd5e1;
 }
 
 .platform-filter-bar--spaced {

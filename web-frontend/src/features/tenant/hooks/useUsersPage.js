@@ -21,6 +21,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   const [pageSize, setPageSize] = useState(TENANT_PAGE_SIZE_DEFAULT);
   const [search, setSearch] = useState('');
   const [businessType, setBusinessType] = useState('');
+  const [companyId, setCompanyId] = useState('');
   const [regionCode, setRegionCode] = useState('');
   const [districtCode, setDistrictCode] = useState('');
 
@@ -129,6 +130,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
         if (!companyHasBusinessType(company, businessType)) return false;
         if (!isRoleAllowedForBusinessType(user.role, businessType)) return false;
       }
+      if (companyId && String(user.companyId ?? '') !== String(companyId)) return false;
       if (regionCode && String(user.regionCode || '') !== regionCode) return false;
       if (districtCode && String(user.districtCode || '') !== districtCode) return false;
       if (!q) return true;
@@ -144,7 +146,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
         .filter(Boolean)
         .some((v) => String(v).toLowerCase().includes(q));
     });
-  }, [displayUsers, search, businessType, companyById, regionCode, districtCode]);
+  }, [displayUsers, search, businessType, companyById, companyId, regionCode, districtCode]);
 
   const total = filteredUsers.length;
   const totalPages = Math.max(1, Math.ceil(total / pageSize) || 1);
@@ -186,6 +188,11 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     setPage(0);
   };
 
+  const handleCompanyChange = (value) => {
+    setCompanyId(value || '');
+    setPage(0);
+  };
+
   const handleGeoChange = ({ regionCode: nextRegion = '', districtCode: nextDistrict = '' }) => {
     setRegionCode(nextRegion || '');
     setDistrictCode(nextDistrict || '');
@@ -198,7 +205,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
   };
 
   const subtitle = t('common.systemUsers', { count: users.length });
-  const searchSuffix = search.trim() || businessType || regionCode || districtCode
+  const searchSuffix = search.trim() || businessType || companyId || regionCode || districtCode
     ? ` · ${t('platform.searchResults', { count: filteredUsers.length })}`
     : '';
 
@@ -216,6 +223,8 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     search,
     businessType,
     businessTypes,
+    companies,
+    companyId,
     regionCode,
     districtCode,
     isLoading,
@@ -227,6 +236,7 @@ export function useUsersPage({ mode = 'tenant' } = {}) {
     closeModal,
     handleSearchChange,
     handleBusinessTypeChange,
+    handleCompanyChange,
     handleGeoChange,
     companyById,
     toggleUser,

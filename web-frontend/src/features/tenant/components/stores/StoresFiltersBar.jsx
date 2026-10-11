@@ -29,6 +29,13 @@ export default function StoresFiltersBar({
       filterOptions={showCompanySelect ? buildBusinessTypeFilterOptions(t, businessTypes) : undefined}
       filterValue={businessType}
       onFilterChange={onBusinessTypeChange}
+      onReset={() => {
+        onSearchChange('');
+        onBusinessTypeChange?.('');
+        onCompanyChange?.('');
+        onGeoChange?.({ regionCode: '', districtCode: '' });
+      }}
+      resetLabel={t('common.reset', { defaultValue: 'Сбросить' })}
       extra={(
         <>
           <GeoFilterSelects

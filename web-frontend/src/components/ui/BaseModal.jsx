@@ -27,13 +27,14 @@ export default function BaseModal({
   return (
     <div
       className={clsx(
-        'fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4',
+        'fixed inset-0 z-50 overflow-y-auto bg-black/60 p-4',
         overlayClassName,
       )}
     >
+      <div className="flex min-h-full items-center justify-center">
       <div
         className={clsx(
-          'w-full rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900',
+          'flex max-h-[min(90vh,100%)] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900',
           SIZE_CLS[size],
           className
         )}
@@ -42,7 +43,7 @@ export default function BaseModal({
         aria-labelledby={title ? 'base-modal-title' : undefined}
       >
         {!hideHeader && (title || onClose) && (
-          <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
             {title && (
               <h2
                 id="base-modal-title"
@@ -64,12 +65,13 @@ export default function BaseModal({
             )}
           </div>
         )}
-        <div className={clsx('p-5', bodyClassName)}>{children}</div>
+        <div className={clsx('min-h-0 flex-1 overflow-y-auto p-5', bodyClassName)}>{children}</div>
         {footer && (
-          <div className={clsx('flex justify-end gap-2 border-t border-slate-200 px-4 py-3 dark:border-slate-800', footerClassName)}>
+          <div className={clsx('flex shrink-0 justify-end gap-2 border-t border-slate-200 px-4 py-3 dark:border-slate-800', footerClassName)}>
             {footer}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

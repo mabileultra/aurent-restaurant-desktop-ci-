@@ -117,7 +117,7 @@ export default function SuperAdminLayout() {
         </div>
       </aside>
 
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <header className="admin-topbar flex shrink-0 items-center justify-between gap-2 px-3 sm:px-4 sm:py-3">
           <button
             type="button"
@@ -145,7 +145,7 @@ export default function SuperAdminLayout() {
             </button>
           </div>
         </header>
-        <div className="admin-main flex-1 overflow-auto p-3 sm:p-4 md:p-6">
+        <div className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
           <Outlet />
         </div>
       </main>

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { Plus } from 'lucide-react';
 import { platformReferenceBookApi } from '../../../api';
 import { BaseButton, BaseInput, BaseModal, PageLayout, inputCls } from '../../../components/ui';
+import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { entriesToText, parseEntriesText } from '../utils/businessTypeUtils';
 
@@ -21,11 +22,20 @@ export default function PlatformReferenceBooksPage() {
   const qc = useQueryClient();
   const [modal, setModal] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [search, setSearch] = useState('');
 
   const { data: books = [], isLoading } = useQuery({
     queryKey: ['platform-reference-books'],
     queryFn: () => platformReferenceBookApi.list().then((r) => r.data),
   });
+
+  const visibleBooks = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return books;
+    return books.filter((book) => [book.name, book.code, book.description]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(q)));
+  }, [books, search]);
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ['platform-reference-books'] });
 
@@ -98,6 +108,15 @@ export default function PlatformReferenceBooksPage() {
           {t('platform.referenceBooks.add')}
         </BaseButton>
       )}
+      filters={(
+        <PlatformCompactFilterBar
+          search={search}
+          onSearchChange={setSearch}
+          searchPlaceholder={t('platform.referenceBooks.search', { defaultValue: 'Поиск по названию или коду…' })}
+          onReset={() => setSearch('')}
+          resetLabel={t('common.reset', { defaultValue: 'Сбросить' })}
+        />
+      )}
     >
       <div className="admin-table-shell overflow-x-auto">
         <table className="w-full text-sm">
@@ -118,16 +137,16 @@ export default function PlatformReferenceBooksPage() {
                   {t('common.loading')}
                 </td>
               </tr>
-            ) : books.length === 0 ? (
+            ) : visibleBooks.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
                   {t('platform.referenceBooks.empty')}
                 </td>
               </tr>
             ) : (
-              books.map((book, index) => (
+              visibleBooks.map((book, index) => (
                 <tr key={book.id}>
-                  <AdminTableNoIdCells page={0} pageSize={books.length || 1} index={index} id={book.id} />
+                  <AdminTableNoIdCells page={0} pageSize={visibleBooks.length || 1} index={index} id={book.id} />
                   <td className="px-4 py-3 font-medium">{book.name}</td>
                   <td className="px-4 py-3 font-mono text-xs text-slate-500">{book.code}</td>
                   <td className="px-4 py-3">{book.entriesCount}</td>

@@ -42,6 +42,13 @@
   border-bottom-color: #1e293b;
 }
 
+.business-constructor__search {
+  margin: 0.55rem 0.55rem 0;
+  flex: none;
+  width: auto;
+  min-width: 0;
+}
+
 .business-constructor__list {
   max-height: 36rem;
   overflow: auto;

@@ -29,6 +29,12 @@ export default function PlatformCompaniesPage() {
           filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
           filterValue={p.businessType}
           onFilterChange={p.handleBusinessTypeChange}
+          onReset={() => {
+            p.handleSearchChange('');
+            p.handleBusinessTypeChange('');
+            p.handleGeoChange({ regionCode: '', districtCode: '' });
+          }}
+          resetLabel={p.t('common.reset', { defaultValue: 'Сбросить' })}
           extra={(
             <GeoFilterSelects
               regionCode={p.regionCode}

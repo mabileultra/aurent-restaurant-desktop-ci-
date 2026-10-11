@@ -1,8 +1,9 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, PageLayout, PageSearchField } from '../../../components/ui';
+import { BaseButton, PageLayout } from '../../../components/ui';
 import PlatformCompactFilterBar from '../../platform/components/PlatformCompactFilterBar';
 import { buildBusinessTypeFilterOptions } from '../../platform/utils/businessTypeFilterOptions';
 import GeoFilterSelects from '../../shared/geo/GeoFilterSelects';
+import StoresCompanyFilter from '../components/stores/StoresCompanyFilter';
 import UserFormModal from '../components/users/UserFormModal';
 import UserDeleteConfirmModal from '../components/users/UserDeleteConfirmModal';
 import UsersTable from '../components/users/UsersTable';
@@ -23,37 +24,40 @@ export default function UsersPage({ mode = 'tenant' }) {
           {p.t('users.add')}
         </BaseButton>
       )}
-      filters={p.isPlatform ? (
+      filters={(
         <PlatformCompactFilterBar
           search={p.search}
           onSearchChange={p.handleSearchChange}
           searchPlaceholder={p.t('platform.userSearch')}
-          filterLabel={p.t('platform.filterBusinessType')}
-          filterOptions={buildBusinessTypeFilterOptions(p.t, p.businessTypes)}
+          filterLabel={p.isPlatform ? p.t('platform.filterBusinessType') : undefined}
+          filterOptions={p.isPlatform ? buildBusinessTypeFilterOptions(p.t, p.businessTypes) : undefined}
           filterValue={p.businessType}
           onFilterChange={p.handleBusinessTypeChange}
+          onReset={() => {
+            p.handleSearchChange('');
+            p.handleBusinessTypeChange('');
+            p.handleCompanyChange('');
+            p.handleGeoChange({ regionCode: '', districtCode: '' });
+          }}
+          resetLabel={p.t('common.reset', { defaultValue: 'Сбросить' })}
           extra={(
-            <GeoFilterSelects
-              regionCode={p.regionCode}
-              districtCode={p.districtCode}
-              onChange={p.handleGeoChange}
-            />
+            <>
+              <GeoFilterSelects
+                regionCode={p.regionCode}
+                districtCode={p.districtCode}
+                onChange={p.handleGeoChange}
+              />
+              {p.isPlatform ? (
+                <StoresCompanyFilter
+                  t={p.t}
+                  companies={p.companies}
+                  companyId={p.companyId}
+                  onChange={p.handleCompanyChange}
+                />
+              ) : null}
+            </>
           )}
         />
-      ) : (
-        <div className="flex flex-wrap items-center gap-2">
-          <PageSearchField
-            className="max-w-md"
-            value={p.search}
-            onChange={p.handleSearchChange}
-            placeholder={p.t('platform.userSearch')}
-          />
-          <GeoFilterSelects
-            regionCode={p.regionCode}
-            districtCode={p.districtCode}
-            onChange={p.handleGeoChange}
-          />
-        </div>
       )}
     >
       <UsersTable
