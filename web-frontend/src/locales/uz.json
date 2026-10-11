@@ -2204,7 +2204,7 @@
     "updated": "Do‘kon yangilandi",
     "saveFailed": "Saqlab bo‘lmadi",
     "activate": "Faollashtirish",
-    "deactivate": "O‘chirish",
+    "deactivate": "Faolsizlantirish",
     "deleteConfirm": "«{{name}}» do‘konini o‘chirasizmi? Bu qaytarib bo‘lmaydi.",
     "deleted": "Do‘kon o‘chirildi",
     "deleteFailed": "Do‘konni o‘chirib bo‘lmadi",

@@ -51,6 +51,21 @@ describe('resolveStorePricesForPayload', () => {
     ]);
   });
 
+  it('when hidden, puts the selected store first so opening stock is not copied onto every store', () => {
+    expect(
+      resolveStorePricesForPayload({
+        storeRows: [{ storeId: '', price: '' }],
+        sellingPrice: 35000,
+        storePricesEnabled: false,
+        fallbackStoreId: 7,
+        fallbackStoreIds: [3, 7],
+      })
+    ).toEqual([
+      { storeId: 7, price: 35000 },
+      { storeId: 3, price: 35000 },
+    ]);
+  });
+
   it('when hidden, prefers all active stores over incomplete storeRows', () => {
     expect(
       resolveStorePricesForPayload({

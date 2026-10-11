@@ -41,12 +41,16 @@ public class ProductInitialStockSupport {
         }
         QuantityValidator.validate(product, initialStock);
         List<Integer> targetStoreIds = resolveTargetStoreIds(storePrices, companyId);
-        for (Integer storeId : targetStoreIds) {
-            Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> PosExceptions.notFound("Store", storeId));
-            storeStockService.initializeForStore(product, store, initialStock);
-            recordMovement(product, initialStock, "RESTOCK", movementNote, store);
+        if (targetStoreIds.isEmpty()) {
+            return;
         }
+        // В форме одно поле «Начальный остаток». Цена может уйти во все магазины,
+        // но количество нельзя копировать в каждый: 10 на двух складах показывается как 20.
+        Integer storeId = targetStoreIds.get(0);
+        Store store = storeRepository.findById(storeId)
+            .orElseThrow(() -> PosExceptions.notFound("Store", storeId));
+        storeStockService.initializeForStore(product, store, initialStock);
+        recordMovement(product, initialStock, "RESTOCK", movementNote, store);
     }
 
     private List<Integer> resolveTargetStoreIds(List<ProductStorePriceRequest> storePrices, Integer companyId) {

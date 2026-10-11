@@ -26,6 +26,7 @@ import { createProductCatalogFormSchema } from '../utils/productCatalogFormSchem
 import { extractAttributeValues, parsePriceRules } from '../../../utils/businessConfigUtils';
 import { useProductCatalogAutoIds } from './useProductCatalogAutoIds';
 import { buildFallbackProductSku } from '../utils/buildFallbackProductSku';
+import { planCatalogStockDeltas } from '../utils/planCatalogStockDeltas';
 
 export function useProductCatalogForm(product, stores, onSaved, options = {}) {
   const { t } = useTranslation();
@@ -238,13 +239,6 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
     prevSellingRef.current = next;
   }, [sellingPriceWatch, costPriceWatch, formSectionMap.storePrices]);
 
-  const resolveStockStoreId = () => {
-    const fromRows = storeRows.map((r) => r.storeId).filter(Boolean);
-    if (fromRows.length === 1) return Number(fromRows[0]);
-    if (stores?.length === 1) return stores[0].id;
-    return null;
-  };
-
   const { mutate, isPending } = useMutation({
     mutationFn: async ({ payload, stockQty, isEditMode }) => {
       if (normalizeBusinessTypeCode(payload?.businessTypeCode || effectiveBusinessType) === 'PHARMACY') {
@@ -258,22 +252,30 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       const res = isEditMode
         ? await productApi.update(product.id, payload)
         : await productApi.create(payload);
-      if (isEditMode) {
-        const stockStoreId = resolveStockStoreId();
-        if (!stockStoreId) {
+      if (isEditMode && stockQty != null && Number.isFinite(Number(stockQty))) {
+        const storeIds = (stores || []).map((s) => s?.id).filter((id) => id != null && id !== '');
+        if (!storeIds.length) {
           throw new Error(t('stockModal.storeRequired'));
         }
-        const prev = await productApi
-          .getById(product.id, { storeId: stockStoreId })
-          .then((r) => r.data.stockQuantity);
-        const delta = stockQty - prev;
-        if (delta !== 0) {
+        const quantitiesByStore = {};
+        await Promise.all(storeIds.map(async (id) => {
+          const qty = await productApi
+            .getById(product.id, { storeId: id })
+            .then((r) => r.data.stockQuantity);
+          quantitiesByStore[id] = qty;
+        }));
+        const plans = planCatalogStockDeltas({
+          desiredTotal: stockQty,
+          quantitiesByStore,
+          preferredStoreId: selectedStoreId ?? storeIds[0],
+        });
+        for (const plan of plans) {
           await productApi.adjustStock(
             product.id,
-            delta,
+            plan.delta,
             'ADJUSTMENT',
             t('productCatalog.stockEditNote'),
-            stockStoreId
+            plan.storeId
           );
         }
       }
@@ -283,7 +285,11 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       toast.success(isEdit ? t('productModal.updated') : t('productModal.created'));
       onSaved();
     },
-    onError: (err) => toast.error(err.response?.data?.message ?? t('productModal.saveFailed')),
+    onError: (err) => toast.error(
+      err.response?.data?.message
+      ?? (err.response ? t('productModal.saveFailed') : err.message)
+      ?? t('productModal.saveFailed')
+    ),
   });
 
   const showSection = (section) =>
@@ -360,9 +366,8 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
       selectedStoreId,
       stores,
     });
-    const stockQty = showSection('accounting') && showSection('accountingStock')
-      ? (submitValues.initialStock ?? 0)
-      : 0;
+    const trackStock = showSection('accounting') && showSection('accountingStock');
+    const stockQty = trackStock ? (submitValues.initialStock ?? 0) : 0;
 
     if (isEdit) {
       mutate({
@@ -370,7 +375,7 @@ export function useProductCatalogForm(product, stores, onSaved, options = {}) {
           ...base,
           active: showSection('activeField') ? submitValues.active : true,
         },
-        stockQty,
+        stockQty: trackStock ? stockQty : null,
         isEditMode: true,
       });
     } else {

@@ -58,6 +58,15 @@ export function resolveStorePricesForPayload({
     const id = Number(fallbackStoreId);
     if (Number.isFinite(id)) ids.push(id);
   }
+  // Начальный остаток пишется только в первый магазин списка — выбранный должен быть первым.
+  if (ids.length > 1 && fallbackStoreId != null && fallbackStoreId !== '') {
+    const selected = Number(fallbackStoreId);
+    const idx = ids.indexOf(selected);
+    if (idx > 0) {
+      ids.splice(idx, 1);
+      ids.unshift(selected);
+    }
+  }
   return ids.map((storeId) => ({ storeId, price: base }));
 }
 
