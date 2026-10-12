@@ -62,7 +62,29 @@ export function ticketStamp(iso) {
   return d.toLocaleString();
 }
 
-/** Top of kitchen / auto-print slips: hall + table (or channel), waiter, time. */
+/** Check number already present (takeaway `#12` or `№12`). */
+function hasCheckNo(line, orderNo) {
+  const text = String(line || '');
+  if (orderNo != null && text.includes(`№${orderNo}`)) return true;
+  return /#\s*\d+/.test(text);
+}
+
+function checkNoMark(order) {
+  const no = order?.orderNo;
+  if (no == null || no === '' || no === '—') return '';
+  const n = Number(no);
+  if (!Number.isFinite(n) || n <= 0) return '';
+  return `№${n}`;
+}
+
+/** Place line plus the order check number so each new order prints a new №. */
+function withCheckNo(line, order) {
+  const mark = checkNoMark(order);
+  if (!mark || hasCheckNo(line, order?.orderNo)) return line;
+  return line ? `${line} · ${mark}` : mark;
+}
+
+/** Top of kitchen / auto-print slips: hall + table (or channel), check №, waiter, time. */
 export function kitchenTicketMetaLines({
   order,
   header,
@@ -92,6 +114,7 @@ export function kitchenTicketMetaLines({
         }) || `Стол ${code}`);
     }
   }
+  tableLine = withCheckNo(tableLine, order);
   const waiterLabel = t?.('rst.order.waiter', { defaultValue: 'Официант' }) || 'Официант';
   const lines = [tableLine];
   if (waiterName) lines.push(`${waiterLabel}: ${waiterName}`);

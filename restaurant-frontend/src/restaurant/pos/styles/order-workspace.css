@@ -386,6 +386,49 @@
   color: #1b1208;
 }
 
+/* Desktop waiter: categories in a left column, same as the cashier. */
+.rst-pos:not(.rst-pos--waiter-mobile) .rst-order__catalog .rst-menu.rst-menu--pos {
+  display: grid;
+  grid-template-columns: 11.5rem minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+  gap: 0.55rem;
+}
+
+.rst-pos:not(.rst-pos--waiter-mobile) .rst-order__catalog .rst-menu-cats {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0 0.15rem 0 0;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.rst-pos:not(.rst-pos--waiter-mobile) .rst-order__catalog .rst-menu-cat {
+  flex: 0 0 auto;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-align: left;
+  white-space: normal;
+}
+
+.rst-pos:not(.rst-pos--waiter-mobile) .rst-order__catalog .rst-menu-grid {
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .rst-menu-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));

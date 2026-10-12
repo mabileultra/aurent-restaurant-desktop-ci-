@@ -62,6 +62,17 @@ describe('kitchenTicketMetaLines', () => {
     });
     expect(lines[0]).toContain('Asosiy zal');
     expect(lines[0]).toContain('Стол 2');
+    expect(lines[0]).not.toContain('№');
     expect(lines[1]).toBe('Официант: DILBAR');
+  });
+
+  it('prints the check number so the next order is a new №', () => {
+    const lines = kitchenTicketMetaLines({
+      order: { tableCode: '2', hallName: 'Asosiy zal', channel: 'DINE_IN', orderNo: 15 },
+      waiterName: 'DILBAR',
+      t: (key, opts) => opts?.defaultValue || key,
+    });
+    expect(lines[0]).toContain('Стол 2');
+    expect(lines[0]).toContain('№15');
   });
 });

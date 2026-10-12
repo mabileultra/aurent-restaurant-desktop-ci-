@@ -154,7 +154,7 @@ public class PrintJobPublisher {
         }
         enqueue(order, PrintJobKind.ORDER_CANCEL, new PrintJobPayloads.OrderCancel(
             order.getId(),
-            ticketHeader(order),
+            kitchenPlaceLine(order),
             order.getWaiterUserId(),
             lines
         ));
@@ -216,7 +216,7 @@ public class PrintJobPublisher {
             titleByPrinter.putIfAbsent(printer, voidSlip ? ("ОТКАЗ · " + baseTitle) : baseTitle);
         }
 
-        String header = ticketHeader(order);
+        String header = kitchenPlaceLine(order);
         UUID waiterUserId = order.getWaiterUserId();
         for (Map.Entry<String, List<PrintJobPayloads.CategoryBatchLine>> entry : byPrinter.entrySet()) {
             enqueue(order, PrintJobKind.CATEGORY_BATCH, new PrintJobPayloads.CategoryBatch(
@@ -250,7 +250,7 @@ public class PrintJobPublisher {
             quantity,
             category.getName(),
             printer,
-            ticketHeader(order),
+            kitchenPlaceLine(order),
             order.getWaiterUserId(),
             item.getName(),
             MenuPortionFormat.display(item.getMenuItem()),
@@ -278,7 +278,17 @@ public class PrintJobPublisher {
             .toList();
     }
 
+    /** Guest bill place line. The bill body already appends №. */
     private static String ticketHeader(FloorOrder order) {
+        return placeLine(order, false);
+    }
+
+    /** Kitchen / cancel slip: same place line plus the check number. */
+    private static String kitchenPlaceLine(FloorOrder order) {
+        return placeLine(order, true);
+    }
+
+    private static String placeLine(FloorOrder order, boolean withCheckNo) {
         OrderChannel channel = order.getChannel() == null ? OrderChannel.DINE_IN : order.getChannel();
         String no = String.valueOf(order.getOrderNo());
         if (channel == OrderChannel.TAKEAWAY) {
@@ -295,10 +305,11 @@ public class PrintJobPublisher {
             || order.getTable().getHall().getName().isBlank()
             ? null
             : order.getTable().getHall().getName().trim();
-        if (hall != null) {
-            return hall + " · Стол " + table;
+        String place = hall != null ? hall + " · Стол " + table : "Стол " + table;
+        if (withCheckNo && order.getOrderNo() > 0) {
+            return place + " · №" + no;
         }
-        return "Стол " + table;
+        return place;
     }
 
     private void enqueue(FloorOrder order, PrintJobKind kind, Object payload) {

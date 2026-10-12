@@ -158,10 +158,9 @@ export default function FloorCanvas({
   const maxY = planeTables.reduce((acc, table) => Math.max(acc, table.posY + table.height), 0);
 
   const startDrag = (event, table, displayTable) => {
-    if (!isAdmin || !onTableMove) {
-      onTableClick?.(table);
-      return;
-    }
+    // Click opens the table. Opening on pointerdown paints the modal under the
+    // finger, and the same tap hits the backdrop and closes it.
+    if (!isAdmin || !onTableMove) return;
     event.preventDefault();
     dragRef.current = {
       tableId: table.id,
