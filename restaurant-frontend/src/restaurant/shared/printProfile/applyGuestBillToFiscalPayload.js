@@ -1,17 +1,16 @@
-import { footerLines, plainSlipLine } from './applyPrintProfile';
-import { fieldStyle } from './printProfileDefaults';
+import { footerLines, headerValue, plainSlipLine, slipFieldStyle } from './applyPrintProfile';
 
 const SLIP = 'GUEST_BILL';
 
 function enabledText(profile, key) {
-  const style = fieldStyle(profile, SLIP, key);
+  const style = slipFieldStyle(profile, SLIP, key);
   if (!style.on) return '';
-  return String(profile?.[key] || '').trim();
+  return headerValue(profile, key);
 }
 
 /**
- * Restaurant print profile overrides the fiscal header only when that slip field is on.
- * Default profile (branding off) leaves the cashier receipt payload unchanged.
+ * Filled logo, name, phone, address and footer go on the fiscal check.
+ * An empty profile leaves the cashier receipt payload unchanged.
  */
 export function applyGuestBillToFiscalPayload(payload, profile) {
   if (!payload || !profile) return payload;
@@ -19,7 +18,7 @@ export function applyGuestBillToFiscalPayload(payload, profile) {
   const receiptFields = { ...(payload.receiptFields || {}) };
   const labels = { ...(payload.labels || {}) };
 
-  const logoOn = fieldStyle(profile, SLIP, 'logo').on && String(profile.logoDataUrl || '').trim();
+  const logoOn = slipFieldStyle(profile, SLIP, 'logo').on && headerValue(profile, 'logo');
   if (logoOn) {
     branding.logoDataUrl = profile.logoDataUrl;
     receiptFields.logo = true;

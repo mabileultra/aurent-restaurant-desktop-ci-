@@ -9,16 +9,33 @@ const payload = {
 };
 
 describe('applyGuestBillToFiscalPayload', () => {
-  it('leaves the fiscal payload alone when branding toggles are off', () => {
+  it('leaves the fiscal payload alone when the header is empty', () => {
     const profile = factoryPrintProfile();
-    profile.phone = '+998';
-    profile.logoDataUrl = 'data:image/png;base64,xx';
-    profile.footer = 'Ждём снова';
     const next = applyGuestBillToFiscalPayload(payload, profile);
     expect(next.branding.companyPhone).toBe('');
     expect(next.branding.logoDataUrl).toBeNull();
     expect(next.receiptFields.footer).toBe(false);
     expect(next.labels.footer).toBe('');
+    expect(next.branding.companyName).toBe('Tenant');
+  });
+
+  it('copies a filled header onto the fiscal check even if the guest-bill boxes are off', () => {
+    const profile = factoryPrintProfile();
+    profile.storeName = 'XAN BALIQ';
+    profile.phone = '+998';
+    profile.address = 'Ташкент';
+    profile.logoDataUrl = 'data:image/png;base64,xx';
+    profile.footer = 'Ждём снова';
+    const next = applyGuestBillToFiscalPayload(payload, profile);
+    expect(next.branding.companyName).toBe('XAN BALIQ');
+    expect(next.branding.companyPhone).toBe('+998');
+    expect(next.branding.companyAddress).toBe('Ташкент');
+    expect(next.branding.logoDataUrl).toBe('data:image/png;base64,xx');
+    expect(next.receiptFields.logo).toBe(true);
+    expect(next.receiptFields.companyPhone).toBe(true);
+    expect(next.receiptFields.companyAddress).toBe(true);
+    expect(next.receiptFields.footer).toBe(true);
+    expect(next.labels.footer).toBe('Ждём снова');
   });
 
   it('copies logo, phone and footer when the guest-bill toggles are on', () => {

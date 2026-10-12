@@ -173,7 +173,7 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
       <h2 className="rst-printers__title">{t('rst.admin.printProfileTitle', { defaultValue: 'Оформление чеков' })}</h2>
       <p className="rst-printers__note">
         {t('rst.admin.printProfileHint', {
-          defaultValue: 'Логотип, шрифт, размер и жирность полей. По умолчанию — как сейчас на кухне/отказе. Times New Roman и др. на ESC/POS термопринтере выглядят как системный шрифт; в HTML/превью — точно.',
+          defaultValue: 'Название, телефон, адрес, логотип и подвал печатаются на счёте и фискальном чеке, если поле заполнено. На отказе, кухне и смене их включают галочки на своей вкладке. Адрес без текста на чек не попадает.',
         })}
       </p>
 

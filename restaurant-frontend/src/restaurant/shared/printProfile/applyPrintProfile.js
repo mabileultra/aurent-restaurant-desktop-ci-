@@ -1,16 +1,33 @@
 import { EMPH_LINE_PREFIX, BOLD_LINE_PREFIX } from '../../pos/utils/ticketLayout';
 import { factoryPrintProfile, fieldStyle, fontCss } from './printProfileDefaults';
 
+const HEADER_KEYS = new Set(['logo', 'storeName', 'address', 'phone', 'footer']);
+
+/** Guest bill and the fiscal check print a filled header even if that tab's box stayed off. */
+export function slipFieldStyle(profile, slipType, key) {
+  const style = fieldStyle(profile, slipType, key);
+  if (slipType === 'GUEST_BILL' && HEADER_KEYS.has(key) && headerValue(profile, key)) {
+    return { ...style, on: true };
+  }
+  return style;
+}
+
+export function headerValue(profile, key) {
+  const p = profile || {};
+  if (key === 'logo') return String(p.logoDataUrl || '').trim();
+  return String(p[key] || '').trim();
+}
+
 /**
- * Branding lines (logo text fallback / store / address / phone) before meta.
- * Defaults keep these OFF — no change to current tickets.
+ * Branding lines (store / address / phone) before meta.
+ * Kitchen, cancel and shift still need the checkbox. The bill prints them when filled.
  */
 export function brandingLines(profile, slipType) {
   const p = profile || factoryPrintProfile();
   const lines = [];
-  const nameStyle = fieldStyle(p, slipType, 'storeName');
-  const addrStyle = fieldStyle(p, slipType, 'address');
-  const phoneStyle = fieldStyle(p, slipType, 'phone');
+  const nameStyle = slipFieldStyle(p, slipType, 'storeName');
+  const addrStyle = slipFieldStyle(p, slipType, 'address');
+  const phoneStyle = slipFieldStyle(p, slipType, 'phone');
   if (nameStyle.on && String(p.storeName || '').trim()) {
     lines.push(styleLine(String(p.storeName).trim(), nameStyle));
   }
@@ -23,10 +40,10 @@ export function brandingLines(profile, slipType) {
   return lines;
 }
 
-/** Bottom line. Off, or empty text, adds nothing — same as today's slips. */
+/** Bottom line. Empty text adds nothing. The bill prints a filled footer without the extra checkbox. */
 export function footerLines(profile, slipType) {
   const p = profile || factoryPrintProfile();
-  const style = fieldStyle(p, slipType, 'footer');
+  const style = slipFieldStyle(p, slipType, 'footer');
   if (!style.on) return [];
   const text = String(p.footer || '').trim();
   if (!text) return [];
@@ -90,7 +107,7 @@ export function resolveTicketTitle(title, profile, slipType) {
 
 export function ticketPrintOptions(profile, slipType) {
   const p = profile || factoryPrintProfile();
-  const logoStyle = fieldStyle(p, slipType, 'logo');
+  const logoStyle = slipFieldStyle(p, slipType, 'logo');
   const headerStyle = fieldStyle(p, slipType, 'headerTitle');
   return {
     fontFamily: fontCss(p.defaultFont),

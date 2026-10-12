@@ -35,17 +35,19 @@ describe('applyPrintProfile defaults', () => {
     expect(ticketPrintOptions(profile, 'CANCEL').logoDataUrl).toBe('');
   });
 
-  it('prints phone and footer only after the slip toggles are on', () => {
+  it('prints a filled header on the guest bill even when that tab box is off', () => {
     const profile = factoryPrintProfile();
+    profile.storeName = 'XAN BALIQ';
     profile.phone = '+998 90 000 00 00';
     profile.footer = 'Ждём снова';
-    expect(wrapSlipLines(['тело'], profile, 'GUEST_BILL')).toEqual(['тело']);
-
-    profile.slips.GUEST_BILL.fields.phone.on = true;
-    profile.slips.GUEST_BILL.fields.footer.on = true;
-    expect(brandingLines(profile, 'GUEST_BILL')).toEqual(['+998 90 000 00 00']);
+    profile.logoDataUrl = 'data:image/png;base64,xx';
+    expect(brandingLines(profile, 'CANCEL')).toEqual([]);
+    expect(ticketPrintOptions(profile, 'CANCEL').logoDataUrl).toBe('');
+    expect(brandingLines(profile, 'GUEST_BILL')).toEqual(['XAN BALIQ', '+998 90 000 00 00']);
     expect(footerLines(profile, 'GUEST_BILL')).toEqual(['Ждём снова']);
+    expect(ticketPrintOptions(profile, 'GUEST_BILL').logoDataUrl).toBe('data:image/png;base64,xx');
     expect(wrapSlipLines(['тело'], profile, 'GUEST_BILL')).toEqual([
+      'XAN BALIQ',
       '+998 90 000 00 00',
       'тело',
       'Ждём снова',
