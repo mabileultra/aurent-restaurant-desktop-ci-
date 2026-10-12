@@ -87,8 +87,7 @@ export function buildPharmacyProductCreatePayload(form, { storeId, prices } = {}
   if (storeId != null) {
     payload.storePrices = [{
       storeId: Number(storeId),
-      sellingPrice,
-      costPrice,
+      price: sellingPrice,
     }];
   }
 

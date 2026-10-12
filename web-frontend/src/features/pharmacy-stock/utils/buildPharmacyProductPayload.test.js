@@ -14,9 +14,10 @@ describe('buildPharmacyProductPayload', () => {
       name: 'Парацетамол',
     };
     expect(validatePharmacyProductForm(form, t)).toBeNull();
-    const payload = buildPharmacyProductCreatePayload(form);
+    const payload = buildPharmacyProductCreatePayload(form, { storeId: 5 });
     expect(payload.name).toBe('Парацетамол');
     expect(payload.sellingPrice).toBe(0.01);
+    expect(payload.storePrices).toEqual([{ storeId: 5, price: 0.01 }]);
     expect(payload.uzInvoiceDocumentId).toBeUndefined();
     expect(payload.businessTypeCode).toBe('PHARMACY');
   });
