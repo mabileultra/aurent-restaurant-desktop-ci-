@@ -51,5 +51,7 @@
     <include file="v44-fractional-g-ml-units.xml" relativeToChangelogFile="true"/>
     <include file="v45-platform-analytics-role.xml" relativeToChangelogFile="true"/>
     <include file="v46-geo-soato.xml" relativeToChangelogFile="true"/>
+    <include file="v46-cash-register-fiscal-provider.xml" relativeToChangelogFile="true"/>
+    <include file="v47-fiscal-drive-settings.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
