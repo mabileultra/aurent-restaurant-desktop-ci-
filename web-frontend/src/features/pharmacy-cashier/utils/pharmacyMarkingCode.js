@@ -83,6 +83,11 @@ export function extractGtinFromMarkingCode(raw) {
   const leading = code.match(/^01(\d{14})/);
   if (leading) return leading[1];
 
+  // Сканер без AI 01: GTIN-14 сразу, потом серия (000000478043577xv.2/…)
+  if (/^\d{14}/.test(code) && code.length > 14 && /[A-Za-z]/.test(code.slice(14))) {
+    return code.slice(0, 14);
+  }
+
   const digits = code.replace(/\D/g, '');
   if (digits.length >= 8 && digits.length <= 14) {
     return digits;

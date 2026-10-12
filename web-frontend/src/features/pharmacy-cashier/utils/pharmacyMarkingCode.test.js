@@ -34,6 +34,13 @@ describe('pharmacyMarkingCode', () => {
     expect(candidates).toContain('47804357');
   });
 
+  it('reads GTIN-14 when scanner omits AI 01 (bare mark + serial)', () => {
+    const bare = '000000478043577xv.2/=z0yd2Fku';
+    expect(extractGtinFromMarkingCode(bare)).toBe('00000047804357');
+    expect(markingBarcodeCandidates(bare)).toContain('47804357');
+    expect(isPharmacyMarkingCode(bare)).toBe(true);
+  });
+
   it('does not treat a plain EAN-13 as a marking code', () => {
     expect(isPharmacyMarkingCode('4780012345678')).toBe(false);
     expect(isCompletePharmacyMarkingScan('4780012345678')).toBe(false);

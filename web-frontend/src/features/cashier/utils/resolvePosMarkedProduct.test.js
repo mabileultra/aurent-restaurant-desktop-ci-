@@ -111,6 +111,21 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     expect(posFetchProductByBarcode).toHaveBeenCalledWith(7, '47804357');
   });
 
+  it('КМ без AI 01 → всё равно находит EAN-8', async () => {
+    const ean8Product = { id: 22, barcode: '47804357', name: 'Молоко', markedProduct: true };
+    posFetchProductByBarcode.mockImplementation(async (_storeId, barcode) => (
+      barcode === '47804357' ? ean8Product : null
+    ));
+    const result = await resolvePosMarkedProduct({
+      products: [],
+      rawCode: '000000478043577xv.2/=z0yd2Fku',
+      storeId: 7,
+      aslEnabled: false,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe(22);
+  });
+
   it('ASL упал по сети, но GTIN найден → ok (не блокируем продажу)', async () => {
     pharmacyIntegrationApi.verifyMarking.mockRejectedValue(new Error('network'));
     const result = await resolvePosMarkedProduct({
