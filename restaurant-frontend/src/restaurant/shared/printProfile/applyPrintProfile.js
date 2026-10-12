@@ -12,6 +12,26 @@ export function slipFieldStyle(profile, slipType, key) {
   return style;
 }
 
+/** Header for the on-screen fiscal check. Null when the guest-bill header is empty. */
+export function guestBillScreenHeader(profile) {
+  if (!profile) return null;
+  const pick = (key) => (slipFieldStyle(profile, 'GUEST_BILL', key).on ? headerValue(profile, key) : '');
+  const logoDataUrl = pick('logo');
+  const companyName = pick('storeName');
+  const companyAddress = pick('address');
+  const companyPhone = pick('phone');
+  const footer = pick('footer');
+  if (!logoDataUrl && !companyName && !companyAddress && !companyPhone && !footer) return null;
+  return {
+    logoDataUrl,
+    logoMaxHeightMm: Number(profile.logoMaxHeightMm) || 12,
+    companyName,
+    companyAddress,
+    companyPhone,
+    footer,
+  };
+}
+
 export function headerValue(profile, key) {
   const p = profile || {};
   if (key === 'logo') return String(p.logoDataUrl || '').trim();

@@ -8,7 +8,7 @@ import {
   resolveEscposPrintErrorMessage,
 } from '../../../../services/cashierEscpos';
 import { CASHIER_ESCPOS_TOAST } from '../../../../config/cashierEscposConfig';
-import { FiscalReceiptBody } from '../../../../components/receipt';
+import RestaurantFiscalReceipt from '../../components/RestaurantFiscalReceipt';
 import { loadRestaurantReceiptSale } from '../../utils/loadRestaurantReceiptSale';
 import {
   printOrdinarySaleReceipt,
@@ -103,7 +103,7 @@ export default function CashierPaidReceiptPane({
           <p className="rst-paid-receipt-pane__placeholder">{t('rst.cashier.receiptLoadFailed')}</p>
         ) : (
           <div className="rst-paid-receipt-pane__paper">
-            <FiscalReceiptBody sale={sale} />
+            <RestaurantFiscalReceipt sale={sale} />
           </div>
         )}
       </div>

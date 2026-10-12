@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   brandingLines,
   footerLines,
+  guestBillScreenHeader,
   styleDishLine,
   ticketPrintOptions,
   wrapSlipLines,
@@ -46,6 +47,12 @@ describe('applyPrintProfile defaults', () => {
     expect(brandingLines(profile, 'GUEST_BILL')).toEqual(['XAN BALIQ', '+998 90 000 00 00']);
     expect(footerLines(profile, 'GUEST_BILL')).toEqual(['Ждём снова']);
     expect(ticketPrintOptions(profile, 'GUEST_BILL').logoDataUrl).toBe('data:image/png;base64,xx');
+    expect(guestBillScreenHeader(profile)).toMatchObject({
+      companyName: 'XAN BALIQ',
+      companyPhone: '+998 90 000 00 00',
+      logoDataUrl: 'data:image/png;base64,xx',
+      footer: 'Ждём снова',
+    });
     expect(wrapSlipLines(['тело'], profile, 'GUEST_BILL')).toEqual([
       'XAN BALIQ',
       '+998 90 000 00 00',

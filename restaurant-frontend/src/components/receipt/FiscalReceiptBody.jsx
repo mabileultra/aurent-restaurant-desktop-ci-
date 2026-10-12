@@ -59,7 +59,12 @@ function ReceiptDivider() {
   return <div className="receipt-divider my-2 border-t border-dashed border-black" />;
 }
 
-export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-area', className = '' }) {
+export default function FiscalReceiptBody({
+  sale,
+  header = null,
+  printAreaId = 'receipt-print-area',
+  className = '',
+}) {
   const { t } = useTranslation();
   const isOn = useTenantDisplayStore((s) => s.isReceiptFieldOn);
   const receiptLogoDataUrl = useTenantDisplayStore((s) => s.committed.receiptLogoDataUrl);
@@ -71,12 +76,18 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   if (!sale) return null;
 
   const companyName =
+    header?.companyName ||
     customCompanyName ||
     import.meta.env.VITE_COMPANY_NAME ||
     sale.storeName ||
     APP_NAME;
-  const companyAddress = customCompanyAddress || import.meta.env.VITE_COMPANY_ADDRESS || '';
-  const companyPhone = customCompanyPhone || import.meta.env.VITE_COMPANY_PHONE || '';
+  const companyAddress = header?.companyAddress || customCompanyAddress || import.meta.env.VITE_COMPANY_ADDRESS || '';
+  const companyPhone = header?.companyPhone || customCompanyPhone || import.meta.env.VITE_COMPANY_PHONE || '';
+  const logoSrc = header?.logoDataUrl || receiptLogoDataUrl || '';
+  const showLogo = Boolean(header?.logoDataUrl) || (isOn('logo') && Boolean(receiptLogoDataUrl));
+  const showName = Boolean(header?.companyName) || isOn('companyName');
+  const showAddress = Boolean(header?.companyAddress) || (isOn('companyAddress') && Boolean(companyAddress));
+  const showPhone = Boolean(header?.companyPhone) || (isOn('companyPhone') && Boolean(companyPhone));
   const stir = customStir || import.meta.env.VITE_COMPANY_STIR || import.meta.env.VITE_STIR || '';
   const { date, time } = splitDateTime(sale.createdAt);
   const fiscalMeta = resolveFiscalReceiptMeta(sale, {
@@ -113,10 +124,10 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
   const receiptTypeLabel = resolveFiscalReceiptTypeLabel(sale, t);
 
   const showHeader =
-    isOn('logo') ||
-    isOn('companyName') ||
-    isOn('companyAddress') ||
-    (isOn('companyPhone') && companyPhone) ||
+    showLogo ||
+    showName ||
+    showAddress ||
+    showPhone ||
     (isOn('stir') && stir);
   const showMeta =
     isOn('dateTime') || isOn('receiptNo') || isOn('employee') || isOn('shift');
@@ -128,16 +139,21 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
     >
       {showHeader ? (
         <header className="receipt-section border-b border-dashed border-black pb-3 text-center">
-          {isOn('logo') && receiptLogoDataUrl ? (
-            <img src={receiptLogoDataUrl} alt="" className="receipt-logo mx-auto mb-2" />
+          {showLogo && logoSrc ? (
+            <img
+              src={logoSrc}
+              alt=""
+              className="receipt-logo mx-auto mb-2"
+              style={header?.logoMaxHeightMm ? { maxHeight: `${header.logoMaxHeightMm}mm` } : undefined}
+            />
           ) : null}
-          {isOn('companyName') ? (
+          {showName ? (
             <p className="receipt-title break-words">{companyName}</p>
           ) : null}
-          {isOn('companyAddress') && companyAddress ? (
+          {showAddress && companyAddress ? (
             <p className="receipt-subtitle mt-1 whitespace-pre-line break-words">{companyAddress}</p>
           ) : null}
-          {isOn('companyPhone') && companyPhone ? (
+          {showPhone && companyPhone ? (
             <p className="receipt-subtitle mt-1 break-words">
               {t('fiscalReceipt.phoneLabel')}: {companyPhone}
             </p>
@@ -314,6 +330,9 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
         <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
           {qrValue ? <ReceiptQrCode value={qrValue} sizePx={200} /> : null}
         </footer>
+      ) : null}
+      {header?.footer ? (
+        <p className="receipt-subtitle mt-3 text-center break-words">{header.footer}</p>
       ) : null}
     </div>
   );

@@ -8,7 +8,8 @@ import {
   resolveEscposPrintErrorMessage,
 } from '../../../services/cashierEscpos';
 import { CASHIER_ESCPOS_TOAST } from '../../../config/cashierEscposConfig';
-import { FiscalReceiptBody, ThermalPrintSettingsPanel } from '../../../components/receipt';
+import { ThermalPrintSettingsPanel } from '../../../components/receipt';
+import RestaurantFiscalReceipt from './RestaurantFiscalReceipt';
 import { RECEIPT_PRINT_DOM } from '../../../config/receiptPrintConfig';
 import {
   printOrdinarySaleReceipt,
@@ -167,7 +168,7 @@ export default function RestaurantReceiptModal({
 
         <div id={RECEIPT_PRINT_DOM.fiscalPrintShellId} className="rst-receipt-modal__body">
           <div className="bg-white text-black">
-            <FiscalReceiptBody sale={sale} />
+            <RestaurantFiscalReceipt sale={sale} />
           </div>
         </div>
 
