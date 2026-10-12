@@ -101,12 +101,25 @@ export function extractGtinFromMarkingCode(raw) {
 export function barcodeLookupVariants(gtin) {
   const digits = String(gtin ?? '').replace(/\D/g, '');
   if (digits.length < 8 || digits.length > 14) return [];
-  const variants = [digits];
-  if (digits.length === 14 && digits.startsWith('0')) variants.push(digits.slice(1));
-  if (digits.length === 14 && digits.startsWith('00')) variants.push(digits.slice(2));
-  if (digits.length === 13) variants.push(`0${digits}`);
-  if (digits.length === 12) variants.push(`0${digits}`);
-  return variants;
+  const variants = new Set([digits]);
+  // GTIN-14 с ведущими нулями → EAN-13 / EAN-12 / EAN-8 (как в карточке: 00000047804357 → 47804357)
+  let stripped = digits;
+  while (stripped.startsWith('0') && stripped.length > 8) {
+    stripped = stripped.slice(1);
+    variants.add(stripped);
+  }
+  if (digits.length < 14) variants.add(digits.padStart(14, '0'));
+  if (digits.length === 13) variants.add(`0${digits}`);
+  if (digits.length === 12) {
+    variants.add(`0${digits}`);
+    variants.add(`00${digits}`);
+  }
+  if (digits.length === 8) {
+    variants.add(digits.padStart(12, '0'));
+    variants.add(digits.padStart(13, '0'));
+    variants.add(digits.padStart(14, '0'));
+  }
+  return [...variants];
 }
 
 /** Короткие штрихкоды, которыми код маркировки может лежать в каталоге. */

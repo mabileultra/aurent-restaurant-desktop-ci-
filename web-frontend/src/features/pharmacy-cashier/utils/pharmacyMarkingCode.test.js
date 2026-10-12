@@ -22,8 +22,16 @@ describe('pharmacyMarkingCode', () => {
   });
 
   it('builds EAN-13 and GTIN-14 candidates from a DataMatrix', () => {
-    expect(markingBarcodeCandidates(MARK)).toEqual(['04780012345678', '4780012345678']);
+    const candidates = markingBarcodeCandidates(MARK);
+    expect(candidates).toContain('04780012345678');
+    expect(candidates).toContain('4780012345678');
     expect(isPharmacyMarkingCode(MARK)).toBe(true);
+  });
+
+  it('maps zero-padded GTIN-14 to EAN-8 in the product card', () => {
+    const candidates = markingBarcodeCandidates('0100000047804357217xv.2/=z0yd2Fku');
+    expect(candidates).toContain('00000047804357');
+    expect(candidates).toContain('47804357');
   });
 
   it('does not treat a plain EAN-13 as a marking code', () => {

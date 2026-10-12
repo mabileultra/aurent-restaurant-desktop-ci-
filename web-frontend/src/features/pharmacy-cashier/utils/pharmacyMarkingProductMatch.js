@@ -1,4 +1,5 @@
 import {
+  barcodeLookupVariants,
   extractGtinFromMarkingCode,
   markingBarcodeCandidates,
   normalizePharmacyMarkingCode,
@@ -18,20 +19,7 @@ function productBarcodeDigits(product) {
 }
 
 function gtinVariants(gtin14) {
-  const d = digitsOnly(gtin14);
-  if (!d) return [];
-  const variants = new Set([d]);
-  if (d.length === 14 && d.startsWith('0')) variants.add(d.slice(1));
-  if (d.length === 14 && d.startsWith('00')) variants.add(d.slice(2));
-  if (d.length === 13) {
-    variants.add(`0${d}`);
-    if (d.startsWith('0')) variants.add(d.slice(1));
-  }
-  if (d.length === 12) {
-    variants.add(`0${d}`);
-    variants.add(`00${d}`);
-  }
-  return [...variants];
+  return barcodeLookupVariants(gtin14);
 }
 
 /** Найти товар в каталоге по коду маркировки / GTIN. */
