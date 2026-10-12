@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toIdentificationMarkingCode, toOfdMarkingLabel } from '../../../src/services/multikassa/ofdMarkingLabel';
+import { toIdentificationMarkingCode, toOfdMarkingLabel } from '../../../../src/services/fiscal/shared/ofdMarkingLabel';
 
 const FULL =
   '0108906002059409218MTGE3S706TDT91UZF092enFQOcSQ9jQzKA16EsBIzjMGF9RCYf1JZd2ReSG6eiU=';

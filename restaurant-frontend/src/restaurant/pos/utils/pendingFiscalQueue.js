@@ -1,7 +1,6 @@
 /** Queue pending Multikassa fiscals for retry when back online. */
 
-import { FISCAL_STATUS } from '../../../services/multikassa/multikassaConstants';
-import { retryPendingFiscalOnPayload } from '../../../services/multikassa/retryPendingFiscalOnPayload';
+import { FISCAL_STATUS, resolvePendingFiscalProvider } from '../../../services/fiscal';
 const LS_KEY = 'rst-pending-fiscals';
 
 function readQueue() {
@@ -44,10 +43,11 @@ export async function flushPendingFiscals() {
   if (!rows.length) return { ok: true, left: 0 };
   const left = [];
   for (const row of rows) {
-    const next = await retryPendingFiscalOnPayload(
-      { fiscal: row.fiscal, storeId: row.storeId },
-      { storeId: row.storeId, cashRegisterId: row.cashRegisterId },
-    );
+    const payload = { fiscal: row.fiscal, storeId: row.storeId };
+    const next = await resolvePendingFiscalProvider(payload).retryPending(payload, {
+      storeId: row.storeId,
+      cashRegisterId: row.cashRegisterId,
+    });
     if (next?.fiscal?.fiscalStatus === FISCAL_STATUS.PENDING) {
       left.push({ ...row, fiscal: next.fiscal });
     }

@@ -37,6 +37,15 @@ class PaymentSplitPolicyDebtTest {
         assertNull(policy.resolveDebt(request(PaymentMethod.CASH, null, null, null), DUE));
         assertNull(policy.resolveDebt(request(PaymentMethod.CARD, "+998901112233", null, null), DUE));
         assertNull(policy.resolveDebt(request(PaymentMethod.MIXED, null, null, null), DUE));
+        assertNull(policy.resolveDebt(request(PaymentMethod.CASHLESS, null, null, null), DUE));
+    }
+
+    @Test
+    void cashlessTakesTheWholeBillOnCard() {
+        PaymentSplitPolicy.Split split = policy.resolve(request(PaymentMethod.CASHLESS, null, null, null), DUE);
+        assertEquals(new BigDecimal("0.00"), split.cashAmount());
+        assertEquals(DUE, split.cardAmount());
+        assertEquals(new BigDecimal("0.00"), split.changeGiven());
     }
 
     @Test

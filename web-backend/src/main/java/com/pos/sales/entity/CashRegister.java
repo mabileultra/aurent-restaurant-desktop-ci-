@@ -2,6 +2,7 @@ package com.pos.sales.entity;
 
 import jakarta.persistence.*;
 import com.pos.entity.Store;
+import com.pos.integrations.fiscal.domain.FiscalProvider;
 import lombok.*;
 
 import java.time.Instant;
@@ -52,6 +53,11 @@ public class CashRegister {
     @Column(name = "status", nullable = false, length = 20)
     private String status = "ACTIVE";
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "fiscal_provider", nullable = false, length = 32)
+    @Builder.Default
+    private FiscalProvider fiscalProvider = FiscalProvider.MULTIKASSA;
+
     @Column(name = "created_at")
     private Instant createdAt;
 
@@ -63,6 +69,9 @@ public class CashRegister {
         Instant now = Instant.now();
         if (createdAt == null) {
             createdAt = now;
+        }
+        if (fiscalProvider == null) {
+            fiscalProvider = FiscalProvider.MULTIKASSA;
         }
         updatedAt = now;
     }

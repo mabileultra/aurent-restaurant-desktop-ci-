@@ -4,6 +4,8 @@
 import { CASHIER_ESCPOS_IPC } from '../../config/cashierEscposConfig';
 import { buildCashierEscposPayload } from './buildCashierEscposPayload';
 import { buildReceiptQrImageDataUrl } from './buildReceiptQrImage';
+import { applyGuestBillToFiscalPayload } from '../../restaurant/shared/printProfile/applyGuestBillToFiscalPayload';
+import { loadStorePrintProfile } from '../../restaurant/shared/printProfile/loadStorePrintProfile';
 
 /**
  * Доступна ли тихая ESC/POS печать в этом окружении.
@@ -69,7 +71,11 @@ export async function printSaleReceiptEscpos(sale, t) {
     throw new Error('ESCPOS print is only available in desktop cashier');
   }
 
-  const payload = buildCashierEscposPayload(sale, t);
+  const built = buildCashierEscposPayload(sale, t);
+  const payload = applyGuestBillToFiscalPayload(
+    built,
+    built ? await loadStorePrintProfile(sale?.storeId) : null,
+  );
   if (!payload) {
     throw new Error('No sale data for ESC/POS print');
   }

@@ -34,7 +34,7 @@ public class PaymentSplitPolicy {
                 tendered.subtract(dueScaled).setScale(2, RoundingMode.HALF_UP)
             );
         }
-        if (method == PaymentMethod.CARD) {
+        if (method == PaymentMethod.CARD || method == PaymentMethod.CASHLESS) {
             return new Split(
                 BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP),
                 dueScaled,

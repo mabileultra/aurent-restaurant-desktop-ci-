@@ -42,7 +42,8 @@ public final class RestaurantRefundPayloadFactory {
                 cash = amount.multiply(cashPaid).divide(paid, 2, java.math.RoundingMode.HALF_UP);
                 card = amount.subtract(cash).max(BigDecimal.ZERO);
             }
-        } else if (payment.getMethod() == PaymentMethod.CARD) {
+        } else if (payment.getMethod() == PaymentMethod.CARD
+            || payment.getMethod() == PaymentMethod.CASHLESS) {
             cash = BigDecimal.ZERO;
             card = amount;
         } else {

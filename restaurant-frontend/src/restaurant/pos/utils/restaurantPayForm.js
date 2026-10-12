@@ -20,16 +20,16 @@ export function deriveRestaurantPay(totalDue, {
   const needsCardType = method === 'CARD' || method === 'MIXED';
   const cardOk = !needsCardType || Boolean(cardType);
 
-  if (method === 'CARD') {
+  if (method === 'CARD' || method === 'CASHLESS') {
     return {
       due,
       cashAmount: 0,
       cardAmount: due,
       amountTendered: due,
       changeGiven: 0,
-      canSubmit: due > 0 && cardOk,
-      hintKey: cardOk ? null : 'pos.cardTypeRequired',
-      infoKey: null,
+      canSubmit: due > 0 && (method === 'CASHLESS' || cardOk),
+      hintKey: method === 'CASHLESS' || cardOk ? null : 'pos.cardTypeRequired',
+      infoKey: method === 'CASHLESS' ? 'rst.order.payCashlessHint' : null,
     };
   }
 

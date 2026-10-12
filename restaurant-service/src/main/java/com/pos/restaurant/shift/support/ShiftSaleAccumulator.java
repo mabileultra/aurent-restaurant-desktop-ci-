@@ -37,7 +37,7 @@ public class ShiftSaleAccumulator {
         }
         if (method == PaymentMethod.CASH) {
             shift.setCashAmount(shift.getCashAmount().add(amount));
-        } else if (method == PaymentMethod.CARD) {
+        } else if (method == PaymentMethod.CARD || method == PaymentMethod.CASHLESS) {
             shift.setCardAmount(shift.getCardAmount().add(amount));
         }
     }
@@ -73,7 +73,7 @@ public class ShiftSaleAccumulator {
         if (method == PaymentMethod.CASH) {
             BigDecimal nextCash = shift.getCashAmount().subtract(amount);
             shift.setCashAmount(nextCash.signum() < 0 ? BigDecimal.ZERO : nextCash);
-        } else if (method == PaymentMethod.CARD) {
+        } else if (method == PaymentMethod.CARD || method == PaymentMethod.CASHLESS) {
             BigDecimal nextCard = shift.getCardAmount().subtract(amount);
             shift.setCardAmount(nextCard.signum() < 0 ? BigDecimal.ZERO : nextCard);
         }

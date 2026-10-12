@@ -9,6 +9,10 @@ public record CashierMultikassaCapabilitiesResponse(
     String selectedDriveId,
     String cashierNameOverride,
     boolean requireBeforeSale,
-    boolean printFiscalQr
+    boolean printFiscalQr,
+    /** Провайдер фискализации кассы; без кассы — MULTIKASSA. */
+    String fiscalProvider,
+    /** FactoryID ФМ (только для FISCAL_DRIVE). */
+    String factoryId
 ) {
 }

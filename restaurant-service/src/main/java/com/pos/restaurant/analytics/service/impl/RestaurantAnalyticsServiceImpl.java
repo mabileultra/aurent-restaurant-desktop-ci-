@@ -48,7 +48,8 @@ public class RestaurantAnalyticsServiceImpl implements RestaurantAnalyticsServic
         var period = periodResolver.resolve(from, to);
         BigDecimal revenue = queries.sumPayments(companyId, storeId, period.from(), period.to());
         BigDecimal cash = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASH, period.from(), period.to());
-        BigDecimal card = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CARD, period.from(), period.to());
+        BigDecimal card = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CARD, period.from(), period.to())
+            .add(queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASHLESS, period.from(), period.to()));
         long paymentCount = queries.countPayments(companyId, storeId, period.from(), period.to());
 
         return new SalesReportResponse(

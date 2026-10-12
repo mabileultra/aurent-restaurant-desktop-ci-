@@ -1,7 +1,9 @@
 import { lineDiscountAmount, lineSubtotal } from '../../store/cartStore';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
-import { toOfdMarkingLabel } from './ofdMarkingLabel';
+import { toOfdMarkingLabel } from '../fiscal/shared/ofdMarkingLabel';
+import { resolveReceivedCashCard } from '../fiscal/shared/resolveReceivedCashCard';
+import { resolveLinePackageCode } from '../fiscal/shared/resolveLinePackageCode';
 import { round2 } from '../../utils/taxAmounts';
 import { transliterateCyrillicToLatin } from '../../utils/transliterateCyrillic';
 
@@ -28,54 +30,7 @@ function numericProductId(productId) {
   return Math.abs(h) || 1;
 }
 
-/** Наличные / карта по доке Multikassa (тийины считаются снаружи). */
-export function resolveReceivedCashCard(payment, total) {
-  const method = String(payment?.paymentMethod || 'CASH').toUpperCase();
-  const due = round2(total);
-  let cash = Number(payment?.cashAmount);
-  let card = Number(payment?.cardAmount);
-  if (!Number.isFinite(cash) || cash < 0) cash = 0;
-  if (!Number.isFinite(card) || card < 0) card = 0;
-
-  if (method === 'CASH') {
-    if (cash <= 0 && card <= 0) cash = due;
-  } else if (method === 'CARD' || method === 'CASHLESS' || method === 'MPESA') {
-    if (cash <= 0 && card <= 0) card = due;
-  } else if (method === 'MIXED') {
-    if (cash > 0 && card <= 0) card = round2(Math.max(0, due - cash));
-    else if (card > 0 && cash <= 0) cash = round2(Math.max(0, due - card));
-  }
-
-  return { cash: round2(cash), card: round2(card) };
-}
-
-function resolveFiscalPackageCode(line) {
-  const direct =
-    line.packageCode != null && String(line.packageCode).trim() !== ''
-      ? String(line.packageCode).trim()
-      : '';
-  if (direct) return direct;
-
-  const candidates = [line.externalId, line.sku, line.productExternalId, line.id];
-  for (const raw of candidates) {
-    const v = String(raw || '').trim();
-    if (!v) continue;
-    // 03214001014000010:1546940
-    const colon = v.match(/^\d{10,}:(\d{3,})$/);
-    if (colon) return colon[1];
-    // IKPU-03214001014000010-P1546940
-    const ikpuSku = v.match(/^IKPU-\d{10,}-P(\d{3,})$/i);
-    if (ikpuSku) return ikpuSku[1];
-  }
-
-  const unit =
-    line.unitMeasureCode != null && String(line.unitMeasureCode).trim() !== ''
-      ? String(line.unitMeasureCode).trim()
-      : '';
-  // «1» — код единицы измерения, не упаковка Tasnif
-  if (unit && unit !== '1') return unit;
-  return '';
-}
+export { resolveReceivedCashCard };
 
 function buildItem(line) {
   const barcode = line.barcode || line.sku || '';
@@ -90,7 +45,7 @@ function buildItem(line) {
   const barcodes = barcode
     ? [{ type: null, barcode: String(barcode) }]
     : [];
-  const packageCode = resolveFiscalPackageCode(line);
+  const packageCode = resolveLinePackageCode(line);
 
   return {
     product_id: numericProductId(line.productId),

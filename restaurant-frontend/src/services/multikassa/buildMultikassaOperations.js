@@ -1,7 +1,7 @@
 import { lineDiscountAmount, lineSubtotal } from '../../utils/cartLineMath';
 import { MULTIKASSA_OPERATION_TYPE } from './multikassaConstants';
 import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
-import { toOfdMarkingLabel } from './ofdMarkingLabel';
+import { toOfdMarkingLabel } from '../fiscal/shared/ofdMarkingLabel';
 import { round2 } from '../../utils/taxAmounts';
 import { transliterateCyrillicToLatin } from '../../utils/transliterateCyrillic';
 

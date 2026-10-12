@@ -41,7 +41,9 @@ public final class RestaurantFinanceIncomeFactory {
         if (payment.getCashAmount() != null && payment.getCashAmount().signum() > 0) {
             return payment.getCashAmount();
         }
-        if (payment.getMethod() == PaymentMethod.CARD || payment.getMethod() == PaymentMethod.MIXED) {
+        if (payment.getMethod() == PaymentMethod.CARD
+            || payment.getMethod() == PaymentMethod.CASHLESS
+            || payment.getMethod() == PaymentMethod.MIXED) {
             return BigDecimal.ZERO;
         }
         return payment.getAmount();
@@ -51,7 +53,7 @@ public final class RestaurantFinanceIncomeFactory {
         if (payment.getCardAmount() != null && payment.getCardAmount().signum() > 0) {
             return payment.getCardAmount();
         }
-        if (payment.getMethod() == PaymentMethod.CARD) {
+        if (payment.getMethod() == PaymentMethod.CARD || payment.getMethod() == PaymentMethod.CASHLESS) {
             return payment.getAmount();
         }
         return BigDecimal.ZERO;

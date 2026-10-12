@@ -1557,6 +1557,8 @@
       "pay": "To‘lov",
       "payCard": "Karta",
       "payCardHint": "Butun summa kartadan olinadi.",
+      "payCashless": "Naqdsiz",
+      "payCashlessHint": "Butun summa naqdsiz: QR yoki o'tkazma, naqd pulsiz va karta turisiz.",
       "payCash": "Naqd",
       "payCredit": "Kredit",
       "payCreditHint": "Kreditga yopish — naqd/karta yo‘q. Fiskal chek chiqarilmaydi.",

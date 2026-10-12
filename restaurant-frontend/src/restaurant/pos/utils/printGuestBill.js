@@ -9,6 +9,12 @@ import {
 } from './desktopPrinters';
 import { buildRestaurantTicketBody } from './buildRestaurantTicketBody';
 import { resolvePrintWaiterName } from './printWaiterNames';
+import {
+  resolveTicketTitle,
+  ticketPrintOptions,
+  wrapSlipLines,
+} from '../../shared/printProfile/applyPrintProfile';
+import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 
 async function loadCurrentShift(storeId) {
   if (storeId == null) return null;
@@ -35,6 +41,8 @@ export async function printGuestBill({
     order.waiterUserId,
     waiterNameById,
   );
+  const profile = await loadStorePrintProfile(order.storeId);
+  const slipType = 'GUEST_BILL';
 
   const body = buildRestaurantTicketBody({
     kind: 'bill',
@@ -43,15 +51,17 @@ export async function printGuestBill({
     shift: resolvedShift,
     waiterName,
     header,
+    profile,
     // Pre-check: no payment / no OFD QR
     paymentMethod: null,
     qrValue: '',
   });
 
   await printTicketLines({
-    title,
+    title: resolveTicketTitle(title, profile, slipType),
     printerName: printer,
-    lines: body,
+    lines: wrapSlipLines(body, profile, slipType),
+    ...ticketPrintOptions(profile, slipType),
   });
   return { mode: 'silent' };
 }

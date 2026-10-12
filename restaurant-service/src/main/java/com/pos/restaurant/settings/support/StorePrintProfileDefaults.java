@@ -43,6 +43,7 @@ public final class StorePrintProfileDefaults {
         root.put("storeName", "");
         root.put("address", "");
         root.put("phone", "");
+        root.put("footer", "");
         root.put("defaultFont", "monospace");
         Map<String, Object> slips = new LinkedHashMap<>();
         for (String slip : SLIP_TYPES) {
@@ -63,6 +64,7 @@ public final class StorePrintProfileDefaults {
         copyString(incoming, base, "storeName");
         copyString(incoming, base, "address");
         copyString(incoming, base, "phone");
+        copyString(incoming, base, "footer");
         String font = stringVal(incoming.get("defaultFont"));
         if (FONT_IDS.contains(font)) {
             base.put("defaultFont", font);

@@ -17,7 +17,7 @@ import { generatePharmacyBarcode } from '../utils/generatePharmacyBarcode';
 import { applyMxikFlags } from '../utils/inferPharmacyMxikFlags';
 import { usePharmacyMxikPick } from '../hooks/usePharmacyMxikPick';
 import { usePharmacyReceiptLineForm } from '../hooks/usePharmacyReceiptLineForm';
-import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
 import PharmacyReceiptLineFields from './PharmacyReceiptLineFields';
 import PharmacyProductAboutFields from './PharmacyProductAboutFields';
 import '../styles/pharmacy-stock.css';

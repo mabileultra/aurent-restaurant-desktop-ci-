@@ -23,6 +23,28 @@ export function brandingLines(profile, slipType) {
   return lines;
 }
 
+/** Bottom line. Off, or empty text, adds nothing — same as today's slips. */
+export function footerLines(profile, slipType) {
+  const p = profile || factoryPrintProfile();
+  const style = fieldStyle(p, slipType, 'footer');
+  if (!style.on) return [];
+  const text = String(p.footer || '').trim();
+  if (!text) return [];
+  return [styleLine(text, style)];
+}
+
+/** Branding above the body, footer under it. Default profile leaves lines as-is. */
+export function wrapSlipLines(lines, profile, slipType) {
+  const body = Array.isArray(lines) ? lines : [];
+  return [...brandingLines(profile, slipType), ...body, ...footerLines(profile, slipType)];
+}
+
+export function plainSlipLine(line) {
+  const raw = String(line ?? '');
+  if (raw.startsWith(EMPH_LINE_PREFIX) || raw.startsWith(BOLD_LINE_PREFIX)) return raw.slice(3);
+  return raw;
+}
+
 export function styleLine(text, style) {
   const body = String(text ?? '');
   if (!body) return body;

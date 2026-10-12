@@ -60,6 +60,7 @@ export function factoryPrintProfile() {
     storeName: '',
     address: '',
     phone: '',
+    footer: '',
     defaultFont: 'monospace',
     slips,
   };

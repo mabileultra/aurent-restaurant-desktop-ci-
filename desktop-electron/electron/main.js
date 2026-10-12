@@ -409,3 +409,6 @@ ipcMain.handle('desktop:showOnScreenKeyboard', () => {
 
 const { multikassaRequest } = require('./multikassa/multikassaProxy');
 ipcMain.handle('desktop:multikassaRequest', (_event, payload) => multikassaRequest(payload));
+
+const { localDeviceRequest } = require('./localDevice/localDeviceProxy');
+ipcMain.handle('desktop:localDeviceRequest', (_event, payload) => localDeviceRequest(payload));

@@ -8,9 +8,7 @@ import {
   isDesktopOfflineBridge,
 } from './desktopOfflineBridge';
 import { markApiReachable, useConnectivityStore } from '../../store/connectivityStore';
-import { retryPendingFiscalOnPayload } from '../multikassa/retryPendingFiscalOnPayload';
-import { toSaleFiscalPayload } from '../multikassa/parseMultikassaResult';
-import { FISCAL_STATUS } from '../multikassa/multikassaConstants';
+import { FISCAL_STATUS, resolvePendingFiscalProvider, toSaleFiscalPayload } from '../fiscal';
 import { logCatalog, logSale } from '../desktop/activityLog';
 
 /** Отправка очереди продаж — часто (лёгкий запрос). */
@@ -90,7 +88,7 @@ export async function pushPendingSales({ catalogKind } = {}) {
   for (const row of pending) {
     let payload = row.payload || {};
     try {
-      payload = await retryPendingFiscalOnPayload(payload, {
+      payload = await resolvePendingFiscalProvider(payload).retryPending(payload, {
         storeId: payload.storeId,
         cashRegisterId: null,
       });
@@ -108,6 +106,9 @@ export async function pushPendingSales({ catalogKind } = {}) {
           fiscalError: payload.fiscal.fiscalError,
           terminalId: payload.fiscal.fiscalTerminalId || payload.fiscal.terminalId,
           fiscalTerminalId: payload.fiscal.fiscalTerminalId || payload.fiscal.terminalId,
+          fiscalProvider: payload.fiscal.fiscalProvider,
+          fiscalDriveTxid: payload.fiscal.fiscalDriveTxid,
+          fiscalDriveRetry: payload.fiscal.fiscalDriveRetry,
         })
       : undefined;
 

@@ -6,7 +6,7 @@ vi.mock('../../../src/services/multikassa/runMultikassaOperation', () => ({
   runMultikassaOperation: (...args) => runMultikassaOperation(...args),
 }));
 
-vi.mock('../../../src/services/multikassa/resolveFiscalPackageCodes', () => ({
+vi.mock('../../../src/services/fiscal/shared/resolveFiscalPackageCodes', () => ({
   enrichFiscalPackageCodes: async (items) => items,
   isRealFiscalPackageCode: (value) => {
     const code = String(value || '').trim();

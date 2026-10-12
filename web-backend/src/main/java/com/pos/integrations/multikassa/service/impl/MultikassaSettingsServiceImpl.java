@@ -4,6 +4,10 @@ import com.pos.entity.Store;
 import com.pos.entity.User;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
+import com.pos.integrations.fiscal.domain.FiscalProvider;
+import com.pos.integrations.fiscaldrive.entity.CashRegisterFiscalDriveSettings;
+import com.pos.integrations.fiscaldrive.repository.CashRegisterFiscalDriveSettingsRepository;
+import com.pos.integrations.fiscaldrive.support.FiscalDriveDefaults;
 import com.pos.integrations.multikassa.dto.AdminMultikassaSettingsResponse;
 import com.pos.integrations.multikassa.dto.CashierMultikassaCapabilitiesResponse;
 import com.pos.integrations.multikassa.dto.SaveMultikassaSettingsRequest;
@@ -36,6 +40,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
 
     private final CashRegisterRepository cashRegisterRepository;
     private final CashRegisterMultikassaSettingsRepository settingsRepository;
+    private final CashRegisterFiscalDriveSettingsRepository fiscalDriveSettingsRepository;
     private final CashierShiftRepository cashierShiftRepository;
     private final TenantAccessSupport tenantAccess;
     private final CashierSaleSupport cashierSaleSupport;
@@ -95,11 +100,14 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
       Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
       CashRegister register = resolveRegisterForCashier(cashier, store, cashRegisterId);
       if (register == null) {
-          return disabledCapabilities(null);
+          return disabledCapabilities(null, true);
+      }
+      if (FiscalProvider.FISCAL_DRIVE == resolveProvider(register)) {
+          return toFiscalDriveCapabilities(register);
       }
       CashRegisterMultikassaSettings settings = findOrDefault(register);
       if (!settings.isEnabled()) {
-          return disabledCapabilities(register.getId(), settings.isPrintFiscalQr());
+          return disabledCapabilities(register, settings.isPrintFiscalQr());
       }
       return toCashierCapabilities(register, settings);
   }
@@ -143,7 +151,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
         CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
             .orElseThrow(() -> new BadRequestException("Не удалось сохранить флаги Multikassa"));
         if (!entity.isEnabled()) {
-            return disabledCapabilities(register.getId(), entity.isPrintFiscalQr());
+            return disabledCapabilities(register, entity.isPrintFiscalQr());
         }
         return toCashierCapabilities(register, entity);
     }
@@ -251,7 +259,28 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             settings.getSelectedDriveId(),
             settings.getCashierNameOverride(),
             settings.isRequireBeforeSale(),
-            settings.isPrintFiscalQr()
+            settings.isPrintFiscalQr(),
+            fiscalProviderOf(register),
+            null
+        );
+    }
+
+    private CashierMultikassaCapabilitiesResponse toFiscalDriveCapabilities(CashRegister register) {
+        CashRegisterFiscalDriveSettings fd = fiscalDriveSettingsRepository.findById(register.getId()).orElse(null);
+        boolean ready = fd != null && StringUtils.hasText(fd.getFactoryId());
+        CashRegisterMultikassaSettings mk = findOrDefault(register);
+        return new CashierMultikassaCapabilitiesResponse(
+            ready,
+            register.getId(),
+            fd != null ? normalizeBaseUrl(fd.getBaseUrl()) : FiscalDriveDefaults.DEFAULT_BASE_URL,
+            fd != null ? fd.getTerminalId() : null,
+            null,
+            null,
+            null,
+            mk.isRequireBeforeSale(),
+            mk.isPrintFiscalQr(),
+            FiscalProvider.FISCAL_DRIVE.name(),
+            ready ? fd.getFactoryId().trim() : null
         );
     }
 
@@ -279,26 +308,37 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             MultikassaDefaults.LOCAL_BASE_URL_8080,
             MultikassaDefaults.LOCAL_BASE_URL_12346,
             MultikassaDefaults.CLOUD_V3_BASE_URL,
-            MultikassaDefaults.CLOUD_V4_BASE_URL
+            MultikassaDefaults.CLOUD_V4_BASE_URL,
+            fiscalProviderOf(register)
         );
     }
 
-    private CashierMultikassaCapabilitiesResponse disabledCapabilities(Long cashRegisterId) {
-        return disabledCapabilities(cashRegisterId, true);
-    }
-
-    private CashierMultikassaCapabilitiesResponse disabledCapabilities(Long cashRegisterId, boolean printFiscalQr) {
+    private CashierMultikassaCapabilitiesResponse disabledCapabilities(
+        CashRegister register,
+        boolean printFiscalQr
+    ) {
         return new CashierMultikassaCapabilitiesResponse(
             false,
-            cashRegisterId,
+            register != null ? register.getId() : null,
             MultikassaDefaults.DEFAULT_BASE_URL,
             null,
             null,
             null,
             null,
             false,
-            printFiscalQr
+            printFiscalQr,
+            fiscalProviderOf(register),
+            null
         );
+    }
+
+    private static String fiscalProviderOf(CashRegister register) {
+        return resolveProvider(register).name();
+    }
+
+    private static FiscalProvider resolveProvider(CashRegister register) {
+        FiscalProvider provider = register != null ? register.getFiscalProvider() : null;
+        return provider != null ? provider : FiscalProvider.MULTIKASSA;
     }
 
     private String normalizeBaseUrl(String baseUrl) {

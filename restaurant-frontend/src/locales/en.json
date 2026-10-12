@@ -1555,6 +1555,8 @@
       "pay": "Payment",
       "payCard": "Card",
       "payCardHint": "The full amount will be charged to the card.",
+      "payCashless": "Cashless",
+      "payCashlessHint": "The full amount is cashless: QR or transfer, with no cash and no card brand.",
       "payCash": "Cash",
       "payCredit": "Credit",
       "payCreditHint": "Close on credit — no cash or card. Fiscal receipt is not issued.",

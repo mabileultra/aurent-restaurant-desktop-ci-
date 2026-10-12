@@ -1,4 +1,4 @@
-import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
 
 export const IMPORT_MATCH_TONES = ['found', 'partial', 'missing', 'duplicate'];
 

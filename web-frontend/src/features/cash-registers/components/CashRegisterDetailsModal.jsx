@@ -28,7 +28,7 @@ function DetailRow({ icon: Icon, label, value, valueClassName = '' }) {
   );
 }
 
-export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, onMultikassa }) {
+export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, onMultikassa, onFiscalDrive }) {
   const { t } = useTranslation();
 
   const { data, isPending, isError } = useQuery({
@@ -131,6 +131,15 @@ export default function CashRegisterDetailsModal({ registerId, onClose, onEdit, 
               className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
             >
               {t('cashRegisters.multikassa.openSettings')}
+            </button>
+          ) : null}
+          {onFiscalDrive && data ? (
+            <button
+              type="button"
+              onClick={() => onFiscalDrive(data.id)}
+              className="rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-medium text-slate-800 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              {t('cashRegisters.fiscalDrive.openSettings')}
             </button>
           ) : null}
           {onEdit && data ? (

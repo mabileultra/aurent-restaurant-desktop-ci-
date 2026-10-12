@@ -42,5 +42,14 @@ class StorePrintProfileDefaultsTest {
         assertEquals(40, merged.get("logoMaxHeightMm"));
         assertEquals("times", merged.get("defaultFont"));
         assertEquals("Rayhon", merged.get("storeName"));
+        assertEquals("", merged.get("footer"));
+    }
+
+    @Test
+    void mergeKeepsFooterText() {
+        Map<String, Object> merged = StorePrintProfileDefaults.merge(Map.of(
+            "footer", "Ждём снова"
+        ));
+        assertEquals("Ждём снова", merged.get("footer"));
     }
 }

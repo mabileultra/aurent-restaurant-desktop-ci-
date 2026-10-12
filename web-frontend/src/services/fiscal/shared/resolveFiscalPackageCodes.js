@@ -1,4 +1,4 @@
-import { tasnifApi } from '../../api/tasnif.api';
+import { tasnifApi } from '../../../api/tasnif.api';
 
 /** «1» — единица измерения, не код упаковки Tasnif. */
 export function isRealFiscalPackageCode(value) {

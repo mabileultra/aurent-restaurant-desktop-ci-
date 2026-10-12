@@ -113,6 +113,21 @@ describe('restaurantPayForm — advance', () => {
   });
 });
 
+describe('restaurantPayForm — cashless', () => {
+  it('takes the whole bill with no cash and no card brand', () => {
+    const d = deriveRestaurantPay(DUE, { method: 'CASHLESS' });
+    expect(d.canSubmit).toBe(true);
+    expect(d.cashAmount).toBe(0);
+    expect(d.cardAmount).toBe(DUE);
+    expect(d.changeGiven).toBe(0);
+    expect(d.infoKey).toBe('rst.order.payCashlessHint');
+    const payload = buildRestaurantPayPayload(d, 'CASHLESS');
+    expect(payload.method).toBe('CASHLESS');
+    expect(payload).not.toHaveProperty('cardType');
+    expect(isNonFiscalPayMethod('CASHLESS')).toBe(false);
+  });
+});
+
 describe('restaurantPayForm — drawer methods unchanged', () => {
   it('cash payload has no debt fields', () => {
     const d = deriveRestaurantPay(DUE, { method: 'CASH', tendered: '150000' });

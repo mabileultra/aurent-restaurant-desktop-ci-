@@ -19,7 +19,7 @@
 .rst-pay-modal__dialog {
   position: relative;
   z-index: 1;
-  width: min(100%, 26rem);
+  width: min(100%, 28rem);
   border-radius: 14px;
   border: 1px solid var(--rst-border, #2a2a2a);
   background: var(--rst-surface, #161616);
@@ -67,15 +67,9 @@
 
 .rst-pay-modal__methods {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 0.4rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
   padding: 0.75rem 1rem 0;
-}
-
-@media (max-width: 720px) {
-  .rst-pay-modal__methods {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 .rst-pay-modal__method {
@@ -84,12 +78,14 @@
   align-items: center;
   gap: 0.3rem;
   min-width: 0;
-  padding: 0.55rem 0.25rem;
+  justify-content: center;
+  min-height: 3.6rem;
+  padding: 0.55rem 0.35rem;
   border-radius: 10px;
   border: 1px solid var(--rst-border, #2a2a2a);
   background: transparent;
   color: inherit;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   font-weight: 600;
   line-height: 1.15;
   text-align: center;

@@ -1,6 +1,9 @@
 import { buildSaleOperationBody, normalizeGnkTerminalId } from './buildMultikassaOperations';
-import { expandMarkedFiscalItems } from './expandMarkedFiscalItems';
-import { enrichFiscalPackageCodes, isRealFiscalPackageCode } from './resolveFiscalPackageCodes';
+import { expandMarkedFiscalItems } from '../fiscal/shared/expandMarkedFiscalItems';
+import {
+  enrichFiscalPackageCodes,
+  isRealFiscalPackageCode,
+} from '../fiscal/shared/resolveFiscalPackageCodes';
 import { runMultikassaOperation } from './runMultikassaOperation';
 import {
   ensureFiscalQrUrl,

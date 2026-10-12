@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v46-cash-register-fiscal-provider" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="cash_registers" columnName="fiscal_provider"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="cash_registers">
+            <column name="fiscal_provider" type="VARCHAR(32)" defaultValue="MULTIKASSA">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Banknote, CircleDollarSign, CreditCard, Split, Wallet, X } from 'lucide-react';
+import { Banknote, CircleDollarSign, CreditCard, QrCode, Split, Wallet, X } from 'lucide-react';
 import { BaseButton } from '../../../components/ui';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { PAYMENT_CARD_PROVIDERS } from '../constants/paymentCardProviders';
@@ -14,6 +14,7 @@ import '../styles/restaurant-pay-modal.css';
 const METHODS = [
   { id: 'CASH', icon: Banknote, labelKey: 'rst.order.payCash' },
   { id: 'CARD', icon: CreditCard, labelKey: 'rst.order.payCard' },
+  { id: 'CASHLESS', icon: QrCode, labelKey: 'rst.order.payCashless' },
   { id: 'MIXED', icon: Split, labelKey: 'rst.order.payMixed' },
   { id: 'CREDIT', icon: CircleDollarSign, labelKey: 'rst.order.payCredit' },
   { id: 'ADVANCE', icon: Wallet, labelKey: 'rst.order.payAdvance' },
@@ -136,6 +137,13 @@ export default function RestaurantPayModal({
                   );
                 })}
               </div>
+            </div>
+          ) : null}
+
+          {method === 'CASHLESS' ? (
+            <div className="rst-pay-modal__amount-box">
+              <span>{t('pos.amountToPay')}</span>
+              <strong>{fmtMoneyCompact(derived.due)}</strong>
             </div>
           ) : null}
 

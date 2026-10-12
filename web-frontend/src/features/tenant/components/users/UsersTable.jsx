@@ -53,7 +53,7 @@ export default function UsersTable({
             <th className="px-4 py-3 font-medium">{t('users.colStores')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colRole')}</th>
             <th className="px-4 py-3 font-medium">{t('users.colActive')}</th>
-            <th className="px-4 py-3 w-12" />
+            <th className="admin-table-sticky-end px-4 py-3 w-12" />
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
@@ -127,7 +127,7 @@ export default function UsersTable({
                     <Circle size={18} className="text-slate-400" />
                   )}
                 </td>
-                <td className="px-4 py-3">
+                <td className="admin-table-sticky-end px-4 py-3">
                   <TableRowActionsMenu
                     open={menuId === user.id}
                     onOpenChange={(next) => onMenuOpenChange(next ? user.id : null)}

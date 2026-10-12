@@ -6,7 +6,7 @@ vi.mock('./runMultikassaOperation', () => ({
   runMultikassaOperation: (...args) => runMultikassaOperation(...args),
 }));
 
-vi.mock('./resolveFiscalPackageCodes', () => ({
+vi.mock('../fiscal/shared/resolveFiscalPackageCodes', () => ({
   enrichFiscalPackageCodes: async (items) => items,
   isRealFiscalPackageCode: (value) => {
     const code = String(value || '').trim();

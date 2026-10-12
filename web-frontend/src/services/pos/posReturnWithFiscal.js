@@ -1,10 +1,6 @@
 import { saleApi } from '../../api/sale.api';
 import { pharmacySalesApi } from '../../api/pharmacySales.api';
-import {
-  fiscalizeRefundBeforeCommit,
-  loadMultikassaCapabilities,
-  wrapMultikassaFiscalError,
-} from '../multikassa';
+import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { clearPharmacySoldMarks } from '../../features/pharmacy-cashier/utils/pharmacySoldMarksStore';
 import { resolvePosRoute } from './posRouteResolver';
 import { useConnectivityStore } from '../../store/connectivityStore';
@@ -63,15 +59,16 @@ export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }
   const offline = route === 'local';
   const kind = resolveSaleCatalogKind({ catalogKind, sale });
 
+  let fiscal = null;
   try {
-    const capabilities = await loadMultikassaCapabilities(store, sale?.cashRegisterId ?? null);
-    await fiscalizeRefundBeforeCommit({
-      capabilities,
+    fiscal = await loadFiscalContext(store, sale?.cashRegisterId ?? null);
+    await fiscal.provider.fiscalizeRefund({
+      capabilities: fiscal.capabilities,
       sale,
       offline,
     });
   } catch (err) {
-    throw wrapMultikassaFiscalError(err);
+    throw wrapFiscalError(err, fiscal?.provider);
   }
 
   const data = await salesClient(kind).returnItems(sale.id, payload).then((r) => r.data);

@@ -47,7 +47,8 @@ public class DashboardFinanceSliceLoader {
         BigDecimal revenue = queries.sumPayments(companyId, storeId, period.from(), period.to());
         BigDecimal previousRevenue = queries.sumPayments(companyId, storeId, previous.from(), previous.to());
         BigDecimal cash = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASH, period.from(), period.to());
-        BigDecimal card = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CARD, period.from(), period.to());
+        BigDecimal card = queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CARD, period.from(), period.to())
+            .add(queries.sumPaymentsByMethod(companyId, storeId, PaymentMethod.CASHLESS, period.from(), period.to()));
         long closed = queries.countClosedOrders(companyId, storeId, period.from(), period.to());
         long previousClosed = queries.countClosedOrders(companyId, storeId, previous.from(), previous.to());
         long cancelled = queries.countCancelledInRange(companyId, storeId, period.from(), period.to());

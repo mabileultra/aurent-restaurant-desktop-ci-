@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="v47-cash-register-fiscal-drive-settings" author="pos">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="cash_register_fiscal_drive_settings"/>
+            </not>
+        </preConditions>
+        <createTable tableName="cash_register_fiscal_drive_settings">
+            <column name="cash_register_id" type="BIGINT">
+                <constraints primaryKey="true" nullable="false"
+                             foreignKeyName="fk_cr_fiscal_drive_register"
+                             references="cash_registers(id)"/>
+            </column>
+            <column name="base_url" type="VARCHAR(512)" defaultValue="http://127.0.0.1:3449">
+                <constraints nullable="false"/>
+            </column>
+            <column name="factory_id" type="VARCHAR(64)"/>
+            <column name="terminal_id" type="VARCHAR(32)"/>
+            <column name="owner_tin" type="VARCHAR(14)"/>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

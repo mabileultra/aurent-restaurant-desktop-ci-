@@ -4,6 +4,7 @@ import {
   formatTicketItemLines,
 } from '../../../../src/restaurant/pos/utils/buildRestaurantTicketBody';
 import { EMPH_LINE_PREFIX, RECEIPT_WIDTH } from '../../../../src/restaurant/pos/utils/ticketLayout';
+import { factoryPrintProfile } from '../../../../src/restaurant/shared/printProfile/printProfileDefaults';
 
 const t = (key, opts) => opts?.defaultValue || key;
 
@@ -130,5 +131,24 @@ describe('buildRestaurantTicketBody bill', () => {
       t,
     });
     expect(lines[0]).toContain('VIP · Стол 2');
+  });
+
+  it('hides the place line when hall is off and swaps thanks for the profile footer', () => {
+    const profile = factoryPrintProfile();
+    profile.footer = 'Ждём снова';
+    profile.slips.GUEST_BILL.fields.hallTable.on = false;
+    profile.slips.GUEST_BILL.fields.footer.on = true;
+    const lines = buildRestaurantTicketBody({
+      kind: 'bill',
+      order: baseOrder,
+      waiterName: 'DILBAR',
+      profile,
+      t,
+    });
+    const joined = lines.join('\n');
+    expect(joined).not.toMatch(/Asosiy zal/);
+    expect(joined).toContain('Официант: DILBAR');
+    expect(joined).not.toContain('Спасибо за визит');
+    expect(lines.at(-1)).toBe('---');
   });
 });

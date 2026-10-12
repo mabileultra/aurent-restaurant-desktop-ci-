@@ -39,14 +39,16 @@ public class RestaurantSaleCompletedFactory {
             ? BigDecimal.ZERO
             : (payment.getCashAmount() != null && payment.getCashAmount().signum() > 0
                 ? payment.getCashAmount()
-                : (method == PaymentMethod.CARD || method == PaymentMethod.MIXED
+                : (method == PaymentMethod.CARD || method == PaymentMethod.CASHLESS || method == PaymentMethod.MIXED
                     ? BigDecimal.ZERO
                     : payment.getAmount()));
         BigDecimal card = nonDrawer
             ? BigDecimal.ZERO
             : (payment.getCardAmount() != null && payment.getCardAmount().signum() > 0
                 ? payment.getCardAmount()
-                : (method == PaymentMethod.CARD ? payment.getAmount() : BigDecimal.ZERO));
+                : (method == PaymentMethod.CARD || method == PaymentMethod.CASHLESS
+                    ? payment.getAmount()
+                    : BigDecimal.ZERO));
         return new SaleCompletedEvent(
             order.getCompanyId(),
             order.getStoreId(),

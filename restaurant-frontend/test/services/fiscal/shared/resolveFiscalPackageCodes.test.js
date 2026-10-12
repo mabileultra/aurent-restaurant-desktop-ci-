@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isRealFiscalPackageCode, pickTasnifPackage } from '../../../src/services/multikassa/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode, pickTasnifPackage } from '../../../../src/services/fiscal/shared/resolveFiscalPackageCodes';
 
 describe('pickTasnifPackage', () => {
   it('skips unit code 1 and takes the Tasnif package', () => {

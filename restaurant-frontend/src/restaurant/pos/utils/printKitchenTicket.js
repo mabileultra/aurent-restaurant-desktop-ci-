@@ -10,11 +10,11 @@ import {
   readPrintedKitchenLines,
 } from './desktopPrinters';
 import {
-  brandingLines,
   filterMetaLines,
   resolveTicketTitle,
   styleDishLine,
   ticketPrintOptions,
+  wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import { kitchenTicketMetaLines, qtyNameRow } from './ticketLayout';
@@ -86,14 +86,13 @@ async function sendGroups(groups, settings) {
       printTicketLines({
         title,
         printerName: printer,
-        lines: [
-          ...brandingLines(profile, slipType),
+        lines: wrapSlipLines([
           ...meta,
           group.label ? `≫ ${group.label}` : '',
           '---',
           ...styleKitchenBlock(fresh, profile, slipType),
           '---',
-        ].filter(Boolean),
+        ].filter(Boolean), profile, slipType),
         ...ticketPrintOptions(profile, slipType),
       })
         .then(() => {
@@ -130,19 +129,22 @@ export async function printCategoryTicketOnAdd({
   if (!printer) return { mode: 'missing', label: category.name || '' };
   const qty = Number(quantity) || 1;
   const resolvedWaiter = await resolveWaiterName(order, waiterName, waiterNameById);
+  const profile = await loadStorePrintProfile(order?.storeId);
+  const slipType = 'KITCHEN';
   await printTicketLines({
-    title: category.name || '',
+    title: resolveTicketTitle(category.name || '', profile, slipType),
     printerName: printer,
-    lines: [
-      ...kitchenTicketMetaLines({
+    lines: wrapSlipLines([
+      ...filterMetaLines(kitchenTicketMetaLines({
         order,
         waiterName: resolvedWaiter,
         t,
-      }),
+      }), profile, slipType),
       '---',
-      ...itemLines({ ...line, quantity: qty }),
+      ...styleKitchenBlock([{ ...line, quantity: qty }], profile, slipType),
       '---',
-    ],
+    ], profile, slipType),
+    ...ticketPrintOptions(profile, slipType),
   });
   return { mode: 'silent' };
 }
@@ -251,5 +253,6 @@ export async function printKitchenBoardTickets(tickets, t, waiterNameById, store
   }
   if (!groups.length) return { mode: 'skip' };
   const settings = await getDesktopPrinterSettings();
-  return sendGroups(groups, settings);
+  const profile = await loadStorePrintProfile(storeId);
+  return sendGroups(groups.map((group) => ({ ...group, profile })), settings);
 }

@@ -1,5 +1,5 @@
-import { lineDiscountAmount } from '../../store/cartStore';
-import { round2 } from '../../utils/taxAmounts';
+import { lineDiscountAmount } from '../../../utils/cartLineMath';
+import { round2 } from '../../../utils/taxAmounts';
 
 /** Каждая отсканированная маркировка уходит в фискал отдельной штукой. Строки без кодов не дробятся. */
 export function expandMarkedFiscalItems(items) {

@@ -9,9 +9,9 @@ import {
   printTicketLines,
 } from '../../pos/utils/desktopPrinters';
 import {
-  brandingLines,
   styleDishLine,
   ticketPrintOptions,
+  wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { invalidateStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import {
@@ -138,14 +138,13 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
       await printTicketLines({
         title: fieldStyle(profile, slipType, 'headerTitle').on ? title : '',
         printerName: printer,
-        lines: [
-          ...brandingLines(profile, slipType),
+        lines: wrapSlipLines([
           t('rst.admin.printTestMeta', { defaultValue: 'Зал · Стол 1' }),
           '---',
           ...(dish ? [dish] : []),
           '---',
           t('rst.admin.printersTestOk'),
-        ],
+        ], profile, slipType),
         ...opts,
       });
       toast.success(t('rst.admin.printersTestOk'));
@@ -223,6 +222,11 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
           label={t('rst.admin.printFieldAddress', { defaultValue: 'Адрес' })}
           value={profile.address}
           onChange={(e) => patchRoot('address', e.target.value)}
+        />
+        <BaseInput
+          label={t('rst.admin.printFieldFooter', { defaultValue: 'Подвал' })}
+          value={profile.footer || ''}
+          onChange={(e) => patchRoot('footer', e.target.value)}
         />
         <BaseSelect
           searchable={false}

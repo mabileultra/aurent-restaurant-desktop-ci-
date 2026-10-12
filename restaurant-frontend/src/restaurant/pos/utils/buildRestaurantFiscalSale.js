@@ -192,7 +192,7 @@ export function buildRestaurantFiscalSale({
   let tendered = amountTendered != null ? round2(amountTendered) : null;
   let change = changeGiven != null ? round2(changeGiven) : null;
   if (cash == null && card == null) {
-    if (method === 'CARD') {
+    if (method === 'CARD' || method === 'CASHLESS') {
       cash = 0;
       card = paid;
     } else if (method === 'MIXED') {

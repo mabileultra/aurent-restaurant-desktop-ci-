@@ -111,6 +111,12 @@ app:
     default-lang: uz
     default-type: 2
     search-type: 1
+  marking-validation:
+    url: ${MARKING_VALIDATION_URL:https://tasnif.soliq.uz/api/cl-api/marking/validation-onkm}
+    username: ${MARKING_VALIDATION_USERNAME:}
+    password: ${MARKING_VALIDATION_PASSWORD:}
+    connect-timeout-ms: 5000
+    read-timeout-ms: 10000
   telegram-bot:
     api-token: ${TELEGRAM_BOT_API_TOKEN:}
     company-id: ${TELEGRAM_BOT_COMPANY_ID:}

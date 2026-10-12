@@ -22,6 +22,9 @@
   position: sticky;
   top: 0;
   z-index: 20;
+  /* iOS paints the page black if a sticky blur meets a tap transform. */
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .rst-pos.rst-pos--waiter-mobile .rst-pos__brand-meta {
@@ -102,7 +105,6 @@
   .rst-pos.rst-pos--waiter-mobile .rst-waiter-tile:active,
   .rst-pos.rst-pos--waiter-mobile .rst-waiter-order__btn:active,
   .rst-pos.rst-pos--waiter-mobile .rst-waiter-floor__hall:active {
-    transform: scale(0.985);
-    opacity: 0.92;
+    opacity: 0.82;
   }
 }

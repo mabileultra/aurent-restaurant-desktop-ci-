@@ -1,6 +1,6 @@
 import { tasnifApi } from '../../../api';
 import { isRowNew } from '../../../utils/productImportUtils';
-import { isRealFiscalPackageCode } from '../../../services/multikassa/resolveFiscalPackageCodes';
+import { isRealFiscalPackageCode } from '../../../services/fiscal/shared/resolveFiscalPackageCodes';
 
 const CONCURRENCY = 4;
 

@@ -114,6 +114,8 @@ export default function CashierRecentSales({
                           ? t('rst.order.refuseShort')
                           : row.paymentMethod === 'CARD'
                             ? t('rst.order.payCard')
+                            : row.paymentMethod === 'CASHLESS'
+                              ? t('rst.order.payCashless')
                             : row.paymentMethod === 'MIXED'
                               ? t('rst.order.payMixed')
                               : t('rst.order.payCash')}

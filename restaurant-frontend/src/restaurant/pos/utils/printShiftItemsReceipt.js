@@ -6,6 +6,14 @@ import {
 } from './desktopPrinters';
 import { escapeHtml, printViaIframe } from './printOrdinarySaleReceipt';
 import { moneyRow, padRow, ticketStamp, TICKET_WIDTH } from './ticketLayout';
+import {
+  resolveTicketTitle,
+  ticketPrintOptions,
+  wrapSlipLines,
+} from '../../shared/printProfile/applyPrintProfile';
+import { fieldStyle } from '../../shared/printProfile/printProfileDefaults';
+import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
+import { slipChromeHtml } from './slipChromeHtml';
 
 /** Preserve API order; bucket rows under category headers. */
 export function groupShiftItemsByCategory(items, uncategorizedLabel) {
@@ -63,23 +71,29 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
     })
     : [emptyLabel];
 
-  const lines = [
-    title.toUpperCase(),
+  const profile = await loadStorePrintProfile(report.storeId);
+  const slipType = 'SHIFT_ITEMS';
+  const show = (key) => fieldStyle(profile, slipType, key).on;
+  const lines = wrapSlipLines([
+    ...(show('headerTitle') ? [title.toUpperCase()] : []),
     ...(store ? [store] : []),
-    ...(cashier ? [cashier] : []),
-    period,
+    ...(show('waiter') && cashier ? [cashier] : []),
+    ...(show('time') ? [period] : []),
     divider,
-    ...itemLines,
-    divider,
-    padRow(totalLabel, qtyLabel),
-    moneyRow('', totalAmount),
-  ];
+    ...(show('items') ? itemLines : []),
+    ...(show('totals') ? [divider, padRow(totalLabel, qtyLabel), moneyRow('', totalAmount)] : []),
+  ], profile, slipType);
 
   if (isDesktopPrinter()) {
     const settings = await getDesktopPrinterSettings();
     const printer = settings?.receiptPrinterName || '';
     if (printer) {
-      await printTicketLines({ title, lines, printerName: printer });
+      await printTicketLines({
+        title: resolveTicketTitle(title, profile, slipType),
+        lines,
+        printerName: printer,
+        ...ticketPrintOptions(profile, slipType),
+      });
       return { mode: 'silent' };
     }
   }
@@ -101,16 +115,18 @@ export async function printShiftItemsReceipt({ report, storeName, cashierName, t
     }).join('<hr />')
     : `<p>${escapeHtml(emptyLabel)}</p>`;
 
+  const chrome = slipChromeHtml(profile, slipType, escapeHtml);
   await printViaIframe(`
     <div class="rst-ord-print">
-      <p class="rst-ord-print__title">${escapeHtml(title)}</p>
+      ${chrome.logo}
+      ${chrome.head}
+      ${show('headerTitle') ? `<p class="rst-ord-print__title">${escapeHtml(title)}</p>` : ''}
       ${store ? `<p class="rst-ord-print__store">${escapeHtml(store)}</p>` : ''}
-      ${cashier ? `<p class="rst-ord-print__meta">${escapeHtml(cashier)}</p>` : ''}
-      <p class="rst-ord-print__meta">${escapeHtml(period)}</p>
-      <hr />
-      ${rowsHtml}
-      <hr />
-      <div class="rst-ord-print__row rst-ord-print__row--grand"><span>${escapeHtml(totalLabel)} · ${escapeHtml(qtyLabel)}</span><strong>${fmtMoneyCompact(totalAmount)}</strong></div>
+      ${show('waiter') && cashier ? `<p class="rst-ord-print__meta">${escapeHtml(cashier)}</p>` : ''}
+      ${show('time') ? `<p class="rst-ord-print__meta">${escapeHtml(period)}</p>` : ''}
+      ${show('items') ? `<hr />${rowsHtml}` : `<p>${escapeHtml(emptyLabel)}</p>`}
+      ${show('totals') ? `<hr /><div class="rst-ord-print__row rst-ord-print__row--grand"><span>${escapeHtml(totalLabel)} · ${escapeHtml(qtyLabel)}</span><strong>${fmtMoneyCompact(totalAmount)}</strong></div>` : ''}
+      ${chrome.foot}
     </div>`);
   return { mode: 'dialog' };
 }

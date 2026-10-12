@@ -1,11 +1,5 @@
 import { rstOrderApi } from '../../api/order.api';
-import {
-  fiscalizeSaleBeforeCommit,
-  loadMultikassaCapabilities,
-  resolveMultikassaFiscalErrorMessage,
-  wrapMultikassaFiscalError,
-} from '../../../services/multikassa';
-import { FISCAL_STATUS } from '../../../services/multikassa/multikassaConstants';
+import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
 import {
   buildRestaurantFiscalSale,
   fiscalPaymentForCart,
@@ -71,7 +65,7 @@ export async function payRestaurantOrderWithFiscal({
     card = 0;
     tendered = tendered != null && tendered >= payAmount ? tendered : payAmount;
     change = round2(Math.max(0, tendered - payAmount));
-  } else if (payMethod === 'CARD') {
+  } else if (payMethod === 'CARD' || payMethod === 'CASHLESS') {
     cash = 0;
     card = payAmount;
     tendered = payAmount;
@@ -101,11 +95,11 @@ export async function payRestaurantOrderWithFiscal({
 
   const cartItems = orderToMultikassaCartItems(order);
   const fiscalPay = fiscalPaymentForCart(cartItems, payment);
-  const capabilities = skipFiscal
-    ? { enabled: false }
-    : await loadMultikassaCapabilities(storeId, cashRegisterId);
+  const { capabilities, provider } = skipFiscal
+    ? { capabilities: { enabled: false }, provider: resolveFiscalProvider(null) }
+    : await loadFiscalContext(storeId, cashRegisterId);
   const networkOffline = typeof navigator !== 'undefined' && navigator.onLine === false;
-  // Налог только если Мультикасса сохранена и есть хотя бы одно блюдо с ИКПУ.
+  // Налог только если Мультикасса сохранена и в чеке есть хотя бы одно блюдо с ИКПУ.
   const fiscalEnabled = Boolean(capabilities?.enabled && cartItems.length > 0);
   const requireBeforeSale = Boolean(fiscalEnabled && capabilities?.requireBeforeSale);
 
@@ -125,17 +119,17 @@ export async function payRestaurantOrderWithFiscal({
 
   if (requireBeforeSale) {
     try {
-      fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
+      fiscalPayload = await provider.fiscalizeSale(fiscalArgs);
     } catch (err) {
       if (networkOffline) {
         fiscalPayload = pendingFiscalFromError({
-          message: resolveMultikassaFiscalErrorMessage(err, t)
+          message: provider.resolveErrorMessage(err, t)
             || err?.message
             || 'Фискал отложен — оплата сохранена локально',
         });
       } else {
-        const wrapped = wrapMultikassaFiscalError(err);
-        wrapped.message = resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message;
+        const wrapped = provider.wrapError(err);
+        wrapped.message = provider.resolveErrorMessage(wrapped, t) || wrapped.message;
         throw wrapped;
       }
     }
@@ -169,11 +163,11 @@ export async function payRestaurantOrderWithFiscal({
 
   if (!requireBeforeSale && fiscalEnabled) {
     try {
-      fiscalPayload = await fiscalizeSaleBeforeCommit(fiscalArgs);
+      fiscalPayload = await provider.fiscalizeSale(fiscalArgs);
     } catch (err) {
-      const wrapped = wrapMultikassaFiscalError(err);
+      const wrapped = provider.wrapError(err);
       fiscalPayload = pendingFiscalFromError({
-        message: resolveMultikassaFiscalErrorMessage(wrapped, t) || wrapped.message,
+        message: provider.resolveErrorMessage(wrapped, t) || wrapped.message,
       });
     }
   }

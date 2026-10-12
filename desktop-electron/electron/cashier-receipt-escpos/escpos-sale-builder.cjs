@@ -461,6 +461,16 @@ async function appendQrAndFooter(printer, payload, jobId) {
   printer.alignLeft();
 }
 
+/** Restaurant print-profile footer. Empty label stays off — fiscal slips unchanged. */
+function appendProfileFooter(printer, payload) {
+  const text = String(payload?.labels?.footer || '').trim();
+  if (!text || !isOn(payload?.receiptFields, 'footer')) return;
+  printer.alignCenter();
+  printer.newLine();
+  printer.println(text);
+  printer.alignLeft();
+}
+
 /**
  * Заполняет printer всеми секциями чека.
  * @param {import('node-thermal-printer').printer} printer
@@ -482,6 +492,7 @@ async function buildReceiptOnPrinter(printer, payload, jobId) {
   appendReceiptType(printer, safePayload);
   appendFiscalBlock(printer, safePayload);
   await appendQrAndFooter(printer, safePayload, jobId);
+  appendProfileFooter(printer, safePayload);
   printer.newLine();
   printer.newLine();
   beepAndCut(printer);

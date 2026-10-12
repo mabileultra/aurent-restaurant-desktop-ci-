@@ -26,6 +26,7 @@ class ShiftSaleAccumulatorTest {
 
         accumulator.applyPayment(shift, PaymentMethod.CASH, new BigDecimal("10.00"), null, null);
         accumulator.applyPayment(shift, PaymentMethod.CARD, new BigDecimal("25.50"), null, null);
+        accumulator.applyPayment(shift, PaymentMethod.CASHLESS, new BigDecimal("4.50"), null, null);
         accumulator.applyPayment(
             shift,
             PaymentMethod.MIXED,
@@ -34,10 +35,10 @@ class ShiftSaleAccumulatorTest {
             new BigDecimal("20.00")
         );
 
-        assertEquals(3, shift.getSaleCount());
-        assertEquals(new BigDecimal("65.50"), shift.getTotalAmount());
+        assertEquals(4, shift.getSaleCount());
+        assertEquals(new BigDecimal("70.00"), shift.getTotalAmount());
         assertEquals(new BigDecimal("20.00"), shift.getCashAmount());
-        assertEquals(new BigDecimal("45.50"), shift.getCardAmount());
+        assertEquals(new BigDecimal("50.00"), shift.getCardAmount());
     }
 
     @Test

@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   brandingLines,
+  footerLines,
   styleDishLine,
   ticketPrintOptions,
+  wrapSlipLines,
 } from '../../../../src/restaurant/shared/printProfile/applyPrintProfile';
 import { factoryPrintProfile } from '../../../../src/restaurant/shared/printProfile/printProfileDefaults';
 import { EMPH_LINE_PREFIX } from '../../../../src/restaurant/pos/utils/ticketLayout';
@@ -31,5 +33,22 @@ describe('applyPrintProfile defaults', () => {
     const profile = factoryPrintProfile();
     profile.logoDataUrl = 'data:image/png;base64,xx';
     expect(ticketPrintOptions(profile, 'CANCEL').logoDataUrl).toBe('');
+  });
+
+  it('prints phone and footer only after the slip toggles are on', () => {
+    const profile = factoryPrintProfile();
+    profile.phone = '+998 90 000 00 00';
+    profile.footer = 'Ждём снова';
+    expect(wrapSlipLines(['тело'], profile, 'GUEST_BILL')).toEqual(['тело']);
+
+    profile.slips.GUEST_BILL.fields.phone.on = true;
+    profile.slips.GUEST_BILL.fields.footer.on = true;
+    expect(brandingLines(profile, 'GUEST_BILL')).toEqual(['+998 90 000 00 00']);
+    expect(footerLines(profile, 'GUEST_BILL')).toEqual(['Ждём снова']);
+    expect(wrapSlipLines(['тело'], profile, 'GUEST_BILL')).toEqual([
+      '+998 90 000 00 00',
+      'тело',
+      'Ждём снова',
+    ]);
   });
 });

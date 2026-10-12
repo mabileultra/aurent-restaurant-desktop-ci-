@@ -22,13 +22,7 @@ import { processOfflineCheckout } from './offlineCheckout';
 import { buildOfflineShiftSoldItems } from '../offline/buildOfflineShiftSoldItems';
 import { useConnectivityStore } from '../../store/connectivityStore';
 import { resolvePosRoute } from './posRouteResolver';
-import {
-  fiscalizeSaleBeforeCommit,
-  fiscalizeShiftOperation,
-  isFiscalShiftAlreadyOpenError,
-  loadMultikassaCapabilities,
-  wrapMultikassaFiscalError,
-} from '../multikassa';
+import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
@@ -276,18 +270,19 @@ export async function posOpenShift(storeId, user, storeName = '', { catalogKind 
       }
     }
 
+    let fiscal = null;
     try {
-      const capabilities = await loadMultikassaCapabilities(storeId, shift?.cashRegisterId);
-      await fiscalizeShiftOperation({
+      fiscal = await loadFiscalContext(storeId, shift?.cashRegisterId);
+      await fiscal.provider.fiscalizeShift({
         kind: 'open',
-        capabilities,
+        capabilities: fiscal.capabilities,
         shiftId: shift?.id,
         cashierName: user?.fullName || user?.username || shift?.cashierName || 'CASHIER',
         zReportNumber: shift?.zReportId,
       });
     } catch (fiscalErr) {
       // Фискальная смена уже открыта на этом компьютере — POS-смену оставляем.
-      if (isFiscalShiftAlreadyOpenError(fiscalErr)) {
+      if (fiscal?.provider.isShiftAlreadyOpenError(fiscalErr)) {
         return shift;
       }
       try {
@@ -302,7 +297,7 @@ export async function posOpenShift(storeId, user, storeName = '', { catalogKind 
           /* ignore */
         }
       }
-      throw wrapMultikassaFiscalError(fiscalErr);
+      throw wrapFiscalError(fiscalErr, fiscal?.provider);
     }
 
     return shift;
@@ -350,20 +345,18 @@ export async function posCloseShift(shiftId, storeId, user, shiftHint = null, { 
   }
 
   const apiClient = shiftApi(catalogKind);
+  let fiscal = null;
   try {
-    const capabilities = await loadMultikassaCapabilities(
-      storeId,
-      shiftHint?.cashRegisterId ?? null,
-    );
-    await fiscalizeShiftOperation({
+    fiscal = await loadFiscalContext(storeId, shiftHint?.cashRegisterId ?? null);
+    await fiscal.provider.fiscalizeShift({
       kind: 'close',
-      capabilities,
+      capabilities: fiscal.capabilities,
       shiftId,
       cashierName: user?.fullName || user?.username || shiftHint?.cashierName || 'CASHIER',
       zReportNumber: shiftHint?.zReportId,
     });
   } catch (fiscalErr) {
-    throw wrapMultikassaFiscalError(fiscalErr);
+    throw wrapFiscalError(fiscalErr, fiscal?.provider);
   }
 
   const closed = await apiClient.close(shiftId).then((r) => r.data);
@@ -378,19 +371,17 @@ export async function posCloseShift(shiftId, storeId, user, shiftHint = null, { 
 }
 
 export async function posXReport(shiftId, storeId, user, shiftHint = null, { catalogKind } = {}) {
+  let fiscal = null;
   try {
-    const capabilities = await loadMultikassaCapabilities(
-      storeId,
-      shiftHint?.cashRegisterId ?? null,
-    );
-    await fiscalizeShiftOperation({
+    fiscal = await loadFiscalContext(storeId, shiftHint?.cashRegisterId ?? null);
+    await fiscal.provider.fiscalizeShift({
       kind: 'x',
-      capabilities,
+      capabilities: fiscal.capabilities,
       shiftId,
       cashierName: user?.fullName || user?.username || shiftHint?.cashierName || 'CASHIER',
     });
   } catch (fiscalErr) {
-    throw wrapMultikassaFiscalError(fiscalErr);
+    throw wrapFiscalError(fiscalErr, fiscal?.provider);
   }
   if (catalogKind === 'pharmacy') {
     // Pharmacy owns shifts; X print uses Multikassa fiscal + shift aggregates (no PosCore x-report).
@@ -431,12 +422,15 @@ export async function posCreateSale({
 
   let fiscalPayload = null;
   let capabilities = { enabled: false, printFiscalQr: true };
+  let fiscalProvider = null;
   try {
     const cashRegisterId = cachedShift?.cashRegisterId ?? null;
-    capabilities = await loadMultikassaCapabilities(storeId, cashRegisterId, {
+    const fiscal = await loadFiscalContext(storeId, cashRegisterId, {
       allowLoadFailureAsDisabled: offline,
     });
-    fiscalPayload = await fiscalizeSaleBeforeCommit({
+    capabilities = fiscal.capabilities;
+    fiscalProvider = fiscal.provider;
+    fiscalPayload = await fiscalProvider.fiscalizeSale({
       capabilities,
       cartItems,
       payment,
@@ -448,7 +442,7 @@ export async function posCreateSale({
       clientSaleId,
     });
   } catch (err) {
-    throw wrapMultikassaFiscalError(err);
+    throw wrapFiscalError(err, fiscalProvider);
   }
 
   const fiscalForApi = fiscalPayload

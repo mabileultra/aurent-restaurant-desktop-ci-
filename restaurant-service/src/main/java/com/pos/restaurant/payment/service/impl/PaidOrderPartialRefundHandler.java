@@ -190,6 +190,7 @@ public class PaidOrderPartialRefundHandler {
             return new CashCardSplit(cash, card);
         }
         if (method == PaymentMethod.CARD
+            || method == PaymentMethod.CASHLESS
             || method == PaymentMethod.CREDIT
             || method == PaymentMethod.ADVANCE) {
             return new CashCardSplit(BigDecimal.ZERO, totalRefund);

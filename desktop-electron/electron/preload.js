@@ -85,4 +85,5 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   getActivityLogTodayPath: () => invoke('activity-log:today-path'),
 
   multikassaRequest: (payload) => invoke('desktop:multikassaRequest', payload),
+  localDeviceRequest: (payload) => invoke('desktop:localDeviceRequest', payload),
 });

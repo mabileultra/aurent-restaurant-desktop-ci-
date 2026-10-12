@@ -10,9 +10,6 @@ const mk = vi.hoisted(() => ({
 
 vi.mock('../../../../src/restaurant/api/order.api', () => ({ rstOrderApi: api }));
 vi.mock('../../../../src/services/multikassa', () => mk);
-vi.mock('../../../../src/services/multikassa/multikassaConstants', () => ({
-  FISCAL_STATUS: { PENDING: 'PENDING', FISCALIZED: 'FISCALIZED' },
-}));
 
 const { payRestaurantOrderWithFiscal } = await import(
   '../../../../src/restaurant/pos/utils/payRestaurantOrderWithFiscal'

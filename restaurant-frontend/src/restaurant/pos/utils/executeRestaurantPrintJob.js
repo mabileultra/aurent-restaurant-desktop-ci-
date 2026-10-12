@@ -12,11 +12,11 @@ import {
 } from './desktopPrinters';
 import { wasGuestBillPrintedLocally } from './restaurantPrintFlush';
 import {
-  brandingLines,
   filterMetaLines,
   resolveTicketTitle,
   styleDishLine,
   ticketPrintOptions,
+  wrapSlipLines,
 } from '../../shared/printProfile/applyPrintProfile';
 import { loadStorePrintProfile } from '../../shared/printProfile/loadStorePrintProfile';
 import {
@@ -128,24 +128,36 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
     return { mode: 'skip', ack: false, release: true };
   }
 
+  const profile = await loadStorePrintProfile(storeId);
+  const slipType = 'KITCHEN';
+  const printCategory = async (metaOrder, dish) => {
+    const meta = filterMetaLines(
+      await metaFromPayload(payload, metaOrder, t, waiterNameById, storeId ?? metaOrder?.storeId),
+      profile,
+      slipType,
+    );
+    await printTicketLines({
+      title: resolveTicketTitle(payload.categoryName || '', profile, slipType),
+      printerName: printer,
+      lines: wrapSlipLines([
+        ...meta,
+        '---',
+        ...styleBlockLines(itemLines(dish), profile, slipType),
+        '---',
+      ], profile, slipType),
+      ...ticketPrintOptions(profile, slipType),
+    });
+  };
+
   // Fast path: payload already has dish text (no second round-trip to order API).
   if (payload.itemName || payload.header) {
     const qty = Number(payload.quantity) || 1;
-    await printTicketLines({
-      title: payload.categoryName || '',
-      printerName: printer,
-      lines: [
-        ...(await metaFromPayload(payload, null, t, waiterNameById, storeId)),
-        '---',
-        ...itemLines({
-          name: payload.itemName,
-          quantity: qty,
-          portionText: payload.portionText,
-          note: payload.note,
-          modifiers: payload.modifiers || [],
-        }),
-        '---',
-      ],
+    await printCategory(null, {
+      name: payload.itemName,
+      quantity: qty,
+      portionText: payload.portionText,
+      note: payload.note,
+      modifiers: payload.modifiers || [],
     });
     return { mode: 'silent', ack: true, release: false };
   }
@@ -155,16 +167,7 @@ async function runCategorySlip(payload, t, waiterNameById, storeId) {
   const line = (order.items || []).find((item) => String(item.id) === String(payload.orderItemId));
   if (!line) return { mode: 'skip', ack: true, release: false };
   const qty = Number(payload.quantity) || Number(line.quantity) || 1;
-  await printTicketLines({
-    title: payload.categoryName || '',
-    printerName: printer,
-    lines: [
-      ...(await metaFromPayload(payload, order, t, waiterNameById, storeId ?? order.storeId)),
-      '---',
-      ...itemLines({ ...line, quantity: qty }),
-      '---',
-    ],
-  });
+  await printCategory(order, { ...line, quantity: qty });
   return { mode: 'silent', ack: true, release: false };
 }
 
@@ -189,13 +192,12 @@ async function runCategoryBatch(payload, t, waiterNameById, storeId) {
   await printTicketLines({
     title: resolveTicketTitle(payload.title || '', profile, slipType),
     printerName: printer,
-    lines: [
-      ...brandingLines(profile, slipType),
+    lines: wrapSlipLines([
       ...meta,
       '---',
       ...dishLines,
       '---',
-    ],
+    ], profile, slipType),
     ...ticketPrintOptions(profile, slipType),
   });
   return { mode: 'silent', ack: true, release: false };
@@ -253,13 +255,12 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
       await printTicketLines({
         title,
         printerName: printer,
-        lines: [
-          ...brandingLines(profile, 'CANCEL'),
+        lines: wrapSlipLines([
           ...meta,
           '---',
           ...dishLines,
           '---',
-        ],
+        ], profile, 'CANCEL'),
         ...ticketPrintOptions(profile, 'CANCEL'),
       });
       return { ack: true, release: false, mode: 'silent' };

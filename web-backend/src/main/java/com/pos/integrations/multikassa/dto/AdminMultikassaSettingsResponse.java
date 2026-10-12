@@ -15,6 +15,7 @@ public record AdminMultikassaSettingsResponse(
     String suggestedLocalUrl8080,
     String suggestedLocalUrl12346,
     String suggestedCloudV3,
-    String suggestedCloudV4
+    String suggestedCloudV4,
+    String fiscalProvider
 ) {
 }

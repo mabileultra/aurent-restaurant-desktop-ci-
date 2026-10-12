@@ -17,9 +17,4 @@ export const MULTIKASSA_OPERATION_TYPE = {
   CREDIT: '10',
 };
 
-export const FISCAL_STATUS = {
-  NOT_REQUIRED: 'NOT_REQUIRED',
-  PENDING: 'PENDING_FISCAL',
-  FISCALIZED: 'FISCALIZED',
-  FAILED: 'FISCAL_FAILED',
-};
+export { FISCAL_STATUS } from '../fiscal/fiscalStatus';
