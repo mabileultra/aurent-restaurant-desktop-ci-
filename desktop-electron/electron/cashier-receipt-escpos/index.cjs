@@ -20,8 +20,8 @@ const {
 const { listSystemPrinters } = require('../printers/resolve.cjs');
 const { matchPrinterName } = require('../printers/printer-match.cjs');
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
+const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
+const { logWarn } = require('./escpos-log.cjs');
 
 function wrapEscposError(err) {
   if (err instanceof EscposPrintError) {
@@ -178,18 +178,18 @@ async function printPlainTicketEscpos(payload) {
         };
         if (p.logoDataUrl && typeof printer.printImage === 'function') {
           try {
-            const m = String(p.logoDataUrl).match(/^data:image\/\w+;base64,(.+)$/);
-            if (m) {
-              const imgPath = path.join(os.tmpdir(), `aurent-rst-logo-${Date.now()}.png`);
-              fs.writeFileSync(imgPath, Buffer.from(m[1], 'base64'));
+            const imgPath = writeLogoPngTempFile(p.logoDataUrl, `aurent-rst-logo-${Date.now()}`);
+            if (imgPath) {
               printer.alignCenter();
               await printer.printImage(imgPath);
               printer.newLine();
               printer.alignLeft();
               try { fs.unlinkSync(imgPath); } catch { /* ignore */ }
+            } else {
+              logWarn('plain', 'LOGO_SKIP', { message: 'empty or undecodable logoDataUrl' });
             }
-          } catch {
-            // logo optional — never fail the slip
+          } catch (err) {
+            logWarn('plain', 'LOGO_SKIP', { message: err?.message || String(err) });
           }
         }
         if (p.title) {
