@@ -31,6 +31,7 @@ describe('applyGuestBillToFiscalPayload', () => {
     expect(next.branding.companyPhone).toBe('+998');
     expect(next.branding.companyAddress).toBe('Ташкент');
     expect(next.branding.logoDataUrl).toBe('data:image/png;base64,xx');
+    expect(next.branding.logoMaxHeightMm).toBe(22);
     expect(next.receiptFields.logo).toBe(true);
     expect(next.receiptFields.companyPhone).toBe(true);
     expect(next.receiptFields.companyAddress).toBe(true);

@@ -39,7 +39,7 @@ public final class StorePrintProfileDefaults {
     public static Map<String, Object> factory() {
         Map<String, Object> root = new LinkedHashMap<>();
         root.put("logoDataUrl", "");
-        root.put("logoMaxHeightMm", 12);
+        root.put("logoMaxHeightMm", 22);
         root.put("storeName", "");
         root.put("address", "");
         root.put("phone", "");

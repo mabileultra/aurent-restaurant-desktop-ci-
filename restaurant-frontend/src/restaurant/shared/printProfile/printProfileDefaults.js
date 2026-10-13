@@ -56,7 +56,7 @@ export function factoryPrintProfile() {
   for (const slip of PRINT_SLIP_TYPES) slips[slip] = defaultSlip(slip);
   return {
     logoDataUrl: '',
-    logoMaxHeightMm: 12,
+    logoMaxHeightMm: 22,
     storeName: '',
     address: '',
     phone: '',

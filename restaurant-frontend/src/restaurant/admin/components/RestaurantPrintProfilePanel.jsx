@@ -210,14 +210,19 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
             ) : null}
           </div>
           <label className="rst-admin-field__hint">
-            {t('rst.admin.printLogoHeight', { defaultValue: 'Высота лого, мм' })}: {profile.logoMaxHeightMm}
+            {t('rst.admin.printLogoHeight', { defaultValue: 'Высота лого на чеке, мм' })}: {profile.logoMaxHeightMm || 22}
             <input
               type="range"
               min={8}
               max={40}
-              value={profile.logoMaxHeightMm}
+              value={Number(profile.logoMaxHeightMm) || 22}
               onChange={(e) => patchRoot('logoMaxHeightMm', Number(e.target.value))}
             />
+            <span className="rst-admin-field__hint">
+              {t('rst.admin.printLogoHeightHint', {
+                defaultValue: 'Сохраните профиль. Размер и жирность применяются при печати на принтере Aurent (нужен обновлённый Desktop).',
+              })}
+            </span>
           </label>
         </div>
 

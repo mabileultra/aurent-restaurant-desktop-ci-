@@ -178,7 +178,11 @@ async function printPlainTicketEscpos(payload) {
         };
         if (p.logoDataUrl && typeof printer.printImage === 'function') {
           try {
-            const imgPath = writeLogoPngTempFile(p.logoDataUrl, `aurent-rst-logo-${Date.now()}`);
+            const imgPath = writeLogoPngTempFile(
+              p.logoDataUrl,
+              `aurent-rst-logo-${Date.now()}`,
+              { maxHeightMm: p.logoMaxHeightMm },
+            );
             if (imgPath) {
               printer.alignCenter();
               await printer.printImage(imgPath);

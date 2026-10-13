@@ -21,6 +21,7 @@ export function applyGuestBillToFiscalPayload(payload, profile) {
   const logoOn = slipFieldStyle(profile, SLIP, 'logo').on && headerValue(profile, 'logo');
   if (logoOn) {
     branding.logoDataUrl = profile.logoDataUrl;
+    branding.logoMaxHeightMm = Number(profile.logoMaxHeightMm) || 22;
     receiptFields.logo = true;
   }
   const storeName = enabledText(profile, 'storeName');
