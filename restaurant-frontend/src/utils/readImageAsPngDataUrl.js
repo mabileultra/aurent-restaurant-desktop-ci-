@@ -1,14 +1,13 @@
 import { readImageDataUrl } from './readImageDataUrl';
 
-/** ~80mm @ 203dpi; keeps ESC/POS raster small and under API logo limit. */
-const MAX_WIDTH_PX = 384;
-const MAX_HEIGHT_PX = 160;
+/** Keep enough pixels for thermal sizing (mm slider); print path scales further. */
+const MAX_WIDTH_PX = 512;
+const MAX_HEIGHT_PX = 512;
 /** Backend StorePrintProfileServiceImpl.MAX_LOGO_CHARS = 400_000 */
 const MAX_DATA_URL_CHARS = 350_000;
 
 /**
  * Read an image file as a compact PNG data URL for receipt logos.
- * Thermal ESC/POS printImage needs real PNG bytes; oversized data URLs fail save.
  *
  * @param {File} file
  * @param {number} [maxBytes] source file size cap
@@ -38,11 +37,13 @@ export async function readImageAsPngDataUrl(file, maxBytes = 350 * 1024) {
     if (!ctx) throw new Error('READ_FAILED');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, width, height);
     const out = canvas.toDataURL('image/png');
     if (out.length <= MAX_DATA_URL_CHARS) return out;
-    width = Math.max(48, Math.round(width * 0.7));
-    height = Math.max(24, Math.round(height * 0.7));
+    width = Math.max(64, Math.round(width * 0.7));
+    height = Math.max(64, Math.round(height * 0.7));
   }
   throw new Error('TOO_LARGE');
 }

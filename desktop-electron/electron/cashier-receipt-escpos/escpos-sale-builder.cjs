@@ -122,7 +122,11 @@ async function appendHeader(printer, payload, jobId) {
 
   if (isOn(fields, 'logo') && branding?.logoDataUrl) {
     try {
-      const imgPath = await writeLogoTempFile(branding.logoDataUrl, jobId);
+      const imgPath = await writeLogoTempFile(
+        branding.logoDataUrl,
+        jobId,
+        branding.logoMaxHeightMm,
+      );
       if (imgPath) {
         await printer.printImage(imgPath);
         printer.newLine();
@@ -162,10 +166,11 @@ async function appendHeader(printer, payload, jobId) {
  * Сохраняет data URL логотипа во временный PNG (через Electron nativeImage).
  * @param {string} dataUrl
  * @param {string} jobId
+ * @param {number} [maxHeightMm]
  * @returns {Promise<string|null>}
  */
-async function writeLogoTempFile(dataUrl, jobId) {
-  return writeLogoPngTempFile(dataUrl, `aurent-receipt-logo-${jobId}`);
+async function writeLogoTempFile(dataUrl, jobId, maxHeightMm) {
+  return writeLogoPngTempFile(dataUrl, `aurent-receipt-logo-${jobId}`, { maxHeightMm });
 }
 
 /**
