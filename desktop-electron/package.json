@@ -1,6 +1,6 @@
 {
   "name": "aurent-cashier-desktop",
-  "version": "1.2.37",
+  "version": "1.2.38",
   "private": true,
   "description": "Aurent POS Electron desktop cashier and admin",
   "main": "electron/main.js",
