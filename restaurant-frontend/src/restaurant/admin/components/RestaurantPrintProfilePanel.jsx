@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { BaseButton, BaseInput, BaseSelect } from '../../../components/ui';
-import { readImageDataUrl } from '../../../utils/readImageDataUrl';
+import { readImageAsPngDataUrl } from '../../../utils/readImageAsPngDataUrl';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import {
   getDesktopPrinterSettings,
@@ -112,7 +112,8 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
   const onLogo = async (file) => {
     if (!file) return;
     try {
-      const dataUrl = await readImageDataUrl(file, 350 * 1024);
+      // PNG: ESC/POS printImage cannot print JPEG/WebP bytes saved as .png.
+      const dataUrl = await readImageAsPngDataUrl(file, 350 * 1024);
       patchRoot('logoDataUrl', dataUrl);
     } catch (err) {
       if (err?.message === 'TOO_LARGE') toast.error(t('rst.admin.printLogoTooLarge', { defaultValue: 'Логотип слишком большой' }));
@@ -173,7 +174,7 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
       <h2 className="rst-printers__title">{t('rst.admin.printProfileTitle', { defaultValue: 'Оформление чеков' })}</h2>
       <p className="rst-printers__note">
         {t('rst.admin.printProfileHint', {
-          defaultValue: 'Название, телефон, адрес, логотип и подвал печатаются на счёте и фискальном чеке, если поле заполнено. На отказе, кухне и смене их включают галочки на своей вкладке. Адрес без текста на чек не попадает.',
+          defaultValue: 'Загрузите логотип и нажмите «Сохранить». На счёте и фискальном чеке логотип появится сам, если файл сохранён. На отказе, кухне и смене его включают галочкой на своей вкладке. После сохранения на кассе подождите пару секунд или обновите страницу.',
         })}
       </p>
 
