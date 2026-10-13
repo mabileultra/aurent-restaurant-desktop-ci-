@@ -15,9 +15,13 @@ import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
 import { getApiErrorMessage } from '../../../utils/apiError';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../../utils/cashierTerminalIdentity';
+import '../styles/fiscal-cashier-controls.css';
 
 const MultikassaSettingsModal = lazy(() =>
   import('../../cash-registers/components/MultikassaSettingsModal'),
+);
+const FiscalDriveSettingsModal = lazy(() =>
+  import('../../cash-registers/components/FiscalDriveSettingsModal'),
 );
 
 const GENERIC_SERVER_ERROR = 'An unexpected error occurred';
@@ -43,6 +47,7 @@ export default function MultikassaCashierControls({ className = '' }) {
   });
   const shiftRegisterId = shift?.cashRegisterId ?? null;
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [fiscalDriveOpen, setFiscalDriveOpen] = useState(false);
   const [settingsRegisterId, setSettingsRegisterId] = useState(null);
   const qc = useQueryClient();
   const { data: caps, isLoading } = useMultikassaCashierStatus({
@@ -75,7 +80,7 @@ export default function MultikassaCashierControls({ className = '' }) {
     },
   });
 
-  const openSettings = async () => {
+  const resolveRegisterId = async () => {
     let registerId = cashRegisterId;
     if (!registerId && storeId != null) {
       try {
@@ -90,15 +95,30 @@ export default function MultikassaCashierControls({ className = '' }) {
           }
         }
       } catch {
-        /* fall through to toast */
+        /* fall through */
       }
     }
+    return registerId;
+  };
+
+  const openSettings = async () => {
+    const registerId = await resolveRegisterId();
     if (!registerId) {
       toast.error(t('cashRegisters.multikassa.needOpenShift'), { id: 'multikassa-settings' });
       return;
     }
     setSettingsRegisterId(registerId);
     setSettingsOpen(true);
+  };
+
+  const openFiscalDrive = async () => {
+    const registerId = await resolveRegisterId();
+    if (!registerId) {
+      toast.error(t('cashRegisters.multikassa.needOpenShift'), { id: 'fiscal-drive-settings' });
+      return;
+    }
+    setSettingsRegisterId(registerId);
+    setFiscalDriveOpen(true);
   };
 
   const onQrClick = () => {
@@ -150,6 +170,15 @@ export default function MultikassaCashierControls({ className = '' }) {
           >
             <Settings2 size={14} strokeWidth={2.25} />
           </button>
+          <button
+            type="button"
+            className="pharmacy-pay-rail__mk-settings"
+            onClick={openFiscalDrive}
+            title={t('cashRegisters.fiscalDrive.openSettings')}
+            aria-label={t('cashRegisters.fiscalDrive.openSettings')}
+          >
+            <span className="pharmacy-pay-rail__fd-label">FD</span>
+          </button>
         </div>
       </div>
 
@@ -160,6 +189,19 @@ export default function MultikassaCashierControls({ className = '' }) {
             cashRegisterId={modalRegisterId}
             onClose={() => {
               setSettingsOpen(false);
+              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
+            }}
+          />
+        </Suspense>
+      ) : null}
+
+      {fiscalDriveOpen && modalRegisterId ? (
+        <Suspense fallback={null}>
+          <FiscalDriveSettingsModal
+            open={fiscalDriveOpen}
+            cashRegisterId={modalRegisterId}
+            onClose={() => {
+              setFiscalDriveOpen(false);
               qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
             }}
           />

@@ -547,7 +547,7 @@
     "scaleHint": "Порт: {{port}}",
     "scaleNotSet": "не настроены — найти автоматически",
     "scaleSaved": "Весы сохранены",
-    "multikassaSection": "Multikassa / QR",
+    "multikassaSection": "Фискализация / QR",
     "multikassaPrintQr": "Печатать фискальный QR",
     "multikassaPrintQrOn": "вкл — на чеке будет QR ОФД",
     "multikassaPrintQrOff": "выкл — обычный чек без QR",

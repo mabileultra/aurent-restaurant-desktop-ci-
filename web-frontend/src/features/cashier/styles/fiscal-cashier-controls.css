@@ -1,0 +1,46 @@
+/* Строка Multikassa / FiscalDrive на pay rail (grocery + pharmacy). */
+.pos-register-pay-rail__fiscal,
+.pharmacy-pay-rail .pharmacy-pay-rail__mk-row {
+  --fcc-border: #d5dbe3;
+  --fcc-muted: #8b95a5;
+  --fcc-green: #006847;
+  --fcc-green-soft: #e7f3ec;
+}
+
+.pos-register-pay-rail__fiscal {
+  margin: 0 0 8px;
+  flex-shrink: 0;
+}
+
+.pharmacy-pay-rail__mk-row {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.pharmacy-pay-rail__mk-settings {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  min-width: 34px;
+  padding: 6px;
+  border-radius: 8px;
+  border: 1px solid var(--fcc-border, var(--ppr-border, #d5dbe3));
+  background: #fff;
+  color: var(--fcc-muted, var(--ppr-muted, #8b95a5));
+  cursor: pointer;
+}
+
+.pharmacy-pay-rail__mk-settings:hover {
+  border-color: #9dceb5;
+  color: var(--fcc-green, var(--ppr-green, #006847));
+}
+
+.pharmacy-pay-rail__fd-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
