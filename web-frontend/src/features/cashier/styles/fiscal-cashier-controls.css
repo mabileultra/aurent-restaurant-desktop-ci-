@@ -8,8 +8,16 @@
 }
 
 .pos-register-pay-rail__fiscal {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   margin: 0 0 8px;
   flex-shrink: 0;
+}
+
+.pos-register-pay-rail__fiscal-fd,
+.pharmacy-pay-rail__fd-row {
+  margin: 0;
 }
 
 .pharmacy-pay-rail__mk-row {

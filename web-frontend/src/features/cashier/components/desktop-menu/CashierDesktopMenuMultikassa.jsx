@@ -16,14 +16,12 @@ import { getApiErrorMessage } from '../../../../utils/apiError';
 const MultikassaSettingsModal = lazy(() =>
   import('../../../cash-registers/components/MultikassaSettingsModal'),
 );
-const FiscalDriveSettingsModal = lazy(() =>
-  import('../../../cash-registers/components/FiscalDriveSettingsModal'),
-);
 
 const GENERIC_SERVER_ERROR = 'An unexpected error occurred';
 
 /**
  * Тумблер фискального QR в меню Aurent Desktop + вход в настройки Multikassa.
+ * FiscalDrive — отдельный блок (CashierDesktopMenuFiscalDrive).
  */
 export default function CashierDesktopMenuMultikassa({ t }) {
   const { storeId } = useCashierStore();
@@ -33,7 +31,6 @@ export default function CashierDesktopMenuMultikassa({ t }) {
   });
   const shiftRegisterId = shift?.cashRegisterId ?? null;
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [fiscalDriveOpen, setFiscalDriveOpen] = useState(false);
   const qc = useQueryClient();
   const { data: caps, isLoading } = useMultikassaCashierStatus({
     storeId,
@@ -70,22 +67,12 @@ export default function CashierDesktopMenuMultikassa({ t }) {
     },
   });
 
-  const requireRegister = (toastId) => {
-    if (!cashRegisterId) {
-      toast.error(t('cashRegisters.multikassa.needOpenShift'), { id: toastId });
-      return false;
-    }
-    return true;
-  };
-
   const openSettings = () => {
-    if (!requireRegister('multikassa-settings')) return;
+    if (!cashRegisterId) {
+      toast.error(t('cashRegisters.multikassa.needOpenShift'), { id: 'multikassa-settings' });
+      return;
+    }
     setSettingsOpen(true);
-  };
-
-  const openFiscalDrive = () => {
-    if (!requireRegister('fiscal-drive-settings')) return;
-    setFiscalDriveOpen(true);
   };
 
   if (storeId == null) return null;
@@ -108,18 +95,6 @@ export default function CashierDesktopMenuMultikassa({ t }) {
         >
           <Settings2 size={15} strokeWidth={2} aria-hidden />
           <span>{t('cashRegisters.multikassa.openSettings')}</span>
-        </button>
-        <button
-          type="button"
-          className="cashier-desktop-menu__item"
-          role="menuitem"
-          onClick={(e) => {
-            e.stopPropagation();
-            openFiscalDrive();
-          }}
-        >
-          <Settings2 size={15} strokeWidth={2} aria-hidden />
-          <span>{t('cashRegisters.fiscalDrive.openSettings')}</span>
         </button>
         <button
           type="button"
@@ -170,19 +145,6 @@ export default function CashierDesktopMenuMultikassa({ t }) {
             cashRegisterId={cashRegisterId}
             onClose={() => {
               setSettingsOpen(false);
-              qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
-            }}
-          />
-        </Suspense>
-      ) : null}
-
-      {fiscalDriveOpen && cashRegisterId ? (
-        <Suspense fallback={null}>
-          <FiscalDriveSettingsModal
-            open={fiscalDriveOpen}
-            cashRegisterId={cashRegisterId}
-            onClose={() => {
-              setFiscalDriveOpen(false);
               qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
             }}
           />

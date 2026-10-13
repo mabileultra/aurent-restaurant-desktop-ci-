@@ -17,6 +17,7 @@ import { isDesktopCashier } from '../../../../utils/authLogin';
 import { BRAND_LOGO_SIZES } from '../../../../config/brandLogos';
 import CashierDesktopMenuConnectivity from './CashierDesktopMenuConnectivity';
 import CashierDesktopMenuMultikassa from './CashierDesktopMenuMultikassa';
+import CashierDesktopMenuFiscalDrive from './CashierDesktopMenuFiscalDrive';
 
 export default function CashierDesktopMenuPanel({
   appName,
@@ -115,6 +116,7 @@ export default function CashierDesktopMenuPanel({
         <CashierDesktopMenuConnectivity t={t} />
 
         <CashierDesktopMenuMultikassa t={t} />
+        <CashierDesktopMenuFiscalDrive t={t} />
 
         <div className="cashier-desktop-menu__sep" role="separator" />
         <button
