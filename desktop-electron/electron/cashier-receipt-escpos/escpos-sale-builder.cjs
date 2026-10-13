@@ -3,8 +3,6 @@
  * Подписи полей приходят с фронта (labels), без i18n в main.
  */
 const fs = require('fs');
-const os = require('os');
-const path = require('path');
 const {
   fmtMoney,
   fmtQty,
@@ -15,6 +13,7 @@ const {
   saleVatRateLabel,
 } = require('./escpos-format.cjs');
 const { logWarn } = require('./escpos-log.cjs');
+const { writeLogoPngTempFile } = require('./escpos-logo-file.cjs');
 const { sanitizePayloadForPrint, preparePrinterEncoding } = require('./escpos-encoding.cjs');
 const { beepAndCut } = require('./escpos-layout.cjs');
 
@@ -160,19 +159,13 @@ async function appendHeader(printer, payload, jobId) {
 }
 
 /**
- * Сохраняет data URL логотипа во временный PNG.
+ * Сохраняет data URL логотипа во временный PNG (через Electron nativeImage).
  * @param {string} dataUrl
  * @param {string} jobId
  * @returns {Promise<string|null>}
  */
 async function writeLogoTempFile(dataUrl, jobId) {
-  const raw = String(dataUrl || '');
-  const m = raw.match(/^data:image\/\w+;base64,(.+)$/);
-  if (!m) return null;
-  const buf = Buffer.from(m[1], 'base64');
-  const filePath = path.join(os.tmpdir(), `aurent-receipt-logo-${jobId}.png`);
-  fs.writeFileSync(filePath, buf);
-  return filePath;
+  return writeLogoPngTempFile(dataUrl, `aurent-receipt-logo-${jobId}`);
 }
 
 /**

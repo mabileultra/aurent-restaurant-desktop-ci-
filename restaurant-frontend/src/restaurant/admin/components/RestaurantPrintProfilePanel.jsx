@@ -99,11 +99,23 @@ export default function RestaurantPrintProfilePanel({ storeId, t }) {
     setSaving(true);
     try {
       const res = await rstKitchenApi.savePrintProfile(storeId, profile);
-      setProfile(res?.data?.profile || profile);
+      const next = res?.data?.profile || profile;
+      setProfile(next);
       invalidateStorePrintProfile(storeId);
-      toast.success(t('rst.admin.printersSaved'));
-    } catch {
-      toast.error(t('rst.admin.saveFailed'));
+      if (profile.logoDataUrl && !next.logoDataUrl) {
+        toast.error(t('rst.admin.printLogoSaveLost', {
+          defaultValue: 'Логотип не сохранился (файл слишком большой). Загрузите картинку поменьше и сохраните снова.',
+        }));
+      } else {
+        toast.success(t('rst.admin.printersSaved'));
+      }
+    } catch (err) {
+      const msg = String(err?.response?.data?.message || err?.message || '');
+      if (/logo|too large|слишком/i.test(msg)) {
+        toast.error(t('rst.admin.printLogoTooLarge', { defaultValue: 'Логотип слишком большой' }));
+      } else {
+        toast.error(t('rst.admin.saveFailed'));
+      }
     } finally {
       setSaving(false);
     }
