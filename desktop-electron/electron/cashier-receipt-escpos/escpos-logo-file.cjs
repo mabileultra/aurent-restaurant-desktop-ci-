@@ -1,6 +1,6 @@
 /**
- * Persist a receipt logo data URL as a high-contrast PNG for thermal printImage.
- * Size follows logoMaxHeightMm; pixels are thresholded so logos print dark, not grey dither.
+ * Persist a receipt logo data URL as a crisp PNG for thermal printImage.
+ * Size follows logoMaxHeightMm; light threshold to B&W without fattening strokes.
  */
 const fs = require('fs');
 const os = require('os');
@@ -11,8 +11,11 @@ const { nativeImage } = require('electron');
 const PAPER_WIDTH_PX = 384;
 /** ~8 dots per mm @ 203 dpi */
 const DOTS_PER_MM = 8;
-/** Greyscale below this → black (higher = bolder / darker logo). */
-const BOLD_THRESHOLD = 185;
+/**
+ * Greyscale below this → black.
+ * Mid threshold keeps thin lines; high values (180+) + dilate made logos fat/blurry.
+ */
+const INK_THRESHOLD = 140;
 
 /**
  * @param {string} dataUrl
@@ -39,15 +42,15 @@ function writeLogoPngTempFile(dataUrl, fileStem, opts = {}) {
   const size = img.getSize();
   let width = size.width || 1;
   let height = size.height || 1;
-  // Fit into paper width × requested mm height (upscale small logos).
-  const scale = Math.min(maxW / width, maxH / height);
-  width = Math.max(1, Math.round(width * scale));
-  height = Math.max(1, Math.round(height * scale));
-  if (width !== size.width || height !== size.height) {
+  // Never upscale — stretching softens edges on thermal. Only shrink to fit.
+  const scale = Math.min(1, maxW / width, maxH / height);
+  if (scale < 1) {
+    width = Math.max(1, Math.round(width * scale));
+    height = Math.max(1, Math.round(height * scale));
     img = img.resize({ width, height, quality: 'better' });
   }
 
-  img = toBoldThermalBitmap(img);
+  img = toCrispThermalBitmap(img);
 
   const filePath = path.join(os.tmpdir(), `${fileStem}.png`);
   fs.writeFileSync(filePath, img.toPNG());
@@ -55,18 +58,17 @@ function writeLogoPngTempFile(dataUrl, fileStem, opts = {}) {
 }
 
 /**
- * Hard black/white + 1px thicken so thin logo strokes survive ESC/POS dither.
+ * Clean black/white without dilate — sharp strokes, not a fat blob.
  * @param {Electron.NativeImage} img
  */
-function toBoldThermalBitmap(img) {
+function toCrispThermalBitmap(img) {
   const { width, height } = img.getSize();
   if (!width || !height) return img;
   const src = img.toBitmap();
-  // Electron bitmap is BGRA, 4 bytes/pixel.
   const stride = width * 4;
   if (src.length < stride * height) return img;
 
-  const mask = Buffer.alloc(width * height); // 1 = black
+  const out = Buffer.alloc(src.length);
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
       const i = y * stride + x * 4;
@@ -74,43 +76,11 @@ function toBoldThermalBitmap(img) {
       const g = src[i + 1];
       const r = src[i + 2];
       const a = src[i + 3];
-      if (a < 32) {
-        mask[y * width + x] = 0;
-        continue;
+      let v = 255;
+      if (a >= 32) {
+        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+        v = lum < INK_THRESHOLD ? 0 : 255;
       }
-      const lum = 0.299 * r + 0.587 * g + 0.114 * b;
-      mask[y * width + x] = lum < BOLD_THRESHOLD ? 1 : 0;
-    }
-  }
-
-  // Dilate once — thicken strokes for thermal.
-  const bold = Buffer.from(mask);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      if (mask[y * width + x]) continue;
-      let neighbor = false;
-      for (let dy = -1; dy <= 1 && !neighbor; dy += 1) {
-        for (let dx = -1; dx <= 1; dx += 1) {
-          if (!dx && !dy) continue;
-          const nx = x + dx;
-          const ny = y + dy;
-          if (nx < 0 || ny < 0 || nx >= width || ny >= height) continue;
-          if (mask[ny * width + nx]) {
-            neighbor = true;
-            break;
-          }
-        }
-      }
-      if (neighbor) bold[y * width + x] = 1;
-    }
-  }
-
-  const out = Buffer.alloc(src.length);
-  for (let y = 0; y < height; y += 1) {
-    for (let x = 0; x < width; x += 1) {
-      const i = y * stride + x * 4;
-      const black = bold[y * width + x];
-      const v = black ? 0 : 255;
       out[i] = v;
       out[i + 1] = v;
       out[i + 2] = v;
