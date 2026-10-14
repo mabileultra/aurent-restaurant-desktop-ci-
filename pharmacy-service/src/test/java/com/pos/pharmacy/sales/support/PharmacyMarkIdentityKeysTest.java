@@ -26,6 +26,16 @@ class PharmacyMarkIdentityKeysTest {
     }
 
     @Test
+    void samePackWithDifferentCryptoTailSharesIdentificationKey() {
+        String base = "010307797292003921U=HqEW=YAVhNqy/Uasgl";
+        Set<String> first = PharmacyMarkIdentityKeys.keysOf(base + "91EE1192ABCDEF");
+        Set<String> second = PharmacyMarkIdentityKeys.keysOf(base + "\u001d91FFFF\u001d92ZZZZ");
+        assertTrue(first.stream().anyMatch(k -> k.startsWith("id:")));
+        assertTrue(first.stream().anyMatch(second::contains));
+        assertTrue(first.stream().filter(k -> k.startsWith("id:")).anyMatch(second::contains));
+    }
+
+    @Test
     void emptyRawYieldsNoKeys() {
         assertTrue(PharmacyMarkIdentityKeys.keysOf("").isEmpty());
         assertTrue(PharmacyMarkIdentityKeys.keysOf("   ").isEmpty());

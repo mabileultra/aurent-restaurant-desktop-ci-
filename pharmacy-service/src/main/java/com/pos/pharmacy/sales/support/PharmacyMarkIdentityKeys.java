@@ -13,9 +13,11 @@ import java.util.regex.Pattern;
  */
 public final class PharmacyMarkIdentityKeys {
 
+    /** Серия AI 21 до криптохвоста 91/92/93. В серии бывают = / . */
     private static final Pattern GS1_SERIAL = Pattern.compile(
-        "01(\\d{14})21([0-9A-Za-z]{4,28})(?:91|92|93|$)"
+        "01(\\d{14})21([\\x21-\\x7E]{4,30}?)(?:91|92|93|$)"
     );
+    private static final Pattern CRYPTO_TAIL = Pattern.compile("(91|92|93).{1,64}$");
 
     private PharmacyMarkIdentityKeys() {
     }
@@ -31,15 +33,34 @@ public final class PharmacyMarkIdentityKeys {
         }
         String full = mark.toLowerCase(Locale.ROOT);
         keys.add("full:" + full);
+        String identification = identificationCode(mark);
+        if (StringUtils.hasText(identification)) {
+            keys.add("id:" + identification.toLowerCase(Locale.ROOT));
+        }
 
         Matcher m = GS1_SERIAL.matcher(mark);
         if (m.find()) {
             String gtin = m.group(1);
             String serial = m.group(2);
-            if (serial != null && serial.length() >= 4 && serial.length() <= 28) {
+            if (serial != null && serial.length() >= 4 && serial.length() <= 30) {
                 keys.add(("gs1:01" + gtin + "|21" + serial).toLowerCase(Locale.ROOT));
             }
         }
         return keys;
+    }
+
+    /** КИ без криптохвоста: два скана одной пачки с разным хвостом дают один ключ. */
+    static String identificationCode(String mark) {
+        if (!StringUtils.hasText(mark)) {
+            return "";
+        }
+        if (mark.length() > 18 && mark.startsWith("01") && mark.startsWith("21", 16)) {
+            String serialAndTail = mark.substring(18);
+            Matcher crypto = CRYPTO_TAIL.matcher(serialAndTail);
+            if (crypto.find() && crypto.start() >= 4) {
+                return mark.substring(0, 18 + crypto.start());
+            }
+        }
+        return mark;
     }
 }

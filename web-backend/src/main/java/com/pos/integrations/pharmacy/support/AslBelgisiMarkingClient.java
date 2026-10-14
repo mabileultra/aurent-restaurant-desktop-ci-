@@ -62,14 +62,15 @@ public class AslBelgisiMarkingClient {
 
     try {
       MarkingVerifyResponse info = exchangeParse(root + PUBLIC_CODES_PATH, headers, body, codes.get(0));
-      if (!info.found()) {
+      // Публичный codes часто оставляет INTRODUCED после розницы. «Уже пробита» — в private.
+      if (!info.alreadySold()) {
         try {
           MarkingVerifyResponse privateResult = exchangeParse(root + PRIVATE_CODES_PATH, headers, body, codes.get(0));
-          if (privateResult.found()) {
+          if (privateResult.found() && (privateResult.alreadySold() || !info.found())) {
             info = privateResult;
           }
         } catch (BadRequestException ignored) {
-          // public пустой / нет прав на private — не валим кассу
+          // нет прав на private — остаётся публичный ответ
         }
       }
 

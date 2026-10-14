@@ -44,7 +44,7 @@ public class SaleSoldMark {
     @Column(name = "mark_code", nullable = false, columnDefinition = "TEXT")
     private String markCode;
 
-    @Column(name = "mark_key", nullable = false, length = 190)
+    @Column(name = "mark_key", nullable = false, columnDefinition = "TEXT")
     private String markKey;
 
     @Column(name = "created_at", nullable = false)

@@ -65,7 +65,7 @@ export function rememberPharmacySoldMarks(storeId, rawMarks) {
 export function collectMarksFromCartItems(items) {
   const out = [];
   for (const line of items || []) {
-    if (Array.isArray(line?.productMarks)) {
+    if (Array.isArray(line?.productMarks) && line.productMarks.some(Boolean)) {
       line.productMarks.filter(Boolean).forEach((m) => out.push(m));
     } else if (line?.productMark || line?.markCode) {
       out.push(line.productMark || line.markCode);

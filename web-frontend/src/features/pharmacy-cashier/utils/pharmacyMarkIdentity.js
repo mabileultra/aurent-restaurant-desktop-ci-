@@ -18,10 +18,13 @@ export function markingIdentityKeys(raw) {
   const full = markingScanKey(mark);
   if (full) keys.add(`full:${full}`);
 
+  const identification = markingIdentificationCode(mark);
+  if (identification.length >= 20) keys.add(`id:${identification.toLowerCase()}`);
+
   const gtin = extractGtinFromMarkingCode(mark);
   const serial = extractSerialFromMarkingCode(mark);
   // serial слишком короткий/длинный — ненадёжен, не схлопываем разные пачки
-  if (gtin && serial && serial.length >= 4 && serial.length <= 28) {
+  if (gtin && serial && serial.length >= 4 && serial.length <= 30) {
     keys.add(`gs1:01${gtin}|21${serial}`.toLowerCase());
   }
   return [...keys];
@@ -31,6 +34,22 @@ export function markingIdentityKeys(raw) {
 export function markingIdentityKey(raw) {
   const keys = markingIdentityKeys(raw);
   return keys[0] || '';
+}
+
+const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
+
+/** Код идентификации без криптохвоста 91/92/93. */
+export function markingIdentificationCode(raw) {
+  const code = normalizePharmacyMarkingCode(raw);
+  if (!code) return '';
+  if (code.length > 18 && code.startsWith('01') && code.slice(16, 18) === '21') {
+    const serialAndTail = code.slice(18);
+    const crypto = serialAndTail.match(CRYPTO_TAIL);
+    if (crypto && crypto.index >= 4) {
+      return code.slice(0, 18 + crypto.index);
+    }
+  }
+  return code;
 }
 
 /** Серия упаковки (AI 21) из DataMatrix. */
@@ -44,13 +63,9 @@ export function extractSerialFromMarkingCode(raw) {
     return serial || null;
   }
 
-  // 01 + GTIN14 + 21 + serial до crypto AI 91/92/93
-  const m = code.match(/01\d{14}21([0-9A-Za-z]+)(?:91|92|93)/);
-  if (m?.[1]) return m[1];
-
-  // без crypto-хвоста: serial до конца, но не длиннее 28
-  const loose = code.match(/01\d{14}21([0-9A-Za-z]{4,28})$/);
-  if (loose?.[1]) return loose[1];
+  const identification = markingIdentificationCode(code);
+  const serial = identification.match(/^01\d{14}21(.+)$/)?.[1];
+  if (serial && serial.length >= 4 && serial.length <= 30) return serial;
 
   return null;
 }
