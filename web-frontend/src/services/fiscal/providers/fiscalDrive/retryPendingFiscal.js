@@ -25,7 +25,10 @@ export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegist
 
   try {
     const registered = await registerReceiptTxid(baseUrl, factoryId, txid);
-    const parsed = parseFiscalDriveRegisterResult(registered);
+    const parsed = parseFiscalDriveRegisterResult(registered, {
+      terminalId: capabilities?.terminalId || null,
+      datetime: retry?.dateTime || retry?.receipt?.Time || null,
+    });
     if (parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) return payload;
     const next = toFiscalDriveSalePayload(parsed, { txid, receipt: retry?.receipt });
     if (payload?.fiscal) {

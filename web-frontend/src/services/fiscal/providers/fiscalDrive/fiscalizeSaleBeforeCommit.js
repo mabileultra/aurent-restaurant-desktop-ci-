@@ -169,7 +169,10 @@ export async function fiscalizeSaleBeforeCommit({
     }
 
     const registered = await registerWithRetry({ baseUrl, factoryId, txid });
-    const parsed = parseFiscalDriveRegisterResult(registered);
+    const parsed = parseFiscalDriveRegisterResult(registered, {
+      terminalId: capabilities?.terminalId || null,
+      datetime: receipt?.Time || null,
+    });
     if (parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
       if (offline || !requireBeforeSale) {
         return pendingPayload({ txid, receipt, message: parsed.fiscalError });

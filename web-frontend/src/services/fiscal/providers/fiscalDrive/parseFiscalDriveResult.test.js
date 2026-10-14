@@ -38,4 +38,35 @@ describe('parseFiscalDriveRegisterResult', () => {
       'https://ofd.soliq.uz/check?t=ZZ000000000000&r=2&c=20240904094538&s=320262508539',
     );
   });
+
+  it('parses camelCase + qrCodeURL (ASP.NET/Go json)', () => {
+    const parsed = parseFiscalDriveRegisterResult({
+      terminalID: 'ZZ000000000000',
+      receiptSeq: 4,
+      dateTime: '2024-09-04 09:45:38',
+      fiscalSign: '320262508539',
+      qrCodeURL: 'https://ofd.soliq.uz/check?t=ZZ000000000000&r=4&c=20240904094538&s=320262508539',
+    });
+    expect(parsed.fiscalStatus).toBe(FISCAL_STATUS.FISCALIZED);
+    expect(parsed.fiscalTerminalId).toBe('ZZ000000000000');
+    expect(parsed.fiscalQrUrl).toContain('ofd.soliq.uz/check');
+  });
+
+  it('unwraps Result and uses terminalId fallback for QR', () => {
+    const parsed = parseFiscalDriveRegisterResult(
+      {
+        Code: 0,
+        Message: 'Success',
+        Result: {
+          ReceiptSeq: 5,
+          FiscalSign: '320262508539',
+          DateTime: '2024-09-04 09:45:38',
+        },
+      },
+      { terminalId: 'ZZ000000000000' },
+    );
+    expect(parsed.fiscalQrUrl).toBe(
+      'https://ofd.soliq.uz/check?t=ZZ000000000000&r=5&c=20240904094538&s=320262508539',
+    );
+  });
 });

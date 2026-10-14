@@ -78,5 +78,28 @@ describe('fiscalizeSaleBeforeCommit FiscalDrive', () => {
     expect(payload.fiscalSign).toBe('320262508539');
     expect(payload.fiscalDriveTxid).toBe('15');
     expect(payload.fiscalProvider).toBe('FISCAL_DRIVE');
+    expect(payload.fiscalQrUrl).toContain('ofd.soliq.uz/check');
+  });
+
+  it('builds ofd QR from caps.terminalId when Register omits TerminalID/QR', async () => {
+    getReceiptTxid.mockResolvedValue(21);
+    registerReceiptTxid.mockResolvedValue({
+      ReceiptSeq: 7,
+      DateTime: '2024-09-04 09:45:38',
+      FiscalSign: '320262508539',
+    });
+
+    const payload = await fiscalizeSaleBeforeCommit({
+      capabilities: { ...caps, terminalId: 'ZZ000000000000' },
+      cartItems,
+      payment: { paymentMethod: 'CASH', cashAmount: 1000 },
+      total: 1000,
+    });
+
+    expect(payload.fiscalStatus).toBe(FISCAL_STATUS.FISCALIZED);
+    expect(payload.fiscalTerminalId).toBe('ZZ000000000000');
+    expect(payload.fiscalQrUrl).toBe(
+      'https://ofd.soliq.uz/check?t=ZZ000000000000&r=7&c=20240904094538&s=320262508539',
+    );
   });
 });

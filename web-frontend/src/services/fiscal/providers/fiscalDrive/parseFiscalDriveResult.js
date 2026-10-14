@@ -2,22 +2,67 @@ import { buildOfdCheckUrl, isOfdCheckUrl } from '../../../../utils/ofdQrUrl';
 import { FISCAL_STATUS } from '../../fiscalStatus';
 import { toSaleFiscalPayload } from '../../shared/toSaleFiscalPayload';
 
-function pick(obj, ...keys) {
+const WRAPPER_KEYS = new Set([
+  'result',
+  'data',
+  'payload',
+  'response',
+  'value',
+  'body',
+  'content',
+]);
+
+/** Case-insensitive lookup; first matching key wins. */
+function pickCI(obj, ...keys) {
   if (!obj || typeof obj !== 'object') return null;
+  const map = new Map(Object.keys(obj).map((k) => [k.toLowerCase(), k]));
   for (const key of keys) {
-    if (obj[key] != null && obj[key] !== '') return obj[key];
+    const real = map.get(String(key).toLowerCase());
+    if (real == null) continue;
+    const value = obj[real];
+    if (value != null && value !== '') return value;
   }
   return null;
 }
 
-/** Ответ RegisterTXID → нейтральный фискальный блок продажи. */
-export function parseFiscalDriveRegisterResult(raw) {
-  const info = raw && typeof raw === 'object' ? raw : {};
-  const fiscalSign = pick(info, 'FiscalSign', 'fiscalSign');
-  const receiptSeq = pick(info, 'ReceiptSeq', 'receiptSeq');
-  const terminalId = pick(info, 'TerminalID', 'TerminalId', 'terminalId');
-  const datetime = pick(info, 'DateTime', 'Time', 'dateTime', 'time');
-  let fiscalQrUrl = pick(info, 'QRCodeURL', 'QRCodeUrl', 'qrCodeUrl', 'QrCodeUrl');
+/** Снять типичные обёртки { Code, Result|Data: { FiscalSign… } }. */
+function unwrapRegisterPayload(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const hasFiscal = pickCI(raw, 'FiscalSign', 'ReceiptSeq', 'QRCodeURL', 'TerminalID');
+  if (hasFiscal != null) return raw;
+  for (const key of Object.keys(raw)) {
+    if (!WRAPPER_KEYS.has(key.toLowerCase())) continue;
+    const inner = raw[key];
+    if (inner && typeof inner === 'object' && !Array.isArray(inner)) {
+      return unwrapRegisterPayload(inner);
+    }
+  }
+  return raw;
+}
+
+/**
+ * Ответ RegisterTXID → нейтральный фискальный блок продажи.
+ * @param {object} raw
+ * @param {{ terminalId?: string|null, datetime?: string|null }} [fallbacks]
+ */
+export function parseFiscalDriveRegisterResult(raw, fallbacks = {}) {
+  const info = unwrapRegisterPayload(raw && typeof raw === 'object' ? raw : {}) || {};
+  const fiscalSign = pickCI(info, 'FiscalSign', 'fiscalSign');
+  const receiptSeq = pickCI(info, 'ReceiptSeq', 'receiptSeq');
+  const terminalId =
+    pickCI(info, 'TerminalID', 'TerminalId', 'terminalId', 'terminalID') ||
+    (fallbacks.terminalId != null && String(fallbacks.terminalId).trim()
+      ? String(fallbacks.terminalId).trim()
+      : null);
+  const datetime =
+    pickCI(info, 'DateTime', 'Time', 'dateTime', 'time') ||
+    (fallbacks.datetime != null && String(fallbacks.datetime).trim()
+      ? String(fallbacks.datetime).trim()
+      : null) ||
+    new Date().toISOString();
+
+  let fiscalQrUrl = pickCI(info, 'QRCodeURL', 'QRCodeUrl', 'qrCodeUrl', 'QrCodeUrl', 'qrCodeURL');
+  if (fiscalQrUrl != null) fiscalQrUrl = String(fiscalQrUrl).trim();
   if (!fiscalQrUrl || !isOfdCheckUrl(fiscalQrUrl)) {
     fiscalQrUrl =
       buildOfdCheckUrl({
@@ -25,7 +70,9 @@ export function parseFiscalDriveRegisterResult(raw) {
         receiptSeq,
         fiscalSign,
         datetime,
-      }) || fiscalQrUrl || null;
+      }) ||
+      fiscalQrUrl ||
+      null;
   }
 
   const hasProof = Boolean(fiscalSign && receiptSeq != null && String(receiptSeq).trim() !== '');
