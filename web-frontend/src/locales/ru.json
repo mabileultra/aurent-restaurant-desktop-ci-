@@ -2514,7 +2514,7 @@
       "markingVerified": "Маркировка: {{name}}",
       "markingProductFound": "Товар найден: {{name}}",
       "markingAlreadyCounted": "Эта маркировка уже отсканирована и есть в чеке",
-      "markingAlreadySold": "ASL Belgisi: эта маркировка уже продана / выведена из оборота",
+      "markingAlreadySold": "Эта маркировка уже пробита",
       "markingScanHint": "Код маркировки — настройте ASL API или откройте портал",
       "links": {
         "admin": "Админ",
@@ -4203,7 +4203,7 @@
     "markingScanRequired": "Маркированный товар — отсканируйте DataMatrix (КМ)",
     "markingNotFound": "Товар по коду маркировки не найден. Проверьте штрихкод (GTIN) в карточке",
     "markingAlreadyCounted": "Эта маркировка уже есть в чеке",
-    "markingAlreadySold": "ASL: эта маркировка уже продана / выведена из оборота",
+    "markingAlreadySold": "Эта маркировка уже пробита",
     "markingQtyViaScan": "Количество маркировки меняется только сканом КМ",
     "markingRequiredBeforePay": "В чеке есть маркированные товары без КМ — отсканируйте DataMatrix",
     "markingBadgeHint": "Маркировка",

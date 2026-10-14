@@ -1,20 +1,12 @@
-import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
-import { pharmacySalesApi } from '../../../api/pharmacySales.api';
-import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
-import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
-import { isPharmacyMarkSoldLocally, rememberPharmacySoldMarks } from './pharmacySoldMarksStore';
+import { inspectMarkPunched } from './inspectMarkPunched';
 import { resolvePharmacyProductByMarking } from './resolvePharmacyProductByMarking';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 /**
- * Резолв КМ на кассе аптеки:
- * 1) локальный sold-кэш
- * 2) свой склад stock_marks
- * 3) товар по GTIN в каталоге
- * 4) sale_sold_marks на бэке
- * 5) если товар уже наш — в чек без ASL
- * 6) ASL только когда товара нет у себя (нужен GTIN / чужой код)
+ * Резолв КМ на кассе аптеки.
+ * Сначала жёстко: код уже пробит (кэш / склад / журнал продаж / ASL) — в чек не кладём.
+ * Карточку ищем только после этой проверки.
  */
 export async function resolveCashierMarkedProduct({
   products,
@@ -23,100 +15,47 @@ export async function resolveCashierMarkedProduct({
   aslEnabled = false,
 }) {
   const mark = preserveMarkingCodeForFiscal(rawCode);
-  let product = null;
-  let aslResult = null;
-  let aslError = null;
-
-  if (storeId && isPharmacyMarkSoldLocally(storeId, mark)) {
+  const gate = await inspectMarkPunched({ storeId, mark, aslEnabled });
+  if (gate.punched) {
     return {
       status: 'sold',
       mark,
       product: null,
-      aslResult: { found: true, alreadySold: true, status: 'SOLD_LOCAL' },
+      aslResult: gate.aslResult,
       aslError: null,
     };
   }
 
-  if (storeId) {
-    try {
-      const { data } = await pharmacyStockMarksApi.check({ storeId, code: mark });
-      if (data?.alreadySold) {
-        rememberPharmacySoldMarks(storeId, [mark]);
-        return {
-          status: 'sold',
-          mark,
-          product: null,
-          aslResult: { found: true, alreadySold: true, status: data.status || 'SOLD' },
-          aslError: null,
-        };
-      }
-      if (data?.found && data.productId) {
-        product = await loadProductById(products, data.productId, storeId);
-        if (product) {
-          return {
-            status: 'ok',
-            mark,
-            product: withMark(product, mark),
-            aslResult: { found: true, status: data.status || 'IN_STOCK', source: 'stock_marks' },
-            aslError: null,
-          };
-        }
-      }
-    } catch {
-      // склад недоступен — fallback на каталог / ASL
+  let product = null;
+  let aslError = gate.aslError;
+  const stock = gate.stock;
+  if (stock?.found && stock.productId) {
+    product = await loadProductById(products, stock.productId, storeId);
+    if (product) {
+      return {
+        status: 'ok',
+        mark,
+        product: withMark(product, mark),
+        aslResult: gate.aslResult || { found: true, status: stock.status || 'IN_STOCK', source: 'stock_marks' },
+        aslError: null,
+      };
     }
   }
 
   try {
     product = await resolvePharmacyProductByMarking({ products, rawCode: mark, storeId });
   } catch (error) {
-    aslError = error;
+    aslError = aslError || error;
   }
 
-  if (storeId) {
+  if (!product && gate.aslResult?.gtin) {
     try {
-      const { data } = await pharmacySalesApi.checkMarkSold({ storeId, code: mark });
-      if (data?.sold === true) {
-        rememberPharmacySoldMarks(storeId, [mark]);
-        return {
-          status: 'sold',
-          mark,
-          product,
-          aslResult: { found: true, alreadySold: true, status: data.status || 'SOLD' },
-          aslError: null,
-        };
-      }
-    } catch {
-      // сеть — свой товар всё равно кладём в чек, чужой код уйдёт в ASL
-    }
-  }
-
-  if (product) {
-    return {
-      status: 'ok',
-      mark,
-      product: withMark(product, mark),
-      aslResult: null,
-      aslError: null,
-    };
-  }
-
-  if (aslEnabled && storeId) {
-    try {
-      const { data } = await pharmacyIntegrationApi.verifyMarking({ storeId, code: mark });
-      aslResult = data;
-      if (isAslMarkAlreadySold(aslResult)) {
-        rememberPharmacySoldMarks(storeId, [mark]);
-        return { status: 'sold', mark, product, aslResult, aslError: null };
-      }
-      if (!product && aslResult?.gtin) {
-        product = await resolvePharmacyProductByMarking({
-          products,
-          rawCode: mark,
-          extraGtins: [aslResult.gtin],
-          storeId,
-        });
-      }
+      product = await resolvePharmacyProductByMarking({
+        products,
+        rawCode: mark,
+        extraGtins: [gate.aslResult.gtin],
+        storeId,
+      });
     } catch (error) {
       aslError = aslError || error;
     }
@@ -127,12 +66,12 @@ export async function resolveCashierMarkedProduct({
       status: 'ok',
       mark,
       product: withMark(product, mark),
-      aslResult,
+      aslResult: gate.aslResult,
       aslError: null,
     };
   }
 
-  return { status: 'not-found', mark, product: null, aslResult, aslError };
+  return { status: 'not-found', mark, product: null, aslResult: gate.aslResult, aslError };
 }
 
 function withMark(product, mark) {

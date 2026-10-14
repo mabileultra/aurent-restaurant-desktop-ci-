@@ -64,7 +64,7 @@ export function usePosCheckout({
       });
     },
     onSuccess: async (res, payment) => {
-      if (catalogKind === 'pharmacy' && storeId) {
+      if (storeId) {
         const marks = collectMarksFromCartItems(useCartStore.getState().items);
         rememberPharmacySoldMarks(storeId, marks);
       }

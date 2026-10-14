@@ -10,8 +10,18 @@ vi.mock('../../../services/pos/posDataRouter', () => ({
   posFetchProductByBarcode: vi.fn(),
 }));
 
+vi.mock('../../../api/pharmacySales.api', () => ({
+  pharmacySalesApi: { checkMarkSold: vi.fn(async () => ({ data: { sold: false } })) },
+}));
+
+vi.mock('../../../api/pharmacyStockMarks.api', () => ({
+  pharmacyStockMarksApi: { check: vi.fn(async () => ({ data: { found: false } })) },
+}));
+
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
+import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { posFetchProductByBarcode } from '../../../services/pos/posDataRouter';
+import { clearPharmacySoldMarksForTests } from '../../pharmacy-cashier/utils/pharmacySoldMarksStore';
 import { resolvePosMarkedProduct } from './resolvePosMarkedProduct';
 
 const KM = '010478001234567821AbCdEfGhIj';
@@ -21,6 +31,8 @@ const product = { id: 11, barcode: EAN, name: 'Чай', markedProduct: true };
 describe('resolvePosMarkedProduct — путь только для КМ', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearPharmacySoldMarksForTests(7);
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
   });
 
   it('обычный штрихкод не идёт в маркировку и ASL не вызывается', async () => {
@@ -48,6 +60,19 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     expect(result.product.productMark).toBeTruthy();
     expect(result.product.productMarks).toHaveLength(1);
     expect(result.product.markedProduct).toBe(true);
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
+  });
+
+  it('КМ уже в журнале продаж → sold даже без ASL', async () => {
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
+    const result = await resolvePosMarkedProduct({
+      products: [product],
+      rawCode: KM,
+      storeId: 7,
+      aslEnabled: false,
+    });
+    expect(result.status).toBe('sold');
+    expect(result.product).toBeNull();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 

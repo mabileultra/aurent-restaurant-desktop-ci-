@@ -17,6 +17,7 @@ import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
+import { clearPharmacySoldMarksForTests } from './pharmacySoldMarksStore';
 import { resolveCashierMarkedProduct } from './resolveCashierMarkedProduct';
 
 const MARK = '010478001234567821SERIAL123\u001d91CRYPT';
@@ -25,9 +26,13 @@ const product = { id: 'p1', barcode: '4780012345678', name: 'Test' };
 describe('resolveCashierMarkedProduct', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearPharmacySoldMarksForTests(7);
+    clearPharmacySoldMarksForTests(9);
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
+    pharmacyStockMarksApi.check.mockResolvedValue({ data: { found: false } });
   });
 
-  it('resolves from stock_marks without ASL', async () => {
+  it('resolves from stock_marks only after the sold journal is clear', async () => {
     pharmacyStockMarksApi.check.mockResolvedValue({
       data: {
         found: true,
@@ -41,19 +46,26 @@ describe('resolveCashierMarkedProduct', () => {
       products: [product],
       rawCode: MARK,
       storeId: 7,
-      aslEnabled: true,
+      aslEnabled: false,
     });
 
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe('p1');
     expect(result.product.productMark).toContain('0104780012345678');
-    expect(pharmacySalesApi.checkMarkSold).not.toHaveBeenCalled();
+    expect(pharmacySalesApi.checkMarkSold).toHaveBeenCalled();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('adds a catalog product without waiting for ASL', async () => {
-    pharmacyStockMarksApi.check.mockResolvedValue({ data: { found: false } });
-    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
+  it('blocks a code that is still IN_STOCK but already in the sales journal', async () => {
+    pharmacyStockMarksApi.check.mockResolvedValue({
+      data: {
+        found: true,
+        alreadySold: false,
+        status: 'IN_STOCK',
+        productId: 'p1',
+      },
+    });
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
 
     const result = await resolveCashierMarkedProduct({
       products: [product],
@@ -62,8 +74,39 @@ describe('resolveCashierMarkedProduct', () => {
       aslEnabled: true,
     });
 
+    expect(result.status).toBe('sold');
+    expect(result.product).toBeNull();
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
+  });
+
+  it('blocks a catalog product when ASL says the code is already punched', async () => {
+    pharmacyIntegrationApi.verifyMarking.mockResolvedValue({
+      data: { found: true, alreadySold: true, status: 'WITHDRAWN' },
+    });
+
+    const result = await resolveCashierMarkedProduct({
+      products: [product],
+      rawCode: MARK,
+      storeId: 7,
+      aslEnabled: true,
+    });
+
+    expect(result.status).toBe('sold');
+    expect(result.product).toBeNull();
+    expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledTimes(1);
+  });
+
+  it('adds a catalog product when the code was not punched', async () => {
+    const result = await resolveCashierMarkedProduct({
+      products: [product],
+      rawCode: MARK,
+      storeId: 7,
+      aslEnabled: false,
+    });
+
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe('p1');
+    expect(pharmacySalesApi.checkMarkSold).toHaveBeenCalled();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 

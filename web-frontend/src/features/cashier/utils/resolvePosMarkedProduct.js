@@ -1,4 +1,3 @@
-import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { posFetchProductByBarcode } from '../../../services/pos/posDataRouter';
 import {
   isPharmacyMarkingCode,
@@ -6,7 +5,7 @@ import {
 } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
 import { findProductByMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMarkingProductMatch';
 import { preserveMarkingCodeForFiscal } from '../../pharmacy-cashier/utils/preserveMarkingCodeForFiscal';
-import { isAslMarkAlreadySold } from '../../pharmacy-cashier/utils/aslMarkingAlreadySold';
+import { inspectMarkPunched } from '../../pharmacy-cashier/utils/inspectMarkPunched';
 
 function withMark(product, mark) {
   return {
@@ -43,10 +42,9 @@ async function findByGtinCandidates(products, mark, storeId, extraGtins = []) {
 }
 
 /**
- * Резолв КМ на обычной кассе:
- * 1) товар по GTIN из DataMatrix
- * 2) если ASL включён — мягкая проверка (уже продан → блок; сеть упала → не мешаем)
- * Обычный скан штрихкода сюда не попадает.
+ * Резолв КМ на обычной кассе.
+ * Сначала жёстко: код уже пробит — в чек нельзя. Штрихкод сюда не попадает.
+ * Сеть ASL упала — не блокируем, если свой журнал продаж код не нашёл.
  */
 export async function resolvePosMarkedProduct({
   products,
@@ -59,27 +57,16 @@ export async function resolvePosMarkedProduct({
     return { status: 'not-marking', mark: '', product: null, aslResult: null };
   }
 
-  let product = await findByGtinCandidates(products, mark, storeId);
-  let aslResult = null;
-
-  if (aslEnabled && storeId) {
-    try {
-      const { data } = await pharmacyIntegrationApi.verifyMarking({ storeId, code: mark });
-      aslResult = data;
-      if (isAslMarkAlreadySold(aslResult)) {
-        return { status: 'sold', mark, product, aslResult };
-      }
-      if (!product && aslResult?.gtin) {
-        product = await findByGtinCandidates(products, mark, storeId, [aslResult.gtin]);
-      }
-    } catch {
-      // ASL недоступен — продажа по найденному GTIN не блокируется
-    }
+  const gate = await inspectMarkPunched({ storeId, mark, aslEnabled });
+  if (gate.punched) {
+    return { status: 'sold', mark, product: null, aslResult: gate.aslResult };
   }
 
+  const extraGtins = gate.aslResult?.gtin ? [gate.aslResult.gtin] : [];
+  const product = await findByGtinCandidates(products, mark, storeId, extraGtins);
   if (!product) {
-    return { status: 'not-found', mark, product: null, aslResult };
+    return { status: 'not-found', mark, product: null, aslResult: gate.aslResult };
   }
 
-  return { status: 'ok', mark, product: withMark(product, mark), aslResult };
+  return { status: 'ok', mark, product: withMark(product, mark), aslResult: gate.aslResult };
 }

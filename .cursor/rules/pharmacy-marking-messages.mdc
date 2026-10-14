@@ -7,6 +7,9 @@ globs:
   - web-frontend/**/verifyImportMarksAgainstAsl*
   - web-frontend/**/usePharmacyImportMarksAsk*
   - web-frontend/**/usePosCartHandlers*
+  - web-frontend/**/inspectMarkPunched*
+  - web-frontend/**/resolveCashierMarkedProduct*
+  - web-frontend/**/resolvePosMarkedProduct*
 alwaysApply: false
 ---
 
@@ -22,8 +25,10 @@ When КМ check fails, show **one** clear message — never raw backend English 
    - **ASL found name, not in catalog** → `markingCatalogMiss`
 2. Import ASL verify: map disabled errors to reason `noIntegration` (do not store raw `error.message` for every code).
 3. Do not toast `resolvePharmacyApiError` for marking not-found when a classified user message exists.
+4. Before a KM enters the cart, `inspectMarkPunched` always runs: local sold cache, `stock_marks`, `sale_sold_marks`, then ASL already-sold when ASL is on. `IN_STOCK` or a catalog hit must not skip that. Repeat scan shows `markingAlreadySold` («уже пробита»). ASL network failure does not block a code the journal does not know.
 
 ## Do not
 
 - Prefer `aslError` API text over “нет интеграции” when ASL is off.
+- Put a KM in the cart before `inspectMarkPunched` (do not return ok on `IN_STOCK` or a catalog hit while the sold journal / ASL already-sold check is still pending).
 - List dozens of identical “disabled” import failures without collapsing to `noIntegration`.

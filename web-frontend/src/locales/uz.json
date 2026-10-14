@@ -2383,7 +2383,7 @@
       "markingVerified": "Markirovka: {{name}}",
       "markingProductFound": "Mahsulot topildi: {{name}}",
       "markingAlreadyCounted": "Bu markirovka allaqachon skan qilingan va chekda bor",
-      "markingAlreadySold": "ASL Belgisi: bu markirovka allaqachon sotilgan / aylanmadan chiqarilgan",
+      "markingAlreadySold": "Bu markirovka allaqachon urilgan",
       "markingScanHint": "Markirovka kodi — ASL API ni sozlang yoki portalni oching",
       "markingCatalogNeed": "Bu markirovka kodi bo‘yicha mahsulot topilmadi. Mahsulot kartasida shtrixkod (GTIN) ni tekshiring",
       "links": {
@@ -3901,7 +3901,7 @@
     "markingScanRequired": "Markirovkalangan mahsulot — DataMatrix (KM) ni skanerlang",
     "markingNotFound": "Markirovka kodi bo‘yicha mahsulot topilmadi. Kartochkadagi shtrixkod (GTIN) ni tekshiring",
     "markingAlreadyCounted": "Bu markirovka allaqachon chekda",
-    "markingAlreadySold": "ASL: bu markirovka allaqachon sotilgan / aylanmadan chiqarilgan",
+    "markingAlreadySold": "Bu markirovka allaqachon urilgan",
     "markingQtyViaScan": "Markirovka miqdori faqat KM skani bilan o‘zgaradi",
     "markingRequiredBeforePay": "Chekda KMsiz markirovkalangan mahsulotlar bor — DataMatrix ni skanerlang",
     "markingBadgeHint": "Markirovka",
