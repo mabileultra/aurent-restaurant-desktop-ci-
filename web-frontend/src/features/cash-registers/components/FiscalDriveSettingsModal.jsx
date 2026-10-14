@@ -84,6 +84,15 @@ export default function FiscalDriveSettingsModal({ open, cashRegisterId, onClose
                     {p.checking ? p.t('cashRegisters.fiscalDrive.checking') : p.t('cashRegisters.fiscalDrive.check')}
                   </button>
                 </div>
+                {p.statusMessage ? (
+                  <p className="multikassa-settings__test" style={{ marginTop: 8 }}>
+                    {p.statusMessage}
+                  </p>
+                ) : (
+                  <p className="multikassa-settings__hint" style={{ marginTop: 8 }}>
+                    {p.t('cashRegisters.fiscalDrive.findHint')}
+                  </p>
+                )}
               </div>
 
               <div className="multikassa-settings__row">

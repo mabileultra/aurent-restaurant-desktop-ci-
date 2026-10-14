@@ -6,8 +6,16 @@ import { localDeviceHttpRequest } from '../../shared/localDeviceHttp';
 
 export const FISCAL_DRIVE_DEFAULT_BASE_URL = 'http://127.0.0.1:3449';
 
-export function listFiscalDrives(baseUrl) {
-  return localDeviceHttpRequest({ baseUrl, method: 'GET', path: '/FiscalDrive/List' });
+/** Список ФМ. В swagger метод бывает GET или POST — пробуем оба. */
+export async function listFiscalDrives(baseUrl) {
+  try {
+    return await localDeviceHttpRequest({ baseUrl, method: 'GET', path: '/FiscalDrive/List' });
+  } catch (err) {
+    const status = Number(err?.status);
+    const retryPost = !status || status === 400 || status === 404 || status === 405 || status === 415;
+    if (!retryPost) throw err;
+    return localDeviceHttpRequest({ baseUrl, method: 'POST', path: '/FiscalDrive/List', body: {} });
+  }
 }
 
 export function getFiscalDriveInfo(baseUrl, factoryId) {
@@ -80,26 +88,41 @@ function pick(obj, ...keys) {
   return null;
 }
 
-function unwrapArray(raw) {
-  if (Array.isArray(raw)) return raw;
-  if (!raw || typeof raw !== 'object') return [];
-  for (const key of ['FiscalDrives', 'fiscalDrives', 'List', 'list', 'Data', 'data', 'Items', 'items']) {
-    if (Array.isArray(raw[key])) return raw[key];
+/** Рекурсивно собирает FactoryID из ответа List (массив, обёртки, вложенные объекты). */
+function collectFactoryIds(raw, depth = 0, out = []) {
+  if (raw == null || depth > 6) return out;
+  if (typeof raw === 'string') {
+    const id = raw.trim();
+    // FactoryID в доке — 36 символов; допускаем чуть короче на всякий случай.
+    if (id.length >= 20) out.push(id);
+    return out;
   }
-  return [];
+  if (typeof raw === 'number' && Number.isFinite(raw)) {
+    out.push(String(raw));
+    return out;
+  }
+  if (Array.isArray(raw)) {
+    for (const entry of raw) collectFactoryIds(entry, depth + 1, out);
+    return out;
+  }
+  if (typeof raw === 'object') {
+    const id = pick(raw, 'FactoryID', 'FactoryId', 'factoryId', 'factoryID');
+    if (id != null) {
+      const trimmed = String(id).trim();
+      if (trimmed) out.push(trimmed);
+    }
+    for (const value of Object.values(raw)) {
+      if (value && (typeof value === 'object' || typeof value === 'string')) {
+        collectFactoryIds(value, depth + 1, out);
+      }
+    }
+  }
+  return out;
 }
 
 /** Ответ `/FiscalDrive/List` → уникальные FactoryID. */
 export function parseFiscalDriveFactoryIds(raw) {
-  const ids = unwrapArray(raw)
-    .map((entry) =>
-      typeof entry === 'string'
-        ? entry
-        : pick(entry, 'FactoryID', 'FactoryId', 'factoryId', 'factoryID', 'ID', 'Id', 'id'),
-    )
-    .map((id) => (id == null ? '' : String(id).trim()))
-    .filter(Boolean);
-  return [...new Set(ids)];
+  return [...new Set(collectFactoryIds(raw))];
 }
 
 /** Ответ `/FiscalDrive/Info/{FactoryID}` → поля, которые нужны настройкам кассы. */

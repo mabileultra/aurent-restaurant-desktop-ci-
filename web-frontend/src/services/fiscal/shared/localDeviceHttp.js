@@ -83,12 +83,18 @@ export async function localDeviceHttpRequest({ baseUrl, method = 'GET', path, bo
   const upper = String(method).toUpperCase();
   const desktop = typeof window !== 'undefined' ? window.desktopCashier : null;
 
-  if (desktop?.isDesktop && typeof desktop.localDeviceRequest === 'function') {
+  if (desktop?.isDesktop) {
+    if (typeof desktop.localDeviceRequest !== 'function') {
+      throw buildError(
+        'Обновите Aurent Desktop до 1.2.38 или новее — в этой версии нет доступа к FiscalDrive на localhost.',
+        { code: 'LOCAL_DEVICE_DESKTOP_OLD' },
+      );
+    }
     return viaDesktop(desktop, { method: upper, url, body, headers });
   }
   if (isHttpsPageWithoutDesktop(desktop)) {
     throw buildError(
-      'Локальная служба недоступна из браузера (HTTPS → HTTP). Откройте кассу в Aurent Desktop.',
+      'FiscalDrive на localhost недоступен из браузера (HTTPS → HTTP). Откройте кассу в Aurent Desktop 1.2.38+.',
       { code: 'LOCAL_DEVICE_BROWSER_HTTPS' },
     );
   }

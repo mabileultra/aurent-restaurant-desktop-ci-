@@ -19,6 +19,12 @@ describe('parseFiscalDriveFactoryIds', () => {
     ).toEqual(['A', 'B']);
   });
 
+  it('finds FactoryID nested under data', () => {
+    expect(
+      parseFiscalDriveFactoryIds({ data: { items: [{ FactoryID: FACTORY_ID }] } }),
+    ).toEqual([FACTORY_ID]);
+  });
+
   it('returns empty for garbage', () => {
     expect(parseFiscalDriveFactoryIds(null)).toEqual([]);
     expect(parseFiscalDriveFactoryIds('oops')).toEqual([]);
@@ -58,5 +64,25 @@ describe('fiscalDrive HTTP', () => {
       message: 'not found',
       status: 404,
     });
+  });
+
+  it('retries List with POST when GET is not allowed', async () => {
+    const localDeviceRequest = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 405, data: { message: 'method not allowed' } })
+      .mockResolvedValueOnce({ ok: true, status: 200, data: [{ FactoryID: FACTORY_ID }] });
+    stubDesktop(localDeviceRequest);
+
+    await expect(listFiscalDrives('http://127.0.0.1:3449')).resolves.toEqual([
+      { FactoryID: FACTORY_ID },
+    ]);
+    expect(localDeviceRequest).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ method: 'GET' }),
+    );
+    expect(localDeviceRequest).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ method: 'POST', body: {} }),
+    );
   });
 });

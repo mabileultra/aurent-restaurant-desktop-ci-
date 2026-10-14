@@ -81,18 +81,32 @@ export function useFiscalDriveSettings({ cashRegisterId, open, onSaved }) {
     setSearching(true);
     setStatusMessage('');
     try {
-      const ids = parseFiscalDriveFactoryIds(await listFiscalDrives(form.baseUrl));
+      const raw = await listFiscalDrives(form.baseUrl);
+      const ids = parseFiscalDriveFactoryIds(raw);
       setFactoryIds(ids);
       if (ids.length === 0) {
-        setStatusMessage(t('cashRegisters.fiscalDrive.noDrives'));
+        const msg = t('cashRegisters.fiscalDrive.noDrives');
+        setStatusMessage(msg);
+        toast.error(msg, { id: 'fiscal-drive-find' });
         return;
       }
       if (ids.length === 1) {
         updateField('factoryId', ids[0]);
         await checkDrive(ids[0]);
+        toast.success(t('cashRegisters.fiscalDrive.foundOne', { factoryId: ids[0] }), {
+          id: 'fiscal-drive-find',
+        });
+        return;
       }
+      updateField('factoryId', ids[0]);
+      setStatusMessage(t('cashRegisters.fiscalDrive.foundMany', { count: ids.length }));
+      toast.success(t('cashRegisters.fiscalDrive.foundMany', { count: ids.length }), {
+        id: 'fiscal-drive-find',
+      });
     } catch (err) {
-      setStatusMessage(err?.message || t('cashRegisters.fiscalDrive.searchFailed'));
+      const msg = err?.message || t('cashRegisters.fiscalDrive.searchFailed');
+      setStatusMessage(msg);
+      toast.error(msg, { id: 'fiscal-drive-find', duration: 8000 });
     } finally {
       setSearching(false);
     }
