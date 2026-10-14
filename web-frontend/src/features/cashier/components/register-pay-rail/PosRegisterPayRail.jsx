@@ -1,7 +1,6 @@
 import { Percent, RotateCcw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import NumericKeypad from '../NumericKeypad';
-import FiscalDriveCashierControls from '../FiscalDriveCashierControls';
 import MultikassaCashierControls from '../MultikassaCashierControls';
 import PosRegisterPayCashPanel from './PosRegisterPayCashPanel';
 import PosRegisterPayMethods from './PosRegisterPayMethods';
@@ -32,7 +31,6 @@ export default function PosRegisterPayRail({
     <aside className="pos-register-pay-rail" aria-label={t('pos.paymentTitle')}>
       <div className="pos-register-pay-rail__fiscal">
         <MultikassaCashierControls />
-        <FiscalDriveCashierControls className="pos-register-pay-rail__fiscal-fd" />
       </div>
       <PosRegisterPayCashPanel
         toPay={rail.toPay}

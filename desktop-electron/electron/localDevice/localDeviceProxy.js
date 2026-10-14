@@ -30,8 +30,15 @@ async function localDeviceRequest(payload = {}) {
   const headers = { Accept: 'application/json', ...(payload.headers || {}) };
   const init = { method, headers };
   if (payload.body != null && method !== 'GET' && method !== 'HEAD') {
-    headers['Content-Type'] = headers['Content-Type'] || 'application/json; charset=utf-8';
-    init.body = typeof payload.body === 'string' ? payload.body : JSON.stringify(payload.body);
+    if (typeof payload.body === 'string') {
+      init.body = payload.body;
+      if (!headers['Content-Type'] && !headers['content-type']) {
+        headers['Content-Type'] = 'application/json; charset=utf-8';
+      }
+    } else {
+      headers['Content-Type'] = headers['Content-Type'] || headers['content-type'] || 'application/json; charset=utf-8';
+      init.body = JSON.stringify(payload.body);
+    }
   }
   const timeoutMs = Number(payload.timeoutMs) > 0 ? Number(payload.timeoutMs) : 15000;
   init.signal = AbortSignal.timeout(timeoutMs);

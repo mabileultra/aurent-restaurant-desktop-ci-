@@ -30,24 +30,86 @@ function factoryPath(factoryId, suffix) {
   return `/FiscalDrive/${suffix}/${encodeURIComponent(String(factoryId || '').trim())}`;
 }
 
-/** JSON-чек → TXID в БД FiscalDriveService. */
-export function getReceiptTxid(baseUrl, factoryId, receipt) {
-  return localDeviceHttpRequest({
-    baseUrl,
-    method: 'POST',
-    path: factoryPath(factoryId, 'Receipt/GetTXID'),
-    body: receipt,
-  });
+const FORM_URLENCODED = { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' };
+
+function isEmptyTxidError(err) {
+  const text = `${err?.message || ''} ${typeof err?.data === 'string' ? err.data : JSON.stringify(err?.data || {})}`;
+  return /invalid TXID|ParseUint:\s*parsing\s*""/i.test(text);
 }
 
-/** Регистрация чека по TXID (идемпотентно при повторе). */
-export function registerReceiptTxid(baseUrl, factoryId, txid) {
-  return localDeviceHttpRequest({
-    baseUrl,
-    method: 'POST',
-    path: factoryPath(factoryId, 'Receipt/RegisterTXID'),
-    body: { TXID: txid },
-  });
+/** Нормализуем TXID к десятичной строке (как ждёт swagger form-поле). */
+export function normalizeReceiptTxid(txid) {
+  if (txid == null) return null;
+  const raw = String(txid).trim();
+  if (!raw) return null;
+  if (!/^\d+$/.test(raw)) return null;
+  return raw;
+}
+
+/** JSON-чек → TXID в БД FiscalDriveService. Swagger: form-поле JsonReceipt. */
+export async function getReceiptTxid(baseUrl, factoryId, receipt) {
+  const path = factoryPath(factoryId, 'Receipt/GetTXID');
+  const json = JSON.stringify(receipt);
+  try {
+    return await localDeviceHttpRequest({
+      baseUrl,
+      method: 'POST',
+      path,
+      body: new URLSearchParams({ JsonReceipt: json }).toString(),
+      headers: FORM_URLENCODED,
+    });
+  } catch (err) {
+    // Старые сборки принимают сырой JSON-чек в body.
+    if (err?.status && err.status !== 400 && err.status !== 415) throw err;
+    return localDeviceHttpRequest({
+      baseUrl,
+      method: 'POST',
+      path,
+      body: receipt,
+    });
+  }
+}
+
+/**
+ * Регистрация чека по TXID (идемпотентно при повторе).
+ * Swagger UI: отдельное поле TXID → form-urlencoded; JSON {TXID} — fallback.
+ */
+export async function registerReceiptTxid(baseUrl, factoryId, txid) {
+  const value = normalizeReceiptTxid(txid);
+  if (!value) {
+    const err = new Error('FiscalDrive: пустой TXID для RegisterTXID');
+    err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
+    throw err;
+  }
+  const path = factoryPath(factoryId, 'Receipt/RegisterTXID');
+  try {
+    return await localDeviceHttpRequest({
+      baseUrl,
+      method: 'POST',
+      path,
+      body: new URLSearchParams({ TXID: value }).toString(),
+      headers: FORM_URLENCODED,
+    });
+  } catch (err) {
+    if (!isEmptyTxidError(err) && Number(err?.status) !== 415) throw err;
+    try {
+      return await localDeviceHttpRequest({
+        baseUrl,
+        method: 'POST',
+        path,
+        body: { TXID: Number(value) },
+      });
+    } catch (jsonErr) {
+      if (!isEmptyTxidError(jsonErr) && Number(jsonErr?.status) !== 415) throw jsonErr;
+      return localDeviceHttpRequest({
+        baseUrl,
+        method: 'POST',
+        path,
+        body: value,
+        headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+      });
+    }
+  }
 }
 
 export function openZReport(baseUrl, factoryId) {
@@ -66,16 +128,42 @@ export function closeZReport(baseUrl, factoryId) {
   });
 }
 
+function pickCI(obj, ...keys) {
+  if (!obj || typeof obj !== 'object') return null;
+  const map = new Map(Object.keys(obj).map((k) => [k.toLowerCase(), k]));
+  for (const key of keys) {
+    const real = map.get(String(key).toLowerCase());
+    if (real == null) continue;
+    const value = obj[real];
+    if (value != null && value !== '') return value;
+  }
+  return null;
+}
+
+function unwrapTxidPayload(raw, depth = 0) {
+  if (raw == null || depth > 4) return raw;
+  if (typeof raw !== 'object' || Array.isArray(raw)) return raw;
+  const direct = pickCI(raw, 'TXID', 'Txid', 'txid');
+  if (direct != null) return raw;
+  for (const key of ['result', 'data', 'payload', 'response', 'value', 'body', 'content']) {
+    const inner = pickCI(raw, key);
+    if (inner == null) continue;
+    if (typeof inner === 'number' || typeof inner === 'string') return inner;
+    if (typeof inner === 'object') return unwrapTxidPayload(inner, depth + 1);
+  }
+  return raw;
+}
+
 /** Ответ GetTXID: число, строка или объект с TXID. */
 export function parseReceiptTxid(raw) {
-  if (raw == null) return null;
-  if (typeof raw === 'number' || typeof raw === 'string') {
-    const value = String(raw).trim();
-    return value || null;
+  const unwrapped = unwrapTxidPayload(raw);
+  if (unwrapped == null) return null;
+  if (typeof unwrapped === 'number' || typeof unwrapped === 'string') {
+    return normalizeReceiptTxid(unwrapped);
   }
-  if (typeof raw === 'object') {
-    const value = pick(raw, 'TXID', 'Txid', 'txid', 'Id', 'id');
-    return value == null ? null : String(value).trim() || null;
+  if (typeof unwrapped === 'object') {
+    const value = pickCI(unwrapped, 'TXID', 'Txid', 'txid', 'Id', 'id');
+    return normalizeReceiptTxid(value);
   }
   return null;
 }

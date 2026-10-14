@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   getFiscalDriveInfo,
   listFiscalDrives,
+  normalizeReceiptTxid,
   parseFiscalDriveFactoryIds,
+  parseReceiptTxid,
+  registerReceiptTxid,
   summarizeFiscalDriveInfo,
 } from './fiscalDriveHttpClient';
 
@@ -84,5 +87,37 @@ describe('fiscalDrive HTTP', () => {
       2,
       expect.objectContaining({ method: 'POST', body: {} }),
     );
+  });
+
+  it('RegisterTXID sends form-urlencoded TXID (swagger field)', async () => {
+    const localDeviceRequest = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      data: { FiscalSign: '1', ReceiptSeq: 1 },
+    });
+    stubDesktop(localDeviceRequest);
+
+    await registerReceiptTxid('http://127.0.0.1:3449', FACTORY_ID, '42');
+    expect(localDeviceRequest).toHaveBeenCalledWith(
+      expect.objectContaining({
+        method: 'POST',
+        body: 'TXID=42',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8',
+        }),
+      }),
+    );
+  });
+});
+
+describe('parseReceiptTxid', () => {
+  it('normalizes plain and wrapped values', () => {
+    expect(normalizeReceiptTxid('15')).toBe('15');
+    expect(parseReceiptTxid(15)).toBe('15');
+    expect(parseReceiptTxid({ TXID: 9 })).toBe('9');
+    expect(parseReceiptTxid({ result: 11 })).toBe('11');
+    expect(parseReceiptTxid({ Code: 0, data: { txid: '3' } })).toBe('3');
+    expect(parseReceiptTxid({ TXID: '' })).toBeNull();
+    expect(parseReceiptTxid('abc')).toBeNull();
   });
 });

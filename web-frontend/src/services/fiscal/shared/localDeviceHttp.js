@@ -48,11 +48,23 @@ async function viaDesktop(desktop, { method, url, body, headers }) {
   return result.data;
 }
 
+function encodeRequestBody(body, headers) {
+  if (body == null) return { body: undefined, headers };
+  if (typeof body === 'string') {
+    return { body, headers };
+  }
+  const next = { ...headers };
+  if (!next['Content-Type'] && !next['content-type']) {
+    next['Content-Type'] = 'application/json; charset=utf-8';
+  }
+  return { body: JSON.stringify(body), headers: next };
+}
+
 async function viaFetch({ method, url, body, headers }) {
-  const init = { method, headers: { Accept: 'application/json', ...(headers || {}) } };
-  if (body != null && method !== 'GET' && method !== 'HEAD') {
-    init.headers['Content-Type'] = 'application/json; charset=utf-8';
-    init.body = JSON.stringify(body);
+  const encoded = encodeRequestBody(body, { Accept: 'application/json', ...(headers || {}) });
+  const init = { method, headers: encoded.headers };
+  if (encoded.body != null && method !== 'GET' && method !== 'HEAD') {
+    init.body = encoded.body;
   }
   let response;
   try {

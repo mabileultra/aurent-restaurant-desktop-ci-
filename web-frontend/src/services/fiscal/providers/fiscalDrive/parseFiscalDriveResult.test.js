@@ -1,15 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
-import { parseReceiptTxid } from './fiscalDriveHttpClient';
 import { FISCAL_STATUS } from '../../fiscalStatus';
-
-describe('parseReceiptTxid', () => {
-  it('accepts number, string and object', () => {
-    expect(parseReceiptTxid(42)).toBe('42');
-    expect(parseReceiptTxid({ TXID: 7 })).toBe('7');
-    expect(parseReceiptTxid(null)).toBeNull();
-  });
-});
 
 describe('parseFiscalDriveRegisterResult', () => {
   it('parses RegisterTXID example from docs', () => {
