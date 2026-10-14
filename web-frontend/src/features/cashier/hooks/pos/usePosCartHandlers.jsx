@@ -159,12 +159,21 @@ export function usePosCartHandlers({
           aslEnabled: Boolean(aslMarkingEnabled),
         });
         if (resolved.status === 'sold') {
-          toast.error(t('pos.markingAlreadySold'));
+          toast.error(t(aslMarkingEnabled
+            ? 'pos.markingAlreadySold'
+            : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
           setSearch('');
           return true;
         }
+        if (!aslMarkingEnabled) {
+          toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
+        }
         if (resolved.status === 'ok' && resolved.product) {
           addMarkedScanToCart(resolved.product);
+          setSearch('');
+          return true;
+        }
+        if (!aslMarkingEnabled) {
           setSearch('');
           return true;
         }

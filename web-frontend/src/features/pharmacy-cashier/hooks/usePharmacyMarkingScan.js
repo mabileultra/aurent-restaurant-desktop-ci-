@@ -74,9 +74,17 @@ export function usePharmacyMarkingScan({
       }
 
       if (resolved.status === 'sold' || afterDup.status === 'sold') {
-        if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
+        if (!silent) {
+          toast.error(t(aslMarkingEnabled
+            ? 'pharmacyCashier.integrations.markingAlreadySold'
+            : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
+        }
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         return;
+      }
+
+      if (!aslMarkingEnabled && !silent) {
+        toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
       }
 
       if (resolved.status === 'ok' && resolved.product) {
@@ -85,6 +93,11 @@ export function usePharmacyMarkingScan({
         if (result?.status === 'duplicate' && !silent) {
           toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         }
+        return;
+      }
+
+      if (!aslMarkingEnabled) {
+        setLastScan({ code: mark, result: resolved.aslResult, product: null });
         return;
       }
 

@@ -113,6 +113,10 @@ export function usePosCheckout({
       }
     },
     onError: (e) => {
+      if (e?.code === 'MARK_ALREADY_SOLD') {
+        toast.error(t('pos.markingSoldLocal'));
+        return;
+      }
       if (e?.message === 'OFFLINE_SHIFT_REQUIRED') {
         toast.error(t('pos.shiftRequired'));
         return;

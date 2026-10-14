@@ -37,7 +37,9 @@ public final class AslMarkingCirculation {
     if (truthy(details.get("firstWithdrawCodeStateUnchanged"))) {
       return true;
     }
-    for (String key : List.of("status", "codeStatus", "state", "withdrawReason", "withdrawalReason")) {
+    for (String key : List.of(
+      "status", "codeStatus", "extendedStatus", "state", "withdrawReason", "withdrawalReason"
+    )) {
       Object value = details.get(key);
       if (value != null && containsSoldMarker(String.valueOf(value))) {
         return true;

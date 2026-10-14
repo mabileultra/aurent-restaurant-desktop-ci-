@@ -77,7 +77,12 @@ public class PharmacyMarkingWithdrawServiceImpl implements PharmacyMarkingWithdr
               fiscalConfirmed ? "LOCAL_ONLY / FISCAL_SUBMITTED — ключ ASL не задан" : "LOCAL_ONLY — ключ ASL не задан"
           );
         }
-        local.add(MarkingWithdrawItemResult.ok(code, fiscalConfirmed ? "FISCAL_SUBMITTED" : "LOCAL_ONLY"));
+        local.add(MarkingWithdrawItemResult.notSent(
+            code,
+            fiscalConfirmed
+                ? "В ASL не отправлено: нет API-ключа"
+                : "В ASL не отправлено: нет API-ключа"
+        ));
       }
       return summarize(local);
     }

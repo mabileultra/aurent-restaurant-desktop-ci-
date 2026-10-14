@@ -2,7 +2,7 @@ import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
 import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
-import { isPharmacyMarkSoldLocally, rememberPharmacySoldMarks } from './pharmacySoldMarksStore';
+import { isPharmacyMarkSoldLocally, rememberPharmacySoldMarks, collectMarksFromCartItems } from './pharmacySoldMarksStore';
 
 function soldHit(status, extra = {}) {
   return {
@@ -70,4 +70,17 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
   }
 
   return { punched: false, aslResult, stock, aslError };
+}
+
+/** До фискального чека: уже пробитый КМ сюда не проходит. */
+export async function assertCartMarksNotPunched(storeId, items) {
+  const marks = collectMarksFromCartItems(items);
+  for (const mark of marks) {
+    const gate = await inspectMarkPunched({ storeId, mark, aslEnabled: false });
+    if (gate.punched) {
+      const err = new Error('Эта маркировка уже пробита в нашей продаже');
+      err.code = 'MARK_ALREADY_SOLD';
+      throw err;
+    }
+  }
 }

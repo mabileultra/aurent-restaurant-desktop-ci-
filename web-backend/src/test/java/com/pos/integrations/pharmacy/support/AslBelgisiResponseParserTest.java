@@ -128,6 +128,22 @@ class AslBelgisiResponseParserTest {
     }
 
     @Test
+    void extendedStatusWithdrawnIsAlreadySold() {
+        String body = """
+            [{
+              "code":"KM2",
+              "status":"INTRODUCED",
+              "extendedStatus":"WITHDRAWN",
+              "gtin":"03077972920015"
+            }]
+            """;
+
+        var parsed = parser.parse("KM2", body);
+        assertTrue(parsed.found());
+        assertTrue(parsed.alreadySold());
+    }
+
+    @Test
     void parsesDocPrivateUnitExample() {
         String body = """
             {

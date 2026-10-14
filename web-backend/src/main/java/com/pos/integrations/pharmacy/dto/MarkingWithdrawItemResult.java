@@ -18,4 +18,9 @@ public record MarkingWithdrawItemResult(
     public static MarkingWithdrawItemResult fail(String code, String message) {
         return new MarkingWithdrawItemResult(code, false, false, null, message);
     }
+
+    /** Ключа нет или ASL не принял отправку — это не успешный вывод. */
+    public static MarkingWithdrawItemResult notSent(String code, String message) {
+        return new MarkingWithdrawItemResult(code, false, false, "NOT_SENT", message);
+    }
 }

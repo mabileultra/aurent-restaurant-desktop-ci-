@@ -26,6 +26,7 @@ import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
+import { assertCartMarksNotPunched } from '../../features/pharmacy-cashier/utils/inspectMarkPunched';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
 
 function connectivityState() {
@@ -419,6 +420,8 @@ export async function posCreateSale({
     typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
       ? crypto.randomUUID()
       : `sale-${Date.now()}`;
+
+  await assertCartMarksNotPunched(storeId, cartItems);
 
   let fiscalPayload = null;
   let capabilities = { enabled: false, printFiscalQr: true };
