@@ -1,5 +1,8 @@
 import { pharmacyIntegrationApi } from '../../../api';
-import { isAslIntegrationDisabledError } from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
+import {
+  isAslApiKeyRejectedError,
+  isAslIntegrationDisabledError,
+} from '../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import { isPlausibleImportMarkCode } from './isPlausibleImportMarkCode';
 import { runLimited } from './runLimited';
 
@@ -62,9 +65,12 @@ export async function verifyImportMarksAgainstAsl({
         });
       }
     } catch (error) {
+      let reason = 'error';
+      if (isAslApiKeyRejectedError(error)) reason = 'badApiKey';
+      else if (isAslIntegrationDisabledError(error)) reason = 'noIntegration';
       rejected.push({
         code: job.code,
-        reason: isAslIntegrationDisabledError(error) ? 'noIntegration' : 'error',
+        reason,
         message: null,
       });
     } finally {

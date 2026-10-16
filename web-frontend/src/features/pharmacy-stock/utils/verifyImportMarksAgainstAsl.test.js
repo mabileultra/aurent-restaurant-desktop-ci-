@@ -55,6 +55,7 @@ describe('verifyImportMarksAgainstAsl', () => {
       notFoundCount: 1,
       alreadySoldCount: 1,
       noIntegrationCount: 0,
+      badApiKeyCount: 0,
       errorCount: 1,
       rejected,
     });

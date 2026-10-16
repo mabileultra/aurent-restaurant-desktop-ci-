@@ -2372,6 +2372,7 @@
       "markingCodePh": "DataMatrix / KM…",
       "markingVerify": "Tekshirish",
       "markingApiDisabled": "Sizda ASL Belgisi integratsiyasi yo‘q: API-kalit kiritilmagan. Admin → Do‘konlar → ASL Belgisi.",
+      "markingApiKeyRejected": "ASL Belgisi API-kalitni qabul qilmadi (401). xTrace kabinetidan biznes-foydalanuvchi Open API kalitini Admin → Do‘konlar → ASL Belgisi ga qayta kiriting.",
       "markingSoldLocalNoKey": "Bu markirovka bizning savdoda allaqachon urilgan. ASL ga yuborilmagan: API-kalit yo‘q.",
       "openAslPortal": "ASL portali",
       "markingStatus": "Holat",

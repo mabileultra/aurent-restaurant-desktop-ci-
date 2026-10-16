@@ -17,6 +17,26 @@ public interface FloorOrderTableLinkRepository extends JpaRepository<FloorOrderT
     Optional<FloorOrderTableLink> findByTableId(Integer tableId);
 
     @Query("""
+        select case when count(l) > 0 then true else false end
+        from FloorOrderTableLink l
+        where l.table.id = :tableId and l.order.status in :statuses
+        """)
+    boolean existsByTableIdAndOrderStatusIn(
+        @Param("tableId") Integer tableId,
+        @Param("statuses") Collection<com.pos.restaurant.order.domain.OrderStatus> statuses
+    );
+
+    @Query("""
+        select case when count(l) > 0 then true else false end
+        from FloorOrderTableLink l
+        where l.table.hall.id = :hallId and l.order.status in :statuses
+        """)
+    boolean existsByHallIdAndOrderStatusIn(
+        @Param("hallId") Integer hallId,
+        @Param("statuses") Collection<com.pos.restaurant.order.domain.OrderStatus> statuses
+    );
+
+    @Query("""
         select l from FloorOrderTableLink l
         join fetch l.order o
         join fetch l.table

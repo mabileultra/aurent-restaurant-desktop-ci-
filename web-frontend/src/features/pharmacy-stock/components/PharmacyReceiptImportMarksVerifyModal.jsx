@@ -38,6 +38,7 @@ export default function PharmacyReceiptImportMarksVerifyModal({
     if (reason === 'alreadySold') return t('pharmacyStock.marks.alreadySold');
     if (reason === 'notFound') return t('pharmacyStock.marks.notFound');
     if (reason === 'noIntegration') return t('pharmacyStock.marks.noIntegration');
+    if (reason === 'badApiKey') return t('pharmacyCashier.integrations.markingApiKeyRejected');
     return t('pharmacyStock.marks.verifyFailed');
   };
 

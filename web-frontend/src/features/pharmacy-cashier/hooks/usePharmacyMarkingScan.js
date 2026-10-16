@@ -83,8 +83,10 @@ export function usePharmacyMarkingScan({
         return;
       }
 
-      if (!aslMarkingEnabled && !silent) {
-        toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
+      if (!aslMarkingEnabled) {
+        if (!silent) toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
+        setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product || null });
+        return;
       }
 
       if (resolved.status === 'ok' && resolved.product) {
@@ -93,11 +95,6 @@ export function usePharmacyMarkingScan({
         if (result?.status === 'duplicate' && !silent) {
           toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         }
-        return;
-      }
-
-      if (!aslMarkingEnabled) {
-        setLastScan({ code: mark, result: resolved.aslResult, product: null });
         return;
       }
 

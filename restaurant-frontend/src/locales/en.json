@@ -1825,7 +1825,7 @@
       "itemsEmpty": "No sales yet",
       "itemsUncategorized": "Uncategorized",
       "closeBlockedOpenOrders": "Close or pay open orders first ({{count}})",
-      "closeBlockedHint": "Open orders: {{count}}. Close/pay them before closing the shift. X and Z can still print now.",
+      "closeBlockedHint": "Open orders: {{count}} (hall / takeaway / delivery, including ones without a table after a hall was removed). Close or cancel them before closing the shift. X and Z can still print now.",
       "reportsHint": "X is an interim report. Z is the final report (print only). “Close shift” prints Z and closes the shift.",
       "required": "Open a shift first",
       "sales": "Checks",

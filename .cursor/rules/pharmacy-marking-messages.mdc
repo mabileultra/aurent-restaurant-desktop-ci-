@@ -20,12 +20,14 @@ When КМ check fails, show **one** clear message — never raw backend English 
 ## Invariants
 
 1. Use `resolveMarkingVerifyUserMessage` / `classifyMarkingVerifyFailure`:
-   - **No ASL integration** (FE off or backend “marking is disabled”) → `markingApiDisabled` / `marks.noIntegration`
+   - **No ASL integration** (FE off or backend “marking is disabled” / “Укажите API-ключ”) → `markingApiDisabled` / `marks.noIntegration`
+   - **Key saved but ASL 401** (“не принял API-ключ”) → `markingApiKeyRejected` / import reason `badApiKey` — **not** “ключа нет”
    - **ASL on, code/product missing** → `markingCatalogNeed` / `marks.notFound`
    - **ASL found name, not in catalog** → `markingCatalogMiss`
 2. Import ASL verify: map disabled errors to reason `noIntegration` (do not store raw `error.message` for every code).
 3. Do not toast `resolvePharmacyApiError` for marking not-found when a classified user message exists.
 4. Before a KM enters the cart, `inspectMarkPunched` always runs: local sold cache, `stock_marks`, `sale_sold_marks`, then ASL already-sold when ASL is on. `IN_STOCK` or a catalog hit must not skip that. Repeat scan shows `markingAlreadySold` («уже пробита»). ASL network failure does not block a code the journal does not know.
+5. No API key (`aslMarkingEnabled` false): toast `markingApiDisabled` and do not add the KM to the cart. Do not fiscalize that marking.
 
 ## Do not
 

@@ -1,0 +1,16 @@
+---
+description: Restaurant shift close blocked by open orders; hall deactivate must not orphan checks
+globs: restaurant-service/**/floor/**/*Deactivate*
+alwaysApply: false
+---
+
+# Restaurant shift ↔ open orders (do not regress)
+
+Closing a cash shift is blocked while any order on that shift is `OPEN` or `BILLING` (`ShiftClosePolicy`), including dine-in checks with `table_id = null` and takeaway/delivery. The floor snapshot only shows **active** halls/tables — orphan open orders are invisible on the plan but still block close.
+
+## Invariants
+
+1. Do not deactivate a table or hall while open/billing orders (or merge links) still reference its tables.
+2. `TableDeactivateHandler` / `HallDeactivateHandler` must check order repositories, not only `TableStatus` / active table count.
+3. Do not “fix” shift close by skipping the open-order gate — cancel/pay the orders (or restore the hall) instead.
+4. UI copy for close-blocked should mention hall / takeaway / delivery and checks without a table after hall removal.

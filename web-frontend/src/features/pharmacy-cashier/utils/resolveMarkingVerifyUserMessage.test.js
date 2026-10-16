@@ -14,6 +14,20 @@ describe('resolveMarkingVerifyUserMessage', () => {
     })).toBe(true);
   });
 
+  it('does not treat rejected API key as missing integration', () => {
+    const err = {
+      response: {
+        data: {
+          message: 'ASL Belgisi не принял API-ключ. Нужен Bearer apiKey бизнес-пользователя (Open API).',
+        },
+      },
+    };
+    expect(isAslIntegrationDisabledError(err)).toBe(false);
+    expect(classifyMarkingVerifyFailure({ aslEnabled: true, aslError: err })).toBe('bad-api-key');
+    expect(resolveMarkingVerifyUserMessage({ aslEnabled: true, aslError: err, t }))
+      .toBe('pharmacyCashier.integrations.markingApiKeyRejected');
+  });
+
   it('says no integration when ASL is off', () => {
     expect(classifyMarkingVerifyFailure({ aslEnabled: false })).toBe('no-integration');
     expect(resolveMarkingVerifyUserMessage({ aslEnabled: false, t }))

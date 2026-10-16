@@ -22,6 +22,17 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
     boolean existsByTableIdAndStatusIn(Integer tableId, Collection<OrderStatus> statuses);
 
     @Query("""
+        select case when count(o) > 0 then true else false end
+        from FloorOrder o
+        join o.table t
+        where t.hall.id = :hallId and o.status in :statuses
+        """)
+    boolean existsByHallIdAndStatusIn(
+        @Param("hallId") Integer hallId,
+        @Param("statuses") Collection<OrderStatus> statuses
+    );
+
+    @Query("""
         select o from FloorOrder o left join fetch o.table
         where o.companyId = :companyId and o.storeId = :storeId and o.status in :statuses
           and o.table is not null

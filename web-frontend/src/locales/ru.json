@@ -2502,6 +2502,7 @@
       "markingCodePh": "DataMatrix / КМ…",
       "markingVerify": "Проверить",
       "markingApiDisabled": "У вас нет интеграции ASL Belgisi: не указан API-ключ. Админка → Магазины → ASL Belgisi.",
+      "markingApiKeyRejected": "ASL Belgisi не принял API-ключ (401). Нужен Open API ключ бизнес-пользователя из кабинета xTrace — вставьте заново в Админка → Магазины → ASL Belgisi.",
       "markingSoldLocalNoKey": "Эта маркировка уже пробита в нашей продаже. В ASL не отправлено: нет API-ключа.",
       "openAslPortal": "Портал ASL",
       "markingStatus": "Статус",
