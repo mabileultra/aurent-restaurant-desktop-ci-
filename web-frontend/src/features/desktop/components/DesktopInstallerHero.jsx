@@ -1,10 +1,13 @@
-import { Apple, CheckCircle2, Loader, Monitor } from 'lucide-react';
-import InstallerDownloadButton from './InstallerDownloadButton';
-import { formatInstallerBytes } from '../utils/installerFormatUtils';
+import { CheckCircle2 } from 'lucide-react';
+import DesktopProductCard from './DesktopProductCard';
 import { isArm64OnlyMacInstaller, isLikelyIntelMac } from '../utils/installerPlatformHint';
 
-export default function DesktopInstallerHero({ t, manifest, version, releasedAt, isLoading, isError }) {
-  const macArm64Only = isArm64OnlyMacInstaller(manifest);
+export default function DesktopInstallerHero({
+  t,
+  cashier,
+  restaurant,
+}) {
+  const macArm64Only = isArm64OnlyMacInstaller(cashier.manifest);
   const showIntelMacWarning = macArm64Only && isLikelyIntelMac();
 
   return (
@@ -12,41 +15,48 @@ export default function DesktopInstallerHero({ t, manifest, version, releasedAt,
       <div className="installer-hero__inner">
         <span className="installer-hero__badge">
           <CheckCircle2 size={14} aria-hidden />
-          {version
-            ? t('installer.versionBadge', { version })
+          {cashier.version
+            ? t('installer.versionBadge', { version: cashier.version })
             : t('installer.versionBadgeFallback')}
         </span>
 
         <h1 className="installer-hero__title">
-          <span className="installer-hero__title-kassa">{t('installer.heroTitleKassa')} </span>
-          <span className="installer-hero__title-brand">{t('installer.heroTitleBrand')}</span>
+          <span className="installer-hero__title-kassa">{t('installer.pageTitle')} </span>
+          <span className="installer-hero__title-brand">{t('installer.pageTitleBrand')}</span>
         </h1>
 
-        <p className="installer-hero__subtitle">{t('installer.subtitle')}</p>
+        <p className="installer-hero__subtitle">{t('installer.pageSubtitle')}</p>
 
-        <div className="installer-hero__downloads">
-          <InstallerDownloadButton
-            href={manifest?.windows?.url}
-            label={t('installer.downloadForWindows')}
-            sublabel={
-              manifest?.windows?.size
-                ? formatInstallerBytes(manifest.windows.size)
-                : t('installer.notAvailable')
-            }
-            icon={Monitor}
-            disabled={!manifest?.windows?.url}
-          />
-          <InstallerDownloadButton
-            href={manifest?.mac?.url}
-            label={t('installer.downloadForMac')}
-            sublabel={
-              manifest?.mac?.size
-                ? formatInstallerBytes(manifest.mac.size)
-                : t('installer.notAvailable')
-            }
-            icon={Apple}
-            disabled={!manifest?.mac?.url}
-          />
+        <div className="installer-products" role="list">
+          <div role="listitem">
+            <DesktopProductCard
+              t={t}
+              title={t('installer.cashierTitle')}
+              brand={t('installer.heroTitleBrand')}
+              description={t('installer.cashierSubtitle')}
+              accent="green"
+              manifest={cashier.manifest}
+              version={cashier.version}
+              releasedAt={cashier.releasedAt}
+              isLoading={cashier.isLoading}
+              isError={cashier.isError}
+            />
+          </div>
+          <div role="listitem">
+            <DesktopProductCard
+              t={t}
+              title={t('installer.restaurantTitle')}
+              brand={t('installer.heroTitleBrand')}
+              description={t('installer.restaurantSubtitle')}
+              accent="slate"
+              manifest={restaurant.manifest}
+              version={restaurant.version}
+              releasedAt={restaurant.releasedAt}
+              isLoading={restaurant.isLoading}
+              isError={restaurant.isError}
+              unavailableText={t('installer.restaurantComingSoon')}
+            />
+          </div>
         </div>
 
         {showIntelMacWarning ? (
@@ -54,19 +64,6 @@ export default function DesktopInstallerHero({ t, manifest, version, releasedAt,
             {t('installer.macIntelUnsupported')}
           </p>
         ) : null}
-
-        <div className="installer-hero__meta">
-          {isLoading ? (
-            <span className="inline-flex items-center gap-2">
-              <Loader size={15} className="animate-spin" />
-              {t('installer.loadingVersion')}
-            </span>
-          ) : version ? (
-            <span>{t('installer.versionLine', { version, date: releasedAt })}</span>
-          ) : isError ? (
-            <span className="installer-hero__meta--warn">{t('installer.manifestUnavailable')}</span>
-          ) : null}
-        </div>
       </div>
     </section>
   );

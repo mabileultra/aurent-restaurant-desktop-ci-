@@ -10,7 +10,7 @@ import '../../../styles/desktop/installer-page.css';
 
 export default function DesktopInstallerPage() {
   const { t } = useTranslation();
-  const { manifest, version, releasedAt, isLoading, isError } = useDesktopInstallerPage();
+  const { cashier, restaurant } = useDesktopInstallerPage();
 
   // В Electron-кассе приложение уже установлено — страница скачивания не нужна.
   if (isDesktopCashier()) {
@@ -21,14 +21,7 @@ export default function DesktopInstallerPage() {
     <div className="public-site">
       <PublicSiteHeader />
       <main className="public-site__main installer-page__main">
-        <DesktopInstallerHero
-          t={t}
-          manifest={manifest}
-          version={version}
-          releasedAt={releasedAt}
-          isLoading={isLoading}
-          isError={isError}
-        />
+        <DesktopInstallerHero t={t} cashier={cashier} restaurant={restaurant} />
         <DesktopInstallerFirstRunGuide t={t} />
         <p className="installer-page__account">
           {t('installer.alreadyHaveAccount')}{' '}

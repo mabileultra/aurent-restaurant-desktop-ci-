@@ -11,6 +11,9 @@
     "start:dev": "electron .",
     "pack": "npm run prepare:all && electron-builder --dir",
     "dist": "npm run prepare:all && electron-builder",
+    "dist:win": "npm run bundle-ui && electron-builder --win --x64",
+    "dist:mac": "npm run bundle-ui && electron-builder --mac",
+    "manifest": "node scripts/generate-manifest.js --dist ./dist --out ../downloads/restaurant-desktop/manifest.json",
     "test": "node --test test/*.test.cjs"
   },
   "build": {

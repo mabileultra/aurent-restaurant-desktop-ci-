@@ -1,0 +1,191 @@
+# Build + upload Aurent Restaurant installers to downloads/restaurant-desktop/.
+# Server impact: mkdir + scp only — no docker compose, no update.sh, no nginx reload.
+name: Release Restaurant Desktop
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_deploy:
+        description: 'Only build artifacts (no upload to server)'
+        required: false
+        default: false
+        type: boolean
+      manifest_only:
+        description: 'Only regenerate manifest.json on server (no rebuild)'
+        required: false
+        default: false
+        type: boolean
+  push:
+    tags:
+      - 'restaurant-desktop-v*'
+
+concurrency:
+  group: restaurant-desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  REMOTE_DIR: /opt/aurent-pos/downloads/restaurant-desktop
+
+jobs:
+  build-win:
+    if: ${{ inputs.manifest_only != true }}
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            restaurant-desktop/package-lock.json
+            restaurant-frontend/package-lock.json
+
+      - name: Install desktop deps
+        working-directory: restaurant-desktop
+        run: npm ci
+
+      - name: Bundle UI + build Windows installer
+        working-directory: restaurant-desktop
+        shell: bash
+        run: |
+          npm run bundle-ui
+          npx electron-builder --win --x64
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        shell: bash
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload Windows installers (static files only)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "mkdir -p ${REMOTE_DIR}"
+          shopt -s nullglob
+          files=(restaurant-desktop/dist/*.exe restaurant-desktop/dist/*.blockmap restaurant-desktop/dist/latest.yml)
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${files[@]}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
+
+      - name: Cleanup SSH key
+        if: always()
+        shell: bash
+        run: rm -f ~/.ssh/deploy_key
+
+  build-mac:
+    if: ${{ inputs.manifest_only != true }}
+    runs-on: macos-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            restaurant-desktop/package-lock.json
+            restaurant-frontend/package-lock.json
+
+      - name: Install desktop deps
+        working-directory: restaurant-desktop
+        run: npm ci
+
+      - name: Bundle UI + build macOS installer
+        working-directory: restaurant-desktop
+        run: |
+          npm run bundle-ui
+          npx electron-builder --mac
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload macOS installers (static files only)
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "mkdir -p ${REMOTE_DIR}"
+          shopt -s nullglob
+          files=(restaurant-desktop/dist/*.dmg restaurant-desktop/dist/*.zip restaurant-desktop/dist/*.blockmap restaurant-desktop/dist/latest-mac.yml)
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${files[@]}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+  publish-manifest:
+    needs: [build-win, build-mac]
+    if: >-
+      always() &&
+      (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
+      (inputs.manifest_only == true || (needs.build-win.result == 'success' && needs.build-mac.result == 'success')) &&
+      (startsWith(github.ref, 'refs/tags/restaurant-desktop-v') || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup SSH
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Pull current installers, write manifest, push manifest only
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          mkdir -p restaurant-desktop/dist
+          VERSION="$(node -p "require('./restaurant-desktop/package.json').version")"
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/Aurent-Restaurant-${VERSION}-*" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/latest.yml" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/latest-mac.yml" \
+            restaurant-desktop/dist/ || true
+          bash deploy/publish-restaurant-desktop.sh
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            downloads/restaurant-desktop/manifest.json \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/manifest.json"
+          echo "Restaurant desktop installers published (static only, no service restart)"
+          cat downloads/restaurant-desktop/manifest.json
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

@@ -16,11 +16,11 @@ export function resolveDownloadAssetUrl(pathOrUrl) {
 }
 
 export function getInstallerManifestUrl() {
-  // Same-origin in dev (Vite proxy), absolute in prod builds.
+  // Separate from grocery cashier (`/downloads/desktop/`).
   if (import.meta.env.DEV) {
-    return '/downloads/desktop/manifest.json';
+    return '/downloads/restaurant-desktop/manifest.json';
   }
-  return resolveDownloadAssetUrl('/downloads/desktop/manifest.json');
+  return resolveDownloadAssetUrl('/downloads/restaurant-desktop/manifest.json');
 }
 
 export async function fetchRestaurantInstallerManifest() {

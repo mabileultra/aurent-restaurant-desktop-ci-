@@ -838,6 +838,14 @@
     "desktopHint": "Kassa dasturi orqali kirish tavsiya etiladi"
   },
   "installer": {
+    "pageTitle": "Ilovalar",
+    "pageTitleBrand": "Aurent",
+    "pageSubtitle": "Mahsulotni tanlang va Windows yoki macOS o‘rnatuvchisini yuklab oling.",
+    "cashierTitle": "Kassa",
+    "cashierSubtitle": "Chakana savdo uchun universal kassa: tez, ishonchli va oson.",
+    "restaurantTitle": "Restoran",
+    "restaurantSubtitle": "Zal, oshxona va restoran kassasi bitta kompyuterda — sozlangandan keyin internetsiz ishlaydi.",
+    "restaurantComingSoon": "Restoran o‘rnatuvchisi tez orada shu yerda bo‘ladi.",
     "heroTitleKassa": "Kassa",
     "heroTitleBrand": "Aurent",
     "subtitle": "Chakana savdo uchun universal kassa: tez, ishonchli va oson. Dasturni yuklab oling va bir necha daqiqada sotishni boshlang.",
@@ -851,7 +859,7 @@
     "notAvailable": "Tez orada",
     "macIntelUnsupported": "Hozirgi o‘rnatuvchi faqat Apple Silicon (M1/M2/M3) uchun. Intel Mac’da ochilmaydi — universal yig‘ilma tayyorlanmoqda. Hozircha desktop-electron → npm start orqali ishga tushiring.",
     "stepsTitle": "Tezkor start",
-    "stepsSubtitle": "Kassada ishlashni 3 oddiy qadamda boshlang",
+    "stepsSubtitle": "Ilova bilan ishlashni 3 oddiy qadamda boshlang",
     "step1Title": "O‘rnatish",
     "step1Text": "Dasturni kompyuterga yuklab oling va o‘rnating.",
     "step2Title": "Uskunalarni sozlash",
