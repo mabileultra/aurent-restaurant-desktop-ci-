@@ -75,8 +75,14 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
+          # No latest.yml: restaurant uses custom manifest.json (no electron-builder publish).
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*.exe restaurant-desktop/dist/*.blockmap restaurant-desktop/dist/latest.yml)
+          files=(restaurant-desktop/dist/*.exe restaurant-desktop/dist/*.blockmap)
+          if ((${#files[@]} == 0)); then
+            echo "No Windows artifacts in restaurant-desktop/dist" >&2
+            ls -la restaurant-desktop/dist || true
+            exit 1
+          fi
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${files[@]}" \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
@@ -131,8 +137,14 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
+          # No latest-mac.yml: restaurant uses custom manifest.json (no electron-builder publish).
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*.dmg restaurant-desktop/dist/*.zip restaurant-desktop/dist/*.blockmap restaurant-desktop/dist/latest-mac.yml)
+          files=(restaurant-desktop/dist/*.dmg restaurant-desktop/dist/*.zip restaurant-desktop/dist/*.blockmap)
+          if ((${#files[@]} == 0)); then
+            echo "No macOS artifacts in restaurant-desktop/dist" >&2
+            ls -la restaurant-desktop/dist || true
+            exit 1
+          fi
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${files[@]}" \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
@@ -176,8 +188,6 @@ jobs:
           VERSION="$(node -p "require('./restaurant-desktop/package.json').version")"
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/Aurent-Restaurant-${VERSION}-*" \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/latest.yml" \
-            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/latest-mac.yml" \
             restaurant-desktop/dist/ || true
           bash deploy/publish-restaurant-desktop.sh
           scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
