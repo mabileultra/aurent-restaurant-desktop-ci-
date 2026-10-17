@@ -42,6 +42,11 @@ function bootLog(line, isErr = false) {
   }
 }
 
+function resolveAppIcon() {
+  const iconPath = path.join(__dirname, '..', 'ra.png');
+  return fs.existsSync(iconPath) ? iconPath : undefined;
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -49,6 +54,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 700,
     title: 'Aurent Restaurant',
+    icon: resolveAppIcon(),
     backgroundColor: '#0f172a',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

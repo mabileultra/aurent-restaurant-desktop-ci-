@@ -40,10 +40,21 @@
       }
     ],
     "mac": {
-      "target": ["dmg", "zip"],
+      "icon": "ra.png",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["universal"]
+        },
+        {
+          "target": "zip",
+          "arch": ["universal"]
+        }
+      ],
       "category": "public.app-category.business"
     },
     "win": {
+      "icon": "ra.png",
       "target": ["nsis"]
     },
     "artifactName": "Aurent-Restaurant-${version}-${os}-${arch}.${ext}"
