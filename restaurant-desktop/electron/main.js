@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const { app, BrowserWindow, ipcMain } = require('electron');
 const { resolveUiRoot, SERVICE_HOST, SERVICE_PORT, HEALTH_URL } = require('./config');
-const { ensureEdgeService, stopEdgeService, getStackStatus } = require('./runtime/edgeStack');
+const { ensureEdgeService, shutdownEdgeStack, getStackStatus } = require('./runtime/edgeStack');
 const { probeHealth } = require('./runtime/health');
 const { startLocalUiServer } = require('./ui/localUiServer');
 const {
@@ -71,8 +71,8 @@ function createWindow() {
 }
 
 async function bootStack() {
-  publishStatus({ phase: 'service', message: 'Starting restaurant-service (edge)…' });
-  bootLog('Checking / starting local restaurant-service…');
+  publishStatus({ phase: 'service', message: 'Starting local DB + restaurant-service…' });
+  bootLog('Starting embedded Postgres (if needed) + restaurant-service…');
 
   try {
     await ensureEdgeService({
@@ -248,7 +248,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', async () => {
-  stopEdgeService();
+  await shutdownEdgeStack({ log: (line) => bootLog(line) });
   if (uiServer) {
     await uiServer.close();
     uiServer = null;

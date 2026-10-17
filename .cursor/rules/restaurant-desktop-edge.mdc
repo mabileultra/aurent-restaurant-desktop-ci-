@@ -53,7 +53,7 @@ Needs **one online** login + full bootstrap. Cold start with zero network is imp
 
 | Cloud today | On PC |
 |---|---|
-| Postgres | Bundled/local Postgres + `restaurant-service` |
+| Postgres | Auto-started embedded Postgres in Electron (`embedded-postgres`, data in userData) — no Docker on hall PCs |
 | Redis | Off → Caffeine |
 | Kafka | Off → `revenue_outbox` PENDING until sync |
 | web-backend (menu/stock) | Local copy + stock outbox |

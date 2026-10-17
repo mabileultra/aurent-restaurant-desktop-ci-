@@ -28,6 +28,10 @@
       "package.json",
       "node_modules/**/*"
     ],
+    "asarUnpack": [
+      "**/node_modules/embedded-postgres/**",
+      "**/node_modules/@embedded-postgres/**"
+    ],
     "extraResources": [
       {
         "from": "ui",
@@ -58,6 +62,14 @@
       "target": ["nsis"]
     },
     "artifactName": "Aurent-Restaurant-${version}-${os}-${arch}.${ext}"
+  },
+  "dependencies": {
+    "embedded-postgres": "18.4.0-beta.17"
+  },
+  "optionalDependencies": {
+    "@embedded-postgres/darwin-arm64": "18.4.0-beta.17",
+    "@embedded-postgres/darwin-x64": "18.4.0-beta.17",
+    "@embedded-postgres/windows-x64": "18.4.0-beta.17"
   },
   "devDependencies": {
     "electron": "^33.2.0",

@@ -3,5 +3,8 @@ dist/
 ui/**
 !ui/.gitkeep
 resources/*.jar
+resources/jre-*/
+resources/jre-download-*
+resources/jre-staging-*
 .DS_Store
 .restaurant-desktop-data/

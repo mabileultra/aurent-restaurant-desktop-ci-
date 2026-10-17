@@ -30,7 +30,7 @@ jobs:
   build-win:
     if: ${{ inputs.manifest_only != true }}
     runs-on: windows-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -50,14 +50,20 @@ jobs:
 
       - name: Install desktop deps
         working-directory: restaurant-desktop
-        run: npm ci
+        shell: bash
+        run: |
+          npm ci
+          npm install @embedded-postgres/windows-x64@18.4.0-beta.17 --no-save --force
 
       - name: Build jar + UI + Windows installer
         working-directory: restaurant-desktop
         shell: bash
+        env:
+          PREPARE_JRE_TARGETS: win-x64
         run: |
           bash ../scripts/prepare-restaurant-desktop.sh
           test -f resources/restaurant-service.jar
+          test -f resources/jre-win-x64/bin/java.exe
           npx electron-builder --win --x64
 
       - name: Setup SSH
@@ -102,7 +108,7 @@ jobs:
   build-mac:
     if: ${{ inputs.manifest_only != true }}
     runs-on: macos-latest
-    timeout-minutes: 60
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -122,13 +128,23 @@ jobs:
 
       - name: Install desktop deps
         working-directory: restaurant-desktop
-        run: npm ci
+        run: |
+          npm ci
+          # Universal DMG: ship both arch Postgres binaries
+          npm install \
+            @embedded-postgres/darwin-arm64@18.4.0-beta.17 \
+            @embedded-postgres/darwin-x64@18.4.0-beta.17 \
+            --no-save --force
 
       - name: Build jar + UI + macOS installer
         working-directory: restaurant-desktop
+        env:
+          PREPARE_JRE_TARGETS: mac-arm64,mac-x64
         run: |
           bash ../scripts/prepare-restaurant-desktop.sh
           test -f resources/restaurant-service.jar
+          test -f resources/jre-mac-arm64/bin/java
+          test -f resources/jre-mac-x64/bin/java
           npx electron-builder --mac
 
       - name: Setup SSH

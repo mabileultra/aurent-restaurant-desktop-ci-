@@ -9,8 +9,10 @@ const {
   JWT_SECRET,
   SERVICE_PORT,
   resolveJarCandidates,
+  resolveJavaBinary,
 } = require('../config');
 const { probeHealth, waitForHealth } = require('./health');
+const { ensureEdgePostgres, stopEdgePostgres } = require('./edgePostgres');
 
 let javaChild = null;
 let startedByUs = false;
@@ -39,9 +41,7 @@ function stopEdgeService() {
 
 /**
  * Ensure edge restaurant-service is up.
- * - If health already OK → reuse (dev may have run scripts/run-restaurant-edge.sh).
- * - Else spawn java -jar with SPRING_PROFILES_ACTIVE=edge.
- * Postgres must already be reachable (docker-compose.restaurant-edge.yml).
+ * Starts local Postgres (embedded) then java -jar — no Docker required.
  */
 async function ensureEdgeService({ isPackaged = false, log = console.log } = {}) {
   const existing = await probeHealth(HEALTH_URL);
@@ -50,15 +50,18 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     return { health: existing, jar: null, reused: true };
   }
 
+  await ensureEdgePostgres({ log });
+
   const jar = findJar(isPackaged);
   if (!jar) {
     throw new Error(
-      'restaurant-service.jar not found. Build jar or set RESTAURANT_SERVICE_JAR. '
-      + 'Also start Postgres: docker compose -f docker-compose.restaurant-edge.yml up -d'
+      'restaurant-service.jar not found. Rebuild installer (prepare copies jar into resources/).'
     );
   }
 
+  const javaBin = resolveJavaBinary(isPackaged);
   log(`[edge] starting jar: ${jar}`);
+  log(`[edge] java: ${javaBin}`);
   const cloudApi = process.env.RESTAURANT_CLOUD_API_URL
     || process.env.RESTAURANT_CLOUD_SYNC_URL
     || '';
@@ -75,7 +78,7 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     RESTAURANT_CLOUD_API_URL: cloudApi || process.env.RESTAURANT_CLOUD_API_URL || '',
   };
 
-  javaChild = spawn('java', ['-jar', jar], {
+  javaChild = spawn(javaBin, ['-jar', jar], {
     env,
     stdio: ['ignore', 'pipe', 'pipe'],
   });
@@ -94,10 +97,18 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     javaChild = null;
     startedByUs = false;
   });
+  javaChild.on('error', (err) => {
+    log(`[edge] java spawn failed: ${err.message}`, true);
+  });
 
   const health = await waitForHealth(HEALTH_URL, { timeoutMs: 120_000 });
   log('[edge] restaurant-service is healthy');
   return { health, jar, reused: false };
+}
+
+async function shutdownEdgeStack({ log = console.log } = {}) {
+  stopEdgeService();
+  await stopEdgePostgres({ log });
 }
 
 function getStackStatus() {
@@ -111,6 +122,7 @@ function getStackStatus() {
 module.exports = {
   ensureEdgeService,
   stopEdgeService,
+  shutdownEdgeStack,
   getStackStatus,
   findJar,
 };
