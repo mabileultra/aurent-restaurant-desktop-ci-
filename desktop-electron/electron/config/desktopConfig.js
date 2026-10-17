@@ -24,16 +24,50 @@ function readUserConfig() {
       return JSON.parse(fs.readFileSync(file, 'utf8'));
     }
   } catch {
-    // ignore invalid config
+    // ignore invalid config on read — callers treat null as empty
   }
   return null;
 }
 
+/**
+ * Безопасная запись: не затираем config при битом JSON;
+ * атомарно (tmp → rename), чтобы весы/принтеры не терялись.
+ */
 function writeUserConfig(patch) {
-  const current = readUserConfig() || {};
+  const file = userConfigPath();
+  let current = {};
+  if (fs.existsSync(file)) {
+    try {
+      current = JSON.parse(fs.readFileSync(file, 'utf8'));
+      if (!current || typeof current !== 'object' || Array.isArray(current)) {
+        current = {};
+      }
+    } catch (err) {
+      const backup = `${file}.corrupt-${Date.now()}`;
+      try {
+        fs.copyFileSync(file, backup);
+      } catch {
+        // ignore
+      }
+      throw new Error(
+        `config.json повреждён — запись отменена, чтобы не стереть принтеры. Бэкап: ${backup}. ${err?.message || ''}`.trim()
+      );
+    }
+  }
+
   const merged = { ...current, ...(patch || {}) };
-  fs.mkdirSync(path.dirname(userConfigPath()), { recursive: true });
-  fs.writeFileSync(userConfigPath(), JSON.stringify(merged, null, 2), 'utf8');
+
+  // Критичные ключи печати не удаляем, даже если patch принёс undefined
+  for (const key of ['stationPrinters', 'billPrinterName', 'receiptPrinterName', 'labelPrinterName']) {
+    if (merged[key] === undefined && current[key] !== undefined) {
+      merged[key] = current[key];
+    }
+  }
+
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  const tmp = `${file}.tmp-${process.pid}-${Date.now()}`;
+  fs.writeFileSync(tmp, JSON.stringify(merged, null, 2), 'utf8');
+  fs.renameSync(tmp, file);
   return merged;
 }
 

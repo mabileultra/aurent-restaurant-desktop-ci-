@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { normalizeHostList } = require('../electron/scales/scale-config.cjs');
+const { normalizeHostList } = require('../electron/scales/scale-hosts.cjs');
 
 test('normalizeHostList merges legacy + list, dedupes', () => {
   const hosts = normalizeHostList({
