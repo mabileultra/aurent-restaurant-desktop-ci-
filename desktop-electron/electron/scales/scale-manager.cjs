@@ -3,10 +3,12 @@ const { tryLoadSerialPort, listSerialPorts } = require('./scale-serial-port.cjs'
 const { createMockReader } = require('./scale-mock.cjs');
 const { readScaleSettings } = require('./scale-config.cjs');
 const { autoDetectPort } = require('./scale-auto-detect.cjs');
+const { createEthernetReader } = require('./scale-ethernet.cjs');
 
 let portInstance = null;
 let parser = null;
 let mockReader = null;
+let ethernetReader = null;
 let lastReading = null;
 let broadcastFn = null;
 let listening = false;
@@ -41,14 +43,56 @@ async function startListening() {
     return { ok: true, mode: 'mock', message: 'Mock scale' };
   }
 
+  // Ethernet (ШТРИХ-ПРИНТ и т.п.)
+  if (settings.transport === 'ethernet') {
+    let host = settings.host;
+    let tcpPort = settings.tcpPort || 1001;
+    if (!host) {
+      const detected = await autoDetectPort({ save: true, prefer: 'ethernet' });
+      if (detected.ok && detected.host) {
+        host = detected.host;
+        tcpPort = detected.tcpPort || 1001;
+      } else {
+        return {
+          ok: false,
+          mode: 'no-host',
+          message: detected.error || 'Ethernet-весы не найдены. Нажмите «Автопоиск».',
+          suggestPicker: true,
+        };
+      }
+    }
+    ethernetReader = createEthernetReader(host, tcpPort, emitReading);
+    listening = true;
+    return { ok: true, mode: 'ethernet', host, tcpPort, family: settings.family };
+  }
+
+  // COM / USB
   const { SerialPort, ReadlineParser, error: serialError } = tryLoadSerialPort();
   if (serialError) {
+    // Нет serialport — пробуем Ethernet как запасной путь.
+    const eth = await autoDetectPort({ save: true, prefer: 'ethernet' });
+    if (eth.ok && eth.host) {
+      ethernetReader = createEthernetReader(eth.host, eth.tcpPort || 1001, emitReading);
+      listening = true;
+      return { ok: true, mode: 'ethernet', host: eth.host, tcpPort: eth.tcpPort, family: 'family-shtrih-print' };
+    }
     return { ok: false, mode: 'unavailable', message: serialError };
   }
 
   let path = settings.port || process.env.POS_SCALE_PORT;
   if (!path) {
     const detected = await autoDetectPort({ save: true });
+    if (detected.ok && detected.transport === 'ethernet' && detected.host) {
+      ethernetReader = createEthernetReader(detected.host, detected.tcpPort || 1001, emitReading);
+      listening = true;
+      return {
+        ok: true,
+        mode: 'ethernet',
+        host: detected.host,
+        tcpPort: detected.tcpPort,
+        family: detected.family || 'family-shtrih-print',
+      };
+    }
     if (detected.ok && detected.port) {
       path = detected.port;
     } else {
@@ -57,7 +101,7 @@ async function startListening() {
         mode: 'no-port',
         message:
           detected.error ||
-          'Весы не найдены. Меню Aurent → «Весы» или подключите COM-порт вручную.',
+          'Весы не найдены. Меню Aurent → «Весы» или «Автопоиск» (COM и Ethernet).',
         suggestPicker: true,
         ports: detected.ports || [],
       };
@@ -97,6 +141,10 @@ async function stopListening() {
   if (mockReader) {
     mockReader.stop();
     mockReader = null;
+  }
+  if (ethernetReader) {
+    ethernetReader.stop();
+    ethernetReader = null;
   }
   if (portInstance?.isOpen) {
     await new Promise((resolve) => {

@@ -1,6 +1,7 @@
 const { parseScaleLine } = require('./scale-parser.cjs');
 const { tryLoadSerialPort, listSerialPorts } = require('./scale-serial-port.cjs');
 const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
+const { autoDetectEthernet } = require('./scale-ethernet.cjs');
 
 const SCALE_NAME_RE =
   /scale|scales|вес|cas|digi|mettler|shtrix|штрих|tm-|pos scale|balance|весы/i;
@@ -66,7 +67,6 @@ function probePort(path, baudRate, timeoutMs = 2800) {
   });
 }
 
-/** Открывается ли порт (без ожидания данных с весов). */
 function probePortOpenOnly(path, baudRate) {
   const { SerialPort, error } = tryLoadSerialPort();
   if (error) return Promise.resolve({ ok: false, error });
@@ -90,18 +90,20 @@ function probePortOpenOnly(path, baudRate) {
   });
 }
 
-/**
- * Автопоиск COM-порта весов. При успехе сохраняет scalePort в config.json.
- */
-async function autoDetectPort({ save = true, baudRate } = {}) {
+async function autoDetectCom({ save = true, baudRate } = {}) {
   const settings = readScaleSettings();
   const rate = Number(baudRate || settings.baudRate || process.env.POS_SCALE_BAUD || 9600);
   const { ports, error: listError } = await listSerialPorts();
   if (listError) {
-    return { ok: false, error: listError, ports: [] };
+    return { ok: false, error: listError, ports: [], transport: 'com' };
   }
   if (!ports.length) {
-    return { ok: false, error: 'COM-порты не найдены. Подключите весы и установите драйвер.', ports: [] };
+    return {
+      ok: false,
+      error: 'COM-порты не найдены',
+      ports: [],
+      transport: 'com',
+    };
   }
 
   const saved = String(settings.port || process.env.POS_SCALE_PORT || '').trim();
@@ -119,9 +121,17 @@ async function autoDetectPort({ save = true, baudRate } = {}) {
   for (const portInfo of tryOrder) {
     const probe = await probePort(portInfo.path, rate);
     if (probe.ok) {
-      if (save) writeScaleSettings({ scalePort: portInfo.path, scaleBaudRate: rate });
+      if (save) {
+        writeScaleSettings({
+          scaleTransport: 'com',
+          scalePort: portInfo.path,
+          scaleBaudRate: rate,
+          scaleFamily: 'weight-generic',
+        });
+      }
       return {
         ok: true,
+        transport: 'com',
         port: portInfo.path,
         baudRate: rate,
         method: 'weight-data',
@@ -135,9 +145,17 @@ async function autoDetectPort({ save = true, baudRate } = {}) {
     const only = ports[0];
     const openProbe = await probePortOpenOnly(only.path, rate);
     if (openProbe.ok) {
-      if (save) writeScaleSettings({ scalePort: only.path, scaleBaudRate: rate });
+      if (save) {
+        writeScaleSettings({
+          scaleTransport: 'com',
+          scalePort: only.path,
+          scaleBaudRate: rate,
+          scaleFamily: 'weight-generic',
+        });
+      }
       return {
         ok: true,
+        transport: 'com',
         port: only.path,
         baudRate: rate,
         method: 'single-com-open',
@@ -149,16 +167,47 @@ async function autoDetectPort({ save = true, baudRate } = {}) {
 
   return {
     ok: false,
-    error: 'Не удалось получить вес ни с одного COM-порта. Выберите порт вручную.',
+    error: 'Не удалось получить вес ни с одного COM-порта',
     ports,
     tried: tryOrder.map((p) => p.path),
+    transport: 'com',
   };
+}
+
+/**
+ * Автопоиск: сначала COM/USB, затем Ethernet (ШТРИХ и др.).
+ * Успех сохраняется в config.json — следующий старт подключается сам.
+ */
+async function autoDetectPort({ save = true, baudRate, prefer } = {}) {
+  const want = String(prefer || '').toLowerCase();
+
+  if (want !== 'ethernet') {
+    const com = await autoDetectCom({ save, baudRate });
+    if (com.ok) return com;
+    if (want === 'com') return com;
+
+    const eth = await autoDetectEthernet({ save });
+    if (eth.ok) return eth;
+
+    return {
+      ok: false,
+      error: [
+        com.error,
+        eth.error,
+      ].filter(Boolean).join(' · ') || 'Весы не найдены (ни COM, ни Ethernet).',
+      com,
+      ethernet: eth,
+    };
+  }
+
+  return autoDetectEthernet({ save });
 }
 
 module.exports = {
   rankPorts,
   probePort,
   probePortOpenOnly,
+  autoDetectCom,
   autoDetectPort,
   scorePort,
 };

@@ -47,3 +47,6 @@ module.exports = {
   showScalePickerWindow,
 };
 
+// Ethernet helpers are available for tests / future PLU adapters.
+module.exports.autoDetectEthernet = require('./scale-ethernet.cjs').autoDetectEthernet;
+

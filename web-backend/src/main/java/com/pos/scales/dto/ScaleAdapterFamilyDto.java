@@ -78,6 +78,16 @@ public record ScaleAdapterFamilyDto(
                 true
             ),
             new ScaleAdapterFamilyDto(
+                "family-shtrih-print",
+                "ШТРИХ-ПРИНТ (семейство)",
+                "Умные весы Штрих-М: Ethernet (и COM при наличии). Автопоиск LAN + вес в кассе.",
+                "ШТРИХ-ПРИНТ М, ШТРИХ-ПРИНТ и близкие",
+                true,
+                false,
+                true,
+                true
+            ),
+            new ScaleAdapterFamilyDto(
                 "family-generic-smart",
                 "Другие умные весы",
                 "Новая марка = тот же контракт",

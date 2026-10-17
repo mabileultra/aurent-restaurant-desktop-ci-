@@ -14,3 +14,4 @@ Web scales UI (`web-frontend/src/scales/scaleBridge.js`) treats Desktop as “ou
 2. `electron/main.js` must call `registerScaleIpc(ipcMain, getMainWindow)` from `electron/scales/index.cjs`.
 3. Keep `serialport` + `@serialport/parser-readline` in dependencies and in `asarUnpack` so COM ports work in packaged builds.
 4. Do not delete `electron/scales/` when refactoring desktop layout — that regression already shipped once (desktop-cashier → desktop-electron).
+5. Auto-detect must cover **both** COM and Ethernet (`scale-auto-detect` → COM first, then `scale-ethernet` LAN scan). Settings persist `scaleTransport` + port or host/tcpPort so the next start reconnects alone.

@@ -47,8 +47,8 @@ function buildPickerHtml() {
   </style>
 </head>
 <body>
-  <h1>Весы (COM-порт)</h1>
-  <p>После установки драйвера Windows создаёт COM-порт. Нажмите «Найти автоматически» или выберите порт из списка.</p>
+  <h1>Весы — COM и Ethernet</h1>
+  <p>«Найти автоматически» ищет USB/COM и весы в локальной сети (ШТРИХ-ПРИНТ и др.), затем сохраняет подключение.</p>
   <div id="status" class="status info">Загрузка…</div>
   <div id="content"></div>
   <label class="field">Скорость (baud)</label>
@@ -65,7 +65,7 @@ function buildPickerHtml() {
     <button class="primary" id="save" disabled>Сохранить</button>
     <button class="secondary" id="cancel">Закрыть</button>
   </div>
-  <p class="hint">Сохранённый порт запоминается — при следующем запуске касса подключится сама. Меню Aurent → «Весы».</p>
+  <p class="hint">Сохранённый COM или IP запоминается — при следующем запуске касса подключается сама.</p>
   <script>
     const content = document.getElementById('content');
     const statusEl = document.getElementById('status');
@@ -125,15 +125,27 @@ function buildPickerHtml() {
     document.getElementById('cancel').onclick = () => window.scalePicker.cancel();
 
     document.getElementById('auto').onclick = async () => {
-      setStatus('Ищем весы на COM-портах…', 'info');
+      setStatus('Ищем весы: COM, затем Ethernet…', 'info');
       try {
         const r = await window.scalePicker.autoDetect();
         if (r.ok) {
-          selected = r.port;
-          if (r.baudRate) baudEl.value = String(r.baudRate);
-          document.getElementById('save').disabled = false;
-          setStatus('Найдено: ' + r.port + (r.reading ? ' (' + r.reading.kg + ' кг)' : ''), 'ok');
-          await load();
+          if (r.transport === 'ethernet' || r.host) {
+            selected = null;
+            document.getElementById('save').disabled = true;
+            setStatus(
+              'Ethernet: ' + r.host + ':' + (r.tcpPort || '') +
+              (r.reading ? ' (' + r.reading.kg + ' кг)' : '') +
+              (r.hint ? ' — ' + r.hint : '') +
+              ' · сохранено, можно закрыть',
+              'ok'
+            );
+          } else {
+            selected = r.port;
+            if (r.baudRate) baudEl.value = String(r.baudRate);
+            document.getElementById('save').disabled = false;
+            setStatus('COM: ' + r.port + (r.reading ? ' (' + r.reading.kg + ' кг)' : ''), 'ok');
+            await load();
+          }
         } else {
           setStatus(r.error || 'Не найдено', 'err');
         }
