@@ -752,7 +752,7 @@
     "desktopRequired": "Desktop-kassa kerak",
     "desktopUpdateRequired": "Aurent Cashier-ni yangilang",
     "desktopUpdateHint": "Bu versiyada tarozi moduli yo‘q — yangi o‘rnatuvchini yuklab oling",
-    "anyModelHint": "Har qanday model COM/USB orqali — og‘irlik kg da keladi",
+    "anyModelHint": "COM/USB yoki Ethernet (SHTRIH va boshqalar) — avtopoqisk saqlaydi",
     "bridgeHint": "Aurent Desktop oching va tarozini sozlang",
     "stable": "barqaror",
     "unstable": "barqaror og‘irlik kutilmoqda",
