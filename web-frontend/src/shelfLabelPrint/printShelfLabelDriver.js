@@ -39,7 +39,7 @@ function injectLabelPageRuleFromCssVars() {
     el.id = LABEL_JOB_PAGE_STYLE_ID;
     document.head.appendChild(el);
   }
-  el.textContent = `@page { size: ${w}mm ${h}mm; margin: ${m}mm; }`;
+  el.textContent = `@page { size: ${w}mm ${h}mm !important; margin: ${m}mm !important; }`;
 }
 
 function prepareLabelPrint() {

@@ -26,7 +26,7 @@ export function prepareSingleLabelPrintPage() {
   const el = document.createElement('style');
   el.id = SINGLE_LABEL_LOCK_STYLE_ID;
   el.textContent = `
-@page { size: ${widthMm}mm ${pageHmm}mm; margin: 0 !important; }
+@page { size: ${widthMm}mm ${pageHmm}mm !important; margin: 0 !important; }
 html, body {
   width: ${widthMm}mm !important;
   height: ${pageHmm}mm !important;

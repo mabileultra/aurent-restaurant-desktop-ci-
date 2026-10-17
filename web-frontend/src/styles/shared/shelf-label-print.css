@@ -196,8 +196,11 @@ html.electron-silent-label.shelflabel-printing-active .shelflabel-barcode-svg * 
 
 html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #pos-label-print-mount,
 html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #shelf-label-print-layer {
+  position: absolute !important;
   left: 0 !important;
   top: 0 !important;
+  margin: 0 !important;
+  transform: none !important;
   width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
   height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
   max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
@@ -225,10 +228,15 @@ html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #
     padding: 0 !important;
   }
 
+  html.electron-silent-label.shelflabel-printing-active #pos-label-print-mount,
+  html.electron-silent-label.shelflabel-printing-active #shelf-label-print-layer,
+  body.shelflabel-printing-active #pos-label-print-mount,
   body.shelflabel-printing-active #shelf-label-print-layer {
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
+    margin: 0 !important;
+    transform: none !important;
     width: calc(var(--label-paper-w-mm, 58) * 1mm) !important;
     height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
     max-height: calc(var(--label-paper-h-mm, 40) * 1mm) !important;
