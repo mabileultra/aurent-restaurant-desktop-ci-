@@ -1,6 +1,7 @@
 import { Apple, Loader, Monitor } from 'lucide-react';
 import InstallerDownloadButton from './InstallerDownloadButton';
 import { formatInstallerBytes } from '../utils/installerFormatUtils';
+import { resolveMacInstallerEntry } from '../utils/installerPlatformHint';
 
 export default function DesktopProductCard({
   t,
@@ -15,6 +16,8 @@ export default function DesktopProductCard({
   isError,
   unavailableText,
 }) {
+  const mac = resolveMacInstallerEntry(manifest);
+
   return (
     <article className={`installer-product installer-product--${accent}`}>
       <header className="installer-product__head">
@@ -38,15 +41,15 @@ export default function DesktopProductCard({
           disabled={!manifest?.windows?.url}
         />
         <InstallerDownloadButton
-          href={manifest?.mac?.url}
+          href={mac?.url}
           label={t('installer.downloadForMac')}
           sublabel={
-            manifest?.mac?.size
-              ? formatInstallerBytes(manifest.mac.size)
+            mac?.size
+              ? formatInstallerBytes(mac.size)
               : t('installer.notAvailable')
           }
           icon={Apple}
-          disabled={!manifest?.mac?.url}
+          disabled={!mac?.url}
         />
       </div>
 

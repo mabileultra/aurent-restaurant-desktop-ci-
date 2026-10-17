@@ -131,12 +131,30 @@ async function fetchOne(os, arch) {
   return finalDir;
 }
 
+function parseTarget(token) {
+  const t = String(token || '').trim();
+  if (t === 'mac-arm64') return ['mac', 'arm64'];
+  if (t === 'mac-x64') return ['mac', 'x64'];
+  if (t === 'win-x64') return ['win', 'x64'];
+  throw new Error(`Unknown JRE target: ${t}`);
+}
+
 async function main() {
   const args = process.argv.slice(2);
   if (args[0] === '--all-release') {
-    await fetchOne('mac', 'arm64');
-    await fetchOne('mac', 'x64');
-    await fetchOne('win', 'x64');
+    await Promise.all([
+      fetchOne('mac', 'arm64'),
+      fetchOne('mac', 'x64'),
+      fetchOne('win', 'x64'),
+    ]);
+    return;
+  }
+  if (args[0] === '--targets' && args[1]) {
+    const list = args[1].split(',').map((s) => s.trim()).filter(Boolean);
+    await Promise.all(list.map((t) => {
+      const [os, arch] = parseTarget(t);
+      return fetchOne(os, arch);
+    }));
     return;
   }
   const os = args[0] || process.platform;

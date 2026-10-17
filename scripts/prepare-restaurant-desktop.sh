@@ -20,16 +20,9 @@ echo "[prepare] copied $(basename "$JAR") → restaurant-desktop/resources/resta
 
 echo "[prepare] fetching portable JRE (clean PC)…"
 # PREPARE_JRE_TARGETS=mac-arm64,mac-x64 | win-x64 | (empty = host)
+# Multiple targets download in parallel via fetch-jre.js --targets
 if [[ -n "${PREPARE_JRE_TARGETS:-}" ]]; then
-  IFS=',' read -ra TARGETS <<< "$PREPARE_JRE_TARGETS"
-  for t in "${TARGETS[@]}"; do
-    case "$t" in
-      mac-arm64) (cd "$ROOT/restaurant-desktop" && node scripts/fetch-jre.js mac arm64) ;;
-      mac-x64)   (cd "$ROOT/restaurant-desktop" && node scripts/fetch-jre.js mac x64) ;;
-      win-x64)   (cd "$ROOT/restaurant-desktop" && node scripts/fetch-jre.js win x64) ;;
-      *) echo "Unknown PREPARE_JRE_TARGETS entry: $t" >&2; exit 1 ;;
-    esac
-  done
+  (cd "$ROOT/restaurant-desktop" && node scripts/fetch-jre.js --targets "$PREPARE_JRE_TARGETS")
 else
   (cd "$ROOT/restaurant-desktop" && node scripts/fetch-jre.js)
 fi

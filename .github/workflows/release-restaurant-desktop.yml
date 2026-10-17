@@ -1,5 +1,6 @@
 # Build + upload Aurent Restaurant installers to downloads/restaurant-desktop/.
 # Server impact: mkdir + scp only — no docker compose, no update.sh, no nginx reload.
+# Speed: separate Mac arch jobs (no universal lipo), JRE cache, one JRE per job.
 name: Release Restaurant Desktop
 
 on:
@@ -21,16 +22,17 @@ on:
 
 concurrency:
   group: restaurant-desktop-release-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   REMOTE_DIR: /opt/aurent-pos/downloads/restaurant-desktop
+  JRE_CACHE_VER: temurin-17-2026-10
 
 jobs:
   build-win:
     if: ${{ inputs.manifest_only != true }}
     runs-on: windows-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -47,6 +49,12 @@ jobs:
           cache-dependency-path: |
             restaurant-desktop/package-lock.json
             restaurant-frontend/package-lock.json
+
+      - name: Cache portable JRE (win-x64)
+        uses: actions/cache@v4
+        with:
+          path: restaurant-desktop/resources/jre-win-x64
+          key: jre-win-x64-${{ env.JRE_CACHE_VER }}
 
       - name: Install desktop deps
         working-directory: restaurant-desktop
@@ -88,7 +96,6 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
-          # No latest.yml: restaurant uses custom manifest.json (no electron-builder publish).
           shopt -s nullglob
           files=(restaurant-desktop/dist/*.exe restaurant-desktop/dist/*.blockmap)
           if ((${#files[@]} == 0)); then
@@ -105,10 +112,10 @@ jobs:
         shell: bash
         run: rm -f ~/.ssh/deploy_key
 
-  build-mac:
+  build-mac-arm64:
     if: ${{ inputs.manifest_only != true }}
     runs-on: macos-latest
-    timeout-minutes: 90
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -126,26 +133,28 @@ jobs:
             restaurant-desktop/package-lock.json
             restaurant-frontend/package-lock.json
 
+      - name: Cache portable JRE (mac-arm64)
+        uses: actions/cache@v4
+        with:
+          path: restaurant-desktop/resources/jre-mac-arm64
+          key: jre-mac-arm64-${{ env.JRE_CACHE_VER }}
+
       - name: Install desktop deps
         working-directory: restaurant-desktop
         run: |
           npm ci
-          # Universal DMG: ship both arch Postgres binaries
-          npm install \
-            @embedded-postgres/darwin-arm64@18.4.0-beta.17 \
-            @embedded-postgres/darwin-x64@18.4.0-beta.17 \
-            --no-save --force
+          npm install @embedded-postgres/darwin-arm64@18.4.0-beta.17 --no-save --force
 
-      - name: Build jar + UI + macOS installer
+      - name: Build jar + UI + macOS arm64 installer
         working-directory: restaurant-desktop
         env:
-          PREPARE_JRE_TARGETS: mac-arm64,mac-x64
+          PREPARE_JRE_TARGETS: mac-arm64
         run: |
           bash ../scripts/prepare-restaurant-desktop.sh
           test -f resources/restaurant-service.jar
           test -f resources/jre-mac-arm64/bin/java
-          test -f resources/jre-mac-x64/bin/java
-          npx electron-builder --mac
+          # One arch only — no universal lipo, smaller pack.
+          npx electron-builder --mac --arm64 -c.mac.target=dmg
 
       - name: Setup SSH
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
@@ -156,7 +165,7 @@ jobs:
           chmod +x deploy/*.sh
           bash deploy/server-setup.sh ci-ssh
 
-      - name: Upload macOS installers (static files only)
+      - name: Upload macOS arm64 installers
         if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
@@ -167,11 +176,89 @@ jobs:
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
-          # No latest-mac.yml: restaurant uses custom manifest.json (no electron-builder publish).
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*.dmg restaurant-desktop/dist/*.zip restaurant-desktop/dist/*.blockmap)
+          files=(restaurant-desktop/dist/*arm64*.dmg restaurant-desktop/dist/*arm64*.blockmap)
           if ((${#files[@]} == 0)); then
-            echo "No macOS artifacts in restaurant-desktop/dist" >&2
+            echo "No macOS arm64 artifacts" >&2
+            ls -la restaurant-desktop/dist || true
+            exit 1
+          fi
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${files[@]}" \
+            "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
+
+      - name: Cleanup SSH key
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
+
+  build-mac-x64:
+    if: ${{ inputs.manifest_only != true }}
+    # Cross-compile x64 Electron on Apple Silicon runner (no universal lipo).
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            restaurant-desktop/package-lock.json
+            restaurant-frontend/package-lock.json
+
+      - name: Cache portable JRE (mac-x64)
+        uses: actions/cache@v4
+        with:
+          path: restaurant-desktop/resources/jre-mac-x64
+          key: jre-mac-x64-${{ env.JRE_CACHE_VER }}
+
+      - name: Install desktop deps
+        working-directory: restaurant-desktop
+        run: |
+          npm ci
+          npm install @embedded-postgres/darwin-x64@18.4.0-beta.17 --no-save --force
+
+      - name: Build jar + UI + macOS x64 installer
+        working-directory: restaurant-desktop
+        env:
+          PREPARE_JRE_TARGETS: mac-x64
+        run: |
+          bash ../scripts/prepare-restaurant-desktop.sh
+          test -f resources/restaurant-service.jar
+          test -f resources/jre-mac-x64/bin/java
+          npx electron-builder --mac --x64 -c.mac.target=dmg
+
+      - name: Setup SSH
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_SSH_KEY_B64: ${{ secrets.DEPLOY_SSH_KEY_B64 }}
+        run: |
+          chmod +x deploy/*.sh
+          bash deploy/server-setup.sh ci-ssh
+
+      - name: Upload macOS x64 installers
+        if: ${{ github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true }}
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER || 'root' }}
+        run: |
+          set -euo pipefail
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+            "${DEPLOY_USER}@${DEPLOY_HOST}" \
+            "mkdir -p ${REMOTE_DIR}"
+          shopt -s nullglob
+          files=(restaurant-desktop/dist/*x64*.dmg restaurant-desktop/dist/*x64*.blockmap)
+          if ((${#files[@]} == 0)); then
+            echo "No macOS x64 artifacts" >&2
             ls -la restaurant-desktop/dist || true
             exit 1
           fi
@@ -184,11 +271,11 @@ jobs:
         run: rm -f ~/.ssh/deploy_key
 
   publish-manifest:
-    needs: [build-win, build-mac]
+    needs: [build-win, build-mac-arm64, build-mac-x64]
     if: >-
       always() &&
       (github.event_name != 'workflow_dispatch' || inputs.skip_deploy != true) &&
-      (inputs.manifest_only == true || (needs.build-win.result == 'success' && needs.build-mac.result == 'success')) &&
+      (inputs.manifest_only == true || (needs.build-win.result == 'success' && needs.build-mac-arm64.result == 'success' && needs.build-mac-x64.result == 'success')) &&
       (startsWith(github.ref, 'refs/tags/restaurant-desktop-v') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10

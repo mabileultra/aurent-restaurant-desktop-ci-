@@ -93,16 +93,15 @@ function main() {
 
   const preferredVersion = readPackageVersion();
   const winName = pickBest(dist, /\.exe$/i, preferredVersion);
-  const macName =
-    pickBest(dist, /mac-universal\.dmg$/i, preferredVersion)
-    || pickBest(dist, /mac-arm64\.dmg$/i, preferredVersion)
-    || pickBest(dist, /mac-x64\.dmg$/i, preferredVersion)
-    || pickBest(dist, /\.dmg$/i, preferredVersion);
+  const macUniversal = pickBest(dist, /mac-universal\.dmg$/i, preferredVersion);
+  const macArm64 = pickBest(dist, /mac-arm64\.dmg$/i, preferredVersion);
+  const macX64 = pickBest(dist, /mac-x64\.dmg$/i, preferredVersion);
+  const macFallback = pickBest(dist, /\.dmg$/i, preferredVersion);
   const zipName = pickBest(dist, /\.zip$/i, preferredVersion);
 
   const fileVersion =
     parseSemver(winName || '')?.raw
-    || parseSemver(macName || '')?.raw
+    || parseSemver(macUniversal || macArm64 || macX64 || macFallback || '')?.raw
     || parseSemver(zipName || '')?.raw
     || preferredVersion
     || '0.0.0';
@@ -112,13 +111,29 @@ function main() {
     releasedAt: new Date().toISOString(),
   };
   if (winName) manifest.windows = buildEntry(dist, winName);
-  if (macName) manifest.mac = buildEntry(dist, macName);
+  if (macArm64) manifest.macArm64 = buildEntry(dist, macArm64);
+  if (macX64) manifest.macX64 = buildEntry(dist, macX64);
+  // Single `mac` for older clients; when both arch builds exist prefer x64 as safer default.
+  if (macUniversal) {
+    manifest.mac = buildEntry(dist, macUniversal);
+  } else if (macArm64 && macX64) {
+    manifest.mac = buildEntry(dist, macX64);
+  } else if (macX64) {
+    manifest.mac = buildEntry(dist, macX64);
+  } else if (macArm64) {
+    manifest.mac = buildEntry(dist, macArm64);
+  } else if (macFallback) {
+    manifest.mac = buildEntry(dist, macFallback);
+  }
   if (zipName) manifest.zip = buildEntry(dist, zipName);
 
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');
   console.log(`manifest → ${out} (v${manifest.version})`);
-  console.log(`  win=${winName || '-'} mac=${macName || '-'} zip=${zipName || '-'}`);
+  console.log(
+    `  win=${winName || '-'} mac=${manifest.mac?.fileName || '-'} `
+    + `arm64=${macArm64 || '-'} x64=${macX64 || '-'} zip=${zipName || '-'}`
+  );
 }
 
 main();
