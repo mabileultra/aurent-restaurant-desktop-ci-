@@ -14,6 +14,7 @@ import {
   shouldShowCashierCompanyCodeField,
   isDesktopCashier,
 } from '../../../utils/authLogin';
+import { isRestaurantDesktop } from '../../../utils/restaurantDesktop';
 import { resolveAuthErrorMessage } from '../../../utils/apiError';
 import { resolveAppHomePath } from '../../../utils/appHomePath';
 import { fetchRestaurantAppAccess } from '../../../utils/fetchRestaurantAppAccess';
@@ -241,6 +242,36 @@ export function useCashierPinLoginPage() {
     setLoading(true);
     setAdminError('');
     try {
+      // Restaurant desktop: first online admin login copies staff hashes into local edge DB.
+      if (isRestaurantDesktop() && typeof window.aurentRestaurant?.bootstrapStaffFromCloud === 'function') {
+        let needsBootstrap = true;
+        try {
+          const status = await window.aurentRestaurant.getEdgeAuthStatus?.();
+          needsBootstrap = !status?.hasStaff || !status?.hasCatalog || !status?.hasStock;
+        } catch {
+          needsBootstrap = true;
+        }
+        // Always refresh catalog/stock when online admin logs in on desktop (down-sync).
+        if (needsBootstrap || navigator.onLine !== false) {
+          toast.loading(t('cashierLogin.edgeBootstrap', {
+            defaultValue: 'Копируем сотрудников и каталог с облака…',
+          }), { id: 'edge-bootstrap' });
+          try {
+            await window.aurentRestaurant.bootstrapStaffFromCloud({ username, password });
+            toast.success(t('cashierLogin.edgeBootstrapDone', {
+              defaultValue: 'Локальные сотрудники и каталог готовы',
+            }), { id: 'edge-bootstrap' });
+          } catch (bootErr) {
+            toast.dismiss('edge-bootstrap');
+            if (needsBootstrap) throw bootErr;
+            // Soft: local already has data; cloud refresh failed
+            toast.error(bootErr?.message || t('cashierLogin.edgeBootstrapPartial', {
+              defaultValue: 'Облако недоступно — работаем с локальной копией',
+            }));
+          }
+        }
+      }
+
       const res = await authApi.login({
         username,
         password,

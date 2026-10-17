@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-047-edge-products" author="pos">
+        <createTable tableName="edge_products">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="name" type="VARCHAR(300)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="barcode" type="VARCHAR(64)"/>
+            <column name="unit_code" type="VARCHAR(32)"/>
+            <column name="tax_rate" type="NUMERIC(5,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cost_price" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="selling_price" type="NUMERIC(18,2)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="stock_qty" type="NUMERIC(18,3)" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="low_stock_alert" type="INT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="ikpu" type="VARCHAR(32)"/>
+            <column name="package_code" type="VARCHAR(32)"/>
+            <column name="unit_of_measure" type="VARCHAR(80)"/>
+            <column name="unit_measure_code" type="VARCHAR(16)"/>
+            <column name="marked_product" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="edge_products" indexName="idx_edge_products_store">
+            <column name="company_id"/>
+            <column name="store_id"/>
+        </createIndex>
+        <createIndex tableName="edge_products" indexName="idx_edge_products_name">
+            <column name="store_id"/>
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,52 @@
+{
+  "name": "aurent-restaurant-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Aurent Restaurant — local-first hall desktop (separate from Aurent Cashier)",
+  "main": "electron/main.js",
+  "scripts": {
+    "bundle-ui": "node scripts/bundle-ui.js",
+    "prepare:all": "bash ../scripts/prepare-restaurant-desktop.sh",
+    "start": "electron .",
+    "start:dev": "electron .",
+    "pack": "npm run prepare:all && electron-builder --dir",
+    "dist": "npm run prepare:all && electron-builder",
+    "test": "node --test test/*.test.cjs"
+  },
+  "build": {
+    "appId": "com.aurent.restaurant",
+    "productName": "Aurent Restaurant",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "ui",
+        "to": "ui"
+      },
+      {
+        "from": "resources",
+        "to": "resources",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "target": ["dmg", "zip"],
+      "category": "public.app-category.business"
+    },
+    "win": {
+      "target": ["nsis"]
+    },
+    "artifactName": "Aurent-Restaurant-${version}-${os}-${arch}.${ext}"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

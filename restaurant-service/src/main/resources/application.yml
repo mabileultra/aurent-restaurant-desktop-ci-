@@ -28,6 +28,10 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET:change-me-use-at-least-32-chars-for-hs256!!}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+  pin:
+    # Same secret as identity so copied pin_digest values verify offline
+    secret: ${PIN_SECRET:${JWT_SECRET:aurent-default-pin-secret}}
   gateway:
     context-secret: ${GATEWAY_CONTEXT_SECRET:}
   pos:
@@ -40,6 +44,11 @@ app:
     send-timeout-ms: 10000
     retry-ms: 30000
   restaurant:
+    edge:
+      enabled: false
+      bootstrap-secret: ${RESTAURANT_EDGE_BOOTSTRAP_SECRET:}
+      cloud-sync-url: ${RESTAURANT_CLOUD_SYNC_URL:}
+      cloud-sync-token: ${RESTAURANT_CLOUD_SYNC_TOKEN:}
     redis:
       enabled: ${RESTAURANT_REDIS_ENABLED:false}
       host: ${REDIS_HOST:localhost}

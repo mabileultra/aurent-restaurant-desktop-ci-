@@ -27,7 +27,9 @@ public class SecurityConfig {
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                .requestMatchers("/rst/**").authenticated()
+                // Edge local auth (only beans exist when app.restaurant.edge.enabled=true)
+                .requestMatchers("/auth/**", "/edge/auth/**", "/edge/bootstrap/**", "/edge/sync/**").permitAll()
+                .requestMatchers("/rst/**", "/products/**").authenticated()
                 .anyRequest().denyAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

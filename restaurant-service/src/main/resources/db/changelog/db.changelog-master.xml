@@ -50,5 +50,8 @@
     <include file="db/changelog/v43-local-first-events.xml"/>
     <include file="db/changelog/v44-store-print-profile.xml"/>
     <include file="db/changelog/v45-menu-item-fiscal.xml"/>
+    <include file="db/changelog/v46-edge-staff.xml"/>
+    <include file="db/changelog/v47-edge-products.xml"/>
 
 </databaseChangeLog>
+

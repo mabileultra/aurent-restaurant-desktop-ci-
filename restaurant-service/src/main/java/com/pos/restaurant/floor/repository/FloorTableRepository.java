@@ -36,4 +36,14 @@ public interface FloorTableRepository extends JpaRepository<FloorTable, Integer>
         @Param("companyId") Integer companyId,
         @Param("storeId") Integer storeId
     );
+
+    @Query("""
+        select t from FloorTable t join fetch t.hall h
+        where t.companyId = :companyId and t.storeId = :storeId
+        order by h.sortOrder asc, t.code asc
+        """)
+    List<FloorTable> findByCompanyIdAndStoreIdOrderByHallAndCode(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId
+    );
 }

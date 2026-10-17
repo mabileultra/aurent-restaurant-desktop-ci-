@@ -1,0 +1,78 @@
+---
+description: Full plan — autonomous restaurant desktop (edge), not cashier
+globs: restaurant-desktop/**/*,restaurant-service/**/*,restaurant-frontend/**/*,scripts/run-restaurant-edge.sh,docker-compose.restaurant-edge.yml
+alwaysApply: false
+---
+
+# Restaurant desktop (edge) — full plan
+
+## Goal
+
+Install on the hall PC → **entire restaurant stack** runs on that machine.
+Same UX online and offline. Cloud only syncs in the background.
+
+**Restaurant касса is in scope** (bill, cash/card pay, shift, receipt print, OFD queue) — it is part of this desktop.
+**Out of scope:** grocery/pharmacy product «Aurent Cashier», its `pos-offline.db`, and aurent.uz retail POS. Do not merge those apps or DBs.
+
+## What lives on the PC
+
+| Layer | On this PC |
+|---|---|
+| Shell | Separate `restaurant-desktop` (Electron), not Aurent Cashier |
+| UI | Full `restaurant-frontend`: floor, orders, kitchen, **restaurant касса (pay/shift/receipt)**, admin, menu, recipes, restaurant stock, hall reports |
+| API | `restaurant-service` (edge) on localhost — hall + restaurant cash ops |
+| DB | Local Postgres: orders, tables, menu, shifts, payments, kitchen, outboxes |
+| Auth | Local staff / PIN / roles / JWT (after one online bootstrap) |
+| Catalog + stock | Local copy of what is now in web-backend; stock moves → queue |
+| Print | Local receipt / kitchen printers |
+| Status strip | Online/offline + pending queue counts (not a mode switch) |
+| LAN | This PC = hub for kitchen / second screen / waiter phones on restaurant Wi‑Fi |
+
+## Boundaries
+
+### Always local (no internet required after bootstrap)
+
+Floor, open table, dishes, modifiers, send to kitchen, cancel, bill, **restaurant касса** (cash pay, card→queue, shift open/close, receipt), local print, restaurant admin (menu, halls, recipes, local stock).
+
+### Queued + explicit confirm (bank / OFD)
+
+Card pay and cloud OFD fiscalization:
+
+1. Without bank/OFD link → **do not fail the hall flow**; put payload in a **dedicated local queue** (pending fiscal / pending card).
+2. When link is back → UI asks: «Есть N чеков в очереди. Отправить в ОФД?» → user presses **Да**.
+3. Only then send. Fail → stay in queue, retry. Success → clear queue item; cloud sync gets final result with **idempotent id**.
+4. Never silent auto-send of OFD/card queue without that confirm.
+
+Cash / kitchen / shift sync to cloud can stay background without that dialog.
+
+### First launch
+
+Needs **one online** login + full bootstrap. Cold start with zero network is impossible.
+
+## Cloud replacements
+
+| Cloud today | On PC |
+|---|---|
+| Postgres | Bundled/local Postgres + `restaurant-service` |
+| Redis | Off → Caffeine |
+| Kafka | Off → `revenue_outbox` PENDING until sync |
+| web-backend (menu/stock) | Local copy + stock outbox |
+| identity-service | Local staff hashes + local JWT after bootstrap |
+
+## Phases (strict order)
+
+1. **Edge profile** — done (`application-edge.yml`, no Redis/Kafka).
+2. **`restaurant-desktop` shell** — done (Electron + local UI proxy).
+3. **Local auth** — done (`edge_staff`, `/auth/*`, identity export, desktop bootstrap).
+4. **Bootstrap pull** — done: halls/tables/menu/stations/modifiers/print profile/recipes/open shift + `edge_products` stock via `/products` cloud pages.
+5. **Bidirectional sync** — up path: `POST /edge/sync/push` → cloud `POST /rst/edge/sync/ingest` (idempotent). Down catalog re-bootstrap on next admin login. Full conflict audit still iterative.
+6. **OFD/card queue UX** — done on desktop: no silent flush; `OfdPendingConfirmBar` asks «Отправить в ОФД?».
+7. **LAN hub** — `RESTAURANT_LAN_HUB=1` binds UI to `0.0.0.0` (window still localhost).
+8. **Acceptance** — manual checklist on hall PC after cloud deploy of export/ingest endpoints.
+
+## Invariants
+
+- Hall UI talks **only** to local `restaurant-service`, not r-aurent.uz for ops.
+- Status strip shows link + queue sizes; buttons do not switch to a “backup scenario”.
+- Grocery/pharmacy «Aurent Cashier» + `pos-offline.db` stay out of scope; **restaurant касса** stays in scope.
+- Site r-aurent.uz remains cloud SaaS; desktop is a separate product install.

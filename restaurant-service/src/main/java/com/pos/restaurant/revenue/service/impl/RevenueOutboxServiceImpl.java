@@ -2,6 +2,7 @@ package com.pos.restaurant.revenue.service.impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.restaurant.recipe.dto.IngredientConsumeRequest;
+import com.pos.restaurant.revenue.config.PosCoreProperties;
 import com.pos.restaurant.revenue.config.RestaurantKafkaProperties;
 import com.pos.restaurant.revenue.domain.RevenueOutboxChannel;
 import com.pos.restaurant.revenue.entity.RevenueOutbox;
@@ -31,6 +32,7 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
 
     private final RevenueOutboxRepository outboxRepository;
     private final RestaurantKafkaProperties kafkaProperties;
+    private final PosCoreProperties posCoreProperties;
     private final ObjectProvider<KafkaTemplate<String, Object>> domainKafka;
     private final ObjectProvider<KafkaTemplate<String, FinanceIntegrationMessage>> financeKafka;
     private final ObjectMapper objectMapper;
@@ -81,9 +83,24 @@ public class RevenueOutboxServiceImpl implements RevenueOutboxService {
         if ("SENT".equals(row.getStatus())) {
             return;
         }
-        if (row.getChannel() != RevenueOutboxChannel.STOCK_CONSUME
-            && row.getChannel() != RevenueOutboxChannel.STOCK_RESTORE
-            && !kafkaProperties.isEnabled()) {
+        boolean stock = row.getChannel() == RevenueOutboxChannel.STOCK_CONSUME
+            || row.getChannel() == RevenueOutboxChannel.STOCK_RESTORE;
+        // Edge / offline: Kafka off → keep SALE/FINANCE PENDING for later HTTP sync.
+        // Stock: apply via PosInventoryClient (EdgePosInventoryClient when edge) then mark SENT.
+        if (stock) {
+            if (!posCoreProperties.isEnabled()) {
+                boolean ok = row.getChannel() == RevenueOutboxChannel.STOCK_CONSUME
+                    ? publishStockConsume(row)
+                    : publishStockRestore(row);
+                if (ok) {
+                    row.setStatus("SENT");
+                    row.setLastError(null);
+                    row.setNextRetryAt(null);
+                    outboxRepository.save(row);
+                }
+                return;
+            }
+        } else if (!kafkaProperties.isEnabled()) {
             return;
         }
         boolean ok = switch (row.getChannel()) {

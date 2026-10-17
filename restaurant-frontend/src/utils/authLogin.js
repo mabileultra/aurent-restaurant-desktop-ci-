@@ -6,6 +6,8 @@ export const COMPANY_CODE_STORAGE_KEY = 'pos.companyLoginCode';
 
 export function isDesktopCashier() {
   if (typeof window === 'undefined') return false;
+  // Restaurant hall desktop is a different Electron shell — not grocery cashier.
+  if (window.aurentRestaurant?.isDesktop) return false;
   if (window.desktopCashier?.isDesktop) return true;
   // Запасной признак: preload мог не успеть или старая сборка без bridge
   return typeof navigator !== 'undefined' && /Electron/i.test(navigator.userAgent);

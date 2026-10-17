@@ -1,0 +1,25 @@
+# Minimal deps for restaurant-service edge profile (no Redis, Kafka, gateway).
+# Usage:
+#   docker compose -f docker-compose.restaurant-edge.yml up -d
+#   SPRING_PROFILES_ACTIVE=edge ./mvnw -pl restaurant-service spring-boot:run
+
+services:
+  restaurant-db:
+    image: postgres:15-alpine
+    container_name: masterpiece-restaurant-edge-db
+    environment:
+      POSTGRES_DB: restaurant_db
+      POSTGRES_USER: restaurant_user
+      POSTGRES_PASSWORD: restaurant_password
+    ports:
+      - "5439:5432"
+    volumes:
+      - restaurant_edge_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U restaurant_user -d restaurant_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  restaurant_edge_pg_data:

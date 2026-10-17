@@ -1,0 +1,37 @@
+# Edge profile: restaurant hall PC without cloud Redis / Kafka / web-backend.
+# Requires only local Postgres (e.g. docker compose restaurant-db on :5439).
+# JWT validated with app.jwt.secret; local staff via /auth/* + /edge/auth/bootstrap-staff.
+#
+# Run:
+#   SPRING_PROFILES_ACTIVE=edge ./mvnw -pl restaurant-service spring-boot:run
+#   or: scripts/run-restaurant-edge.sh
+
+server:
+  port: ${RESTAURANT_SERVER_PORT:8087}
+
+spring:
+  datasource:
+    url: ${RESTAURANT_DB_URL:jdbc:postgresql://localhost:5439/restaurant_db}
+    username: ${RESTAURANT_DB_USERNAME:restaurant_user}
+    password: ${RESTAURANT_DB_PASSWORD:restaurant_password}
+
+app:
+  pos:
+    # Stock consume stays in revenue_outbox until cloud/local POS sync exists.
+    enabled: false
+  kafka:
+    enabled: false
+  restaurant:
+    redis:
+      enabled: false
+    edge:
+      enabled: true
+      bootstrap-secret: ${RESTAURANT_EDGE_BOOTSTRAP_SECRET:edge-dev-bootstrap}
+      cloud-sync-url: ${RESTAURANT_CLOUD_SYNC_URL:${RESTAURANT_CLOUD_API_URL:}}
+      cloud-sync-token: ${RESTAURANT_CLOUD_SYNC_TOKEN:}
+      sync-interval-ms: ${RESTAURANT_EDGE_SYNC_INTERVAL_MS:60000}
+
+management:
+  health:
+    redis:
+      enabled: false

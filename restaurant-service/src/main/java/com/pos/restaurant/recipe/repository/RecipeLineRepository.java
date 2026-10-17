@@ -3,6 +3,8 @@ package com.pos.restaurant.recipe.repository;
 import com.pos.restaurant.recipe.entity.RecipeLine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
@@ -12,7 +14,12 @@ public interface RecipeLineRepository extends JpaRepository<RecipeLine, UUID> {
 
     List<RecipeLine> findByRecipeIdOrderBySortOrderAscProductNameAsc(UUID recipeId);
 
-    List<RecipeLine> findByRecipeIdIn(Collection<UUID> recipeIds);
+    @Query("""
+        select l from RecipeLine l
+        join fetch l.recipe
+        where l.recipe.id in :ids
+        """)
+    List<RecipeLine> findByRecipeIdIn(@Param("ids") Collection<UUID> ids);
 
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     void deleteByRecipeId(UUID recipeId);

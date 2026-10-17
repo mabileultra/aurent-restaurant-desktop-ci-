@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-046-edge-staff" author="pos">
+        <createTable tableName="edge_staff">
+            <column name="user_id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_login_code" type="VARCHAR(16)"/>
+            <column name="username" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="VARCHAR(200)"/>
+            <column name="full_name" type="VARCHAR(300)"/>
+            <column name="role" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="password_hash" type="VARCHAR(200)"/>
+            <column name="pin_hash" type="VARCHAR(200)"/>
+            <column name="store_ids_json" type="TEXT"/>
+            <column name="allowed_modules_json" type="TEXT"/>
+            <column name="can_request_bill" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP WITH TIME ZONE" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addUniqueConstraint tableName="edge_staff" columnNames="username"
+            constraintName="uk_edge_staff_username"/>
+        <createIndex tableName="edge_staff" indexName="idx_edge_staff_company">
+            <column name="company_id"/>
+        </createIndex>
+        <createIndex tableName="edge_staff" indexName="idx_edge_staff_company_code">
+            <column name="company_login_code"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

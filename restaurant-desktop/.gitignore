@@ -1,0 +1,7 @@
+node_modules/
+dist/
+ui/**
+!ui/.gitkeep
+resources/*.jar
+.DS_Store
+.restaurant-desktop-data/

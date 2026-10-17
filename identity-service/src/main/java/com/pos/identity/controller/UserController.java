@@ -1,9 +1,11 @@
 package com.pos.identity.controller;
 
+import com.pos.identity.dto.auth.EdgeStaffExportResponse;
 import com.pos.identity.dto.user.CreateUserRequest;
 import com.pos.identity.dto.user.UpdateUserRequest;
 import com.pos.identity.dto.user.UserResponse;
 import com.pos.identity.service.UserService;
+import com.pos.identity.service.auth.EdgeStaffExportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -33,6 +35,7 @@ import java.util.UUID;
 public class UserController {
 
     private final UserService userService;
+    private final EdgeStaffExportService edgeStaffExportService;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER')")
@@ -40,6 +43,14 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = "Список пользователей")
     public ResponseEntity<List<UserResponse>> list() {
         return ResponseEntity.ok(userService.findAll());
+    }
+
+    @GetMapping("/edge-staff-export")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN', 'MANAGER')")
+    @Operation(summary = "Export staff hashes for restaurant-desktop offline bootstrap")
+    @ApiResponse(responseCode = "200", description = "Staff rows with password/PIN hashes")
+    public ResponseEntity<EdgeStaffExportResponse> edgeStaffExport() {
+        return ResponseEntity.ok(edgeStaffExportService.exportForCurrentCompany());
     }
 
     @GetMapping("/pos-roster")
