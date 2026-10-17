@@ -1,5 +1,5 @@
 /**
- * Каталог семейств адаптеров + выгрузка PLU на активный адаптер.
+ * Каталог семейств адаптеров + выгрузка PLU (на все сохранённые Ethernet-весы).
  */
 const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
 const { pushPluToShtrih, DEFAULT_UDP_PORT } = require('./scale-shtrih-udp.cjs');
@@ -17,7 +17,7 @@ const ADAPTERS = [
   {
     id: 'family-shtrih-print',
     name: 'ШТРИХ-ПРИНТ',
-    description: 'Ethernet UDP (порт 1111): вес + выгрузка PLU на клавиши весов.',
+    description: 'Ethernet UDP (порт 1111): вес + выгрузка PLU на все сохранённые весы.',
     modelsHint: 'ШТРИХ-ПРИНТ М и близкие',
     family: true,
     readyNow: true,
@@ -49,6 +49,20 @@ function setActiveAdapter(adapterId) {
   return getActiveAdapter();
 }
 
+function resolveShtrihTargets(settings) {
+  const fromList = Array.isArray(settings.hosts) ? settings.hosts : [];
+  if (fromList.length) {
+    return fromList.map((h) => ({
+      host: h.host,
+      udpPort: Number(h.udpPort) || DEFAULT_UDP_PORT,
+      label: h.label || '',
+    }));
+  }
+  const host = String(settings.host || '').trim();
+  if (!host) return [];
+  return [{ host, udpPort: Number(settings.tcpPort) || DEFAULT_UDP_PORT, label: '' }];
+}
+
 /**
  * @param {Array} items — строки из GET /scales/sync/export
  */
@@ -63,13 +77,60 @@ async function pushPlu(items) {
     };
   }
 
-  if (active.id === 'family-shtrih-print') {
-    const host = settings.host;
-    const udpPort = Number(settings.tcpPort) || DEFAULT_UDP_PORT;
-    return pushPluToShtrih(items, { host, udpPort });
+  if (active.id !== 'family-shtrih-print') {
+    return { ok: false, message: 'PLU push для этого адаптера ещё не реализован' };
   }
 
-  return { ok: false, message: 'PLU push для этого адаптера ещё не реализован' };
+  const targets = resolveShtrihTargets(settings);
+  if (!targets.length) {
+    return {
+      ok: false,
+      message: 'Нет сохранённых Ethernet-весов. Aurent → Весы → добавьте IP (можно несколько).',
+    };
+  }
+
+  const results = [];
+  let okCount = 0;
+  let pushedTotal = 0;
+
+  for (const target of targets) {
+    const res = await pushPluToShtrih(items, {
+      host: target.host,
+      udpPort: target.udpPort,
+    });
+    results.push({
+      host: target.host,
+      udpPort: target.udpPort,
+      label: target.label,
+      ok: Boolean(res.ok),
+      pushed: res.pushed || 0,
+      message: res.message || res.hint || '',
+    });
+    if (res.ok) {
+      okCount += 1;
+      pushedTotal = res.pushed || pushedTotal;
+    }
+  }
+
+  if (okCount === 0) {
+    return {
+      ok: false,
+      message: 'Не удалось выгрузить ни на одни весы: ' + results.map((r) => r.host + ' — ' + r.message).join('; '),
+      devices: results,
+    };
+  }
+
+  const fail = results.filter((r) => !r.ok);
+  return {
+    ok: true,
+    pushed: pushedTotal,
+    deviceCount: okCount,
+    deviceTotal: targets.length,
+    devices: results,
+    message: fail.length
+      ? `Выгружено на ${okCount} из ${targets.length} весов`
+      : `Выгружено на ${okCount} весов`,
+  };
 }
 
 module.exports = {
@@ -77,4 +138,5 @@ module.exports = {
   getActiveAdapter,
   setActiveAdapter,
   pushPlu,
+  resolveShtrihTargets,
 };

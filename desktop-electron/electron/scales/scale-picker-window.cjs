@@ -65,11 +65,21 @@ function buildPickerHtml() {
     .footer button { width: 100%; }
     .hint { font-size: 0.72rem; color: #64748b; margin: 8px 0 0; line-height: 1.35; }
     .empty { color: #991b1b; font-size: 0.82rem; margin: 0; }
+    .host-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc;
+      font-size: 0.85rem;
+    }
+    .host-row .path { font-weight: 700; }
+    .host-row button.tiny {
+      flex: 0; min-width: auto; padding: 4px 8px; font-size: 0.72rem; background: #fee2e2; color: #991b1b;
+    }
+    .grid3 { display: grid; grid-template-columns: 1.2fr 0.7fr 1fr; gap: 8px; }
   </style>
 </head>
 <body>
   <h1>Настройка весов</h1>
-  <p class="lead">COM и Ethernet — отдельно. Сохраните тот способ, которым подключены весы.</p>
+  <p class="lead">COM и Ethernet — отдельно. Можно сохранить <b>несколько</b> ШТРИХ по IP — PLU уйдёт на все.</p>
   <div id="status" class="status info">Загрузка…</div>
 
   <div class="panels">
@@ -95,22 +105,28 @@ function buildPickerHtml() {
 
     <!-- ═══ Ethernet ═══ -->
     <section class="panel" id="panel-eth">
-      <h2>2. Ethernet (LAN) — ШТРИХ</h2>
-      <p class="sub">ПК и весы в одной подсети. Для ШТРИХ-ПРИНТ: IP + <b>UDP-порт 1111</b> (из меню весов). После сохранения можно выгрузить PLU из Aurent.</p>
-      <div class="grid2">
+      <h2>2. Ethernet — список ШТРИХ</h2>
+      <p class="sub">Добавьте все весы (IP + UDP <b>1111</b>). Выгрузка PLU из Aurent пойдёт на весь список.</p>
+      <div id="hosts-list" class="list" style="max-height:120px;margin-bottom:8px"></div>
+      <div class="grid3">
         <div>
           <label class="field" for="host">IP весов</label>
           <input id="host" type="text" placeholder="192.168.0.203" autocomplete="off" />
         </div>
         <div>
-          <label class="field" for="tcpPort">UDP-порт</label>
+          <label class="field" for="tcpPort">UDP</label>
           <input id="tcpPort" type="number" min="1" max="65535" value="1111" />
+        </div>
+        <div>
+          <label class="field" for="hostLabel">Имя (зал)</label>
+          <input id="hostLabel" type="text" placeholder="Зал 1" autocomplete="off" />
         </div>
       </div>
       <div class="actions">
-        <button class="accent" id="auto-eth" type="button">Найти Ethernet</button>
-        <button class="secondary" id="test-eth" type="button">Проверить Ethernet</button>
-        <button class="primary" id="save-eth" type="button">Сохранить Ethernet</button>
+        <button class="primary" id="add-eth" type="button">Добавить в список</button>
+        <button class="secondary" id="test-eth" type="button">Проверить</button>
+        <button class="accent" id="auto-eth" type="button">Найти в сети</button>
+        <button class="secondary" id="save-eth-list" type="button">Сохранить список</button>
       </div>
     </section>
   </div>
@@ -125,9 +141,12 @@ function buildPickerHtml() {
     const baudEl = document.getElementById('baud');
     const hostEl = document.getElementById('host');
     const tcpPortEl = document.getElementById('tcpPort');
+    const hostLabelEl = document.getElementById('hostLabel');
     const comListEl = document.getElementById('com-list');
+    const hostsListEl = document.getElementById('hosts-list');
     let ports = [];
     let selected = null;
+    let hosts = [];
 
     function setStatus(text, kind) {
       statusEl.textContent = text;
@@ -156,12 +175,35 @@ function buildPickerHtml() {
       });
     }
 
+    function renderHosts() {
+      if (!hosts.length) {
+        hostsListEl.innerHTML = '<p class="empty" style="color:#64748b">Список пуст — добавьте IP весов ниже.</p>';
+        return;
+      }
+      hostsListEl.innerHTML = hosts.map((h, idx) => {
+        const title = (h.label ? h.label + ' · ' : '') + h.host + ':' + (h.udpPort || 1111);
+        return '<div class="host-row" data-idx="' + idx + '">'
+          + '<span class="path">' + title + '</span>'
+          + '<button type="button" class="tiny" data-remove="' + idx + '">Удалить</button></div>';
+      }).join('');
+      hostsListEl.querySelectorAll('[data-remove]').forEach(btn => {
+        btn.onclick = (e) => {
+          e.stopPropagation();
+          const i = Number(btn.getAttribute('data-remove'));
+          hosts.splice(i, 1);
+          renderHosts();
+          setStatus('Удалено из списка. Нажмите «Сохранить список».', 'info');
+        };
+      });
+    }
+
     async function load() {
       setStatus('Загрузка настроек…', 'info');
       try {
         const data = await window.scalePicker.load();
         ports = data.ports || [];
         selected = data.currentPort || (ports[0] && ports[0].path) || null;
+        hosts = Array.isArray(data.hosts) ? data.hosts.slice() : [];
         if (data.baudRate) baudEl.value = String(data.baudRate);
         if (data.host) hostEl.value = data.host;
         if (data.tcpPort) tcpPortEl.value = String(data.tcpPort);
@@ -169,14 +211,15 @@ function buildPickerHtml() {
 
         if (data.serialError) {
           setStatus('Модуль serialport: ' + data.serialError, 'err');
-        } else if (data.transport === 'ethernet' && data.host) {
-          setStatus('Сейчас: Ethernet ' + data.host + ':' + (data.tcpPort || ''), 'ok');
+        } else if (hosts.length) {
+          setStatus('Ethernet-весов в списке: ' + hosts.length + ' (PLU уйдёт на все)', 'ok');
         } else if (selected) {
-          setStatus('Сейчас: COM ' + selected + ' — или настройте Ethernet ниже', 'info');
+          setStatus('Сейчас: COM ' + selected + ' — или добавьте Ethernet ниже', 'info');
         } else {
-          setStatus('Выберите COM или укажите IP весов', 'info');
+          setStatus('Выберите COM или добавьте IP весов', 'info');
         }
         renderCom();
+        renderHosts();
       } catch (e) {
         setStatus('Ошибка: ' + (e?.message || e), 'err');
       }
@@ -204,22 +247,41 @@ function buildPickerHtml() {
     };
 
     document.getElementById('auto-eth').onclick = async () => {
-      setStatus('Ищем весы в локальной сети (TCP)…', 'info');
+      setStatus('Ищем весы в локальной сети…', 'info');
       try {
         const r = await window.scalePicker.autoDetect({ prefer: 'ethernet' });
-        if (r.ok) {
+        if (r.ok && r.host) {
           hostEl.value = r.host || '';
           if (r.tcpPort) tcpPortEl.value = String(r.tcpPort);
-          setStatus(
-            'Ethernet: ' + r.host + ':' + (r.tcpPort || '') +
-            (r.reading ? ' (' + r.reading.kg + ' кг)' : '') +
-            (r.hint ? ' — ' + r.hint : '') +
-            ' · сохранено',
-            'ok'
-          );
+          const udpPort = Number(r.tcpPort) || 1111;
+          const exists = hosts.some((h) => h.host === r.host && Number(h.udpPort) === udpPort);
+          if (!exists) hosts.unshift({ host: r.host, udpPort, label: '' });
+          renderHosts();
+          setStatus('Найдено ' + r.host + ':' + udpPort + ' — добавлено в список. Сохраните список.', 'ok');
         } else {
-          setStatus(r.error || 'Ethernet не найден', 'err');
+          setStatus(r.error || 'Ethernet не найден — впишите IP вручную (UDP 1111)', 'err');
         }
+      } catch (e) {
+        setStatus(e?.message || String(e), 'err');
+      }
+    };
+
+    document.getElementById('add-eth').onclick = () => {
+      const host = String(hostEl.value || '').trim();
+      const udpPort = Number(tcpPortEl.value) || 1111;
+      const label = String(hostLabelEl.value || '').trim();
+      if (!host) { setStatus('Укажите IP весов', 'err'); return; }
+      const exists = hosts.some((h) => h.host === host && Number(h.udpPort) === udpPort);
+      if (exists) { setStatus('Этот IP уже в списке', 'err'); return; }
+      hosts.unshift({ host, udpPort, label });
+      renderHosts();
+      setStatus('Добавлено ' + host + ':' + udpPort + '. Нажмите «Сохранить список».', 'ok');
+    };
+
+    document.getElementById('save-eth-list').onclick = async () => {
+      if (!hosts.length) { setStatus('Список пуст — сначала «Добавить в список»', 'err'); return; }
+      try {
+        await window.scalePicker.save({ transport: 'ethernet', hosts });
       } catch (e) {
         setStatus(e?.message || String(e), 'err');
       }
@@ -244,17 +306,15 @@ function buildPickerHtml() {
 
     document.getElementById('test-eth').onclick = async () => {
       const host = String(hostEl.value || '').trim();
-      const tcpPort = Number(tcpPortEl.value) || 0;
-      if (!host || !tcpPort) { setStatus('Укажите IP и TCP-порт', 'err'); return; }
+      const tcpPort = Number(tcpPortEl.value) || 1111;
+      if (!host) { setStatus('Укажите IP', 'err'); return; }
       setStatus('Проверка ' + host + ':' + tcpPort + '…', 'info');
       try {
         const r = await window.scalePicker.testEthernet({ host, tcpPort });
-        if (r.ok && r.reading) {
-          setStatus('Ethernet вес: ' + r.reading.kg + ' кг', 'ok');
-        } else if (r.ok) {
-          setStatus('TCP открыт на ' + host + ':' + tcpPort + '. Положите товар и повторите.', 'ok');
+        if (r.ok) {
+          setStatus(r.hint || ('OK ' + host + ':' + tcpPort), 'ok');
         } else {
-          setStatus(r.error || 'TCP недоступен', 'err');
+          setStatus(r.error || 'Нет ответа', 'err');
         }
       } catch (e) {
         setStatus(e?.message || String(e), 'err');
@@ -274,22 +334,6 @@ function buildPickerHtml() {
       }
     };
 
-    document.getElementById('save-eth').onclick = async () => {
-      const host = String(hostEl.value || '').trim();
-      const tcpPort = Number(tcpPortEl.value) || 0;
-      if (!host) { setStatus('Укажите IP весов', 'err'); return; }
-      if (!tcpPort) { setStatus('Укажите TCP-порт', 'err'); return; }
-      try {
-        await window.scalePicker.save({
-          transport: 'ethernet',
-          host,
-          tcpPort,
-        });
-      } catch (e) {
-        setStatus(e?.message || String(e), 'err');
-      }
-    };
-
     load();
   </script>
 </body>
@@ -300,8 +344,8 @@ function buildPickerHtml() {
 function showScalePickerWindow(mainWindow) {
   return new Promise((resolve, reject) => {
     const win = new BrowserWindow({
-      width: 520,
-      height: 720,
+      width: 540,
+      height: 780,
       resizable: true,
       title: 'Aurent — весы',
       autoHideMenuBar: true,
@@ -342,6 +386,7 @@ function showScalePickerWindow(mainWindow) {
         baudRate: settings.baudRate,
         host: settings.host,
         tcpPort: settings.tcpPort,
+        hosts: settings.hosts || [],
       };
     });
 
@@ -351,14 +396,31 @@ function showScalePickerWindow(mainWindow) {
         : 'com';
 
       if (transport === 'ethernet') {
+        if (Array.isArray(payload?.hosts)) {
+          const list = payload.hosts
+            .map((h) => ({
+              host: String(h?.host || '').trim(),
+              udpPort: Number(h?.udpPort || h?.tcpPort) || 1111,
+              label: String(h?.label || '').trim(),
+            }))
+            .filter((h) => h.host);
+          if (!list.length) throw new Error('Список весов пуст');
+          const saved = writeScaleSettings({
+            scaleTransport: 'ethernet',
+            scaleHosts: list,
+            scaleFamily: 'family-shtrih-print',
+          });
+          finish(saved);
+          return saved;
+        }
         const host = String(payload?.host || '').trim();
-        const tcpPort = Number(payload?.tcpPort) || 0;
+        const tcpPort = Number(payload?.tcpPort) || 1111;
         if (!host) throw new Error('Укажите IP весов');
-        if (!tcpPort) throw new Error('Укажите TCP-порт');
         const saved = writeScaleSettings({
           scaleTransport: 'ethernet',
           scaleHost: host,
-          scaleTcpPort: tcpPort || 1111,
+          scaleTcpPort: tcpPort,
+          scaleHostLabel: String(payload?.label || '').trim(),
           scaleFamily: 'family-shtrih-print',
         });
         finish(saved);

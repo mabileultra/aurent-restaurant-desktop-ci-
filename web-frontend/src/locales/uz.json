@@ -794,6 +794,7 @@
     "exportToScale": "PLU yuklash",
     "exporting": "Yuklanmoqda…",
     "exportOk": "Yuklangan PLU: {{count}}",
+    "exportOkDevices": "Yuklangan PLU: {{count}} → tarozi: {{devices}}",
     "exportFailed": "PLU yuklanmadi",
     "exportEmpty": "PLU belgilangan tovarlar yo‘q",
     "exportStubHint": "Paket tayyor, lekin bu oila protokoli hali ulanmagan. Ekran stansiyasi ishlaydi.",

@@ -95,9 +95,17 @@ export function useScalesPluSync(t) {
       }
       const result = await scalePushPlu(items);
       if (result?.ok) {
+        const devices = result.deviceCount || result.deviceTotal || 1;
         toast.success(
-          t('scales.exportOk', { count: result.pushed ?? items.length })
+          t('scales.exportOkDevices', {
+            count: result.pushed ?? items.length,
+            devices,
+            defaultValue: `Выгружено PLU: ${result.pushed ?? items.length} → весов: ${devices}`,
+          })
         );
+        if (result.message && result.deviceCount < result.deviceTotal) {
+          toast.error(result.message);
+        }
       } else {
         toast.error(result?.message || t('scales.exportStubHint'));
       }

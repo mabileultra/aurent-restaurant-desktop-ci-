@@ -16,3 +16,4 @@ Web scales UI (`web-frontend/src/scales/scaleBridge.js`) treats Desktop as “ou
 4. Do not delete `electron/scales/` when refactoring desktop layout — that regression already shipped once (desktop-cashier → desktop-electron).
 5. Auto-detect must cover **both** COM and Ethernet (`scale-auto-detect` → COM first, then `scale-ethernet` LAN scan). Settings persist `scaleTransport` + port or host/tcpPort so the next start reconnects alone.
 6. ШТРИХ-ПРИНТ PLU: UDP порт по умолчанию **1111**, выгрузка через `scale-shtrih-udp.cjs` / `scalePushPlu` — не ломать без замены протокола.
+7. Несколько весов: `scaleHosts[]` в config; `scalePushPlu` шлёт на **все** хосты; primary `scaleHost` — для чтения веса.

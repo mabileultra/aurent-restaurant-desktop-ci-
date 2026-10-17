@@ -187,6 +187,7 @@
     "exportToScale": "Выгрузить PLU",
     "exporting": "Выгрузка…",
     "exportOk": "Выгружено PLU: {{count}}",
+    "exportOkDevices": "Выгружено PLU: {{count}} → весов: {{devices}}",
     "exportFailed": "Не удалось выгрузить PLU",
     "exportEmpty": "Нет товаров с назначенным PLU",
     "exportStubHint": "Пакет готов, но host-протокол этого семейства ещё не подключён. Экранная станция работает.",
