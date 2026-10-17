@@ -4,6 +4,7 @@ const { listSerialPorts } = require('./scale-serial-port.cjs');
 const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
 const { autoDetectPort, probePort } = require('./scale-auto-detect.cjs');
 const { probeTcpHost, probeWeightOnTcp } = require('./scale-ethernet.cjs');
+const { probeShtrihUdp } = require('./scale-shtrih-udp.cjs');
 
 function buildPickerHtml() {
   const html = `<!DOCTYPE html>
@@ -94,16 +95,16 @@ function buildPickerHtml() {
 
     <!-- ═══ Ethernet ═══ -->
     <section class="panel" id="panel-eth">
-      <h2>2. Ethernet (LAN)</h2>
-      <p class="sub">ПК и весы в одной подсети. Укажите IP весов и TCP-порт (часто 1001) или «Найти Ethernet».</p>
+      <h2>2. Ethernet (LAN) — ШТРИХ</h2>
+      <p class="sub">ПК и весы в одной подсети. Для ШТРИХ-ПРИНТ: IP + <b>UDP-порт 1111</b> (из меню весов). После сохранения можно выгрузить PLU из Aurent.</p>
       <div class="grid2">
         <div>
           <label class="field" for="host">IP весов</label>
           <input id="host" type="text" placeholder="192.168.0.203" autocomplete="off" />
         </div>
         <div>
-          <label class="field" for="tcpPort">TCP-порт</label>
-          <input id="tcpPort" type="number" min="1" max="65535" value="1001" />
+          <label class="field" for="tcpPort">UDP-порт</label>
+          <input id="tcpPort" type="number" min="1" max="65535" value="1111" />
         </div>
       </div>
       <div class="actions">
@@ -357,7 +358,7 @@ function showScalePickerWindow(mainWindow) {
         const saved = writeScaleSettings({
           scaleTransport: 'ethernet',
           scaleHost: host,
-          scaleTcpPort: tcpPort,
+          scaleTcpPort: tcpPort || 1111,
           scaleFamily: 'family-shtrih-print',
         });
         finish(saved);
@@ -396,10 +397,24 @@ function showScalePickerWindow(mainWindow) {
     ipcMain.handle('scale-picker:test-ethernet', async (_e, payload) => {
       const host = String(payload?.host || '').trim();
       const tcpPort = Number(payload?.tcpPort) || 0;
-      if (!host || !tcpPort) throw new Error('Укажите IP и TCP-порт');
+      if (!host || !tcpPort) throw new Error('Укажите IP и UDP/TCP-порт');
+      // ШТРИХ: UDP (часто 1111). Сначала UDP-probe, затем запасной TCP-вес.
+      const udp = await probeShtrihUdp(host, tcpPort);
+      if (udp.ok) {
+        return {
+          ok: true,
+          host,
+          tcpPort,
+          transport: 'udp',
+          hint: 'UDP пакет ушёл на ' + host + ':' + tcpPort + '. Сохраните и выгрузите PLU из Aurent.',
+        };
+      }
       const open = await probeTcpHost(host, tcpPort, 1200);
       if (!open.ok) {
-        return { ok: false, error: 'TCP не отвечает на ' + host + ':' + tcpPort + ' (' + (open.error || 'fail') + ')' };
+        return {
+          ok: false,
+          error: 'Нет ответа UDP/TCP на ' + host + ':' + tcpPort + ' (' + (udp.error || open.error || 'fail') + ')',
+        };
       }
       const weight = await probeWeightOnTcp(host, tcpPort, 2800);
       if (weight.ok) return weight;

@@ -40,7 +40,8 @@ function readScaleSettings() {
     port: String(cfg.scalePort || '').trim(),
     baudRate: Number(cfg.scaleBaudRate || 9600),
     host: String(cfg.scaleHost || '').trim(),
-    tcpPort: Number(cfg.scaleTcpPort || 1001) || 1001,
+    // Для ШТРИХ-ПРИНТ это UDP-порт (по умолчанию 1111); поле исторически scaleTcpPort.
+    tcpPort: Number(cfg.scaleTcpPort || 1111) || 1111,
     family: String(cfg.scaleFamily || (transport === 'ethernet' ? 'family-shtrih-print' : 'weight-generic')).trim(),
     mock: cfg.scaleMock === true,
     stableOnly: cfg.scaleStableOnly !== false,
@@ -59,7 +60,7 @@ function writeScaleSettings(patch) {
   if (typeof patch?.scalePort === 'string') merged.scalePort = patch.scalePort.trim();
   if (patch?.scaleBaudRate != null) merged.scaleBaudRate = Number(patch.scaleBaudRate) || 9600;
   if (typeof patch?.scaleHost === 'string') merged.scaleHost = patch.scaleHost.trim();
-  if (patch?.scaleTcpPort != null) merged.scaleTcpPort = Number(patch.scaleTcpPort) || 1001;
+  if (patch?.scaleTcpPort != null) merged.scaleTcpPort = Number(patch.scaleTcpPort) || 1111;
   if (typeof patch?.scaleFamily === 'string') merged.scaleFamily = patch.scaleFamily.trim();
   if (typeof patch?.scaleMock === 'boolean') merged.scaleMock = patch.scaleMock;
   if (typeof patch?.scaleStableOnly === 'boolean') merged.scaleStableOnly = patch.scaleStableOnly;

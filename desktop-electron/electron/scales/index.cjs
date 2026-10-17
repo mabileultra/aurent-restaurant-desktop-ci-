@@ -7,6 +7,12 @@ const scaleManager = require('./scale-manager.cjs');
 const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
 const { autoDetectPort } = require('./scale-auto-detect.cjs');
 const { showScalePickerWindow } = require('./scale-picker-window.cjs');
+const {
+  listAdapters,
+  getActiveAdapter,
+  setActiveAdapter,
+  pushPlu,
+} = require('./scale-adapters.cjs');
 
 function registerScaleIpc(ipcMain, getMainWindow) {
   scaleManager.setBroadcast((reading) => {
@@ -25,7 +31,13 @@ function registerScaleIpc(ipcMain, getMainWindow) {
   ipcMain.handle('desktop:scale-capture', () => scaleManager.captureStable());
   ipcMain.handle('desktop:scale-is-available', async () => {
     const st = await scaleManager.getStatus();
-    return Boolean(st.serialModuleLoaded || st.mockEnv || st.settings?.mock || st.settings?.port);
+    return Boolean(
+      st.serialModuleLoaded
+      || st.mockEnv
+      || st.settings?.mock
+      || st.settings?.port
+      || st.settings?.host
+    );
   });
 
   ipcMain.handle('desktop:scale-auto-detect', (_e, opts) =>
@@ -36,6 +48,13 @@ function registerScaleIpc(ipcMain, getMainWindow) {
     const saved = await showScalePickerWindow(getMainWindow());
     return saved;
   });
+
+  ipcMain.handle('desktop:scale-list-adapters', () => listAdapters());
+  ipcMain.handle('desktop:scale-get-active-adapter', () => getActiveAdapter());
+  ipcMain.handle('desktop:scale-set-active-adapter', (_e, adapterId) =>
+    setActiveAdapter(String(adapterId || ''))
+  );
+  ipcMain.handle('desktop:scale-push-plu', (_e, items) => pushPlu(items || []));
 }
 
 module.exports = {
@@ -45,8 +64,12 @@ module.exports = {
   writeScaleSettings,
   autoDetectPort,
   showScalePickerWindow,
+  listAdapters,
+  getActiveAdapter,
+  setActiveAdapter,
+  pushPlu,
 };
 
-// Ethernet helpers are available for tests / future PLU adapters.
 module.exports.autoDetectEthernet = require('./scale-ethernet.cjs').autoDetectEthernet;
+module.exports.pushPluToShtrih = require('./scale-shtrih-udp.cjs').pushPluToShtrih;
 

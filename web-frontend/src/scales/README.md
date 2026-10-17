@@ -24,8 +24,8 @@
 - Каталог семейств: `GET /scales/sync/adapters`
 - Пакет PLU: `GET /scales/sync/export`
 - UI: **Коды PLU** → «Выгрузить на умные весы»
-- **Сейчас работает:** `weight-generic` (COM/USB → кг) и `family-shtrih-print` (Ethernet-автопоиск + вес)
-- **Умные весы (PLU push):** слоты семейств — выгрузка PLU по host-протоколу ещё не для всех марок
+- **Сейчас работает:** `weight-generic` (COM/USB → кг) и `family-shtrih-print` (Ethernet UDP 1111 + вес + **выгрузка PLU**)
+- **Умные весы (PLU push):** ШТРИХ-ПРИНТ — да; остальные семейства — слоты без протокола
 
 ## Настройка в десктопе
 

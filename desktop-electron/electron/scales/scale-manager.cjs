@@ -46,12 +46,12 @@ async function startListening() {
   // Ethernet (ШТРИХ-ПРИНТ и т.п.)
   if (settings.transport === 'ethernet') {
     let host = settings.host;
-    let tcpPort = settings.tcpPort || 1001;
+    let tcpPort = settings.tcpPort || 1111;
     if (!host) {
       const detected = await autoDetectPort({ save: true, prefer: 'ethernet' });
       if (detected.ok && detected.host) {
         host = detected.host;
-        tcpPort = detected.tcpPort || 1001;
+        tcpPort = detected.tcpPort || 1111;
       } else {
         return {
           ok: false,
@@ -72,7 +72,7 @@ async function startListening() {
     // Нет serialport — пробуем Ethernet как запасной путь.
     const eth = await autoDetectPort({ save: true, prefer: 'ethernet' });
     if (eth.ok && eth.host) {
-      ethernetReader = createEthernetReader(eth.host, eth.tcpPort || 1001, emitReading);
+      ethernetReader = createEthernetReader(eth.host, eth.tcpPort || 1111, emitReading);
       listening = true;
       return { ok: true, mode: 'ethernet', host: eth.host, tcpPort: eth.tcpPort, family: 'family-shtrih-print' };
     }
@@ -83,7 +83,7 @@ async function startListening() {
   if (!path) {
     const detected = await autoDetectPort({ save: true });
     if (detected.ok && detected.transport === 'ethernet' && detected.host) {
-      ethernetReader = createEthernetReader(detected.host, detected.tcpPort || 1001, emitReading);
+      ethernetReader = createEthernetReader(detected.host, detected.tcpPort || 1111, emitReading);
       listening = true;
       return {
         ok: true,

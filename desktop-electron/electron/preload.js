@@ -54,6 +54,10 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   scaleCapture: () => invoke('desktop:scale-capture'),
   scaleAutoDetect: (opts) => invoke('desktop:scale-auto-detect', opts || {}),
   openScalePicker: () => invoke('desktop:open-scale-picker'),
+  scaleListAdapters: () => invoke('desktop:scale-list-adapters'),
+  scaleGetActiveAdapter: () => invoke('desktop:scale-get-active-adapter'),
+  scaleSetActiveAdapter: (adapterId) => invoke('desktop:scale-set-active-adapter', adapterId),
+  scalePushPlu: (items) => invoke('desktop:scale-push-plu', items),
   onScaleWeight: (callback) => {
     if (typeof callback !== 'function') return () => {};
     const handler = (_event, payload) => callback(payload);

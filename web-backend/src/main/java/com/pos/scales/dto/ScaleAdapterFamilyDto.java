@@ -80,10 +80,10 @@ public record ScaleAdapterFamilyDto(
             new ScaleAdapterFamilyDto(
                 "family-shtrih-print",
                 "ШТРИХ-ПРИНТ (семейство)",
-                "Умные весы Штрих-М: Ethernet (и COM при наличии). Автопоиск LAN + вес в кассе.",
+                "Штрих-М: Ethernet UDP (порт 1111). Вес в кассе + выгрузка PLU на клавиши весов.",
                 "ШТРИХ-ПРИНТ М, ШТРИХ-ПРИНТ и близкие",
                 true,
-                false,
+                true,
                 true,
                 true
             ),
