@@ -34,6 +34,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -46,11 +52,12 @@ jobs:
         working-directory: restaurant-desktop
         run: npm ci
 
-      - name: Bundle UI + build Windows installer
+      - name: Build jar + UI + Windows installer
         working-directory: restaurant-desktop
         shell: bash
         run: |
-          npm run bundle-ui
+          bash ../scripts/prepare-restaurant-desktop.sh
+          test -f resources/restaurant-service.jar
           npx electron-builder --win --x64
 
       - name: Setup SSH
@@ -99,6 +106,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -111,10 +124,11 @@ jobs:
         working-directory: restaurant-desktop
         run: npm ci
 
-      - name: Bundle UI + build macOS installer
+      - name: Build jar + UI + macOS installer
         working-directory: restaurant-desktop
         run: |
-          npm run bundle-ui
+          bash ../scripts/prepare-restaurant-desktop.sh
+          test -f resources/restaurant-service.jar
           npx electron-builder --mac
 
       - name: Setup SSH
