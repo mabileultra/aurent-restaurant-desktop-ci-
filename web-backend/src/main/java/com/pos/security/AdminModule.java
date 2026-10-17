@@ -54,6 +54,8 @@ public enum AdminModule {
     CASHIER_OFFLINE("cashierOffline", "cashier", Set.of("CASHIER", "WAITER", "ADMIN", "MANAGER")),
     RESTAURANT_POS("restaurantPos", "cashier", Set.of("CASHIER", "WAITER", "MANAGER", "ADMIN")),
     RESTAURANT_FLOOR("restaurantFloor", "restaurant", Set.of("ADMIN", "MANAGER")),
+    /** Guest bill button. Off for waiter until granted on the access screen. */
+    RESTAURANT_REQUEST_BILL("restaurantRequestBill", "restaurant", Set.of("ADMIN", "MANAGER", "CASHIER")),
     RESTAURANT_BOOKING("restaurantBooking", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_DELIVERY("restaurantDelivery", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_KITCHEN("restaurantKitchen", "restaurant", Set.of("CASHIER", "WAITER", "COOK", "MANAGER", "ADMIN")),

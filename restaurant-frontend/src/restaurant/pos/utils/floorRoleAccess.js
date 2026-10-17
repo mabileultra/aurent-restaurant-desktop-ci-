@@ -1,6 +1,6 @@
 /** Role capabilities for floor ops vs hall configuration. */
 
-export function resolveFloorAccess(role) {
+export function resolveFloorAccess(role, { requestBillGrant = false } = {}) {
   const r = String(role || '').toUpperCase();
   const isAdmin = r === 'ADMIN' || r === 'MANAGER';
   const isWaiter = r === 'WAITER';
@@ -18,8 +18,8 @@ export function resolveFloorAccess(role) {
     canViewBooking: isAdmin || isWaiter || isCashier,
     /** Counter takeaway/delivery sales — cashier/admin only. */
     canCounterSales: isAdmin || isCashier,
-    /** Request guest bill — cashier/admin only (not waiter). */
-    canRequestBill: isAdmin || isCashier,
+    /** Guest bill. Waiter only when the access screen granted restaurantRequestBill. */
+    canRequestBill: isAdmin || isCashier || requestBillGrant,
     /** Take payment — cashier/admin. */
     canPay: isAdmin || isCashier,
     canCancelOrder: isAdmin || isCashier,

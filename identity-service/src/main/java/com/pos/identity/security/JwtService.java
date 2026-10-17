@@ -1,6 +1,8 @@
 package com.pos.identity.security;
 
 import com.pos.identity.entity.User;
+import com.pos.identity.service.ModuleAccessService;
+import com.pos.shared.access.ModuleVisibility;
 import com.pos.shared.jwt.JwtClaimNames;
 import com.pos.shared.jwt.JwtClaimsExtractor;
 import io.jsonwebtoken.Claims;
@@ -28,6 +30,12 @@ public class JwtService {
     @Value("${app.jwt.expiration-ms}")
     private long jwtExpiration;
 
+    private final ModuleAccessService moduleAccessService;
+
+    public JwtService(ModuleAccessService moduleAccessService) {
+        this.moduleAccessService = moduleAccessService;
+    }
+
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
         if (userDetails instanceof User user) {
@@ -37,8 +45,14 @@ public class JwtService {
             if (user.getRole() != null) {
                 claims.put(JwtClaimNames.ROLES, List.of(user.getRole().getName()));
             }
+            claims.put(JwtClaimNames.CAN_REQUEST_BILL, canRequestBill(user));
         }
         return generateToken(claims, userDetails);
+    }
+
+    private boolean canRequestBill(User user) {
+        return moduleAccessService.resolveAllowedModuleIds(user)
+            .contains(ModuleVisibility.RESTAURANT_REQUEST_BILL);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {

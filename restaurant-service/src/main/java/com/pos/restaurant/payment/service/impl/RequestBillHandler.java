@@ -14,6 +14,7 @@ import com.pos.restaurant.order.support.OrderTotals;
 import com.pos.restaurant.order.support.ServiceChargeSupport;
 import com.pos.restaurant.order.support.TableSeatSync;
 import com.pos.restaurant.payment.support.BillEligibilityPolicy;
+import com.pos.restaurant.payment.support.BillRequestAccess;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.settings.service.KitchenBoardService;
 import com.pos.shared.log.LogUtil;
@@ -32,6 +33,7 @@ public class RequestBillHandler {
     private final FloorOrderItemRepository itemRepository;
     private final OrderLookup orderLookup;
     private final BillEligibilityPolicy eligibilityPolicy;
+    private final BillRequestAccess billRequestAccess;
     private final OrderResponseAssembler assembler;
     private final OrderLinkedTablesSupport linkedTables;
     private final OrderTotals orderTotals;
@@ -43,6 +45,7 @@ public class RequestBillHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId) {
+        billRequestAccess.assertAllowed();
         FloorOrder order = orderLookup.requireActive(orderId);
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         boolean kitchenBoard = kitchenBoardService.isEnabled(order.getCompanyId(), order.getStoreId());

@@ -8,12 +8,15 @@ import java.util.Set;
  */
 public final class ModuleVisibility {
 
+    public static final String RESTAURANT_REQUEST_BILL = "restaurantRequestBill";
+
     private static final Set<String> RESTAURANT_KEYS = Set.of(
         "restaurantFloor",
         "restaurantBooking",
         "restaurantDelivery",
         "restaurantKitchen",
-        "restaurantPos"
+        "restaurantPos",
+        RESTAURANT_REQUEST_BILL
     );
 
     private static final Set<String> GROCERY_CATALOG_KEYS = Set.of(

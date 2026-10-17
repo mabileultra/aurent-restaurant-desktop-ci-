@@ -2,6 +2,9 @@ package com.pos.restaurant.security;
 
 import com.pos.shared.gateway.GatewayActor;
 import com.pos.shared.gateway.RequestActorResolver;
+import com.pos.shared.jwt.JwtClaimNames;
+import com.pos.shared.jwt.JwtClaimsExtractor;
+import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -60,15 +63,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             contextSecret,
             request.getHeader("Authorization"),
             jwtSecret
-        ).ifPresent(this::accept);
+        ).ifPresent(actor -> accept(actor, request));
     }
 
-    private void accept(GatewayActor actor) {
-        RestaurantTenantContext.set(actor.companyId(), actor.userId(), actor.role());
+    private void accept(GatewayActor actor, HttpServletRequest request) {
+        RestaurantTenantContext.set(
+            actor.companyId(),
+            actor.userId(),
+            actor.role(),
+            readCanRequestBill(request)
+        );
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
             actor.userId().toString(),
             null,
             List.of(new SimpleGrantedAuthority("ROLE_" + actor.role()))
         ));
+    }
+
+    private boolean readCanRequestBill(HttpServletRequest request) {
+        String header = request.getHeader("Authorization");
+        if (header == null || !header.startsWith("Bearer ") || jwtSecret == null || jwtSecret.isBlank()) {
+            return false;
+        }
+        try {
+            Claims claims = JwtClaimsExtractor.parseAllClaims(header.substring(7).trim(), jwtSecret);
+            return JwtClaimsExtractor.extractFlag(claims, JwtClaimNames.CAN_REQUEST_BILL);
+        } catch (RuntimeException ex) {
+            return false;
+        }
     }
 }

@@ -25,8 +25,14 @@ describe('resolveFloorAccess', () => {
     expect(a.canOpenOrder).toBe(true);
     expect(a.canConfigureHall).toBe(false);
     expect(a.canPay).toBe(false);
+    expect(a.canRequestBill).toBe(false);
     expect(a.canCounterSales).toBe(false);
     expect(a.canTransferMerge).toBe(false);
+  });
+
+  it('lets a waiter request the bill only when that module is granted', () => {
+    expect(resolveFloorAccess('WAITER', { requestBillGrant: true }).canRequestBill).toBe(true);
+    expect(resolveFloorAccess('WAITER', { requestBillGrant: true }).canPay).toBe(false);
   });
 
   it('lets cashier take payment and counter sales', () => {

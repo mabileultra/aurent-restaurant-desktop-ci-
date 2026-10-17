@@ -11,6 +11,7 @@ import { rstShiftApi } from '../../api/shift.api';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import { useAuthStore } from '../../../store/authStore';
+import { useModuleAccess } from '../../../hooks/useModuleAccess';
 import { formatShiftOpenDuration } from '../utils/formatElapsed';
 import {
   emptyGuestForm, emptyCounterForm, buildWaiters, buildWaiterNameById,
@@ -59,8 +60,11 @@ function draftOrderFromTable(table) {
 export function useFloorPosPage() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
+  const { hasModule } = useModuleAccess();
   const workspace = useRestaurantWorkspaceStore();
-  const access = resolveFloorAccess(user?.role);
+  const access = resolveFloorAccess(user?.role, {
+    requestBillGrant: hasModule('restaurantRequestBill'),
+  });
   const [posMode, setPosMode] = useState('floor');
   const [floorSection, setFloorSection] = useState('tables');
   const [selectedHallId, setSelectedHallId] = useState(ALL_HALLS_ID);

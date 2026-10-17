@@ -39,6 +39,14 @@ public final class JwtClaimsExtractor {
         return UUID.fromString(claims.getSubject());
     }
 
+    public static boolean extractFlag(Claims claims, String name) {
+        Object value = claims.get(name);
+        if (value instanceof Boolean flag) {
+            return flag;
+        }
+        return value != null && Boolean.parseBoolean(value.toString());
+    }
+
     public static String extractPrimaryRole(Claims claims) {
         Object roles = claims.get(JwtClaimNames.ROLES);
         if (roles instanceof List<?> list && !list.isEmpty()) {

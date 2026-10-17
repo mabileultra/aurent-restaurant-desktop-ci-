@@ -14,6 +14,9 @@ describe('isModuleVisibleForBusinessType', () => {
 
   it('shows restaurant modules only for restaurant, not grocery POS', () => {
     expect(isModuleVisibleForBusinessType('restaurantKitchen', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'RESTAURANT')).toBe(true);
+    expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'PHARMACY')).toBe(false);
+    expect(isModuleVisibleForBusinessType('restaurantRequestBill', 'CLOTHING')).toBe(false);
     expect(isModuleVisibleForBusinessType('cashierPos', 'RESTAURANT')).toBe(false);
     expect(isModuleVisibleForBusinessType('stockTransfers', 'RESTAURANT')).toBe(true);
     expect(isModuleVisibleForBusinessType('restaurantPos', 'UNIVERSAL')).toBe(true);
