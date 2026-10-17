@@ -5,6 +5,7 @@ function buildAppMenu({
   openServerSettings,
   reloadPage,
   checkForUpdates,
+  openScalePicker,
   uiMode = UI_MODE_REMOTE,
   setUiMode,
   allowBundledUi = false,
@@ -95,6 +96,14 @@ function buildAppMenu({
             openServerSettings().catch(() => {
               /* cancelled */
             });
+          },
+        },
+        {
+          label: 'Весы…',
+          click: () => {
+            if (typeof openScalePicker === 'function') {
+              Promise.resolve(openScalePicker()).catch(() => {});
+            }
           },
         },
         { type: 'separator' },

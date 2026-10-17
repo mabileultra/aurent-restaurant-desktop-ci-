@@ -44,6 +44,22 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   labelTsplSetSettings: (patch) => invoke('desktop:label-tspl-set-settings', patch),
   labelTsplAutoDetect: (opts) => invoke('desktop:label-tspl-auto-detect', opts || {}),
 
+  scaleIsAvailable: () => invoke('desktop:scale-is-available'),
+  scaleStatus: () => invoke('desktop:scale-status'),
+  scaleListPorts: () => invoke('desktop:scale-list-ports'),
+  scaleGetSettings: () => invoke('desktop:scale-get-settings'),
+  scaleSetSettings: (patch) => invoke('desktop:scale-set-settings', patch),
+  scaleStart: () => invoke('desktop:scale-start'),
+  scaleStop: () => invoke('desktop:scale-stop'),
+  scaleCapture: () => invoke('desktop:scale-capture'),
+  scaleAutoDetect: (opts) => invoke('desktop:scale-auto-detect', opts || {}),
+  openScalePicker: () => invoke('desktop:open-scale-picker'),
+  onScaleWeight: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, payload) => callback(payload);
+    ipcRenderer.on('desktop:scale-weight', handler);
+    return () => ipcRenderer.removeListener('desktop:scale-weight', handler);
+  },
 
   checkForUpdates: () => invoke('desktop:checkForUpdates'),
   quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),

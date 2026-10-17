@@ -1,0 +1,16 @@
+---
+description: Desktop Aurent Cashier must expose scale* IPC for web scales UI
+globs: desktop-electron/electron/{preload.js,main.js,scales/**}
+alwaysApply: false
+---
+
+# Desktop scales bridge (do not regress)
+
+Web scales UI (`web-frontend/src/scales/scaleBridge.js`) treats Desktop as “outdated” when `window.desktopCashier.isDesktop` is true but `scaleStart` is missing — toast «Обновите Aurent Cashier».
+
+## Invariants
+
+1. `electron/preload.js` must expose: `scaleStart`, `scaleStop`, `scaleCapture`, `scaleIsAvailable`, `scaleAutoDetect`, `openScalePicker`, `onScaleWeight` (and related getters/setters).
+2. `electron/main.js` must call `registerScaleIpc(ipcMain, getMainWindow)` from `electron/scales/index.cjs`.
+3. Keep `serialport` + `@serialport/parser-readline` in dependencies and in `asarUnpack` so COM ports work in packaged builds.
+4. Do not delete `electron/scales/` when refactoring desktop layout — that regression already shipped once (desktop-cashier → desktop-electron).

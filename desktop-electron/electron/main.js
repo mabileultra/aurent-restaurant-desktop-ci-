@@ -45,6 +45,11 @@ function rebuildAppMenu() {
     openServerSettings: handleOpenServerSettings,
     reloadPage: reloadActiveUi,
     checkForUpdates: checkForUpdatesNow,
+    openScalePicker: async () => {
+      const { showScalePickerWindow } = require('./scales/index.cjs');
+      const { getMainWindow } = require('./printers/window-ref.cjs');
+      return showScalePickerWindow(getMainWindow());
+    },
     uiMode: cfg.uiMode,
     allowBundledUi: cfg.allowBundledUi,
     setUiMode: handleSetUiMode,
@@ -345,10 +350,12 @@ app.whenReady().then(async () => {
     console.error('[ui] cache clear failed', err?.message || err);
   }
   createWindow(start);
-  const { setMainWindow } = require('./printers/window-ref.cjs');
+  const { setMainWindow, getMainWindow } = require('./printers/window-ref.cjs');
   setMainWindow(mainWindow);
   const { registerPrinterIpc } = require('./registerPrinterIpc');
   registerPrinterIpc();
+  const { registerScaleIpc } = require('./scales/index.cjs');
+  registerScaleIpc(ipcMain, getMainWindow);
   initAutoUpdater({ webUrl: desktopConfig.cashierUrl });
 
   app.on('activate', async () => {
