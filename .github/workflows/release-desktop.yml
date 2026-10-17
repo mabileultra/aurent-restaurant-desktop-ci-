@@ -104,8 +104,10 @@ jobs:
         env:
           UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
         run: |
-          # serialport/@serialport/bindings-cpp → node-gyp still imports distutils (removed in Python 3.12+)
-          python3 -m pip install --user setuptools
+          # serialport/@serialport/bindings-cpp → node-gyp imports distutils (gone in Python 3.12+).
+          # macOS runners are PEP 668 “externally-managed” — need --break-system-packages.
+          python3 -m pip install --user --break-system-packages setuptools
+          python3 -c 'import setuptools; print("setuptools", setuptools.__version__)'
           npm ci
           npm run dist:mac
 
