@@ -104,6 +104,8 @@ jobs:
         env:
           UPDATE_BASE_URL: ${{ env.UPDATE_BASE_URL }}
         run: |
+          # serialport/@serialport/bindings-cpp → node-gyp still imports distutils (removed in Python 3.12+)
+          python3 -m pip install --user setuptools
           npm ci
           npm run dist:mac
 
