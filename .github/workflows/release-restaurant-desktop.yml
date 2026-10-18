@@ -75,14 +75,17 @@ jobs:
           (cd restaurant-desktop && npm ci --ignore-scripts && npm run bundle-ui)
           test -f restaurant-desktop/resources/restaurant-service.jar
           test -f restaurant-desktop/ui/index.html
+          # Flat payload so Windows/mac download paths are predictable.
+          rm -rf /tmp/restaurant-edge-payload
+          mkdir -p /tmp/restaurant-edge-payload/resources /tmp/restaurant-edge-payload/ui
+          cp -f restaurant-desktop/resources/restaurant-service.jar /tmp/restaurant-edge-payload/resources/
+          cp -a restaurant-desktop/ui/. /tmp/restaurant-edge-payload/ui/
 
       - name: Upload jar + UI
         uses: actions/upload-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: |
-            restaurant-desktop/resources/restaurant-service.jar
-            restaurant-desktop/ui/**
+          path: /tmp/restaurant-edge-payload
           retention-days: 2
 
   build-win:
@@ -117,7 +120,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: .
+          path: restaurant-desktop
 
       - name: Install desktop deps + JRE + build Windows
         working-directory: restaurant-desktop
@@ -127,6 +130,9 @@ jobs:
           npm ci
           npm install @embedded-postgres/windows-x64@18.4.0-beta.17 --no-save --force
           node scripts/fetch-jre.js --targets win-x64
+          echo "== payload check =="
+          ls -la resources || true
+          ls -la ui | head || true
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-win-x64/bin/java.exe
@@ -204,7 +210,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: .
+          path: restaurant-desktop
 
       - name: Install desktop deps + JRE + build macOS x64
         working-directory: restaurant-desktop
@@ -213,6 +219,9 @@ jobs:
           npm ci
           npm install @embedded-postgres/darwin-x64@18.4.0-beta.17 --no-save --force
           node scripts/fetch-jre.js --targets mac-x64
+          echo "== payload check =="
+          ls -la resources || true
+          ls -la ui | head || true
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-mac-x64/bin/java
@@ -287,7 +296,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: restaurant-edge-payload
-          path: .
+          path: restaurant-desktop
 
       - name: Install desktop deps + JRE + build macOS arm64
         working-directory: restaurant-desktop
@@ -296,6 +305,9 @@ jobs:
           npm ci
           npm install @embedded-postgres/darwin-arm64@18.4.0-beta.17 --no-save --force
           node scripts/fetch-jre.js --targets mac-arm64
+          echo "== payload check =="
+          ls -la resources || true
+          ls -la ui | head || true
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-mac-arm64/bin/java
