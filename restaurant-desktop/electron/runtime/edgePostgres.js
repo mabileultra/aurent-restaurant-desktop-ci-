@@ -37,6 +37,24 @@ async function loadEmbeddedPostgres() {
   return mod.default || mod;
 }
 
+function withTimeout(promise, ms, label) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => {
+      reject(new Error(`${label} timed out after ${Math.round(ms / 1000)}s`));
+    }, ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
+/** Windows initdb often hangs on --locale=C; encoding-only is safest. */
+function initdbFlagsForPlatform() {
+  if (process.platform === 'win32') {
+    return ['--encoding=UTF8'];
+  }
+  return ['--locale=C', '--encoding=UTF8'];
+}
+
 async function ensureEdgePostgres({ log = console.log } = {}) {
   if (await portOpen(DB_PORT)) {
     log(`[edge-db] Postgres already listening on ${DB_PORT}`);
@@ -47,22 +65,38 @@ async function ensureEdgePostgres({ log = console.log } = {}) {
   const dir = dataDir();
   fs.mkdirSync(dir, { recursive: true });
 
+  const flags = initdbFlagsForPlatform();
   cluster = new EmbeddedPostgres({
     databaseDir: dir,
     user: DB_USER,
     password: DB_PASSWORD,
     port: DB_PORT,
     persistent: true,
-    initdbFlags: ['--locale=C', '--encoding=UTF8'],
+    initdbFlags: flags,
   });
 
   if (!fs.existsSync(markerPath())) {
-    log(`[edge-db] initdb → ${dir}`);
-    await cluster.initialise();
+    log(`[edge-db] initdb → ${dir} (flags: ${flags.join(' ')})`);
+    log('[edge-db] first run can take 1–2 min; if antivirus asks, allow Postgres');
+    try {
+      await withTimeout(cluster.initialise(), 180_000, 'Postgres initdb');
+    } catch (err) {
+      // Broken partial cluster → wipe so next launch can retry clean.
+      try {
+        fs.rmSync(dir, { recursive: true, force: true });
+        fs.mkdirSync(dir, { recursive: true });
+      } catch {
+        /* ignore */
+      }
+      throw new Error(
+        `${err.message || err}. Удалите папку pgdata и добавьте исключение антивируса для Aurent Restaurant.`
+      );
+    }
+    log('[edge-db] initdb done');
   }
 
   log(`[edge-db] starting Postgres on ${DB_PORT}…`);
-  await cluster.start();
+  await withTimeout(cluster.start(), 60_000, 'Postgres start');
   startedByUs = true;
 
   try {
