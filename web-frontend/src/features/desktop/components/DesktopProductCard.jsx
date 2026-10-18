@@ -15,8 +15,9 @@ export default function DesktopProductCard({
   isLoading,
   isError,
   unavailableText,
+  showMac = true,
 }) {
-  const mac = resolveMacInstallerEntry(manifest);
+  const mac = showMac ? resolveMacInstallerEntry(manifest) : null;
 
   return (
     <article className={`installer-product installer-product--${accent}`}>
@@ -40,17 +41,19 @@ export default function DesktopProductCard({
           icon={Monitor}
           disabled={!manifest?.windows?.url}
         />
-        <InstallerDownloadButton
-          href={mac?.url}
-          label={t('installer.downloadForMac')}
-          sublabel={
-            mac?.size
-              ? formatInstallerBytes(mac.size)
-              : t('installer.notAvailable')
-          }
-          icon={Apple}
-          disabled={!mac?.url}
-        />
+        {showMac ? (
+          <InstallerDownloadButton
+            href={mac?.url}
+            label={t('installer.downloadForMac')}
+            sublabel={
+              mac?.size
+                ? formatInstallerBytes(mac.size)
+                : t('installer.notAvailable')
+            }
+            icon={Apple}
+            disabled={!mac?.url}
+          />
+        ) : null}
       </div>
 
       <div className="installer-product__meta">

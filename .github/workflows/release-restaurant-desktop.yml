@@ -16,11 +16,12 @@ on:
         default: false
         type: boolean
       mac_targets:
-        description: 'Which Mac DMGs to build (x64 = Intel; both = slower)'
+        description: 'Mac DMGs (none = Windows only — fastest)'
         required: false
-        default: x64
+        default: none
         type: choice
         options:
+          - none
           - x64
           - arm64
           - both
@@ -180,7 +181,8 @@ jobs:
     needs: [prepare]
     if: >-
       inputs.manifest_only != true &&
-      (github.event_name != 'workflow_dispatch' || inputs.mac_targets == 'x64' || inputs.mac_targets == 'both' || inputs.mac_targets == '')
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.mac_targets == 'x64' || inputs.mac_targets == 'both')
     runs-on: macos-latest
     timeout-minutes: 35
     steps:
@@ -266,7 +268,8 @@ jobs:
     needs: [prepare]
     if: >-
       inputs.manifest_only != true &&
-      (github.event_name == 'push' || inputs.mac_targets == 'arm64' || inputs.mac_targets == 'both')
+      github.event_name == 'workflow_dispatch' &&
+      (inputs.mac_targets == 'arm64' || inputs.mac_targets == 'both')
     runs-on: macos-latest
     timeout-minutes: 35
     steps:
@@ -357,7 +360,6 @@ jobs:
       (inputs.manifest_only == true || needs.build-win.result == 'success') &&
       (inputs.manifest_only == true || needs.build-mac-x64.result == 'success' || needs.build-mac-x64.result == 'skipped') &&
       (inputs.manifest_only == true || needs.build-mac-arm64.result == 'success' || needs.build-mac-arm64.result == 'skipped') &&
-      (inputs.manifest_only == true || needs.build-mac-x64.result == 'success' || needs.build-mac-arm64.result == 'success') &&
       (startsWith(github.ref, 'refs/tags/restaurant-desktop-v') || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 10

@@ -55,6 +55,7 @@ export default function DesktopInstallerHero({
               isLoading={restaurant.isLoading}
               isError={restaurant.isError}
               unavailableText={t('installer.restaurantComingSoon')}
+              showMac={false}
             />
           </div>
         </div>
