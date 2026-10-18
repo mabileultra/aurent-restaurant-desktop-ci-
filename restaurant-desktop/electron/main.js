@@ -125,11 +125,25 @@ async function bootStack() {
   setInterval(async () => {
     const hit = await probeHealth(HEALTH_URL);
     let pendingOutbox = lastStatus.pendingOutbox || 0;
+    // DNS alone is not enough (school filters often resolve but block HTTPS).
     let online = false;
     try {
-      const dns = require('dns').promises;
-      await dns.lookup('r-aurent.uz');
-      online = true;
+      online = await new Promise((resolve) => {
+        const https = require('https');
+        const req = https.get(
+          'https://r-aurent.uz/api/v1/actuator/health',
+          { timeout: 4000 },
+          (res) => {
+            res.resume();
+            resolve(res.statusCode >= 200 && res.statusCode < 500);
+          }
+        );
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => {
+          req.destroy();
+          resolve(false);
+        });
+      });
     } catch {
       online = false;
     }

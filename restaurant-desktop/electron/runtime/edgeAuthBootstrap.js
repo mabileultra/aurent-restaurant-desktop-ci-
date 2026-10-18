@@ -53,9 +53,16 @@ function localBase() {
   return `http://${SERVICE_HOST}:${SERVICE_PORT}/api/v1`;
 }
 
+const DEFAULT_CLOUD_API = 'https://r-aurent.uz/api/v1';
+
 function cloudBase() {
-  return (process.env.RESTAURANT_CLOUD_API_URL || process.env.VITE_API_URL || 'https://r-aurent.uz/api/v1')
-    .replace(/\/$/, '');
+  const raw = process.env.RESTAURANT_CLOUD_API_URL
+    || process.env.RESTAURANT_CLOUD_SYNC_URL
+    || '';
+  // Never use relative VITE_API_URL (/api/v1) — that would hit localhost, not the cloud.
+  const candidate = String(raw || DEFAULT_CLOUD_API).trim().replace(/\/$/, '');
+  if (!/^https?:\/\//i.test(candidate)) return DEFAULT_CLOUD_API;
+  return candidate;
 }
 
 async function getLocalAuthStatus() {
@@ -74,16 +81,35 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
     throw new Error('username and password required');
   }
   const cloud = cloudBase();
-  const login = await requestJson(`${cloud}/auth/login`, {
-    method: 'POST',
-    body: { username, password },
-  });
+  let login;
+  try {
+    login = await requestJson(`${cloud}/auth/login`, {
+      method: 'POST',
+      body: { username, password },
+    });
+  } catch (err) {
+    const detail = err.status
+      ? `HTTP ${err.status}${err.data?.message ? `: ${err.data.message}` : ''}`
+      : (err.message || err);
+    throw new Error(
+      `Облако недоступно или неверный логин (${cloud}/auth/login): ${detail}. `
+      + 'Нужны логин/пароль админа с r-aurent.uz, не код компании. Проверьте HTTPS/фильтр школы.'
+    );
+  }
   const token = login.data?.token;
   if (!token) throw new Error('Cloud login did not return a token');
 
-  const exported = await requestJson(`${cloud}/users/edge-staff-export`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
+  let exported;
+  try {
+    exported = await requestJson(`${cloud}/users/edge-staff-export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  } catch (err) {
+    const detail = err.status
+      ? `HTTP ${err.status}${err.data?.message ? `: ${err.data.message}` : ''}`
+      : (err.message || err);
+    throw new Error(`Экспорт сотрудников с облака не удался: ${detail}`);
+  }
   const companyId = exported.data?.companyId;
   const companyLoginCode = exported.data?.companyLoginCode;
   const staff = exported.data?.staff || [];

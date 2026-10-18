@@ -1,4 +1,5 @@
 import { pinRoleBadgeClass, pinRoleLabel, staffInitial } from '../../utils/pinRosterRoles';
+import { isRestaurantDesktop } from '../../../../utils/restaurantDesktop';
 
 export default function CashierPinLoginRoster({
   t,
@@ -14,6 +15,14 @@ export default function CashierPinLoginRoster({
     count,
     defaultValue: 'Кто работает? ({{count}})',
   });
+  const emptyHint = isRestaurantDesktop()
+    ? t('cashierLogin.rosterEmptyDesktop', {
+      defaultValue:
+        'Сотрудников ещё нет на этом ПК. Откройте «Админка», войдите логином и паролем админа с сайта (при включённом интернете) — один раз скопируем штат. Код компании сам по себе ничего не загружает.',
+    })
+    : t('cashierLogin.rosterEmpty', {
+      defaultValue: 'Нет сотрудников с PIN. Выдайте PIN менеджеру, кассиру, официанту или повару в штате.',
+    });
 
   return (
     <div className="cashier-pin-roster__body">
@@ -35,11 +44,7 @@ export default function CashierPinLoginRoster({
       ) : null}
 
       {!loading && !error && count === 0 ? (
-        <p className="cashier-pin-roster__status">
-          {t('cashierLogin.rosterEmpty', {
-            defaultValue: 'Нет сотрудников с PIN. Выдайте PIN менеджеру, кассиру, официанту или повару в штате.',
-          })}
-        </p>
+        <p className="cashier-pin-roster__status">{emptyHint}</p>
       ) : null}
 
       {/* Admin card always when not a hard empty-load failure; staff cards when present. */}

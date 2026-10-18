@@ -64,7 +64,7 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
   log(`[edge] java: ${javaBin}`);
   const cloudApi = process.env.RESTAURANT_CLOUD_API_URL
     || process.env.RESTAURANT_CLOUD_SYNC_URL
-    || '';
+    || 'https://r-aurent.uz/api/v1';
   const env = {
     ...process.env,
     SPRING_PROFILES_ACTIVE: 'edge',
@@ -75,8 +75,11 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     JWT_SECRET,
     PIN_SECRET: process.env.PIN_SECRET || JWT_SECRET,
     RESTAURANT_CLOUD_SYNC_URL: cloudApi,
-    RESTAURANT_CLOUD_API_URL: cloudApi || process.env.RESTAURANT_CLOUD_API_URL || '',
+    RESTAURANT_CLOUD_API_URL: cloudApi,
   };
+  // So Electron bootstrap (same process) also sees an absolute cloud base.
+  process.env.RESTAURANT_CLOUD_API_URL = cloudApi;
+  process.env.RESTAURANT_CLOUD_SYNC_URL = cloudApi;
 
   javaChild = spawn(javaBin, ['-jar', jar], {
     env,
