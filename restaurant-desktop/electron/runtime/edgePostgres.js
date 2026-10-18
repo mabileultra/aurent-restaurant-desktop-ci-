@@ -84,13 +84,13 @@ function run(bin, args, opts = {}) {
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     });
-    let err = '';
-    child.stderr.on('data', (c) => { err += c.toString(); });
-    child.stdout.on('data', () => {});
+    let out = '';
+    child.stderr.on('data', (c) => { out += c.toString(); });
+    child.stdout.on('data', (c) => { out += c.toString(); });
     child.on('error', reject);
     child.on('close', (code) => {
-      if (code === 0) resolve();
-      else reject(new Error(`${path.basename(bin)} failed (code ${code}): ${err.slice(0, 500)}`));
+      if (code === 0) resolve(out);
+      else reject(new Error(`${path.basename(bin)} failed (code ${code}): ${out.slice(0, 800)}`));
     });
   });
 }
@@ -109,13 +109,17 @@ async function initialiseCluster(binDir, dir, log) {
   log('[edge-db] first run can take 1–2 min; allow antivirus if prompted');
   try {
     await withTimeout(
-      run(initdb, [
-        `--pgdata=${dir}`,
-        '--auth=password',
-        `--username=${DB_USER}`,
-        `--pwfile=${pwFile}`,
-        ...initdbFlags(),
-      ]),
+      run(
+        initdb,
+        [
+          `--pgdata=${dir}`,
+          '--auth=password',
+          `--username=${DB_USER}`,
+          `--pwfile=${pwFile}`,
+          ...initdbFlags(),
+        ],
+        { env: pgsqlEnv(binDir) }
+      ),
       180_000,
       'Postgres initdb'
     );
@@ -138,50 +142,60 @@ async function initialiseCluster(binDir, dir, log) {
   log('[edge-db] initdb done');
 }
 
+function pgsqlEnv(binDir) {
+  const libDir = path.join(path.dirname(binDir), 'lib');
+  const pathParts = [binDir, libDir, process.env.PATH || ''];
+  return {
+    ...process.env,
+    PATH: pathParts.join(path.delimiter),
+    // Help Windows load Postgres DLLs next to binaries.
+    PGDATA: undefined,
+  };
+}
+
+async function waitUntilPortListening(port, timeoutMs, log) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (await portOpen(port)) return;
+    await new Promise((r) => setTimeout(r, 400));
+  }
+  throw new Error(`Postgres did not open port ${port} within ${Math.round(timeoutMs / 1000)}s`);
+}
+
 async function startCluster(binDir, dir, log) {
-  const postgres = path.join(binDir, exe('postgres'));
-  log(`[edge-db] starting Postgres on ${DB_PORT}…`);
-  await new Promise((resolve, reject) => {
-    pgChild = spawn(
-      postgres,
-      ['-D', dir, '-p', String(DB_PORT)],
-      { stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true }
-    );
-    startedByUs = true;
-    let settled = false;
-    const timer = setTimeout(() => {
-      if (!settled) {
-        settled = true;
-        reject(new Error('Postgres start timed out after 60s'));
-      }
-    }, 60_000);
-    const onData = (buf) => {
-      const msg = String(buf);
-      if (msg.includes('ready to accept connections') && !settled) {
-        settled = true;
-        clearTimeout(timer);
-        resolve();
-      }
-    };
-    pgChild.stderr.on('data', onData);
-    pgChild.stdout.on('data', onData);
-    pgChild.on('error', (err) => {
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        reject(err);
-      }
-    });
-    pgChild.on('exit', (code) => {
-      pgChild = null;
-      startedByUs = false;
-      if (!settled) {
-        settled = true;
-        clearTimeout(timer);
-        reject(new Error(`Postgres exited early code=${code}`));
-      }
-    });
-  });
+  const pgCtl = path.join(binDir, exe('pg_ctl'));
+  const logFile = path.join(dir, 'pg-start.log');
+  log(`[edge-db] starting Postgres on ${DB_PORT} via pg_ctl…`);
+  // Detached cluster managed by pg_ctl (survives Node; we stop via pg_ctl later).
+  await withTimeout(
+    run(
+      pgCtl,
+      [
+        'start',
+        '-D', dir,
+        '-l', logFile,
+        '-o', `-p ${DB_PORT}`,
+        '-w',
+        '-t', '90',
+      ],
+      { env: pgsqlEnv(binDir) }
+    ),
+    120_000,
+    'pg_ctl start'
+  );
+  startedByUs = true;
+  try {
+    await waitUntilPortListening(DB_PORT, 30_000, log);
+  } catch (err) {
+    let tail = '';
+    try {
+      tail = fs.readFileSync(logFile, 'utf8').slice(-800);
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
+  }
+  log(`[edge-db] Postgres listening on ${DB_PORT}`);
 }
 
 async function createDbIfNeeded(log) {
@@ -232,17 +246,27 @@ async function ensureEdgePostgres({ log = console.log } = {}) {
 }
 
 async function stopEdgePostgres({ log = console.log } = {}) {
-  if (!pgChild || !startedByUs) {
+  if (!startedByUs) {
     pgChild = null;
     startedByUs = false;
     return;
   }
   try {
     log('[edge-db] stopping Postgres…');
-    if (process.platform === 'win32') {
-      pgChild.kill();
-    } else {
-      pgChild.kill('SIGTERM');
+    const binDir = resolvePgsqlBinDir();
+    const dir = dataDir();
+    if (binDir && fs.existsSync(markerPath())) {
+      const pgCtl = path.join(binDir, exe('pg_ctl'));
+      await run(pgCtl, ['stop', '-D', dir, '-m', 'fast', '-w'], { env: pgsqlEnv(binDir) }).catch((err) => {
+        log(`[edge-db] pg_ctl stop: ${err.message || err}`);
+      });
+    }
+    if (pgChild) {
+      try {
+        pgChild.kill();
+      } catch {
+        /* ignore */
+      }
     }
   } catch (err) {
     log(`[edge-db] stop warning: ${err.message || err}`);
