@@ -132,6 +132,7 @@ jobs:
           npm install @embedded-postgres/windows-x64@18.4.0-beta.17 --no-save --force
           node scripts/sync-pgsql-native.cjs win32 x64
           node scripts/fetch-jre.js --targets win-x64
+          node scripts/fetch-vcredist.js
           echo "== payload check =="
           ls -la resources || true
           ls -la ui | head || true
@@ -139,6 +140,8 @@ jobs:
           test -f ui/index.html
           test -f resources/jre-win-x64/bin/java.exe
           test -f resources/pgsql/bin/initdb.exe
+          test -f resources/vc_redist.x64.exe
+          test -f nsis/installer.nsh
           npx electron-builder --win --x64
 
       - name: Setup SSH

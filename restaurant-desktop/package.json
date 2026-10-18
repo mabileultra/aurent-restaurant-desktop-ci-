@@ -1,6 +1,6 @@
 {
   "name": "aurent-restaurant-desktop",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "description": "Aurent Restaurant — local-first hall desktop (separate from Aurent Cashier)",
   "main": "electron/main.js",
@@ -21,7 +21,7 @@
     "productName": "Aurent Restaurant",
     "directories": {
       "output": "dist",
-      "buildResources": "build"
+      "buildResources": "nsis"
     },
     "files": [
       "electron/**/*",
@@ -65,6 +65,11 @@
       "target": [
         "nsis"
       ]
+    },
+    "nsis": {
+      "include": "installer.nsh",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     },
     "artifactName": "Aurent-Restaurant-${version}-${os}-${arch}.${ext}"
   },

@@ -118,7 +118,8 @@ async function initialiseCluster(binDir, dir, log) {
           `--pwfile=${pwFile}`,
           ...initdbFlags(),
         ],
-        { env: pgsqlEnv(binDir) }
+        // cwd=bin so Windows loads sibling Postgres DLLs next to initdb.exe
+        { env: pgsqlEnv(binDir), cwd: binDir }
       ),
       180_000,
       'Postgres initdb'
@@ -129,9 +130,7 @@ async function initialiseCluster(binDir, dir, log) {
     } catch {
       /* ignore */
     }
-    throw new Error(
-      `${err.message || err}. Delete pgdata folder and allow Aurent in antivirus.`
-    );
+    throw new Error(formatInitdbFailure(err));
   } finally {
     try {
       fs.unlinkSync(pwFile);
@@ -150,6 +149,23 @@ function pgsqlEnv(binDir) {
     ...process.env,
     PATH: pathParts.join(path.delimiter),
   };
+}
+
+/** Windows STATUS_DLL_NOT_FOUND — usually missing VC++ Redistributable x64. */
+function formatInitdbFailure(err) {
+  const raw = String(err?.message || err);
+  const codeMatch = raw.match(/code\s+(\d+)/i);
+  const code = codeMatch ? Number(codeMatch[1]) : 0;
+  // 0xC0000135 = 3221225781 STATUS_DLL_NOT_FOUND
+  if (code === 3221225781 || /3221225781/.test(raw)) {
+    return (
+      'Postgres initdb: не хватает системных DLL (код 3221225781).\n'
+      + 'Установите «Microsoft Visual C++ Redistributable x64», затем удалите папку pgdata и запустите снова:\n'
+      + 'https://aka.ms/vs/17/release/vc_redist.x64.exe\n'
+      + 'Также разрешите Aurent в антивирусе.'
+    );
+  }
+  return `${raw}. Удалите pgdata и разрешите Aurent в антивирусе.`;
 }
 
 function patchClusterConfig(dir, log) {
