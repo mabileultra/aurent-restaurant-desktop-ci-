@@ -13,6 +13,8 @@ const {
   getLocalAuthStatus,
   getLocalBootstrapStatus,
   bootstrapStaffFromCloud,
+  fetchCloudPinRoster,
+  ensureStaffViaCloudPin,
 } = require('./runtime/edgeAuthBootstrap');
 const {
   getCompanyLoginCode,
@@ -247,6 +249,12 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle('restaurant:bootstrap-staff-from-cloud', async (_e, payload) => {
     return bootstrapStaffFromCloud(payload || {});
+  });
+  ipcMain.handle('restaurant:fetch-cloud-pin-roster', async (_e, companyLoginCode) => {
+    return fetchCloudPinRoster(companyLoginCode);
+  });
+  ipcMain.handle('restaurant:ensure-staff-via-cloud-pin', async (_e, payload) => {
+    return ensureStaffViaCloudPin(payload || {});
   });
   ipcMain.handle('restaurant:get-company-login-code', async () => getCompanyLoginCode());
   ipcMain.handle('restaurant:set-company-login-code', async (_e, code) => setCompanyLoginCode(code));

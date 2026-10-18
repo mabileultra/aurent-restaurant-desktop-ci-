@@ -5,6 +5,8 @@ contextBridge.exposeInMainWorld('aurentRestaurant', {
   getStatus: () => ipcRenderer.invoke('restaurant:get-status'),
   getEdgeAuthStatus: () => ipcRenderer.invoke('restaurant:get-edge-auth-status'),
   bootstrapStaffFromCloud: (payload) => ipcRenderer.invoke('restaurant:bootstrap-staff-from-cloud', payload),
+  fetchCloudPinRoster: (companyLoginCode) => ipcRenderer.invoke('restaurant:fetch-cloud-pin-roster', companyLoginCode),
+  ensureStaffViaCloudPin: (payload) => ipcRenderer.invoke('restaurant:ensure-staff-via-cloud-pin', payload),
   pushCloudSync: () => ipcRenderer.invoke('restaurant:push-cloud-sync'),
   getCompanyLoginCode: () => ipcRenderer.invoke('restaurant:get-company-login-code'),
   setCompanyLoginCode: (code) => ipcRenderer.invoke('restaurant:set-company-login-code', code),

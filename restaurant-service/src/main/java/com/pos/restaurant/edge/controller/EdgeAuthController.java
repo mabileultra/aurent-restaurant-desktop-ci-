@@ -1,6 +1,7 @@
 package com.pos.restaurant.edge.controller;
 
 import com.pos.restaurant.edge.dto.EdgeAuthResponse;
+import com.pos.restaurant.edge.dto.EdgeCloudPinUpsertRequest;
 import com.pos.restaurant.edge.dto.EdgeLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinRosterEntry;
@@ -59,6 +60,12 @@ public class EdgeAuthController {
     public ResponseEntity<Map<String, Object>> bootstrap(@Valid @RequestBody EdgeStaffBootstrapRequest request) {
         int saved = edgeAuthService.bootstrap(request);
         return ResponseEntity.ok(Map.of("saved", saved, "hasStaff", edgeAuthService.hasStaff()));
+    }
+
+    @PostMapping("/edge/auth/upsert-cloud-pin")
+    @Operation(summary = "Upsert one staff row after Electron verified PIN on cloud")
+    public ResponseEntity<EdgeAuthResponse> upsertCloudPin(@Valid @RequestBody EdgeCloudPinUpsertRequest request) {
+        return ResponseEntity.ok(edgeAuthService.upsertFromCloudPin(request));
     }
 
     @GetMapping("/edge/auth/status")

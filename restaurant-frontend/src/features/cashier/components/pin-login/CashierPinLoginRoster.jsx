@@ -18,7 +18,7 @@ export default function CashierPinLoginRoster({
   const emptyHint = isRestaurantDesktop()
     ? t('cashierLogin.rosterEmptyDesktop', {
       defaultValue:
-        'Сотрудников ещё нет на этом ПК. Откройте «Админка», войдите логином и паролем админа с сайта (при включённом интернете) — один раз скопируем штат. Код компании сам по себе ничего не загружает.',
+        'Нет сотрудников с PIN для этого кода. Проверьте код компании и интернет — список берётся с облака. Если пусто, выдайте PIN в штате на сайте.',
     })
     : t('cashierLogin.rosterEmpty', {
       defaultValue: 'Нет сотрудников с PIN. Выдайте PIN менеджеру, кассиру, официанту или повару в штате.',

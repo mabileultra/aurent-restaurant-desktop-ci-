@@ -3,23 +3,32 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import { fetchRestaurantAppAccess } from '../../utils/fetchRestaurantAppAccess';
+import { isRestaurantDesktop } from '../../utils/restaurantDesktop';
 import WrongAppScreen from '../../features/auth/components/WrongAppScreen';
 
 /**
  * Blocks grocery/pharmacy/platform sessions on r-aurent with a clear message.
  * Do not remount the SPA while re-checking — that aborts in-flight dialogs.
+ * Restaurant desktop (edge) skips this gate — local company types may be empty before catalog bootstrap.
  */
 export default function RestaurantWorldGate({ children }) {
   const { t } = useTranslation();
   const token = useAuthStore((s) => s.token);
   const user = useAuthStore((s) => s.user);
   const hasHydrated = useAuthStore((s) => s._hasHydrated);
-  const [loading, setLoading] = useState(Boolean(token));
+  const desktop = isRestaurantDesktop();
+  const [loading, setLoading] = useState(Boolean(token) && !desktop);
   const [denied, setDenied] = useState(null);
-  const allowedRef = useRef(false);
+  const allowedRef = useRef(desktop);
 
   useEffect(() => {
     if (!hasHydrated) return undefined;
+    if (desktop) {
+      allowedRef.current = true;
+      setDenied(null);
+      setLoading(false);
+      return undefined;
+    }
     if (!token) {
       allowedRef.current = false;
       setLoading(false);
@@ -59,7 +68,7 @@ export default function RestaurantWorldGate({ children }) {
     })();
 
     return () => { cancelled = true; };
-  }, [hasHydrated, token, user?.role, user?.companyId]);
+  }, [hasHydrated, token, user?.role, user?.companyId, desktop]);
 
   if (denied) {
     return <WrongAppScreen t={t} />;

@@ -3,6 +3,7 @@ package com.pos.restaurant.edge.service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pos.restaurant.edge.dto.EdgeAuthResponse;
+import com.pos.restaurant.edge.dto.EdgeCloudPinUpsertRequest;
 import com.pos.restaurant.edge.dto.EdgeLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinLoginRequest;
 import com.pos.restaurant.edge.dto.EdgePinRosterEntry;
@@ -40,6 +41,9 @@ public class EdgeAuthService {
     @Value("${app.pin.secret}")
     private String pinSecret;
 
+    @Value("${app.jwt.secret:}")
+    private String jwtSecret;
+
     @Transactional(readOnly = true)
     public EdgeAuthResponse login(EdgeLoginRequest request) {
         EdgeStaff staff = staffRepository.findByUsernameIgnoreCaseAndActiveTrue(request.username().trim())
@@ -75,7 +79,6 @@ public class EdgeAuthService {
         if (pin.length() < 4 || pin.length() > 6) {
             throw new BusinessException("Invalid PIN");
         }
-        String digest = EdgePinDigest.digestHex(pin, pinSecret);
         EdgeStaff match = null;
         for (EdgeStaff staff : candidates) {
             if (request.userId() != null && !staff.getUserId().equals(request.userId())) {
@@ -84,7 +87,7 @@ public class EdgeAuthService {
             if (!StringUtils.hasText(staff.getPinHash())) {
                 continue;
             }
-            if (digest.equalsIgnoreCase(staff.getPinHash().trim())) {
+            if (pinMatchesStoredHash(pin, staff.getPinHash())) {
                 match = staff;
                 break;
             }
@@ -93,6 +96,41 @@ public class EdgeAuthService {
             throw new BusinessException("Invalid PIN");
         }
         return toAuthResponse(match, jwtIssuer.issue(match));
+    }
+
+    /**
+     * After Electron verified PIN against cloud: store staff with PIN hashed by local secret
+     * so offline PIN works even when cloud PIN_SECRET ≠ local.
+     */
+    @Transactional
+    public EdgeAuthResponse upsertFromCloudPin(EdgeCloudPinUpsertRequest request) {
+        if (StringUtils.hasText(bootstrapSecret)
+            && !bootstrapSecret.equals(String.valueOf(request.bootstrapSecret()))) {
+            throw new BusinessException("Invalid bootstrap secret");
+        }
+        String pin = EdgePinDigest.normalizePin(request.pin());
+        if (pin.length() < 4 || pin.length() > 6) {
+            throw new BusinessException("Invalid PIN");
+        }
+        EdgeStaff row = staffRepository.findById(request.userId()).orElseGet(EdgeStaff::new);
+        row.setUserId(request.userId());
+        row.setCompanyId(request.companyId());
+        row.setCompanyLoginCode(firstNonBlank(request.companyLoginCode(), row.getCompanyLoginCode()));
+        row.setUsername(request.username().trim());
+        row.setEmail(request.email());
+        row.setFullName(request.fullName());
+        row.setRole(StringUtils.hasText(request.role()) ? request.role().trim() : "WAITER");
+        row.setPinHash(EdgePinDigest.digestHex(pin, pinSecret));
+        row.setStoreIdsJson(writeJson(request.storeIds()));
+        row.setAllowedModulesJson(writeJson(request.allowedModules()));
+        row.setCanRequestBill(Boolean.TRUE.equals(request.canRequestBill()));
+        row.setActive(true);
+        row.setUpdatedAt(Instant.now());
+        if (!StringUtils.hasText(row.getPasswordHash())) {
+            row.setPasswordHash(null);
+        }
+        staffRepository.save(row);
+        return toAuthResponse(row, jwtIssuer.issue(row));
     }
 
     @Transactional
@@ -133,6 +171,39 @@ public class EdgeAuthService {
     @Transactional(readOnly = true)
     public boolean hasStaff() {
         return staffRepository.countByActiveTrue() > 0;
+    }
+
+    /** Accept cloud-exported digests hashed with JWT_SECRET / default key as well as local PIN_SECRET. */
+    private boolean pinMatchesStoredHash(String pin, String storedHash) {
+        String expected = storedHash == null ? "" : storedHash.trim();
+        if (!StringUtils.hasText(expected)) {
+            return false;
+        }
+        for (String key : pinSecretCandidates()) {
+            if (expected.equalsIgnoreCase(EdgePinDigest.digestHex(pin, key))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private List<String> pinSecretCandidates() {
+        List<String> keys = new ArrayList<>();
+        if (StringUtils.hasText(pinSecret)) {
+            keys.add(pinSecret.trim());
+        }
+        if (StringUtils.hasText(jwtSecret) && !keys.contains(jwtSecret.trim())) {
+            keys.add(jwtSecret.trim());
+        }
+        String fallback = "aurent-default-pin-secret";
+        if (!keys.contains(fallback)) {
+            keys.add(fallback);
+        }
+        String changeMe = "change-me-use-at-least-32-chars-for-hs256!!";
+        if (!keys.contains(changeMe)) {
+            keys.add(changeMe);
+        }
+        return keys;
     }
 
     private String resolvePasswordHash(String existingHash, String plaintext, String keepIfBlank) {

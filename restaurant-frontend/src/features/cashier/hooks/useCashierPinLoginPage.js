@@ -51,6 +51,13 @@ function writeRosterCache(loginCode, rows) {
 }
 
 async function resolvePinHomePath(role) {
+  // Hall desktop is always the restaurant app — do not kick users for missing local business-types.
+  if (isRestaurantDesktop()) {
+    return {
+      path: resolveAppHomePath(role),
+      access: { ok: true },
+    };
+  }
   const { access, businessPayload, fetchError } = await fetchRestaurantAppAccess(role);
   return {
     path: resolveAppHomePath(role, businessPayload?.defaultTypeCode),
@@ -180,17 +187,46 @@ export function useCashierPinLoginPage() {
     try {
       const res = await authApi.cashierPinRoster(loginCode);
       if (reqId !== rosterReqRef.current) return;
-      const rows = Array.isArray(res.data) ? res.data : [];
+      let rows = Array.isArray(res.data) ? res.data : [];
+      // Desktop: local DB empty until bootstrap — pull public cloud roster by company code.
+      if (
+        rows.length === 0
+        && isRestaurantDesktop()
+        && typeof window.aurentRestaurant?.fetchCloudPinRoster === 'function'
+      ) {
+        try {
+          const cloudRows = await window.aurentRestaurant.fetchCloudPinRoster(loginCode);
+          if (Array.isArray(cloudRows) && cloudRows.length) {
+            rows = cloudRows;
+          }
+        } catch {
+          /* keep local empty / error below */
+        }
+      }
       setRoster(rows);
       writeRosterCache(loginCode, rows);
       setRosterError('');
     } catch (err) {
       if (reqId !== rosterReqRef.current) return;
+      // Local roster failed — still try cloud on desktop.
+      if (isRestaurantDesktop() && typeof window.aurentRestaurant?.fetchCloudPinRoster === 'function') {
+        try {
+          const cloudRows = await window.aurentRestaurant.fetchCloudPinRoster(loginCode);
+          if (reqId !== rosterReqRef.current) return;
+          if (Array.isArray(cloudRows) && cloudRows.length) {
+            setRoster(cloudRows);
+            writeRosterCache(loginCode, cloudRows);
+            setRosterError('');
+            return;
+          }
+        } catch {
+          /* fall through */
+        }
+      }
       const msg = resolveAuthErrorMessage(err, t) || t('cashierLogin.rosterFailed', {
         defaultValue: 'Не удалось загрузить сотрудников',
       });
       if (rosterRef.current.length) {
-        // Keep stale cards; don't block the screen with a hard error.
         setRosterError('');
       } else {
         setRoster([]);
@@ -312,13 +348,14 @@ export function useCashierPinLoginPage() {
         freshLoginRef.current = false;
       }, 4000);
     } catch (err) {
-      const apiMsg = err.response?.data?.message;
-      if (!err.response) {
-        setAdminError(t('login.networkError'));
-      } else if (apiMsg === 'Invalid username or password') {
+      const apiMsg = err.response?.data?.message || err.message;
+      if (apiMsg && /invalid credentials|invalid username or password|неверн/i.test(String(apiMsg))) {
         setAdminError(t('login.badCredentials'));
-      } else {
+      } else if (err.response) {
         setAdminError(resolveAuthErrorMessage(err, t) || t('login.failed'));
+      } else {
+        // Electron bootstrap throws plain Error (no axios response) — show real text.
+        setAdminError(apiMsg || t('login.networkError'));
       }
     } finally {
       setLoading(false);
@@ -351,12 +388,37 @@ export function useCashierPinLoginPage() {
     setLoading(true);
     setPinError('');
     try {
-      const res = await authApi.cashierPinLogin({
-        companyLoginCode: loginCode,
-        pin: normalizePin(pin),
-        userId: selectedStaff.id,
-      });
-      const { token: accessToken, ...profile } = res.data;
+      const pinNorm = normalizePin(pin);
+      let authPayload = null;
+
+      // Desktop: verify PIN on cloud, upsert local hash, get local JWT (works before admin bootstrap).
+      if (
+        isRestaurantDesktop()
+        && typeof window.aurentRestaurant?.ensureStaffViaCloudPin === 'function'
+        && navigator.onLine !== false
+      ) {
+        try {
+          authPayload = await window.aurentRestaurant.ensureStaffViaCloudPin({
+            companyLoginCode: loginCode,
+            pin: pinNorm,
+            userId: selectedStaff.id,
+          });
+        } catch (cloudPinErr) {
+          // Fall back to local-only if already bootstrapped / offline cloud error.
+          console.warn('[edge] cloud pin ensure failed', cloudPinErr?.message || cloudPinErr);
+        }
+      }
+
+      if (!authPayload?.token) {
+        const res = await authApi.cashierPinLogin({
+          companyLoginCode: loginCode,
+          pin: pinNorm,
+          userId: selectedStaff.id,
+        });
+        authPayload = res.data;
+      }
+
+      const { token: accessToken, ...profile } = authPayload || {};
       if (!accessToken) {
         setPinError(t('login.failed'));
         return;
