@@ -130,6 +130,7 @@ jobs:
           set -euo pipefail
           npm ci
           npm install @embedded-postgres/windows-x64@18.4.0-beta.17 --no-save --force
+          node scripts/sync-pgsql-native.cjs win32 x64
           node scripts/fetch-jre.js --targets win-x64
           echo "== payload check =="
           ls -la resources || true
@@ -137,6 +138,7 @@ jobs:
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-win-x64/bin/java.exe
+          test -f resources/pgsql/bin/initdb.exe
           npx electron-builder --win --x64
 
       - name: Setup SSH
@@ -220,6 +222,7 @@ jobs:
           set -euo pipefail
           npm ci
           npm install @embedded-postgres/darwin-x64@18.4.0-beta.17 --no-save --force
+          node scripts/sync-pgsql-native.cjs darwin x64
           node scripts/fetch-jre.js --targets mac-x64
           echo "== payload check =="
           ls -la resources || true
@@ -227,6 +230,7 @@ jobs:
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-mac-x64/bin/java
+          test -f resources/pgsql/bin/initdb
           npx electron-builder --mac --x64 -c.mac.target=dmg
 
       - name: Setup SSH
@@ -307,6 +311,7 @@ jobs:
           set -euo pipefail
           npm ci
           npm install @embedded-postgres/darwin-arm64@18.4.0-beta.17 --no-save --force
+          node scripts/sync-pgsql-native.cjs darwin arm64
           node scripts/fetch-jre.js --targets mac-arm64
           echo "== payload check =="
           ls -la resources || true
@@ -314,6 +319,7 @@ jobs:
           test -f resources/restaurant-service.jar
           test -f ui/index.html
           test -f resources/jre-mac-arm64/bin/java
+          test -f resources/pgsql/bin/initdb
           npx electron-builder --mac --arm64 -c.mac.target=dmg
 
       - name: Setup SSH

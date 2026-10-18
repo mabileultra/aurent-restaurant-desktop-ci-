@@ -3,6 +3,7 @@ dist/
 ui/**
 !ui/.gitkeep
 resources/*.jar
+resources/pgsql/
 resources/jre-*/
 resources/jre-download-*
 resources/jre-staging-*
