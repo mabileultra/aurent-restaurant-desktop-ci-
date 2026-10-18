@@ -235,51 +235,64 @@ async function startCluster(binDir, dir, log) {
 
 async function createDbIfNeeded(log) {
   const { Client } = require('pg');
-  const client = new Client({
-    host: '127.0.0.1',
-    port: DB_PORT,
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: 'postgres',
-  });
-  await client.connect();
-  try {
-    const res = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [DB_NAME]);
-    if (res.rowCount === 0) {
-      await client.query(`CREATE DATABASE "${DB_NAME}"`);
-      log(`[edge-db] database ${DB_NAME} ready`);
-    } else {
-      log(`[edge-db] database ${DB_NAME} already exists`);
+  let lastErr;
+  // Brief retries: right after pg_ctl, accept() can lag on Windows.
+  for (let attempt = 1; attempt <= 8; attempt += 1) {
+    const client = new Client({
+      host: '127.0.0.1',
+      port: DB_PORT,
+      user: DB_USER,
+      password: DB_PASSWORD,
+      database: 'postgres',
+      connectionTimeoutMillis: 5_000,
+    });
+    try {
+      await client.connect();
+      const res = await client.query('SELECT 1 FROM pg_database WHERE datname = $1', [DB_NAME]);
+      if (res.rowCount === 0) {
+        await client.query(`CREATE DATABASE "${DB_NAME}"`);
+        log(`[edge-db] database ${DB_NAME} ready`);
+      } else {
+        log(`[edge-db] database ${DB_NAME} already exists`);
+      }
+      await client.end().catch(() => {});
+      return;
+    } catch (err) {
+      lastErr = err;
+      await client.end().catch(() => {});
+      await new Promise((r) => setTimeout(r, 500));
     }
-  } finally {
-    await client.end().catch(() => {});
   }
+  throw new Error(`create database ${DB_NAME}: ${lastErr?.message || lastErr}`);
 }
 
 async function ensureEdgePostgres({ log = console.log } = {}) {
+  let reused = false;
   if (await portOpen(DB_PORT)) {
     log(`[edge-db] Postgres already listening on ${DB_PORT}`);
-    return { reused: true, port: DB_PORT };
-  }
-
-  const binDir = resolvePgsqlBinDir();
-  if (!binDir) {
-    throw new Error(
-      'Postgres binaries (initdb) not found. Reinstall Aurent Restaurant (resources/pgsql missing).'
-    );
-  }
-  log(`[edge-db] binaries: ${binDir}`);
-
-  const dir = dataDir();
-  if (!fs.existsSync(markerPath())) {
-    await initialiseCluster(binDir, dir, log);
+    reused = true;
   } else {
-    patchClusterConfig(dir, log);
+    const binDir = resolvePgsqlBinDir();
+    if (!binDir) {
+      throw new Error(
+        'Postgres binaries (initdb) not found. Reinstall Aurent Restaurant (resources/pgsql missing).'
+      );
+    }
+    log(`[edge-db] binaries: ${binDir}`);
+
+    const dir = dataDir();
+    if (!fs.existsSync(markerPath())) {
+      await initialiseCluster(binDir, dir, log);
+    } else {
+      patchClusterConfig(dir, log);
+    }
+
+    await startCluster(binDir, dir, log);
   }
 
-  await startCluster(binDir, dir, log);
+  // Always ensure restaurant_db — previous runs often left Postgres up without the DB.
   await createDbIfNeeded(log);
-  return { reused: false, port: DB_PORT };
+  return { reused, port: DB_PORT };
 }
 
 async function stopEdgePostgres({ log = console.log } = {}) {
