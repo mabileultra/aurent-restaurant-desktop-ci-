@@ -458,7 +458,7 @@ async function pushPluToShtrih(items, opts = {}) {
 /**
  * Проверка связи: запрос веса 02 01 11 без пароля. Успешный send() без ответа — не связь.
  */
-async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT) {
+async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT, timeoutMs = 1200) {
   const h = String(host || '').trim();
   const port = Number(udpPort) || DEFAULT_UDP_PORT;
   if (!h) return { ok: false, error: 'no-host' };
@@ -468,7 +468,7 @@ async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT) {
       socket.once('error', reject);
       socket.bind(0, () => resolve());
     });
-    const pending = waitForUdp(socket, 1200);
+    const pending = waitForUdp(socket, timeoutMs);
     await sendUdp(socket, buildWeightRequestPacket(), port, h);
     const raw = await pending;
     const parsed = parseScaleReply(raw);

@@ -5,7 +5,8 @@
 const net = require('net');
 const os = require('os');
 const { parseScaleLine } = require('./scale-parser.cjs');
-const { writeScaleSettings } = require('./scale-config.cjs');
+const { readScaleSettings, writeScaleSettings } = require('./scale-config.cjs');
+const { probeShtrihUdp, DEFAULT_UDP_PORT } = require('./scale-shtrih-udp.cjs');
 
 /** Порты, которые часто слушают label/print-весы (ШТРИХ, CAS host и т.п.). */
 const COMMON_TCP_PORTS = [1001, 1111, 4001, 5001, 5555, 7778, 9100];
@@ -120,14 +121,76 @@ async function scanLanScaleCandidates({ concurrency = 48 } = {}) {
 }
 
 /**
- * Автопоиск Ethernet-весов: сначала TCP open, затем ideally вес.
+ * ШТРИХ-ПРИНТ 4.5 слушает только UDP 1111. TCP-скан такие весы не видит.
+ * @returns {Promise<Array<{host:string,udpPort:number,result:number}>>}
+ */
+async function scanLanShtrihUdp({ concurrency = 24, timeoutMs = 400 } = {}) {
+  const subnets = localIpv4Subnets();
+  const hosts = [];
+  for (const { base, self } of subnets) {
+    for (let i = 1; i <= 254; i += 1) {
+      const host = `${base}.${i}`;
+      if (host !== self) hosts.push(host);
+    }
+  }
+  if (!hosts.length) return [];
+
+  const found = [];
+  let idx = 0;
+  async function worker() {
+    while (idx < hosts.length) {
+      const host = hosts[idx];
+      idx += 1;
+      const res = await probeShtrihUdp(host, DEFAULT_UDP_PORT, timeoutMs);
+      if (res.ok) found.push({ host: res.host, udpPort: res.udpPort || DEFAULT_UDP_PORT, result: res.result });
+    }
+  }
+  const workers = Array.from({ length: Math.min(concurrency, hosts.length) }, () => worker());
+  await Promise.all(workers);
+  return found;
+}
+
+/**
+ * Автопоиск Ethernet-весов: сначала UDP 1111 (ШТРИХ-ПРИНТ), затем TCP.
  */
 async function autoDetectEthernet({ save = true } = {}) {
+  const udpHits = await scanLanShtrihUdp();
+  if (udpHits.length) {
+    const first = udpHits[0];
+    if (save) {
+      const prev = readScaleSettings().hosts || [];
+      const merged = [];
+      const seen = new Set();
+      for (const row of [...udpHits, ...prev]) {
+        const host = String(row.host || '').trim();
+        const udpPort = Number(row.udpPort || row.tcpPort) || DEFAULT_UDP_PORT;
+        const key = host + ':' + udpPort;
+        if (!host || seen.has(key)) continue;
+        seen.add(key);
+        merged.push({ host, udpPort, label: row.label || '' });
+      }
+      writeScaleSettings({
+        scaleTransport: 'ethernet',
+        scaleFamily: 'family-shtrih-print',
+        scaleHosts: merged,
+      });
+    }
+    return {
+      ok: true,
+      transport: 'ethernet',
+      host: first.host,
+      tcpPort: first.udpPort,
+      method: 'udp-1111',
+      hosts: udpHits,
+      candidates: udpHits,
+    };
+  }
+
   const candidates = await scanLanScaleCandidates();
   if (!candidates.length) {
     return {
       ok: false,
-      error: 'В локальной сети не найдены весы на типичных TCP-портах (1001, 1111, …).',
+      error: 'ШТРИХ-ПРИНТ по UDP 1111 не ответили, TCP-порты тоже пустые. Впишите IP вручную.',
       candidates: [],
     };
   }

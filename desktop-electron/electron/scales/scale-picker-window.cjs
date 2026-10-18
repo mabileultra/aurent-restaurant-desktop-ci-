@@ -253,11 +253,18 @@ function buildPickerHtml() {
         if (r.ok && r.host) {
           hostEl.value = r.host || '';
           if (r.tcpPort) tcpPortEl.value = String(r.tcpPort);
-          const udpPort = Number(r.tcpPort) || 1111;
-          const exists = hosts.some((h) => h.host === r.host && Number(h.udpPort) === udpPort);
-          if (!exists) hosts.unshift({ host: r.host, udpPort, label: '' });
+          const found = Array.isArray(r.hosts) && r.hosts.length
+            ? r.hosts
+            : [{ host: r.host, udpPort: Number(r.tcpPort) || 1111 }];
+          for (const row of found) {
+            const udpPort = Number(row.udpPort || row.tcpPort || r.tcpPort) || 1111;
+            const host = String(row.host || '').trim();
+            if (!host) continue;
+            const exists = hosts.some((h) => h.host === host && Number(h.udpPort) === udpPort);
+            if (!exists) hosts.unshift({ host, udpPort, label: '' });
+          }
           renderHosts();
-          setStatus('Найдено ' + r.host + ':' + udpPort + ' — добавлено в список. Сохраните список.', 'ok');
+          setStatus('Найдено ' + found.length + ' (' + r.host + ') — добавлено в список. Сохраните список.', 'ok');
         } else {
           setStatus(r.error || 'Ethernet не найден — впишите IP вручную (UDP 1111)', 'err');
         }
