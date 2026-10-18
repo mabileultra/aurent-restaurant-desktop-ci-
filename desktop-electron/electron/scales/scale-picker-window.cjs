@@ -468,7 +468,7 @@ function showScalePickerWindow(mainWindow) {
           host,
           tcpPort,
           transport: 'udp',
-          hint: 'UDP пакет ушёл на ' + host + ':' + tcpPort + '. Сохраните и выгрузите PLU из Aurent.',
+          hint: 'Весы ответили на ' + host + ':' + tcpPort + '. Сохраните и выгрузите PLU из Aurent.',
         };
       }
       const open = await probeTcpHost(host, tcpPort, 1200);

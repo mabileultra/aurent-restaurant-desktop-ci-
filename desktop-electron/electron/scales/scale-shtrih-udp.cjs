@@ -8,7 +8,6 @@ const dgram = require('dgram');
 const DEFAULT_UDP_PORT = 1111;
 const DEFAULT_PASSWORD = '0030';
 const PLU_WRITE_CMD = 0x50;
-const ITEM_GAP_MS = 450;
 
 /** Unicode → байт Windows-1251 (кириллица + ASCII). */
 function charToWin1251(ch) {
@@ -50,78 +49,267 @@ function encodeUintLe(value, byteLength) {
 }
 
 function encodePassword(password = DEFAULT_PASSWORD) {
-  return encodeWin1251Padded(String(password || DEFAULT_PASSWORD).padStart(4, '0').slice(0, 4), 4);
+  const digits = String(password || DEFAULT_PASSWORD).replace(/\D/g, '').padStart(4, '0').slice(-4);
+  return Buffer.from(digits, 'ascii');
+}
+
+function splitName(name) {
+  const text = String(name || '').trim();
+  return [text.slice(0, 28), text.slice(28, 56)];
 }
 
 /**
  * Пакет записи одного PLU (команда 0x50).
+ * Поле после группы — код сообщения, 0 = не задано. Ненулевой код без
+ * сообщения в памяти весов они отклоняют, и товар в PLU не попадает.
  * @returns {Buffer}
  */
 function buildPluWritePacket(item, { password = DEFAULT_PASSWORD } = {}) {
   const pluNum = Math.max(1, Math.min(65535, parseInt(String(item.plu), 10) || 0));
   if (!pluNum) throw new Error('Некорректный PLU: ' + item.plu);
 
-  // Цена в минимальных единицах (тийин/копейки): 12.50 → 1250; целые сумы → *100 если есть дробь, иначе как есть*100 для единообразия.
   const priceRaw = Number(item.pricePerKg);
   const priceUnits = Number.isFinite(priceRaw)
-    ? Math.round(priceRaw * 100)
+    ? Math.min(999999, Math.max(0, Math.round(priceRaw * 100)))
     : 0;
 
-  const name = String(item.name || '').trim() || ('PLU ' + pluNum);
-  const shelfDays = Math.max(0, Math.min(65535, Number(item.shelfLifeDays) || 0));
-  const groupCode = Math.max(0, Math.min(65535, Number(item.groupCode) || 1));
+  const [name1, name2] = splitName(String(item.name || '').trim() || ('PLU ' + pluNum));
+  const shelfDays = Math.max(0, Math.min(9999, Number(item.shelfLifeDays) || 0));
+  const tareGrams = Math.max(0, Math.min(65535, Number(item.tareGrams) || 0));
+  const groupCode = Math.max(0, Math.min(9999, Number(item.groupCode) || 0));
 
   const body = Buffer.concat([
     Buffer.from([PLU_WRITE_CMD]),
     encodePassword(password),
     encodeUintLe(pluNum, 2),
-    encodeUintLe(pluNum, 4), // код товара
-    encodeWin1251Padded(name, 28),
-    encodeWin1251Padded('', 28), // вторая строка имени
+    encodeUintLe(pluNum, 4),
+    encodeWin1251Padded(name1, 28),
+    encodeWin1251Padded(name2, 28),
     encodeUintLe(priceUnits, 4),
     encodeUintLe(shelfDays, 2),
-    encodeUintLe(0, 2), // тара
+    encodeUintLe(tareGrams, 2),
     encodeUintLe(groupCode, 2),
-    encodeUintLe(pluNum, 2), // номер на клавиатуре
-    encodeUintLe(0, 1), // картинка
-    encodeUintLe(0, 4), // доп. поле (срок/росстест-слот)
+    encodeUintLe(0, 2),
+    encodeUintLe(0, 1),
+    encodeUintLe(0, 4),
   ]);
 
-  const len = body.length; // LEN = CMD + DATA
+  const len = body.length;
   return Buffer.concat([Buffer.from([0x02, len]), body]);
 }
 
-function sleep(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+function buildBeepPacket(password = DEFAULT_PASSWORD) {
+  const body = Buffer.concat([Buffer.from([0x11]), encodePassword(password)]);
+  return Buffer.concat([Buffer.from([0x02, body.length]), body]);
 }
 
 /**
- * Отправка UDP-датаграмм на весы (fire-and-forget с паузой, как у Загрузчика).
+ * Ответ 0x50: STX | LEN | CMD | код результата. 0 — товар записан в память.
+ * TCP-кадр может начинаться с длины uint32 LE.
  */
-async function sendUdpPackets(host, udpPort, packets, { localPort = 0 } = {}) {
+function parseScaleReply(buf) {
+  if (!Buffer.isBuffer(buf) || buf.length < 4) return null;
+  let off = 0;
+  if (buf[0] !== 0x02 && buf.length >= 8 && buf[4] === 0x02) off = 4;
+  if (buf[off] !== 0x02) return null;
+  const cmdAt = buf[off + 1] === 0xff ? off + 4 : off + 2;
+  if (buf.length < cmdAt + 2) return null;
+  return { cmd: buf[cmdAt], result: buf[cmdAt + 1] };
+}
+
+function resultText(code) {
+  const known = {
+    1: 'ошибка параметров',
+    2: 'неверная команда',
+    3: 'неверный пароль (по умолчанию 0030, после 5 ошибок весы блокируют интерфейс до перезагрузки)',
+  };
+  return known[code] || ('код ' + code);
+}
+
+function waitForUdp(socket, ms) {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      socket.removeListener('message', onMessage);
+      const err = new Error('timeout');
+      err.code = 'TIMEOUT';
+      reject(err);
+    }, ms);
+    const onMessage = (msg) => {
+      clearTimeout(timer);
+      resolve(msg);
+    };
+    socket.once('message', onMessage);
+  });
+}
+
+function sendUdp(socket, buf, port, host) {
+  return new Promise((resolve, reject) => {
+    socket.send(buf, port, host, (err) => (err ? reject(err) : resolve()));
+  });
+}
+
+async function pushViaUdp(host, port, packets) {
   const socket = dgram.createSocket('udp4');
   await new Promise((resolve, reject) => {
     socket.once('error', reject);
-    socket.bind(localPort, () => resolve());
+    socket.bind(0, () => {
+      socket.removeAllListeners('error');
+      socket.on('error', () => { /* ошибку отдаёт send/wait */ });
+      resolve();
+    });
   });
 
+  let answered = false;
+  let pushed = 0;
   try {
     for (let i = 0; i < packets.length; i += 1) {
-      const buf = packets[i];
-      await new Promise((resolve, reject) => {
-        socket.send(buf, udpPort, host, (err) => (err ? reject(err) : resolve()));
-      });
-      if (i < packets.length - 1) await sleep(ITEM_GAP_MS);
+      const pending = waitForUdp(socket, i === 0 ? 1600 : 1000);
+      await sendUdp(socket, packets[i].buf, port, host);
+      let raw;
+      try {
+        raw = await pending;
+      } catch (err) {
+        if (err?.code === 'TIMEOUT') {
+          return {
+            answered,
+            ok: false,
+            pushed,
+            transport: 'udp',
+            message: answered
+              ? `Весы перестали отвечать после ${pushed} PLU`
+              : `Весы не ответили по UDP ${host}:${port}`,
+          };
+        }
+        throw err;
+      }
+      answered = true;
+      const parsed = parseScaleReply(raw);
+      if (!parsed) {
+        return {
+          answered: true,
+          ok: false,
+          pushed,
+          transport: 'udp',
+          message: `Весы ${host}:${port} прислали непонятный ответ на PLU ${packets[i].plu}`,
+        };
+      }
+      if (parsed.result !== 0) {
+        return {
+          answered: true,
+          ok: false,
+          pushed,
+          transport: 'udp',
+          result: parsed.result,
+          message: `Весы отклонили PLU ${packets[i].plu}: ${resultText(parsed.result)}`,
+        };
+      }
+      pushed += 1;
     }
+    return { answered: true, ok: true, pushed, transport: 'udp' };
   } finally {
     try { socket.close(); } catch { /* ignore */ }
   }
 }
 
+function readTcpReply(socket, ms) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    const timer = setTimeout(() => done(Object.assign(new Error('timeout'), { code: 'TIMEOUT' })), ms);
+    const onData = (chunk) => {
+      chunks.push(chunk);
+      const buf = Buffer.concat(chunks);
+      if (parseScaleReply(buf)) done(null, buf);
+    };
+    const done = (err, buf) => {
+      clearTimeout(timer);
+      socket.removeListener('data', onData);
+      if (err) reject(err);
+      else resolve(buf);
+    };
+    socket.on('data', onData);
+  });
+}
+
+async function pushViaTcp(host, port, packets) {
+  const net = require('net');
+  const socket = net.connect({ host, port });
+  let answered = false;
+  let pushed = 0;
+  try {
+    await new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'TIMEOUT' })), 1600);
+      socket.once('connect', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      socket.once('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+    for (let i = 0; i < packets.length; i += 1) {
+      const len = Buffer.alloc(4);
+      len.writeUInt32LE(packets[i].buf.length, 0);
+      const pending = readTcpReply(socket, i === 0 ? 1600 : 1000);
+      socket.write(Buffer.concat([len, packets[i].buf]));
+      let raw;
+      try {
+        raw = await pending;
+      } catch (err) {
+        if (err?.code === 'TIMEOUT') {
+          return {
+            answered,
+            ok: false,
+            pushed,
+            transport: 'tcp',
+            message: answered
+              ? `Весы перестали отвечать после ${pushed} PLU`
+              : `Весы не ответили по TCP ${host}:${port}`,
+          };
+        }
+        throw err;
+      }
+      answered = true;
+      const parsed = parseScaleReply(raw);
+      if (!parsed || parsed.result !== 0) {
+        const code = parsed ? parsed.result : null;
+        return {
+          answered: true,
+          ok: false,
+          pushed,
+          transport: 'tcp',
+          result: code,
+          message: parsed
+            ? `Весы отклонили PLU ${packets[i].plu}: ${resultText(code)}`
+            : `Весы ${host}:${port} прислали непонятный ответ на PLU ${packets[i].plu}`,
+        };
+      }
+      pushed += 1;
+    }
+    return { answered: true, ok: true, pushed, transport: 'tcp' };
+  } catch (err) {
+    return {
+      answered: false,
+      ok: false,
+      pushed,
+      transport: 'tcp',
+      message: `TCP ${host}:${port}: ${err?.message || err}`,
+    };
+  } finally {
+    try { socket.destroy(); } catch { /* ignore */ }
+  }
+}
+
+function candidatePorts(udpPort) {
+  const primary = Number(udpPort) || DEFAULT_UDP_PORT;
+  const ports = [primary];
+  if (primary !== DEFAULT_UDP_PORT) ports.push(DEFAULT_UDP_PORT);
+  return ports;
+}
+
 /**
- * Выгрузка списка PLU на ШТРИХ-ПРИНТ по UDP.
- * @param {Array<{plu:string,name:string,pricePerKg:number}>} items
- * @param {{host:string,udpPort?:number,password?:string}} opts
+ * Выгрузка PLU. Успех — только когда весы ответили кодом 0 (товар в памяти).
+ * Сначала UDP, при тишине — TCP с префиксом длины. Если порт не 1111, пробуем и 1111.
  */
 async function pushPluToShtrih(items, opts = {}) {
   const host = String(opts.host || '').trim();
@@ -138,7 +326,10 @@ async function pushPluToShtrih(items, opts = {}) {
   const errors = [];
   for (const row of list) {
     try {
-      packets.push(buildPluWritePacket(row, { password: opts.password || DEFAULT_PASSWORD }));
+      packets.push({
+        plu: row.plu,
+        buf: buildPluWritePacket(row, { password: opts.password || DEFAULT_PASSWORD }),
+      });
     } catch (err) {
       errors.push({ plu: row.plu, error: err?.message || String(err) });
     }
@@ -147,54 +338,75 @@ async function pushPluToShtrih(items, opts = {}) {
     return { ok: false, message: 'Не удалось собрать пакеты PLU', errors };
   }
 
-  try {
-    await sendUdpPackets(host, udpPort, packets);
-  } catch (err) {
-    return {
-      ok: false,
-      message: 'UDP ошибка: ' + (err?.message || String(err)),
-      host,
-      udpPort,
-      errors,
-    };
+  const notes = [];
+  for (const port of candidatePorts(udpPort)) {
+    for (const via of [pushViaUdp, pushViaTcp]) {
+      let attempt;
+      try {
+        attempt = await via(host, port, packets);
+      } catch (err) {
+        notes.push(`${host}:${port} — ${err?.message || err}`);
+        continue;
+      }
+      if (attempt.answered && attempt.ok) {
+        return {
+          ok: true,
+          pushed: attempt.pushed,
+          skipped: errors.length,
+          host,
+          udpPort: port,
+          transport: attempt.transport,
+          errors: errors.length ? errors : undefined,
+          hint: `PLU записаны в память (${attempt.transport.toUpperCase()} ${host}:${port}). Наберите номер PLU на весах.`,
+        };
+      }
+      if (attempt.answered) {
+        return {
+          ok: false,
+          pushed: attempt.pushed || 0,
+          host,
+          udpPort: port,
+          message: attempt.message,
+          errors: errors.length ? errors : undefined,
+        };
+      }
+      if (attempt.message) notes.push(attempt.message);
+    }
   }
 
   return {
-    ok: true,
-    pushed: packets.length,
-    skipped: errors.length,
+    ok: false,
+    pushed: 0,
     host,
     udpPort,
+    message: notes[0] || `Весы ${host} не подтвердили запись в память. Проверьте Ethernet, UDP-порт 1111 и пароль 0030.`,
     errors: errors.length ? errors : undefined,
-    hint: 'PLU отправлены. На весах наберите код PLU — должен появиться товар.',
   };
 }
 
 /**
- * Быстрая проверка: шлём пустой/короткий пакет записи с тестовым PLU=0 не делаем —
- * просто UDP bind + send нулевого echo ненадёжен. Используем одну запись «служебную» не надо.
- * Проверка связи = успешный send на порт (ICMP ping отдельно).
+ * Проверка связи: команда «гудок» и ответ весов. Успешный send() без ответа — не связь.
  */
 async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT) {
   const h = String(host || '').trim();
   const port = Number(udpPort) || DEFAULT_UDP_PORT;
   if (!h) return { ok: false, error: 'no-host' };
+  const socket = dgram.createSocket('udp4');
   try {
-    // Команда «гудок»/статус в разных прошивках разная; шлём минимальный валидный PLU-пакет
-    // с plu=1 name=TEST только если opts.writeTest — здесь только open+send length check.
-    const socket = dgram.createSocket('udp4');
     await new Promise((resolve, reject) => {
       socket.once('error', reject);
       socket.bind(0, () => resolve());
     });
-    const probe = Buffer.from([0x02, 0x01, 0x11, 0x12]); // короткий ping-like (как в QZ Gudok-вариантах)
-    await new Promise((resolve, reject) => {
-      socket.send(probe, port, h, (err) => (err ? reject(err) : resolve()));
-    });
-    socket.close();
-    return { ok: true, host: h, udpPort: port };
+    const pending = waitForUdp(socket, 1200);
+    await sendUdp(socket, buildBeepPacket(), port, h);
+    const raw = await pending;
+    const parsed = parseScaleReply(raw);
+    if (!parsed) return { ok: false, host: h, udpPort: port, error: 'bad-reply' };
+    return { ok: true, host: h, udpPort: port, result: parsed.result };
   } catch (err) {
-    return { ok: false, host: h, udpPort: port, error: err?.message || String(err) };
+    return { ok: false, host: h, udpPort: port, error: err?.code === 'TIMEOUT' ? 'нет ответа' : (err?.message || String(err)) };
+  } finally {
+    try { socket.close(); } catch { /* ignore */ }
   }
 }
 
@@ -204,6 +416,7 @@ module.exports = {
   encodeWin1251Padded,
   encodeUintLe,
   buildPluWritePacket,
+  parseScaleReply,
   pushPluToShtrih,
   probeShtrihUdp,
 };
