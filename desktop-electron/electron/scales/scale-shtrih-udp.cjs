@@ -98,9 +98,12 @@ function buildPluWritePacket(item, { password = DEFAULT_PASSWORD } = {}) {
   return Buffer.concat([Buffer.from([0x02, len]), body]);
 }
 
-function buildBeepPacket(password = DEFAULT_PASSWORD) {
-  const body = Buffer.concat([Buffer.from([0x11]), encodePassword(password)]);
-  return Buffer.concat([Buffer.from([0x02, body.length]), body]);
+/**
+ * Прошивка ШТРИХ-ПРИНТ 4.5: команда 0x11 без пароля.
+ * `02 05 11` + ASCII-пароль весы отвергают кодом 0x79 (121, неверная длина).
+ */
+function buildWeightRequestPacket() {
+  return Buffer.from([0x02, 0x01, 0x11]);
 }
 
 /**
@@ -122,8 +125,76 @@ function resultText(code) {
     1: 'ошибка параметров',
     2: 'неверная команда',
     3: 'неверный пароль (по умолчанию 0030, после 5 ошибок весы блокируют интерфейс до перезагрузки)',
+    0x79: 'неверная длина данных команды',
   };
   return known[code] || ('код ' + code);
+}
+
+const MAX_WEIGHT_GRAMS = 500000;
+
+/**
+ * Успешный ответ 0x11: STX | LEN | 11 | 00 | вес int32 LE в граммах | стабильность (0/1).
+ * Короткий ответ — int16 LE. Код результата не 0 — веса нет.
+ */
+function parseShtrihWeightReply(buf) {
+  const parsed = parseScaleReply(buf);
+  if (!parsed || parsed.cmd !== 0x11 || parsed.result !== 0) return null;
+  let off = 0;
+  if (buf[0] !== 0x02 && buf.length >= 8 && buf[4] === 0x02) off = 4;
+  const cmdAt = buf[off + 1] === 0xff ? off + 4 : off + 2;
+  const data = buf.subarray(cmdAt + 2);
+  let grams = null;
+  let stable = true;
+  if (data.length >= 4) {
+    grams = buf.readInt32LE(cmdAt + 2);
+    if (data.length >= 5) stable = data[4] !== 0;
+  } else if (data.length >= 2) {
+    grams = buf.readInt16LE(cmdAt + 2);
+    if (data.length >= 3) stable = data[2] !== 0;
+  }
+  if (grams == null || !Number.isFinite(grams)) return null;
+  const abs = Math.abs(grams);
+  if (abs > MAX_WEIGHT_GRAMS) return null;
+  return {
+    kg: Math.round((abs / 1000) * 1000) / 1000,
+    stable,
+    raw: buf.toString('hex'),
+  };
+}
+
+function createShtrihWeightPoller(host, udpPort, onReading) {
+  const h = String(host || '').trim();
+  const port = Number(udpPort) || DEFAULT_UDP_PORT;
+  let stopped = false;
+  let timer = null;
+  const socket = dgram.createSocket('udp4');
+  socket.on('error', () => {});
+
+  async function tick() {
+    if (stopped) return;
+    try {
+      const pending = waitForUdp(socket, 700);
+      await sendUdp(socket, buildWeightRequestPacket(), port, h);
+      const raw = await pending;
+      const reading = parseShtrihWeightReply(raw);
+      if (reading && typeof onReading === 'function') onReading(reading);
+    } catch {
+      /* таймаут или нет сокета — следующий тик */
+    }
+    if (!stopped) timer = setTimeout(tick, 250);
+  }
+
+  socket.bind(0, () => {
+    if (!stopped) tick();
+  });
+
+  return {
+    stop() {
+      stopped = true;
+      if (timer) clearTimeout(timer);
+      try { socket.close(); } catch { /* ignore */ }
+    },
+  };
 }
 
 function waitForUdp(socket, ms) {
@@ -385,7 +456,7 @@ async function pushPluToShtrih(items, opts = {}) {
 }
 
 /**
- * Проверка связи: команда «гудок» и ответ весов. Успешный send() без ответа — не связь.
+ * Проверка связи: запрос веса 02 01 11 без пароля. Успешный send() без ответа — не связь.
  */
 async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT) {
   const h = String(host || '').trim();
@@ -398,7 +469,7 @@ async function probeShtrihUdp(host, udpPort = DEFAULT_UDP_PORT) {
       socket.bind(0, () => resolve());
     });
     const pending = waitForUdp(socket, 1200);
-    await sendUdp(socket, buildBeepPacket(), port, h);
+    await sendUdp(socket, buildWeightRequestPacket(), port, h);
     const raw = await pending;
     const parsed = parseScaleReply(raw);
     if (!parsed) return { ok: false, host: h, udpPort: port, error: 'bad-reply' };
@@ -416,7 +487,10 @@ module.exports = {
   encodeWin1251Padded,
   encodeUintLe,
   buildPluWritePacket,
+  buildWeightRequestPacket,
   parseScaleReply,
+  parseShtrihWeightReply,
   pushPluToShtrih,
   probeShtrihUdp,
+  createShtrihWeightPoller,
 };

@@ -3,7 +3,7 @@ const { tryLoadSerialPort, listSerialPorts } = require('./scale-serial-port.cjs'
 const { createMockReader } = require('./scale-mock.cjs');
 const { readScaleSettings } = require('./scale-config.cjs');
 const { autoDetectPort } = require('./scale-auto-detect.cjs');
-const { createEthernetReader } = require('./scale-ethernet.cjs');
+const { createShtrihWeightPoller } = require('./scale-shtrih-udp.cjs');
 
 let portInstance = null;
 let parser = null;
@@ -61,7 +61,7 @@ async function startListening() {
         };
       }
     }
-    ethernetReader = createEthernetReader(host, tcpPort, emitReading);
+    ethernetReader = createShtrihWeightPoller(host, tcpPort, emitReading);
     listening = true;
     return { ok: true, mode: 'ethernet', host, tcpPort, family: settings.family };
   }
@@ -72,7 +72,7 @@ async function startListening() {
     // Нет serialport — пробуем Ethernet как запасной путь.
     const eth = await autoDetectPort({ save: true, prefer: 'ethernet' });
     if (eth.ok && eth.host) {
-      ethernetReader = createEthernetReader(eth.host, eth.tcpPort || 1111, emitReading);
+      ethernetReader = createShtrihWeightPoller(eth.host, eth.tcpPort || 1111, emitReading);
       listening = true;
       return { ok: true, mode: 'ethernet', host: eth.host, tcpPort: eth.tcpPort, family: 'family-shtrih-print' };
     }
@@ -83,7 +83,7 @@ async function startListening() {
   if (!path) {
     const detected = await autoDetectPort({ save: true });
     if (detected.ok && detected.transport === 'ethernet' && detected.host) {
-      ethernetReader = createEthernetReader(detected.host, detected.tcpPort || 1111, emitReading);
+      ethernetReader = createShtrihWeightPoller(detected.host, detected.tcpPort || 1111, emitReading);
       listening = true;
       return {
         ok: true,

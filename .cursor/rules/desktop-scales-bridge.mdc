@@ -15,6 +15,6 @@ Web scales UI (`web-frontend/src/scales/scaleBridge.js`) treats Desktop as “ou
 3. Keep `serialport` + `@serialport/parser-readline` in dependencies and in `asarUnpack` so COM ports work in packaged builds.
 4. Do not delete `electron/scales/` when refactoring desktop layout — that regression already shipped once (desktop-cashier → desktop-electron).
 5. Auto-detect must cover **both** COM and Ethernet (`scale-auto-detect` → COM first, then `scale-ethernet` LAN scan). Settings persist `scaleTransport` + port or host/tcpPort so the next start reconnects alone.
-6. ШТРИХ-ПРИНТ PLU: UDP порт по умолчанию **1111**, выгрузка через `scale-shtrih-udp.cjs` / `scalePushPlu`. Успех только при ответе весов с кодом 0 — `socket.send` без ответа не значит, что товар попал в память. Код сообщения в пакете 0x50 — 0, если сообщения нет.
+6. ШТРИХ-ПРИНТ PLU: UDP порт по умолчанию **1111**, выгрузка через `scale-shtrih-udp.cjs` / `scalePushPlu`. Успех только при ответе весов с кодом 0 — `socket.send` без ответа не значит, что товар попал в память. Код сообщения в пакете 0x50 — 0, если сообщения нет. Пароль ASCII `0030` только в 0x50. Запрос веса 0x11 — ровно `02 01 11`, без пароля: `02 05 11 30 30 33 30` прошивка 4.5 отвергает кодом 0x79 (121). Живой вес — UDP-опрос этой команды, не ASCII по TCP.
 7. Несколько весов: `scaleHosts[]` в config; `scalePushPlu` шлёт на **все** хосты; primary `scaleHost` — для чтения веса.
 8. `writeUserConfig` / весы: **никогда** не перезаписывать `config.json` пустым при битом JSON — иначе слетают `stationPrinters` и кухня молчит.

@@ -2,8 +2,10 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const {
   buildPluWritePacket,
+  buildWeightRequestPacket,
   encodeUintLe,
   parseScaleReply,
+  parseShtrihWeightReply,
 } = require('../electron/scales/scale-shtrih-udp.cjs');
 
 test('buildPluWritePacket: STX + LEN + CMD 0x50, пароль ASCII 0030, код сообщения 0', () => {
@@ -27,6 +29,16 @@ test('parseScaleReply: код 0 — товар записан', () => {
   assert.deepEqual(parseScaleReply(Buffer.from([0x02, 0x02, 0x50, 0x00])), { cmd: 0x50, result: 0 });
   assert.equal(parseScaleReply(Buffer.from([0x04, 0x00, 0x00, 0x00, 0x02, 0x02, 0x50, 0x03])).result, 3);
   assert.equal(parseScaleReply(Buffer.from([0x02, 0x01])), null);
+});
+
+test('запрос веса 0x11 без пароля: 02 01 11', () => {
+  assert.deepEqual([...buildWeightRequestPacket()], [0x02, 0x01, 0x11]);
+});
+
+test('parseShtrihWeightReply: 350 г, стабилен; ошибка 0x79 — не вес', () => {
+  const ok = Buffer.from([0x02, 0x07, 0x11, 0x00, 0x5e, 0x01, 0x00, 0x00, 0x01]);
+  assert.deepEqual(parseShtrihWeightReply(ok), { kg: 0.35, stable: true, raw: ok.toString('hex') });
+  assert.equal(parseShtrihWeightReply(Buffer.from([0x02, 0x02, 0x11, 0x79])), null);
 });
 
 test('encodeUintLe little-endian', () => {
