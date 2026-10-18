@@ -6,7 +6,14 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
 echo "[prepare] building restaurant-service jar…"
-mvn -pl restaurant-service -am package -DskipTests -q
+# Windows runners default to windows-1252 — Cyrillic comments in sources need UTF-8.
+export LANG="${LANG:-C.UTF-8}"
+export LC_ALL="${LC_ALL:-C.UTF-8}"
+export JAVA_TOOL_OPTIONS="${JAVA_TOOL_OPTIONS:-} -Dfile.encoding=UTF-8 -Dsun.jnu.encoding=UTF-8"
+export MAVEN_OPTS="${MAVEN_OPTS:-} -Dfile.encoding=UTF-8"
+mvn -pl restaurant-service -am package -DskipTests -q \
+  -Dproject.build.sourceEncoding=UTF-8 \
+  -Dproject.reporting.outputEncoding=UTF-8
 
 JAR="$(ls -1 "$ROOT/restaurant-service/target"/restaurant-service-*.jar 2>/dev/null | grep -v plain | head -1 || true)"
 if [[ -z "${JAR}" ]]; then
