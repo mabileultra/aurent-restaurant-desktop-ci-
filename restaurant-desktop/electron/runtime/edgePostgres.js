@@ -140,6 +140,7 @@ async function initialiseCluster(binDir, dir, log) {
     }
   }
   log('[edge-db] initdb done');
+  patchClusterConfig(dir, log);
 }
 
 function pgsqlEnv(binDir) {
@@ -148,12 +149,48 @@ function pgsqlEnv(binDir) {
   return {
     ...process.env,
     PATH: pathParts.join(path.delimiter),
-    // Help Windows load Postgres DLLs next to binaries.
-    PGDATA: undefined,
   };
 }
 
-async function waitUntilPortListening(port, timeoutMs, log) {
+function patchClusterConfig(dir, log) {
+  const conf = path.join(dir, 'postgresql.conf');
+  if (!fs.existsSync(conf)) return;
+  let text = fs.readFileSync(conf, 'utf8');
+  const settings = {
+    "listen_addresses": "'127.0.0.1'",
+    port: String(DB_PORT),
+    logging_collector: 'off',
+  };
+  for (const [key, value] of Object.entries(settings)) {
+    const re = new RegExp(`^#?\\s*${key}\\s*=.*$`, 'm');
+    const line = `${key} = ${value}`;
+    if (re.test(text)) text = text.replace(re, line);
+    else text += `\n${line}\n`;
+  }
+  fs.writeFileSync(conf, text, 'utf8');
+  log('[edge-db] postgresql.conf: listen 127.0.0.1');
+}
+
+function clearStalePid(dir, log) {
+  const pidFile = path.join(dir, 'postmaster.pid');
+  if (!fs.existsSync(pidFile)) return;
+  try {
+    fs.unlinkSync(pidFile);
+    log('[edge-db] removed stale postmaster.pid');
+  } catch (err) {
+    log(`[edge-db] could not remove postmaster.pid: ${err.message}`);
+  }
+}
+
+function readLogTail(logFile, max = 1200) {
+  try {
+    return fs.readFileSync(logFile, 'utf8').slice(-max);
+  } catch {
+    return '';
+  }
+}
+
+async function waitUntilPortListening(port, timeoutMs) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     if (await portOpen(port)) return;
@@ -165,34 +202,32 @@ async function waitUntilPortListening(port, timeoutMs, log) {
 async function startCluster(binDir, dir, log) {
   const pgCtl = path.join(binDir, exe('pg_ctl'));
   const logFile = path.join(dir, 'pg-start.log');
-  log(`[edge-db] starting Postgres on ${DB_PORT} via pg_ctl…`);
-  // Detached cluster managed by pg_ctl (survives Node; we stop via pg_ctl later).
-  await withTimeout(
-    run(
-      pgCtl,
-      [
-        'start',
-        '-D', dir,
-        '-l', logFile,
-        '-o', `-p ${DB_PORT}`,
-        '-w',
-        '-t', '90',
-      ],
-      { env: pgsqlEnv(binDir) }
-    ),
-    120_000,
-    'pg_ctl start'
-  );
-  startedByUs = true;
+  patchClusterConfig(dir, log);
+  clearStalePid(dir, log);
+
+  log(`[edge-db] starting Postgres on ${DB_PORT} via pg_ctl (no -w)…`);
+  // Do not use pg_ctl -w here: on some Windows hosts it hangs even when the
+  // server is up. Start detached, then poll TCP 127.0.0.1:port.
   try {
-    await waitUntilPortListening(DB_PORT, 30_000, log);
+    const out = await run(
+      pgCtl,
+      ['start', '-D', dir, '-l', logFile, '-o', `-p ${DB_PORT}`],
+      { env: pgsqlEnv(binDir), cwd: binDir }
+    );
+    if (out && out.trim()) log(`[edge-db] pg_ctl: ${out.trim().slice(0, 300)}`);
   } catch (err) {
-    let tail = '';
-    try {
-      tail = fs.readFileSync(logFile, 'utf8').slice(-800);
-    } catch {
-      /* ignore */
-    }
+    const tail = readLogTail(logFile);
+    throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
+  }
+  startedByUs = true;
+
+  try {
+    await waitUntilPortListening(DB_PORT, 90_000);
+  } catch (err) {
+    const tail = readLogTail(logFile);
+    // Best-effort stop so the next launch is clean.
+    await run(pgCtl, ['stop', '-D', dir, '-m', 'fast'], { env: pgsqlEnv(binDir), cwd: binDir }).catch(() => {});
+    startedByUs = false;
     throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
   }
   log(`[edge-db] Postgres listening on ${DB_PORT}`);
@@ -238,6 +273,8 @@ async function ensureEdgePostgres({ log = console.log } = {}) {
   const dir = dataDir();
   if (!fs.existsSync(markerPath())) {
     await initialiseCluster(binDir, dir, log);
+  } else {
+    patchClusterConfig(dir, log);
   }
 
   await startCluster(binDir, dir, log);
