@@ -10,6 +10,8 @@ import {
   useConnectivityStore,
 } from '../store/connectivityStore';
 import { isDesktopOfflineBridge } from '../services/offline/desktopOfflineBridge';
+import { isRestaurantDesktop } from '../utils/restaurantDesktop';
+import { isJwtExpired } from '../utils/jwtToken';
 
 let connectivityRefreshTimer;
 
@@ -71,6 +73,15 @@ api.interceptors.response.use(
       isDesktopOfflineBridge() &&
       (isApiNetworkError(error) || status === 502 || status === 503 || status === 504)
     ) {
+      return Promise.reject(error);
+    }
+    // Restaurant edge: missing cloud-only routes used to 401 → refresh fail → kick to PIN.
+    // Only force re-login when the JWT itself is expired.
+    if (isRestaurantDesktop() && (status === 401 || status === 403)) {
+      const token = useAuthStore.getState().token;
+      if (token && isJwtExpired(token)) {
+        forceAuthReLogin();
+      }
       return Promise.reject(error);
     }
     if (shouldAttemptRefresh) {

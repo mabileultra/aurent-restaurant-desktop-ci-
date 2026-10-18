@@ -136,7 +136,29 @@ async function bootStack() {
   // LAN hub: kitchen / phones on restaurant Wi‑Fi hit this PC (RESTAURANT_LAN_HUB=1).
   const lanHub = process.env.RESTAURANT_LAN_HUB === '1' || process.env.RESTAURANT_LAN_HUB === 'true';
   const uiHost = lanHub ? '0.0.0.0' : '127.0.0.1';
-  uiServer = await startLocalUiServer({ uiRoot, backendOrigin, host: uiHost, port: 0 });
+  // Fixed port so localStorage (company code, theme) survives restarts.
+  // Random port:0 made every launch a new origin → empty company code.
+  const preferredUiPort = Number(process.env.RESTAURANT_UI_PORT || 17887);
+  let lastListenErr = null;
+  for (let offset = 0; offset < 5; offset += 1) {
+    const tryPort = preferredUiPort + offset;
+    try {
+      uiServer = await startLocalUiServer({
+        uiRoot,
+        backendOrigin,
+        host: uiHost,
+        port: tryPort,
+      });
+      lastListenErr = null;
+      break;
+    } catch (err) {
+      lastListenErr = err;
+      bootLog(`[edge] UI port ${tryPort} busy: ${err.message || err}`);
+    }
+  }
+  if (!uiServer) {
+    throw lastListenErr || new Error('UI server failed to bind');
+  }
   const localUiOrigin = `http://127.0.0.1:${uiServer.port}`;
   bootLog(`UI server: ${uiServer.origin}${lanHub ? ' (LAN hub)' : ''}`);
   publishStatus({

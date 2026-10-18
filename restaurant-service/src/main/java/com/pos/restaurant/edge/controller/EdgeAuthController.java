@@ -16,7 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -39,6 +39,14 @@ public class EdgeAuthController {
     @Operation(summary = "Local password login (edge)")
     public ResponseEntity<EdgeAuthResponse> login(@Valid @RequestBody EdgeLoginRequest request) {
         return ResponseEntity.ok(edgeAuthService.login(request));
+    }
+
+    @PostMapping("/auth/refresh")
+    @Operation(summary = "Re-issue local JWT (edge)")
+    public ResponseEntity<EdgeAuthResponse> refresh(
+        @RequestHeader(value = "Authorization", required = false) String authorization
+    ) {
+        return ResponseEntity.ok(edgeAuthService.refresh(authorization));
     }
 
     @GetMapping("/auth/cashier-pin/roster")

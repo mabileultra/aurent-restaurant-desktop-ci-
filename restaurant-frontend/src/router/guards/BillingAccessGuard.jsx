@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { tenantBillingApi } from '../../api';
 import { useAuthStore } from '../../store/authStore';
+import { isRestaurantDesktop } from '../../utils/restaurantDesktop';
 
 const RETAIL_BILLING = '/billing';
 const RESTAURANT_BILLING = '/rst/admin/billing';
@@ -22,6 +23,9 @@ export default function BillingAccessGuard({ children }) {
   const { t } = useTranslation();
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
+
+  // Hall PC has no cloud billing — never block or 401-loop after login.
+  if (isRestaurantDesktop()) return children;
 
   const enabled = Boolean(isAuthenticated() && user && user.role !== 'SUPER_ADMIN' && user.role !== 'PLATFORM_ADMIN');
 

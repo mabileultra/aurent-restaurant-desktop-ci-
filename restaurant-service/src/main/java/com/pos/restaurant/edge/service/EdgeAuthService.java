@@ -13,6 +13,7 @@ import com.pos.restaurant.edge.entity.EdgeStaff;
 import com.pos.restaurant.edge.repository.EdgeStaffRepository;
 import com.pos.restaurant.edge.support.EdgePinDigest;
 import com.pos.restaurant.exception.BusinessException;
+import com.pos.shared.jwt.JwtClaimsExtractor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -24,6 +25,7 @@ import org.springframework.util.StringUtils;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -52,6 +54,25 @@ public class EdgeAuthService {
             || !passwordEncoder.matches(request.password(), staff.getPasswordHash())) {
             throw new BusinessException("Invalid credentials");
         }
+        return toAuthResponse(staff, jwtIssuer.issue(staff));
+    }
+
+    /** FE always tries /auth/refresh on 401 — edge must support it or login loops back to PIN. */
+    @Transactional(readOnly = true)
+    public EdgeAuthResponse refresh(String authorizationHeader) {
+        if (!StringUtils.hasText(authorizationHeader) || !authorizationHeader.startsWith("Bearer ")) {
+            throw new BusinessException("Invalid or expired token");
+        }
+        String token = authorizationHeader.substring(7).trim();
+        UUID userId;
+        try {
+            userId = JwtClaimsExtractor.extract(token, jwtSecret).userId();
+        } catch (RuntimeException ex) {
+            throw new BusinessException("Invalid or expired token");
+        }
+        EdgeStaff staff = staffRepository.findById(userId)
+            .filter(EdgeStaff::isActive)
+            .orElseThrow(() -> new BusinessException("Invalid or expired token"));
         return toAuthResponse(staff, jwtIssuer.issue(staff));
     }
 

@@ -1,6 +1,6 @@
 {
   "name": "aurent-restaurant-desktop",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "description": "Aurent Restaurant — local-first hall desktop (separate from Aurent Cashier)",
   "main": "electron/main.js",

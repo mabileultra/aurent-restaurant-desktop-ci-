@@ -105,6 +105,15 @@ export function useCashierPinLoginPage() {
     // Fresh password login for admin — let navigate finish; otherwise clear non-PIN sessions.
     if (!PIN_ROLES.has(user?.role)) {
       if (freshLoginRef.current && ADMIN_PASSWORD_ROLES.has(user?.role)) return;
+      // Hall desktop: never wipe admin/manager from the PIN screen — send them home.
+      if (isRestaurantDesktop() && ADMIN_PASSWORD_ROLES.has(user?.role)) {
+        let cancelled = false;
+        (async () => {
+          const { path } = await resolvePinHomePath(user.role);
+          if (!cancelled) navigate(path, { replace: true });
+        })();
+        return () => { cancelled = true; };
+      }
       logoutAndResetSession();
       return;
     }
@@ -331,9 +340,9 @@ export function useCashierPinLoginPage() {
         return;
       }
       resetClientSessionState();
+      freshLoginRef.current = true;
       setAuth(accessToken, profile);
       if (normalizedCompanyCode) persistCompanyLoginCode(normalizedCompanyCode);
-      freshLoginRef.current = true;
 
       const { path, access } = await resolvePinHomePath(profile.role);
       if (!access.ok) {
