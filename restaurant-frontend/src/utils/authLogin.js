@@ -55,6 +55,14 @@ export function persistCompanyLoginCode(code) {
   } catch {
     /* ignore */
   }
+  // Restaurant hall desktop: also keep in Electron userData (survives UI reloads).
+  try {
+    if (typeof window !== 'undefined' && window.aurentRestaurant?.setCompanyLoginCode) {
+      void window.aurentRestaurant.setCompanyLoginCode(normalized || '');
+    }
+  } catch {
+    /* ignore */
+  }
   return normalized;
 }
 
@@ -77,6 +85,23 @@ export async function resolveCashierCompanyCode(searchParams) {
       const fromDesktop = await window.desktopCashier.getCompanyLoginCode();
       const code = persistCompanyLoginCode(fromDesktop);
       if (code) return code;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (typeof window !== 'undefined' && window.aurentRestaurant?.getCompanyLoginCode) {
+    try {
+      const fromRestaurant = await window.aurentRestaurant.getCompanyLoginCode();
+      const code = normalizeCompanyLoginCode(fromRestaurant);
+      if (code) {
+        try {
+          localStorage.setItem(COMPANY_CODE_STORAGE_KEY, code);
+        } catch {
+          /* ignore */
+        }
+        return code;
+      }
     } catch {
       /* ignore */
     }

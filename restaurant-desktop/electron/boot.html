@@ -5,32 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Aurent Restaurant</title>
   <style>
-    html, body { margin: 0; height: 100%; font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; }
-    .wrap { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 2rem; text-align: center; }
-    h1 { margin: 0; font-size: 1.35rem; font-weight: 700; }
-    p { margin: 0; color: #94a3b8; font-size: 0.9rem; max-width: 28rem; line-height: 1.45; }
-    .log { margin-top: 1.25rem; width: min(36rem, 100%); max-height: 12rem; overflow: auto; text-align: left;
-      background: #020617; border: 1px solid #1e293b; border-radius: 0.5rem; padding: 0.75rem; font-size: 0.75rem; color: #94a3b8; white-space: pre-wrap; }
-    .err { color: #fca5a5; }
+    :root {
+      --bg0: #0b1220;
+      --bg1: #132038;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --err: #fca5a5;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 50% -10%, #1e3a5f 0%, var(--bg0) 55%);
+      color: var(--text);
+    }
+    .wrap {
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.85rem;
+      padding: 2rem 2rem 3.5rem;
+      text-align: center;
+    }
+    .boot-gif {
+      width: min(220px, 55vw);
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 32px rgba(0, 0, 0, 0.45));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    .boot-gif.is-hidden { display: none; }
+    h1 {
+      margin: 0.15rem 0 0;
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    #msg {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 26rem;
+      line-height: 1.45;
+      min-height: 1.45em;
+    }
+    .boot-footer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.65rem;
+      pointer-events: none;
+    }
+    .spinner {
+      width: 28px;
+      height: 28px;
+      border: 3px solid rgba(148, 163, 184, 0.22);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    .spinner.is-hidden { display: none; }
+    .boot-footer-label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .dots::after {
+      content: "";
+      animation: dots 1.4s steps(4, end) infinite;
+    }
+    @keyframes dots {
+      0% { content: ""; }
+      25% { content: "."; }
+      50% { content: ".."; }
+      75% { content: "..."; }
+    }
+    #errBox {
+      display: none;
+      margin-top: 0.75rem;
+      width: min(28rem, 100%);
+      text-align: left;
+      background: rgba(127, 29, 29, 0.35);
+      border: 1px solid rgba(248, 113, 113, 0.35);
+      border-radius: 0.75rem;
+      padding: 0.85rem 1rem;
+      color: var(--err);
+      font-size: 0.85rem;
+      line-height: 1.4;
+      white-space: pre-wrap;
+      max-height: 10rem;
+      overflow: auto;
+    }
+    #errBox.is-visible { display: block; }
   </style>
 </head>
 <body>
   <div class="wrap">
+    <img class="boot-gif" id="bootGif" src="../gif.gif" alt="" />
     <h1>Aurent Restaurant</h1>
-    <p id="msg">Запуск локального сервиса зала…</p>
-    <div class="log" id="log"></div>
+    <p id="msg">Запуск<span class="dots"></span></p>
+    <div id="errBox" role="alert"></div>
+  </div>
+  <div class="boot-footer" id="bootFooter">
+    <div class="spinner" id="spinner" aria-hidden="true"></div>
+    <span class="boot-footer-label">Загрузка</span>
   </div>
   <script>
-    const logEl = document.getElementById('log');
     const msgEl = document.getElementById('msg');
-    window.__bootAppend = (line, isErr) => {
-      const span = document.createElement('div');
-      if (isErr) span.className = 'err';
-      span.textContent = line;
-      logEl.appendChild(span);
-      logEl.scrollTop = logEl.scrollHeight;
+    const bootGif = document.getElementById('bootGif');
+    const spinner = document.getElementById('spinner');
+    const bootFooter = document.getElementById('bootFooter');
+    const errBox = document.getElementById('errBox');
+
+    window.__bootMsg = (t) => {
+      msgEl.innerHTML = '';
+      msgEl.appendChild(document.createTextNode(String(t || 'Запуск')));
+      const dots = document.createElement('span');
+      dots.className = 'dots';
+      msgEl.appendChild(dots);
+      errBox.classList.remove('is-visible');
+      errBox.textContent = '';
+      bootGif.classList.remove('is-hidden');
+      spinner.classList.remove('is-hidden');
+      bootFooter.style.display = '';
     };
-    window.__bootMsg = (t) => { msgEl.textContent = t; };
+
+    // Kept for compatibility; ignored so raw service logs stay out of the UI.
+    window.__bootAppend = () => {};
+
+    window.__bootFail = (title, detail) => {
+      msgEl.textContent = String(title || 'Не удалось запустить');
+      bootGif.classList.add('is-hidden');
+      spinner.classList.add('is-hidden');
+      bootFooter.style.display = 'none';
+      if (detail) {
+        errBox.textContent = String(detail).slice(0, 1200);
+        errBox.classList.add('is-visible');
+      }
+    };
   </script>
 </body>
 </html>

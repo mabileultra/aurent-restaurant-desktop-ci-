@@ -148,6 +148,12 @@ export function useCashierPinLoginPage() {
     [companyCode]
   );
 
+  // Save as soon as 5 digits are valid — not only after PIN/admin login.
+  useEffect(() => {
+    if (!normalizedCompanyCode) return;
+    persistCompanyLoginCode(normalizedCompanyCode);
+  }, [normalizedCompanyCode]);
+
   const loadRoster = useCallback(async (loginCode, { force = false } = {}) => {
     if (!loginCode) {
       rosterReqRef.current += 1;

@@ -38,11 +38,18 @@ export default function CashierPinLoginCompanyPopover({
         type="button"
         className={`cashier-pin-login__company-chip${open ? ' is-open' : ''}${isValid ? ' is-set' : ''}`}
         aria-label={t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
-        title={t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
+        title={isValid
+          ? normalizeCompanyLoginCode(value)
+          : t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
         disabled={disabled}
         onClick={onToggle}
       >
         <Building2 size={18} strokeWidth={2.25} aria-hidden />
+        {isValid ? (
+          <span className="cashier-pin-login__company-chip-code">
+            {normalizeCompanyLoginCode(value)}
+          </span>
+        ) : null}
       </button>
 
       {open ? (

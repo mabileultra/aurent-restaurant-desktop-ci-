@@ -14,6 +14,10 @@ const {
   getLocalBootstrapStatus,
   bootstrapStaffFromCloud,
 } = require('./runtime/edgeAuthBootstrap');
+const {
+  getCompanyLoginCode,
+  setCompanyLoginCode,
+} = require('./runtime/companyCodeStore');
 
 let mainWindow = null;
 let uiServer = null;
@@ -33,13 +37,40 @@ function publishStatus(patch) {
   }
 }
 
+let lastBootDetail = '';
+
+function bootMsg(text) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.executeJavaScript(
+    `window.__bootMsg && window.__bootMsg(${JSON.stringify(String(text))})`
+  ).catch(() => {});
+}
+
+/** Internal progress only — never dump raw Postgres/Spring lines into the splash. */
 function bootLog(line, isErr = false) {
-  if (mainWindow && !mainWindow.isDestroyed()) {
-    const safe = JSON.stringify(String(line).slice(0, 400));
-    mainWindow.webContents.executeJavaScript(
-      `window.__bootAppend && window.__bootAppend(${safe}, ${isErr ? 'true' : 'false'})`
-    ).catch(() => {});
+  const text = String(line || '');
+  lastBootDetail = text.slice(0, 800);
+  if (isErr) console.error('[boot]', text);
+  else console.log('[boot]', text.slice(0, 240));
+
+  const lower = text.toLowerCase();
+  if (isErr) return;
+  if (lower.includes('initdb') || lower.includes('pgdata') || lower.includes('postgres')) {
+    bootMsg('Подготовка локальной базы');
+  } else if (lower.includes('starting jar') || lower.includes('java:') || lower.includes('spring boot')) {
+    bootMsg('Запуск сервиса ресторана');
+  } else if (lower.includes('database ') || lower.includes('listening')) {
+    bootMsg('Почти готово');
+  } else if (lower.includes('ui server')) {
+    bootMsg('Открытие интерфейса');
   }
+}
+
+function bootFail(title, detail) {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  mainWindow.webContents.executeJavaScript(
+    `window.__bootFail && window.__bootFail(${JSON.stringify(String(title))}, ${JSON.stringify(String(detail || lastBootDetail || ''))})`
+  ).catch(() => {});
 }
 
 function resolveAppIcon() {
@@ -72,7 +103,8 @@ function createWindow() {
 
 async function bootStack() {
   publishStatus({ phase: 'service', message: 'Starting local DB + restaurant-service…' });
-  bootLog('Starting embedded Postgres (if needed) + restaurant-service…');
+  bootMsg('Запуск');
+  lastBootDetail = '';
 
   try {
     await ensureEdgeService({
@@ -83,20 +115,18 @@ async function bootStack() {
     const msg = err?.message || String(err);
     bootLog(msg, true);
     publishStatus({ phase: 'error', message: msg, serviceHealthy: false });
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      mainWindow.webContents.executeJavaScript(
-        `window.__bootMsg && window.__bootMsg(${JSON.stringify('Не удалось запустить локальный сервис. См. лог.')})`
-      ).catch(() => {});
-    }
+    bootFail('Не удалось запустить локальный сервис', msg);
     return;
   }
 
   publishStatus({ phase: 'ui', serviceHealthy: true, message: 'Starting local UI…' });
+  bootMsg('Открытие интерфейса');
   const uiRoot = resolveUiRoot(app.isPackaged);
   if (!fs.existsSync(path.join(uiRoot, 'index.html'))) {
     const msg = 'UI не собран. В папке restaurant-desktop: npm run bundle-ui';
     bootLog(msg, true);
     publishStatus({ phase: 'error', message: msg });
+    bootFail('Интерфейс не найден', msg);
     return;
   }
 
@@ -218,6 +248,8 @@ app.whenReady().then(async () => {
   ipcMain.handle('restaurant:bootstrap-staff-from-cloud', async (_e, payload) => {
     return bootstrapStaffFromCloud(payload || {});
   });
+  ipcMain.handle('restaurant:get-company-login-code', async () => getCompanyLoginCode());
+  ipcMain.handle('restaurant:set-company-login-code', async (_e, code) => setCompanyLoginCode(code));
   ipcMain.handle('restaurant:push-cloud-sync', async () => {
     const http = require('http');
     return new Promise((resolve, reject) => {
