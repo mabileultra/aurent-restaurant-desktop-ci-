@@ -15,6 +15,7 @@ On the register check search field, a barcode/КМ scan must **not** open the pr
 1. `nextRegisterScanBurst` / `looksLikeRegisterScanInput`: digit-only codes and marking/GS1-shaped input hide the picker even when inter-char gap > 80 ms.
 2. Once a burst/scan-shaped session started, keep `burst` while the value keeps growing (sticky), until the field is cleared.
 3. When `search` is cleared after a successful scan (bypassing `handleSearchChange`), reset the burst ref so the next manual name search can open the picker.
+4. Lookup uses the full search-field value (`resolveScanCode`), not the 80 ms wedge tail. A slow scan must not clear the field and toast «не найден» on a fragment.
 
 ## Do not
 
