@@ -16,12 +16,9 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.StoreSettingRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.TableRow;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.repository.FloorHallRepository;
-import com.pos.restaurant.kitchen.entity.KitchenStation;
 import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
 import com.pos.restaurant.menu.domain.MenuItemType;
 import com.pos.restaurant.menu.domain.MenuPortionUnit;
-import com.pos.restaurant.menu.entity.MenuCategory;
-import com.pos.restaurant.menu.entity.MenuItem;
 import com.pos.restaurant.menu.repository.MenuCategoryRepository;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.modifier.domain.ModifierGroupKind;
@@ -53,8 +50,10 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -135,19 +134,30 @@ public class EdgeCatalogImportService {
     @Transactional(readOnly = true)
     public boolean hasCatalog(Integer companyId, Integer storeId) {
         if (companyId == null || storeId == null) {
-            return hallRepository.count() > 0 || itemRepository.count() > 0;
+            return hasAnyCatalog();
         }
-        return !hallRepository
-            .findByCompanyIdAndStoreIdOrderBySortOrderAscNameAsc(companyId, storeId)
-            .isEmpty()
-            || !itemRepository
-            .findByCompanyIdAndStoreIdOrderBySortOrderAscNameAsc(companyId, storeId)
-            .isEmpty();
+        Integer halls = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM floor_halls WHERE company_id = ? AND store_id = ?",
+            Integer.class,
+            companyId,
+            storeId
+        );
+        if (halls != null && halls > 0) return true;
+        Integer items = jdbc.queryForObject(
+            "SELECT COUNT(*) FROM menu_items WHERE company_id = ? AND store_id = ?",
+            Integer.class,
+            companyId,
+            storeId
+        );
+        return items != null && items > 0;
     }
 
     @Transactional(readOnly = true)
     public boolean hasAnyCatalog() {
-        return hallRepository.count() > 0 || itemRepository.count() > 0;
+        Integer halls = jdbc.queryForObject("SELECT COUNT(*) FROM floor_halls", Integer.class);
+        if (halls != null && halls > 0) return true;
+        Integer items = jdbc.queryForObject("SELECT COUNT(*) FROM menu_items", Integer.class);
+        return items != null && items > 0;
     }
 
     private int upsertHalls(EdgeCatalogSnapshot snap) {
@@ -235,115 +245,279 @@ public class EdgeCatalogImportService {
     }
 
     private int upsertStations(EdgeCatalogSnapshot snap) {
+        // JDBC: Menu/Kitchen entities use @GeneratedValue(UUID) — JPA save() would mint new ids
+        // and break FK links from the cloud snapshot.
         List<StationRow> rows = snap.stations() == null ? List.of() : snap.stations();
+        Instant now = Instant.now();
+        int n = 0;
         for (StationRow row : rows) {
             if (row.id() == null) continue;
-            KitchenStation e = stationRepository.findById(row.id()).orElseGet(KitchenStation::new);
-            e.setId(row.id());
-            e.setCompanyId(snap.companyId());
-            e.setStoreId(snap.storeId());
-            e.setCode(row.code());
-            e.setName(row.name());
-            e.setSortOrder(row.sortOrder());
-            e.setActive(row.active());
-            stationRepository.save(e);
+            String code = StringUtils.hasText(row.code()) ? row.code().trim() : ("S" + row.id().toString().substring(0, 8));
+            String name = StringUtils.hasText(row.name()) ? row.name().trim() : code;
+            jdbc.update("""
+                INSERT INTO kitchen_stations
+                  (id, company_id, store_id, code, name, sort_order, active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  company_id = EXCLUDED.company_id,
+                  store_id = EXCLUDED.store_id,
+                  code = EXCLUDED.code,
+                  name = EXCLUDED.name,
+                  sort_order = EXCLUDED.sort_order,
+                  active = EXCLUDED.active,
+                  updated_at = EXCLUDED.updated_at
+                """,
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                code,
+                name,
+                row.sortOrder(),
+                row.active(),
+                Timestamp.from(now),
+                Timestamp.from(now)
+            );
+            n++;
         }
-        return rows.size();
+        return n;
     }
 
     private int upsertCategories(EdgeCatalogSnapshot snap) {
         List<CategoryRow> rows = snap.categories() == null ? List.of() : snap.categories();
+        Instant now = Instant.now();
+        Set<UUID> known = new HashSet<>();
         for (CategoryRow row : rows) {
             if (row.id() == null) continue;
-            MenuCategory e = categoryRepository.findById(row.id()).orElseGet(MenuCategory::new);
-            e.setId(row.id());
-            e.setCompanyId(snap.companyId());
-            e.setStoreId(snap.storeId());
-            e.setName(row.name());
-            e.setSortOrder(row.sortOrder());
-            e.setActive(row.active());
-            e.setAutoPrint(row.autoPrint());
-            e.setPrintPrinterName(row.printPrinterName());
-            categoryRepository.save(e);
+            upsertCategoryRow(
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                StringUtils.hasText(row.name()) ? row.name().trim() : "Раздел",
+                row.sortOrder(),
+                row.active(),
+                row.autoPrint(),
+                row.printPrinterName(),
+                now
+            );
+            known.add(row.id());
         }
-        return rows.size();
+        // Orphan item → category FKs (deleted/moved categories on cloud)
+        List<ItemRow> items = snap.items() == null ? List.of() : snap.items();
+        for (ItemRow item : items) {
+            UUID catId = item.menuCategoryId();
+            if (catId == null || known.contains(catId)) continue;
+            String stubName = StringUtils.hasText(item.category()) ? item.category().trim() : "Раздел";
+            upsertCategoryRow(catId, snap.companyId(), snap.storeId(), stubName, 900, true, false, null, now);
+            known.add(catId);
+        }
+        return known.size();
+    }
+
+    private void upsertCategoryRow(
+        UUID id,
+        Integer companyId,
+        Integer storeId,
+        String name,
+        int sortOrder,
+        boolean active,
+        boolean autoPrint,
+        String printPrinterName,
+        Instant now
+    ) {
+        jdbc.update("""
+            INSERT INTO menu_categories
+              (id, company_id, store_id, name, sort_order, active, auto_print, print_printer_name, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT (id) DO UPDATE SET
+              company_id = EXCLUDED.company_id,
+              store_id = EXCLUDED.store_id,
+              name = EXCLUDED.name,
+              sort_order = EXCLUDED.sort_order,
+              active = EXCLUDED.active,
+              auto_print = EXCLUDED.auto_print,
+              print_printer_name = EXCLUDED.print_printer_name,
+              updated_at = EXCLUDED.updated_at
+            """,
+            id,
+            companyId,
+            storeId,
+            name,
+            sortOrder,
+            active,
+            autoPrint,
+            printPrinterName,
+            Timestamp.from(now),
+            Timestamp.from(now)
+        );
     }
 
     private int upsertItems(EdgeCatalogSnapshot snap) {
         List<ItemRow> rows = snap.items() == null ? List.of() : snap.items();
-        for (ItemRow row : rows) {
-            if (row.id() == null) continue;
-            MenuItem e = itemRepository.findById(row.id()).orElseGet(MenuItem::new);
-            e.setId(row.id());
-            e.setCompanyId(snap.companyId());
-            e.setStoreId(snap.storeId());
-            e.setItemType(parseEnum(MenuItemType.class, row.itemType(), MenuItemType.DISH));
-            e.setName(row.name());
-            e.setSku(row.sku());
-            e.setPrice(row.price() == null ? BigDecimal.ZERO : row.price());
-            e.setTaxRate(row.taxRate() == null ? BigDecimal.ZERO : row.taxRate());
-            e.setActive(row.active());
-            e.setAvailable(row.available());
-            e.setStationId(row.stationId());
-            e.setCategory(row.category());
-            e.setMenuCategoryId(row.menuCategoryId());
-            e.setImageUrl(row.imageUrl());
-            e.setDescription(row.description());
-            e.setPrepMinutes(row.prepMinutes());
-            e.setPortionGrams(row.portionGrams());
-            e.setPortionAmount(row.portionAmount());
-            e.setPortionUnit(parseEnum(MenuPortionUnit.class, row.portionUnit(), null));
-            e.setPortionLabel(row.portionLabel());
-            e.setVariantGroupId(row.variantGroupId());
-            e.setTags(row.tags());
-            e.setIkpu(row.ikpu());
-            e.setPackageCode(row.packageCode());
-            e.setUnitOfMeasure(row.unitOfMeasure());
-            e.setUnitMeasureCode(row.unitMeasureCode());
-            e.setBarcode(row.barcode());
-            e.setMarkedProduct(row.markedProduct());
-            e.setSortOrder(row.sortOrder());
-            itemRepository.save(e);
+        Instant now = Instant.now();
+        Set<UUID> stationIds = new HashSet<>();
+        if (snap.stations() != null) {
+            for (StationRow s : snap.stations()) {
+                if (s != null && s.id() != null) stationIds.add(s.id());
+            }
         }
-        return rows.size();
+        int n = 0;
+        for (ItemRow row : rows) {
+            if (row.id() == null || !StringUtils.hasText(row.name())) continue;
+            UUID stationId = row.stationId() != null && stationIds.contains(row.stationId())
+                ? row.stationId()
+                : null;
+            String itemType = parseEnum(MenuItemType.class, row.itemType(), MenuItemType.DISH).name();
+            MenuPortionUnit portionUnit = parseEnum(MenuPortionUnit.class, row.portionUnit(), null);
+            jdbc.update("""
+                INSERT INTO menu_items (
+                  id, company_id, store_id, item_type, name, sku, price, tax_rate, active, available,
+                  station_id, category, menu_category_id, image_url, description, prep_minutes,
+                  portion_grams, portion_amount, portion_unit, portion_label, variant_group_id, tags,
+                  ikpu, package_code, unit_of_measure, unit_measure_code, barcode, marked_product,
+                  sort_order, created_at, updated_at
+                ) VALUES (
+                  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                  ?, ?, ?, ?, ?, ?,
+                  ?, ?, ?, ?, ?, ?,
+                  ?, ?, ?, ?, ?, ?,
+                  ?, ?, ?
+                )
+                ON CONFLICT (id) DO UPDATE SET
+                  company_id = EXCLUDED.company_id,
+                  store_id = EXCLUDED.store_id,
+                  item_type = EXCLUDED.item_type,
+                  name = EXCLUDED.name,
+                  sku = EXCLUDED.sku,
+                  price = EXCLUDED.price,
+                  tax_rate = EXCLUDED.tax_rate,
+                  active = EXCLUDED.active,
+                  available = EXCLUDED.available,
+                  station_id = EXCLUDED.station_id,
+                  category = EXCLUDED.category,
+                  menu_category_id = EXCLUDED.menu_category_id,
+                  image_url = EXCLUDED.image_url,
+                  description = EXCLUDED.description,
+                  prep_minutes = EXCLUDED.prep_minutes,
+                  portion_grams = EXCLUDED.portion_grams,
+                  portion_amount = EXCLUDED.portion_amount,
+                  portion_unit = EXCLUDED.portion_unit,
+                  portion_label = EXCLUDED.portion_label,
+                  variant_group_id = EXCLUDED.variant_group_id,
+                  tags = EXCLUDED.tags,
+                  ikpu = EXCLUDED.ikpu,
+                  package_code = EXCLUDED.package_code,
+                  unit_of_measure = EXCLUDED.unit_of_measure,
+                  unit_measure_code = EXCLUDED.unit_measure_code,
+                  barcode = EXCLUDED.barcode,
+                  marked_product = EXCLUDED.marked_product,
+                  sort_order = EXCLUDED.sort_order,
+                  updated_at = EXCLUDED.updated_at
+                """,
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                itemType,
+                row.name().trim(),
+                row.sku(),
+                row.price() == null ? BigDecimal.ZERO : row.price(),
+                row.taxRate() == null ? BigDecimal.ZERO : row.taxRate(),
+                row.active(),
+                row.available(),
+                stationId,
+                row.category(),
+                row.menuCategoryId(),
+                row.imageUrl(),
+                row.description(),
+                row.prepMinutes(),
+                row.portionGrams(),
+                row.portionAmount(),
+                portionUnit == null ? null : portionUnit.name(),
+                row.portionLabel(),
+                row.variantGroupId(),
+                row.tags(),
+                row.ikpu(),
+                row.packageCode(),
+                row.unitOfMeasure(),
+                row.unitMeasureCode(),
+                row.barcode(),
+                row.markedProduct(),
+                row.sortOrder(),
+                Timestamp.from(now),
+                Timestamp.from(now)
+            );
+            n++;
+        }
+        return n;
     }
 
     private int upsertModifierGroups(EdgeCatalogSnapshot snap) {
         List<ModifierGroupRow> rows = snap.modifierGroups() == null ? List.of() : snap.modifierGroups();
+        Instant now = Instant.now();
+        int n = 0;
         for (ModifierGroupRow row : rows) {
-            if (row.id() == null) continue;
-            ModifierGroup e = modifierGroupRepository.findById(row.id()).orElseGet(ModifierGroup::new);
-            e.setId(row.id());
-            e.setCompanyId(snap.companyId());
-            e.setStoreId(snap.storeId());
-            e.setName(row.name());
-            e.setGroupKind(parseEnum(ModifierGroupKind.class, row.groupKind(), ModifierGroupKind.STANDARD));
-            e.setMinSelect(row.minSelect());
-            e.setMaxSelect(row.maxSelect());
-            e.setSortOrder(row.sortOrder());
-            e.setAvailableForAll(row.availableForAll());
-            e.setActive(row.active());
-            modifierGroupRepository.save(e);
+            if (row.id() == null || !StringUtils.hasText(row.name())) continue;
+            String kind = parseEnum(ModifierGroupKind.class, row.groupKind(), ModifierGroupKind.STANDARD).name();
+            jdbc.update("""
+                INSERT INTO modifier_groups
+                  (id, company_id, store_id, name, group_kind, min_select, max_select, sort_order,
+                   available_for_all, active, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  company_id = EXCLUDED.company_id,
+                  store_id = EXCLUDED.store_id,
+                  name = EXCLUDED.name,
+                  group_kind = EXCLUDED.group_kind,
+                  min_select = EXCLUDED.min_select,
+                  max_select = EXCLUDED.max_select,
+                  sort_order = EXCLUDED.sort_order,
+                  available_for_all = EXCLUDED.available_for_all,
+                  active = EXCLUDED.active,
+                  updated_at = EXCLUDED.updated_at
+                """,
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                row.name().trim(),
+                kind,
+                row.minSelect(),
+                row.maxSelect(),
+                row.sortOrder(),
+                row.availableForAll(),
+                row.active(),
+                Timestamp.from(now),
+                Timestamp.from(now)
+            );
+            n++;
         }
-        return rows.size();
+        return n;
     }
 
     private int upsertModifierOptions(EdgeCatalogSnapshot snap) {
         List<ModifierOptionRow> rows = snap.modifierOptions() == null ? List.of() : snap.modifierOptions();
+        int n = 0;
         for (ModifierOptionRow row : rows) {
-            if (row.id() == null || row.groupId() == null) continue;
-            ModifierGroup group = modifierGroupRepository.findById(row.groupId()).orElse(null);
-            if (group == null) continue;
-            ModifierOption e = modifierOptionRepository.findById(row.id()).orElseGet(ModifierOption::new);
-            e.setId(row.id());
-            e.setGroup(group);
-            e.setName(row.name());
-            e.setPriceDelta(row.priceDelta() == null ? BigDecimal.ZERO : row.priceDelta());
-            e.setSortOrder(row.sortOrder());
-            e.setActive(row.active());
-            modifierOptionRepository.save(e);
+            if (row.id() == null || row.groupId() == null || !StringUtils.hasText(row.name())) continue;
+            jdbc.update("""
+                INSERT INTO modifier_options
+                  (id, group_id, name, price_delta, sort_order, active)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  group_id = EXCLUDED.group_id,
+                  name = EXCLUDED.name,
+                  price_delta = EXCLUDED.price_delta,
+                  sort_order = EXCLUDED.sort_order,
+                  active = EXCLUDED.active
+                """,
+                row.id(),
+                row.groupId(),
+                row.name().trim(),
+                row.priceDelta() == null ? BigDecimal.ZERO : row.priceDelta(),
+                row.sortOrder(),
+                row.active()
+            );
+            n++;
         }
-        return rows.size();
+        return n;
     }
 
     private int upsertModifierLinks(EdgeCatalogSnapshot snap) {
@@ -351,10 +525,15 @@ public class EdgeCatalogImportService {
         int n = 0;
         for (ModifierLinkRow row : rows) {
             if (row.menuItemId() == null || row.groupId() == null) continue;
-            MenuItemModifierLink.Key key = new MenuItemModifierLink.Key(row.menuItemId(), row.groupId());
-            if (modifierLinkRepository.existsById(key)) continue;
-            modifierLinkRepository.save(new MenuItemModifierLink(row.menuItemId(), row.groupId()));
-            n++;
+            int updated = jdbc.update("""
+                INSERT INTO menu_item_modifier_groups (menu_item_id, group_id)
+                VALUES (?, ?)
+                ON CONFLICT DO NOTHING
+                """,
+                row.menuItemId(),
+                row.groupId()
+            );
+            n += updated;
         }
         return n;
     }
@@ -380,40 +559,76 @@ public class EdgeCatalogImportService {
 
     private int upsertRecipes(EdgeCatalogSnapshot snap) {
         List<RecipeRow> rows = snap.recipes() == null ? List.of() : snap.recipes();
+        Instant now = Instant.now();
+        int n = 0;
         for (RecipeRow row : rows) {
             if (row.id() == null || row.menuItemId() == null) continue;
-            MenuItem menuItem = itemRepository.findById(row.menuItemId()).orElse(null);
-            if (menuItem == null) continue;
-            Recipe e = recipeRepository.findById(row.id()).orElseGet(Recipe::new);
-            e.setId(row.id());
-            e.setCompanyId(snap.companyId());
-            e.setStoreId(snap.storeId());
-            e.setMenuItem(menuItem);
-            e.setOutputQty(row.outputQty() == null ? BigDecimal.ONE : row.outputQty());
-            recipeRepository.save(e);
+            Integer exists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM menu_items WHERE id = ?",
+                Integer.class,
+                row.menuItemId()
+            );
+            if (exists == null || exists == 0) continue;
+            jdbc.update("""
+                INSERT INTO recipes (id, company_id, store_id, menu_item_id, output_qty, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  company_id = EXCLUDED.company_id,
+                  store_id = EXCLUDED.store_id,
+                  menu_item_id = EXCLUDED.menu_item_id,
+                  output_qty = EXCLUDED.output_qty,
+                  updated_at = EXCLUDED.updated_at
+                """,
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                row.menuItemId(),
+                row.outputQty() == null ? BigDecimal.ONE : row.outputQty(),
+                Timestamp.from(now)
+            );
+            n++;
         }
-        return rows.size();
+        return n;
     }
 
     private int upsertRecipeLines(EdgeCatalogSnapshot snap) {
         List<RecipeLineRow> rows = snap.recipeLines() == null ? List.of() : snap.recipeLines();
+        int n = 0;
         for (RecipeLineRow row : rows) {
-            if (row.id() == null || row.recipeId() == null) continue;
-            Recipe recipe = recipeRepository.findById(row.recipeId()).orElse(null);
-            if (recipe == null) continue;
-            RecipeLine e = recipeLineRepository.findById(row.id()).orElseGet(RecipeLine::new);
-            e.setId(row.id());
-            e.setRecipe(recipe);
-            e.setProductId(row.productId());
-            e.setProductName(row.productName() == null ? "" : row.productName());
-            e.setUnit(StringUtils.hasText(row.unit()) ? row.unit() : "kg");
-            e.setQtyGross(row.qtyGross() == null ? BigDecimal.ZERO : row.qtyGross());
-            e.setWastePercent(row.wastePercent() == null ? BigDecimal.ZERO : row.wastePercent());
-            e.setQtyNet(row.qtyNet() == null ? BigDecimal.ZERO : row.qtyNet());
-            e.setSortOrder(row.sortOrder());
-            recipeLineRepository.save(e);
+            if (row.id() == null || row.recipeId() == null || row.productId() == null) continue;
+            Integer exists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM recipes WHERE id = ?",
+                Integer.class,
+                row.recipeId()
+            );
+            if (exists == null || exists == 0) continue;
+            jdbc.update("""
+                INSERT INTO recipe_lines
+                  (id, recipe_id, product_id, product_name, unit, qty_gross, waste_percent, qty_net, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  recipe_id = EXCLUDED.recipe_id,
+                  product_id = EXCLUDED.product_id,
+                  product_name = EXCLUDED.product_name,
+                  unit = EXCLUDED.unit,
+                  qty_gross = EXCLUDED.qty_gross,
+                  waste_percent = EXCLUDED.waste_percent,
+                  qty_net = EXCLUDED.qty_net,
+                  sort_order = EXCLUDED.sort_order
+                """,
+                row.id(),
+                row.recipeId(),
+                row.productId(),
+                row.productName() == null ? "" : row.productName(),
+                StringUtils.hasText(row.unit()) ? row.unit() : "kg",
+                row.qtyGross() == null ? BigDecimal.ZERO : row.qtyGross(),
+                row.wastePercent() == null ? BigDecimal.ZERO : row.wastePercent(),
+                row.qtyNet() == null ? BigDecimal.ZERO : row.qtyNet(),
+                row.sortOrder()
+            );
+            n++;
         }
-        return rows.size();
+        return n;
     }
 
     private int upsertOpenShift(EdgeCatalogSnapshot snap) {
