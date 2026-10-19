@@ -93,9 +93,9 @@ function buildItemCommands(item, payload, ox, oy, compact, fontScale) {
   if (item.showBarcode && item.barcode) {
     const code = String(item.barcode).replace(/\s/g, '');
     if (code) {
-      const bcH = compact ? 34 : paperHmm <= 35 ? 46 : 52;
-      const bcNarrow = compact ? 1 : 2;
-      const bcWide = compact ? 2 : 3;
+      const bcH = compact ? 64 : paperHmm <= 35 ? 96 : 120;
+      const bcNarrow = 2;
+      const bcWide = compact ? 4 : 6;
       y += mmToDots(compact ? 0.5 : 1);
       lines.push(
         `BARCODE ${ox + mmToDots(2)},${y},"128",${bcH},1,0,${bcNarrow},${bcWide},"${escapeTsplText(code)}"`,

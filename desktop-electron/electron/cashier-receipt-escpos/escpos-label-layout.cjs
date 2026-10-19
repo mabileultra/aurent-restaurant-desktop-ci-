@@ -58,15 +58,15 @@ function barcodeOptsForPaper(paperWmm, paperHmm) {
   const w = Number(paperWmm) || 40;
   const h = Number(paperHmm) || 30;
   if (h <= 22 || w <= 32) {
-    return { width: 1, height: 34 };
+    return { width: 2, height: 64 };
   }
   if (h <= 28) {
-    return { width: 1.25, height: 40 };
+    return { width: 2, height: 80 };
   }
   if (h <= 35) {
-    return { width: 1.5, height: 46 };
+    return { width: 2, height: 96 };
   }
-  return { width: 2, height: 52 };
+  return { width: 3, height: 120 };
 }
 
 /**

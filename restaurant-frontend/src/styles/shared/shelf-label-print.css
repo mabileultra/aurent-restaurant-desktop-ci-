@@ -35,7 +35,7 @@
 }
 
 .shelflabel-card--pricetag .shelflabel-barcode-svg {
-  max-height: calc(52px * var(--label-font-scale, 1));
+  max-height: none;
 }
 
 .shelflabel-name {
@@ -70,7 +70,16 @@
 .shelflabel-barcode-svg {
   display: block;
   margin: 0 auto;
-  max-height: calc(72px * var(--label-font-scale, 1));
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  shape-rendering: crispEdges;
+}
+
+.shelflabel-barcode-svg rect,
+.shelflabel-barcode-svg line,
+.shelflabel-barcode-svg path {
+  shape-rendering: crispEdges;
 }
 
 /* Временно для замера макета перед печатью (иначе off-screen → высота 0) */
@@ -275,7 +284,10 @@ html.electron-silent-label.shelflabel-printing-active.electron-print-capturing #
     max-height: calc(5mm * var(--label-font-scale, 1)) !important;
   }
 
+  .shelflabel-barcode-svg,
   .shelflabel-card--pricetag .shelflabel-barcode-svg {
-    max-height: calc(12mm * var(--label-font-scale, 1)) !important;
+    max-height: none !important;
+    height: auto !important;
+    shape-rendering: crispEdges !important;
   }
 }
