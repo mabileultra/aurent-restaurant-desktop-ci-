@@ -28,8 +28,15 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // Edge local auth (only beans exist when app.restaurant.edge.enabled=true)
-                .requestMatchers("/auth/**", "/edge/auth/**", "/edge/bootstrap/**", "/edge/sync/**").permitAll()
-                .requestMatchers("/rst/**", "/products/**").authenticated()
+                .requestMatchers(
+                    "/auth/**",
+                    "/edge/auth/**",
+                    "/edge/bootstrap/**",
+                    "/edge/sync/**",
+                    "/billing/**",
+                    "/company-business-types"
+                ).permitAll()
+                .requestMatchers("/rst/**", "/products/**", "/stores/**").authenticated()
                 .anyRequest().denyAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

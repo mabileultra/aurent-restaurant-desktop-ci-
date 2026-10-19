@@ -6,6 +6,7 @@ import com.pos.restaurant.edge.dto.catalog.EdgeStockBootstrapRequest;
 import com.pos.restaurant.edge.service.EdgeCatalogExportService;
 import com.pos.restaurant.edge.service.EdgeCatalogImportService;
 import com.pos.restaurant.edge.service.EdgeStockBootstrapService;
+import com.pos.restaurant.edge.service.EdgeStoreService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ public class EdgeCatalogController {
     private final EdgeCatalogExportService exportService;
     private final ObjectProvider<EdgeCatalogImportService> importService;
     private final ObjectProvider<EdgeStockBootstrapService> stockBootstrapService;
+    private final ObjectProvider<EdgeStoreService> edgeStoreService;
 
     @GetMapping("/rst/edge/catalog-export")
     @Operation(summary = "Export store catalog snapshot for restaurant-desktop bootstrap (cloud)")
@@ -64,12 +66,15 @@ public class EdgeCatalogController {
     public ResponseEntity<Map<String, Object>> status() {
         EdgeCatalogImportService importer = importService.getIfAvailable();
         EdgeStockBootstrapService stock = stockBootstrapService.getIfAvailable();
+        EdgeStoreService stores = edgeStoreService.getIfAvailable();
         boolean hasCatalog = importer != null && importer.hasAnyCatalog();
         boolean hasStock = stock != null && stock.hasAnyStock();
+        boolean hasStores = stores != null && !stores.listAllIds().isEmpty();
         Map<String, Object> body = new HashMap<>();
         body.put("edge", importer != null);
         body.put("hasCatalog", hasCatalog);
         body.put("hasStock", hasStock);
+        body.put("hasStores", hasStores);
         return ResponseEntity.ok(body);
     }
 }

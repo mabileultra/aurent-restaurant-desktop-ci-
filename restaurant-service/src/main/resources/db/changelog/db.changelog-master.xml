@@ -52,6 +52,7 @@
     <include file="db/changelog/v45-menu-item-fiscal.xml"/>
     <include file="db/changelog/v46-edge-staff.xml"/>
     <include file="db/changelog/v47-edge-products.xml"/>
+    <include file="db/changelog/v48-edge-stores.xml"/>
 
 </databaseChangeLog>
 

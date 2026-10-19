@@ -141,6 +141,18 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
     },
   });
 
+  let stores = null;
+  let storesError = null;
+  try {
+    stores = await bootstrapStoresFromCloud({
+      token,
+      companyId,
+      bootstrapSecret: secret,
+    });
+  } catch (err) {
+    storesError = err.message || String(err);
+  }
+
   let catalog = null;
   let catalogError = null;
   let stock = null;
@@ -176,11 +188,47 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
     companyLoginCode,
     staffCount: staff.length,
     storeId: storeId || null,
+    stores,
+    storesError,
     catalog,
     catalogError,
     stock,
     stockError,
   };
+}
+
+/** Pull company store list from cloud web-backend so local GET /stores is non-empty. */
+async function bootstrapStoresFromCloud({ token, companyId, bootstrapSecret } = {}) {
+  if (!token || !companyId) {
+    throw new Error('token and companyId required for stores bootstrap');
+  }
+  const cloud = cloudBase();
+  const exported = await requestJson(`${cloud}/stores`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const raw = Array.isArray(exported.data) ? exported.data : [];
+  const stores = raw
+    .filter((s) => s && s.id != null)
+    .map((s) => ({
+      id: s.id,
+      name: s.name,
+      code: s.code,
+      address: s.address,
+      businessType: s.businessType || 'RESTAURANT',
+      active: s.active !== false,
+    }));
+  if (!stores.length) {
+    throw new Error('Cloud /stores returned empty list');
+  }
+  const local = await requestJson(`${localBase()}/edge/bootstrap/stores`, {
+    method: 'POST',
+    body: {
+      companyId,
+      bootstrapSecret: bootstrapSecret || process.env.RESTAURANT_EDGE_BOOTSTRAP_SECRET || 'edge-dev-bootstrap',
+      stores,
+    },
+  });
+  return { saved: local.data?.saved ?? stores.length, count: stores.length };
 }
 
 function resolveStoreId({ storeId, staff, login }) {
@@ -378,6 +426,11 @@ async function ensureStaffViaCloudPin({
             })),
           },
         });
+        await bootstrapStoresFromCloud({
+          token,
+          companyId,
+          bootstrapSecret: secret,
+        }).catch(() => {});
         const storeId = resolveStoreId({ staff, login: profile });
         if (storeId) {
           await bootstrapCatalogFromCloud({
@@ -423,6 +476,7 @@ module.exports = {
   getLocalAuthStatus,
   getLocalBootstrapStatus,
   bootstrapStaffFromCloud,
+  bootstrapStoresFromCloud,
   bootstrapCatalogFromCloud,
   bootstrapStockFromCloud,
   fetchCloudPinRoster,

@@ -5,12 +5,15 @@ import LanguageSwitcher from '../../../../components/shared/LanguageSwitcher';
 import RestaurantMobileInstallCorner from '../../../desktop-download/components/RestaurantMobileInstallCorner';
 import { BRAND_LOGO_SIZES, BRAND_NAME } from '../../../../config/brandLogos';
 import { useTenantDisplayStore } from '../../../../store/tenantDisplayStore';
+import { isRestaurantDesktop } from '../../../../utils/restaurantDesktop';
 import {
   readRestaurantTheme,
   setRestaurantTheme,
   subscribeRestaurantTheme,
 } from '../../../../store/themeStore';
 import '../../../../restaurant/shared/styles/rst-lang-switch.css';
+
+const DESKTOP_BRAND = 'Aurent Restaurant';
 
 function useChromeClock() {
   const [now, setNow] = useState(() => new Date());
@@ -41,6 +44,8 @@ export default function CashierPinLoginChrome({
   const theme = useSyncExternalStore(subscribeRestaurantTheme, readRestaurantTheme, () => 'dark');
   const light = theme === 'light';
   const { clockLabel, dateLabel } = useChromeClock();
+  const hallDesktop = isRestaurantDesktop();
+  const brandName = hallDesktop ? DESKTOP_BRAND : (displayAppName() || BRAND_NAME);
 
   return (
     <header className="cashier-pin-roster__chrome">
@@ -49,7 +54,7 @@ export default function CashierPinLoginChrome({
           <BrandMark variant="icon" size={BRAND_LOGO_SIZES.iconMd} />
         </span>
         <div className="cashier-pin-roster__brand-text">
-          <span className="cashier-pin-roster__brand-name">{displayAppName() || BRAND_NAME}</span>
+          <span className="cashier-pin-roster__brand-name">{brandName}</span>
           <span className="cashier-pin-roster__brand-sub">
             {t('cashierLogin.terminalSubtitle', {
               defaultValue: 'Терминал ресторана',
@@ -69,7 +74,7 @@ export default function CashierPinLoginChrome({
           className="cashier-pin-roster__lang"
         />
 
-        <RestaurantMobileInstallCorner />
+        {hallDesktop ? null : <RestaurantMobileInstallCorner />}
 
         <button
           type="button"

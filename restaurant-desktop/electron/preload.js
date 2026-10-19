@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('aurentRestaurant', {
   pushCloudSync: () => ipcRenderer.invoke('restaurant:push-cloud-sync'),
   getCompanyLoginCode: () => ipcRenderer.invoke('restaurant:get-company-login-code'),
   setCompanyLoginCode: (code) => ipcRenderer.invoke('restaurant:set-company-login-code', code),
+  setMenuLocale: (locale) => ipcRenderer.invoke('restaurant:set-menu-locale', locale),
   onStatus: (cb) => {
     const handler = (_e, payload) => cb(payload);
     ipcRenderer.on('restaurant:status', handler);

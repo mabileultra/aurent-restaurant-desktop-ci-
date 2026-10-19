@@ -41,6 +41,7 @@ import com.pos.restaurant.shift.domain.RestaurantShiftStatus;
 import com.pos.restaurant.shift.entity.RestaurantShift;
 import com.pos.restaurant.shift.repository.RestaurantShiftRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -73,6 +74,7 @@ public class EdgeCatalogImportService {
     private final RecipeRepository recipeRepository;
     private final RecipeLineRepository recipeLineRepository;
     private final RestaurantShiftRepository shiftRepository;
+    private final ObjectProvider<EdgeStoreService> edgeStoreService;
 
     @Value("${app.restaurant.edge.bootstrap-secret:}")
     private String bootstrapSecret;
@@ -103,6 +105,11 @@ public class EdgeCatalogImportService {
         int recipes = upsertRecipes(snap);
         int recipeLines = upsertRecipeLines(snap);
         int shifts = upsertOpenShift(snap);
+
+        EdgeStoreService stores = edgeStoreService.getIfAvailable();
+        if (stores != null) {
+            stores.upsertFromCatalog(snap.companyId(), snap.storeId());
+        }
 
         syncSequences();
 

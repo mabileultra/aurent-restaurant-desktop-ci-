@@ -21,7 +21,7 @@ export default function RestaurantMobileInstallCorner() {
   const rootRef = useRef(null);
 
   const isDesktopShell = typeof window !== 'undefined'
-    && Boolean(window.desktopCashier?.isDesktop);
+    && Boolean(window.desktopCashier?.isDesktop || window.aurentRestaurant?.isDesktop);
 
   useEffect(() => {
     if (!open) return undefined;

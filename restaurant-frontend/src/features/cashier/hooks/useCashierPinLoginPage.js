@@ -298,7 +298,7 @@ export function useCashierPinLoginPage() {
         let needsBootstrap = true;
         try {
           const status = await window.aurentRestaurant.getEdgeAuthStatus?.();
-          needsBootstrap = !status?.hasStaff || !status?.hasCatalog || !status?.hasStock;
+          needsBootstrap = !status?.hasStaff || !status?.hasCatalog || !status?.hasStock || !status?.hasStores;
         } catch {
           needsBootstrap = true;
         }
@@ -571,7 +571,7 @@ export function useCashierPinLoginPage() {
     setCompanyCode,
     companyPopoverOpen,
     setCompanyPopoverOpen,
-    showCompanyCodeField: shouldShowCashierCompanyCodeField(),
+    showCompanyCodeField: shouldShowCashierCompanyCodeField(companyCode),
     pressDigit,
     backspace,
     clear,

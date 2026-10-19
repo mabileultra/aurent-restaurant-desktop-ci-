@@ -20,6 +20,20 @@ const {
   getCompanyLoginCode,
   setCompanyLoginCode,
 } = require('./runtime/companyCodeStore');
+const { buildAppMenu, normalizeLocale } = require('./menu/appMenu');
+
+let menuLocale = 'ru';
+
+function applyAppMenu() {
+  buildAppMenu({
+    locale: menuLocale,
+    reloadPage: () => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.reload();
+      }
+    },
+  });
+}
 
 let mainWindow = null;
 let uiServer = null;
@@ -286,6 +300,11 @@ app.whenReady().then(async () => {
   });
   ipcMain.handle('restaurant:get-company-login-code', async () => getCompanyLoginCode());
   ipcMain.handle('restaurant:set-company-login-code', async (_e, code) => setCompanyLoginCode(code));
+  ipcMain.handle('restaurant:set-menu-locale', async (_e, locale) => {
+    menuLocale = normalizeLocale(locale);
+    applyAppMenu();
+    return { locale: menuLocale };
+  });
   ipcMain.handle('restaurant:push-cloud-sync', async () => {
     const http = require('http');
     return new Promise((resolve, reject) => {
@@ -314,6 +333,7 @@ app.whenReady().then(async () => {
     });
   });
 
+  applyAppMenu();
   createWindow();
   await bootStack();
 

@@ -15,6 +15,7 @@ import com.pos.restaurant.edge.support.EdgePinDigest;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.shared.jwt.JwtClaimsExtractor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,7 +25,9 @@ import org.springframework.util.StringUtils;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -36,6 +39,7 @@ public class EdgeAuthService {
     private final EdgeJwtIssuer jwtIssuer;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+    private final ObjectProvider<EdgeStoreService> edgeStoreService;
 
     @Value("${app.restaurant.edge.bootstrap-secret:}")
     private String bootstrapSecret;
@@ -151,6 +155,10 @@ public class EdgeAuthService {
             row.setPasswordHash(null);
         }
         staffRepository.save(row);
+        EdgeStoreService stores = edgeStoreService.getIfAvailable();
+        if (stores != null) {
+            stores.upsertFromStoreIds(request.companyId(), request.storeIds());
+        }
         return toAuthResponse(row, jwtIssuer.issue(row));
     }
 
@@ -164,6 +172,7 @@ public class EdgeAuthService {
             }
         }
         int saved = 0;
+        Set<Integer> storeIds = new HashSet<>();
         for (EdgeStaffBootstrapItem item : request.staff()) {
             if (item == null || item.userId() == null || !StringUtils.hasText(item.username())) {
                 continue;
@@ -184,7 +193,14 @@ public class EdgeAuthService {
             row.setActive(item.active() == null || item.active());
             row.setUpdatedAt(Instant.now());
             staffRepository.save(row);
+            if (item.storeIds() != null) {
+                storeIds.addAll(item.storeIds());
+            }
             saved++;
+        }
+        EdgeStoreService stores = edgeStoreService.getIfAvailable();
+        if (stores != null) {
+            stores.upsertFromStoreIds(request.companyId(), storeIds);
         }
         return saved;
     }

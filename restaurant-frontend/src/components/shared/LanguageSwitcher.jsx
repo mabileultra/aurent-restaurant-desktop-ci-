@@ -29,6 +29,16 @@ export default function LanguageSwitcher({ className = '', variant = 'default' }
       ? 'cashier-lang-switch'
       : 'rst-lang-switch';
 
+  const pushDesktopMenuLocale = (code) => {
+    try {
+      if (typeof window !== 'undefined' && window.aurentRestaurant?.setMenuLocale) {
+        void window.aurentRestaurant.setMenuLocale(code);
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
   const switchTo = (code) => {
     try {
       localStorage.setItem('pos-lang', code);
@@ -36,8 +46,13 @@ export default function LanguageSwitcher({ className = '', variant = 'default' }
       /* ignore quota / private mode */
     }
     void i18n.changeLanguage(code);
+    pushDesktopMenuLocale(code);
     setOpen(false);
   };
+
+  useEffect(() => {
+    pushDesktopMenuLocale(activeCode);
+  }, [activeCode]);
 
   useEffect(() => {
     if (!open) return undefined;
