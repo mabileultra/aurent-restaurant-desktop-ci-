@@ -59,12 +59,16 @@ function bootLog(line, isErr = false) {
   if (isErr) return;
   if (lower.includes('initdb') || lower.includes('pgdata') || lower.includes('postgres')) {
     bootMsg('Подготовка локальной базы');
+  } else if (lower.includes('waiting for service')) {
+    bootMsg('Первый запуск: подготовка базы');
   } else if (lower.includes('starting jar') || lower.includes('java:') || lower.includes('spring boot')) {
     bootMsg('Запуск сервиса ресторана');
   } else if (lower.includes('database ') || lower.includes('listening')) {
     bootMsg('Почти готово');
   } else if (lower.includes('ui server')) {
     bootMsg('Открытие интерфейса');
+  } else if (lower.includes('liquibase') || lower.includes('hikari')) {
+    bootMsg('Миграции базы данных');
   }
 }
 

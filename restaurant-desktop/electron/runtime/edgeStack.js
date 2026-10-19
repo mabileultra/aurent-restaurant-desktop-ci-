@@ -104,7 +104,18 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     log(`[edge] java spawn failed: ${err.message}`, true);
   });
 
-  const health = await waitForHealth(HEALTH_URL, { timeoutMs: 120_000 });
+  // First Liquibase on slow hall PCs can take 1–3 min — keep UI alive with progress.
+  const health = await waitForHealth(HEALTH_URL, {
+    timeoutMs: 180_000,
+    intervalMs: 1_200,
+    onProgress: ({ elapsedMs }) => {
+      const sec = Math.round(elapsedMs / 1000);
+      log(`[edge] waiting for service… ${sec}s (миграции БД при первом запуске)`);
+    },
+  });
+  if (!javaChild) {
+    throw new Error('restaurant-service exited before becoming healthy — see log above');
+  }
   log('[edge] restaurant-service is healthy');
   return { health, jar, reused: false };
 }

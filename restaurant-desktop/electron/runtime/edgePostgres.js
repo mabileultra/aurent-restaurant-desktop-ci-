@@ -77,20 +77,63 @@ function withTimeout(promise, ms, label) {
   return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
 }
 
+/**
+ * @param {string} bin
+ * @param {string[]} args
+ * @param {object} [opts]
+ * @param {number} [opts.timeoutMs] — kill child and reject if still running
+ */
 function run(bin, args, opts = {}) {
+  const { timeoutMs, ...spawnOpts } = opts;
   return new Promise((resolve, reject) => {
     const child = spawn(bin, args, {
-      ...opts,
+      ...spawnOpts,
       stdio: ['ignore', 'pipe', 'pipe'],
       windowsHide: true,
     });
     let out = '';
+    let settled = false;
+    const finish = (fn, value) => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      fn(value);
+    };
+    let timer = null;
+    if (timeoutMs && timeoutMs > 0) {
+      timer = setTimeout(() => {
+        try {
+          child.kill();
+        } catch {
+          /* ignore */
+        }
+        // Windows: pg_ctl can ignore SIGTERM — best-effort taskkill
+        if (process.platform === 'win32' && child.pid) {
+          try {
+            spawn('taskkill', ['/pid', String(child.pid), '/t', '/f'], {
+              stdio: 'ignore',
+              windowsHide: true,
+            });
+          } catch {
+            /* ignore */
+          }
+        }
+        finish(reject, new Error(
+          `${path.basename(bin)} timed out after ${Math.round(timeoutMs / 1000)}s`
+        ));
+      }, timeoutMs);
+    }
     child.stderr.on('data', (c) => { out += c.toString(); });
     child.stdout.on('data', (c) => { out += c.toString(); });
-    child.on('error', reject);
+    child.on('error', (err) => finish(reject, err));
     child.on('close', (code) => {
-      if (code === 0) resolve(out);
-      else reject(new Error(`${path.basename(bin)} failed (code ${code}): ${out.slice(0, 800)}`));
+      if (code === 0) finish(resolve, out);
+      else {
+        finish(
+          reject,
+          new Error(`${path.basename(bin)} failed (code ${code}): ${out.slice(0, 800)}`)
+        );
+      }
     });
   });
 }
@@ -108,21 +151,17 @@ async function initialiseCluster(binDir, dir, log) {
   log(`[edge-db] initdb → ${dir}`);
   log('[edge-db] first run can take 1–2 min; allow antivirus if prompted');
   try {
-    await withTimeout(
-      run(
-        initdb,
-        [
-          `--pgdata=${dir}`,
-          '--auth=password',
-          `--username=${DB_USER}`,
-          `--pwfile=${pwFile}`,
-          ...initdbFlags(),
-        ],
-        // cwd=bin so Windows loads sibling Postgres DLLs next to initdb.exe
-        { env: pgsqlEnv(binDir), cwd: binDir }
-      ),
-      180_000,
-      'Postgres initdb'
+    await run(
+      initdb,
+      [
+        `--pgdata=${dir}`,
+        '--auth=password',
+        `--username=${DB_USER}`,
+        `--pwfile=${pwFile}`,
+        ...initdbFlags(),
+      ],
+      // cwd=bin so Windows loads sibling Postgres DLLs next to initdb.exe
+      { env: pgsqlEnv(binDir), cwd: binDir, timeoutMs: 180_000 }
     );
   } catch (err) {
     try {
@@ -222,27 +261,35 @@ async function startCluster(binDir, dir, log) {
   clearStalePid(dir, log);
 
   log(`[edge-db] starting Postgres on ${DB_PORT} via pg_ctl (no -w)…`);
-  // Do not use pg_ctl -w here: on some Windows hosts it hangs even when the
-  // server is up. Start detached, then poll TCP 127.0.0.1:port.
+  // Do not use pg_ctl -w: on some Windows hosts it hangs forever.
+  // Also kill pg_ctl if it does not return (timeoutMs) — previously boot froze.
   try {
     const out = await run(
       pgCtl,
       ['start', '-D', dir, '-l', logFile, '-o', `-p ${DB_PORT}`],
-      { env: pgsqlEnv(binDir), cwd: binDir }
+      { env: pgsqlEnv(binDir), cwd: binDir, timeoutMs: 25_000 }
     );
     if (out && out.trim()) log(`[edge-db] pg_ctl: ${out.trim().slice(0, 300)}`);
   } catch (err) {
-    const tail = readLogTail(logFile);
-    throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
+    // Timed out but server may already be up — continue to port poll.
+    if (await portOpen(DB_PORT)) {
+      log(`[edge-db] pg_ctl slow, but port ${DB_PORT} is open — continuing`);
+    } else {
+      const tail = readLogTail(logFile);
+      throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
+    }
   }
   startedByUs = true;
 
   try {
-    await waitUntilPortListening(DB_PORT, 90_000);
+    await waitUntilPortListening(DB_PORT, 60_000);
   } catch (err) {
     const tail = readLogTail(logFile);
-    // Best-effort stop so the next launch is clean.
-    await run(pgCtl, ['stop', '-D', dir, '-m', 'fast'], { env: pgsqlEnv(binDir), cwd: binDir }).catch(() => {});
+    await run(
+      pgCtl,
+      ['stop', '-D', dir, '-m', 'fast'],
+      { env: pgsqlEnv(binDir), cwd: binDir, timeoutMs: 15_000 }
+    ).catch(() => {});
     startedByUs = false;
     throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
   }

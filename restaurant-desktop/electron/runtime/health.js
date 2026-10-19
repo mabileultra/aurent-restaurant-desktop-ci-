@@ -24,11 +24,25 @@ function probeHealth(url, timeoutMs = 2000) {
   });
 }
 
-async function waitForHealth(url, { timeoutMs = 90_000, intervalMs = 1000 } = {}) {
+async function waitForHealth(url, {
+  timeoutMs = 90_000,
+  intervalMs = 1000,
+  onProgress = null,
+} = {}) {
   const started = Date.now();
+  let lastProgressAt = 0;
   while (Date.now() - started < timeoutMs) {
     const hit = await probeHealth(url);
     if (hit.ok) return hit;
+    const elapsed = Date.now() - started;
+    if (typeof onProgress === 'function' && elapsed - lastProgressAt >= 5_000) {
+      lastProgressAt = elapsed;
+      onProgress({
+        elapsedMs: elapsed,
+        remainingMs: Math.max(0, timeoutMs - elapsed),
+        lastError: hit.error || `HTTP ${hit.status || '?'}`,
+      });
+    }
     await new Promise((r) => setTimeout(r, intervalMs));
   }
   throw new Error(`restaurant-service health timeout: ${url}`);
