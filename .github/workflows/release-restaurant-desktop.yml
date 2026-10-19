@@ -162,20 +162,40 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+          : "${DEPLOY_HOST:?DEPLOY_HOST secret missing}"
+          : "${DEPLOY_USER:?DEPLOY_USER secret missing}"
+          test -f ~/.ssh/deploy_key || { echo "deploy_key missing — Setup SSH failed" >&2; exit 1; }
+          ls -la restaurant-desktop/dist || true
+          # ssh-keyscan often returns non-zero on CI; must not abort the job
+          ssh-keyscan -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          SSH_OPTS=(-i ~/.ssh/deploy_key -o StrictHostKeyChecking=accept-new -o ConnectTimeout=20 -o ServerAliveInterval=15)
+          ssh "${SSH_OPTS[@]}" \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "mkdir -p ${REMOTE_DIR}"
           shopt -s nullglob
-          files=(restaurant-desktop/dist/*.exe restaurant-desktop/dist/*.blockmap)
+          # Only ship the product installer (skip NSIS __uninstaller helper)
+          files=(restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap)
           if ((${#files[@]} == 0)); then
-            echo "No Windows artifacts" >&2
+            echo "No Windows artifacts (Aurent-Restaurant-*-win-*.exe)" >&2
             ls -la restaurant-desktop/dist || true
             exit 1
           fi
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes \
+          echo "Uploading: ${files[*]}"
+          scp "${SSH_OPTS[@]}" \
             "${files[@]}" \
             "${DEPLOY_USER}@${DEPLOY_HOST}:${REMOTE_DIR}/"
+          echo "Upload OK"
+
+      - name: Archive Windows installer (Actions artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aurent-restaurant-desktop-win-x64
+          path: |
+            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe
+            restaurant-desktop/dist/Aurent-Restaurant-*-win-*.exe.blockmap
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Cleanup SSH key
         if: always()
