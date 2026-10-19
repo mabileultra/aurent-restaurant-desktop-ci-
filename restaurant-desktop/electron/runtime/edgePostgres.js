@@ -286,18 +286,97 @@ async function startCluster(binDir, dir, log) {
   log(`[edge-db] Postgres listening on ${DB_PORT}`);
 }
 
-async function createDbIfNeeded(log) {
+function pgPassEnv(binDir) {
+  return {
+    ...pgsqlEnv(binDir),
+    PGPASSWORD: DB_PASSWORD,
+  };
+}
+
+/** TCP open ≠ ready for queries; Windows often resets early clients (ECONNRESET). */
+async function waitUntilPostgresReady(binDir, log, timeoutMs = 90_000) {
+  const started = Date.now();
+  const pgIsReady = binDir ? path.join(binDir, exe('pg_isready')) : null;
+  let attempt = 0;
+  while (Date.now() - started < timeoutMs) {
+    attempt += 1;
+    if (pgIsReady && fs.existsSync(pgIsReady)) {
+      try {
+        await run(
+          pgIsReady,
+          ['-h', '127.0.0.1', '-p', String(DB_PORT), '-U', DB_USER, '-d', 'postgres'],
+          { env: pgPassEnv(binDir), cwd: binDir, timeoutMs: 8_000 }
+        );
+        log(`[edge-db] Postgres ready (pg_isready, try ${attempt})`);
+        return;
+      } catch {
+        /* keep trying */
+      }
+    } else {
+      const { Client } = require('pg');
+      const client = new Client({
+        host: '127.0.0.1',
+        port: DB_PORT,
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: 'postgres',
+        connectionTimeoutMillis: 4_000,
+      });
+      try {
+        await client.connect();
+        await client.query('SELECT 1');
+        await client.end().catch(() => {});
+        log(`[edge-db] Postgres ready (SQL, try ${attempt})`);
+        return;
+      } catch {
+        await client.end().catch(() => {});
+      }
+    }
+    if (attempt === 1 || attempt % 5 === 0) {
+      log(`[edge-db] waiting until Postgres accepts connections… (${attempt})`);
+    }
+    await new Promise((r) => setTimeout(r, 1_000));
+  }
+  throw new Error(
+    `Postgres port ${DB_PORT} open but not accepting queries within ${Math.round(timeoutMs / 1000)}s`
+  );
+}
+
+async function createDbViaCreatedb(binDir, log) {
+  const createdb = path.join(binDir, exe('createdb'));
+  if (!fs.existsSync(createdb)) return false;
+  try {
+    await run(
+      createdb,
+      ['-h', '127.0.0.1', '-p', String(DB_PORT), '-U', DB_USER, '-E', 'UTF8', DB_NAME],
+      { env: pgPassEnv(binDir), cwd: binDir, timeoutMs: 60_000 }
+    );
+    log(`[edge-db] database ${DB_NAME} ready (createdb)`);
+    return true;
+  } catch (err) {
+    const msg = String(err.message || err);
+    if (/already exists/i.test(msg)) {
+      log(`[edge-db] database ${DB_NAME} already exists (createdb)`);
+      return true;
+    }
+    log(`[edge-db] createdb: ${msg.slice(0, 200)}`);
+    return false;
+  }
+}
+
+async function createDbViaNodePg(log) {
   const { Client } = require('pg');
   let lastErr;
-  // Brief retries: right after pg_ctl, accept() can lag on Windows.
-  for (let attempt = 1; attempt <= 8; attempt += 1) {
+  // ECONNRESET is common for ~10–20s after Windows pg_ctl — retry longer.
+  for (let attempt = 1; attempt <= 20; attempt += 1) {
     const client = new Client({
       host: '127.0.0.1',
       port: DB_PORT,
       user: DB_USER,
       password: DB_PASSWORD,
       database: 'postgres',
-      connectionTimeoutMillis: 5_000,
+      connectionTimeoutMillis: 8_000,
+      keepAlive: false,
     });
     try {
       await client.connect();
@@ -313,19 +392,29 @@ async function createDbIfNeeded(log) {
     } catch (err) {
       lastErr = err;
       await client.end().catch(() => {});
-      await new Promise((r) => setTimeout(r, 500));
+      const delay = Math.min(2_500, 400 + attempt * 150);
+      if (attempt === 1 || attempt % 4 === 0) {
+        log(`[edge-db] create DB retry ${attempt}: ${err.message || err}`);
+      }
+      await new Promise((r) => setTimeout(r, delay));
     }
   }
   throw new Error(`create database ${DB_NAME}: ${lastErr?.message || lastErr}`);
 }
 
+async function createDbIfNeeded(binDir, log) {
+  await waitUntilPostgresReady(binDir, log);
+  if (binDir && (await createDbViaCreatedb(binDir, log))) return;
+  await createDbViaNodePg(log);
+}
+
 async function ensureEdgePostgres({ log = console.log } = {}) {
+  const binDir = resolvePgsqlBinDir();
   let reused = false;
   if (await portOpen(DB_PORT)) {
     log(`[edge-db] Postgres already listening on ${DB_PORT}`);
     reused = true;
   } else {
-    const binDir = resolvePgsqlBinDir();
     if (!binDir) {
       throw new Error(
         'Postgres binaries (initdb) not found. Reinstall Aurent Restaurant (resources/pgsql missing).'
@@ -344,7 +433,7 @@ async function ensureEdgePostgres({ log = console.log } = {}) {
   }
 
   // Always ensure restaurant_db — previous runs often left Postgres up without the DB.
-  await createDbIfNeeded(log);
+  await createDbIfNeeded(binDir, log);
   return { reused, port: DB_PORT };
 }
 

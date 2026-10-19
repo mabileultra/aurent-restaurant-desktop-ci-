@@ -57,7 +57,9 @@ function bootLog(line, isErr = false) {
 
   const lower = text.toLowerCase();
   if (isErr) return;
-  if (lower.includes('initdb') || lower.includes('pgdata') || lower.includes('postgres')) {
+  if (lower.includes('waiting until postgres') || lower.includes('create db retry')) {
+    bootMsg('Ожидание базы данных');
+  } else if (lower.includes('initdb') || lower.includes('pgdata') || lower.includes('postgres')) {
     bootMsg('Подготовка локальной базы');
   } else if (lower.includes('waiting for service')) {
     bootMsg('Первый запуск: подготовка базы');
