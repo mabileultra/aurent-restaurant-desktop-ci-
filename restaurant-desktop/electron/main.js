@@ -109,6 +109,8 @@ function createWindow() {
     title: 'Aurent Restaurant',
     icon: resolveAppIcon(),
     backgroundColor: '#0f172a',
+    // Native menu stays available via Alt — do not permanently eat vertical space on Windows.
+    autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,

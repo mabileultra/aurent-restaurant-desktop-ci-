@@ -104,7 +104,11 @@ public class EdgeStoreService {
             if (!companyId.equals(row.getCompanyId())) {
                 row.setCompanyId(companyId);
             }
-            if (!StringUtils.hasText(row.getBusinessType())) {
+            // Catalog lives only on restaurant/canteen floors — never leave UNIVERSAL after import.
+            String type = row.getBusinessType();
+            if (!StringUtils.hasText(type)
+                || "UNIVERSAL".equalsIgnoreCase(type)
+                || "GROCERY".equalsIgnoreCase(type)) {
                 row.setBusinessType("RESTAURANT");
             }
             row.setActive(true);

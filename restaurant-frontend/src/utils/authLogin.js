@@ -13,19 +13,11 @@ export function isDesktopCashier() {
   return typeof navigator !== 'undefined' && /Electron/i.test(navigator.userAgent);
 }
 
-/**
- * Код компании на PIN-экране:
- * — grocery cashier desktop: скрыт (код из настроек Electron);
- * — restaurant hall desktop: скрыт, когда код уже сохранён (чип с цифрами не показываем).
- */
-export function shouldShowCashierCompanyCodeField(currentCode) {
+/** Код компании на PIN-экране: скрываем только если десктоп-касса реально отдаёт код из настроек. */
+export function shouldShowCashierCompanyCodeField() {
   if (typeof window === 'undefined') return true;
   if (window.desktopCashier?.isDesktop && typeof window.desktopCashier.getCompanyLoginCode === 'function') {
     return false;
-  }
-  if (window.aurentRestaurant?.isDesktop) {
-    const known = normalizeCompanyLoginCode(currentCode) || peekCashierCompanyCode();
-    return !known;
   }
   return true;
 }

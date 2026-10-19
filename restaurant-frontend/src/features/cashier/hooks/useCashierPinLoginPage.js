@@ -308,10 +308,17 @@ export function useCashierPinLoginPage() {
             defaultValue: 'Копируем сотрудников и каталог с облака…',
           }), { id: 'edge-bootstrap' });
           try {
-            await window.aurentRestaurant.bootstrapStaffFromCloud({ username, password });
-            toast.success(t('cashierLogin.edgeBootstrapDone', {
-              defaultValue: 'Локальные сотрудники и каталог готовы',
-            }), { id: 'edge-bootstrap' });
+            const boot = await window.aurentRestaurant.bootstrapStaffFromCloud({ username, password });
+            if (boot?.catalogError && !boot?.hasCatalog) {
+              throw new Error(boot.catalogError);
+            }
+            if (boot?.catalogError) {
+              toast.error(boot.catalogError, { id: 'edge-bootstrap' });
+            } else {
+              toast.success(t('cashierLogin.edgeBootstrapDone', {
+                defaultValue: 'Локальные сотрудники и каталог готовы',
+              }), { id: 'edge-bootstrap' });
+            }
           } catch (bootErr) {
             toast.dismiss('edge-bootstrap');
             if (needsBootstrap) throw bootErr;
@@ -571,7 +578,7 @@ export function useCashierPinLoginPage() {
     setCompanyCode,
     companyPopoverOpen,
     setCompanyPopoverOpen,
-    showCompanyCodeField: shouldShowCashierCompanyCodeField(companyCode),
+    showCompanyCodeField: shouldShowCashierCompanyCodeField(),
     pressDigit,
     backspace,
     clear,

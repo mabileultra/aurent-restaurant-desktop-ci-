@@ -143,42 +143,71 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
 
   let stores = null;
   let storesError = null;
+  let storeRows = [];
   try {
     stores = await bootstrapStoresFromCloud({
       token,
       companyId,
       bootstrapSecret: secret,
     });
+    storeRows = stores?.rows || [];
   } catch (err) {
     storesError = err.message || String(err);
   }
 
-  let catalog = null;
-  let catalogError = null;
-  let stock = null;
-  let stockError = null;
-  const storeId = resolveStoreId({ storeId: preferredStoreId, staff, login: login.data });
-  if (storeId) {
+  const storeIds = resolveRestaurantStoreIds({
+    storeId: preferredStoreId,
+    staff,
+    login: login.data,
+    stores: storeRows,
+  });
+
+  const catalogs = [];
+  const catalogErrors = [];
+  const stocks = [];
+  const stockErrors = [];
+  for (const storeId of storeIds) {
     try {
-      catalog = await bootstrapCatalogFromCloud({
+      const catalog = await bootstrapCatalogFromCloud({
         token,
         storeId,
         companyLoginCode,
         bootstrapSecret: secret,
       });
+      catalogs.push({ storeId, ...catalog });
     } catch (err) {
-      catalogError = err.message || String(err);
+      catalogErrors.push({ storeId, error: err.message || String(err) });
     }
     try {
-      stock = await bootstrapStockFromCloud({
+      const stock = await bootstrapStockFromCloud({
         token,
         companyId,
         storeId,
         bootstrapSecret: secret,
       });
+      stocks.push({ storeId, ...stock });
     } catch (err) {
-      stockError = err.message || String(err);
+      stockErrors.push({ storeId, error: err.message || String(err) });
     }
+  }
+
+  const hasCatalog = catalogs.some((c) => c?.hasCatalog || Number(c?.halls) > 0 || Number(c?.items) > 0);
+  const catalogError = !storeIds.length
+    ? (storesError || 'Нет storeId для каталога — проверьте точки RESTAURANT/CANTEEN в облаке')
+    : (!hasCatalog
+      ? (catalogErrors.map((e) => `#${e.storeId}: ${e.error}`).join('; ')
+        || 'Каталог с облака пустой (нет залов/меню). Создайте залы на r-aurent.uz.')
+      : (catalogErrors.length ? catalogErrors.map((e) => `#${e.storeId}: ${e.error}`).join('; ') : null));
+
+  if (!hasCatalog) {
+    const err = new Error(catalogError || 'Не удалось загрузить каталог ресторана с облака');
+    err.bootstrapPartial = true;
+    err.detail = {
+      storesError,
+      catalogErrors,
+      storeIds,
+    };
+    throw err;
   }
 
   return {
@@ -187,14 +216,32 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
     companyId,
     companyLoginCode,
     staffCount: staff.length,
-    storeId: storeId || null,
+    storeId: storeIds[0] || null,
+    storeIds,
     stores,
     storesError,
-    catalog,
+    catalog: catalogs[0] || null,
+    catalogs,
     catalogError,
-    stock,
-    stockError,
+    stock: stocks[0] || null,
+    stocks,
+    stockError: stockErrors.length
+      ? stockErrors.map((e) => `#${e.storeId}: ${e.error}`).join('; ')
+      : null,
+    hasCatalog: true,
   };
+}
+
+function asList(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.data)) return payload.data;
+  if (payload && Array.isArray(payload.content)) return payload.content;
+  return [];
+}
+
+function isRestaurantBusinessType(type) {
+  const code = String(type || '').trim().toUpperCase();
+  return code === 'RESTAURANT' || code === 'CANTEEN';
 }
 
 /** Pull company store list from cloud web-backend so local GET /stores is non-empty. */
@@ -206,7 +253,7 @@ async function bootstrapStoresFromCloud({ token, companyId, bootstrapSecret } = 
   const exported = await requestJson(`${cloud}/stores`, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  const raw = Array.isArray(exported.data) ? exported.data : [];
+  const raw = asList(exported.data);
   const stores = raw
     .filter((s) => s && s.id != null)
     .map((s) => ({
@@ -214,7 +261,8 @@ async function bootstrapStoresFromCloud({ token, companyId, bootstrapSecret } = 
       name: s.name,
       code: s.code,
       address: s.address,
-      businessType: s.businessType || 'RESTAURANT',
+      // Blank type: treat as restaurant on hall PC so FE filter is not empty.
+      businessType: String(s.businessType || 'RESTAURANT').trim().toUpperCase() || 'RESTAURANT',
       active: s.active !== false,
     }));
   if (!stores.length) {
@@ -228,17 +276,42 @@ async function bootstrapStoresFromCloud({ token, companyId, bootstrapSecret } = 
       stores,
     },
   });
-  return { saved: local.data?.saved ?? stores.length, count: stores.length };
+  return {
+    saved: local.data?.saved ?? stores.length,
+    count: stores.length,
+    rows: stores,
+  };
 }
 
-function resolveStoreId({ storeId, staff, login }) {
-  if (storeId) return Number(storeId);
-  const fromLogin = login?.storeIds;
-  if (Array.isArray(fromLogin) && fromLogin.length) return Number(fromLogin[0]);
-  for (const s of staff || []) {
-    if (Array.isArray(s.storeIds) && s.storeIds.length) return Number(s.storeIds[0]);
+/** Prefer RESTAURANT/CANTEEN ids; fall back to staff/login storeIds. Cap at 5. */
+function resolveRestaurantStoreIds({ storeId, staff, login, stores }) {
+  const out = [];
+  const push = (id) => {
+    const n = Number(id);
+    if (!Number.isFinite(n) || n <= 0 || out.includes(n)) return;
+    out.push(n);
+  };
+  if (storeId) push(storeId);
+
+  const restaurantFromCloud = (stores || [])
+    .filter((s) => isRestaurantBusinessType(s.businessType) && s.active !== false)
+    .map((s) => s.id);
+  for (const id of restaurantFromCloud) push(id);
+
+  if (!out.length) {
+    for (const s of stores || []) push(s.id);
   }
-  return null;
+
+  const fromLogin = login?.storeIds;
+  if (Array.isArray(fromLogin)) {
+    for (const id of fromLogin) push(id);
+  }
+  for (const s of staff || []) {
+    if (Array.isArray(s.storeIds)) {
+      for (const id of s.storeIds) push(id);
+    }
+  }
+  return out.slice(0, 5);
 }
 
 /**
@@ -426,13 +499,23 @@ async function ensureStaffViaCloudPin({
             })),
           },
         });
-        await bootstrapStoresFromCloud({
-          token,
-          companyId,
-          bootstrapSecret: secret,
-        }).catch(() => {});
-        const storeId = resolveStoreId({ staff, login: profile });
-        if (storeId) {
+        let storeRows = [];
+        try {
+          const storesResult = await bootstrapStoresFromCloud({
+            token,
+            companyId,
+            bootstrapSecret: secret,
+          });
+          storeRows = storesResult?.rows || [];
+        } catch {
+          /* continue with staff storeIds */
+        }
+        const storeIds = resolveRestaurantStoreIds({
+          staff,
+          login: profile,
+          stores: storeRows,
+        });
+        for (const storeId of storeIds) {
           await bootstrapCatalogFromCloud({
             token,
             storeId,

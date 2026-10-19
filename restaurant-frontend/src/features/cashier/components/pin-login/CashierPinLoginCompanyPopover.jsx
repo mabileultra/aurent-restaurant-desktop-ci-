@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Building2 } from 'lucide-react';
 import { normalizeCompanyLoginCode, sanitizeCompanyLoginCodeInput } from '../../../../utils/authLogin';
+import { isRestaurantDesktop } from '../../../../utils/restaurantDesktop';
 
 export default function CashierPinLoginCompanyPopover({
   t,
@@ -14,6 +15,8 @@ export default function CashierPinLoginCompanyPopover({
   const wrapRef = useRef(null);
   const inputRef = useRef(null);
   const isValid = Boolean(normalizeCompanyLoginCode(value));
+  // Hall desktop: keep the chip to enter/change code, but do not show digits on the button.
+  const hideChipDigits = isRestaurantDesktop();
 
   useEffect(() => {
     if (!open) return undefined;
@@ -38,14 +41,12 @@ export default function CashierPinLoginCompanyPopover({
         type="button"
         className={`cashier-pin-login__company-chip${open ? ' is-open' : ''}${isValid ? ' is-set' : ''}`}
         aria-label={t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
-        title={isValid
-          ? normalizeCompanyLoginCode(value)
-          : t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
+        title={t('cashierLogin.companyCode', { defaultValue: 'Код компании' })}
         disabled={disabled}
         onClick={onToggle}
       >
         <Building2 size={18} strokeWidth={2.25} aria-hidden />
-        {isValid ? (
+        {isValid && !hideChipDigits ? (
           <span className="cashier-pin-login__company-chip-code">
             {normalizeCompanyLoginCode(value)}
           </span>
