@@ -21,7 +21,11 @@ public record EdgeCatalogSnapshot(
     StoreSettingRow storeSetting,
     List<RecipeRow> recipes,
     List<RecipeLineRow> recipeLines,
-    ShiftRow openShift
+    ShiftRow openShift,
+    /** Live floor: OPEN/BILLING orders so hall PC mirrors cloud «сейчас». */
+    List<OpenOrderRow> openOrders,
+    List<OpenOrderItemRow> openOrderItems,
+    List<OpenOrderLinkRow> openOrderLinks
 ) {
     public record HallRow(
         Integer id,
@@ -148,5 +152,60 @@ public record EdgeCatalogSnapshot(
         BigDecimal handoverExpected,
         BigDecimal handoverDiff,
         String comment
+    ) {}
+
+    public record OpenOrderRow(
+        UUID id,
+        Integer tableId,
+        String channel,
+        int orderNo,
+        String status,
+        int guestCount,
+        int adultCount,
+        int childrenCount,
+        String clientName,
+        String clientPhone,
+        String deliveryAddress,
+        String deliveryStatus,
+        UUID openedByUserId,
+        UUID waiterUserId,
+        UUID courierUserId,
+        BigDecimal commissionPercent,
+        BigDecimal commissionBaseAmount,
+        BigDecimal commissionAmount,
+        BigDecimal servicePercent,
+        BigDecimal serviceAmount,
+        BigDecimal discountAmount,
+        UUID shiftId,
+        String comment,
+        Instant openedAt,
+        Instant closedAt,
+        Instant updatedAt
+    ) {}
+
+    public record OpenOrderItemRow(
+        UUID id,
+        UUID orderId,
+        UUID menuItemId,
+        String name,
+        BigDecimal quantity,
+        BigDecimal returnedQuantity,
+        BigDecimal sentQuantity,
+        BigDecimal unitPrice,
+        BigDecimal taxRate,
+        UUID stationId,
+        String note,
+        String itemStatus,
+        int sortOrder,
+        Instant createdAt,
+        Instant updatedAt
+    ) {}
+
+    public record OpenOrderLinkRow(
+        UUID id,
+        UUID orderId,
+        Integer tableId,
+        Instant linkedAt,
+        UUID linkedByUserId
     ) {}
 }

@@ -7,6 +7,9 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ItemRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierGroupRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierOptionRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderItemRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderLinkRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeLineRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ShiftRow;
@@ -24,6 +27,12 @@ import com.pos.restaurant.modifier.entity.ModifierOption;
 import com.pos.restaurant.modifier.repository.MenuItemModifierLinkRepository;
 import com.pos.restaurant.modifier.repository.ModifierGroupRepository;
 import com.pos.restaurant.modifier.repository.ModifierOptionRepository;
+import com.pos.restaurant.order.domain.OrderStatus;
+import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.restaurant.order.entity.FloorOrderTableLink;
+import com.pos.restaurant.order.repository.FloorOrderItemRepository;
+import com.pos.restaurant.order.repository.FloorOrderRepository;
+import com.pos.restaurant.order.repository.FloorOrderTableLinkRepository;
 import com.pos.restaurant.recipe.entity.Recipe;
 import com.pos.restaurant.recipe.repository.RecipeLineRepository;
 import com.pos.restaurant.recipe.repository.RecipeRepository;
@@ -56,6 +65,9 @@ public class EdgeCatalogExportService {
     private final RecipeRepository recipeRepository;
     private final RecipeLineRepository recipeLineRepository;
     private final RestaurantShiftRepository shiftRepository;
+    private final FloorOrderRepository floorOrderRepository;
+    private final FloorOrderItemRepository floorOrderItemRepository;
+    private final FloorOrderTableLinkRepository floorOrderTableLinkRepository;
 
     @Transactional(readOnly = true)
     public EdgeCatalogSnapshot export(Integer storeId, String companyLoginCode) {
@@ -214,6 +226,74 @@ public class EdgeCatalogExportService {
             ))
             .orElse(null);
 
+        List<OrderStatus> liveStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
+        List<FloorOrder> allLive = floorOrderRepository
+            .findTableOrdersByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, liveStatuses);
+        List<OpenOrderRow> openOrders = allLive.stream().map(o -> new OpenOrderRow(
+            o.getId(),
+            o.getTable() == null ? null : o.getTable().getId(),
+            o.getChannel() == null ? "DINE_IN" : o.getChannel().name(),
+            o.getOrderNo(),
+            o.getStatus() == null ? "OPEN" : o.getStatus().name(),
+            o.getGuestCount(),
+            o.getAdultCount(),
+            o.getChildrenCount(),
+            o.getClientName(),
+            o.getClientPhone(),
+            o.getDeliveryAddress(),
+            o.getDeliveryStatus() == null ? null : o.getDeliveryStatus().name(),
+            o.getOpenedByUserId(),
+            o.getWaiterUserId(),
+            o.getCourierUserId(),
+            o.getCommissionPercent(),
+            o.getCommissionBaseAmount(),
+            o.getCommissionAmount(),
+            o.getServicePercent(),
+            o.getServiceAmount(),
+            o.getDiscountAmount() == null ? java.math.BigDecimal.ZERO : o.getDiscountAmount(),
+            o.getShift() == null ? null : o.getShift().getId(),
+            o.getComment(),
+            o.getOpenedAt(),
+            o.getClosedAt(),
+            o.getUpdatedAt()
+        )).toList();
+
+        List<UUID> liveIds = allLive.stream().map(FloorOrder::getId).toList();
+        List<OpenOrderItemRow> openOrderItems = liveIds.isEmpty()
+            ? List.of()
+            : floorOrderItemRepository.findByOrderIdInOrdered(liveIds).stream()
+                .map(i -> new OpenOrderItemRow(
+                    i.getId(),
+                    i.getOrder().getId(),
+                    i.getMenuItem() == null ? null : i.getMenuItem().getId(),
+                    i.getName(),
+                    i.getQuantity(),
+                    i.getReturnedQuantity(),
+                    i.getSentQuantity(),
+                    i.getUnitPrice(),
+                    i.getTaxRate(),
+                    i.getStationId(),
+                    i.getNote(),
+                    i.getItemStatus() == null ? "NEW" : i.getItemStatus().name(),
+                    i.getSortOrder(),
+                    i.getCreatedAt(),
+                    i.getUpdatedAt()
+                ))
+                .toList();
+
+        List<OpenOrderLinkRow> openOrderLinks = new ArrayList<>();
+        for (UUID oid : liveIds) {
+            for (FloorOrderTableLink link : floorOrderTableLinkRepository.findByOrderId(oid)) {
+                openOrderLinks.add(new OpenOrderLinkRow(
+                    link.getId(),
+                    oid,
+                    link.getTable() == null ? null : link.getTable().getId(),
+                    link.getLinkedAt(),
+                    link.getLinkedByUserId()
+                ));
+            }
+        }
+
         return new EdgeCatalogSnapshot(
             companyId,
             storeId,
@@ -229,7 +309,10 @@ public class EdgeCatalogExportService {
             setting,
             recipeRows,
             recipeLineRows,
-            openShift
+            openShift,
+            openOrders,
+            openOrderItems,
+            openOrderLinks
         );
     }
 }
