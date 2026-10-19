@@ -11,6 +11,17 @@ const { userDataDir, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = require('../conf
 
 let pgChild = null;
 let startedByUs = false;
+/** May move off DB_PORT if 5439 is occupied by a dead/foreign listener. */
+let listenPort = DB_PORT;
+
+function getListenPort() {
+  return listenPort;
+}
+
+function setListenPort(port) {
+  listenPort = Number(port) || DB_PORT;
+  process.env.RESTAURANT_DB_PORT = String(listenPort);
+}
 
 function dataDir() {
   return path.join(userDataDir(), 'pgdata');
@@ -203,7 +214,7 @@ function patchClusterConfig(dir, log) {
   let text = fs.readFileSync(conf, 'utf8');
   const settings = {
     "listen_addresses": "'127.0.0.1'",
-    port: String(DB_PORT),
+    port: String(listenPort),
     logging_collector: 'off',
   };
   for (const [key, value] of Object.entries(settings)) {
@@ -244,26 +255,88 @@ async function waitUntilPortListening(port, timeoutMs) {
   throw new Error(`Postgres did not open port ${port} within ${Math.round(timeoutMs / 1000)}s`);
 }
 
+async function waitUntilPortFree(port, timeoutMs) {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    if (!(await portOpen(port))) return true;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  return !(await portOpen(port));
+}
+
+function readPostmasterPid(dir) {
+  const pidFile = path.join(dir, 'postmaster.pid');
+  if (!fs.existsSync(pidFile)) return null;
+  try {
+    const first = fs.readFileSync(pidFile, 'utf8').split(/\r?\n/)[0];
+    const pid = parseInt(String(first || '').trim(), 10);
+    return Number.isFinite(pid) && pid > 0 ? pid : null;
+  } catch {
+    return null;
+  }
+}
+
+async function killPid(pid, log) {
+  if (!pid) return;
+  try {
+    if (process.platform === 'win32') {
+      await run('taskkill', ['/pid', String(pid), '/t', '/f'], { timeoutMs: 10_000 });
+    } else {
+      process.kill(pid, 'SIGKILL');
+    }
+    log(`[edge-db] killed pid ${pid}`);
+  } catch (err) {
+    log(`[edge-db] kill pid ${pid}: ${err.message || err}`);
+  }
+}
+
+/** Stop our data dir hard — zombie listeners on 5439 were skipped as "already up". */
+async function forceStopCluster(binDir, dir, log) {
+  if (!binDir || !fs.existsSync(dir)) return;
+  const pgCtl = path.join(binDir, exe('pg_ctl'));
+  const pid = readPostmasterPid(dir);
+  if (fs.existsSync(pgCtl)) {
+    await run(
+      pgCtl,
+      ['stop', '-D', dir, '-m', 'immediate'],
+      { env: pgsqlEnv(binDir), cwd: binDir, timeoutMs: 15_000 }
+    ).catch((err) => log(`[edge-db] pg_ctl stop: ${err.message || err}`));
+  }
+  await killPid(pid, log);
+  clearStalePid(dir, log);
+  await waitUntilPortFree(listenPort, 5_000);
+}
+
+async function pickFreePort(fromPort, log) {
+  for (let p = fromPort; p < fromPort + 12; p += 1) {
+    if (!(await portOpen(p))) {
+      log(`[edge-db] using free port ${p}`);
+      return p;
+    }
+  }
+  throw new Error(`No free Postgres port near ${fromPort}`);
+}
+
 async function startCluster(binDir, dir, log) {
   const pgCtl = path.join(binDir, exe('pg_ctl'));
   const logFile = path.join(dir, 'pg-start.log');
   patchClusterConfig(dir, log);
   clearStalePid(dir, log);
 
-  log(`[edge-db] starting Postgres on ${DB_PORT} via pg_ctl (no -w)…`);
+  log(`[edge-db] starting Postgres on ${listenPort} via pg_ctl (no -w)…`);
   // Do not use pg_ctl -w: on some Windows hosts it hangs forever.
   // Also kill pg_ctl if it does not return (timeoutMs) — previously boot froze.
   try {
     const out = await run(
       pgCtl,
-      ['start', '-D', dir, '-l', logFile, '-o', `-p ${DB_PORT}`],
+      ['start', '-D', dir, '-l', logFile, '-o', `-p ${listenPort}`],
       { env: pgsqlEnv(binDir), cwd: binDir, timeoutMs: 25_000 }
     );
     if (out && out.trim()) log(`[edge-db] pg_ctl: ${out.trim().slice(0, 300)}`);
   } catch (err) {
     // Timed out but server may already be up — continue to port poll.
-    if (await portOpen(DB_PORT)) {
-      log(`[edge-db] pg_ctl slow, but port ${DB_PORT} is open — continuing`);
+    if (await portOpen(listenPort)) {
+      log(`[edge-db] pg_ctl slow, but port ${listenPort} is open — continuing`);
     } else {
       const tail = readLogTail(logFile);
       throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
@@ -272,7 +345,7 @@ async function startCluster(binDir, dir, log) {
   startedByUs = true;
 
   try {
-    await waitUntilPortListening(DB_PORT, 60_000);
+    await waitUntilPortListening(listenPort, 60_000);
   } catch (err) {
     const tail = readLogTail(logFile);
     await run(
@@ -283,7 +356,7 @@ async function startCluster(binDir, dir, log) {
     startedByUs = false;
     throw new Error(`${err.message}${tail ? `\n--- pg-start.log ---\n${tail}` : ''}`);
   }
-  log(`[edge-db] Postgres listening on ${DB_PORT}`);
+  log(`[edge-db] Postgres listening on ${listenPort}`);
 }
 
 function pgPassEnv(binDir) {
@@ -293,52 +366,62 @@ function pgPassEnv(binDir) {
   };
 }
 
-/** TCP open ≠ ready for queries; Windows often resets early clients (ECONNRESET). */
-async function waitUntilPostgresReady(binDir, log, timeoutMs = 90_000) {
+/** @returns {Promise<boolean>} */
+async function probePostgresAuth(binDir, timeoutMs = 12_000) {
   const started = Date.now();
   const pgIsReady = binDir ? path.join(binDir, exe('pg_isready')) : null;
-  let attempt = 0;
   while (Date.now() - started < timeoutMs) {
-    attempt += 1;
     if (pgIsReady && fs.existsSync(pgIsReady)) {
       try {
         await run(
           pgIsReady,
-          ['-h', '127.0.0.1', '-p', String(DB_PORT), '-U', DB_USER, '-d', 'postgres'],
-          { env: pgPassEnv(binDir), cwd: binDir, timeoutMs: 8_000 }
+          ['-h', '127.0.0.1', '-p', String(listenPort), '-U', DB_USER, '-d', 'postgres'],
+          { env: pgPassEnv(binDir), cwd: binDir, timeoutMs: 5_000 }
         );
-        log(`[edge-db] Postgres ready (pg_isready, try ${attempt})`);
-        return;
+        return true;
       } catch {
-        /* keep trying */
+        /* retry */
       }
-    } else {
-      const { Client } = require('pg');
-      const client = new Client({
-        host: '127.0.0.1',
-        port: DB_PORT,
-        user: DB_USER,
-        password: DB_PASSWORD,
-        database: 'postgres',
-        connectionTimeoutMillis: 4_000,
-      });
-      try {
-        await client.connect();
-        await client.query('SELECT 1');
-        await client.end().catch(() => {});
-        log(`[edge-db] Postgres ready (SQL, try ${attempt})`);
-        return;
-      } catch {
-        await client.end().catch(() => {});
-      }
+    }
+    const { Client } = require('pg');
+    const client = new Client({
+      host: '127.0.0.1',
+      port: listenPort,
+      user: DB_USER,
+      password: DB_PASSWORD,
+      database: 'postgres',
+      connectionTimeoutMillis: 3_000,
+    });
+    try {
+      await client.connect();
+      await client.query('SELECT 1');
+      await client.end().catch(() => {});
+      return true;
+    } catch {
+      await client.end().catch(() => {});
+    }
+    await new Promise((r) => setTimeout(r, 700));
+  }
+  return false;
+}
+
+/** TCP open ≠ ready for queries; Windows often resets early clients (ECONNRESET). */
+async function waitUntilPostgresReady(binDir, log, timeoutMs = 90_000) {
+  const started = Date.now();
+  let attempt = 0;
+  while (Date.now() - started < timeoutMs) {
+    attempt += 1;
+    if (await probePostgresAuth(binDir, 2_500)) {
+      log(`[edge-db] Postgres ready (try ${attempt})`);
+      return;
     }
     if (attempt === 1 || attempt % 5 === 0) {
       log(`[edge-db] waiting until Postgres accepts connections… (${attempt})`);
     }
-    await new Promise((r) => setTimeout(r, 1_000));
+    await new Promise((r) => setTimeout(r, 800));
   }
   throw new Error(
-    `Postgres port ${DB_PORT} open but not accepting queries within ${Math.round(timeoutMs / 1000)}s`
+    `Postgres port ${listenPort} open but not accepting queries within ${Math.round(timeoutMs / 1000)}s`
   );
 }
 
@@ -348,7 +431,7 @@ async function createDbViaCreatedb(binDir, log) {
   try {
     await run(
       createdb,
-      ['-h', '127.0.0.1', '-p', String(DB_PORT), '-U', DB_USER, '-E', 'UTF8', DB_NAME],
+      ['-h', '127.0.0.1', '-p', String(listenPort), '-U', DB_USER, '-E', 'UTF8', DB_NAME],
       { env: pgPassEnv(binDir), cwd: binDir, timeoutMs: 60_000 }
     );
     log(`[edge-db] database ${DB_NAME} ready (createdb)`);
@@ -371,7 +454,7 @@ async function createDbViaNodePg(log) {
   for (let attempt = 1; attempt <= 20; attempt += 1) {
     const client = new Client({
       host: '127.0.0.1',
-      port: DB_PORT,
+      port: listenPort,
       user: DB_USER,
       password: DB_PASSWORD,
       database: 'postgres',
@@ -410,31 +493,47 @@ async function createDbIfNeeded(binDir, log) {
 
 async function ensureEdgePostgres({ log = console.log } = {}) {
   const binDir = resolvePgsqlBinDir();
+  if (!binDir) {
+    throw new Error(
+      'Postgres binaries (initdb) not found. Reinstall Aurent Restaurant (resources/pgsql missing).'
+    );
+  }
+  log(`[edge-db] binaries: ${binDir}`);
+  setListenPort(DB_PORT);
+  const dir = dataDir();
   let reused = false;
-  if (await portOpen(DB_PORT)) {
-    log(`[edge-db] Postgres already listening on ${DB_PORT}`);
-    reused = true;
-  } else {
-    if (!binDir) {
-      throw new Error(
-        'Postgres binaries (initdb) not found. Reinstall Aurent Restaurant (resources/pgsql missing).'
-      );
-    }
-    log(`[edge-db] binaries: ${binDir}`);
 
-    const dir = dataDir();
+  // Never trust "TCP open" alone — zombie/foreign listeners caused 90s false waits.
+  if (await portOpen(listenPort)) {
+    log(`[edge-db] port ${listenPort} open — checking auth…`);
+    const probeMs = fs.existsSync(markerPath()) ? 25_000 : 10_000;
+    if (await probePostgresAuth(binDir, probeMs)) {
+      log(`[edge-db] reusing healthy Postgres on ${listenPort}`);
+      reused = true;
+    } else {
+      log(`[edge-db] port ${listenPort} not healthy — stopping old cluster and restarting`);
+      await forceStopCluster(binDir, dir, log);
+      if (await portOpen(listenPort)) {
+        const alt = await pickFreePort(listenPort + 1, log);
+        log(
+          `[edge-db] ${listenPort} still busy (another app?) — switching to ${alt}`
+        );
+        setListenPort(alt);
+      }
+    }
+  }
+
+  if (!reused) {
     if (!fs.existsSync(markerPath())) {
       await initialiseCluster(binDir, dir, log);
     } else {
       patchClusterConfig(dir, log);
     }
-
     await startCluster(binDir, dir, log);
   }
 
-  // Always ensure restaurant_db — previous runs often left Postgres up without the DB.
   await createDbIfNeeded(binDir, log);
-  return { reused, port: DB_PORT };
+  return { reused, port: listenPort, jdbcUrl: `jdbc:postgresql://127.0.0.1:${listenPort}/${DB_NAME}` };
 }
 
 async function stopEdgePostgres({ log = console.log } = {}) {
@@ -472,4 +571,5 @@ module.exports = {
   stopEdgePostgres,
   dataDir,
   resolvePgsqlBinDir,
+  getListenPort,
 };

@@ -6,6 +6,7 @@ const {
   DB_URL,
   DB_USER,
   DB_PASSWORD,
+  DB_NAME,
   JWT_SECRET,
   SERVICE_PORT,
   resolveJarCandidates,
@@ -50,7 +51,9 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     return { health: existing, jar: null, reused: true };
   }
 
-  await ensureEdgePostgres({ log });
+  const pg = await ensureEdgePostgres({ log });
+  const dbUrl = pg?.jdbcUrl || `jdbc:postgresql://127.0.0.1:${pg?.port || 5439}/${DB_NAME}`;
+  log(`[edge] DB ${dbUrl}`);
 
   const jar = findJar(isPackaged);
   if (!jar) {
@@ -69,7 +72,8 @@ async function ensureEdgeService({ isPackaged = false, log = console.log } = {})
     ...process.env,
     SPRING_PROFILES_ACTIVE: 'edge',
     RESTAURANT_SERVER_PORT: String(SERVICE_PORT),
-    RESTAURANT_DB_URL: DB_URL,
+    RESTAURANT_DB_URL: dbUrl,
+    RESTAURANT_DB_PORT: String(pg?.port || 5439),
     RESTAURANT_DB_USERNAME: DB_USER,
     RESTAURANT_DB_PASSWORD: DB_PASSWORD,
     JWT_SECRET,
