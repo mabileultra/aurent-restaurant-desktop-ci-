@@ -11,6 +11,7 @@ import FloorPosModals from '../components/FloorPosModals';
 import OrderWorkspace from '../components/OrderWorkspace';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
+import PosSoundToggle from '../components/PosSoundToggle';
 import { useFloorPosPage } from '../hooks/useFloorPosPage';
 import { useWaiterMobileLayout } from '../waiter-mobile/hooks/useWaiterMobileLayout';
 import WaiterMobileHeaderActions from '../waiter-mobile/components/WaiterMobileHeaderActions';
@@ -398,6 +399,7 @@ export default function RestaurantFloorPosPage() {
                   <BaseButton type="button" variant="ghost">{p.t('rst.pos.backToAdmin')}</BaseButton>
                 </Link>
               ) : null}
+              <PosSoundToggle t={p.t} />
               <RestaurantThemeSwitch />
               <LanguageSwitcher variant="rst" />
               {mobile.showEnterMobile ? (

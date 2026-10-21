@@ -26,6 +26,7 @@ import {
   flushRestaurantPrintRelay,
 } from '../utils/restaurantPrintFlush';
 import { toastApiError } from '../../../utils/apiError';
+import { playPosSound } from '../utils/posSounds';
 
 export function useFloorPosMutations(deps) {
   const {
@@ -446,6 +447,7 @@ export function useFloorPosMutations(deps) {
       invalidateCounter();
       invalidateShift();
       invalidateRecentPaid();
+      playPosSound('success');
       toast.success(t('rst.order.paid'));
       if (result?.sale && saleNeedsFiscalPrint(result.sale)) {
         if (isCashierEscposPrintAvailable()) {
@@ -456,6 +458,7 @@ export function useFloorPosMutations(deps) {
               duration: CASHIER_ESCPOS_TOAST.successDurationMs,
             });
           } catch (e) {
+            playPosSound('error');
             toast.error(
               resolveEscposPrintErrorMessage(e, t) ?? t('receipt.printFailed'),
               {
@@ -470,6 +473,7 @@ export function useFloorPosMutations(deps) {
       }
     },
     onError: (err) => {
+      playPosSound('error');
       if (err?.code === 'MARKING_NO_INTEGRATION' || err?.message === 'MARKING_NO_INTEGRATION') {
         toast.error(t('rst.integrations.markingApiDisabled'));
         return;

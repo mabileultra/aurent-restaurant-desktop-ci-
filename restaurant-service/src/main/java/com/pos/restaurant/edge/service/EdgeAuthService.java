@@ -210,6 +210,171 @@ public class EdgeAuthService {
         return staffRepository.countByActiveTrue() > 0;
     }
 
+    @Transactional(readOnly = true)
+    public List<java.util.Map<String, Object>> listUsers(Integer companyId) {
+        Integer cid = companyId != null ? companyId : inferCompanyId();
+        if (cid == null) return List.of();
+        return staffRepository.findByCompanyIdOrderByFullNameAsc(cid).stream()
+            .map(this::toUserDto)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Map<String, Object> getUser(UUID id) {
+        EdgeStaff staff = staffRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("User not found"));
+        return toUserDto(staff);
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> createUser(java.util.Map<String, Object> body) {
+        Integer companyId = intVal(body.get("companyId"));
+        if (companyId == null) companyId = inferCompanyId();
+        if (companyId == null) throw new BusinessException("companyId required");
+        String username = str(body.get("username"));
+        if (!StringUtils.hasText(username)) throw new BusinessException("username required");
+        if (staffRepository.existsByUsernameIgnoreCase(username.trim())) {
+            throw new BusinessException("Username already exists");
+        }
+        EdgeStaff row = new EdgeStaff();
+        row.setUserId(UUID.randomUUID());
+        row.setCompanyId(companyId);
+        row.setCompanyLoginCode(firstNonBlank(str(body.get("companyLoginCode")), inferCompanyLoginCode(companyId)));
+        row.setUsername(username.trim());
+        row.setEmail(str(body.get("email")));
+        row.setFullName(resolveFullName(body));
+        row.setRole(StringUtils.hasText(str(body.get("role"))) ? str(body.get("role")).trim() : "WAITER");
+        row.setPasswordHash(resolvePasswordHash(null, str(body.get("password")), null));
+        row.setPinHash(resolvePinHash(null, str(body.get("pin")), null));
+        row.setStoreIdsJson(writeJson(body.get("storeIds")));
+        row.setAllowedModulesJson(writeJson(body.get("allowedModules")));
+        row.setCanRequestBill(Boolean.TRUE.equals(body.get("canRequestBill")));
+        row.setActive(body.get("active") == null || Boolean.TRUE.equals(body.get("active")));
+        row.setUpdatedAt(Instant.now());
+        staffRepository.save(row);
+        return toUserDto(row);
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> updateUser(UUID id, java.util.Map<String, Object> body) {
+        EdgeStaff row = staffRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("User not found"));
+        if (body.containsKey("username") && StringUtils.hasText(str(body.get("username")))) {
+            String username = str(body.get("username")).trim();
+            if (!username.equalsIgnoreCase(row.getUsername())
+                && staffRepository.existsByUsernameIgnoreCase(username)) {
+                throw new BusinessException("Username already exists");
+            }
+            row.setUsername(username);
+        }
+        if (body.containsKey("email")) row.setEmail(str(body.get("email")));
+        if (body.containsKey("fullName") || body.containsKey("firstName") || body.containsKey("lastName")) {
+            row.setFullName(resolveFullName(body));
+        }
+        if (body.containsKey("role") && StringUtils.hasText(str(body.get("role")))) {
+            row.setRole(str(body.get("role")).trim());
+        }
+        if (StringUtils.hasText(str(body.get("password")))) {
+            row.setPasswordHash(passwordEncoder.encode(str(body.get("password")).trim()));
+        }
+        if (StringUtils.hasText(str(body.get("pin")))) {
+            row.setPinHash(EdgePinDigest.digestHex(EdgePinDigest.normalizePin(str(body.get("pin"))), pinSecret));
+        }
+        if (body.containsKey("storeIds")) row.setStoreIdsJson(writeJson(body.get("storeIds")));
+        if (body.containsKey("allowedModules")) row.setAllowedModulesJson(writeJson(body.get("allowedModules")));
+        if (body.containsKey("canRequestBill")) {
+            row.setCanRequestBill(Boolean.TRUE.equals(body.get("canRequestBill")));
+        }
+        if (body.containsKey("active")) row.setActive(Boolean.TRUE.equals(body.get("active")));
+        row.setUpdatedAt(Instant.now());
+        staffRepository.save(row);
+        return toUserDto(row);
+    }
+
+    @Transactional
+    public java.util.Map<String, Object> toggleUser(UUID id) {
+        EdgeStaff row = staffRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("User not found"));
+        row.setActive(!row.isActive());
+        row.setUpdatedAt(Instant.now());
+        staffRepository.save(row);
+        return toUserDto(row);
+    }
+
+    @Transactional
+    public void deleteUser(UUID id) {
+        EdgeStaff row = staffRepository.findById(id)
+            .orElseThrow(() -> new BusinessException("User not found"));
+        row.setActive(false);
+        row.setUpdatedAt(Instant.now());
+        staffRepository.save(row);
+    }
+
+    private java.util.Map<String, Object> toUserDto(EdgeStaff staff) {
+        java.util.Map<String, Object> m = new java.util.HashMap<>();
+        m.put("id", staff.getUserId());
+        m.put("userId", staff.getUserId());
+        m.put("username", staff.getUsername());
+        m.put("email", staff.getEmail());
+        m.put("fullName", staff.getFullName());
+        m.put("role", staff.getRole());
+        m.put("companyId", staff.getCompanyId());
+        m.put("companyLoginCode", staff.getCompanyLoginCode());
+        m.put("storeIds", readIntList(staff.getStoreIdsJson()));
+        m.put("allowedModules", readStringList(staff.getAllowedModulesJson()));
+        m.put("canRequestBill", staff.isCanRequestBill());
+        m.put("active", staff.isActive());
+        m.put("hasPin", StringUtils.hasText(staff.getPinHash()));
+        if (StringUtils.hasText(staff.getFullName()) && staff.getFullName().contains(" ")) {
+            int sp = staff.getFullName().indexOf(' ');
+            m.put("firstName", staff.getFullName().substring(0, sp));
+            m.put("lastName", staff.getFullName().substring(sp + 1));
+        } else {
+            m.put("firstName", staff.getFullName());
+            m.put("lastName", null);
+        }
+        return m;
+    }
+
+    private Integer inferCompanyId() {
+        return staffRepository.findAll().stream().map(EdgeStaff::getCompanyId).findFirst().orElse(null);
+    }
+
+    private String inferCompanyLoginCode(Integer companyId) {
+        return staffRepository.findByCompanyIdOrderByFullNameAsc(companyId).stream()
+            .map(EdgeStaff::getCompanyLoginCode)
+            .filter(StringUtils::hasText)
+            .findFirst()
+            .orElse(null);
+    }
+
+    private static String resolveFullName(java.util.Map<String, Object> body) {
+        if (StringUtils.hasText(str(body.get("fullName")))) return str(body.get("fullName")).trim();
+        String first = str(body.get("firstName"));
+        String last = str(body.get("lastName"));
+        String mid = str(body.get("patronymic"));
+        String joined = java.util.stream.Stream.of(last, first, mid)
+            .filter(StringUtils::hasText)
+            .map(String::trim)
+            .reduce((a, b) -> a + " " + b)
+            .orElse(null);
+        return joined;
+    }
+
+    private static String str(Object v) {
+        return v == null ? null : String.valueOf(v);
+    }
+
+    private static Integer intVal(Object v) {
+        if (v == null) return null;
+        if (v instanceof Number n) return n.intValue();
+        try {
+            return Integer.parseInt(String.valueOf(v).trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     /** Accept cloud-exported digests hashed with JWT_SECRET / default key as well as local PIN_SECRET. */
     private boolean pinMatchesStoredHash(String pin, String storedHash) {
         String expected = storedHash == null ? "" : storedHash.trim();

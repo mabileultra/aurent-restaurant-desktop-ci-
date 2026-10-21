@@ -53,6 +53,9 @@
     <include file="db/changelog/v46-edge-staff.xml"/>
     <include file="db/changelog/v47-edge-products.xml"/>
     <include file="db/changelog/v48-edge-stores.xml"/>
+    <include file="db/changelog/v49-edge-warehouse.xml"/>
+    <include file="db/changelog/v50-edge-suppliers.xml"/>
+    <include file="db/changelog/v51-edge-autonomy-gaps.xml"/>
 
 </databaseChangeLog>
 

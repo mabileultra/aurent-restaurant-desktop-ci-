@@ -45,4 +45,12 @@ public interface KitchenTicketRepository extends JpaRepository<KitchenTicket, UU
     );
 
     List<KitchenTicket> findByOrderId(UUID orderId);
+
+    @Query("""
+        select t from KitchenTicket t
+        join fetch t.order
+        left join fetch t.station
+        where t.order.id in :orderIds
+        """)
+    List<KitchenTicket> findByOrderIdIn(@Param("orderIds") Collection<UUID> orderIds);
 }

@@ -3,6 +3,7 @@ package com.pos.restaurant.edge.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "edge_products")
+@IdClass(EdgeProductId.class)
 @Getter
 @Setter
 @NoArgsConstructor
@@ -31,6 +33,7 @@ public class EdgeProduct {
     @Column(name = "company_id", nullable = false)
     private Integer companyId;
 
+    @Id
     @Column(name = "store_id", nullable = false)
     private Integer storeId;
 

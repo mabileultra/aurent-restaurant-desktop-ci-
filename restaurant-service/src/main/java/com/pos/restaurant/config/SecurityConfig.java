@@ -33,10 +33,23 @@ public class SecurityConfig {
                     "/edge/auth/**",
                     "/edge/bootstrap/**",
                     "/edge/sync/**",
+                    "/edge/live-export",
+                    "/edge/live-import",
                     "/billing/**",
                     "/company-business-types"
                 ).permitAll()
-                .requestMatchers("/rst/**", "/products/**", "/stores/**").authenticated()
+                .requestMatchers(
+                    "/rst/**",
+                    "/products/**",
+                    "/stores/**",
+                    "/warehouse/**",
+                    "/suppliers/**",
+                    "/users",
+                    "/users/**",
+                    "/cashier/**",
+                    "/admin/**",
+                    "/edge/print-relay/**"
+                ).authenticated()
                 .anyRequest().denyAll()
             )
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -8,9 +8,13 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ItemRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierGroupRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierOptionRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.KitchenTicketLineRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.KitchenTicketRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderItemModifierRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderItemRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OrderPaymentRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeLineRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ShiftRow;
@@ -110,6 +114,15 @@ public class EdgeCatalogImportService {
         int openOrders = upsertOpenOrders(snap);
         int openOrderItems = upsertOpenOrderItems(snap);
         int openOrderLinks = upsertOpenOrderLinks(snap);
+        int openOrderItemModifiers = upsertOpenOrderItemModifiers(snap);
+        int closedGhosts = reconcileClosedLiveOrders(snap);
+        int kitchenTickets = upsertKitchenTickets(snap);
+        int kitchenTicketLines = upsertKitchenTicketLines(snap);
+        int cancelledTickets = reconcileStaleKitchenTickets(snap);
+        int closedOrders = upsertClosedOrders(snap);
+        int closedOrderItems = upsertClosedOrderItems(snap);
+        int closedOrderItemModifiers = upsertClosedOrderItemModifiers(snap);
+        int orderPayments = upsertOrderPayments(snap);
 
         EdgeStoreService stores = edgeStoreService.getIfAvailable();
         if (stores != null) {
@@ -134,6 +147,15 @@ public class EdgeCatalogImportService {
         result.put("openOrders", openOrders);
         result.put("openOrderItems", openOrderItems);
         result.put("openOrderLinks", openOrderLinks);
+        result.put("openOrderItemModifiers", openOrderItemModifiers);
+        result.put("closedGhostOrders", closedGhosts);
+        result.put("kitchenTickets", kitchenTickets);
+        result.put("kitchenTicketLines", kitchenTicketLines);
+        result.put("cancelledStaleTickets", cancelledTickets);
+        result.put("closedOrders", closedOrders);
+        result.put("closedOrderItems", closedOrderItems);
+        result.put("closedOrderItemModifiers", closedOrderItemModifiers);
+        result.put("orderPayments", orderPayments);
         result.put("hasCatalog", hasCatalog(snap.companyId(), snap.storeId()));
         result.put("companyId", snap.companyId());
         result.put("storeId", snap.storeId());
@@ -685,8 +707,27 @@ public class EdgeCatalogImportService {
         return 1;
     }
 
+    private int upsertClosedOrders(EdgeCatalogSnapshot snap) {
+        if (snap.closedOrders() == null) return 0;
+        return upsertOrderRows(snap, snap.closedOrders());
+    }
+
+    private int upsertClosedOrderItems(EdgeCatalogSnapshot snap) {
+        if (snap.closedOrderItems() == null) return 0;
+        return upsertOrderItemRows(snap.closedOrderItems());
+    }
+
+    private int upsertClosedOrderItemModifiers(EdgeCatalogSnapshot snap) {
+        if (snap.closedOrderItemModifiers() == null) return 0;
+        return upsertOrderItemModifierRows(snap.closedOrderItemModifiers());
+    }
+
     private int upsertOpenOrders(EdgeCatalogSnapshot snap) {
         List<OpenOrderRow> rows = snap.openOrders() == null ? List.of() : snap.openOrders();
+        return upsertOrderRows(snap, rows);
+    }
+
+    private int upsertOrderRows(EdgeCatalogSnapshot snap, List<OpenOrderRow> rows) {
         Instant now = Instant.now();
         int n = 0;
         for (OpenOrderRow row : rows) {
@@ -777,6 +818,10 @@ public class EdgeCatalogImportService {
 
     private int upsertOpenOrderItems(EdgeCatalogSnapshot snap) {
         List<OpenOrderItemRow> rows = snap.openOrderItems() == null ? List.of() : snap.openOrderItems();
+        return upsertOrderItemRows(rows);
+    }
+
+    private int upsertOrderItemRows(List<OpenOrderItemRow> rows) {
         Instant now = Instant.now();
         int n = 0;
         for (OpenOrderItemRow row : rows) {
@@ -856,6 +901,264 @@ public class EdgeCatalogImportService {
             n++;
         }
         return n;
+    }
+
+    private int upsertOpenOrderItemModifiers(EdgeCatalogSnapshot snap) {
+        List<OpenOrderItemModifierRow> rows =
+            snap.openOrderItemModifiers() == null ? List.of() : snap.openOrderItemModifiers();
+        return upsertOrderItemModifierRows(rows);
+    }
+
+    private int upsertOrderItemModifierRows(List<OpenOrderItemModifierRow> rows) {
+        int n = 0;
+        for (OpenOrderItemModifierRow row : rows) {
+            if (row.id() == null || row.orderItemId() == null || !StringUtils.hasText(row.name())) continue;
+            Integer itemExists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM floor_order_items WHERE id = ?",
+                Integer.class,
+                row.orderItemId()
+            );
+            if (itemExists == null || itemExists == 0) continue;
+            jdbc.update("""
+                INSERT INTO floor_order_item_modifiers (id, order_item_id, option_id, name, price_delta)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  order_item_id = EXCLUDED.order_item_id,
+                  option_id = EXCLUDED.option_id,
+                  name = EXCLUDED.name,
+                  price_delta = EXCLUDED.price_delta
+                """,
+                row.id(),
+                row.orderItemId(),
+                row.optionId(),
+                row.name().trim(),
+                row.priceDelta() == null ? BigDecimal.ZERO : row.priceDelta()
+            );
+            n++;
+        }
+        return n;
+    }
+
+    /**
+     * Close local OPEN/BILLING orders that cloud no longer reports as live
+     * (paid/closed elsewhere — otherwise hall PC shows ghosts).
+     */
+    private int reconcileClosedLiveOrders(EdgeCatalogSnapshot snap) {
+        // null = old cloud jar without live export — do not wipe local floor
+        if (snap.openOrders() == null) return 0;
+        List<OpenOrderRow> rows = snap.openOrders();
+        Set<UUID> keep = new HashSet<>();
+        for (OpenOrderRow row : rows) {
+            if (row.id() != null) keep.add(row.id());
+        }
+        Instant now = Instant.now();
+        if (keep.isEmpty()) {
+            return jdbc.update("""
+                UPDATE floor_orders
+                SET status = 'CLOSED', closed_at = COALESCE(closed_at, ?), updated_at = ?
+                WHERE company_id = ? AND store_id = ? AND status IN ('OPEN', 'BILLING')
+                """,
+                Timestamp.from(now), Timestamp.from(now), snap.companyId(), snap.storeId()
+            );
+        }
+        String placeholders = String.join(",", keep.stream().map(id -> "?").toList());
+        Object[] args = new Object[keep.size() + 4];
+        int i = 0;
+        args[i++] = Timestamp.from(now);
+        args[i++] = Timestamp.from(now);
+        args[i++] = snap.companyId();
+        args[i++] = snap.storeId();
+        for (UUID id : keep) args[i++] = id;
+        return jdbc.update("""
+            UPDATE floor_orders
+            SET status = 'CLOSED', closed_at = COALESCE(closed_at, ?), updated_at = ?
+            WHERE company_id = ? AND store_id = ? AND status IN ('OPEN', 'BILLING')
+              AND id NOT IN (%s)
+            """.formatted(placeholders),
+            args
+        );
+    }
+
+    private int upsertKitchenTickets(EdgeCatalogSnapshot snap) {
+        List<KitchenTicketRow> rows = snap.kitchenTickets() == null ? List.of() : snap.kitchenTickets();
+        Instant now = Instant.now();
+        int n = 0;
+        for (KitchenTicketRow row : rows) {
+            if (row.id() == null || row.orderId() == null) continue;
+            Integer orderExists = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM floor_orders WHERE id = ?",
+                Integer.class,
+                row.orderId()
+            );
+            if (orderExists == null || orderExists == 0) continue;
+            UUID stationId = row.stationId();
+            if (stationId != null) {
+                Integer st = jdbc.queryForObject(
+                    "SELECT COUNT(*) FROM kitchen_stations WHERE id = ?",
+                    Integer.class,
+                    stationId
+                );
+                if (st == null || st == 0) stationId = null;
+            }
+            Instant sentAt = row.sentAt() == null ? now : row.sentAt();
+            Instant updatedAt = row.updatedAt() == null ? sentAt : row.updatedAt();
+            jdbc.update("""
+                INSERT INTO kitchen_tickets (
+                  id, company_id, store_id, order_id, station_id, status, sent_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  company_id = EXCLUDED.company_id,
+                  store_id = EXCLUDED.store_id,
+                  order_id = EXCLUDED.order_id,
+                  station_id = EXCLUDED.station_id,
+                  status = EXCLUDED.status,
+                  sent_at = EXCLUDED.sent_at,
+                  updated_at = EXCLUDED.updated_at
+                """,
+                row.id(),
+                snap.companyId(),
+                snap.storeId(),
+                row.orderId(),
+                stationId,
+                StringUtils.hasText(row.status()) ? row.status() : "NEW",
+                Timestamp.from(sentAt),
+                Timestamp.from(updatedAt)
+            );
+            n++;
+        }
+        return n;
+    }
+
+    private int upsertKitchenTicketLines(EdgeCatalogSnapshot snap) {
+        List<KitchenTicketLineRow> rows =
+            snap.kitchenTicketLines() == null ? List.of() : snap.kitchenTicketLines();
+        int n = 0;
+        for (KitchenTicketLineRow row : rows) {
+            if (row.id() == null || row.ticketId() == null || row.orderItemId() == null) continue;
+            Integer ticketOk = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM kitchen_tickets WHERE id = ?",
+                Integer.class,
+                row.ticketId()
+            );
+            Integer itemOk = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM floor_order_items WHERE id = ?",
+                Integer.class,
+                row.orderItemId()
+            );
+            if (ticketOk == null || ticketOk == 0 || itemOk == null || itemOk == 0) continue;
+            jdbc.update("""
+                INSERT INTO kitchen_ticket_lines (id, ticket_id, order_item_id, quantity)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  ticket_id = EXCLUDED.ticket_id,
+                  order_item_id = EXCLUDED.order_item_id,
+                  quantity = EXCLUDED.quantity
+                """,
+                row.id(),
+                row.ticketId(),
+                row.orderItemId(),
+                row.quantity()
+            );
+            n++;
+        }
+        return n;
+    }
+
+    private int upsertOrderPayments(EdgeCatalogSnapshot snap) {
+        if (snap.orderPayments() == null) return 0;
+        List<OrderPaymentRow> rows = snap.orderPayments();
+        Instant now = Instant.now();
+        int n = 0;
+        for (OrderPaymentRow row : rows) {
+            if (row.id() == null || row.orderId() == null) continue;
+            Integer orderOk = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM floor_orders WHERE id = ?",
+                Integer.class,
+                row.orderId()
+            );
+            if (orderOk == null || orderOk == 0) continue;
+            Instant paidAt = row.paidAt() == null ? now : row.paidAt();
+            UUID paidBy = row.paidByUserId() == null ? UUID.randomUUID() : row.paidByUserId();
+            jdbc.update("""
+                INSERT INTO floor_order_payments (
+                  id, order_id, method, amount, cash_amount, card_amount,
+                  amount_tendered, change_given, card_type,
+                  debt_phone, debt_comment, advance_paid, debt_remaining,
+                  paid_by_user_id, paid_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT (id) DO UPDATE SET
+                  order_id = EXCLUDED.order_id,
+                  method = EXCLUDED.method,
+                  amount = EXCLUDED.amount,
+                  cash_amount = EXCLUDED.cash_amount,
+                  card_amount = EXCLUDED.card_amount,
+                  amount_tendered = EXCLUDED.amount_tendered,
+                  change_given = EXCLUDED.change_given,
+                  card_type = EXCLUDED.card_type,
+                  debt_phone = EXCLUDED.debt_phone,
+                  debt_comment = EXCLUDED.debt_comment,
+                  advance_paid = EXCLUDED.advance_paid,
+                  debt_remaining = EXCLUDED.debt_remaining,
+                  paid_by_user_id = EXCLUDED.paid_by_user_id,
+                  paid_at = EXCLUDED.paid_at
+                """,
+                row.id(),
+                row.orderId(),
+                StringUtils.hasText(row.method()) ? row.method() : "CASH",
+                row.amount() == null ? BigDecimal.ZERO : row.amount(),
+                row.cashAmount() == null ? BigDecimal.ZERO : row.cashAmount(),
+                row.cardAmount() == null ? BigDecimal.ZERO : row.cardAmount(),
+                row.amountTendered() == null
+                    ? (row.amount() == null ? BigDecimal.ZERO : row.amount())
+                    : row.amountTendered(),
+                row.changeGiven() == null ? BigDecimal.ZERO : row.changeGiven(),
+                row.cardType(),
+                row.debtPhone(),
+                row.debtComment(),
+                row.advancePaid(),
+                row.debtRemaining(),
+                paidBy,
+                Timestamp.from(paidAt)
+            );
+            n++;
+        }
+        return n;
+    }
+
+    private int reconcileStaleKitchenTickets(EdgeCatalogSnapshot snap) {
+        if (snap.kitchenTickets() == null) return 0;
+        List<KitchenTicketRow> rows = snap.kitchenTickets();
+        Set<UUID> keep = new HashSet<>();
+        for (KitchenTicketRow row : rows) {
+            if (row.id() != null) keep.add(row.id());
+        }
+        Instant now = Instant.now();
+        if (keep.isEmpty()) {
+            return jdbc.update("""
+                UPDATE kitchen_tickets
+                SET status = 'CANCELLED', updated_at = ?
+                WHERE company_id = ? AND store_id = ?
+                  AND status NOT IN ('SERVED', 'CANCELLED')
+                """,
+                Timestamp.from(now), snap.companyId(), snap.storeId()
+            );
+        }
+        String placeholders = String.join(",", keep.stream().map(id -> "?").toList());
+        Object[] args = new Object[keep.size() + 3];
+        int i = 0;
+        args[i++] = Timestamp.from(now);
+        args[i++] = snap.companyId();
+        args[i++] = snap.storeId();
+        for (UUID id : keep) args[i++] = id;
+        return jdbc.update("""
+            UPDATE kitchen_tickets
+            SET status = 'CANCELLED', updated_at = ?
+            WHERE company_id = ? AND store_id = ?
+              AND status NOT IN ('SERVED', 'CANCELLED')
+              AND id NOT IN (%s)
+            """.formatted(placeholders),
+            args
+        );
     }
 
     private void syncSequences() {

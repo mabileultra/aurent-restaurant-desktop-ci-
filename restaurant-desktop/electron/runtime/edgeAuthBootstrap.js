@@ -65,6 +65,144 @@ function cloudBase() {
   return candidate;
 }
 
+/** In-memory cloud session for quiet live floor re-pull while desktop is online. */
+let liveCloudSession = null;
+let liveRefreshInFlight = false;
+
+function rememberLiveCloudSession({
+  token,
+  companyId,
+  companyLoginCode,
+  storeIds,
+  bootstrapSecret,
+} = {}) {
+  const ids = Array.isArray(storeIds)
+    ? storeIds.map((id) => Number(id)).filter((id) => Number.isFinite(id) && id > 0)
+    : [];
+  if (!token || !ids.length) return;
+  liveCloudSession = {
+    token,
+    companyId: companyId == null ? null : Number(companyId),
+    companyLoginCode: companyLoginCode || null,
+    storeIds: [...new Set(ids)].slice(0, 5),
+    bootstrapSecret: bootstrapSecret || process.env.RESTAURANT_EDGE_BOOTSTRAP_SECRET || 'edge-dev-bootstrap',
+    savedAt: Date.now(),
+  };
+}
+
+function getLiveCloudSession() {
+  return liveCloudSession;
+}
+
+/**
+ * Re-pull catalog + live floor (orders/kitchen) from cloud into local edge DB.
+ * Best-effort; never throws to callers that poll quietly.
+ */
+async function refreshLiveFromCloud() {
+  const session = liveCloudSession;
+  if (!session?.token || !session.storeIds?.length) {
+    return { skipped: true, reason: 'no-session' };
+  }
+  if (liveRefreshInFlight) {
+    return { skipped: true, reason: 'in-flight' };
+  }
+  liveRefreshInFlight = true;
+  const results = [];
+  const secret = session.bootstrapSecret || process.env.RESTAURANT_EDGE_BOOTSTRAP_SECRET || 'edge-dev-bootstrap';
+  try {
+    for (const storeId of session.storeIds) {
+      try {
+        // Live-only pull (not full catalog): upsert phone/cloud opens without wiping hall-local tables.
+        const q = new URLSearchParams({ storeId: String(storeId) });
+        if (session.companyLoginCode) q.set('companyLoginCode', session.companyLoginCode);
+        const exported = await requestJson(`${cloudBase()}/rst/edge/live-export?${q}`, {
+          headers: { Authorization: `Bearer ${session.token}` },
+        });
+        const snapshot = exported.data;
+        if (!snapshot?.companyId || !snapshot?.storeId) {
+          results.push({ storeId, ok: false, error: 'empty-cloud-live' });
+          continue;
+        }
+        const local = await requestJson(`${localBase()}/edge/live-import`, {
+          method: 'POST',
+          body: { bootstrapSecret: secret, snapshot },
+        });
+        results.push({
+          storeId,
+          ok: true,
+          openOrders: Number(local.data?.openOrders || 0),
+          kitchenTickets: Number(local.data?.kitchenTickets || 0),
+        });
+      } catch (err) {
+        results.push({ storeId, ok: false, error: err.message || String(err) });
+        if (err.status === 401 || err.status === 403) {
+          liveCloudSession = null;
+          break;
+        }
+      }
+    }
+    return { refreshed: true, results };
+  } finally {
+    liveRefreshInFlight = false;
+  }
+}
+
+let livePushInFlight = false;
+
+/**
+ * Push local OPEN/BILLING floor to cloud so phone clients see hall PC changes quickly.
+ */
+async function pushLiveToCloud() {
+  const session = liveCloudSession;
+  if (!session?.token || !session.storeIds?.length || !session.companyId) {
+    return { skipped: true, reason: 'no-session' };
+  }
+  if (livePushInFlight) {
+    return { skipped: true, reason: 'in-flight' };
+  }
+  livePushInFlight = true;
+  const results = [];
+  const secret = session.bootstrapSecret || process.env.RESTAURANT_EDGE_BOOTSTRAP_SECRET || 'edge-dev-bootstrap';
+  try {
+    for (const storeId of session.storeIds) {
+      try {
+        const q = new URLSearchParams({
+          storeId: String(storeId),
+          companyId: String(session.companyId),
+          bootstrapSecret: secret,
+        });
+        if (session.companyLoginCode) q.set('companyLoginCode', session.companyLoginCode);
+        const local = await requestJson(`${localBase()}/edge/live-export?${q}`);
+        const snapshot = local.data;
+        if (!snapshot?.companyId || !snapshot?.storeId) {
+          results.push({ storeId, ok: false, error: 'empty-local-live' });
+          continue;
+        }
+        const cloud = await requestJson(`${cloudBase()}/rst/edge/live-ingest`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${session.token}` },
+          body: snapshot,
+        });
+        results.push({
+          storeId,
+          ok: true,
+          openOrders: Number(cloud.data?.openOrders || 0),
+          kitchenTickets: Number(cloud.data?.kitchenTickets || 0),
+        });
+      } catch (err) {
+        results.push({ storeId, ok: false, error: err.message || String(err) });
+        if (err.status === 401 || err.status === 403) {
+          liveCloudSession = null;
+          break;
+        }
+      }
+    }
+    return { pushed: true, results };
+  } finally {
+    livePushInFlight = false;
+  }
+}
+
 async function getLocalAuthStatus() {
   const { data } = await requestJson(`${localBase()}/edge/auth/status`);
   return data;
@@ -210,6 +348,14 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
     throw err;
   }
 
+  rememberLiveCloudSession({
+    token,
+    companyId,
+    companyLoginCode,
+    storeIds,
+    bootstrapSecret: secret,
+  });
+
   return {
     saved: local.data?.saved ?? staff.length,
     hasStaff: Boolean(local.data?.hasStaff),
@@ -229,6 +375,8 @@ async function bootstrapStaffFromCloud({ username, password, bootstrapSecret, st
       ? stockErrors.map((e) => `#${e.storeId}: ${e.error}`).join('; ')
       : null,
     hasCatalog: true,
+    openOrders: Number(catalogs[0]?.openOrders || 0),
+    kitchenTickets: Number(catalogs[0]?.kitchenTickets || 0),
   };
 }
 
@@ -466,8 +614,9 @@ async function ensureStaffViaCloudPin({
   const token = profile.token;
   if (!token) throw new Error('Cloud PIN login did not return a token');
 
-  // Best-effort full staff+catalog pull when this user can export.
+  // Best-effort: admin pulls staff+stock; every online PIN refreshes live floor for assigned stores.
   const role = String(profile.role || '').toUpperCase();
+  let pulledStoreIds = resolveRestaurantStoreIds({ login: profile, staff: [], stores: [] });
   if (role === 'ADMIN' || role === 'MANAGER' || role === 'SUPER_ADMIN') {
     try {
       const exported = await requestJson(`${cloud}/users/edge-staff-export`, {
@@ -510,18 +659,12 @@ async function ensureStaffViaCloudPin({
         } catch {
           /* continue with staff storeIds */
         }
-        const storeIds = resolveRestaurantStoreIds({
+        pulledStoreIds = resolveRestaurantStoreIds({
           staff,
           login: profile,
           stores: storeRows,
         });
-        for (const storeId of storeIds) {
-          await bootstrapCatalogFromCloud({
-            token,
-            storeId,
-            companyLoginCode: companyLoginCodeExport,
-            bootstrapSecret: secret,
-          }).catch(() => {});
+        for (const storeId of pulledStoreIds) {
           await bootstrapStockFromCloud({
             token,
             companyId,
@@ -534,6 +677,22 @@ async function ensureStaffViaCloudPin({
       /* PIN upsert below is enough for this user */
     }
   }
+
+  for (const storeId of pulledStoreIds) {
+    await bootstrapCatalogFromCloud({
+      token,
+      storeId,
+      companyLoginCode: code,
+      bootstrapSecret: secret,
+    }).catch(() => {});
+  }
+  rememberLiveCloudSession({
+    token,
+    companyId: profile.companyId,
+    companyLoginCode: code,
+    storeIds: pulledStoreIds,
+    bootstrapSecret: secret,
+  });
 
   const local = await requestJson(`${localBase()}/edge/auth/upsert-cloud-pin`, {
     method: 'POST',
@@ -564,5 +723,9 @@ module.exports = {
   bootstrapStockFromCloud,
   fetchCloudPinRoster,
   ensureStaffViaCloudPin,
+  refreshLiveFromCloud,
+  pushLiveToCloud,
+  getLiveCloudSession,
+  rememberLiveCloudSession,
   cloudBase,
 };

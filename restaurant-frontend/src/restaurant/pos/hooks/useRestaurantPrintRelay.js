@@ -11,6 +11,7 @@ import { executeRestaurantPrintJob } from '../utils/executeRestaurantPrintJob';
 import { prefetchPrintWaiterRoster, seedPrintWaiterRoster } from '../utils/printWaiterNames';
 import { createPrintRelayLeader } from '../utils/printRelayLeader';
 import { onRestaurantPrintFlush } from '../utils/restaurantPrintFlush';
+import { playPosSound } from '../utils/posSounds';
 
 const POLL_MS = 300;
 const CAPS_TIMEOUT_MS = 2500;
@@ -163,7 +164,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
     if (storeId == null || !isDesktopPrinter()) return undefined;
 
     let cancelled = false;
-    const leader = createPrintRelayLeader();
+    const leader = createPrintRelayLeader({ storeId });
 
     const refreshCaps = async () => {
       try {
@@ -200,6 +201,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       const now = Date.now();
       if (now - (uncertainWarnedAt.get(label) || 0) < UNCERTAIN_WARN_MS) return;
       uncertainWarnedAt.set(label, now);
+      playPosSound('error');
       toast.error(
         tRef.current('rst.admin.printUncertain', {
           printer: label,
@@ -287,6 +289,7 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
       const key = `${storeId}:kitchen-missing:${stations}`;
       if (warnedMissingRef.current.has(key)) return;
       warnedMissingRef.current.add(key);
+      playPosSound('error');
       toast.error(
         tRef.current('rst.admin.kitchenPrinterMissing', {
           stations,

@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <!-- Same catalog product UUID may exist per store (transfers / multi-point hall). -->
+    <changeSet id="rst-049-edge-products-composite-pk" author="pos">
+        <sql>
+            ALTER TABLE edge_products DROP CONSTRAINT IF EXISTS edge_products_pkey;
+            ALTER TABLE edge_products ADD PRIMARY KEY (id, store_id);
+        </sql>
+    </changeSet>
+
+    <changeSet id="rst-049-edge-wh-docs" author="pos">
+        <createTable tableName="edge_wh_docs">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="doc_type" type="VARCHAR(24)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="doc_number" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT"/>
+            <column name="store_id_2" type="INT"/>
+            <column name="supplier_id" type="UUID"/>
+            <column name="supplier_name" type="VARCHAR(300)"/>
+            <column name="output_product_id" type="UUID"/>
+            <column name="output_product_name" type="VARCHAR(300)"/>
+            <column name="output_qty" type="NUMERIC(18,3)"/>
+            <column name="output_unit_cost" type="NUMERIC(18,2)"/>
+            <column name="reason" type="VARCHAR(120)"/>
+            <column name="recipient" type="VARCHAR(300)"/>
+            <column name="status" type="VARCHAR(32)"/>
+            <column name="notes" type="VARCHAR(1000)"/>
+            <column name="product_id" type="UUID"/>
+            <column name="product_name" type="VARCHAR(300)"/>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="total_qty" type="NUMERIC(18,3)" defaultValueNumeric="0"/>
+            <column name="total_cost" type="NUMERIC(18,2)" defaultValueNumeric="0"/>
+            <column name="total_diff" type="NUMERIC(18,3)" defaultValueNumeric="0"/>
+            <column name="total_lines" type="INT" defaultValueNumeric="0"/>
+            <column name="loss_amount" type="NUMERIC(18,2)"/>
+            <column name="created_by_name" type="VARCHAR(200)"/>
+            <column name="created_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="edge_wh_docs" indexName="idx_edge_wh_docs_store_type">
+            <column name="company_id"/>
+            <column name="doc_type"/>
+            <column name="store_id"/>
+            <column name="created_at"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="rst-049-edge-wh-lines" author="pos">
+        <createTable tableName="edge_wh_lines">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="doc_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_name" type="VARCHAR(300)"/>
+            <column name="sku" type="VARCHAR(64)"/>
+            <column name="quantity" type="NUMERIC(18,3)" defaultValueNumeric="0"/>
+            <column name="purchase_price" type="NUMERIC(18,2)"/>
+            <column name="unit_selling_price" type="NUMERIC(18,2)"/>
+            <column name="line_cost" type="NUMERIC(18,2)"/>
+            <column name="system_qty" type="NUMERIC(18,3)"/>
+            <column name="counted_qty" type="NUMERIC(18,3)"/>
+            <column name="difference" type="NUMERIC(18,3)"/>
+            <column name="unit_cost" type="NUMERIC(18,2)"/>
+            <column name="vat_percent" type="INT"/>
+            <column name="marked_product" type="BOOLEAN"/>
+            <column name="storage_location" type="VARCHAR(120)"/>
+        </createTable>
+        <addForeignKeyConstraint
+            baseTableName="edge_wh_lines"
+            baseColumnNames="doc_id"
+            constraintName="fk_edge_wh_lines_doc"
+            referencedTableName="edge_wh_docs"
+            referencedColumnNames="id"
+            onDelete="CASCADE"/>
+        <createIndex tableName="edge_wh_lines" indexName="idx_edge_wh_lines_doc">
+            <column name="doc_id"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

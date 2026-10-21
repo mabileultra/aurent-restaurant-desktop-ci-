@@ -43,6 +43,17 @@ public interface FloorOrderRepository extends JpaRepository<FloorOrder, UUID>, J
         @Param("statuses") Collection<OrderStatus> statuses
     );
 
+    /** All live orders including takeaway/delivery without a table (edge bootstrap). */
+    @Query("""
+        select o from FloorOrder o left join fetch o.table left join fetch o.shift
+        where o.companyId = :companyId and o.storeId = :storeId and o.status in :statuses
+        """)
+    List<FloorOrder> findLiveByCompanyIdAndStoreIdAndStatusIn(
+        @Param("companyId") Integer companyId,
+        @Param("storeId") Integer storeId,
+        @Param("statuses") Collection<OrderStatus> statuses
+    );
+
     @Query("""
         select o from FloorOrder o left join fetch o.table
         where o.companyId = :companyId and o.storeId = :storeId

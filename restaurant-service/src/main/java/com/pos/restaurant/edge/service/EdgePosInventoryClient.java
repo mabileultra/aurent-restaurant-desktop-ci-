@@ -39,9 +39,18 @@ public class EdgePosInventoryClient implements PosInventoryClient {
         if (request == null || request.lines() == null || request.lines().isEmpty()) {
             return true;
         }
+        Integer storeId = request.storeId();
+        Integer companyId = request.companyId();
         for (var line : request.lines()) {
             if (line == null || line.productId() == null || line.quantity() == null) continue;
-            EdgeProduct p = productRepository.findById(line.productId()).orElse(null);
+            EdgeProduct p = null;
+            if (companyId != null && storeId != null) {
+                p = productRepository.findByIdAndCompanyIdAndStoreId(line.productId(), companyId, storeId)
+                    .orElse(null);
+            }
+            if (p == null && companyId != null) {
+                p = productRepository.findByIdAndCompanyId(line.productId(), companyId).orElse(null);
+            }
             if (p == null) continue;
             BigDecimal delta = line.quantity().abs();
             BigDecimal next = consume

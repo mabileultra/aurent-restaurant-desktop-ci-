@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-051-edge-pharmacy-integration" author="pos">
+        <createTable tableName="edge_pharmacy_integration">
+            <column name="store_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asl_marking_enabled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="asl_portal_url" type="VARCHAR(500)"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rst-051-edge-multikassa" author="pos">
+        <createTable tableName="edge_multikassa">
+            <column name="store_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="enabled" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cash_register_id" type="BIGINT"/>
+            <column name="base_url" type="VARCHAR(500)"/>
+            <column name="terminal_id" type="VARCHAR(120)"/>
+            <column name="module_number" type="VARCHAR(120)"/>
+            <column name="selected_drive_id" type="VARCHAR(120)"/>
+            <column name="cashier_name_override" type="VARCHAR(200)"/>
+            <column name="require_before_sale" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="print_fiscal_qr" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="fiscal_provider" type="VARCHAR(32)" defaultValue="MULTIKASSA"/>
+            <column name="factory_id" type="VARCHAR(120)"/>
+            <column name="updated_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rst-051-edge-print-relay-lease" author="pos">
+        <createTable tableName="edge_print_relay_lease">
+            <column name="store_id" type="INT">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="owner_id" type="VARCHAR(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="owner_label" type="VARCHAR(200)"/>
+            <column name="heartbeat_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="rst-051-edge-marking-log" author="pos">
+        <createTable tableName="edge_marking_verify_log">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="VARCHAR(512)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(32)" defaultValue="ACCEPTED_OFFLINE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="verified_at" type="TIMESTAMPTZ" defaultValueComputed="NOW()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createIndex tableName="edge_marking_verify_log" indexName="idx_edge_marking_code">
+            <column name="store_id"/>
+            <column name="code"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

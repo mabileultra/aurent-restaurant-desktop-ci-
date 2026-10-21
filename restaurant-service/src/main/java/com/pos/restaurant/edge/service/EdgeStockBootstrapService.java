@@ -40,7 +40,9 @@ public class EdgeStockBootstrapService {
         int saved = 0;
         for (ProductRow row : request.products()) {
             if (row == null || row.id() == null || !StringUtils.hasText(row.name())) continue;
-            EdgeProduct e = productRepository.findById(row.id()).orElseGet(EdgeProduct::new);
+            EdgeProduct e = productRepository
+                .findByIdAndCompanyIdAndStoreId(row.id(), request.companyId(), request.storeId())
+                .orElseGet(EdgeProduct::new);
             e.setId(row.id());
             e.setCompanyId(request.companyId());
             e.setStoreId(request.storeId());

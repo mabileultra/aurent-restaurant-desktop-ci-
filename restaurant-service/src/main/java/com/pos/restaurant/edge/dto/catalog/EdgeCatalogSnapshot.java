@@ -25,7 +25,16 @@ public record EdgeCatalogSnapshot(
     /** Live floor: OPEN/BILLING orders so hall PC mirrors cloud «сейчас». */
     List<OpenOrderRow> openOrders,
     List<OpenOrderItemRow> openOrderItems,
-    List<OpenOrderLinkRow> openOrderLinks
+    List<OpenOrderLinkRow> openOrderLinks,
+    List<OpenOrderItemModifierRow> openOrderItemModifiers,
+    /** Active KDS tickets for live orders (kitchen board). */
+    List<KitchenTicketRow> kitchenTickets,
+    List<KitchenTicketLineRow> kitchenTicketLines,
+    /** Recent CLOSED orders for local reports (last ~30 days). */
+    List<OpenOrderRow> closedOrders,
+    List<OpenOrderItemRow> closedOrderItems,
+    List<OpenOrderItemModifierRow> closedOrderItemModifiers,
+    List<OrderPaymentRow> orderPayments
 ) {
     public record HallRow(
         Integer id,
@@ -207,5 +216,47 @@ public record EdgeCatalogSnapshot(
         Integer tableId,
         Instant linkedAt,
         UUID linkedByUserId
+    ) {}
+
+    public record OpenOrderItemModifierRow(
+        UUID id,
+        UUID orderItemId,
+        UUID optionId,
+        String name,
+        BigDecimal priceDelta
+    ) {}
+
+    public record KitchenTicketRow(
+        UUID id,
+        UUID orderId,
+        UUID stationId,
+        String status,
+        Instant sentAt,
+        Instant updatedAt
+    ) {}
+
+    public record KitchenTicketLineRow(
+        UUID id,
+        UUID ticketId,
+        UUID orderItemId,
+        BigDecimal quantity
+    ) {}
+
+    public record OrderPaymentRow(
+        UUID id,
+        UUID orderId,
+        String method,
+        BigDecimal amount,
+        BigDecimal cashAmount,
+        BigDecimal cardAmount,
+        BigDecimal amountTendered,
+        BigDecimal changeGiven,
+        String cardType,
+        String debtPhone,
+        String debtComment,
+        BigDecimal advancePaid,
+        BigDecimal debtRemaining,
+        UUID paidByUserId,
+        Instant paidAt
     ) {}
 }

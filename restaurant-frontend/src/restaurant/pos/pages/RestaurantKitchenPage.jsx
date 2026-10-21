@@ -8,6 +8,7 @@ import PosZoomControls from '../components/PosZoomControls';
 import KitchenTicketCard from '../components/KitchenTicketCard';
 import LanguageSwitcher from '../../../components/shared/LanguageSwitcher';
 import RestaurantThemeSwitch from '../../shared/components/RestaurantThemeSwitch';
+import PosSoundToggle from '../components/PosSoundToggle';
 import { useKitchenPosPage } from '../hooks/useKitchenPosPage';
 import { usePosUiScale } from '../hooks/usePosUiScale';
 import { useKitchenMobileLayout } from '../kitchen-mobile/hooks/useKitchenMobileLayout';
@@ -126,6 +127,7 @@ export default function RestaurantKitchenPage() {
             </Link>
           ) : null}
           {mobile.enabled ? null : <PosZoomControls zoom={zoom} t={p.t} />}
+          <PosSoundToggle t={p.t} />
           <RestaurantThemeSwitch />
           <LanguageSwitcher variant="rst" />
           {mobile.showEnterMobile ? <PosEnterMobileButton onEnter={mobile.enterMobile} /> : null}

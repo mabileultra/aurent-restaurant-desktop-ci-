@@ -13,5 +13,9 @@ public interface EdgeStaffRepository extends JpaRepository<EdgeStaff, UUID> {
 
     List<EdgeStaff> findByCompanyLoginCodeAndActiveTrueOrderByFullNameAsc(String companyLoginCode);
 
+    List<EdgeStaff> findByCompanyIdOrderByFullNameAsc(Integer companyId);
+
+    boolean existsByUsernameIgnoreCase(String username);
+
     long countByActiveTrue();
 }

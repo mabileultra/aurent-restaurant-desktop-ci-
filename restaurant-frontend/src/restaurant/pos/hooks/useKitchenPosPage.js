@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +10,7 @@ import { useAuthStore } from '../../../store/authStore';
 import { groupTicketsByStatus, NEXT_TICKET_STATUS } from '../utils/kitchenBoard';
 import { toastApiError } from '../../../utils/apiError';
 import { printKitchenBoardTickets } from '../utils/printKitchenTicket';
+import { playPosSound } from '../utils/posSounds';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
 const STATION_FILTER_KEY = 'rst-kds-station-filter';
@@ -37,6 +38,7 @@ export function useKitchenPosPage() {
   const workspace = useRestaurantWorkspaceStore();
   const canAdvance = user?.role === 'ADMIN' || user?.role === 'MANAGER' || user?.role === 'COOK';
   const [stationFilter, setStationFilterState] = useState('all');
+  const seenNewTicketIdsRef = useRef(null);
 
   useStoreFloorSync(workspace.storeId, { syncKitchen: true });
 
@@ -129,15 +131,41 @@ export function useKitchenPosPage() {
     let cancelled = false;
     printKitchenBoardTickets(rows, t, waiterNameById, workspace.storeId).then((printed) => {
       if (cancelled || !printed?.errors?.length) return;
+      playPosSound('error');
       toast.error(printed.errors[0]);
     }).catch((err) => {
       if (cancelled) return;
+      playPosSound('error');
       toast.error(err?.message || t('receipt.printFailed'));
     });
     return () => {
       cancelled = true;
     };
   }, [ticketsQuery.data, t, waiterNameById, workspace.storeId]);
+
+  // Beep when a NEW ticket appears (skip first snapshot so page open is quiet).
+  useEffect(() => {
+    const rows = ticketsQuery.data;
+    if (!Array.isArray(rows)) return;
+    const newIds = rows.filter((row) => row?.status === 'NEW' && row.id != null).map((row) => String(row.id));
+    if (seenNewTicketIdsRef.current == null) {
+      seenNewTicketIdsRef.current = new Set(newIds);
+      return;
+    }
+    let arrived = false;
+    for (const id of newIds) {
+      if (!seenNewTicketIdsRef.current.has(id)) {
+        seenNewTicketIdsRef.current.add(id);
+        arrived = true;
+      }
+    }
+    if (arrived) playPosSound('kitchen');
+  }, [ticketsQuery.data]);
+
+  useEffect(() => {
+    seenNewTicketIdsRef.current = null;
+  }, [workspace.storeId, stationFilter]);
+
   const columns = groupTicketsByStatus(tickets);
 
   const stations = stationsQuery.data ?? [];

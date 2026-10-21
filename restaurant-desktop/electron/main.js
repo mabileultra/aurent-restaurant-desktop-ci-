@@ -15,6 +15,8 @@ const {
   bootstrapStaffFromCloud,
   fetchCloudPinRoster,
   ensureStaffViaCloudPin,
+  refreshLiveFromCloud,
+  pushLiveToCloud,
 } = require('./runtime/edgeAuthBootstrap');
 const {
   getCompanyLoginCode,
@@ -198,6 +200,10 @@ async function bootStack() {
   }
 
   let syncInFlight = false;
+  let lastLivePullAt = 0;
+  let lastLivePushAt = 0;
+  const LIVE_PULL_MS = 10_000;
+  const LIVE_PUSH_MS = 10_000;
   setInterval(async () => {
     const hit = await probeHealth(HEALTH_URL);
     let pendingOutbox = lastStatus.pendingOutbox || 0;
@@ -270,6 +276,25 @@ async function bootStack() {
         /* next tick */
       } finally {
         syncInFlight = false;
+      }
+    }
+
+    // Quiet bi-directional live floor: push hall first, then pull cloud (~10s).
+    // Pull-before-push would reconcile-away local OPEN tables not yet on cloud.
+    if (online && Date.now() - lastLivePushAt >= LIVE_PUSH_MS) {
+      lastLivePushAt = Date.now();
+      try {
+        await pushLiveToCloud();
+      } catch {
+        /* next tick */
+      }
+    }
+    if (online && Date.now() - lastLivePullAt >= LIVE_PULL_MS) {
+      lastLivePullAt = Date.now();
+      try {
+        await refreshLiveFromCloud();
+      } catch {
+        /* next tick */
       }
     }
   }, 5000);

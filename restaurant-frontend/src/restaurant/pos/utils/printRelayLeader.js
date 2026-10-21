@@ -1,5 +1,9 @@
+import { api } from '../../../api/client';
+
 /**
- * Only one Aurent window per machine should poll/print — avoids dual claim + stuck spooler.
+ * LAN-wide single print-relay leader.
+ * Prefers edge server lease (/edge/print-relay/lease); falls back to localStorage
+ * when the lease API is unavailable (cloud-only / non-edge).
  */
 const LOCK_KEY = 'rst-print-relay-leader';
 const HEARTBEAT_MS = 1500;
@@ -17,11 +21,14 @@ function writeLock(ownerId, at = Date.now()) {
   localStorage.setItem(LOCK_KEY, JSON.stringify({ ownerId, at }));
 }
 
-export function createPrintRelayLeader() {
+export function createPrintRelayLeader({ storeId } = {}) {
   const ownerId = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   let timer = null;
+  let serverFails = 0;
+  let lastLeader = false;
+  const preferServer = storeId != null;
 
-  const isLeader = () => {
+  const localIsLeader = () => {
     const lock = readLock();
     const now = Date.now();
     if (!lock?.ownerId || !lock.at || now - lock.at > STALE_MS) {
@@ -35,10 +42,35 @@ export function createPrintRelayLeader() {
     return false;
   };
 
-  // Called again on every caps refresh: a second interval would outlive stop() and hold the lock forever.
+  const heartbeat = async () => {
+    if (preferServer && storeId != null && serverFails < 8) {
+      try {
+        const { data } = await api.post('/edge/print-relay/lease', {
+          storeId: Number(storeId),
+          ownerId,
+          ownerLabel: typeof navigator !== 'undefined' ? navigator.userAgent?.slice(0, 120) : null,
+        });
+        serverFails = 0;
+        lastLeader = Boolean(data?.leader);
+        return lastLeader;
+      } catch {
+        serverFails += 1;
+      }
+    }
+    lastLeader = localIsLeader();
+    return lastLeader;
+  };
+
+  const isLeader = () => lastLeader;
+
   const start = () => {
-    isLeader();
-    if (timer == null) timer = window.setInterval(isLeader, HEARTBEAT_MS);
+    if (!preferServer) lastLeader = localIsLeader();
+    void heartbeat();
+    if (timer == null) {
+      timer = window.setInterval(() => {
+        void heartbeat();
+      }, HEARTBEAT_MS);
+    }
   };
 
   const stop = () => {
@@ -48,6 +80,7 @@ export function createPrintRelayLeader() {
     if (lock?.ownerId === ownerId) {
       localStorage.removeItem(LOCK_KEY);
     }
+    lastLeader = false;
   };
 
   return { ownerId, isLeader, start, stop };

@@ -7,9 +7,13 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ItemRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierGroupRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ModifierOptionRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.KitchenTicketLineRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.KitchenTicketRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderItemModifierRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderItemRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderRow;
+import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OrderPaymentRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeLineRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.RecipeRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.ShiftRow;
@@ -19,7 +23,11 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.TableRow;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.repository.FloorHallRepository;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
+import com.pos.restaurant.kitchen.domain.KitchenTicketStatus;
+import com.pos.restaurant.kitchen.entity.KitchenTicket;
 import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
+import com.pos.restaurant.kitchen.repository.KitchenTicketLineRepository;
+import com.pos.restaurant.kitchen.repository.KitchenTicketRepository;
 import com.pos.restaurant.menu.repository.MenuCategoryRepository;
 import com.pos.restaurant.menu.repository.MenuItemRepository;
 import com.pos.restaurant.modifier.entity.ModifierGroup;
@@ -29,10 +37,15 @@ import com.pos.restaurant.modifier.repository.ModifierGroupRepository;
 import com.pos.restaurant.modifier.repository.ModifierOptionRepository;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
+import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.entity.FloorOrderTableLink;
+import com.pos.restaurant.order.repository.FloorOrderItemModifierRepository;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
 import com.pos.restaurant.order.repository.FloorOrderTableLinkRepository;
+import com.pos.restaurant.payment.entity.FloorOrderPayment;
+import com.pos.restaurant.payment.repository.FloorOrderPaymentRepository;
+import org.springframework.data.domain.PageRequest;
 import com.pos.restaurant.recipe.entity.Recipe;
 import com.pos.restaurant.recipe.repository.RecipeLineRepository;
 import com.pos.restaurant.recipe.repository.RecipeRepository;
@@ -67,7 +80,11 @@ public class EdgeCatalogExportService {
     private final RestaurantShiftRepository shiftRepository;
     private final FloorOrderRepository floorOrderRepository;
     private final FloorOrderItemRepository floorOrderItemRepository;
+    private final FloorOrderItemModifierRepository floorOrderItemModifierRepository;
     private final FloorOrderTableLinkRepository floorOrderTableLinkRepository;
+    private final KitchenTicketRepository kitchenTicketRepository;
+    private final KitchenTicketLineRepository kitchenTicketLineRepository;
+    private final FloorOrderPaymentRepository floorOrderPaymentRepository;
 
     @Transactional(readOnly = true)
     public EdgeCatalogSnapshot export(Integer storeId, String companyLoginCode) {
@@ -228,7 +245,7 @@ public class EdgeCatalogExportService {
 
         List<OrderStatus> liveStatuses = List.of(OrderStatus.OPEN, OrderStatus.BILLING);
         List<FloorOrder> allLive = floorOrderRepository
-            .findTableOrdersByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, liveStatuses);
+            .findLiveByCompanyIdAndStoreIdAndStatusIn(companyId, storeId, liveStatuses);
         List<OpenOrderRow> openOrders = allLive.stream().map(o -> new OpenOrderRow(
             o.getId(),
             o.getTable() == null ? null : o.getTable().getId(),
@@ -259,25 +276,39 @@ public class EdgeCatalogExportService {
         )).toList();
 
         List<UUID> liveIds = allLive.stream().map(FloorOrder::getId).toList();
-        List<OpenOrderItemRow> openOrderItems = liveIds.isEmpty()
+        List<FloorOrderItem> liveItems = liveIds.isEmpty()
             ? List.of()
-            : floorOrderItemRepository.findByOrderIdInOrdered(liveIds).stream()
-                .map(i -> new OpenOrderItemRow(
-                    i.getId(),
-                    i.getOrder().getId(),
-                    i.getMenuItem() == null ? null : i.getMenuItem().getId(),
-                    i.getName(),
-                    i.getQuantity(),
-                    i.getReturnedQuantity(),
-                    i.getSentQuantity(),
-                    i.getUnitPrice(),
-                    i.getTaxRate(),
-                    i.getStationId(),
-                    i.getNote(),
-                    i.getItemStatus() == null ? "NEW" : i.getItemStatus().name(),
-                    i.getSortOrder(),
-                    i.getCreatedAt(),
-                    i.getUpdatedAt()
+            : floorOrderItemRepository.findByOrderIdInOrdered(liveIds);
+        List<OpenOrderItemRow> openOrderItems = liveItems.stream()
+            .map(i -> new OpenOrderItemRow(
+                i.getId(),
+                i.getOrder().getId(),
+                i.getMenuItem() == null ? null : i.getMenuItem().getId(),
+                i.getName(),
+                i.getQuantity(),
+                i.getReturnedQuantity(),
+                i.getSentQuantity(),
+                i.getUnitPrice(),
+                i.getTaxRate(),
+                i.getStationId(),
+                i.getNote(),
+                i.getItemStatus() == null ? "NEW" : i.getItemStatus().name(),
+                i.getSortOrder(),
+                i.getCreatedAt(),
+                i.getUpdatedAt()
+            ))
+            .toList();
+
+        List<UUID> liveItemIds = liveItems.stream().map(FloorOrderItem::getId).toList();
+        List<OpenOrderItemModifierRow> openOrderItemModifiers = liveItemIds.isEmpty()
+            ? List.of()
+            : floorOrderItemModifierRepository.findByOrderItemIdIn(liveItemIds).stream()
+                .map(m -> new OpenOrderItemModifierRow(
+                    m.getId(),
+                    m.getOrderItem().getId(),
+                    m.getOptionId(),
+                    m.getName(),
+                    m.getPriceDelta() == null ? java.math.BigDecimal.ZERO : m.getPriceDelta()
                 ))
                 .toList();
 
@@ -293,6 +324,109 @@ public class EdgeCatalogExportService {
                 ));
             }
         }
+
+        List<KitchenTicket> activeTickets = liveIds.isEmpty()
+            ? List.of()
+            : kitchenTicketRepository.findByOrderIdIn(liveIds).stream()
+                .filter(t -> t.getStatus() != KitchenTicketStatus.SERVED
+                    && t.getStatus() != KitchenTicketStatus.CANCELLED)
+                .toList();
+        List<KitchenTicketRow> kitchenTickets = activeTickets.stream()
+            .map(t -> new KitchenTicketRow(
+                t.getId(),
+                t.getOrder() == null ? null : t.getOrder().getId(),
+                t.getStation() == null ? null : t.getStation().getId(),
+                t.getStatus() == null ? "NEW" : t.getStatus().name(),
+                t.getSentAt(),
+                t.getUpdatedAt()
+            ))
+            .toList();
+        List<UUID> ticketIds = activeTickets.stream().map(KitchenTicket::getId).toList();
+        List<KitchenTicketLineRow> kitchenTicketLines = ticketIds.isEmpty()
+            ? List.of()
+            : kitchenTicketLineRepository.findByTicketIdIn(ticketIds).stream()
+                .map(l -> new KitchenTicketLineRow(
+                    l.getId(),
+                    l.getTicket().getId(),
+                    l.getOrderItem() == null ? null : l.getOrderItem().getId(),
+                    l.getQuantity()
+                ))
+                .toList();
+
+        List<FloorOrder> recentClosed = floorOrderRepository.findRecentByCompanyIdAndStoreIdAndStatusIn(
+            companyId, storeId, List.of(OrderStatus.CLOSED), PageRequest.of(0, 400)
+        );
+        List<OpenOrderRow> closedOrders = recentClosed.stream().map(o -> new OpenOrderRow(
+            o.getId(),
+            o.getTable() == null ? null : o.getTable().getId(),
+            o.getChannel() == null ? "DINE_IN" : o.getChannel().name(),
+            o.getOrderNo(),
+            o.getStatus() == null ? "CLOSED" : o.getStatus().name(),
+            o.getGuestCount(),
+            o.getAdultCount(),
+            o.getChildrenCount(),
+            o.getClientName(),
+            o.getClientPhone(),
+            o.getDeliveryAddress(),
+            o.getDeliveryStatus() == null ? null : o.getDeliveryStatus().name(),
+            o.getOpenedByUserId(),
+            o.getWaiterUserId(),
+            o.getCourierUserId(),
+            o.getCommissionPercent(),
+            o.getCommissionBaseAmount(),
+            o.getCommissionAmount(),
+            o.getServicePercent(),
+            o.getServiceAmount(),
+            o.getDiscountAmount() == null ? java.math.BigDecimal.ZERO : o.getDiscountAmount(),
+            o.getShift() == null ? null : o.getShift().getId(),
+            o.getComment(),
+            o.getOpenedAt(),
+            o.getClosedAt(),
+            o.getUpdatedAt()
+        )).toList();
+        List<UUID> closedIds = recentClosed.stream().map(FloorOrder::getId).toList();
+        List<FloorOrderItem> closedItems = closedIds.isEmpty()
+            ? List.of()
+            : floorOrderItemRepository.findByOrderIdInOrdered(closedIds);
+        List<OpenOrderItemRow> closedOrderItems = closedItems.stream()
+            .map(i -> new OpenOrderItemRow(
+                i.getId(),
+                i.getOrder().getId(),
+                i.getMenuItem() == null ? null : i.getMenuItem().getId(),
+                i.getName(),
+                i.getQuantity(),
+                i.getReturnedQuantity(),
+                i.getSentQuantity(),
+                i.getUnitPrice(),
+                i.getTaxRate(),
+                i.getStationId(),
+                i.getNote(),
+                i.getItemStatus() == null ? "NEW" : i.getItemStatus().name(),
+                i.getSortOrder(),
+                i.getCreatedAt(),
+                i.getUpdatedAt()
+            ))
+            .toList();
+        List<UUID> closedItemIds = closedItems.stream().map(FloorOrderItem::getId).toList();
+        List<OpenOrderItemModifierRow> closedOrderItemModifiers = closedItemIds.isEmpty()
+            ? List.of()
+            : floorOrderItemModifierRepository.findByOrderItemIdIn(closedItemIds).stream()
+                .map(m -> new OpenOrderItemModifierRow(
+                    m.getId(),
+                    m.getOrderItem().getId(),
+                    m.getOptionId(),
+                    m.getName(),
+                    m.getPriceDelta() == null ? java.math.BigDecimal.ZERO : m.getPriceDelta()
+                ))
+                .toList();
+
+        List<UUID> paymentOrderIds = new ArrayList<>(liveIds);
+        paymentOrderIds.addAll(closedIds);
+        List<OrderPaymentRow> orderPayments = paymentOrderIds.isEmpty()
+            ? List.of()
+            : floorOrderPaymentRepository.findByOrder_IdIn(paymentOrderIds).stream()
+                .map(EdgeCatalogExportService::toPaymentRow)
+                .toList();
 
         return new EdgeCatalogSnapshot(
             companyId,
@@ -312,7 +446,34 @@ public class EdgeCatalogExportService {
             openShift,
             openOrders,
             openOrderItems,
-            openOrderLinks
+            openOrderLinks,
+            openOrderItemModifiers,
+            kitchenTickets,
+            kitchenTicketLines,
+            closedOrders,
+            closedOrderItems,
+            closedOrderItemModifiers,
+            orderPayments
+        );
+    }
+
+    private static OrderPaymentRow toPaymentRow(FloorOrderPayment p) {
+        return new OrderPaymentRow(
+            p.getId(),
+            p.getOrder() == null ? null : p.getOrder().getId(),
+            p.getMethod() == null ? "CASH" : p.getMethod().name(),
+            p.getAmount(),
+            p.getCashAmount(),
+            p.getCardAmount(),
+            p.getAmountTendered(),
+            p.getChangeGiven(),
+            p.getCardType() == null ? null : p.getCardType().name(),
+            p.getDebtPhone(),
+            p.getDebtComment(),
+            p.getAdvancePaid(),
+            p.getDebtRemaining(),
+            p.getPaidByUserId(),
+            p.getPaidAt()
         );
     }
 }
