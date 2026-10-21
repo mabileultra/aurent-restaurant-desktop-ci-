@@ -183,10 +183,25 @@ export function usePharmacyCartHandlers({
   );
 
   const handleQtyConfirm = useCallback(
-    ({ packs = 0, pieces = 0, lot, productMarks, sellByPiece: sellByPieceFromModal } = {}) => {
+    ({
+      packs = 0,
+      pieces = 0,
+      lot,
+      productMarks,
+      sellByPiece: sellByPieceFromModal,
+      packPrice: packPriceFromModal,
+      piecePrice: piecePriceFromModal,
+      unitsInPack: unitsFromModal,
+    } = {}) => {
       const product = qtyModalProduct;
       if (!product) return;
-      const unitsInPack = productUnitsInPack(product) || Number(product.unitsInPack) || 1;
+      const unitsInPack = Number(unitsFromModal) > 0
+        ? Number(unitsFromModal)
+        : (productUnitsInPack(product) || Number(product.unitsInPack) || 1);
+      const packPrice = Number(packPriceFromModal);
+      const piecePrice = Number(piecePriceFromModal);
+      const hasPackPrice = Number.isFinite(packPrice) && packPrice >= 0;
+      const hasPiecePrice = Number.isFinite(piecePrice) && piecePrice >= 0;
       const marks = Array.isArray(productMarks) ? productMarks.filter(Boolean) : [];
       const sellByPiece = marks.length > 0
         ? false
@@ -199,17 +214,34 @@ export function usePharmacyCartHandlers({
       if (qty <= 0) return;
       let payload = {
         ...product,
+        unitsInPack,
         pieceStep: productPieceStep(product),
         attributes: {
           ...(product.attributes || {}),
+          units_in_pack: String(unitsInPack),
           ...(lot?.batchNumber ? { batch: lot.batchNumber, lotBatch: lot.batchNumber } : {}),
           ...(lot?.expiryDate ? { expiry_date: lot.expiryDate, lotExpiry: lot.expiryDate } : {}),
         },
       };
       if (sellByPiece && unitsInPack > 1) {
-        payload = applyPharmacyPackSaleToCartProduct(payload);
+        payload = applyPharmacyPackSaleToCartProduct({
+          ...payload,
+          sellingPrice: hasPackPrice ? packPrice : payload.sellingPrice,
+        });
+        payload = {
+          ...payload,
+          unitsInPack,
+          packUnitPrice: hasPackPrice ? packPrice : payload.packUnitPrice,
+          sellingPrice: hasPiecePrice ? piecePrice : payload.sellingPrice,
+        };
       } else {
-        payload = { ...payload, pharmacySellByPiece: false };
+        payload = {
+          ...payload,
+          pharmacySellByPiece: false,
+          packUnitPrice: null,
+          unitsInPack,
+          ...(hasPackPrice ? { sellingPrice: packPrice } : {}),
+        };
       }
       if (marks.length > 0) {
         payload = {
@@ -220,13 +252,33 @@ export function usePharmacyCartHandlers({
           productMarks: marks,
           pharmacySellByPiece: false,
           packUnitPrice: null,
+          unitsInPack,
+          ...(hasPackPrice ? { sellingPrice: packPrice } : {}),
         };
       }
       const lineId = marks.length > 0
         ? useCartStore.getState().insertSeparatePieceItem(payload, qty)
         : addPharmacyPieceItem(payload, qty);
+      const pieceSale = sellByPiece && unitsInPack > 1 && marks.length === 0;
       const line = useCartStore.getState().items.find((i) => i.lineId === lineId);
-      if (line) showLineAddedToast(line, product.name);
+      if (line) {
+        useCartStore.getState().patchLine(lineId, {
+          unitsInPack,
+          pharmacySellByPiece: pieceSale,
+          packUnitPrice: pieceSale && hasPackPrice ? packPrice : null,
+          unitPrice: pieceSale
+            ? (hasPiecePrice ? piecePrice : line.unitPrice)
+            : (hasPackPrice ? packPrice : line.unitPrice),
+          attributes: {
+            ...(line.attributes || {}),
+            units_in_pack: String(unitsInPack),
+          },
+        });
+        showLineAddedToast(
+          useCartStore.getState().items.find((i) => i.lineId === lineId) || line,
+          product.name,
+        );
+      }
       setQtyModalProduct(null);
       setSelectedLineId(lineId);
       setSearch('');

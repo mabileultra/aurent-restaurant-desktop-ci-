@@ -270,6 +270,20 @@
   color: #94a3b8;
 }
 
+.pharmacy-stock__totals-row td {
+  padding: 0.55rem 0.65rem;
+  border-top: 1px solid var(--pharm-line);
+  background: #f8fafc;
+  color: #0f172a;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dark .pharmacy-stock__totals-row td {
+  background: rgba(15, 23, 42, 0.72);
+  color: #e2e8f0;
+}
+
 .pharmacy-stock__table tbody td {
   padding: 0.5rem 0.65rem;
   border-bottom: 1px solid #f1f5f9;

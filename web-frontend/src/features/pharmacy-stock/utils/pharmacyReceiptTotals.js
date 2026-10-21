@@ -1,12 +1,14 @@
-/** Суммы документа: закуп с НДС × кол-во, розница × кол-во. */
+/** Суммы документа: сохранённые суммы строк, иначе закуп с НДС × кол-во упаковок и розница × кол-во упаковок. */
 
 export function linePurchaseSum(line) {
+  if (line?.lineCost != null && line.lineCost !== '') return round2(line.lineCost);
   const unit = Number(line?.purchasePriceWithVat ?? line?.purchasePrice) || 0;
   const qty = Number(line?.quantity) || 0;
   return round2(unit * qty);
 }
 
 export function lineRetailSum(line) {
+  if (line?.lineRetail != null && line.lineRetail !== '') return round2(line.lineRetail);
   const unit = Number(line?.retailPrice ?? line?.unitSellingPrice) || 0;
   const qty = Number(line?.quantity) || 0;
   return round2(unit * qty);

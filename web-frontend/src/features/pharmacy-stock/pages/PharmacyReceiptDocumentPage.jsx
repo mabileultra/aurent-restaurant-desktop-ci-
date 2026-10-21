@@ -38,6 +38,7 @@ import {
   formatMoney,
   linesReadyForActivate,
 } from '../utils/pharmacyReceiptPricing';
+import { linePurchaseSum, lineRetailSum, receiptDisplayTotals } from '../utils/pharmacyReceiptTotals';
 import {
   resolveStoreName,
   resolveSupplierName,
@@ -238,6 +239,8 @@ export default function PharmacyReceiptDocumentPage() {
     );
   }
 
+  const docTotals = receiptDisplayTotals(receipt);
+
   const openActivate = () => {
     if (!canActivate) {
       toast.error(t('pharmacyStock.activateNeedLots'));
@@ -333,6 +336,8 @@ export default function PharmacyReceiptDocumentPage() {
                     <th>{t('pharmacyStock.vatRate')}</th>
                     <th>{t('pharmacyStock.markupPercent')}</th>
                     <th>{t('pharmacyStock.retailPrice')}</th>
+                    <th>{t('pharmacyStock.colLinePurchase')}</th>
+                    <th>{t('pharmacyStock.colLineRetail')}</th>
                     <th>{t('pharmacyStock.batch')}</th>
                     <th>{t('pharmacyStock.expiry')}</th>
                     <th className="pharmacy-stock__row-actions" />
@@ -341,7 +346,7 @@ export default function PharmacyReceiptDocumentPage() {
                 <tbody>
                   {(receipt.lines ?? []).length === 0 ? (
                     <tr>
-                      <td colSpan={14}>
+                      <td colSpan={16}>
                         <div className="pharmacy-stock__empty">{t('pharmacyStock.noLines')}</div>
                       </td>
                     </tr>
@@ -362,6 +367,8 @@ export default function PharmacyReceiptDocumentPage() {
                       <td>{line.vatPercent ?? '—'}</td>
                       <td>{line.markupPercent ?? '—'}</td>
                       <td>{formatMoney(line.retailPrice ?? line.unitSellingPrice)}</td>
+                      <td>{formatMoney(linePurchaseSum(line))}</td>
+                      <td>{formatMoney(lineRetailSum(line))}</td>
                       <td>{line.batchNumber || '—'}</td>
                       <td>{line.expiryDate || '—'}</td>
                       <PharmacyEditCell
@@ -375,6 +382,16 @@ export default function PharmacyReceiptDocumentPage() {
                     </tr>
                   ))}
                 </tbody>
+                {(receipt.lines ?? []).length > 0 ? (
+                  <tfoot>
+                    <tr className="pharmacy-stock__totals-row">
+                      <td colSpan={11}>{t('pharmacyStock.invoiceTotal')}</td>
+                      <td>{formatMoney(docTotals.purchase)}</td>
+                      <td>{formatMoney(docTotals.retail)}</td>
+                      <td colSpan={3} />
+                    </tr>
+                  </tfoot>
+                ) : null}
               </table>
             </div>
             <TablePagination
@@ -410,7 +427,6 @@ export default function PharmacyReceiptDocumentPage() {
         existingLine={editingLine}
         defaultMarkup={receipt.defaultMarkupPercent ?? 20}
         saving={updateLineMutation.isPending}
-        stockLocked={isPosted}
         onAboutProduct={() => setAboutProduct(productStubFromReceiptLine(editingLine))}
         onSave={(payload) => updateLineMutation.mutate({ lineId: editingLine.id, payload })}
       />

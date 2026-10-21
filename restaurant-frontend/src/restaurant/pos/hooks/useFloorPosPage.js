@@ -24,6 +24,7 @@ import { resolveFloorAccess } from '../utils/floorRoleAccess';
 import { isWeightSoldMenuItem } from '../utils/menuWeightSale';
 import { optimisticAddItem } from '../utils/optimisticOrderPatch';
 import { useFloorPosMutations } from './useFloorPosMutations';
+import { useRestaurantAslMarking } from './useRestaurantAslMarking';
 import { useFloorTableActions } from './useFloorTableActions';
 import { useStoreFloorSync } from './useStoreFloorSync';
 
@@ -223,6 +224,8 @@ export function useFloorPosPage() {
       staleTime: ORDER_STALE_MS,
     });
   };
+
+  const { aslMarkingEnabled, aslReady, resolveEnabled } = useRestaurantAslMarking(storeId);
 
   const m = useFloorPosMutations({
     t, storeId, storeName: workspace.storeName, channel, guestForm, openTable, counterForm,
@@ -428,8 +431,15 @@ export function useFloorPosPage() {
     }
   };
 
-  const addItemNow = (menuItem, extras = {}) => {
+  const addItemNow = async (menuItem, extras = {}) => {
     if (!menuItem) return;
+    if (menuItem.markedProduct) {
+      const enabled = aslReady ? aslMarkingEnabled : await resolveEnabled();
+      if (!enabled) {
+        toast.error(t('rst.integrations.markingApiDisabled'));
+        return;
+      }
+    }
     if (activeOrderId) {
       if (!isOrderOpenLike(order)) {
         toast.error(t('rst.order.notOpen', {

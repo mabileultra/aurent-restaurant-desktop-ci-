@@ -28,6 +28,9 @@ public class PharmacyIntegrationHttpConfig {
 
     var httpClient = HttpClients.custom()
       .setDefaultRequestConfig(requestConfig)
+      // ASL отвечает 307 на другой хост. Авто-редирект HttpClient снимает Authorization,
+      // и живой ключ приходит обратно как 401.
+      .disableRedirectHandling()
       .build();
 
     HttpComponentsClientHttpRequestFactory requestFactory = new HttpComponentsClientHttpRequestFactory(httpClient);

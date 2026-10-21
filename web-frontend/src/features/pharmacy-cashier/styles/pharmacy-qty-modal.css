@@ -237,6 +237,25 @@
   color: var(--pqm-muted);
 }
 
+.pharmacy-qty-modal__metric-input {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--pqm-ink);
+  font-size: 0.92rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  outline: none;
+}
+
+.pharmacy-qty-modal__metric-input:focus {
+  box-shadow: 0 1px 0 0 var(--pqm-brand);
+}
+
 .pharmacy-qty-modal__metric-value {
   font-size: 0.92rem;
   font-weight: 800;

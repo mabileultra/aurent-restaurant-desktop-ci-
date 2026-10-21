@@ -470,6 +470,10 @@ export function useFloorPosMutations(deps) {
       }
     },
     onError: (err) => {
+      if (err?.code === 'MARKING_NO_INTEGRATION' || err?.message === 'MARKING_NO_INTEGRATION') {
+        toast.error(t('rst.integrations.markingApiDisabled'));
+        return;
+      }
       if (err?.code === 'MULTIKASSA_OFFLINE_BLOCKED' || err?.message === 'MULTIKASSA_OFFLINE_BLOCKED') {
         toast.error(t('cashRegisters.multikassa.fiscalOfflineBlocked'));
         return;

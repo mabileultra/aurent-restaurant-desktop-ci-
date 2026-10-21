@@ -163,7 +163,7 @@ function round3(n) {
 export function formatMoney(value) {
   const n = Number(value);
   if (!Number.isFinite(n)) return '—';
-  return n.toLocaleString('ru-RU', { maximumFractionDigits: 2 });
+  return n.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 export function statusLabel(status, t) {

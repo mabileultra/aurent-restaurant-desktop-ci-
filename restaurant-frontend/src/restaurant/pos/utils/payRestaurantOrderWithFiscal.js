@@ -1,4 +1,6 @@
+import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { rstOrderApi } from '../../api/order.api';
+import { markingNoIntegrationError, orderHasMarkedLines } from './restaurantMarkingGate';
 import { FISCAL_STATUS, loadFiscalContext, resolveFiscalProvider } from '../../../services/fiscal';
 import {
   buildRestaurantFiscalSale,
@@ -83,6 +85,17 @@ export async function payRestaurantOrderWithFiscal({
   }
 
   const skipFiscal = isNonFiscalPayMethod(payMethod);
+
+  if (orderHasMarkedLines(order)) {
+    let aslOn = false;
+    try {
+      const res = await pharmacyIntegrationApi.getCashierCapabilities(storeId);
+      aslOn = Boolean(res?.data?.aslMarkingEnabled);
+    } catch {
+      aslOn = false;
+    }
+    if (!aslOn) throw markingNoIntegrationError();
+  }
 
   const payment = {
     paymentMethod: payMethod,

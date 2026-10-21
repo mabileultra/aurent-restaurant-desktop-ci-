@@ -197,13 +197,13 @@ public class AslBelgisiMarkingClient {
         String.class
       );
       requestLogCallScope.noteHttp(response.getStatusCode().value(), url);
-      if (response.getStatusCode().is3xxRedirection() && response.getHeaders().getLocation() != null) {
+      if (isRedirect(response.getStatusCode()) && response.getHeaders().getLocation() != null) {
         return followRedirect(response.getHeaders().getLocation(), headers, body, requestedCode);
       }
       return parser().parse(requestedCode, response.getBody());
     } catch (HttpStatusCodeException ex) {
       requestLogCallScope.noteHttp(ex.getStatusCode().value(), url);
-      if (ex.getStatusCode().value() == 307 && ex.getResponseHeaders() != null
+      if (isRedirect(ex.getStatusCode()) && ex.getResponseHeaders() != null
         && ex.getResponseHeaders().getLocation() != null) {
         return followRedirect(ex.getResponseHeaders().getLocation(), headers, body, requestedCode);
       }
@@ -220,14 +220,36 @@ public class AslBelgisiMarkingClient {
     String target = location.isAbsolute()
       ? location.toString()
       : normalizeBaseUrl(PharmacyIntegrationDefaults.ASL_API_BASE_URL) + location;
-    ResponseEntity<String> redirected = pharmacyIntegrationRestTemplate.exchange(
-      target,
-      HttpMethod.POST,
-      new HttpEntity<>(body, headers),
-      String.class
-    );
-    requestLogCallScope.noteHttp(redirected.getStatusCode().value(), target);
-    return parser().parse(requestedCode, redirected.getBody());
+    if (!aslHost(target)) {
+      throw new BadRequestException("ASL Belgisi перенаправил запрос на неизвестный адрес");
+    }
+    try {
+      ResponseEntity<String> redirected = pharmacyIntegrationRestTemplate.exchange(
+        target,
+        HttpMethod.POST,
+        new HttpEntity<>(body, headers),
+        String.class
+      );
+      requestLogCallScope.noteHttp(redirected.getStatusCode().value(), target);
+      return parser().parse(requestedCode, redirected.getBody());
+    } catch (HttpStatusCodeException ex) {
+      requestLogCallScope.noteHttp(ex.getStatusCode().value(), target);
+      throw new BadRequestException(errorMessage(ex.getStatusCode(), ex.getResponseBodyAsString()));
+    }
+  }
+
+  private static boolean isRedirect(HttpStatusCode status) {
+    int code = status.value();
+    return code == 301 || code == 302 || code == 307 || code == 308;
+  }
+
+  private static boolean aslHost(String url) {
+    try {
+      String host = URI.create(url).getHost();
+      return host != null && host.toLowerCase(java.util.Locale.ROOT).endsWith("aslbelgisi.uz");
+    } catch (IllegalArgumentException ex) {
+      return false;
+    }
   }
 
   private HttpHeaders bearerHeaders(String token) {
@@ -244,6 +266,10 @@ public class AslBelgisiMarkingClient {
 
   private String errorMessage(HttpStatusCode status, String body) {
     if (status.value() == HttpStatus.UNAUTHORIZED.value() || status.value() == HttpStatus.FORBIDDEN.value()) {
+      String parsed = parser().errorMessage(body);
+      if (inactiveToken(parsed)) {
+        return "ASL Belgisi не принял API-ключ: он не активен. В xTrace действует только один ключ бизнес-пользователя — создайте новый и снова сохраните его в настройках магазина.";
+      }
       return "ASL Belgisi не принял API-ключ. Нужен Bearer apiKey бизнес-пользователя (Open API).";
     }
     String parsed = parser().errorMessage(body);
@@ -251,6 +277,16 @@ public class AslBelgisiMarkingClient {
       return parsed;
     }
     return "ASL Belgisi вернул ошибку " + status.value();
+  }
+
+  private static boolean inactiveToken(String parsed) {
+    if (!StringUtils.hasText(parsed)) {
+      return false;
+    }
+    String text = parsed.toLowerCase(java.util.Locale.ROOT).replace('\u2019', '\'');
+    return text.contains("isn't active")
+      || text.contains("invalid_token")
+      || text.contains("не актив");
   }
 
   private String normalizeBaseUrl(String baseUrl) {

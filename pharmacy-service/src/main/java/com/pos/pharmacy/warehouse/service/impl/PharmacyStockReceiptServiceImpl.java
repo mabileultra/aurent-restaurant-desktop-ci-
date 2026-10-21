@@ -205,23 +205,30 @@ public class PharmacyStockReceiptServiceImpl implements PharmacyStockReceiptServ
             .findFirst()
             .orElseThrow(() -> PharmacyErrors.notFound(PharmacyReceiptErrors.PHARM_RECEIPT_LINE_NOT_FOUND));
         Product product;
+        Map<UUID, BigDecimal> previousQuantities = Map.of();
         if (StockReceiptStatus.POSTED.equals(receipt.getStatus())) {
             product = existing.getProduct();
             if (product == null) {
                 product = productCatalogService.requireActive(lineReq.productId());
             }
-            pharmacyReceipt.applyPrices(existing, product, lineReq);
+            if (existing.getId() != null && existing.getQuantity() != null) {
+                previousQuantities = Map.of(existing.getId(), existing.getQuantity());
+            }
+            pharmacyReceipt.applyLine(existing, product, lineReq);
         } else {
             pharmacyReceipt.requireDraft(receipt);
             product = productCatalogService.requireActive(lineReq.productId());
             pharmacyReceipt.applyLine(existing, product, lineReq);
         }
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getPurchasePrice(), "цена закупки");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getPurchasePriceWithVat(), "цена с НДС");
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getRetailPrice(), "розничная цена");
         PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getUnitSellingPrice(), "цена продажи");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getLineCost(), "сумма закупки");
+        PharmacyMoneyLimit.requireFitsNumeric18_2(existing.getLineRetail(), "сумма розницы");
         pharmacyReceipt.recalculateTotals(receipt);
         stockReceiptRepository.save(receipt);
-        postedPriceSync.sync(receipt, List.of(existing));
+        postedPriceSync.sync(receipt, List.of(existing), previousQuantities);
     }
 
     @Override

@@ -27,6 +27,14 @@ function digits(value) {
   return String(value ?? '').replace(/[^\d]/g, '');
 }
 
+function moneyInput(value) {
+  const raw = String(value ?? '').replace(/\s/g, '').replace(',', '.');
+  if (raw === '' || raw === '.') return raw;
+  const cleaned = raw.replace(/[^\d.]/g, '');
+  const [head, ...rest] = cleaned.split('.');
+  return rest.length ? `${head}.${rest.join('').slice(0, 2)}` : head;
+}
+
 function lotKeyOf(lot) {
   return `${lot?.batchNumber || ''}|${lot?.expiryDate || ''}`;
 }
@@ -67,16 +75,18 @@ export default function PharmacyQtyModal({
   const [packOnly, setPackOnly] = useState(false);
   const [markingOn, setMarkingOn] = useState(false);
   const [error, setError] = useState('');
+  const [packPriceText, setPackPriceText] = useState('0');
+  const [piecePriceText, setPiecePriceText] = useState('0');
+  const [unitsText, setUnitsText] = useState('1');
   const cartItems = useCartStore((s) => s.items);
 
-  const unitsInPack = productUnitsInPack(product) || Number(product?.unitsInPack) || 1;
+  const catalogUnits = productUnitsInPack(product) || Number(product?.unitsInPack) || 1;
+  const unitsInPack = Math.max(1, Number(unitsText) || catalogUnits);
   const productAllowsPiece = productSellByPiece(product);
   const sellByPiece = productAllowsPiece && !packOnly;
   const pieceStep = productPieceStep(product);
-  const packPrice = Number(product?.packUnitPrice ?? product?.sellingPrice ?? 0);
-  const piecePrice = unitsInPack > 1
-    ? pharmacyPieceUnitPrice(packPrice, unitsInPack)
-    : packPrice;
+  const packPrice = Number(packPriceText) || 0;
+  const piecePrice = Number(piecePriceText) || 0;
   const manufacturer = productAttr(product, 'manufacturer', 'производитель', 'producer')
     || product?.manufacturer
     || '';
@@ -86,7 +96,7 @@ export default function PharmacyQtyModal({
   const uniqueBarcodes = [...new Set(barcodes)];
   const showPackUi = unitsInPack > 1;
   const markedProduct = Boolean(product?.markedProduct);
-  const soldPacks = packsAlreadyInCart(cartItems, product?.id, unitsInPack);
+  const soldPacks = packsAlreadyInCart(cartItems, product?.id, catalogUnits);
 
   const lotsQuery = useQuery({
     queryKey: ['pharmacy-lots', storeId, product?.id],
@@ -103,26 +113,33 @@ export default function PharmacyQtyModal({
       return lots.reduce((sum, lot) => sum + (Number(lot.quantity) || 0), 0);
     }
     const raw = Number(product?.stockQuantity ?? 0);
-    if (product?.pharmacySellByPiece && product?.packUnitPrice != null && unitsInPack > 1) {
-      return raw / unitsInPack;
+    if (product?.pharmacySellByPiece && product?.packUnitPrice != null && catalogUnits > 1) {
+      return raw / catalogUnits;
     }
     return raw;
-  }, [lots, product, unitsInPack]);
+  }, [lots, product, catalogUnits]);
 
   useEffect(() => {
     if (!open || !product) return;
-    setPacksText(unitsInPack > 1 ? '0' : '1');
+    setPacksText(catalogUnits > 1 ? '0' : '1');
     setPiecesText('0');
     setError('');
     setPackOnly(!productAllowsPiece);
     setMarkingOn(markedProduct);
+    const initialPack = Number(product?.packUnitPrice ?? product?.sellingPrice ?? 0);
+    const initialUnits = catalogUnits;
+    setUnitsText(String(initialUnits));
+    setPackPriceText(String(initialPack));
+    setPiecePriceText(String(
+      initialUnits > 1 ? pharmacyPieceUnitPrice(initialPack, initialUnits) : initialPack,
+    ));
     const hintExpiry = productExpiry(product);
     const hintBatch = productBatch(product);
     setLotKey(hintExpiry || hintBatch ? `${hintBatch || ''}|${hintExpiry || ''}` : '');
     setBatchText(hintBatch || '');
     const timer = setTimeout(() => packRef.current?.focus(), 30);
     return () => clearTimeout(timer);
-  }, [open, product, unitsInPack, productAllowsPiece, markedProduct]);
+  }, [open, product, catalogUnits, productAllowsPiece, markedProduct]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -165,6 +182,31 @@ export default function PharmacyQtyModal({
     setError('');
   };
 
+  const changePackPrice = (raw) => {
+    const text = moneyInput(raw);
+    setPackPriceText(text);
+    const pack = Number(text) || 0;
+    setPiecePriceText(String(unitsInPack > 1 ? pharmacyPieceUnitPrice(pack, unitsInPack) : pack));
+    setError('');
+  };
+
+  const changePiecePrice = (raw) => {
+    const text = moneyInput(raw);
+    setPiecePriceText(text);
+    const piece = Number(text) || 0;
+    setPackPriceText(String(unitsInPack > 1 ? Math.round(piece * unitsInPack * 100) / 100 : piece));
+    setError('');
+  };
+
+  const changeUnits = (raw) => {
+    const text = digits(raw);
+    const nextUnits = Number(text) > 0 ? Number(text) : catalogUnits;
+    setUnitsText(text);
+    const pack = Number(packPriceText) || 0;
+    setPiecePriceText(String(nextUnits > 1 ? pharmacyPieceUnitPrice(pack, nextUnits) : pack));
+    setError('');
+  };
+
   const bumpPiece = (delta) => {
     if (!sellByPiece) return;
     const step = pieceStep > 1 ? pieceStep : 1;
@@ -195,6 +237,9 @@ export default function PharmacyQtyModal({
         : (batchText.trim() ? { batchNumber: batchText.trim(), expiryDate: expiryValue || null } : null),
       productMarks: [],
       markingOn,
+      packPrice,
+      piecePrice: showPackUi ? piecePrice : packPrice,
+      unitsInPack,
     });
   };
 
@@ -281,7 +326,12 @@ export default function PharmacyQtyModal({
           <div className="pharmacy-qty-modal__metrics">
             <div className="pharmacy-qty-modal__metric">
               <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.colPrice')}</span>
-              <span className="pharmacy-qty-modal__metric-value">{fmt(packPrice)}</span>
+              <input
+                className="pharmacy-qty-modal__metric-input"
+                inputMode="decimal"
+                value={packPriceText}
+                onChange={(e) => changePackPrice(e.target.value)}
+              />
             </div>
             <div className="pharmacy-qty-modal__metric">
               <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.vatShort')}</span>
@@ -291,11 +341,21 @@ export default function PharmacyQtyModal({
               <span className="pharmacy-qty-modal__metric-label">
                 {showPackUi ? t('pharmacyCashier.pricePerPieceShort') : t('pharmacyCashier.pricePerPiece')}
               </span>
-              <span className="pharmacy-qty-modal__metric-value">{fmt(piecePrice)}</span>
+              <input
+                className="pharmacy-qty-modal__metric-input"
+                inputMode="decimal"
+                value={showPackUi ? piecePriceText : packPriceText}
+                onChange={(e) => (showPackUi ? changePiecePrice(e.target.value) : changePackPrice(e.target.value))}
+              />
             </div>
             <div className="pharmacy-qty-modal__metric">
               <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.inPack')}</span>
-              <span className="pharmacy-qty-modal__metric-value">{showPackUi ? unitsInPack : 1}</span>
+              <input
+                className="pharmacy-qty-modal__metric-input"
+                inputMode="numeric"
+                value={unitsText}
+                onChange={(e) => changeUnits(e.target.value)}
+              />
             </div>
             <div className="pharmacy-qty-modal__metric pharmacy-qty-modal__metric--sold">
               <span className="pharmacy-qty-modal__metric-label">{t('pharmacyCashier.soldPacks')}</span>
