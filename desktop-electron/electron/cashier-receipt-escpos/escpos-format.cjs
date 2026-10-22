@@ -28,16 +28,30 @@ function fmtMoneyTable(value) {
 }
 
 /**
- * Количество без лишних нулей.
- * @param {number|string} value
+ * Подпись весовой единицы с карточки товара. Пустая единица остаётся кг.
+ * @param {string} unitOfMeasure
  * @returns {string}
  */
-function fmtQty(value, saleType) {
+function weightUnitLabel(unitOfMeasure) {
+  const u = String(unitOfMeasure || '').trim().toLowerCase();
+  if (u === 'g' || u === 'г' || u === 'гр' || u === 'грамм' || u === 'gram' || u === 'gramm') return 'г';
+  if (u === 'mg' || u === 'мг') return 'мг';
+  return 'кг';
+}
+
+/**
+ * Количество без лишних нулей.
+ * @param {number|string} value
+ * @param {string} [saleType]
+ * @param {string} [unitOfMeasure]
+ * @returns {string}
+ */
+function fmtQty(value, saleType, unitOfMeasure) {
   const n = Number(value);
   if (!Number.isFinite(n)) return '0';
   if (saleType === 'WEIGHT') {
     const s = n.toFixed(3).replace(/\.?0+$/, '') || '0';
-    return `${s} kg`;
+    return `${s} ${weightUnitLabel(unitOfMeasure)}`;
   }
   if (Number.isInteger(n) || Math.abs(n - Math.round(n)) < 0.0005) {
     return String(Math.round(n));

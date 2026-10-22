@@ -273,7 +273,7 @@ function appendItems(printer, payload) {
 
   for (const item of sale.items || []) {
     printer.println(String(item.productName || ''));
-    const qty = fmtQty(item.quantity, item.saleType);
+    const qty = fmtQty(item.quantity, item.saleType, item.unitOfMeasure);
     printer.println(`${qty} * ${fmtMoney(itemUnitPrice(item))} = ${fmtMoney(item.lineTotal)}`);
     if (isOn(fields, 'itemVatLine')) {
       const rate = item.taxRatePercent != null ? Number(item.taxRatePercent) : 12;
