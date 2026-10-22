@@ -1,12 +1,25 @@
 /** Local Windows printers on the Aurent desktop shell. Browser has none. */
 
+function printerBridge() {
+  if (typeof window === 'undefined') return null;
+  const cashier = window.desktopCashier;
+  if (cashier?.isDesktop) return cashier;
+  const hall = window.aurentRestaurant;
+  if (hall?.isDesktop && typeof hall.listPrinters === 'function') return hall;
+  return null;
+}
+
 export function isDesktopPrinter() {
-  const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
-  return Boolean(desk?.isDesktop);
+  const desk = printerBridge();
+  return Boolean(desk?.isDesktop || (typeof window !== 'undefined' && window.aurentRestaurant?.isDesktop));
 }
 
 export function listDesktopPrinters() {
-  return window.desktopCashier.listPrinters();
+  const desk = printerBridge();
+  if (typeof desk?.listPrinters !== 'function') {
+    return Promise.reject(new Error('Список принтеров недоступен в этой сборке'));
+  }
+  return desk.listPrinters();
 }
 
 const PRINTER_LIST_TTL_MS = 60_000;
@@ -33,11 +46,24 @@ export async function listDesktopPrintersCached() {
 }
 
 export function getDesktopPrinterSettings() {
-  return window.desktopCashier.getPrinterSettings();
+  const desk = printerBridge();
+  if (typeof desk?.getPrinterSettings !== 'function') {
+    return Promise.resolve({
+      receiptPrinterName: '',
+      labelPrinterName: '',
+      billPrinterName: '',
+      stationPrinters: {},
+    });
+  }
+  return desk.getPrinterSettings();
 }
 
 export function saveDesktopPrinterSettings(settings) {
-  return window.desktopCashier.setPrinterSettings(settings);
+  const desk = printerBridge();
+  if (typeof desk?.setPrinterSettings !== 'function') {
+    return Promise.reject(new Error('Сохранение принтеров недоступно в этой сборке'));
+  }
+  return desk.setPrinterSettings(settings);
 }
 
 function escapeHtml(value) {
@@ -49,7 +75,11 @@ function escapeHtml(value) {
 }
 
 export function printTicketHtml(html, printerName) {
-  return window.desktopCashier.printTicketHtml({ html, printerName });
+  const desk = printerBridge();
+  if (typeof desk?.printTicketHtml !== 'function') {
+    return Promise.reject(new Error('Печать недоступна в этой сборке'));
+  }
+  return desk.printTicketHtml({ html, printerName });
 }
 
 /**
@@ -119,7 +149,7 @@ async function printTicketLinesNow({
   logoMaxHeightMm,
   titleEmph,
 }) {
-  const desk = typeof window !== 'undefined' ? window.desktopCashier : null;
+  const desk = printerBridge();
   const payload = {
     printerName: name,
     title: title || '',

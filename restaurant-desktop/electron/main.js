@@ -23,6 +23,10 @@ const {
   setCompanyLoginCode,
 } = require('./runtime/companyCodeStore');
 const { buildAppMenu, normalizeLocale } = require('./menu/appMenu');
+const { setMainWindow } = require('./printers/window-ref.cjs');
+const { registerPrinterIpc } = require('./printers/registerPrinterIpc');
+const { initAutoUpdater } = require('./autoUpdaterBridge');
+const { multikassaRequest } = require('./multikassa/multikassaProxy');
 
 let menuLocale = 'ru';
 
@@ -122,8 +126,10 @@ function createWindow() {
   });
 
   mainWindow.loadFile(path.join(__dirname, 'boot.html'));
+  setMainWindow(mainWindow);
   mainWindow.on('closed', () => {
     mainWindow = null;
+    setMainWindow(null);
   });
 }
 
@@ -361,6 +367,26 @@ app.whenReady().then(async () => {
   });
 
   applyAppMenu();
+  registerPrinterIpc();
+  ipcMain.handle('desktop:quit', () => {
+    app.quit();
+    return { ok: true };
+  });
+  ipcMain.handle('desktop:toggleFullscreen', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    }
+    return { ok: true };
+  });
+  ipcMain.handle('desktop:reload', () => {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.reload();
+    }
+    return { ok: true };
+  });
+  ipcMain.handle('desktop:multikassaRequest', (_event, payload) => multikassaRequest(payload || {}));
+  ipcMain.handle('desktop:getCompanyLoginCode', async () => getCompanyLoginCode());
+  initAutoUpdater();
   createWindow();
   await bootStack();
 

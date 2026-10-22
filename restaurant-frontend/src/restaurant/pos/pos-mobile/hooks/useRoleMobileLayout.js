@@ -7,7 +7,9 @@ import {
 } from '../utils/roleMobilePrefs';
 
 function isDesktopElectronShell() {
-  return typeof window !== 'undefined' && Boolean(window.desktopCashier?.isDesktop);
+  return typeof window !== 'undefined' && Boolean(
+    window.aurentRestaurant?.isDesktop || window.desktopCashier?.isDesktop,
+  );
 }
 
 /**

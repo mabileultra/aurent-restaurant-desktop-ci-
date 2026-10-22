@@ -585,6 +585,7 @@ export function useCashierPinLoginPage() {
     submit,
     toggleFullscreen,
     quitApp,
-    showQuit: isDesktopCashier() && typeof window.desktopCashier?.quit === 'function',
+    showQuit: (isDesktopCashier() || isRestaurantDesktop())
+      && typeof window.desktopCashier?.quit === 'function',
   };
 }

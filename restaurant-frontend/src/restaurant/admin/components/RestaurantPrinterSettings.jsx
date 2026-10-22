@@ -49,7 +49,10 @@ export default function RestaurantPrinterSettings({
 }) {
   const qc = useQueryClient();
   const desktop = isDesktopPrinter();
-  const canList = desktop && typeof window.desktopCashier?.listPrinters === 'function';
+  const canList = desktop && (
+    typeof window.desktopCashier?.listPrinters === 'function'
+    || typeof window.aurentRestaurant?.listPrinters === 'function'
+  );
   const [printers, setPrinters] = useState([]);
   const [settings, setSettings] = useState(null);
   const settingsRef = useRef(null);
@@ -57,39 +60,6 @@ export default function RestaurantPrinterSettings({
   const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState('');
-
-  useEffect(() => {
-    if (!canList) return undefined;
-    let cancelled = false;
-    Promise.all([listDesktopPrinters(), getDesktopPrinterSettings()])
-      .then(([list, saved]) => {
-        if (cancelled) return;
-        setPrinters(Array.isArray(list) ? list : []);
-        const next = {
-          receiptPrinterName: saved?.receiptPrinterName || '',
-          labelPrinterName: saved?.labelPrinterName || '',
-          billPrinterName: saved?.billPrinterName || '',
-          stationPrinters: saved?.stationPrinters || {},
-        };
-        settingsRef.current = next;
-        setSettings(next);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setLoadError(true);
-        const next = {
-          receiptPrinterName: '',
-          labelPrinterName: '',
-          billPrinterName: '',
-          stationPrinters: {},
-        };
-        settingsRef.current = next;
-        setSettings(next);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [canList]);
 
   const applySettings = (saved) => {
     const next = {
@@ -102,6 +72,36 @@ export default function RestaurantPrinterSettings({
     setSettings(next);
     return next;
   };
+
+  const loadPrinters = () => {
+    if (!canList) return Promise.resolve();
+    setLoadError(false);
+    return Promise.all([listDesktopPrinters(), getDesktopPrinterSettings()])
+      .then(([list, saved]) => {
+        setPrinters(Array.isArray(list) ? list : []);
+        applySettings(saved);
+      })
+      .catch(() => {
+        setLoadError(true);
+        applySettings({
+          receiptPrinterName: '',
+          labelPrinterName: '',
+          billPrinterName: '',
+          stationPrinters: {},
+        });
+      });
+  };
+
+  useEffect(() => {
+    if (!canList) return undefined;
+    let cancelled = false;
+    loadPrinters().then(() => {
+      if (cancelled) return;
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [canList]);
 
   const save = async (patch) => {
     const next = { ...(settingsRef.current || settings), ...patch };
@@ -245,6 +245,19 @@ export default function RestaurantPrinterSettings({
   return (
     <div className="rst-admin-form">
       {loadError ? <p className="rst-coming__text">{t('rst.admin.printersLoadFailed')}</p> : null}
+      <div className="rst-printers__row" style={{ marginBottom: 12 }}>
+        <BaseButton type="button" variant="ghost" disabled={busy} onClick={() => loadPrinters()}>
+          {t('rst.admin.printersFind', { defaultValue: 'Найти принтеры' })}
+        </BaseButton>
+        <span className="rst-admin-field__hint">
+          {printers.length
+            ? t('rst.admin.printersFound', {
+              count: printers.length,
+              defaultValue: `Найдено: ${printers.length}`,
+            })
+            : t('rst.admin.printersNoneFound', { defaultValue: 'Windows пока не отдал список — нажмите «Найти принтеры».' })}
+        </span>
+      </div>
       <section className="rst-printers__block">
         <h2 className="rst-printers__title">{t('rst.admin.printersPayTitle')}</h2>
         <p className="rst-printers__note">{t('rst.admin.printersPayHint')}</p>

@@ -1,6 +1,6 @@
 {
   "name": "aurent-restaurant-desktop",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "private": true,
   "description": "Aurent Restaurant — local-first hall desktop (separate from Aurent Cashier)",
   "main": "electron/main.js",
@@ -32,7 +32,9 @@
     ],
     "asarUnpack": [
       "**/node_modules/embedded-postgres/**",
-      "**/node_modules/@embedded-postgres/**"
+      "**/node_modules/@embedded-postgres/**",
+      "electron/printers/win-raw-print.ps1",
+      "electron/printers/win-raw-print-worker.ps1"
     ],
     "extraResources": [
       {
@@ -71,10 +73,17 @@
       "oneClick": false,
       "allowToChangeInstallationDirectory": true
     },
+    "publish": {
+      "provider": "generic",
+      "url": "https://r-aurent.uz/downloads/restaurant-desktop/"
+    },
     "artifactName": "Aurent-Restaurant-${version}-${os}-${arch}.${ext}"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "embedded-postgres": "18.4.0-beta.17",
+    "iconv-lite": "^0.6.3",
+    "node-thermal-printer": "^4.6.1",
     "pg": "^8.23.1"
   },
   "optionalDependencies": {

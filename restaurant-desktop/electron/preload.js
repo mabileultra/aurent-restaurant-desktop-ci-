@@ -1,5 +1,40 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
+const invoke = (channel, ...args) => ipcRenderer.invoke(channel, ...args);
+
+/**
+ * Hall UI historically talks to window.desktopCashier (cashier shell names).
+ * Keep aurentRestaurant for edge bootstrap; isDesktopCashier() still false
+ * because it checks aurentRestaurant first.
+ */
+contextBridge.exposeInMainWorld('desktopCashier', {
+  isDesktop: true,
+  getCompanyLoginCode: () => invoke('desktop:getCompanyLoginCode'),
+  reload: () => invoke('desktop:reload'),
+  toggleFullscreen: () => invoke('desktop:toggleFullscreen'),
+  quit: () => invoke('desktop:quit'),
+
+  listPrinters: () => invoke('desktop:list-printers'),
+  getPrinterSettings: () => invoke('desktop:get-printer-settings'),
+  setPrinterSettings: (settings) => invoke('desktop:set-printer-settings', settings),
+  printTicketHtml: (payload) => invoke('desktop:print-ticket-html', payload || {}),
+  printReceiptEscpos: (payload) => invoke('desktop:print-receipt-escpos', payload),
+  printPlainEscpos: (payload) => invoke('desktop:print-plain-escpos', payload || {}),
+  printZReportEscpos: (payload) => invoke('desktop:print-z-report-escpos', payload),
+  printShiftReportEscpos: (payload) => invoke('desktop:print-shift-report-escpos', payload),
+
+  checkForUpdates: () => invoke('desktop:checkForUpdates'),
+  quitAndInstallUpdate: () => invoke('desktop:quitAndInstallUpdate'),
+  onDesktopUpdate: (callback) => {
+    if (typeof callback !== 'function') return () => {};
+    const handler = (_event, payload) => callback(payload);
+    ipcRenderer.on('desktop:update', handler);
+    return () => ipcRenderer.removeListener('desktop:update', handler);
+  },
+
+  multikassaRequest: (payload) => invoke('desktop:multikassaRequest', payload),
+});
+
 contextBridge.exposeInMainWorld('aurentRestaurant', {
   isDesktop: true,
   getStatus: () => ipcRenderer.invoke('restaurant:get-status'),
