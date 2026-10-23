@@ -46,8 +46,8 @@ function tasnifMxik(tasnif) {
 }
 
 /**
- * Товар по DataMatrix без ASL: GTIN из КМ → сразу Tasnif (ОФД/ИКПУ) → каталог.
- * extraGtins — только варианты GTIN из самого кода, не ответ ASL.
+ * Товар по маркировке: GTIN из КМ → штрихкод / поиск каталога.
+ * Tasnif ИКПУ — только если по GTIN карточки нет.
  */
 export async function lookupProductByMarkingGtin({
   products,
@@ -64,12 +64,6 @@ export async function lookupProductByMarkingGtin({
   const candidates = markingBarcodeCandidates(mark, extraGtins);
   const gtin = candidates.find((code) => code.length >= 8) || extractGtinFromMarkingCode(mark);
 
-  const tasnifPromise = gtin && lookupTasnifByBarcode
-    ? Promise.resolve()
-      .then(() => lookupTasnifByBarcode(gtin))
-      .catch(() => null)
-    : Promise.resolve(null);
-
   for (const barcode of candidates) {
     try {
       // eslint-disable-next-line no-await-in-loop
@@ -81,16 +75,25 @@ export async function lookupProductByMarkingGtin({
     }
   }
 
-  const tasnif = await tasnifPromise;
-  const mxik = tasnifMxik(tasnif);
-  if (mxik) {
-    const byIkpu = findByIkpu(products, mxik);
-    if (byIkpu) return byIkpu;
-  }
-
-  return firstCatalogHit(
+  const byGtinCatalog = await firstCatalogHit(
     searchCatalog,
-    [mxik, ...candidates].filter(Boolean),
-    (items) => (mxik && findByIkpu(items, mxik)) || findInList(items, mark, extraGtins),
+    candidates,
+    (items) => findInList(items, mark, extraGtins),
   );
+  if (byGtinCatalog) return byGtinCatalog;
+
+  if (!gtin || !lookupTasnifByBarcode) return null;
+  let tasnif = null;
+  try {
+    tasnif = await lookupTasnifByBarcode(gtin);
+  } catch {
+    tasnif = null;
+  }
+  const mxik = tasnifMxik(tasnif);
+  if (!mxik) return null;
+
+  const byIkpu = findByIkpu(products, mxik);
+  if (byIkpu) return byIkpu;
+
+  return firstCatalogHit(searchCatalog, [mxik], (items) => findByIkpu(items, mxik));
 }

@@ -131,7 +131,8 @@ public class PharmacySaleCheckoutService {
         soldMarkService.registerSaleMarks(saved, saved.getItems(), markPlan.marksPerItem());
         stockMarkService.markPendingWithdraw(storeId, saved.getId(), markPlan.allMarks());
         if (!markPlan.allMarks().isEmpty()) {
-            markWithdrawService.enqueueAfterSale(companyId, storeId, saved.getId(), markPlan.allMarks());
+            boolean fiscalOk = SaleFiscalApplier.STATUS_FISCALIZED.equals(saved.getFiscalStatus());
+            markWithdrawService.enqueueAfterSale(companyId, storeId, saved.getId(), markPlan.allMarks(), fiscalOk);
         }
         shiftSaleAccumulator.applySale(
             openShift,

@@ -42,7 +42,7 @@ class PharmacyMarkWithdrawServiceImplTest {
         when(stockMarkService.confirmSold(eq(10), eq(5), eq(List.of("KM1")), eq("WITHDRAWN")))
             .thenReturn(1);
 
-        service.enqueueAfterSale(10, 5, UUID.randomUUID(), List.of("KM1"));
+        service.enqueueAfterSale(10, 5, UUID.randomUUID(), List.of("KM1"), true);
 
         verify(stockMarkService).confirmSold(10, 5, List.of("KM1"), "WITHDRAWN");
     }

@@ -13,6 +13,9 @@ import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
 import { applyPharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkedScanCart';
+import { assessPharmacyMarkLifecycle } from '../../../pharmacy-cashier/utils/pharmacyMarkLifecycle';
+import { markingIdentityKeys } from '../../../pharmacy-cashier/utils/pharmacyMarkIdentity';
+import { preserveMarkingCodeForFiscal } from '../../../pharmacy-cashier/utils/preserveMarkingCodeForFiscal';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
@@ -38,6 +41,7 @@ export function usePosCartHandlers({
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
+  const pendingMarkKeysRef = useRef(new Set());
   const [weightModalProduct, setWeightModalProduct] = useState(null);
   const [weightEditLineId, setWeightEditLineId] = useState(null);
 
@@ -143,17 +147,41 @@ export function usePosCartHandlers({
    */
   const tryAddByMarking = useCallback(
     async (rawCode) => {
-      if (!rawCode || !storeId || scanningRef.current || payOpen || returnOpen) return false;
+      if (!rawCode || !storeId || payOpen || returnOpen) return false;
       if (classifyPosScanInput(rawCode) !== 'marking') return false;
+      // КМ не должен падать в штрихкод/список, даже если предыдущий скан ещё идёт
+      if (scanningRef.current) return true;
+      if (!shiftIsOpen) {
+        toast.error(t('pos.shiftRequired'));
+        return true;
+      }
+      const mark = preserveMarkingCodeForFiscal(rawCode);
+      const before = assessPharmacyMarkLifecycle({
+        rawCode: mark,
+        cartItems: useCartStore.getState().items,
+        pendingKeys: [...pendingMarkKeysRef.current],
+        storeId,
+      });
+      if (before.status === 'duplicate') {
+        toast.error(t('pos.markingAlreadyCounted'));
+        setSearch('');
+        return true;
+      }
+      if (before.status === 'sold') {
+        toast.error(t(aslMarkingEnabled
+          ? 'pos.markingAlreadySold'
+          : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
+        setSearch('');
+        return true;
+      }
+
       scanningRef.current = true;
+      const keys = markingIdentityKeys(mark);
+      keys.forEach((k) => pendingMarkKeysRef.current.add(k));
       try {
-        if (!shiftIsOpen) {
-          toast.error(t('pos.shiftRequired'));
-          return true;
-        }
         const resolved = await resolvePosMarkedProduct({
           products,
-          rawCode,
+          rawCode: mark,
           storeId,
           aslEnabled: Boolean(aslMarkingEnabled),
         });
@@ -173,10 +201,13 @@ export function usePosCartHandlers({
         setSearch('');
         return true;
       } catch (e) {
-        toast.error(t('pos.markingNotFound'));
+        toast.error(t(e?.code === 'MARK_ALREADY_SOLD'
+          ? 'pos.markingAlreadySold'
+          : 'pos.markingNotFound'));
         setSearch('');
         return true;
       } finally {
+        keys.forEach((k) => pendingMarkKeysRef.current.delete(k));
         scanningRef.current = false;
         searchInputRef.current?.focus();
       }
@@ -269,7 +300,8 @@ export function usePosCartHandlers({
 
       // Жёсткое разделение: КМ → только маркировка; штрихкод → налог без ASL
       if (classifyPosScanInput(trimmed) === 'marking') {
-        return tryAddByMarking(trimmed);
+        await tryAddByMarking(trimmed);
+        return true;
       }
 
       scanningRef.current = true;

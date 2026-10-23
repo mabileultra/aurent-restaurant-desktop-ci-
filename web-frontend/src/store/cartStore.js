@@ -88,12 +88,18 @@ const syncDiscountFromPercent = (item) => ({
 
 /** Позиции для API: только построчные скидки (скидка на чек — отдельными полями в sales). */
 export function buildCheckoutLineItems(items) {
-  return items.map((i) => ({
-    productId: i.productId,
-    quantity: roundQty(i.quantity),
-    discount: lineDiscountAmount(i),
-    unitPrice: round2(i.unitPrice),
-  }));
+  return items.map((i) => {
+    const marks = Array.isArray(i.productMarks) && i.productMarks.some(Boolean)
+      ? i.productMarks.filter(Boolean)
+      : [i.productMark || i.markCode].filter(Boolean);
+    return {
+      productId: i.productId,
+      quantity: roundQty(i.quantity),
+      discount: lineDiscountAmount(i),
+      unitPrice: round2(i.unitPrice),
+      ...(marks.length > 0 ? { productMarks: marks } : {}),
+    };
+  });
 }
 
 export const useCartStore = create((set, get) => ({

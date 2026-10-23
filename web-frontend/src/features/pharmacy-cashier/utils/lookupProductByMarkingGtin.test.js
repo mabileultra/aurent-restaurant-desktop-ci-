@@ -16,6 +16,7 @@ describe('lookupProductByMarkingGtin', () => {
 
   it('searches the catalog by GTIN when the open list is empty', async () => {
     const fetchByBarcode = vi.fn(async () => null);
+    const lookupTasnifByBarcode = vi.fn();
     const searchCatalog = vi.fn(async (query) => (
       query.includes('4780012345678') ? { content: [product] } : { content: [] }
     ));
@@ -24,13 +25,14 @@ describe('lookupProductByMarkingGtin', () => {
       mark: KM,
       fetchByBarcode,
       searchCatalog,
-      lookupTasnifByBarcode: vi.fn(),
+      lookupTasnifByBarcode,
     });
     expect(hit.id).toBe(11);
     expect(searchCatalog).toHaveBeenCalled();
+    expect(lookupTasnifByBarcode).not.toHaveBeenCalled();
   });
 
-  it('asks Tasnif immediately and finds the card by IKPU when barcodes do not match', async () => {
+  it('asks Tasnif for IKPU only after GTIN barcode search misses', async () => {
     const byIkpu = { id: 22, barcode: '999', ikpu: '03004409005039001', name: 'Чай' };
     const lookupTasnifByBarcode = vi.fn(async () => ({ mxik: '03004409005039001' }));
     const hit = await lookupProductByMarkingGtin({

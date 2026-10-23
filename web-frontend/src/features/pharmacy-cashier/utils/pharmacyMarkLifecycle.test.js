@@ -79,4 +79,19 @@ describe('pharmacy mark lifecycle', () => {
       locallySold: true,
     }).status).toBe('sold');
   });
+
+  it('treats GS-separated crypto as the same pack as concatenated crypto', () => {
+    const base = '010307797292003921U=HqEW=YAVhNqy/Uasgl';
+    const items = [{
+      lineId: 'L1',
+      productId: product.id,
+      quantity: 1,
+      productMarks: [`${base}91EE1192ABCDEF`],
+    }];
+    expect(assessPharmacyMarkLifecycle({
+      rawCode: `${base}\u001d91FFFF\u001d92ZZZZ`,
+      cartItems: items,
+    }).status).toBe('duplicate');
+    expect(planMarkedScan(items, product, `${base}\u001d91FFFF\u001d92ZZZZ`).status).toBe('duplicate');
+  });
 });

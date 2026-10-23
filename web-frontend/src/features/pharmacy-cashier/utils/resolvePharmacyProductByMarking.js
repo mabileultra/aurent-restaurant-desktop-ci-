@@ -10,7 +10,7 @@ function isMissingProduct(error) {
   return status === 404 || status === 400;
 }
 
-/** Найти товар кассы по DataMatrix: GTIN из КМ и ИКПУ из Tasnif (ОФД), без ASL. */
+/** Найти товар кассы по КМ: сначала GTIN, ИКПУ из Tasnif — только запасной путь. */
 export async function resolvePharmacyProductByMarking({
   products,
   rawCode,

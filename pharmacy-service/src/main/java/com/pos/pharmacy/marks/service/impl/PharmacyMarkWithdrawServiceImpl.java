@@ -32,11 +32,23 @@ public class PharmacyMarkWithdrawServiceImpl implements PharmacyMarkWithdrawServ
     @Override
     @Async(PharmacyExecutorNames.MARK_WITHDRAW)
     public void enqueueAfterSale(Integer companyId, Integer storeId, UUID saleId, Collection<String> markCodes) {
+        enqueueAfterSale(companyId, storeId, saleId, markCodes, false);
+    }
+
+    @Override
+    @Async(PharmacyExecutorNames.MARK_WITHDRAW)
+    public void enqueueAfterSale(
+        Integer companyId,
+        Integer storeId,
+        UUID saleId,
+        Collection<String> markCodes,
+        boolean fiscalConfirmed
+    ) {
         if (companyId == null || storeId == null || markCodes == null || markCodes.isEmpty()) {
             return;
         }
         try {
-            processGroup(companyId, storeId, List.copyOf(markCodes), false);
+            processGroup(companyId, storeId, List.copyOf(markCodes), fiscalConfirmed);
         } catch (Exception ex) {
             LogUtil.warn(
                 PharmacyMarkWithdrawServiceImpl.class,

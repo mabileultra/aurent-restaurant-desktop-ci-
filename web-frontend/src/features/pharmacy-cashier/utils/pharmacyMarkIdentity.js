@@ -5,6 +5,15 @@ import {
 } from './pharmacyMarkingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
+/** Как pharmacy-service PharmacyMarkIdentityKeys: серия до криптохвоста 91/92/93. */
+const GS1_SERIAL = /01(\d{14})21([\x21-\x7E]{4,30}?)(?:91|92|93|$)/;
+
+function gs1Parts(code) {
+  const match = String(code || '').match(GS1_SERIAL);
+  if (!match) return null;
+  return { gtin: match[1], serial: match[2] };
+}
+
 /**
  * Ключи одной упаковки (полный код + GTIN|serial).
  * Разные пачки одного товара → разные ключи.
@@ -42,6 +51,8 @@ const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
 export function markingIdentificationCode(raw) {
   const code = normalizePharmacyMarkingCode(raw);
   if (!code) return '';
+  const parts = gs1Parts(code);
+  if (parts) return `01${parts.gtin}21${parts.serial}`;
   if (code.length > 18 && code.startsWith('01') && code.slice(16, 18) === '21') {
     const serialAndTail = code.slice(18);
     const crypto = serialAndTail.match(CRYPTO_TAIL);
@@ -61,6 +72,11 @@ export function extractSerialFromMarkingCode(raw) {
   if (paren?.[1]) {
     const serial = paren[1].replace(/\s+/g, '');
     return serial || null;
+  }
+
+  const parts = gs1Parts(code);
+  if (parts?.serial && parts.serial.length >= 4 && parts.serial.length <= 30) {
+    return parts.serial;
   }
 
   const identification = markingIdentificationCode(code);

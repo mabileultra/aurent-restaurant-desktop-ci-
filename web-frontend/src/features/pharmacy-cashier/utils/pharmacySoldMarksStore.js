@@ -5,7 +5,7 @@ const STORAGE_PREFIX = 'pharmacy-sold-marks:v1';
 const memoryFallback = new Map();
 
 function storageKey(storeId) {
-  return `${STORAGE_PREFIX}:${storeId || 'unknown'}`;
+  return `${STORAGE_PREFIX}:${storeId == null || storeId === '' ? 'unknown' : String(storeId)}`;
 }
 
 function canUseLocalStorage() {
