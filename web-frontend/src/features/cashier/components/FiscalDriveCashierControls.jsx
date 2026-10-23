@@ -63,7 +63,7 @@ export default function FiscalDriveCashierControls({ className = '' }) {
     setOpen(true);
   };
 
-  if (storeId == null || !isFiscalDrive) return null;
+  if (storeId == null) return null;
 
   const modalRegisterId = registerId ?? cashRegisterId;
 

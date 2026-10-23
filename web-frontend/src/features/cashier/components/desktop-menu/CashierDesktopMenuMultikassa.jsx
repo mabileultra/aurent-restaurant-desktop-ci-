@@ -11,7 +11,6 @@ import {
 import { useCashierStore } from '../../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
-import { isFiscalDriveProvider } from '../../../../services/fiscal';
 import { getApiErrorMessage } from '../../../../utils/apiError';
 
 const MultikassaSettingsModal = lazy(() =>
@@ -77,7 +76,6 @@ export default function CashierDesktopMenuMultikassa({ t }) {
   };
 
   if (storeId == null) return null;
-  if (isFiscalDriveProvider(caps)) return null;
 
   return (
     <>
