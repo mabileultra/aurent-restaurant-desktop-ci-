@@ -96,3 +96,15 @@ export function resolveMarkingVerifyUserMessage({
   }
   return t(notFound);
 }
+
+/**
+ * Касса: без ASL товар ищем локально. «Нет интеграции» не показываем —
+ * это для приёмки/импорта, не для скана в чек.
+ */
+export function resolveCashierMarkingMissMessage(args = {}) {
+  if (!args.aslEnabled) {
+    const notFound = args.keys?.notFound || 'pharmacyCashier.integrations.markingCatalogNeed';
+    return args.t(notFound);
+  }
+  return resolveMarkingVerifyUserMessage(args);
+}

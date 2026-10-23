@@ -7,7 +7,7 @@ import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFis
 import { assessPharmacyMarkLifecycle } from '../utils/pharmacyMarkLifecycle';
 import { markingIdentityKeys } from '../utils/pharmacyMarkIdentity';
 import { resolveCashierMarkedProduct } from '../utils/resolveCashierMarkedProduct';
-import { resolveMarkingVerifyUserMessage } from '../utils/resolveMarkingVerifyUserMessage';
+import { resolveCashierMarkingMissMessage } from '../utils/resolveMarkingVerifyUserMessage';
 
 /**
  * Скан / вставка КМ из поля поиска — та же логика, что модалка ASL.
@@ -94,7 +94,7 @@ export function usePharmacyMarkingScan({
 
       setLastScan({ code: mark, result: resolved.aslResult, product: null });
       if (!silent) {
-        toast.error(resolveMarkingVerifyUserMessage({
+        toast.error(resolveCashierMarkingMissMessage({
           aslEnabled: Boolean(aslMarkingEnabled),
           aslResult: resolved.aslResult,
           aslError: resolved.aslError,

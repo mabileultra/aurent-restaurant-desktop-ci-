@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   classifyMarkingVerifyFailure,
   isAslIntegrationDisabledError,
+  resolveCashierMarkingMissMessage,
   resolveMarkingVerifyUserMessage,
 } from './resolveMarkingVerifyUserMessage';
 
@@ -60,5 +61,13 @@ describe('resolveMarkingVerifyUserMessage', () => {
       aslError: { response: { data: { message: 'Internal boom\nstack\nmore' } } },
       t,
     })).toBe('pharmacyCashier.integrations.markingApiDisabled');
+  });
+
+  it('cashier miss without ASL says product not found, not missing integration', () => {
+    expect(resolveCashierMarkingMissMessage({
+      aslEnabled: false,
+      t,
+      keys: { notFound: 'pos.markingNotFound' },
+    })).toBe('pos.markingNotFound');
   });
 });
