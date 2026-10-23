@@ -102,8 +102,13 @@ export function resolveMarkingVerifyUserMessage({
  * это для приёмки/импорта, не для скана в чек.
  */
 export function resolveCashierMarkingMissMessage(args = {}) {
-  if (!args.aslEnabled) {
-    const notFound = args.keys?.notFound || 'pharmacyCashier.integrations.markingCatalogNeed';
+  const notFound = args.keys?.notFound || 'pharmacyCashier.integrations.markingCatalogNeed';
+  const kind = classifyMarkingVerifyFailure({
+    aslEnabled: args.aslEnabled,
+    aslResult: args.aslResult,
+    aslError: args.aslError,
+  });
+  if (!args.aslEnabled || kind === 'no-integration') {
     return args.t(notFound);
   }
   return resolveMarkingVerifyUserMessage(args);

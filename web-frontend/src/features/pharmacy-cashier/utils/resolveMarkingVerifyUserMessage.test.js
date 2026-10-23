@@ -70,4 +70,13 @@ describe('resolveMarkingVerifyUserMessage', () => {
       keys: { notFound: 'pos.markingNotFound' },
     })).toBe('pos.markingNotFound');
   });
+
+  it('cashier miss does not ask for ASL when backend says marking is disabled', () => {
+    expect(resolveCashierMarkingMissMessage({
+      aslEnabled: true,
+      aslError: { response: { data: { message: 'ASL Belgisi marking is disabled for this store' } } },
+      t,
+      keys: { notFound: 'pos.markingNotFound' },
+    })).toBe('pos.markingNotFound');
+  });
 });

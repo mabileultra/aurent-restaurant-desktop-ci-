@@ -13,7 +13,6 @@ import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
 import { applyPharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkedScanCart';
-import { resolveCashierMarkingMissMessage } from '../../../pharmacy-cashier/utils/resolveMarkingVerifyUserMessage';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
@@ -170,29 +169,11 @@ export function usePosCartHandlers({
           setSearch('');
           return true;
         }
-        toast.error(resolveCashierMarkingMissMessage({
-          aslEnabled: Boolean(aslMarkingEnabled),
-          aslResult: resolved.aslResult,
-          t,
-          keys: {
-            notFound: 'pos.markingNotFound',
-            catalogMiss: 'pharmacyCashier.integrations.markingCatalogMiss',
-            verifyFailed: 'pos.markingNotFound',
-          },
-        }));
+        toast.error(t('pos.markingNotFound'));
         setSearch('');
         return true;
       } catch (e) {
-        toast.error(resolveCashierMarkingMissMessage({
-          aslEnabled: Boolean(aslMarkingEnabled),
-          aslError: e,
-          t,
-          keys: {
-            notFound: 'pos.markingNotFound',
-            catalogMiss: 'pharmacyCashier.integrations.markingCatalogMiss',
-            verifyFailed: 'pos.markingNotFound',
-          },
-        }));
+        toast.error(t('pos.markingNotFound'));
         setSearch('');
         return true;
       } finally {

@@ -94,12 +94,16 @@ export function usePharmacyMarkingScan({
 
       setLastScan({ code: mark, result: resolved.aslResult, product: null });
       if (!silent) {
-        toast.error(resolveCashierMarkingMissMessage({
-          aslEnabled: Boolean(aslMarkingEnabled),
-          aslResult: resolved.aslResult,
-          aslError: resolved.aslError,
-          t,
-        }));
+        toast.error(
+          aslMarkingEnabled
+            ? resolveCashierMarkingMissMessage({
+              aslEnabled: true,
+              aslResult: resolved.aslResult,
+              aslError: resolved.aslError,
+              t,
+            })
+            : t('pharmacyCashier.integrations.markingCatalogNeed'),
+        );
       }
     } finally {
       keys.forEach((k) => pendingRef.current.delete(k));
