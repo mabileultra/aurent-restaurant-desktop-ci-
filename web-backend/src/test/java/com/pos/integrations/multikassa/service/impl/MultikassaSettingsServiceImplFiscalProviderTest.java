@@ -91,19 +91,12 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
                 .terminalId("ZZ000000000000")
                 .build()
         ));
-        when(settingsRepository.findById(14L)).thenReturn(Optional.of(
-            CashRegisterMultikassaSettings.builder()
-                .cashRegisterId(14L)
-                .enabled(false)
-                .requireBeforeSale(false)
-                .printFiscalQr(true)
-                .build()
-        ));
 
         CashierMultikassaCapabilitiesResponse caps = service.getCashierCapabilities(cashier, 5, 14L);
 
         assertThat(caps.enabled()).isTrue();
         assertThat(caps.requireBeforeSale()).isTrue();
+        assertThat(caps.printFiscalQr()).isTrue();
         assertThat(caps.fiscalProvider()).isEqualTo(FiscalProvider.FISCAL_DRIVE.name());
         assertThat(caps.factoryId()).isEqualTo("FACTORY-1");
         assertThat(caps.baseUrl()).isEqualTo("http://127.0.0.1:3449");
@@ -121,7 +114,6 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
                 .baseUrl("http://127.0.0.1:3449/")
                 .build()
         ));
-        when(settingsRepository.findById(15L)).thenReturn(Optional.empty());
 
         CashierMultikassaCapabilitiesResponse caps = service.getCashierCapabilities(cashier, 5, 15L);
 

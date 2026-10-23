@@ -12,10 +12,11 @@ function digitsOnly(value) {
 function productBarcodeDigits(product) {
   const values = [
     product?.barcode,
+    product?.sku,
     ...(Array.isArray(product?.barcodes) ? product.barcodes : []),
     ...(Array.isArray(product?.additionalBarcodes) ? product.additionalBarcodes : []),
   ];
-  return values.map(digitsOnly).filter(Boolean);
+  return values.map(digitsOnly).filter((value) => value.length >= 8);
 }
 
 function gtinVariants(gtin14) {

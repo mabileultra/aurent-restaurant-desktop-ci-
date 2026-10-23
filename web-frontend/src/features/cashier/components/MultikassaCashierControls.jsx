@@ -13,6 +13,7 @@ import {
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
+import { isFiscalDriveProvider } from '../../../services/fiscal';
 import { getApiErrorMessage } from '../../../utils/apiError';
 import { buildTerminalRequest, resolveCashierTerminalIdentity } from '../../../utils/cashierTerminalIdentity';
 import '../styles/fiscal-cashier-controls.css';
@@ -111,6 +112,7 @@ export default function MultikassaCashierControls({ className = '' }) {
   };
 
   if (storeId == null) return null;
+  if (isFiscalDriveProvider(caps)) return null;
 
   const modalRegisterId = settingsRegisterId ?? cashRegisterId;
 

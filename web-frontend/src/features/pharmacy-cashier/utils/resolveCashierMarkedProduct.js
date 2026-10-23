@@ -48,19 +48,6 @@ export async function resolveCashierMarkedProduct({
     aslError = aslError || error;
   }
 
-  if (!product && gate.aslResult?.gtin) {
-    try {
-      product = await resolvePharmacyProductByMarking({
-        products,
-        rawCode: mark,
-        extraGtins: [gate.aslResult.gtin],
-        storeId,
-      });
-    } catch (error) {
-      aslError = aslError || error;
-    }
-  }
-
   if (product) {
     return {
       status: 'ok',

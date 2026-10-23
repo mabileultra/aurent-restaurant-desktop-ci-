@@ -10,13 +10,18 @@ vi.mock('../../../api/pharmacyStockMarks.api', () => ({
   pharmacyStockMarksApi: { check: vi.fn() },
 }));
 vi.mock('../../../api/pharmacyWarehouse.api', () => ({
-  pharmacyWarehouseApi: { getProduct: vi.fn(), getByBarcode: vi.fn() },
+  pharmacyWarehouseApi: { getProduct: vi.fn(), getByBarcode: vi.fn(), listProducts: vi.fn() },
+}));
+
+vi.mock('../../../api/tasnif.api', () => ({
+  tasnifApi: { lookup: vi.fn(async () => ({ data: null })) },
 }));
 
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
+import { tasnifApi } from '../../../api/tasnif.api';
 import { clearPharmacySoldMarksForTests } from './pharmacySoldMarksStore';
 import { resolveCashierMarkedProduct } from './resolveCashierMarkedProduct';
 
@@ -30,6 +35,8 @@ describe('resolveCashierMarkedProduct', () => {
     clearPharmacySoldMarksForTests(9);
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
     pharmacyStockMarksApi.check.mockResolvedValue({ data: { found: false } });
+    pharmacyWarehouseApi.listProducts.mockResolvedValue({ data: { content: [] } });
+    pharmacyWarehouseApi.getByBarcode.mockRejectedValue({ response: { status: 404 } });
   });
 
   it('resolves from stock_marks only after the sold journal is clear', async () => {
@@ -125,9 +132,7 @@ describe('resolveCashierMarkedProduct', () => {
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('asks ASL only when the product is not in the local catalog', async () => {
-    pharmacyStockMarksApi.check.mockResolvedValue({ data: { found: false } });
-    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
+  it('does not resolve a card from ASL gtin — identity is Tasnif/OFD', async () => {
     pharmacyIntegrationApi.verifyMarking.mockResolvedValue({
       data: { found: true, alreadySold: false, gtin: '99900000000007' },
     });
@@ -145,9 +150,32 @@ describe('resolveCashierMarkedProduct', () => {
       aslEnabled: true,
     });
 
-    expect(result.status).toBe('ok');
-    expect(result.product.id).toBe('p-asl');
+    expect(result.status).toBe('not-found');
+    expect(result.product).toBeNull();
     expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledTimes(1);
+  });
+
+  it('finds the card by Tasnif IKPU without ASL', async () => {
+    tasnifApi.lookup.mockResolvedValue({ data: { mxik: '03004409005039001' } });
+    pharmacyWarehouseApi.listProducts.mockImplementation(async (params) => {
+      if (String(params.search) === '03004409005039001') {
+        return {
+          data: { content: [{ id: 'p-ofd', barcode: '999', ikpu: '03004409005039001', name: 'From OFD' }] },
+        };
+      }
+      return { data: { content: [] } };
+    });
+
+    const result = await resolveCashierMarkedProduct({
+      products: [],
+      rawCode: MARK,
+      storeId: 9,
+      aslEnabled: false,
+    });
+
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe('p-ofd');
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
   it('blocks already sold stock marks', async () => {

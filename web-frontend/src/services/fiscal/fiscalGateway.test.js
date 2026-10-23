@@ -17,6 +17,7 @@ vi.mock('../multikassa', () => ({
 import * as multikassa from '../multikassa';
 import {
   FISCAL_PROVIDER,
+  isFiscalDriveProvider,
   loadFiscalContext,
   resolveFiscalProvider,
   resolvePendingFiscalProvider,
@@ -28,6 +29,12 @@ describe('resolveFiscalProvider', () => {
     expect(resolveFiscalProvider(undefined).id).toBe(FISCAL_PROVIDER.MULTIKASSA);
     expect(resolveFiscalProvider('').id).toBe(FISCAL_PROVIDER.MULTIKASSA);
     expect(resolveFiscalProvider('SOMETHING_ELSE').id).toBe(FISCAL_PROVIDER.MULTIKASSA);
+  });
+
+  it('does not treat a Multikassa register as FiscalDrive', () => {
+    expect(isFiscalDriveProvider({ enabled: true, fiscalProvider: 'MULTIKASSA' })).toBe(false);
+    expect(isFiscalDriveProvider({ enabled: true })).toBe(false);
+    expect(isFiscalDriveProvider({ fiscalProvider: 'FISCAL_DRIVE' })).toBe(true);
   });
 
   it('matches id case-insensitively', () => {

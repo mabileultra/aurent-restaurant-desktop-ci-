@@ -148,6 +148,9 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             request.requireBeforeSale()
         );
         entityManager.clear();
+        if (FiscalProvider.FISCAL_DRIVE == resolveProvider(register)) {
+            return toFiscalDriveCapabilities(register);
+        }
         CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
             .orElseThrow(() -> new BadRequestException("Не удалось сохранить флаги Multikassa"));
         if (!entity.isEnabled()) {
@@ -268,7 +271,6 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
     private CashierMultikassaCapabilitiesResponse toFiscalDriveCapabilities(CashRegister register) {
         CashRegisterFiscalDriveSettings fd = fiscalDriveSettingsRepository.findById(register.getId()).orElse(null);
         String factoryId = fd != null && StringUtils.hasText(fd.getFactoryId()) ? fd.getFactoryId().trim() : null;
-        CashRegisterMultikassaSettings mk = findOrDefault(register);
         return new CashierMultikassaCapabilitiesResponse(
             true,
             register.getId(),
@@ -278,7 +280,7 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             null,
             null,
             true,
-            mk.isPrintFiscalQr(),
+            true,
             FiscalProvider.FISCAL_DRIVE.name(),
             factoryId
         );

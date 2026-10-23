@@ -27,7 +27,7 @@ When КМ check fails, show **one** clear message — never raw backend English 
 2. Import ASL verify: map disabled errors to reason `noIntegration` (do not store raw `error.message` for every code).
 3. Do not toast `resolvePharmacyApiError` for marking not-found when a classified user message exists.
 4. Before a KM enters the cart, `inspectMarkPunched` always runs: local sold cache, `stock_marks`, `sale_sold_marks`, then ASL already-sold when ASL is on. `IN_STOCK` or a catalog hit must not skip that. Repeat scan shows `markingAlreadySold` («уже пробита»). ASL network failure does not block a code the journal does not know.
-5. Cashier scan: never toast `markingApiDisabled`. No API key → local GTIN lookup, KM in cart/`Labels`. Miss → `markingNotFound` / `markingCatalogNeed`. `markingApiDisabled` stays on warehouse import verify only. Cashier `aslMarkingEnabled` is true only when an API key is saved.
+5. Cashier scan: never toast `markingApiDisabled`. Product identity is GTIN from the DataMatrix plus Tasnif (ОФД ИКПУ) via `lookupProductByMarkingGtin` — not ASL `verifyMarking` / `aslResult.gtin`. ASL stays only for already-sold when a key is saved. Miss → `markingNotFound` / `markingCatalogNeed`. `markingApiDisabled` stays on warehouse import verify only. Cashier `aslMarkingEnabled` is true only when an API key is saved.
 
 ## Do not
 

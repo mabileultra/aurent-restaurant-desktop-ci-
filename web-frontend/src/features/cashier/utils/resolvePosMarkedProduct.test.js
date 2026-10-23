@@ -8,6 +8,11 @@ vi.mock('../../../api/pharmacyIntegration.api', () => ({
 
 vi.mock('../../../services/pos/posDataRouter', () => ({
   posFetchProductByBarcode: vi.fn(),
+  posFetchProductsPage: vi.fn(async () => ({ content: [] })),
+}));
+
+vi.mock('../../../api/tasnif.api', () => ({
+  tasnifApi: { lookup: vi.fn(async () => ({ data: null })) },
 }));
 
 vi.mock('../../../api/pharmacySales.api', () => ({

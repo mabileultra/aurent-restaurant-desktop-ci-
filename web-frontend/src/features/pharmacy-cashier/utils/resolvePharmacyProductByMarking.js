@@ -1,6 +1,5 @@
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
-import { markingBarcodeCandidates } from './pharmacyMarkingCode';
-import { findProductByMarkingCode } from './pharmacyMarkingProductMatch';
+import { lookupProductByMarkingGtin } from './lookupProductByMarkingGtin';
 import {
   getCachedPharmacyProduct,
   setCachedPharmacyProduct,
@@ -11,38 +10,46 @@ function isMissingProduct(error) {
   return status === 404 || status === 400;
 }
 
-/** Найти товар кассы по DataMatrix: сначала GTIN в загруженном списке, затем в каталоге. */
+/** Найти товар кассы по DataMatrix: GTIN из КМ и ИКПУ из Tasnif (ОФД), без ASL. */
 export async function resolvePharmacyProductByMarking({
   products,
   rawCode,
   extraGtins = [],
   storeId,
 }) {
-  const local = findProductByMarkingCode(products, rawCode)
-    || extraGtins
-      .map((gtin) => findProductByMarkingCode(products, `01${gtin}`))
-      .find(Boolean);
-  if (local) return local;
-  if (!storeId) return null;
-
-  const candidates = markingBarcodeCandidates(rawCode, extraGtins);
-  for (const barcode of candidates) {
-    const cached = getCachedPharmacyProduct(storeId, barcode);
-    if (cached) return cached;
-  }
-
-  const found = await Promise.all(candidates.map(async (barcode) => {
-    try {
-      const { data } = await pharmacyWarehouseApi.getByBarcode(barcode, storeId);
-      if (data?.id) {
-        setCachedPharmacyProduct(storeId, barcode, data);
+  return lookupProductByMarkingGtin({
+    products,
+    mark: rawCode,
+    extraGtins,
+    fetchByBarcode: storeId
+      ? async (barcode) => {
+        const cached = getCachedPharmacyProduct(storeId, barcode);
+        if (cached) return cached;
+        try {
+          const { data } = await pharmacyWarehouseApi.getByBarcode(barcode, storeId);
+          if (data?.id) {
+            setCachedPharmacyProduct(storeId, barcode, data);
+            return data;
+          }
+          return null;
+        } catch (error) {
+          if (!isMissingProduct(error)) throw error;
+          return null;
+        }
+      }
+      : undefined,
+    searchCatalog: storeId
+      ? async (query) => {
+        const { data } = await pharmacyWarehouseApi.listProducts({
+          storeId,
+          search: query,
+          page: 0,
+          size: 20,
+          activeOnly: true,
+          scope: 'ACTIVE',
+        });
         return data;
       }
-      return null;
-    } catch (error) {
-      if (!isMissingProduct(error)) throw error;
-      return null;
-    }
-  }));
-  return found.find(Boolean) ?? null;
+      : undefined,
+  });
 }

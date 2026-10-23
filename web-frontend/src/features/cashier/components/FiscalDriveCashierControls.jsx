@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { cashierTerminalApi } from '../../../api/cashierTerminal.api';
 import { useMultikassaCashierStatus } from '../hooks/useMultikassaCashierStatus';
+import { isFiscalDriveProvider } from '../../../services/fiscal';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../hooks/useCashierStoreProfile';
@@ -34,7 +35,7 @@ export default function FiscalDriveCashierControls({ className = '' }) {
     enabled: storeId != null,
   });
   const cashRegisterId = shiftRegisterId ?? caps?.cashRegisterId ?? registerId ?? null;
-  const isFiscalDrive = String(caps?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE';
+  const isFiscalDrive = isFiscalDriveProvider(caps);
 
   const openSettings = async () => {
     let id = cashRegisterId;
@@ -62,7 +63,7 @@ export default function FiscalDriveCashierControls({ className = '' }) {
     setOpen(true);
   };
 
-  if (storeId == null) return null;
+  if (storeId == null || !isFiscalDrive) return null;
 
   const modalRegisterId = registerId ?? cashRegisterId;
 

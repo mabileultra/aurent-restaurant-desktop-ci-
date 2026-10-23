@@ -6,6 +6,7 @@ import { useCashierStore } from '../../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
 import { useMultikassaCashierStatus } from '../../hooks/useMultikassaCashierStatus';
+import { isFiscalDriveProvider } from '../../../../services/fiscal';
 
 const FiscalDriveSettingsModal = lazy(() =>
   import('../../../cash-registers/components/FiscalDriveSettingsModal'),
@@ -26,7 +27,7 @@ export default function CashierDesktopMenuFiscalDrive({ t }) {
     enabled: storeId != null,
   });
   const cashRegisterId = shiftRegisterId ?? caps?.cashRegisterId ?? null;
-  const isFiscalDrive = String(caps?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE';
+  const isFiscalDrive = isFiscalDriveProvider(caps);
 
   if (storeId == null) return null;
 
