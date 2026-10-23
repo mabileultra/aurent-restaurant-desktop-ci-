@@ -15,10 +15,13 @@ export {
   registerReceiptTxid,
   openZReport,
   closeZReport,
+  syncFiscalDriveState,
+  syncFullReceipts,
   parseReceiptTxid,
   parseFiscalDriveFactoryIds,
   summarizeFiscalDriveInfo,
 } from './fiscalDriveHttpClient';
+export { ensureFiscalDriveReady } from './ensureFiscalDriveReady';
 export { buildMarkingValidationProducts } from './buildMarkingValidationProducts';
 export { MARKING_VALIDATION_STATUS, validateFiscalMarking } from './validateFiscalMarking';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';

@@ -58,6 +58,7 @@ function shortAppletMessage(hex, name) {
 }
 
 export function mapFiscalDriveError(err) {
+  if (err?.code?.startsWith('FISCAL_DRIVE') && err?.fiscalDriveCode) return err;
   const raw = errorText(err);
   const hex = extractHexCode(raw);
   const known = hex ? CODE_MESSAGES[hex] : null;
@@ -72,4 +73,24 @@ export function mapFiscalDriveError(err) {
   wrapped.cause = err;
   wrapped.data = err?.data;
   return wrapped;
+}
+
+function errorCodeAndText(err) {
+  const mapped = err?.fiscalDriveCode ? err : mapFiscalDriveError(err);
+  return `${mapped.fiscalDriveCode || ''} ${mapped.message || ''} ${errorText(err)}`;
+}
+
+/** 0x9022/0x9023 — Z уже открыт, повторный Open не ошибка продажи. */
+export function isFiscalDriveShiftAlreadyOpenError(err) {
+  return /0x9022|0x9023|already.?open|уже.*(открыт)|Z-отчёт не закрыт/i.test(errorCodeAndText(err));
+}
+
+/** 0x9021 — чек нельзя зарегистрировать, пока Z не открыт. */
+export function isFiscalDriveZNotOpenError(err) {
+  return /0x9021|Z-отчёт не открыт|z.?report.*not.?open/i.test(errorCodeAndText(err));
+}
+
+/** ФМ заблокирован или часы впереди — нужна State/Sync. */
+export function isFiscalDriveNeedsSyncError(err) {
+  return /0x9031|0x90f1|0x9091|ME_SYNC_WITH_SERVER|заблок/i.test(errorCodeAndText(err));
 }

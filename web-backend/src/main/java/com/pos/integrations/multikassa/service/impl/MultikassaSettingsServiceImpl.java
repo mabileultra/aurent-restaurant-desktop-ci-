@@ -267,20 +267,20 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
 
     private CashierMultikassaCapabilitiesResponse toFiscalDriveCapabilities(CashRegister register) {
         CashRegisterFiscalDriveSettings fd = fiscalDriveSettingsRepository.findById(register.getId()).orElse(null);
-        boolean ready = fd != null && StringUtils.hasText(fd.getFactoryId());
+        String factoryId = fd != null && StringUtils.hasText(fd.getFactoryId()) ? fd.getFactoryId().trim() : null;
         CashRegisterMultikassaSettings mk = findOrDefault(register);
         return new CashierMultikassaCapabilitiesResponse(
-            ready,
+            true,
             register.getId(),
             fd != null ? normalizeBaseUrl(fd.getBaseUrl()) : FiscalDriveDefaults.DEFAULT_BASE_URL,
             fd != null ? fd.getTerminalId() : null,
             null,
             null,
             null,
-            mk.isRequireBeforeSale(),
+            true,
             mk.isPrintFiscalQr(),
             FiscalProvider.FISCAL_DRIVE.name(),
-            ready ? fd.getFactoryId().trim() : null
+            factoryId
         );
     }
 

@@ -1,5 +1,6 @@
 import { loadMultikassaCapabilities } from '../../../multikassa/loadMultikassaCapabilities';
 import { FISCAL_STATUS } from '../../fiscalStatus';
+import { ensureFiscalDriveReady } from './ensureFiscalDriveReady';
 import { registerReceiptTxid } from './fiscalDriveHttpClient';
 import { mapFiscalDriveError } from './mapFiscalDriveError';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
@@ -19,14 +20,19 @@ export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegist
   const capabilities =
     capsHint ||
     (await loadMultikassaCapabilities(storeId ?? payload.storeId, cashRegisterId ?? payload.cashRegisterId));
-  const factoryId = String(capabilities?.factoryId || '').trim();
-  const baseUrl = String(capabilities?.baseUrl || '').trim();
-  if (!capabilities?.enabled || !factoryId || !baseUrl) return payload;
+  const isFiscalDrive =
+    Boolean(capabilities?.enabled) ||
+    String(capabilities?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE';
+  if (!isFiscalDrive) return payload;
 
   try {
-    const registered = await registerReceiptTxid(baseUrl, factoryId, txid);
+    const ready = await ensureFiscalDriveReady({
+      baseUrl: capabilities?.baseUrl,
+      factoryId: capabilities?.factoryId,
+    });
+    const registered = await registerReceiptTxid(ready.baseUrl, ready.factoryId, txid);
     const parsed = parseFiscalDriveRegisterResult(registered, {
-      terminalId: capabilities?.terminalId || null,
+      terminalId: capabilities?.terminalId || ready.terminalId || null,
       datetime: retry?.dateTime || retry?.receipt?.Time || null,
     });
     if (parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) return payload;

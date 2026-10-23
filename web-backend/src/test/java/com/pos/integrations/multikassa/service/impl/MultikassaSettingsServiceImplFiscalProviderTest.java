@@ -95,7 +95,7 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
             CashRegisterMultikassaSettings.builder()
                 .cashRegisterId(14L)
                 .enabled(false)
-                .requireBeforeSale(true)
+                .requireBeforeSale(false)
                 .printFiscalQr(true)
                 .build()
         ));
@@ -103,10 +103,32 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
         CashierMultikassaCapabilitiesResponse caps = service.getCashierCapabilities(cashier, 5, 14L);
 
         assertThat(caps.enabled()).isTrue();
+        assertThat(caps.requireBeforeSale()).isTrue();
         assertThat(caps.fiscalProvider()).isEqualTo(FiscalProvider.FISCAL_DRIVE.name());
         assertThat(caps.factoryId()).isEqualTo("FACTORY-1");
         assertThat(caps.baseUrl()).isEqualTo("http://127.0.0.1:3449");
         assertThat(caps.terminalId()).isEqualTo("ZZ000000000000");
+    }
+
+    @Test
+    void fiscalDriveWithoutFactoryIdStillEnablesCashierSoPosCanListTheModule() {
+        CashRegister register = register(15L);
+        register.setFiscalProvider(FiscalProvider.FISCAL_DRIVE);
+        when(cashRegisterRepository.findById(15L)).thenReturn(Optional.of(register));
+        when(fiscalDriveSettingsRepository.findById(15L)).thenReturn(Optional.of(
+            CashRegisterFiscalDriveSettings.builder()
+                .cashRegisterId(15L)
+                .baseUrl("http://127.0.0.1:3449/")
+                .build()
+        ));
+        when(settingsRepository.findById(15L)).thenReturn(Optional.empty());
+
+        CashierMultikassaCapabilitiesResponse caps = service.getCashierCapabilities(cashier, 5, 15L);
+
+        assertThat(caps.enabled()).isTrue();
+        assertThat(caps.requireBeforeSale()).isTrue();
+        assertThat(caps.factoryId()).isNull();
+        assertThat(caps.fiscalProvider()).isEqualTo(FiscalProvider.FISCAL_DRIVE.name());
     }
 
     @Test

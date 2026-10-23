@@ -1,0 +1,25 @@
+---
+description: POS fiscalization goes through the provider layer (Multikassa today, FiscalDrive next)
+globs: web-frontend/src/**/*.js,restaurant-frontend/src/**/*.js
+alwaysApply: false
+---
+
+# Fiscal provider layer (do not regress)
+
+POS flows call fiscalization only via `services/fiscal` (`loadFiscalContext`, `provider.*`, `wrapFiscalError`, `resolvePendingFiscalProvider`) — same layer in `web-frontend` and `restaurant-frontend`.
+
+Restaurant callers: `restaurant/pos/utils/payRestaurantOrderWithFiscal.js`, `restaurant/pos/utils/pendingFiscalQueue.js` (restaurant provider also exposes `resolveErrorMessage`).
+
+## Invariants
+
+1. `posDataRouter` (shift open/close/X, sale), `posReturnWithFiscal`, `offlineSyncService` must not import fiscal operations from `services/multikassa` directly.
+2. Missing/unknown `capabilities.fiscalProvider` or `payload.fiscal.fiscalProvider` → **Multikassa**. Existing client registers must keep working unchanged.
+3. Multikassa stays a supported provider for live clients — do not delete or rewrite it while adding FiscalDrive.
+4. A new provider = new file in `services/fiscal/providers/` + entry in `resolveFiscalProvider`; no `if (provider === ...)` in POS flows.
+5. Error codes surfaced to UI (`MULTIKASSA_*`) stay as-is for the Multikassa provider.
+6. Provider-neutral helpers live in `services/fiscal` (`fiscalStatus`, `shared/toSaleFiscalPayload`, `shared/ofdMarkingLabel`, `shared/resolveFiscalPackageCodes`, `shared/expandMarkedFiscalItems`). Providers import them from there; `services/fiscal/shared` must never import from `services/multikassa`.
+7. Backend source of truth: `cash_registers.fiscal_provider` (`FiscalProvider` enum, default `MULTIKASSA`, Liquibase v46). It is per cash register (not in the Multikassa settings table) and is returned as `fiscalProvider` in cashier capabilities and admin settings, even when Multikassa is disabled.
+8. FiscalDrive connection settings live in `cash_register_fiscal_drive_settings` (v47, `/admin/cash-registers/{id}/fiscal-drive`). Calls to the local FiscalDriveService go through `fiscal/shared/localDeviceHttp.js` → Electron `desktop:localDeviceRequest`, which must stay **loopback-only** (do not widen it to arbitrary hosts; Multikassa cloud keeps its own proxy).
+9. Marking check before a FiscalDrive receipt: frontend `validateFiscalMarking` → backend `POST /cashier/marking/validate` → tax `validation-onkm`. Credentials only in env `MARKING_VALIDATION_USERNAME/PASSWORD` (never in yml defaults, code, or frontend). `ownerTin`/`terminalId` come from the register's FiscalDrive settings, not from the client. Network/auth failures return `UNAVAILABLE` (not 500); `REJECTED` carries the tax code (1001…2090). This is separate from the Asl Belgisi integration — do not merge them.
+10. FiscalDrive sale path: `GetTXID` → `RegisterTXID` (retry on link failure; store TXID for pending). Capabilities for `FISCAL_DRIVE` come from `cash_register_fiscal_drive_settings` (not Multikassa enabled flag). Switch provider only via FiscalDrive settings `useForFiscalization` — default stays Multikassa. Refund via FiscalDrive is not ready yet.
+11. FiscalDrive never completes a sale without RegisterTXID proof (`FiscalSign` + `QRCodeURL` on ofd.soliq.uz). Do not inherit Multikassa `requireBeforeSale=false` as silent PENDING/no-QR. Before GetTXID: List FactoryID if missing, `State/Sync` if Locked, `ZReport/Open` if Z is closed. On 0x9021 retry RegisterTXID with the **same** TXID (never GetTXID again for that receipt). Type «Покупка» on the sale is not fiscal proof.

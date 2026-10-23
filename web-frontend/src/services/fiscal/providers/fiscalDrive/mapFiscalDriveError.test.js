@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { mapFiscalDriveError } from './mapFiscalDriveError';
+import {
+  isFiscalDriveNeedsSyncError,
+  isFiscalDriveShiftAlreadyOpenError,
+  isFiscalDriveZNotOpenError,
+  mapFiscalDriveError,
+} from './mapFiscalDriveError';
 
 const CLOSE_Z_DUMP = [
   '"n":"9091 - ME_SYNC_WITH_SERVER"',
@@ -37,4 +42,11 @@ describe('mapFiscalDriveError', () => {
     expect(err.message).toBe('Ошибка фискального модуля (90ab — SOME_APPLET_FAULT)');
     expect(err.fiscalDriveCode).toBe('0x90ab');
   });
+
+  it('classifies Z already open vs not open vs needs sync', () => {
+    expect(isFiscalDriveShiftAlreadyOpenError(mapFiscalDriveError(new Error('0x9022')))).toBe(true);
+    expect(isFiscalDriveZNotOpenError(mapFiscalDriveError(new Error('0x9021')))).toBe(true);
+    expect(isFiscalDriveNeedsSyncError(mapFiscalDriveError(new Error('0x9091')))).toBe(true);
+  });
 });
+

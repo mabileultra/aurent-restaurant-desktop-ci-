@@ -6,12 +6,20 @@ import {
 import { FISCAL_STATUS } from '../../fiscalStatus';
 import { logFiscal } from '../../../desktop/activityLog';
 import { buildFiscalDriveReceipt } from './buildFiscalDriveReceipt';
+import { ensureFiscalDriveReady, openFiscalDriveZReport } from './ensureFiscalDriveReady';
 import {
+  FISCAL_DRIVE_DEFAULT_BASE_URL,
   getReceiptTxid,
   parseReceiptTxid,
   registerReceiptTxid,
+  syncFiscalDriveState,
+  syncFullReceipts,
 } from './fiscalDriveHttpClient';
-import { mapFiscalDriveError } from './mapFiscalDriveError';
+import {
+  isFiscalDriveNeedsSyncError,
+  isFiscalDriveZNotOpenError,
+  mapFiscalDriveError,
+} from './mapFiscalDriveError';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
 import { validateFiscalDriveReceipt } from './validateFiscalDriveReceipt';
 import { MARKING_VALIDATION_STATUS, validateFiscalMarking } from './validateFiscalMarking';
@@ -31,20 +39,11 @@ function pendingPayload({ txid, receipt, message }) {
   };
 }
 
-function assertCapabilitiesReady(capabilities) {
-  const factoryId = String(capabilities?.factoryId || '').trim();
-  const baseUrl = String(capabilities?.baseUrl || '').trim();
-  if (!factoryId) {
-    const err = new Error('В настройках FiscalDrive не указан FactoryID модуля');
-    err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
-    throw err;
-  }
-  if (!baseUrl) {
-    const err = new Error('Не указан адрес FiscalDriveService (обычно http://127.0.0.1:3449)');
-    err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
-    throw err;
-  }
-  return { factoryId, baseUrl };
+function isFiscalDriveCaps(capabilities) {
+  return (
+    Boolean(capabilities?.enabled) ||
+    String(capabilities?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE'
+  );
 }
 
 async function assertMarkingOk({ capabilities, cartItems, offline, requireBeforeSale }) {
@@ -93,9 +92,29 @@ async function registerWithRetry({ baseUrl, factoryId, txid, attempts = 2 }) {
   throw lastErr;
 }
 
+/** RegisterTXID с тем же TXID: открыть Z / State/Sync и повторить, без повторного GetTXID. */
+async function registerTxidReady({ baseUrl, factoryId, txid }) {
+  try {
+    return await registerWithRetry({ baseUrl, factoryId, txid });
+  } catch (err) {
+    const mapped = mapFiscalDriveError(err);
+    if (isFiscalDriveZNotOpenError(mapped)) {
+      await openFiscalDriveZReport(baseUrl, factoryId);
+      return registerWithRetry({ baseUrl, factoryId, txid });
+    }
+    if (isFiscalDriveNeedsSyncError(mapped)) {
+      await syncFiscalDriveState(baseUrl, factoryId);
+      await openFiscalDriveZReport(baseUrl, factoryId);
+      return registerWithRetry({ baseUrl, factoryId, txid });
+    }
+    throw mapped;
+  }
+}
+
 /**
  * Фискализация продажи через FiscalDrive (ФМ 0400) до commit продажи.
- * GetTXID → RegisterTXID (повтор при сбое связи). TXID сохраняется для pending retry.
+ * GetTXID → RegisterTXID (повтор при сбое связи). QR только из ответа RegisterTXID.
+ * Для FiscalDrive продажа без FiscalSign не допускается (кроме offline).
  */
 export async function fiscalizeSaleBeforeCommit({
   capabilities,
@@ -104,20 +123,29 @@ export async function fiscalizeSaleBeforeCommit({
   total,
   offline = false,
 }) {
-  if (!capabilities?.enabled) return null;
+  if (!isFiscalDriveCaps(capabilities)) return null;
 
-  const requireBeforeSale = Boolean(capabilities.requireBeforeSale);
+  // FiscalDrive: QR с ofd.soliq.uz только после RegisterTXID — не наследуем soft-fail Multikassa.
+  const requireBeforeSale = !offline;
 
   let factoryId;
   let baseUrl;
+  let readyTerminalId = null;
   try {
-    ({ factoryId, baseUrl } = assertCapabilitiesReady(capabilities));
+    const ready = await ensureFiscalDriveReady({
+      baseUrl: capabilities?.baseUrl || FISCAL_DRIVE_DEFAULT_BASE_URL,
+      factoryId: capabilities?.factoryId,
+    });
+    factoryId = ready.factoryId;
+    baseUrl = ready.baseUrl;
+    readyTerminalId = ready.terminalId;
   } catch (err) {
-    if (offline || !requireBeforeSale) {
-      logFiscal('FiscalDrive отложен (нет настроек)', { offline, message: err.message }, 'warn');
-      return pendingPayload({ message: err.message });
+    const mapped = mapFiscalDriveError(err);
+    if (offline) {
+      logFiscal('FiscalDrive отложен (нет ФМ)', { offline, message: mapped.message }, 'warn');
+      return pendingPayload({ message: mapped.message });
     }
-    throw err;
+    throw mapped;
   }
 
   const fiscalItems = expandMarkedFiscalItems(await enrichFiscalPackageCodes(cartItems));
@@ -130,7 +158,7 @@ export async function fiscalizeSaleBeforeCommit({
       `${missingPackage.name || 'Товар'}: нет кода упаковки Tasnif для ИКПУ ${missingPackage.ikpu}`,
     );
     err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
-    if (offline || !requireBeforeSale) return pendingPayload({ message: err.message });
+    if (offline) return pendingPayload({ message: err.message });
     throw err;
   }
 
@@ -148,14 +176,14 @@ export async function fiscalizeSaleBeforeCommit({
     cartItems: fiscalItems,
     payment,
     total,
-    capabilities,
+    capabilities: { ...capabilities, factoryId, baseUrl, terminalId: capabilities?.terminalId || readyTerminalId },
   });
   const validationErrors = validateFiscalDriveReceipt(receipt);
   if (validationErrors.length > 0) {
     const err = new Error(validationErrors[0]);
     err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
     err.details = validationErrors;
-    if (offline || !requireBeforeSale) return pendingPayload({ receipt, message: err.message });
+    if (offline) return pendingPayload({ receipt, message: err.message });
     throw err;
   }
 
@@ -168,18 +196,24 @@ export async function fiscalizeSaleBeforeCommit({
       throw err;
     }
 
-    const registered = await registerWithRetry({ baseUrl, factoryId, txid });
+    const registered = await registerTxidReady({ baseUrl, factoryId, txid });
     const parsed = parseFiscalDriveRegisterResult(registered, {
-      terminalId: capabilities?.terminalId || null,
+      terminalId: capabilities?.terminalId || readyTerminalId || null,
       datetime: receipt?.Time || null,
     });
     if (parsed.fiscalStatus !== FISCAL_STATUS.FISCALIZED) {
-      if (offline || !requireBeforeSale) {
+      if (offline) {
         return pendingPayload({ txid, receipt, message: parsed.fiscalError });
       }
       const err = new Error(parsed.fiscalError);
       err.code = 'FISCAL_DRIVE_FISCAL_FAILED';
       throw err;
+    }
+
+    try {
+      await syncFullReceipts(baseUrl, factoryId, 10);
+    } catch (syncErr) {
+      logFiscal(`FiscalDrive FullReceipts sync: ${syncErr?.message || syncErr}`, { txid }, 'warn');
     }
 
     const payload = toFiscalDriveSalePayload(parsed, { txid, receipt });
@@ -191,7 +225,7 @@ export async function fiscalizeSaleBeforeCommit({
     return payload;
   } catch (err) {
     const mapped = err?.code?.startsWith('FISCAL_DRIVE') ? err : mapFiscalDriveError(err);
-    if (offline || !requireBeforeSale) {
+    if (offline) {
       logFiscal(`FiscalDrive PENDING: ${mapped.message}`, { offline, txid }, 'warn');
       return pendingPayload({ txid, receipt, message: mapped.message });
     }

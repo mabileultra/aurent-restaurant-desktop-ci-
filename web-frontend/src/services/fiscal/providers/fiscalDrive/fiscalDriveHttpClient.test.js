@@ -39,7 +39,12 @@ describe('summarizeFiscalDriveInfo', () => {
     expect(summarizeFiscalDriveInfo({ TerminalID: 'zz000000000000', AppletVersion: '0400' })).toEqual({
       terminalId: 'ZZ000000000000',
       version: '0400',
+      locked: false,
     });
+  });
+
+  it('reads Locked from Info', () => {
+    expect(summarizeFiscalDriveInfo({ Locked: true }).locked).toBe(true);
   });
 });
 

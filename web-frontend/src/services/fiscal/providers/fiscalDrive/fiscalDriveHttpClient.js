@@ -128,6 +128,27 @@ export function closeZReport(baseUrl, factoryId) {
   });
 }
 
+/** Синхронизация состояния ФМ с ОФД (время, разблокировка). */
+export function syncFiscalDriveState(baseUrl, factoryId) {
+  return localDeviceHttpRequest({
+    baseUrl,
+    method: 'POST',
+    path: factoryPath(factoryId, 'State/Sync'),
+  });
+}
+
+/** Отправка FullReceipt из БД службы на ОФД (не нужна для QR на чеке). */
+export function syncFullReceipts(baseUrl, factoryId, itemsCount = 10) {
+  const count = Math.min(32, Math.max(1, Number(itemsCount) || 10));
+  return localDeviceHttpRequest({
+    baseUrl,
+    method: 'POST',
+    path: `/DataBase/Files/Sync/FullReceipts/${encodeURIComponent(String(factoryId || '').trim())}`,
+    body: new URLSearchParams({ ItemsCount: String(count) }).toString(),
+    headers: FORM_URLENCODED,
+  });
+}
+
 function pickCI(obj, ...keys) {
   if (!obj || typeof obj !== 'object') return null;
   const map = new Map(Object.keys(obj).map((k) => [k.toLowerCase(), k]));
@@ -218,8 +239,10 @@ export function summarizeFiscalDriveInfo(raw) {
   const info = raw && typeof raw === 'object' ? raw : {};
   const terminalId = pick(info, 'TerminalID', 'TerminalId', 'terminalId', 'terminalID');
   const version = pick(info, 'AppletVersion', 'Version', 'version', 'appletVersion');
+  const locked = pick(info, 'Locked', 'locked');
   return {
     terminalId: terminalId != null ? String(terminalId).trim().toUpperCase() : null,
     version: version != null ? String(version) : null,
+    locked: locked === true || locked === 'true' || locked === 1,
   };
 }
