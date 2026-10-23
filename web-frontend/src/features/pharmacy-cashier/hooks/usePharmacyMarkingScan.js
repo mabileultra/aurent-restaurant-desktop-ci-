@@ -83,12 +83,6 @@ export function usePharmacyMarkingScan({
         return;
       }
 
-      if (!aslMarkingEnabled) {
-        if (!silent) toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
-        setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product || null });
-        return;
-      }
-
       if (resolved.status === 'ok' && resolved.product) {
         const result = onProductFound?.(resolved.product);
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });

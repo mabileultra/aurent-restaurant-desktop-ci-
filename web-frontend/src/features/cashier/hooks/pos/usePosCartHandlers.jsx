@@ -165,11 +165,6 @@ export function usePosCartHandlers({
           setSearch('');
           return true;
         }
-        if (!aslMarkingEnabled) {
-          toast.error(t('pharmacyCashier.integrations.markingApiDisabled'));
-          setSearch('');
-          return true;
-        }
         if (resolved.status === 'ok' && resolved.product) {
           addMarkedScanToCart(resolved.product);
           setSearch('');
