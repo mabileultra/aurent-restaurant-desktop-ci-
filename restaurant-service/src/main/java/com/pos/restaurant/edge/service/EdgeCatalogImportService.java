@@ -572,10 +572,10 @@ public class EdgeCatalogImportService {
         RestaurantStoreSetting e = storeSettingRepository
             .findByCompanyIdAndStoreId(snap.companyId(), snap.storeId())
             .orElseGet(RestaurantStoreSetting::new);
-        if (row.id() != null) {
-            e.setId(row.id());
-        } else if (e.getId() == null) {
-            e.setId(UUID.randomUUID());
+        // company+store is the key. Cloud and edge mint different UUIDs;
+        // setId on an already persistent row aborts the whole catalog import.
+        if (e.getId() == null) {
+            e.setId(row.id() != null ? row.id() : UUID.randomUUID());
         }
         e.setCompanyId(snap.companyId());
         e.setStoreId(snap.storeId());
