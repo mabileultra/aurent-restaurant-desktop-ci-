@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { assessQtyMarkingScan } from './pharmacyQtyMarkingScan';
-import { planMarkedScan } from './pharmacyMarkedScanCart';
-import { markingIdentityKey } from './pharmacyMarkIdentity';
+import { markingIdentityKey, planMarkedScan } from '../../marking';
 
 const product = {
   id: 'p-indo',

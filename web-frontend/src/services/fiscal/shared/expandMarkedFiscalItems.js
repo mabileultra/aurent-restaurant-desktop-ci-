@@ -4,9 +4,9 @@ import { round2 } from '../../../utils/taxAmounts';
 /** Каждая отсканированная маркировка уходит в фискал отдельной штукой. Строки без кодов не дробятся. */
 export function expandMarkedFiscalItems(items) {
   return (items || []).flatMap((line) => {
-    const marks = Array.isArray(line?.productMarks)
+    const marks = Array.isArray(line?.productMarks) && line.productMarks.some(Boolean)
       ? line.productMarks.filter((mark) => String(mark || '').trim())
-      : [];
+      : [line?.productMark || line?.markCode || line?.productLabel].filter((mark) => String(mark || '').trim());
     if (marks.length === 0) return [line];
 
     const discount = lineDiscountAmount(line);

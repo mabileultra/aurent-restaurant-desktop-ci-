@@ -1,4 +1,4 @@
-import { markingMatchesProduct } from '../../pharmacy-cashier/utils/pharmacyMarkingProductMatch';
+import { markingMatchesProduct } from '../../marking';
 import { marksForLine, requiredMarkCountForLine } from './pharmacyReceiptMarks';
 
 function lineAsProduct(line) {

@@ -1,10 +1,10 @@
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
-  isCompletePharmacyMarkingScan,
-  isPharmacyMarkingCode,
-  normalizePharmacyMarkingCode,
-} from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+  isCompleteMarkingScan,
+  isMarkingCode,
+  normalizeMarkingCode,
+} from '../../marking';
 import { marksForLine, requiredMarkCountForLine } from '../utils/pharmacyReceiptMarks';
 
 /**
@@ -51,8 +51,8 @@ export function usePharmacyReceiptMarks({ t }) {
 
   const validateNewMark = useCallback((line, rawCode) => {
     if (!line?.id || !line?.productId) return null;
-    const code = normalizePharmacyMarkingCode(rawCode);
-    if (!isPharmacyMarkingCode(rawCode) && !isCompletePharmacyMarkingScan(rawCode)) {
+    const code = normalizeMarkingCode(rawCode);
+    if (!isMarkingCode(rawCode) && !isCompleteMarkingScan(rawCode)) {
       toast.error(t('pharmacyStock.marks.invalidCode'));
       return null;
     }

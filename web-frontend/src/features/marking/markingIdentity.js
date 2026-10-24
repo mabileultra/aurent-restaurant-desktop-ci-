@@ -1,8 +1,8 @@
 import {
   extractGtinFromMarkingCode,
   markingScanKey,
-  normalizePharmacyMarkingCode,
-} from './pharmacyMarkingCode';
+  normalizeMarkingCode,
+} from './markingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 /** Как pharmacy-service PharmacyMarkIdentityKeys: серия до криптохвоста 91/92/93. */
@@ -20,7 +20,7 @@ function gs1Parts(code) {
  * Одна пачка с разным хвостом криптокода → общий GTIN|serial.
  */
 export function markingIdentityKeys(raw) {
-  const mark = preserveMarkingCodeForFiscal(raw) || normalizePharmacyMarkingCode(raw);
+  const mark = preserveMarkingCodeForFiscal(raw) || normalizeMarkingCode(raw);
   if (!mark) return [];
 
   const keys = new Set();
@@ -49,7 +49,7 @@ const CRYPTO_TAIL = /(91|92|93).{1,64}$/;
 
 /** Код идентификации без криптохвоста 91/92/93. */
 export function markingIdentificationCode(raw) {
-  const code = normalizePharmacyMarkingCode(raw);
+  const code = normalizeMarkingCode(raw);
   if (!code) return '';
   const parts = gs1Parts(code);
   if (parts) return `01${parts.gtin}21${parts.serial}`;
@@ -65,7 +65,7 @@ export function markingIdentificationCode(raw) {
 
 /** Серия упаковки (AI 21) из DataMatrix. */
 export function extractSerialFromMarkingCode(raw) {
-  const code = normalizePharmacyMarkingCode(raw);
+  const code = normalizeMarkingCode(raw);
   if (!code) return null;
 
   const paren = code.match(/\(21\)([^()]+)/);

@@ -4213,7 +4213,7 @@
     "barcodeAdded": "В чек: {{name}}",
     "itemAdded": "{{name}} — {{sum}}",
     "markingScanRequired": "Маркированный товар — отсканируйте DataMatrix (КМ)",
-    "markingNotFound": "Товар по коду маркировки не найден. Проверьте штрихкод (GTIN) в карточке",
+    "markingNotFound": "Товар по коду маркировки не найден. Проверьте штрихкод (GTIN) в карточке.",
     "markingAlreadyCounted": "Эта маркировка уже есть в чеке",
     "markingAlreadySold": "Эта маркировка уже пробита",
     "markingSoldLocal": "Эта маркировка уже пробита в нашей продаже",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planMarkedScan } from './pharmacyMarkedScanCart';
+import { planMarkedScan } from './markedScanCart';
 
 const product = { id: 'p1', name: 'Терафлю', stockQuantity: 10 };
 

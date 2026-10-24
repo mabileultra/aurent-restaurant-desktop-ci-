@@ -1,18 +1,6 @@
 import { posFetchProductByBarcode, posFetchProductsPage } from '../../../services/pos/posDataRouter';
-import { isPharmacyMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
-import { lookupProductByMarkingGtin } from '../../pharmacy-cashier/utils/lookupProductByMarkingGtin';
-import { preserveMarkingCodeForFiscal } from '../../pharmacy-cashier/utils/preserveMarkingCodeForFiscal';
-import { inspectMarkPunched } from '../../pharmacy-cashier/utils/inspectMarkPunched';
-
-function withMark(product, mark) {
-  return {
-    ...product,
-    productMark: mark,
-    markCode: mark,
-    markedProduct: true,
-    productMarks: [mark],
-  };
-}
+import { lookupProductByMarkingGtin } from '../../marking';
+import { resolveCashierMarking } from '../../marking/resolveCashierMarking';
 
 async function findByGtinCandidates(products, mark, storeId, extraGtins = []) {
   if (!storeId && (!products || products.length === 0)) return null;
@@ -46,20 +34,10 @@ export async function resolvePosMarkedProduct({
   storeId,
   aslEnabled = false,
 }) {
-  const mark = preserveMarkingCodeForFiscal(rawCode);
-  if (!mark || !isPharmacyMarkingCode(rawCode)) {
-    return { status: 'not-marking', mark: '', product: null, aslResult: null };
-  }
-
-  const gate = await inspectMarkPunched({ storeId, mark, aslEnabled });
-  if (gate.punched) {
-    return { status: 'sold', mark, product: null, aslResult: gate.aslResult };
-  }
-
-  const product = await findByGtinCandidates(products, mark, storeId);
-  if (!product) {
-    return { status: 'not-found', mark, product: null, aslResult: gate.aslResult };
-  }
-
-  return { status: 'ok', mark, product: withMark(product, mark), aslResult: gate.aslResult };
+  return resolveCashierMarking({
+    rawCode,
+    storeId,
+    aslEnabled,
+    findProduct: (mark) => findByGtinCandidates(products, mark, storeId),
+  });
 }

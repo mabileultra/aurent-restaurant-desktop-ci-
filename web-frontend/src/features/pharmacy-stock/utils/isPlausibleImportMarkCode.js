@@ -1,8 +1,8 @@
-import { isPharmacyMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+import { isMarkingCode } from '../../marking';
 
 /** Импорт → ASL: только DataMatrix КМ, не ИКПУ и не «Маркировкаланган». */
 export function isPlausibleImportMarkCode(raw) {
-  return isPharmacyMarkingCode(raw);
+  return isMarkingCode(raw);
 }
 
 export function filterPlausibleImportMarkCodes(codes) {

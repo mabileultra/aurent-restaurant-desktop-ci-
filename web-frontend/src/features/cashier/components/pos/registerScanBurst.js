@@ -1,4 +1,4 @@
-import { isPharmacyMarkingCode } from '../../../pharmacy-cashier/utils/pharmacyMarkingCode';
+import { isMarkingCode } from '../../../marking';
 
 /** Same gap as the barcode wedge: faster than a person types. */
 export const REGISTER_SCAN_GAP_MS = 80;
@@ -10,7 +10,7 @@ export const REGISTER_SCAN_GAP_MS = 80;
 export function looksLikeRegisterScanInput(value) {
   const t = String(value ?? '').trim();
   if (!t) return false;
-  if (isPharmacyMarkingCode(t)) return true;
+  if (isMarkingCode(t)) return true;
   if (t.includes('\u001d') || t.includes('€')) return true;
   // GS1 КМ в процессе набора: 01… без кириллицы
   if (/^01\d/.test(t) && !/[а-яёА-ЯЁ]/.test(t)) return true;

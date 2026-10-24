@@ -26,7 +26,7 @@ import { loadFiscalContext, wrapFiscalError } from '../fiscal';
 import { lineSubtotal } from '../../store/cartStore';
 import { round2 } from '../../utils/taxAmounts';
 import { buildPharmacySaleExtras } from '../../features/pharmacy-cashier/utils/buildPharmacySaleExtras';
-import { assertCartMarksNotPunched } from '../../features/pharmacy-cashier/utils/inspectMarkPunched';
+import { assertCartMarksNotPunched } from '../../features/marking';
 import { buildShiftPrintReport } from '../../features/cashier/utils/buildShiftPrintReport';
 
 function connectivityState() {

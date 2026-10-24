@@ -14,7 +14,7 @@ import {
 import { getUnitConfig } from '../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../utils/productPrice';
 import { addPharmacyPieceItem } from '../utils/pharmacyCartActions';
-import { applyPharmacyMarkingScan, isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
+import { applyMarkingScan, isMarkCountedLine, isMarkingCode } from '../../marking';
 import { applyPharmacyPackSaleToCartProduct } from '../utils/pharmacyPackSale';
 import { toCartQuantity } from '../utils/pharmacyPackQty';
 import { resolvePharmacyApiError } from '../../../pharmacy/errors/resolvePharmacyApiError';
@@ -28,7 +28,6 @@ import {
   productUnitsInPack,
 } from '../utils/pharmacyProductMeta';
 import { classifyPharmacySearchScan } from '../utils/classifyPharmacySearchScan';
-import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
 import { focusPharmacyScanField, isPharmacyKmFieldFocused } from '../utils/focusPharmacyScanField';
 import { canAddProductFromSearchList } from '../../cashier/hooks/pos/posProductsSearchStale';
 
@@ -147,7 +146,7 @@ export function usePharmacyCartHandlers({
         ...cartProductPayload(product),
         pharmacySellByPiece: false,
       };
-      const result = applyPharmacyMarkingScan(payload, product.productMark || product.markCode);
+      const result = applyMarkingScan(payload, product.productMark || product.markCode);
       if (result.status === 'duplicate') {
         toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
         return result;
@@ -345,7 +344,7 @@ export function usePharmacyCartHandlers({
       }
 
       // КМ — в очередь, даже если открыта модалка количества (её закрываем).
-      if (onMarkingScan && isPharmacyMarkingCode(trimmed)) {
+      if (onMarkingScan && isMarkingCode(trimmed)) {
         if (qtyModalProduct) setQtyModalProduct(null);
         const keepKm = isPharmacyKmFieldFocused(kmInputRef);
         const markingHandled = onMarkingScan(trimmed, { silent });

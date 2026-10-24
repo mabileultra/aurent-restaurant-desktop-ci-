@@ -21,10 +21,7 @@ import { resolvePharmacyApiError } from '../../../../pharmacy/errors/resolvePhar
 import { useAuthStore } from '../../../../store/authStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
-import {
-  collectMarksFromCartItems,
-  rememberPharmacySoldMarks,
-} from '../../../pharmacy-cashier/utils/pharmacySoldMarksStore';
+import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
 
 export function usePosCheckout({
   storeId,
@@ -66,7 +63,7 @@ export function usePosCheckout({
     onSuccess: async (res, payment) => {
       if (storeId) {
         const marks = collectMarksFromCartItems(useCartStore.getState().items);
-        rememberPharmacySoldMarks(storeId, marks);
+        rememberSoldMarks(storeId, marks);
       }
       clearCart();
       setPayOpen(false);

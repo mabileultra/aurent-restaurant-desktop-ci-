@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { isCompletePharmacyMarkingScan } from '../utils/pharmacyMarkingCode';
+import { isCompleteMarkingScan } from '../../marking';
 
 /**
  * Если в поиск вставили/набрали полный DataMatrix — сразу в чек, без кнопки КМ.
@@ -16,7 +16,7 @@ export function usePharmacySearchMarkAutoSubmit({
   useEffect(() => {
     if (!enabled || !onMarkingScan) return undefined;
     const value = String(search || '');
-    if (!isCompletePharmacyMarkingScan(value)) {
+    if (!isCompleteMarkingScan(value)) {
       if (!value.trim()) lastSubmittedRef.current = '';
       return undefined;
     }

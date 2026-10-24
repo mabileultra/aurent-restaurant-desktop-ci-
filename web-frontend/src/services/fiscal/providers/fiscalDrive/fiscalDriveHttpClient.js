@@ -32,9 +32,23 @@ function factoryPath(factoryId, suffix) {
 
 const FORM_URLENCODED = { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8' };
 
+function errorBlob(err) {
+  return `${err?.message || ''} ${typeof err?.data === 'string' ? err.data : JSON.stringify(err?.data || {})}`;
+}
+
 function isEmptyTxidError(err) {
-  const text = `${err?.message || ''} ${typeof err?.data === 'string' ? err.data : JSON.stringify(err?.data || {})}`;
-  return /invalid TXID|ParseUint:\s*parsing\s*""/i.test(text);
+  return /invalid TXID|ParseUint:\s*parsing\s*""/i.test(errorBlob(err));
+}
+
+/** Form JsonReceipt не разобрался — служба парсит пустой Time/DateTime (HTTP 500). */
+export function isEmptyFiscalDateTimeError(err) {
+  return /invalid DateTime field value|cannot parse "" as "2006"|ParseError/i.test(errorBlob(err));
+}
+
+function shouldRetryGetTxidAsJson(err) {
+  const status = Number(err?.status);
+  if (status === 400 || status === 415 || status === 422) return true;
+  return isEmptyFiscalDateTimeError(err);
 }
 
 /** Нормализуем TXID к десятичной строке (как ждёт swagger form-поле). */
@@ -59,8 +73,8 @@ export async function getReceiptTxid(baseUrl, factoryId, receipt) {
       headers: FORM_URLENCODED,
     });
   } catch (err) {
-    // Старые сборки принимают сырой JSON-чек в body.
-    if (err?.status && err.status !== 400 && err.status !== 415) throw err;
+    // Form не приняли / Time пришёл пустым — тот же чек сырым JSON, без второго GetTXID с другим телом-пустышкой.
+    if (!shouldRetryGetTxidAsJson(err)) throw err;
     return localDeviceHttpRequest({
       baseUrl,
       method: 'POST',

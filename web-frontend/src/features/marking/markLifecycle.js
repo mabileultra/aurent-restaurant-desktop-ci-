@@ -1,11 +1,11 @@
-import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
-import { isPharmacyMarkingCode } from './pharmacyMarkingCode';
+import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
+import { isMarkingCode } from './markingCode';
 import {
   cartHasMark,
   markingIdentityKey,
   markingIdentityKeys,
-} from './pharmacyMarkIdentity';
-import { isPharmacyMarkSoldLocally } from './pharmacySoldMarksStore';
+} from './markingIdentity';
+import { isMarkSoldLocally } from './soldMarksStore';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 function pendingHasMark(pendingKeys, rawMark) {
@@ -22,7 +22,7 @@ function pendingHasMark(pendingKeys, rawMark) {
  * not-marking— не DataMatrix
  * ok         — можно добавлять
  */
-export function assessPharmacyMarkLifecycle({
+export function assessMarkLifecycle({
   rawCode,
   cartItems = [],
   pendingKeys = [],
@@ -31,7 +31,7 @@ export function assessPharmacyMarkLifecycle({
   locallySold = null,
 }) {
   if (!String(rawCode || '').trim()) return { status: 'empty' };
-  if (!isPharmacyMarkingCode(rawCode)) return { status: 'not-marking' };
+  if (!isMarkingCode(rawCode)) return { status: 'not-marking' };
 
   const mark = preserveMarkingCodeForFiscal(rawCode);
   const key = markingIdentityKey(mark);
@@ -43,7 +43,7 @@ export function assessPharmacyMarkLifecycle({
 
   const soldLocal =
     locallySold === true
-    || (locallySold !== false && storeId != null && isPharmacyMarkSoldLocally(storeId, mark));
+    || (locallySold !== false && storeId != null && isMarkSoldLocally(storeId, mark));
   if (soldLocal) {
     return { status: 'sold', key, mark };
   }

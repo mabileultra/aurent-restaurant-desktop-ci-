@@ -4,9 +4,9 @@ import {
   markingIdentificationCode,
   markingIdentityKeys,
   marksShareIdentity,
-} from './pharmacyMarkIdentity';
+} from './markingIdentity';
 
-describe('pharmacyMarkIdentity', () => {
+describe('markingIdentity', () => {
   it('shares gs1/id keys across crypto tails like pharmacy-service', () => {
     const base = '010307797292003921U=HqEW=YAVhNqy/Uasgl';
     const first = markingIdentityKeys(`${base}91EE1192ABCDEF`);

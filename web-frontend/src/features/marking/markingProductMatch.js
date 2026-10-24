@@ -2,8 +2,8 @@ import {
   barcodeLookupVariants,
   extractGtinFromMarkingCode,
   markingBarcodeCandidates,
-  normalizePharmacyMarkingCode,
-} from './pharmacyMarkingCode';
+  normalizeMarkingCode,
+} from './markingCode';
 
 function digitsOnly(value) {
   return String(value ?? '').replace(/\D/g, '');
@@ -27,7 +27,7 @@ function gtinVariants(gtin14) {
 export function findProductByMarkingCode(products, rawCode) {
   if (!Array.isArray(products) || products.length === 0) return null;
 
-  const normalized = normalizePharmacyMarkingCode(rawCode).toLowerCase();
+  const normalized = normalizeMarkingCode(rawCode).toLowerCase();
   const gtin = extractGtinFromMarkingCode(rawCode);
   const gtinSet = new Set(gtinVariants(gtin));
 
@@ -59,7 +59,7 @@ export function markingMatchesProduct(product, rawCode, extraGtins = []) {
   if (barcodes.length === 0) return false;
 
   const candidates = new Set(markingBarcodeCandidates(rawCode, extraGtins));
-  const markDigits = digitsOnly(normalizePharmacyMarkingCode(rawCode));
+  const markDigits = digitsOnly(normalizeMarkingCode(rawCode));
 
   return barcodes.some((barcode) => {
     if (candidates.has(barcode)) return true;

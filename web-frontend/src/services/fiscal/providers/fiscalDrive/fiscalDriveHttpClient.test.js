@@ -1,6 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   getFiscalDriveInfo,
+  getReceiptTxid,
+  isEmptyFiscalDateTimeError,
   listFiscalDrives,
   normalizeReceiptTxid,
   parseFiscalDriveFactoryIds,
@@ -92,6 +94,33 @@ describe('fiscalDrive HTTP', () => {
       2,
       expect.objectContaining({ method: 'POST', body: {} }),
     );
+  });
+
+  it('GetTXID retries raw JSON when form comes back as empty DateTime 500', async () => {
+    const localDeviceRequest = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        data: {
+          Reason: 'parsing time "" as "2006-01-02 15:04:05": cannot parse "" as "2006"',
+          Type: '*time.ParseError',
+          CallLog: [{ Message: 'invalid DateTime field value' }],
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, status: 200, data: { TXID: 15 } });
+    stubDesktop(localDeviceRequest);
+
+    const receipt = { Time: '2024-09-04 09:45:38', Items: [] };
+    await expect(getReceiptTxid('http://127.0.0.1:3449', FACTORY_ID, receipt)).resolves.toEqual({
+      TXID: 15,
+    });
+    expect(localDeviceRequest).toHaveBeenCalledTimes(2);
+    expect(localDeviceRequest.mock.calls[0][0].body).toContain('JsonReceipt=');
+    expect(localDeviceRequest.mock.calls[1][0].body).toEqual(receipt);
+    expect(isEmptyFiscalDateTimeError({
+      data: { CallLog: [{ Message: 'invalid DateTime field value' }] },
+    })).toBe(true);
   });
 
   it('RegisterTXID sends form-urlencoded TXID (swagger field)', async () => {

@@ -1,7 +1,7 @@
 import { saleApi } from '../../api/sale.api';
 import { pharmacySalesApi } from '../../api/pharmacySales.api';
 import { loadFiscalContext, wrapFiscalError } from '../fiscal';
-import { clearPharmacySoldMarks } from '../../features/pharmacy-cashier/utils/pharmacySoldMarksStore';
+import { clearSoldMarks } from '../../features/marking';
 import { resolvePosRoute } from './posRouteResolver';
 import { useConnectivityStore } from '../../store/connectivityStore';
 
@@ -73,7 +73,7 @@ export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }
 
   const data = await salesClient(kind).returnItems(sale.id, payload).then((r) => r.data);
   if (kind === 'pharmacy' && store) {
-    clearPharmacySoldMarks(store);
+    clearSoldMarks(store);
   }
   return data;
 }

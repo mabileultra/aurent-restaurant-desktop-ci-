@@ -9,7 +9,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Ключи КМ для запрета повторной продажи (как на фронте pharmacyMarkIdentity).
+ * Ключи КМ для запрета повторной продажи (как на фронте markingIdentity).
  */
 public final class PharmacyMarkIdentityKeys {
 

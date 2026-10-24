@@ -138,6 +138,32 @@ describe('buildSaleOperationBody (Multikassa Operations API)', () => {
     expect(body.items[0].product_mark).toBe('0108906002059409218MTGE3S706TDT');
   });
 
+  it('sends grams as the package name when the product unit is grams', () => {
+    const body = buildSaleOperationBody({
+      cartItems: [
+        {
+          productId: 1,
+          name: 'Сахар',
+          quantity: 200,
+          unitPrice: 50,
+          ikpu: '03214001014000010',
+          packageCode: '1546941',
+          packageName: 'килограмм',
+          unitCode: 'G',
+          unitOfMeasure: 'g',
+          taxRate: 12,
+        },
+      ],
+      payment: { paymentMethod: 'CASH', receiptType: 'SALE' },
+      total: 10000,
+      capabilities,
+      shiftId: 's1',
+      cashierName: 'CASHIER',
+    });
+    expect(body.items[0].count).toBe(200);
+    expect(body.items[0].product_package_name).toBe('g');
+  });
+
   it('does not treat unitMeasureCode 1 as package code', () => {
     const body = buildSaleOperationBody({
       cartItems: [

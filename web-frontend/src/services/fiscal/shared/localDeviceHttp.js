@@ -5,7 +5,7 @@
 function pickErrorMessage(data) {
   if (data == null) return null;
   if (typeof data === 'string') return data;
-  return data.message || data.Message || data.error || data.Error || data.title || null;
+  return data.message || data.Message || data.error || data.Error || data.title || data.Reason || null;
 }
 
 function buildError(message, { status, data, cause, code } = {}) {

@@ -22,7 +22,7 @@ import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
 import { tasnifApi } from '../../../api/tasnif.api';
-import { clearPharmacySoldMarksForTests } from './pharmacySoldMarksStore';
+import { clearSoldMarks } from '../../marking';
 import { resolveCashierMarkedProduct } from './resolveCashierMarkedProduct';
 
 const MARK = '010478001234567821SERIAL123\u001d91CRYPT';
@@ -31,8 +31,8 @@ const product = { id: 'p1', barcode: '4780012345678', name: 'Test' };
 describe('resolveCashierMarkedProduct', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    clearPharmacySoldMarksForTests(7);
-    clearPharmacySoldMarksForTests(9);
+    clearSoldMarks(7);
+    clearSoldMarks(9);
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
     pharmacyStockMarksApi.check.mockResolvedValue({ data: { found: false } });
     pharmacyWarehouseApi.listProducts.mockResolvedValue({ data: { content: [] } });

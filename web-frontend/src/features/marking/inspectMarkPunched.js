@@ -1,8 +1,8 @@
-import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
-import { pharmacySalesApi } from '../../../api/pharmacySales.api';
-import { pharmacyStockMarksApi } from '../../../api/pharmacyStockMarks.api';
-import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
-import { isPharmacyMarkSoldLocally, rememberPharmacySoldMarks, collectMarksFromCartItems } from './pharmacySoldMarksStore';
+import { pharmacyIntegrationApi } from '../../api/pharmacyIntegration.api';
+import { pharmacySalesApi } from '../../api/pharmacySales.api';
+import { pharmacyStockMarksApi } from '../../api/pharmacyStockMarks.api';
+import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
+import { isMarkSoldLocally, rememberSoldMarks, collectMarksFromCartItems } from './soldMarksStore';
 
 function soldHit(status, extra = {}) {
   return {
@@ -19,7 +19,7 @@ function soldHit(status, extra = {}) {
  * локальный кэш → stock_marks → sale_sold_marks → ASL (если включён).
  */
 export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) {
-  if (storeId && isPharmacyMarkSoldLocally(storeId, mark)) {
+  if (storeId && isMarkSoldLocally(storeId, mark)) {
     return soldHit('SOLD_LOCAL');
   }
 
@@ -29,7 +29,7 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
       const { data } = await pharmacyStockMarksApi.check({ storeId, code: mark });
       stock = data || null;
       if (data?.alreadySold) {
-        rememberPharmacySoldMarks(storeId, [mark]);
+        rememberSoldMarks(storeId, [mark]);
         return soldHit(data.status || 'SOLD', { stock });
       }
     } catch {
@@ -41,7 +41,7 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
     try {
       const { data } = await pharmacySalesApi.checkMarkSold({ storeId, code: mark });
       if (data?.sold === true) {
-        rememberPharmacySoldMarks(storeId, [mark]);
+        rememberSoldMarks(storeId, [mark]);
         return soldHit(data.status || 'SOLD', { stock });
       }
     } catch {
@@ -56,7 +56,7 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
       const { data } = await pharmacyIntegrationApi.verifyMarking({ storeId, code: mark });
       aslResult = data;
       if (isAslMarkAlreadySold(aslResult)) {
-        rememberPharmacySoldMarks(storeId, [mark]);
+        rememberSoldMarks(storeId, [mark]);
         return {
           punched: true,
           aslResult,

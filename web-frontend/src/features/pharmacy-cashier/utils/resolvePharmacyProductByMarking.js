@@ -1,5 +1,5 @@
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
-import { lookupProductByMarkingGtin } from './lookupProductByMarkingGtin';
+import { lookupProductByMarkingGtin } from '../../marking';
 import {
   getCachedPharmacyProduct,
   setCachedPharmacyProduct,

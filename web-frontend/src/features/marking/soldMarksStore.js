@@ -1,4 +1,4 @@
-import { markingIdentityKeys } from './pharmacyMarkIdentity';
+import { markingIdentityKeys } from './markingIdentity';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 const STORAGE_PREFIX = 'pharmacy-sold-marks:v1';
@@ -44,7 +44,7 @@ function writeSet(storeId, set) {
 }
 
 /** КМ уже продавали на этой кассе (после успешного чека). */
-export function isPharmacyMarkSoldLocally(storeId, rawMark) {
+export function isMarkSoldLocally(storeId, rawMark) {
   const keys = markingIdentityKeys(preserveMarkingCodeForFiscal(rawMark));
   if (keys.length === 0) return false;
   const sold = readSet(storeId);
@@ -52,7 +52,7 @@ export function isPharmacyMarkSoldLocally(storeId, rawMark) {
 }
 
 /** Запомнить КМ после успешной продажи — повторный скан сразу блокируется. */
-export function rememberPharmacySoldMarks(storeId, rawMarks) {
+export function rememberSoldMarks(storeId, rawMarks) {
   const list = Array.isArray(rawMarks) ? rawMarks : [];
   if (!storeId || list.length === 0) return;
   const sold = readSet(storeId);
@@ -75,7 +75,7 @@ export function collectMarksFromCartItems(items) {
 }
 
 /** Сбросить локальный sold-кэш магазина (после возврата). */
-export function clearPharmacySoldMarks(storeId) {
+export function clearSoldMarks(storeId) {
   const key = storageKey(storeId);
   memoryFallback.delete(key);
   if (canUseLocalStorage()) {
@@ -85,9 +85,4 @@ export function clearPharmacySoldMarks(storeId) {
       // ignore
     }
   }
-}
-
-/** @deprecated use clearPharmacySoldMarks */
-export function clearPharmacySoldMarksForTests(storeId) {
-  clearPharmacySoldMarks(storeId);
 }

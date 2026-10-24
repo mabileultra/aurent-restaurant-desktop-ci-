@@ -64,6 +64,9 @@ export function mapFiscalDriveError(err) {
   const known = hex ? CODE_MESSAGES[hex] : null;
   const name = extractAppletName(raw);
   let message = known || raw || 'Ошибка FiscalDrive';
+  if (/invalid DateTime field value|cannot parse "" as "2006"|ParseError/i.test(raw)) {
+    message = 'FiscalDrive не принял дату чека — повторите продажу из Aurent Desktop';
+  }
   if (!known && looksLikeAppletDump(raw)) {
     message = shortAppletMessage(hex, name);
   }

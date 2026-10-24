@@ -1,10 +1,10 @@
-import { useCartStore } from '../../../store/cartStore';
+import { useCartStore } from '../../store/cartStore';
 import {
   markingIdentityKey,
   markingIdentityKeys,
   lineMarkIdentityKeys,
   marksShareIdentity,
-} from './pharmacyMarkIdentity';
+} from './markingIdentity';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 export function lineMarkKeys(line) {
@@ -72,7 +72,7 @@ export function planMarkedScan(items, product, rawMark) {
 }
 
 /** Снять одну маркировку с чека. */
-export function removePharmacyMarking(rawMark) {
+export function removeMarking(rawMark) {
   const key = markingIdentityKey(preserveMarkingCodeForFiscal(rawMark));
   if (!key) return false;
   const items = useCartStore.getState().items;
@@ -97,7 +97,7 @@ export function removePharmacyMarking(rawMark) {
   return true;
 }
 
-export function applyPharmacyMarkingScan(product, rawMark) {
+export function applyMarkingScan(product, rawMark) {
   const items = useCartStore.getState().items;
   const plan = planMarkedScan(items, product, rawMark);
   if (plan.status === 'create') {

@@ -8,14 +8,14 @@ import {
 
 const t = (key, params) => (params?.name ? `${key}:${params.name}` : key);
 
-describe('resolveMarkingVerifyUserMessage', () => {
-  it('detects disabled ASL from backend text', () => {
+describe('тексты проверки маркировки', () => {
+  it('бэкенд «marking is disabled» — нет интеграции, не отказ ключа', () => {
     expect(isAslIntegrationDisabledError({
       response: { data: { message: 'ASL Belgisi marking is disabled for this store' } },
     })).toBe(true);
   });
 
-  it('does not treat rejected API key as missing integration', () => {
+  it('отклонённый API-ключ не считается «интеграции нет»', () => {
     const err = {
       response: {
         data: {
@@ -29,13 +29,13 @@ describe('resolveMarkingVerifyUserMessage', () => {
       .toBe('pharmacyCashier.integrations.markingApiKeyRejected');
   });
 
-  it('says no integration when ASL is off', () => {
+  it('ASL выключена — приёмка просит ключ', () => {
     expect(classifyMarkingVerifyFailure({ aslEnabled: false })).toBe('no-integration');
     expect(resolveMarkingVerifyUserMessage({ aslEnabled: false, t }))
       .toBe('pharmacyCashier.integrations.markingApiDisabled');
   });
 
-  it('says product not found when ASL is on', () => {
+  it('ASL включена, кода нет — «нужна карточка», без сырого API', () => {
     expect(classifyMarkingVerifyFailure({
       aslEnabled: true,
       aslResult: { found: false },
@@ -47,7 +47,7 @@ describe('resolveMarkingVerifyUserMessage', () => {
     })).toBe('pharmacyCashier.integrations.markingCatalogNeed');
   });
 
-  it('says catalog miss when ASL found name but no local product', () => {
+  it('ASL знает имя, локально товара нет — catalog miss', () => {
     expect(resolveMarkingVerifyUserMessage({
       aslEnabled: true,
       aslResult: { found: true, productName: 'Л-ЦЕТ' },
@@ -55,7 +55,7 @@ describe('resolveMarkingVerifyUserMessage', () => {
     })).toBe('pharmacyCashier.integrations.markingCatalogMiss:Л-ЦЕТ');
   });
 
-  it('does not dump raw API errors when ASL is off but request failed', () => {
+  it('приёмка не показывает дамп API, если ASL выключена', () => {
     expect(resolveMarkingVerifyUserMessage({
       aslEnabled: false,
       aslError: { response: { data: { message: 'Internal boom\nstack\nmore' } } },
@@ -63,7 +63,7 @@ describe('resolveMarkingVerifyUserMessage', () => {
     })).toBe('pharmacyCashier.integrations.markingApiDisabled');
   });
 
-  it('cashier miss without ASL says product not found, not missing integration', () => {
+  it('касса без ASL: товар не найден, не «нет интеграции»', () => {
     expect(resolveCashierMarkingMissMessage({
       aslEnabled: false,
       t,
@@ -71,7 +71,7 @@ describe('resolveMarkingVerifyUserMessage', () => {
     })).toBe('pos.markingNotFound');
   });
 
-  it('cashier miss does not ask for ASL when backend says marking is disabled', () => {
+  it('касса не просит ASL, если бэкенд сказал marking is disabled', () => {
     expect(resolveCashierMarkingMissMessage({
       aslEnabled: true,
       aslError: { response: { data: { message: 'ASL Belgisi marking is disabled for this store' } } },

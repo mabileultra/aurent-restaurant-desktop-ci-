@@ -1,4 +1,4 @@
-import { loadMultikassaCapabilities } from '../../../multikassa/loadMultikassaCapabilities';
+import { loadFiscalCapabilities } from '../../loadFiscalCapabilities';
 import { FISCAL_STATUS } from '../../fiscalStatus';
 import { ensureFiscalDriveReady } from './ensureFiscalDriveReady';
 import { registerReceiptTxid } from './fiscalDriveHttpClient';
@@ -19,7 +19,7 @@ export async function retryPendingFiscalOnPayload(payload, { storeId, cashRegist
 
   const capabilities =
     capsHint ||
-    (await loadMultikassaCapabilities(storeId ?? payload.storeId, cashRegisterId ?? payload.cashRegisterId));
+    (await loadFiscalCapabilities(storeId ?? payload.storeId, cashRegisterId ?? payload.cashRegisterId));
   const isFiscalDrive =
     Boolean(capabilities?.enabled) ||
     String(capabilities?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE';

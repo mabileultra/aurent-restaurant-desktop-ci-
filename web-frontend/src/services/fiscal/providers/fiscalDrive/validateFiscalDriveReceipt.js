@@ -1,3 +1,4 @@
+import { isFiscalDateTime } from '../../shared/fiscalMoney';
 import { FD_RECEIPT_TYPE, FD_SUM_TOLERANCE_TIYIN } from './fiscalDriveConstants';
 
 const isNonNegativeInt = (v) => Number.isInteger(v) && v >= 0;
@@ -10,6 +11,12 @@ export function validateFiscalDriveReceipt(receipt) {
   const errors = [];
   const items = Array.isArray(receipt?.Items) ? receipt.Items : [];
 
+  if (!isFiscalDateTime(receipt?.Time)) {
+    errors.push('В чеке нет даты и времени (Time)');
+  }
+  if (receipt?.RefundInfo && !/^\d{14}$/.test(String(receipt.RefundInfo.DateTime || ''))) {
+    errors.push('В возврате пустая дата исходного чека (RefundInfo.DateTime)');
+  }
   if (!isNonNegativeInt(receipt?.ReceivedCash) || !isNonNegativeInt(receipt?.ReceivedCard)) {
     errors.push('Сумма оплаты должна быть целым неотрицательным числом в тийинах');
   }

@@ -1,11 +1,14 @@
-package com.pos.sales.service;
+package com.pos.integrations.marking.service;
 
 import com.pos.sales.dto.sale.SaleItemRequest;
 
 import java.util.List;
 
-/** После фискального чека: опрос/подтверждение вывода КМ в ASL (SmartPOS/E-POS читают ASL, не ОФД). */
-public interface PosSaleAslWithdrawService {
+/**
+ * Вывод КМ после фискального чека (опрос ASL). Не аптечный сценарий:
+ * grocery и pharmacy зовут один контракт. Retail WITHDRAWN для чужих касс — Labels в ОФД.
+ */
+public interface MarkingAfterSaleService {
 
     void enqueueAfterSale(Integer storeId, List<String> codes, boolean fiscalConfirmed);
 

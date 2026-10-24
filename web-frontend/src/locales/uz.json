@@ -3911,7 +3911,7 @@
     "barcodeAdded": "Chekka: {{name}}",
     "itemAdded": "{{name}} — {{sum}}",
     "markingScanRequired": "Markirovkalangan mahsulot — DataMatrix (KM) ni skanerlang",
-    "markingNotFound": "Markirovka kodi bo‘yicha mahsulot topilmadi. Kartochkadagi shtrixkod (GTIN) ni tekshiring",
+    "markingNotFound": "Markirovka kodi bo‘yicha mahsulot topilmadi. Kartochkadagi shtrixkod (GTIN) ni tekshiring.",
     "markingAlreadyCounted": "Bu markirovka allaqachon chekda",
     "markingAlreadySold": "Bu markirovka allaqachon urilgan",
     "markingSoldLocal": "Bu markirovka bizning savdoda allaqachon urilgan",

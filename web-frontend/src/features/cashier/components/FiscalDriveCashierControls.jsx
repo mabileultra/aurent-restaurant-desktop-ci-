@@ -5,7 +5,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { cashierTerminalApi } from '../../../api/cashierTerminal.api';
-import { useMultikassaCashierStatus } from '../hooks/useMultikassaCashierStatus';
+import { useFiscalCashierStatus } from '../../fiscal/useFiscalCashierStatus';
+import { FISCAL_CASHIER_CAPS_KEY } from '../../fiscal/resolveCashierFiscalTheme';
 import { isFiscalDriveProvider } from '../../../services/fiscal';
 import { useCashierStore } from '../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../hooks/useCashierShiftView';
@@ -29,7 +30,7 @@ export default function FiscalDriveCashierControls({ className = '' }) {
   const [open, setOpen] = useState(false);
   const [registerId, setRegisterId] = useState(null);
   const qc = useQueryClient();
-  const { data: caps, isLoading } = useMultikassaCashierStatus({
+  const { data: caps, isLoading } = useFiscalCashierStatus({
     storeId,
     cashRegisterId: shiftRegisterId,
     enabled: storeId != null,
@@ -48,7 +49,7 @@ export default function FiscalDriveCashierControls({ className = '' }) {
           id = reg?.cashRegisterId ?? null;
           if (id != null) {
             setRegisterId(id);
-            qc.invalidateQueries({ queryKey: ['multikassa-cashier-caps', storeId, shiftRegisterId] });
+            qc.invalidateQueries({ queryKey: [FISCAL_CASHIER_CAPS_KEY, storeId, shiftRegisterId] });
           }
         }
       } catch {

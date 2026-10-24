@@ -1,4 +1,4 @@
-import { isPharmacyMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+import { isMarkingCode } from '../../marking';
 
 /**
  * Жёсткое разделение входа на кассе.
@@ -8,6 +8,6 @@ import { isPharmacyMarkingCode } from '../../pharmacy-cashier/utils/pharmacyMark
 export function classifyPosScanInput(raw) {
   const value = String(raw ?? '').trim();
   if (!value) return 'empty';
-  if (isPharmacyMarkingCode(value)) return 'marking';
+  if (isMarkingCode(value)) return 'marking';
   return 'barcode';
 }

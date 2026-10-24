@@ -20,7 +20,7 @@ import com.pos.sales.service.sale.support.CreditSaleCustomerSupport;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
-import com.pos.sales.service.PosSaleAslWithdrawService;
+import com.pos.integrations.marking.service.MarkingAfterSaleService;
 import com.pos.sales.service.sale.SaleCheckoutService;
 import com.pos.sales.service.sale.support.CheckoutProductLoader;
 import com.pos.sales.service.sale.support.SaleEnumParser;
@@ -79,7 +79,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final CheckoutQuantityResolver checkoutQuantityResolver;
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
-    private final PosSaleAslWithdrawService posSaleAslWithdrawService;
+    private final MarkingAfterSaleService markingAfterSaleService;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -207,9 +207,9 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         saleFiscalApplier.apply(sale, shift, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
-        posSaleAslWithdrawService.enqueueAfterSale(
+        markingAfterSaleService.enqueueAfterSale(
             store.getId(),
-            PosSaleAslWithdrawService.codesOf(req.items()),
+            MarkingAfterSaleService.codesOf(req.items()),
             SaleFiscalApplier.STATUS_FISCALIZED.equals(saved.getFiscalStatus())
         );
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {

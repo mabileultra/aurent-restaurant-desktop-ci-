@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { assessPharmacyMarkLifecycle } from './pharmacyMarkLifecycle';
+import { assessMarkLifecycle } from './markLifecycle';
 import {
   extractSerialFromMarkingCode,
   markingIdentityKey,
   markingIdentityKeys,
-} from './pharmacyMarkIdentity';
-import { planMarkedScan } from './pharmacyMarkedScanCart';
+} from './markingIdentity';
+import { planMarkedScan } from './markedScanCart';
 
 const product = { id: 'p1', barcode: '4780012345678', stockQuantity: 10 };
 
@@ -13,7 +13,7 @@ function mark(serial, crypto = 'CRYPTAA') {
   return `010478001234567821${serial}\u001d91${crypto}`;
 }
 
-describe('pharmacy mark lifecycle', () => {
+describe('mark lifecycle', () => {
   it('builds a stable identity from GTIN + serial even if crypto tail differs', () => {
     const a = mark('PACK001', 'AAAA');
     const b = mark('PACK001', 'BBBB');
@@ -48,7 +48,7 @@ describe('pharmacy mark lifecycle', () => {
       quantity: 1,
       productMarks: [code],
     }];
-    expect(assessPharmacyMarkLifecycle({
+    expect(assessMarkLifecycle({
       rawCode: mark('SAME01', 'OTHERTAIL'),
       cartItems: items,
     }).status).toBe('duplicate');
@@ -57,7 +57,7 @@ describe('pharmacy mark lifecycle', () => {
   it('rejects a pending in-flight scan as duplicate', () => {
     const code = mark('PEND01');
     const keys = markingIdentityKeys(code);
-    expect(assessPharmacyMarkLifecycle({
+    expect(assessMarkLifecycle({
       rawCode: code,
       cartItems: [],
       pendingKeys: keys,
@@ -65,7 +65,7 @@ describe('pharmacy mark lifecycle', () => {
   });
 
   it('rejects ASL withdrawn codes as sold', () => {
-    expect(assessPharmacyMarkLifecycle({
+    expect(assessMarkLifecycle({
       rawCode: mark('SOLD01'),
       cartItems: [],
       aslResult: { found: true, alreadySold: true, status: 'WITHDRAWN' },
@@ -73,7 +73,7 @@ describe('pharmacy mark lifecycle', () => {
   });
 
   it('rejects locally sold marks even without ASL', () => {
-    expect(assessPharmacyMarkLifecycle({
+    expect(assessMarkLifecycle({
       rawCode: mark('LOCAL1'),
       cartItems: [],
       locallySold: true,
@@ -88,7 +88,7 @@ describe('pharmacy mark lifecycle', () => {
       quantity: 1,
       productMarks: [`${base}91EE1192ABCDEF`],
     }];
-    expect(assessPharmacyMarkLifecycle({
+    expect(assessMarkLifecycle({
       rawCode: `${base}\u001d91FFFF\u001d92ZZZZ`,
       cartItems: items,
     }).status).toBe('duplicate');

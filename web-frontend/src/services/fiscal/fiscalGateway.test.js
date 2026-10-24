@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('./loadFiscalCapabilities', () => ({
+  loadFiscalCapabilities: vi.fn(),
+}));
+
 vi.mock('../multikassa', () => ({
-  loadMultikassaCapabilities: vi.fn(),
   fiscalizeSaleBeforeCommit: vi.fn(),
   fiscalizeRefundBeforeCommit: vi.fn(),
   fiscalizeShiftOperation: vi.fn(),
@@ -14,6 +17,7 @@ vi.mock('../multikassa', () => ({
   }),
 }));
 
+import { loadFiscalCapabilities } from './loadFiscalCapabilities';
 import * as multikassa from '../multikassa';
 import {
   FISCAL_PROVIDER,
@@ -47,11 +51,11 @@ describe('loadFiscalContext', () => {
 
   it('passes store, register and options through and keeps capabilities as-is', async () => {
     const caps = { enabled: true, baseUrl: 'http://localhost:8080', printFiscalQr: false };
-    multikassa.loadMultikassaCapabilities.mockResolvedValue(caps);
+    loadFiscalCapabilities.mockResolvedValue(caps);
 
     const ctx = await loadFiscalContext(7, 3, { allowLoadFailureAsDisabled: true });
 
-    expect(multikassa.loadMultikassaCapabilities).toHaveBeenCalledWith(7, 3, {
+    expect(loadFiscalCapabilities).toHaveBeenCalledWith(7, 3, {
       allowLoadFailureAsDisabled: true,
     });
     expect(ctx.capabilities).toBe(caps);
@@ -59,8 +63,8 @@ describe('loadFiscalContext', () => {
   });
 
   it('propagates capability load errors unchanged', async () => {
-    const err = Object.assign(new Error('load'), { code: 'MULTIKASSA_CAPABILITIES_LOAD_FAILED' });
-    multikassa.loadMultikassaCapabilities.mockRejectedValue(err);
+    const err = Object.assign(new Error('load'), { code: 'FISCAL_CAPABILITIES_LOAD_FAILED' });
+    loadFiscalCapabilities.mockRejectedValue(err);
     await expect(loadFiscalContext(1)).rejects.toBe(err);
   });
 });
@@ -92,6 +96,11 @@ describe('multikassa provider adapter', () => {
 });
 
 describe('wrapFiscalError', () => {
+  it('keeps a fiscal load error instead of relabeling it Multikassa', () => {
+    const err = Object.assign(new Error('load'), { code: 'FISCAL_CAPABILITIES_LOAD_FAILED' });
+    expect(wrapFiscalError(err).code).toBe('FISCAL_CAPABILITIES_LOAD_FAILED');
+  });
+
   it('falls back to Multikassa wrapping when provider is unknown', () => {
     const wrapped = wrapFiscalError(new Error('boom'));
     expect(wrapped.code).toBe('MULTIKASSA_FISCAL_FAILED');

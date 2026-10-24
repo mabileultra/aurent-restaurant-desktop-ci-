@@ -1,10 +1,10 @@
-package com.pos.sales.service.impl;
+package com.pos.integrations.marking.service.impl;
 
+import com.pos.integrations.marking.service.MarkingAfterSaleService;
 import com.pos.integrations.pharmacy.config.PharmacyAslExecutorNames;
 import com.pos.integrations.pharmacy.dto.MarkingWithdrawRequest;
 import com.pos.integrations.pharmacy.dto.MarkingWithdrawResponse;
 import com.pos.integrations.pharmacy.service.PharmacyMarkingWithdrawService;
-import com.pos.sales.service.PosSaleAslWithdrawService;
 import com.pos.shared.log.LogUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +14,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PosSaleAslWithdrawServiceImpl implements PosSaleAslWithdrawService {
+public class MarkingAfterSaleServiceImpl implements MarkingAfterSaleService {
 
     private final PharmacyMarkingWithdrawService withdrawService;
 
@@ -36,8 +36,8 @@ public class PosSaleAslWithdrawServiceImpl implements PosSaleAslWithdrawService 
             }
         } catch (Exception ex) {
             LogUtil.warn(
-                PosSaleAslWithdrawServiceImpl.class,
-                "ASL withdraw after grocery sale failed storeId={}: {}",
+                MarkingAfterSaleServiceImpl.class,
+                "ASL withdraw after sale failed storeId={}: {}",
                 storeId,
                 ex.getMessage()
             );

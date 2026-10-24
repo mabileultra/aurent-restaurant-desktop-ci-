@@ -1,4 +1,4 @@
-import { barcodeLookupVariants } from './pharmacyMarkingCode';
+import { barcodeLookupVariants } from '../../marking';
 
 /** In-memory кэш barcode/GTIN → product для аптечной кассы (TTL). */
 

@@ -4,6 +4,7 @@ import { formatMultikassaDateTime, toSum, toTiyin } from './multikassaMoney';
 import { toOfdMarkingLabel } from '../fiscal/shared/ofdMarkingLabel';
 import { resolveReceivedCashCard } from '../fiscal/shared/resolveReceivedCashCard';
 import { resolveLinePackageCode } from '../fiscal/shared/resolveLinePackageCode';
+import { resolveFiscalPackageName } from '../fiscal/shared/resolveFiscalPackageCodes';
 import { round2 } from '../../utils/taxAmounts';
 import { transliterateCyrillicToLatin } from '../../utils/transliterateCyrillic';
 
@@ -32,9 +33,15 @@ function numericProductId(productId) {
 
 export { resolveReceivedCashCard };
 
+function lineMark(line) {
+  if (line.productMark || line.markCode) return line.productMark || line.markCode;
+  if (Array.isArray(line.productMarks) && line.productMarks[0]) return line.productMarks[0];
+  return line.productLabel || '';
+}
+
 function buildItem(line) {
   const barcode = line.barcode || line.sku || '';
-  const mark = line.productMark || line.markCode || '';
+  const mark = lineMark(line);
   const ofdLabel = toOfdMarkingLabel(mark) || toOfdMarkingLabel(line.productLabel) || '';
   const ikpu = line.ikpu != null && String(line.ikpu).trim() !== '' ? String(line.ikpu) : '';
   const classifier =
@@ -47,11 +54,9 @@ function buildItem(line) {
     : [];
   const packageCode = resolveLinePackageCode(line);
 
-  return {
+  const item = {
     product_id: numericProductId(line.productId),
     classifier_class_code: classifier,
-    product_mark: ofdLabel || mark,
-    product_label: ofdLabel,
     product_name: transliterateCyrillicToLatin(line.name || 'Товар') || 'Tovar',
     product_barcode: barcode ? String(barcode) : '',
     no_check_mark: Boolean(line.noCheckMark),
@@ -69,11 +74,14 @@ function buildItem(line) {
     product_vat_percent: Number(line.taxRate ?? 12),
     // «1» фискальный модуль не принимает: это не код упаковки Tasnif.
     product_package: packageCode || (ikpu ? '' : '1'),
-    product_package_name: transliterateCyrillicToLatin(
-      line.packageName || line.unitOfMeasure || line.unitLabel || 'sht',
-    ),
+    product_package_name: transliterateCyrillicToLatin(resolveFiscalPackageName(line)),
     other: toSum(line.other || 0),
   };
+  if (ofdLabel) {
+    item.product_mark = ofdLabel;
+    item.product_label = ofdLabel;
+  }
+  return item;
 }
 
 function resolveOperationType(receiptType) {

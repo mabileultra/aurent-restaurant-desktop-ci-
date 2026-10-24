@@ -153,6 +153,19 @@ describe('buildFiscalDriveReceipt', () => {
       FiscalSign: '445705250315',
     });
   });
+
+  it('does not send RefundInfo with an empty DateTime', () => {
+    const receipt = buildFiscalDriveReceipt({
+      cartItems: [line()],
+      payment: { paymentMethod: 'CASH' },
+      total: 1000,
+      refundInfo: { terminalId: 'ZZ1', receiptSeq: 1, dateTime: '', fiscalSign: '1' },
+      now: NOW,
+    });
+    expect(receipt.Time).toBe('2024-09-04 09:45:38');
+    expect(receipt.Operation).toBe(FD_OPERATION.SALE);
+    expect(receipt.RefundInfo).toBeUndefined();
+  });
 });
 
 describe('validateFiscalDriveReceipt', () => {

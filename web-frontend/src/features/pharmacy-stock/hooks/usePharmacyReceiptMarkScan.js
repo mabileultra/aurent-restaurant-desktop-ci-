@@ -1,12 +1,12 @@
 import { useCallback, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { pharmacyIntegrationApi } from '../../../api';
-import { isAslMarkAlreadySold } from '../../pharmacy-cashier/utils/aslMarkingAlreadySold';
 import {
-  isCompletePharmacyMarkingScan,
-  isPharmacyMarkingCode,
-  normalizePharmacyMarkingCode,
-} from '../../pharmacy-cashier/utils/pharmacyMarkingCode';
+  isAslMarkAlreadySold,
+  isCompleteMarkingScan,
+  isMarkingCode,
+  normalizeMarkingCode,
+} from '../../marking';
 import {
   isAslIntegrationDisabledError,
   resolveMarkingVerifyUserMessage,
@@ -40,8 +40,8 @@ export function usePharmacyReceiptMarkScan({
   }, [lines, marksByLineId, pinnedLineId]);
 
   const processCode = useCallback(async (rawCode) => {
-    const code = normalizePharmacyMarkingCode(rawCode);
-    if (!code || (!isPharmacyMarkingCode(rawCode) && !isCompletePharmacyMarkingScan(rawCode))) {
+    const code = normalizeMarkingCode(rawCode);
+    if (!code || (!isMarkingCode(rawCode) && !isCompleteMarkingScan(rawCode))) {
       toast.error(t('pharmacyStock.marks.invalidCode'));
       return false;
     }
@@ -109,7 +109,7 @@ export function usePharmacyReceiptMarkScan({
 
   const onDraftChange = useCallback((value) => {
     setDraft(value);
-    if (isCompletePharmacyMarkingScan(value)) {
+    if (isCompleteMarkingScan(value)) {
       void processCode(value);
     }
   }, [processCode]);

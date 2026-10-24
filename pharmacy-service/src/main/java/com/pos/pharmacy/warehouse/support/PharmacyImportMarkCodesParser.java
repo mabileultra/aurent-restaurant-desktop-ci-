@@ -47,7 +47,7 @@ public final class PharmacyImportMarkCodesParser {
 
     /**
      * Реальный КМ (DataMatrix), не флаг «Маркировкаланган» и не ИКПУ/МХИК (14–17 цифр).
-     * Согласовано с {@code isPharmacyMarkingCode} на кассе.
+     * Согласовано с {@code isMarkingCode} на кассе.
      */
     public static boolean isPlausibleMarkCode(String code) {
         if (!StringUtils.hasText(code)) {

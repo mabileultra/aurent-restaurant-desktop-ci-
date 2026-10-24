@@ -1,12 +1,10 @@
 import { pharmacyWarehouseApi } from '../../../api/pharmacyWarehouse.api';
-import { inspectMarkPunched } from './inspectMarkPunched';
+import { resolveCashierMarking } from '../../marking/resolveCashierMarking';
 import { resolvePharmacyProductByMarking } from './resolvePharmacyProductByMarking';
-import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 /**
- * Резолв КМ на кассе аптеки.
- * Сначала жёстко: код уже пробит (кэш / склад / журнал продаж / ASL) — в чек не кладём.
- * Карточку ищем только после этой проверки.
+ * Резолв КМ на кассе аптеки — та же схема, что grocery:
+ * sold-gate, потом GTIN. Склад IN_STOCK только подсказывает карточку.
  */
 export async function resolveCashierMarkedProduct({
   products,
@@ -14,60 +12,23 @@ export async function resolveCashierMarkedProduct({
   storeId,
   aslEnabled = false,
 }) {
-  const mark = preserveMarkingCodeForFiscal(rawCode);
-  const gate = await inspectMarkPunched({ storeId, mark, aslEnabled });
-  if (gate.punched) {
-    return {
-      status: 'sold',
-      mark,
-      product: null,
-      aslResult: gate.aslResult,
-      aslError: null,
-    };
-  }
-
-  let product = null;
-  let aslError = gate.aslError;
-  const stock = gate.stock;
-  if (stock?.found && stock.productId) {
-    product = await loadProductById(products, stock.productId, storeId);
-    if (product) {
-      return {
-        status: 'ok',
-        mark,
-        product: withMark(product, mark),
-        aslResult: gate.aslResult || { found: true, status: stock.status || 'IN_STOCK', source: 'stock_marks' },
-        aslError: null,
-      };
-    }
-  }
-
-  try {
-    product = await resolvePharmacyProductByMarking({ products, rawCode: mark, storeId });
-  } catch (error) {
-    aslError = aslError || error;
-  }
-
-  if (product) {
-    return {
-      status: 'ok',
-      mark,
-      product: withMark(product, mark),
-      aslResult: gate.aslResult,
-      aslError: null,
-    };
-  }
-
-  return { status: 'not-found', mark, product: null, aslResult: gate.aslResult, aslError };
-}
-
-function withMark(product, mark) {
-  return {
-    ...product,
-    productMark: mark,
-    markCode: mark,
-    markedProduct: true,
-  };
+  return resolveCashierMarking({
+    rawCode,
+    storeId,
+    aslEnabled,
+    findProduct: async (mark, gate) => {
+      const stock = gate?.stock;
+      if (stock?.found && stock.productId && !stock.alreadySold) {
+        const fromStock = await loadProductById(products, stock.productId, storeId);
+        if (fromStock) return fromStock;
+      }
+      try {
+        return await resolvePharmacyProductByMarking({ products, rawCode: mark, storeId });
+      } catch {
+        return null;
+      }
+    },
+  });
 }
 
 async function loadProductById(products, productId, storeId) {

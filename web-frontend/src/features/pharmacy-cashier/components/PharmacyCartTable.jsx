@@ -5,7 +5,7 @@ import { lineDiscountAmount, lineSubtotal } from '../../../store/cartStore';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { formatQty } from '../../../utils/quantityFormat';
 import { formatCartPackPieceQty } from '../utils/pharmacyPackQty';
-import { isMarkCountedLine } from '../utils/pharmacyMarkedScanCart';
+import { isMarkCountedLine } from '../../marking';
 import {
   pharmacyCartDisplayPrice,
 } from '../utils/pharmacyCartActions';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
+import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
 
 describe('isAslMarkAlreadySold', () => {
   it('treats withdrawn status as already sold', () => {

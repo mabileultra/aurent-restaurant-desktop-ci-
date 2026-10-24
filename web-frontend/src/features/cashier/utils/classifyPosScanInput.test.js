@@ -20,6 +20,12 @@ describe('classifyPosScanInput — жёсткое разделение КМ / ш
     expect(classifyPosScanInput('01\u001d04780012345678\u001d21ABC')).toBe('marking');
   });
 
+  it('QR чека ОФД — не маркировка', () => {
+    expect(classifyPosScanInput(
+      'https://ofd.soliq.uz/check?t=ZZ000000000000&r=3&c=20240904094538&s=320262508539',
+    )).toBe('barcode');
+  });
+
   it('пути не смешиваются: один код — один вид', () => {
     const ean = '4780012345678';
     const km = '010478001234567821XxYyZzAaBb';

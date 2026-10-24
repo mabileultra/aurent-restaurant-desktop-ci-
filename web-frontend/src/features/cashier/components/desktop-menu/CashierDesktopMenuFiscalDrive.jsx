@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { useCashierStore } from '../../../../hooks/useCashierStore';
 import { useCashierShiftView } from '../../../../hooks/useCashierShiftView';
 import { useCashierStoreProfile } from '../../../../hooks/useCashierStoreProfile';
-import { useMultikassaCashierStatus } from '../../hooks/useMultikassaCashierStatus';
+import { useFiscalCashierStatus } from '../../../fiscal/useFiscalCashierStatus';
 import { isFiscalDriveProvider } from '../../../../services/fiscal';
 
 const FiscalDriveSettingsModal = lazy(() =>
@@ -21,7 +21,7 @@ export default function CashierDesktopMenuFiscalDrive({ t }) {
   });
   const shiftRegisterId = shift?.cashRegisterId ?? null;
   const [open, setOpen] = useState(false);
-  const { data: caps } = useMultikassaCashierStatus({
+  const { data: caps } = useFiscalCashierStatus({
     storeId,
     cashRegisterId: shiftRegisterId,
     enabled: storeId != null,

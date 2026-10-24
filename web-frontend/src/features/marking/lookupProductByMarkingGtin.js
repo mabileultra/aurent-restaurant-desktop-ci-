@@ -1,9 +1,9 @@
-import { tasnifApi } from '../../../api/tasnif.api';
-import { extractGtinFromMarkingCode, markingBarcodeCandidates } from './pharmacyMarkingCode';
+import { tasnifApi } from '../../api/tasnif.api';
+import { extractGtinFromMarkingCode, markingBarcodeCandidates } from './markingCode';
 import {
   findProductByMarkingCode,
   markingMatchesProduct,
-} from './pharmacyMarkingProductMatch';
+} from './markingProductMatch';
 
 function pageItems(page) {
   if (Array.isArray(page)) return page;

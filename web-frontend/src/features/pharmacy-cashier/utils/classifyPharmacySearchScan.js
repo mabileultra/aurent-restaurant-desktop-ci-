@@ -1,4 +1,4 @@
-import { isPharmacyMarkingCode } from './pharmacyMarkingCode';
+import { isMarkingCode } from '../../marking';
 
 /**
  * Одно поле поиска на кассе: имя / штрихкод / DataMatrix КМ.
@@ -8,7 +8,7 @@ export function classifyPharmacySearchScan(raw) {
   const value = String(raw ?? '').trim();
   if (!value) return { kind: 'empty', value: '' };
 
-  if (isPharmacyMarkingCode(value)) {
+  if (isMarkingCode(value)) {
     return { kind: 'marking', value };
   }
 

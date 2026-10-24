@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { classifyPharmacySearchScan } from './classifyPharmacySearchScan';
-import { findProductByMarkingCode } from './pharmacyMarkingProductMatch';
-import { planMarkedScan } from './pharmacyMarkedScanCart';
+import { findProductByMarkingCode, planMarkedScan } from '../../marking';
 
 const MARK = '010478001234567821SERIAL123\u001d91CRYPT';
 const product = {

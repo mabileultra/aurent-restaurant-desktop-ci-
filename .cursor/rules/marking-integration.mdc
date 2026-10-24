@@ -1,0 +1,25 @@
+---
+description: Marking is a POS integration, not a pharmacy feature
+globs:
+  - web-frontend/src/features/marking/**
+  - web-frontend/src/features/cashier/**/*mark*
+  - web-backend/src/main/java/com/pos/integrations/marking/**
+  - web-backend/src/main/java/com/pos/sales/service/sale/impl/SaleCheckoutServiceImpl.java
+alwaysApply: false
+---
+
+# Marking integration (do not put new KM logic in pharmacy)
+
+## Invariants
+
+1. Marking lives in `features/marking/` (code, identity, sold-gate, GTIN lookup, cart attach). After-sale withdraw is `integrations/marking` (`MarkingAfterSaleService`). Fiscal UI is `features/fiscal/CashierFiscalTheme`; providers stay in `services/fiscal` and `services/multikassa`. Grocery/pharmacy only pass catalog/warehouse finders — do not add KM logic there.
+2. After a FISCALIZED sale, grocery calls `MarkingAfterSaleService` (`integrations/marking`), not a pharmacy-named type.
+3. ASL HTTP stays under `integrations/pharmacy` (API key, verify). Sold-gate, GTIN lookup, identity, OFD Labels are marking — not pharmacy catalog.
+4. Multikassa and FiscalDrive only send KM (`product_mark` / `Labels`). They do not own sold-gate or ASL withdraw.
+5. Cashier marking scheme (scan → cart → OFD):
+   - Search: GTIN from KM only. ASL key never resolves the card.
+   - Cart: full scanner KM in `productMarks`.
+   - Multikassa Operations: `product_mark` + `product_label` = identification KM (no 91/92/93). Omit both when there is no KM.
+   - FiscalDrive GetTXID: `Labels[]` = the same identification KM.
+   - ASL API key: sold-gate + withdraw after FISCALIZED. No key → OFD Labels only.
+   - Sold-gate is per KM, not per card: a punched mark stays sold even if the cashier is on another product.

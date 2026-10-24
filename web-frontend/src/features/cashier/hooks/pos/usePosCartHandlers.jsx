@@ -12,10 +12,12 @@ import { isMeasuredProduct, minQtyForUnit, qtyStepForUnit, roundQty } from '../.
 import { getUnitConfig } from '../../../../utils/unitConfig';
 import { resolveProductUnitPrice } from '../../../../utils/productPrice';
 import { canAddProductFromSearchList } from './posProductsSearchStale';
-import { applyPharmacyMarkingScan } from '../../../pharmacy-cashier/utils/pharmacyMarkedScanCart';
-import { assessPharmacyMarkLifecycle } from '../../../pharmacy-cashier/utils/pharmacyMarkLifecycle';
-import { markingIdentityKeys } from '../../../pharmacy-cashier/utils/pharmacyMarkIdentity';
-import { preserveMarkingCodeForFiscal } from '../../../pharmacy-cashier/utils/preserveMarkingCodeForFiscal';
+import {
+  applyMarkingScan,
+  assessMarkLifecycle,
+  markingIdentityKeys,
+  preserveMarkingCodeForFiscal,
+} from '../../../marking';
 import { resolvePosMarkedProduct } from '../../utils/resolvePosMarkedProduct';
 import { classifyPosScanInput } from '../../utils/classifyPosScanInput';
 
@@ -122,7 +124,7 @@ export function usePosCartHandlers({
         toast.error(t('pos.outOfStock'));
         return null;
       }
-      const result = applyPharmacyMarkingScan(payload, product.productMark || product.markCode);
+      const result = applyMarkingScan(payload, product.productMark || product.markCode);
       if (result.status === 'duplicate') {
         toast.error(t('pos.markingAlreadyCounted'));
         return result;
@@ -156,7 +158,7 @@ export function usePosCartHandlers({
         return true;
       }
       const mark = preserveMarkingCodeForFiscal(rawCode);
-      const before = assessPharmacyMarkLifecycle({
+      const before = assessMarkLifecycle({
         rawCode: mark,
         cartItems: useCartStore.getState().items,
         pendingKeys: [...pendingMarkKeysRef.current],

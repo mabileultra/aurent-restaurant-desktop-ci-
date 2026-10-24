@@ -1,7 +1,7 @@
 import { lineDiscountAmount, buildCheckoutLineItems } from '../../../store/cartStore';
 import { round2 } from '../../../utils/taxAmounts';
 import { roundQty } from '../../../utils/quantityFormat';
-import { isMarkCountedLine } from './pharmacyMarkedScanCart';
+import { isMarkCountedLine } from '../../marking';
 import { pharmacyCheckoutLineFromCartItem } from './pharmacyPackSale';
 
 function lineMarks(item) {

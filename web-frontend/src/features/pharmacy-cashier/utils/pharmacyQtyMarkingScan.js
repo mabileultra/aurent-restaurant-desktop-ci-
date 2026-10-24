@@ -1,15 +1,18 @@
-import { isAslMarkAlreadySold } from './aslMarkingAlreadySold';
-import { markingMatchesProduct } from './pharmacyMarkingProductMatch';
 import {
   extractGtinFromMarkingCode,
-  isPharmacyMarkingCode,
-  normalizePharmacyMarkingCode,
-} from './pharmacyMarkingCode';
-import { markingIdentityKey, markingIdentityKeys, lineMarkIdentityKeys } from './pharmacyMarkIdentity';
-import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
+  isAslMarkAlreadySold,
+  isMarkingCode,
+  isMarkSoldLocally,
+  lineMarkIdentityKeys,
+  markingIdentityKey,
+  markingIdentityKeys,
+  markingMatchesProduct,
+  normalizeMarkingCode,
+  preserveMarkingCodeForFiscal,
+} from '../../marking';
 
 export function shortMarkLabel(mark) {
-  const code = normalizePharmacyMarkingCode(mark);
+  const code = normalizeMarkingCode(mark);
   if (!code) return '';
   if (code.length <= 16) return code;
   return `…${code.slice(-10)}`;
@@ -34,8 +37,10 @@ export function assessQtyMarkingScan({
   extraGtins = [],
   aslResult = null,
   pendingKeys = [],
+  storeId = null,
+  locallySold = null,
 }) {
-  if (!isPharmacyMarkingCode(rawCode)) return { status: 'not-marking' };
+  if (!isMarkingCode(rawCode)) return { status: 'not-marking' };
 
   const mark = preserveMarkingCodeForFiscal(rawCode);
   const key = markingIdentityKey(mark);
@@ -45,7 +50,10 @@ export function assessQtyMarkingScan({
     return { status: 'duplicate', key };
   }
 
-  if (aslResult && isAslMarkAlreadySold(aslResult)) {
+  const soldLocal =
+    locallySold === true
+    || (locallySold !== false && storeId != null && isMarkSoldLocally(storeId, mark));
+  if (soldLocal || (aslResult && isAslMarkAlreadySold(aslResult))) {
     return { status: 'sold', key };
   }
 

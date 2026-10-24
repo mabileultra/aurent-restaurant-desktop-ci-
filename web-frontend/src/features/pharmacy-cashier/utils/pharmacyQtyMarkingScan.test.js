@@ -52,6 +52,11 @@ describe('assessQtyMarkingScan — надёжная проверка', () => {
       aslResult: { found: true, alreadySold: true, status: 'WITHDRAWN' },
     }).status).toBe('sold');
     expect(assessQtyMarkingScan({
+      product: { id: 'other', barcode: '4780131182498' },
+      rawCode: MARK,
+      aslResult: { found: true, alreadySold: true, status: 'WITHDRAWN' },
+    }).status).toBe('sold');
+    expect(assessQtyMarkingScan({
       product,
       rawCode: MARK,
       aslResult: { found: true, gtin: '09990000000000' },

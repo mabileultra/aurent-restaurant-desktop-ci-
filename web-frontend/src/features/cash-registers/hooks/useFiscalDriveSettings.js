@@ -116,6 +116,7 @@ export function useFiscalDriveSettings({ cashRegisterId, open, onSaved }) {
     mutationFn: (payload) => fiscalDriveApi.saveAdminSettings(cashRegisterId, payload).then((r) => r.data),
     onSuccess: (saved) => {
       qc.setQueryData(queryKey, saved);
+      qc.invalidateQueries({ queryKey: ['fiscal-cashier-caps'] });
       toast.success(t('cashRegisters.fiscalDrive.saved'));
       onSaved?.();
     },

@@ -26,7 +26,7 @@ vi.mock('../../../api/pharmacyStockMarks.api', () => ({
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { posFetchProductByBarcode } from '../../../services/pos/posDataRouter';
-import { clearPharmacySoldMarksForTests } from '../../pharmacy-cashier/utils/pharmacySoldMarksStore';
+import { clearSoldMarks } from '../../marking';
 import { resolvePosMarkedProduct } from './resolvePosMarkedProduct';
 
 const KM = '010478001234567821AbCdEfGhIj';
@@ -36,7 +36,7 @@ const product = { id: 11, barcode: EAN, name: 'Чай', markedProduct: true };
 describe('resolvePosMarkedProduct — путь только для КМ', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    clearPharmacySoldMarksForTests(7);
+    clearSoldMarks(7);
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
   });
 

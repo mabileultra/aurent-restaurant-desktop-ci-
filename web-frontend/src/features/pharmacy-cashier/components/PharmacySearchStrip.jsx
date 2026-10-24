@@ -7,7 +7,7 @@ import {
 } from '../constants/pharmacyQuickLinks';
 import { usePharmacyIntegrationToolbar } from '../hooks/usePharmacyIntegrationToolbar';
 import { usePharmacySearchMarkAutoSubmit } from '../hooks/usePharmacySearchMarkAutoSubmit';
-import { isPharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
+import { isMarkingCode } from '../../marking';
 import PharmacyIntegrationIcon from './PharmacyIntegrationIcon';
 import PharmacyIntegrationMoreMenu from './PharmacyIntegrationMoreMenu';
 import '../styles/pharmacy-search-strip.css';
@@ -88,7 +88,7 @@ export default function PharmacySearchStrip({
 
   const handleProductPaste = (e) => {
     const text = e.clipboardData?.getData('text') ?? '';
-    if (!isPharmacyMarkingCode(text)) return;
+    if (!isMarkingCode(text)) return;
     e.preventDefault();
     onSearchChange?.('');
     onMarkingScan?.(text);

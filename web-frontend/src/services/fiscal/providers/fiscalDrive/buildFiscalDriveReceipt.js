@@ -1,5 +1,5 @@
 import { lineSubtotal } from '../../../../store/cartStore';
-import { formatFiscalDateTime, toTiyin } from '../../shared/fiscalMoney';
+import { formatFiscalDateTime, toFiscalRefundDateTime, toTiyin } from '../../shared/fiscalMoney';
 import { resolveReceivedCashCard } from '../../shared/resolveReceivedCashCard';
 import { buildFiscalDriveItem } from './buildFiscalDriveItem';
 import {
@@ -70,25 +70,31 @@ export function buildFiscalDriveReceipt({
   const receivedCard = toTiyin(card);
   const discounts = splitOrderDiscount(lines, total);
 
+  const refundDateTime = toFiscalRefundDateTime(refundInfo?.dateTime);
+  const refundTerminalId = String(refundInfo?.terminalId || '').trim();
+  const refundFiscalSign = String(refundInfo?.fiscalSign || '').trim();
+  const refundSeq = Number(refundInfo?.receiptSeq) || 0;
+  const refund = refundInfo && refundDateTime && refundTerminalId && refundFiscalSign && refundSeq > 0
+    ? {
+      TerminalID: refundTerminalId,
+      ReceiptSeq: refundSeq,
+      DateTime: refundDateTime,
+      FiscalSign: refundFiscalSign,
+    }
+    : null;
+
   const receipt = {
     Time: formatFiscalDateTime(now),
     ReceivedCash: receivedCash,
     ReceivedCard: receivedCard,
     Type: resolveReceiptType(payment?.receiptType),
-    Operation: refundInfo ? FD_OPERATION.REFUND : FD_OPERATION.SALE,
+    Operation: refund ? FD_OPERATION.REFUND : FD_OPERATION.SALE,
     PaymentType: resolvePaymentType(receivedCash, receivedCard),
     Location: resolveLocation(capabilities),
     Items: lines.map((line, i) => buildFiscalDriveItem(line, { extraDiscountTiyin: discounts[i] })),
   };
 
-  if (refundInfo) {
-    receipt.RefundInfo = {
-      TerminalID: String(refundInfo.terminalId || ''),
-      ReceiptSeq: Number(refundInfo.receiptSeq) || 0,
-      DateTime: String(refundInfo.dateTime || ''),
-      FiscalSign: String(refundInfo.fiscalSign || ''),
-    };
-  }
+  if (refund) receipt.RefundInfo = refund;
 
   return receipt;
 }

@@ -1,5 +1,5 @@
 /** Нормализация кода маркировки (DataMatrix / КМ). */
-export function normalizePharmacyMarkingCode(raw) {
+export function normalizeMarkingCode(raw) {
   if (!raw) return '';
   return String(raw)
     .replace(/^\uFEFF/, '')
@@ -20,11 +20,15 @@ export function normalizePharmacyMarkingCode(raw) {
  * Эвристика: код маркировки ASL Belgisi (DataMatrix / QR КМ), а не EAN и не ИКПУ/МХИК.
  * В ASL уходит именно этот КМ (`codes`), никогда поле ikpu карточки.
  */
-export function isPharmacyMarkingCode(raw) {
-  const code = normalizePharmacyMarkingCode(raw);
+export function isMarkingCode(raw) {
+  const code = normalizeMarkingCode(raw);
   if (!code) return false;
 
   const lower = code.toLowerCase().replace(/ё/g, 'е');
+  // QR чека ОФД — не КМ, товар по нему не ищем
+  if (/^https?:\/\//i.test(code) || lower.includes('ofd.soliq.uz')) {
+    return false;
+  }
   // Флаг Didox на фактуре — не DataMatrix
   if (lower.includes('маркировкаланган') || lower.includes('markirovkalangan')) {
     return false;
@@ -51,9 +55,9 @@ export function isPharmacyMarkingCode(raw) {
 }
 
 /** Код достаточно полный, чтобы автоматом отправить в чек (без Enter). */
-export function isCompletePharmacyMarkingScan(raw) {
-  if (!isPharmacyMarkingCode(raw)) return false;
-  const code = normalizePharmacyMarkingCode(raw);
+export function isCompleteMarkingScan(raw) {
+  if (!isMarkingCode(raw)) return false;
+  const code = normalizeMarkingCode(raw);
   if (code.length >= 25) return true;
   // 01 + GTIN14 + 21 + serial (≥4)
   if (/01\d{14}21[0-9A-Za-z]{4,}/.test(code)) return true;
@@ -63,14 +67,14 @@ export function isCompletePharmacyMarkingScan(raw) {
 
 /** Ключ для сравнения сканов (один КМ = один ключ). */
 export function markingScanKey(raw) {
-  return normalizePharmacyMarkingCode(raw)
+  return normalizeMarkingCode(raw)
     .replace(/\s+/g, '')
     .toLowerCase();
 }
 
 /** Извлечь GTIN из GS1-строки маркировки. */
 export function extractGtinFromMarkingCode(raw) {
-  const code = normalizePharmacyMarkingCode(raw);
+  const code = normalizeMarkingCode(raw);
   if (!code) return null;
 
   const paren = code.match(/\(01\)(\d{14})/);

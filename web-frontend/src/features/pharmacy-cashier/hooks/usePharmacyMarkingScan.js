@@ -2,10 +2,13 @@ import { useCallback, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { useCartStore } from '../../../store/cartStore';
-import { isPharmacyMarkingCode, normalizePharmacyMarkingCode } from '../utils/pharmacyMarkingCode';
-import { preserveMarkingCodeForFiscal } from '../utils/preserveMarkingCodeForFiscal';
-import { assessPharmacyMarkLifecycle } from '../utils/pharmacyMarkLifecycle';
-import { markingIdentityKeys } from '../utils/pharmacyMarkIdentity';
+import {
+  assessMarkLifecycle,
+  isMarkingCode,
+  markingIdentityKeys,
+  normalizeMarkingCode,
+  preserveMarkingCodeForFiscal,
+} from '../../marking';
 import { resolveCashierMarkedProduct } from '../utils/resolveCashierMarkedProduct';
 import { resolveCashierMarkingMissMessage } from '../utils/resolveMarkingVerifyUserMessage';
 
@@ -26,14 +29,14 @@ export function usePharmacyMarkingScan({
   const runningRef = useRef(false);
 
   const processOne = useCallback(async (rawCode, { silent = false } = {}) => {
-    const code = normalizePharmacyMarkingCode(rawCode);
-    if (!code || !isPharmacyMarkingCode(rawCode)) return;
+    const code = normalizeMarkingCode(rawCode);
+    if (!code || !isMarkingCode(rawCode)) return;
 
     const mark = preserveMarkingCodeForFiscal(rawCode);
     const keys = markingIdentityKeys(mark);
     const cartItems = useCartStore.getState().items;
 
-    const before = assessPharmacyMarkLifecycle({
+    const before = assessMarkLifecycle({
       rawCode: mark,
       cartItems,
       pendingKeys: [...pendingRef.current],
@@ -60,7 +63,7 @@ export function usePharmacyMarkingScan({
         aslEnabled: Boolean(aslMarkingEnabled),
       });
 
-      const afterDup = assessPharmacyMarkLifecycle({
+      const afterDup = assessMarkLifecycle({
         rawCode: mark,
         cartItems: useCartStore.getState().items,
         pendingKeys: [...pendingRef.current].filter((k) => !keys.includes(k)),
@@ -125,8 +128,8 @@ export function usePharmacyMarkingScan({
   }, [processOne]);
 
   const tryHandleMarkingScan = useCallback((rawCode, opts = {}) => {
-    const code = normalizePharmacyMarkingCode(rawCode);
-    if (!code || !isPharmacyMarkingCode(rawCode)) return false;
+    const code = normalizeMarkingCode(rawCode);
+    if (!code || !isMarkingCode(rawCode)) return false;
     queueRef.current.push({ rawCode, opts });
     void drain();
     return true;
