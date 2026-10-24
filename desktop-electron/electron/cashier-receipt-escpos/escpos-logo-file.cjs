@@ -35,7 +35,7 @@ function writeLogoPngTempFile(dataUrl, fileStem, opts = {}) {
   }
   if (!img || img.isEmpty()) return null;
 
-  const maxHeightMm = clamp(Number(opts.maxHeightMm) || 20, 8, 40);
+  const maxHeightMm = clamp(Number(opts.maxHeightMm) || 20, 8, 48);
   const maxH = Math.round(maxHeightMm * DOTS_PER_MM);
   const maxW = PAPER_WIDTH_PX;
 

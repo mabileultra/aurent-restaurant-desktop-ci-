@@ -92,8 +92,8 @@
   html.print-thermal-only .receipt-qr {
     image-rendering: pixelated !important;
     image-rendering: crisp-edges !important;
-    width: 40mm !important;
-    height: 40mm !important;
+    width: 48mm !important;
+    height: 48mm !important;
     max-width: 100% !important;
   }
   /* Подача бумаги вниз — чтобы драйвер POS-80 успел отрезать чек */
