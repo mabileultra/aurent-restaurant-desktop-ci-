@@ -1,6 +1,7 @@
 import { pharmacyIntegrationApi } from '../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../api/pharmacyStockMarks.api';
+import { saleApi } from '../../api/sale.api';
 import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
 import { isMarkSoldLocally, rememberSoldMarks, collectMarksFromCartItems } from './soldMarksStore';
 
@@ -16,7 +17,7 @@ function soldHit(status, extra = {}) {
 /**
  * Жёсткая проверка одного КМ до чека.
  * Склад IN_STOCK и карточка в каталоге не отменяют проверку:
- * локальный кэш → stock_marks → sale_sold_marks → ASL (если включён).
+ * локальный кэш → stock_marks → grocery-журнал → pharmacy-журнал → ASL (если включён).
  */
 export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) {
   if (storeId && isMarkSoldLocally(storeId, mark)) {
@@ -34,6 +35,18 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
       }
     } catch {
       // склад недоступен — журнал продаж и ASL всё равно проверяем
+    }
+  }
+
+  if (storeId) {
+    try {
+      const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
+      if (data?.sold === true) {
+        rememberSoldMarks(storeId, [mark]);
+        return soldHit(data.status || 'SOLD', { stock });
+      }
+    } catch {
+      // grocery-журнал недоступен — проверяем аптечный и ASL
     }
   }
 

@@ -9,6 +9,11 @@ vi.mock('../../api/pharmacySales.api', () => ({
 vi.mock('../../api/pharmacyStockMarks.api', () => ({
   pharmacyStockMarksApi: { check: vi.fn(async () => ({ data: { found: false } })) },
 }));
+vi.mock('../../api/sale.api', () => ({
+  saleApi: { checkMarkSold: vi.fn(async () => ({ data: { sold: false } })) },
+}));
+
+import { saleApi } from '../../api/sale.api';
 
 import { classifyPosScanInput } from '../cashier/utils/classifyPosScanInput';
 import { toOfdMarkingLabel } from '../../services/fiscal/shared/ofdMarkingLabel';
@@ -21,6 +26,7 @@ import {
   clearSoldMarks,
   extractGtinFromMarkingCode,
   isMarkingCode,
+  isMarkSoldLocally,
   lookupProductByMarkingGtin,
   markingBarcodeCandidates,
   markingIdentificationCode,
@@ -80,7 +86,9 @@ function sendToOfd(product, km) {
 
 describe('реальные КМ: поиск на кассе и отправка в ОФД', () => {
   beforeEach(() => {
+    vi.clearAllMocks();
     clearSoldMarks(7);
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
   });
 
   it.each([NALEYKA, BLACK_GOLD])(
@@ -174,6 +182,20 @@ describe('реальные КМ: поиск на кассе и отправка 
     expect(mk.items.map((item) => item.product_label)).toEqual([NALEYKA.ki, BLACK_GOLD.ki]);
     expect(buildFiscalDriveItem(lines[0]).Labels).toEqual([NALEYKA.ki]);
     expect(buildFiscalDriveItem(lines[1]).Labels).toEqual([BLACK_GOLD.ki]);
+  });
+
+  it('журнал grocery sold — «уже пробита» без локального кэша и на другом товаре', async () => {
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
+    const findOther = vi.fn(async () => CATALOG[1]);
+    const resolved = await resolveCashierMarking({
+      rawCode: NALEYKA.km,
+      storeId: 7,
+      aslEnabled: false,
+      findProduct: findOther,
+    });
+    expect(resolved.status).toBe('sold');
+    expect(findOther).not.toHaveBeenCalled();
+    expect(isMarkSoldLocally(7, NALEYKA.ki)).toBe(true);
   });
 
   it('пробитый КМ — «уже пробита», даже если ищем другой товар', async () => {

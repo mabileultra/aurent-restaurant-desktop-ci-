@@ -23,3 +23,4 @@ alwaysApply: false
    - FiscalDrive GetTXID: `Labels[]` = the same identification KM.
    - ASL API key: sold-gate + withdraw after FISCALIZED. No key → OFD Labels only.
    - Sold-gate is per KM, not per card: a punched mark stays sold even if the cashier is on another product.
+   - Grocery checkout writes `sale_sold_marks` (`MarkingSoldJournalService`) before/after the receipt; scan checks that journal first. Failed fiscal does not write. Return/void unregisters.

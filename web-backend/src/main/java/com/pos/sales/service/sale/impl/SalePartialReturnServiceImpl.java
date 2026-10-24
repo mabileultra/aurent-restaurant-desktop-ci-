@@ -14,6 +14,7 @@ import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.integrations.finance.service.FinanceReturnIntegrationService;
+import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.sales.service.sale.SaleAccessPolicy;
 import com.pos.sales.service.sale.SalePartialReturnService;
@@ -47,6 +48,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
     private final CatalogIsolationSupport catalogIsolation;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
     private final PosDomainEventService posDomainEventService;
+    private final MarkingSoldJournalService markingSoldJournalService;
 
     @Override
     public SaleResponse returnItems(UUID saleId, PartialReturnRequest request) {
@@ -67,6 +69,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
         boolean anyReturned = false;
         UUID returnEventId = UUID.randomUUID();
         BigDecimal refundAmount = BigDecimal.ZERO;
+        Map<UUID, Integer> returnedMarksByItem = new HashMap<>();
 
         for (PartialReturnLineRequest line : request.lines()) {
             SaleItem item = itemsById.get(line.saleItemId());
@@ -92,6 +95,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
             item.setReturnedQuantity(QuantityUtil.add(item.getReturnedQuantity(), returnQty));
             restoreStock(sale, item, returnQty, reason);
             refundAmount = refundAmount.add(lineReturnAmount(item, returnQty));
+            returnedMarksByItem.merge(item.getId(), Math.max(1, returnQty.intValue()), Integer::sum);
             anyReturned = true;
         }
 
@@ -107,6 +111,7 @@ public class SalePartialReturnServiceImpl implements SalePartialReturnService {
             sale.setStatus(Sale.SaleStatus.REFUNDED);
         }
 
+        markingSoldJournalService.unregisterForReturn(sale.getId(), returnedMarksByItem);
         Sale saved = saleRepository.save(sale);
         salesLedgerCacheService.onSaleChanged(saved);
         financeReturnIntegrationService.onRefundCompleted(saved, returnEventId, refundAmount);

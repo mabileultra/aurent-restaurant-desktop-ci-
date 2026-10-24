@@ -13,15 +13,26 @@ public interface MarkingAfterSaleService {
     void enqueueAfterSale(Integer storeId, List<String> codes, boolean fiscalConfirmed);
 
     static List<String> codesOf(List<SaleItemRequest> items) {
+        return marksPerItem(items).stream()
+            .flatMap(List::stream)
+            .distinct()
+            .toList();
+    }
+
+    static List<List<String>> marksPerItem(List<SaleItemRequest> items) {
         if (items == null || items.isEmpty()) {
             return List.of();
         }
         return items.stream()
-            .filter(item -> item != null && item.productMarks() != null)
-            .flatMap(item -> item.productMarks().stream())
-            .filter(code -> code != null && !code.isBlank())
-            .map(String::trim)
-            .distinct()
+            .map(item -> {
+                if (item == null || item.productMarks() == null) {
+                    return List.<String>of();
+                }
+                return item.productMarks().stream()
+                    .filter(code -> code != null && !code.isBlank())
+                    .map(String::trim)
+                    .toList();
+            })
             .toList();
     }
 }

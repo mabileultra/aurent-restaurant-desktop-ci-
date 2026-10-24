@@ -11,4 +11,5 @@ export const saleApi = {
     api.post(`/sales/${id}/void`, null, { params: { reason } }),
   returnItems: (id, body) => api.post(`/sales/${id}/return-items`, body),
   mySales: (params) => api.get('/sales/my-sales', { params }),
+  checkMarkSold: (payload) => api.post('/cashier/marks/check', payload, { timeout: 5000 }),
 };

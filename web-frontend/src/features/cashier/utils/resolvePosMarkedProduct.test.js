@@ -22,6 +22,9 @@ vi.mock('../../../api/pharmacySales.api', () => ({
 vi.mock('../../../api/pharmacyStockMarks.api', () => ({
   pharmacyStockMarksApi: { check: vi.fn(async () => ({ data: { found: false } })) },
 }));
+vi.mock('../../../api/sale.api', () => ({
+  saleApi: { checkMarkSold: vi.fn(async () => ({ data: { sold: false } })) },
+}));
 
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';

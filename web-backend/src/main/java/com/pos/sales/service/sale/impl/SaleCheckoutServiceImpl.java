@@ -21,6 +21,7 @@ import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.repository.UserRepository;
 import com.pos.integrations.marking.service.MarkingAfterSaleService;
+import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.sales.service.sale.SaleCheckoutService;
 import com.pos.sales.service.sale.support.CheckoutProductLoader;
 import com.pos.sales.service.sale.support.SaleEnumParser;
@@ -80,6 +81,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
     private final PosDomainEventService posDomainEventService;
     private final SaleFiscalApplier saleFiscalApplier;
     private final MarkingAfterSaleService markingAfterSaleService;
+    private final MarkingSoldJournalService markingSoldJournalService;
 
     @Override
     public SaleResponse processSale(CreateSaleRequest req, UUID cashierId) {
@@ -95,6 +97,10 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
 
         Sale.ReceiptType receiptType = SaleEnumParser.receiptType(req.receiptType());
         Customer customer = creditSaleCustomerSupport.resolveForCheckout(req.customerId(), receiptType);
+
+        Integer companyId = store.getCompany() != null ? store.getCompany().getId() : null;
+        List<List<String>> marksPerItem = MarkingAfterSaleService.marksPerItem(req.items());
+        markingSoldJournalService.assertNotSold(companyId, MarkingAfterSaleService.codesOf(req.items()));
 
         Map<UUID, Product> productsById = checkoutProductLoader.loadIndexed(req.items());
         productsById.values().forEach(product -> catalogIsolation.assertSaleCatalogMatchesStore(store, product));
@@ -207,6 +213,7 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         saleFiscalApplier.apply(sale, shift, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
+        markingSoldJournalService.registerSaleMarks(saved, marksPerItem);
         markingAfterSaleService.enqueueAfterSale(
             store.getId(),
             MarkingAfterSaleService.codesOf(req.items()),

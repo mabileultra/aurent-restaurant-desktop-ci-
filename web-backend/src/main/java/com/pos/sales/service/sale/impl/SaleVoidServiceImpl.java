@@ -11,6 +11,7 @@ import com.pos.catalog.repository.ProductRepository;
 import com.pos.sales.repository.SaleRepository;
 import com.pos.inventory.service.stock.support.StockMovementPersistence;
 import com.pos.integrations.finance.service.FinanceReturnIntegrationService;
+import com.pos.integrations.marking.service.MarkingSoldJournalService;
 import com.pos.service.event.PosDomainEventService;
 import com.pos.sales.service.sale.SaleAccessPolicy;
 import com.pos.sales.service.sale.SaleVoidService;
@@ -41,6 +42,7 @@ public class SaleVoidServiceImpl implements SaleVoidService {
     private final CatalogIsolationSupport catalogIsolation;
     private final FinanceReturnIntegrationService financeReturnIntegrationService;
     private final PosDomainEventService posDomainEventService;
+    private final MarkingSoldJournalService markingSoldJournalService;
 
     @Override
     public SaleResponse voidSale(UUID id, String reason) {
@@ -92,6 +94,7 @@ public class SaleVoidServiceImpl implements SaleVoidService {
         sale.setStatus(Sale.SaleStatus.VOIDED);
         String prev = sale.getNotes();
         sale.setNotes(prev != null && !prev.isBlank() ? prev + " | VOID: " + r : "VOID: " + r);
+        markingSoldJournalService.unregisterAllForSale(sale.getId());
 
         Sale saved = saleRepository.save(sale);
         salesLedgerCacheService.onSaleChanged(saved);

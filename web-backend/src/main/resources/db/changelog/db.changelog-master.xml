@@ -53,5 +53,7 @@
     <include file="v46-geo-soato.xml" relativeToChangelogFile="true"/>
     <include file="v46-cash-register-fiscal-provider.xml" relativeToChangelogFile="true"/>
     <include file="v47-fiscal-drive-settings.xml" relativeToChangelogFile="true"/>
+    <include file="v48-sale-sold-marks.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>
+
