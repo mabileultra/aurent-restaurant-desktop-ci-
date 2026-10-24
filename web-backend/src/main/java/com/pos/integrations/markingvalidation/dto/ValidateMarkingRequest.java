@@ -11,7 +11,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Запрос кассы. ИНН владельца и TerminalID берутся из настроек FiscalDrive кассы, не от клиента. */
+/** Запрос кассы. ИНН компании и Terminal ID Multikassa сервер берёт сам, не от клиента. */
 public record ValidateMarkingRequest(
     @NotNull Long cashRegisterId,
     boolean refund,

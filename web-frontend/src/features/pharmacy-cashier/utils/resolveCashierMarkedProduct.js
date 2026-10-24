@@ -10,11 +10,13 @@ export async function resolveCashierMarkedProduct({
   products,
   rawCode,
   storeId,
+  cashRegisterId = null,
   aslEnabled = false,
 }) {
   return resolveCashierMarking({
     rawCode,
     storeId,
+    cashRegisterId,
     aslEnabled,
     findProduct: async (mark, gate) => {
       const stock = gate?.stock;

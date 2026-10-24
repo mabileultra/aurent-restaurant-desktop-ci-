@@ -33,6 +33,7 @@ export {
 export { assessMarkLifecycle } from './markLifecycle';
 
 export { inspectMarkPunched, assertCartMarksNotPunched } from './inspectMarkPunched';
+export { inspectMarkCirculation } from './inspectMarkCirculation';
 export { lookupProductByMarkingGtin } from './lookupProductByMarkingGtin';
 export { planMarkedScan, applyMarkingScan, removeMarking, isMarkCountedLine } from './markedScanCart';
 export { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';

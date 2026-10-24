@@ -26,6 +26,17 @@ vi.mock('../../../api/sale.api', () => ({
   saleApi: { checkMarkSold: vi.fn(async () => ({ data: { sold: false } })) },
 }));
 
+const validateFiscalMarking = vi.fn(async () => ({ status: 'VALID' }));
+vi.mock('../../../services/fiscal/shared/validateFiscalMarking', () => ({
+  MARKING_VALIDATION_STATUS: {
+    VALID: 'VALID',
+    REJECTED: 'REJECTED',
+    UNAVAILABLE: 'UNAVAILABLE',
+    NOT_REQUIRED: 'NOT_REQUIRED',
+  },
+  validateFiscalMarking: (...args) => validateFiscalMarking(...args),
+}));
+
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
 import { posFetchProductByBarcode } from '../../../services/pos/posDataRouter';
@@ -41,6 +52,7 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     vi.clearAllMocks();
     clearSoldMarks(7);
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
+    validateFiscalMarking.mockResolvedValue({ status: 'VALID' });
   });
 
   it('обычный штрихкод не идёт в маркировку и ASL не вызывается', async () => {
@@ -186,5 +198,36 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     });
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe(11);
+  });
+
+  it('Tasnif 1016 — уже не в обороте, в чек нельзя', async () => {
+    validateFiscalMarking.mockResolvedValue({
+      status: 'REJECTED',
+      code: '1016',
+      message: 'Код уже выведен из оборота',
+    });
+    const result = await resolvePosMarkedProduct({
+      products: [product],
+      rawCode: KM,
+      storeId: 7,
+      cashRegisterId: 11,
+      aslEnabled: false,
+    });
+    expect(result.status).toBe('withdrawn');
+    expect(result.product).toBeNull();
+    expect(result.message).toBe('Код уже выведен из оборота');
+  });
+
+  it('Tasnif VALID — в обороте, в чек', async () => {
+    const result = await resolvePosMarkedProduct({
+      products: [product],
+      rawCode: KM,
+      storeId: 7,
+      cashRegisterId: 11,
+      aslEnabled: false,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe(11);
+    expect(validateFiscalMarking).toHaveBeenCalled();
   });
 });

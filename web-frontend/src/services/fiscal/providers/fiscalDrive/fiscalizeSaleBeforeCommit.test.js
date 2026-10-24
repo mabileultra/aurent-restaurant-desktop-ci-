@@ -7,9 +7,8 @@ vi.mock('../../shared/resolveFiscalPackageCodes', () => ({
 vi.mock('../../shared/expandMarkedFiscalItems', () => ({
   expandMarkedFiscalItems: (items) => items,
 }));
-vi.mock('./validateFiscalMarking', () => ({
-  MARKING_VALIDATION_STATUS: { VALID: 'VALID', REJECTED: 'REJECTED', UNAVAILABLE: 'UNAVAILABLE', NOT_REQUIRED: 'NOT_REQUIRED' },
-  validateFiscalMarking: vi.fn(async () => ({ status: 'NOT_REQUIRED' })),
+vi.mock('../../shared/assertOnkmMarking', () => ({
+  assertOnkmMarking: vi.fn(async () => undefined),
 }));
 vi.mock('./fiscalDriveHttpClient', async () => {
   const actual = await vi.importActual('./fiscalDriveHttpClient');

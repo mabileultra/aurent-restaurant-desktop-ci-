@@ -1,5 +1,6 @@
 import { buildRefundBody } from './buildMultikassaOperations';
 import { runMultikassaOperation } from './runMultikassaOperation';
+import { assertOnkmMarking } from '../fiscal/shared/assertOnkmMarking';
 
 /**
  * Возврат в Multikassa (op 4) до partial return в POS.
@@ -24,6 +25,14 @@ export async function fiscalizeRefundBeforeCommit({
     err.code = 'MULTIKASSA_OFFLINE_BLOCKED';
     throw err;
   }
+
+  await assertOnkmMarking({
+    cashRegisterId: capabilities.cashRegisterId,
+    cartItems: sale?.items || sale?.saleItems || [],
+    refund: true,
+    requireBeforeSale: true,
+    errorPrefix: 'MULTIKASSA',
+  });
 
   const body = buildRefundBody({ receiptSaleId });
   return runMultikassaOperation(capabilities.baseUrl, body, {

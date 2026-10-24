@@ -22,7 +22,7 @@ import {
 } from './mapFiscalDriveError';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
 import { validateFiscalDriveReceipt } from './validateFiscalDriveReceipt';
-import { MARKING_VALIDATION_STATUS, validateFiscalMarking } from './validateFiscalMarking';
+import { assertOnkmMarking } from '../../shared/assertOnkmMarking';
 
 function pendingPayload({ txid, receipt, message }) {
   return {
@@ -44,38 +44,6 @@ function isFiscalDriveCaps(capabilities) {
     Boolean(capabilities?.enabled) ||
     String(capabilities?.fiscalProvider || '').toUpperCase() === 'FISCAL_DRIVE'
   );
-}
-
-async function assertMarkingOk({ capabilities, cartItems, offline, requireBeforeSale }) {
-  try {
-    const result = await validateFiscalMarking({
-      cashRegisterId: capabilities.cashRegisterId,
-      cartItems,
-      refund: false,
-    });
-    if (!result || result.status === MARKING_VALIDATION_STATUS.NOT_REQUIRED) return;
-    if (result.status === MARKING_VALIDATION_STATUS.VALID) return;
-    if (result.status === MARKING_VALIDATION_STATUS.REJECTED) {
-      const err = new Error(result.message || `Код маркировки отклонён (${result.code || '?'})`);
-      err.code = 'FISCAL_DRIVE_MARKING_REJECTED';
-      err.markingCode = result.code;
-      throw err;
-    }
-    // UNAVAILABLE
-    const err = new Error(result.message || 'Сервис проверки маркировки недоступен');
-    err.code = 'FISCAL_DRIVE_MARKING_UNAVAILABLE';
-    if (offline || !requireBeforeSale) {
-      err.soft = true;
-    }
-    throw err;
-  } catch (err) {
-    if (err?.code?.startsWith('FISCAL_DRIVE_MARKING')) throw err;
-    const wrapped = new Error(err?.message || 'Не удалось проверить маркировку');
-    wrapped.code = 'FISCAL_DRIVE_MARKING_UNAVAILABLE';
-    wrapped.cause = err;
-    if (offline || !requireBeforeSale) wrapped.soft = true;
-    throw wrapped;
-  }
 }
 
 async function registerWithRetry({ baseUrl, factoryId, txid, attempts = 2 }) {
@@ -163,7 +131,13 @@ export async function fiscalizeSaleBeforeCommit({
   }
 
   try {
-    await assertMarkingOk({ capabilities, cartItems: fiscalItems, offline, requireBeforeSale });
+    await assertOnkmMarking({
+      cashRegisterId: capabilities.cashRegisterId,
+      cartItems: fiscalItems,
+      offline,
+      requireBeforeSale,
+      errorPrefix: 'FISCAL_DRIVE',
+    });
   } catch (err) {
     if (err?.soft) {
       logFiscal(`Маркировка UNAVAILABLE → PENDING: ${err.message}`, null, 'warn');

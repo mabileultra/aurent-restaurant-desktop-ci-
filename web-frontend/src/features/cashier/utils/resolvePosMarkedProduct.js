@@ -32,11 +32,13 @@ export async function resolvePosMarkedProduct({
   products,
   rawCode,
   storeId,
+  cashRegisterId = null,
   aslEnabled = false,
 }) {
   return resolveCashierMarking({
     rawCode,
     storeId,
+    cashRegisterId,
     aslEnabled,
     findProduct: (mark) => findByGtinCandidates(products, mark, storeId),
   });

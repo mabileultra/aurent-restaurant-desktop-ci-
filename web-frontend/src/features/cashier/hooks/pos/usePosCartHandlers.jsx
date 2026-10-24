@@ -40,6 +40,7 @@ export function usePosCartHandlers({
   selectedLineId,
   setSelectedLineId,
   aslMarkingEnabled = false,
+  cashRegisterId = null,
 }) {
   const { t } = useTranslation();
   const scanningRef = useRef(false);
@@ -185,12 +186,23 @@ export function usePosCartHandlers({
           products,
           rawCode: mark,
           storeId,
+          cashRegisterId,
           aslEnabled: Boolean(aslMarkingEnabled),
         });
         if (resolved.status === 'sold') {
           toast.error(t(aslMarkingEnabled
             ? 'pos.markingAlreadySold'
             : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
+          setSearch('');
+          return true;
+        }
+        if (resolved.status === 'withdrawn') {
+          toast.error(resolved.message || t('pos.markingNotInCirculation'));
+          setSearch('');
+          return true;
+        }
+        if (resolved.status === 'check-failed') {
+          toast.error(resolved.message || t('pos.markingCheckFailed'));
           setSearch('');
           return true;
         }
@@ -217,6 +229,7 @@ export function usePosCartHandlers({
     [
       addMarkedScanToCart,
       aslMarkingEnabled,
+      cashRegisterId,
       payOpen,
       products,
       returnOpen,

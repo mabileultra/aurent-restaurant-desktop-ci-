@@ -17,6 +17,7 @@ import { resolveCashierMarkingMissMessage } from '../utils/resolveMarkingVerifyU
  */
 export function usePharmacyMarkingScan({
   storeId,
+  cashRegisterId = null,
   aslMarkingEnabled,
   products,
   onProductFound,
@@ -60,6 +61,7 @@ export function usePharmacyMarkingScan({
         products,
         rawCode: mark,
         storeId,
+        cashRegisterId,
         aslEnabled: Boolean(aslMarkingEnabled),
       });
 
@@ -83,6 +85,16 @@ export function usePharmacyMarkingScan({
             : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
         }
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
+        return;
+      }
+      if (resolved.status === 'withdrawn') {
+        if (!silent) toast.error(resolved.message || t('pos.markingNotInCirculation'));
+        setLastScan({ code: mark, result: resolved.aslResult, product: null });
+        return;
+      }
+      if (resolved.status === 'check-failed') {
+        if (!silent) toast.error(resolved.message || t('pos.markingCheckFailed'));
+        setLastScan({ code: mark, result: resolved.aslResult, product: null });
         return;
       }
 
@@ -112,7 +124,7 @@ export function usePharmacyMarkingScan({
       keys.forEach((k) => pendingRef.current.delete(k));
       setVerifying(false);
     }
-  }, [aslMarkingEnabled, onProductFound, products, storeId, t]);
+  }, [aslMarkingEnabled, cashRegisterId, onProductFound, products, storeId, t]);
 
   const drain = useCallback(async () => {
     if (runningRef.current) return;

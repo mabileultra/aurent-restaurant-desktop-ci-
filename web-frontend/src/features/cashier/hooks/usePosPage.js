@@ -129,6 +129,7 @@ export function usePosPage() {
     selectedLineId,
     setSelectedLineId,
     aslMarkingEnabled: Boolean(integration.capabilities?.aslMarkingEnabled),
+    cashRegisterId: shift?.cashRegisterId ?? null,
   });
 
   usePosSearchMarkAutoSubmit({

@@ -13,6 +13,7 @@ import {
 import { FISCAL_STATUS } from './multikassaConstants';
 import { isOfdCheckUrl } from '../../utils/ofdQrUrl';
 import { logFiscal } from '../desktop/activityLog';
+import { assertOnkmMarking } from '../fiscal/shared/assertOnkmMarking';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
   if (clientSaleId) return `sale:${clientSaleId}`;
@@ -106,6 +107,22 @@ export async function fiscalizeSaleBeforeCommit({
     );
     err.code = 'MULTIKASSA_FISCAL_FAILED';
     if (offline || !requireBeforeSale) {
+      return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
+    }
+    throw err;
+  }
+
+  try {
+    await assertOnkmMarking({
+      cashRegisterId: capabilities.cashRegisterId,
+      cartItems: fiscalItems,
+      offline,
+      requireBeforeSale,
+      errorPrefix: 'MULTIKASSA',
+    });
+  } catch (err) {
+    if (err?.soft) {
+      logFiscal(`Маркировка UNAVAILABLE → PENDING: ${err.message}`, null, 'warn');
       return pendingPayload(null, buildIdempotencyKey({ shiftId, clientSaleId }), err.message);
     }
     throw err;

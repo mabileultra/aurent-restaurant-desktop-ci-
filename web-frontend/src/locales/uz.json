@@ -3915,6 +3915,8 @@
     "markingAlreadyCounted": "Bu markirovka allaqachon chekda",
     "markingAlreadySold": "Bu markirovka allaqachon urilgan",
     "markingSoldLocal": "Bu markirovka bizning savdoda allaqachon urilgan",
+    "markingNotInCirculation": "Bu markirovka allaqachon aylanmadan chiqarilgan",
+    "markingCheckFailed": "Markirovka aylanmada ekanini tekshirib bo‘lmadi",
     "markingQtyViaScan": "Markirovka miqdori faqat KM skani bilan o‘zgaradi",
     "markingRequiredBeforePay": "Chekda KMsiz markirovkalangan mahsulotlar bor — DataMatrix ni skanerlang",
     "markingBadgeHint": "Markirovka",

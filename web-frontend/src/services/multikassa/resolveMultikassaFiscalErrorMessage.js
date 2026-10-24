@@ -13,7 +13,11 @@ export function resolveMultikassaFiscalErrorMessage(e, t, fallbackKey = 'cashReg
   if (/принтер не найден|ошибка принтера|printer not found/i.test(raw)) {
     return t('cashRegisters.multikassa.mkPrinterMissing');
   }
-  if (e?.code === 'MULTIKASSA_FISCAL_FAILED') {
+  if (
+    e?.code === 'MULTIKASSA_FISCAL_FAILED'
+    || e?.code === 'MULTIKASSA_MARKING_REJECTED'
+    || e?.code === 'MULTIKASSA_MARKING_UNAVAILABLE'
+  ) {
     return e.message || t(fallbackKey);
   }
   return raw || t(fallbackKey);

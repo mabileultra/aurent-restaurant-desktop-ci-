@@ -126,7 +126,11 @@ export function usePosCheckout({
         toast.error(resolveMultikassaFiscalErrorMessage(e, t));
         return;
       }
-      if (e?.code === 'MULTIKASSA_FISCAL_FAILED') {
+      if (
+        e?.code === 'MULTIKASSA_FISCAL_FAILED'
+        || e?.code === 'MULTIKASSA_MARKING_REJECTED'
+        || e?.code === 'MULTIKASSA_MARKING_UNAVAILABLE'
+      ) {
         toast.error(resolveMultikassaFiscalErrorMessage(e, t));
         return;
       }

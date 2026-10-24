@@ -4217,6 +4217,8 @@
     "markingAlreadyCounted": "Эта маркировка уже есть в чеке",
     "markingAlreadySold": "Эта маркировка уже пробита",
     "markingSoldLocal": "Эта маркировка уже пробита в нашей продаже",
+    "markingNotInCirculation": "Эта маркировка уже не в обороте",
+    "markingCheckFailed": "Не удалось проверить, в обороте ли маркировка",
     "markingQtyViaScan": "Количество маркировки меняется только сканом КМ",
     "markingRequiredBeforePay": "В чеке есть маркированные товары без КМ — отсканируйте DataMatrix",
     "markingBadgeHint": "Маркировка",

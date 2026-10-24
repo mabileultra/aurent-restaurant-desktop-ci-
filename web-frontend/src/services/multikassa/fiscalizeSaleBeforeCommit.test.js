@@ -1,9 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 const runMultikassaOperation = vi.fn();
+const assertOnkmMarking = vi.fn(async () => undefined);
 
 vi.mock('./runMultikassaOperation', () => ({
   runMultikassaOperation: (...args) => runMultikassaOperation(...args),
+}));
+
+vi.mock('../fiscal/shared/assertOnkmMarking', () => ({
+  assertOnkmMarking: (...args) => assertOnkmMarking(...args),
 }));
 
 vi.mock('../fiscal/shared/resolveFiscalPackageCodes', () => ({
@@ -49,6 +54,8 @@ const CART = [
 describe('fiscalizeSaleBeforeCommit → QR from Multikassa', () => {
   beforeEach(() => {
     runMultikassaOperation.mockReset();
+    assertOnkmMarking.mockReset();
+    assertOnkmMarking.mockResolvedValue(undefined);
   });
 
   it('returns ofd.soliq.uz QR when module returns real fiscal proof + QRCodeURL', async () => {
@@ -147,6 +154,25 @@ describe('fiscalizeSaleBeforeCommit → QR from Multikassa', () => {
         cashierName: 'Cashier',
       }),
     ).rejects.toMatchObject({ code: 'MULTIKASSA_FISCAL_FAILED' });
+  });
+
+  it('blocks sale when Tasnif rejects the marking code', async () => {
+    const err = new Error('Код уже выведен из оборота');
+    err.code = 'MULTIKASSA_MARKING_REJECTED';
+    err.markingCode = '1016';
+    assertOnkmMarking.mockRejectedValue(err);
+
+    await expect(
+      fiscalizeSaleBeforeCommit({
+        capabilities: { ...BASE_CAPS, requireBeforeSale: true, cashRegisterId: 11 },
+        cartItems: CART,
+        payment: { paymentMethod: 'CASH', amountTendered: 1000 },
+        total: 1000,
+        shiftId: 10,
+        cashierName: 'Cashier',
+      }),
+    ).rejects.toMatchObject({ code: 'MULTIKASSA_MARKING_REJECTED' });
+    expect(runMultikassaOperation).not.toHaveBeenCalled();
   });
 
   it('returns null when Multikassa disabled — no fiscal QR expected', async () => {

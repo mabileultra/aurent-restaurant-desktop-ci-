@@ -1,13 +1,14 @@
 package com.pos.integrations.markingvalidation.service.impl;
 
+import com.pos.entity.Company;
 import com.pos.entity.Store;
 import com.pos.exception.BadRequestException;
-import com.pos.integrations.fiscaldrive.entity.CashRegisterFiscalDriveSettings;
-import com.pos.integrations.fiscaldrive.repository.CashRegisterFiscalDriveSettingsRepository;
 import com.pos.integrations.markingvalidation.client.MarkingValidationClient;
 import com.pos.integrations.markingvalidation.client.OnkmValidationRequest;
 import com.pos.integrations.markingvalidation.dto.MarkingValidationResponse;
 import com.pos.integrations.markingvalidation.dto.ValidateMarkingRequest;
+import com.pos.integrations.multikassa.entity.CashRegisterMultikassaSettings;
+import com.pos.integrations.multikassa.repository.CashRegisterMultikassaSettingsRepository;
 import com.pos.sales.entity.CashRegister;
 import com.pos.sales.repository.CashRegisterRepository;
 import com.pos.service.support.TenantAccessSupport;
@@ -33,13 +34,17 @@ import static org.mockito.Mockito.when;
 class MarkingValidationServiceImplTest {
 
     @Mock private CashRegisterRepository cashRegisterRepository;
-    @Mock private CashRegisterFiscalDriveSettingsRepository fiscalDriveSettingsRepository;
+    @Mock private CashRegisterMultikassaSettingsRepository multikassaSettingsRepository;
     @Mock private TenantAccessSupport tenantAccess;
     @Mock private MarkingValidationClient client;
 
     @InjectMocks private MarkingValidationServiceImpl service;
 
-    private final Store store = Store.builder().id(5).name("Shop").build();
+    private final Store store = Store.builder()
+        .id(5)
+        .name("Shop")
+        .company(Company.builder().id(1).name("Co").loginCode("c").tin("309998877").build())
+        .build();
     private final CashRegister register =
         CashRegister.builder().id(11L).store(store).registerNumber(1).status("ACTIVE").build();
 
@@ -51,10 +56,10 @@ class MarkingValidationServiceImplTest {
     }
 
     @Test
-    void ownerTinAndTerminalComeFromRegisterSettings() {
+    void ownerTinAndTerminalComeFromCompanyAndMultikassa() {
         when(cashRegisterRepository.findById(11L)).thenReturn(Optional.of(register));
-        when(fiscalDriveSettingsRepository.findById(11L)).thenReturn(Optional.of(
-            CashRegisterFiscalDriveSettings.builder().ownerTin("200523221").terminalId("ZZ000000000000").build()
+        when(multikassaSettingsRepository.findById(11L)).thenReturn(Optional.of(
+            CashRegisterMultikassaSettings.builder().terminalId("TERM-MK").build()
         ));
         when(client.validate(any())).thenReturn(MarkingValidationResponse.valid());
 
@@ -63,8 +68,8 @@ class MarkingValidationServiceImplTest {
         ArgumentCaptor<OnkmValidationRequest> sent = ArgumentCaptor.forClass(OnkmValidationRequest.class);
         verify(client).validate(sent.capture());
         verify(tenantAccess).assertCanAccessStore(store);
-        assertThat(sent.getValue().ownerTin()).isEqualTo("200523221");
-        assertThat(sent.getValue().terminalId()).isEqualTo("ZZ000000000000");
+        assertThat(sent.getValue().ownerTin()).isEqualTo("309998877");
+        assertThat(sent.getValue().terminalId()).isEqualTo("TERM-MK");
         assertThat(sent.getValue().refund()).isEqualTo(1);
         OnkmValidationRequest.Product product = sent.getValue().products().get(0);
         assertThat(product.packageCode()).isEqualTo("1077302");
@@ -73,11 +78,12 @@ class MarkingValidationServiceImplTest {
     }
 
     @Test
-    void missingFiscalDriveSettingsIsBadRequest() {
-        when(cashRegisterRepository.findById(11L)).thenReturn(Optional.of(register));
-        when(fiscalDriveSettingsRepository.findById(11L)).thenReturn(Optional.of(
-            CashRegisterFiscalDriveSettings.builder().ownerTin("200523221").build()
+    void missingCompanyTinOrMultikassaTerminalIsBadRequest() {
+        when(cashRegisterRepository.findById(11L)).thenReturn(Optional.of(
+            CashRegister.builder().id(11L).store(Store.builder().id(5).name("Shop").build())
+                .registerNumber(1).status("ACTIVE").build()
         ));
+        when(multikassaSettingsRepository.findById(11L)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.validate(request(false))).isInstanceOf(BadRequestException.class);
         verifyNoInteractions(client);
