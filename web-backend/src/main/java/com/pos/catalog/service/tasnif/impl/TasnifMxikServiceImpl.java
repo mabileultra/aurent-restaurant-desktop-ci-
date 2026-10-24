@@ -39,19 +39,25 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         int safeSize = Math.min(Math.max(1, size), 50);
 
         String digits = normalizeDigits(q);
-        return fetchPage(resolveLang(lang), safePage, safeSize, properties.getSearchType(), builder -> {
-            if (digits.length() >= 17 && isMostlyDigits(q)) {
-                // Полный MXIK (обычно 17 цифр)
-                builder.queryParam("mxikCode", digits);
-            } else if (digits.length() >= 8 && digits.length() <= 14 && isMostlyDigits(q)) {
-                // EAN/штрихкод
-                builder.queryParam("shtrixCode", digits);
-            } else if (digits.length() >= 15 && isMostlyDigits(q)) {
-                builder.queryParam("mxikCode", digits);
-            } else {
-                builder.queryParam("search_text", q);
+        String resolvedLang = resolveLang(lang);
+        List<Consumer<UriComponentsBuilder>> strategies = new ArrayList<>();
+        if (digits.length() >= 17 && isMostlyDigits(q)) {
+            strategies.add(builder -> builder.queryParam("mxikCode", digits));
+        } else if (digits.length() >= 8 && digits.length() <= 14 && isMostlyDigits(q)) {
+            strategies.add(builder -> builder.queryParam("shtrixCode", digits));
+        } else if (digits.length() >= 15 && isMostlyDigits(q)) {
+            strategies.add(builder -> builder.queryParam("mxikCode", digits));
+        }
+        strategies.add(builder -> builder.queryParam("search_text", q));
+
+        MxikSearchResponse empty = new MxikSearchResponse(List.of(), safePage, safeSize, 0);
+        for (Consumer<UriComponentsBuilder> strategy : strategies) {
+            MxikSearchResponse page = fetchOrEmpty(resolvedLang, safePage, safeSize, properties.getSearchType(), strategy);
+            if (!page.items().isEmpty()) {
+                return page;
             }
-        });
+        }
+        return empty;
     }
 
     @Override
@@ -82,15 +88,35 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
         if (code.length() < 8) {
             throw new BadRequestException("Штрихкод должен содержать не менее 8 цифр");
         }
-        MxikSearchResponse page = fetchPage(
+        MxikSearchResponse page = fetchOrEmpty(
             resolveLang(lang), 0, 1, properties.getSearchType(),
             b -> b.queryParam("shtrixCode", code)
         );
+        if (page.items().isEmpty()) {
+            page = fetchOrEmpty(
+                resolveLang(lang), 0, 1, properties.getSearchType(),
+                b -> b.queryParam("search_text", code)
+            );
+        }
         if (page.items().isEmpty()) {
             throw new ResourceNotFoundException("Товар не найден в tasnif.soliq.uz");
         }
         MxikCatalogItemDto item = page.items().get(0);
         return toLookup(item, firstPackage(item), lang);
+    }
+
+    private MxikSearchResponse fetchOrEmpty(
+        String lang,
+        int page,
+        int size,
+        int type,
+        Consumer<UriComponentsBuilder> params
+    ) {
+        try {
+            return fetchPage(lang, page, size, type, params);
+        } catch (ResourceNotFoundException ex) {
+            return new MxikSearchResponse(List.of(), page, size, 0);
+        }
     }
 
     private MxikSearchResponse fetchPage(

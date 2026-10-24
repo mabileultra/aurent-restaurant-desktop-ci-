@@ -145,15 +145,28 @@ export async function lookupProductByMarkingGtin({
   );
   if (byGtinCatalog) return byGtinCatalog;
 
-  const tasnif = await lookupTasnifForMark(candidates, lookupTasnifByBarcode);
-  if (!tasnif) return null;
+  // Как склад: не стопоримся на первом ответе Tasnif — чужой MXIK / пустой
+  // shtrixCode на одном GTIN не должен хоронить остальные варианты.
+  for (const barcode of candidates) {
+    let tasnif = null;
+    try {
+      // eslint-disable-next-line no-await-in-loop
+      tasnif = await lookupTasnifByBarcode(barcode);
+    } catch {
+      tasnif = null;
+    }
+    if (!tasnifMxik(tasnif) && !String(tasnif?.name || '').trim()) continue;
 
-  const byTasnif = findByTasnif(products, tasnif);
-  if (byTasnif) return byTasnif;
+    const byTasnif = findByTasnif(products, tasnif);
+    if (byTasnif) return byTasnif;
 
-  return firstCatalogHit(
-    searchCatalog,
-    tasnifWarehouseQueries(tasnif),
-    (items) => findByTasnif(items, tasnif) || findInList(items, mark, extraGtins),
-  );
+    // eslint-disable-next-line no-await-in-loop
+    const warehouse = await firstCatalogHit(
+      searchCatalog,
+      tasnifWarehouseQueries(tasnif),
+      (items) => findByTasnif(items, tasnif) || findInList(items, mark, extraGtins),
+    );
+    if (warehouse) return warehouse;
+  }
+  return null;
 }
