@@ -18,7 +18,7 @@ import { resolvePosRoute } from '../services/pos/posRouteResolver';
 import { isOfflineFirstDesktop } from '../services/offline/offlineFirstFlag';
 import { logConnectivity, logError } from '../services/desktop/activityLog';
 
-/** Сразу offline при сбое probe; online — после трёх подряд успешных probe. */
+/** Online — после трёх подряд успешных probe; offline — после двух сбоев. */
 const ONLINE_RECOVERY_STREAK = 3;
 /** Offline — после двух подряд неудачных probe (меньше мигания полоски). */
 const OFFLINE_FAILURE_STREAK = 2;
@@ -70,8 +70,7 @@ function stabilizeApiOnline(rawOnline) {
 
   if (!rawOnline) {
     offlineFailureStreak += 1;
-    if (stableApiOnline === null || stableApiOnline === false) {
-      stableApiOnline = false;
+    if (stableApiOnline === false) {
       onlineRecoveryStreak = 0;
       if (!offlineSinceMs) offlineSinceMs = Date.now();
       return false;
@@ -162,9 +161,9 @@ export const useConnectivityStore = create((set, get) => ({
     const prev = get();
     const rawApiOnline =
       status.apiOnline !== undefined ? Boolean(status.apiOnline) : prev.apiOnline;
-    const rawOfflineMode =
-      status.offlineMode !== undefined ? Boolean(status.offlineMode) : !rawApiOnline;
-    const apiOnline = rawOfflineMode ? false : stabilizeApiOnline(rawApiOnline);
+    // Десктоп всегда шлёт offlineMode = !apiOnline с одного probe — не обходить
+    // стабилизатор, иначе бейдж мигает каждые CONNECTIVITY_POLL_MS.
+    const apiOnline = stabilizeApiOnline(rawApiOnline);
     const next = {
       apiOnline,
       offlineMode: !apiOnline,
@@ -280,10 +279,6 @@ export function markApiReachable() {
     return;
   }
   apiUnreachableUntil = 0;
-  stableApiOnline = true;
-  onlineRecoveryStreak = ONLINE_RECOVERY_STREAK;
-  offlineFailureStreak = 0;
-  offlineSinceMs = 0;
   useConnectivityStore.getState().applyStatus({ apiOnline: true, offlineMode: false });
 }
 

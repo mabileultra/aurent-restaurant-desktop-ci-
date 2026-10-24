@@ -39,7 +39,7 @@ describe('assertOnkmMarking', () => {
     });
   });
 
-  it('does not treat UNAVAILABLE as success', async () => {
+  it('UNAVAILABLE is always soft — sale still goes to Multikassa', async () => {
     validateFiscalMarking.mockResolvedValue({
       status: 'UNAVAILABLE',
       code: 'TIMEOUT',
@@ -51,7 +51,7 @@ describe('assertOnkmMarking', () => {
       requireBeforeSale: true,
     }).catch((e) => e);
     expect(err.code).toBe('MULTIKASSA_MARKING_UNAVAILABLE');
-    expect(err.soft).toBeFalsy();
+    expect(err.soft).toBe(true);
   });
 
   it('soft-fails UNAVAILABLE when requireBeforeSale is off', async () => {

@@ -5,7 +5,7 @@ export { MARKING_VALIDATION_STATUS };
 /**
  * Tasnif `validation-onkm` перед чеком.
  * REJECTED — всегда блок (1016/2070 выведены, 2080/2090 блок/срок).
- * UNAVAILABLE — не успех: блок при requireBeforeSale, иначе soft.
+ * UNAVAILABLE — Tasnif молчит: не стопим чек, soft.
  */
 export async function assertOnkmMarking({
   cashRegisterId,
@@ -27,7 +27,7 @@ export async function assertOnkmMarking({
     }
     const err = new Error(result.message || 'Сервис проверки маркировки недоступен');
     err.code = `${errorPrefix}_MARKING_UNAVAILABLE`;
-    if (offline || !requireBeforeSale) err.soft = true;
+    err.soft = true;
     throw err;
   } catch (err) {
     if (err?.code === `${errorPrefix}_MARKING_REJECTED` || err?.code === `${errorPrefix}_MARKING_UNAVAILABLE`) {
@@ -36,7 +36,7 @@ export async function assertOnkmMarking({
     const wrapped = new Error(err?.message || 'Не удалось проверить маркировку');
     wrapped.code = `${errorPrefix}_MARKING_UNAVAILABLE`;
     wrapped.cause = err;
-    if (offline || !requireBeforeSale) wrapped.soft = true;
+    wrapped.soft = true;
     throw wrapped;
   }
 }

@@ -39,7 +39,9 @@ vi.mock('../../../services/fiscal/shared/validateFiscalMarking', () => ({
 
 import { pharmacyIntegrationApi } from '../../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../../api/pharmacySales.api';
-import { posFetchProductByBarcode } from '../../../services/pos/posDataRouter';
+import { saleApi } from '../../../api/sale.api';
+import { tasnifApi } from '../../../api/tasnif.api';
+import { posFetchProductByBarcode, posFetchProductsPage } from '../../../services/pos/posDataRouter';
 import { clearSoldMarks } from '../../marking';
 import { resolvePosMarkedProduct } from './resolvePosMarkedProduct';
 
@@ -266,5 +268,85 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe(11);
     expect(validateFiscalMarking).toHaveBeenCalled();
+  });
+});
+
+describe('касса — жёсткий путь Tasnif + склад', () => {
+  const vodkaKm = '0104780083110808217Ф*7щгЮ93Вкф7';
+  const vodka = {
+    id: 77,
+    barcode: '9990001112223',
+    ikpu: '02208001001926001',
+    name: 'Водка: Naleyka',
+    markedProduct: true,
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearSoldMarks(7);
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
+    posFetchProductByBarcode.mockResolvedValue(null);
+    posFetchProductsPage.mockResolvedValue({ content: [] });
+    tasnifApi.lookup.mockResolvedValue({
+      data: { mxik: '02208001001926001', name: vodka.name, packageCode: '1077302' },
+    });
+    validateFiscalMarking.mockResolvedValue({ status: 'VALID' });
+  });
+
+  it('GTIN нет на карточке — Tasnif ИКПУ находит маркированную водку на складе', async () => {
+    const result = await resolvePosMarkedProduct({
+      products: [vodka],
+      rawCode: vodkaKm,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe(77);
+    expect(result.product.productMarks).toEqual([vodkaKm]);
+    expect(tasnifApi.lookup).toHaveBeenCalled();
+    expect(validateFiscalMarking).toHaveBeenCalled();
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
+  });
+
+  it('Tasnif 1002 чужой — в чек нельзя, даже если склад есть', async () => {
+    validateFiscalMarking.mockResolvedValue({
+      status: 'REJECTED',
+      code: '1002',
+      message: 'Указанный код маркировки не принадлежит вам.',
+    });
+    const result = await resolvePosMarkedProduct({
+      products: [vodka],
+      rawCode: vodkaKm,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('withdrawn');
+    expect(result.product).toBeNull();
+    expect(result.message).toMatch(/не принадлежит/);
+  });
+
+  it('Tasnif VALID, склада нет — не найден, не выдумываем карточку', async () => {
+    const result = await resolvePosMarkedProduct({
+      products: [],
+      rawCode: vodkaKm,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('not-found');
+    expect(result.product).toBeNull();
+    expect(tasnifApi.lookup).toHaveBeenCalled();
+  });
+
+  it('наш журнал говорит sold, Tasnif VALID — всё равно в чек', async () => {
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
+    const result = await resolvePosMarkedProduct({
+      products: [vodka],
+      rawCode: vodkaKm,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe(77);
   });
 });

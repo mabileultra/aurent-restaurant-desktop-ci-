@@ -182,33 +182,28 @@ export function usePosCartHandlers({
           cashRegisterId,
         });
         if (resolved.status === 'sold') {
-          toast.error(t('pos.markingSoldLocal'));
+          toast.error(t('pos.markingSoldLocal'), { id: 'pos-marking-scan' });
           setSearch('');
           return true;
         }
         if (resolved.status === 'withdrawn') {
-          toast.error(resolved.message || t('pos.markingNotInCirculation'));
-          setSearch('');
-          return true;
-        }
-        if (resolved.status === 'check-failed') {
-          toast.error(resolved.message || t('pos.markingCheckFailed'));
+          toast.error(resolved.message || t('pos.markingNotInCirculation'), { id: 'pos-marking-scan' });
           setSearch('');
           return true;
         }
         if (resolved.status === 'ok' && resolved.product) {
-          toast.success(t('pos.markingInCirculation'));
+          toast.success(t('pos.markingInCirculation'), { id: 'pos-marking-scan' });
           addMarkedScanToCart(resolved.product);
           setSearch('');
           return true;
         }
-        toast.error(t('pos.markingNotFound'));
+        toast.error(t('pos.markingNotFound'), { id: 'pos-marking-scan' });
         setSearch('');
         return true;
       } catch (e) {
         toast.error(t(e?.code === 'MARK_ALREADY_SOLD'
           ? 'pos.markingAlreadySold'
-          : 'pos.markingNotFound'));
+          : 'pos.markingNotFound'), { id: 'pos-marking-scan' });
         setSearch('');
         return true;
       } finally {

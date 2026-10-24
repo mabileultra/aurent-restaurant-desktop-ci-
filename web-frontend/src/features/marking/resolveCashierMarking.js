@@ -51,14 +51,6 @@ export async function resolveCashierMarking({
       message: circulation.message,
     });
   }
-  if (circulation.status === 'unavailable') {
-    return emptyResolve('check-failed', mark, {
-      aslResult: gate.aslResult,
-      markingCode: circulation.code,
-      message: circulation.message,
-    });
-  }
-
   if (!product) {
     return emptyResolve('not-found', mark, {
       aslResult: gate.aslResult,

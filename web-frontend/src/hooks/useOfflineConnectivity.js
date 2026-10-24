@@ -100,11 +100,18 @@ export function useOfflineConnectivity() {
 
     const onReconnect = async () => {
       if (cancelled || !canRunOnlineSync()) return;
+      const live = useConnectivityStore.getState();
+      if (live.syncing || live.syncingCatalog) return;
       const toastId = 'pos-reconnect-sync';
-      toast.loading(i18n.t('offline.reconnectStarted'), { id: toastId });
+      const noisy = Number(live.pendingSales || 0) > 0 || !live.bootstrapReady;
+      if (noisy) toast.loading(i18n.t('offline.reconnectStarted'), { id: toastId });
       const result = await runDesktopReconnectSync(storeId, { catalogKind });
       if (cancelled) return;
       if (result?.skipped) {
+        toast.dismiss(toastId);
+        return;
+      }
+      if (!noisy) {
         toast.dismiss(toastId);
         return;
       }
@@ -134,7 +141,7 @@ export function useOfflineConnectivity() {
           reconnectTimer = null;
           if (cancelled || !canRunOnlineSync()) return;
           void onReconnect();
-        }, 2_500);
+        }, 8_000);
       }
       if (!state.apiOnline && prev?.apiOnline && reconnectTimer) {
         window.clearTimeout(reconnectTimer);
