@@ -1,6 +1,5 @@
 import { tasnifApi } from '../../api/tasnif.api';
 import { barcodeLookupVariants, markingBarcodeCandidates } from './markingCode';
-import { isMarkingOnlyProduct } from './isMarkingOnlyProduct';
 import {
   findProductByMarkingCode,
   markingMatchesProduct,
@@ -24,9 +23,7 @@ function findInList(items, mark, extraGtins) {
 function findByIkpu(items, mxik) {
   const wanted = digitsOnly(mxik);
   if (wanted.length < 8) return null;
-  return (items || []).find((product) => (
-    !isMarkingOnlyProduct(product) && digitsOnly(product?.ikpu) === wanted
-  )) || null;
+  return (items || []).find((product) => digitsOnly(product?.ikpu) === wanted) || null;
 }
 
 async function firstCatalogHit(searchCatalog, queries, pick) {
@@ -105,7 +102,6 @@ function findByTasnif(items, tasnif) {
   const wanted = String(tasnif?.name || '').trim().toLowerCase();
   if (wanted.length < 4) return null;
   const hits = (items || []).filter((product) => {
-    if (isMarkingOnlyProduct(product)) return false;
     const name = String(product?.name || '').trim().toLowerCase();
     return name && (name === wanted || name.includes(wanted) || wanted.includes(name));
   });

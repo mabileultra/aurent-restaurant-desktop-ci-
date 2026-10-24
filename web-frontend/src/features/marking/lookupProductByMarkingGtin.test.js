@@ -72,7 +72,7 @@ describe('lookupProductByMarkingGtin', () => {
     expect(searchCatalog).toHaveBeenCalledWith('02208001001926001');
   });
 
-  it('does not attach a marking-only card by IKPU — only by GTIN', async () => {
+  it('finds a marking-only warehouse card by Tasnif IKPU when GTIN is not on the card', async () => {
     const vodka = {
       id: 77,
       barcode: '999',
@@ -84,10 +84,10 @@ describe('lookupProductByMarkingGtin', () => {
       products: [vodka],
       mark: '0104780083110808217Ф*7щгЮ93Вкф7',
       fetchByBarcode: vi.fn(async () => null),
-      searchCatalog: vi.fn(async () => ({ content: [vodka] })),
+      searchCatalog: vi.fn(async () => ({ content: [] })),
       lookupTasnifByBarcode: vi.fn(async () => ({ mxik: '02208001001926001', name: 'Водка' })),
     });
-    expect(hit).toBeFalsy();
+    expect(hit.id).toBe(77);
   });
 
   it('searches the catalog by Tasnif IKPU when the open list has no matching barcode', async () => {

@@ -1,4 +1,4 @@
-/** Карточка с галочкой «только маркировка»: склад по КМ/GTIN, не по ИКПУ. */
+/** Галочка «только маркировка»: в чек с полки/штрихкода нельзя — только скан КМ. */
 export function isMarkingOnlyProduct(product) {
   return product?.markedProduct === true;
 }
