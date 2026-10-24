@@ -3,7 +3,12 @@ import { pharmacySalesApi } from '../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../api/pharmacyStockMarks.api';
 import { saleApi } from '../../api/sale.api';
 import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
-import { isMarkSoldLocally, rememberSoldMarks, collectMarksFromCartItems } from './soldMarksStore';
+import {
+  collectMarksFromCartItems,
+  forgetSoldMarks,
+  isMarkSoldLocally,
+  rememberSoldMarks,
+} from './soldMarksStore';
 
 function soldHit(status, extra = {}) {
   return {
@@ -21,7 +26,15 @@ function soldHit(status, extra = {}) {
  */
 export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) {
   if (storeId && isMarkSoldLocally(storeId, mark)) {
-    return soldHit('SOLD_LOCAL');
+    try {
+      const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
+      if (data?.sold === true) {
+        return soldHit(data.status || 'SOLD_LOCAL');
+      }
+      forgetSoldMarks(storeId, [mark]);
+    } catch {
+      return soldHit('SOLD_LOCAL');
+    }
   }
 
   let stock = null;

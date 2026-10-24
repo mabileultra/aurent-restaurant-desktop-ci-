@@ -35,13 +35,19 @@ describe('inspectMarkPunched — sold-gate до чека', () => {
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: false } });
   });
 
-  it('локальный кэш — punched, без склада и ASL', async () => {
+  it('локальный кэш + журнал sold — punched, ASL не зовём', async () => {
     rememberSoldMarks(7, [MARK]);
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
     const gate = await inspectMarkPunched({ storeId: 7, mark: MARK_OTHER_TAIL, aslEnabled: true });
     expect(gate.punched).toBe(true);
-    expect(gate.aslResult.status).toBe('SOLD_LOCAL');
-    expect(pharmacyStockMarksApi.check).not.toHaveBeenCalled();
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
+  });
+
+  it('локальный кэш после возврата (журнал не sold) — можно снова', async () => {
+    rememberSoldMarks(7, [MARK]);
+    const gate = await inspectMarkPunched({ storeId: 7, mark: MARK, aslEnabled: false });
+    expect(gate.punched).toBe(false);
+    expect(saleApi.checkMarkSold).toHaveBeenCalled();
   });
 
   it('IN_STOCK сам по себе не sold', async () => {
@@ -98,6 +104,7 @@ describe('inspectMarkPunched — sold-gate до чека', () => {
   });
 
   it('assertCartMarksNotPunched бросает MARK_ALREADY_SOLD', async () => {
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
     rememberSoldMarks(7, [MARK]);
     await expect(assertCartMarksNotPunched(7, [{ productMarks: [MARK_OTHER_TAIL] }]))
       .rejects.toMatchObject({ code: 'MARK_ALREADY_SOLD' });

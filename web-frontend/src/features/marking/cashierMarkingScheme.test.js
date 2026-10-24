@@ -89,6 +89,7 @@ describe('касса: схема маркировки', () => {
       rawCode: KM_OTHER_TAIL,
       cartItems: [],
       storeId: 3,
+      locallySold: true,
     }).status).toBe('sold');
   });
 

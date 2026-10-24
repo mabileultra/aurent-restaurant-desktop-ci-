@@ -3,6 +3,7 @@ import {
   clearSoldMarks,
   collectMarksFromCartItems,
   isMarkSoldLocally,
+  forgetSoldMarks,
   rememberSoldMarks,
 } from './soldMarksStore';
 
@@ -30,6 +31,13 @@ describe('soldMarksStore', () => {
     rememberSoldMarks(7, [`${base}91EE1192ABCDEF`]);
     expect(isMarkSoldLocally('7', `${base}\u001d91FFFF\u001d92ZZZZ`)).toBe(true);
     expect(isMarkSoldLocally(7, `${base}91AAAA`)).toBe(true);
+  });
+
+  it('forgets a returned mark so rescan is allowed', () => {
+    const mark = '010478001234567821AAAA';
+    rememberSoldMarks(1, [mark]);
+    forgetSoldMarks(1, [mark]);
+    expect(isMarkSoldLocally(1, mark)).toBe(false);
   });
 
   it('collects a single mark when the marks array is empty', () => {

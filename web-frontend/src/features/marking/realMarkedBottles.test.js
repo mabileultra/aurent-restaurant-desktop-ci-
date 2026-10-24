@@ -199,6 +199,7 @@ describe('реальные КМ: поиск на кассе и отправка 
   });
 
   it('пробитый КМ — «уже пробита», даже если ищем другой товар', async () => {
+    saleApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
     rememberSoldMarks(7, [NALEYKA.km]);
     const findOther = vi.fn(async () => CATALOG[1]);
     const resolved = await resolveCashierMarking({

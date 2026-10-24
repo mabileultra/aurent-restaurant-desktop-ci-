@@ -25,6 +25,7 @@ export {
 export {
   isMarkSoldLocally,
   rememberSoldMarks,
+  forgetSoldMarks,
   collectMarksFromCartItems,
   clearSoldMarks,
 } from './soldMarksStore';

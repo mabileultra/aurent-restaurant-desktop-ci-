@@ -5,7 +5,6 @@ import {
   markingIdentityKey,
   markingIdentityKeys,
 } from './markingIdentity';
-import { isMarkSoldLocally } from './soldMarksStore';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
 function pendingHasMark(pendingKeys, rawMark) {
@@ -41,10 +40,7 @@ export function assessMarkLifecycle({
     return { status: 'duplicate', key, mark };
   }
 
-  const soldLocal =
-    locallySold === true
-    || (locallySold !== false && storeId != null && isMarkSoldLocally(storeId, mark));
-  if (soldLocal) {
+  if (locallySold === true) {
     return { status: 'sold', key, mark };
   }
 

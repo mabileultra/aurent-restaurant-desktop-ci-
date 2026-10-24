@@ -72,7 +72,7 @@ export async function posReturnSaleItems({ sale, payload, storeId, catalogKind }
   }
 
   const data = await salesClient(kind).returnItems(sale.id, payload).then((r) => r.data);
-  if (kind === 'pharmacy' && store) {
+  if (store) {
     clearSoldMarks(store);
   }
   return data;

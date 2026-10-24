@@ -74,6 +74,17 @@ export function collectMarksFromCartItems(items) {
   return out;
 }
 
+/** Снять КМ с локального кэша после возврата. */
+export function forgetSoldMarks(storeId, rawMarks) {
+  const list = Array.isArray(rawMarks) ? rawMarks : [];
+  if (!storeId || list.length === 0) return;
+  const sold = readSet(storeId);
+  for (const raw of list) {
+    markingIdentityKeys(preserveMarkingCodeForFiscal(raw)).forEach((k) => sold.delete(k));
+  }
+  writeSet(storeId, sold);
+}
+
 /** Сбросить локальный sold-кэш магазина (после возврата). */
 export function clearSoldMarks(storeId) {
   const key = storageKey(storeId);
