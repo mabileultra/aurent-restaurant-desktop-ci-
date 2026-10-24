@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next';
 import { fmtMoney as fmt } from '../../../utils/formatMoney';
 import { parseTenderedInput } from '../../cashier/components/payment/posPaymentConstants';
 import PrintReceiptToggle from '../../cashier/components/payment/PrintReceiptToggle';
-import CashierFiscalTheme from '../../fiscal/CashierFiscalTheme';
 import PosRegisterCardProviders from '../../cashier/components/register-pay-rail/PosRegisterCardProviders';
 import PharmacyPayQuickCash from './PharmacyPayQuickCash';
 import PharmacyPayPatientCards from './PharmacyPayPatientCards';
@@ -74,7 +73,6 @@ export default function PharmacyPayRail({
 
   return (
     <aside className="pharmacy-pay-rail" aria-label={t('pos.paymentTitle')}>
-      <CashierFiscalTheme variant="rail" />
       <div className="pharmacy-pay-rail__total">
         <span className="pharmacy-pay-rail__total-label">{t('pos.amountToPay')}</span>
         <div className="pharmacy-pay-rail__total-row">

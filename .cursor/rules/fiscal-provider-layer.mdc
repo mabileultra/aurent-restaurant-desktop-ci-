@@ -12,7 +12,7 @@ Restaurant callers: `restaurant/pos/utils/payRestaurantOrderWithFiscal.js`, `res
 
 ## Invariants
 
-1. `posDataRouter` (shift open/close/X, sale), `posReturnWithFiscal`, `offlineSyncService` must not import fiscal operations from `services/multikassa` directly. POS loads caps via `loadFiscalCapabilities` → `GET /cashier/fiscal`. `/cashier/multikassa` is Multikassa UI/flags only and must not return FiscalDrive `factoryId` / FD `enabled`. Cashier chrome (pay rail, desktop menu) renders `CashierFiscalTheme` — one provider block, not Multikassa+FiscalDrive stacked.
+1. `posDataRouter` (shift open/close/X, sale), `posReturnWithFiscal`, `offlineSyncService` must not import fiscal operations from `services/multikassa` directly. POS loads caps via `loadFiscalCapabilities` → `GET /cashier/fiscal`. `/cashier/multikassa` is Multikassa UI/flags only and must not return FiscalDrive `factoryId` / FD `enabled`. Pay rail has no Multikassa/FiscalDrive switches — provider is chosen in cash-register settings. Desktop menu may keep one `CashierFiscalTheme` settings entry.
 2. Missing/unknown `capabilities.fiscalProvider` or `payload.fiscal.fiscalProvider` → **Multikassa**. Existing client registers must keep working unchanged.
 3. Multikassa stays a supported provider for live clients — do not delete or rewrite it while adding FiscalDrive. When `fiscal_provider=MULTIKASSA`, sale/shift/QR/`requireBeforeSale` stay on the Multikassa path (`services/multikassa/*`, localhost:8080 / mkfiscal). Do not open FiscalDrive Z, List FactoryID, or RegisterTXID on a Multikassa register.
 4. A new provider = new file in `services/fiscal/providers/` + entry in `resolveFiscalProvider`; no `if (provider === ...)` in POS flows.
