@@ -76,16 +76,26 @@ class MultikassaSettingsServiceImplFiscalProviderTest {
     }
 
     @Test
-    void fiscalDriveRegisterDoesNotExposeFiscalDriveThroughMultikassa() {
+    void fiscalDriveRegisterUsesMultikassaSettingsWhileDriveIsHidden() {
         CashRegister register = register(14L);
         register.setFiscalProvider(FiscalProvider.FISCAL_DRIVE);
+        CashRegisterMultikassaSettings settings = CashRegisterMultikassaSettings.builder()
+            .cashRegisterId(14L)
+            .cashRegister(register)
+            .enabled(true)
+            .baseUrl("http://localhost:8080/")
+            .terminalId("VG123")
+            .requireBeforeSale(true)
+            .printFiscalQr(true)
+            .build();
         when(cashRegisterRepository.findById(14L)).thenReturn(Optional.of(register));
+        when(settingsRepository.findById(14L)).thenReturn(Optional.of(settings));
 
         CashierMultikassaCapabilitiesResponse caps = service.getCashierCapabilities(cashier, 5, 14L);
 
-        assertThat(caps.enabled()).isFalse();
+        assertThat(caps.enabled()).isTrue();
+        assertThat(caps.terminalId()).isEqualTo("VG123");
         assertThat(caps.factoryId()).isNull();
-        assertThat(caps.fiscalProvider()).isEqualTo(FiscalProvider.FISCAL_DRIVE.name());
     }
 
     @Test

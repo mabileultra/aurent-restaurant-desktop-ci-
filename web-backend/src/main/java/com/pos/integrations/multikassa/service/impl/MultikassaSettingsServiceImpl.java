@@ -98,9 +98,6 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
       if (register == null) {
           return disabledCapabilities(null, true);
       }
-      if (FiscalProvider.FISCAL_DRIVE == resolveProvider(register)) {
-          return disabledCapabilities(register, true);
-      }
       CashRegisterMultikassaSettings settings = findOrDefault(register);
       if (!settings.isEnabled()) {
           return disabledCapabilities(register, settings.isPrintFiscalQr());
@@ -144,9 +141,6 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             request.requireBeforeSale()
         );
         entityManager.clear();
-        if (FiscalProvider.FISCAL_DRIVE == resolveProvider(register)) {
-            return disabledCapabilities(register, true);
-        }
         CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())
             .orElseThrow(() -> new BadRequestException("Не удалось сохранить флаги Multikassa"));
         if (!entity.isEnabled()) {

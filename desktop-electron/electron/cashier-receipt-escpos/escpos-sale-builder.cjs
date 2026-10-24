@@ -410,7 +410,8 @@ function appendFiscalBlock(printer, payload) {
 }
 
 /**
- * Крупный налоговый QR. Подвал «спасибо / призовые игры ГНК» не печатаем.
+ * QR Multikassa (ofd.soliq.uz). Мелкий printQR не используем, если есть картинка.
+ * Подвал «Рахмат / Спасибо» — после QR.
  * @param {import('node-thermal-printer').printer} printer
  * @param {object} payload
  * @param {string} jobId
@@ -450,7 +451,7 @@ async function appendQrAndFooter(printer, payload, jobId) {
   if (!printedImage) {
     try {
       const mm = Number(payload.paperWmm) || 80;
-      printer.printQR(qrValue, { cellSize: mm <= 58 ? 5 : 7, correction: 'M', model: 2 });
+      printer.printQR(qrValue, { cellSize: mm <= 58 ? 8 : 10, correction: 'M', model: 2 });
     } catch (err) {
       logWarn(jobId, 'QR_SKIP', { message: err?.message, len: qrValue.length });
     }

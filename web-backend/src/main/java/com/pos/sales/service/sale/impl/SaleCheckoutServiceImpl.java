@@ -213,11 +213,14 @@ public class SaleCheckoutServiceImpl implements SaleCheckoutService {
         saleFiscalApplier.apply(sale, shift, req.fiscal());
 
         Sale saved = saleRepository.save(sale);
-        markingSoldJournalService.registerSaleMarks(saved, marksPerItem);
+        boolean fiscalOk = SaleFiscalApplier.STATUS_FISCALIZED.equals(saved.getFiscalStatus());
+        if (fiscalOk) {
+            markingSoldJournalService.registerSaleMarks(saved, marksPerItem);
+        }
         markingAfterSaleService.enqueueAfterSale(
             store.getId(),
             MarkingAfterSaleService.codesOf(req.items()),
-            SaleFiscalApplier.STATUS_FISCALIZED.equals(saved.getFiscalStatus())
+            fiscalOk
         );
         if (saved.getReceiptType() != Sale.ReceiptType.ADVANCE) {
             for (SaleItem item : saved.getItems()) {

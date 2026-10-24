@@ -51,7 +51,7 @@ test('tax QR is printed from the ofd url', async () => {
   const qr = callsOf(printer, 'printQR');
   assert.equal(qr.length, 1);
   assert.equal(qr[0].args[0], TAX_QR);
-  assert.equal(qr[0].args[1].cellSize, 7);
+  assert.equal(qr[0].args[1].cellSize, 10);
 });
 
 test('tax QR image is preferred over generated printQR', async () => {

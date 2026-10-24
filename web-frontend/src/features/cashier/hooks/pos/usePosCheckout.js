@@ -21,6 +21,7 @@ import { resolvePharmacyApiError } from '../../../../pharmacy/errors/resolvePhar
 import { useAuthStore } from '../../../../store/authStore';
 import { resolvePosRoute } from '../../../../services/pos/posRouteResolver';
 import { resolveMultikassaFiscalErrorMessage } from '../../../../services/multikassa';
+import { FISCAL_STATUS } from '../../../../services/fiscal';
 import { collectMarksFromCartItems, rememberSoldMarks } from '../../../marking';
 
 export function usePosCheckout({
@@ -61,9 +62,8 @@ export function usePosCheckout({
       });
     },
     onSuccess: async (res, payment) => {
-      if (storeId) {
-        const marks = collectMarksFromCartItems(useCartStore.getState().items);
-        rememberSoldMarks(storeId, marks);
+      if (storeId && String(res?.data?.fiscalStatus || '').toUpperCase() === FISCAL_STATUS.FISCALIZED) {
+        rememberSoldMarks(storeId, collectMarksFromCartItems(useCartStore.getState().items));
       }
       clearCart();
       setPayOpen(false);

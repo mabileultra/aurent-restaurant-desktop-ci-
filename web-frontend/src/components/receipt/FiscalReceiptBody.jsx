@@ -313,6 +313,11 @@ export default function FiscalReceiptBody({ sale, printAreaId = 'receipt-print-a
       {showQrBlock ? (
         <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
           {qrValue ? <ReceiptQrCode value={qrValue} sizePx={200} /> : null}
+          <p className="receipt-subtitle mt-2">{t('fiscalReceipt.footer')}</p>
+        </footer>
+      ) : isOn('footer') ? (
+        <footer className="receipt-section mt-3 border-t border-dashed border-black pt-3 text-center">
+          <p className="receipt-subtitle">{t('fiscalReceipt.footer')}</p>
         </footer>
       ) : null}
     </div>
