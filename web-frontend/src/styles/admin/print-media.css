@@ -103,8 +103,8 @@
   html.electron-silent-print.print-thermal-modal #fiscal-print-shell::after {
     content: '';
     display: block;
-    height: 20mm;
-    min-height: 20mm;
+    height: 8mm;
+    min-height: 8mm;
   }
   /* Термочек из модалки / X-Z отчёта: только .fiscal-print-scene, без UI приложения */
   html.print-thermal-modal #root,

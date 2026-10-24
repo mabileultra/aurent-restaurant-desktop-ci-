@@ -427,7 +427,6 @@ async function appendQrAndFooter(printer, payload, jobId) {
   if (!isTaxQr) return;
 
   printer.alignCenter();
-  printer.newLine();
 
   let printedImage = false;
   const dataUrl = String(payload.qrImageDataUrl || '').trim();
@@ -455,7 +454,6 @@ async function appendQrAndFooter(printer, payload, jobId) {
       logWarn(jobId, 'QR_SKIP', { message: err?.message, len: qrValue.length });
     }
   }
-  printer.newLine();
   printer.alignLeft();
 }
 
@@ -464,7 +462,6 @@ function appendProfileFooter(printer, payload) {
   const text = String(payload?.labels?.footer || '').trim();
   if (!text || !isOn(payload?.receiptFields, 'footer')) return;
   printer.alignCenter();
-  printer.newLine();
   printer.println(text);
   printer.alignLeft();
 }
@@ -491,8 +488,6 @@ async function buildReceiptOnPrinter(printer, payload, jobId) {
   appendFiscalBlock(printer, safePayload);
   await appendQrAndFooter(printer, safePayload, jobId);
   appendProfileFooter(printer, safePayload);
-  printer.newLine();
-  printer.newLine();
   beepAndCut(printer);
 }
 
