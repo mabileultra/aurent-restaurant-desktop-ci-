@@ -85,9 +85,8 @@ public class PharmacyIntegrationSettingsServiceImpl implements PharmacyIntegrati
   public CashierPharmacyIntegrationResponse getCashierCapabilities(User cashier, Integer storeId) {
     Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
     StorePharmacyIntegration settings = findOrDefault(store);
-    boolean aslEnabled = AslApiKeySupport.hasKey(settings.getAslApiKey());
     return new CashierPharmacyIntegrationResponse(
-      aslEnabled,
+      false,
       settings.isDmedEnabled(),
       PharmacyIntegrationDefaults.ASL_PORTAL_URL,
       PharmacyIntegrationDefaults.DMED_PORTAL_URL,

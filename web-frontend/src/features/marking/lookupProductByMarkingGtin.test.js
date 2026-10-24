@@ -46,6 +46,50 @@ describe('lookupProductByMarkingGtin', () => {
     expect(hit.id).toBe(22);
   });
 
+  it('tries every GTIN variant in Tasnif then finds the warehouse card by IKPU', async () => {
+    const byIkpu = {
+      id: 101,
+      barcode: '999',
+      ikpu: '02208001001926001',
+      name: 'Водка: Naleyka, Крепость 40%, Стеклянная бутылка 0,25 л',
+    };
+    const lookupTasnifByBarcode = vi.fn(async (barcode) => {
+      if (barcode === '4780083110808') return { mxik: '02208001001926001', name: byIkpu.name };
+      throw new Error('not in tasnif');
+    });
+    const searchCatalog = vi.fn(async (query) => (
+      query === '02208001001926001' ? { content: [byIkpu] } : { content: [] }
+    ));
+    const hit = await lookupProductByMarkingGtin({
+      products: [],
+      mark: '0104780083110808217Ф*7щгЮ93Вкф7',
+      fetchByBarcode: vi.fn(async () => null),
+      searchCatalog,
+      lookupTasnifByBarcode,
+    });
+    expect(hit.id).toBe(101);
+    expect(lookupTasnifByBarcode).toHaveBeenCalled();
+    expect(searchCatalog).toHaveBeenCalledWith('02208001001926001');
+  });
+
+  it('does not attach a marking-only card by IKPU — only by GTIN', async () => {
+    const vodka = {
+      id: 77,
+      barcode: '999',
+      ikpu: '02208001001926001',
+      name: 'Водка',
+      markedProduct: true,
+    };
+    const hit = await lookupProductByMarkingGtin({
+      products: [vodka],
+      mark: '0104780083110808217Ф*7щгЮ93Вкф7',
+      fetchByBarcode: vi.fn(async () => null),
+      searchCatalog: vi.fn(async () => ({ content: [vodka] })),
+      lookupTasnifByBarcode: vi.fn(async () => ({ mxik: '02208001001926001', name: 'Водка' })),
+    });
+    expect(hit).toBeFalsy();
+  });
+
   it('searches the catalog by Tasnif IKPU when the open list has no matching barcode', async () => {
     const byIkpu = { id: 22, barcode: '999', ikpu: '03004409005039001', name: 'Чай' };
     const hit = await lookupProductByMarkingGtin({

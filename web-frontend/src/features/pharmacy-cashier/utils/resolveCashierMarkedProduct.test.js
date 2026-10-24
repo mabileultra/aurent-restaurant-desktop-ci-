@@ -89,7 +89,7 @@ describe('resolveCashierMarkedProduct', () => {
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('blocks a catalog product when ASL says the code is already punched', async () => {
+  it('does not ask ASL when the journal is clean', async () => {
     pharmacyIntegrationApi.verifyMarking.mockResolvedValue({
       data: { found: true, alreadySold: true, status: 'WITHDRAWN' },
     });
@@ -98,12 +98,11 @@ describe('resolveCashierMarkedProduct', () => {
       products: [product],
       rawCode: MARK,
       storeId: 7,
-      aslEnabled: true,
     });
 
-    expect(result.status).toBe('sold');
-    expect(result.product).toBeNull();
-    expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledTimes(1);
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe('p1');
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
   it('adds a catalog product when the code was not punched', async () => {
@@ -155,7 +154,7 @@ describe('resolveCashierMarkedProduct', () => {
 
     expect(result.status).toBe('not-found');
     expect(result.product).toBeNull();
-    expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledTimes(1);
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
   it('finds the card by Tasnif IKPU without ASL', async () => {

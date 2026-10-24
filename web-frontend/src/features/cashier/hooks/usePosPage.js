@@ -128,7 +128,6 @@ export function usePosPage() {
     removeItem,
     selectedLineId,
     setSelectedLineId,
-    aslMarkingEnabled: Boolean(integration.capabilities?.aslMarkingEnabled),
     cashRegisterId: shift?.cashRegisterId ?? null,
   });
 

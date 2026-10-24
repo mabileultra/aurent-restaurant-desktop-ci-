@@ -21,6 +21,6 @@ alwaysApply: false
    - Cart: full scanner KM in `productMarks`.
    - Multikassa Operations: `product_mark` + `product_label` = identification KM (no 91/92/93). Omit both when there is no KM.
    - FiscalDrive GetTXID: `Labels[]` = the same identification KM.
-   - ASL API key: sold-gate + withdraw after FISCALIZED. No key → OFD Labels only.
+   - ASL Belgisi is off: sold-gate is local/journal only; circulation is Tasnif; withdraw is OFD Labels.
    - Sold-gate is per KM, not per card: a punched mark stays sold even if the cashier is on another product.
    - Grocery checkout writes `sale_sold_marks` (`MarkingSoldJournalService`) before/after the receipt; scan checks that journal first. Failed fiscal does not write. Return/void unregisters.

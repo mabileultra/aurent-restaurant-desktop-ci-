@@ -10,6 +10,10 @@ export async function inspectMarkCirculation({ cashRegisterId, product, mark }) 
   if (!cashRegisterId || !mark) {
     return { status: 'skipped' };
   }
+  const ikpu = String(product?.ikpu || product?.mxik || '').replace(/\D/g, '');
+  if (!ikpu) {
+    return { status: 'skipped' };
+  }
   let result;
   try {
     result = await validateFiscalMarking({

@@ -34,10 +34,15 @@ export { assessMarkLifecycle } from './markLifecycle';
 
 export { inspectMarkPunched, assertCartMarksNotPunched } from './inspectMarkPunched';
 export { inspectMarkCirculation } from './inspectMarkCirculation';
-export { lookupProductByMarkingGtin } from './lookupProductByMarkingGtin';
+export {
+  lookupProductByMarkingGtin,
+  lookupTasnifIdentity,
+  productStubFromTasnif,
+} from './lookupProductByMarkingGtin';
 export { planMarkedScan, applyMarkingScan, removeMarking, isMarkCountedLine } from './markedScanCart';
 export { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 export { isAslMarkAlreadySold } from './aslMarkAlreadySold';
 export { findProductByMarkingCode, markingMatchesProduct } from './markingProductMatch';
+export { isMarkingOnlyProduct } from './isMarkingOnlyProduct';
 export { attachMarkToProduct, lineMarkingCodes } from './attachMarkToProduct';
 export { resolveCashierMarking } from './resolveCashierMarking';

@@ -45,7 +45,13 @@ import { resolvePosMarkedProduct } from './resolvePosMarkedProduct';
 
 const KM = '010478001234567821AbCdEfGhIj';
 const EAN = '4780012345678';
-const product = { id: 11, barcode: EAN, name: 'Чай', markedProduct: true };
+const product = {
+  id: 11,
+  barcode: EAN,
+  name: 'Чай',
+  markedProduct: true,
+  ikpu: '02208001001926001',
+};
 
 describe('resolvePosMarkedProduct — путь только для КМ', () => {
   beforeEach(() => {
@@ -83,7 +89,7 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('КМ уже в журнале продаж → sold даже без ASL', async () => {
+  it('КМ уже в журнале, Tasnif не спрашивали → sold', async () => {
     pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
     const result = await resolvePosMarkedProduct({
       products: [product],
@@ -96,7 +102,21 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('КМ + ASL уже продана → sold (в чек нельзя)', async () => {
+  it('КМ уже в журнале, Tasnif VALID — всё равно ищем товар и в чек', async () => {
+    pharmacySalesApi.checkMarkSold.mockResolvedValue({ data: { sold: true, status: 'SOLD' } });
+    const result = await resolvePosMarkedProduct({
+      products: [product],
+      rawCode: KM,
+      storeId: 7,
+      cashRegisterId: 11,
+      aslEnabled: false,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.product.id).toBe(11);
+    expect(validateFiscalMarking).toHaveBeenCalled();
+  });
+
+  it('ASL не спрашиваем — sold только из нашего журнала', async () => {
     pharmacyIntegrationApi.verifyMarking.mockResolvedValue({
       data: { found: true, alreadySold: true, status: 'SOLD' },
     });
@@ -104,13 +124,9 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
       products: [product],
       rawCode: KM,
       storeId: 7,
-      aslEnabled: true,
     });
-    expect(result.status).toBe('sold');
-    expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledWith({
-      storeId: 7,
-      code: expect.any(String),
-    });
+    expect(result.status).toBe('ok');
+    expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
   it('КМ + ASL ок → товар в чек', async () => {
@@ -125,6 +141,27 @@ describe('resolvePosMarkedProduct — путь только для КМ', () => 
     });
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe(11);
+  });
+
+  it('карточки нет — Tasnif 1016 всё равно, не «не найден»', async () => {
+    const { tasnifApi } = await import('../../../api/tasnif.api');
+    tasnifApi.lookup.mockResolvedValue({
+      data: { mxik: '02208001001926001', name: 'Naleyka', packageCode: '1' },
+    });
+    validateFiscalMarking.mockResolvedValue({
+      status: 'REJECTED',
+      code: '1016',
+      message: 'Код уже выведен из оборота',
+    });
+    const result = await resolvePosMarkedProduct({
+      products: [],
+      rawCode: KM,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('withdrawn');
+    expect(result.message).toBe('Код уже выведен из оборота');
+    expect(validateFiscalMarking).toHaveBeenCalled();
   });
 
   it('КМ: товара нет → not-found', async () => {

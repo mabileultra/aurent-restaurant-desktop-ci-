@@ -1,8 +1,6 @@
-import { pharmacyIntegrationApi } from '../../api/pharmacyIntegration.api';
 import { pharmacySalesApi } from '../../api/pharmacySales.api';
 import { pharmacyStockMarksApi } from '../../api/pharmacyStockMarks.api';
 import { saleApi } from '../../api/sale.api';
-import { isAslMarkAlreadySold } from './aslMarkAlreadySold';
 import {
   collectMarksFromCartItems,
   forgetSoldMarks,
@@ -22,9 +20,10 @@ function soldHit(status, extra = {}) {
 /**
  * Жёсткая проверка одного КМ до чека.
  * Склад IN_STOCK и карточка в каталоге не отменяют проверку:
- * локальный кэш → stock_marks → grocery-журнал → pharmacy-журнал → ASL (если включён).
+ * локальный кэш → stock_marks → grocery-журнал → pharmacy-журнал.
+ * ASL не вызываем: оборот проверяет Tasnif, вывод — ОФД.
  */
-export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) {
+export async function inspectMarkPunched({ storeId, mark }) {
   if (storeId && isMarkSoldLocally(storeId, mark)) {
     try {
       const { data } = await saleApi.checkMarkSold({ storeId, code: mark });
@@ -47,7 +46,7 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
         return soldHit(data.status || 'SOLD', { stock });
       }
     } catch {
-      // склад недоступен — журнал продаж и ASL всё равно проверяем
+      // склад недоступен — журнал продаж всё равно проверяем
     }
   }
 
@@ -59,7 +58,7 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
         return soldHit(data.status || 'SOLD', { stock });
       }
     } catch {
-      // grocery-журнал недоступен — проверяем аптечный и ASL
+      // grocery-журнал недоступен — проверяем аптечный
     }
   }
 
@@ -71,38 +70,18 @@ export async function inspectMarkPunched({ storeId, mark, aslEnabled = false }) 
         return soldHit(data.status || 'SOLD', { stock });
       }
     } catch {
-      // сеть — ниже ещё ASL, если включён
+      // сеть — журнал недоступен, Tasnif проверит оборот на скане
     }
   }
 
-  let aslResult = null;
-  let aslError = null;
-  if (aslEnabled && storeId) {
-    try {
-      const { data } = await pharmacyIntegrationApi.verifyMarking({ storeId, code: mark });
-      aslResult = data;
-      if (isAslMarkAlreadySold(aslResult)) {
-        rememberSoldMarks(storeId, [mark]);
-        return {
-          punched: true,
-          aslResult,
-          stock,
-          aslError: null,
-        };
-      }
-    } catch (error) {
-      aslError = error;
-    }
-  }
-
-  return { punched: false, aslResult, stock, aslError };
+  return { punched: false, aslResult: null, stock, aslError: null };
 }
 
 /** До фискального чека: уже пробитый КМ сюда не проходит. */
 export async function assertCartMarksNotPunched(storeId, items) {
   const marks = collectMarksFromCartItems(items);
   for (const mark of marks) {
-    const gate = await inspectMarkPunched({ storeId, mark, aslEnabled: false });
+    const gate = await inspectMarkPunched({ storeId, mark });
     if (gate.punched) {
       const err = new Error('Эта маркировка уже пробита в нашей продаже');
       err.code = 'MARK_ALREADY_SOLD';

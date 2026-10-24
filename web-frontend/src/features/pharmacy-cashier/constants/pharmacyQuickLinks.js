@@ -25,6 +25,5 @@ export const PHARMACY_TOOLBAR_LINKS = [
 /** Пункты выпадающего меню «⋯» */
 export const PHARMACY_MORE_LINKS = [
   { id: PHARMACY_QUICK_LINK_IDS.ANALOGS, kind: 'analogs' },
-  { id: PHARMACY_QUICK_LINK_IDS.ASL_PORTAL, kind: 'external', urlKey: 'aslPortal' },
   { id: PHARMACY_QUICK_LINK_IDS.MYGOV, kind: 'external', urlKey: 'mygov' },
 ];

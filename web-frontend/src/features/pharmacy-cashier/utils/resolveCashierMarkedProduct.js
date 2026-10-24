@@ -11,13 +11,11 @@ export async function resolveCashierMarkedProduct({
   rawCode,
   storeId,
   cashRegisterId = null,
-  aslEnabled = false,
 }) {
   return resolveCashierMarking({
     rawCode,
     storeId,
     cashRegisterId,
-    aslEnabled,
     findProduct: async (mark, gate) => {
       const stock = gate?.stock;
       if (stock?.found && stock.productId && !stock.alreadySold) {

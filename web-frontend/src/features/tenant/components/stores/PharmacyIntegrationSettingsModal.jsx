@@ -24,9 +24,7 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3 dark:border-slate-800">
           <div>
             <h2 id="pharm-int-settings-title" className="text-lg font-semibold text-slate-900 dark:text-white">
-              {pharmacyStore
-                ? p.t('stores.pharmacyIntegration.title')
-                : p.t('stores.pharmacyIntegration.titleRetail')}
+              {p.t('stores.pharmacyIntegration.title')}
             </h2>
             <p className="text-sm text-slate-500">{store.name}</p>
           </div>
@@ -42,41 +40,8 @@ export default function PharmacyIntegrationSettingsModal({ open, store, onClose 
             ) : (
               <>
                 <p className="pharm-int-settings__lead">
-                  {pharmacyStore
-                    ? p.t('stores.pharmacyIntegration.leadPharmacy')
-                    : p.t('stores.pharmacyIntegration.leadRetail')}
+                  {p.t('stores.pharmacyIntegration.leadPharmacy')}
                 </p>
-
-                <section className="pharm-int-settings__section">
-                  <h3 className="pharm-int-settings__section-title">{p.t('stores.pharmacyIntegration.aslTitle')}</h3>
-                  <label className="pharm-int-settings__check">
-                    <input
-                      type="checkbox"
-                      checked={p.form.aslEnabled}
-                      onChange={(e) => p.updateField('aslEnabled', e.target.checked)}
-                    />
-                    <span>{p.t('stores.pharmacyIntegration.aslEnabled')}</span>
-                  </label>
-                  <label className="pharm-int-settings__label">{p.t('stores.pharmacyIntegration.aslBaseUrl')}</label>
-                  <input
-                    className="pharm-int-settings__input"
-                    value={p.form.aslApiBaseUrl}
-                    onChange={(e) => p.updateField('aslApiBaseUrl', e.target.value)}
-                    placeholder="https://xtrace.aslbelgisi.uz"
-                  />
-                  <label className="pharm-int-settings__label">{p.t('stores.pharmacyIntegration.aslApiKey')}</label>
-                  <input
-                    type="password"
-                    className="pharm-int-settings__input"
-                    value={p.form.aslApiKey}
-                    onChange={(e) => p.updateField('aslApiKey', e.target.value)}
-                    placeholder={p.hasAslApiKey ? p.maskedKey : p.t('stores.pharmacyIntegration.aslApiKeyPh')}
-                    autoComplete="new-password"
-                  />
-                  {p.hasAslApiKey && (
-                    <p className="pharm-int-settings__hint">{p.t('stores.pharmacyIntegration.aslKeySaved', { mask: p.maskedKey })}</p>
-                  )}
-                </section>
 
                 {pharmacyStore ? (
                   <section className="pharm-int-settings__section">

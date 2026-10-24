@@ -90,17 +90,13 @@ describe('inspectMarkPunched — sold-gate до чека', () => {
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
   });
 
-  it('ASL alreadySold только если ключ включён', async () => {
+  it('ASL не вызываем — оборот смотрит Tasnif', async () => {
     pharmacyIntegrationApi.verifyMarking.mockResolvedValue({
       data: { found: true, alreadySold: true, status: 'WITHDRAWN' },
     });
-    const off = await inspectMarkPunched({ storeId: 7, mark: MARK, aslEnabled: false });
-    expect(off.punched).toBe(false);
+    const gate = await inspectMarkPunched({ storeId: 7, mark: MARK });
+    expect(gate.punched).toBe(false);
     expect(pharmacyIntegrationApi.verifyMarking).not.toHaveBeenCalled();
-
-    const on = await inspectMarkPunched({ storeId: 7, mark: MARK, aslEnabled: true });
-    expect(on.punched).toBe(true);
-    expect(pharmacyIntegrationApi.verifyMarking).toHaveBeenCalledTimes(1);
   });
 
   it('assertCartMarksNotPunched бросает MARK_ALREADY_SOLD', async () => {

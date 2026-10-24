@@ -25,7 +25,7 @@ async function findByGtinCandidates(products, mark, storeId, extraGtins = []) {
 
 /**
  * Резолв КМ на обычной кассе.
- * Сначала жёстко: код уже пробит — в чек нельзя. Штрихкод сюда не попадает.
+ * Tasnif решает оборот. Штрихкод сюда не попадает.
  * Сеть ASL упала — не блокируем, если свой журнал продаж код не нашёл.
  */
 export async function resolvePosMarkedProduct({
@@ -33,13 +33,11 @@ export async function resolvePosMarkedProduct({
   rawCode,
   storeId,
   cashRegisterId = null,
-  aslEnabled = false,
 }) {
   return resolveCashierMarking({
     rawCode,
     storeId,
     cashRegisterId,
-    aslEnabled,
     findProduct: (mark) => findByGtinCandidates(products, mark, storeId),
   });
 }

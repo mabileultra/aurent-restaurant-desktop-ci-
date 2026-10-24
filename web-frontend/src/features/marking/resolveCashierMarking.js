@@ -1,76 +1,73 @@
 import { attachMarkToProduct } from './attachMarkToProduct';
 import { inspectMarkCirculation } from './inspectMarkCirculation';
 import { inspectMarkPunched } from './inspectMarkPunched';
+import { lookupTasnifIdentity } from './lookupProductByMarkingGtin';
 import { isMarkingCode } from './markingCode';
 import { preserveMarkingCodeForFiscal } from './preserveMarkingCodeForFiscal';
 
+function emptyResolve(status, mark, extras = {}) {
+  return {
+    status,
+    mark,
+    product: null,
+    aslResult: extras.aslResult ?? null,
+    aslError: extras.aslError ?? null,
+    markingCode: extras.markingCode ?? null,
+    message: extras.message ?? null,
+  };
+}
+
 /**
- * Скан КМ на кассе (grocery и pharmacy).
- *
- * 1. Sold-gate (кэш → склад → журнал → ASL, если ключ сохранён).
- * 2. Товар только по GTIN из КМ (`findProduct`). ASL карточку не ищет.
- * 3. Tasnif: уже не в обороте — в чек нельзя; в обороте — кладём полный КМ.
+ * Скан КМ: всегда Tasnif (оборот), товар — склад через Tasnif.
+ * Локальный «пробит» не отменяет запрос в Tasnif.
  */
 export async function resolveCashierMarking({
   rawCode,
   storeId,
   cashRegisterId = null,
-  aslEnabled = false,
   findProduct,
 }) {
   const mark = preserveMarkingCodeForFiscal(rawCode);
   if (!mark || !isMarkingCode(rawCode)) {
-    return { status: 'not-marking', mark: '', product: null, aslResult: null, aslError: null };
+    return emptyResolve('not-marking', '');
   }
 
-  const gate = await inspectMarkPunched({
-    storeId,
-    mark,
-    aslEnabled: Boolean(aslEnabled),
-  });
-  if (gate.punched) {
-    return {
-      status: 'sold',
-      mark,
-      product: null,
-      aslResult: gate.aslResult,
-      aslError: null,
-    };
-  }
-
+  const gate = await inspectMarkPunched({ storeId, mark });
   const product = findProduct ? await findProduct(mark, gate) : null;
-  if (!product) {
-    return {
-      status: 'not-found',
-      mark,
-      product: null,
-      aslResult: gate.aslResult,
-      aslError: gate.aslError || null,
-    };
-  }
+  const hasIkpu = /\d{8,}/.test(String(product?.ikpu || '').replace(/\D/g, ''));
+  const circulationProduct = hasIkpu
+    ? product
+    : { ...(product || {}), ...(await lookupTasnifIdentity(mark) || {}) };
 
-  const circulation = await inspectMarkCirculation({ cashRegisterId, product, mark });
+  const circulation = await inspectMarkCirculation({
+    cashRegisterId,
+    product: circulationProduct,
+    mark,
+  });
   if (circulation.status === 'not-in-circulation') {
-    return {
-      status: 'withdrawn',
-      mark,
-      product: null,
+    return emptyResolve('withdrawn', mark, {
+      aslResult: gate.aslResult,
       markingCode: circulation.code,
       message: circulation.message,
-      aslResult: gate.aslResult,
-      aslError: null,
-    };
+    });
   }
   if (circulation.status === 'unavailable') {
-    return {
-      status: 'check-failed',
-      mark,
-      product: null,
+    return emptyResolve('check-failed', mark, {
+      aslResult: gate.aslResult,
       markingCode: circulation.code,
       message: circulation.message,
+    });
+  }
+
+  if (!product) {
+    return emptyResolve('not-found', mark, {
       aslResult: gate.aslResult,
-      aslError: null,
-    };
+      aslError: gate.aslError || null,
+    });
+  }
+
+  if (gate.punched && circulation.status === 'skipped') {
+    return emptyResolve('sold', mark, { aslResult: gate.aslResult });
   }
 
   return {

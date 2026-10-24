@@ -10,7 +10,6 @@ import {
   preserveMarkingCodeForFiscal,
 } from '../../marking';
 import { resolveCashierMarkedProduct } from '../utils/resolveCashierMarkedProduct';
-import { resolveCashierMarkingMissMessage } from '../utils/resolveMarkingVerifyUserMessage';
 
 /**
  * Скан / вставка КМ из поля поиска — та же логика, что модалка ASL.
@@ -18,7 +17,6 @@ import { resolveCashierMarkingMissMessage } from '../utils/resolveMarkingVerifyU
 export function usePharmacyMarkingScan({
   storeId,
   cashRegisterId = null,
-  aslMarkingEnabled,
   products,
   onProductFound,
 }) {
@@ -48,10 +46,6 @@ export function usePharmacyMarkingScan({
       if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadyCounted'));
       return;
     }
-    if (before.status === 'sold') {
-      if (!silent) toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
-      return;
-    }
 
     keys.forEach((k) => pendingRef.current.add(k));
     setVerifying(true);
@@ -62,7 +56,6 @@ export function usePharmacyMarkingScan({
         rawCode: mark,
         storeId,
         cashRegisterId,
-        aslEnabled: Boolean(aslMarkingEnabled),
       });
 
       const afterDup = assessMarkLifecycle({
@@ -80,9 +73,7 @@ export function usePharmacyMarkingScan({
 
       if (resolved.status === 'sold' || afterDup.status === 'sold') {
         if (!silent) {
-          toast.error(t(aslMarkingEnabled
-            ? 'pharmacyCashier.integrations.markingAlreadySold'
-            : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
+          toast.error(t('pharmacyCashier.integrations.markingAlreadySold'));
         }
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         return;
@@ -99,6 +90,7 @@ export function usePharmacyMarkingScan({
       }
 
       if (resolved.status === 'ok' && resolved.product) {
+        if (!silent) toast.success(t('pos.markingInCirculation'));
         const result = onProductFound?.(resolved.product);
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         if (result?.status === 'duplicate' && !silent) {
@@ -109,22 +101,13 @@ export function usePharmacyMarkingScan({
 
       setLastScan({ code: mark, result: resolved.aslResult, product: null });
       if (!silent) {
-        toast.error(
-          aslMarkingEnabled
-            ? resolveCashierMarkingMissMessage({
-              aslEnabled: true,
-              aslResult: resolved.aslResult,
-              aslError: resolved.aslError,
-              t,
-            })
-            : t('pharmacyCashier.integrations.markingCatalogNeed'),
-        );
+        toast.error(t('pharmacyCashier.integrations.markingCatalogNeed'));
       }
     } finally {
       keys.forEach((k) => pendingRef.current.delete(k));
       setVerifying(false);
     }
-  }, [aslMarkingEnabled, cashRegisterId, onProductFound, products, storeId, t]);
+  }, [cashRegisterId, onProductFound, products, storeId, t]);
 
   const drain = useCallback(async () => {
     if (runningRef.current) return;

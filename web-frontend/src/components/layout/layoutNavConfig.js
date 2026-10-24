@@ -131,24 +131,7 @@ export function stockChildrenForBusinessType(businessType) {
       key: 'stockPharmacyReceipts',
     };
   });
-  if (!isPharmacy) return mapped;
-  const receiptsIdx = mapped.findIndex((item) => item.moduleId === 'stockReceipts');
-  const aslItem = {
-    to: '/pharm/stock/asl-marks',
-    key: 'stockPharmacyAslMarks',
-    icon: ICONS.AlertTriangle,
-    moduleId: 'stockReceipts',
-  };
-  const aslRequestsItem = {
-    to: '/pharm/stock/asl-requests',
-    key: 'stockPharmacyAslRequests',
-    icon: ICONS.Activity,
-    moduleId: 'stockReceipts',
-  };
-  if (receiptsIdx < 0) return [...mapped, aslItem, aslRequestsItem];
-  const next = [...mapped];
-  next.splice(receiptsIdx + 1, 0, aslItem, aslRequestsItem);
-  return next;
+  return mapped;
 }
 
 export const ORDER_CHILDREN = [{ to: '/orders/list', key: 'ordersList', icon: ICONS.ClipboardList, moduleId: 'ordersList' }];

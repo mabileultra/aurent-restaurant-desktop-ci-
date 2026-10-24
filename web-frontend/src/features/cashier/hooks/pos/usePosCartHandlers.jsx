@@ -15,6 +15,7 @@ import { canAddProductFromSearchList } from './posProductsSearchStale';
 import {
   applyMarkingScan,
   assessMarkLifecycle,
+  isMarkingOnlyProduct,
   markingIdentityKeys,
   preserveMarkingCodeForFiscal,
 } from '../../../marking';
@@ -39,7 +40,6 @@ export function usePosCartHandlers({
   removeItem,
   selectedLineId,
   setSelectedLineId,
-  aslMarkingEnabled = false,
   cashRegisterId = null,
 }) {
   const { t } = useTranslation();
@@ -170,13 +170,6 @@ export function usePosCartHandlers({
         setSearch('');
         return true;
       }
-      if (before.status === 'sold') {
-        toast.error(t(aslMarkingEnabled
-          ? 'pos.markingAlreadySold'
-          : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
-        setSearch('');
-        return true;
-      }
 
       scanningRef.current = true;
       const keys = markingIdentityKeys(mark);
@@ -187,12 +180,9 @@ export function usePosCartHandlers({
           rawCode: mark,
           storeId,
           cashRegisterId,
-          aslEnabled: Boolean(aslMarkingEnabled),
         });
         if (resolved.status === 'sold') {
-          toast.error(t(aslMarkingEnabled
-            ? 'pos.markingAlreadySold'
-            : 'pharmacyCashier.integrations.markingSoldLocalNoKey'));
+          toast.error(t('pos.markingSoldLocal'));
           setSearch('');
           return true;
         }
@@ -207,6 +197,7 @@ export function usePosCartHandlers({
           return true;
         }
         if (resolved.status === 'ok' && resolved.product) {
+          toast.success(t('pos.markingInCirculation'));
           addMarkedScanToCart(resolved.product);
           setSearch('');
           return true;
@@ -228,7 +219,6 @@ export function usePosCartHandlers({
     },
     [
       addMarkedScanToCart,
-      aslMarkingEnabled,
       cashRegisterId,
       payOpen,
       products,
@@ -249,6 +239,10 @@ export function usePosCartHandlers({
       }
       if (!product.active) {
         toast.error(t('pos.productInactive'));
+        return;
+      }
+      if (isMarkingOnlyProduct(product) && !(product.productMark || product.markCode)) {
+        toast.error(t('pos.markingScanRequired'));
         return;
       }
       const saleType = product.saleType || 'PIECE';

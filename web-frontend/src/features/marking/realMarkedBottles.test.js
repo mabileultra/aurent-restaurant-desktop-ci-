@@ -194,7 +194,6 @@ describe('реальные КМ: поиск на кассе и отправка 
       findProduct: findOther,
     });
     expect(resolved.status).toBe('sold');
-    expect(findOther).not.toHaveBeenCalled();
     expect(isMarkSoldLocally(7, NALEYKA.ki)).toBe(true);
   });
 
@@ -210,7 +209,6 @@ describe('реальные КМ: поиск на кассе и отправка 
     });
     expect(resolved.status).toBe('sold');
     expect(resolved.product).toBeNull();
-    expect(findOther).not.toHaveBeenCalled();
     expect(assessQtyMarkingScan({
       product: CATALOG[1],
       rawCode: NALEYKA.km,

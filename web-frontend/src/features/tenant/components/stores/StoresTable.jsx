@@ -3,7 +3,7 @@ import TableRowActionsMenu from '../../../../components/shared/TableRowActionsMe
 import TablePagination from '../../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../../components/shared/AdminTableNoIdColumns';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
-import { storeSupportsAslMarking } from '../../utils/storeAslMarkingSupport';
+import { storeIsPharmacy } from '../../utils/storeAslMarkingSupport';
 
 export default function StoresTable({
   t,
@@ -89,7 +89,7 @@ export default function StoresTable({
                     onOpenChange={(next) => onMenuOpenChange(next ? row.id : null)}
                     actions={[
                       { label: t('common.edit'), onClick: () => onEdit(row) },
-                      ...(storeSupportsAslMarking(row.businessType) && onPharmacyIntegration
+                      ...(storeIsPharmacy(row.businessType) && onPharmacyIntegration
                         ? [{
                           label: t('stores.pharmacyIntegration.menu'),
                           onClick: () => onPharmacyIntegration(row),

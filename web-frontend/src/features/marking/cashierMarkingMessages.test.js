@@ -12,6 +12,8 @@ const POS_KEYS = [
   'markingAlreadySold',
   'markingAlreadyCounted',
   'markingSoldLocal',
+  'markingInCirculation',
+  'markingNotInCirculation',
   'markingRequiredBeforePay',
   'markingScanRequired',
 ];
@@ -56,6 +58,7 @@ describe('касса: тексты ошибок маркировки и фиск
     }
     expect(locale.pos.markingNotFound).not.toMatch(/ASL|интеграц|integratsiya/i);
     expect(locale.pos.markingAlreadySold).toMatch(/пробит|urilgan/i);
+    expect(locale.pos.markingInCirculation).toMatch(/оборот|aylanma/i);
     expect(locale.pharmacyCashier.integrations.markingApiDisabled).toMatch(/API/i);
   });
 

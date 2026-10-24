@@ -139,7 +139,12 @@ export default function ProductCatalogGeneralSection({
               </label>
               <label className="flex cursor-pointer items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
                 <input type="checkbox" {...register('markedProduct')} className="rounded border-slate-400 dark:border-slate-600" />
-                {t('productCatalog.marked')}
+                <span>
+                  {t('productCatalog.marked')}
+                  <span className="mt-0.5 block text-xs text-slate-500 dark:text-slate-400">
+                    {t('productCatalog.markedHint')}
+                  </span>
+                </span>
               </label>
             </>
           ) : null}

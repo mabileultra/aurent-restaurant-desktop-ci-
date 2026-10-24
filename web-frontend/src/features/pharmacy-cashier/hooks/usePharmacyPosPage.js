@@ -253,7 +253,6 @@ export function usePharmacyPosPage() {
   const markingScan = usePharmacyMarkingScan({
     storeId,
     cashRegisterId: shift?.cashRegisterId ?? null,
-    aslMarkingEnabled: integration.capabilities.aslMarkingEnabled,
     products: fefoProducts,
     onProductFound: cartHandlers.addMarkedScan,
   });

@@ -127,7 +127,7 @@ export default function PharmacyReceiptDocumentPage() {
 
   const receiptPreview = receiptQuery.data;
   const integration = usePharmacyIntegrationConfig(receiptPreview?.storeId);
-  const aslEnabled = Boolean(integration.capabilities?.aslMarkingEnabled);
+  const aslEnabled = false;
   const aslReady = Boolean(receiptPreview?.storeId) && !integration.isLoading;
   const receiptMarks = usePharmacyReceiptMarks({ t });
   const { hydrateMarks } = receiptMarks;
