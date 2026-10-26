@@ -6,6 +6,7 @@ services:
   postgres:
     image: postgres:15-alpine
     container_name: aurent-pos-db
+    mem_limit: 384m
     restart: unless-stopped
     command:
       - postgres
@@ -40,6 +41,7 @@ services:
   finance-db:
     image: postgres:15-alpine
     container_name: aurent-finance-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${FINANCE_DB_NAME:-finance_db}
@@ -61,6 +63,7 @@ services:
   redpanda:
     image: docker.redpanda.com/redpandadata/redpanda:v24.2.4
     container_name: aurent-redpanda
+    mem_limit: 640m
     restart: unless-stopped
     command:
       - redpanda
@@ -68,7 +71,7 @@ services:
       - --kafka-addr internal://0.0.0.0:9092,external://0.0.0.0:19092
       - --advertise-kafka-addr internal://redpanda:9092,external://127.0.0.1:19092
       - --smp ${REDPANDA_SMP:-2}
-      - --memory ${REDPANDA_MEMORY:-1G}
+      - --memory ${REDPANDA_MEMORY:-512M}
       - --overprovisioned
       - --default-log-level=warn
     volumes:
@@ -87,6 +90,7 @@ services:
   redis:
     image: redis:7-alpine
     container_name: aurent-redis
+    mem_limit: 64m
     restart: unless-stopped
     command:
       - redis-server
@@ -115,6 +119,7 @@ services:
       context: .
       dockerfile: finance-service/Dockerfile
     container_name: aurent-finance-service
+    mem_limit: 768m
     restart: unless-stopped
     depends_on:
       finance-db:
@@ -147,6 +152,7 @@ services:
   identity-db:
     image: postgres:15-alpine
     container_name: aurent-identity-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${IDENTITY_DB_NAME:-identity_db}
@@ -170,6 +176,7 @@ services:
       context: .
       dockerfile: identity-service/Dockerfile
     container_name: aurent-identity-service
+    mem_limit: 768m
     restart: unless-stopped
     depends_on:
       identity-db:
@@ -211,6 +218,7 @@ services:
   platform-db:
     image: postgres:15-alpine
     container_name: aurent-platform-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${PLATFORM_DB_NAME:-platform_db}
@@ -234,6 +242,7 @@ services:
       context: .
       dockerfile: platform-service/Dockerfile
     container_name: aurent-platform-service
+    mem_limit: 1024m
     restart: unless-stopped
     depends_on:
       platform-db:
@@ -288,6 +297,7 @@ services:
   reporting-db:
     image: postgres:15-alpine
     container_name: aurent-reporting-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${REPORTING_DB_NAME:-reporting_db}
@@ -311,6 +321,7 @@ services:
       context: .
       dockerfile: reporting-service/Dockerfile
     container_name: aurent-reporting-service
+    mem_limit: 896m
     restart: unless-stopped
     depends_on:
       reporting-db:
@@ -345,6 +356,7 @@ services:
   crm-db:
     image: postgres:15-alpine
     container_name: aurent-crm-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${CRM_DB_NAME:-crm_db}
@@ -368,6 +380,7 @@ services:
       context: .
       dockerfile: crm-service/Dockerfile
     container_name: aurent-crm-service
+    mem_limit: 640m
     restart: unless-stopped
     depends_on:
       crm-db:
@@ -403,6 +416,7 @@ services:
   restaurant-db:
     image: postgres:15-alpine
     container_name: aurent-restaurant-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${RESTAURANT_DB_NAME:-restaurant_db}
@@ -426,6 +440,7 @@ services:
       context: .
       dockerfile: restaurant-service/Dockerfile
     container_name: aurent-restaurant-service
+    mem_limit: 1024m
     restart: unless-stopped
     depends_on:
       restaurant-db:
@@ -458,6 +473,7 @@ services:
   pharmacy-db:
     image: postgres:15-alpine
     container_name: aurent-pharmacy-db
+    mem_limit: 192m
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${PHARMACY_DB_NAME:-pharmacy_db}
@@ -481,6 +497,7 @@ services:
       context: .
       dockerfile: pharmacy-service/Dockerfile
     container_name: aurent-pharmacy-service
+    mem_limit: 768m
     restart: unless-stopped
     depends_on:
       pharmacy-db:
@@ -525,6 +542,7 @@ services:
       context: .
       dockerfile: ai-service/Dockerfile
     container_name: aurent-ai-service
+    mem_limit: 512m
     restart: unless-stopped
     depends_on:
       reporting-service:
@@ -561,6 +579,7 @@ services:
       context: .
       dockerfile: web-backend/Dockerfile
     container_name: aurent-pos-backend
+    mem_limit: 1152m
     restart: unless-stopped
     expose:
       - "8080"
@@ -651,6 +670,7 @@ services:
       context: .
       dockerfile: api-gateway/Dockerfile
     container_name: aurent-api-gateway
+    mem_limit: 640m
     restart: unless-stopped
     depends_on:
       backend:
@@ -710,6 +730,7 @@ services:
         VITE_SENTRY_TRACES_SAMPLE_RATE: ${VITE_SENTRY_TRACES_SAMPLE_RATE:-0.05}
         VITE_SENTRY_RELEASE: ${VITE_SENTRY_RELEASE:-}
     container_name: aurent-pos-frontend
+    mem_limit: 64m
     restart: unless-stopped
     depends_on:
       api-gateway:
@@ -729,6 +750,7 @@ services:
         VITE_API_URL: /api/v1
         VITE_MAIN_APP_URL: ${VITE_MAIN_APP_URL:-https://aurent.uz}
     container_name: aurent-restaurant-frontend
+    mem_limit: 64m
     restart: unless-stopped
     depends_on:
       api-gateway:
@@ -746,6 +768,7 @@ services:
       context: ./telegram-support-bot
       dockerfile: Dockerfile
     container_name: aurent-pharmacy-telegram-bot
+    mem_limit: 96m
     restart: unless-stopped
     env_file:
       - .env
@@ -773,6 +796,7 @@ services:
       context: ./telegram-web-support-bot
       dockerfile: Dockerfile
     container_name: aurent-web-support-telegram-bot
+    mem_limit: 96m
     restart: unless-stopped
     env_file:
       - .env
