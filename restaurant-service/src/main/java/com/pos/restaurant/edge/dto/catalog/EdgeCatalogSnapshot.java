@@ -133,7 +133,8 @@ public record EdgeCatalogSnapshot(
     public record StoreSettingRow(
         UUID id,
         boolean kitchenBoardEnabled,
-        String printProfileJson
+        String printProfileJson,
+        Boolean menuPhotosEnabled
     ) {}
 
     public record RecipeRow(

@@ -2,7 +2,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { rstKitchenApi } from '../../api/kitchen.api';
 import { rstMenuApi } from '../../api/menu.api';
-import { useModuleAccess } from '../../../hooks/useModuleAccess';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
 import RestaurantPrinterSettings from '../components/RestaurantPrinterSettings';
 import RestaurantPrintProfilePanel from '../components/RestaurantPrintProfilePanel';
@@ -12,8 +11,6 @@ import '../styles/print-profile.css';
 
 export default function PrintersAdminPage() {
   const { t } = useTranslation();
-  const { hasModule } = useModuleAccess();
-  const pickupLabelsEnabled = hasModule('restaurantPickupLabel');
   const workspace = useRestaurantWorkspaceStore();
   const stationsQuery = useQuery({
     queryKey: ['rst-stations-admin', workspace.storeId],
@@ -58,7 +55,6 @@ export default function PrintersAdminPage() {
             categories={autoPrintCategories}
             storeId={workspace.storeId}
             kitchenBoardEnabled={kitchenBoardEnabled}
-            pickupLabelsEnabled={pickupLabelsEnabled}
             t={t}
           />
           <RestaurantPrintProfilePanel

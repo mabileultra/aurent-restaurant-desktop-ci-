@@ -40,6 +40,11 @@ public class RestaurantStoreSetting {
     @Builder.Default
     private boolean kitchenBoardEnabled = true;
 
+    /** Cashier and menu cards show a photo or the empty placeholder. */
+    @Column(name = "menu_photos_enabled", nullable = false)
+    @Builder.Default
+    private boolean menuPhotosEnabled = true;
+
     /** JSON print profile (logo, fonts, per-slip field styles). Null = factory defaults. */
     @Column(name = "print_profile_json", columnDefinition = "TEXT")
     private String printProfileJson;

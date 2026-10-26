@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
 import { useRestaurantWorkspaceStore } from '../../shared/hooks/useRestaurantWorkspaceStore';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
 import {
   familyPunchScore,
@@ -46,6 +47,7 @@ export default function MenuPicker({
 }) {
   const workspace = useRestaurantWorkspaceStore();
   const storeId = workspace.storeId;
+  const photos = useMenuPhotos(storeId);
   const [category, setCategory] = useState('');
   const [query, setQuery] = useState('');
   const [focusedId, setFocusedId] = useState(null);
@@ -212,16 +214,20 @@ export default function MenuPicker({
                 }, 180);
               }}
             >
-              <div className="rst-menu-card__media">
-                {imageUrl ? (
-                  <img src={imageUrl} alt="" className="rst-menu-card__img" />
-                ) : (
-                  <div className="rst-menu-card__media-empty">{t('rst.admin.noPhoto')}</div>
-                )}
-                {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
-                  <span className="rst-menu-card__prep">~{item.prepMinutes} {t('rst.order.prepMin')}</span>
-                ) : null}
-              </div>
+              {photos.enabled ? (
+                <div className="rst-menu-card__media">
+                  {imageUrl ? (
+                    <img src={imageUrl} alt="" className="rst-menu-card__img" />
+                  ) : (
+                    <div className="rst-menu-card__media-empty">{t('rst.admin.noPhoto')}</div>
+                  )}
+                  {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                    <span className="rst-menu-card__prep">~{item.prepMinutes} {t('rst.order.prepMin')}</span>
+                  ) : null}
+                </div>
+              ) : item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                <span className="rst-menu-card__prep--inline">~{item.prepMinutes} {t('rst.order.prepMin')}</span>
+              ) : null}
               {inCheck > 0 ? (
                 <span className="rst-menu-card__badge">{t('rst.order.inCheck', { count: inCheck })}</span>
               ) : null}

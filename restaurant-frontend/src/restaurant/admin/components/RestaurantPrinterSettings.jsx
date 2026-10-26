@@ -10,7 +10,6 @@ import {
   printTicketLines,
   saveDesktopPrinterSettings,
 } from '../../pos/utils/desktopPrinters';
-import { printPickupLabel } from '../../pos/utils/printPickupLabel';
 
 function printerOptions(printers, current) {
   const names = printers.map((item) => item?.name).filter(Boolean);
@@ -46,7 +45,6 @@ export default function RestaurantPrinterSettings({
   categories = [],
   storeId,
   kitchenBoardEnabled = true,
-  pickupLabelsEnabled = false,
   t,
 }) {
   const qc = useQueryClient();
@@ -166,26 +164,15 @@ export default function RestaurantPrinterSettings({
     }
     setTesting(key);
     try {
-      if (key === 'label') {
-        await printPickupLabel({
-          pickupNo: t('rst.admin.labelPrinterTestTitle', { defaultValue: 'ТЕСТ' }),
-          channel: 'TAKEAWAY',
-          items: [{ name: t('rst.admin.printersTestOk'), quantity: 1 }],
-          printedAt: new Date().toISOString(),
-          printerName: name,
-          t,
-        });
-      } else {
-        await printTicketLines({
-          title: t('rst.admin.printersTest'),
-          lines: [
-            t('rst.admin.printersTestOk'),
-            name,
-            new Date().toLocaleString(),
-          ],
-          printerName: name,
-        });
-      }
+      await printTicketLines({
+        title: t('rst.admin.printersTest'),
+        lines: [
+          t('rst.admin.printersTestOk'),
+          name,
+          new Date().toLocaleString(),
+        ],
+        printerName: name,
+      });
       toast.success(t('rst.admin.printersTestOk'));
     } catch {
       toast.error(t('rst.admin.printersTestFailed'));
@@ -319,39 +306,6 @@ export default function RestaurantPrinterSettings({
             </div>
             <span className="rst-admin-field__hint">{t('rst.admin.billPrinterHint')}</span>
           </div>
-          {pickupLabelsEnabled ? (
-            <div className="rst-admin-field">
-              <span className="rst-admin-field__label">{t('rst.admin.labelPrinter')}</span>
-              <div className="rst-printers__row">
-                <PrinterSelect
-                  value={settings.labelPrinterName}
-                  printers={printers}
-                  disabled={busy}
-                  noneLabel={none}
-                  onChange={(value) => save({ labelPrinterName: value })}
-                />
-                <BaseButton
-                  type="button"
-                  variant="ghost"
-                  disabled={busy || !settings.labelPrinterName}
-                  onClick={() => testPrint(settings.labelPrinterName, 'label')}
-                >
-                  {testing === 'label' ? t('common.loading') : t('rst.admin.printersTest')}
-                </BaseButton>
-              </div>
-              <span className="rst-admin-field__hint">{t('rst.admin.labelPrinterHint')}</span>
-              <BaseSelect
-                searchable={false}
-                value={settings.labelPrinterMode === 'tspl' ? 'tspl' : 'driver'}
-                disabled={busy}
-                onChange={(e) => save({ labelPrinterMode: e.target.value === 'tspl' ? 'tspl' : 'driver' })}
-                options={[
-                  { value: 'driver', label: t('rst.admin.labelPrinterDriver') },
-                  { value: 'tspl', label: t('rst.admin.labelPrinterTspl') },
-                ]}
-              />
-            </div>
-          ) : null}
         </div>
       </section>
       <section className="rst-printers__block">

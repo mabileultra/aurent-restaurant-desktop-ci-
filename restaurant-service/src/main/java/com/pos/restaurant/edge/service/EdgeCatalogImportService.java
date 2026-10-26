@@ -581,6 +581,7 @@ public class EdgeCatalogImportService {
         e.setStoreId(snap.storeId());
         e.setKitchenBoardEnabled(row.kitchenBoardEnabled());
         e.setPrintProfileJson(row.printProfileJson());
+        e.setMenuPhotosEnabled(row.menuPhotosEnabled() == null || row.menuPhotosEnabled());
         storeSettingRepository.save(e);
         return 1;
     }

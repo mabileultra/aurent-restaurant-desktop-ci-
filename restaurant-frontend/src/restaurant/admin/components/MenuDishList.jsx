@@ -16,7 +16,7 @@ function dishTags(item, t) {
     }));
 }
 
-export default function MenuDishList({ p, onOpenMenu }) {
+export default function MenuDishList({ p, onOpenMenu, photosEnabled = true }) {
   return (
     <div className="rst-menu-board">
       <div className="rst-menu-board__head">
@@ -48,30 +48,52 @@ export default function MenuDishList({ p, onOpenMenu }) {
 
             return (
               <article key={item.id} className={`rst-menu-card${!item.available ? ' is-off' : ''}`}>
-                <div className="rst-menu-card__media">
-                  {item.imageUrl ? (
-                    <img src={item.imageUrl} alt="" />
-                  ) : (
-                    <div className="rst-menu-card__media-empty">{p.t('rst.admin.noPhoto')}</div>
-                  )}
-                  {!item.available ? (
-                    <span className="rst-menu-card__badge is-off">{p.t('rst.admin.unavailable')}</span>
-                  ) : null}
-                  {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
-                    <span className="rst-menu-card__prep">~{item.prepMinutes} {p.t('rst.order.prepMin')}</span>
-                  ) : null}
-                  <button
-                    type="button"
-                    className="rst-menu-card__more"
-                    aria-label={p.t('common.actions')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onOpenMenu(item, e.currentTarget.getBoundingClientRect());
-                    }}
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                </div>
+                {photosEnabled ? (
+                  <div className="rst-menu-card__media">
+                    {item.imageUrl ? (
+                      <img src={item.imageUrl} alt="" />
+                    ) : (
+                      <div className="rst-menu-card__media-empty">{p.t('rst.admin.noPhoto')}</div>
+                    )}
+                    {!item.available ? (
+                      <span className="rst-menu-card__badge is-off">{p.t('rst.admin.unavailable')}</span>
+                    ) : null}
+                    {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                      <span className="rst-menu-card__prep">~{item.prepMinutes} {p.t('rst.order.prepMin')}</span>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="rst-menu-card__more"
+                      aria-label={p.t('common.actions')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenMenu(item, e.currentTarget.getBoundingClientRect());
+                      }}
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="rst-menu-card__bar">
+                    {!item.available ? (
+                      <span className="rst-menu-card__badge is-off">{p.t('rst.admin.unavailable')}</span>
+                    ) : null}
+                    {item.prepMinutes != null && Number(item.prepMinutes) > 0 ? (
+                      <span className="rst-menu-card__prep">~{item.prepMinutes} {p.t('rst.order.prepMin')}</span>
+                    ) : null}
+                    <button
+                      type="button"
+                      className="rst-menu-card__more"
+                      aria-label={p.t('common.actions')}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenMenu(item, e.currentTarget.getBoundingClientRect());
+                      }}
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                  </div>
+                )}
                 <div className="rst-menu-card__body">
                   {tags.length ? (
                     <div className="rst-menu-card__tags">

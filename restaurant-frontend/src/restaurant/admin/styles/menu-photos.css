@@ -1,0 +1,28 @@
+.rst-menu-photos {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-left: auto;
+}
+
+.rst-menu-photos__state {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.rst-menu-photos__state.is-on {
+  color: var(--rst-accent, #3b82f6);
+}
+
+.rst-menu-photos__state.is-off {
+  color: var(--rst-muted, #9aa0a6);
+}
+
+.rst-menu-board .rst-menu-card__bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 2.5rem;
+  padding: 0.35rem 0.45rem 0;
+}

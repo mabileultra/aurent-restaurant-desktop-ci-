@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useMenuAdminPage } from '../hooks/useMenuAdminPage';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import MenuCardMenu from '../components/MenuCardMenu';
+import MenuPhotoSwitch from '../components/MenuPhotoSwitch';
 import MenuDishFilters from '../components/MenuDishFilters';
 import MenuDishForm from '../components/MenuDishForm';
 import MenuDishList from '../components/MenuDishList';
@@ -12,6 +14,7 @@ import '../styles/menu-admin.css';
 
 export default function MenuAdminPage() {
   const p = useMenuAdminPage();
+  const photos = useMenuPhotos(p.workspace.storeId, p.t);
   const [cardMenu, setCardMenu] = useState(null);
 
   if (p.workspace.noAssignment) {
@@ -25,11 +28,13 @@ export default function MenuAdminPage() {
           <h1 className="rst-coming__title">{p.t('rst.admin.menuTitle')}</h1>
           <p className="rst-coming__text">{p.t('rst.admin.menuSubtitle')}</p>
         </div>
+        <MenuPhotoSwitch photos={photos} t={p.t} />
       </div>
 
       <MenuDishFilters p={p} />
       <MenuDishList
         p={p}
+        photosEnabled={photos.enabled}
         onOpenMenu={(item, rect) => {
           setCardMenu((cur) => (cur?.item?.id === item.id ? null : { item, rect }));
         }}

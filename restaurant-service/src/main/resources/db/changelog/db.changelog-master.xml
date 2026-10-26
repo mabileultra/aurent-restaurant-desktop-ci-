@@ -58,6 +58,7 @@
     <include file="db/changelog/v51-edge-autonomy-gaps.xml"/>
     <include file="db/changelog/v52-pickup-labels.xml"/>
     <include file="db/changelog/v53-store-floor-revision.xml"/>
+    <include file="db/changelog/v54-menu-photos.xml"/>
 
 </databaseChangeLog>
 

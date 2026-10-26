@@ -202,7 +202,12 @@ public class EdgeCatalogExportService {
 
         StoreSettingRow setting = storeSettingRepository
             .findByCompanyIdAndStoreId(companyId, storeId)
-            .map(s -> new StoreSettingRow(s.getId(), s.isKitchenBoardEnabled(), s.getPrintProfileJson()))
+            .map(s -> new StoreSettingRow(
+                s.getId(),
+                s.isKitchenBoardEnabled(),
+                s.getPrintProfileJson(),
+                s.isMenuPhotosEnabled()
+            ))
             .orElse(null);
 
         List<Recipe> recipes = recipeRepository.findByCompanyIdAndStoreId(companyId, storeId);

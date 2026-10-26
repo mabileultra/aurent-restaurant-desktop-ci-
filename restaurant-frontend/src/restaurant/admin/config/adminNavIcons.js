@@ -21,6 +21,7 @@ import {
   Settings2,
   Shuffle,
   Store,
+  Tag,
   Tags,
   TrendingDown,
   Truck,
@@ -71,6 +72,7 @@ export const RST_NAV_ITEM_ICONS = {
   stores: Store,
   integrations: Plug,
   printers: Printer,
+  pickupLabels: Tag,
   billing: CreditCard,
   guide: BookMarked,
 };
