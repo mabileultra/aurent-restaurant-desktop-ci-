@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   Bookmark,
   Building2,
@@ -12,6 +13,7 @@ import {
   TrendingUp,
   Wifi,
 } from 'lucide-react';
+import PlatformDateRangePicker from '../PlatformDateRangePicker';
 
 function Field({ label, icon: Icon, children, className = '' }) {
   return (
@@ -35,13 +37,18 @@ function RangePair({ from, to, onFrom, onTo, fromPh, toPh }) {
   );
 }
 
-function DatePair({ from, to, onFrom, onTo }) {
+function DatePair({ from, to, onFrom, onTo, t }) {
   return (
-    <div className="ta-range">
-      <input type="date" value={from} onChange={(e) => onFrom(e.target.value)} />
-      <span className="ta-muted">—</span>
-      <input type="date" value={to} onChange={(e) => onTo(e.target.value)} />
-    </div>
+    <PlatformDateRangePicker
+      from={from}
+      to={to}
+      onChange={({ from: f, to: nextTo }) => {
+        onFrom(f);
+        onTo(nextTo);
+      }}
+      t={t}
+      className="w-full"
+    />
   );
 }
 
@@ -137,6 +144,7 @@ export default function TaxAnalyticsFiltersPanel({
             to={draft.connectionTo}
             onFrom={(v) => set({ connectionFrom: v })}
             onTo={(v) => set({ connectionTo: v })}
+            t={t}
           />
         </Field>
 
@@ -146,6 +154,7 @@ export default function TaxAnalyticsFiltersPanel({
             to={draft.turnoverTo}
             onFrom={(v) => set({ turnoverFrom: v })}
             onTo={(v) => set({ turnoverTo: v })}
+            t={t}
           />
         </Field>
 
@@ -194,6 +203,7 @@ export default function TaxAnalyticsFiltersPanel({
             to={draft.lastActivityTo}
             onFrom={(v) => set({ lastActivityFrom: v })}
             onTo={(v) => set({ lastActivityTo: v })}
+            t={t}
           />
         </Field>
 

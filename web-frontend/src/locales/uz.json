@@ -2459,6 +2459,31 @@
     }
   },
   "platform": {
+    "datePicker": {
+      "placeholderRange": "Sana oralig‘i",
+      "placeholderSingle": "Sanani tanlang",
+      "today": "Bugun",
+      "yesterday": "Kecha",
+      "last7Days": "Oxirgi 7 kun",
+      "last30Days": "Oxirgi 30 kun",
+      "thisMonth": "Shu oy",
+      "lastMonth": "O‘tgan oy",
+      "allTime": "Barcha davr",
+      "cancel": "Bekor qilish",
+      "apply": "Qo‘llash",
+      "clear": "Tozalash",
+      "close": "Yopish",
+      "notSelected": "Sana tanlanmagan",
+      "selectEndDate": "Tugash sanasini tanlang",
+      "daysCount_one": "{{count}} kun",
+      "daysCount_other": "{{count}} kun",
+      "quickDays_one": "+{{count}} kun",
+      "quickDays_other": "+{{count}} kun",
+      "prevMonth": "Oldingi oy",
+      "nextMonth": "Keyingi oy",
+      "prevYear": "Oldingi yil",
+      "nextYear": "Keyingi yil"
+    },
     "title": "Super-admin",
     "subtitle": "Platforma boshqaruvi",
     "noAccess": {

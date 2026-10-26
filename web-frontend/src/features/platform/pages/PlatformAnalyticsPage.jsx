@@ -1,3 +1,4 @@
+import React from 'react';
 import {
   AlertTriangle,
   Building2,
@@ -12,6 +13,7 @@ import {
 import '../../../styles/platform/tax-analytics.css';
 import { PageLayout } from '../../../components/ui';
 import TaxAnalyticsFiltersPanel from '../components/analytics/TaxAnalyticsFiltersPanel';
+import PlatformDateRangePicker from '../components/PlatformDateRangePicker';
 import { useTaxAnalyticsPage } from '../hooks/useTaxAnalyticsPage';
 
 function fmtNum(n) {
@@ -79,18 +81,17 @@ export default function PlatformAnalyticsPage() {
               {t(`platform.analytics.periods.${key}`)}
             </button>
           ))}
-          <input
-            type="date"
-            value={p.customFrom}
-            onChange={(e) => { p.setCustomFrom(e.target.value); p.setPeriod('custom'); }}
-            className="ta-period__btn"
-          />
-          <span className="ta-muted">—</span>
-          <input
-            type="date"
-            value={p.customTo}
-            onChange={(e) => { p.setCustomTo(e.target.value); p.setPeriod('custom'); }}
-            className="ta-period__btn"
+          <PlatformDateRangePicker
+            from={p.customFrom}
+            to={p.customTo}
+            onChange={({ from, to }) => {
+              p.setCustomFrom(from);
+              p.setCustomTo(to);
+              p.setPeriod('custom');
+            }}
+            placeholder={t('platform.analytics.periods.custom', 'Tanlangan davr')}
+            align="right"
+            t={t}
           />
         </div>
       )}

@@ -1,6 +1,8 @@
+import React from 'react';
 import { RotateCcw, Search } from 'lucide-react';
 import GeoFilterSelects from '../../../shared/geo/GeoFilterSelects';
 import { DATE_FIELDS, PAYMENT_METHODS } from '../../hooks/useBillingCollections';
+import PlatformDateRangePicker from '../PlatformDateRangePicker';
 
 export default function BillingFiltersBar({ t, c, plans }) {
   const k = (key) => t(`platform.billing.collections.${key}`);
@@ -16,22 +18,14 @@ export default function BillingFiltersBar({ t, c, plans }) {
         >
           {DATE_FIELDS.map((f) => <option key={f} value={f}>{k(`dateFields.${f}`)}</option>)}
         </select>
-        <input
-          type="date"
-          className="bc-control"
-          value={c.from}
-          max={c.to || undefined}
-          onChange={(e) => c.setFrom(e.target.value)}
-          aria-label={k('dateFrom')}
-        />
-        <span className="bc-filters__dash">—</span>
-        <input
-          type="date"
-          className="bc-control"
-          value={c.to}
-          min={c.from || undefined}
-          onChange={(e) => c.setTo(e.target.value)}
-          aria-label={k('dateTo')}
+        <PlatformDateRangePicker
+          from={c.from}
+          to={c.to}
+          onChange={({ from, to }) => {
+            c.setFrom(from);
+            c.setTo(to);
+          }}
+          t={t}
         />
       </div>
       <GeoFilterSelects

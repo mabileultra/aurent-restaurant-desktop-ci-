@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { BaseModal } from '../../../../components/ui';
 import { toIsoDate } from '../BillingPeriodCalendar';
+import PlatformDatePicker from '../PlatformDatePicker';
 
 export default function BillingBulkModal({ p }) {
   const { t, plans, actions: a } = p;
@@ -49,7 +50,13 @@ export default function BillingBulkModal({ p }) {
         ) : (
           <label className="bc-form__field">
             <span>{t('platform.billing.collections.colNext')}</span>
-            <input type="date" className="bc-control" min={today} value={date} onChange={(e) => setDate(e.target.value)} />
+            <PlatformDatePicker
+              min={today}
+              value={date}
+              onChange={setDate}
+              className="w-full"
+              t={t}
+            />
           </label>
         )}
         <p className="bc-warn">
