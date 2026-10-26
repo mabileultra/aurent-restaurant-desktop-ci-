@@ -1,0 +1,71 @@
+.rst-cashier-tax {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  width: 100%;
+  min-height: 2.85rem;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--rst-ink, #e8edf5);
+  font: inherit;
+  font-size: 1.05rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.rst-cashier-tax:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--rst-ink, #e8edf5) 7%, transparent);
+}
+
+.rst-cashier-tax:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.rst-cashier-tax.is-on {
+  border-color: var(--rst-accent, #c4a574);
+  background: color-mix(in srgb, var(--rst-accent, #c4a574) 16%, transparent);
+}
+
+.rst-cashier-tax__label {
+  font-weight: 800;
+}
+
+.rst-cashier-tax__state {
+  margin-left: auto;
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.72;
+}
+
+.rst-cashier-tax__switch {
+  position: relative;
+  flex-shrink: 0;
+  width: 1.7rem;
+  height: 0.95rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.rst-cashier-tax.is-on .rst-cashier-tax__switch {
+  background: var(--rst-accent, #c4a574);
+}
+
+.rst-cashier-tax__knob {
+  position: absolute;
+  top: 0.1rem;
+  left: 0.12rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.15s ease;
+}
+
+.rst-cashier-tax.is-on .rst-cashier-tax__knob {
+  transform: translateX(0.7rem);
+}

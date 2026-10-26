@@ -58,7 +58,7 @@ public class PayOrderHandler {
 
     @Transactional
     public OrderResponse handle(UUID orderId, PayOrderRequest request) {
-        FloorOrder order = orderLookup.requireBilling(orderId);
+        FloorOrder order = orderLookup.requirePayable(orderId);
         List<FloorOrderItem> items = itemRepository.findByOrderIdOrderBySortOrderAscCreatedAtAsc(orderId);
         BigDecimal subtotal = orderTotals.billable(items);
         waiterCommissionService.applyOnPayment(order, subtotal);

@@ -6,7 +6,8 @@ const REVISION_POLL_MS = 2_000;
 
 /**
  * Stage B: poll a tiny floor-revision watermark and invalidate heavy queries
- * only when something actually changed (phone / other POS / kitchen).
+ * only when the floor revision changes (other cashier, booking, table).
+ * Kitchen and the open check keep their own polls.
  */
 export function useStoreFloorSync(storeId, { activeOrderId = null, syncKitchen = false } = {}) {
   const qc = useQueryClient();

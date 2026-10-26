@@ -9,6 +9,8 @@ const RESTAURANT_MODULE_IDS = new Set([
   'restaurantKitchen',
   'restaurantPos',
   'restaurantRequestBill',
+  'restaurantPickupLabel',
+  'restaurantQuickSale',
 ]);
 
 const GROCERY_CATALOG_MODULE_IDS = new Set([

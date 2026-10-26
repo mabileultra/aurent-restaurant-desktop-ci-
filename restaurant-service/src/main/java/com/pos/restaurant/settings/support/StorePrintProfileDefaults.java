@@ -9,7 +9,9 @@ import java.util.Map;
  */
 public final class StorePrintProfileDefaults {
 
-    public static final List<String> SLIP_TYPES = List.of("CANCEL", "GUEST_BILL", "KITCHEN", "SHIFT_ITEMS");
+    public static final List<String> SLIP_TYPES = List.of(
+        "CANCEL", "GUEST_BILL", "KITCHEN", "SHIFT_ITEMS", "PICKUP_LABEL"
+    );
 
     public static final List<String> FIELD_KEYS = List.of(
         "logo",
@@ -96,14 +98,17 @@ public final class StorePrintProfileDefaults {
 
     private static Map<String, Object> defaultField(String slip, String key) {
         Map<String, Object> field = new LinkedHashMap<>();
+        boolean pickup = "PICKUP_LABEL".equals(slip);
         boolean on = switch (key) {
             case "logo", "storeName", "address", "phone", "footer" -> false;
             case "totals" -> "GUEST_BILL".equals(slip) || "SHIFT_ITEMS".equals(slip);
+            case "waiter" -> !pickup;
             default -> true;
         };
         // CANCEL: match current ESC/POS (large title + emphasized dish lines).
         boolean cancelEmph = "CANCEL".equals(slip) && ("headerTitle".equals(key) || "items".equals(key));
-        String size = cancelEmph ? "lg" : "md";
+        boolean pickupTitle = pickup && "headerTitle".equals(key);
+        String size = cancelEmph || pickupTitle ? "lg" : "md";
         boolean bold = cancelEmph || "headerTitle".equals(key);
         field.put("on", on);
         field.put("bold", bold);

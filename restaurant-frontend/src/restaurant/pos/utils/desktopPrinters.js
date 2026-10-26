@@ -51,6 +51,7 @@ export function getDesktopPrinterSettings() {
     return Promise.resolve({
       receiptPrinterName: '',
       labelPrinterName: '',
+      labelPrinterMode: 'driver',
       billPrinterName: '',
       stationPrinters: {},
     });
@@ -72,6 +73,14 @@ function escapeHtml(value) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+export function printRawLabel(printerName, bytes) {
+  const desk = printerBridge();
+  if (typeof desk?.printRaw !== 'function') {
+    return Promise.reject(new Error('TSPL недоступен в этой сборке'));
+  }
+  return desk.printRaw({ printerName, bytes });
 }
 
 export function printTicketHtml(html, printerName) {

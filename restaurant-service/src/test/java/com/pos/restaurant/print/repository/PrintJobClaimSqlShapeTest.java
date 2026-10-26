@@ -26,6 +26,7 @@ class PrintJobClaimSqlShapeTest {
             int.class, // guestBill
             int.class, // orderCancel
             int.class, // kitchenSend
+            int.class, // pickupLabel
             int.class, // hasPrinters
             java.util.Collection.class,
             java.util.Collection.class

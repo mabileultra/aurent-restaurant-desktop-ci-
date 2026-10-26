@@ -14,6 +14,7 @@ import com.pos.restaurant.order.entity.FloorOrderItem;
 import com.pos.restaurant.order.repository.FloorOrderItemRepository;
 import com.pos.restaurant.order.support.OrderLookup;
 import com.pos.restaurant.order.support.OrderResponseAssembler;
+import com.pos.restaurant.pickup.service.PickupLabelService;
 import com.pos.restaurant.print.service.PrintJobPublisher;
 import com.pos.restaurant.print.support.PrintJobPayloads;
 import com.pos.restaurant.settings.service.KitchenBoardService;
@@ -47,6 +48,7 @@ class SendToKitchenHandlerTest {
     @Mock private OrderResponseAssembler assembler;
     @Mock private KitchenBoardService kitchenBoardService;
     @Mock private PrintJobPublisher printJobPublisher;
+    @Mock private PickupLabelService pickupLabelService;
 
     @InjectMocks
     private SendToKitchenHandler handler;
@@ -67,6 +69,7 @@ class SendToKitchenHandlerTest {
         assertEquals(OrderItemStatus.SENT_TO_KITCHEN, item.getItemStatus());
         assertEquals(0, item.getSentQuantity().compareTo(BigDecimal.ONE));
         verify(printJobPublisher).categorySlipsForPending(eq(order), any(), any());
+        verify(pickupLabelService).assignAndEnqueue(eq(order), any());
         verify(ticketRepository, never()).save(any());
     }
 
@@ -157,7 +160,7 @@ class SendToKitchenHandlerTest {
             UUID.randomUUID(), 1, null, null, null, 2, OrderStatus.OPEN, null,
             1, 1, 0, null, null, null, null, null, null, null, null, null,
             BigDecimal.ZERO, null, null, null, BigDecimal.ZERO, null, null, 0,
-            List.of(), List.of(), List.of()
+            List.of(), List.of(), List.of(), null
         );
     }
 }

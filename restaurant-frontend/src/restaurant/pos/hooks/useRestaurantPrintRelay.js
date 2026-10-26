@@ -104,6 +104,7 @@ async function loadClaimCapabilities() {
   const fromSettings = [
     settings?.billPrinterName,
     settings?.receiptPrinterName,
+    settings?.labelPrinterName,
     ...Object.values(settings?.stationPrinters || {}),
   ]
     .map((name) => String(name || '').trim())
@@ -115,8 +116,9 @@ async function loadClaimCapabilities() {
     || String(settings?.billPrinterName || '').trim(),
   );
   const kitchenSend = Object.values(settings?.stationPrinters || {}).some((name) => String(name || '').trim());
+  const pickupLabel = Boolean(String(settings?.labelPrinterName || '').trim());
   const printerNames = [...new Set([...fromOs, ...fromSettings])];
-  return { printerNames, guestBill, orderCancel, kitchenSend };
+  return { printerNames, guestBill, orderCancel, kitchenSend, pickupLabel };
 }
 
 function capsReady(caps) {
@@ -124,6 +126,7 @@ function capsReady(caps) {
     caps?.guestBill
     || caps?.orderCancel
     || caps?.kitchenSend
+    || caps?.pickupLabel
     || caps?.printerNames?.length,
   );
 }
@@ -153,7 +156,13 @@ export function useRestaurantPrintRelay(storeId, t, waiterNameById) {
   const storeIdRef = useRef(storeId);
   storeIdRef.current = storeId;
   const warnedMissingRef = useRef(new Set());
-  const capsRef = useRef({ printerNames: [], guestBill: false, orderCancel: false, kitchenSend: false });
+  const capsRef = useRef({
+    printerNames: [],
+    guestBill: false,
+    orderCancel: false,
+    kitchenSend: false,
+    pickupLabel: false,
+  });
 
   useEffect(() => {
     if (storeId == null) return;

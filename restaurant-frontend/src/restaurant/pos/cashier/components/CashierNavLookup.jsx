@@ -4,6 +4,7 @@ import { fmtMoneyCompact } from '../../../../utils/formatMoney';
 import { CASHIER_TAB_ICONS } from '../config/cashierNavIcons';
 import { CASHIER_TABS } from '../utils/cashierNav';
 import { useRestaurantDesktopUpdate } from '../hooks/useRestaurantDesktopUpdate';
+import CashierTaxToggle from './CashierTaxToggle';
 import '../styles/cashier-nav-lookup.css';
 
 export default function CashierNavLookup({
@@ -13,6 +14,7 @@ export default function CashierNavLookup({
   tabs = CASHIER_TABS,
   shift = null,
   shiftOpenLabel = null,
+  storeId = null,
   t,
 }) {
   const [open, setOpen] = useState(false);
@@ -124,6 +126,7 @@ export default function CashierNavLookup({
               <strong>{t('rst.cashier.shiftClosed')}</strong>
             )}
           </div>
+          <CashierTaxToggle storeId={storeId} t={t} />
           {(tabs || CASHIER_TABS).map((item) => {
             const Icon = CASHIER_TAB_ICONS[item.key];
             const active = activeTab === item.key

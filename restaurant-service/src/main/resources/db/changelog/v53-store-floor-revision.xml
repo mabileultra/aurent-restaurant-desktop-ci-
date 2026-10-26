@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet id="rst-053-store-floor-revision" author="pos">
+        <createTable tableName="store_floor_revision">
+            <column name="company_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="store_id" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revision" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="origin" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+            <column name="seen_origin" type="BIGINT" defaultValueNumeric="0">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <addPrimaryKey
+            tableName="store_floor_revision"
+            columnNames="company_id, store_id"
+            constraintName="pk_store_floor_revision"/>
+    </changeSet>
+
+</databaseChangeLog>

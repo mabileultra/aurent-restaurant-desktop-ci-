@@ -63,9 +63,10 @@ public class PrintJobServiceImpl implements PrintJobService {
         boolean guestBill = request.guestBill();
         boolean orderCancel = request.orderCancel();
         boolean kitchenSend = request.kitchenSend();
+        boolean pickupLabel = request.pickupLabel();
         List<String> printers = normalizePrinters(request.printerNames());
         List<String> busy = normalizePrinters(request.busyPrinters());
-        if (!guestBill && !orderCancel && !kitchenSend && printers.isEmpty()) {
+        if (!guestBill && !orderCancel && !kitchenSend && !pickupLabel && printers.isEmpty()) {
             return List.of();
         }
 
@@ -88,6 +89,7 @@ public class PrintJobServiceImpl implements PrintJobService {
             guestBill ? 1 : 0,
             orderCancel ? 1 : 0,
             kitchenSend ? 1 : 0,
+            pickupLabel ? 1 : 0,
             printers.isEmpty() ? 0 : 1,
             printerBind,
             busy.isEmpty() ? List.of("__none__") : busy

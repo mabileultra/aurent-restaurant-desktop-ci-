@@ -23,6 +23,7 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.TableRow;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.floor.repository.FloorHallRepository;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
+import com.pos.restaurant.floor.revision.FloorRevisionStore;
 import com.pos.restaurant.kitchen.domain.KitchenTicketStatus;
 import com.pos.restaurant.kitchen.entity.KitchenTicket;
 import com.pos.restaurant.kitchen.repository.KitchenStationRepository;
@@ -85,6 +86,7 @@ public class EdgeCatalogExportService {
     private final KitchenTicketRepository kitchenTicketRepository;
     private final KitchenTicketLineRepository kitchenTicketLineRepository;
     private final FloorOrderPaymentRepository floorOrderPaymentRepository;
+    private final FloorRevisionStore floorRevisionStore;
 
     @Transactional(readOnly = true)
     public EdgeCatalogSnapshot export(Integer storeId, String companyLoginCode) {
@@ -272,7 +274,8 @@ public class EdgeCatalogExportService {
             o.getComment(),
             o.getOpenedAt(),
             o.getClosedAt(),
-            o.getUpdatedAt()
+            o.getUpdatedAt(),
+            o.getPickupNo()
         )).toList();
 
         List<UUID> liveIds = allLive.stream().map(FloorOrder::getId).toList();
@@ -382,7 +385,8 @@ public class EdgeCatalogExportService {
             o.getComment(),
             o.getOpenedAt(),
             o.getClosedAt(),
-            o.getUpdatedAt()
+            o.getUpdatedAt(),
+            o.getPickupNo()
         )).toList();
         List<UUID> closedIds = recentClosed.stream().map(FloorOrder::getId).toList();
         List<FloorOrderItem> closedItems = closedIds.isEmpty()
@@ -453,7 +457,8 @@ public class EdgeCatalogExportService {
             closedOrders,
             closedOrderItems,
             closedOrderItemModifiers,
-            orderPayments
+            orderPayments,
+            floorRevisionStore.readOrigin(companyId, storeId)
         );
     }
 

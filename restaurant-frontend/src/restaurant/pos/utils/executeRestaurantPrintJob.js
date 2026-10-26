@@ -3,6 +3,7 @@
  */
 import { rstOrderApi } from '../../api/order.api';
 import { printGuestBill } from './printGuestBill';
+import { printPickupLabel } from './printPickupLabel';
 import { printKitchenTicket } from './printKitchenTicket';
 import {
   getDesktopPrinterSettings,
@@ -322,6 +323,27 @@ export async function executeRestaurantPrintJob(job, { t, waiterNameById, storeI
 
     if (job.kind === 'CATEGORY_SLIP') {
       return await runCategorySlip(payload, t, waiterNameById, storeId);
+    }
+
+    if (job.kind === 'PICKUP_LABEL') {
+      const settings = await getDesktopPrinterSettings();
+      const printer = String(settings?.labelPrinterName || '').trim();
+      if (!printer || !(await localHasPrinterFast(printer))) {
+        return { ack: false, release: true, mode: 'missing' };
+      }
+      const profile = await loadStorePrintProfile(storeId);
+      const printed = await printPickupLabel({
+        pickupNo: payload.pickupNo,
+        channel: payload.channel,
+        items: payload.items || [],
+        printedAt: payload.printedAt,
+        printerName: printer,
+        t,
+        profile,
+        rawMode: settings?.labelPrinterMode,
+      });
+      if (printed?.mode === 'silent') return { ack: true, release: false, mode: 'silent' };
+      return { ack: false, release: true, mode: printed?.mode || 'skip' };
     }
 
     return { ack: true, release: false };

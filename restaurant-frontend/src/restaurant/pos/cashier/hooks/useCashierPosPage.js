@@ -5,6 +5,7 @@ import { tableActiveOrders } from '../../utils/floorStatusFilters';
 import { tableStatusClass } from '../../utils/tableStatus';
 import { isCashierHallTab } from '../utils/cashierNav';
 import { usePrefetchCashierSales } from './usePrefetchCashierSales';
+import { useModuleAccess } from '../../../../hooks/useModuleAccess';
 
 /**
  * Cashier shell state on top of shared floor POS hook.
@@ -15,6 +16,7 @@ import { usePrefetchCashierSales } from './usePrefetchCashierSales';
  */
 export function useCashierPosPage() {
   const floor = useFloorPosPage();
+  const { hasModule } = useModuleAccess();
   const [tab, setTabState] = useState('hall');
   const [selectedTableId, setSelectedTableId] = useState(null);
   const [fullOrder, setFullOrder] = useState(false);
@@ -112,6 +114,15 @@ export function useCashierPosPage() {
     floor.handleTableClick(table);
   };
 
+  const onQuickSaleOpened = (created) => {
+    clearDraft();
+    if (floor.posMode !== 'takeaway') floor.changePosMode('takeaway');
+    floor.setActiveOrderId(created?.id ?? null);
+    setSelectedTableId(null);
+    setTabState('hall');
+    setFullOrder(true);
+  };
+
   const clearOrder = () => {
     floor.setActiveOrderId(null);
     setSelectedTableId(null);
@@ -175,5 +186,7 @@ export function useCashierPosPage() {
     confirmModifiers,
     showFullOrder: Boolean(fullOrder && floor.orderForUi),
     isDraftOrder: floor.isDraftOrder,
+    quickSaleEnabled: hasModule('restaurantQuickSale'),
+    onQuickSaleOpened,
   };
 }

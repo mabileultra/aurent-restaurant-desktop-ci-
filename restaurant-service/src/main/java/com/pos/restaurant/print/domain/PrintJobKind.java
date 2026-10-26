@@ -6,5 +6,6 @@ public enum PrintJobKind {
     ORDER_CANCEL,
     KITCHEN_SEND,
     CATEGORY_SLIP,
-    CATEGORY_BATCH
+    CATEGORY_BATCH,
+    PICKUP_LABEL
 }

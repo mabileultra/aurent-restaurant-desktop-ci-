@@ -743,7 +743,7 @@ public class EdgeCatalogImportService {
                   opened_by_user_id, waiter_user_id, courier_user_id,
                   commission_percent, commission_base_amount, commission_amount,
                   service_percent, service_amount, discount_amount, shift_id, comment,
-                  opened_at, closed_at, updated_at
+                  opened_at, closed_at, updated_at, pickup_no
                 ) VALUES (
                   ?, ?, ?, ?, ?, ?, ?,
                   ?, ?, ?,
@@ -751,7 +751,7 @@ public class EdgeCatalogImportService {
                   ?, ?, ?,
                   ?, ?, ?,
                   ?, ?, ?, ?, ?,
-                  ?, ?, ?
+                  ?, ?, ?, ?
                 )
                 ON CONFLICT (id) DO UPDATE SET
                   company_id = EXCLUDED.company_id,
@@ -780,7 +780,8 @@ public class EdgeCatalogImportService {
                   comment = EXCLUDED.comment,
                   opened_at = EXCLUDED.opened_at,
                   closed_at = EXCLUDED.closed_at,
-                  updated_at = EXCLUDED.updated_at
+                  updated_at = EXCLUDED.updated_at,
+                  pickup_no = EXCLUDED.pickup_no
                 """,
                 row.id(),
                 snap.companyId(),
@@ -809,7 +810,8 @@ public class EdgeCatalogImportService {
                 row.comment(),
                 Timestamp.from(openedAt),
                 row.closedAt() == null ? null : Timestamp.from(row.closedAt()),
-                Timestamp.from(updatedAt)
+                Timestamp.from(updatedAt),
+                row.pickupNo()
             );
             n++;
         }

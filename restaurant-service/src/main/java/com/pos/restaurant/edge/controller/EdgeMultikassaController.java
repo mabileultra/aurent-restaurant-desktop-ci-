@@ -42,6 +42,9 @@ public class EdgeMultikassaController {
         @RequestBody Map<String, Object> body
     ) {
         EdgeMultikassaSettings row = ensure(storeId);
+        if (body.containsKey("enabled")) {
+            row.setEnabled(Boolean.TRUE.equals(body.get("enabled")));
+        }
         if (body.containsKey("requireBeforeSale")) {
             row.setRequireBeforeSale(Boolean.TRUE.equals(body.get("requireBeforeSale")));
         }

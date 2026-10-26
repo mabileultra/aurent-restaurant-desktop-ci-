@@ -33,6 +33,9 @@ export default function OrderWorkspace({
   onRemove,
   onCancel,
   onSendKitchen,
+  onReprintPickup,
+  reprintingPickup,
+  canReprintPickup,
   onRequestBill,
   onPay,
   onDiscount,
@@ -182,6 +185,7 @@ export default function OrderWorkspace({
             <div className="rst-order__ticket-kicker">
               TICKET #{order.orderNo}
               {channel === 'DINE_IN' ? ` · ${t('rst.order.tableHeading', { code: order.tableCode })}` : ''}
+              {order.pickupNo ? ` · ${t('rst.order.pickupNo', { no: order.pickupNo })}` : ''}
             </div>
             <h2 className="rst-order__title">{ticketTitle}</h2>
             <p className="rst-order__ticket-waiter">
@@ -285,6 +289,16 @@ export default function OrderWorkspace({
               disabled={sendingKitchen}
             >
               {t('rst.order.sendKitchenKds')}
+            </button>
+          ) : null}
+          {footerVariant !== 'waiter' && canReprintPickup && order.pickupNo ? (
+            <button
+              type="button"
+              className="rst-order__kds"
+              onClick={onReprintPickup}
+              disabled={reprintingPickup}
+            >
+              {t('rst.order.reprintPickup')}
             </button>
           ) : null}
 

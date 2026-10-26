@@ -128,6 +128,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                         (:guestBill = 1 AND kind = 'GUEST_BILL')
                         OR (:orderCancel = 1 AND kind = 'ORDER_CANCEL')
                         OR (:kitchenSend = 1 AND kind = 'KITCHEN_SEND')
+                        OR (:pickupLabel = 1 AND kind = 'PICKUP_LABEL')
                       )
                     ORDER BY created_at ASC
                     LIMIT :batch
@@ -149,6 +150,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         @Param("guestBill") int guestBill,
         @Param("orderCancel") int orderCancel,
         @Param("kitchenSend") int kitchenSend,
+        @Param("pickupLabel") int pickupLabel,
         @Param("hasPrinters") int hasPrinters,
         @Param("printers") Collection<String> printers,
         @Param("busyPrinters") Collection<String> busyPrinters

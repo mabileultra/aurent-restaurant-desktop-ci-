@@ -12,14 +12,18 @@ public class RestaurantHotCache {
 
     private final CacheManager cacheManager;
 
-    public void evictFloor(Integer storeId) {
+    public void evictFloor(Integer companyId, Integer storeId) {
         if (storeId == null) {
             return;
         }
         Cache cache = cacheManager.getCache(RestaurantCacheNames.FLOOR);
-        if (cache != null) {
-            cache.evict(storeId);
+        if (cache == null) {
+            return;
         }
+        if (companyId != null) {
+            cache.evict(companyId + ":" + storeId);
+        }
+        cache.evict(storeId);
     }
 
     public void evictMenu(Integer storeId) {

@@ -29,6 +29,7 @@ const SLIP_LABEL = {
   GUEST_BILL: 'rst.admin.printSlipGuestBill',
   KITCHEN: 'rst.admin.printSlipKitchen',
   SHIFT_ITEMS: 'rst.admin.printSlipShift',
+  PICKUP_LABEL: 'rst.admin.printSlipPickup',
 };
 
 const FIELD_LABEL = {

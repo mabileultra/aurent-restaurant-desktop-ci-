@@ -11,6 +11,7 @@ export const rstPrintApi = {
       guestBill: false,
       orderCancel: false,
       kitchenSend: false,
+      pickupLabel: false,
     }),
   acknowledge: (storeId, jobIds) => api.post(rst(`/stores/${storeId}/print-jobs/ack`), { jobIds }),
   release: (storeId, jobIds) => api.post(rst(`/stores/${storeId}/print-jobs/release`), { jobIds }),

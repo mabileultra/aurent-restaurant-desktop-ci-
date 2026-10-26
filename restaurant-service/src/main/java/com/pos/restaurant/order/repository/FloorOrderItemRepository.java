@@ -30,6 +30,24 @@ public interface FloorOrderItemRepository extends JpaRepository<FloorOrderItem, 
         """)
     List<FloorOrderItem> findByOrderIdInOrdered(@Param("orderIds") Collection<UUID> orderIds);
 
+    /**
+     * Tile aggregate. {@code lines_count} includes CANCELLED rows.
+     * {@code subtotal} is the sum of per-line ROUND(quantity * unit_price, 2) without CANCELLED.
+     */
+    @Query(value = """
+        SELECT i.order_id,
+               COUNT(*) AS lines_count,
+               COALESCE(SUM(CASE
+                   WHEN i.item_status <> 'CANCELLED'
+                   THEN ROUND(i.quantity * i.unit_price, 2)
+                   ELSE 0
+               END), 0) AS subtotal
+        FROM floor_order_items i
+        WHERE i.order_id IN (:orderIds)
+        GROUP BY i.order_id
+        """, nativeQuery = true)
+    List<Object[]> summarizeTiles(@Param("orderIds") Collection<UUID> orderIds);
+
     Optional<FloorOrderItem> findByIdAndOrderId(UUID id, UUID orderId);
 
     int countByOrderId(UUID orderId);

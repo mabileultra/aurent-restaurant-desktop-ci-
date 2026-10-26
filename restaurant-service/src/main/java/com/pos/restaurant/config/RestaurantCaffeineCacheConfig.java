@@ -33,8 +33,8 @@ public class RestaurantCaffeineCacheConfig {
             new CaffeineCache(
                 RestaurantCacheNames.FLOOR,
                 Caffeine.newBuilder()
-                    .maximumSize(500)
-                    .expireAfterWrite(3, TimeUnit.SECONDS)
+                    .maximumSize(5_000)
+                    .expireAfterWrite(15, TimeUnit.SECONDS)
                     .recordStats()
                     .build()
             ),

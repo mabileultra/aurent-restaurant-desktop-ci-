@@ -41,7 +41,7 @@ public class CashierMultikassaController {
     }
 
     @PatchMapping("/flags")
-    @Operation(summary = "Вкл/выкл печать фискального QR (и опционально requireBeforeSale)")
+    @Operation(summary = "Вкл/выкл налог на кассе (и опционально QR / requireBeforeSale)")
     public ResponseEntity<CashierMultikassaCapabilitiesResponse> updateFlags(
         @RequestParam Integer storeId,
         @RequestParam(required = false) Long cashRegisterId,

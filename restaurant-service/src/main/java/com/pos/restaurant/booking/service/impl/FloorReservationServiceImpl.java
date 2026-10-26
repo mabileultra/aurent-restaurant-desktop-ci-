@@ -10,7 +10,9 @@ import com.pos.restaurant.booking.support.ReservationLookup;
 import com.pos.restaurant.booking.support.ReservationResponseAssembler;
 import com.pos.restaurant.floor.entity.FloorTable;
 import com.pos.restaurant.floor.repository.FloorTableRepository;
+import com.pos.restaurant.floor.revision.FloorRevisionBump;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.security.RestaurantTenantContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +36,7 @@ public class FloorReservationServiceImpl implements FloorReservationService {
     private final ReservationCancelHandler cancelHandler;
     private final ReservationNoShowHandler noShowHandler;
     private final ReservationSeatHandler seatHandler;
+    private final FloorRevisionBump floorRevision;
 
     @Override
     @Transactional(readOnly = true)
@@ -67,33 +70,46 @@ public class FloorReservationServiceImpl implements FloorReservationService {
     }
 
     @Override
+    @Transactional
     public ReservationResponse create(Integer storeId, SaveReservationRequest request) {
-        return createHandler.handle(storeId, request);
+        return touch(createHandler.handle(storeId, request));
     }
 
     @Override
+    @Transactional
     public ReservationResponse update(UUID reservationId, SaveReservationRequest request) {
-        return updateHandler.handle(reservationId, request);
+        return touch(updateHandler.handle(reservationId, request));
     }
 
     @Override
+    @Transactional
     public ReservationResponse confirm(UUID reservationId) {
-        return confirmHandler.handle(reservationId);
+        return touch(confirmHandler.handle(reservationId));
     }
 
     @Override
+    @Transactional
     public ReservationResponse cancel(UUID reservationId) {
-        return cancelHandler.handle(reservationId);
+        return touch(cancelHandler.handle(reservationId));
     }
 
     @Override
+    @Transactional
     public ReservationResponse markNoShow(UUID reservationId) {
-        return noShowHandler.handle(reservationId);
+        return touch(noShowHandler.handle(reservationId));
     }
 
     @Override
+    @Transactional
     public ReservationResponse seat(UUID reservationId) {
-        return seatHandler.handle(reservationId);
+        return touch(seatHandler.handle(reservationId));
+    }
+
+    private ReservationResponse touch(ReservationResponse response) {
+        if (response != null) {
+            floorRevision.bump(RestaurantTenantContext.getCompanyId(), response.storeId());
+        }
+        return response;
     }
 
     private BookingTableOptionResponse toOption(FloorTable table) {

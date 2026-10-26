@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('desktopCashier', {
   printTicketHtml: (payload) => invoke('desktop:print-ticket-html', payload || {}),
   printReceiptEscpos: (payload) => invoke('desktop:print-receipt-escpos', payload),
   printPlainEscpos: (payload) => invoke('desktop:print-plain-escpos', payload || {}),
+  printRaw: (payload) => invoke('desktop:print-raw', payload || {}),
   printZReportEscpos: (payload) => invoke('desktop:print-z-report-escpos', payload),
   printShiftReportEscpos: (payload) => invoke('desktop:print-shift-report-escpos', payload),
 

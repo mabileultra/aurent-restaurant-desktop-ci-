@@ -116,6 +116,8 @@ export const ADMIN_MODULE_IDS = [
   { id: 'restaurantKitchen', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'CASHIER', 'WAITER', 'COOK'] },
   { id: 'restaurantBooking', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },
   { id: 'restaurantDelivery', group: 'restaurant', roles: ['ADMIN', 'MANAGER', 'WAITER', 'CASHIER'] },
+  { id: 'restaurantPickupLabel', group: 'restaurant', roles: [] },
+  { id: 'restaurantQuickSale', group: 'restaurant', roles: [] },
   { id: 'usersList', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersPrinterSettings', group: 'settings', roles: ['ADMIN'] },
   { id: 'usersBrandingSettings', group: 'settings', roles: ['ADMIN'] },

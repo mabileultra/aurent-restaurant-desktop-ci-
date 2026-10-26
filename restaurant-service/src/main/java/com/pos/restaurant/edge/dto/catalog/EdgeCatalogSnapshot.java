@@ -34,7 +34,9 @@ public record EdgeCatalogSnapshot(
     List<OpenOrderRow> closedOrders,
     List<OpenOrderItemRow> closedOrderItems,
     List<OpenOrderItemModifierRow> closedOrderItemModifiers,
-    List<OrderPaymentRow> orderPayments
+    List<OrderPaymentRow> orderPayments,
+    /** Published tile origin of the source node. Peers move their local version only when this grows. */
+    Long floorRevision
 ) {
     public record HallRow(
         Integer id,
@@ -189,7 +191,8 @@ public record EdgeCatalogSnapshot(
         String comment,
         Instant openedAt,
         Instant closedAt,
-        Instant updatedAt
+        Instant updatedAt,
+        Integer pickupNo
     ) {}
 
     public record OpenOrderItemRow(

@@ -5,6 +5,7 @@ import { BaseButton } from '../../../../components/ui';
 import { logoutAndResetSession } from '../../../../utils/authSession';
 import { CASHIER_HEADER_TABS } from '../utils/cashierNav';
 import CashierNavLookup from './CashierNavLookup';
+import CashierQuickSaleButton from './CashierQuickSaleButton';
 import PosEnterMobileButton from '../../pos-mobile/components/PosEnterMobileButton';
 import WaiterMobileHeaderActions from '../../waiter-mobile/components/WaiterMobileHeaderActions';
 import '../styles/cashier-shell.css';
@@ -27,6 +28,9 @@ export default function CashierTopBar({
   roleLabel = '',
   shift = null,
   shiftOpenLabel = null,
+  storeId = null,
+  quickSaleEnabled = false,
+  onQuickSaleOpened,
   t,
 }) {
   return (
@@ -38,6 +42,7 @@ export default function CashierTopBar({
           disabledKeys={disabledTabs}
           shift={shift}
           shiftOpenLabel={shiftOpenLabel}
+          storeId={storeId}
           t={t}
         />
       ) : null}
@@ -84,6 +89,13 @@ export default function CashierTopBar({
       ) : null}
 
       <div className="rst-cashier-top__actions">
+        <CashierQuickSaleButton
+          enabled={quickSaleEnabled}
+          storeId={storeId}
+          shift={shift}
+          onOpened={onQuickSaleOpened}
+          t={t}
+        />
         {compactActions ? (
           <WaiterMobileHeaderActions
             enabled

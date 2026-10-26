@@ -357,6 +357,21 @@ export function useFloorPosMutations(deps) {
     },
   });
 
+  const reprintPickupMutation = useMutation({
+    mutationFn: async () => {
+      const orderId = requireOrderId(activeOrderId, order?.id);
+      const res = await rstOrderApi.reprintPickupLabel(orderId);
+      return res?.data !== undefined ? res.data : res;
+    },
+    onSuccess: (res) => {
+      setOrderData(res);
+      toast.success(t('rst.order.pickupPrinted'));
+      flushRestaurantPrintRelay();
+      invalidateFloor();
+    },
+    onError: (err) => errMsg(err, 'rst.order.pickupFailed'),
+  });
+
   const cancelMutation = useMutation({
     mutationFn: async () => {
       return rstOrderApi.cancel(activeOrderId);
@@ -513,7 +528,7 @@ export function useFloorPosMutations(deps) {
   return {
     openMutation, openExtraCheckMutation, openCounterMutation, openShiftMutation, closeShiftMutation,
     addItemMutation, updateItemMutation, removeItemMutation, assignWaiterMutation,
-    updateGuestsMutation, sendKitchenMutation, cancelMutation, billMutation,
+    updateGuestsMutation, sendKitchenMutation, reprintPickupMutation, cancelMutation, billMutation,
     discountMutation, payMutation, refundMutation, markReadyMutation,
   };
 }

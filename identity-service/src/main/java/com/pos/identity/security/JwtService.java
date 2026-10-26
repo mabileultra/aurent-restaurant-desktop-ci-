@@ -46,6 +46,7 @@ public class JwtService {
                 claims.put(JwtClaimNames.ROLES, List.of(user.getRole().getName()));
             }
             claims.put(JwtClaimNames.CAN_REQUEST_BILL, canRequestBill(user));
+            claims.put(JwtClaimNames.CAN_PRINT_PICKUP_LABEL, canPrintPickupLabel(user));
         }
         return generateToken(claims, userDetails);
     }
@@ -53,6 +54,11 @@ public class JwtService {
     private boolean canRequestBill(User user) {
         return moduleAccessService.resolveAllowedModuleIds(user)
             .contains(ModuleVisibility.RESTAURANT_REQUEST_BILL);
+    }
+
+    private boolean canPrintPickupLabel(User user) {
+        return moduleAccessService.resolveAllowedModuleIds(user)
+            .contains(ModuleVisibility.RESTAURANT_PICKUP_LABEL);
     }
 
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {

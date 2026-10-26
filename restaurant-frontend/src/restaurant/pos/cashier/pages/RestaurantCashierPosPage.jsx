@@ -113,6 +113,9 @@ export default function RestaurantCashierPosPage() {
     canSendKitchen: !p.isDraftOrder && p.canSendKitchen,
     sendingKitchen: p.sendKitchenMutation.isPending,
     onSendKitchen: p.isDraftOrder ? undefined : () => p.sendKitchenMutation.mutate(),
+    canReprintPickup: !p.isDraftOrder && p.canReprintPickup && !!order.pickupNo,
+    reprintingPickup: p.reprintPickupMutation?.isPending,
+    onReprintPickup: p.isDraftOrder ? undefined : () => p.reprintPickupMutation?.mutate(),
     canRequestBill: !p.isDraftOrder && p.canRequestBill,
     canPay: !p.isDraftOrder && p.canPay,
     onRequestBill: p.isDraftOrder ? undefined : () => p.billMutation.mutate(),
@@ -174,6 +177,9 @@ export default function RestaurantCashierPosPage() {
           roleLabel={p.t(`roles.${user?.role || 'CASHIER'}`, { defaultValue: p.t('roles.CASHIER') })}
           shift={p.shift}
           shiftOpenLabel={p.shiftOpenLabel}
+          storeId={p.workspace.storeId}
+          quickSaleEnabled={p.quickSaleEnabled}
+          onQuickSaleOpened={p.onQuickSaleOpened}
           t={p.t}
         />
       )}

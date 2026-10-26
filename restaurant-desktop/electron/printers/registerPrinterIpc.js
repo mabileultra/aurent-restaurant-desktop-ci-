@@ -21,6 +21,11 @@ function registerPrinterIpc() {
     writePrinterSettings(settings || {}),
   );
   ipcMain.handle('desktop:print-ticket-html', (_e, payload) => printTicketHtml(payload || {}));
+  ipcMain.handle('desktop:print-raw', async (_e, payload) => {
+    const { printRawBuffer } = require('./win-raw-print.cjs');
+    const text = String(payload?.bytes || '');
+    return printRawBuffer(payload?.printerName, Buffer.from(text, 'utf8'));
+  });
 
   try {
     const escposModule = require('../cashier-receipt-escpos/index.cjs');

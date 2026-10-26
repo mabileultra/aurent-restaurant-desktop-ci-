@@ -48,6 +48,10 @@ public enum AdminModule {
     RESTAURANT_FLOOR("restaurantFloor", "restaurant", Set.of("ADMIN", "MANAGER")),
     /** Guest bill button. Off for waiter until granted on the access screen. */
     RESTAURANT_REQUEST_BILL("restaurantRequestBill", "restaurant", Set.of("ADMIN", "MANAGER", "CASHIER")),
+    /** Cafe pickup sticker. Off until Super Admin grants it. */
+    RESTAURANT_PICKUP_LABEL("restaurantPickupLabel", "restaurant", Set.of()),
+    /** Walk-in receipt without a table. Off until Super Admin grants it. */
+    RESTAURANT_QUICK_SALE("restaurantQuickSale", "restaurant", Set.of()),
     RESTAURANT_BOOKING("restaurantBooking", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_DELIVERY("restaurantDelivery", "restaurant", Set.of("ADMIN", "MANAGER", "WAITER", "CASHIER")),
     RESTAURANT_KITCHEN("restaurantKitchen", "restaurant", Set.of("CASHIER", "WAITER", "COOK", "MANAGER", "ADMIN")),

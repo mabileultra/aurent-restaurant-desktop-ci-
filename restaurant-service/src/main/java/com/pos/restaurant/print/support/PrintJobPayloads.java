@@ -68,6 +68,16 @@ public final class PrintJobPayloads {
         List<String> modifiers
     ) {}
 
+    public record PickupLabel(
+        UUID orderId,
+        int pickupNo,
+        String channel,
+        String printedAt,
+        List<PickupLine> items
+    ) {}
+
+    public record PickupLine(String name, BigDecimal quantity) {}
+
     /** Full table/order cancel — printed on the cashier receipt printer. */
     public record OrderCancel(
         UUID orderId,

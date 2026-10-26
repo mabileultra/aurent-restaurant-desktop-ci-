@@ -34,7 +34,6 @@ const SHIFT_STALE_MS = 20_000;
 const MENU_STALE_MS = 10 * 60_000;
 const ORDER_STALE_MS = 3_000;
 /** Fallback if revision poll misses; primary sync is useStoreFloorSync (~2s watermark). */
-const FLOOR_POLL_MS = 20_000;
 const ORDER_POLL_MS = 12_000;
 
 function draftOrderFromTable(table) {
@@ -111,8 +110,7 @@ export function useFloorPosPage() {
     },
     enabled: storeId != null && (onFloor || !!activeOrderId),
     staleTime: FLOOR_STALE_MS,
-    // Keep polling on the board even when a ticket is open (phone / other POS edits).
-    refetchInterval: onFloor || activeOrderId ? FLOOR_POLL_MS : false,
+    refetchInterval: false,
     refetchOnWindowFocus: true,
   });
   const counterQuery = useQuery({
@@ -587,7 +585,10 @@ export function useFloorPosPage() {
     openMutation: m.openMutation, addItemMutation: m.addItemMutation, handleQty,
     handleRemoveItem,
     removeItemMutation: m.removeItemMutation, cancelMutation: m.cancelMutation,
-    sendKitchenMutation: m.sendKitchenMutation, billMutation: m.billMutation,
+    sendKitchenMutation: m.sendKitchenMutation,
+    reprintPickupMutation: m.reprintPickupMutation,
+    canReprintPickup: hasModule('restaurantPickupLabel'),
+    billMutation: m.billMutation,
     discountMutation: m.discountMutation,
     payMutation: m.payMutation,
     paidReceipt, closePaidReceipt: () => setPaidReceipt(null),

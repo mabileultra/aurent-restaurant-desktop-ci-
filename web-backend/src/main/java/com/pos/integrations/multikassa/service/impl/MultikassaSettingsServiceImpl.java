@@ -113,8 +113,10 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
       Long cashRegisterId,
       UpdateCashierMultikassaFlagsRequest request
   ) {
-      if (request == null || (request.printFiscalQr() == null && request.requireBeforeSale() == null)) {
-          throw new BadRequestException("Укажите printFiscalQr и/или requireBeforeSale");
+      if (request == null || (request.printFiscalQr() == null
+          && request.requireBeforeSale() == null
+          && request.enabled() == null)) {
+          throw new BadRequestException("Укажите enabled, printFiscalQr и/или requireBeforeSale");
       }
       Store store = cashierSaleSupport.requireStoreForSale(cashier, storeId);
       CashRegister register = resolveRegisterForCashier(cashier, store, cashRegisterId);
@@ -138,7 +140,8 @@ public class MultikassaSettingsServiceImpl implements MultikassaSettingsService 
             register.getId(),
             MultikassaDefaults.DEFAULT_BASE_URL,
             request.printFiscalQr(),
-            request.requireBeforeSale()
+            request.requireBeforeSale(),
+            request.enabled()
         );
         entityManager.clear();
         CashRegisterMultikassaSettings entity = settingsRepository.findById(register.getId())

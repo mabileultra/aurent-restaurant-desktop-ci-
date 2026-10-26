@@ -3,6 +3,7 @@ package com.pos.restaurant.order.support;
 import com.pos.restaurant.exception.BusinessException;
 import com.pos.restaurant.exception.NotFoundException;
 import com.pos.restaurant.floor.support.FloorTenantSupport;
+import com.pos.restaurant.order.domain.OrderChannel;
 import com.pos.restaurant.order.domain.OrderStatus;
 import com.pos.restaurant.order.entity.FloorOrder;
 import com.pos.restaurant.order.repository.FloorOrderRepository;
@@ -54,5 +55,17 @@ public class OrderLookup {
             throw new BusinessException("Bill has not been requested");
         }
         return order;
+    }
+
+    /** Hall checks stay on BILLING. A takeaway walk-in can be paid while still OPEN. */
+    public FloorOrder requirePayable(UUID orderId) {
+        FloorOrder order = require(orderId);
+        if (order.getStatus() == OrderStatus.BILLING) {
+            return order;
+        }
+        if (order.getStatus() == OrderStatus.OPEN && order.getChannel() == OrderChannel.TAKEAWAY) {
+            return order;
+        }
+        throw new BusinessException("Bill has not been requested");
     }
 }

@@ -1,6 +1,6 @@
 /** Keep in sync with StorePrintProfileDefaults.java — empty/default = today's slips. */
 
-export const PRINT_SLIP_TYPES = ['CANCEL', 'GUEST_BILL', 'KITCHEN', 'SHIFT_ITEMS'];
+export const PRINT_SLIP_TYPES = ['CANCEL', 'GUEST_BILL', 'KITCHEN', 'SHIFT_ITEMS', 'PICKUP_LABEL'];
 
 export const PRINT_FIELD_KEYS = [
   'logo',
@@ -32,15 +32,18 @@ export const PRINT_SIZE_OPTIONS = [
 
 function defaultField(slip, key) {
   const cancelEmph = slip === 'CANCEL' && (key === 'headerTitle' || key === 'items');
+  const pickup = slip === 'PICKUP_LABEL';
+  const pickupTitle = pickup && key === 'headerTitle';
   let on = true;
   if (key === 'logo' || key === 'storeName' || key === 'address' || key === 'phone' || key === 'footer') {
     on = false;
   }
   if (key === 'totals') on = slip === 'GUEST_BILL' || slip === 'SHIFT_ITEMS';
+  if (pickup && key === 'waiter') on = false;
   return {
     on,
     bold: cancelEmph || key === 'headerTitle',
-    size: cancelEmph ? 'lg' : 'md',
+    size: cancelEmph || pickupTitle ? 'lg' : 'md',
     font: 'inherit',
   };
 }

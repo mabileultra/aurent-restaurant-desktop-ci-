@@ -1417,6 +1417,8 @@
       "back": "Orqaga",
       "pickFile": "Fayl tanlash",
       "confirmImport": "Yangilarini import qilish",
+      "confirmReceipt": "Import qilib kirim qilish",
+      "receiptDone": "Kirim {{no}} o'tkazildi",
       "done": "Import bajarildi",
       "created": "Yaratildi",
       "skipped": "O‘tkazib yuborildi",
@@ -1506,7 +1508,8 @@
       "mode": {
         "AS_FILE": "Import fayldagidek",
         "TO_STORES": "Tanlangan do‘kon(lar)ga",
-        "TO_CATALOG": "Katalogga (ro‘yxat)"
+        "TO_CATALOG": "Faqat mahsulotlar ro‘yxati (kartochka, kirimsiz)",
+        "AS_RECEIPT": "Darhol yangi kirim"
       }
     },
     "export": {
@@ -3047,6 +3050,8 @@
       "restaurantDelivery": "Yetkazib berish",
       "restaurantPos": "Restoran — kassa",
       "restaurantRequestBill": "Hisob berish",
+      "restaurantPickupLabel": "Berish etiketi",
+      "restaurantQuickSale": "Tez chek",
       "finance": "Moliya",
       "financeDashboard": "Moliya — boshqaruv paneli",
       "financeDebts": "Moliya — qarzlar",

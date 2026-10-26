@@ -27,7 +27,7 @@ public class RestaurantRedisProperties {
 
     private int menuTtlSeconds = 600;
 
-    private int floorTtlSeconds = 3;
+    private int floorTtlSeconds = 15;
 
     private int kitchenBoardTtlSeconds = 30;
 }

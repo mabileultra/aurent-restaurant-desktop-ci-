@@ -67,11 +67,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void accept(GatewayActor actor, HttpServletRequest request) {
+        ModuleFlags flags = readModuleFlags(request);
         RestaurantTenantContext.set(
             actor.companyId(),
             actor.userId(),
             actor.role(),
-            readCanRequestBill(request)
+            flags.canRequestBill(),
+            flags.canPrintPickupLabel()
         );
         SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
             actor.userId().toString(),
@@ -80,16 +82,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         ));
     }
 
-    private boolean readCanRequestBill(HttpServletRequest request) {
+    private ModuleFlags readModuleFlags(HttpServletRequest request) {
         String header = request.getHeader("Authorization");
         if (header == null || !header.startsWith("Bearer ") || jwtSecret == null || jwtSecret.isBlank()) {
-            return false;
+            return ModuleFlags.NONE;
         }
         try {
             Claims claims = JwtClaimsExtractor.parseAllClaims(header.substring(7).trim(), jwtSecret);
-            return JwtClaimsExtractor.extractFlag(claims, JwtClaimNames.CAN_REQUEST_BILL);
+            return new ModuleFlags(
+                JwtClaimsExtractor.extractFlag(claims, JwtClaimNames.CAN_REQUEST_BILL),
+                JwtClaimsExtractor.extractFlag(claims, JwtClaimNames.CAN_PRINT_PICKUP_LABEL)
+            );
         } catch (RuntimeException ex) {
-            return false;
+            return ModuleFlags.NONE;
         }
+    }
+
+    private record ModuleFlags(boolean canRequestBill, boolean canPrintPickupLabel) {
+        private static final ModuleFlags NONE = new ModuleFlags(false, false);
     }
 }

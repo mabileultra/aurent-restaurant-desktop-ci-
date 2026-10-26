@@ -29,6 +29,7 @@ function readPrinterSettings() {
   return {
     receiptPrinterName: cfg.receiptPrinterName || '',
     labelPrinterName: cfg.labelPrinterName || '',
+    labelPrinterMode: cfg.labelPrinterMode === 'tspl' ? 'tspl' : 'driver',
     billPrinterName: cfg.billPrinterName || '',
     stationPrinters: readStationPrinters(cfg.stationPrinters),
   };
@@ -41,6 +42,9 @@ function writePrinterSettings(settings) {
   }
   if (typeof settings?.labelPrinterName === 'string') {
     next.labelPrinterName = settings.labelPrinterName.trim();
+  }
+  if (settings?.labelPrinterMode === 'tspl' || settings?.labelPrinterMode === 'driver') {
+    next.labelPrinterMode = settings.labelPrinterMode;
   }
   if (typeof settings?.billPrinterName === 'string') {
     next.billPrinterName = settings.billPrinterName.trim();

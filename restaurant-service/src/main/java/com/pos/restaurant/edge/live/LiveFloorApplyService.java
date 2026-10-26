@@ -9,6 +9,7 @@ import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderLinkRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OpenOrderRow;
 import com.pos.restaurant.edge.dto.catalog.EdgeCatalogSnapshot.OrderPaymentRow;
 import com.pos.restaurant.exception.BusinessException;
+import com.pos.restaurant.floor.revision.FloorRevisionBump;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,8 @@ import java.util.UUID;
 public class LiveFloorApplyService {
 
     private final JdbcTemplate jdbc;
+    private final LiveServicePercentApply servicePercentApply;
+    private final FloorRevisionBump floorRevision;
 
     @Transactional
     public Map<String, Object> applyLive(EdgeCatalogSnapshot snap) {
@@ -50,6 +53,8 @@ public class LiveFloorApplyService {
         if (snap == null || snap.companyId() == null || snap.storeId() == null) {
             throw new BusinessException("Invalid live snapshot");
         }
+        // Edge pull only. Cloud ingest must not let a hall PC overwrite the admin percent.
+        int servicePercents = reconcileGhosts ? 0 : servicePercentApply.apply(snap);
         int orders = upsertOrders(snap, snap.openOrders());
         int items = upsertItems(snap.openOrderItems());
         int links = upsertLinks(snap.openOrderLinks());
@@ -59,8 +64,10 @@ public class LiveFloorApplyService {
         int payments = upsertPayments(snap);
         int closedGhosts = reconcileGhosts ? reconcileOpen(snap) : 0;
         int staleTickets = reconcileGhosts ? reconcileTickets(snap) : 0;
+        floorRevision.noteRemote(snap.companyId(), snap.storeId(), snap.floorRevision());
 
         Map<String, Object> out = new HashMap<>();
+        out.put("servicePercents", servicePercents);
         out.put("openOrders", orders);
         out.put("openOrderItems", items);
         out.put("openOrderLinks", links);
@@ -93,9 +100,9 @@ public class LiveFloorApplyService {
                   opened_by_user_id, waiter_user_id, courier_user_id,
                   commission_percent, commission_base_amount, commission_amount,
                   service_percent, service_amount, discount_amount, shift_id, comment,
-                  opened_at, closed_at, updated_at
+                  opened_at, closed_at, updated_at, pickup_no
                 ) VALUES (
-                  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+                  ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
                 )
                 ON CONFLICT (id) DO UPDATE SET
                   company_id = EXCLUDED.company_id, store_id = EXCLUDED.store_id,
@@ -112,7 +119,8 @@ public class LiveFloorApplyService {
                   service_percent = EXCLUDED.service_percent, service_amount = EXCLUDED.service_amount,
                   discount_amount = EXCLUDED.discount_amount, shift_id = EXCLUDED.shift_id,
                   comment = EXCLUDED.comment, opened_at = EXCLUDED.opened_at,
-                  closed_at = EXCLUDED.closed_at, updated_at = EXCLUDED.updated_at
+                  closed_at = EXCLUDED.closed_at, updated_at = EXCLUDED.updated_at,
+                  pickup_no = EXCLUDED.pickup_no
                 """,
                 row.id(), snap.companyId(), snap.storeId(), row.tableId(),
                 StringUtils.hasText(row.channel()) ? row.channel() : "DINE_IN",
@@ -127,7 +135,8 @@ public class LiveFloorApplyService {
                 row.shiftId(), row.comment(),
                 Timestamp.from(openedAt),
                 row.closedAt() == null ? null : Timestamp.from(row.closedAt()),
-                Timestamp.from(updatedAt)
+                Timestamp.from(updatedAt),
+                row.pickupNo()
             );
             n++;
         }
