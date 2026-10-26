@@ -22,7 +22,5 @@ export {
   summarizeFiscalDriveInfo,
 } from './fiscalDriveHttpClient';
 export { ensureFiscalDriveReady } from './ensureFiscalDriveReady';
-export { buildMarkingValidationProducts } from './buildMarkingValidationProducts';
-export { MARKING_VALIDATION_STATUS, validateFiscalMarking } from './validateFiscalMarking';
 export { fiscalizeSaleBeforeCommit } from './fiscalizeSaleBeforeCommit';
 export { parseFiscalDriveRegisterResult } from './parseFiscalDriveResult';

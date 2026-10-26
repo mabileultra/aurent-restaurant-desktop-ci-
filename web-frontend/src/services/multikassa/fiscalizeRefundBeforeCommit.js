@@ -1,6 +1,6 @@
 import { buildRefundBody } from './buildMultikassaOperations';
 import { runMultikassaOperation } from './runMultikassaOperation';
-import { assertOnkmMarking } from '../fiscal/shared/assertOnkmMarking';
+import { assertOnkmMarking } from '../../features/marking/onkm';
 
 /**
  * Возврат в Multikassa (op 4) до partial return в POS.

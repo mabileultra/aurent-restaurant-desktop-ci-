@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const validateFiscalMarking = vi.fn();
 
-vi.mock('./validateFiscalMarking', () => ({
+vi.mock('./validate', () => ({
   MARKING_VALIDATION_STATUS: {
     VALID: 'VALID',
     REJECTED: 'REJECTED',
@@ -12,7 +12,7 @@ vi.mock('./validateFiscalMarking', () => ({
   validateFiscalMarking: (...args) => validateFiscalMarking(...args),
 }));
 
-import { assertOnkmMarking } from './assertOnkmMarking';
+import { assertOnkmMarking } from './assertBeforeSale';
 
 describe('assertOnkmMarking', () => {
   beforeEach(() => {

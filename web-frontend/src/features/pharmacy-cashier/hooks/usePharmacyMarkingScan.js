@@ -90,7 +90,9 @@ export function usePharmacyMarkingScan({
       }
 
       if (resolved.status === 'ok' && resolved.product) {
-        if (!silent) toast.success(t('pos.markingInCirculation'));
+        if (!silent && resolved.circulation === 'in-circulation') {
+          toast.success(t('pos.markingInCirculation'));
+        }
         const result = onProductFound?.(resolved.product);
         setLastScan({ code: mark, result: resolved.aslResult, product: resolved.product });
         if (result?.status === 'duplicate' && !silent) {

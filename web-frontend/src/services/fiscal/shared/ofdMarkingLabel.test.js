@@ -23,4 +23,9 @@ describe('ofdMarkingLabel', () => {
     expect(toOfdMarkingLabel('')).toBe('');
     expect(toOfdMarkingLabel(null)).toBe('');
   });
+
+  it('Чёрное золото: 93 в хвосте скана режется как крипто, не как серия', () => {
+    const scanned = '0104780131182498217?ыПдК793Тоы2';
+    expect(toOfdMarkingLabel(scanned)).toBe('0104780131182498217?ыПдК7');
+  });
 });

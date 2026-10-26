@@ -7,7 +7,7 @@ vi.mock('../../shared/resolveFiscalPackageCodes', () => ({
 vi.mock('../../shared/expandMarkedFiscalItems', () => ({
   expandMarkedFiscalItems: (items) => items,
 }));
-vi.mock('../../shared/assertOnkmMarking', () => ({
+vi.mock('../../../../features/marking/onkm', () => ({
   assertOnkmMarking: vi.fn(async () => undefined),
 }));
 vi.mock('./fiscalDriveHttpClient', async () => {

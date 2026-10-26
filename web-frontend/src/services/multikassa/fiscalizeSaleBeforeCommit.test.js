@@ -7,7 +7,7 @@ vi.mock('./runMultikassaOperation', () => ({
   runMultikassaOperation: (...args) => runMultikassaOperation(...args),
 }));
 
-vi.mock('../fiscal/shared/assertOnkmMarking', () => ({
+vi.mock('../../features/marking/onkm', () => ({
   assertOnkmMarking: (...args) => assertOnkmMarking(...args),
 }));
 

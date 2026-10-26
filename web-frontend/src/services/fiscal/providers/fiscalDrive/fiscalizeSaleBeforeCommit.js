@@ -22,7 +22,7 @@ import {
 } from './mapFiscalDriveError';
 import { parseFiscalDriveRegisterResult, toFiscalDriveSalePayload } from './parseFiscalDriveResult';
 import { validateFiscalDriveReceipt } from './validateFiscalDriveReceipt';
-import { assertOnkmMarking } from '../../shared/assertOnkmMarking';
+import { assertOnkmMarking } from '../../../../features/marking/onkm';
 
 function pendingPayload({ txid, receipt, message }) {
   return {

@@ -66,6 +66,7 @@ export async function resolveCashierMarking({
     status: 'ok',
     mark,
     product: attachMarkToProduct(product, mark),
+    circulation: circulation.status,
     aslResult: gate.aslResult,
     aslError: null,
   };

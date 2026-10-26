@@ -3,9 +3,9 @@ package com.pos.integrations.markingvalidation.service.impl;
 import com.pos.exception.BadRequestException;
 import com.pos.exception.ResourceNotFoundException;
 import com.pos.integrations.markingvalidation.client.MarkingValidationClient;
-import com.pos.integrations.markingvalidation.client.OnkmValidationRequest;
 import com.pos.integrations.markingvalidation.dto.MarkingValidationResponse;
 import com.pos.integrations.markingvalidation.dto.ValidateMarkingRequest;
+import com.pos.integrations.markingvalidation.mapper.OnkmRequestMapper;
 import com.pos.integrations.markingvalidation.service.MarkingValidationService;
 import com.pos.integrations.multikassa.entity.CashRegisterMultikassaSettings;
 import com.pos.integrations.multikassa.repository.CashRegisterMultikassaSettingsRepository;
@@ -16,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,11 +35,11 @@ public class MarkingValidationServiceImpl implements MarkingValidationService {
 
         OwnerTerminal owner = resolveOwnerAndTerminal(register);
 
-        return client.validate(new OnkmValidationRequest(
+        return client.validate(OnkmRequestMapper.toRequest(
             owner.tin(),
             owner.terminalId(),
-            request.refund() ? 1 : 0,
-            request.products().stream().map(MarkingValidationServiceImpl::toWire).toList()
+            request.refund(),
+            request.products()
         ));
     }
 
@@ -71,20 +69,6 @@ public class MarkingValidationServiceImpl implements MarkingValidationService {
         }
         String tin = register.getStore().getCompany().getTin();
         return StringUtils.hasText(tin) ? tin.trim() : null;
-    }
-
-    private static OnkmValidationRequest.Product toWire(ValidateMarkingRequest.Product product) {
-        List<String> fullKmIds = product.fullKmIds() == null || product.fullKmIds().isEmpty()
-            ? null
-            : product.fullKmIds();
-        return new OnkmValidationRequest.Product(
-            StringUtils.hasText(product.commitentTin()) ? product.commitentTin() : null,
-            product.productCode().trim(),
-            StringUtils.hasText(product.packageCode()) ? product.packageCode().trim() : null,
-            product.amount(),
-            product.kmIds(),
-            fullKmIds
-        );
     }
 
     private record OwnerTerminal(String tin, String terminalId) {}

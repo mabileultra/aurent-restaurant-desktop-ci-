@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const validateFiscalMarking = vi.fn();
 
-vi.mock('../../services/fiscal/shared/validateFiscalMarking', () => ({
+vi.mock('./validate', () => ({
   MARKING_VALIDATION_STATUS: {
     VALID: 'VALID',
     REJECTED: 'REJECTED',
@@ -12,7 +12,7 @@ vi.mock('../../services/fiscal/shared/validateFiscalMarking', () => ({
   validateFiscalMarking: (...args) => validateFiscalMarking(...args),
 }));
 
-import { inspectMarkCirculation } from './inspectMarkCirculation';
+import { inspectMarkCirculation } from './inspectCirculation';
 
 const MARK = '010509987308971221uC*NTOg';
 const product = { id: 1, ikpu: '02208005001025008', packageCode: '1077302' };
@@ -46,6 +46,18 @@ describe('inspectMarkCirculation', () => {
         code: '1016',
         message: 'Код уже выведен из оборота',
       });
+  });
+
+  it('NOT_REQUIRED is not in circulation', async () => {
+    validateFiscalMarking.mockResolvedValue({ status: 'NOT_REQUIRED' });
+    await expect(inspectMarkCirculation({ cashRegisterId: 11, product, mark: MARK }))
+      .resolves.toMatchObject({ status: 'skipped' });
+  });
+
+  it('empty result is not in circulation', async () => {
+    validateFiscalMarking.mockResolvedValue(null);
+    await expect(inspectMarkCirculation({ cashRegisterId: 11, product, mark: MARK }))
+      .resolves.toMatchObject({ status: 'skipped' });
   });
 
   it('unavailable is not success', async () => {

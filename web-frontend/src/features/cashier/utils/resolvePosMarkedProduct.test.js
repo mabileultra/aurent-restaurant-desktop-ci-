@@ -27,7 +27,7 @@ vi.mock('../../../api/sale.api', () => ({
 }));
 
 const validateFiscalMarking = vi.fn(async () => ({ status: 'VALID' }));
-vi.mock('../../../services/fiscal/shared/validateFiscalMarking', () => ({
+vi.mock('../../marking/onkm/validate', () => ({
   MARKING_VALIDATION_STATUS: {
     VALID: 'VALID',
     REJECTED: 'REJECTED',
@@ -301,6 +301,7 @@ describe('касса — жёсткий путь Tasnif + склад', () => {
       cashRegisterId: 11,
     });
     expect(result.status).toBe('ok');
+    expect(result.circulation).toBe('in-circulation');
     expect(result.product.id).toBe(77);
     expect(result.product.productMarks).toEqual([vodkaKm]);
     expect(tasnifApi.lookup).toHaveBeenCalled();
@@ -348,5 +349,18 @@ describe('касса — жёсткий путь Tasnif + склад', () => {
     });
     expect(result.status).toBe('ok');
     expect(result.product.id).toBe(77);
+    expect(result.circulation).toBe('in-circulation');
+  });
+
+  it('Tasnif UNAVAILABLE — в чек можно, circulation не in-circulation', async () => {
+    validateFiscalMarking.mockResolvedValue({ status: 'UNAVAILABLE', message: 'нет сети' });
+    const result = await resolvePosMarkedProduct({
+      products: [vodka],
+      rawCode: vodkaKm,
+      storeId: 7,
+      cashRegisterId: 11,
+    });
+    expect(result.status).toBe('ok');
+    expect(result.circulation).toBe('unavailable');
   });
 });

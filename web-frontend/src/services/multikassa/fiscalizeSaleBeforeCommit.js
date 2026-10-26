@@ -13,7 +13,7 @@ import {
 import { FISCAL_STATUS } from './multikassaConstants';
 import { isOfdCheckUrl } from '../../utils/ofdQrUrl';
 import { logFiscal } from '../desktop/activityLog';
-import { assertOnkmMarking } from '../fiscal/shared/assertOnkmMarking';
+import { assertOnkmMarking } from '../../features/marking/onkm';
 
 function buildIdempotencyKey({ shiftId, clientSaleId }) {
   if (clientSaleId) return `sale:${clientSaleId}`;
@@ -113,6 +113,7 @@ export async function fiscalizeSaleBeforeCommit({
   }
 
   try {
+    // Порт ONKM: Multikassa не читает коды Tasnif, только пропускает / стопит / soft.
     await assertOnkmMarking({
       cashRegisterId: capabilities.cashRegisterId,
       cartItems: fiscalItems,
