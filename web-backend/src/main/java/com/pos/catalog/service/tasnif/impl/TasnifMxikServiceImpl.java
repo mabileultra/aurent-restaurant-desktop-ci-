@@ -52,9 +52,9 @@ public class TasnifMxikServiceImpl implements TasnifMxikService {
 
         MxikSearchResponse empty = new MxikSearchResponse(List.of(), safePage, safeSize, 0);
         for (Consumer<UriComponentsBuilder> strategy : strategies) {
-            MxikSearchResponse page = fetchOrEmpty(resolvedLang, safePage, safeSize, properties.getSearchType(), strategy);
-            if (!page.items().isEmpty()) {
-                return page;
+            MxikSearchResponse result = fetchOrEmpty(resolvedLang, safePage, safeSize, properties.getSearchType(), strategy);
+            if (!result.items().isEmpty()) {
+                return result;
             }
         }
         return empty;
