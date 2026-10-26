@@ -118,3 +118,10 @@ desktop-electron/ui/*
 
 # Last successfully deployed commit on the server (not in git)
 .deploy-sha
+
+# =========================
+# 🤖 LOCAL AI & AGENT RULES
+# =========================
+GEMINI.md
+.gemini/
+
