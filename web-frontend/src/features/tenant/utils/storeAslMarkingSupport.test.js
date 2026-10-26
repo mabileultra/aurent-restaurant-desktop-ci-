@@ -9,8 +9,14 @@ describe('storeAslMarkingSupport', () => {
     expect(storeSupportsAslMarking('PHARMACY')).toBe(true);
   });
 
-  it('rejects restaurant and empty', () => {
-    expect(storeSupportsAslMarking('RESTAURANT')).toBe(false);
+  it('allows restaurant and canteen', () => {
+    expect(storeSupportsAslMarking('RESTAURANT')).toBe(true);
+    expect(storeSupportsAslMarking('CANTEEN')).toBe(true);
+  });
+
+  it('rejects unsupported types and empty', () => {
+    expect(storeSupportsAslMarking('SERVICES')).toBe(false);
+    expect(storeSupportsAslMarking('OTHER')).toBe(false);
     expect(storeSupportsAslMarking('')).toBe(false);
     expect(storeSupportsAslMarking(null)).toBe(false);
   });

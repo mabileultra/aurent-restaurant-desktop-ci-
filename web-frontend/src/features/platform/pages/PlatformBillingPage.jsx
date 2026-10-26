@@ -59,19 +59,15 @@ export default function PlatformBillingPage() {
             <BillingFiltersBar t={p.t} c={c} plans={p.plans} />
           </div>
 
-          <div className={p.selectedRow ? 'bc-layout bc-layout--drawer' : 'bc-layout'}>
+          <div className="bc-layout">
             <BillingCompaniesTable p={p} />
             <div className="bc-layout__side">
-              {p.selectedRow ? (
-                <BillingCompanyDrawer p={p} />
-              ) : (
-                <>
-                  <BillingUpcomingPanel p={p} />
-                  <BillingTopUpQueuePanel p={p} />
-                </>
-              )}
+              <BillingUpcomingPanel p={p} />
+              <BillingTopUpQueuePanel p={p} />
             </div>
           </div>
+
+          <BillingCompanyDrawer p={p} />
         </>
       ) : null}
 

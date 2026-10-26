@@ -1,55 +1,71 @@
 // vite.config.js
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
-  plugins: [react()],
-  server: {
-    port: 5173,
-    // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
-    proxy: {
-      '/api/v1/auth': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/users': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/module-access': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/security': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/platform/account': {
-        target: process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081',
-        changeOrigin: true,
-      },
-      '/api/v1/companies': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/platform': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/billing': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api/v1/public': {
-        target: process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084',
-        changeOrigin: true,
-      },
-      '/api': {
-        target: process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088',
-        changeOrigin: true,
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  const identityProxy = env.VITE_DEV_IDENTITY_PROXY || process.env.VITE_DEV_IDENTITY_PROXY || 'http://127.0.0.1:8081';
+  const platformProxy = env.VITE_DEV_PLATFORM_PROXY || process.env.VITE_DEV_PLATFORM_PROXY || 'http://127.0.0.1:8084';
+  const apiProxy = env.VITE_DEV_API_PROXY || process.env.VITE_DEV_API_PROXY || 'http://127.0.0.1:8088';
+
+  return {
+    plugins: [react()],
+    server: {
+      port: 5173,
+      // Local without api-gateway: mirror docker route split (auth→identity, platform→platform, else→backend).
+      proxy: {
+        '/api/v1/auth': {
+          target: identityProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/users': {
+          target: identityProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/platform/module-access': {
+          target: identityProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/platform/security': {
+          target: identityProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/platform/account': {
+          target: identityProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/companies': {
+          target: platformProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/platform': {
+          target: platformProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/billing': {
+          target: platformProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api/v1/public': {
+          target: platformProxy,
+          changeOrigin: true,
+          secure: false,
+        },
+        '/api': {
+          target: apiProxy,
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
-  },
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -119,4 +135,5 @@ export default defineConfig({
       },
     },
   },
+};
 });

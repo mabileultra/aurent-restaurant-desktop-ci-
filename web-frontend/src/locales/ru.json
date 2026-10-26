@@ -2665,11 +2665,45 @@
     "noDepartmentsMatch": "Цеха не найдены"
   },
   "platform": {
+    "datePicker": {
+      "placeholderRange": "Диапазон дат",
+      "placeholderSingle": "Выберите дату",
+      "today": "Сегодня",
+      "yesterday": "Вчера",
+      "last7Days": "Последние 7 дней",
+      "last30Days": "Последние 30 дней",
+      "thisMonth": "Этот месяц",
+      "lastMonth": "Прошлый месяц",
+      "allTime": "За всё время",
+      "cancel": "Отмена",
+      "apply": "Применить",
+      "clear": "Очистить",
+      "close": "Закрыть",
+      "notSelected": "Период не выбран",
+      "selectEndDate": "Выберите дату окончания",
+      "daysCount_one": "{{count}} день",
+      "daysCount_few": "{{count}} дня",
+      "daysCount_many": "{{count}} дней",
+      "daysCount_other": "{{count}} дней",
+      "quickDays_one": "+{{count}} день",
+      "quickDays_few": "+{{count}} дня",
+      "quickDays_many": "+{{count}} дней",
+      "quickDays_other": "+{{count}} дней",
+      "prevMonth": "Предыдущий месяц",
+      "nextMonth": "Следующий месяц",
+      "prevYear": "Предыдущий год",
+      "nextYear": "Следующий год"
+    },
     "title": "Супер-админ",
     "subtitle": "Управление платформой",
     "noAccess": {
       "title": "Нет назначенных разделов",
       "subtitle": "Супер-админ ещё не выдал вам доступ. Зайдите позже или попросите открыть нужные разделы в «Доступах»."
+    },
+    "navGroups": {
+      "main": "Основное",
+      "finance": "Финансы и учёт",
+      "management": "Управление"
     },
     "companies": "Компании",
     "stores": "Магазины",
@@ -2877,7 +2911,8 @@
       "namePh": "Название",
       "descriptionPh": "Описание",
       "active": "Активен",
-      "entriesPh": "Элементы: S или S|Маленький (каждый с новой строки)"
+      "entriesPh": "Элементы: S или S|Маленький (каждый с новой строки)",
+      "search": "Поиск по названию или коду…"
     },
     "leads": {
       "nav": "Заявки",

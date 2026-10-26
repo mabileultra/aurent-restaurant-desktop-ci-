@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { CalendarClock } from 'lucide-react';
 import { shiftIsoDate, toIsoDate } from '../BillingPeriodCalendar';
 import { activeDeferralDay } from './billingCollectionsUi';
+import PlatformDatePicker from '../PlatformDatePicker';
 
 const QUICK_DAYS = [3, 7, 14, 30];
 
@@ -41,7 +42,14 @@ export default function BillingDeferralBlock({ p }) {
         ))}
       </div>
       <div className="bc-deferral__row">
-        <input type="date" className="bc-control" min={tomorrow} value={until} onChange={(e) => setUntil(e.target.value)} />
+        <PlatformDatePicker
+          min={tomorrow}
+          value={until}
+          onChange={setUntil}
+          quickDays={false}
+          className="w-full"
+          t={t}
+        />
         <input
           className="bc-control"
           value={reason}
