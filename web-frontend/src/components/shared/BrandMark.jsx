@@ -1,5 +1,6 @@
+import React from 'react';
 import { useTenantDisplayStore } from '../../store/tenantDisplayStore';
-import { BRAND_LOGO_FULL, BRAND_NAME } from '../../config/brandLogos';
+import { BRAND_LOGO_FULL, BRAND_LOGO_ICON, BRAND_NAME } from '../../config/brandLogos';
 
 /**
  * Логотип: кастомный из настроек компании или фирменный Aurent (logo2).
@@ -7,47 +8,59 @@ import { BRAND_LOGO_FULL, BRAND_NAME } from '../../config/brandLogos';
  */
 export default function BrandMark({
   variant = 'full',
-  size = 32,
+  size,
   height,
   className = '',
   alt,
+  style = {},
 }) {
   const tenantLogo = useTenantDisplayStore((s) => s.committed.systemLogoDataUrl);
   const systemLogoSizePx = useTenantDisplayStore((s) => s.committed.systemLogoSizePx);
   const label = alt ?? BRAND_NAME;
-  const src = BRAND_LOGO_FULL;
+  const src = variant === 'icon' ? BRAND_LOGO_ICON : BRAND_LOGO_FULL;
+  const iconPx = typeof size === 'number' ? size : 32;
 
   if (tenantLogo) {
-    const px = systemLogoSizePx || (typeof size === 'number' ? size : 32);
+    const px = systemLogoSizePx || iconPx;
+    if (variant === 'full') {
+      const h = height ?? (typeof size === 'number' ? size : px);
+      return (
+        <img
+          src={tenantLogo}
+          alt={label}
+          className={`brand-logo brand-logo--full object-contain ${className}`.trim()}
+          style={{ height: h, width: 'auto', maxWidth: '220px', objectFit: 'contain', ...style }}
+        />
+      );
+    }
     return (
       <img
         src={tenantLogo}
         alt={label}
-        className={`brand-logo object-contain ${className}`.trim()}
-        style={{ width: px, height: px, maxWidth: px, maxHeight: px }}
+        className={`brand-logo brand-logo--icon object-contain ${className}`.trim()}
+        style={{ width: px, height: px, maxWidth: px, maxHeight: px, objectFit: 'contain', ...style }}
       />
     );
   }
 
   if (variant === 'icon') {
-    const px = typeof size === 'number' ? size : 32;
     return (
       <img
         src={src}
         alt={label}
-        className={`brand-logo brand-logo--icon ${className}`.trim()}
-        style={{ width: px, height: px }}
+        className={`brand-logo brand-logo--icon object-contain ${className}`.trim()}
+        style={{ width: iconPx, height: iconPx, objectFit: 'contain', ...style }}
       />
     );
   }
 
-  const h = height ?? 40;
+  const h = height ?? (typeof size === 'number' ? size : 40);
   return (
     <img
       src={src}
       alt={label}
-      className={`brand-logo brand-logo--full ${className}`.trim()}
-      style={{ height: h }}
+      className={`brand-logo brand-logo--full object-contain ${className}`.trim()}
+      style={{ height: h, width: 'auto', objectFit: 'contain', ...style }}
     />
   );
 }

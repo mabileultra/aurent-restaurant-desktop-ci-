@@ -2465,6 +2465,11 @@
       "title": "Bo‘limlar berilmagan",
       "subtitle": "Super-admin hali ruxsat bermagan. Keyinroq kiring yoki «Kirish huquqlari»da bo‘limlarni ochishni so‘rang."
     },
+    "navGroups": {
+      "main": "Asosiy",
+      "finance": "Moliya va hisob",
+      "management": "Boshqaruv"
+    },
     "companies": "Kompaniyalar",
     "stores": "Do‘konlar",
     "users": "Foydalanuvchilar",
@@ -2548,6 +2553,8 @@
       "enableCustomFirst": "Individual huquqlarni yoqing va modullarni sozlang"
     },
     "businessTypes": {
+      "nav": "Konstruktor biznesa",
+      "title": "Konstruktor biznesa",
       "formFieldsTitle": "«Mahsulot qo‘shish» forma maydonlari",
       "formFieldsHint": "Mahsulot qo‘shish modalidagi bloklarni guruhlar bo‘yicha yoqing yoki o‘chiring.",
       "formFieldsNameAlways": "Mahsulot nomi doim ko‘rinadi va majburiy.",
@@ -2590,6 +2597,25 @@
       "formFieldPlu": "PLU kodi (tarozi)",
       "formFieldExtraBarcodes": "Qo‘shimcha shtrixkodlar",
       "formFieldDynamic": "Biznes turi qo‘shimcha maydonlari"
+    },
+    "referenceBooks": {
+      "nav": "Spravochniki",
+      "title": "Spravochniki",
+      "subtitle": "Konstruktor LIST maydonlari uchun umumiy qiymatlar ro‘yxati",
+      "add": "Spravochnik qo‘shish",
+      "saved": "Spravochnik saqlandi",
+      "deleted": "Spravochnik o‘chirildi",
+      "deleteConfirm": "«{{name}}» spravochnigini o‘chirasizmi?",
+      "empty": "Spravochniklar hali yo‘q",
+      "colName": "Nomi",
+      "colCode": "Kodi",
+      "colEntries": "Elementlar",
+      "colActive": "Faol",
+      "codePh": "Kodi (clothing_sizes)",
+      "namePh": "Nomi",
+      "descriptionPh": "Tavsifi",
+      "active": "Faol",
+      "entriesPh": "Elementlar: S yoki S|Kichik (har biri yangi qatordan)"
     },
     "leads": {
       "nav": "Arizalar",

@@ -53,7 +53,8 @@ html.app-viewport--canonical .admin-shell aside[class*='lg:w-16'] {
   max-width: var(--shell-sidebar-w-collapsed) !important;
 }
 
-html.app-viewport--canonical .platform-shell aside[class*='lg:w-64'] {
+html.app-viewport--canonical .platform-shell aside[class*='lg:w-64'],
+html.app-viewport--canonical .platform-shell aside[class*='lg:w-72'] {
   width: var(--shell-sidebar-w) !important;
   max-width: var(--shell-sidebar-w) !important;
 }

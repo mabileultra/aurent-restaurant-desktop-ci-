@@ -1,20 +1,31 @@
 import { isPlatformAdminRole, isPlatformAnalyticsRole, isSuperAdminRole } from '../../../utils/platformRoles';
 
+export const PLATFORM_NAV_GROUPS = [
+  { id: 'main', key: 'platform.navGroups.main' },
+  { id: 'finance', key: 'platform.navGroups.finance' },
+  { id: 'management', key: 'platform.navGroups.management' },
+];
+
 export const PLATFORM_NAV = [
-  { to: '/platform/companies', key: 'platform.companies', module: 'platformCompanies' },
-  { to: '/platform/stores', key: 'platform.stores', module: 'platformStores' },
-  { to: '/platform/users', key: 'platform.users', module: 'platformUsers' },
-  { to: '/platform/access', key: 'platform.moduleAccess.nav', module: 'platformAccess' },
-  { to: '/platform/business-types', key: 'platform.businessTypes.nav', module: 'platformBusinessTypes' },
-  { to: '/platform/reference-books', key: 'platform.referenceBooks.nav', module: 'platformReferenceBooks' },
-  { to: '/platform/leads', key: 'platform.leads.nav', module: 'platformLeads' },
-  { to: '/platform/billing', key: 'platform.billing.nav', module: 'platformBilling' },
-  { to: '/platform/analytics', key: 'platform.analytics.nav', module: 'platformAnalytics' },
-  { to: '/platform/monitoring', key: 'platform.monitoring.nav', module: 'platformMonitoring' },
-  { to: '/platform/email', key: 'platform.email.nav', module: 'platformEmail' },
-  { to: '/platform/desktop-notifications', key: 'platform.desktopNotifications.nav', module: 'platformDesktopNotifications' },
-  { to: '/platform/security', key: 'platform.security.nav', superAdminOnly: true },
-  { to: '/platform/account', key: 'platform.account.nav', operatorSelf: true },
+  // Asosiy
+  { to: '/platform/companies', key: 'platform.companies', module: 'platformCompanies', group: 'main' },
+  { to: '/platform/stores', key: 'platform.stores', module: 'platformStores', group: 'main' },
+  { to: '/platform/users', key: 'platform.users', module: 'platformUsers', group: 'main' },
+
+  // Moliya va hisob
+  { to: '/platform/billing', key: 'platform.billing.nav', module: 'platformBilling', group: 'finance' },
+  { to: '/platform/desktop-notifications', key: 'platform.desktopNotifications.nav', module: 'platformDesktopNotifications', group: 'finance' },
+  { to: '/platform/analytics', key: 'platform.analytics.nav', module: 'platformAnalytics', group: 'finance' },
+
+  // Boshqaruv
+  { to: '/platform/access', key: 'platform.moduleAccess.nav', module: 'platformAccess', group: 'management' },
+  { to: '/platform/business-types', key: 'platform.businessTypes.nav', module: 'platformBusinessTypes', group: 'management' },
+  { to: '/platform/reference-books', key: 'platform.referenceBooks.nav', module: 'platformReferenceBooks', group: 'management' },
+  { to: '/platform/leads', key: 'platform.leads.nav', module: 'platformLeads', group: 'management' },
+  { to: '/platform/monitoring', key: 'platform.monitoring.nav', module: 'platformMonitoring', group: 'management' },
+  { to: '/platform/email', key: 'platform.email.nav', module: 'platformEmail', group: 'management' },
+  { to: '/platform/security', key: 'platform.security.nav', superAdminOnly: true, group: 'management' },
+  { to: '/platform/account', key: 'platform.account.nav', operatorSelf: true, group: 'management' },
 ];
 
 function isPlatformStaffNavRole(role) {
@@ -32,6 +43,14 @@ export function visiblePlatformNav(role, hasModule) {
   });
 }
 
+export function visiblePlatformNavGrouped(role, hasModule) {
+  const visible = visiblePlatformNav(role, hasModule);
+  return PLATFORM_NAV_GROUPS.map((group) => ({
+    ...group,
+    items: visible.filter((item) => item.group === group.id),
+  })).filter((group) => group.items.length > 0);
+}
+
 export function firstPlatformPath(role, hasModule) {
   return visiblePlatformNav(role, hasModule)[0]?.to ?? '/platform';
 }
@@ -45,3 +64,4 @@ export function canOpenPlatformPath(role, hasModule, pathname) {
   if (item.superAdminOnly) return false;
   return hasModule(item.module);
 }
+

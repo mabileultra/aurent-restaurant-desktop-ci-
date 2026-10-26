@@ -1,21 +1,42 @@
 /* Platform / super-admin shell */
 .platform-shell {
-  --platform-sidebar-w: var(--shell-sidebar-w, 256px);
-  --platform-header-h: var(--shell-header-h, 56px);
+  --platform-sidebar-w: 288px;
+  --platform-header-h: 64px;
   --platform-main-pad: var(--shell-pad, 16px);
 }
 
 html.app-viewport--canonical .platform-shell {
-  --platform-sidebar-w: var(--shell-sidebar-w, 200px);
+  --platform-sidebar-w: 240px;
 }
 
 .platform-shell.admin-shell .admin-sidebar {
-  width: min(100vw, 16rem);
+  width: min(100vw, 18rem);
 }
 
 @media (min-width: 1024px) {
   .platform-shell.admin-shell .admin-sidebar {
     width: var(--platform-sidebar-w);
   }
+}
+
+.platform-shell .admin-sidebar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.platform-shell .admin-sidebar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+.platform-shell .admin-sidebar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+.platform-shell .admin-sidebar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.dark .platform-shell .admin-sidebar::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+.dark .platform-shell .admin-sidebar::-webkit-scrollbar-thumb {
+  background: #334155;
 }
 
