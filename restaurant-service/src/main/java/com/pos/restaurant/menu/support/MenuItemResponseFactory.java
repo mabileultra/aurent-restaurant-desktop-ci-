@@ -24,7 +24,7 @@ public class MenuItemResponseFactory {
             base.stationId(),
             base.menuCategoryId(),
             base.category(),
-            base.imageUrl(),
+            listSafeImageUrl(base.imageUrl()),
             base.description(),
             base.prepMinutes(),
             base.portionGrams(),
@@ -41,5 +41,20 @@ public class MenuItemResponseFactory {
             base.barcode(),
             base.markedProduct()
         );
+    }
+
+    /**
+     * Inline data-URI photos blow list payloads to multi‑MB (POS hangs / gateway 500).
+     * Keep only http(s) URLs in list responses; admin edit still loads via get-by-id later.
+     */
+    static String listSafeImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        String trimmed = imageUrl.trim();
+        if (trimmed.regionMatches(true, 0, "data:", 0, 5)) {
+            return null;
+        }
+        return trimmed;
     }
 }

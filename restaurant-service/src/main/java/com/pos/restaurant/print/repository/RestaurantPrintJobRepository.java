@@ -100,7 +100,7 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
         WHERE id IN (
             SELECT id FROM (
                 SELECT slip.id, slip.created_at
-                FROM unnest(ARRAY[:printers]) AS printer(name)
+                FROM unnest(CAST(:printers AS text[])) AS printer_name
                 CROSS JOIN LATERAL (
                     SELECT id, created_at
                     FROM restaurant_print_jobs
@@ -109,13 +109,13 @@ public interface RestaurantPrintJobRepository extends JpaRepository<RestaurantPr
                       AND status = 'PENDING'
                       AND created_at > :since
                       AND kind IN ('CATEGORY_SLIP', 'CATEGORY_BATCH')
-                      AND lower(coalesce(CAST(payload AS json)->>'printerName', '')) = printer.name
+                      AND lower(coalesce(CAST(payload AS json)->>'printerName', '')) = printer_name
                     ORDER BY created_at ASC
                     LIMIT :perLane
                     FOR UPDATE SKIP LOCKED
                 ) slip
                 WHERE :hasPrinters = 1
-                  AND printer.name NOT IN (:busyPrinters)
+                  AND printer_name NOT IN (:busyPrinters)
                 UNION ALL
                 SELECT id, created_at FROM (
                     SELECT id, created_at
