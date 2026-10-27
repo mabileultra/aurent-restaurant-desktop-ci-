@@ -30,6 +30,25 @@
   font-size: 0.8rem;
 }
 
+.platform-filter-bar__geo .base-select {
+  flex: 0 1 11.5rem;
+  width: 11.5rem;
+  min-width: 9.5rem;
+}
+
+.platform-filter-bar__geo .base-select__label {
+  display: none;
+}
+
+.platform-filter-bar__geo .base-select__trigger {
+  min-height: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.65rem;
+  border-radius: 0.55rem;
+  border-color: #e6ebf1;
+  font-size: 0.8rem;
+}
+
 .platform-filter-bar__select:disabled {
   opacity: 0.55;
   cursor: not-allowed;
@@ -40,6 +59,19 @@
   background: #0f172a;
   border-color: #334155;
   color: #e2e8f0;
+}
+
+.dark .platform-filter-bar__geo .base-select__trigger {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+.dark .platform-filter-bar__geo .base-select--disabled .base-select__trigger {
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+  opacity: 0.65;
 }
 
 .platform-filter-bar__menu {
@@ -109,6 +141,11 @@
   border-radius: 0.5rem;
   background: #fff;
   box-shadow: 0 10px 24px rgb(15 23 42 / 0.12);
+}
+
+.platform-filter-bar__dropdown--right {
+  left: auto;
+  right: 0;
 }
 
 .dark .platform-filter-bar__dropdown {

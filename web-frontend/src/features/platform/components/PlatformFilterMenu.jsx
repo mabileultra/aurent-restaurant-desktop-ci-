@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Filter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,7 +7,15 @@ export default function PlatformFilterMenu({ options = [], value = '', onChange,
   const caption = t('platform.toolbarFilter', { defaultValue: 'Фильтр' });
   const rootRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [alignRight, setAlignRight] = useState(false);
   const active = Boolean(value);
+
+  useEffect(() => {
+    if (open && rootRef.current && typeof window !== 'undefined') {
+      const rect = rootRef.current.getBoundingClientRect();
+      setAlignRight(rect.left + 220 > window.innerWidth - 16);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -43,7 +51,10 @@ export default function PlatformFilterMenu({ options = [], value = '', onChange,
         </span>
       </button>
       {open ? (
-        <div className="platform-filter-bar__dropdown" role="menu">
+        <div
+          className={`platform-filter-bar__dropdown${alignRight ? ' platform-filter-bar__dropdown--right' : ''}`}
+          role="menu"
+        >
           {options.map((option) => (
             <button
               key={option.value || 'all'}

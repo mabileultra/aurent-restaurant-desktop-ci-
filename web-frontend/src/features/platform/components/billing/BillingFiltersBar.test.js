@@ -3,6 +3,13 @@ import React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import BillingFiltersBar from './BillingFiltersBar';
 
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key) => key,
+    i18n: { language: 'uz' },
+  }),
+}));
+
 vi.mock('../../../shared/geo/GeoFilterSelects', () => ({
   default: () => React.createElement('div', { className: 'mock-geo' }),
 }));
@@ -41,10 +48,14 @@ describe('BillingFiltersBar', () => {
 
     expect(html).toContain('bc-filters');
     expect(html).toContain('bc-filters__date');
+    expect(html).toContain('base-select');
+    expect(html).toContain('bc-filter-select');
+    expect(html).toContain('Starter');
     // Date range picker formatted dates
     expect(html).toContain('01.10.2026 — 26.10.2026');
-    // Raw inputs should not exist anymore
+    // Raw inputs and controls should not exist anymore
     expect(html).not.toContain('type="date"');
+    expect(html).not.toContain('bc-control');
     expect(html).not.toContain('bc-filters__dash');
   });
 

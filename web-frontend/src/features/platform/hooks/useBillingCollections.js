@@ -70,6 +70,7 @@ export function useBillingCollections() {
   const upcomingQ = useQuery({
     queryKey: [COLLECTIONS_QUERY_KEY, 'companies', { state: 'DUE_SOON' }],
     queryFn: () => platformBillingApi.collectionsCompanies({ state: 'DUE_SOON' }).then((r) => r.data),
+    enabled: false,
   });
 
   const upcoming = useMemo(
@@ -151,6 +152,9 @@ export function useBillingCollections() {
     pagedRows,
     total: rows.length,
     loading: rowsQ.isLoading,
+    isError: rowsQ.isError,
+    error: rowsQ.error,
+    refetch: rowsQ.refetch,
     page,
     setPage,
     pageSize,

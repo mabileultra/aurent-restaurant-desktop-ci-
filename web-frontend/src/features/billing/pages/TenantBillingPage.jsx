@@ -8,6 +8,11 @@ import BillingLedgerSection from '../components/BillingLedgerSection';
 import BillingPayModal from '../components/BillingPayModal';
 import BillingPaymentsList from '../components/BillingPaymentsList';
 import { useTenantBillingPage } from '../hooks/useTenantBillingPage';
+import {
+  formatMoneyInputDigits,
+  parseMoneyInput,
+  preventNonNumericKey,
+} from '../utils/parseMoneyInput';
 
 function periodStart(paidUntil) {
   if (!paidUntil) return null;
@@ -197,7 +202,7 @@ export default function TenantBillingPage() {
                 <button
                   key={value}
                   type="button"
-                  className={`billing-preset ${String(p.amount) === String(value) ? 'billing-preset--active' : ''}`}
+                  className={`billing-preset ${parseMoneyInput(p.amount) === Number(value) ? 'billing-preset--active' : ''}`}
                   onClick={() => p.setAmount(String(value))}
                 >
                   {p.money(value)}
@@ -214,7 +219,8 @@ export default function TenantBillingPage() {
               inputMode="numeric"
               autoComplete="off"
               value={p.amount}
-              onChange={(e) => p.setAmount(e.target.value)}
+              onKeyDown={preventNonNumericKey}
+              onChange={(e) => p.setAmount(formatMoneyInputDigits(e.target.value))}
               placeholder={p.t('billing.customAmount')}
             />
 

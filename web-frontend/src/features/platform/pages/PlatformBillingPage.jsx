@@ -1,10 +1,10 @@
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import '../../../styles/billing.css';
 import '../../../styles/platform/billing-collections.css';
 import { PageLayout } from '../../../components/ui';
 import BillingKpiCards from '../components/billing/BillingKpiCards';
-import BillingStateTabs from '../components/billing/BillingStateTabs';
 import BillingFiltersBar from '../components/billing/BillingFiltersBar';
 import BillingCompaniesTable from '../components/billing/BillingCompaniesTable';
 import BillingCompanyDrawer from '../components/billing/BillingCompanyDrawer';
@@ -12,7 +12,6 @@ import BillingAddPaymentModal from '../components/billing/BillingAddPaymentModal
 import BillingBulkModal from '../components/billing/BillingBulkModal';
 import BillingReportsView from '../components/billing/BillingReportsView';
 import BillingCalendarView from '../components/billing/BillingCalendarView';
-import { BillingTopUpQueuePanel, BillingUpcomingPanel } from '../components/billing/BillingSidePanels';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 const VIEWS = ['overview', 'reports', 'calendar'];
@@ -31,7 +30,7 @@ export default function PlatformBillingPage() {
       title={p.t('platform.billing.title')}
       subtitle={p.t('platform.billing.subtitle')}
       actions={(
-        <button type="button" className="bc-btn bc-btn--primary" onClick={p.openPaymentModal}>
+        <button type="button" className="bc-btn bc-btn--primary" onClick={() => p.openPaymentModal()}>
           <Plus size={16} aria-hidden />
           {p.t('platform.billing.collections.addPayment')}
         </button>
@@ -55,41 +54,34 @@ export default function PlatformBillingPage() {
           <BillingKpiCards t={p.t} money={p.money} overview={c.overview} tab={c.tab} onTab={c.setTab} />
 
           <div className="bc-card bc-toolbar">
-            <BillingStateTabs t={p.t} tab={c.tab} onTab={c.setTab} count={c.tabCount} />
             <BillingFiltersBar t={p.t} c={c} plans={p.plans} />
           </div>
 
-          <div className="bc-layout">
-            <BillingCompaniesTable p={p} />
-            <div className="bc-layout__side">
-              <BillingUpcomingPanel p={p} />
-              <BillingTopUpQueuePanel p={p} />
-            </div>
-          </div>
-
-          <BillingCompanyDrawer p={p} />
+          <BillingCompaniesTable p={p} />
         </>
       ) : null}
 
-      {view === 'reports' ? <BillingReportsView t={p.t} money={p.money} /> : null}
+      {view === 'reports' ? <BillingReportsView t={p.t} money={p.money} p={p} /> : null}
 
       {view === 'calendar' ? (
         <BillingCalendarView
           t={p.t}
           money={p.money}
           dateLocale={p.dateLocale}
+          p={p}
           onOpenCompany={(id) => {
-            setView('overview');
             p.openCompanyById(id);
           }}
         />
       ) : null}
 
+      <BillingCompanyDrawer p={p} />
+
       {p.paymentModalOpen ? (
         <BillingAddPaymentModal
           t={p.t}
           companies={p.allCompanies}
-          initialCompanyId={p.selectedCompanyId}
+          initialCompanyId={p.paymentTargetCompanyId || p.selectedCompanyId}
           busy={p.manualPaymentBusy}
           onClose={p.closePaymentModal}
           onSubmit={p.submitManualPayment}

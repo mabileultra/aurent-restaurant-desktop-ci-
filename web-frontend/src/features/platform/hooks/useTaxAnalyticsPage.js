@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { geoApi, taxAnalyticsApi } from '../../../api';
+import { cleanGeoName } from '../../shared/geo/geoNameUtils';
 
 const PERIODS = ['today', '7d', '30d', 'month', 'year'];
 const FILTERS_KEY = 'platform.taxAnalytics.savedFilters';
@@ -238,7 +239,11 @@ export function useTaxAnalyticsPage() {
   };
 
   const lang = i18n.language;
-  const labelGeo = (row) => (lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz));
+  const labelGeo = (row) => {
+    if (!row) return '';
+    const raw = lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz);
+    return cleanGeoName(raw);
+  };
 
   return {
     t,

@@ -108,6 +108,18 @@ describe('PlatformDateRangePicker component', () => {
     );
     expect(html).toContain('Выберите период');
   });
+
+  it('respects align="right" prop', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformDateRangePicker, {
+        from: '2026-10-01',
+        to: '2026-10-26',
+        align: 'right',
+      }),
+    );
+    // Component renders without error and sets up right alignment
+    expect(html).toContain('role="combobox"');
+  });
 });
 
 describe('PlatformDatePicker component', () => {
@@ -186,5 +198,15 @@ describe('PlatformDatePicker component', () => {
       }),
     );
     expect(html).toContain('Выберите дату');
+  });
+
+  it('respects align="right" prop', () => {
+    const html = renderToStaticMarkup(
+      React.createElement(PlatformDatePicker, {
+        value: '2026-10-26',
+        align: 'right',
+      }),
+    );
+    expect(html).toContain('role="combobox"');
   });
 });

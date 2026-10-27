@@ -1,6 +1,6 @@
-/** Фирменные логотипы Aurent — везде logo2 (полный знак). */
-export const BRAND_LOGO_ICON = '/brand/logo2.png';
-export const BRAND_LOGO_FULL = '/brand/logo2.png';
+/** Фирменные логотипы Aurent — везде logonew (полный знак без фона). */
+export const BRAND_LOGO_ICON = '/brand/logonew.png';
+export const BRAND_LOGO_FULL = '/brand/logonew.png';
 export const BRAND_NAME = 'Aurent';
 
 export const BRAND_LOGO_SIZES = {

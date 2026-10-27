@@ -3,6 +3,11 @@ import { QrCode, X } from 'lucide-react';
 import { PAYMENT_PROVIDER_LOGOS } from '../../cashier/constants/paymentProviderLogos';
 import ReceiptQrCode from '../../../components/receipt/ReceiptQrCode';
 import { BaseButton, BaseModal } from '../../../components/ui';
+import {
+  formatMoneyInputDigits,
+  parseMoneyInput,
+  preventNonNumericKey,
+} from '../utils/parseMoneyInput';
 
 const METHODS = [
   { id: 'HUMO', tone: 'humo', logo: PAYMENT_PROVIDER_LOGOS.HUMO, labelKey: 'billing.payHumo', available: false },
@@ -68,8 +73,8 @@ export default function BillingPayModal({
           <button
             key={value}
             type="button"
-            className={`billing-preset ${String(amount) === String(value) ? 'billing-preset--active' : ''}`}
-            onClick={() => setAmount(String(value))}
+            className={`billing-preset ${parseMoneyInput(amount) === Number(value) ? 'billing-preset--active' : ''}`}
+            onClick={() => setAmount(formatMoneyInputDigits(String(value)))}
           >
             {money(value)}
           </button>
@@ -81,7 +86,8 @@ export default function BillingPayModal({
         inputMode="numeric"
         autoComplete="off"
         value={amount}
-        onChange={(e) => setAmount(e.target.value)}
+        onKeyDown={preventNonNumericKey}
+        onChange={(e) => setAmount(formatMoneyInputDigits(e.target.value))}
         placeholder={t('billing.customAmount')}
       />
 

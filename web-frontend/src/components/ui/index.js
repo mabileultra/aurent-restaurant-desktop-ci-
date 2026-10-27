@@ -8,4 +8,5 @@ export { default as PageLayout } from './PageLayout';
 export { default as PageHeader } from './PageHeader';
 export { default as PageSearchField } from './PageSearchField';
 export { default as ErrorBanner } from './ErrorBanner';
+export { default as PlatformErrorState } from './PlatformErrorState';
 export { inputCls, labelCls, fieldErrorCls } from './uiClasses';

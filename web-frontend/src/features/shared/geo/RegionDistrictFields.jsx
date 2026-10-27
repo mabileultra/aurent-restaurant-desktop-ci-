@@ -3,8 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { BaseSelect } from '../../../components/ui';
 import { geoApi } from '../../../api/geo.api';
 
+import { cleanGeoName } from './geoNameUtils';
+
 function regionLabel(row, lang) {
-  return lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz);
+  const raw = lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz);
+  return cleanGeoName(raw);
 }
 
 /**
