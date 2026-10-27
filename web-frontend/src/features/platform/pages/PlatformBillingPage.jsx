@@ -5,7 +5,6 @@ import '../../../styles/billing.css';
 import '../../../styles/platform/billing-collections.css';
 import { PageLayout } from '../../../components/ui';
 import BillingKpiCards from '../components/billing/BillingKpiCards';
-import BillingStateTabs from '../components/billing/BillingStateTabs';
 import BillingFiltersBar from '../components/billing/BillingFiltersBar';
 import BillingCompaniesTable from '../components/billing/BillingCompaniesTable';
 import BillingCompanyDrawer from '../components/billing/BillingCompanyDrawer';
@@ -55,7 +54,6 @@ export default function PlatformBillingPage() {
           <BillingKpiCards t={p.t} money={p.money} overview={c.overview} tab={c.tab} onTab={c.setTab} />
 
           <div className="bc-card bc-toolbar">
-            <BillingStateTabs t={p.t} tab={c.tab} onTab={c.setTab} count={c.tabCount} />
             <BillingFiltersBar t={p.t} c={c} plans={p.plans} />
           </div>
 
@@ -70,8 +68,8 @@ export default function PlatformBillingPage() {
           t={p.t}
           money={p.money}
           dateLocale={p.dateLocale}
+          p={p}
           onOpenCompany={(id) => {
-            setView('overview');
             p.openCompanyById(id);
           }}
         />

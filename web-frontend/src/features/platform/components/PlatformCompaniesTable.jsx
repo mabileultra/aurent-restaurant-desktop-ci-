@@ -2,11 +2,14 @@ import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu'
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
 import { useGeoNameLookup } from '../../shared/geo/useGeoNameLookup';
+import { PlatformErrorState } from '../../../components/ui';
 
 export default function PlatformCompaniesTable({
   t,
   isPending,
   isError = false,
+  error = null,
+  onRetry,
   rows,
   page,
   pageSize,
@@ -50,10 +53,21 @@ export default function PlatformCompaniesTable({
                   {t('common.loading')}
                 </td>
               </tr>
-            ) : isError || rows.length === 0 ? (
+            ) : isError ? (
+              <tr>
+                <td colSpan={10} className="px-4 py-8">
+                  <PlatformErrorState
+                    size="sm"
+                    error={error}
+                    onRetry={onRetry}
+                    retryLoading={isPending}
+                  />
+                </td>
+              </tr>
+            ) : rows.length === 0 ? (
               <tr>
                 <td colSpan={10} className="px-4 py-8 text-center text-slate-500">
-                  {isError ? t('common.loadError') : t('common.noData')}
+                  {t('common.noData')}
                 </td>
               </tr>
             ) : (

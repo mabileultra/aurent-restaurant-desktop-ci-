@@ -39,7 +39,7 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     [search, page, pageSize, resolvedCompanyId, businessType, regionCode, districtCode]
   );
 
-  const { data, isPending, isError, error } = useQuery({
+  const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ['stores-manage', queryParams],
     queryFn: () => storeApi.getManaged(queryParams).then((r) => r.data),
   });
@@ -183,6 +183,8 @@ export function useStoresPage({ showCompanySelect = false, companyIdFilter, comp
     totalPages,
     isPending,
     isError,
+    error,
+    refetch,
     errorMessage,
     showCompanySelect,
     companies,
