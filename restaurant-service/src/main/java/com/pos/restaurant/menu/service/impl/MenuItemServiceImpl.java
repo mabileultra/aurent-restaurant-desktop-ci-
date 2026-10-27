@@ -40,7 +40,10 @@ public class MenuItemServiceImpl implements MenuItemService {
     private final RestaurantHotCache hotCache;
 
     @Override
-    @Cacheable(cacheNames = RestaurantCacheNames.MENU, key = "#storeId + ':' + #posOnly")
+    @Cacheable(
+        cacheNames = RestaurantCacheNames.MENU,
+        key = "T(com.pos.restaurant.security.RestaurantTenantContext).getCompanyId() + ':' + #storeId + ':' + #posOnly"
+    )
     public List<MenuItemResponse> list(Integer storeId, boolean posOnly) {
         Integer companyId = tenantSupport.requireCompanyId();
         List<MenuItem> items = posOnly
@@ -71,7 +74,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Transactional
     public MenuItemResponse create(Integer storeId, SaveMenuItemRequest request) {
         MenuItemResponse created = createHandler.handle(storeId, request);
-        hotCache.evictMenu(storeId);
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), storeId);
         return created;
     }
 
@@ -79,7 +82,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     @Transactional
     public MenuItemResponse update(UUID itemId, SaveMenuItemRequest request) {
         MenuItemResponse updated = updateHandler.handle(itemId, request);
-        hotCache.evictMenu(updated.storeId());
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), updated.storeId());
         return updated;
     }
 
@@ -90,7 +93,7 @@ public class MenuItemServiceImpl implements MenuItemService {
         List<UUID> groups = linkRepository.findByMenuItemId(created.id()).stream()
             .map(MenuItemModifierLink::getGroupId)
             .toList();
-        hotCache.evictMenu(created.storeId());
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), created.storeId());
         return responseFactory.withGroups(created, groups);
     }
 
@@ -99,6 +102,6 @@ public class MenuItemServiceImpl implements MenuItemService {
     public void deactivate(UUID itemId) {
         Integer storeId = itemRepository.findById(itemId).map(MenuItem::getStoreId).orElse(null);
         deactivateHandler.handle(itemId);
-        hotCache.evictMenu(storeId);
+        hotCache.evictMenu(tenantSupport.requireCompanyId(), storeId);
     }
 }

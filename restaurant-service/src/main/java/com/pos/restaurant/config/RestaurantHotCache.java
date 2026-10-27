@@ -27,6 +27,10 @@ public class RestaurantHotCache {
     }
 
     public void evictMenu(Integer storeId) {
+        evictMenu(null, storeId);
+    }
+
+    public void evictMenu(Integer companyId, Integer storeId) {
         if (storeId == null) {
             return;
         }
@@ -34,6 +38,11 @@ public class RestaurantHotCache {
         if (cache == null) {
             return;
         }
+        if (companyId != null) {
+            cache.evict(companyId + ":" + storeId + ":true");
+            cache.evict(companyId + ":" + storeId + ":false");
+        }
+        // Legacy keys (pre company-scoped menu cache) — drop so empty poison cannot linger.
         cache.evict(storeId + ":true");
         cache.evict(storeId + ":false");
     }
