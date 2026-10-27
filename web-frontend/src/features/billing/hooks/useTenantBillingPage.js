@@ -4,7 +4,10 @@ import toast from 'react-hot-toast';
 import { useTranslation } from 'react-i18next';
 import { TABLE_PAGE_SIZE_OPTIONS } from '../../../components/shared/TablePagination';
 import { tenantBillingApi } from '../../../api';
-import { parseMoneyInput } from '../utils/parseMoneyInput';
+import {
+  formatMoneyInputDigits,
+  parseMoneyInput,
+} from '../utils/parseMoneyInput';
 
 const PRESETS = [500000, 850000, 1500000, 3000000];
 const LEDGER_TABS = [null, 'TOP_UP', 'CHARGE', 'MODULE'];
@@ -28,7 +31,7 @@ export function useTenantBillingPage() {
   const { t, i18n } = useTranslation();
   const dateLocale = i18n.language?.startsWith('uz') ? 'uz-UZ' : 'ru-RU';
   const qc = useQueryClient();
-  const [amount, setAmount] = useState('850000');
+  const [amount, setAmount] = useState(() => formatMoneyInputDigits('850000'));
   const [comment, setComment] = useState('');
   const [file, setFile] = useState(null);
   const [ledgerType, setLedgerType] = useState(null);
@@ -356,7 +359,10 @@ export function useTenantBillingPage() {
     pendingTopUps: (topUpsQ.data?.content || []).filter((x) => x.status === 'PENDING'),
     amount,
     setAmount: (value) => {
-      setAmount(value);
+      setAmount((prev) => {
+        const next = typeof value === 'function' ? value(prev) : value;
+        return formatMoneyInputDigits(next);
+      });
       clearOnlineSession();
     },
     amountValid: parsedAmount != null,

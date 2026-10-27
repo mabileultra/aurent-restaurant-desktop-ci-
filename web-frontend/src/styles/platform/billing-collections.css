@@ -477,8 +477,38 @@ textarea.bc-control { height: auto; padding-block: 0.5rem; }
 .bc-timeline__item > svg { color: var(--bc-tone); flex-shrink: 0; margin-top: 0.1rem; }
 .bc-timeline__body { flex: 1; min-width: 0; }
 .bc-timeline__title { display: block; font-size: 0.8125rem; font-weight: 700; color: var(--color-ink); }
-.bc-timeline__side { text-align: right; font-size: 0.8125rem; font-weight: 700; white-space: nowrap; }
-.bc-manage { margin-top: 0; padding-top: 0; border-top: 0; }
+.bc-manage {
+  margin-top: 0;
+  padding: 1.1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.875rem;
+  background: var(--color-surface);
+}
+
+.dark .bc-manage,
+.dark .billing-manage {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9;
+}
+
+.dark .billing-table th {
+  color: #94a3b8 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.dark .billing-table td {
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+.dark .billing-table tbody tr:hover {
+  background: #1e293b !important;
+}
+
+.dark .billing-table tbody tr.billing-row--selected {
+  background: rgba(37, 99, 235, 0.25) !important;
+}
 
 /* Side panels */
 .bc-side { padding: 1rem; }

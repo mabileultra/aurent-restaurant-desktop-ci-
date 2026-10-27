@@ -207,8 +207,7 @@ export default function BillingActionableLedger({ t, money, p }) {
                         type="button"
                         className="bc-btn bc-btn--primary bc-btn--sm inline-flex items-center gap-1"
                         onClick={() => {
-                          p?.selectCompany?.(row);
-                          p?.openPaymentModal?.();
+                          p?.openPaymentModal?.(b.companyId, { returnToDrawer: false });
                         }}
                       >
                         <Plus size={13} aria-hidden />

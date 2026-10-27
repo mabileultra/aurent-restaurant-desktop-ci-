@@ -30,7 +30,7 @@ export default function PlatformBillingPage() {
       title={p.t('platform.billing.title')}
       subtitle={p.t('platform.billing.subtitle')}
       actions={(
-        <button type="button" className="bc-btn bc-btn--primary" onClick={p.openPaymentModal}>
+        <button type="button" className="bc-btn bc-btn--primary" onClick={() => p.openPaymentModal()}>
           <Plus size={16} aria-hidden />
           {p.t('platform.billing.collections.addPayment')}
         </button>
@@ -81,7 +81,7 @@ export default function PlatformBillingPage() {
         <BillingAddPaymentModal
           t={p.t}
           companies={p.allCompanies}
-          initialCompanyId={p.selectedCompanyId}
+          initialCompanyId={p.paymentTargetCompanyId || p.selectedCompanyId}
           busy={p.manualPaymentBusy}
           onClose={p.closePaymentModal}
           onSubmit={p.submitManualPayment}

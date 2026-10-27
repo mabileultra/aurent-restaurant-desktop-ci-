@@ -69,7 +69,7 @@ function LedgerTimeline({ p, limit }) {
         return (
           <li
             key={e.id}
-            className={`flex items-start justify-between gap-3 p-2.5 rounded-xl border text-xs bg-white dark:bg-slate-850 ${
+            className={`flex items-start justify-between gap-3 p-2.5 rounded-xl border text-xs bg-white dark:!bg-slate-800/80 ${
               positive
                 ? 'border-emerald-200/80 dark:border-emerald-900/60 border-l-4 border-l-emerald-600'
                 : 'border-rose-200/80 dark:border-rose-900/60 border-l-4 border-l-rose-600'
@@ -117,7 +117,7 @@ export default function BillingCompanyDrawer({ p }) {
 
   const { regionName, districtName } = useGeoNameLookup(row?.regionCode ? [row.regionCode] : []);
 
-  if (!row || !b) return null;
+  if (!row || !b || p.paymentModalOpen) return null;
 
   const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
   const currency = t('billing.currency');
@@ -159,10 +159,10 @@ export default function BillingCompanyDrawer({ p }) {
 
       {/* Centered Dialog Box (Stitch Design) */}
       <div
-        className="relative w-full max-w-3xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 flex flex-col max-h-[88vh] overflow-hidden transform transition-all duration-200 z-10 select-text"
+        className="relative w-full max-w-3xl bg-white dark:!bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:!border-slate-800 flex flex-col max-h-[88vh] overflow-hidden transform transition-all duration-200 z-10 select-text"
       >
         {/* Modal Header */}
-        <header className="px-6 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white dark:bg-slate-900">
+        <header className="px-6 pt-6 pb-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0 bg-white dark:!bg-slate-900">
           <div className="flex items-center space-x-4 min-w-0">
             {/* Avatar Icon */}
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-lg font-extrabold shadow-inner shrink-0 ${avatarClass(row.paymentState)}`}>
@@ -366,7 +366,7 @@ export default function BillingCompanyDrawer({ p }) {
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Telefon raqam */}
-                  <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-between">
+                  <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-800 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0">
                         <Phone size={16} />
@@ -391,7 +391,7 @@ export default function BillingCompanyDrawer({ p }) {
                   </div>
 
                   {/* STIR / INN */}
-                  <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-between">
+                  <div className="p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-800 flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-700 dark:text-indigo-400 flex items-center justify-center shrink-0">
                         <Hash size={16} />
@@ -480,7 +480,7 @@ export default function BillingCompanyDrawer({ p }) {
         </div>
 
         {/* Modal Action Footer (Sticky bottom) */}
-        <footer className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
+        <footer className="px-6 py-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:!bg-slate-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shrink-0">
           {/* Quick Communication button */}
           <div className="flex items-center space-x-2">
             <button
@@ -515,7 +515,7 @@ export default function BillingCompanyDrawer({ p }) {
             <button
               type="button"
               className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-semibold text-xs shadow-md shadow-emerald-900/10 transition-colors"
-              onClick={p.openPaymentModal}
+              onClick={() => p.openPaymentModal(b.companyId, { returnToDrawer: true })}
             >
               <Wallet size={16} />
               <span>{k('acceptPayment')}</span>

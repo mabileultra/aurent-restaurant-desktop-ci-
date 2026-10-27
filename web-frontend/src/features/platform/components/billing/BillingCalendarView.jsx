@@ -167,8 +167,8 @@ export default function BillingCalendarView({ t, money, p, onOpenCompany }) {
     }
   };
 
-  const handleOpenPaymentModal = () => {
-    p?.openPaymentModal?.();
+  const handleOpenPaymentModal = (companyId) => {
+    p?.openPaymentModal?.(companyId, { returnToDrawer: false });
   };
 
   return (

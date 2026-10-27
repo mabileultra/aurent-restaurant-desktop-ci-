@@ -202,8 +202,7 @@ export default function BillingCalendarListView({
                         type="button"
                         className="bc-btn bc-btn--primary bc-btn--sm inline-flex items-center gap-1"
                         onClick={() => {
-                          onOpenCompany(item.companyId, item.company);
-                          onOpenPaymentModal();
+                          onOpenPaymentModal(item.companyId);
                         }}
                       >
                         <Plus size={13} aria-hidden />

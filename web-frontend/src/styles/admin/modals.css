@@ -85,8 +85,67 @@ html.app-theme--admin:not(.dark) .fixed.inset-0 {
 }
 
 html.dark.app-theme--admin .fixed.inset-0,
-.dark html.app-theme--admin .fixed.inset-0 {
+.dark html.app-theme--admin .fixed.inset-0,
+.dark .fixed.inset-0 {
   color-scheme: dark;
+}
+
+/* Modal Dialog surface in Dark Mode (overrides any leaked .bg-white !important) */
+html.dark.app-theme--admin [role='dialog'],
+html.dark [role='dialog'],
+.dark [role='dialog'],
+.dark.app-theme--admin [role='dialog'],
+.dark.admin-shell [role='dialog'],
+.dark.platform-shell [role='dialog'],
+.dark .fixed.inset-0 [role='dialog'] {
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9;
+}
+
+html.dark.app-theme--admin [role='dialog'] .border-slate-200,
+html.dark.app-theme--admin [role='dialog'] .border-slate-100,
+.dark .fixed.inset-0 [role='dialog'] .border-slate-200,
+.dark .fixed.inset-0 [role='dialog'] .border-slate-100,
+.dark [role='dialog'] .border-slate-200,
+.dark [role='dialog'] .border-slate-100 {
+  border-color: #1e293b !important;
+}
+
+html.dark.app-theme--admin [role='dialog'] .bg-white,
+.dark.app-theme--admin [role='dialog'] .bg-white,
+.dark .fixed.inset-0 [role='dialog'] .bg-white,
+.dark [role='dialog'] .bg-white,
+html.dark [role='dialog'] header.bg-white,
+html.dark [role='dialog'] footer.bg-white,
+.dark [role='dialog'] header.bg-white,
+.dark [role='dialog'] footer.bg-white {
+  background-color: #0f172a !important;
+  color: #f1f5f9;
+}
+
+html.dark.app-theme--admin [role='dialog'] .text-slate-900,
+.dark .fixed.inset-0 [role='dialog'] .text-slate-900,
+.dark [role='dialog'] .text-slate-900 {
+  color: #f1f5f9 !important;
+}
+
+html.dark.app-theme--admin [role='dialog'] .text-slate-700,
+.dark .fixed.inset-0 [role='dialog'] .text-slate-700,
+.dark [role='dialog'] .text-slate-700 {
+  color: #cbd5e1 !important;
+}
+
+html.dark.app-theme--admin [role='dialog'] .text-slate-500,
+.dark .fixed.inset-0 [role='dialog'] .text-slate-500,
+.dark [role='dialog'] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+html.dark.app-theme--admin [role='dialog'] table td,
+.dark .fixed.inset-0 [role='dialog'] table td,
+.dark [role='dialog'] table td {
+  color: #f1f5f9;
 }
 
 html.app-theme--admin:not(.dark) .fixed.inset-0 input,
@@ -102,7 +161,10 @@ html.dark.app-theme--admin .fixed.inset-0 select,
 html.dark.app-theme--admin .fixed.inset-0 textarea,
 .dark html.app-theme--admin .fixed.inset-0 input,
 .dark html.app-theme--admin .fixed.inset-0 select,
-.dark html.app-theme--admin .fixed.inset-0 textarea {
+.dark html.app-theme--admin .fixed.inset-0 textarea,
+.dark .fixed.inset-0 input,
+.dark .fixed.inset-0 select,
+.dark .fixed.inset-0 textarea {
   background-color: #0f172a;
   color: #f1f5f9;
   border-color: #334155;

@@ -1,12 +1,23 @@
 import { useState } from 'react';
 import { BaseModal } from '../../../../components/ui';
 import PlatformSelect from '../PlatformSelect';
-import { parseMoneyInput } from '../../../billing/utils/parseMoneyInput';
+import {
+  formatMoneyInputDigits,
+  parseMoneyInput,
+  preventNonNumericKey,
+} from '../../../billing/utils/parseMoneyInput';
 import { PAYMENT_METHODS } from '../../hooks/useBillingCollections';
 
 export default function BillingAddPaymentModal({ t, companies, initialCompanyId, busy, onClose, onSubmit }) {
-  const k = (key) => t(`platform.billing.collections.${key}`);
-  const [companyId, setCompanyId] = useState(initialCompanyId ? String(initialCompanyId) : '');
+  const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
+  const companyList = Array.isArray(companies) ? companies : [];
+  const normalizeId = (id) => {
+    if (typeof id === 'number') return String(id);
+    if (typeof id === 'string' && id !== '' && id !== '[object Object]') return id;
+    if (typeof id === 'object' && id !== null && 'companyId' in id) return String(id.companyId);
+    return '';
+  };
+  const [companyId, setCompanyId] = useState(() => normalizeId(initialCompanyId));
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('BANK_TRANSFER');
   const [transactionId, setTransactionId] = useState('');
@@ -41,9 +52,9 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
             value={companyId}
             onChange={(e) => setCompanyId(e.target.value)}
             placeholder={k('pickCompany')}
-            options={companies.map((row) => ({
-              value: String(row.billing.companyId),
-              label: `${row.billing.companyName || `#${row.billing.companyId}`} (ID ${row.billing.companyId})`,
+            options={companyList.map((row) => ({
+              value: String(row.billing?.companyId ?? row.id ?? ''),
+              label: `${row.billing?.companyName || row.name || `#${row.billing?.companyId ?? row.id}`} (ID ${row.billing?.companyId ?? row.id})`,
             }))}
             searchable
             required
@@ -54,10 +65,12 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
             <span>{k('amount')} *</span>
             <input
               className="bc-control"
+              type="text"
               inputMode="numeric"
               autoComplete="off"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onKeyDown={preventNonNumericKey}
+              onChange={(e) => setAmount(formatMoneyInputDigits(e.target.value))}
               placeholder="1 000 000"
               required
             />

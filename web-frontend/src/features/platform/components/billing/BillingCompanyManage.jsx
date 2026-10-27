@@ -1,5 +1,9 @@
 import BillingPeriodCalendar from '../BillingPeriodCalendar';
 import PlatformSelect from '../PlatformSelect';
+import {
+  formatMoneyInputDigits,
+  preventNonNumericKey,
+} from '../../../billing/utils/parseMoneyInput';
 
 export default function BillingCompanyManage({ p }) {
   const { t } = p;
@@ -17,7 +21,8 @@ export default function BillingCompanyManage({ p }) {
           inputMode="numeric"
           autoComplete="off"
           value={p.monthlyAmount}
-          onChange={(e) => p.setMonthlyAmount(e.target.value)}
+          onKeyDown={preventNonNumericKey}
+          onChange={(e) => p.setMonthlyAmount(formatMoneyInputDigits(e.target.value))}
           placeholder={t('platform.billing.monthlyAmountPlaceholder')}
         />
         <PlatformSelect
@@ -59,7 +64,8 @@ export default function BillingCompanyManage({ p }) {
             inputMode="numeric"
             autoComplete="off"
             value={p.adjustAmount}
-            onChange={(e) => p.setAdjustAmount(e.target.value)}
+            onKeyDown={preventNonNumericKey}
+            onChange={(e) => p.setAdjustAmount(formatMoneyInputDigits(e.target.value))}
             placeholder={t('platform.billing.topUpAmountPlaceholder')}
           />
           <input

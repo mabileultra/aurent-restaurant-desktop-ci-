@@ -90,13 +90,13 @@ export default function BillingKpiCards({ t, money, overview, tab, onTab }) {
       role="tablist"
       aria-label={t('platform.billing.title', { defaultValue: 'Billing KPI filtrlari' })}
     >
-      {cards.map((card) => (
+      {cards.map(({ key, ...cardProps }) => (
         <KpiCard
-          key={card.key}
-          {...card}
-          label={k(`kpi.${card.key}`)}
-          active={tab === card.key}
-          onClick={() => onTab(card.key)}
+          key={key}
+          {...cardProps}
+          label={k(`kpi.${key}`)}
+          active={tab === key}
+          onClick={() => onTab(key)}
         />
       ))}
     </div>
