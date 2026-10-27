@@ -1,11 +1,23 @@
 import { useState } from 'react';
 import { BaseModal } from '../../../../components/ui';
-import { parseMoneyInput } from '../../../billing/utils/parseMoneyInput';
+import PlatformSelect from '../PlatformSelect';
+import {
+  formatMoneyInputDigits,
+  parseMoneyInput,
+  preventNonNumericKey,
+} from '../../../billing/utils/parseMoneyInput';
 import { PAYMENT_METHODS } from '../../hooks/useBillingCollections';
 
 export default function BillingAddPaymentModal({ t, companies, initialCompanyId, busy, onClose, onSubmit }) {
-  const k = (key) => t(`platform.billing.collections.${key}`);
-  const [companyId, setCompanyId] = useState(initialCompanyId ? String(initialCompanyId) : '');
+  const k = (key, opts) => t(`platform.billing.collections.${key}`, opts);
+  const companyList = Array.isArray(companies) ? companies : [];
+  const normalizeId = (id) => {
+    if (typeof id === 'number') return String(id);
+    if (typeof id === 'string' && id !== '' && id !== '[object Object]') return id;
+    if (typeof id === 'object' && id !== null && 'companyId' in id) return String(id.companyId);
+    return '';
+  };
+  const [companyId, setCompanyId] = useState(() => normalizeId(initialCompanyId));
   const [amount, setAmount] = useState('');
   const [method, setMethod] = useState('BANK_TRANSFER');
   const [transactionId, setTransactionId] = useState('');
@@ -35,33 +47,46 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
       <form id="bc-add-payment" className="bc-form" onSubmit={submit}>
         <label className="bc-form__field">
           <span>{k('colCompany')} *</span>
-          <select className="bc-control" value={companyId} onChange={(e) => setCompanyId(e.target.value)} required>
-            <option value="">{k('pickCompany')}</option>
-            {companies.map((row) => (
-              <option key={row.billing.companyId} value={row.billing.companyId}>
-                {row.billing.companyName || `#${row.billing.companyId}`} (ID {row.billing.companyId})
-              </option>
-            ))}
-          </select>
+          <PlatformSelect
+            size="md"
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
+            placeholder={k('pickCompany')}
+            options={companyList.map((row) => ({
+              value: String(row.billing?.companyId ?? row.id ?? ''),
+              label: `${row.billing?.companyName || row.name || `#${row.billing?.companyId ?? row.id}`} (ID ${row.billing?.companyId ?? row.id})`,
+            }))}
+            searchable
+            required
+          />
         </label>
         <div className="bc-form__row">
           <label className="bc-form__field">
             <span>{k('amount')} *</span>
             <input
               className="bc-control"
+              type="text"
               inputMode="numeric"
               autoComplete="off"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onKeyDown={preventNonNumericKey}
+              onChange={(e) => setAmount(formatMoneyInputDigits(e.target.value))}
               placeholder="1 000 000"
               required
             />
           </label>
           <label className="bc-form__field">
             <span>{k('colMethod')} *</span>
-            <select className="bc-control" value={method} onChange={(e) => setMethod(e.target.value)}>
-              {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{k(`methods.${m}`)}</option>)}
-            </select>
+            <PlatformSelect
+              size="md"
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              options={PAYMENT_METHODS.map((m) => ({
+                value: m,
+                label: k(`methods.${m}`),
+              }))}
+              searchable={false}
+            />
           </label>
         </div>
         <label className="bc-form__field">

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { CalendarClock, ChevronDown, ChevronRight, Copy, Download, Layers, X } from 'lucide-react';
 import TablePagination from '../../../../components/shared/TablePagination';
 import { useGeoNameLookup } from '../../../shared/geo/useGeoNameLookup';
+import { PlatformErrorState } from '../../../../components/ui';
 import { STATE_TONE, activeDeferralDay, balanceTone, dueHint, initials } from './billingCollectionsUi';
 
 function ExportMenu({ k, disabled, busy, onExcel, onCsv }) {
@@ -109,6 +110,17 @@ export default function BillingCompaniesTable({ p }) {
           <tbody>
             {c.loading ? (
               <tr><td colSpan={11} className="bc-table__empty">{t('common.loading')}</td></tr>
+            ) : c.isError ? (
+              <tr>
+                <td colSpan={11} className="p-4">
+                  <PlatformErrorState
+                    size="sm"
+                    error={c.error}
+                    onRetry={c.refetch}
+                    retryLoading={c.loading}
+                  />
+                </td>
+              </tr>
             ) : c.pagedRows.length === 0 ? (
               <tr><td colSpan={11} className="bc-table__empty">{t('platform.billing.emptyCompanies')}</td></tr>
             ) : (

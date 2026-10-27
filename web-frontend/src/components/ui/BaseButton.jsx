@@ -4,7 +4,7 @@ const VARIANT_CLS = {
   primary:
     'base-btn--primary bg-[color:var(--color-brand)] font-semibold text-[color:var(--color-brand-on)] hover:bg-[color:var(--color-brand-hover)] disabled:opacity-50',
   secondary:
-    'border border-slate-300 bg-white font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700',
+    'border border-slate-300 bg-white font-medium text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50 dark:!border-slate-700 dark:!bg-slate-800 dark:text-slate-200 dark:hover:!bg-slate-700',
   danger:
     'bg-red-600 font-semibold text-white hover:bg-red-700 disabled:opacity-50',
   ghost:

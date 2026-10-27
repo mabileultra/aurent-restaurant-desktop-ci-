@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, ErrorBanner, PageLayout } from '../../../components/ui';
+import { BaseButton, PageLayout, PlatformErrorState } from '../../../components/ui';
 import StoreFormModal from '../components/stores/StoreFormModal';
 import PharmacyIntegrationSettingsModal from '../components/stores/PharmacyIntegrationSettingsModal';
 import StoresFiltersBar from '../components/stores/StoresFiltersBar';
@@ -36,26 +36,32 @@ export default function StoresPage({ showCompanySelect = false, companyIdFilter,
         />
       )}
     >
-      {p.isError && <ErrorBanner message={p.errorMessage} />}
-
-      <StoresTable
-        t={p.t}
-        isPending={p.isPending}
-        rows={p.rows}
-        page={p.page}
-        pageSize={p.pageSize}
-        total={p.total}
-        totalPages={p.totalPages}
-        showCompany={showCompanySelect}
-        onPageChange={p.setPage}
-        onPageSizeChange={p.setPageSize}
-        menuId={p.menuId}
-        onMenuOpenChange={p.setMenuId}
-        onEdit={p.openEdit}
-        onToggleActive={(id) => p.toggleMutation.mutate(id)}
-        onDelete={p.tryDelete}
-        onPharmacyIntegration={p.openPharmacyIntegration}
-      />
+      {p.isError ? (
+        <PlatformErrorState
+          error={p.error}
+          onRetry={p.refetch}
+          retryLoading={p.isPending}
+        />
+      ) : (
+        <StoresTable
+          t={p.t}
+          isPending={p.isPending}
+          rows={p.rows}
+          page={p.page}
+          pageSize={p.pageSize}
+          total={p.total}
+          totalPages={p.totalPages}
+          showCompany={showCompanySelect}
+          onPageChange={p.setPage}
+          onPageSizeChange={p.setPageSize}
+          menuId={p.menuId}
+          onMenuOpenChange={p.setMenuId}
+          onEdit={p.openEdit}
+          onToggleActive={(id) => p.toggleMutation.mutate(id)}
+          onDelete={p.tryDelete}
+          onPharmacyIntegration={p.openPharmacyIntegration}
+        />
+      )}
 
       <StoreFormModal
         open={p.modalOpen}

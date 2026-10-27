@@ -20,11 +20,12 @@
     <script>
       (function () {
         try {
-          document.documentElement.classList.remove('dark');
           var isCashier = location.pathname.indexOf('/cashier') === 0;
+          var isRst = location.pathname.indexOf('/rst') === 0;
           var isCashierLogin = location.pathname.indexOf('/cashier/login') === 0;
           var cashierTheme = 'dark';
           if (isCashier) {
+            document.documentElement.classList.remove('dark');
             cashierTheme = localStorage.getItem('pos-cashier-theme');
             if (cashierTheme !== 'light' && cashierTheme !== 'dark') cashierTheme = 'dark';
             /* PIN-логин всегда светлый — иначе чёрный экран до монтирования React */
@@ -35,8 +36,6 @@
               'app-theme--cashier'
             );
             document.documentElement.classList.remove('app-theme--admin');
-          }
-          if (isCashier) {
             var bg = isCashierLogin ? '#f8fafc' : cashierTheme === 'light' ? '#e9eef4' : '#0c1018';
             document.documentElement.style.backgroundColor = bg;
             document.addEventListener('DOMContentLoaded', function () {
@@ -44,10 +43,23 @@
             });
             var meta = document.querySelector('meta[name="theme-color"]');
             if (meta) meta.setAttribute('content', bg);
+          } else if (isRst) {
+            document.documentElement.classList.add('dark', 'rst-theme');
+            document.documentElement.style.colorScheme = 'dark';
+            document.documentElement.style.backgroundColor = '#121418';
           } else {
-            document.documentElement.style.colorScheme = 'light';
-            document.documentElement.classList.add('app-theme--admin');
-            localStorage.removeItem('pos-theme');
+            var adminTheme = localStorage.getItem('app-admin-theme') || 'light';
+            var isDark = adminTheme === 'dark' || (adminTheme === 'system' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if (isDark) {
+              document.documentElement.classList.add('dark', 'app-theme--admin');
+              document.documentElement.style.colorScheme = 'dark';
+              document.documentElement.style.backgroundColor = '#0b1210';
+            } else {
+              document.documentElement.classList.remove('dark');
+              document.documentElement.classList.add('app-theme--admin');
+              document.documentElement.style.colorScheme = 'light';
+              document.documentElement.style.backgroundColor = '#f1f5f9';
+            }
           }
         } catch (e) {
           /* ignore */

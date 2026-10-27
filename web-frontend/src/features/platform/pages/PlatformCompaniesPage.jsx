@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react';
-import { BaseButton, ErrorBanner, PageLayout } from '../../../components/ui';
+import { BaseButton, PageLayout } from '../../../components/ui';
 import PlatformCompactFilterBar from '../components/PlatformCompactFilterBar';
 import { buildBusinessTypeFilterOptions } from '../utils/businessTypeFilterOptions';
 import PlatformCompanyFormModal from '../components/PlatformCompanyFormModal';
@@ -45,11 +45,12 @@ export default function PlatformCompaniesPage() {
         />
       )}
     >
-      {p.isError ? <ErrorBanner message={p.errorMessage} /> : null}
       <PlatformCompaniesTable
         t={p.t}
         isPending={p.isPending}
         isError={p.isError}
+        error={p.error}
+        onRetry={p.refetch}
         rows={p.rows}
         page={p.page}
         pageSize={p.pageSize}

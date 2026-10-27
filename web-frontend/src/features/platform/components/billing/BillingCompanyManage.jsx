@@ -1,4 +1,9 @@
 import BillingPeriodCalendar from '../BillingPeriodCalendar';
+import PlatformSelect from '../PlatformSelect';
+import {
+  formatMoneyInputDigits,
+  preventNonNumericKey,
+} from '../../../billing/utils/parseMoneyInput';
 
 export default function BillingCompanyManage({ p }) {
   const { t } = p;
@@ -16,17 +21,21 @@ export default function BillingCompanyManage({ p }) {
           inputMode="numeric"
           autoComplete="off"
           value={p.monthlyAmount}
-          onChange={(e) => p.setMonthlyAmount(e.target.value)}
+          onKeyDown={preventNonNumericKey}
+          onChange={(e) => p.setMonthlyAmount(formatMoneyInputDigits(e.target.value))}
           placeholder={t('platform.billing.monthlyAmountPlaceholder')}
         />
-        <select className="billing-select" value={p.assignPlanId} onChange={(e) => p.pickPlan(e.target.value)}>
-          <option value="">{t('platform.billing.pickPlanOptional')}</option>
-          {p.plans.map((plan) => (
-            <option key={plan.id} value={plan.id}>
-              {plan.name} — {p.money(plan.monthlyPrice)}
-            </option>
-          ))}
-        </select>
+        <PlatformSelect
+          size="md"
+          value={p.assignPlanId}
+          onChange={(e) => p.pickPlan(e.target.value)}
+          placeholder={t('platform.billing.pickPlanOptional')}
+          options={p.plans.map((plan) => ({
+            value: plan.id,
+            label: `${plan.name} — ${p.money(plan.monthlyPrice)}`,
+          }))}
+          searchable={p.plans.length > 5}
+        />
       </div>
       <label className="billing-field-label">{t('platform.billing.periodStart')}</label>
       <BillingPeriodCalendar value={p.periodStartOn} onChange={p.setPeriodStartOn} locale={p.dateLocale} t={t} />
@@ -55,7 +64,8 @@ export default function BillingCompanyManage({ p }) {
             inputMode="numeric"
             autoComplete="off"
             value={p.adjustAmount}
-            onChange={(e) => p.setAdjustAmount(e.target.value)}
+            onKeyDown={preventNonNumericKey}
+            onChange={(e) => p.setAdjustAmount(formatMoneyInputDigits(e.target.value))}
             placeholder={t('platform.billing.topUpAmountPlaceholder')}
           />
           <input

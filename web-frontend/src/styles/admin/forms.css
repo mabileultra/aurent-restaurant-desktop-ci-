@@ -3,8 +3,16 @@
  * html.app-theme--admin выставляет AdminThemeSync / syncRootTheme.
  */
 
-html.app-theme--admin {
+html.app-theme--admin:not(.dark) {
   color-scheme: light;
+}
+
+html.dark.app-theme--admin,
+.dark.admin-shell,
+.dark .admin-shell,
+.dark.platform-shell,
+.dark .platform-shell {
+  color-scheme: dark;
 }
 
 html.app-theme--admin input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
@@ -42,8 +50,8 @@ html.app-theme--admin .form-select:focus {
 }
 
 /* Shell-обёртки (дублируют html.app-theme--admin для specificity) */
-.admin-shell,
-.platform-shell,
+.admin-shell:not(.dark),
+.platform-shell:not(.dark),
 .login-page,
 .public-site {
   color-scheme: light;
@@ -82,6 +90,102 @@ html.app-theme--admin .form-select:focus {
   box-shadow: 0 0 0 0.2rem var(--color-focus-ring);
 }
 
-html:not(.cashier-theme--dark):not(.cashier-theme--light):not(.app-theme--cashier) {
+/* Dark Mode overrides for Admin and Platform forms */
+html.dark.app-theme--admin input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+html.dark.app-theme--admin select,
+html.dark.app-theme--admin textarea,
+html.dark.app-theme--admin .form-control,
+html.dark.app-theme--admin .form-select,
+.dark .admin-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.dark .admin-shell select,
+.dark .admin-shell textarea,
+.dark .platform-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.dark .platform-shell select,
+.dark .platform-shell textarea,
+.dark.admin-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.dark.admin-shell select,
+.dark.admin-shell textarea,
+.dark.platform-shell input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='color']):not([type='file']),
+.dark.platform-shell select,
+.dark.platform-shell textarea,
+.dark .admin-shell .form-control,
+.dark .admin-shell .form-select,
+.dark .platform-shell .form-control,
+.dark .platform-shell .form-select,
+.dark.admin-shell .form-control,
+.dark.admin-shell .form-select,
+.dark.platform-shell .form-control,
+.dark.platform-shell .form-select {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+html.dark.app-theme--admin input::placeholder,
+html.dark.app-theme--admin textarea::placeholder,
+.dark .admin-shell input::placeholder,
+.dark .admin-shell textarea::placeholder,
+.dark .platform-shell input::placeholder,
+.dark .platform-shell textarea::placeholder,
+.dark.admin-shell input::placeholder,
+.dark.admin-shell textarea::placeholder,
+.dark.platform-shell input::placeholder,
+.dark.platform-shell textarea::placeholder {
+  color: #64748b;
+}
+
+html.dark.app-theme--admin input:disabled,
+html.dark.app-theme--admin select:disabled,
+html.dark.app-theme--admin textarea:disabled,
+.dark .admin-shell input:disabled,
+.dark .admin-shell select:disabled,
+.dark .admin-shell textarea:disabled,
+.dark .platform-shell input:disabled,
+.dark .platform-shell select:disabled,
+.dark .platform-shell textarea:disabled,
+.dark.admin-shell input:disabled,
+.dark.admin-shell select:disabled,
+.dark.admin-shell textarea:disabled,
+.dark.platform-shell input:disabled,
+.dark.platform-shell select:disabled,
+.dark.platform-shell textarea:disabled {
+  background-color: #1e293b;
+  color: #64748b;
+  border-color: #334155;
+}
+
+html.dark.app-theme--admin input:focus,
+html.dark.app-theme--admin select:focus,
+html.dark.app-theme--admin textarea:focus,
+html.dark.app-theme--admin .form-control:focus,
+html.dark.app-theme--admin .form-select:focus,
+.dark .admin-shell input:focus,
+.dark .admin-shell select:focus,
+.dark .admin-shell textarea:focus,
+.dark .platform-shell input:focus,
+.dark .platform-shell select:focus,
+.dark .platform-shell textarea:focus,
+.dark.admin-shell input:focus,
+.dark.admin-shell select:focus,
+.dark.admin-shell textarea:focus,
+.dark.platform-shell input:focus,
+.dark.platform-shell select:focus,
+.dark.platform-shell textarea:focus,
+.dark .admin-shell .form-control:focus,
+.dark .admin-shell .form-select:focus,
+.dark .platform-shell .form-control:focus,
+.dark .platform-shell .form-select:focus,
+.dark.admin-shell .form-control:focus,
+.dark.admin-shell .form-select:focus,
+.dark.platform-shell .form-control:focus,
+.dark.platform-shell .form-select:focus {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #10b981;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+}
+
+html:not(.cashier-theme--dark):not(.cashier-theme--light):not(.app-theme--cashier):not(.dark) {
   color-scheme: light;
 }

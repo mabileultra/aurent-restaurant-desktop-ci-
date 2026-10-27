@@ -34,7 +34,7 @@ export default function BaseModal({
       <div className="flex min-h-full items-center justify-center">
       <div
         className={clsx(
-          'flex max-h-[min(90vh,100%)] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:border-slate-700 dark:bg-slate-900',
+          'flex max-h-[min(90vh,100%)] w-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl dark:!border-slate-800 dark:!bg-slate-900 text-slate-900 dark:text-slate-100',
           SIZE_CLS[size],
           className
         )}
@@ -57,7 +57,7 @@ export default function BaseModal({
                 variant="ghost"
                 size="sm"
                 onClick={onClose}
-                className="ml-auto p-1"
+                className="ml-auto p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:!bg-slate-800"
                 aria-label="Close"
               >
                 <X size={20} />

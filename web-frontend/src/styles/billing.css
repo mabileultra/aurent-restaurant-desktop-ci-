@@ -1327,3 +1327,305 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Dark Mode Support for Billing Components
+   ========================================================================== */
+.dark .billing-page,
+.dark .billing-pay-modal,
+.dark .billing-manage,
+html.dark.app-theme--admin .billing-page,
+html.dark.app-theme--admin .billing-pay-modal,
+html.dark.app-theme--admin .billing-manage {
+  --billing-ink: #f1f5f9;
+  --billing-ink-soft: #cbd5e1;
+  --billing-mint: rgba(16, 185, 129, 0.15);
+  --billing-line: #334155;
+  --billing-blue-soft: rgba(37, 99, 235, 0.15);
+  --billing-violet-soft: rgba(124, 58, 237, 0.15);
+  --billing-amber-soft: rgba(217, 119, 6, 0.15);
+  --billing-rose-soft: rgba(225, 29, 72, 0.15);
+  --billing-sky-soft: rgba(2, 132, 199, 0.15);
+}
+
+.dark .billing-manage,
+html.dark.app-theme--admin .billing-manage {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9;
+}
+
+.dark .billing-manage__hint,
+html.dark.app-theme--admin .billing-manage__hint {
+  color: #94a3b8;
+}
+
+.dark .billing-manage__hint--ok,
+html.dark.app-theme--admin .billing-manage__hint--ok {
+  color: #34d399;
+}
+
+.dark .billing-manage__topup,
+html.dark.app-theme--admin .billing-manage__topup {
+  border-top-color: #334155;
+}
+
+.dark .billing-field-label,
+html.dark.app-theme--admin .billing-field-label {
+  color: #cbd5e1;
+}
+
+.dark .billing-input,
+.dark .billing-select,
+.dark .billing-textarea,
+html.dark.app-theme--admin .billing-input,
+html.dark.app-theme--admin .billing-select,
+html.dark.app-theme--admin .billing-textarea {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+.dark .billing-input:focus,
+.dark .billing-select:focus,
+.dark .billing-textarea:focus,
+html.dark.app-theme--admin .billing-input:focus,
+html.dark.app-theme--admin .billing-select:focus,
+html.dark.app-theme--admin .billing-textarea:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22) !important;
+}
+
+.dark .billing-date__field,
+html.dark.app-theme--admin .billing-date__field {
+  background: #0f172a !important;
+  color: #f1f5f9 !important;
+  border-color: #334155 !important;
+}
+
+.dark .billing-date__field:hover,
+.dark .billing-date__field[aria-expanded='true'],
+html.dark.app-theme--admin .billing-date__field:hover,
+html.dark.app-theme--admin .billing-date__field[aria-expanded='true'] {
+  border-color: #10b981 !important;
+}
+
+.dark .billing-date__field svg,
+html.dark.app-theme--admin .billing-date__field svg {
+  color: #34d399;
+}
+
+.dark .billing-calendar,
+html.dark.app-theme--admin .billing-calendar {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5) !important;
+  color: #f1f5f9;
+}
+
+.dark .billing-calendar__title,
+html.dark.app-theme--admin .billing-calendar__title {
+  color: #f1f5f9;
+}
+
+.dark .billing-calendar__nav-btn,
+html.dark.app-theme--admin .billing-calendar__nav-btn {
+  background: #1e293b;
+  color: #34d399;
+}
+
+.dark .billing-calendar__nav-btn:hover,
+html.dark.app-theme--admin .billing-calendar__nav-btn:hover {
+  background: #334155;
+}
+
+.dark .billing-calendar__week span,
+html.dark.app-theme--admin .billing-calendar__week span {
+  color: #94a3b8;
+}
+
+.dark .billing-calendar__day,
+html.dark.app-theme--admin .billing-calendar__day {
+  color: #f1f5f9;
+}
+
+.dark .billing-calendar__day:hover:not(.billing-calendar__day--empty),
+html.dark.app-theme--admin .billing-calendar__day:hover:not(.billing-calendar__day--empty) {
+  background: #1e293b;
+}
+
+.dark .billing-calendar__day--past,
+html.dark.app-theme--admin .billing-calendar__day--past {
+  color: #64748b;
+}
+
+.dark .billing-calendar__day--selected,
+html.dark.app-theme--admin .billing-calendar__day--selected {
+  background: #059669;
+  color: #ffffff;
+}
+
+.dark .billing-btn--accent,
+html.dark.app-theme--admin .billing-btn--accent {
+  background: #006847 !important;
+  color: #ffffff !important;
+}
+
+.dark .billing-btn--accent:hover:not(:disabled),
+html.dark.app-theme--admin .billing-btn--accent:hover:not(:disabled) {
+  background: #00563b !important;
+}
+
+.dark .billing-btn--ok,
+html.dark.app-theme--admin .billing-btn--ok {
+  background: rgba(22, 101, 52, 0.35) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.dark .billing-btn--blue,
+html.dark.app-theme--admin .billing-btn--blue {
+  background: rgba(37, 99, 235, 0.3) !important;
+  color: #93c5fd !important;
+  border: 1px solid rgba(147, 197, 253, 0.3);
+}
+
+.dark .billing-btn--violet,
+html.dark.app-theme--admin .billing-btn--violet {
+  background: rgba(124, 58, 237, 0.3) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(192, 132, 252, 0.3);
+}
+
+.dark .billing-btn--danger,
+html.dark.app-theme--admin .billing-btn--danger {
+  background: rgba(153, 27, 27, 0.35) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+.dark .billing-table th,
+html.dark.app-theme--admin .billing-table th {
+  color: #94a3b8 !important;
+  border-bottom: 1px solid #334155 !important;
+}
+
+.dark .billing-table td,
+html.dark.app-theme--admin .billing-table td {
+  color: #f1f5f9 !important;
+  border-bottom: 1px solid #1e293b !important;
+}
+
+.dark .billing-table tbody tr:hover,
+html.dark.app-theme--admin .billing-table tbody tr:hover {
+  background: #1e293b !important;
+}
+
+.dark .billing-table tbody tr.billing-row--selected,
+html.dark.app-theme--admin .billing-table tbody tr.billing-row--selected {
+  background: rgba(37, 99, 235, 0.25) !important;
+}
+
+.dark .billing-amount--plus,
+html.dark.app-theme--admin .billing-amount--plus {
+  color: #34d399 !important;
+}
+
+.dark .billing-amount--minus,
+html.dark.app-theme--admin .billing-amount--minus {
+  color: #f1f5f9 !important;
+}
+
+.dark .billing-icon-btn,
+html.dark.app-theme--admin .billing-icon-btn {
+  color: #94a3b8 !important;
+}
+
+.dark .billing-icon-btn:hover:not(:disabled),
+html.dark.app-theme--admin .billing-icon-btn:hover:not(:disabled) {
+  color: #f87171 !important;
+  background: rgba(239, 68, 68, 0.2) !important;
+}
+
+.dark .billing-badge--TOP_UP,
+.dark .billing-badge--BONUS,
+.dark .billing-badge--ACTIVE,
+.dark .billing-badge--TRIAL,
+html.dark.app-theme--admin .billing-badge--TOP_UP,
+html.dark.app-theme--admin .billing-badge--BONUS,
+html.dark.app-theme--admin .billing-badge--ACTIVE,
+html.dark.app-theme--admin .billing-badge--TRIAL {
+  background: rgba(34, 197, 94, 0.2) !important;
+  color: #4ade80 !important;
+  border: 1px solid rgba(74, 222, 128, 0.3) !important;
+}
+
+.dark .billing-badge--BLOCKED,
+html.dark.app-theme--admin .billing-badge--BLOCKED {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(248, 113, 113, 0.3) !important;
+}
+
+.dark .billing-badge--GRACE,
+html.dark.app-theme--admin .billing-badge--GRACE {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #fbbf24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.3) !important;
+}
+
+.dark .billing-badge--CHARGE,
+html.dark.app-theme--admin .billing-badge--CHARGE {
+  background: rgba(148, 163, 184, 0.2) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(148, 163, 184, 0.3) !important;
+}
+
+.dark .billing-badge--MODULE,
+html.dark.app-theme--admin .billing-badge--MODULE {
+  background: rgba(168, 85, 247, 0.2) !important;
+  color: #c084fc !important;
+  border: 1px solid rgba(192, 132, 252, 0.3) !important;
+}
+
+.dark .billing-badge--ADJUST,
+html.dark.app-theme--admin .billing-badge--ADJUST {
+  background: rgba(249, 115, 22, 0.2) !important;
+  color: #fb923c !important;
+  border: 1px solid rgba(251, 146, 60, 0.3) !important;
+}
+
+.dark .billing-metric,
+.dark .billing-panel,
+.dark .billing-topup,
+.dark .billing-footer__card,
+.dark .billing-kpi__card,
+html.dark.app-theme--admin .billing-metric,
+html.dark.app-theme--admin .billing-panel,
+html.dark.app-theme--admin .billing-topup,
+html.dark.app-theme--admin .billing-footer__card,
+html.dark.app-theme--admin .billing-kpi__card {
+  background: #0f172a !important;
+  border-color: #334155 !important;
+  color: #f1f5f9 !important;
+}
+
+.dark .billing-metric__value,
+.dark .billing-panel__title,
+.dark .billing-topup__title,
+.dark .billing-detail__grid dd,
+.dark .billing-footer__title,
+.dark .billing-kpi__card strong,
+.dark .billing-pay-modal__title,
+.dark .billing-pay-qr__title,
+html.dark.app-theme--admin .billing-metric__value,
+html.dark.app-theme--admin .billing-panel__title,
+html.dark.app-theme--admin .billing-topup__title,
+html.dark.app-theme--admin .billing-detail__grid dd,
+html.dark.app-theme--admin .billing-footer__title,
+html.dark.app-theme--admin .billing-kpi__card strong,
+html.dark.app-theme--admin .billing-pay-modal__title,
+html.dark.app-theme--admin .billing-pay-qr__title {
+  color: #f1f5f9 !important;
+}
+
