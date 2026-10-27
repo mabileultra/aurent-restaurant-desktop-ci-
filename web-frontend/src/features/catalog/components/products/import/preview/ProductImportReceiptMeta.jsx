@@ -1,8 +1,8 @@
-import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { BaseSelect } from '../../../../../../components/ui';
 import { supplierApi } from '../../../../../../api';
 import { inputCls } from '../../../../../../utils/productImportUtils';
+import ProductImportQuickSupplier from './ProductImportQuickSupplier';
 
 /**
  * Мета прихода при импорте AS_RECEIPT: поставщик, оплата (наличка/долг), комментарий.
@@ -26,7 +26,7 @@ export default function ProductImportReceiptMeta({
     <div className="product-import-receipt-meta">
       <p className="product-import-receipt-meta__title">{t('products.import.receiptMetaTitle')}</p>
       <div className="product-import-receipt-meta__grid">
-        <div className="space-y-1.5">
+        <div className="product-import-receipt-meta__supplier">
           <BaseSelect
             label={t('stockReports.colSupplier')}
             value={supplierId}
@@ -37,12 +37,13 @@ export default function ProductImportReceiptMeta({
               ...supplierList.map((s) => ({ value: String(s.id), label: s.name })),
             ]}
           />
-          <Link
-            to="/suppliers"
-            className="text-xs font-semibold text-emerald-700 underline dark:text-emerald-400"
-          >
-            {t('finance.expenses.addSupplier')}
-          </Link>
+          <ProductImportQuickSupplier
+            t={t}
+            onCreated={(id) => {
+              setSupplierId(id);
+              suppliersQuery.refetch();
+            }}
+          />
         </div>
         <BaseSelect
           label={t('stockReports.paymentType')}
@@ -53,7 +54,7 @@ export default function ProductImportReceiptMeta({
             { value: 'CREDIT', label: t('stockReports.paymentCredit') },
           ]}
         />
-        <div className="product-import-receipt-meta__notes sm:col-span-2">
+        <div className="product-import-receipt-meta__notes">
           <label className="mb-1 block text-xs font-medium text-slate-600 dark:text-slate-400">
             {t('stockReports.writeOffNotes')}
           </label>

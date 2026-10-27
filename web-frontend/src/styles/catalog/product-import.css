@@ -1,10 +1,10 @@
 /* Импорт товаров — BaseModal + панели в стиле billing/platform */
 
 .product-import-modal {
-  width: min(98vw, 70rem);
-  max-width: min(98vw, 70rem);
-  height: min(92vh, 58rem);
-  max-height: min(92vh, 58rem);
+  width: min(98vw, 110rem);
+  max-width: min(98vw, 110rem) !important;
+  height: min(94vh, 64rem);
+  max-height: min(94vh, 64rem);
 }
 
 @media (max-width: 900px) {
@@ -150,6 +150,17 @@
   grid-template-columns: 1fr;
 }
 
+.product-import-receipt-meta__supplier {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.product-import-receipt-meta__supplier > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
 @media (min-width: 640px) {
   .product-import-receipt-meta__grid {
     grid-template-columns: 1fr 1fr;
@@ -162,7 +173,7 @@
 
 @media (min-width: 1024px) {
   .product-import-receipt-meta__grid {
-    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.4fr);
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr) minmax(0, 1.4fr);
   }
 
   .product-import-receipt-meta__notes {
@@ -181,8 +192,10 @@
 .product-import-preview__table-block {
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
   min-height: 0;
   flex: 1;
+  padding-bottom: 0.25rem;
 }
 
 .product-import-preview-toolbar {
@@ -214,7 +227,7 @@
   border-radius: 0.5rem;
   border: 1px solid rgb(226 232 240);
   flex: 1;
-  min-height: 34rem;
+  min-height: 28rem;
 }
 
 .dark .product-import-preview-table {
@@ -222,9 +235,9 @@
 }
 
 .product-import-preview-table__scroll {
-  /* ~10 строк по 3.35rem + шапка — чтобы страница 10 была видна целиком */
-  height: min(58vh, 38rem);
-  min-height: 34rem;
+  /* оставляем место под пагинацию и футер модалки */
+  height: min(48vh, 32rem);
+  min-height: 28rem;
   overflow: auto;
   scrollbar-gutter: stable;
 }

@@ -8,7 +8,7 @@ const SIZE_CLS = {
   lg: 'max-w-3xl',
   xl: 'max-w-5xl',
   /** Широкие мастера (импорт товаров и т.п.) */
-  full: 'max-w-[min(98vw,70rem)]',
+  full: 'max-w-[min(98vw,110rem)]',
 };
 
 export default function BaseModal({
