@@ -7,6 +7,7 @@ export default function ProductImportModalFooter({
   canImport,
   allDuplicates,
   importing,
+  mode,
   t,
 }) {
   return (
@@ -43,7 +44,7 @@ export default function ProductImportModalFooter({
           title={allDuplicates ? t('products.import.invoiceAllDuplicates') : undefined}
           className="admin-btn-primary px-4 py-2 text-sm"
         >
-          {importing ? '…' : t('products.import.confirmImport')}
+          {importing ? '…' : t(mode === 'AS_RECEIPT' ? 'products.import.confirmReceipt' : 'products.import.confirmImport')}
         </button>
       )}
     </div>

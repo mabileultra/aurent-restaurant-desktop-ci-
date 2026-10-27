@@ -123,7 +123,9 @@ export function convertUnitQuantity(fromCode, toCode, quantity) {
 
 const LABEL_TO_CODE = {
   pcs: 'PCS', kg: 'KG', g: 'G', l: 'L', m: 'M', mm: 'MM', m2: 'M2',
-  кг: 'KG', г: 'G', л: 'L', м: 'M', мм: 'MM', 'м²': 'M2',
+  кг: 'KG', килограмм: 'KG', kilogram: 'KG',
+  г: 'G', гр: 'G', грамм: 'G', gram: 'G', gramm: 'G',
+  л: 'L', м: 'M', мм: 'MM', 'м²': 'M2',
 };
 
 export function unitCodeFromLabel(label) {

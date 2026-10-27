@@ -24,7 +24,7 @@ import {
 
 export function useProductImport(onClose) {
   const { t, i18n } = useTranslation();
-  const [mode, setMode] = useState('AS_FILE');
+  const [mode, setMode] = useState('TO_CATALOG');
   const [source, setSource] = useState('UZ_INVOICE');
   const [step, setStep] = useState('setup');
   const [preview, setPreview] = useState(null);
@@ -319,8 +319,9 @@ export function useProductImport(onClose) {
 
   const runImport = async () => {
     if (!pendingFile) return;
-    if (canImport && !defaultStoreId) {
-      toast.error(t('products.import.storeRequired'));
+    // Магазин нужен только для прихода; «в каталог» — карточки без остатка.
+    if (canImport && mode === 'AS_RECEIPT' && !defaultStoreId) {
+      toast.error(t('products.import.storeRequiredReceipt'));
       return;
     }
     setImporting(true);
@@ -363,8 +364,10 @@ export function useProductImport(onClose) {
       const errs = Array.isArray(data?.errors) ? data.errors : [];
 
       if (created > 0) {
-        const msg =
-          skipped > 0
+        const receiptNo = data?.receiptNumber;
+        const msg = receiptNo
+          ? t('products.import.receiptDone', { no: receiptNo })
+          : skipped > 0
             ? t('products.import.importPartial', { created, skipped })
             : `${t('products.import.done')} · ${t('products.import.created')}: ${created}`;
         toast.success(msg);

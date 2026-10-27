@@ -8,6 +8,7 @@ import ProductImportTasnifBar from './preview/ProductImportTasnifBar';
 export default function ProductImportPreviewStep(props) {
   const {
     t,
+    mode,
     preview,
     rows,
     allRows,
@@ -136,6 +137,7 @@ export default function ProductImportPreviewStep(props) {
         setDefaultStoreId={setDefaultStoreId}
         applyDefaultStoreToAll={applyDefaultStoreToAll}
         stores={stores}
+        mode={mode}
       />
 
       <ProductImportTasnifBar

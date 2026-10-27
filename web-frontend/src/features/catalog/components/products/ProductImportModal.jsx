@@ -27,6 +27,7 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
           {imp.step === 'preview' && imp.preview && (
             <ProductImportPreviewStep
               t={imp.t}
+              mode={imp.mode}
               preview={imp.preview}
               rows={imp.rows}
               allRows={imp.allRows}
@@ -87,6 +88,7 @@ export default function ProductImportModal({ categories = [], stores = [], onClo
           canImport={imp.canImport}
           allDuplicates={imp.allDuplicates}
           importing={imp.importing}
+          mode={imp.mode}
           t={imp.t}
         />
       </div>

@@ -849,8 +849,10 @@
       "applyLocationAll": "Применить ко всем",
       "colLocation": "Расположение",
       "storeRequired": "Выберите магазин для импорта",
+      "storeRequiredReceipt": "Выберите магазин для прихода",
       "colStore": "Магазин",
       "storeHint": "Новые товары будут привязаны к выбранному магазину с указанной ценой продажи.",
+      "storeHintReceipt": "Приход проведётся в выбранный магазин: остаток и цены из файла.",
       "colFilePrice": "Цена в файле",
       "colImportPrice": "Цена продажи",
       "colCategory": "Категория",
@@ -908,7 +910,8 @@
       "mode": {
         "AS_FILE": "Как в файле импорта",
         "TO_STORES": "В выбранный магазин(ы)",
-        "TO_CATALOG": "В каталог (список товаров)"
+        "TO_CATALOG": "Только в каталог (карточки, без прихода)",
+        "AS_RECEIPT": "Сразу новый приход"
       }
     },
     "export": {
@@ -3277,6 +3280,7 @@
       "platformCompanies": "Компании",
       "restaurantPickupLabel": "Этикетка выдачи",
       "restaurantQuickSale": "Быстрый чек",
+      "restaurantDiscount": "Скидка в заказе",
       "platformStores": "Магазины",
       "platformUsers": "Пользователи",
       "platformBusinessTypes": "Конструктор бизнеса",

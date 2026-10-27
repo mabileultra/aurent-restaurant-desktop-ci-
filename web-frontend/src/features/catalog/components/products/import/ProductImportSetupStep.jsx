@@ -49,7 +49,7 @@ export default function ProductImportSetupStep({ t, source, setSource, mode, set
 
       <p className="text-sm text-slate-600 dark:text-slate-300">{t('products.import.question')}</p>
       <div className="space-y-2">
-        {['AS_FILE', 'TO_STORES', 'TO_CATALOG'].map((key) => (
+        {['TO_CATALOG', 'AS_RECEIPT'].map((key) => (
           <label key={key} className={optCls(mode === key)}>
             <input type="radio" name="im" checked={mode === key} onChange={() => setMode(key)} className="mt-1" />
             <span className="text-sm text-slate-800 dark:text-slate-200">{t(`products.import.mode.${key}`)}</span>
