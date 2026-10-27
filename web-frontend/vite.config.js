@@ -74,13 +74,15 @@ export default defineConfig(({ mode }) => {
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('recharts')) return 'charts';
-            if (id.includes('@tanstack/react-query')) return 'query';
-            // react-hook-form + zod must stay with React — separate "forms" chunk causes
-            // "Cannot access before initialization" in production (circular chunk deps).
+            // react-query must stay with React — a separate "query" chunk caused
+            // vendor ↔ cashier-weight cycles and a white screen
+            // (Cannot read properties of undefined (reading 'createContext')).
+            // Same class of bug as splitting react-hook-form/zod into "forms".
             if (
               id.includes('react')
               || id.includes('react-dom')
               || id.includes('react-router')
+              || id.includes('@tanstack/react-query')
               || id.includes('react-hook-form')
               || id.includes('zod')
               || id.includes('@hookform')
@@ -90,7 +92,9 @@ export default defineConfig(({ mode }) => {
             return;
           }
 
-          // Cashier — split by route concern to avoid one 500kB chunk
+          // Cashier — split by route concern to avoid one 500kB chunk.
+          // Keep weight/scales inside cashier-pos: a separate cashier-weight chunk
+          // created vendor → weight → query cycles in production.
           if (id.includes('/src/features/cashier/')) {
             if (
               id.includes('/payment/')
@@ -106,14 +110,6 @@ export default defineConfig(({ mode }) => {
               || id.includes('useCashierMySales')
             ) {
               return 'cashier-my-sales';
-            }
-            if (
-              id.includes('WeightEntryModal')
-              || id.includes('useWeightEntryModal')
-              || id.includes('/weight-entry/')
-              || id.includes('/scales/')
-            ) {
-              return 'cashier-weight';
             }
             return 'cashier-pos';
           }
