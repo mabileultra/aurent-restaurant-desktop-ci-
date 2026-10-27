@@ -4,16 +4,20 @@ import { Plus, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { supplierApi } from '../../../../../../api';
 import { BaseButton } from '../../../../../../components/ui';
+import { formatUzPhone, isCompleteUzPhone } from '../../../../../../utils/phoneUz';
 import './product-import-quick-supplier.css';
 
 /**
- * Всплывающая форма: имя + ИНН, без ухода со страницы импорта.
+ * Всплывающая форма как в справочнике: название, ИНН, адрес, email, телефон.
  */
 export default function ProductImportQuickSupplier({ t, onCreated }) {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState('');
   const [taxId, setTaxId] = useState('');
+  const [address, setAddress] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('+998 ');
   const rootRef = useRef(null);
   const nameRef = useRef(null);
 
@@ -30,6 +34,9 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
     if (open) {
       setName('');
       setTaxId('');
+      setAddress('');
+      setEmail('');
+      setPhone('+998 ');
       requestAnimationFrame(() => nameRef.current?.focus());
     }
   }, [open]);
@@ -59,9 +66,9 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
     createM.mutate({
       name: name.trim(),
       taxId: taxId.trim(),
-      address: null,
-      email: null,
-      phone: null,
+      address: address.trim() || null,
+      email: email.trim() || null,
+      phone: isCompleteUzPhone(phone) ? formatUzPhone(phone).trim() : null,
     });
   };
 
@@ -80,7 +87,7 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
       {open ? (
         <form className="product-import-quick-supplier__pop" onSubmit={submit}>
           <div className="product-import-quick-supplier__head">
-            <span>{t('products.import.addSupplierQuick')}</span>
+            <span>{t('suppliersModule.modal.title')}</span>
             <button
               type="button"
               className="product-import-quick-supplier__close"
@@ -91,7 +98,11 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
             </button>
           </div>
           <label className="product-import-quick-supplier__field">
-            <span>{t('suppliersModule.modal.name')} *</span>
+            <span>
+              <em>*</em>
+              {' '}
+              {t('suppliersModule.modal.name')}
+            </span>
             <input
               ref={nameRef}
               value={name}
@@ -100,10 +111,40 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
             />
           </label>
           <label className="product-import-quick-supplier__field">
-            <span>{t('suppliersModule.modal.taxId')} *</span>
+            <span>
+              <em>*</em>
+              {' '}
+              {t('suppliersModule.modal.taxId')}
+            </span>
             <input
               value={taxId}
               onChange={(e) => setTaxId(e.target.value)}
+              autoComplete="off"
+            />
+          </label>
+          <label className="product-import-quick-supplier__field">
+            <span>{t('suppliersModule.modal.address')}</span>
+            <input
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              autoComplete="off"
+            />
+          </label>
+          <label className="product-import-quick-supplier__field">
+            <span>{t('suppliersModule.modal.email')}</span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="off"
+            />
+          </label>
+          <label className="product-import-quick-supplier__field">
+            <span>{t('suppliersModule.modal.phone')}</span>
+            <input
+              value={phone}
+              onChange={(e) => setPhone(formatUzPhone(e.target.value))}
+              placeholder="+998 (__) ___-__-__"
               autoComplete="off"
             />
           </label>
@@ -112,7 +153,7 @@ export default function ProductImportQuickSupplier({ t, onCreated }) {
               {t('common.cancel')}
             </BaseButton>
             <BaseButton type="submit" variant="primary" size="sm" disabled={createM.isPending}>
-              {createM.isPending ? '…' : t('common.save')}
+              {createM.isPending ? '…' : t('suppliersModule.add')}
             </BaseButton>
           </div>
         </form>

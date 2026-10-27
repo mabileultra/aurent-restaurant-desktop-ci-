@@ -28,7 +28,9 @@
   left: 0;
   top: calc(100% + 0.4rem);
   z-index: 40;
-  width: min(18.5rem, 78vw);
+  width: min(22rem, 86vw);
+  max-height: min(70vh, 32rem);
+  overflow-y: auto;
   border-radius: 0.75rem;
   border: 1px solid rgb(226 232 240);
   background: #fff;
@@ -62,6 +64,11 @@
   font-size: 0.7rem;
   font-weight: 600;
   color: rgb(71 85 105);
+}
+
+.product-import-quick-supplier__field em {
+  font-style: normal;
+  color: rgb(220 38 38);
 }
 
 .product-import-quick-supplier__field input {
