@@ -2,6 +2,7 @@ import { MoreVertical } from 'lucide-react';
 import { BaseButton } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstMenuImage from '../../shared/components/RstMenuImage';
 import { formatMenuPortion } from '../../shared/utils/formatMenuPortion';
 
 function dishTags(item, t) {
@@ -51,7 +52,7 @@ export default function MenuDishList({ p, onOpenMenu, photosEnabled = true }) {
                 {photosEnabled ? (
                   <div className="rst-menu-card__media">
                     {item.imageUrl ? (
-                      <img src={item.imageUrl} alt="" />
+                      <RstMenuImage imageUrl={item.imageUrl} />
                     ) : (
                       <div className="rst-menu-card__media-empty">{p.t('rst.admin.noPhoto')}</div>
                     )}

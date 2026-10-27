@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { BaseButton, BaseInput } from '../../../components/ui';
 import TablePagination from '../../../components/shared/TablePagination';
 import { fmtMoneyCompact } from '../../../utils/formatMoney';
+import RstMenuImage from '../../shared/components/RstMenuImage';
+import { useMenuPhotos } from '../../shared/hooks/useMenuPhotos';
 import MenuDishFilters from '../components/MenuDishFilters';
 import RecipeFoodCostSummary from '../components/RecipeFoodCostSummary';
 import RecipeWizardModal from '../components/RecipeWizardModal';
@@ -15,6 +17,7 @@ import '../styles/tech-card.css';
 
 export default function RecipesAdminPage() {
   const p = useRecipesAdminPage();
+  const photos = useMenuPhotos(p.workspace.storeId);
 
   if (p.workspace.noAssignment) {
     return <div className="rst-notice">{p.t('rst.floor.noStore')}</div>;
@@ -55,13 +58,15 @@ export default function RecipesAdminPage() {
                   className={`rst-tech__dish${p.selectedId === dish.id ? ' is-active' : ''}`}
                   onClick={() => p.setSelectedId(dish.id)}
                 >
-                  <div className="rst-tech__dish-media">
-                    {dish.imageUrl ? (
-                      <img src={dish.imageUrl} alt="" />
-                    ) : (
-                      <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
-                    )}
-                  </div>
+                  {photos.enabled ? (
+                    <div className="rst-tech__dish-media">
+                      {dish.imageUrl ? (
+                        <RstMenuImage imageUrl={dish.imageUrl} />
+                      ) : (
+                        <div className="rst-tech__dish-media-empty">{p.t('rst.admin.noPhoto')}</div>
+                      )}
+                    </div>
+                  ) : null}
                   <div className="rst-tech__dish-body">
                     <strong>{dish.name}</strong>
                     <span>
@@ -252,7 +257,7 @@ export default function RecipesAdminPage() {
         </div>
       </div>
 
-      <RecipeWizardModal p={p} />
+      <RecipeWizardModal p={p} photosEnabled={photos.enabled} />
     </section>
   );
 }
