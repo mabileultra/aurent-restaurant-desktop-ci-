@@ -11,6 +11,15 @@ function readStoredId() {
   }
 }
 
+/** Drop branch pick for this tab (e.g. after company code change). */
+export function clearPersistedRestaurantStoreId() {
+  try {
+    sessionStorage.removeItem(STORAGE_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Persist selected restaurant branch for the browser tab. */
 export function usePersistedRestaurantStoreId() {
   const [pickedStoreId, setPicked] = useState(readStoredId);
