@@ -13,11 +13,12 @@ On the register check search field, a barcode/КМ scan must **not** open the pr
 ## Invariants
 
 1. `nextRegisterScanBurst` / `looksLikeRegisterScanInput`: digit-only codes and marking/GS1-shaped input hide the picker even when inter-char gap > 80 ms.
-2. Once a burst/scan-shaped session started, keep `burst` while the value keeps growing (sticky), until the field is cleared.
-3. When `search` is cleared after a successful scan (bypassing `handleSearchChange`), reset the burst ref so the next manual name search can open the picker.
-4. Lookup uses the full search-field value (`resolveScanCode`), not the 80 ms wedge tail. A slow scan must not clear the field and toast «не найден» on a fragment.
+2. Letter / name typing (RU or Latin) must **not** set `burst` from typing speed alone — the product picker must open for manual search.
+3. Once a burst/scan-shaped session started, keep `burst` while the value keeps growing (sticky), until the field is cleared.
+4. When `search` is cleared after a successful scan (bypassing `handleSearchChange`), reset the burst ref so the next manual name search can open the picker.
+5. Lookup uses the full search-field value (`resolveScanCode`), not the 80 ms wedge tail. A slow scan must not clear the field and toast «не найден» on a fragment.
 
 ## Do not
 
-- Rely only on `REGISTER_SCAN_GAP_MS` for POS Bluetooth scanners.
+- Hide the picker for fast Latin/Cyrillic name typing via `REGISTER_SCAN_GAP_MS` alone.
 - Open the register picker for digit-only / КМ input that is still growing.

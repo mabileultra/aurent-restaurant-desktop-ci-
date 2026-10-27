@@ -24,21 +24,16 @@ export function looksLikeRegisterScanInput(value) {
 /**
  * A USB scanner dumps the code as one fast burst into the check search field.
  * That burst must not open the product list over the receipt.
- * Slow POS scanners: keep hiding while the value still looks like a scan code.
+ * Name search (letters) must open the picker even when typing is fast (< 80 ms).
+ * Only scan-shaped input (digits / КМ / GS1) hides the picker; sticky while it grows.
  */
 export function nextRegisterScanBurst(prev, value, now = Date.now()) {
   const text = String(value ?? '');
   const trimmed = text.trim();
   const prevLen = prev?.len ?? 0;
-  const gap = now - (prev?.at ?? 0);
   const grew = text.length > prevLen;
-  const delta = text.length - prevLen;
-  const fastChars = prevLen > 0 && gap >= 0 && gap <= REGISTER_SCAN_GAP_MS;
-  const pastedCode = delta >= 6;
   const continueBurst = Boolean(prev?.burst && grew && trimmed);
   const scanShaped = looksLikeRegisterScanInput(text);
-  const burst = Boolean(
-    trimmed && grew && (fastChars || pastedCode || continueBurst || scanShaped),
-  );
+  const burst = Boolean(trimmed && grew && (scanShaped || continueBurst));
   return { at: now, len: text.length, burst };
 }

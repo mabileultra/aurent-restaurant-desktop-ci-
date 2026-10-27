@@ -23,11 +23,11 @@ describe('looksLikeRegisterScanInput', () => {
 });
 
 describe('nextRegisterScanBurst', () => {
-  it('treats a fast second character as a scanner burst', () => {
+  it('keeps fast typing of a Latin name as a manual search', () => {
     const first = nextRegisterScanBurst({ at: 0, len: 0, burst: false }, 'm', 1000);
     const second = nextRegisterScanBurst(first, 'mo', 1000 + 20);
     expect(first.burst).toBe(false);
-    expect(second.burst).toBe(true);
+    expect(second.burst).toBe(false);
   });
 
   it('keeps slow typing of a name as a manual search', () => {
@@ -47,10 +47,10 @@ describe('nextRegisterScanBurst', () => {
     expect(second.burst).toBe(true);
   });
 
-  it('keeps burst across a slow mid-code gap after a fast start', () => {
-    const a = nextRegisterScanBurst({ at: 0, len: 0, burst: false }, 'x', 1000);
-    const b = nextRegisterScanBurst(a, 'xy', 1020);
-    const c = nextRegisterScanBurst(b, 'xyz', 1020 + REGISTER_SCAN_GAP_MS + 50);
+  it('keeps burst across a slow mid-code gap after a digit start', () => {
+    const a = nextRegisterScanBurst({ at: 0, len: 0, burst: false }, '4', 1000);
+    const b = nextRegisterScanBurst(a, '46', 1020);
+    const c = nextRegisterScanBurst(b, '460', 1020 + REGISTER_SCAN_GAP_MS + 50);
     expect(b.burst).toBe(true);
     expect(c.burst).toBe(true);
   });
