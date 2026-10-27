@@ -77,8 +77,10 @@
 .bc-btn--danger-outline { background: var(--color-surface); border-color: var(--bc-danger-soft); color: var(--bc-danger); }
 .bc-btn--block { width: 100%; height: 2.75rem; }
 .bc-icon-btn { padding: 0.3rem; border-radius: 0.5rem; color: var(--color-muted); }
-.bc-icon-btn:hover { background: var(--bc-neutral-soft); color: var(--color-text); }
 .bc-link { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.8125rem; font-weight: 600; color: var(--color-brand); }
+.dark .bc-btn--outline:hover:not(:disabled) { border-color: #10b981; color: #34d399; }
+.dark .bc-btn--ghost:hover { color: #34d399; }
+.dark .bc-link { color: #34d399; }
 
 /* KPI Cards as Primary Interactive Filter Tabs */
 .bc-kpis {
@@ -255,6 +257,14 @@
   font-size: 0.8125rem;
   transition: all 0.15s ease;
 }
+.dark .bc-filters__search input {
+  background: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .bc-filters__search input::placeholder {
+  color: #64748b;
+}
 .bc-control {
   height: 2.375rem;
   padding-inline: 0.7rem;
@@ -321,7 +331,15 @@ textarea.bc-control { height: auto; padding-block: 0.5rem; }
   background: var(--color-surface-muted, #f8fafc);
 }
 .dark .bc-filters .base-select--disabled .base-select__trigger {
-  background: rgba(255, 255, 255, 0.03);
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+  opacity: 0.65;
+}
+.dark .bc-filters .base-select--active-filter .base-select__trigger {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
 }
 
 /* Layout */

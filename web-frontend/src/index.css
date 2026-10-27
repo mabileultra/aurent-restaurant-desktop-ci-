@@ -17,12 +17,12 @@
 @layer base {
   * { box-sizing: border-box; }
   body {
-    @apply bg-slate-100 text-slate-900;
+    @apply bg-slate-100 text-slate-900 dark:bg-[#0b1210] dark:text-slate-100;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { @apply bg-slate-200; }
-  ::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-400; }
-  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-500; }
+  ::-webkit-scrollbar-track { @apply bg-slate-200 dark:bg-slate-900; }
+  ::-webkit-scrollbar-thumb { @apply rounded-full bg-slate-400 dark:bg-slate-700; }
+  ::-webkit-scrollbar-thumb:hover { @apply bg-slate-500 dark:bg-slate-600; }
 }

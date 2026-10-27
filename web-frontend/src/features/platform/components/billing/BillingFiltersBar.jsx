@@ -55,6 +55,7 @@ export default function BillingFiltersBar({ t, c, plans }) {
               c.setFrom(from);
               c.setTo(to);
             }}
+            align="right"
             t={t}
           />
         </div>

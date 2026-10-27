@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
+import ThemeToggle from '../shared/ThemeToggle';
 import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { visiblePlatformNavGrouped } from '../../features/platform/nav/platformNav';
@@ -100,7 +101,7 @@ export default function SuperAdminLayout() {
     <div className="platform-shell admin-shell flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100">
       {/* Top Header */}
       <header
-        className="admin-topbar border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20"
+        className="admin-topbar border-b border-slate-200 dark:border-slate-800 dark:!bg-slate-900 h-16 flex items-center justify-between px-4 sm:px-6 shrink-0 z-20"
         data-purpose="top-header"
       >
         {/* Top Left: Hamburger for mobile + Logo & Title */}
@@ -130,6 +131,7 @@ export default function SuperAdminLayout() {
         {/* Top Right: ABC keyboard, RU/UZ switcher, avatar, logout */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <OnScreenKeyboardButton variant="header" />
+          <ThemeToggle />
           <LanguageSwitcher />
           <div
             className="w-9 h-9 rounded-full bg-emerald-600 text-white font-semibold flex items-center justify-center shadow-sm text-sm shrink-0 select-none"
@@ -164,7 +166,7 @@ export default function SuperAdminLayout() {
 
         {/* Sidebar Accordion Navigation */}
         <aside
-          className={`admin-sidebar bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 select-none overflow-y-auto fixed top-16 bottom-0 left-0 z-40 w-72 max-w-[85vw] shadow-xl transition-transform duration-200 lg:static lg:top-auto lg:bottom-auto lg:z-auto lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${
+          className={`admin-sidebar dark:!bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between shrink-0 select-none overflow-y-auto fixed top-16 bottom-0 left-0 z-40 w-72 max-w-[85vw] shadow-xl transition-transform duration-200 lg:static lg:top-auto lg:bottom-auto lg:z-auto lg:w-72 lg:max-w-none lg:translate-x-0 lg:shadow-none ${
             mobileNavOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
           data-purpose="sidebar"
@@ -213,7 +215,7 @@ export default function SuperAdminLayout() {
                                 `flex items-center space-x-3 py-2.5 rounded-lg text-sm font-medium transition ${
                                   isActive
                                     ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 font-semibold border-l-[3px] border-emerald-600 dark:border-emerald-400 pl-[9px] pr-3 shadow-xs'
-                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/60 dark:hover:text-slate-100 border-l-[3px] border-transparent pl-[9px] pr-3'
+                                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800/80 dark:hover:text-white border-l-[3px] border-transparent pl-[9px] pr-3'
                                 }`
                               }
                             >

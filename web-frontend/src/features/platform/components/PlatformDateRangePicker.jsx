@@ -60,7 +60,23 @@ export default function PlatformDateRangePicker({
     return new Date();
   });
 
+  const [effectiveAlign, setEffectiveAlign] = useState(align);
   const containerRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (align === 'right') {
+        setEffectiveAlign('right');
+      } else if (containerRef.current && typeof window !== 'undefined') {
+        const rect = containerRef.current.getBoundingClientRect();
+        if (rect.left + 500 > window.innerWidth - 16) {
+          setEffectiveAlign('right');
+        } else {
+          setEffectiveAlign(align || 'left');
+        }
+      }
+    }
+  }, [isOpen, align]);
 
   // Sync state when props change while closed
   useEffect(() => {
@@ -271,7 +287,7 @@ export default function PlatformDateRangePicker({
             toggleOpen();
           }
         }}
-        className={`group h-[2.375rem] px-3 inline-flex items-center justify-between gap-2.5 rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm select-none ${
+        className={`group h-[2.375rem] px-3 inline-flex items-center justify-between gap-2.5 rounded-[0.6rem] border border-slate-200 dark:border-slate-700 bg-white dark:!bg-slate-900 text-slate-800 dark:text-slate-100 text-xs font-medium hover:border-slate-300 dark:hover:border-slate-600 focus-within:ring-2 focus-within:ring-emerald-500/20 focus-within:border-emerald-500 transition-all shadow-sm select-none ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         } ${isFullWidth ? 'w-full' : ''} ${className}`}
       >
@@ -311,7 +327,7 @@ export default function PlatformDateRangePicker({
           role="dialog"
           aria-label={getPickerText('placeholderRange', lang, t)}
           className={`absolute z-50 mt-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-900/10 dark:shadow-black/50 overflow-hidden flex flex-col w-[328px] sm:w-[496px] max-w-[calc(100vw-1.5rem)] animate-in fade-in zoom-in-95 duration-150 ${
-            align === 'right' ? 'right-0' : 'left-0'
+            effectiveAlign === 'right' ? 'right-0' : 'left-0'
           }`}
         >
           {/* Main Body: Presets + Calendar */}

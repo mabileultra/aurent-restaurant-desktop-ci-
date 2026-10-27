@@ -76,6 +76,8 @@
 }
 
 .dark .platform-select.base-select--disabled .base-select__trigger {
-  background: rgba(255, 255, 255, 0.03);
-  border-color: #1e293b;
+  background: #1e293b;
+  border-color: #334155;
+  color: #64748b;
+  opacity: 0.65;
 }

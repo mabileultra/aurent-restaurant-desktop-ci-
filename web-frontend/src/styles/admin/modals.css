@@ -2,47 +2,110 @@
  * Admin modals, dropdowns, portaled menus — 1024×768
  */
 
-html.app-theme--admin .base-select__menu,
-html.app-theme--admin .base-select__trigger,
-html.app-theme--admin .base-select__input {
+html.app-theme--admin:not(.dark) .base-select:not(.base-select--disabled):not(.base-select--active-filter) .base-select__trigger,
+html.app-theme--admin:not(.dark) .base-select__menu,
+html.app-theme--admin:not(.dark) .base-select__input {
   color-scheme: light;
   background-color: #ffffff;
   color: #0f172a;
+}
+
+html.app-theme--admin:not(.dark) .base-select--disabled .base-select__trigger {
+  background-color: #f1f5f9;
+  color: #94a3b8;
+}
+
+html.dark.app-theme--admin .base-select__menu,
+.dark html.app-theme--admin .base-select__menu,
+html.dark.app-theme--admin .base-select:not(.base-select--disabled):not(.base-select--active-filter) .base-select__trigger,
+.dark html.app-theme--admin .base-select:not(.base-select--disabled):not(.base-select--active-filter) .base-select__trigger {
+  color-scheme: dark;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
+html.dark.app-theme--admin .base-select--disabled .base-select__trigger,
+.dark html.app-theme--admin .base-select--disabled .base-select__trigger {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #64748b;
 }
 
 html.app-theme--admin .base-select__input {
   background-color: transparent;
 }
 
-html.app-theme--admin .base-select__option {
+html.app-theme--admin:not(.dark) .base-select__option {
   color: #0f172a;
 }
 
-html.app-theme--admin .base-select__option:hover,
-html.app-theme--admin .base-select__option.is-highlighted,
-html.app-theme--admin .base-select__option--highlight {
+html.app-theme--admin:not(.dark) .base-select__option:hover,
+html.app-theme--admin:not(.dark) .base-select__option.is-highlighted,
+html.app-theme--admin:not(.dark) .base-select__option--highlight {
   background-color: var(--color-brand-soft);
   color: var(--color-brand-deep);
 }
 
-html.app-theme--admin .base-select__trigger:focus,
-html.app-theme--admin .base-select__trigger:focus-within,
-html.app-theme--admin .base-select--open .base-select__trigger {
+html.dark.app-theme--admin .base-select__option,
+.dark html.app-theme--admin .base-select__option {
+  color: #e2e8f0;
+}
+
+html.dark.app-theme--admin .base-select__option:hover,
+html.dark.app-theme--admin .base-select__option.is-highlighted,
+html.dark.app-theme--admin .base-select__option--highlight,
+.dark html.app-theme--admin .base-select__option:hover,
+.dark html.app-theme--admin .base-select__option.is-highlighted,
+.dark html.app-theme--admin .base-select__option--highlight {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+html.app-theme--admin:not(.dark) .base-select__trigger:focus,
+html.app-theme--admin:not(.dark) .base-select__trigger:focus-within,
+html.app-theme--admin:not(.dark) .base-select--open .base-select__trigger {
   border-color: var(--color-brand);
   box-shadow: 0 0 0 3px var(--color-focus-ring);
 }
 
+html.dark.app-theme--admin .base-select__trigger:focus,
+html.dark.app-theme--admin .base-select__trigger:focus-within,
+html.dark.app-theme--admin .base-select--open .base-select__trigger,
+.dark html.app-theme--admin .base-select__trigger:focus,
+.dark html.app-theme--admin .base-select__trigger:focus-within,
+.dark html.app-theme--admin .base-select--open .base-select__trigger {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+}
+
 /* BaseModal и любые fixed-оверлеи (модалки admin/platform) */
-html.app-theme--admin .fixed.inset-0 {
+html.app-theme--admin:not(.dark) .fixed.inset-0 {
   color-scheme: light;
 }
 
-html.app-theme--admin .fixed.inset-0 input,
-html.app-theme--admin .fixed.inset-0 select,
-html.app-theme--admin .fixed.inset-0 textarea {
+html.dark.app-theme--admin .fixed.inset-0,
+.dark html.app-theme--admin .fixed.inset-0 {
+  color-scheme: dark;
+}
+
+html.app-theme--admin:not(.dark) .fixed.inset-0 input,
+html.app-theme--admin:not(.dark) .fixed.inset-0 select,
+html.app-theme--admin:not(.dark) .fixed.inset-0 textarea {
   background-color: #ffffff;
   color: #0f172a;
   border-color: #cbd5e1;
+}
+
+html.dark.app-theme--admin .fixed.inset-0 input,
+html.dark.app-theme--admin .fixed.inset-0 select,
+html.dark.app-theme--admin .fixed.inset-0 textarea,
+.dark html.app-theme--admin .fixed.inset-0 input,
+.dark html.app-theme--admin .fixed.inset-0 select,
+.dark html.app-theme--admin .fixed.inset-0 textarea {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #334155;
 }
 
 html.app-viewport--canonical .fixed.inset-0.flex.items-center.justify-center {
@@ -92,23 +155,51 @@ html.app-viewport--canonical .platform-desktop-notifications-field textarea {
 }
 
 /* Product lookup / tasnif portaled panels */
-html.app-theme--admin .product-lookup-select__menu,
-html.app-theme--admin .tasnif-search-panel {
+html.app-theme--admin:not(.dark) .product-lookup-select__menu,
+html.app-theme--admin:not(.dark) .tasnif-search-panel {
   color-scheme: light;
   background-color: #ffffff;
 }
 
+html.dark.app-theme--admin .product-lookup-select__menu,
+html.dark.app-theme--admin .tasnif-search-panel,
+.dark html.app-theme--admin .product-lookup-select__menu,
+.dark html.app-theme--admin .tasnif-search-panel {
+  color-scheme: dark;
+  background-color: #0f172a;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+
 /* Weight modal в admin catalog (если открыт вне кассы) */
-html.app-theme--admin .weight-entry-modal__input {
+html.app-theme--admin:not(.dark) .weight-entry-modal__input {
   background-color: #ffffff;
   color: #0f172a;
   border-color: #cbd5e1;
 }
 
+html.dark.app-theme--admin .weight-entry-modal__input,
+.dark html.app-theme--admin .weight-entry-modal__input {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #334155;
+}
+
 /* Order wizard portal */
-html.app-theme--admin .order-add-wizard input,
-html.app-theme--admin .order-add-wizard select,
-html.app-theme--admin .order-add-wizard textarea {
+html.app-theme--admin:not(.dark) .order-add-wizard input,
+html.app-theme--admin:not(.dark) .order-add-wizard select,
+html.app-theme--admin:not(.dark) .order-add-wizard textarea {
   background-color: #ffffff;
   color: #0f172a;
+}
+
+html.dark.app-theme--admin .order-add-wizard input,
+html.dark.app-theme--admin .order-add-wizard select,
+html.dark.app-theme--admin .order-add-wizard textarea,
+.dark html.app-theme--admin .order-add-wizard input,
+.dark html.app-theme--admin .order-add-wizard select,
+.dark html.app-theme--admin .order-add-wizard textarea {
+  background-color: #0f172a;
+  color: #f1f5f9;
+  border-color: #334155;
 }
