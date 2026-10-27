@@ -1,4 +1,5 @@
 import BillingPeriodCalendar from '../BillingPeriodCalendar';
+import PlatformSelect from '../PlatformSelect';
 
 export default function BillingCompanyManage({ p }) {
   const { t } = p;
@@ -19,14 +20,17 @@ export default function BillingCompanyManage({ p }) {
           onChange={(e) => p.setMonthlyAmount(e.target.value)}
           placeholder={t('platform.billing.monthlyAmountPlaceholder')}
         />
-        <select className="billing-select" value={p.assignPlanId} onChange={(e) => p.pickPlan(e.target.value)}>
-          <option value="">{t('platform.billing.pickPlanOptional')}</option>
-          {p.plans.map((plan) => (
-            <option key={plan.id} value={plan.id}>
-              {plan.name} — {p.money(plan.monthlyPrice)}
-            </option>
-          ))}
-        </select>
+        <PlatformSelect
+          size="md"
+          value={p.assignPlanId}
+          onChange={(e) => p.pickPlan(e.target.value)}
+          placeholder={t('platform.billing.pickPlanOptional')}
+          options={p.plans.map((plan) => ({
+            value: plan.id,
+            label: `${plan.name} — ${p.money(plan.monthlyPrice)}`,
+          }))}
+          searchable={p.plans.length > 5}
+        />
       </div>
       <label className="billing-field-label">{t('platform.billing.periodStart')}</label>
       <BillingPeriodCalendar value={p.periodStartOn} onChange={p.setPeriodStartOn} locale={p.dateLocale} t={t} />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { BaseModal } from '../../../../components/ui';
+import PlatformSelect from '../PlatformSelect';
 import { toIsoDate } from '../BillingPeriodCalendar';
 import PlatformDatePicker from '../PlatformDatePicker';
 
@@ -40,12 +41,17 @@ export default function BillingBulkModal({ p }) {
         {isPlan ? (
           <label className="bc-form__field">
             <span>{t('platform.billing.collections.colPlan')}</span>
-            <select className="bc-control" value={planId} onChange={(e) => setPlanId(e.target.value)}>
-              <option value="">{t('platform.billing.pickPlan')}</option>
-              {plans.filter((x) => x.active !== false).map((x) => (
-                <option key={x.id} value={x.id}>{x.name} — {p.money(x.monthlyPrice)}</option>
-              ))}
-            </select>
+            <PlatformSelect
+              size="md"
+              value={planId}
+              onChange={(e) => setPlanId(e.target.value)}
+              placeholder={t('platform.billing.pickPlan')}
+              options={plans.filter((x) => x.active !== false).map((x) => ({
+                value: x.id,
+                label: `${x.name} — ${p.money(x.monthlyPrice)}`,
+              }))}
+              searchable={plans.length > 5}
+            />
           </label>
         ) : (
           <label className="bc-form__field">

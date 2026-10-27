@@ -33,6 +33,7 @@ export function usePlatformBillingPage() {
   const collections = useBillingCollections();
 
   const [selectedCompanyId, setSelectedCompanyId] = useState(null);
+  const [selectedCompanyRow, setSelectedCompanyRow] = useState(null);
   const [drawerTab, setDrawerTab] = useState('overview');
   const [adjustAmount, setAdjustAmount] = useState('');
   const [adjustNote, setAdjustNote] = useState('');
@@ -49,6 +50,7 @@ export function usePlatformBillingPage() {
   const topUpsQ = useQuery({
     queryKey: ['platform-billing-topups'],
     queryFn: () => platformBillingApi.topUps({ status: 'PENDING', size: 30 }).then((r) => r.data),
+    enabled: false,
   });
 
   const ledgerQ = useQuery({
@@ -155,14 +157,15 @@ export function usePlatformBillingPage() {
   ));
 
   const selectedRow = useMemo(
-    () => collections.rows.find((r) => r.billing.companyId === selectedCompanyId) || null,
-    [collections.rows, selectedCompanyId],
+    () => collections.rows.find((r) => r.billing.companyId === selectedCompanyId) || selectedCompanyRow || null,
+    [collections.rows, selectedCompanyId, selectedCompanyRow],
   );
   const selected = selectedRow?.billing || null;
 
   const selectCompany = (row) => {
-    const b = row.billing;
-    setSelectedCompanyId(b.companyId);
+    const b = row?.billing || {};
+    setSelectedCompanyId(b.companyId || null);
+    setSelectedCompanyRow(row || null);
     setDrawerTab('overview');
     setAssignPlanId(b.planId || '');
     setMonthlyAmount(String(Math.round(Number(b.monthlyTotal || 0))));
@@ -203,7 +206,10 @@ export function usePlatformBillingPage() {
     selected,
     selectedCompanyId,
     selectCompany,
-    closeDrawer: () => setSelectedCompanyId(null),
+    closeDrawer: () => {
+      setSelectedCompanyId(null);
+      setSelectedCompanyRow(null);
+    },
     openCompanyById: (companyId) => {
       collections.resetFilters();
       collections.setTab('ALL');

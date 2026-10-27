@@ -1,4 +1,5 @@
 import { BaseButton, BaseModal } from '../../../../components/ui';
+import PlatformSelect from '../PlatformSelect';
 
 function DetailRow({ label, value }) {
   return (
@@ -59,16 +60,17 @@ export default function PlatformLeadDetailModal({
           <label htmlFor="lead-status" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
             {t('common.status')}
           </label>
-          <select
+          <PlatformSelect
             id="lead-status"
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800"
+            size="md"
             value={editStatus}
             onChange={(e) => onStatusChange(e.target.value)}
-          >
-            {['NEW', 'IN_PROGRESS', 'DONE', 'REJECTED'].map((s) => (
-              <option key={s} value={s}>{t(`platform.leads.statuses.${s}`)}</option>
-            ))}
-          </select>
+            options={['NEW', 'IN_PROGRESS', 'DONE', 'REJECTED'].map((s) => ({
+              value: s,
+              label: t(`platform.leads.statuses.${s}`),
+            }))}
+            searchable={false}
+          />
         </div>
         <div>
           <label htmlFor="lead-note" className="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">

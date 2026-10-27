@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { BaseModal } from '../../../../components/ui';
+import PlatformSelect from '../PlatformSelect';
 import { parseMoneyInput } from '../../../billing/utils/parseMoneyInput';
 import { PAYMENT_METHODS } from '../../hooks/useBillingCollections';
 
@@ -35,14 +36,18 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
       <form id="bc-add-payment" className="bc-form" onSubmit={submit}>
         <label className="bc-form__field">
           <span>{k('colCompany')} *</span>
-          <select className="bc-control" value={companyId} onChange={(e) => setCompanyId(e.target.value)} required>
-            <option value="">{k('pickCompany')}</option>
-            {companies.map((row) => (
-              <option key={row.billing.companyId} value={row.billing.companyId}>
-                {row.billing.companyName || `#${row.billing.companyId}`} (ID {row.billing.companyId})
-              </option>
-            ))}
-          </select>
+          <PlatformSelect
+            size="md"
+            value={companyId}
+            onChange={(e) => setCompanyId(e.target.value)}
+            placeholder={k('pickCompany')}
+            options={companies.map((row) => ({
+              value: String(row.billing.companyId),
+              label: `${row.billing.companyName || `#${row.billing.companyId}`} (ID ${row.billing.companyId})`,
+            }))}
+            searchable
+            required
+          />
         </label>
         <div className="bc-form__row">
           <label className="bc-form__field">
@@ -59,9 +64,16 @@ export default function BillingAddPaymentModal({ t, companies, initialCompanyId,
           </label>
           <label className="bc-form__field">
             <span>{k('colMethod')} *</span>
-            <select className="bc-control" value={method} onChange={(e) => setMethod(e.target.value)}>
-              {PAYMENT_METHODS.map((m) => <option key={m} value={m}>{k(`methods.${m}`)}</option>)}
-            </select>
+            <PlatformSelect
+              size="md"
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
+              options={PAYMENT_METHODS.map((m) => ({
+                value: m,
+                label: k(`methods.${m}`),
+              }))}
+              searchable={false}
+            />
           </label>
         </div>
         <label className="bc-form__field">

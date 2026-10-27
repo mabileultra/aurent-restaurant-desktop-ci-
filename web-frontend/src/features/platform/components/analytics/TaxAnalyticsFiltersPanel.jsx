@@ -14,16 +14,17 @@ import {
   Wifi,
 } from 'lucide-react';
 import PlatformDateRangePicker from '../PlatformDateRangePicker';
+import PlatformSelect from '../PlatformSelect';
 
 function Field({ label, icon: Icon, children, className = '' }) {
   return (
-    <label className={`ta-field ${className}`.trim()}>
+    <div className={`ta-field ${className}`.trim()}>
       <span className="ta-field__label">
         {Icon ? <Icon size={12} strokeWidth={2.2} aria-hidden /> : null}
         {label}
       </span>
       {children}
-    </label>
+    </div>
   );
 }
 
@@ -81,61 +82,81 @@ export default function TaxAnalyticsFiltersPanel({
 
       <div className="ta-filters ta-filters--dense">
         <Field label={t('geo.region')} icon={MapPin}>
-          <select
+          <PlatformSelect
             value={draft.regionCode}
             onChange={(e) => set({ regionCode: e.target.value, districtCode: '' })}
-          >
-            <option value="">{t('platform.analytics.allRegions')}</option>
-            {regions.map((r) => (
-              <option key={r.regionCode} value={r.regionCode}>{labelGeo(r)}</option>
-            ))}
-          </select>
+            placeholder={t('platform.analytics.allRegions')}
+            options={regions.map((r) => ({
+              value: r.regionCode,
+              label: labelGeo(r),
+            }))}
+            searchable
+            cleanGeo
+          />
         </Field>
 
         <Field label={t('geo.district')} icon={MapPin}>
-          <select
+          <PlatformSelect
             value={draft.districtCode}
             disabled={!draft.regionCode}
             onChange={(e) => set({ districtCode: e.target.value })}
-          >
-            <option value="">{t('platform.analytics.allDistricts')}</option>
-            {districts.map((d) => (
-              <option key={d.code} value={d.code}>{labelGeo(d)}</option>
-            ))}
-          </select>
+            placeholder={t('platform.analytics.allDistricts')}
+            options={districts.map((d) => ({
+              value: d.code,
+              label: labelGeo(d),
+            }))}
+            searchable
+            cleanGeo
+          />
         </Field>
 
         <Field label={t('platform.analytics.enterpriseType')} icon={Building2}>
-          <select value={draft.enterpriseType} onChange={(e) => set({ enterpriseType: e.target.value })}>
-            <option value="">{t('platform.analytics.allTypes')}</option>
-            <option value="LEGAL">{t('platform.analytics.typeLegal')}</option>
-            <option value="IE">{t('platform.analytics.typeIe')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.enterpriseType}
+            onChange={(e) => set({ enterpriseType: e.target.value })}
+            placeholder={t('platform.analytics.allTypes')}
+            options={[
+              { value: 'LEGAL', label: t('platform.analytics.typeLegal') },
+              { value: 'IE', label: t('platform.analytics.typeIe') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.activitySubtype')} icon={Building2}>
-          <select value={draft.activitySubtype} onChange={(e) => set({ activitySubtype: e.target.value })}>
-            <option value="">{t('platform.analytics.allSubtypes')}</option>
-            <option value="RETAIL">{t('platform.analytics.subtypeRetail')}</option>
-            <option value="PHARMACY">{t('platform.analytics.subtypePharmacy')}</option>
-            <option value="RESTAURANT">{t('platform.analytics.subtypeRestaurant')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.activitySubtype}
+            onChange={(e) => set({ activitySubtype: e.target.value })}
+            placeholder={t('platform.analytics.allSubtypes')}
+            options={[
+              { value: 'RETAIL', label: t('platform.analytics.subtypeRetail') },
+              { value: 'PHARMACY', label: t('platform.analytics.subtypePharmacy') },
+              { value: 'RESTAURANT', label: t('platform.analytics.subtypeRestaurant') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.connectionStatus')} icon={Wifi}>
-          <select value={draft.connectionStatus} onChange={(e) => set({ connectionStatus: e.target.value })}>
-            <option value="">{t('platform.analytics.allStatuses')}</option>
-            <option value="CONNECTED">{t('platform.analytics.statusConnected')}</option>
-            <option value="NOT_CONNECTED">{t('platform.analytics.statusNotConnected')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.connectionStatus}
+            onChange={(e) => set({ connectionStatus: e.target.value })}
+            placeholder={t('platform.analytics.allStatuses')}
+            options={[
+              { value: 'CONNECTED', label: t('platform.analytics.statusConnected') },
+              { value: 'NOT_CONNECTED', label: t('platform.analytics.statusNotConnected') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.activityStatus')} icon={Wifi}>
-          <select value={draft.activityStatus} onChange={(e) => set({ activityStatus: e.target.value })}>
-            <option value="">{t('platform.analytics.allActivity')}</option>
-            <option value="ACTIVE">{t('platform.analytics.activityActive')}</option>
-            <option value="INACTIVE">{t('platform.analytics.activityInactive')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.activityStatus}
+            onChange={(e) => set({ activityStatus: e.target.value })}
+            placeholder={t('platform.analytics.allActivity')}
+            options={[
+              { value: 'ACTIVE', label: t('platform.analytics.activityActive') },
+              { value: 'INACTIVE', label: t('platform.analytics.activityInactive') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.connectionPeriod')} icon={CalendarRange} className="ta-field--wide">
@@ -181,20 +202,28 @@ export default function TaxAnalyticsFiltersPanel({
         </Field>
 
         <Field label={t('platform.analytics.dynamics')} icon={TrendingUp}>
-          <select value={draft.dynamics} onChange={(e) => set({ dynamics: e.target.value })}>
-            <option value="">{t('platform.analytics.allDynamics')}</option>
-            <option value="UP">{t('platform.analytics.dynamicsUp')}</option>
-            <option value="DOWN">{t('platform.analytics.dynamicsDown')}</option>
-            <option value="FLAT">{t('platform.analytics.dynamicsFlat')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.dynamics}
+            onChange={(e) => set({ dynamics: e.target.value })}
+            placeholder={t('platform.analytics.allDynamics')}
+            options={[
+              { value: 'UP', label: t('platform.analytics.dynamicsUp') },
+              { value: 'DOWN', label: t('platform.analytics.dynamicsDown') },
+              { value: 'FLAT', label: t('platform.analytics.dynamicsFlat') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.hasErrors')} icon={ShieldAlert}>
-          <select value={draft.hasErrors} onChange={(e) => set({ hasErrors: e.target.value })}>
-            <option value="">{t('platform.analytics.allErrors')}</option>
-            <option value="YES">{t('platform.analytics.errorsYes')}</option>
-            <option value="NO">{t('platform.analytics.errorsNo')}</option>
-          </select>
+          <PlatformSelect
+            value={draft.hasErrors}
+            onChange={(e) => set({ hasErrors: e.target.value })}
+            placeholder={t('platform.analytics.allErrors')}
+            options={[
+              { value: 'YES', label: t('platform.analytics.errorsYes') },
+              { value: 'NO', label: t('platform.analytics.errorsNo') },
+            ]}
+          />
         </Field>
 
         <Field label={t('platform.analytics.lastActivity')} icon={CalendarRange} className="ta-field--wide">

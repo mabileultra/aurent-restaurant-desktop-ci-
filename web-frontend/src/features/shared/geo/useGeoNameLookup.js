@@ -3,9 +3,12 @@ import { useQueries, useQuery } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { geoApi } from '../../../api/geo.api';
 
+import { cleanGeoName } from './geoNameUtils';
+
 function labelOf(row, lang) {
   if (!row) return '';
-  return lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz);
+  const raw = lang?.startsWith('uz') ? (row.nameUz || row.nameRu) : (row.nameRu || row.nameUz);
+  return cleanGeoName(raw);
 }
 
 /**

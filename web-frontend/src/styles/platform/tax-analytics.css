@@ -81,6 +81,13 @@
   width: 100%; min-height: 2.15rem;
 }
 .ta-page .ta-field select:disabled { opacity: 0.55; cursor: not-allowed; }
+.ta-page .ta-field .base-select { width: 100%; }
+.ta-page .ta-field .base-select__trigger {
+  min-height: 2.15rem;
+  height: 2.15rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+}
 .ta-page .ta-range { display: flex; align-items: center; gap: 0.35rem; }
 .ta-page .ta-range input { flex: 1; min-width: 0; }
 .ta-page .ta-search {

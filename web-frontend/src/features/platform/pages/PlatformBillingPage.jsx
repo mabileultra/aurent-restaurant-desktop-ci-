@@ -1,3 +1,4 @@
+import React from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import '../../../styles/billing.css';
@@ -12,7 +13,6 @@ import BillingAddPaymentModal from '../components/billing/BillingAddPaymentModal
 import BillingBulkModal from '../components/billing/BillingBulkModal';
 import BillingReportsView from '../components/billing/BillingReportsView';
 import BillingCalendarView from '../components/billing/BillingCalendarView';
-import { BillingTopUpQueuePanel, BillingUpcomingPanel } from '../components/billing/BillingSidePanels';
 import { usePlatformBillingPage } from '../hooks/usePlatformBillingPage';
 
 const VIEWS = ['overview', 'reports', 'calendar'];
@@ -59,19 +59,11 @@ export default function PlatformBillingPage() {
             <BillingFiltersBar t={p.t} c={c} plans={p.plans} />
           </div>
 
-          <div className="bc-layout">
-            <BillingCompaniesTable p={p} />
-            <div className="bc-layout__side">
-              <BillingUpcomingPanel p={p} />
-              <BillingTopUpQueuePanel p={p} />
-            </div>
-          </div>
-
-          <BillingCompanyDrawer p={p} />
+          <BillingCompaniesTable p={p} />
         </>
       ) : null}
 
-      {view === 'reports' ? <BillingReportsView t={p.t} money={p.money} /> : null}
+      {view === 'reports' ? <BillingReportsView t={p.t} money={p.money} p={p} /> : null}
 
       {view === 'calendar' ? (
         <BillingCalendarView
@@ -84,6 +76,8 @@ export default function PlatformBillingPage() {
           }}
         />
       ) : null}
+
+      <BillingCompanyDrawer p={p} />
 
       {p.paymentModalOpen ? (
         <BillingAddPaymentModal

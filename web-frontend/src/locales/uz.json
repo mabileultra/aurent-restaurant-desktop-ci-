@@ -2957,7 +2957,15 @@
           "paymentsCount_other": "{{count}} ta to‘lov",
           "debtTotal": "Umumiy qarzdorlik",
           "debtCount": "Qarzdorlar soni",
-          "debtAverage": "O‘rtacha qarz"
+          "debtAverage": "O‘rtacha qarz",
+          "dynamicsTitle": "Tushum va kutilmalar dinamikasi",
+          "dynamicsSub": "Haqiqiy tushgan mablag‘lar va yaqin to‘lovlar prognozi",
+          "distribution": "bo‘yicha ulush",
+          "activeMethodsCount": "5 ta to‘lov usuli",
+          "noMethodPayments": "Ushbu davrda hali to‘lovlar qayd etilmagan",
+          "ledgerTitle": "Yaqin kunlarda to‘lashi kerak bo‘lganlar va qarzdorlar",
+          "ledgerSub": "Muddati o‘tgan yoki yaqin 30 kun ichida to‘lov kutilayotgan kompaniyalar ro‘yxati",
+          "noDueCompanies": "Qarzdor yoki yaqin kunda to‘lov kutilayotgan kompaniyalar mavjud emas"
         },
         "calendar": {
           "monthTotal": "Oy bo‘yicha: {{count}} ta to‘lov · {{amount}} {{currency}}",

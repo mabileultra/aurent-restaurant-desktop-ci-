@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
+
 function getEnabledIndexes(options) {
   return options.reduce((acc, option, index) => {
     if (!option.disabled) acc.push(index);
@@ -34,7 +36,7 @@ export function useBaseSelect({ options, open, setOpen, disabled, onBlur, name, 
     setOpen((prev) => !prev);
   }, [disabled, setOpen]);
 
-  useLayoutEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!open || !triggerRef.current) return;
 
     const gap = 4;

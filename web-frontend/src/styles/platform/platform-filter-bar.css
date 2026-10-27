@@ -30,6 +30,25 @@
   font-size: 0.8rem;
 }
 
+.platform-filter-bar__geo .base-select {
+  flex: 0 1 11.5rem;
+  width: 11.5rem;
+  min-width: 9.5rem;
+}
+
+.platform-filter-bar__geo .base-select__label {
+  display: none;
+}
+
+.platform-filter-bar__geo .base-select__trigger {
+  min-height: 1.9rem;
+  height: 1.9rem;
+  padding: 0 0.65rem;
+  border-radius: 0.55rem;
+  border-color: #e6ebf1;
+  font-size: 0.8rem;
+}
+
 .platform-filter-bar__select:disabled {
   opacity: 0.55;
   cursor: not-allowed;
