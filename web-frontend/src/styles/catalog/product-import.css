@@ -1,15 +1,173 @@
-/* Импорт товаров — большой модал + предпросмотр + светофор тасниф */
+/* Импорт товаров — BaseModal + панели в стиле billing/platform */
 
 .product-import-modal {
-  width: min(96vw, 100rem);
-  max-width: 100rem;
-  height: min(94vh, 56rem);
+  width: min(98vw, 70rem);
+  max-width: min(98vw, 70rem);
+  height: min(92vh, 58rem);
+  max-height: min(92vh, 58rem);
+}
+
+@media (max-width: 900px) {
+  .product-import-modal {
+    width: 100%;
+    max-width: none;
+    height: min(100dvh, 100%);
+    max-height: none;
+    border-radius: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-import-modal {
+    border-radius: 0;
+    height: 100dvh;
+  }
 }
 
 .product-import-modal__body {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  background: rgb(248 250 252);
+}
+
+.dark .product-import-modal__body {
+  background: rgb(15 23 42);
+}
+
+.product-import-modal__footer {
+  background: rgb(255 255 255);
+}
+
+.dark .product-import-modal__footer {
+  background: rgb(15 23 42);
+}
+
+.product-import-setup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.product-import-setup__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.product-import-setup__kicker {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(100 116 139);
+}
+
+.product-import-setup__lead {
+  margin: 0.35rem 0 0;
+  max-width: 36rem;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: rgb(51 65 85);
+}
+
+.dark .product-import-setup__lead {
+  color: rgb(203 213 225);
+}
+
+.product-import-setup__link {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgb(5 150 105);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.product-import-setup__link:hover {
+  color: rgb(4 120 87);
+}
+
+.product-import-panel {
+  border-radius: 0.9rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.dark .product-import-panel {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59 / 0.55);
+  box-shadow: none;
+}
+
+.product-import-panel__label {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: rgb(71 85 105);
+}
+
+.dark .product-import-panel__label {
+  color: rgb(148 163 184);
+}
+
+.product-import-receipt-meta {
+  border-radius: 0.9rem;
+  border: 1px solid rgb(226 232 240);
+  background: rgb(255 255 255);
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+}
+
+.dark .product-import-receipt-meta {
+  border-color: rgb(51 65 85);
+  background: rgb(30 41 59 / 0.55);
+  box-shadow: none;
+}
+
+.product-import-receipt-meta__title {
+  margin: 0 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 650;
+  color: rgb(71 85 105);
+}
+
+.dark .product-import-receipt-meta__title {
+  color: rgb(148 163 184);
+}
+
+.product-import-receipt-meta__grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .product-import-receipt-meta__grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .product-import-receipt-meta__notes {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (min-width: 1024px) {
+  .product-import-receipt-meta__grid {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 1.4fr);
+  }
+
+  .product-import-receipt-meta__notes {
+    grid-column: auto;
+  }
 }
 
 .product-import-preview {

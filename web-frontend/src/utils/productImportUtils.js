@@ -1,10 +1,10 @@
 import { fmtMoney } from './formatMoney';
 
 export const optCls = (active) =>
-  `flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition ${
+  `flex cursor-pointer items-start gap-3 rounded-xl border p-3.5 transition ${
     active
-      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10'
-      : 'border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600'
+      ? 'border-emerald-500 bg-emerald-50 shadow-sm dark:border-emerald-400/70 dark:bg-emerald-500/10'
+      : 'border-slate-200 bg-white hover:border-slate-300 dark:border-slate-600 dark:bg-slate-900/40 dark:hover:border-slate-500'
   }`;
 
 export const inputCls =

@@ -35,6 +35,9 @@ export function useProductImport(onClose) {
   const [defaultCategoryId, setDefaultCategoryId] = useState('');
   const [defaultStoreId, setDefaultStoreId] = useState('');
   const [defaultStorageLocation, setDefaultStorageLocation] = useState('');
+  const [supplierId, setSupplierId] = useState('');
+  const [paymentType, setPaymentType] = useState('CASH');
+  const [receiptNotes, setReceiptNotes] = useState('');
   const [editable, setEditable] = useState({});
   const [visibleColumns, setVisibleColumns] = useState(() => loadProductImportColumnVisibility());
   const [tasnifByRow, setTasnifByRow] = useState({});
@@ -324,6 +327,10 @@ export function useProductImport(onClose) {
       toast.error(t('products.import.storeRequiredReceipt'));
       return;
     }
+    if (canImport && mode === 'AS_RECEIPT' && paymentType === 'CREDIT' && !supplierId) {
+      toast.error(t('stockReports.receiptCreditNeedsSupplier'));
+      return;
+    }
     setImporting(true);
     const fd = new FormData();
     fd.append('file', pendingFile);
@@ -354,6 +361,9 @@ export function useProductImport(onClose) {
       defaultCategoryId: defaultCategoryId ? Number(defaultCategoryId) : null,
       defaultStoreId: defaultStoreId ? Number(defaultStoreId) : null,
       defaultStorageLocation: defaultStorageLocation.trim() || null,
+      supplierId: mode === 'AS_RECEIPT' && supplierId ? supplierId : null,
+      paymentType: mode === 'AS_RECEIPT' ? paymentType : null,
+      receiptNotes: mode === 'AS_RECEIPT' && receiptNotes.trim() ? receiptNotes.trim() : null,
       rows: rowOverrides,
     };
 
@@ -417,6 +427,12 @@ export function useProductImport(onClose) {
     setDefaultStoreId,
     defaultStorageLocation,
     setDefaultStorageLocation,
+    supplierId,
+    setSupplierId,
+    paymentType,
+    setPaymentType,
+    receiptNotes,
+    setReceiptNotes,
     editable,
     rows: pageSlice.pageRows,
     allRows: rows,

@@ -1,0 +1,22 @@
+---
+description: Soft billing payment notice (not hard BLOCKED)
+globs: "**/BillingAccessGuard.jsx,**/billingNoticeSchedule.js,**/useBillingPaymentNotice.js,**/BillingAccessNoticeResolver.java,**/BillingAccessResponse.java"
+alwaysApply: false
+---
+
+# Soft billing payment notice
+
+## Product rule
+
+- Hard lock only when status is `BLOCKED` (`BillingAccessGuard`).
+- Soft notice when `paymentNoticeRequired` (GRACE, or charge due today/overdue with balance &lt; monthly total).
+- Slots Asia/Tashkent: **10:00, 15:00, 21:00**. Duration ~12s. Does not block POS.
+- On login/open: if any passed slot today was not shown yet → show **once** and mark all pending slots; future slots still fire on schedule.
+- One full shift open all day → all three fire. Open at 20:00 with none shown → catch-up for 10+15, then 21:00 separately.
+- Admin CTA → `/billing` (or `/rst/admin/billing`). Cashier → support Telegram `@aurent_support` + ask admin.
+- Do not show notice on billing pages.
+
+## Do not
+
+- Turn soft notice into a hard overlay that blocks checkout.
+- Change slot hours without updating `BILLING_NOTICE_HOURS` + this rule.

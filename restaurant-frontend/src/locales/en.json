@@ -1,7 +1,15 @@
 {
   "billing": {
     "accessBlockedBody": "Aurent monthly payment failed. Ask your company admin to top up the account under Billing & subscription.",
-    "accessBlockedTitle": "Access suspended"
+    "accessBlockedTitle": "Access suspended",
+    "paymentNoticeTitle": "Subscription payment needed",
+    "paymentNoticeDueBody": "Aurent payment is due. Top up the balance so access is not limited.",
+    "paymentNoticeOverdueBody": "Aurent payment is overdue. Please top up the balance as soon as possible.",
+    "paymentNoticeGraceBody": "Grace period: {{days}} day(s) left. Top up while access is still open.",
+    "paymentNoticeAdminHint": "Go to admin → Billing & subscription, or contact support.",
+    "paymentNoticeCashierHint": "Ask your company admin or support to complete the payment.",
+    "paymentNoticeGoBilling": "Go to billing",
+    "paymentNoticeSupport": "Contact support"
   },
   "cashRegisters": {
     "colFiscal": "Fiscal card ID",

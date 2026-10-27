@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import ShellOutlet from '../shared/ShellOutlet';
 import {
   Building2,
   Store,
@@ -24,7 +25,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
 import { logoutAndResetSession } from '../../utils/authSession';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
-import ThemeToggle from '../shared/ThemeToggle';
 import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
 import { useModuleAccess } from '../../hooks/useModuleAccess';
 import { visiblePlatformNavGrouped } from '../../features/platform/nav/platformNav';
@@ -131,7 +131,6 @@ export default function SuperAdminLayout() {
         {/* Top Right: ABC keyboard, RU/UZ switcher, avatar, logout */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           <OnScreenKeyboardButton variant="header" />
-          <ThemeToggle />
           <LanguageSwitcher />
           <div
             className="w-9 h-9 rounded-full bg-emerald-600 text-white font-semibold flex items-center justify-center shadow-sm text-sm shrink-0 select-none"
@@ -281,7 +280,7 @@ export default function SuperAdminLayout() {
           data-purpose="main-content"
         >
           <div className="admin-main min-h-0 flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 md:p-6">
-            <Outlet />
+            <ShellOutlet />
           </div>
         </main>
       </div>

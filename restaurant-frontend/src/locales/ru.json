@@ -1,7 +1,15 @@
 {
   "billing": {
     "accessBlockedBody": "Месячная оплата Aurent не прошла. Попросите администратора компании пополнить счёт в разделе «Оплата и подписка».",
-    "accessBlockedTitle": "Доступ приостановлен"
+    "accessBlockedTitle": "Доступ приостановлен",
+    "paymentNoticeTitle": "Нужно оплатить подписку",
+    "paymentNoticeDueBody": "Срок оплаты Aurent наступил. Пополните баланс, чтобы доступ не был ограничен.",
+    "paymentNoticeOverdueBody": "Оплата Aurent просрочена. Пополните баланс как можно скорее.",
+    "paymentNoticeGraceBody": "Льготный период: осталось {{days}} дн. Пополните баланс, пока доступ ещё открыт.",
+    "paymentNoticeAdminHint": "Перейдите в админку → «Оплата и подписка» или напишите в поддержку.",
+    "paymentNoticeCashierHint": "Обратитесь к администратору компании или в службу поддержки, чтобы оплатить платёж.",
+    "paymentNoticeGoBilling": "Перейти к оплате",
+    "paymentNoticeSupport": "Написать в поддержку"
   },
   "cashRegisters": {
     "colFiscal": "ID фискальной карты",

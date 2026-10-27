@@ -54,6 +54,9 @@ public class ProductImportReceiptSupport {
      */
     public String postReceipt(
         Integer storeId,
+        UUID supplierId,
+        String paymentType,
+        String receiptNotes,
         String invoiceDocumentId,
         List<StockReceiptLineRequest> lines,
         int createdCount,
@@ -62,15 +65,26 @@ public class ProductImportReceiptSupport {
         if (lines == null || lines.isEmpty()) {
             return null;
         }
-        String notes = StringUtils.hasText(invoiceDocumentId)
-            ? "Импорт " + invoiceDocumentId.trim()
-            : "Импорт товаров";
+        String pay = StringUtils.hasText(paymentType) ? paymentType.trim().toUpperCase() : "CASH";
+        if (!"CASH".equals(pay) && !"CREDIT".equals(pay)) {
+            pay = "CASH";
+        }
+        if ("CREDIT".equals(pay) && supplierId == null) {
+            errors.add("Товары созданы (" + createdCount
+                + "), но приход не проведён: для долга укажите поставщика");
+            return null;
+        }
+        String notes = StringUtils.hasText(receiptNotes)
+            ? receiptNotes.trim()
+            : (StringUtils.hasText(invoiceDocumentId)
+                ? "Импорт " + invoiceDocumentId.trim()
+                : "Импорт товаров");
         try {
             StockReceiptResponse receipt = stockReceiptService.create(new CreateStockReceiptRequest(
-                null,
+                supplierId,
                 storeId,
                 notes,
-                "CASH",
+                pay,
                 lines
             ));
             return receipt.receiptNumber();

@@ -3,6 +3,7 @@ import ProductImportColumnPicker from './preview/ProductImportColumnPicker';
 import ProductImportPagination from './preview/ProductImportPagination';
 import ProductImportPreviewControls from './preview/ProductImportPreviewControls';
 import ProductImportPreviewTable from './preview/ProductImportPreviewTable';
+import ProductImportReceiptMeta from './preview/ProductImportReceiptMeta';
 import ProductImportTasnifBar from './preview/ProductImportTasnifBar';
 
 export default function ProductImportPreviewStep(props) {
@@ -26,6 +27,12 @@ export default function ProductImportPreviewStep(props) {
     setDefaultStoreId,
     applyDefaultStoreToAll,
     stores,
+    supplierId,
+    setSupplierId,
+    paymentType,
+    setPaymentType,
+    receiptNotes,
+    setReceiptNotes,
     defaultStorageLocation,
     setDefaultStorageLocation,
     applyDefaultLocationToAll,
@@ -98,9 +105,9 @@ export default function ProductImportPreviewStep(props) {
       <p className="text-xs text-slate-500">{t('products.import.priceHint')}</p>
       <p className="text-xs text-slate-500">{t('products.import.storeHint')}</p>
 
-      <div className="flex flex-wrap items-end gap-2 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
+      <div className="product-import-panel flex flex-wrap items-end gap-2">
         <div className="min-w-[12rem] flex-1">
-          <p className="mb-1 text-xs font-medium text-slate-600 dark:text-slate-400">
+          <p className="product-import-panel__label mb-1">
             {t('products.import.defaultLocation')}
           </p>
           <input
@@ -139,6 +146,18 @@ export default function ProductImportPreviewStep(props) {
         stores={stores}
         mode={mode}
       />
+
+      {mode === 'AS_RECEIPT' ? (
+        <ProductImportReceiptMeta
+          t={t}
+          supplierId={supplierId}
+          setSupplierId={setSupplierId}
+          paymentType={paymentType}
+          setPaymentType={setPaymentType}
+          receiptNotes={receiptNotes}
+          setReceiptNotes={setReceiptNotes}
+        />
+      ) : null}
 
       <ProductImportTasnifBar
         t={t}

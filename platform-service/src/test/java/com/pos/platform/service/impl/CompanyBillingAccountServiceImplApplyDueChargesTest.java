@@ -9,6 +9,8 @@ import com.pos.platform.repository.CompanyRepository;
 import com.pos.platform.service.BillingLedgerService;
 import com.pos.platform.service.BillingPlanService;
 import com.pos.platform.service.support.BillingAccessCache;
+import com.pos.platform.service.support.BillingAccessNoticeResolver;
+import com.pos.platform.service.support.BillingChargeEngine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,7 +49,11 @@ class CompanyBillingAccountServiceImplApplyDueChargesTest {
 
     @BeforeEach
     void setUp() {
+        BillingChargeEngine chargeEngine = new BillingChargeEngine(ledgerService);
+        ReflectionTestUtils.setField(chargeEngine, "graceDays", 3);
         service = new CompanyBillingAccountServiceImpl(
+            new BillingAccessNoticeResolver(),
+            chargeEngine,
             companyBillingRepository,
             companyRepository,
             topUpRepository,
@@ -55,7 +61,6 @@ class CompanyBillingAccountServiceImplApplyDueChargesTest {
             ledgerService,
             accessCache
         );
-        ReflectionTestUtils.setField(service, "graceDays", 3);
     }
 
     @Test

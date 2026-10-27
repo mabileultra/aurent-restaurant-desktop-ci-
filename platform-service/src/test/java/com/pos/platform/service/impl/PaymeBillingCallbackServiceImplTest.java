@@ -60,7 +60,8 @@ class PaymeBillingCallbackServiceImplTest {
             intentRepository,
             creditService,
             auth,
-            paymentProperties
+            new com.pos.platform.service.support.payme.PaymeIntentLookup(intentRepository),
+            new com.pos.platform.service.support.payme.PaymeFiscalDetailBuilder(paymentProperties)
         );
         when(auth.paymeConfigured()).thenReturn(true);
         when(auth.verifyPaymeAuth(any())).thenReturn(true);

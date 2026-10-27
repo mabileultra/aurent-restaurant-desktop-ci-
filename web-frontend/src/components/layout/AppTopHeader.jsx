@@ -2,7 +2,6 @@ import { Menu, X } from 'lucide-react';
 import OnScreenKeyboardButton from '../shared/OnScreenKeyboardButton';
 import BrandMark from '../shared/BrandMark';
 import LanguageSwitcher from '../shared/LanguageSwitcher';
-import ThemeToggle from '../shared/ThemeToggle';
 
 export default function AppTopHeader({
   t,
@@ -36,7 +35,6 @@ export default function AppTopHeader({
 
       <div className="flex shrink-0 items-center gap-2 sm:gap-3 md:gap-4">
         <OnScreenKeyboardButton variant="header" />
-        <ThemeToggle />
         <LanguageSwitcher />
         <div className="flex items-center gap-2 text-sm">
           <div className="admin-topbar__avatar">

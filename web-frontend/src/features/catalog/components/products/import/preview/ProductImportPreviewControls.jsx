@@ -21,7 +21,7 @@ export default function ProductImportPreviewControls({
   const storeHintKey =
     mode === 'AS_RECEIPT' ? 'products.import.storeHintReceipt' : 'products.import.storeHint';
   return (
-    <div className="grid gap-4 rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50 md:grid-cols-3">
+    <div className="product-import-panel grid gap-4 md:grid-cols-3">
       <div>
         <p className="mb-2 text-xs font-medium text-slate-600 dark:text-slate-400">
           {t('products.import.markupLabel')}

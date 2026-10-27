@@ -1,7 +1,15 @@
 {
   "billing": {
     "accessBlockedBody": "Aurent oylik to‘lovi o‘tmadi. Kompaniya administratoridan «To‘lov va obuna» bo‘limida hisobni to‘ldirishni so‘rang.",
-    "accessBlockedTitle": "Kirish to‘xtatilgan"
+    "accessBlockedTitle": "Kirish to‘xtatilgan",
+    "paymentNoticeTitle": "Obunani to‘lash kerak",
+    "paymentNoticeDueBody": "Aurent to‘lov muddati keldi. Kirish cheklanmasligi uchun balansni to‘ldiring.",
+    "paymentNoticeOverdueBody": "Aurent to‘lovi kechikkan. Balansni imkon qadar tezroq to‘ldiring.",
+    "paymentNoticeGraceBody": "Imtiyozli muddat: {{days}} kun qoldi. Kirish hali ochiq — balansni to‘ldiring.",
+    "paymentNoticeAdminHint": "Adminkaga → «To‘lov va obuna» o‘ting yoki qo‘llab-quvvatlashga yozing.",
+    "paymentNoticeCashierHint": "To‘lovni amalga oshirish uchun kompaniya administratoriga yoki qo‘llab-quvvatlash xizmatiga murojaat qiling.",
+    "paymentNoticeGoBilling": "To‘lovga o‘tish",
+    "paymentNoticeSupport": "Qo‘llab-quvvatlashga yozish"
   },
   "cashRegisters": {
     "colFiscal": "Fiskal karta ID",

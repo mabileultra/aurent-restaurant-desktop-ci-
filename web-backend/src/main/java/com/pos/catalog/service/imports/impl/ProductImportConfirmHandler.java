@@ -120,6 +120,9 @@ public class ProductImportConfirmHandler {
         if (strategy.asReceipt()) {
             receiptNumber = receiptSupport.postReceipt(
                 defaultStoreId,
+                opts.supplierId(),
+                opts.paymentType(),
+                opts.receiptNotes(),
                 preview.uzInvoiceDocumentId(),
                 receiptLines,
                 created,
@@ -131,7 +134,9 @@ public class ProductImportConfirmHandler {
     }
 
     private static ProductImportConfirmRequest defaultOptions() {
-        return new ProductImportConfirmRequest("AS_FILE", "CATALOG", true, null, null, null, List.of());
+        return new ProductImportConfirmRequest(
+            "AS_FILE", "CATALOG", true, null, null, null, null, "CASH", null, List.of()
+        );
     }
 
     private static Map<Integer, ProductImportConfirmRequest.ImportRowConfirm> buildOverrideMap(
