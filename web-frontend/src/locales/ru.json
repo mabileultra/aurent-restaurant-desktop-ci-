@@ -2765,6 +2765,7 @@
     "businessTypeDefaultHint": "Тип по умолчанию для магазинов: {{code}}. Для ресторана отметьте «Ресторан» и нажмите «Сделать основным».",
     "businessTypeDefault": "По умолчанию",
     "businessTypeMakeDefault": "Сделать основным",
+    "loginCodeCopied": "Код входа скопирован в буфер",
     "moduleAccess": {
       "nav": "Доступы",
       "title": "Управление доступами",

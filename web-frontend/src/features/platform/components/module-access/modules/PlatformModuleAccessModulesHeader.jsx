@@ -27,7 +27,7 @@ export default function PlatformModuleAccessModulesHeader({
         <span>{t('platform.moduleAccess.useCustom')}</span>
       </label>
       {!customAccess ? (
-        <p className="mt-1 text-xs text-amber-600">{t('platform.moduleAccess.customHint')}</p>
+        <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{t('platform.moduleAccess.customHint')}</p>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-2">
         <button

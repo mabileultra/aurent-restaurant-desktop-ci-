@@ -1,3 +1,7 @@
+import { useState } from 'react';
+import { Check, Copy, Store } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import TableRowActionsMenu from '../../../components/shared/TableRowActionsMenu';
 import TablePagination from '../../../components/shared/TablePagination';
 import { AdminTableNoIdCells, AdminTableNoIdHeaders } from '../../../components/shared/AdminTableNoIdColumns';
@@ -22,12 +26,24 @@ export default function PlatformCompaniesTable({
   onEdit,
   onDelete,
 }) {
+  const [copiedId, setCopiedId] = useState(null);
   const safeTotalPages = Math.max(
     totalPages || 0,
     pageSize > 0 && total > 0 ? Math.ceil(total / pageSize) : 1
   );
   const regionCodes = rows.map((r) => r.regionCode).filter(Boolean);
   const { regionName, districtName } = useGeoNameLookup(regionCodes);
+
+  const handleCopyLoginCode = (e, code, id) => {
+    e.stopPropagation();
+    if (!code) return;
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(code);
+    }
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast.success(t('platform.loginCodeCopied', { defaultValue: 'Kirish kodi nusxalandi' }));
+  };
 
   return (
     <div className="admin-table-shell">
@@ -77,15 +93,51 @@ export default function PlatformCompaniesTable({
                   <td className="px-4 py-3 font-medium text-slate-900 dark:text-white">{row.name}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{regionName(row.regionCode)}</td>
                   <td className="px-4 py-3 text-slate-600 dark:text-slate-400">{districtName(row.districtCode)}</td>
-                  <td className="px-4 py-3 font-mono text-xs tracking-wide text-slate-600 dark:text-slate-400">
-                    {row.loginCode || '—'}
-                  </td>
-                  <td className="px-4 py-3">{row.storeCount}</td>
-                  <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
-                    {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`)}
+                  <td className="px-4 py-3">
+                    {row.loginCode ? (
+                      <button
+                        type="button"
+                        onClick={(e) => handleCopyLoginCode(e, row.loginCode, row.id)}
+                        className="group inline-flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors font-mono text-xs font-semibold text-slate-700 dark:text-slate-300"
+                        title={t('common.copy', { defaultValue: 'Nusxalash' })}
+                      >
+                        <span>{row.loginCode}</span>
+                        {copiedId === row.id ? (
+                          <Check size={12} className="text-emerald-500" />
+                        ) : (
+                          <Copy size={12} className="text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-colors" />
+                        )}
+                      </button>
+                    ) : (
+                      <span className="text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    {row.active ? t('common.active') : t('common.inactive')}
+                    <Link
+                      to={`/platform/stores?companyId=${row.id}`}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
+                      title={t('platform.viewCompanyStores', { defaultValue: 'Do‘konlarni ko‘rish' })}
+                    >
+                      <Store size={12} />
+                      <span>{row.storeCount ?? 0}</span>
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                      {t(`productTemplates.businessTypes.${row.businessType ?? 'UNIVERSAL'}`, { defaultValue: row.businessType })}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                        row.active
+                          ? 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                          : 'border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                      }`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${row.active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+                      {row.active ? t('common.active') : t('common.inactive')}
+                    </span>
                   </td>
                   <td className="px-4 py-3">
                     <TableRowActionsMenu

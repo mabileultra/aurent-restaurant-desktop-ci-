@@ -13,7 +13,7 @@ export default function PlatformCompaniesPage() {
   return (
     <PageLayout
       spacing="space-y-4"
-      title={p.t('platform.companiesTitle')}
+      title={`${p.t('platform.companiesTitle')}${typeof p.total === 'number' && p.total > 0 ? ` (${p.total})` : ''}`}
       actions={(
         <BaseButton onClick={p.openCreate} className="admin-btn-primary">
           <Plus size={16} />

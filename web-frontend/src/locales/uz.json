@@ -2554,6 +2554,8 @@
     "field_businessTypesHint": "Konstruktordan bir yoki bir nechta tur tanlang. Asosiy tur — yangi do'konlar uchun.",
     "businessTypeDefault": "Asosiy",
     "businessTypeMakeDefault": "Asosiy qilish",
+    "businessTypeDefaultHint": "Do'konlar uchun standart tur: {{code}}. Restoran uchun «Restoran»ni belgilang va «Asosiy qilish» tugmasini bosing.",
+    "loginCodeCopied": "Kirish kodi nusxalandi",
     "moduleAccess": {
       "nav": "Kirish huquqlari",
       "title": "Kirishlarni boshqarish",
