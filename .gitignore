@@ -121,8 +121,11 @@ desktop-electron/ui/*
 .deploy-sha
 
 # =========================
-# 🤖 LOCAL AI & AGENT RULES
+# 🤖 LOCAL AI & GRAPHIFY
 # =========================
 GEMINI.md
 .gemini/
+graphify-out/cache/
+graphify-out/.*
+graphify-out/*.json
 
