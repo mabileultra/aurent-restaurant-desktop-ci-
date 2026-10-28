@@ -70,9 +70,11 @@ describe('PlatformCompaniesTable', () => {
   it('renders company rows with all formatted columns correctly', () => {
     const html = renderToStaticMarkup(React.createElement(PlatformCompaniesTable, defaultProps));
 
-    // Company names
+    // Company names and initials
     expect(html).toContain('Supermarket Avesta');
     expect(html).toContain('Oshxona Rayhon');
+    expect(html).toContain('SA');
+    expect(html).toContain('OR');
 
     // Geo lookup names
     expect(html).toContain('Toshkent sh.');

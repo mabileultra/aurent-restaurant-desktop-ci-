@@ -32,10 +32,17 @@ export function usePlatformCompaniesPage() {
   const [districtCode, setDistrictCode] = useState('');
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PLATFORM_COMPANY_PAGE_SIZE);
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [selectedCompany, setSelectedCompany] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [menuId, setMenuId] = useState(null);
+
+  const handleStatusFilterChange = (next) => {
+    setStatusFilter(next);
+    setPage(0);
+  };
 
   const params = useMemo(
     () => ({
@@ -45,13 +52,20 @@ export function usePlatformCompaniesPage() {
       businessType: businessType || undefined,
       regionCode: regionCode || undefined,
       districtCode: districtCode || undefined,
+      active: statusFilter === 'ALL' ? undefined : statusFilter === 'ACTIVE',
     }),
-    [page, pageSize, search, businessType, regionCode, districtCode]
+    [page, pageSize, search, businessType, regionCode, districtCode, statusFilter]
   );
 
   const { data, isPending, isError, error, refetch } = useQuery({
     queryKey: ['companies', params],
     queryFn: () => companyApi.getAll(params).then((r) => r.data),
+  });
+
+  const { data: allCompanies = [] } = useQuery({
+    queryKey: ['companies-all'],
+    queryFn: () => companyApi.listAll().then((r) => r.data || []),
+    staleTime: 60_000,
   });
 
   const { data: constructorTypes = [] } = useQuery({
@@ -143,11 +157,30 @@ export function usePlatformCompaniesPage() {
     onError: (e) => toast.error(e.response?.data?.message ?? t('platform.saveFailed')),
   });
 
-  const rows = data?.content ?? [];
+  const rawRows = data?.content ?? [];
+  const rows = useMemo(() => {
+    if (statusFilter === 'ACTIVE') {
+      return rawRows.filter((r) => r.active);
+    }
+    if (statusFilter === 'INACTIVE') {
+      return rawRows.filter((r) => !r.active);
+    }
+    return rawRows;
+  }, [rawRows, statusFilter]);
+
   const total = data?.totalElements ?? 0;
   const totalPages = data?.totalPages ?? 0;
   const fromN = total === 0 ? 0 : page * pageSize + 1;
   const toN = Math.min((page + 1) * pageSize, total);
+
+  const totalCompanies = allCompanies.length > 0 ? allCompanies.length : total;
+  const activeCompanies = allCompanies.length > 0
+    ? allCompanies.filter((c) => c.active).length
+    : rawRows.filter((r) => r.active).length;
+  const inactiveCompanies = Math.max(0, totalCompanies - activeCompanies);
+  const totalStores = allCompanies.length > 0
+    ? allCompanies.reduce((acc, c) => acc + (c.storeCount || 0), 0)
+    : rawRows.reduce((acc, r) => acc + (r.storeCount || 0), 0);
 
   const openCreate = () => {
     setEditing(null);
@@ -294,6 +327,14 @@ export function usePlatformCompaniesPage() {
     totalPages,
     fromN,
     toN,
+    statusFilter,
+    setStatusFilter: handleStatusFilterChange,
+    selectedCompany,
+    setSelectedCompany,
+    totalCompanies,
+    activeCompanies,
+    inactiveCompanies,
+    totalStores,
     businessTypes: constructorTypes,
     saveMutation,
     openCreate,

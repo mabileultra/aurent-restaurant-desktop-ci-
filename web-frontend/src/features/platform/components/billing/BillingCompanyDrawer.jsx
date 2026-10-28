@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -143,9 +144,9 @@ export default function BillingCompanyDrawer({ p }) {
     toast.success("Kompaniya ma'lumotlari nusxalandi!");
   };
 
-  return (
+  const dialogNode = (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label={b.companyName}
@@ -525,4 +526,9 @@ export default function BillingCompanyDrawer({ p }) {
       </div>
     </div>
   );
+
+  if (typeof document !== 'undefined' && document.body) {
+    return createPortal(dialogNode, document.body);
+  }
+  return dialogNode;
 }

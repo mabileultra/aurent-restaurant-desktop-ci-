@@ -55,7 +55,7 @@ export default class SectionErrorBoundary extends Component {
       }
 
       return (
-        <div className={`w-full rounded-xl border border-slate-200/80 bg-white dark:border-slate-800 dark:bg-slate-900 shadow-sm ${this.props.className || ''}`}>
+        <div className={`w-full rounded-xl border border-slate-200/80 bg-white dark:!border-slate-800 dark:!bg-slate-900 shadow-sm ${this.props.className || ''}`}>
           <PlatformErrorState
             error={this.state.error}
             title={this.props.title}
