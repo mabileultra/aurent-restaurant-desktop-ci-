@@ -1,0 +1,13 @@
+.ta-page .ca-tabs { margin-bottom: 0.25rem; }
+.ta-page .ca-row { cursor: pointer; }
+.ta-page .ca-row:hover td { background: #eff6ff; }
+.ta-page .ca-firm { font-weight: 600; color: #0f172a; }
+.ta-page .ca-meta {
+  display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.35rem; color: var(--ta-muted); font-size: 0.8rem;
+}
+.ta-page .ca-back {
+  display: inline-flex; align-items: center; gap: 0.3rem;
+  color: var(--ta-blue); font-size: 0.8rem; font-weight: 600; text-decoration: none;
+}
+.dark .ta-page .ca-row:hover td { background: rgba(37, 99, 235, 0.16); }
+.dark .ta-page .ca-firm { color: #f8fafc; }

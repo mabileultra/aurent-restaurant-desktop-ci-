@@ -25,6 +25,8 @@ export const PlatformReferenceBooksPage = lazy(() => import('../features/platfor
 export const PlatformLeadsPage = lazy(() => import('../features/platform/pages/PlatformLeadsPage'));
 export const PlatformBillingPage = lazy(() => import('../features/platform/pages/PlatformBillingPage'));
 export const PlatformAnalyticsPage = lazy(() => import('../features/platform/pages/PlatformAnalyticsPage'));
+export const PlatformCompanyAnalyticsPage = lazy(() => import('../features/platform/pages/PlatformCompanyAnalyticsPage'));
+export const PlatformCompanyAnalyticsDetailPage = lazy(() => import('../features/platform/pages/PlatformCompanyAnalyticsDetailPage'));
 export const TenantBillingPage = lazy(() => import('../features/billing/pages/TenantBillingPage'));
 
 export const PublicHomePage = lazy(() => import('../features/public-site/pages/PublicHomePage'));

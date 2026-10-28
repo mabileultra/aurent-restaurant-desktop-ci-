@@ -13,6 +13,7 @@ import {
 import '../../../styles/platform/tax-analytics.css';
 import { PageLayout } from '../../../components/ui';
 import TaxAnalyticsFiltersPanel from '../components/analytics/TaxAnalyticsFiltersPanel';
+import AnalyticsSectionTabs from '../components/analytics/AnalyticsSectionTabs';
 import PlatformDateRangePicker from '../components/PlatformDateRangePicker';
 import { useTaxAnalyticsPage } from '../hooks/useTaxAnalyticsPage';
 
@@ -96,6 +97,7 @@ export default function PlatformAnalyticsPage() {
         </div>
       )}
     >
+      <AnalyticsSectionTabs t={t} />
       {p.overviewError ? <p className="ta-error">{t('platform.analytics.loadFailed')}</p> : null}
 
       <div className="ta-kpi-grid">
